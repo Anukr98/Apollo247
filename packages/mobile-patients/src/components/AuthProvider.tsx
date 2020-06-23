@@ -122,7 +122,7 @@ const buildApolloClient = (authToken: string, handleUnauthenticated: () => void)
       // return forward(operation);
     }
   });
-  setBugFenderLog(!authToken.length ? 'NO_AUTH_TOKEN' : 'AUTH_TOKEN_AVAILABLE', authToken);
+  setBugFenderLog(!authToken ? 'NO_AUTH_TOKEN' : 'AUTH_TOKEN_AVAILABLE', authToken);
   const authLink = setContext(async (_, { headers }) => ({
     headers: {
       ...headers,
