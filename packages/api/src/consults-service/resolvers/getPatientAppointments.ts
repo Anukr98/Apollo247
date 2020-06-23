@@ -237,13 +237,13 @@ const getPatientPersonalizedAppointments: Resolver<
       process.env.NODE_ENV == 'local'
         ? ApiConstants.LOCAL_DOC_ID.toString()
         : process.env.NODE_ENV == 'development'
-        ? ApiConstants.DEV_DOC_ID
+        ? ApiConstants.DEV_DOC_ID.toString()
         : process.env.NODE_ENV == 'staging'
-        ? ApiConstants.QA_DOC_ID
+        ? ApiConstants.QA_DOC_ID.toString()
         : offlineApptsList.response[0].doctorid_247;
     const apptDetailsOffline: PersonalizedAppointment = {
       id: offlineApptsList.response[0].appointmentid,
-      hospitalLocation: offlineApptsList.response[0].appointmentid.location_name,
+      hospitalLocation: offlineApptsList.response[0].location_name,
       appointmentDateTime: new Date(offlineApptsList.response[0].consultedtime),
       appointmentType:
         offlineApptsList.response[0].appointmenttype == 'WALKIN'
