@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Theme, Typography, Grid, CircularProgress, Popover } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { AphSelect, AphButton, AphInput, AphTextField } from '@aph/web-ui-components';
@@ -335,6 +335,7 @@ export const KavachLanding: React.FC = (props) => {
   const [serviceOptions, setServiceOptions] = useState<any>([]);
   const [locationOptions, setLocationOptions] = useState<any>([]);
   const [servicesLocations, setServicesLocations] = useState<ServicesLocationsInterface>({});
+  const scrollToRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetchUtil(process.env.KAVACH_SERVICES_LOCATIONS_URL, 'GET', {}, '', true)
@@ -352,6 +353,9 @@ export const KavachLanding: React.FC = (props) => {
         }
       })
       .catch((err) => console.log(err));
+  }, []);
+  useEffect(() => {
+    scrollToRef && scrollToRef.current && scrollToRef.current.scrollIntoView({ behavior: 'auto' });
   }, []);
 
   useEffect(() => {
@@ -442,7 +446,7 @@ export const KavachLanding: React.FC = (props) => {
     <div className={classes.kavachLanding}>
       <Header />
       <div className={classes.container}>
-        <div className={classes.kavachContent}>
+        <div className={classes.kavachContent} ref={scrollToRef}>
           <div className={classes.kavachIntro}>
             <Typography component="h1">Keeping you safe from Covid. Always</Typography>
             <div className={classes.imgContainer}>
