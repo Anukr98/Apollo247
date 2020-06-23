@@ -22,7 +22,6 @@ import moment from 'moment';
 import AsyncStorage from '@react-native-community/async-storage';
 import { Alert, Dimensions, Platform, Linking } from 'react-native';
 import RNAndroidLocationEnabler from 'react-native-android-location-enabler';
-import Geocoder from 'react-native-geocoding';
 import Permissions from 'react-native-permissions';
 import { DiagnosticsCartItem } from '../components/DiagnosticsCartProvider';
 import { getCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription } from '../graphql/types/getCaseSheet';
@@ -605,57 +604,6 @@ export const doRequestAndAccessLocation = (): Promise<LocationData> => {
         reject('Unable to get location.');
       });
   });
-};
-
-export const getUserCurrentPosition = async () => {
-  const item = await AsyncStorage.getItem('location');
-  const location = item ? JSON.parse(item) : null;
-
-  if (location) {
-    console.log(location, 'location');
-
-    return {
-      latlong: location.latlong,
-      name: location.name.toUpperCase(),
-    };
-  } else {
-    return new Promise(async (resolve, reject) => {
-      Permissions.request('location')
-        .then((response) => {
-          if (response === 'authorized') {
-            Geolocation.getCurrentPosition(
-              async (position) => {
-                console.log(position, 'position');
-
-                (Geocoder as any).init(googleApiKey);
-                const jsonData = await (Geocoder as any).from(
-                  position.coords.latitude,
-                  position.coords.longitude
-                );
-                if (jsonData) {
-                  const result = jsonData.results[0];
-                  const addressComponent = result.address_components[1].long_name || '';
-                  const pincode = result.address_components.slice(-1)[0].long_name || '';
-                  console.log(jsonData, addressComponent, 'addressComponent', pincode);
-                  resolve({
-                    latlong: result.geometry.location,
-                    name: addressComponent,
-                    zipcode: pincode,
-                  });
-                }
-                reject(null);
-              },
-              (error) => console.log(JSON.stringify(error)),
-              { enableHighAccuracy: false, timeout: 20000 }
-            );
-          }
-        })
-        .catch((error) => {
-          CommonBugFender('helperFunctions_getUserCurrentPosition', error);
-          console.log(error, 'error permission');
-        });
-    });
-  }
 };
 
 const { height } = Dimensions.get('window');
