@@ -211,7 +211,6 @@ export enum MEDICINE_ORDER_STATUS {
   READY_AT_STORE = "READY_AT_STORE",
   RETURN_ACCEPTED = "RETURN_ACCEPTED",
   RETURN_INITIATED = "RETURN_INITIATED",
-  PURCHASED_IN_STORE = "PURCHASED_IN_STORE",
 }
 
 export enum MEDICINE_ORDER_TYPE {
@@ -465,6 +464,7 @@ export interface AddMedicalRecordInput {
   sourceName?: string | null;
   testDate?: any | null;
   testName: string;
+  testResultFiles?: LabResultFileProperties | null;
 }
 
 export interface AddMedicalRecordParametersInput {
@@ -660,6 +660,12 @@ export interface HelpEmailInput {
   comments?: string | null;
   patientId?: string | null;
   email?: string | null;
+}
+
+export interface LabResultFileProperties {
+  fileName: string;
+  mimeType: string;
+  content: string;
 }
 
 export interface MedicineCartOMSInput {
