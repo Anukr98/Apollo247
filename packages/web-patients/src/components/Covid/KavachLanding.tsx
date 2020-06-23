@@ -183,7 +183,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     packages: {},
     videoContainer: {
-      height: 360,
+      height: 416,
       borderRadius: 5,
       overflow: 'hidden',
     },
