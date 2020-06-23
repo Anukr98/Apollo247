@@ -59,11 +59,63 @@ export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_hos
   source: string | null;
 }
 
+export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labResults_response_labTestResults {
+  __typename: "LabTestFileParameters";
+  parameterName: string | null;
+  unit: string | null;
+  result: string | null;
+  range: string | null;
+  outOfRange: boolean | null;
+}
+
+export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labResults_response {
+  __typename: "LabResultsBaseResponse";
+  id: string;
+  labTestName: string;
+  labTestSource: string;
+  date: any;
+  labTestRefferedBy: string | null;
+  additionalNotes: string | null;
+  observation: string | null;
+  labTestResults: (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labResults_response_labTestResults | null)[] | null;
+  fileUrl: string;
+}
+
+export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labResults {
+  __typename: "LabResultsDownloadResponse";
+  response: (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labResults_response | null)[] | null;
+  errorCode: number;
+  errorMsg: string | null;
+  errorType: string | null;
+}
+
+export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_prescriptions_response {
+  __typename: "PrescriptionsBaseResponse";
+  id: string;
+  prescriptionName: string;
+  date: any;
+  prescribedBy: string | null;
+  notes: string | null;
+  prescriptionSource: string | null;
+  source: string;
+  fileUrl: string;
+}
+
+export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_prescriptions {
+  __typename: "PrescriptionDownloadResponse";
+  response: (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_prescriptions_response | null)[] | null;
+  errorCode: number | null;
+  errorMsg: string | null;
+  errorType: string | null;
+}
+
 export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords {
   __typename: "PrismMedicalRecordsResult";
   labTests: (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labTests | null)[] | null;
   healthChecks: (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_healthChecks | null)[] | null;
   hospitalizations: (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_hospitalizations | null)[] | null;
+  labResults: getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labResults | null;
+  prescriptions: getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_prescriptions | null;
 }
 
 export interface getPatientPrismMedicalRecords {

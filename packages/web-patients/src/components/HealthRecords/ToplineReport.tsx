@@ -94,8 +94,7 @@ export const ToplineReport: React.FC<ToplineReportProps> = (props) => {
           <Grid item sm={12}>
             <div className={classes.cardSection}>
               {(data.observations && data.observations) ||
-                (data.additionalNotes && data.additionalNotes) ||
-                (data.healthCheckSummary && data.healthCheckSummary)}
+                (data.additionalNotes && data.additionalNotes)}
             </div>
           </Grid>
         </Grid>
