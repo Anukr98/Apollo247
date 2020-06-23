@@ -61,8 +61,8 @@ import {
 } from 'graphql/types/validatePharmaCoupon';
 import { Route } from 'react-router-dom';
 import { VALIDATE_PHARMA_COUPONS } from 'graphql/medicines';
-import { CouponCategoryApplicable } from 'graphql/types/globalTypes';
 import { getItemSpecialPrice } from '../PayMedicine';
+import { getTypeOfProduct } from 'helpers/commonHelpers';
 import _lowerCase from 'lodash/lowerCase';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -787,17 +787,6 @@ export const MedicineCart: React.FC = (props) => {
 
   const couponMutation = useMutation<validatePharmaCoupon>(VALIDATE_PHARMA_COUPONS);
 
-  const getTypeOfProduct = (type: string) => {
-    switch (_lowerCase(type)) {
-      case 'pharma':
-        return CouponCategoryApplicable.PHARMA;
-      case 'fmcg':
-        return CouponCategoryApplicable.FMCG;
-      default:
-        return null;
-    }
-  };
-
   const validateCoupon = () => {
     if (couponCode.length > 0 && currentPatient && currentPatient.id) {
       couponMutation({
@@ -1219,7 +1208,7 @@ export const MedicineCart: React.FC = (props) => {
                         <div className={classes.consultDoctor}>
                           <span>Don’t have a prescription? Don’t worry!</span>
                           <Link
-                            to={clientRoutes.doctorsLanding()}
+                            to={clientRoutes.specialityListing()}
                             className={classes.consultDoctoLink}
                           >
                             Consult A Doctor
@@ -1368,9 +1357,9 @@ export const MedicineCart: React.FC = (props) => {
                       validateCouponResult.discountedTotals &&
                       validateCouponResult.discountedTotals.couponDiscount > 0 && (
                         <div className={classes.discountTotal}>
-                          Savings of Rs.
-                          {validateCouponResult.discountedTotals.couponDiscount.toFixed(2)}
-                          on the bill
+                          {`Savings of Rs.
+                          ${validateCouponResult.discountedTotals.couponDiscount.toFixed(2)}
+                           on the bill`}
                         </div>
                       )}
                     {errorMessage.length > 0 && (

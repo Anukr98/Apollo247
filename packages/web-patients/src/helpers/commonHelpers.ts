@@ -2,6 +2,8 @@ import { DEVICETYPE } from 'graphql/types/globalTypes';
 import { GetDoctorDetailsById_getDoctorDetailsById_consultHours } from 'graphql/types/GetDoctorDetailsById';
 import moment from 'moment';
 import { GooglePlacesType } from 'components/LocationProvider';
+import { CouponCategoryApplicable } from 'graphql/types/globalTypes';
+import _lowerCase from 'lodash/lowerCase';
 
 declare global {
   interface Window {
@@ -159,7 +161,29 @@ const getDiffInDays = (nextAvailability: string) => {
     return 0;
   }
 };
+const getDiffInMinutes = (doctorAvailablePhysicalSlots: string) => {
+  if (doctorAvailablePhysicalSlots && doctorAvailablePhysicalSlots.length > 0) {
+    const nextAvailabilityTime =
+      doctorAvailablePhysicalSlots && moment(doctorAvailablePhysicalSlots);
+    const currentTime = moment(new Date());
+    const differenceInMinutes = currentTime.diff(nextAvailabilityTime, 'minutes') * -1;
+    return differenceInMinutes + 1; // for some reason moment is returning 1 second less. so that 1 is added.;
+  } else {
+    return 0;
+  }
+};
 
+const getDiffInHours = (doctorAvailablePhysicalSlots: string) => {
+  if (doctorAvailablePhysicalSlots && doctorAvailablePhysicalSlots.length > 0) {
+    const nextAvailabilityTime =
+      doctorAvailablePhysicalSlots && moment(doctorAvailablePhysicalSlots);
+    const currentTime = moment(new Date());
+    const differenceInHours = currentTime.diff(nextAvailabilityTime, 'hours') * -1;
+    return Math.round(differenceInHours) + 1;
+  } else {
+    return 0;
+  }
+};
 const acceptedFilesNamesForFileUpload = ['png', 'jpg', 'jpeg', 'pdf'];
 const MAX_FILE_SIZE_FOR_UPLOAD = 2000000;
 const INVALID_FILE_SIZE_ERROR = 'Invalid File Size. File size must be less than 2MB';
@@ -224,7 +248,19 @@ const availabilityList = ['Now', 'Today', 'Tomorrow', 'Next 3 days'];
 
 // End of doctors list based on specialty related changes
 
+const getTypeOfProduct = (type: string) => {
+  switch (_lowerCase(type)) {
+    case 'pharma':
+      return CouponCategoryApplicable.PHARMA;
+    case 'fmcg':
+      return CouponCategoryApplicable.FMCG;
+    default:
+      return CouponCategoryApplicable.FMCG;
+  }
+};
+
 export {
+  getTypeOfProduct,
   feeInRupees,
   experienceList,
   genderList,
@@ -233,6 +269,8 @@ export {
   SearchObject,
   DOCTOR_CATEGORY,
   getDiffInDays,
+  getDiffInMinutes,
+  getDiffInHours,
   NO_SERVICEABLE_MESSAGE,
   sortByProperty,
   locationRoutesBlackList,

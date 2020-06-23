@@ -18,6 +18,9 @@ import { useLocationDetails } from 'components/LocationProvider';
 import { gtmTracking } from '../gtmTracking';
 import { SearchObject } from 'components/DoctorsFilter';
 import { BottomLinks } from 'components/BottomLinks';
+import { PastSearches } from 'components/PastSearches';
+import { useAuth } from 'hooks/authHooks';
+import { clientRoutes } from 'helpers/clientRoutes';
 import {
   SearchDoctorAndSpecialtyByNameVariables,
   SearchDoctorAndSpecialtyByName,
@@ -112,7 +115,7 @@ const useStyles = makeStyles((theme: Theme) => {
           fontWeight: 'bold',
           color: '#fca317',
           textTransform: 'uppercase',
-          padding: '0 15px',
+          padding: '0 4px 0 7px',
           position: 'relative',
           '&:after': {
             content: "''",
@@ -684,6 +687,7 @@ export const SpecialityListing: React.FC = (props) => {
   const [loading, setLoading] = useState<boolean>(false);
   const [showSearchAndPastSearch, setShowSearchAndPastSearch] = useState<boolean>(true);
   const [disableFilters, setDisableFilters] = useState<boolean>(true);
+  const { isSignedIn } = useAuth();
 
   const handleChange = (panel: string) => (event: React.ChangeEvent<{}>, isExpanded: boolean) => {
     setExpanded(isExpanded ? panel : false);
@@ -699,6 +703,7 @@ export const SpecialityListing: React.FC = (props) => {
     currentLat,
     getCurrentLocationPincode,
   } = useLocationDetails();
+
   const params = useParams<{
     specialty: string;
   }>();
@@ -783,19 +788,23 @@ export const SpecialityListing: React.FC = (props) => {
     }
   }, [specialitySelected]);
 
+  const specialityNames = specialitySelected.length > 0 ? specialitySelected.split('_') : '';
+
   return (
     <div className={classes.slContainer}>
       <Header />
       <div className={classes.container}>
         <div className={classes.slContent}>
           <div className={classes.pageHeader}>
-            <div className={classes.backArrow} title={'Back to home page'}>
-              <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
-              <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
-            </div>
+            <Link to={clientRoutes.welcome()}>
+              <div className={classes.backArrow} title={'Back to home page'}>
+                <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
+                <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
+              </div>
+            </Link>
             <ol className={classes.breadcrumbs}>
               <li>
-                <a href="javascript:void(0);">Home</a>
+                <Link to={clientRoutes.welcome()}>Home</Link>
               </li>
               <li className="active">
                 <a href="javascript:void(0);">Specialities</a>
@@ -820,18 +829,24 @@ export const SpecialityListing: React.FC = (props) => {
                     <AphInput placeholder="Search doctors or specialities" />
                   </div>
                   <div className={classes.pastSearch}>
-                    <Typography component="h6">Past Searches</Typography>
-                    <ul className={classes.pastSearchList}>
-                      <li>
-                        <a href="javascript:void(0)">Dr. Alok Mehta</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0)">Cardiology</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0)">Paediatrician</a>
-                      </li>
-                    </ul>
+                    <Typography component="h6">{isSignedIn ? 'Past Searches' : ''}</Typography>
+                    <div className={classes.pastSearchList}>
+                      {currentPatient &&
+                      currentPatient.id &&
+                      filterOptions.searchKeyword.length <= 0 &&
+                      specialitySelected.length === 0 &&
+                      showSearchAndPastSearch ? (
+                        <PastSearches
+                          speciality={(specialitySelected) =>
+                            setSpecialitySelected(specialitySelected)
+                          }
+                          disableFilter={(disableFilters) => {
+                            setDisableFilters(disableFilters);
+                          }}
+                          specialityId={(specialityId: string) => setSpecialtyId(specialityId)}
+                        />
+                      ) : null}
+                    </div>
                   </div>
                   <Typography component="h2">
                     Start your care now by choosing from 500 doctors and 65 specialities
@@ -844,49 +859,51 @@ export const SpecialityListing: React.FC = (props) => {
                       <Grid container spacing={2}>
                         <Grid item xs={6} md={3}>
                           <div className={classes.specialityCard}>
-                            <Link to="">
+                            <Link to={clientRoutes.specialties('paediatrics')}>
                               <Typography component="h3">Paediatrics</Typography>
                               <img src={require('images/ic-baby.svg')} />
                               <Typography>For your child’s health problems</Typography>
-                              <Typography className={classes.symptoms}>
+                              {/* <Typography className={classes.symptoms}>
                                 Fever, cough, diarrhoea
-                              </Typography>
+                              </Typography> */}
                             </Link>
                           </div>
                         </Grid>
                         <Grid item xs={6} md={3}>
                           <div className={classes.specialityCard}>
-                            <Link to="">
+                            <Link
+                              to={clientRoutes.specialties('general-physician-internal-medicine')}
+                            >
                               <Typography component="h3">General Physician</Typography>
                               <img src={require('images/ic_doctor_consult.svg')} />
                               <Typography>For any common health issue</Typography>
-                              <Typography className={classes.symptoms}>
+                              {/* <Typography className={classes.symptoms}>
                                 Fever, headache, asthma
-                              </Typography>
+                              </Typography> */}
                             </Link>
                           </div>
                         </Grid>
                         <Grid item xs={6} md={3}>
                           <div className={classes.specialityCard}>
-                            <Link to="">
+                            <Link to={clientRoutes.specialties('dermatology')}>
                               <Typography component="h3">Dermatology</Typography>
                               <img src={require('images/ic-hair.svg')} />
                               <Typography>For skin &amp; hair problems</Typography>
-                              <Typography className={classes.symptoms}>
+                              {/* <Typography className={classes.symptoms}>
                                 Skin rash, acne, skin patch
-                              </Typography>
+                              </Typography> */}
                             </Link>
                           </div>
                         </Grid>
                         <Grid item xs={6} md={3}>
                           <div className={classes.specialityCard}>
-                            <Link to="">
+                            <Link to={clientRoutes.specialties('obstetrics--gynaecology')}>
                               <Typography component="h3">Gynaecology</Typography>
                               <img src={require('images/ic-gynaec.svg')} />
                               <Typography>For women’s health </Typography>
-                              <Typography className={classes.symptoms}>
+                              {/* <Typography className={classes.symptoms}>
                                 Irregular periods, pregnancy
-                              </Typography>
+                              </Typography> */}
                             </Link>
                           </div>
                         </Grid>
@@ -930,7 +947,15 @@ export const SpecialityListing: React.FC = (props) => {
                         <Typography component="h6">
                           Not sure about which speciality to choose?
                         </Typography>
-                        <a href="javascript:void(0)">Track your Symptoms</a>
+                        <Link
+                          to={
+                            isSignedIn
+                              ? clientRoutes.symptomsTrackerFor()
+                              : clientRoutes.symptomsTracker()
+                          }
+                        >
+                          Track your Symptoms
+                        </Link>
                       </div>
                     </div>
                   </div>

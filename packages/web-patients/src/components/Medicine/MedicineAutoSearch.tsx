@@ -501,9 +501,31 @@ export const MedicineAutoSearch: React.FC = (props) => {
                                 /* Gtm code start  */
                                 gtmTracking({
                                   category: 'Pharmacy',
-                                  action: 'Updating Cart Item by decreasing quantity 1',
+                                  action: 'Remove From Cart',
                                   label: medicine.name,
                                   value: medicine.special_price || medicine.price,
+                                  ecommObj: {
+                                    event: 'remove_from_cart',
+                                    ecommerce: {
+                                      items: [
+                                        {
+                                          item_name: medicine.name,
+                                          item_id: medicine.sku,
+                                          price: medicine.price,
+                                          item_category: 'Pharmacy',
+                                          item_category_2: medicine.type_id
+                                            ? medicine.type_id.toLowerCase() === 'pharma'
+                                              ? 'Drugs'
+                                              : 'FMCG'
+                                            : null,
+                                          // 'item_category_4': '', // future reference
+                                          item_variant: 'Default',
+                                          index: 1,
+                                          quantity: 1,
+                                        },
+                                      ],
+                                    },
+                                  },
                                 });
                                 /* Gtm code end  */
                                 updateCartItem && updateCartItem(cartItem);
@@ -539,9 +561,31 @@ export const MedicineAutoSearch: React.FC = (props) => {
                                 /* Gtm code start  */
                                 gtmTracking({
                                   category: 'Pharmacy',
-                                  action: 'Updating Cart Item by increasing quantity 1',
+                                  action: 'Add to Cart',
                                   label: medicine.name,
                                   value: medicine.special_price || medicine.price,
+                                  ecommObj: {
+                                    event: 'add_to_cart',
+                                    ecommerce: {
+                                      items: [
+                                        {
+                                          item_name: medicine.name,
+                                          item_id: medicine.sku,
+                                          price: medicine.price,
+                                          item_category: 'Pharmacy',
+                                          item_category_2: medicine.type_id
+                                            ? medicine.type_id.toLowerCase() === 'pharma'
+                                              ? 'Drugs'
+                                              : 'FMCG'
+                                            : null,
+                                          // 'item_category_4': '', // future reference
+                                          item_variant: 'Default',
+                                          index: 1,
+                                          quantity: 1,
+                                        },
+                                      ],
+                                    },
+                                  },
                                 });
                                 /* Gtm code end  */
                                 updateCartItem && updateCartItem(cartItem);
