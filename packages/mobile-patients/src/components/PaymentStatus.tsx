@@ -7,7 +7,9 @@ import {
   ScrollView,
   StatusBar,
   Dimensions,
+  Clipboard,
 } from 'react-native';
+import { Copy } from '@aph/mobile-patients/src/components/ui/Icons';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import React, { useEffect, useState } from 'react';
 import { NavigationScreenProps } from 'react-navigation';
@@ -22,7 +24,6 @@ import {
   makeAppointmentPaymentVariables,
 } from '@aph/mobile-patients/src/graphql/types/makeAppointmentPayment';
 import { GET_PHARMA_TRANSACTION_STATUS } from '@aph/mobile-patients/src/graphql/profiles';
-import { GET_MEDICINE_ORDER_DETAILS } from '@aph/mobile-patients/src/graphql/profiles';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
@@ -58,15 +59,19 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
   const orderAutoId = props.navigation.getParam('orderAutoId');
   const paymentTypeID = props.navigation.getParam('paymentTypeID');
   const { currentPatient } = useAllCurrentPatients();
+  const [copiedText, setCopiedText] = useState('');
 
+  const copyToClipboard = (refId: string) => {
+    Clipboard.setString(refId);
+  };
   const PaymentModes: any = {
     DC: 'Debit Card',
     CC: 'Credit Card',
     NB: 'Net Banking',
     UPI: 'UPI',
     PPI: 'Paytm Wallet',
-    PAYTM_DIGITAL_CREDIT:'Paytm Postpaid',
-    EMI:'EMI'
+    PAYTM_DIGITAL_CREDIT: 'Paytm Postpaid',
+    EMI: 'EMI',
   };
 
   const Modes: any = {
@@ -217,7 +222,10 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
         </View>
         <View style={{ flex: 0.29, justifyContent: 'flex-start', alignItems: 'center' }}>
           {textComponent('Payment Ref. Number - ', undefined, theme.colors.SHADE_GREY, false)}
-          {textComponent(refNumberText, undefined, theme.colors.SHADE_GREY, false)}
+          <TouchableOpacity style={styles.refStyles} onPress={() => copyToClipboard(refNumberText)}>
+            {textComponent(refNumberText, undefined, theme.colors.SHADE_GREY, false)}
+            <Copy style={styles.iconStyle} />
+          </TouchableOpacity>
         </View>
       </View>
     );
@@ -411,5 +419,14 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.4,
     shadowRadius: 8,
     elevation: 5,
+  },
+  refStyles: {
+    flexDirection: 'row',
+  },
+  iconStyle: {
+    marginLeft: 6,
+    marginTop: 5,
+    width: 9,
+    height: 10,
   },
 });

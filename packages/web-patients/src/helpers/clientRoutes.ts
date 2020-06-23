@@ -10,6 +10,7 @@ export const clientRoutes = {
   specialtyDoctorDetails: (specialty: string, doctorName: string, doctorId: string) =>
     `/specialties/${specialty}/${doctorName}-${doctorId}`,
   doctorsLanding: () => '/doctors',
+  // specialties: (specialty: string) => `/specialties/${specialty}`,
   specialties: (specialty: string) => `/specialties/${specialty}`,
   appointments: () => '/appointments',
   appointmentSuccess: () => `/appointments/${status}`,
@@ -30,13 +31,13 @@ export const clientRoutes = {
   notificationSettings: () => '/settings',
   addRecords: () => '/add-records',
   yourOrders: () => '/orders',
-  medicineAllBrands: () => '/view-all-brands',
+  medicineAllBrands: () => '/medicine/brands',
   medicineSearchByBrand: (id: string) => `/search-by-brand/${id}`,
   searchByMedicine: (searchMedicineType: string, searchText: string) =>
     `/medicine/${searchMedicineType}/${searchText}`,
-  medicineDetails: (sku: string) => `/medicine-details/${sku}`,
-  medicineCategoryDetails: (searchMedicineType: string, sku: string) =>
-    `/medicine-details/${searchMedicineType}/${sku}`,
+  medicineDetails: (sku: string) => `/medicine/${sku}`,
+  medicineCategoryDetails: (searchMedicineType: string, searchText: string, sku: string) =>
+    `/medicine/${searchMedicineType}/${searchText}/${sku}`,
   addressBook: () => '/address-book',
   symptomsTrackerFor: () => '/track-symptoms-for',
   symptomsTracker: () => '/track-symptoms',
@@ -53,6 +54,7 @@ export const clientRoutes = {
   partnerSBI: () => '/partners/sbi',
   contactUs: () => '/contact',
   covidLanding: () => '/covid19',
+  kavachLanding: () => '/covid19/kavach',
   covidDetails: () => '/covid19/*',
   aboutUs: () => '/aboutUs',
   needHelp: () => '/needHelp',
@@ -61,6 +63,8 @@ export const clientRoutes = {
   payOnlineConsult: () => '/pay-online-consult',
   payOnlineClinicConsult: () => '/pay-clinic-visit',
   prescriptionReview: () => '/prescription-review',
+  specialityListing: () => '/specialities',
+  medicinePrescription: () => '/medicine-prescription',
 };
 
 export const clientBaseUrl = () => webPatientsBaseUrl();

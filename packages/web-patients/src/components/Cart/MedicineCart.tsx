@@ -61,8 +61,8 @@ import {
 } from 'graphql/types/validatePharmaCoupon';
 import { Route } from 'react-router-dom';
 import { VALIDATE_PHARMA_COUPONS } from 'graphql/medicines';
-import { CouponCategoryApplicable } from 'graphql/types/globalTypes';
 import { getItemSpecialPrice } from '../PayMedicine';
+import { getTypeOfProduct } from 'helpers/commonHelpers';
 import _lowerCase from 'lodash/lowerCase';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -777,12 +777,7 @@ export const MedicineCart: React.FC = (props) => {
             mrp: cartItemDetails.price,
             isPrescriptionNeeded: cartItemDetails.is_prescription_required ? 1 : 0,
             mou: parseInt(cartItemDetails.mou),
-            isMedicine:
-              _lowerCase(cartItemDetails.type_id) === 'pharma'
-                ? '1'
-                : _lowerCase(cartItemDetails.type_id) === 'fmcg'
-                ? '0'
-                : null,
+            isMedicine: _lowerCase(cartItemDetails.type_id) === 'pharma' ? '1' : '0',
             specialPrice: Number(getItemSpecialPrice(cartItemDetails)),
           };
         })
@@ -791,17 +786,6 @@ export const MedicineCart: React.FC = (props) => {
   // coupon related code
 
   const couponMutation = useMutation<validatePharmaCoupon>(VALIDATE_PHARMA_COUPONS);
-
-  const getTypeOfProduct = (type: string) => {
-    switch (_lowerCase(type)) {
-      case 'pharma':
-        return CouponCategoryApplicable.PHARMA;
-      case 'fmcg':
-        return CouponCategoryApplicable.FMCG;
-      default:
-        return null;
-    }
-  };
 
   const validateCoupon = () => {
     if (couponCode.length > 0 && currentPatient && currentPatient.id) {
@@ -1025,7 +1009,7 @@ export const MedicineCart: React.FC = (props) => {
           const uploadUrlscheck = data.map(({ data }: any) =>
             data && data.uploadDocument && data.uploadDocument.status ? data.uploadDocument : null
           );
-          const filtered = uploadUrlscheck.filter(function(el) {
+          const filtered = uploadUrlscheck.filter(function (el) {
             return el != null;
           });
           const phyPresUrls = filtered.map((item) => item.filePath).filter((i) => i);

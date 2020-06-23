@@ -506,8 +506,6 @@ const updateDoctorFeeSummary: Resolver<
       args.summaryDate,
       ConsultMode.BOTH
     );
-    console.log('consultations==>', totalConsultations);
-    console.log('appointmentId==>', totalConsultations[0].id);
     let totalFee: number = 0;
     let totalConsults: number = 0;
     if (totalConsultations.length) {
@@ -518,13 +516,12 @@ const updateDoctorFeeSummary: Resolver<
           const paymentDetails = await dashboardRepo.getAppointmentPaymentDetailsByApptId(
             consultation.id
           );
-          console.log('paymentDetails=>', paymentDetails);
+          //console.log('paymentDetails=>', paymentDetails);
           let fee = 0;
           if (!_isEmpty(paymentDetails) && paymentDetails) {
             fee = parseFloat(paymentDetails.amountPaid.toString());
           }
-          console.log('appointmentId==>', consultation.id);
-          console.log('totalFee==>', fee);
+          console.log('totalFee==>', fee, ' ', consultation.id);
           resolve(fee);
         });
       });

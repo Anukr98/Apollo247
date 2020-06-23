@@ -535,12 +535,7 @@ export const PayMedicine: React.FC = (props) => {
             mrp: cartItemDetails.price,
             isPrescriptionNeeded: cartItemDetails.is_prescription_required ? 1 : 0,
             mou: parseInt(cartItemDetails.mou),
-            isMedicine:
-              _lowerCase(cartItemDetails.type_id) === 'pharma'
-                ? '1'
-                : _lowerCase(cartItemDetails.type_id) === 'fmcg'
-                ? '0'
-                : null,
+            isMedicine: _lowerCase(cartItemDetails.type_id) === 'pharma' ? '1' : '0',
             specialPrice: Number(getItemSpecialPrice(cartItemDetails)),
           };
         })
@@ -640,6 +635,24 @@ export const PayMedicine: React.FC = (props) => {
     paymentMutation()
       .then((res) => {
         /**Gtm code start  */
+        let ecommItems: any[] = [];
+        cartItems.map((items, key) => {
+          ecommItems.push({
+            item_name: items.name,
+            item_id: items.sku,
+            price: items.price,
+            item_category: 'Pharmacy',
+            item_category_2: items.type_id
+              ? items.type_id.toLowerCase() === 'pharma'
+                ? 'Drugs'
+                : 'FMCG'
+              : null,
+            // 'item_category_4': '', // for future
+            item_variant: 'Default',
+            index: key + 1,
+            quantity: items.mou,
+          });
+        });
         _obTracking({
           userLocation: city,
           paymentType: value === 'COD' ? 'COD' : 'Prepaid',
@@ -647,6 +660,11 @@ export const PayMedicine: React.FC = (props) => {
           couponCode: couponCode ? couponCode : null,
           couponValue: couponValue ? couponValue : null,
           finalBookingValue: totalWithCouponDiscount,
+          ecommObj: {
+            ecommerce: {
+              items: ecommItems,
+            },
+          },
         });
         /**Gtm code end  */
 
@@ -872,8 +890,9 @@ export const PayMedicine: React.FC = (props) => {
                       {mutationLoading ? (
                         <CircularProgress size={22} color="secondary" />
                       ) : (
-                        `Pay Rs.${totalWithCouponDiscount &&
-                          totalWithCouponDiscount.toFixed(2)} on delivery`
+                        `Pay Rs.${
+                          totalWithCouponDiscount && totalWithCouponDiscount.toFixed(2)
+                        } on delivery`
                       )}
                     </AphButton>
                   )}

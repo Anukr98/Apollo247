@@ -72,6 +72,14 @@ export enum ApiConstants {
   ORDER_CONFIRMED_TITLE = 'Medicine order is confirmed',
   ORDER_CONFIRMED_BODY = 'Hi {0}! Your order no {1} has been verified & successfully processed. Order will be delivered {2}',
 
+  //medicine order ready at store
+  ORDER_READY_AT_STORE_TITLE = 'Medicine order is ready',
+  ORDER_READY_AT_STORE_BODY = 'Hi {0}! items for your order {1} are ready for pickup at your selected store {2}. Store Contact Number: {3}. Kindly contact the store 20 minutes before reaching the store.',
+
+  //medicine order picked up
+  ORDER_PICKEDUP_TITLE = 'Medicine order is pickedup',
+  ORDER_PICKEDUP_BODY = 'Order Picked Up: Greetings from Apollo 24|7 Your order {0} is picked up successfully. Please take a moment & review your experience here - https://onelink.to/nfbwva',
+
   //medicine order out for delivery
   ORDER_OUT_FOR_DELIVERY_TITLE = 'Medicine order is out for delivery',
   ORDER_OUT_FOR_DELIVERY_BODY = 'Hi {0}! Your order {1} is out for delivery. Our executive will be there soon :)',
@@ -116,6 +124,7 @@ export enum ApiConstants {
   PHYSICAL_BOOK_APPOINTMENT_BODY = 'Thanks for choosing Apollo24|7, {0} :) Your appointment {1} with Dr. {2} is confirmed for {3} at {4}. Click here to fill your details before your consultation starts. This will take hardly 10 minutes and will help our doctor to assist you better.',
   DOCTOR_BOOK_APPOINTMENT_SMS = 'Hi Dr. {0}! You have a new appointment {1} with {2} scheduled for {3}.',
   SEND_DOCTOR_BOOK_APPOINTMENT_SMS = 24, //send sms to doctor if appointment datetime is less than 24hrs
+  DOCTOR_BOOK_APPOINTMENT_WHATSAPP = 'Hi Dr. {0}! You have a new appointment for today. \npatient Name :{1} \nAppointment Time :{2} \nTeam Apollo247.',
   DIAGNOSTIC_ORDER_SUCCESS_TITLE = 'Diagnostic test is booked',
   DIAGNOSTIC_ORDER_SUCCESS_BODY = "Congratulations {0}! We've booked your test successfully.",
 
@@ -127,9 +136,12 @@ export enum ApiConstants {
   DAILY_APPOINTMENT_SUMMARY = 'Hi Dr. {0}! Good morning. You have {1} appointment(s) booked for today on Apollo24|7. Summary of appointments',
   ONLINE_APPOINTMENTS = ' \nOnline Appointments : {0}',
   PHYSICAL_APPOINTMENTS = ' \nPhysical Appointments : {0}',
+  DAILY_WHATSAPP_NOTIFICATION = 'Hi Dr.{0}! Good morning. You have {1} appointment(s) booked for today on Apollo24|7. \nSummary:',
+  WHATSAPP_LINK = '\nClick here to check your today’s calendar on Mobile Application ',
   FOLLOWUP_NOTIFITICATION_TEXT = 'Hi {0}! Hope you are feeling better after your consultation with Dr. {1} :) You can book a free follow up with us till {2}.',
   CHAT_MESSGAE_TEXT = 'Hi Dr. {0}! Your patient {1} has sent you a chat message. ',
-  WHATSAPP_SD_CHAT_NOTIFICATION = 'Hi Dr. {0}! {1} has sent you a chat message. Click here to respond. {3}',
+  SEND_PATIENT_NOTIFICATION = 'Hi {0}! {1} is waiting for you to start the consultation.Please go to your dashboard in Apollo 24|7 and start consultation. ',
+  WHATSAPP_SD_CHAT_NOTIFICATION = 'Hi Dr. {0}! {1} has sent you a chat message. Click here to reply to the patient from a mobile Application.',
   DAILY_APPOINTMENT_SUMMARY_RESPONSE = 'Daily Appointment summaries have been sent to {0} Doctor(s) successfully',
   FOLLOW_UP_NOTIFICATION_RESPONSE = 'Follow up notifications sent to {0} patients successfully',
   PRESCRIPTION_READY_TITLE = 'Prescription ready',
@@ -215,6 +227,8 @@ export enum ApiConstants {
   APPOINTMENT_MAX_RESCHEDULE_COUNT_DOCTOR = 3,
 
   COUNTRY_CODE = '91',
+  OFFLINE_ORDERID = '7582d9fa-c33d-43d9-968f-77c917fff3ae',
+  CURRENT_UHID = 'APJ1.0002579777',
 
   //doctor no-photo url
   DOCTOR_DEFAULT_PHOTO_URL = 'https://prodaphstorage.blob.core.windows.net/doctors/no_photo.png',
@@ -223,7 +237,7 @@ export enum ApiConstants {
 
   OTP_EXPIRATION_MINUTES = 2,
   OTP_MESSAGE_TEXT = 'Dear Apollo Customer, Your one time password is {0} and is valid for {1} mins.',
-  DOCTOR_WHATSAPP_OTP = 'Dear Doctor, your one time password is {0}. Please note that this OTP is valid for 2 minutes.',
+  DOCTOR_WHATSAPP_OTP = 'Dear Doctor, your one time password is {0}. Please note that this OTP is valid for 2 minutes',
   KALEYRA_OTP_SENDER = 'APOLLO',
   KALEYRA_OTP_SMS_METHOD = 'sms',
   OTP_SUCCESS_MESSAGE = 'OTP sent to the mobile number successfully',
@@ -297,7 +311,7 @@ export enum ApiConstants {
   AUTO_SUBMIT_BY_SD = 'JD case-sheet auto submitted, as per the request',
   VIRTUAL_JD_NOTES_UNASSIGNED = 'The patient did not complete the self-assessment form. Hence empty case has been submitted',
   VIRTUAL_JD_NOTES_ASSIGNED = 'As the JD did not have enough time to submit the case, an empty case has been submitted',
-  ALLOWED_DOSAGES = 'ML,MG,GM,TABLET,PUFF,UNIT,SPRAY,PATCH,AS_PRESCRIBED,CAPSULE,DROP',
+  ALLOWED_DOSAGES = 'ML,MG,GM,TABLET,PUFF,UNIT,SPRAY,PATCH,AS_PRESCRIBED,CAPSULE,DROP,SACHET,TEASPOON,INTERNATIONAL_UNIT',
   NO_JD_AVAILABLE_TEXT = 'Patient Medical details could not be collected by the JD',
   APPOINTMENT_BOOKED_WITHIN_10_MIN = 'As patient booked within {0} minutes of the appointment time, case sheet has been submitted without any details.',
   NOT_APPLICABLE = 'Not Applicable',
@@ -333,4 +347,15 @@ export enum ApiConstants {
   PHARMACOLOGIST_EMAIL_ID = 'pharmacologist@apollo247.org',
   PHARMACOLOGIST_EMAIL_ID_TEST = 'kishore.s@apollo247.org',
   // end of pharmacologist email config
+
+  //PHRV1 constants start
+  LABTEST_SOURCE_SELF_UPLOADED = '247self',
+  PRESCRIPTION_SOURCE_PREFIX = '247',
+  //PHRV1 constants end
+
+  //REDIS KEYS
+  REDIS_URL = 'apollodev.redis.cache.windows.net',
+  REDIS_PORT = 6379,
+  REDIS_PWD = 'FgFyZpibcBewC6U7AZYDq1DppMW02mi+koiEa63gDF4=',
+  REDIS_IMAGE_URL = '/catalog/product/',
 }

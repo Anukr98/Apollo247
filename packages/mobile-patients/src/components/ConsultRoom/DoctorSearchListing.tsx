@@ -25,6 +25,7 @@ import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsPro
 import {
   CommonBugFender,
   CommonLogEvent,
+  setBugFenderLog,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { DOCTOR_SPECIALITY_BY_FILTERS } from '@aph/mobile-patients/src/graphql/profiles';
 import {
@@ -152,6 +153,21 @@ const styles = StyleSheet.create({
     color: theme.colors.SHERPA_BLUE,
     paddingBottom: 5,
   },
+  topTabBar: {
+    backgroundColor: '#f7f8f5',
+    flexDirection: 'row',
+    shadowColor: '#808080',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  docTypeCont: {
+    flex: 0.5,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderBottomWidth: 4,
+  },
 });
 
 let latlng: locationType | null = null;
@@ -202,6 +218,11 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const [doctorsList, setDoctorsList] = useState<
     (getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors | null)[]
   >([]);
+  const [filteredDoctorsList, setFilteredDoctorsList] = useState<
+    (getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors | null)[]
+  >([]);
+  const [doctorsType, setDoctorsType] = useState<string>('APOLLO');
+  const [apolloDocsNumber, setApolloDocsNumber] = useState<number>(0);
   const [FilterData, setFilterData] = useState<filterDataType[]>([...filterData]);
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
   const [locationSearchList, setlocationSearchList] = useState<{ name: string; placeId: string }[]>(
@@ -383,7 +404,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       setcurrentLocation(locationDetails.displayName);
       setLocationSearchText(locationDetails.displayName);
     }
-    callPermissions();
+    // callPermissions();
     return () => {
       didFocusSubscription && didFocusSubscription.remove();
       willBlurSubscription && willBlurSubscription.remove();
@@ -402,6 +423,26 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     }
   };
 
+  const filterDoctors = (
+    data: (getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors | null)[],
+    type: string
+  ) => {
+    if (type == 'APOLLO') {
+      let apolloDoctors = data.filter((item) => {
+        return item?.doctorType == 'APOLLO';
+      });
+      setFilteredDoctorsList(apolloDoctors);
+      console.log(apolloDoctors.length);
+      setApolloDocsNumber(apolloDoctors.length);
+    } else {
+      let otherDoctors = data.filter((item) => {
+        console.log(item?.doctorType);
+        return item?.doctorType != 'APOLLO';
+      });
+      setFilteredDoctorsList(otherDoctors);
+    }
+  };
+
   const setData = (data: getDoctorsBySpecialtyAndFilters) => {
     try {
       const filterGetData =
@@ -409,6 +450,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       if (filterGetData) {
         if (filterGetData.doctors) {
           setDoctorsList(filterGetData.doctors);
+          filterDoctors(filterGetData.doctors, doctorsType);
         }
 
         if (filterGetData.doctorsAvailability) {
@@ -538,7 +580,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       sort: sort,
     };
     console.log('FilterInput', FilterInput);
-
+    setBugFenderLog('DOCTOR_FILTER_INPUT', JSON.stringify(FilterInput));
     client
       .query<getDoctorsBySpecialtyAndFilters>({
         query: DOCTOR_SPECIALITY_BY_FILTERS,
@@ -549,9 +591,15 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       })
       .then(({ data }) => {
         console.log('data', data);
-
         setData(data);
         vaueChange(data);
+        //log data
+        const doctorInfo =
+          data.getDoctorsBySpecialtyAndFilters?.doctors === null
+            ? {}
+            : data.getDoctorsBySpecialtyAndFilters?.doctors[0];
+        setBugFenderLog('DOCTOR_FILTER_DATA', JSON.stringify(doctorInfo));
+        //end log data
       })
       .catch((e) => {
         CommonBugFender('DoctorSearchListing_fetchSpecialityFilterData', e);
@@ -909,15 +957,15 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
 
   const renderDoctorSearches = (filter?: ConsultMode, searchText?: string) => {
     let doctors =
-      doctorsList.length && filter
-        ? doctorsList.filter(
+      filteredDoctorsList.length && filter
+        ? filteredDoctorsList.filter(
             (
               obj: getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors | null
             ) => {
               return consultionType(obj!.id, filter) || consultionType(obj!.id, ConsultMode.BOTH);
             }
           )
-        : doctorsList;
+        : filteredDoctorsList;
     doctors =
       doctors.length && searchText
         ? doctors.filter(
@@ -1308,6 +1356,56 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     );
   };
 
+  const renderTopTabBar = () => {
+    if (doctorsList && filteredDoctorsList && doctorsList.length > filteredDoctorsList.length) {
+      return (
+        <View style={styles.topTabBar}>
+          <TouchableOpacity
+            style={{
+              ...styles.docTypeCont,
+              borderBottomColor:
+                doctorsType == 'APOLLO' ? theme.colors.SEARCH_UNDERLINE_COLOR : '#f7f8f5',
+            }}
+            onPress={() => {
+              setDoctorsType('APOLLO');
+              filterDoctors(doctorsList, 'APOLLO');
+            }}
+          >
+            <Text
+              style={{
+                ...theme.fonts.IBMPlexSansMedium(15),
+                marginVertical: 13,
+                color: doctorsType == 'APOLLO' ? theme.colors.LIGHT_BLUE : 'rgba(1,28,36,0.6)',
+              }}
+            >
+              Apollo Doctors ({apolloDocsNumber})
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={{
+              ...styles.docTypeCont,
+              borderBottomColor:
+                doctorsType == 'PARTNERS' ? theme.colors.SEARCH_UNDERLINE_COLOR : '#f7f8f5',
+            }}
+            onPress={() => {
+              setDoctorsType('PARTNERS');
+              filterDoctors(doctorsList, 'PARTNERS');
+            }}
+          >
+            <Text
+              style={{
+                ...theme.fonts.IBMPlexSansMedium(15),
+                marginVertical: 13,
+                color: doctorsType == 'PARTNERS' ? theme.colors.LIGHT_BLUE : 'rgba(1,28,36,0.6)',
+              }}
+            >
+              Doctor Partners ({doctorsList.length - apolloDocsNumber})
+            </Text>
+          </TouchableOpacity>
+        </View>
+      );
+    }
+  };
   return (
     <View style={styles.mainContainer}>
       <SafeAreaView style={theme.viewStyles.container}>
@@ -1318,6 +1416,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             renderSearchLoadingView()
           ) : (
             <View>
+              {renderTopTabBar()}
               <Text style={styles.consultHeadingText}>
                 {string.doctor_search_listing.consultBest.replace(
                   '{0}',

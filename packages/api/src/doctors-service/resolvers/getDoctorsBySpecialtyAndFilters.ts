@@ -186,7 +186,8 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     elasticMatch.push({ match: { 'specialty.name': ApiConstants.GENERAL_PHYSICIAN.toString() } });
   }
   if (args.filterInput.experience && args.filterInput.experience.length > 0) {
-    let elasticExperience: { [index: string]: any } = [];
+    //eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const elasticExperience: { [index: string]: any } = [];
     args.filterInput.experience.forEach((experience) => {
       elasticExperience.push({
         range: { experience: { gte: experience.minimum, lte: experience.maximum } },
@@ -197,7 +198,8 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     }
   }
   if (args.filterInput.fees && args.filterInput.fees.length > 0) {
-    let elasticFee: { [index: string]: any } = [];
+    //eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const elasticFee: { [index: string]: any } = [];
     args.filterInput.fees.forEach((fee) => {
       elasticFee.push({
         range: { onlineConsultationFees: { gte: fee.minimum, lte: fee.maximum } },
@@ -215,7 +217,6 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
       elasticMatch.push({ match: { languages: language } });
     });
   }
-
   const searchParams: RequestParams.Search = {
     index: 'doctors',
     body: {
@@ -228,6 +229,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     },
   };
   const client = new Client({ node: process.env.ELASTIC_CONNECTION_URL });
+
   const getDetails = await client.search(searchParams);
 
   for (const doc of getDetails.body.hits.hits) {
@@ -237,6 +239,12 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     doctor['doctorHospital'] = [];
     doctor['openSlotDates'] = [];
     doctor['activeSlotCount'] = 0;
+    if (doctor['physicalConsultationFees'] === 0) {
+      doctor['physicalConsultationFees'] = doctor['onlineConsultationFees'];
+    }
+    if (doctor['onlineConsultationFees'] === 0) {
+      doctor['onlineConsultationFees'] = doctor['physicalConsultationFees'];
+    }
     doctor['availableMode'] = [];
     doctor['earliestSlotavailableInMinutes'] = 0;
     let bufferTime = 5;
@@ -419,7 +427,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
       ) {
         earlyAvailableApolloDoctors.push(earlyAvailableStarApolloDoctors[i]);
         i++;
-      } else {
+      } else if (j < earlyAvailableNonStarApolloDoctors.length) {
         earlyAvailableApolloDoctors.push(earlyAvailableNonStarApolloDoctors[j]);
         j++;
       }
@@ -448,7 +456,6 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
         j++;
       }
     }
-
     doctors = earlyAvailableApolloDoctors
       .concat(
         earlyAvailableNonApolloDoctors.sort(

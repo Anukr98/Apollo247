@@ -10,7 +10,7 @@ import { ApiConstants } from 'ApiConstants';
 import { Patient, MedicineOrders, DiagnosticOrders } from 'profiles-service/entities';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { AppointmentRefundsRepository } from 'consults-service/repositories/appointmentRefundsRepository';
-
+import { DoctorDeviceTokenRepository } from 'doctors-service/repositories/doctorDeviceTokenRepository';
 import { PatientDeviceTokenRepository } from 'profiles-service/repositories/patientDeviceTokenRepository';
 import { TransferAppointmentRepository } from 'consults-service/repositories/tranferAppointmentRepository';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
@@ -20,7 +20,7 @@ import { addMilliseconds, format, differenceInHours, differenceInMinutes, addDay
 import path from 'path';
 import fs from 'fs';
 import { log } from 'customWinstonLogger';
-import { APPOINTMENT_TYPE, Appointment } from 'consults-service/entities';
+import { APPOINTMENT_TYPE, Appointment, STATUS } from 'consults-service/entities';
 import Pubnub from 'pubnub';
 import fetch from 'node-fetch';
 
@@ -87,6 +87,7 @@ export const getNotificationsTypeDefs = gql`
     sendFollowUpNotification: String
     sendChatMessageToDoctor(appointmentId: String): SendChatMessageToDoctorResult
     sendMessageToMobileNumber(mobileNumber: String, textToSend: String): SendSMS
+    sendDoctorReminderNotifications(nextMin: Int): SendChatMessageToDoctorResult
   }
 `;
 
@@ -119,6 +120,8 @@ export enum NotificationType {
   MEDICINE_ORDER_PAYMENT_FAILED = 'MEDICINE_ORDER_PAYMENT_FAILED',
   MEDICINE_ORDER_OUT_FOR_DELIVERY = 'MEDICINE_ORDER_OUT_FOR_DELIVERY',
   MEDICINE_ORDER_DELIVERED = 'MEDICINE_ORDER_DELIVERED',
+  MEDICINE_ORDER_PICKEDUP = 'MEDICINE_ORDER_PICKEDUP',
+  MEDICINE_ORDER_READY_AT_STORE = 'MEDICINE_ORDER_READY_AT_STORE',
   DOCTOR_CANCEL_APPOINTMENT = 'DOCTOR_CANCEL_APPOINTMENT',
   PATIENT_REGISTRATION = 'PATIENT_REGISTRATION',
   APPOINTMENT_REMINDER_15 = 'APPOINTMENT_REMINDER_15',
@@ -140,6 +143,7 @@ export enum NotificationType {
   PAYMENT_PENDING_SUCCESS = 'PAYMENT_PENDING_SUCCESS',
   PAYMENT_PENDING_FAILURE = 'PAYMENT_PENDING_FAILURE',
   APPOINTMENT_PAYMENT_REFUND = 'APPOINTMENT_PAYMENT_REFUND',
+  DOCTOR_APPOINTMENT_REMINDER = 'DOCTOR_APPOINTMENT_REMINDER',
 }
 
 export enum APPT_CALL_TYPE {
@@ -660,23 +664,25 @@ export async function sendNotification(
     //sendNotificationWhatsapp(patientDetails.mobileNumber, smsLink);
 
     //send sms to doctor if Appointment DateTime is less than 24 hours
-    const presentDate = new Date();
-    const laterDate =
-      appointment.appointmentDateTime > presentDate ? appointment.appointmentDateTime : presentDate;
-    const earlierDate =
-      appointment.appointmentDateTime > presentDate ? presentDate : appointment.appointmentDateTime;
-    const hoursDifference = differenceInHours(laterDate, earlierDate);
-
-    if (hoursDifference > 0 && hoursDifference < ApiConstants.SEND_DOCTOR_BOOK_APPOINTMENT_SMS) {
-      let doctorSMS = ApiConstants.DOCTOR_BOOK_APPOINTMENT_SMS.replace(
+    const todaysDate = new Date(format(new Date(), 'yyyy-mm-dd') + ' 18:30:00');
+    const yesterdaysDate = new Date(format(addDays(new Date(), -1), 'yyyy-mm-dd') + ' 18:30:00');
+    if (
+      appointment.appointmentDateTime <= todaysDate &&
+      appointment.appointmentDateTime >= yesterdaysDate
+    ) {
+      const doctorWhatsAppMessage = ApiConstants.DOCTOR_BOOK_APPOINTMENT_WHATSAPP.replace(
         '{0}',
         doctorDetails.fullName
-      );
-      doctorSMS = doctorSMS.replace('{1}', appointment.displayId.toString());
-      doctorSMS = doctorSMS.replace('{2}', patientDetails.firstName);
-      doctorSMS = doctorSMS.replace('{3}', apptDate.toString());
-      sendNotificationSMS(doctorDetails.mobileNumber, doctorSMS);
+      )
+        .replace('{1}', patientDetails.firstName)
+        .replace('{2}', apptDate.toString());
+      sendNotificationWhatsapp(doctorDetails.mobileNumber, doctorWhatsAppMessage, 1);
     }
+    let doctorSMS = ApiConstants.DOCTOR_BOOK_APPOINTMENT_SMS.replace('{0}', doctorDetails.fullName);
+    doctorSMS = doctorSMS.replace('{1}', appointment.displayId.toString());
+    doctorSMS = doctorSMS.replace('{2}', patientDetails.firstName);
+    doctorSMS = doctorSMS.replace('{3}', apptDate.toString());
+    sendNotificationSMS(doctorDetails.mobileNumber, doctorSMS);
   } else if (pushNotificationInput.notificationType == NotificationType.PAYMENT_PENDING_SUCCESS) {
     let content = ApiConstants.BOOK_APPOINTMENT_PAYMENT_SUCCESS_BODY.replace(
       '{0}',
@@ -1277,7 +1283,7 @@ export async function sendReminderNotification(
       }
     }
 
-    /*let whatsappMsg = ApiConstants.WHATSAPP_SD_CONSULT_REMINDER_15_MIN.replace(
+    let whatsappMsg = ApiConstants.WHATSAPP_SD_CONSULT_REMINDER_15_MIN.replace(
       '{0}',
       patientDetails.firstName
     );
@@ -1285,8 +1291,8 @@ export async function sendReminderNotification(
       '{1}',
       doctorDetails.firstName + ' ' + doctorDetails.lastName
     );
-    whatsappMsg = whatsappMsg.replace('{3}', diffMins.toString()); */
-    //sendNotificationWhatsapp(patientDetails.mobileNumber, whatsappMsg);
+    whatsappMsg = whatsappMsg.replace('{3}', diffMins.toString());
+    sendNotificationWhatsapp(patientDetails.mobileNumber, whatsappMsg, 1);
     if (appointment.appointmentType != APPOINTMENT_TYPE.PHYSICAL) {
       payload = {
         notification: {
@@ -1576,6 +1582,13 @@ export async function sendCartNotification(
       pushNotificationInput.orderAutoId.toString()
     );
     sendNotificationSMS(patientDetails.mobileNumber, notificationBody);
+  } else if (pushNotificationInput.notificationType == NotificationType.MEDICINE_ORDER_PICKEDUP) {
+    notificationTitle = ApiConstants.ORDER_PICKEDUP_TITLE;
+    notificationBody = ApiConstants.ORDER_PICKEDUP_BODY.replace(
+      '{0}',
+      pushNotificationInput.orderAutoId.toString()
+    );
+    sendNotificationSMS(patientDetails.mobileNumber, notificationBody);
   }
 
   //initialize firebaseadmin
@@ -1603,9 +1616,15 @@ export async function sendCartNotification(
     },
   };
 
-  if (pushNotificationInput.notificationType == NotificationType.MEDICINE_ORDER_DELIVERED) {
+  if (
+    pushNotificationInput.notificationType == NotificationType.MEDICINE_ORDER_DELIVERED ||
+    pushNotificationInput.notificationType == NotificationType.MEDICINE_ORDER_PICKEDUP
+  ) {
     payload.data = {
-      type: 'Order_Delivered',
+      type:
+        pushNotificationInput.notificationType == NotificationType.MEDICINE_ORDER_DELIVERED
+          ? 'Order_Delivered'
+          : 'Order_pickedup',
       orderAutoId: pushNotificationInput.orderAutoId.toString(),
       orderId: medicineOrderDetails.id,
       deliveredDate: format(new Date(), 'yyyy-MM-dd HH:mm'),
@@ -1850,6 +1869,11 @@ export async function sendMedicineOrderStatusNotification(
       notificationTitle = ApiConstants.ORDER_OUT_FOR_DELIVERY_TITLE;
       notificationBody = ApiConstants.ORDER_OUT_FOR_DELIVERY_BODY;
       break;
+    case NotificationType.MEDICINE_ORDER_READY_AT_STORE:
+      payloadDataType = 'Order_ready_at_store';
+      notificationTitle = ApiConstants.ORDER_READY_AT_STORE_TITLE;
+      notificationBody = ApiConstants.ORDER_READY_AT_STORE_BODY;
+      break;
     case NotificationType.MEDICINE_ORDER_PAYMENT_FAILED:
       payloadDataType = 'Order_Payment_Failed';
       notificationTitle = ApiConstants.MEDICINE_ORDER_PAYMENT_FAILED_TITLE;
@@ -1877,9 +1901,17 @@ export async function sendMedicineOrderStatusNotification(
   notificationBody = notificationBody.replace('{1}', orderNumber);
   const atOrederDateTime = tatDate ? 'by ' + format(tatDate, 'EEE MMM dd yyyy hh:mm bb') : 'soon';
   const inTatHours = 'in ' + orderTat + 'hours';
-  if (notificationType === NotificationType.MEDICINE_ORDER_CONFIRMED)
-    notificationBody = notificationBody.replace('{2}', atOrederDateTime);
-  notificationBody = notificationBody.replace('{2}', inTatHours);
+  if (notificationType == NotificationType.MEDICINE_ORDER_READY_AT_STORE) {
+    const shopAddress = JSON.parse(orderDetails.shopAddress);
+    notificationBody = notificationBody.replace('{2}', shopAddress.storename);
+    notificationBody = notificationBody.replace('{3}', shopAddress.phone);
+  } else {
+    if (notificationType === NotificationType.MEDICINE_ORDER_CONFIRMED) {
+      notificationBody = notificationBody.replace('{2}', atOrederDateTime);
+    }
+    notificationBody = notificationBody.replace('{2}', inTatHours);
+  }
+
   console.log(notificationBody, notificationType, 'med orders');
   const payload = {
     notification: {
@@ -2096,15 +2128,25 @@ const sendDailyAppointmentSummary: Resolver<
       let onlineAppointments = 0;
       let physicalAppointments = 0;
       appointments.forEach((appointment) => {
-        if (appointment.appointmentType == APPOINTMENT_TYPE.PHYSICAL) {
-          physicalAppointments++;
-        } else if (appointment.appointmentType == APPOINTMENT_TYPE.ONLINE) {
-          onlineAppointments++;
+        if (appointment.status != STATUS.COMPLETED) {
+          if (appointment.appointmentType == APPOINTMENT_TYPE.PHYSICAL) {
+            physicalAppointments++;
+          } else if (appointment.appointmentType == APPOINTMENT_TYPE.ONLINE) {
+            onlineAppointments++;
+          }
         }
       });
+
       const totalAppointments = onlineAppointments + physicalAppointments;
+
       if (totalAppointments > 0) {
         doctorsCount++;
+        const whatsAppLink =
+          ApiConstants.WHATSAPP_LINK + '' + process.env.WHATSAPP_LINK_BOOK_APOINTMENT;
+        let whatsAppMessageBody = ApiConstants.DAILY_WHATSAPP_NOTIFICATION.replace(
+          '{0}',
+          doctor.firstName
+        ).replace('{1}', totalAppointments.toString());
         let messageBody = ApiConstants.DAILY_APPOINTMENT_SUMMARY.replace(
           '{0}',
           doctor.firstName
@@ -2118,8 +2160,11 @@ const sendDailyAppointmentSummary: Resolver<
             ? ApiConstants.PHYSICAL_APPOINTMENTS.replace('{0}', physicalAppointments.toString())
             : '';
         messageBody += onlineAppointmentsText + physicalAppointmentsText;
+        whatsAppMessageBody +=
+          onlineAppointmentsText + '' + physicalAppointmentsText + whatsAppLink;
         sendBrowserNotitication(doctor.id, messageBody);
         sendNotificationSMS(doctor.mobileNumber, messageBody);
+        sendNotificationWhatsapp(doctor.mobileNumber, whatsAppMessageBody, 1);
       }
       if (index + 1 === array.length) {
         resolve(doctorsCount);
@@ -2196,6 +2241,13 @@ const sendChatMessageToDoctor: Resolver<
   const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
   const doctorDetails = await doctorRepo.findById(appointment.doctorId);
   if (!doctorDetails) throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID, undefined, {});
+  const whatsAppLink = process.env.WHATSAPP_LINK_BOOK_APOINTMENT;
+  let whatsAppMessageBody = ApiConstants.WHATSAPP_SD_CHAT_NOTIFICATION.replace(
+    '{0}',
+    doctorDetails.firstName
+  ).replace('{1}', patientDetails.firstName);
+  whatsAppMessageBody = whatsAppMessageBody + whatsAppLink;
+  await sendNotificationWhatsapp(doctorDetails.mobileNumber, whatsAppMessageBody, 1);
   const messageBody = ApiConstants.CHAT_MESSGAE_TEXT.replace(
     '{0}',
     doctorDetails.firstName
@@ -2216,6 +2268,102 @@ const sendMessageToMobileNumber: Resolver<
   return { status: messageResponse.status, message: messageResponse.message };
 };
 
+const sendDoctorReminderNotifications: Resolver<
+  null,
+  { nextMin: number },
+  NotificationsServiceContext,
+  SendChatMessageToDoctorResult
+> = async (parent, args, { doctorsDb, consultsDb, patientsDb }) => {
+  const apptRepo = consultsDb.getCustomRepository(AppointmentRepository);
+  const doctorTokenRepo = doctorsDb.getCustomRepository(DoctorDeviceTokenRepository);
+  //initialize firebaseadmin
+  const config = {
+    credential: firebaseAdmin.credential.applicationDefault(),
+    databaseURL: `https://${process.env.FIREBASE_PROJECT_ID}.firebaseio.com`,
+  };
+  let admin = require('firebase-admin');
+  let notificationResponse: any;
+  admin = !firebaseAdmin.apps.length ? firebaseAdmin.initializeApp(config) : firebaseAdmin.app();
+  const options = {
+    priority: NotificationPriority.high,
+    timeToLive: 60 * 60 * 24, //wait for one day.. if device is offline
+  };
+  //get all appointments
+  const apptsList = await apptRepo.getSpecificMinuteBothAppointments(args.nextMin);
+  if (apptsList.length > 0) {
+    apptsList.forEach(async (apptId) => {
+      //building payload
+      const payload = {
+        notification: {
+          title:
+            apptId.appointmentType == APPOINTMENT_TYPE.PHYSICAL
+              ? 'In-person appointment'
+              : 'OnlineAppointment',
+          body: apptId.patientName + ' ' + format(apptId.appointmentDateTime, 'yyyy-mm-dd h:mm:ss'),
+          sound: ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString(),
+        },
+        data: {
+          type: 'doctor_appointment_reminder',
+          appointmentId: apptId.id,
+          patientName: apptId.patientName,
+          content:
+            apptId.patientName + ' ' + format(apptId.appointmentDateTime, 'yyyy-mm-dd h:mm:ss'),
+        },
+      };
+
+      const deviceTokensList = await doctorTokenRepo.getDeviceTokens(apptId.doctorId);
+      //if (deviceTokensList.length == 0) return { status: true };
+
+      const registrationToken: string[] = [];
+      if (deviceTokensList.length > 0) {
+        deviceTokensList.forEach((values) => {
+          registrationToken.push(values.deviceToken);
+        });
+
+        console.log(registrationToken, 'registrationToken doctor');
+        admin
+          .messaging()
+          .sendToDevice(registrationToken, payload, options)
+          .then((response: PushNotificationSuccessMessage) => {
+            notificationResponse = response;
+            //if (pushNotificationInput.notificationType == NotificationType.CALL_APPOINTMENT) {
+            const fileName =
+              process.env.NODE_ENV +
+              '_doctorapptnotification_' +
+              format(new Date(), 'yyyyMMdd') +
+              '.txt';
+            let assetsDir = path.resolve('/apollo-hospitals/packages/api/src/assets');
+            if (process.env.NODE_ENV != 'local') {
+              assetsDir = path.resolve(<string>process.env.ASSETS_DIRECTORY);
+            }
+            let content =
+              format(new Date(), 'yyyy-MM-dd hh:mm') +
+              '\n apptid: ' +
+              apptId.id.toString() +
+              '\n multicastId: ';
+            content +=
+              response.multicastId.toString() +
+              '\n------------------------------------------------------------------------------------\n';
+            fs.appendFile(assetsDir + '/' + fileName, content, (err) => {
+              if (err) {
+                console.log('file saving error', err);
+              }
+              console.log('notification results saved');
+            });
+            //}
+          })
+          .catch((error: JSON) => {
+            console.log('PushNotification Failed::' + error);
+            throw new AphError(AphErrorMessages.PUSH_NOTIFICATION_FAILED);
+          });
+
+        console.log(notificationResponse, 'notificationResponse');
+      }
+    });
+  }
+  return { status: true };
+};
+
 export const getNotificationsResolvers = {
   Query: {
     sendPushNotification,
@@ -2224,5 +2372,6 @@ export const getNotificationsResolvers = {
     sendFollowUpNotification,
     sendChatMessageToDoctor,
     sendMessageToMobileNumber,
+    sendDoctorReminderNotifications,
   },
 };

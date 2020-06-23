@@ -104,23 +104,23 @@ export interface SearchByBrandProps
   extends NavigationScreenProps<{
     title: string;
     category_id: string;
-    isTest?: boolean; // Ignoring for now
     movedFrom?: string;
+    products?: MedicineProduct[];
   }> {}
 
 export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
+  const products = props.navigation.getParam('products');
   const category_id = props.navigation.getParam('category_id');
   const pageTitle = props.navigation.getParam('title');
-  const isTest = props.navigation.getParam('isTest');
   const [searchText, setSearchText] = useState<string>('');
-  const [productsList, setProductsList] = useState<MedicineProduct[]>([]);
+  const [productsList, setProductsList] = useState<MedicineProduct[]>(products || []);
   const [medicineList, setMedicineList] = useState<MedicineProduct[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isLoading, setIsLoading] = useState<boolean>(products ? false : true);
   const [searchSate, setsearchSate] = useState<'load' | 'success' | 'fail' | undefined>();
   const medicineListRef = useRef<FlatList<MedicineProduct> | null>();
   const [pageCount, setPageCount] = useState<number>(1);
-  const [listFetching, setListFetching] = useState<boolean>(true);
-  const [endReached, setEndReached] = useState<boolean>(false);
+  const [listFetching, setListFetching] = useState<boolean>(products ? false : true);
+  const [endReached, setEndReached] = useState<boolean>(products ? true : false);
   const [prevData, setPrevData] = useState<MedicineProduct[]>();
   const [itemsLoading, setItemsLoading] = useState<{ [key: string]: boolean }>({});
   const { currentPatient } = useAllCurrentPatients();
@@ -139,6 +139,9 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
   }, [currentPatient]);
 
   useEffect(() => {
+    if (products) {
+      return;
+    }
     getProductsByCategoryApi(category_id, pageCount)
       .then(({ data }) => {
         console.log(data, 'getProductsByCategoryApi');
@@ -197,7 +200,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
             : special_price
           : undefined,
         prescriptionRequired: is_prescription_required == '1',
-        isMedicine: type_id == 'Pharma',
+        isMedicine: (type_id || '').toLowerCase() == 'pharma',
         quantity: 1,
         thumbnail,
         isInStock: true,
