@@ -2284,7 +2284,7 @@ const sendChatMessageToDoctor: Resolver<
         title:
           appointment.patientName +
           ' sent 1 message | ' +
-          format(new Date(), 'yyyy-MM-dd hh:mm:ss'),
+          format(new Date(), 'yyyy-MM-dd HH:mm:ss'),
         body: chatMsg,
         sound: ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString(),
       },
@@ -2384,7 +2384,7 @@ const sendDoctorReminderNotifications: Resolver<
               ? 'In-person appointment'
               : 'OnlineAppointment',
           body:
-            apptId.patientName + ' ' + format(apptId.appointmentDateTime, 'yyyy-MM-dd hh:mm:ss'),
+            apptId.patientName + ' ' + format(apptId.appointmentDateTime, 'yyyy-MM-dd HH:mm:ss'),
           sound: ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString(),
         },
         data: {
@@ -2392,7 +2392,7 @@ const sendDoctorReminderNotifications: Resolver<
           appointmentId: apptId.id,
           patientName: apptId.patientName,
           content:
-            apptId.patientName + ' ' + format(apptId.appointmentDateTime, 'yyyy-MM-dd hh:mm:ss'),
+            apptId.patientName + ' ' + format(apptId.appointmentDateTime, 'yyyy-MM-dd HH:mm:ss'),
         },
       };
 
@@ -2473,14 +2473,14 @@ export async function sendDoctorAppointmentNotification(
   const payload = {
     notification: {
       title: 'A New Appointment is scheduled with ' + patientName,
-      body: format(appointmentDateTime, 'yyyy-MM-dd hh:mm:ss'),
+      body: format(appointmentDateTime, 'yyyy-MM-dd HH:mm:ss'),
       sound: ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString(),
     },
     data: {
       type: 'doctor_new_appointment_booked',
       appointmentId: apptId,
       patientName: patientName,
-      content: format(appointmentDateTime, 'yyyy-MM-dd hh:mm:ss'),
+      content: format(appointmentDateTime, 'yyyy-MM-dd HH:mm:ss'),
     },
   };
   const doctorTokenRepo = doctorsDb.getCustomRepository(DoctorDeviceTokenRepository);
