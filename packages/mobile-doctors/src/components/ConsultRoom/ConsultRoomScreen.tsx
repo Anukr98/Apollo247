@@ -80,6 +80,8 @@ import {
   ModifyCaseSheetInput,
   REQUEST_ROLES,
   STATUS,
+  BOOKINGSOURCE,
+  DEVICETYPE,
 } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
 import {
   initateConferenceTelephoneCall,
@@ -119,6 +121,7 @@ import {
   Text,
   TouchableOpacity,
   View,
+  Platform,
 } from 'react-native';
 import firebase from 'react-native-firebase';
 import KeepAwake from 'react-native-keep-awake';
@@ -1041,6 +1044,8 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             appointmentId: AppId,
             status: status,
             noShowBy: REQUEST_ROLES.PATIENT,
+            callSource: BOOKINGSOURCE.MOBILE,
+            deviceType: Platform.OS === 'ios' ? DEVICETYPE.IOS : DEVICETYPE.ANDROID,
           },
         },
         fetchPolicy: 'no-cache',
@@ -1113,6 +1118,8 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           appointmentId: AppId,
           callType: callType,
           doctorType: DOCTOR_CALL_TYPE.SENIOR,
+          callSource: BOOKINGSOURCE.MOBILE,
+          deviceType: Platform.OS === 'ios' ? DEVICETYPE.IOS : DEVICETYPE.ANDROID,
         },
       })
       .then((_data) => {

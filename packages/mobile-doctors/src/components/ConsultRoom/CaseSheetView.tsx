@@ -70,6 +70,8 @@ import {
   ModifyCaseSheetInput,
   REQUEST_ROLES,
   STATUS,
+  BOOKINGSOURCE,
+  DEVICETYPE,
 } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
 import {
   UpdatePatientPrescriptionSentStatus,
@@ -503,6 +505,8 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           endAppointmentSessionInput: {
             appointmentId: AppId,
             status: STATUS.COMPLETED,
+            callSource: BOOKINGSOURCE.MOBILE,
+            deviceType: Platform.OS === 'ios' ? DEVICETYPE.IOS : DEVICETYPE.ANDROID,
           },
         },
         fetchPolicy: 'no-cache',

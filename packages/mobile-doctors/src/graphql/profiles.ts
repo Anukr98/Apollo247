@@ -1458,11 +1458,15 @@ export const SEND_CALL_NOTIFICATION = gql`
     $appointmentId: String
     $callType: APPT_CALL_TYPE
     $doctorType: DOCTOR_CALL_TYPE
+    $deviceType: DEVICETYPE
+    $callSource: BOOKINGSOURCE
   ) {
     sendCallNotification(
       appointmentId: $appointmentId
       callType: $callType
       doctorType: $doctorType
+      deviceType: $deviceType
+      callSource: $callSource
     ) {
       status
       callDetails {
