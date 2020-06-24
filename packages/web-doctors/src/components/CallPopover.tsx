@@ -28,6 +28,7 @@ import { CancelAppointment, CancelAppointmentVariables } from 'graphql/types/Can
 import { Consult } from 'components/Consult';
 import { CircularProgress } from '@material-ui/core';
 import { TestCall } from './TestCall';
+import Alert from './Alert';
 
 import {
   EndAppointmentSession,
@@ -1306,6 +1307,11 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const [consultStart, setConsultStart] = useState<boolean>(false);
   const [sendToPatientButtonDisable, setSendToPatientButtonDisable] = useState<boolean>(false);
   const [playRingtone, setPlayRingtone] = useState<boolean>(false);
+
+  //OT Error state
+  const [sessionError, setSessionError] = React.useState<boolean>(null);
+  const [publisherError, setPublisherError] = React.useState<boolean>(null);
+  const [subscriberError, setSubscriberError] = React.useState<boolean>(null);
 
   const toggelChatVideo = () => {
     setIsNewMsg(false);
@@ -3023,6 +3029,9 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               isCallAccepted={isCallAccepted}
               isNewMsg={isNewMsg}
               convertCall={() => convertCall()}
+              setSessionError={setSessionError}
+              setPublisherError={setPublisherError}
+              setSubscriberError={setSubscriberError}
             />
           )}
         </div>
@@ -3384,6 +3393,26 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         </Paper>
       </Modal>
       {/* referral field required popup end */}
+      {/* Ot Errors Start */}
+      <Alert
+        error={sessionError}
+        onClose={() => {
+          setSessionError(null);
+        }}
+      />
+      <Alert
+        error={publisherError}
+        onClose={() => {
+          setPublisherError(null);
+        }}
+      />
+      <Alert
+        error={subscriberError}
+        onClose={() => {
+          setSubscriberError(null);
+        }}
+      />
+      {/* Ot Errors Ends */}
     </div>
   );
 };
