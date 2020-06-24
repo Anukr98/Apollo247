@@ -23,4 +23,5 @@ module.exports = Object.freeze({
   DOCTORS_DEEPLINK_REFRESH: `mutation{ refreshDoctorDeepLinks }`,
   PHARMA_RESPONSE_DELAY: 7000,
   CONSULT_RESPONSE_DELAY: 5000,
+  DOCTORS_DEEPLINK_GENERATE: `mutation{ generateDeepLinksByCron }`,
 });
