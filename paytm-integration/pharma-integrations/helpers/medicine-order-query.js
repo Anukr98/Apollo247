@@ -17,6 +17,7 @@ const getMedicineOrderQuery = (method, patientId, orderId) => {
             currentStatus
             quoteDateTime
             coupon
+            customerComment
             patient{
               mobileNumber
               firstName

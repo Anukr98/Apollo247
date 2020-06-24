@@ -66,16 +66,7 @@ export const AddSymptomPopUp: React.FC<AddSymptomPopUpProps> = (props) => {
           onPress={() => {
             if (value) {
               if (value.symptom) {
-                if (value.severity) {
-                  props.onDone && props.onDone(value);
-                } else {
-                  showAphAlert &&
-                    showAphAlert({
-                      title: strings.common.alert,
-                      description: strings.consult.enter_severity,
-                    });
-                  return;
-                }
+                props.onDone && props.onDone(value);
               } else {
                 showAphAlert &&
                   showAphAlert({

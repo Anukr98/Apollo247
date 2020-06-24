@@ -229,6 +229,9 @@ export enum ApiConstants {
   COUNTRY_CODE = '91',
   OFFLINE_ORDERID = '7582d9fa-c33d-43d9-968f-77c917fff3ae',
   CURRENT_UHID = 'APJ1.0002579777',
+  LOCAL_DOC_ID = 'd7566de3-c967-4a0e-a53d-f4b0f98eb065',
+  DEV_DOC_ID = '74c93b2e-8aab-4b6c-8391-5407f4afb833',
+  QA_DOC_ID = '',
 
   //doctor no-photo url
   DOCTOR_DEFAULT_PHOTO_URL = 'https://prodaphstorage.blob.core.windows.net/doctors/no_photo.png',

@@ -6,6 +6,8 @@ import { AppointmentRepository } from 'consults-service/repositories/appointment
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
+import { ApiConstants } from 'ApiConstants';
+import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 
 export const getPatinetAppointmentsTypeDefs = gql`
   type PatinetAppointments {
@@ -58,6 +60,19 @@ export const getPatinetAppointmentsTypeDefs = gql`
     consultsCount: Int
   }
 
+  type PersonalizedAppointmentResult {
+    appointmentDetails: PersonalizedAppointment
+  }
+
+  type PersonalizedAppointment {
+    id: String
+    hospitalLocation: String
+    appointmentDateTime: DateTime
+    appointmentType: APPOINTMENT_TYPE
+    doctorId: String
+    doctorDetails: DoctorDetailsWithStatusExclude @provides(fields: "id")
+  }
+
   extend type Query {
     getPatinetAppointments(
       patientAppointmentsInput: PatientAppointmentsInput
@@ -68,6 +83,7 @@ export const getPatinetAppointmentsTypeDefs = gql`
       offset: Int
       limit: Int
     ): PatientAllAppointmentsResult!
+    getPatientPersonalizedAppointments(patientUhid: String): PersonalizedAppointmentResult!
   }
 `;
 
@@ -118,6 +134,18 @@ type AppointmentPayment = {
   responseMessage: string;
   bankTxnId: string;
   orderId: string;
+};
+
+type PersonalizedAppointmentResult = {
+  appointmentDetails: PersonalizedAppointment | '';
+};
+
+type PersonalizedAppointment = {
+  id: string;
+  hospitalLocation: string;
+  appointmentDateTime: Date;
+  appointmentType: APPOINTMENT_TYPE;
+  doctorId: string;
 };
 
 type Doctor = {
@@ -184,15 +212,67 @@ const getPatientAllAppointments: Resolver<
   return { appointments };
 };
 
+const getPatientPersonalizedAppointments: Resolver<
+  null,
+  { patientUhid: string },
+  ConsultServiceContext,
+  PersonalizedAppointmentResult
+> = async (parent, args, { consultsDb, doctorsDb }) => {
+  const apptsResp = await fetch(
+    process.env.PRISM_GET_OFFLINE_APPOINTMENTS
+      ? process.env.PRISM_GET_OFFLINE_APPOINTMENTS + ApiConstants.CURRENT_UHID
+      : '',
+    {
+      method: 'GET',
+      headers: {},
+    }
+  );
+  const textRes = await apptsResp.text();
+  const offlineApptsList = JSON.parse(textRes);
+
+  let apptDetails: any = '';
+  if (offlineApptsList.errorCode == 0) {
+    //console.log(offlineApptsList.response, offlineApptsList.response.length);
+    let doctorId = '';
+    console.log(ApiConstants.DEV_DOC_ID.toString(), process.env.NODE_ENV, 'input data');
+    if (process.env.NODE_ENV == 'local') doctorId = ApiConstants.LOCAL_DOC_ID.toString();
+    else if (process.env.NODE_ENV == 'development') doctorId = ApiConstants.DEV_DOC_ID.toString();
+    else if (process.env.NODE_ENV == 'staging') doctorId = ApiConstants.QA_DOC_ID.toString();
+    else offlineApptsList.response[0].doctorid_247;
+    doctorId = '74c93b2e-8aab-4b6c-8391-5407f4afb833';
+    const apptDetailsOffline: PersonalizedAppointment = {
+      id: offlineApptsList.response[0].appointmentid,
+      hospitalLocation: offlineApptsList.response[0].location_name,
+      appointmentDateTime: new Date(offlineApptsList.response[0].consultedtime),
+      appointmentType:
+        offlineApptsList.response[0].appointmenttype == 'WALKIN'
+          ? APPOINTMENT_TYPE.PHYSICAL
+          : APPOINTMENT_TYPE.ONLINE,
+      doctorId,
+    };
+    apptDetails = apptDetailsOffline;
+  }
+  if (apptDetails == '') throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
+  return { appointmentDetails: apptDetails };
+};
+
 export const getPatinetAppointmentsResolvers = {
   PatinetAppointments: {
     doctorInfo(appointments: PatinetAppointments) {
       return { __typename: 'DoctorDetailsWithStatusExclude', id: appointments.doctorId };
     },
   },
+
+  PersonalizedAppointment: {
+    doctorDetails(appointment: PersonalizedAppointment) {
+      return { __typename: 'DoctorDetailsWithStatusExclude', id: appointment.doctorId };
+    },
+  },
+
   Query: {
     getPatinetAppointments,
     getPatientFutureAppointmentCount,
     getPatientAllAppointments,
+    getPatientPersonalizedAppointments,
   },
 };

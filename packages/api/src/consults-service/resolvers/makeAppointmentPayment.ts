@@ -23,7 +23,11 @@ import { sendMail } from 'notifications-service/resolvers/email';
 import { EmailMessage } from 'types/notificationMessageTypes';
 import { ApiConstants } from 'ApiConstants';
 import { addMilliseconds, format, addDays, differenceInSeconds } from 'date-fns';
-import { sendNotification, NotificationType } from 'notifications-service/resolvers/notifications';
+import {
+  sendNotification,
+  NotificationType,
+  sendDoctorAppointmentNotification,
+} from 'notifications-service/resolvers/notifications';
 
 import { DoctorType } from 'doctors-service/entities';
 import { appointmentPaymentEmailTemplate } from 'helpers/emailTemplates/appointmentPaymentEmailTemplate';
@@ -342,21 +346,29 @@ const makeAppointmentPayment: Resolver<
       apptsRepo.updateJdQuestionStatusbyIds([processingAppointment.id]);
     }
   } else if (paymentInput.paymentStatus == 'TXN_FAILURE') {
-    await apptsRepo.updateAppointment(processingAppointment.id, {
-      status: STATUS.PAYMENT_FAILED,
-      paymentInfo,
-    });
-    if (paymentInfo.paymentStatus === 'PENDING') {
-      //NOTIFICATION logic starts here
-      sendNotification(
-        {
-          appointmentId: processingAppointment.id,
-          notificationType: NotificationType.PAYMENT_PENDING_FAILURE,
-        },
-        patientsDb,
-        consultsDb,
-        doctorsDb
-      );
+    if (paymentInput.responseCode == '141') {
+      await apptsRepo.updateAppointment(processingAppointment.id, {
+        status: STATUS.PAYMENT_ABORTED,
+        paymentInfo,
+      });
+    } else {
+      await apptsRepo.updateAppointment(processingAppointment.id, {
+        status: STATUS.PAYMENT_FAILED,
+        paymentInfo,
+      });
+
+      if (paymentInfo.paymentStatus === 'PENDING') {
+        //NOTIFICATION logic starts here
+        sendNotification(
+          {
+            appointmentId: processingAppointment.id,
+            notificationType: NotificationType.PAYMENT_PENDING_FAILURE,
+          },
+          patientsDb,
+          consultsDb,
+          doctorsDb
+        );
+      }
     }
   } else if (paymentInput.paymentStatus == 'PENDING') {
     await apptsRepo.updateAppointment(processingAppointment.id, {
@@ -387,20 +399,7 @@ const sendPatientAcknowledgements = async (
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
 
-  //SMS logic starts here
-  //let smsMessage = ApiConstants.BOOK_APPOINTMENT_SMS_MESSAGE.replace(
-  //'{0}',
-  //patientDetails.firstName
-  //);
-  //smsMessage = smsMessage.replace('{1}', appointmentData.displayId.toString());
-  //smsMessage = smsMessage.replace('{2}', docDetails.firstName + ' ' + docDetails.lastName);
   const istDateTime = addMilliseconds(appointmentData.appointmentDateTime, 19800000);
-  //const smsDate = format(istDateTime, 'dd-MM-yyyy HH:mm');
-  //smsMessage = smsMessage.replace('{3}', smsDate.toString());
-  //smsMessage = smsMessage.replace('at {4}', '');
-  //console.log(smsMessage, 'sms message');
-  //sendSMS(smsMessage);
-  //SMS logic ends here
 
   //NOTIFICATION logic starts here
   const pushNotificationInput = {
@@ -414,6 +413,13 @@ const sendPatientAcknowledgements = async (
     doctorsDb
   );
   console.log(notificationResult, 'book appt notification');
+  sendDoctorAppointmentNotification(
+    appointmentData.appointmentDateTime,
+    appointmentData.patientName,
+    appointmentData.id,
+    appointmentData.doctorId,
+    doctorsDb
+  );
   // NOTIFICATION logic ends here
 
   const hospitalCity = docDetails.doctorHospital[0].facility.city;

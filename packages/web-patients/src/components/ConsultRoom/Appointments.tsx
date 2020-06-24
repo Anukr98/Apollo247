@@ -787,7 +787,7 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
                             <AphButton
                               color="primary"
                               onClick={() => {
-                                history.push(clientRoutes.doctorsLanding());
+                                history.push(clientRoutes.specialityListing());
                               }}
                               title={'Book an Appointment'}
                             >
@@ -822,7 +822,7 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
                             <AphButton
                               color="primary"
                               onClick={() => {
-                                history.push(clientRoutes.doctorsLanding());
+                                history.push(clientRoutes.specialityListing());
                               }}
                               title={'Book an Appointment'}
                             >
