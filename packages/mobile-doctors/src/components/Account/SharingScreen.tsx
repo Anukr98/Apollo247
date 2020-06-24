@@ -198,7 +198,6 @@ export const SharingScreen: React.FC<SharingScreenProps> = (props) => {
                       message: string.account.message
                         .replace('{0}', doctorDetails ? doctorDetails.fullName || '' : '')
                         .replace('{1}', url),
-                      url: url,
                       title: string.account.message_title,
                     },
                     { dialogTitle: string.account.message_title }

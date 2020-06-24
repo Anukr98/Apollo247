@@ -1608,3 +1608,15 @@ export const SEND_MESSAGE_TO_MOBILE_NUMBER = gql`
     }
   }
 `;
+
+export const EXO_TEL_CALL = gql`
+  query initateConferenceTelephoneCall($exotelInput: exotelInput) {
+    initateConferenceTelephoneCall(exotelInput: $exotelInput) {
+      isError
+      from
+      to
+      response
+      errorMessage
+    }
+  }
+`;

@@ -19,12 +19,14 @@ import { gtmTracking } from '../../gtmTracking';
 import {
   NO_SERVICEABLE_MESSAGE,
   getDiffInDays,
-  TAT_API_TIMEOUT_IN_SEC,
+  TAT_API_TIMEOUT_IN_MILLI_SEC,
 } from 'helpers/commonHelpers';
 import { checkServiceAvailability } from 'helpers/MedicineApiCalls';
 import moment from 'moment';
 import { Alerts } from 'components/Alerts/Alerts';
 import { findAddrComponents } from 'helpers/commonHelpers';
+import { CartTypes } from 'components/MedicinesCartProvider';
+import _lowerCase from 'lodash/lowerCase';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -361,7 +363,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
       .catch((err) => console.log(err));
   };
 
-  const setDefaultDeliveryTime = () => {
+  const setDefaultDeliveryTime = (pinCode: string) => {
     const nextDeliveryDate = moment()
       .set({
         hour: 20,
@@ -372,46 +374,26 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
     setDeliveryTime(nextDeliveryDate);
     setErrorMessage('');
     setTatLoading(false);
-    getPlaceDetails(pinCode);
+    if (pharmaAddressDetails.pincode !== pinCode) {
+      getPlaceDetails(pinCode);
+    }
   };
 
-  const getCurrentLocationDetails = async (currentLat: string, currentLong: string) => {
-    await axios
-      .get(
-        `https://maps.googleapis.com/maps/api/geocode/json?latlng=${currentLat},${currentLong}&key=${process.env.GOOGLE_API_KEY}`
-      )
-      .then(({ data }) => {
-        try {
-          if (data && data.results[0] && data.results[0].address_components) {
-            const addrComponents = data.results[0].address_components || [];
-            const pincode = findAddrComponents('postal_code', addrComponents);
-            const city =
-              findAddrComponents('administrative_area_level_2', addrComponents) ||
-              findAddrComponents('locality', addrComponents);
-            const state = findAddrComponents('administrative_area_level_1', addrComponents);
-            const country = findAddrComponents('country', addrComponents);
-            setMedicineAddress(city);
-            setPharmaAddressDetails({
-              city,
-              state,
-              pincode,
-              country,
-            });
-            setHeaderPincodeError('0');
-          }
-        } catch {
-          (e: AxiosError) => {
-            console.log(e);
-            setIsAlertOpen(true);
-            setAlertMessage('Something went wrong :(');
-          };
-        }
-      })
-      .catch((e: AxiosError) => {
-        setIsAlertOpen(true);
-        setAlertMessage('Something went wrong :(');
-        console.log(e);
-      });
+  const setAddressDetails = (addrComponents: any) => {
+    const pincode = findAddrComponents('postal_code', addrComponents);
+    const city =
+      findAddrComponents('administrative_area_level_2', addrComponents) ||
+      findAddrComponents('locality', addrComponents);
+    const state = findAddrComponents('administrative_area_level_1', addrComponents);
+    const country = findAddrComponents('country', addrComponents);
+    setMedicineAddress(city);
+    setPharmaAddressDetails({
+      city,
+      state,
+      pincode,
+      country,
+    });
+    setHeaderPincodeError('0');
   };
 
   const getPlaceDetails = (pincode: string) => {
@@ -422,8 +404,8 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
       .then(({ data }) => {
         try {
           if (data && data.results[0] && data.results[0].address_components) {
-            const { lat, lng } = data.results[0].geometry.location;
-            getCurrentLocationDetails(lat, lng);
+            const addrComponents = data.results[0].address_components || [];
+            setAddressDetails(addrComponents);
           }
         } catch {
           (e: AxiosError) => {
@@ -447,7 +429,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
         apiDetails.deliveryUrl || '',
         {
           postalcode: pinCode,
-          ordertype: 'pharma',
+          ordertype: _lowerCase(data.type_id) === 'pharma' ? CartTypes.PHARMA : CartTypes.FMCG,
           lookup: [
             {
               sku: data.sku || params.sku,
@@ -459,7 +441,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
           headers: {
             Authentication: apiDetails.deliveryAuthToken,
           },
-          timeout: TAT_API_TIMEOUT_IN_SEC * 1000,
+          timeout: TAT_API_TIMEOUT_IN_MILLI_SEC,
           cancelToken: new CancelToken((c) => {
             // An executor function receives a cancel function as a parameter
             cancelGetDeliveryTimeApi = c;
@@ -493,15 +475,17 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
               typeof res.data.errorMSG === 'string' ||
               typeof res.data.errorMsg === 'string'
             ) {
-              setDefaultDeliveryTime();
+              setDefaultDeliveryTime(pinCode);
             }
           }
         } catch (error) {
-          setDefaultDeliveryTime();
+          console.log(error);
+          setDefaultDeliveryTime(pinCode);
         }
       })
       .catch((error: any) => {
-        setDefaultDeliveryTime();
+        console.log(error);
+        setDefaultDeliveryTime(pinCode);
       });
   };
 
@@ -642,9 +626,45 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                         <AphCustomDropdown
                           classes={{ selectMenu: classes.selectMenuItem }}
                           value={medicineQty}
-                          onChange={(e: React.ChangeEvent<{ value: any }>) =>
-                            setMedicineQty(parseInt(e.target.value))
-                          }
+                          onChange={(e: React.ChangeEvent<{ value: any }>) => {
+                            const quantity = parseInt(e.target.value);
+                            /* Gtm code start  */
+                            itemIndexInCart(data) !== -1 &&
+                              gtmTracking({
+                                category: 'Pharmacy',
+                                action: quantity > medicineQty ? 'Add to Cart' : 'Remove From Cart',
+                                label: data.name,
+                                value: data.special_price || data.price,
+                                ecommObj: {
+                                  event:
+                                    quantity > medicineQty ? 'add_to_cart' : 'remove_from_cart',
+                                  ecommerce: {
+                                    items: [
+                                      {
+                                        item_name: data.name,
+                                        item_id: data.sku,
+                                        price: data.price,
+                                        item_category: 'Pharmacy',
+                                        item_category_2: data.type_id
+                                          ? data.type_id.toLowerCase() === 'pharma'
+                                            ? 'Drugs'
+                                            : 'FMCG'
+                                          : null,
+                                        // 'item_category_4': '', // future reference
+                                        item_variant: 'Default',
+                                        index: 1,
+                                        quantity:
+                                          quantity > medicineQty
+                                            ? quantity - medicineQty
+                                            : medicineQty - quantity,
+                                      },
+                                    ],
+                                  },
+                                },
+                              });
+                            /* Gtm code end  */
+                            setMedicineQty(quantity);
+                          }}
                         >
                           {options.map((option, index) => (
                             <MenuItem
@@ -726,6 +746,28 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                           action: 'Add to Cart',
                           label: data.name,
                           value: data.special_price || data.price,
+                          ecommObj: {
+                            event: 'add_to_cart',
+                            ecommerce: {
+                              items: [
+                                {
+                                  item_name: data.name,
+                                  item_id: data.sku,
+                                  price: data.price,
+                                  item_category: 'Pharmacy',
+                                  item_category_2: data.type_id
+                                    ? data.type_id.toLowerCase() === 'pharma'
+                                      ? 'Drugs'
+                                      : 'FMCG'
+                                    : null,
+                                  // 'item_category_4': '', // future reference
+                                  item_variant: 'Default',
+                                  index: 1,
+                                  quantity: medicineQty,
+                                },
+                              ],
+                            },
+                          },
                         });
                       /**Gtm code End  */
                       applyCartOperations(cartItem);

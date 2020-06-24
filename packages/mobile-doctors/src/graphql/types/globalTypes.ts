@@ -70,6 +70,7 @@ export enum DoctorType {
   CRADLE = "CRADLE",
   DOCTOR_CONNECT = "DOCTOR_CONNECT",
   FERTILITY = "FERTILITY",
+  HOMECARE = "HOMECARE",
   JUNIOR = "JUNIOR",
   PAYROLL = "PAYROLL",
   SPECTRA = "SPECTRA",
@@ -125,6 +126,7 @@ export enum MEDICINE_TIMINGS {
   MORNING = "MORNING",
   NIGHT = "NIGHT",
   NOON = "NOON",
+  NOT_SPECIFIC = "NOT_SPECIFIC",
 }
 
 export enum MEDICINE_TO_BE_TAKEN {
@@ -138,6 +140,7 @@ export enum MEDICINE_UNIT {
   CAPSULE = "CAPSULE",
   CREAM = "CREAM",
   DROP = "DROP",
+  DROPS = "DROPS",
   GEL = "GEL",
   GM = "GM",
   INJECTION = "INJECTION",
@@ -187,6 +190,7 @@ export enum REQUEST_ROLES {
 export enum ROUTE_OF_ADMINISTRATION {
   EAR_DROPS = "EAR_DROPS",
   EYE_DROPS = "EYE_DROPS",
+  EYE_OINTMENT = "EYE_OINTMENT",
   GARGLE = "GARGLE",
   INHALE = "INHALE",
   INTRAMUSCULAR = "INTRAMUSCULAR",
@@ -328,6 +332,7 @@ export interface DiagnosisInput {
 
 export interface DiagnosticPrescriptionInput {
   itemname?: string | null;
+  testInstruction?: string | null;
 }
 
 export interface DoctorAvailabilityInput {
@@ -503,6 +508,13 @@ export interface UpdatePatientInput {
   relation?: Relation | null;
   photoUrl?: string | null;
   deviceCode?: string | null;
+  employeeId?: string | null;
+}
+
+export interface exotelInput {
+  from?: string | null;
+  to?: string | null;
+  appointmentId?: string | null;
 }
 
 //==============================================================

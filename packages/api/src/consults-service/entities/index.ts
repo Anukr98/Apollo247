@@ -675,6 +675,7 @@ export enum MEDICINE_TIMINGS {
   MORNING = 'MORNING',
   NIGHT = 'NIGHT',
   NOON = 'NOON',
+  NOT_SPECIFIC = 'NOT_SPECIFIC',
 }
 export enum MEDICINE_TO_BE_TAKEN {
   AFTER_FOOD = 'AFTER_FOOD',
@@ -743,6 +744,7 @@ export type CaseSheetMedicinePrescription = {
 export type CaseSheetDiagnosis = { name: string };
 export type CaseSheetDiagnosisPrescription = {
   itemname: string;
+  testInstruction: string;
 };
 export type CaseSheetOtherInstruction = { instruction: string };
 export type CaseSheetSymptom = {
@@ -1718,6 +1720,7 @@ export interface RxPdfData {
     frequency: string;
     instructions?: string;
     routeOfAdministration?: string;
+    medicineFormTypes?: string;
   }[];
   generalAdvice: CaseSheetOtherInstruction[];
   diagnoses: CaseSheetDiagnosis[];

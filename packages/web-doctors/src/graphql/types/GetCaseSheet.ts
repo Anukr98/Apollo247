@@ -185,6 +185,7 @@ export interface GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis {
 export interface GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription {
   __typename: "DiagnosticPrescription";
   itemname: string | null;
+  testInstruction: string | null;
 }
 
 export interface GetCaseSheet_getCaseSheet_caseSheetDetails {
