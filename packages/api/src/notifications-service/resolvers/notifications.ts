@@ -2282,7 +2282,9 @@ const sendChatMessageToDoctor: Resolver<
     const payload = {
       notification: {
         title:
-          appointment.patientName + ' sent 1 message | ' + format(new Date(), 'yyyy-mm-dd h:mm:ss'),
+          appointment.patientName +
+          ' sent 1 message | ' +
+          format(new Date(), 'yyyy-MM-dd HH:mm:ss'),
         body: chatMsg,
         sound: ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString(),
       },
@@ -2381,7 +2383,8 @@ const sendDoctorReminderNotifications: Resolver<
             apptId.appointmentType == APPOINTMENT_TYPE.PHYSICAL
               ? 'In-person appointment'
               : 'OnlineAppointment',
-          body: apptId.patientName + ' ' + format(apptId.appointmentDateTime, 'yyyy-mm-dd h:mm:ss'),
+          body:
+            apptId.patientName + ' ' + format(apptId.appointmentDateTime, 'yyyy-MM-dd HH:mm:ss'),
           sound: ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString(),
         },
         data: {
@@ -2389,7 +2392,7 @@ const sendDoctorReminderNotifications: Resolver<
           appointmentId: apptId.id,
           patientName: apptId.patientName,
           content:
-            apptId.patientName + ' ' + format(apptId.appointmentDateTime, 'yyyy-mm-dd h:mm:ss'),
+            apptId.patientName + ' ' + format(apptId.appointmentDateTime, 'yyyy-MM-dd HH:mm:ss'),
         },
       };
 
@@ -2470,14 +2473,14 @@ export async function sendDoctorAppointmentNotification(
   const payload = {
     notification: {
       title: 'A New Appointment is scheduled with ' + patientName,
-      body: format(appointmentDateTime, 'yyyy-mm-dd h:mm:ss'),
+      body: format(appointmentDateTime, 'yyyy-MM-dd HH:mm:ss'),
       sound: ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString(),
     },
     data: {
       type: 'doctor_new_appointment_booked',
       appointmentId: apptId,
       patientName: patientName,
-      content: format(appointmentDateTime, 'yyyy-mm-dd h:mm:ss'),
+      content: format(appointmentDateTime, 'yyyy-MM-dd HH:mm:ss'),
     },
   };
   const doctorTokenRepo = doctorsDb.getCustomRepository(DoctorDeviceTokenRepository);
