@@ -145,6 +145,7 @@ import { useUIElements } from '../UIElementsProvider';
 import { ChatQuestions } from './ChatQuestions';
 import strings from '@aph/mobile-patients/src/strings/strings.json';
 import { CustomAlert } from '../ui/CustomAlert';
+import { Snackbar } from 'react-native-paper';
 
 interface OpentokStreamObject {
   connection: {
@@ -327,7 +328,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [sessionId, setsessionId] = useState<string>('');
   const [token, settoken] = useState<string>('');
   const [cameraPosition, setCameraPosition] = useState<string>('front');
-  const [mute, setMute] = useState<boolean>(true);
+  const [tame, setTame] = useState<boolean>(true);
   const [showVideo, setShowVideo] = useState<boolean>(true);
   const [PipView, setPipView] = useState<boolean>(false);
   const [isCall, setIsCall] = useState<boolean>(false);
@@ -478,7 +479,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [patientImageshow, setPatientImageshow] = useState<boolean>(false);
   const [showweb, setShowWeb] = useState<boolean>(false);
   const [url, setUrl] = useState('');
-
+  const [snackbarState, setSnackbarState] = useState<boolean>(false);
+  const [handlerMessage, setHandlerMessage] = useState('');
   const postAppointmentWEGEvent = (
     type:
       | WebEngageEventName.COMPLETED_AUTOMATED_QUESTIONS
@@ -1320,7 +1322,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       intervalId && clearInterval(intervalId);
     }
   };
-
+  const setSnackBar = () => {
+    setSnackbarState(true);
+    setHandlerMessage('      Something went wrong!!  Trying to connect');
+  };
   const publisherEventHandlers = {
     streamCreated: (event: string) => {
       console.log('Publisher stream created!', event);
@@ -1329,24 +1334,30 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       console.log('Publisher stream destroyed!', event);
     },
     error: (error: string) => {
+      setSnackBar();
       console.log(`There was an error with the publisherEventHandlers: ${JSON.stringify(error)}`);
     },
     otrnError: (error: string) => {
+      setSnackBar();
       console.log(`There was an error with the publisherEventHandlers: ${JSON.stringify(error)}`);
     },
   };
 
   const subscriberEventHandlers = {
     error: (error: string) => {
+      setSnackBar();
       console.log(`There was an error with the subscriberEventHandlers: ${JSON.stringify(error)}`);
     },
     connected: (event: string) => {
+      setSnackbarState(false);
       console.log('Subscribe stream connected!', event);
     },
     disconnected: (event: string) => {
+      setSnackBar();
       console.log('Subscribe stream disconnected!', event);
     },
     otrnError: (error: string) => {
+      setSnackBar();
       console.log(`There was an error with the subscriberEventHandlers: ${JSON.stringify(error)}`);
     },
     videoDisabled: (error: string) => {
@@ -1362,9 +1373,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   const sessionEventHandlers = {
     error: (error: string) => {
+      setSnackBar();
       console.log(`There was an error with the sessionEventHandlers: ${JSON.stringify(error)}`);
     },
     connectionCreated: (event: string) => {
+      setSnackbarState(false);
       console.log('session stream connectionCreated!', event);
     },
     connectionDestroyed: (event: string) => {
@@ -1372,6 +1385,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       eventsAfterConnectionDestroyed();
     },
     sessionConnected: (event: string) => {
+      setSnackbarState(false);
       console.log('session stream sessionConnected!', event);
       KeepAwake.activate();
     },
@@ -1381,6 +1395,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       // disconnectCallText();
     },
     sessionReconnected: (event: string) => {
+      setSnackbarState(false);
       console.log('session stream sessionReconnected!', event);
       KeepAwake.activate();
     },
@@ -1407,6 +1422,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       }
     },
     otrnError: (error: string) => {
+      setSnackBar();
       console.log(
         `There was an error with the otrnError sessionEventHandlers: ${JSON.stringify(error)}`
       );
@@ -1421,7 +1437,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     setHideStatusBar(false);
     setConvertVideo(false);
     KeepAwake.activate();
-    setMute(true);
+    setTame(true);
     setShowVideo(true);
     setCameraPosition('front');
     setChatReceived(false);
@@ -4573,9 +4589,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 properties={{
                   cameraPosition: cameraPosition,
                   publishVideo: showVideo,
-                  publishAudio: mute,
+                  publishAudio: tame,
                   videoTrack: showVideo,
-                  audioTrack: mute,
+                  audioTrack: tame,
                   audioVolume: 100,
                   name: g(currentPatient, 'firstName') || 'patient',
                 }}
@@ -4725,10 +4741,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             properties={{
               cameraPosition: cameraPosition,
               publishVideo: convertVideo ? true : false,
-              publishAudio: mute,
+              publishAudio: tame,
               audioVolume: 100,
               videoTrack: convertVideo ? true : false,
-              audioTrack: mute,
+              audioTrack: tame,
               name: g(currentPatient, 'firstName') || 'patient',
             }}
             resolution={'352x288'}
@@ -4774,6 +4790,16 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           </View>
         )}
         <Text style={timerStyles}>{callAccepted ? callTimerStarted : 'INCOMING'}</Text>
+        <Snackbar
+          style={{ marginBottom: 80 }}
+          visible={snackbarState}
+          onDismiss={() => {
+            setSnackbarState(false);
+          }}
+          duration={5000}
+        >
+          {handlerMessage}
+        </Snackbar>
         {renderBusyMessages(showAudioPipView, isIphoneX() ? 121 : 101)}
         {showAudioPipView && renderAudioCallButtons()}
         {!showAudioPipView && renderOnCallPipButtons('audio')}
@@ -5001,10 +5027,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           <TouchableOpacity
             activeOpacity={1}
             onPress={() => {
-              mute === true ? setMute(false) : setMute(true);
+              tame === true ? setTame(false) : setTame(true);
             }}
           >
-            {mute === true ? (
+            {tame === true ? (
               <UnMuteIcon style={{ height: 60, width: 60 }} />
             ) : (
               <MuteIcon style={{ height: 60, width: 60 }} />
@@ -5016,7 +5042,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               setIsAudioCall(false);
               stopTimer();
               setHideStatusBar(false);
-              setMute(true);
+              setTame(true);
               setShowVideo(true);
               setCameraPosition('front');
 
@@ -5084,7 +5110,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           onPress={() => {
             pipType === 'audio' && setIsAudioCall(false);
             pipType === 'video' && setIsCall(false);
-            setMute(true);
+            setTame(true);
             setShowVideo(true);
             setCameraPosition('front');
             stopTimer();
@@ -5277,10 +5303,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           <TouchableOpacity
             activeOpacity={1}
             onPress={() => {
-              mute === true ? setMute(false) : setMute(true);
+              tame === true ? setTame(false) : setTame(true);
             }}
           >
-            {mute === true ? (
+            {tame === true ? (
               <UnMuteIcon style={{ height: 60, width: 60 }} />
             ) : (
               <MuteIcon style={{ height: 60, width: 60 }} />
@@ -5290,7 +5316,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             activeOpacity={1}
             onPress={() => {
               setIsCall(false);
-              setMute(true);
+              setTame(true);
               setShowVideo(true);
               setCameraPosition('front');
               stopTimer();

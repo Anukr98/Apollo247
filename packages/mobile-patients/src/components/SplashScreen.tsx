@@ -544,6 +544,9 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
               'Pharmacy_Delivery_Charges',
               'home_screen_emergency_banner',
               'home_screen_emergency_number',
+              'QA_top6_specailties',
+              'DEV_top6_specailties',
+              'top6_specailties',
               'QA_min_value_to_nudge_users_to_avail_free_delivery',
               'min_value_to_nudge_users_to_avail_free_delivery',
               'QA_pharmacy_homepage',
@@ -615,6 +618,19 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           const homeScreenEmergencyBannerNumber = snapshot['home_screen_emergency_number'].val();
           homeScreenEmergencyBannerNumber &&
             updateAppConfig('HOME_SCREEN_EMERGENCY_BANNER_NUMBER', homeScreenEmergencyBannerNumber);
+
+          if (buildName() === 'DEV') {
+            const DEV_top6_specailties = snapshot['DEV_top6_specailties'].val();
+            DEV_top6_specailties &&
+              updateAppConfig('TOP_SPECIALITIES', JSON.parse(DEV_top6_specailties));
+          } else if (buildName() === 'QA') {
+            const QA_top6_specailties = snapshot['QA_top6_specailties'].val();
+            QA_top6_specailties &&
+              updateAppConfig('TOP_SPECIALITIES', JSON.parse(QA_top6_specailties));
+          } else {
+            const top6_specailties = snapshot['top6_specailties'].val();
+            top6_specailties && updateAppConfig('TOP_SPECIALITIES', JSON.parse(top6_specailties));
+          }
 
           const myValye = snapshot;
           let index: number = 0;
