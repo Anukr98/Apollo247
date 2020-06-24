@@ -18,7 +18,7 @@ import { ManageProfile } from 'components/ManageProfile';
 import { hasOnePrimaryUser } from '../../helpers/onePrimaryUser';
 import { BottomLinks } from 'components/BottomLinks';
 import { MedicineAutoSearch } from 'components/Medicine/MedicineAutoSearch';
-import { uploadPrescriptionTracking } from '../../webEngageTracking';
+import { uploadPrescriptionTracking, pharmacySearchEnterTracking } from 'webEngageTracking';
 import { UploadPrescription } from 'components/Prescriptions/UploadPrescription';
 import { UploadEPrescriptionCard } from 'components/Prescriptions/UploadEPrescriptionCard';
 import { useCurrentPatient } from 'hooks/authHooks';
@@ -235,6 +235,7 @@ export const SearchByMedicine: React.FC = (props) => {
   const [showResponsiveFilter, setShowResponsiveFilter] = useState<boolean>(false);
   const [disableFilters, setDisableFilters] = useState<boolean>(true);
   const [isReloaded, setIsReloaded] = useState(false);
+  const [categoryId, setCategoryId] = useState<string>('');
 
   const [isUploadPreDialogOpen, setIsUploadPreDialogOpen] = React.useState<boolean>(false);
   const [isEPrescriptionOpen, setIsEPrescriptionOpen] = React.useState<boolean>(false);
@@ -270,6 +271,7 @@ export const SearchByMedicine: React.FC = (props) => {
         }
       )
       .then(({ data }) => {
+        pharmacySearchEnterTracking(data.products && data.products.length);
         setMedicineList(data.products);
         setMedicineListFiltered(data.products);
         setHeading(data.search_heading || '');
@@ -296,6 +298,7 @@ export const SearchByMedicine: React.FC = (props) => {
           }
         )
         .then(({ data }) => {
+          setCategoryId(data.category_id || paramSearchText);
           axios
             .post(
               apiDetails.url || '',
@@ -580,6 +583,8 @@ export const SearchByMedicine: React.FC = (props) => {
               setDiscountFilter={setDiscountFilter}
               setFilterData={setFilterData}
               setSortBy={setSortBy}
+              categoryName={paramSearchText}
+              categoryId={categoryId}
             />
             <div className={classes.searchSection}>
               <Scrollbars className={classes.scrollBar} autoHide={true}>
