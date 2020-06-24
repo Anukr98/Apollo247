@@ -346,11 +346,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
             } - Online Consultation/Appointment - Apollo 247`,
             description: `Book an appointment with ${fullName} - ${specialty &&
               specialty.name} and consult online at Apollo 247. Know more about ${fullName} and his work here. Get medical help online in just a few clicks at Apollo 247.`,
-            canonicalLink:
-              window &&
-              window.location &&
-              window.location.origin &&
-              `${window.location.origin}/doctors/${fullName}-${id}`,
+            canonicalLink: window && window.location && window.location.href,
           });
         }
       });

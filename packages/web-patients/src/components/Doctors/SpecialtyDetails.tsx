@@ -29,6 +29,7 @@ import {
 import _find from 'lodash/find';
 import { ConsultMode, DoctorType } from 'graphql/types/globalTypes';
 import _filter from 'lodash/filter';
+import { MetaTagsComp } from 'MetaTagsComp';
 import { GET_ALL_SPECIALITIES } from 'graphql/specialities';
 import { NavigationBottom } from 'components/NavigationBottom';
 
@@ -225,7 +226,7 @@ const useStyles = makeStyles((theme: Theme) => {
         backgroundColor: '#fff',
         display: 'block',
         padding: '10px 20px',
-      }
+      },
     },
     selectCity: {
       width: 165,
@@ -568,8 +569,15 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
       ? data.getDoctorsBySpecialtyAndFilters.doctorsAvailability
       : [];
 
+  const metaTagProps = {
+    title: `${specialtyName} - Book Online Appointments And Consultations - Apollo 247`,
+    description: `Book online appointments with ${specialtyName} in just a few clicks. Consult the best ${specialtyName} in India at the best prices. Apollo 247 is the one-stop solution to all your medical needs.`,
+    canonicalLink: window && window.location && window.location.href,
+  };
+
   return (
     <div className={classes.root}>
+      <MetaTagsComp {...metaTagProps} />
       <div className={classes.mHide}>
         <Header />
       </div>
@@ -603,11 +611,9 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
                   <div className={classes.inputIcon}>
                     <img src={require('images/location.svg')} alt="" />
                   </div>
-                  <AphSelect
-                    value={1}
-                  >
+                  <AphSelect value={1}>
                     <MenuItem
-                      classes= {{
+                      classes={{
                         root: classes.menuRoot,
                         selected: classes.menuSelected,
                       }}
@@ -616,7 +622,7 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
                       Hyderabad
                     </MenuItem>
                     <MenuItem
-                      classes= {{
+                      classes={{
                         root: classes.menuRoot,
                         selected: classes.menuSelected,
                       }}
@@ -630,9 +636,7 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
                   <div className={classes.inputIcon}>
                     <img src={require('images/ic-search.svg')} alt="" />
                   </div>
-                  <AphTextField
-                    placeholder="Search for Doctors, Specialities or Hospitals"
-                  />
+                  <AphTextField placeholder="Search for Doctors, Specialities or Hospitals" />
                 </div>
               </div>
               <div className={classes.tabsFilter}>
@@ -666,58 +670,62 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
                 onlyFilteredCount={onlyFilteredCount}
               />
               <div className={classes.doctorCards}>
-              {(filter.language.length > 0 ||
-                filter.availability.length > 0 ||
-                filter.experience.length > 0 ||
-                filter.fees.length > 0 ||
-                filter.gender.length > 0) && <AddedFilters filter={filter} />}
-              {loading ? (
-                <div className={classes.circlularProgress}>
-                  <CircularProgress />
-                </div>
-              ) : filteredDoctorData && filteredDoctorData.length ? (
-                <>
-                  <Grid container spacing={2}>
-                    {filteredDoctorData.map((doctor: DoctorDetails) => {
-                      let availableMode = '';
-                      let nextAvailabilityString = '';
-                      const nextAvailability = _find(doctorsNextAvailability, (availability) => {
-                        const availabilityDoctorId =
-                          availability && availability.doctorId ? availability.doctorId : '';
-                        const currentDoctorId = doctor && doctor.id ? doctor.id : '';
-                        return availabilityDoctorId === currentDoctorId;
-                      });
-                      const availableModes = _find(doctorsAvailability, (availability) => {
-                        const availabilityDoctorId =
-                          availability && availability.doctorId ? availability.doctorId : '';
-                        const currentDoctorId = doctor && doctor.id ? doctor.id : '';
-                        return availabilityDoctorId === currentDoctorId;
-                      });
-                      if (
-                        availableModes &&
-                        availableModes.availableModes &&
-                        availableModes.availableModes.length > 0
-                      ) {
-                        availableMode = availableModes.availableModes[0];
-                      } else {
-                        availableMode = 'ONLINE';
-                      }
-                      if (availableMode === 'ONLINE' || availableMode === 'BOTH') {
-                        nextAvailabilityString = nextAvailability && nextAvailability.onlineSlot;
-                      } else {
-                        nextAvailabilityString = nextAvailability && nextAvailability.physicalSlot;
-                      }
-                      return (
-                        <Grid key={doctor.id} item xs={12} sm={12} md={12} lg={6}>
-                          <InfoCard doctorInfo={doctor} nextAvailability={nextAvailabilityString} />
-                        </Grid>
-                      );
-                    })}
-                  </Grid>
-                </>
-              ) : (
-                'no results found'
-              )}
+                {(filter.language.length > 0 ||
+                  filter.availability.length > 0 ||
+                  filter.experience.length > 0 ||
+                  filter.fees.length > 0 ||
+                  filter.gender.length > 0) && <AddedFilters filter={filter} />}
+                {loading ? (
+                  <div className={classes.circlularProgress}>
+                    <CircularProgress />
+                  </div>
+                ) : filteredDoctorData && filteredDoctorData.length ? (
+                  <>
+                    <Grid container spacing={2}>
+                      {filteredDoctorData.map((doctor: DoctorDetails) => {
+                        let availableMode = '';
+                        let nextAvailabilityString = '';
+                        const nextAvailability = _find(doctorsNextAvailability, (availability) => {
+                          const availabilityDoctorId =
+                            availability && availability.doctorId ? availability.doctorId : '';
+                          const currentDoctorId = doctor && doctor.id ? doctor.id : '';
+                          return availabilityDoctorId === currentDoctorId;
+                        });
+                        const availableModes = _find(doctorsAvailability, (availability) => {
+                          const availabilityDoctorId =
+                            availability && availability.doctorId ? availability.doctorId : '';
+                          const currentDoctorId = doctor && doctor.id ? doctor.id : '';
+                          return availabilityDoctorId === currentDoctorId;
+                        });
+                        if (
+                          availableModes &&
+                          availableModes.availableModes &&
+                          availableModes.availableModes.length > 0
+                        ) {
+                          availableMode = availableModes.availableModes[0];
+                        } else {
+                          availableMode = 'ONLINE';
+                        }
+                        if (availableMode === 'ONLINE' || availableMode === 'BOTH') {
+                          nextAvailabilityString = nextAvailability && nextAvailability.onlineSlot;
+                        } else {
+                          nextAvailabilityString =
+                            nextAvailability && nextAvailability.physicalSlot;
+                        }
+                        return (
+                          <Grid key={doctor.id} item xs={12} sm={12} md={12} lg={6}>
+                            <InfoCard
+                              doctorInfo={doctor}
+                              nextAvailability={nextAvailabilityString}
+                            />
+                          </Grid>
+                        );
+                      })}
+                    </Grid>
+                  </>
+                ) : (
+                  'no results found'
+                )}
               </div>
               <BookBest />
               <FrequentlyQuestions />
