@@ -23,7 +23,6 @@ import { UploadPrescription } from 'components/Prescriptions/UploadPrescription'
 import { UploadEPrescriptionCard } from 'components/Prescriptions/UploadEPrescriptionCard';
 import { useCurrentPatient } from 'hooks/authHooks';
 import moment from 'moment';
-import { MetaTagsComp } from 'MetaTagsComp';
 import { gtmTracking } from 'gtmTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -493,15 +492,9 @@ export const SearchByMedicine: React.FC = (props) => {
     uploadPrescriptionTracking({ ...patient, age });
     setIsUploadPreDialogOpen(true);
   };
-  const metaTagProps = {
-    title: `Buy ${params.searchMedicineType} - Online Pharmacy Store - Apollo 247`,
-    description: `Buy ${params.searchMedicineType} online at Apollo 247 - India's online pharmacy store. Get ${params.searchMedicineType} medicines in just a few clicks. Buy ${params.searchMedicineType} at best prices in India.`,
-    canonicalLink: window && window.location && window.location.href,
-  };
 
   return (
     <div className={classes.root}>
-      <MetaTagsComp {...metaTagProps} />
       <Header />
       <div className={classes.container}>
         <div className={classes.searchByBrandPage}>

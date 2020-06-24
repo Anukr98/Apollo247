@@ -12,7 +12,7 @@ import {
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
-import { AppointmentCallDetails } from 'consults-service/entities';
+import { AppointmentCallDetails, BOOKINGSOURCE, DEVICETYPE } from 'consults-service/entities';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { AppointmentCallDetailsRepository } from 'consults-service/repositories/appointmentCallDetailsRepository';
 import { format } from 'date-fns';
@@ -70,6 +70,8 @@ export const doctorCallNotificationTypeDefs = gql`
       sendNotification: Boolean
       doctorId: String
       doctorName: String
+      deviceType: DEVICETYPE
+      callSource: BOOKINGSOURCE
     ): NotificationResult!
     endCallNotification(appointmentCallId: String): EndCallResult!
     sendApptNotification: ApptNotificationResult!
@@ -131,6 +133,8 @@ const sendCallNotification: Resolver<
     sendNotification: Boolean;
     doctorId: string;
     doctorName: string;
+    deviceType: DEVICETYPE;
+    callSource: BOOKINGSOURCE;
   },
   ConsultServiceContext,
   NotificationResult
@@ -146,6 +150,8 @@ const sendCallNotification: Resolver<
     startTime: new Date(),
     doctorId: args.doctorId,
     doctorName: args.doctorName,
+    deviceType: args.deviceType,
+    callSource: args.callSource,
   };
   const appointmentCallDetails = await callDetailsRepo.saveAppointmentCallDetails(
     appointmentCallDetailsAttrs

@@ -57,6 +57,7 @@ const Common = {
   TEXT_LIGHT_BLUE: text_light_blue,
   SEPARATOR_LINE: 'rgba(2, 71, 91, 0.2)',
   APP_RED: red,
+  DARK_RED: darkRed,
   NOTIFICATION_DOT: pink,
 };
 

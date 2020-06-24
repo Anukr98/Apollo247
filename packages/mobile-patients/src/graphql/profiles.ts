@@ -679,6 +679,8 @@ export const GET_ALL_SPECIALTIES = gql`
       specialistPluralTerm
       userFriendlyNomenclature
       # displayOrder
+      shortDescription
+      symptoms
     }
   }
 `;
@@ -1376,8 +1378,12 @@ export const UPDATE_DIAGNOSTIC_ORDER = gql`
 `;
 
 export const GET_MEDICINE_ORDER_OMS_DETAILS = gql`
-  query getMedicineOrderOMSDetails($patientId: String, $orderAutoId: Int) {
-    getMedicineOrderOMSDetails(patientId: $patientId, orderAutoId: $orderAutoId) {
+  query getMedicineOrderOMSDetails($patientId: String, $orderAutoId: Int, $billNumber: String) {
+    getMedicineOrderOMSDetails(
+      patientId: $patientId
+      orderAutoId: $orderAutoId
+      billNumber: $billNumber
+    ) {
       medicineOrderDetails {
         id
         orderAutoId
@@ -1394,6 +1400,7 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS = gql`
         deliveryType
         currentStatus
         patientAddressId
+        alertStore
         medicineOrdersStatus {
           id
           orderStatus
@@ -2131,6 +2138,15 @@ export const CANCEL_MEDICINE_ORDER_OMS = gql`
   mutation CancelMedicineOrderOMS($medicineOrderCancelOMSInput: MedicineOrderCancelOMSInput) {
     cancelMedicineOrderOMS(medicineOrderCancelOMSInput: $medicineOrderCancelOMSInput) {
       orderStatus
+    }
+  }
+`;
+
+export const ALERT_MEDICINE_ORDER_PICKUP = gql `
+  mutation alertMedicineOrderPickup($alertMedicineOrderPickupInput : AlertMedicineOrderPickupInput) {
+    alertMedicineOrderPickup(alertMedicineOrderPickupInput : $alertMedicineOrderPickupInput) {
+      status
+      message
     }
   }
 `;

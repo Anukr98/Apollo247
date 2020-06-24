@@ -25,7 +25,7 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
 import React, { useEffect } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
-import { StyleSheet, Platform } from 'react-native';
+import { StyleSheet, Platform, View, TouchableOpacity, Text } from 'react-native';
 import firebase from 'react-native-firebase';
 import { Notification, NotificationOpen } from 'react-native-firebase/notifications';
 import { NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
@@ -38,6 +38,7 @@ import {
   getMedicineOrderOMSDetails,
   getMedicineOrderOMSDetailsVariables,
 } from '../graphql/types/getMedicineOrderOMSDetails';
+import { NotificationIconWhite } from './ui/Icons';
 
 const styles = StyleSheet.create({
   rescheduleTextStyles: {
@@ -53,6 +54,21 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     ...theme.viewStyles.shadowStyle,
   },
+  buttonStyle: {
+    height: 60,
+    borderRadius: 10,
+    backgroundColor: theme.colors.BUTTON_BG,
+    width: '70%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'column',
+    shadowColor: 'rgba(0,0,0,0.2)',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.8,
+    shadowRadius: 2,
+    elevation: 3,
+    display: 'flex',
+  },
 });
 
 type CustomNotificationType =
@@ -64,6 +80,7 @@ type CustomNotificationType =
   | 'Order_Out_For_Delivery'
   | 'Order_Placed'
   | 'Order_Confirmed'
+  | 'Order_ready_at_store'
   | 'Reminder_Appointment_15'
   | 'Reminder_Appointment_Casesheet_15'
   | 'Diagnostic_Order_Success'
@@ -127,6 +144,55 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
           },
         },
       ],
+    });
+  };
+
+  const showOrderReadyAtStoreAlert = (
+    data:
+      | {
+          content: string;
+          orderAutoId: string;
+          orderId: string;
+          firstName: string;
+          statusDate: string;
+        }
+      | any,
+    type?: CustomNotificationType
+  ) => {
+    aphConsole.log(`CustomNotificationType:: ${type}`);
+    showAphAlert!({
+      title: `Hi, ${data.firstName}`,
+      description: 'Order status updated. Kindly alert the store 10 minutes before you are about to reach, so that we can keep the items ready!',
+      children: (
+        <View
+          style={{
+            marginHorizontal: 20,
+            marginVertical: 25,
+            alignItems: 'center',
+          }}
+        >
+          <TouchableOpacity
+            style={styles.buttonStyle}
+            onPress={() => {
+              hideAphAlert!();
+              props.navigation.navigate(AppRoutes.OrderDetailsScene, {
+                goToHomeOnBack: true,
+                orderAutoId: data.orderAutoId,
+              });
+            }}
+          >
+            <NotificationIconWhite />
+            <Text
+              style={{
+                marginTop: 4,
+                textAlign: 'center',
+                color: theme.colors.WHITE,
+                ...theme.fonts.IBMPlexSansBold(14)
+              }}
+            >ALERT THE STORE</Text>
+          </TouchableOpacity>
+        </View>
+      ),
     });
   };
 
@@ -354,6 +420,10 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
           showMedOrderStatusAlert(data, 'Order_Confirmed');
         }
         break;
+      case 'Order_ready_at_store':
+        {
+          showOrderReadyAtStoreAlert(data, 'Order_ready_at_store');
+        }
       case 'Diagnostic_Order_Success':
         {
           return; // Not showing in app because PN overriding in-app notification

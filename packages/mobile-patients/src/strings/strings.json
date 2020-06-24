@@ -291,6 +291,7 @@
   "OrderSummery": {
     "total": "Total",
     "order": "ORDER",
+    "bill": "BILL",
     "orderPlaced": "Order Placed",
     "paymentMethod": "Payment Method",
     "shipping_address_heading": "SHIPPING ADDRESS",

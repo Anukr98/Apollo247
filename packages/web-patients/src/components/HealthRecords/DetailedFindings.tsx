@@ -110,7 +110,7 @@ export const MedicalTest = [
 
 export const DetailedFindings: React.FC<DetailedFindingsProps> = (props) => {
   const classes = useStyles({});
-  const { data, type } = props.activeData;
+  const { data } = props.activeData;
   return (
     <ExpansionPanel className={classes.root} defaultExpanded={true}>
       <ExpansionPanelSummary
@@ -122,48 +122,37 @@ export const DetailedFindings: React.FC<DetailedFindingsProps> = (props) => {
       <ExpansionPanelDetails className={classes.panelDetails}>
         <Grid container spacing={2}>
           {data &&
-            (
-              (data.medicalRecordParameters && data.medicalRecordParameters) ||
-              (data.labTestResultParameters && data.labTestResultParameters)
-            ).map((detail: any) => {
+            (data.labTestResults && data.labTestResults).map((detail: any) => {
               const unit = MedicalTest.find((item) => item.key === detail.unit);
               return (
                 <Grid item xs={12} sm={12}>
-                  <div className={classes.cardTitle}>
-                    {type === 'lab' && !detail.setParameterName ? 'SUMMARY' : detail.parameterName}
-                  </div>
+                  <div className={classes.cardTitle}>{detail.parameterName}</div>
                   <div className={classes.cardSection}>
                     <Grid container spacing={2}>
-                      {type === 'lab' && !detail.setParameterName ? (
-                        <div className={classes.result}>{detail.result || 'N/A'}</div>
-                      ) : (
-                        <>
-                          <Grid item xs={6} sm={3}>
-                            <div className={classes.resultGroup}>
-                              <label>Result</label>
-                              <div className={classes.result}>{detail.result || 'N/A'}</div>
-                            </div>
-                          </Grid>
-                          <Grid item xs={6} sm={3}>
-                            <div className={classes.resultGroup}>
-                              <label>Units</label>
-                              <div className={classes.result}>
-                                {unit ? unit.value : detail.unit || 'N/A'}
-                              </div>
-                            </div>
-                          </Grid>
-                          <Grid item xs={6} sm={3}>
-                            <div className={classes.resultGroup}>
-                              <label>Normal Range</label>
-                              <div className={`${classes.result}`}>
-                                {detail.range
-                                  ? detail.range
-                                  : `${detail.minimum || ''} - ${detail.maximum || ''}`}
-                              </div>
-                            </div>
-                          </Grid>
-                        </>
-                      )}
+                      <Grid item xs={6} sm={4}>
+                        <div className={classes.resultGroup}>
+                          <label>Result</label>
+                          <div className={classes.result}>{detail.result || 'N/A'}</div>
+                        </div>
+                      </Grid>
+                      <Grid item xs={6} sm={4}>
+                        <div className={classes.resultGroup}>
+                          <label>Units</label>
+                          <div className={classes.result}>
+                            {unit ? unit.value : detail.unit || 'N/A'}
+                          </div>
+                        </div>
+                      </Grid>
+                      <Grid item xs={6} sm={4}>
+                        <div className={classes.resultGroup}>
+                          <label>Normal Range</label>
+                          <div className={`${classes.result}`}>
+                            {detail.range
+                              ? detail.range
+                              : `${detail.minimum || ''} - ${detail.maximum || ''}`}
+                          </div>
+                        </div>
+                      </Grid>
                     </Grid>
                   </div>
                 </Grid>

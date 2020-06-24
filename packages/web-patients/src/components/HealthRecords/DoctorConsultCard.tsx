@@ -235,6 +235,20 @@ export const DoctorConsultCard: React.FC<ConsultCardProps> = (props) => {
             <AphButton>Order Meds & Tests</AphButton> */}
       {/* </div> */}
     </div>
+  ) : consult.prescribedBy ? (
+    <div className={`${classes.root} ${isActiveCard ? classes.activeCard : ''}`}>
+      <div className={classes.doctorInfoGroup}>
+        <div className={classes.doctorImg}>
+          <img src={require('images/ic_prescription_icon.svg')} alt="" />
+        </div>
+        <div className={classes.doctorInfo}>
+          <div className={classes.doctorName}>{consult.prescriptionName}</div>
+          <div className={classes.dateField}>
+            <span>{consult.date && moment(consult.date).format('MM/DD/YYYY')}</span>
+          </div>
+        </div>
+      </div>
+    </div>
   ) : consult.medicineOrderLineItems && consult.medicineOrderLineItems.length === 0 ? (
     <div className={`${classes.root} ${isActiveCard ? classes.activeCard : ''}`}>
       <div className={classes.doctorInfoGroup}>

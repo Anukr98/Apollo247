@@ -202,7 +202,8 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
         orderId={`#${orderNumber}`}
         onPress={() => {
           props.navigation.navigate(AppRoutes.OrderDetailsScene, {
-            orderAutoId: orderNumber,
+            orderAutoId: order.orderAutoId,
+            billNumber: order.billNumber,
             orderDetails: order.medicineOrdersStatus,
             setOrders: (orders: MedOrder[]) => {
               setOrders(orders);

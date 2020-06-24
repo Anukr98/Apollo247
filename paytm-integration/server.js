@@ -1059,6 +1059,8 @@ app.get('/processOmsOrders', (req, res) => {
                       comment: '',
                     });
                   }
+                } else {
+                  orderType = 'Pharma';
                 }
                 const paymentDetails =
                   (orderDetails.medicineOrderPayments && orderDetails.medicineOrderPayments[0]) ||
@@ -1109,7 +1111,7 @@ app.get('/processOmsOrders', (req, res) => {
                   timeslot: orderTat ? format(orderTat, 'HH:mm') : '',
                   shippingcharges: orderDetails.devliveryCharges || 0,
                   categorytype: orderType,
-                  customercomment: '',
+                  customercomment: orderDetails.customerComment || '',
                   landmark: landmark,
                   issubscribe: false,
                   customerdetails: {

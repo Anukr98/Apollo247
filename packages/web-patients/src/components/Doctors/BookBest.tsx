@@ -13,6 +13,9 @@ const useStyles = makeStyles((theme: Theme) => {
       marginTop: 20,
       fontSize: 14,
       lineHeight: '23px',
+      [theme.breakpoints.down('xs')]: {
+        borderRadius: 0,
+      },
       '& h3': {
         margin: 0,
         color: '#01667c',
@@ -37,7 +40,7 @@ export const BookBest: React.FC = (props) => {
 
   return (
     <div className={classes.root}>
-      <h3>Book Best Family Physicians</h3>
+      <h3>Family Physicians</h3>
       <p>A family physician, more commonly referred as a family doctor, specialises on providing comprehensive medical care to each member of the family, regardless of age and gender. Since a family doctor is trained on treating almost all kinds of diseases and across various parts of the body, he/she is also often known as a primary care physician.</p>
       <h3>You can consult a family doctor if</h3>
       <ul>

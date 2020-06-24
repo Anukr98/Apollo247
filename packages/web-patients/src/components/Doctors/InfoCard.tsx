@@ -10,7 +10,7 @@ import {
   GetDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors_doctorHospital,
 } from 'graphql/types/GetDoctorsBySpecialtyAndFilters';
 import { ConsultMode, SEARCH_TYPE } from 'graphql/types/globalTypes';
-import { getDiffInDays } from 'helpers/commonHelpers';
+import { getDiffInDays, getDiffInMinutes, getDiffInHours } from 'helpers/commonHelpers';
 import moment from 'moment';
 import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
 import { useAuth } from 'hooks/authHooks';
@@ -164,7 +164,7 @@ export const InfoCard: React.FC<InfoCardProps> = (props) => {
   const classes = useStyles({});
   const [popupLoading, setPopupLoading] = useState<boolean>(false);
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
-
+  const doctorValue = doctorInfo.fullName;
   const consultMode =
     doctorInfo &&
     doctorInfo.consultHours &&
@@ -174,28 +174,7 @@ export const InfoCard: React.FC<InfoCardProps> = (props) => {
       ? doctorInfo.consultHours[0].consultMode
       : '';
 
-  const getDiffInMinutes = () => {
-    if (nextAvailability && nextAvailability.length > 0) {
-      const nextAvailabilityTime = nextAvailability && moment(nextAvailability);
-      const currentTime = moment(new Date());
-      const differenceInMinutes = currentTime.diff(nextAvailabilityTime, 'minutes') * -1;
-      return differenceInMinutes + 1; // for some reason moment is returning 1 second less. so that 1 is added.;
-    } else {
-      return 0;
-    }
-  };
-
-  const getDiffInHours = () => {
-    if (nextAvailability && nextAvailability.length > 0) {
-      const nextAvailabilityTime = nextAvailability && moment(nextAvailability);
-      const currentTime = moment(new Date());
-      const differenceInHours = currentTime.diff(nextAvailabilityTime, 'hours') * -1;
-      return Math.round(differenceInHours) + 1;
-    } else {
-      return 0;
-    }
-  };
-  const differenceInMinutes = getDiffInMinutes();
+  const differenceInMinutes = getDiffInMinutes(nextAvailability);
   const availabilityMarkup = () => {
     if (nextAvailability && nextAvailability.length > 0) {
       if (differenceInMinutes === 0) {
@@ -214,7 +193,9 @@ export const InfoCard: React.FC<InfoCardProps> = (props) => {
         );
       } else if (differenceInMinutes >= 60 && differenceInMinutes < 1380) {
         return (
-          <div className={`${classes.availability}`}>AVAILABLE IN {getDiffInHours()} HOURS</div>
+          <div className={`${classes.availability}`}>
+            AVAILABLE IN {getDiffInHours(nextAvailability)} HOURS
+          </div>
         );
       } else if (differenceInMinutes >= 1380) {
         return (
@@ -242,10 +223,9 @@ export const InfoCard: React.FC<InfoCardProps> = (props) => {
     });
 
   const saveSearchMutation = useMutation<SaveSearch, SaveSearchVariables>(SAVE_PATIENT_SEARCH);
-
   return (
     <div className={classes.root}>
-      <Link to={clientRoutes.doctorDetails(props.doctorInfo.firstName, props.doctorInfo.id)}>
+      <Link to={clientRoutes.doctorDetails(doctorValue.replace(/ /g, ''), doctorInfo.id)}>
         <div className={classes.topContent}>
           <div className={classes.iconGroup}>
             <Avatar
@@ -339,7 +319,8 @@ export const InfoCard: React.FC<InfoCardProps> = (props) => {
             >
               {popupLoading ? (
                 <CircularProgress size={22} color="secondary" />
-              ) : getDiffInMinutes() > 0 && getDiffInMinutes() <= 60 ? (
+              ) : getDiffInMinutes(nextAvailability) > 0 &&
+                getDiffInMinutes(nextAvailability) <= 60 ? (
                 'CONSULT NOW'
               ) : (
                 'BOOK APPOINTMENT'

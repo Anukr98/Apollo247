@@ -54,6 +54,8 @@ export const UIElementsProviderStyles = StyleSheet.create({
     marginTop: Platform.OS === 'ios' ? (isIphoneX() ? 100 : 75) : 55,
     backgroundColor: theme.colors.WHITE,
     borderRadius: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   popUpPointer: {
     position: 'absolute',
