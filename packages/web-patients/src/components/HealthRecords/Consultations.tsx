@@ -10,16 +10,12 @@ import { Diagnosis } from 'components/HealthRecords/Diagnosis';
 import { PrescribedTests } from 'components/HealthRecords/PrescribedTests';
 import { GeneralAdvice } from 'components/HealthRecords/GeneralAdvice';
 import { FollowUp } from 'components/HealthRecords/FollowUp';
-import { PaymentInvoice } from 'components/HealthRecords/PaymentInvoice';
-import { PrescriptionPreview } from 'components/HealthRecords/PrescriptionPreview';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import moment from 'moment';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet as CaseSheetType } from '../../graphql/types/getPatientPastConsultsAndPrescriptions';
 import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
-// import { phrConsultCardClickTracking } from '../../webEngageTracking';
-// import { useCurrentPatient } from 'hooks/authHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
