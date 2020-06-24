@@ -265,7 +265,7 @@ const SaveMedicineOrderPaymentMq: Resolver<
         if (topicError) {
           log(
             'profileServiceLogger',
-            'Failed to send message queue',
+            'Failed to create message queue',
             `SaveMedicineOrderPaymentMq()->${queueName}`,
             JSON.stringify(topicError),
             JSON.stringify(topicError)

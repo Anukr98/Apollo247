@@ -55,6 +55,7 @@ export const getMedicineOrdersOMSListTypeDefs = gql`
     medicineOrdersStatus: [MedicineOrdersOMSStatus]
     medicineOrderShipments: [MedicineOrderOMSShipment]
     patient: Patient
+    customerComment: String
   }
 
   type MedicineOrderOMSLineItems {
