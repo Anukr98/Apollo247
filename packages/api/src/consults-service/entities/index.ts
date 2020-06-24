@@ -59,6 +59,7 @@ export enum STATUS {
   JUNIOR_DOCTOR_ENDED = 'JUNIOR_DOCTOR_ENDED',
   CALL_ABANDON = 'CALL_ABANDON',
   UNAVAILABLE_MEDMANTRA = 'UNAVAILABLE_MEDMANTRA',
+  PAYMENT_ABORTED = 'PAYMENT_ABORTED',
 }
 
 export enum REFUND_STATUS {
@@ -558,6 +559,12 @@ export class AppointmentCallDetails extends BaseEntity {
 
   @Column()
   callType: string;
+
+  @Column()
+  deviceType: DEVICETYPE;
+
+  @Column()
+  callSource: BOOKINGSOURCE;
 
   @Column({ nullable: true })
   doctorId: string;
