@@ -16,7 +16,7 @@ import firebase from 'react-native-firebase';
 import SplashScreenView from 'react-native-splash-screen';
 import { Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useAuth } from '../hooks/authHooks';
-import { AppConfig, updateAppConfig } from '../strings/AppConfig';
+import { AppConfig, updateAppConfig, PharmacyHomepageInfo, AppEnv } from '../strings/AppConfig';
 import { PrefetchAPIReuqest } from '@praktice/navigator-react-native-sdk';
 import { Button } from './ui/Button';
 import { useUIElements } from './UIElementsProvider';
@@ -33,6 +33,12 @@ import {
   APPStateInActive,
   APPStateActive,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { useApolloClient } from 'react-apollo-hooks';
+import {
+  getAppointmentData as getAppointmentDataQuery,
+  getAppointmentDataVariables,
+} from '@aph/mobile-patients/src/graphql/types/getAppointmentData';
+import { GET_APPOINTMENT_DATA } from '@aph/mobile-patients/src/graphql/profiles';
 // The moment we import from sdk @praktice/navigator-react-native-sdk,
 // finally not working on all promises.
 
@@ -86,7 +92,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const { setAllPatients, setMobileAPICalled } = useAuth();
   const { showAphAlert, hideAphAlert } = useUIElements();
   const [appState, setAppState] = useState(AppState.currentState);
-
+  const client = useApolloClient();
   // const { setVirtualConsultationFee } = useAppCommonData();
 
   useEffect(() => {
@@ -204,9 +210,11 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           console.log('MedicineCart handleopen');
           getData('MedicineCart', data.length === 2 ? linkId : undefined);
           break;
-
+        case 'ChatRoom':
+          if (data.length === 2) getAppointmentDataAndNavigate(linkId);
+          break;
         default:
-          getData('ConsultRoom');
+          getData('ConsultRoom', undefined, true);
           break;
       }
       console.log('route', route);
@@ -322,13 +330,31 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           }
           SplashScreenView.hide();
         },
-        timeout ? 1500 : 0
+        timeout ? 2000 : 0
       );
     }
     fetchData();
   };
-
-  const pushTheView = (routeName: String, id?: String) => {
+  const getAppointmentDataAndNavigate = (appointmentID: string) => {
+    client
+      .query<getAppointmentDataQuery, getAppointmentDataVariables>({
+        query: GET_APPOINTMENT_DATA,
+        variables: {
+          appointmentId: appointmentID,
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((_data) => {
+        const appointmentData: any = _data.data.getAppointmentData!.appointmentsHistory;
+        if (appointmentData[0]!.doctorInfo !== null) {
+          getData('ChatRoom', appointmentData[0]);
+        }
+      })
+      .catch((error) => {
+        CommonBugFender('SplashFetchingAppointmentData', error);
+      });
+  };
+  const pushTheView = (routeName: String, id?: any) => {
     console.log('pushTheView', routeName);
     setBugFenderLog('DEEP_LINK_PUSHVIEW', { routeName, id });
     switch (routeName) {
@@ -401,7 +427,13 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           movedFrom: 'splashscreen',
         });
         break;
-
+      case 'ChatRoom':
+        props.navigation.navigate(AppRoutes.ChatRoom, {
+          data: id,
+          callType: '',
+          prescription: '',
+        });
+        break;
       default:
         break;
     }
@@ -508,9 +540,17 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
               'QA_Virtual_consultation_fee',
               'Need_Help_To_Contact_In',
               'Min_Value_For_Pharmacy_Free_Delivery',
+              'QA_Min_Value_For_Pharmacy_Free_Delivery',
               'Pharmacy_Delivery_Charges',
               'home_screen_emergency_banner',
               'home_screen_emergency_number',
+              'QA_top6_specailties',
+              'DEV_top6_specailties',
+              'top6_specailties',
+              'QA_min_value_to_nudge_users_to_avail_free_delivery',
+              'min_value_to_nudge_users_to_avail_free_delivery',
+              'QA_pharmacy_homepage',
+              'pharmacy_homepage',
             ]);
         })
         .then((snapshot) => {
@@ -519,11 +559,54 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           const needHelpToContactInMessage = snapshot['Need_Help_To_Contact_In'].val();
           needHelpToContactInMessage && setNeedHelpToContactInMessage!(needHelpToContactInMessage);
 
+          const pharmacyHomepageInfoQA = JSON.parse(snapshot['QA_pharmacy_homepage'].val() || null);
+          pharmacyHomepageInfoQA &&
+            AppConfig.APP_ENV != AppEnv.PROD &&
+            updateAppConfig(
+              'PHARMACY_HOMEPAGE_INFO',
+              pharmacyHomepageInfoQA as PharmacyHomepageInfo[]
+            );
+
+          const pharmacyHomepageInfo = JSON.parse(snapshot['pharmacy_homepage'].val() || null);
+          pharmacyHomepageInfo &&
+            AppConfig.APP_ENV == AppEnv.PROD &&
+            updateAppConfig(
+              'PHARMACY_HOMEPAGE_INFO',
+              pharmacyHomepageInfo as PharmacyHomepageInfo[]
+            );
+
           const minValueForPharmacyFreeDelivery = snapshot[
             'Min_Value_For_Pharmacy_Free_Delivery'
           ].val();
+          const QAMinValueForPharmacyFreeDelivery = snapshot[
+            'QA_Min_Value_For_Pharmacy_Free_Delivery'
+          ].val();
+          const QAMinValueToNudgeUsersToAvailFreeDelivery = snapshot[
+            'QA_min_value_to_nudge_users_to_avail_free_delivery'
+          ].val();
+          QAMinValueToNudgeUsersToAvailFreeDelivery &&
+            AppConfig.APP_ENV != AppEnv.PROD &&
+            updateAppConfig(
+              'MIN_VALUE_TO_NUDGE_USERS_TO_AVAIL_FREE_DELIVERY',
+              QAMinValueToNudgeUsersToAvailFreeDelivery
+            );
+          const minValueToNudgeUsersToAvailFreeDelivery = snapshot[
+            'min_value_to_nudge_users_to_avail_free_delivery'
+          ].val();
+          minValueToNudgeUsersToAvailFreeDelivery &&
+            AppConfig.APP_ENV == AppEnv.PROD &&
+            updateAppConfig(
+              'MIN_VALUE_TO_NUDGE_USERS_TO_AVAIL_FREE_DELIVERY',
+              minValueToNudgeUsersToAvailFreeDelivery
+            );
+
           minValueForPharmacyFreeDelivery &&
+            AppConfig.APP_ENV == AppEnv.PROD &&
             updateAppConfig('MIN_CART_VALUE_FOR_FREE_DELIVERY', minValueForPharmacyFreeDelivery);
+
+          QAMinValueForPharmacyFreeDelivery &&
+            AppConfig.APP_ENV != AppEnv.PROD &&
+            updateAppConfig('MIN_CART_VALUE_FOR_FREE_DELIVERY', QAMinValueForPharmacyFreeDelivery);
 
           const pharmacyDeliveryCharges = snapshot['Pharmacy_Delivery_Charges'].val();
           pharmacyDeliveryCharges && updateAppConfig('DELIVERY_CHARGES', pharmacyDeliveryCharges);
@@ -535,6 +618,19 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           const homeScreenEmergencyBannerNumber = snapshot['home_screen_emergency_number'].val();
           homeScreenEmergencyBannerNumber &&
             updateAppConfig('HOME_SCREEN_EMERGENCY_BANNER_NUMBER', homeScreenEmergencyBannerNumber);
+
+          if (buildName() === 'DEV') {
+            const DEV_top6_specailties = snapshot['DEV_top6_specailties'].val();
+            DEV_top6_specailties &&
+              updateAppConfig('TOP_SPECIALITIES', JSON.parse(DEV_top6_specailties));
+          } else if (buildName() === 'QA') {
+            const QA_top6_specailties = snapshot['QA_top6_specailties'].val();
+            QA_top6_specailties &&
+              updateAppConfig('TOP_SPECIALITIES', JSON.parse(QA_top6_specailties));
+          } else {
+            const top6_specailties = snapshot['top6_specailties'].val();
+            top6_specailties && updateAppConfig('TOP_SPECIALITIES', JSON.parse(top6_specailties));
+          }
 
           const myValye = snapshot;
           let index: number = 0;

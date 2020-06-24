@@ -2,38 +2,27 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { More } from '@aph/mobile-patients/src/components/ui/Icons';
 import { OrderCard } from '@aph/mobile-patients/src/components/ui/OrderCard';
-import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import {
-  GetMedicineOrdersList,
-  GetMedicineOrdersListVariables,
-  GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList,
-  GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList_medicineOrdersStatus,
-} from '@aph/mobile-patients/src/graphql/types/GetMedicineOrdersList';
-import {
-  MEDICINE_DELIVERY_TYPE,
-  MEDICINE_ORDER_STATUS,
-} from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { MEDICINE_DELIVERY_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { g, getOrderStatusText } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { ApolloQueryResult } from 'apollo-client';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
-import { SafeAreaView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView, StyleSheet, View } from 'react-native';
 import { NavigationScreenProps, ScrollView, FlatList } from 'react-navigation';
 import { useQuery } from 'react-apollo-hooks';
-import { GET_MEDICINE_ORDERS_OMS__LIST } from '../graphql/profiles';
-import { useUIElements } from './UIElementsProvider';
+import { GET_MEDICINE_ORDERS_OMS__LIST } from '@aph/mobile-patients/src/graphql/profiles';
+import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
   getMedicineOrdersOMSListVariables,
   getMedicineOrdersOMSList,
   getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrdersList,
   getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrdersList_medicineOrdersStatus,
-} from '../graphql/types/getMedicineOrdersOMSList';
+} from '@aph/mobile-patients/src/graphql/types/getMedicineOrdersOMSList';
 
 const styles = StyleSheet.create({
   noDataCard: {
@@ -44,54 +33,16 @@ const styles = StyleSheet.create({
     elevation: 0,
   },
 });
+
 type OrderRefetch = (
   variables?: getMedicineOrdersOMSListVariables
 ) => Promise<ApolloQueryResult<getMedicineOrdersOMSList>>;
-
-const getOrderDescription = (
-  status: MEDICINE_ORDER_STATUS,
-  isOrderRequirePrescription?: boolean // if any of the order item requires prescription
-) => {
-  const orderStatusDescMapping = {
-    [MEDICINE_ORDER_STATUS.ORDER_PLACED]: isOrderRequirePrescription
-      ? ['', '']
-      : [
-          'Verification Pending: ',
-          'Your order is being verified by our pharmacists. Our pharmacists might be required to call you for order verification.',
-        ],
-    [MEDICINE_ORDER_STATUS.ORDER_VERIFIED]: [
-      'Store Assigned: ',
-      'Your order has been assigned to our pharmacy.',
-    ],
-    [MEDICINE_ORDER_STATUS.ORDER_BILLED]: [
-      '',
-      'Your order #{{orderId}} has been packed. Soon would be dispatched from our pharmacy.',
-    ],
-    [MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY]: [
-      'Out for delivery: ',
-      'Your order #A2472707936 would be reaching your doorstep soon.',
-    ],
-    [MEDICINE_ORDER_STATUS.PAYMENT_FAILED]: [
-      '',
-      'Order Not Placed! Please try to place the order again with an alternative payment method or Cash on Delivery (COD).',
-    ],
-  };
-
-  const isStatusAvailable = Object.keys(orderStatusDescMapping).includes(status);
-
-  return isStatusAvailable
-    ? {
-        heading: g(orderStatusDescMapping, status as any, '0'),
-        description: g(orderStatusDescMapping, status as any, '1'),
-      }
-    : null;
-};
+type MedOrder = getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrdersList;
 
 export interface YourOrdersSceneProps
   extends NavigationScreenProps<{
     refetch: OrderRefetch;
-    isTest: boolean;
-    orders: getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrdersList[];
+    orders: MedOrder[];
     error: object;
     header: string;
   }> {}
@@ -99,12 +50,8 @@ export interface YourOrdersSceneProps
 export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const { loading, setLoading } = useUIElements();
-  const { getPatientApiCall } = useAuth();
-  const isTest = props.navigation.getParam('isTest');
   // const ordersFetched = props.navigation.getParam('orders');
-  const [orders, setOrders] = useState<
-    getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrdersList[]
-  >(props.navigation.getParam('orders'));
+  const [orders, setOrders] = useState<MedOrder[]>(props.navigation.getParam('orders'));
   const refetch: OrderRefetch =
     props.navigation.getParam('refetch') ||
     useQuery<getMedicineOrdersOMSList, getMedicineOrdersOMSListVariables>(
@@ -130,21 +77,13 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
               )
           );
           setLoading!(false);
-          setOrders(
-            _orders as getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrdersList[]
-          );
+          setOrders(_orders as MedOrder[]);
           setisChanged(!isChanged);
         })
         .catch((e) => {
           CommonBugFender('YourOrdersScene_refetch', e);
         });
   }, []);
-
-  useEffect(() => {
-    if (!currentPatient) {
-      getPatientApiCall();
-    }
-  }, [currentPatient]);
 
   useEffect(() => {
     const filteredOrders = orders.filter(
@@ -157,45 +96,24 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
     setOrders(filteredOrders);
   }, [isChanged]);
 
-  // let { data, error, loading, refetch } = useQuery<
-  //   GetMedicineOrdersList,
-  //   GetMedicineOrdersListVariables
-  // >(GET_MEDICINE_ORDERS_LIST, {
-  //   variables: { patientId: currentPatient && currentPatient.id },
-  //   fetchPolicy: 'no-cache',
-  // });
+  const getDeliverTypeOrDescription = (
+    order: getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrdersList
+  ) => {
+    const getStore = () => {
+      const shopAddress = g(order, 'shopAddress');
+      const parsedShopAddress = JSON.parse(shopAddress || '{}');
+      return (parsedShopAddress && parsedShopAddress.address) || 'Store Pickup';
+    };
 
-  // const orders = (
-  //   (!loading && g(data, 'getMedicineOrdersList', 'MedicineOrdersList')) ||
-  //   []
-  // ).filter(
-  //   (item) =>
-  //     !(
-  //       (item!.medicineOrdersStatus || []).length == 1 &&
-  //       (item!.medicineOrdersStatus || []).find(
-  //         (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.QUOTE
-  //       )
-  //     )
-  // );
-
-  // useEffect(() => {
-  //   const _didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
-  //     refetch()
-  //       .then(() => {})
-  //       .catch(() => {});
-  //   });
-  //   return () => {
-  //     _didFocusSubscription && _didFocusSubscription.remove();
-  //   };
-  // }, []);
-
-  const getDeliverType = (type: MEDICINE_DELIVERY_TYPE) => {
+    const type = g(order, 'deliveryType');
     switch (type) {
       case MEDICINE_DELIVERY_TYPE.HOME_DELIVERY:
         return 'Home Delivery';
         break;
       case MEDICINE_DELIVERY_TYPE.STORE_PICKUP:
-        return 'Store Pickup';
+        {
+          return getStore() || 'Store Pickup';
+        }
         break;
       default:
         return 'Unknown';
@@ -216,7 +134,7 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
           .getTime()
     );
   };
-
+  /*
   const getStatusType = (
     orderStatusList: (getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrdersList_medicineOrdersStatus | null)[]
   ) => {
@@ -230,42 +148,74 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
     const sortedList = getSortedList(orderStatusList);
     return getOrderStatusText(g(sortedList[0], 'orderStatus')!);
   };
-
+*/
   const getFormattedTime = (time: string) => {
     return moment(time).format('D MMM YY, hh:mm A');
+  };
+
+  const getOrderTitle = (
+    order: getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrdersList
+  ) => {
+    // use billedItems for delivered orders
+    const billedItems = g(
+      order,
+      'medicineOrderShipments',
+      '0' as any,
+      'medicineOrderInvoice',
+      '0' as any,
+      'itemDetails'
+    );
+    const billedLineItems = billedItems
+      ? (JSON.parse(billedItems) as { itemName: string }[])
+      : null;
+    const lineItems = (billedLineItems || g(order, 'medicineOrderLineItems') || []) as {
+      itemName?: string;
+      medicineName?: string;
+    }[];
+    let title = 'Medicines';
+
+    if (lineItems.length) {
+      const firstItem = g(lineItems, '0' as any, billedLineItems ? 'itemName' : 'medicineName')!;
+      const lineItemsLength = lineItems.length;
+      title =
+        lineItemsLength > 1
+          ? `${firstItem} + ${lineItemsLength - 1} item${lineItemsLength > 2 ? 's' : ''}`
+          : firstItem;
+    }
+
+    return title;
   };
 
   const renderOrder = (
     order: getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrdersList,
     index: number
   ) => {
+    const orderNumber = order.billNumber || order.orderAutoId;
     return (
       <OrderCard
-        isTest={isTest}
         style={[
           { marginHorizontal: 20 },
           index < orders.length - 1 ? { marginBottom: 8 } : { marginBottom: 20 },
           index == 0 ? { marginTop: 20 } : {},
         ]}
-        key={`${order.orderAutoId}`}
-        orderId={`#${order.orderAutoId}`}
+        key={`${orderNumber}`}
+        orderId={`#${orderNumber}`}
         onPress={() => {
           props.navigation.navigate(AppRoutes.OrderDetailsScene, {
             orderAutoId: order.orderAutoId,
+            billNumber: order.billNumber,
             orderDetails: order.medicineOrdersStatus,
-            setOrders: (
-              orders: getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrdersList[]
-            ) => {
+            setOrders: (orders: MedOrder[]) => {
               setOrders(orders);
               setisChanged(!isChanged);
             },
             refetch: refetch,
           });
         }}
-        title={'Medicines'}
-        description={getDeliverType(order.deliveryType)}
-        statusDesc={getStatusDesc(g(order, 'medicineOrdersStatus')!)}
-        status={getStatusType(g(order, 'medicineOrdersStatus')!)}
+        title={getOrderTitle(order)}
+        description={getDeliverTypeOrDescription(order)}
+        statusDesc={getOrderStatusText(order.currentStatus!)}
+        status={order.currentStatus!}
         dateTime={getFormattedTime(g(order.medicineOrdersStatus![0]!, 'statusDate'))}
       />
     );
@@ -327,13 +277,6 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
           title={props.navigation.getParam('header') || string.orders.urOrders}
           container={{ borderBottomWidth: 0 }}
           onPressLeftIcon={() => props.navigation.goBack()}
-          rightComponent={
-            isTest && (
-              <TouchableOpacity activeOpacity={1} onPress={() => {}}>
-                <More />
-              </TouchableOpacity>
-            )
-          }
         />
         <ScrollView bounces={false}>
           {renderOrders()}
