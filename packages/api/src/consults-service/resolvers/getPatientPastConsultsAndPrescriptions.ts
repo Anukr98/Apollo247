@@ -11,9 +11,9 @@ import { MedicineOrders } from 'profiles-service/entities';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
-import { AphError } from 'AphError';
-import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
+
 import _ from 'lodash';
+import { MedicineOrdersRepository } from 'profiles-service/repositories/MedicineOrdersRepository';
 //import { PatientLabResults, LabTestResults, TestResultFiles } from 'types/labResults';
 
 export const getPatientConsultsAndPrescriptionsTypeDefs = gql`
@@ -192,7 +192,7 @@ const getPatientPastConsultsAndPrescriptions: Resolver<
   }
 
   //commented to support backward compatability
-  /*let patientMedicineOrders: MedicineOrders[] = [];
+  let patientMedicineOrders: MedicineOrders[] = [];
   let uniqueMedicineRxOrders: MedicineOrders[] = [];
   const medicineOrdersRepo = patientsDb.getCustomRepository(MedicineOrdersRepository);
   if (hasFilter(CONSULTS_RX_SEARCH_FILTER.PRESCRIPTION, filter)) {
@@ -212,9 +212,9 @@ const getPatientPastConsultsAndPrescriptions: Resolver<
         return true;
       }
     });
-  } */
+  }
 
-  return { consults: patientAppointments, medicineOrders: [] };
+  return { consults: patientAppointments, medicineOrders: uniqueMedicineRxOrders };
 };
 
 const getPatientLabResults: Resolver<

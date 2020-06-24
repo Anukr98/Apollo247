@@ -196,6 +196,21 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
     });
   }
 
+  getMedicineOrderLineItemByOrderId(id: MedicineOrders['id']) {
+    return MedicineOrderLineItems.find({
+      where: { medicineOrders: id },
+      select: ['medicineSKU', 'quantity'],
+    });
+  }
+
+  getMedicineOrderDetailsByOrderId(orderAutoId: number) {
+    return this.findOne({
+      select: ['id', 'currentStatus', 'orderAutoId', 'patientAddressId', 'isOmsOrder', 'patient'],
+      where: { orderAutoId },
+      relations: ['patient'],
+    });
+  }
+
   getMedicineOrderDetailsByAp(apOrderNo: string) {
     return this.findOne({
       where: { apOrderNo },
@@ -285,6 +300,14 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
         'medicineOrderInvoice',
         'patient',
       ],
+    });
+  }
+
+  getMedicineOrdersListWithPayments(patientIds: String[]) {
+    return this.find({
+      where: { patient: In(patientIds) },
+      order: { createdDate: 'DESC' },
+      relations: ['medicineOrderPayments'],
     });
   }
 

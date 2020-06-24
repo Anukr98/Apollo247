@@ -868,6 +868,11 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     checkBox: {
       paddingTop: 15,
+      '& label': {
+        '& >span:first-child': {
+          color: '#00b38e',
+        },
+      },
     },
     bottomActions: {
       display: 'flex',
@@ -897,6 +902,10 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#fff',
       marginLeft: 16,
       minWidth: 210,
+      '&:hover': {
+        backgroundColor: '#fc9916',
+        color: '#fff',
+      },
     },
     sendBtnDisabled: {
       opacity: 0.6,
@@ -3340,7 +3349,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                 <FormControlLabel
                   control={
                     <Checkbox
-                      color="primary"
                       checked={isConfirmationChecked}
                       onChange={(event) => {
                         setIsConfirmationChecked(event.target.checked);
