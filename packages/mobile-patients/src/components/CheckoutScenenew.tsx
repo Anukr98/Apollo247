@@ -36,6 +36,7 @@ import {
   postWebEngageEvent,
   formatAddress,
   postAppsFlyerEvent,
+  postFirebaseEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -69,6 +70,7 @@ import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEv
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import string from '@aph/mobile-patients/src/strings/strings.json';
+import { FirebaseEvents, FirebaseEventName } from '../helpers/firebaseEvents';
 
 export interface CheckoutSceneNewProps extends NavigationScreenProps {}
 
@@ -288,6 +290,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
           // Order-Success, Show popup here & clear cart info
           try {
             postwebEngageCheckoutCompletedEvent(`${orderAutoId}`);
+            firePurchaseEvent(orderId);
           } catch (error) {
             console.log(error);
           }
@@ -335,6 +338,8 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       checkoutEventAttributes,
       paymentTypeID: paymentMode,
       bankCode: bankCode,
+      coupon: coupon ? coupon.code : null,
+      cartItems: cartItems,
     });
   };
 
@@ -468,6 +473,32 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
             : `Your order failed due to some temporary issue :( Please submit the order again.`,
         });
       });
+  };
+
+  const firePurchaseEvent = (orderId: string) => {
+    let items: any = [];
+    cartItems.forEach((item, index) => {
+      let itemObj: any = {};
+      itemObj.item_name = item.name; // Product Name or Doctor Name
+      itemObj.item_id = item.id; // Product SKU or Doctor ID
+      itemObj.price = item.specialPrice ? item.specialPrice : item.price; // Product Price After discount or Doctor VC price (create another item in array for PC price)
+      // (itemObj.item_brand = doctor.doctorType), // Product brand or Apollo (for Apollo doctors) or Partner Doctors (for 3P doctors)
+      itemObj.item_category = 'Pharmacy'; // 'Pharmacy' or 'Consultations'
+      // (itemObj.item_category2 = doctor.specialty.name), // FMCG or Drugs (for Pharmacy) or Specialty Name (for Consultations)
+      itemObj.item_variant = 'Default'; // "Default" (for Pharmacy) or Virtual / Physcial (for Consultations)
+      itemObj.index = index + 1; // Item sequence number in the list
+      itemObj.quantity = item.quantity; // "1" or actual quantity
+      items.push(itemObj);
+    });
+    let code: any = coupon ? coupon.code : null;
+    const eventAttributes: FirebaseEvents[FirebaseEventName.PURCHASE] = {
+      COUPON: code,
+      CURRENCY: 'INR',
+      ITEMS: items,
+      TRANSACTION_ID: orderId,
+      VALUE: getFormattedAmount(grandTotal),
+    };
+    postFirebaseEvent(FirebaseEventName.PURCHASE, eventAttributes);
   };
 
   const handleOrderSuccess = (orderAutoId: string) => {
