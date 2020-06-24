@@ -182,6 +182,8 @@ export type filterDataType = {
 export type locationType = { lat: number | string; lng: number | string };
 export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) => {
   const specialistPluralTerm = props.navigation.getParam('specialistPluralTerm');
+  const typeOfConsult = props.navigation.getParam('typeOfConsult');
+  const doctorTypeFilter = props.navigation.getParam('doctorType');
   const filterData: filterDataType[] = [
     {
       label: 'Experience In Years',
@@ -261,6 +263,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const [searchIconClicked, setSearchIconClicked] = useState<boolean>(false);
 
   useEffect(() => {
+    setDeepLinkFilter();
+    setDeepLinkDoctorTypeFilter();
     if (!currentPatient) {
       getPatientApiCall();
     }
@@ -1191,6 +1195,23 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const [physicalCheckBox, setPhysicalCheckbox] = useState<boolean>(true);
   const [nearyByFlag, setNearyByFlag] = useState<boolean>(false);
   const [availabilityFlag, setAvailabilityFlag] = useState<boolean>(true);
+
+  const setDeepLinkDoctorTypeFilter = () => {
+    if (doctorTypeFilter === 'apollo') {
+      setDoctorsType('APOLLO');
+      filterDoctors(doctorsList, 'APOLLO');
+    } else if (doctorTypeFilter === 'partners') {
+      setDoctorsType('PARTNERS');
+      filterDoctors(doctorsList, 'PARTNERS');
+    }
+  };
+  const setDeepLinkFilter = () => {
+    if (typeOfConsult === 'online') {
+      setPhysicalCheckbox(false);
+    } else if (typeOfConsult === 'inperson') {
+      setOnlineCheckbox(false);
+    }
+  };
 
   const renderBottomOptions = () => {
     return (
