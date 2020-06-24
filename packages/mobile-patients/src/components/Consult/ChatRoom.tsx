@@ -1324,7 +1324,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
   const setSnackBar = () => {
     setSnackbarState(true);
-    setHandlerMessage('    Something went wrong!!  Trying to connect');
+    setHandlerMessage('      Something went wrong!!  Trying to connect');
   };
   const publisherEventHandlers = {
     streamCreated: (event: string) => {
