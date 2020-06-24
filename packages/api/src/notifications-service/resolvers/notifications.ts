@@ -2287,7 +2287,7 @@ const sendChatMessageToDoctor: Resolver<
         sound: ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString(),
       },
       data: {
-        type: 'doctor_appointment_reminder',
+        type: 'doctor_chat_message',
         appointmentId: appointment.id,
         patientName: appointment.patientName,
         content: chatMsg,
@@ -2474,7 +2474,7 @@ export async function sendDoctorAppointmentNotification(
       sound: ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString(),
     },
     data: {
-      type: 'doctor_appointment_reminder',
+      type: 'doctor_new_appointment_booked',
       appointmentId: apptId,
       patientName: patientName,
       content: format(appointmentDateTime, 'yyyy-mm-dd h:mm:ss'),

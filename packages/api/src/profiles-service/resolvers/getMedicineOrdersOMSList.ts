@@ -45,6 +45,7 @@ export const getMedicineOrdersOMSListTypeDefs = gql`
     couponDiscount: Float
     productDiscount: Float
     packagingCharges: Float
+    redeemedAmount: Float
     showPrescriptionAtStore: Boolean
     billNumber: String
     orderType: MEDICINE_ORDER_TYPE
@@ -257,6 +258,9 @@ const getMedicineOrdersOMSList: Resolver<
         orderType: MEDICINE_ORDER_TYPE.CART_ORDER,
         patientId: args.patientId,
         deliveryType: MEDICINE_DELIVERY_TYPE.STORE_PICKUP,
+        estimatedAmount: order.mrpTotal,
+        productDiscount: order.discountTotal,
+        redeemedAmount: order.giftTotal,
         medicineOrdersStatus: [
           {
             id: ApiConstants.OFFLINE_ORDERID,
@@ -348,6 +352,9 @@ const getMedicineOrderOMSDetails: Resolver<
             orderType: MEDICINE_ORDER_TYPE.CART_ORDER,
             patientId: args.patientId,
             deliveryType: MEDICINE_DELIVERY_TYPE.STORE_PICKUP,
+            estimatedAmount: order.mrpTotal,
+            productDiscount: order.discountTotal,
+            redeemedAmount: order.giftTotal,
             medicineOrdersStatus: [
               {
                 id: ApiConstants.OFFLINE_ORDERID,
@@ -362,9 +369,6 @@ const getMedicineOrderOMSDetails: Resolver<
             ],
             medicineOrderShipments: [],
           };
-          console.log(offlineList, 'offlineList');
-          //offlineList.push(orderDetails)
-          //medicineOrdersList.push(offlineList);
           medicineOrderDetails = offlineList;
         }
       });
