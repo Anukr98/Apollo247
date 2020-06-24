@@ -5822,7 +5822,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           'Only JPG / PNG type files up to 2 mb are allowed',
         ]}
         isVisible={isDropdownVisible}
-        disabledOption={isCall ? 'CAMERA' : 'NONE'}
+        disabledOption={'NONE'}
         blockCamera={isCall}
         blockCameraMessage={strings.alerts.Open_camera_in_video_call}
         optionTexts={{
@@ -5835,7 +5835,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         onResponse={(selectedType, response) => {
           console.log('res', response);
           setDropdownVisible(false);
-          if (selectedType == 'GALLERY' || selectedType == 'CAMERA') {
+          if (selectedType == 'CAMERA_AND_GALLERY') {
             console.log('ca');
 
             uploadDocument(response, response[0].base64, response[0].fileType);
