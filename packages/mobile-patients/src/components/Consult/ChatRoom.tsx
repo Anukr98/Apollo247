@@ -1365,7 +1365,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       console.log(`There was an error with the subscriberEventHandlers: ${JSON.stringify(error)}`);
     },
     videoDisabled: (error: any) => {
-      console.log(`videoDisabled subscriberEventHandlers: ${JSON.stringify(error)}`);
+      console.log(`videoDisabled subscriberEventHandlers: ${JSON.stringify(error)}`, error.reason);
+      console.log('error.reason', error.reason, error.reason === 'quality');
       if (error.reason === 'quality') {
         setSnackbarState(true);
         setHandlerMessage('Falling back to audio due to bad network!!');
@@ -4718,6 +4719,16 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             )}
 
             <Text style={timerStyles}>{callAccepted ? callTimerStarted : 'INCOMING'}</Text>
+            <Snackbar
+              style={{ marginBottom: 100, zIndex: 1001 }}
+              visible={snackbarState}
+              onDismiss={() => {
+                setSnackbarState(false);
+              }}
+              duration={5000}
+            >
+              {handlerMessage}
+            </Snackbar>
             {renderBusyMessages(!PipView, isIphoneX() ? 171 : 161)}
 
             {PipView && renderOnCallPipButtons('video')}
@@ -4873,7 +4884,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       </View>
     );
   };
-
+  const showMessage = (isPaused: any) => {
+    if (downgradeToAudio) {
+      return `Falling back to audio due to bad network!!`;
+    }
+    return `Doctor’s ${isPaused} ${isPaused.indexOf('/') > -1 ? 'are' : 'is'} Paused`;
+  };
   const renderBusyMessages = (showPip: boolean, insetTop: any) => {
     return (
       <>
@@ -4909,7 +4925,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   padding: 0,
                   flexWrap: 'wrap',
                 }}
-              >{`Doctor’s ${isPaused} ${isPaused.indexOf('/') > -1 ? 'are' : 'is'} Paused`}</Text>
+              >
+                {showMessage(isPaused)}
+              </Text>
             </View>
           </View>
         ) : null}
