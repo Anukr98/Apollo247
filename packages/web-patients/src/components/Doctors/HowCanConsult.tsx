@@ -349,100 +349,80 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
           </AphButton>
         </div>
       </div>
-      {physicalDirection && (
-        <div className={classes.consultGroup}>
-          <div className={classes.groupHead}>
-            <span>
+      <div className={classes.consultGroup}>
+        <div className={classes.groupHead}>
+          <span>
+            {physicalDirection ? (
               <img src={require('images/ic-specialist.svg')} alt="" />
-            </span>
-            <h4>How to consult in person</h4>
-          </div>
-          <div className={classes.groupContent}>
-            <ul>
-              <li>
-                <span>
-                  <img src={require('images/ic_doctor_small.svg')} alt="" />
-                </span>
-                <span>Choose the doctor</span>
-              </li>
-              <li>
-                <span>
-                  <img src={require('images/ic_book-slot.svg')} alt="" />
-                </span>
-                <span>Book a slot</span>
-              </li>
-              <li>
-                <span>
-                  <img src={require('images/ic-payment.svg')} alt="" />
-                </span>
-                <span>Make payment</span>
-              </li>
-              <li className={classes.blueText}>
-                <span>
-                  <img src={require('images/ic_hospital.svg')} alt="" />
-                </span>
-                <span>Visit the doctor at Hospital/Clinic</span>
-              </li>
-              <li>
-                <span>
-                  <img src={require('images/ic_prescription-sm.svg')} alt="" />
-                </span>
-                <span>Receive prescriptions instantly </span>
-              </li>
-            </ul>
-          </div>
-        </div>
-      )}
-      {onlineDirection && (
-        <div className={classes.consultGroup}>
-          <div className={classes.groupHead}>
-            <span>
+            ) : (
               <img src={require('images/video-calling.svg')} alt="" />
-            </span>
-            <h4>How to consult via chat/audio/video?</h4>
-          </div>
-          <div className={classes.groupContent}>
-            <ul>
-              <li>
-                <span>
-                  <img src={require('images/ic_doctor_small.svg')} alt="" />
-                </span>
-                <span>Choose the doctor</span>
-              </li>
-              <li>
-                <span>
-                  <img src={require('images/ic_book-slot.svg')} alt="" />
-                </span>
-                <span>Book a slot</span>
-              </li>
-              <li>
-                <span>
-                  <img src={require('images/ic-payment.svg')} alt="" />
-                </span>
-                <span>Make payment</span>
-              </li>
+            )}
+          </span>
+          <h4>
+            {physicalDirection
+              ? 'How to consult in person'
+              : 'How to consult via chat/audio/video?'}
+          </h4>
+        </div>
+        <div className={classes.groupContent}>
+          <ul>
+            <li>
+              <span>
+                <img src={require('images/ic_doctor_small.svg')} alt="" />
+              </span>
+              <span>Choose the doctor</span>
+            </li>
+            <li>
+              <span>
+                <img src={require('images/ic_book-slot.svg')} alt="" />
+              </span>
+              <span>Book a slot</span>
+            </li>
+            <li>
+              <span>
+                <img src={require('images/ic-payment.svg')} alt="" />
+              </span>
+              <span>Make payment</span>
+            </li>
+            {physicalDirection ? (
+              ''
+            ) : (
               <li className={classes.blueText}>
                 <span>
                   <img src={require('images/ic_video-blue.svg')} alt="" />
                 </span>
                 <span>Speak to the doctor via video/audio/chat</span>
               </li>
-              <li>
+            )}
+            {physicalDirection ? (
+              <li className={classes.blueText}>
                 <span>
-                  <img src={require('images/ic_prescription-sm.svg')} alt="" />
+                  <img src={require('images/ic_hospital.svg')} alt="" />
                 </span>
-                <span>Receive prescriptions instantly</span>
+                <span>Visit the doctor at Hospital/Clinic</span>
               </li>
+            ) : (
+              ''
+            )}
+            <li>
+              <span>
+                <img src={require('images/ic_prescription-sm.svg')} alt="" />
+              </span>
+              <span>Receive prescriptions instantly </span>
+            </li>
+            {physicalDirection ? (
+              ''
+            ) : (
               <li className={classes.blueText}>
                 <span>
                   <img src={require('images/ic_chat.svg')} alt="" />
                 </span>
                 <span>Chat with the doctor for 6 days after your consult</span>
               </li>
-            </ul>
-          </div>
+            )}
+          </ul>
         </div>
-      )}
+      </div>
       {/* <div className={classes.bottomActions}> */}
       <ProtectedWithLoginPopup>
         {({ protectWithLoginPopup }) => (
