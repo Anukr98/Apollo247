@@ -1,39 +1,46 @@
 import AppointmentsStyles from '@aph/mobile-doctors/src/components/Appointments/Appointments.styles';
 import { AppointmentsList } from '@aph/mobile-doctors/src/components/Appointments/AppointmentsList';
-import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
+import { useNotification } from '@aph/mobile-doctors/src/components/Notification/NotificationContext';
+import { NotificationListener } from '@aph/mobile-doctors/src/components/NotificationListener';
+import { CommonNotificationHeader } from '@aph/mobile-doctors/src/components/ui/CommonNotificationHeader';
 import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
 import {
-  ApploLogo,
   CalendarTodayIcon,
   Down,
   NoCalenderData,
-  Notification,
-  RoundIcon,
   Up,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { Loader } from '@aph/mobile-doctors/src/components/ui/Loader';
-import { NeedHelpCard } from '@aph/mobile-doctors/src/components/ui/NeedHelpCard';
-import { GET_DOCTOR_APPOINTMENTS } from '@aph/mobile-doctors/src/graphql/profiles';
+import { useUIElements } from '@aph/mobile-doctors/src/components/ui/UIElementsProvider';
+import {
+  GET_DOCTOR_APPOINTMENTS,
+  SAVE_DOCTOR_DEVICE_TOKEN,
+} from '@aph/mobile-doctors/src/graphql/profiles';
 import {
   GetDoctorAppointments,
   GetDoctorAppointmentsVariables,
   GetDoctorAppointments_getDoctorAppointments,
 } from '@aph/mobile-doctors/src/graphql/types/GetDoctorAppointments';
+import { DOCTOR_DEVICE_TYPE } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
+import {
+  saveDoctorDeviceToken,
+  saveDoctorDeviceTokenVariables,
+} from '@aph/mobile-doctors/src/graphql/types/saveDoctorDeviceToken';
 import { DoctorProfile } from '@aph/mobile-doctors/src/helpers/commonTypes';
+import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
+import { g } from '@aph/mobile-doctors/src/helpers/helperFunctions';
 import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
+import AsyncStorage from '@react-native-community/async-storage';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
-import { SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
+import { Platform, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
 import { CalendarList } from 'react-native-calendars';
+import firebase from 'react-native-firebase';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { WeekView } from './WeekView';
-import { NotificationListener } from '@aph/mobile-doctors/src/components/NotificationListener';
-import { CommonNotificationHeader } from '@aph/mobile-doctors/src/components/ui/CommonNotificationHeader';
-import { useNotification } from '@aph/mobile-doctors/src/components/Notification/NotificationContext';
-import { useUIElements } from '@aph/mobile-doctors/src/components/ui/UIElementsProvider';
 
 const styles = AppointmentsStyles;
 let timerId: NodeJS.Timeout;
@@ -55,6 +62,8 @@ const monthsName = [
 
 export interface AppointmentsProps extends NavigationScreenProps {
   profileData: DoctorProfile;
+  goToDate?: Date;
+  openAppointment?: string;
 }
 const intervalTime = 30 * 1000;
 export const Appointments: React.FC<AppointmentsProps> = (props) => {
@@ -62,19 +71,21 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
     (props.navigation.state.params && props.navigation.state.params.displayName) || ''
   );
   const { fetchNotifications } = useNotification();
+  const openAppointment = props.navigation.getParam('openAppointment');
+  const defaultDate = props.navigation.getParam('goToDate') || new Date();
 
-  const [date, setDate] = useState<Date>(new Date());
-  const [calendarDate, setCalendarDate] = useState<Date>(new Date()); // to maintain a sync between week view change and calendar month
+  const [date, setDate] = useState<Date>(defaultDate);
+  const [calendarDate, setCalendarDate] = useState<Date>(defaultDate); // to maintain a sync between week view change and calendar month
   const [isCalendarVisible, setCalendarVisible] = useState(false);
 
-  const [currentmonth, setCurrentMonth] = useState(monthsName[new Date().getMonth()]);
+  const [currentmonth, setCurrentMonth] = useState(monthsName[defaultDate.getMonth()]);
   const [getAppointments, setgetAppointments] = useState<
     GetDoctorAppointments_getDoctorAppointments
   >();
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
 
   const { doctorDetails } = useAuth();
-  const { isAlertVisible } = useUIElements();
+  const { isAlertVisible, showAphAlert } = useUIElements();
 
   useEffect(() => {
     setDoctorName((doctorDetails && doctorDetails.displayName) || '');
@@ -126,6 +137,66 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
 
   const client = useApolloClient();
 
+  const callDeviceTokenAPI = async () => {
+    const deviceToken = JSON.parse((await AsyncStorage.getItem('deviceToken')) || '');
+    firebase
+      .messaging()
+      .getToken()
+      .then((token) => {
+        console.log('tokenFMC', token);
+        if (token !== deviceToken.deviceToken) {
+          const input = {
+            deviceType: Platform.OS === 'ios' ? DOCTOR_DEVICE_TYPE.IOS : DOCTOR_DEVICE_TYPE.ANDROID,
+            deviceToken: token,
+            deviceOS: '',
+            doctorId: doctorDetails ? doctorDetails.id : '',
+          };
+          if (doctorDetails) {
+            client
+              .mutate<saveDoctorDeviceToken, saveDoctorDeviceTokenVariables>({
+                mutation: SAVE_DOCTOR_DEVICE_TOKEN,
+                variables: {
+                  SaveDoctorDeviceTokenInput: input,
+                },
+              })
+              .then((data) => {
+                AsyncStorage.setItem(
+                  'deviceToken',
+                  JSON.stringify(
+                    g(data, 'data', 'saveDoctorDeviceToken', 'deviceToken', 'deviceToken')
+                  )
+                );
+              })
+              .catch((error) => {
+                CommonBugFender('Save_Doctor_Device_Token', error);
+              });
+          }
+        }
+      });
+  };
+
+  const checkNotificationPermission = async () => {
+    const enabled = await firebase.messaging().hasPermission();
+    if (enabled) {
+      // user has permissions
+      callDeviceTokenAPI();
+    } else {
+      // user doesn't have permission
+      try {
+        await firebase.messaging().requestPermission();
+        // User has authorised
+      } catch (error) {
+        // User has rejected permissions
+        CommonBugFender('FireBaseFCM_splashscreen', error);
+        console.log('not enabled error', error);
+      }
+    }
+  };
+
+  useEffect(() => {
+    checkNotificationPermission();
+  }, []);
+
   const getAppointmentsApi = (selectedDate = date) => {
     const recordsDate = moment(selectedDate).format('YYYY-MM-DD');
 
@@ -139,8 +210,26 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
         },
         fetchPolicy: 'no-cache',
       })
-      .then(({ data }) => {
-        data && data.getDoctorAppointments && setgetAppointments(data.getDoctorAppointments);
+      .then(async ({ data }) => {
+        if (data && data.getDoctorAppointments) {
+          setgetAppointments(data.getDoctorAppointments);
+          const requestStatus = JSON.parse(
+            (await AsyncStorage.getItem('requestCompleted')) || 'false'
+          );
+
+          if (
+            data.getDoctorAppointments.appointmentsHistory &&
+            data.getDoctorAppointments.appointmentsHistory.length === 0 &&
+            !requestStatus
+          ) {
+            AsyncStorage.setItem('requestCompleted', 'true');
+            showAphAlert &&
+              showAphAlert({
+                title: 'Alert!',
+                description: 'Not able to find appointment. Try again',
+              });
+          }
+        }
       })
       .catch((err) => {
         setgetAppointments(undefined);
@@ -353,6 +442,7 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
             navigation={props.navigation}
             appointmentsHistory={(getAppointments && getAppointments.appointmentsHistory) || []}
             newPatientsList={(getAppointments && getAppointments.newPatientsList) || []}
+            openAppointment={openAppointment}
           />
         )}
       </View>

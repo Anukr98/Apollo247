@@ -274,7 +274,13 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       });
     }
   }, [appointmentData]);
-
+  useEffect(() => {
+    if (startConsult) {
+      AsyncStorage.setItem('showInAppNotification', 'false');
+    } else {
+      AsyncStorage.setItem('showInAppNotification', 'true');
+    }
+  }, [startConsult]);
   const backDataFunctionality = () => {
     try {
       console.log(callhandelBack, 'is back called');
@@ -1747,6 +1753,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                 }}
               >
                 <ChatRoom
+                  patientId={patientId}
                   returnToCall={returnToCall}
                   setReturnToCall={setReturnToCall}
                   setChatReceived={setChatReceived}

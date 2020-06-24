@@ -83,6 +83,7 @@ export interface ChatRoomProps extends NavigationScreenProps {
   setUrl: Dispatch<SetStateAction<string>>;
   patientDetails: GetCaseSheet_getCaseSheet_caseSheetDetails_patientDetails | null | undefined;
   extendedHeader?: boolean;
+  patientId: string;
 }
 export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   // const [isDropdownVisible, setDropdownVisible] = useState(false);
@@ -93,7 +94,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const changedHeight = props.extendedHeader ? 230 : 185;
   const keyBoardHeight = props.extendedHeader ? 90 : 130;
   const doctorId = props.navigation.getParam('DoctorId');
-  const patientId = props.navigation.getParam('PatientId');
+  const patientId = props.patientId || props.navigation.getParam('PatientId');
 
   const flatListRef = useRef<FlatList<never> | undefined | null>();
   const [messageText, setMessageText] = useState<string>('');
