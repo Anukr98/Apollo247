@@ -410,7 +410,9 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
       <View style={{ marginHorizontal: 20, marginVertical: 16 }}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
           <View>
-            <Text style={styles.orderStyles}>{string.OrderSummery.order} # </Text>
+            <Text style={styles.orderStyles}>
+              {offlineOrderNumber ? string.OrderSummery.bill : string.OrderSummery.order} #{' '}
+            </Text>
             <Text style={styles.orderStyles}>{offlineOrderNumber || orderDetails.orderAutoId}</Text>
           </View>
           <View style={{ flexDirection: 'row' }}>
