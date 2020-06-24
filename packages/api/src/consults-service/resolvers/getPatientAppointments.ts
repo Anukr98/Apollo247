@@ -233,14 +233,11 @@ const getPatientPersonalizedAppointments: Resolver<
   let apptDetails: any = '';
   if (offlineApptsList.errorCode == 0) {
     //console.log(offlineApptsList.response, offlineApptsList.response.length);
-    const doctorId =
-      process.env.NODE_ENV == 'local'
-        ? ApiConstants.LOCAL_DOC_ID.toString()
-        : process.env.NODE_ENV == 'development'
-        ? ApiConstants.DEV_DOC_ID.toString()
-        : process.env.NODE_ENV == 'staging'
-        ? ApiConstants.QA_DOC_ID.toString()
-        : offlineApptsList.response[0].doctorid_247;
+    let doctorId = '';
+    if (process.env.NODE_ENV == 'local') doctorId = ApiConstants.LOCAL_DOC_ID.toString();
+    else if (process.env.NODE_ENV == 'development') doctorId = ApiConstants.DEV_DOC_ID.toString();
+    else if (process.env.NODE_ENV == 'staging') doctorId = ApiConstants.QA_DOC_ID.toString();
+    else offlineApptsList.response[0].doctorid_247;
     const apptDetailsOffline: PersonalizedAppointment = {
       id: offlineApptsList.response[0].appointmentid,
       hospitalLocation: offlineApptsList.response[0].location_name,

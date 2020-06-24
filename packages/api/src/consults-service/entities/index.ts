@@ -560,10 +560,10 @@ export class AppointmentCallDetails extends BaseEntity {
   @Column()
   callType: string;
 
-  @Column()
+  @Column({ nullable: true })
   deviceType: DEVICETYPE;
 
-  @Column()
+  @Column({ nullable: true })
   callSource: BOOKINGSOURCE;
 
   @Column({ nullable: true })
