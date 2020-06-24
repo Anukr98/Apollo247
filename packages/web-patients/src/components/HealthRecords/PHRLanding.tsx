@@ -246,11 +246,11 @@ export const PHRLanding: React.FC<LandingProps> = (props) => {
   };
 
   useEffect(() => {
-    if (!labResults && !prescriptions) {
+    if (!isSigningIn && !labResults && !prescriptions) {
       setMedicalLoading(true);
       fetchPrismData();
     }
-  }, [labResults, prescriptions]);
+  }, [labResults, prescriptions, isSigningIn]);
 
   useEffect(() => {
     if (labResults) {
