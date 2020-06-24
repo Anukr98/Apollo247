@@ -13,6 +13,9 @@ import {
   APPOINTMENT_STATE,
   AppointmentNoShow,
   CASESHEET_STATUS,
+  DEVICETYPE,
+  BOOKINGSOURCE,
+  AppointmentCallDetails,
 } from 'consults-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
@@ -21,8 +24,11 @@ import {
   NotificationType,
   sendNotification,
   sendNotificationSMS,
+  APPT_CALL_TYPE,
+  DOCTOR_CALL_TYPE,
 } from 'notifications-service/resolvers/notifications';
 import { RescheduleAppointmentRepository } from 'consults-service/repositories/rescheduleAppointmentRepository';
+import { AppointmentCallDetailsRepository } from 'consults-service/repositories/appointmentCallDetailsRepository';
 import { AppointmentNoShowRepository } from 'consults-service/repositories/appointmentNoShowRepository';
 import { AdminDoctorMap } from 'doctors-service/repositories/adminDoctorRepository';
 import { sendMail } from 'notifications-service/resolvers/email';
@@ -77,6 +83,9 @@ export const createAppointmentSessionTypeDefs = gql`
     appointmentId: ID!
     status: STATUS!
     noShowBy: REQUEST_ROLES
+    deviceType: DEVICETYPE
+    callSource: BOOKINGSOURCE
+    callType: APPT_CALL_TYPE
   }
 
   extend type Mutation {
@@ -137,6 +146,9 @@ type EndAppointmentSessionInput = {
   appointmentId: string;
   status: STATUS;
   noShowBy: REQUEST_ROLES;
+  deviceType: DEVICETYPE;
+  callSource: BOOKINGSOURCE;
+  callType: APPT_CALL_TYPE;
 };
 
 const createJuniorAppointmentSession: Resolver<
@@ -436,6 +448,7 @@ const endAppointmentSession: Resolver<
   const apptRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const apptDetails = await apptRepo.findById(endAppointmentSessionInput.appointmentId);
   if (apptDetails == null) throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
+  const callDetailsRepo = consultsDb.getCustomRepository(AppointmentCallDetailsRepository);
   await apptRepo.updateAppointmentStatus(
     endAppointmentSessionInput.appointmentId,
     endAppointmentSessionInput.status,
@@ -445,6 +458,16 @@ const endAppointmentSession: Resolver<
   const apptSession = await apptSessionRepo.getAppointmentSession(
     endAppointmentSessionInput.appointmentId
   );
+  const appointmentCallDetailsAttrs: Partial<AppointmentCallDetails> = {
+    appointment: apptDetails,
+    callType: endAppointmentSessionInput.callType,
+    doctorType: DOCTOR_CALL_TYPE.SENIOR,
+    startTime: new Date(),
+    endTime: new Date(),
+    deviceType: endAppointmentSessionInput.deviceType,
+    callSource: endAppointmentSessionInput.callSource,
+  };
+  await callDetailsRepo.saveAppointmentCallDetails(appointmentCallDetailsAttrs);
   if (apptSession) {
     await apptSessionRepo.endAppointmentSession(apptSession.id, new Date());
   }
@@ -460,6 +483,7 @@ const endAppointmentSession: Resolver<
       appointment: apptDetails,
       noShowStatus: endAppointmentSessionInput.status,
     };
+
     await noShowRepo.saveNoShow(noShowAttrs);
     const rescheduleAppointmentAttrs: Partial<RescheduleAppointmentDetails> = {
       rescheduleReason: endAppointmentSessionInput.status.toString(),

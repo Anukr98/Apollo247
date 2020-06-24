@@ -474,3 +474,21 @@ exports.refreshDoctorDeepLinks = (req, res) => {
       console.log('error', error);
     });
 };
+
+exports.generateDeeplinkForNewDoctors = (req, res) => {
+  const requestJSON = {
+    query: Constants.DOCTORS_DEEPLINK_GENERATE,
+  };
+  axios.defaults.headers.common['authorization'] = Constants.AUTH_TOKEN;
+  axios
+    .post(process.env.API_URL, requestJSON)
+    .then((response) => {
+      res.send({
+        status: 'success',
+        message: response.data,
+      });
+    })
+    .catch((error) => {
+      console.log('error', error);
+    });
+};

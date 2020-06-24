@@ -406,6 +406,9 @@ export class MedicineOrders extends BaseEntity {
   paymentInfo: Partial<MedicineOrderPayments>;
 
   @Column({ nullable: true })
+  customerComment: string;
+
+  @Column({ nullable: true })
   isOmsOrder: boolean;
 
   @Column({ nullable: true })

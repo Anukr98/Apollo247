@@ -120,6 +120,7 @@ export const getPatientMedicalRecordsTypeDefs = gql`
     labTestResults: [LabTestFileParameters]
     fileUrl: String!
     date: Date!
+    testResultFiles: [PrecriptionFileParameters]
   }
 
   type LabResultsDownloadResponse {
@@ -143,6 +144,7 @@ export const getPatientMedicalRecordsTypeDefs = gql`
     source: String!
     fileUrl: String!
     date: Date!
+    prescriptionFiles: [PrecriptionFileParameters]
   }
 
   type PrecriptionFileParameters {
@@ -159,7 +161,6 @@ export const getPatientMedicalRecordsTypeDefs = gql`
     errorMsg: String
     errorType: String
     response: [PrescriptionsBaseResponse]
-    prescriptionFiles: [PrecriptionFileParameters]
   }
 
   type PrismMedicalRecordsResult {
@@ -314,12 +315,18 @@ const getPatientPrismMedicalRecords: Resolver<
 
   //add documet urls in the labresults and prescription objects
   labResults.response.map((labresult) => {
-    labresult.fileUrl = labResultDocumentUrl.replace('{RECORDID}', labresult.id);
+    labresult.fileUrl =
+      labresult.testResultFiles.length > 0
+        ? labResultDocumentUrl.replace('{RECORDID}', labresult.id)
+        : '';
     labresult.date = new Date(format(new Date(labresult.labTestDate), 'yyyy-MM-dd'));
   });
 
   prescriptions.response.map((prescription) => {
-    prescription.fileUrl = prescriptionDocumentUrl.replace('{RECORDID}', prescription.id);
+    prescription.fileUrl =
+      prescription.prescriptionFiles.length > 0
+        ? prescriptionDocumentUrl.replace('{RECORDID}', prescription.id)
+        : '';
     prescription.date = new Date(format(new Date(prescription.dateOfPrescription), 'yyyy-MM-dd'));
   });
 

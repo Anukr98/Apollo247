@@ -161,7 +161,29 @@ const getDiffInDays = (nextAvailability: string) => {
     return 0;
   }
 };
+const getDiffInMinutes = (doctorAvailablePhysicalSlots: string) => {
+  if (doctorAvailablePhysicalSlots && doctorAvailablePhysicalSlots.length > 0) {
+    const nextAvailabilityTime =
+      doctorAvailablePhysicalSlots && moment(doctorAvailablePhysicalSlots);
+    const currentTime = moment(new Date());
+    const differenceInMinutes = currentTime.diff(nextAvailabilityTime, 'minutes') * -1;
+    return differenceInMinutes + 1; // for some reason moment is returning 1 second less. so that 1 is added.;
+  } else {
+    return 0;
+  }
+};
 
+const getDiffInHours = (doctorAvailablePhysicalSlots: string) => {
+  if (doctorAvailablePhysicalSlots && doctorAvailablePhysicalSlots.length > 0) {
+    const nextAvailabilityTime =
+      doctorAvailablePhysicalSlots && moment(doctorAvailablePhysicalSlots);
+    const currentTime = moment(new Date());
+    const differenceInHours = currentTime.diff(nextAvailabilityTime, 'hours') * -1;
+    return Math.round(differenceInHours) + 1;
+  } else {
+    return 0;
+  }
+};
 const acceptedFilesNamesForFileUpload = ['png', 'jpg', 'jpeg', 'pdf'];
 const MAX_FILE_SIZE_FOR_UPLOAD = 2000000;
 const INVALID_FILE_SIZE_ERROR = 'Invalid File Size. File size must be less than 2MB';
@@ -247,6 +269,8 @@ export {
   SearchObject,
   DOCTOR_CATEGORY,
   getDiffInDays,
+  getDiffInMinutes,
+  getDiffInHours,
   NO_SERVICEABLE_MESSAGE,
   sortByProperty,
   locationRoutesBlackList,

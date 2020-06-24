@@ -453,7 +453,7 @@ export const OnlineCheckout: React.FC = () => {
     //     doctorDetails.getDoctorDetailsById.doctorHospital &&
     //     doctorDetails.getDoctorDetailsById.doctorHospital[0].facility) ||
     //   null;
-    
+
     return (
       <div>
         <div className={classes.pageTopHeader}>
@@ -462,7 +462,7 @@ export const OnlineCheckout: React.FC = () => {
         <div className={classes.container}>
           <div className={classes.pageContainer}>
             <div className={classes.pageHeader}>
-              <Link to={clientRoutes.doctorsLanding()}>
+              <Link to={clientRoutes.specialityListing()}>
                 <div className={classes.backArrow}>
                   <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
                   <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />

@@ -378,6 +378,9 @@ interface ConsultRoomProps {
   disableChat: boolean;
   isNewMessage: (isNewMessage: boolean) => void;
   autoCloseCaseSheet: boolean;
+  setSessionError: (error: any) => void;
+  setPublisherError: (error: any) => void;
+  setSubscriberError: (error: any) => void;
 }
 
 export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
@@ -1002,6 +1005,9 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
             isNewMsg={isNewMsg}
             convertCall={() => convertCall()}
             JDPhotoUrl={''}
+            setSessionError={props.setSessionError}
+            setPublisherError={props.setPublisherError}
+            setSubscriberError={props.setSubscriberError}
           />
         )}
         {(!showVideo || showVideoChat) && (

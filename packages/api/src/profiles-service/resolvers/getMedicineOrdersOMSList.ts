@@ -45,6 +45,7 @@ export const getMedicineOrdersOMSListTypeDefs = gql`
     couponDiscount: Float
     productDiscount: Float
     packagingCharges: Float
+    redeemedAmount: Float
     showPrescriptionAtStore: Boolean
     billNumber: String
     orderType: MEDICINE_ORDER_TYPE
@@ -55,6 +56,7 @@ export const getMedicineOrdersOMSListTypeDefs = gql`
     medicineOrdersStatus: [MedicineOrdersOMSStatus]
     medicineOrderShipments: [MedicineOrderOMSShipment]
     patient: Patient
+    customerComment: String
   }
 
   type MedicineOrderOMSLineItems {
@@ -233,7 +235,7 @@ const getMedicineOrdersOMSList: Resolver<
       }
       const offlineShopAddress = {
         storename: order.siteName,
-        address: order.Address,
+        address: order.address,
         workinghrs: '24 Hrs',
         phone: order.mobileNo,
         city: order.city,
@@ -256,6 +258,9 @@ const getMedicineOrdersOMSList: Resolver<
         orderType: MEDICINE_ORDER_TYPE.CART_ORDER,
         patientId: args.patientId,
         deliveryType: MEDICINE_DELIVERY_TYPE.STORE_PICKUP,
+        estimatedAmount: order.mrpTotal,
+        productDiscount: order.discountTotal,
+        redeemedAmount: order.giftTotal,
         medicineOrdersStatus: [
           {
             id: ApiConstants.OFFLINE_ORDERID,
@@ -288,7 +293,7 @@ const getMedicineOrderOMSDetails: Resolver<
   ProfilesServiceContext,
   MedicineOrderOMSDetailsResult
 > = async (parent, args, { profilesDb }) => {
-  let medicineOrderDetails: any = {};
+  let medicineOrderDetails: any = '';
   if (args.billNumber && args.billNumber != '' && args.billNumber != '0') {
     const ordersResp = await fetch(
       process.env.PRISM_GET_OFFLINE_ORDERS
@@ -324,7 +329,7 @@ const getMedicineOrderOMSDetails: Resolver<
           }
           const offlineShopAddress = {
             storename: order.siteName,
-            address: order.Address,
+            address: order.address,
             workinghrs: '24 Hrs',
             phone: order.mobileNo,
             city: order.city,
@@ -347,6 +352,9 @@ const getMedicineOrderOMSDetails: Resolver<
             orderType: MEDICINE_ORDER_TYPE.CART_ORDER,
             patientId: args.patientId,
             deliveryType: MEDICINE_DELIVERY_TYPE.STORE_PICKUP,
+            estimatedAmount: order.mrpTotal,
+            productDiscount: order.discountTotal,
+            redeemedAmount: order.giftTotal,
             medicineOrdersStatus: [
               {
                 id: ApiConstants.OFFLINE_ORDERID,
@@ -361,12 +369,12 @@ const getMedicineOrderOMSDetails: Resolver<
             ],
             medicineOrderShipments: [],
           };
-          console.log(offlineList, 'offlineList');
-          //offlineList.push(orderDetails)
-          //medicineOrdersList.push(offlineList);
           medicineOrderDetails = offlineList;
         }
       });
+    }
+    if (medicineOrderDetails == '' || medicineOrderDetails == null) {
+      throw new AphError(AphErrorMessages.INVALID_MEDICINE_ORDER_ID, undefined, {});
     }
   } else {
     const patientRepo = profilesDb.getCustomRepository(PatientRepository);
