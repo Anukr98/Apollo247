@@ -664,7 +664,9 @@ export const reOrderMedicines = async (
           (billedLineItems
             ? billedLineItems[index].issuedQty
             : isOfflineOrder
-            ? (lineItems[index].price! / lineItems[index].mrp!) * lineItems[index].quantity!
+            ? Math.ceil(
+                lineItems[index].price! / lineItems[index].mrp! / lineItems[index].quantity!
+              )
             : lineItems[index].quantity) || 1
         ),
         prescriptionRequired: item.is_prescription_required == '1',

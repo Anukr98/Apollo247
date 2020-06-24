@@ -320,7 +320,9 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
             borderRightColor: 'rgba(2, 71, 91, 0.3)',
           }}
         >
-          <Text style={styles.medicineText1}>{item.quantity}</Text>
+          <Text style={styles.medicineText1}>
+            {offlineOrderNumber ? item.price! / item.mrp! / item.quantity! : item.quantity}
+          </Text>
         </View>
         <View
           style={{
