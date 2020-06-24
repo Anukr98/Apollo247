@@ -580,8 +580,8 @@ export const MedicineDetails: React.FC = (props) => {
               setMetaTagProps({
                 title: `Buy / Order ${data.productdp[0].name} Online At Best Price - Pharmacy Store - Apollo 247`,
                 description: `Buy ${data.productdp[0].name} online in just a few clicks on Apollo 247 - one of India's leading online pharmacy store. Get ${data.productdp[0].name} and a lot more at best prices. Head straight to Apollo 247 to know more.`,
-                canonicalLink: window && window.location && window.location.origin && `${window.location.origin}/medicines/${params.sku}`,
-              })
+                canonicalLink: window && window.location && window.location.href,
+              });
           })
           .catch((e) => {
             console.log(e);

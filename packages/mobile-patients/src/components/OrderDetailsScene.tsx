@@ -145,6 +145,7 @@ type OrderRefetch = (
 export interface OrderDetailsSceneProps
   extends NavigationScreenProps<{
     orderAutoId?: string;
+    billNumber?: string;
     showOrderSummaryTab?: boolean;
     goToHomeOnBack?: boolean;
     refetchOrders: OrderRefetch;
@@ -158,6 +159,7 @@ export interface OrderDetailsSceneProps
 
 export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   const orderAutoId = props.navigation.getParam('orderAutoId');
+  const billNumber = props.navigation.getParam('billNumber');
   const goToHomeOnBack = props.navigation.getParam('goToHomeOnBack');
   const showOrderSummaryTab = props.navigation.getParam('showOrderSummaryTab');
   const setOrders = props.navigation.getParam('setOrders');
@@ -195,7 +197,8 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   const { showAphAlert, hideAphAlert, setLoading } = useUIElements();
   const vars: getMedicineOrderOMSDetailsVariables = {
     patientId: currentPatient && currentPatient.id,
-    orderAutoId: Number(orderAutoId),
+    orderAutoId: billNumber ? 0 : Number(orderAutoId),
+    billNumber: billNumber || '',
   };
   const refetchOrders: OrderRefetch =
     props.navigation.getParam('refetch') ||
@@ -1472,7 +1475,8 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         item!.orderStatus == MEDICINE_ORDER_STATUS.DELIVERED ||
         item!.orderStatus == MEDICINE_ORDER_STATUS.CANCELLED ||
         item!.orderStatus == MEDICINE_ORDER_STATUS.PAYMENT_FAILED ||
-        item!.orderStatus == MEDICINE_ORDER_STATUS.ORDER_FAILED
+        item!.orderStatus == MEDICINE_ORDER_STATUS.ORDER_FAILED ||
+        item!.orderStatus == MEDICINE_ORDER_STATUS.PURCHASED_IN_STORE
     );
     const cannotCancelOrder = orderStatusList.find(
       (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.ORDER_BILLED
@@ -1528,13 +1532,12 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     const isDelivered = orderStatusList.find(
       (item) =>
         item!.orderStatus == MEDICINE_ORDER_STATUS.DELIVERED ||
+        item!.orderStatus == MEDICINE_ORDER_STATUS.PURCHASED_IN_STORE ||
         item!.orderStatus == MEDICINE_ORDER_STATUS.PICKEDUP
     );
-    const isHomeDelivery = orderDetails.deliveryType == MEDICINE_DELIVERY_TYPE.HOME_DELIVERY;
 
     return (
-      !!isDelivered &&
-      !!isHomeDelivery && (
+      !!isDelivered && (
         <View>
           {Array.from({ length: 10 })
             .reverse()

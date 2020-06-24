@@ -17,6 +17,9 @@ const useStyles = makeStyles((theme: Theme) => {
     root: {
       marginTop: 10,
       marginBottom: 14,
+      [theme.breakpoints.down('xs')]: {
+        marginTop: 0,
+      },
     },
     filters: {
       backgroundColor: '#fff',
@@ -27,6 +30,10 @@ const useStyles = makeStyles((theme: Theme) => {
       alignItems: 'center',
       fontSize: 12,
       fontWeight: 500,
+      [theme.breakpoints.down('xs')]: {
+        borderRadius: 0,
+        marginTop: 0,
+      },
       '& label': {
         marginLeft: 0,
         '& span': {
@@ -109,6 +116,7 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingLeft: 16,
       paddingRight: 8,
       borderRight: '0.5px solid rgba(2,71,91,0.3)',
+      width: '20%',
       '& h4': {
         fontSize: 12,
         fontWeight: 500,
@@ -132,6 +140,7 @@ const useStyles = makeStyles((theme: Theme) => {
         color: '#00b38e',
         textTransform: 'none',
         fontSize: 12,
+        lineHeight: '14px',
         fontWeight: 500,
         padding: '8px 8px',
         margin: '4px 0',

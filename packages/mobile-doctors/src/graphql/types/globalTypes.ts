@@ -70,6 +70,7 @@ export enum DoctorType {
   CRADLE = "CRADLE",
   DOCTOR_CONNECT = "DOCTOR_CONNECT",
   FERTILITY = "FERTILITY",
+  HOMECARE = "HOMECARE",
   JUNIOR = "JUNIOR",
   PAYROLL = "PAYROLL",
   SPECTRA = "SPECTRA",
@@ -91,6 +92,7 @@ export enum LOGIN_TYPE {
 export enum MEDICINE_CONSUMPTION_DURATION {
   DAYS = "DAYS",
   MONTHS = "MONTHS",
+  TILL_NEXT_REVIEW = "TILL_NEXT_REVIEW",
   WEEKS = "WEEKS",
 }
 
@@ -124,6 +126,7 @@ export enum MEDICINE_TIMINGS {
   MORNING = "MORNING",
   NIGHT = "NIGHT",
   NOON = "NOON",
+  NOT_SPECIFIC = "NOT_SPECIFIC",
 }
 
 export enum MEDICINE_TO_BE_TAKEN {
@@ -137,9 +140,11 @@ export enum MEDICINE_UNIT {
   CAPSULE = "CAPSULE",
   CREAM = "CREAM",
   DROP = "DROP",
+  DROPS = "DROPS",
   GEL = "GEL",
   GM = "GM",
   INJECTION = "INJECTION",
+  INTERNATIONAL_UNIT = "INTERNATIONAL_UNIT",
   LOTION = "LOTION",
   MG = "MG",
   ML = "ML",
@@ -157,6 +162,7 @@ export enum MEDICINE_UNIT {
   SUSPENSION = "SUSPENSION",
   SYRUP = "SYRUP",
   TABLET = "TABLET",
+  TEASPOON = "TEASPOON",
   UNIT = "UNIT",
 }
 
@@ -184,18 +190,23 @@ export enum REQUEST_ROLES {
 export enum ROUTE_OF_ADMINISTRATION {
   EAR_DROPS = "EAR_DROPS",
   EYE_DROPS = "EYE_DROPS",
+  EYE_OINTMENT = "EYE_OINTMENT",
   GARGLE = "GARGLE",
   INHALE = "INHALE",
   INTRAMUSCULAR = "INTRAMUSCULAR",
+  INTRANASAL_SPRAY = "INTRANASAL_SPRAY",
   INTRAVAGINAL = "INTRAVAGINAL",
   INTRAVENOUS = "INTRAVENOUS",
+  INTRA_ARTICULAR = "INTRA_ARTICULAR",
   LOCAL_APPLICATION = "LOCAL_APPLICATION",
+  NASALLY = "NASALLY",
   NASAL_DROPS = "NASAL_DROPS",
   ORALLY = "ORALLY",
   ORAL_DROPS = "ORAL_DROPS",
   PER_RECTAL = "PER_RECTAL",
   SUBCUTANEOUS = "SUBCUTANEOUS",
   SUBLINGUAL = "SUBLINGUAL",
+  TRIGGER_POINT_INJECTION = "TRIGGER_POINT_INJECTION",
 }
 
 export enum Relation {
@@ -321,6 +332,7 @@ export interface DiagnosisInput {
 
 export interface DiagnosticPrescriptionInput {
   itemname?: string | null;
+  testInstruction?: string | null;
 }
 
 export interface DoctorAvailabilityInput {
@@ -496,6 +508,13 @@ export interface UpdatePatientInput {
   relation?: Relation | null;
   photoUrl?: string | null;
   deviceCode?: string | null;
+  employeeId?: string | null;
+}
+
+export interface exotelInput {
+  from?: string | null;
+  to?: string | null;
+  appointmentId?: string | null;
 }
 
 //==============================================================

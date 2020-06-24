@@ -1,4 +1,3 @@
-import loadingVideo from '@aph/mobile-patients/src/Video/9seconds.mp4';
 import React, { useEffect, useState } from 'react';
 import { Platform, StyleProp, StyleSheet, ViewStyle } from 'react-native';
 import VideoPlayer from 'react-native-video-controls';
@@ -33,8 +32,8 @@ export const CommonVideoPlayer: React.FC<CommonVideoPlayerProps> = (props) => {
   return (
     <VideoPlayer
       style={[styles.headerView, style]}
-      // source={{ uri: 'https://vjs.zencdn.net/v/oceans.mp4' }}
-      source={Platform.OS === 'ios' ? { uri: '9seconds', type: 'mp4' } : loadingVideo}
+      source={{ uri: 'https://vjs.zencdn.net/v/oceans.mp4' }}
+      // source={Platform.OS === 'ios' ? { uri: '9seconds', type: 'mp4' } : loadingVideo}
       repeat
       showOnStart={false}
       controlTimeout={10}

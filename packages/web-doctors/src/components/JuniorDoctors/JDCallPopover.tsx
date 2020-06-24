@@ -23,6 +23,7 @@ import { JDConsult } from 'components/JuniorDoctors/JDConsult';
 import { CircularProgress } from '@material-ui/core';
 import { JDConsultRoomParams } from 'helpers/clientRoutes';
 import { TestCall } from '../TestCall';
+
 const ringtoneUrl = require('../../images/phone_ringing.mp3');
 
 const handleBrowserUnload = (event: BeforeUnloadEvent) => {
@@ -653,6 +654,9 @@ interface CallPopoverProps {
   isAudioVideoCallEnded: (isAudioVideoCall: boolean) => void;
   endCallNotificationAction: (callId: boolean) => void;
   hasCameraMicPermission: boolean;
+  setSessionError: (error: any) => void;
+  setPublisherError: (error: any) => void;
+  setSubscriberError: (error: any) => void;
 }
 
 let intervalId: any;
@@ -1978,6 +1982,9 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
               isNewMsg={isNewMsg}
               convertCall={() => convertCall()}
               JDPhotoUrl={currentPatient && currentPatient.photoUrl ? currentPatient.photoUrl : ''}
+              setSessionError={props.setSessionError}
+              setPublisherError={props.setPublisherError}
+              setSubscriberError={props.setSubscriberError}
             />
           )}
         </div>

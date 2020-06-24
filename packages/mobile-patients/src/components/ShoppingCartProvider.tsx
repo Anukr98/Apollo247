@@ -53,7 +53,7 @@ export interface PharmaCoupon extends validatePharmaCoupon_validatePharmaCoupon 
   code: string;
 }
 
-export type EPrescriptionDisableOption = 'CAMERA' | 'GALLERY' | 'E-PRESCRIPTION' | 'NONE';
+export type EPrescriptionDisableOption = 'CAMERA_AND_GALLERY' | 'E-PRESCRIPTION' | 'NONE';
 
 export interface ShoppingCartContextProps {
   cartItems: ShoppingCartItem[];
@@ -318,7 +318,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
     (cartTotal + deliveryCharges - couponDiscount - productDiscount).toFixed(2)
   );
 
-  const uploadPrescriptionRequired = cartItems.findIndex((item) => item.prescriptionRequired) != -1;
+  const uploadPrescriptionRequired = cartItems.findIndex((item) => item.prescriptionRequired) != -1 || physicalPrescriptions.length;
 
   const addAddress = (address: savePatientAddress_savePatientAddress_patientAddress) => {
     setAddresses([address, ...addresses]);

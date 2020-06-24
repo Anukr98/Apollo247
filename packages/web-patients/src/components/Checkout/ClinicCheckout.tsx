@@ -447,7 +447,7 @@ export const ClinicCheckout: React.FC = () => {
         <div className={classes.container}>
           <div className={classes.pageContainer}>
             <div className={classes.pageHeader}>
-              <Link to={clientRoutes.doctorsLanding()}>
+              <Link to={clientRoutes.specialityListing()}>
                 <div className={classes.backArrow}>
                   <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
                   <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />

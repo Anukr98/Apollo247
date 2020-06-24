@@ -1378,8 +1378,12 @@ export const UPDATE_DIAGNOSTIC_ORDER = gql`
 `;
 
 export const GET_MEDICINE_ORDER_OMS_DETAILS = gql`
-  query getMedicineOrderOMSDetails($patientId: String, $orderAutoId: Int) {
-    getMedicineOrderOMSDetails(patientId: $patientId, orderAutoId: $orderAutoId) {
+  query getMedicineOrderOMSDetails($patientId: String, $orderAutoId: Int, $billNumber: String) {
+    getMedicineOrderOMSDetails(
+      patientId: $patientId
+      orderAutoId: $orderAutoId
+      billNumber: $billNumber
+    ) {
       medicineOrderDetails {
         id
         orderAutoId

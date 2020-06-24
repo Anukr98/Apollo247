@@ -387,6 +387,48 @@ export const GET_MEDICAL_PRISM_RECORD = gql`
         hospitalizationPrismFileIds
         source
       }
+      labResults {
+        response {
+          id
+          labTestName
+          labTestSource
+          # labTestDate
+          date
+          labTestRefferedBy
+          additionalNotes
+          observation
+          labTestResults {
+            parameterName
+            unit
+            result
+            range
+            outOfRange
+            # resultDate
+          }
+          fileUrl
+        }
+        errorCode
+        errorMsg
+        errorType
+      }
+      prescriptions {
+        response {
+          id
+          prescriptionName
+          date
+          # dateOfPrescription
+          # startDate
+          # endDate
+          prescribedBy
+          notes
+          prescriptionSource
+          source
+          fileUrl
+        }
+        errorCode
+        errorMsg
+        errorType
+      }
     }
   }
 `;
