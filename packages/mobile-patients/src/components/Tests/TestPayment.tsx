@@ -89,7 +89,7 @@ export const TestPayment: React.FC<TestPaymentProps> = (props) => {
       // (itemObj.item_category2 = doctor.specialty.name), // FMCG or Drugs (for Pharmacy) or Specialty Name (for Consultations)
       itemObj.item_variant = item.collectionMethod; // "Default" (for Pharmacy) or Virtual / Physcial (for Consultations)
       itemObj.index = index + 1; // Item sequence number in the list
-      itemObj.quantity = item.mou; // "1" or actual quantity
+      itemObj.quantity = 1; // "1" or actual quantity
       items.push(itemObj);
     });
     let code: any = coupon ? coupon.code : null;
