@@ -159,6 +159,7 @@ const styles = StyleSheet.create({
     color: theme.colors.LIGHT_BLUE,
     lineHeight: 12,
     letterSpacing: 0.04,
+    textAlign: 'center',
   },
   whichSpecialityTxt: {
     ...theme.fonts.IBMPlexSansMedium(14),
