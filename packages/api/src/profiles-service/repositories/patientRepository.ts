@@ -640,9 +640,7 @@ export class PatientRepository extends Repository<Patient> {
   }
 
   async getIdsByMobileNumber(mobileNumber: string) {
-    return (await this.findByMobileNumber(mobileNumber)).map(async (patient) => {
-      patient.id;
-    });
+    return await this.findByMobileNumber(mobileNumber);
   }
 
   async getLinkedPatientIds(patientId: string) {

@@ -2294,7 +2294,7 @@ const sendChatMessageToDoctor: Resolver<
       },
     };
 
-    deviceTokensList.forEach((values) => {
+    deviceTokensList.forEach((values: { deviceToken: string }) => {
       registrationToken.push(values.deviceToken);
     });
 
