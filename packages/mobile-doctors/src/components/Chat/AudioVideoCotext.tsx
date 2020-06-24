@@ -638,7 +638,6 @@ export const AudioVideoProvider: React.FC = (props) => {
             <OTSubscriber
               style={isMinimized ? styles.subscriberMinimizedStyle : styles.subscriberStyle}
               eventHandlers={subscriberEventHandlers}
-              subscribeToSelf={true}
               properties={{
                 subscribeToAudio: true,
                 subscribeToVideo: isVideo ? true : false,
