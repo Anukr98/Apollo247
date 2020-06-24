@@ -25,6 +25,7 @@ import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { DoctorConsultHoursRepository } from 'doctors-service/repositories/doctorConsultHoursRepository';
 import { ApiConstants } from 'ApiConstants';
+import { IsNotIn } from 'class-validator';
 //import { DoctorNextAvaialbleSlotsRepository } from 'consults-service/repositories/DoctorNextAvaialbleSlotsRepository';
 
 type DoctorSlot = {
@@ -1051,12 +1052,21 @@ export class DoctorRepository extends Repository<Doctor> {
       return doc.length;
     }
   }
+
   async getSpecialityDoctors(specialty: string) {
     const queryBuilder = this.createQueryBuilder('doctor').where('doctor.specialty = :specialty', {
       specialty,
     });
     const doctorsResult = await queryBuilder.getMany();
     return doctorsResult;
+  }
+
+  async getSeniorDoctorsFromExcludeList(ids: string[]) {
+    return this.createQueryBuilder('doctor')
+      .andWhere('doctor.isActive = true')
+      .andWhere('doctor.doctorType != :junior', { junior: DoctorType.JUNIOR })
+      .andWhere('doctor.id not in (:...ids)', { ids })
+      .getMany();
   }
 }
 
