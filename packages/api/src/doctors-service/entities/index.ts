@@ -31,14 +31,15 @@ export enum ConsultMode {
 
 export enum DoctorType {
   APOLLO = 'APOLLO',
-  PAYROLL = 'PAYROLL',
-  STAR_APOLLO = 'STAR_APOLLO',
-  JUNIOR = 'JUNIOR',
-  DOCTOR_CONNECT = 'DOCTOR_CONNECT',
-  CRADLE = 'CRADLE',
   CLINIC = 'CLINIC',
-  SPECTRA = 'SPECTRA',
+  CRADLE = 'CRADLE',
+  DOCTOR_CONNECT = 'DOCTOR_CONNECT',
   FERTILITY = 'FERTILITY',
+  HOMECARE = 'HOMECARE',
+  JUNIOR = 'JUNIOR',
+  PAYROLL = 'PAYROLL',
+  SPECTRA = 'SPECTRA',
+  STAR_APOLLO = 'STAR_APOLLO',
   SUGAR = 'SUGAR',
 }
 
@@ -120,6 +121,7 @@ export enum MEDICINE_TIMINGS {
   MORNING = 'MORNING',
   NIGHT = 'NIGHT',
   NOON = 'NOON',
+  NOT_SPECIFIC = 'NOT_SPECIFIC',
 }
 export enum MEDICINE_TO_BE_TAKEN {
   AFTER_FOOD = 'AFTER_FOOD',
@@ -139,6 +141,7 @@ export enum ROUTE_OF_ADMINISTRATION {
   ORAL_DROPS = 'ORAL_DROPS',
   NASAL_DROPS = 'NASAL_DROPS',
   EYE_DROPS = 'EYE_DROPS',
+  EYE_OINTMENT = 'EYE_OINTMENT',
   EAR_DROPS = 'EAR_DROPS',
   INTRAVAGINAL = 'INTRAVAGINAL',
   NASALLY = 'NASALLY',
@@ -520,6 +523,15 @@ export class DoctorSpecialty extends BaseEntity {
   createdDate: Date;
 
   @Column({ nullable: true })
+  shortDescription: string;
+
+  @Column({ nullable: true })
+  symptoms: string;
+
+  @Column({ nullable: true })
+  commonSearchWords: string;
+
+  @Column({ nullable: true })
   displayOrder: Number;
 
   @Column({ nullable: true })
@@ -548,6 +560,9 @@ export class DoctorSpecialty extends BaseEntity {
 
   @Column({ nullable: true })
   commonSearchTerm: string;
+
+  @Column({ nullable: true })
+  slugName: string;
 
   @Column({ nullable: true })
   updatedDate: Date;

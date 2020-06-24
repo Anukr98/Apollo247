@@ -15,10 +15,9 @@ import {
   validatePharmaCoupon_validatePharmaCoupon,
   validatePharmaCoupon,
 } from 'graphql/types/validatePharmaCoupon';
-import { CouponCategoryApplicable } from 'graphql/types/globalTypes';
 import { useShoppingCart } from 'components/MedicinesCartProvider';
 import { gtmTracking } from '../../gtmTracking';
-import _lowerCase from 'lodash/lowerCase';
+import { getTypeOfProduct } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -186,17 +185,6 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
     fetchPolicy: 'no-cache',
   });
 
-  const getTypeOfProduct = (type: string) => {
-    switch (_lowerCase(type)) {
-      case 'pharma':
-        return CouponCategoryApplicable.PHARMA;
-      case 'fmcg':
-        return CouponCategoryApplicable.FMCG;
-      default:
-        return null;
-    }
-  };
-
   const validateCoupon = useMutation<validatePharmaCoupon>(VALIDATE_PHARMA_COUPONS, {
     variables: {
       pharmaCouponInput: {
@@ -238,12 +226,12 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
               (coupon) => coupon.displayStatus
             );
             setAvailableCoupons(visibleCoupons);
-            setIsLoading(false);
           }
         })
         .catch((e) => {
-          setIsLoading(false);
-        });
+          console.log(e);
+        })
+        .finally(() => setIsLoading(false));
     }
   }, [availableCoupons]);
 

@@ -3,7 +3,7 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-import { FilterDoctorInput, ConsultMode, ConsultType, WeekDay } from "./globalTypes";
+import { FilterDoctorInput, ConsultMode, ConsultType, WeekDay, DoctorType } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: GetDoctorsBySpecialtyAndFilters
@@ -59,6 +59,9 @@ export interface GetDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters
   photoUrl: string | null;
   qualification: string | null;
   consultHours: (GetDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors_consultHours | null)[] | null;
+  onlineConsultationFees: string;
+  physicalConsultationFees: string;
+  doctorType: DoctorType;
   doctorHospital: GetDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors_doctorHospital[];
 }
 

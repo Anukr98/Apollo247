@@ -160,7 +160,7 @@ export const MedicinesCartContext = createContext<MedicineCartContextProps>({
   setHeaderPincodeError: null,
 });
 
-enum CartTypes {
+export enum CartTypes {
   PHARMA = 'PHARMA',
   FMCG = 'FMCG',
   BOTH = 'BOTH',

@@ -18,7 +18,7 @@ const bugsnag = new Client();
 const isReleaseOn = AppConfig.Configuration.ANALYTICAL_ENIVRONMENT == 'release';
 const isEnvironment = AppConfig.Configuration.LOG_ENVIRONMENT;
 
-Bugfender.init('ZawMMlDXsIzVNhaPh928FvY9YCvMfLDe');
+Bugfender.init('brmAJ2pHunypOwF6EpcWyOf5mffsl2Ea');
 
 export const isIphone5s = () => height === 568;
 
@@ -98,4 +98,9 @@ export const setBugFenderLog = async (stringName: string, errorValue?: any) => {
   } catch (error) {
     aphConsole.log('setBugFenderLog error', error);
   }
+};
+
+export const setBugfenderPhoneNumber = async () => {
+  const phoneNumber = await AsyncStorage.getItem('phoneNumber');
+  Bugfender.setDeviceString('PHONE_NUMBER', phoneNumber);
 };

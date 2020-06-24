@@ -8,6 +8,10 @@ export default StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     backgroundColor: 'white',
+  },
+  maincontainer: {
+    justifyContent: 'center',
+    backgroundColor: 'white',
     paddingHorizontal: 20,
   },
   headingContainer: {

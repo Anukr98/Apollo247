@@ -10,7 +10,7 @@ export const updateAppConfig = (key: keyof typeof Configuration, value: object) 
   Configuration[key] = value as never;
 };
 
-const APP_ENV: AppEnv = AppEnv.QA as AppEnv; //Change to AppEnv.(DEV, QA, PROD) for respective API environments in the app. Also don't forget to change src/helpers/apiRoutes.ts
+const APP_ENV: AppEnv = AppEnv.PROD as AppEnv; //Change to AppEnv.(DEV, QA, PROD) for respective API environments in the app. Also don't forget to change src/helpers/apiRoutes.ts
 //Common keys
 const commonConfigs = {
   PRO_PUBNUB_PUBLISH: 'pub-c-75e6dc17-2d81-4969-8410-397064dae70e',
@@ -35,8 +35,8 @@ const ConfigurationDev = {
 const ConfigurationQA = {
   ...commonConfigs,
   LOG_ENVIRONMENT: 'release',
-  iOS_Version: '1.0103',
-  Android_Version: '1.0103',
+  iOS_Version: '1.0106',
+  Android_Version: '1.0106',
 };
 
 //Prod
@@ -47,8 +47,8 @@ const ConfigurationProd = {
   PRO_TOKBOX_KEY: '46422952', // PRODUCTION
   PRO_PUBNUB_PUBLISH: 'pub-c-e275fde3-09e1-44dd-bc32-5c3d04c3b2ef', // PRODUCTION
   PRO_PUBNUB_SUBSCRIBER: 'sub-c-517dafbc-d955-11e9-aa3a-6edd521294c5', // PRODUCTION
-  iOS_Version: '1.01',
-  Android_Version: '1.01',
+  iOS_Version: '1.02',
+  Android_Version: '1.02',
 };
 
 const Configuration =

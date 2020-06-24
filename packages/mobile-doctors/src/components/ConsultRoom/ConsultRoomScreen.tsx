@@ -12,7 +12,8 @@ import {
   BackArrow,
   Call,
   ClosePopup,
-  CrossPopup,
+  CloseWhite,
+  ConnectCall,
   DotIcon,
   Down,
   RoundCallIcon,
@@ -33,6 +34,7 @@ import {
   CREATE_CASESHEET_FOR_SRD,
   END_APPOINTMENT_SESSION,
   END_CALL_NOTIFICATION,
+  EXO_TEL_CALL,
   GET_CASESHEET,
   MODIFY_CASESHEET,
   SEND_CALL_NOTIFICATION,
@@ -80,6 +82,10 @@ import {
   STATUS,
 } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
 import {
+  initateConferenceTelephoneCall,
+  initateConferenceTelephoneCallVariables,
+} from '@aph/mobile-doctors/src/graphql/types/initateConferenceTelephoneCall';
+import {
   modifyCaseSheet,
   modifyCaseSheetVariables,
 } from '@aph/mobile-doctors/src/graphql/types/modifyCaseSheet';
@@ -103,6 +109,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useApolloClient, useMutation } from 'react-apollo-hooks';
 import {
   Alert,
+  AppState,
+  AppStateStatus,
   BackHandler,
   Dimensions,
   FlatList,
@@ -111,9 +119,8 @@ import {
   Text,
   TouchableOpacity,
   View,
-  AppState,
-  AppStateStatus,
 } from 'react-native';
+import firebase from 'react-native-firebase';
 import KeepAwake from 'react-native-keep-awake';
 import { NavigationScreenProps } from 'react-navigation';
 
@@ -163,7 +170,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const [overlayDisplay, setOverlayDisplay] = useState<React.ReactNode>(null);
   const [chatReceived, setChatReceived] = useState(false);
   const client = useApolloClient();
-  const { showAphAlert, hideAphAlert, loading, setLoading, showPopup } = useUIElements();
+  const { showAphAlert, hideAphAlert, loading, setLoading, showPopup, hidePopup } = useUIElements();
   const AppId = props.navigation.getParam('AppId');
   const [Appintmentdatetime, setAppintmentdatetime] = useState(
     props.navigation.getParam('Appintmentdatetime')
@@ -301,7 +308,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         setLoading && setLoading(false);
         showAphAlert &&
           showAphAlert({
-            title: 'Alert!',
+            title: strings.common.alert,
             description: 'Error occured while creating Case Sheet. Please try again',
           });
       });
@@ -843,6 +850,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             setcaseSheet(modifiedData);
             setData(modifiedData);
           }
+          setSavedTime(g(modifiedData, 'caseSheetDetails', 'updatedDate'));
           setIsAutoSaved(autoSave);
           AsyncStorage.setItem(
             'prevSavedData',
@@ -1055,7 +1063,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         if (status === STATUS.NO_SHOW) {
           showAphAlert &&
             showAphAlert({
-              title: 'Alert!',
+              title: strings.common.alert,
               description:
                 'Since the patient is not responding from last 10 mins, we are rescheduling this appointment.',
               unDismissable: true,
@@ -1067,7 +1075,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         } else {
           showAphAlert &&
             showAphAlert({
-              title: 'Alert!',
+              title: strings.common.alert,
               description: 'Successfully Rescheduled',
               unDismissable: true,
               onPressOk: () => {
@@ -1288,14 +1296,15 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               joinTimerNoShow && clearInterval(joinTimerNoShow);
               abondmentStarted = false;
               patientJoined = true;
-            } else if (occupancyPatient.length === 0 && (isAudio || isVideo) && callAccepted) {
-              stopAllCalls(isAudio ? 'A' : isVideo ? 'V' : undefined);
-              showAphAlert &&
-                showAphAlert({
-                  title: 'Alert!',
-                  description: 'Call Disconnected',
-                });
             }
+            // else if (occupancyPatient.length === 0 && (isAudio || isVideo) && callAccepted) {
+            //   stopAllCalls(isAudio ? 'A' : isVideo ? 'V' : undefined);
+            //   showAphAlert &&
+            //     showAphAlert({
+            //       title: strings.common.alert,
+            //       description: 'Call Disconnected',
+            //     });
+            // }
             // else {
             //   console.log(
             //     'Call ab',
@@ -1619,6 +1628,13 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const onEndConsult = () => {
     stopAllCalls();
     endCallNotificationAPI(false);
+    firebase.analytics().logEvent('Doctor_end_consult', {
+      doctorName: doctorDetails ? doctorDetails.fullName : doctorId,
+      patientName: patientDetails
+        ? `${patientDetails.firstName} ${patientDetails.lastName}`
+        : patientId,
+      appointmentData: appointmentData,
+    });
   };
   const renderTabPage = () => {
     return (
@@ -1744,6 +1760,10 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                   isDropdownVisible={isDropdownVisible}
                   setDropdownVisible={setDropdownVisible}
                   patientDetails={patientDetails}
+                  extendedHeader={
+                    consultStarted ||
+                    g(caseSheet, 'caseSheetDetails', 'appointment', 'status') === STATUS.COMPLETED
+                  }
                 />
               </View>
             )}
@@ -1765,6 +1785,14 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         },
       })
       .then((_data: any) => {
+        firebase.analytics().logEvent('Doctor_start_consult', {
+          doctorName: doctorDetails ? doctorDetails.fullName : doctorId,
+          patientName: patientDetails
+            ? `${patientDetails.firstName} ${patientDetails.lastName}`
+            : patientId,
+          appointmentData: appointmentData,
+        });
+
         setCaseSheetEdit(true);
         console.log('createsession', _data);
         console.log('sessionid', _data.data.createAppointmentSession.sessionId);
@@ -1942,7 +1970,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                 setShowLoading(false);
                 showAphAlert &&
                   showAphAlert({
-                    title: 'Alert!',
+                    title: strings.common.alert,
                     description: 'Error occured while cancelling appointment. Please try again',
                   });
                 Alert.alert(e.graphQLErrors[0].message);
@@ -1994,6 +2022,125 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       </AphOverlay>
     );
   };
+  const makeCall = () => {
+    setShowExoPopup(false);
+    if (g(doctorDetails, 'mobileNumber') && g(patientDetails, 'mobileNumber')) {
+      setShowLoading(true);
+      const exotelInput = {
+        appointmentId: g(caseSheet, 'caseSheetDetails', 'appointment', 'id') || AppId,
+        from: g(doctorDetails, 'mobileNumber'),
+        to: g(patientDetails, 'mobileNumber'),
+      };
+      firebase.analytics().logEvent('DOCTOR_CALL_EXOTEL', { callBy: exotelInput });
+      client
+        .query<initateConferenceTelephoneCall, initateConferenceTelephoneCallVariables>({
+          query: EXO_TEL_CALL,
+          fetchPolicy: 'no-cache',
+          variables: {
+            exotelInput: exotelInput,
+          },
+        })
+        .then((data) => {
+          setShowLoading(false);
+          if (g(data, 'data', 'initateConferenceTelephoneCall', 'isError')) {
+            showAphAlert &&
+              showAphAlert({
+                title: strings.common.alert,
+                description:
+                  'Error: ' + g(data, 'data', 'initateConferenceTelephoneCall', 'errorMessage') ||
+                  'Try again',
+              });
+          } else {
+            showPopup({
+              description: strings.exoTel.toastMessage,
+              style: styles.exoToastContainer,
+              popUpPointerStyle: { width: 0, height: 0 },
+              descriptionTextStyle: theme.viewStyles.text('M', 12, theme.colors.WHITE, 1, 20),
+              hideOk: true,
+              icon: (
+                <View style={styles.exoCloseContainer}>
+                  <CloseWhite style={{ width: 16, height: 16 }} />
+                </View>
+              ),
+              timer: 5,
+            });
+          }
+        })
+        .catch((e) => {
+          setShowLoading(false);
+        });
+    } else {
+      showAphAlert &&
+        showAphAlert({
+          title: strings.common.alert,
+          description: `${
+            g(doctorDetails, 'mobileNumber')
+              ? g(patientDetails, 'mobileNumber')
+                ? ''
+                : "Patient's"
+              : "Doctor's"
+          } number is not present try again.`,
+        });
+    }
+  };
+
+  const exoTelPopup = () => {
+    return (
+      <View style={styles.exoTelPopupContainer}>
+        <View style={styles.exoTelPopupMainContainer}>
+          <Text style={styles.exoHeader}>{strings.exoTel.heading}</Text>
+          <Text style={styles.exosubHeader}>{strings.exoTel.subHeading}</Text>
+          <View style={styles.exopointContainer}>
+            <View style={styles.exoPointMain}>
+              <Text style={styles.exoPointNumberText}>1</Text>
+            </View>
+            <Text style={styles.exoPointText}>{strings.exoTel.point1}</Text>
+          </View>
+          <View style={styles.exopointContainer}>
+            <View style={styles.exoPointMain}>
+              <Text style={styles.exoPointNumberText}>2</Text>
+            </View>
+            <Text style={styles.exoPointText}>{strings.exoTel.point2}</Text>
+          </View>
+          <Text style={styles.exonoteText}>{strings.exoTel.note}</Text>
+          <View style={styles.exobuttonContainer}>
+            <TouchableOpacity
+              activeOpacity={1}
+              style={styles.exoCancelContainer}
+              onPress={() => {
+                setShowExoPopup(false);
+              }}
+            >
+              <Text style={styles.exoCancelText}>{strings.buttons.cancel}</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity activeOpacity={1} onPress={makeCall}>
+              <View style={styles.exobuttonStyle}>
+                <Text style={styles.exoProceedText}>{strings.exoTel.proceed}</Text>
+              </View>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    );
+  };
+  const [showExoPopup, setShowExoPopup] = useState<boolean>(false);
+  const renderexoTEl = () => {
+    return (
+      <View style={styles.exoMainContainer}>
+        <TouchableOpacity
+          onPress={() => {
+            setShowExoPopup(true);
+          }}
+        >
+          <View style={styles.exobuttonContainer}>
+            <ConnectCall />
+            <Text style={styles.exoConnectText}>{strings.exoTel.connect_via_call}</Text>
+          </View>
+        </TouchableOpacity>
+      </View>
+    );
+  };
 
   const showHeaderView = () => {
     return (
@@ -2016,7 +2163,9 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         middleText={strings.consult_room.consult_room}
         // timerremaintext={!consultStarted ? PatientConsultTime : undefined}
         timerremaintext={
-          isAutoSaved ? 'Auto Saved at ' + moment(savedTime).format('DD:MM:YY:HH:mm:ss') : undefined
+          isAutoSaved && moment(savedTime).isValid()
+            ? 'Auto Saved at ' + moment(savedTime).format('DD:MM:YY:HH:mm:ss')
+            : undefined
         }
         headingContainer={{
           marginLeft:
@@ -2093,6 +2242,12 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                 : setDropdownShow(!dropdownShow), //startConsult && setDropdownShow(!dropdownShow),
           },
         ]}
+        subView={
+          consultStarted ||
+          g(caseSheet, 'caseSheetDetails', 'appointment', 'status') === STATUS.COMPLETED
+            ? renderexoTEl()
+            : null
+        }
       />
     );
   };
@@ -2116,7 +2271,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         } else {
           showAphAlert &&
             showAphAlert({
-              title: 'Alert!',
+              title: strings.common.alert,
               description: 'You are not allowed to cancel the appointment.',
             });
         }
@@ -2292,6 +2447,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       >
         {showHeaderView()}
         {overlayDisplay}
+        {showExoPopup && exoTelPopup()}
         {displayReSchedulePopUp && (
           <ReSchedulePopUp
             doctorId={doctorId}

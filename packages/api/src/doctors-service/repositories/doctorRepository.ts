@@ -392,6 +392,14 @@ export class DoctorRepository extends Repository<Doctor> {
       .getMany();
   }
 
+  getListBySpecialty() {
+    return this.createQueryBuilder('doctor')
+      .leftJoinAndSelect('doctor.specialty', 'specialty')
+      .where('doctor.doctorType != :junior', { junior: DoctorType.JUNIOR })
+      .andWhere('doctor.isActive = true')
+      .getMany();
+  }
+
   findOtherDoctorsOfSpecialty(specialtyId: string, doctorId: string) {
     return this.createQueryBuilder('doctor')
       .leftJoinAndSelect('doctor.specialty', 'specialty')
