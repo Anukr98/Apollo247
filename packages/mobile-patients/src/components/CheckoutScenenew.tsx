@@ -482,9 +482,9 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       itemObj.item_name = item.name; // Product Name or Doctor Name
       itemObj.item_id = item.id; // Product SKU or Doctor ID
       itemObj.price = item.specialPrice ? item.specialPrice : item.price; // Product Price After discount or Doctor VC price (create another item in array for PC price)
-      // (itemObj.item_brand = doctor.doctorType), // Product brand or Apollo (for Apollo doctors) or Partner Doctors (for 3P doctors)
+      itemObj.item_brand = ''; // Product brand or Apollo (for Apollo doctors) or Partner Doctors (for 3P doctors)
       itemObj.item_category = 'Pharmacy'; // 'Pharmacy' or 'Consultations'
-      // (itemObj.item_category2 = doctor.specialty.name), // FMCG or Drugs (for Pharmacy) or Specialty Name (for Consultations)
+      itemObj.item_category2 = item.isMedicine ? 'Drug' : 'FMCG'; // FMCG or Drugs (for Pharmacy) or Specialty Name (for Consultations)
       itemObj.item_variant = 'Default'; // "Default" (for Pharmacy) or Virtual / Physcial (for Consultations)
       itemObj.index = index + 1; // Item sequence number in the list
       itemObj.quantity = item.quantity; // "1" or actual quantity
