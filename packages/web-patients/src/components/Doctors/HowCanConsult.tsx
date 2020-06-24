@@ -339,7 +339,7 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
           </AphButton>
           <AphButton
             className={
-              physicalDirection ? `${classes.button} ${classes.btnActive}` : `${classes.button}`
+              onlineDirection ? `${classes.button} ${classes.btnActive}` : `${classes.button}`
             }
             onClick={() => {
               setOnlineDirection(true);
