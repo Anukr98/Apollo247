@@ -20,6 +20,7 @@ export enum WebEngageEventName {
   REGISTRATION_DONE = 'Registration Done',
   NUMBER_OF_PROFILES_FETCHED = 'Number of Profiles fetched',
   SEARCH = 'Pharmacy Search',
+  SEARCH_ENTER_CLICK = 'Pharmacy Search Enter Clicked',
   PHARMACY_SEARCH_RESULTS = 'Pharmacy Search Results',
   PHARMACY_PRODUCT_CLICKED = 'Pharmacy Product Clicked',
   NOTIFY_ME = 'Notify Me',
@@ -216,6 +217,10 @@ export interface WebEngageEvents {
     keyword: string;
     Source: 'Pharmacy Home' | 'Pharmacy List';
     resultsdisplayed: number;
+  };
+  [WebEngageEventName.SEARCH_ENTER_CLICK]: {
+    keyword: string;
+    numberofresults: number;
   };
   [WebEngageEventName.PHARMACY_SEARCH_RESULTS]: {
     keyword: string;
