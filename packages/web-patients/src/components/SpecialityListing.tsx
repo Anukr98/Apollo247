@@ -3,7 +3,7 @@ import { Theme, Grid, CircularProgress, Popover, Typography } from '@material-ui
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
 import { NavigationBottom } from 'components/NavigationBottom';
-import { AphInput, AphButton } from '@aph/web-ui-components';
+import { AphInput } from '@aph/web-ui-components';
 import { Specialities } from 'components/Specialities';
 import ExpansionPanel from '@material-ui/core/ExpansionPanel';
 import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
@@ -27,9 +27,9 @@ import {
 } from 'graphql/types/SearchDoctorAndSpecialtyByName';
 import { readableParam } from 'helpers/commonHelpers';
 import { SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME } from 'graphql/doctors';
-import { MedicineLocationSearch } from 'components/MedicineLocationSearch';
 import { useParams } from 'hooks/routerHooks';
 import { Link } from 'react-router-dom';
+import { AphButton, AphDialog, AphDialogClose, AphDialogTitle } from '@aph/web-ui-components';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -166,56 +166,38 @@ const useStyles = makeStyles((theme: Theme) => {
       borderBottom: '2px solid #00b38e',
       padding: '5px 0',
       margin: '0 10px 0 0',
-      width: 120,
+      cursor: 'pointer',
       '& >img': {
         margin: '0 10px 0 0',
       },
-      '& >div': {
-        margin: '0  !important',
-        border: 'none',
-        padding: '0 !important',
-        '& span': {
-          '&:first-child': {
-            width: 70,
-            height: 20,
-            border: 'none',
-            display: 'block',
-            fontSize: 0,
-            position: 'relative',
-            '&:before': {
-              content: "'Select City'",
-              fontSize: 14,
-              color: '#02475b',
-              fontWeight: 'bold',
-              position: 'absolute',
-              left: 0,
-              top: 0,
-            },
-          },
-        },
-      },
       [theme.breakpoints.down(600)]: {
-        width: 150,
         margin: '0 0 10px',
-        '& >div': {
-          width: '100%',
-          '& span': {
-            '&:first-child': {
-              width: 100,
-            },
-          },
-          '& >div': {
-            maxWidth: '100%',
-            '& >div': {
-              '&:last-child': {
-                display: 'flex',
-              },
-            },
-          },
-        },
       },
     },
-
+    userLocation: {
+      display: 'flex',
+      alignItems: 'center',
+      '& p': {
+        fontSize: 16,
+        color: 'rgba(2,71,91, 0.3)',
+        fontWeight: 700,
+        margin: '0 10px 0 0',
+        width: 120,
+      },
+    },
+    searchInput: {
+      padding: '0 0 0 30px',
+    },
+    searchContainer: {
+      display: 'flex',
+      alignItems: 'center',
+      width: '100%',
+      position: 'relative',
+      '& img': {
+        position: 'absolute',
+        left: 0,
+      },
+    },
     pastSearch: {
       padding: '20px 0 0',
       '& h6': {
@@ -336,11 +318,7 @@ const useStyles = makeStyles((theme: Theme) => {
       listStyle: 'decimal',
     },
     tsContent: {
-      // display: 'flex',
-      // alignItems: 'center',
-      // justifyContent: 'space-between',
       padding: '20px 0',
-      // flexWrap: 'wrap',
     },
     osContainer: {
       padding: '20px 0',
@@ -624,6 +602,48 @@ const useStyles = makeStyles((theme: Theme) => {
         display: 'none',
       },
     },
+    locationContainer: {
+      padding: 30,
+      [theme.breakpoints.down(600)]: {
+        padding: 20,
+      },
+    },
+    dialogTitle: {
+      textAlign: 'left',
+      [theme.breakpoints.down(600)]: {
+        '& h2': {
+          fontSize: 14,
+        },
+      },
+    },
+    popularCities: {
+      padding: '20px 0',
+      '& h6': {
+        fontSize: 14,
+        fontWeight: 700,
+        margin: '0 0 10px',
+        color: '#02475b',
+      },
+      '& button': {
+        margin: '0 15px 0 0',
+        color: '#00b38e',
+        borderRadius: 10,
+        fontSize: 12,
+        textTransform: 'none',
+        [theme.breakpoints.down(500)]: {
+          margin: '0 15px 15px 0',
+        },
+      },
+    },
+    btnContainer: {
+      display: 'flex',
+      justifyContent: 'flex-end',
+      '& button': {
+        width: 180,
+        fontSize: 13,
+        fontWeight: 700,
+      },
+    },
   };
 });
 
@@ -687,6 +707,7 @@ export const SpecialityListing: React.FC = (props) => {
   const [loading, setLoading] = useState<boolean>(false);
   const [showSearchAndPastSearch, setShowSearchAndPastSearch] = useState<boolean>(true);
   const [disableFilters, setDisableFilters] = useState<boolean>(true);
+  const [locationPopup, setLocationPopup] = useState<boolean>(false);
   const { isSignedIn } = useAuth();
 
   const handleChange = (panel: string) => (event: React.ChangeEvent<{}>, isExpanded: boolean) => {
@@ -822,11 +843,20 @@ export const SpecialityListing: React.FC = (props) => {
                     </a> */}
                   </div>
                   <div className={classes.specialitySearch}>
-                    <div className={classes.location}>
-                      <img src={require('images/location.svg')} />
-                      <MedicineLocationSearch />
+                    <div className={classes.location} onClick={() => setLocationPopup(true)}>
+                      <img src={require('images/location.svg')} alt="" />
+                      <div className={classes.userLocation}>
+                        <Typography>Select Your City</Typography>
+                        <img src={require('images/ic_dropdown_green.svg')} alt="" />
+                      </div>
                     </div>
-                    <AphInput placeholder="Search doctors or specialities" />
+                    <div className={classes.searchContainer}>
+                      <img src={require('images/ic-search.svg')} alt="" />
+                      <AphInput
+                        className={classes.searchInput}
+                        placeholder="Search doctors or specialities"
+                      />
+                    </div>
                   </div>
                   <div className={classes.pastSearch}>
                     <Typography component="h6">{isSignedIn ? 'Past Searches' : ''}</Typography>
@@ -1196,6 +1226,27 @@ export const SpecialityListing: React.FC = (props) => {
       <div className={classes.footerLinks}>
         <BottomLinks />
       </div>
+      <AphDialog open={locationPopup} maxWidth="md">
+        <AphDialogClose onClick={() => setLocationPopup(false)} title={'Close'} />
+        <AphDialogTitle className={classes.dialogTitle}>
+          Select a city to see the recommended healthcare services
+        </AphDialogTitle>
+        <div className={classes.locationContainer}>
+          <AphInput placeholder="Select for a city" />
+
+          <div className={classes.popularCities}>
+            <Typography component="h6">Popular Cities</Typography>
+            <AphButton>Hyderabad</AphButton>
+            <AphButton>Chennai</AphButton>
+            <AphButton>Mumbai</AphButton>
+            <AphButton>Kolkata</AphButton>
+            <AphButton>Bangalore</AphButton>
+          </div>
+          <div className={classes.btnContainer}>
+            <AphButton color="primary">Okay</AphButton>
+          </div>
+        </div>
+      </AphDialog>
     </div>
   );
 };
