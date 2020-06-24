@@ -36,7 +36,6 @@ import { addRecordClickTracking } from '../../webEngageTracking';
 import { gtmTracking } from '../../gtmTracking';
 import { BottomLinks } from 'components/BottomLinks';
 import { INVALID_FILE_SIZE_ERROR, toBase64 } from 'helpers/commonHelpers';
-import { database } from 'firebase';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -366,8 +365,6 @@ const MedicalRecordInitialValues: AddMedicalRecordParametersInput = {
   maximum: 0,
 };
 
-type PickerImage = any;
-
 type RecordTypeType = {
   key: string;
   value: string;
@@ -411,8 +408,6 @@ export const AddRecords: React.FC = (props) => {
 
   const { currentPatient } = useAllCurrentPatients();
   const isSmallScreen = useMediaQuery('(max-width:767px)');
-  // const uploadLabResultMutation = useMutation(UPLOAD_LAB_RESULT);
-  // const uploadPrescriptionMutation = useMutation(UPLOAD_PRESCRIPTIONS);
   const addMedicalRecordMutation = useMutation(ADD_MEDICAL_RECORD);
 
   const isValid = () => {
@@ -521,7 +516,6 @@ export const AddRecords: React.FC = (props) => {
         testDate: dateOfTest !== '' ? moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD') : '',
       };
     }
-    console.log(inputData);
     addMedicalRecordMutation({
       variables: {
         AddMedicalRecordInput: inputData,
@@ -538,7 +532,11 @@ export const AddRecords: React.FC = (props) => {
           label: `${typeOfRecord} - Self`,
         });
         /**Gtm code start start */
-        window.location.href = `${clientRoutes.healthRecords()}?active=medical`;
+
+        window.location.href =
+          typeOfRecord === MedicalRecordType.TEST_REPORT
+            ? `${clientRoutes.healthRecords()}?active=medical`
+            : clientRoutes.healthRecords();
       })
       .catch((e) => {
         setshowSpinner(false);
@@ -549,30 +547,8 @@ export const AddRecords: React.FC = (props) => {
 
   const saveRecord = () => {
     const valid = isValid();
-    // valid.isvalid && !valid.isValidParameter &&
     if (valid.message.length === 0) {
       setshowSpinner(true);
-      // if (uploadedDocuments && uploadedDocuments.length) {
-      //   uploadLabOrPrescriptionResults(uploadedDocuments)
-      //     .then(({ data }: any) => {
-      //       if (data) {
-      //         typeOfRecord === MedicRecordType.TEST_REPORT
-      //           ? callAddingRecord(data.uploadLabResults.fileUrl, data.uploadLabResults.recordId)
-      //           : callAddingRecord(
-      //               data.uploadPrescriptions.fileUrl,
-      //               data.uploadPrescriptions.recordId
-      //             );
-      //       }
-      //     })
-      //     .catch((e: any) => {
-      //       console.log(e);
-      //       setshowSpinner(false);
-      //       // setIsAlertOpen(true);
-      //     });
-      // }
-      // else {
-      //   callAddingRecord('', '');
-      // }
       callAddingRecord();
     } else {
       setIsAlertOpen(true);

@@ -43,6 +43,8 @@ import {
   APPT_CALL_TYPE,
   Relation,
   STATUS,
+  DEVICETYPE,
+  BOOKINGSOURCE,
 } from 'graphql/types/globalTypes';
 import { CaseSheet } from 'components/JuniorDoctors/JDCaseSheet/CaseSheet';
 import { useAuth } from 'hooks/authHooks';
@@ -984,6 +986,8 @@ export const JDConsultRoom: React.FC = () => {
           appointmentId: appointmentId,
           callType: callType,
           doctorType: DOCTOR_CALL_TYPE.JUNIOR,
+          deviceType: DEVICETYPE.DESKTOP,
+          callSource: BOOKINGSOURCE.WEB,
         },
       })
       .then((_data) => {
@@ -1005,6 +1009,8 @@ export const JDConsultRoom: React.FC = () => {
             appointmentId: appointmentId,
             callType: callType,
             doctorType: DOCTOR_CALL_TYPE.JUNIOR,
+            deviceType: DEVICETYPE.DESKTOP,
+            callSource: BOOKINGSOURCE.WEB,
           }),
           appointmentId: appointmentId,
           doctorId: currentDoctor!.id,
