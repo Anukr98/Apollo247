@@ -318,14 +318,15 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
   };
   const saveSearchMutation = useMutation<SaveSearch, SaveSearchVariables>(SAVE_PATIENT_SEARCH);
 
-  const className = `${classes.button} ${classes.btnActive}`;
   return (
     <div className={classes.root}>
       <div className={classes.headerGroup}>
         <h3>How can I consult with Dr.{doctorName}:</h3>
         <div className={classes.tabButtons}>
           <AphButton
-            className={physicalDirection ? className : `${classes.button}`}
+            className={
+              physicalDirection ? `${classes.button} ${classes.btnActive}` : `${classes.button}`
+            }
             id="btnActive"
             onClick={() => {
               setPhysicalDirection(true);
@@ -337,7 +338,9 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
             <span>{availabilityMarkup()}</span>
           </AphButton>
           <AphButton
-            className={onlineDirection ? className : `${classes.button}`}
+            className={
+              physicalDirection ? `${classes.button} ${classes.btnActive}` : `${classes.button}`
+            }
             onClick={() => {
               setOnlineDirection(true);
               setPhysicalDirection(false);
@@ -352,11 +355,12 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
       <div className={classes.consultGroup}>
         <div className={classes.groupHead}>
           <span>
-            {physicalDirection ? (
-              <img src={require('images/ic-specialist.svg')} alt="" />
-            ) : (
-              <img src={require('images/video-calling.svg')} alt="" />
-            )}
+            <img
+              src={require(physicalDirection
+                ? 'images/ic-specialist.svg'
+                : 'images/video-calling.svg')}
+              alt=""
+            />
           </span>
           <h4>
             {physicalDirection
@@ -384,35 +388,28 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
               </span>
               <span>Make payment</span>
             </li>
-            {physicalDirection ? (
-              ''
-            ) : (
-              <li className={classes.blueText}>
-                <span>
-                  <img src={require('images/ic_video-blue.svg')} alt="" />
-                </span>
-                <span>Speak to the doctor via video/audio/chat</span>
-              </li>
-            )}
-            {physicalDirection ? (
-              <li className={classes.blueText}>
-                <span>
-                  <img src={require('images/ic_hospital.svg')} alt="" />
-                </span>
-                <span>Visit the doctor at Hospital/Clinic</span>
-              </li>
-            ) : (
-              ''
-            )}
+            <li className={classes.blueText}>
+              <span>
+                <img
+                  src={require(physicalDirection
+                    ? 'images/ic_video-blue.svg'
+                    : 'images/ic_hospital.svg')}
+                  alt=""
+                />
+              </span>
+              <span>
+                {physicalDirection
+                  ? 'Speak to the doctor via video/audio/chat'
+                  : 'Visit the doctor at Hospital/Clinic'}
+              </span>
+            </li>
             <li>
               <span>
                 <img src={require('images/ic_prescription-sm.svg')} alt="" />
               </span>
               <span>Receive prescriptions instantly </span>
             </li>
-            {physicalDirection ? (
-              ''
-            ) : (
+            {!physicalDirection && (
               <li className={classes.blueText}>
                 <span>
                   <img src={require('images/ic_chat.svg')} alt="" />
