@@ -1070,6 +1070,13 @@ export class PatientFamilyHistory extends BaseEntity {
   updateDateUpdate() {
     this.updatedDate = new Date();
   }
+  @AfterUpdate()
+  @AfterInsert()
+  async dropPatientCache() {
+    const redis = await pool.getTedis();
+    await redis.del(`patient:${this.patient.id}`);
+    pool.putTedis(redis);
+  }
 }
 //patient family history ends
 
@@ -1106,7 +1113,7 @@ export class PatientLifeStyle extends BaseEntity {
 
   @AfterUpdate()
   @AfterInsert()
-  async clearPatientCache() {
+  async dropPatientCache() {
     const redis = await pool.getTedis();
     await redis.del(`patient:${this.patient.id}`);
     pool.putTedis(redis);
@@ -1537,6 +1544,14 @@ export class PatientMedicalHistory extends BaseEntity {
   @BeforeUpdate()
   updateDateUpdate() {
     this.updatedDate = new Date();
+  }
+
+  @AfterUpdate()
+  @AfterInsert()
+  async dropPatientCache() {
+    const redis = await pool.getTedis();
+    await redis.del(`patient:${this.patient.id}`);
+    pool.putTedis(redis);
   }
 }
 //patientMedicalHistory ends
