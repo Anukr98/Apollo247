@@ -570,14 +570,8 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
       : [];
 
   const metaTagProps = {
-    title: `${readableParam(
-      specialtyName
-    )} - Book Online Appointments And Consultations - Apollo 247`,
-    description: `Book online appointments with ${readableParam(
-      specialtyName
-    )} in just a few clicks. Consult the best ${readableParam(
-      specialtyName
-    )} in India at the best prices. Apollo 247 is the one-stop solution to all your medical needs.`,
+    title: `${specialtyName} - Book Online Appointments And Consultations - Apollo 247`,
+    description: `Book online appointments with ${specialtyName} in just a few clicks. Consult the best ${specialtyName} in India at the best prices. Apollo 247 is the one-stop solution to all your medical needs.`,
     canonicalLink: window && window.location && window.location.href,
   };
 
