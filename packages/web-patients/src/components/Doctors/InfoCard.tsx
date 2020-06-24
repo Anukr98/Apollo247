@@ -164,7 +164,7 @@ export const InfoCard: React.FC<InfoCardProps> = (props) => {
   const classes = useStyles({});
   const [popupLoading, setPopupLoading] = useState<boolean>(false);
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
-  const doctorValue = doctorInfo.fullName;
+  const doctorValue = doctorInfo.fullName.toLowerCase();
   const consultMode =
     doctorInfo &&
     doctorInfo.consultHours &&
@@ -225,7 +225,7 @@ export const InfoCard: React.FC<InfoCardProps> = (props) => {
   const saveSearchMutation = useMutation<SaveSearch, SaveSearchVariables>(SAVE_PATIENT_SEARCH);
   return (
     <div className={classes.root}>
-      <Link to={clientRoutes.doctorDetails(doctorValue.replace(/ /g, ''), doctorInfo.id)}>
+      <Link to={clientRoutes.doctorDetails(doctorValue.replace(/ /g, '-'), doctorInfo.id)}>
         <div className={classes.topContent}>
           <div className={classes.iconGroup}>
             <Avatar
