@@ -129,7 +129,7 @@ const updatePatient: Resolver<
     }
   }
   console.log(await patientRepo.getPatientDetails(patientInput.id));
-  Object.assign(patient, await patientRepo.getPatientData(patientInput.id));
+  Object.assign(patient, await patientRepo.getPatientDetails(patientInput.id));
   return { patient };
 };
 
