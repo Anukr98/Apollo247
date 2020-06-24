@@ -179,7 +179,7 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
       const lineItemsLength = lineItems.length;
       title =
         lineItemsLength > 1
-          ? `${firstItem} + ${lineItemsLength - 1} item${lineItemsLength > 2 ? 's' : ''}`
+          ? `${firstItem} + ${lineItemsLength - 1} item${lineItemsLength > 2 ? 's ' : ' '}`
           : firstItem;
     }
 

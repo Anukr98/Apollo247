@@ -152,6 +152,9 @@ export const getOrderStatusText = (status: MEDICINE_ORDER_STATUS): string => {
     case MEDICINE_ORDER_STATUS.RETURN_INITIATED:
       statusString = 'Return Requested';
       break;
+    case MEDICINE_ORDER_STATUS.PURCHASED_IN_STORE:
+      statusString = 'Purchased In-store';
+      break;
     case 'TO_BE_DELIVERED' as any:
       statusString = 'Expected Order Delivery';
       break;
@@ -641,6 +644,7 @@ export const reOrderMedicines = async (
   const billedLineItems = billedItems
     ? (JSON.parse(billedItems) as MedicineOrderBilledItem[])
     : null;
+  const isOfflineOrder = !!g(order, 'billNumber');
   const lineItems = (g(order, 'medicineOrderLineItems') ||
     []) as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrderLineItems[];
   const lineItemsSkus = billedLineItems
@@ -657,7 +661,13 @@ export const reOrderMedicines = async (
         price: parseNumber(item.price),
         specialPrice: item.special_price ? parseNumber(item.special_price) : undefined,
         quantity: Math.ceil(
-          (billedLineItems ? billedLineItems[index].issuedQty : lineItems[index].quantity) || 1
+          (billedLineItems
+            ? billedLineItems[index].issuedQty
+            : isOfflineOrder
+            ? Math.ceil(
+                lineItems[index].price! / lineItems[index].mrp! / lineItems[index].quantity!
+              )
+            : lineItems[index].quantity) || 1
         ),
         prescriptionRequired: item.is_prescription_required == '1',
         isMedicine: (item.type_id || '').toLowerCase() == 'pharma',
