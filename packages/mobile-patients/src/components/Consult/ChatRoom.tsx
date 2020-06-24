@@ -1360,8 +1360,18 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       setSnackBar();
       console.log(`There was an error with the subscriberEventHandlers: ${JSON.stringify(error)}`);
     },
-    videoDisabled: (error: string) => {
+    videoDisabled: (error: any) => {
       // console.log(`videoDisabled subscriberEventHandlers: ${JSON.stringify(error)}`);
+      if (error.reason === 'quality') {
+        setSnackbarState(true);
+        setHandlerMessage('Poor network connection detected!!');
+      }
+    },
+    videoEnabled: (error: any) => {
+      console.log(`videoDisabled: ${JSON.stringify(error)}`);
+      if (error.reason === 'quality') {
+        setSnackbarState(false);
+      }
     },
     videoDisableWarning: (error: string) => {
       // console.log(`videoDisableWarning subscriberEventHandlers: ${JSON.stringify(error)}`);
