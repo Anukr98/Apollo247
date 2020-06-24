@@ -1,27 +1,42 @@
 import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
 import { useUIElements } from '@aph/mobile-doctors/src/components/ui/UIElementsProvider';
-import { CREATE_CASESHEET_FOR_SRD, GET_CASESHEET } from '@aph/mobile-doctors/src/graphql/profiles';
-import { CreateSeniorDoctorCaseSheet } from '@aph/mobile-doctors/src/graphql/types/CreateSeniorDoctorCaseSheet';
-import { GetCaseSheet } from '@aph/mobile-doctors/src/graphql/types/GetCaseSheet';
 import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
-import { g } from '@aph/mobile-doctors/src/helpers/helperFunctions';
 import AsyncStorage from '@react-native-community/async-storage';
 import React, { useEffect } from 'react';
-import { useApolloClient } from 'react-apollo-hooks';
 import firebase from 'react-native-firebase';
 import { Notification, NotificationOpen } from 'react-native-firebase/notifications';
 import { NavigationScreenProps } from 'react-navigation';
+import moment from 'moment';
 
-type CustomNotificationType = 'Reminder_Appointment_Casesheet_15' | 'NOTIFICATION_TYPE2';
+type CustomNotificationType =
+  | 'doctor_appointment_reminder'
+  | 'doctor_new_appointment_booked'
+  | 'doctor_chat_message';
+
+type NotificationBody = {
+  type: CustomNotificationType;
+  appointmentId?: string;
+  patientName?: string;
+  content?: string;
+};
 
 export interface NotificationListenerProps extends NavigationScreenProps {}
 
 export const NotificationListener: React.FC<NotificationListenerProps> = (props) => {
-  const { showAphAlert, hideAphAlert, setLoading } = useUIElements();
-  const client = useApolloClient();
+  const { showAphAlert, hideAphAlert } = useUIElements();
 
   useEffect(() => {
-    console.log('createNotificationListeners');
+    try {
+      const channel = new firebase.notifications.Android.Channel(
+        'fcm_FirebaseNotifiction_default_channel',
+        'Apollo',
+        firebase.notifications.Android.Importance.Default
+      ).setDescription('Demo app description');
+      firebase.notifications().android.createChannel(channel);
+    } catch (error) {
+      CommonBugFender('NotificationListener_channel_try', error);
+    }
+
     /*
      * Triggered when a particular notification has been received in foreground
      * */
@@ -34,8 +49,8 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
         .setBody(notification.body)
         .setData(notification.data)
         .android.setChannelId('fcm_FirebaseNotifiction_default_channel') // e.g. the id you chose above
-        .android.setSmallIcon('@mipmap/ic_launcher') // create this icon in Android Studio
-        .android.setColor('#000000') // you can set a color here
+        .android.setSmallIcon('@drawable/ic_notification_white') // create this icon in Android Studio
+        .android.setColor('#0087ba') // you can set a color here
         .android.setPriority(firebase.notifications.Android.Priority.Default);
       firebase
         .notifications()
@@ -62,34 +77,13 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
             // Get the action triggered by the notification being opened
             // const action = _notificationOpen.action;
             processNotification(_notificationOpen.notification);
-
-            try {
-              console.log('notificationOpen', _notificationOpen.notification.notificationId);
-
-              firebase
-                .notifications()
-                .removeDeliveredNotification(_notificationOpen.notification.notificationId);
-            } catch (error) {
-              CommonBugFender('NotificationListener_firebase_try', error);
-            }
+            dismissNotification(_notificationOpen.notification.notificationId);
           }
         }
       })
       .catch((e) => {
         CommonBugFender('NotificationListener_firebase', e);
       });
-
-    try {
-      const channel = new firebase.notifications.Android.Channel(
-        'fcm_FirebaseNotifiction_default_channel',
-        'Apollo',
-        firebase.notifications.Android.Importance.Default
-      ).setDescription('Demo app description');
-      // .setSound('incallmanager_ringtone.mp3');
-      firebase.notifications().android.createChannel(channel);
-    } catch (error) {
-      CommonBugFender('NotificationListener_channel_try', error);
-    }
 
     /*
      * If your app is in background, you can listen for when a notification is clicked / tapped / opened as follows:
@@ -109,116 +103,128 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
     };
   }, []);
 
-  const processNotification = async (notification: Notification) => {
-    const { title, body, data } = notification;
-    const notificationType = data.type as CustomNotificationType;
-    // console.log({ notificationType, title, body, data });
-    // console.log('processNotification', notification);
-
-    // if (notificationType === 'PRESCRIPTION_READY') {
-    //   if (currentScreenName === AppRoutes.ConsultDetails) return;
-    // }
-
-    if (
-      ['Reminder_Appointment_Casesheet_15', 'Reminder_Appointment_15'].includes(notificationType)
-    ) {
-      showAlert(data);
+  const dismissNotification = (notificationId: string) => {
+    try {
+      firebase.notifications().removeDeliveredNotification(notificationId);
+    } catch (error) {
+      CommonBugFender('Dismiss_Notification', error);
     }
-    // else if (notificationType === 'NOTIFICATION_TYPE2') {
-    //   //do other
-    // }
   };
-  const showAlert = (data: { [key: string]: string }) => {
-    const userName = data.patientName;
-
-    showAphAlert &&
-      showAphAlert({
-        title: 'Appointment Reminder!',
-        description: `Your appointment with ${userName} will start in 15 mins. Please be available online and prepared, accordingly.`,
-        CTAs: [
-          {
-            text: 'CANCEL',
-            type: 'white-button',
-            onPress: () => {
-              hideAphAlert && hideAphAlert();
+  const processNotification = async (notification: Notification) => {
+    const showInApp = JSON.parse((await AsyncStorage.getItem('showInAppNotification')) || 'true');
+    if (!showInApp) {
+      return;
+    }
+    const data = notification.data as NotificationBody;
+    if (data.type === 'doctor_chat_message') {
+      showAphAlert &&
+        showAphAlert({
+          title: `${data.patientName || 'Patient'} sent message`,
+          description: notification.body || data.content,
+          CTAs: [
+            {
+              text: 'CANCEL',
+              type: 'white-button',
+              onPress: () => {
+                hideAphAlert && hideAphAlert();
+              },
             },
-          },
-          {
-            text: 'CONSULT ROOM',
-            type: 'orange-button',
-            onPress: () => {
-              goConsultRoom(data.appointmentId);
-              hideAphAlert && hideAphAlert();
+            {
+              text: 'CHAT',
+              type: 'orange-button',
+              onPress: () => {
+                hideAphAlert && hideAphAlert();
+                props.navigation.push(AppRoutes.ConsultRoomScreen, {
+                  AppId: data.appointmentId,
+                  activeTabIndex: 1,
+                });
+              },
             },
-          },
-        ],
-      });
+          ],
+        });
+    } else if (data.type === 'doctor_appointment_reminder') {
+      dismissNotification(notification.notificationId);
+      showAphAlert &&
+        showAphAlert({
+          title: notification.title || 'Appointment Reminder!',
+          description: data.content,
+          CTAs: [
+            {
+              text: 'CANCEL',
+              type: 'white-button',
+              onPress: () => {
+                hideAphAlert && hideAphAlert();
+              },
+            },
+            {
+              text: 'CONSULT ROOM',
+              type: 'orange-button',
+              onPress: () => {
+                hideAphAlert && hideAphAlert();
+                if (data.appointmentId) {
+                  AsyncStorage.setItem('requestCompleted', 'false');
+                  props.navigation.replace(AppRoutes.TabBar, {
+                    goToDate: new Date(),
+                    openAppointment: data.appointmentId,
+                  });
+                } else {
+                  showAphAlert &&
+                    showAphAlert({
+                      title: 'Alert!',
+                      description: 'Unable to open appointment',
+                      CTAs: [
+                        {
+                          text: 'CANCEL',
+                          type: 'white-button',
+                          onPress: () => {
+                            hideAphAlert && hideAphAlert();
+                          },
+                        },
+                        {
+                          text: 'OPEN CALENDER',
+                          type: 'orange-button',
+                          onPress: () => {
+                            hideAphAlert && hideAphAlert();
+                            props.navigation.replace(AppRoutes.TabBar, { goToDate: new Date() });
+                          },
+                        },
+                      ],
+                    });
+                }
+              },
+            },
+          ],
+        });
+    } else if (data.type === 'doctor_new_appointment_booked') {
+      const date =
+        data.content && moment(data.content, 'YYYY-MM-DD HH:mm:ss').isValid()
+          ? moment(data.content).toDate()
+          : new Date();
+      dismissNotification(notification.notificationId);
+      showAphAlert &&
+        showAphAlert({
+          title: `A New Appointment is scheduled with ${data.patientName}`,
+          description: `at ${moment(date).format('YYYY-MM-DD hh:mm A')}`,
+          CTAs: [
+            {
+              text: 'CANCEL',
+              type: 'white-button',
+              onPress: () => {
+                hideAphAlert && hideAphAlert();
+              },
+            },
+            {
+              text: 'OPEN CALENDER',
+              type: 'orange-button',
+              onPress: () => {
+                hideAphAlert && hideAphAlert();
+                props.navigation.replace(AppRoutes.TabBar, { goToDate: date });
+              },
+            },
+          ],
+        });
+    }
   };
 
-  const createCaseSheetSRDAPI = (AppId: string) => {
-    setLoading && setLoading(true);
-    client
-      .mutate<CreateSeniorDoctorCaseSheet>({
-        mutation: CREATE_CASESHEET_FOR_SRD,
-        variables: {
-          appointmentId: AppId,
-        },
-      })
-      .then((data) => {
-        const caseSheet = g(data, 'data', 'createSeniorDoctorCaseSheet');
-        props.navigation.push(AppRoutes.ConsultRoomScreen, {
-          AppId: AppId,
-          DoctorId: g(caseSheet, 'doctorId'),
-          PatientId: g(caseSheet, 'patientId'),
-          PatientConsultTime: null,
-          Appintmentdatetime: g(caseSheet, 'appointment', 'appointmentDateTime'),
-          AppointmentStatus: g(caseSheet, 'appointment', 'status'),
-          AppoinementData: g(caseSheet, 'appointment'),
-        });
-      })
-      .catch(() => {
-        setLoading && setLoading(false);
-        showAphAlert &&
-          showAphAlert({
-            title: 'Alert!',
-            description: 'Error occured while creating Case Sheet. Please try again',
-          });
-      });
-  };
-
-  const goConsultRoom = (appointmentId: string) => {
-    setLoading && setLoading(true);
-    client
-      .query<GetCaseSheet>({
-        query: GET_CASESHEET,
-        fetchPolicy: 'no-cache',
-        variables: { appointmentId: appointmentId },
-      })
-      .then((_data) => {
-        const caseSheet = g(_data, 'data', 'getCaseSheet');
-        props.navigation.push(AppRoutes.ConsultRoomScreen, {
-          AppId: appointmentId,
-          DoctorId: g(caseSheet, 'caseSheetDetails', 'doctorId'),
-          PatientId: g(caseSheet, 'caseSheetDetails', 'patientId'),
-          PatientConsultTime: null,
-          Appintmentdatetime: g(
-            caseSheet,
-            'caseSheetDetails',
-            'appointment',
-            'appointmentDateTime'
-          ),
-          AppointmentStatus: g(caseSheet, 'caseSheetDetails', 'appointment', 'status'),
-          AppoinementData: g(caseSheet, 'caseSheetDetails', 'appointment'),
-        });
-      })
-      .catch((e) => {
-        setLoading && setLoading(false);
-        const message = e.message ? e.message.split(':')[1].trim() : '';
-        if (message === 'NO_CASESHEET_EXIST') {
-          createCaseSheetSRDAPI(appointmentId);
-        }
-        console.log('Error occured while fetching Doctor GetJuniorDoctorCaseSheet', message);
-      });
-  };
   return <></>;
 };

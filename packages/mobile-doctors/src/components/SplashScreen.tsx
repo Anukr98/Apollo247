@@ -12,6 +12,7 @@ import { ActivityIndicator, AppState, AppStateStatus, Linking, Platform, View } 
 import firebase from 'react-native-firebase';
 import SplashScreenView from 'react-native-splash-screen';
 import { NavigationScreenProps } from 'react-navigation';
+import moment from 'moment';
 
 const styles = SplashScreenStyles;
 
@@ -39,6 +40,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
       Linking.addEventListener('url', (event) => handleOpenURL(event.url));
       AsyncStorage.removeItem('location');
+      AsyncStorage.setItem('showInAppNotification', 'true');
     } catch (error) {
       CommonBugFender('SplashScreen_Linking_URL_try', error);
       console.log('rrerererre', error);
@@ -48,6 +50,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const handleOpenURL = async (url: string) => {
     const route = url.replace('apollodoctors://', '');
     const data = route.split('?');
+    const multiData = data[1].split('&');
+
     console.log(url, data, 'deeplinkpress');
 
     const isLoggedIn = await AsyncStorage.getItem('isLoggedIn');
@@ -56,16 +60,38 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       switch (data[0].toLowerCase()) {
         case 'appointments':
           if (isLoggedIn) {
+            if (data.length == 1 || multiData.length !== 2) {
+              props.navigation.navigate(AppRoutes.TabBar);
+            } else if (data.length == 2 && multiData.length === 2) {
+              AsyncStorage.setItem('requestCompleted', 'false');
+              props.navigation.replace(AppRoutes.TabBar, {
+                goToDate: moment(multiData[1].split('=')[1]).isValid()
+                  ? moment(multiData[1].split('=')[1]).toDate()
+                  : new Date(),
+                openAppointment: multiData[0].split('=')[1],
+              });
+            }
+          }
+          break;
+        case 'chat':
+          if (isLoggedIn) {
             if (data.length == 1) {
               props.navigation.navigate(AppRoutes.TabBar);
             } else if (data.length == 2) {
               props.navigation.push(AppRoutes.ConsultRoomScreen, {
                 AppId: data[1],
-                DoctorId: '',
-                PatientId: '',
-                PatientConsultTime: null,
-                Appintmentdatetime: '',
-                AppoinementData: '',
+                activeTabIndex: 1,
+              });
+            }
+          }
+          break;
+        case 'calendar':
+          if (isLoggedIn) {
+            if (data.length == 1) {
+              props.navigation.navigate(AppRoutes.TabBar);
+            } else if (data.length == 2) {
+              props.navigation.replace(AppRoutes.TabBar, {
+                goToDate: moment(data[1]).isValid() ? moment(data[1]).toDate() : new Date(),
               });
             }
           }

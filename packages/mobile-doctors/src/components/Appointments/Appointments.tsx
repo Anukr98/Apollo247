@@ -1,18 +1,17 @@
 import AppointmentsStyles from '@aph/mobile-doctors/src/components/Appointments/Appointments.styles';
 import { AppointmentsList } from '@aph/mobile-doctors/src/components/Appointments/AppointmentsList';
-import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
+import { useNotification } from '@aph/mobile-doctors/src/components/Notification/NotificationContext';
+import { NotificationListener } from '@aph/mobile-doctors/src/components/NotificationListener';
+import { CommonNotificationHeader } from '@aph/mobile-doctors/src/components/ui/CommonNotificationHeader';
 import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
 import {
-  ApploLogo,
   CalendarTodayIcon,
   Down,
   NoCalenderData,
-  Notification,
-  RoundIcon,
   Up,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { Loader } from '@aph/mobile-doctors/src/components/ui/Loader';
-import { NeedHelpCard } from '@aph/mobile-doctors/src/components/ui/NeedHelpCard';
+import { useUIElements } from '@aph/mobile-doctors/src/components/ui/UIElementsProvider';
 import {
   GET_DOCTOR_APPOINTMENTS,
   SAVE_DOCTOR_DEVICE_TOKEN,
@@ -22,29 +21,26 @@ import {
   GetDoctorAppointmentsVariables,
   GetDoctorAppointments_getDoctorAppointments,
 } from '@aph/mobile-doctors/src/graphql/types/GetDoctorAppointments';
-import { DoctorProfile } from '@aph/mobile-doctors/src/helpers/commonTypes';
-import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
-import strings from '@aph/mobile-doctors/src/strings/strings.json';
-import { theme } from '@aph/mobile-doctors/src/theme/theme';
-import moment from 'moment';
-import React, { useEffect, useState } from 'react';
-import { useApolloClient } from 'react-apollo-hooks';
-import { SafeAreaView, Text, TouchableOpacity, View, Platform } from 'react-native';
-import { CalendarList } from 'react-native-calendars';
-import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import { WeekView } from './WeekView';
-import { NotificationListener } from '@aph/mobile-doctors/src/components/NotificationListener';
-import { CommonNotificationHeader } from '@aph/mobile-doctors/src/components/ui/CommonNotificationHeader';
-import { useNotification } from '@aph/mobile-doctors/src/components/Notification/NotificationContext';
-import { useUIElements } from '@aph/mobile-doctors/src/components/ui/UIElementsProvider';
-import firebase from 'react-native-firebase';
-import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
-import AsyncStorage from '@react-native-community/async-storage';
+import { DOCTOR_DEVICE_TYPE } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
 import {
   saveDoctorDeviceToken,
   saveDoctorDeviceTokenVariables,
 } from '@aph/mobile-doctors/src/graphql/types/saveDoctorDeviceToken';
-import { DOCTOR_DEVICE_TYPE } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
+import { DoctorProfile } from '@aph/mobile-doctors/src/helpers/commonTypes';
+import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
+import { g } from '@aph/mobile-doctors/src/helpers/helperFunctions';
+import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
+import strings from '@aph/mobile-doctors/src/strings/strings.json';
+import { theme } from '@aph/mobile-doctors/src/theme/theme';
+import AsyncStorage from '@react-native-community/async-storage';
+import moment from 'moment';
+import React, { useEffect, useState } from 'react';
+import { useApolloClient } from 'react-apollo-hooks';
+import { Platform, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
+import { CalendarList } from 'react-native-calendars';
+import firebase from 'react-native-firebase';
+import { NavigationScreenProps, ScrollView } from 'react-navigation';
+import { WeekView } from './WeekView';
 
 const styles = AppointmentsStyles;
 let timerId: NodeJS.Timeout;
@@ -66,6 +62,8 @@ const monthsName = [
 
 export interface AppointmentsProps extends NavigationScreenProps {
   profileData: DoctorProfile;
+  goToDate?: Date;
+  openAppointment?: string;
 }
 const intervalTime = 30 * 1000;
 export const Appointments: React.FC<AppointmentsProps> = (props) => {
@@ -73,19 +71,21 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
     (props.navigation.state.params && props.navigation.state.params.displayName) || ''
   );
   const { fetchNotifications } = useNotification();
+  const openAppointment = props.navigation.getParam('openAppointment');
+  const defaultDate = props.navigation.getParam('goToDate') || new Date();
 
-  const [date, setDate] = useState<Date>(new Date());
-  const [calendarDate, setCalendarDate] = useState<Date>(new Date()); // to maintain a sync between week view change and calendar month
+  const [date, setDate] = useState<Date>(defaultDate);
+  const [calendarDate, setCalendarDate] = useState<Date>(defaultDate); // to maintain a sync between week view change and calendar month
   const [isCalendarVisible, setCalendarVisible] = useState(false);
 
-  const [currentmonth, setCurrentMonth] = useState(monthsName[new Date().getMonth()]);
+  const [currentmonth, setCurrentMonth] = useState(monthsName[defaultDate.getMonth()]);
   const [getAppointments, setgetAppointments] = useState<
     GetDoctorAppointments_getDoctorAppointments
   >();
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
 
   const { doctorDetails } = useAuth();
-  const { isAlertVisible } = useUIElements();
+  const { isAlertVisible, showAphAlert } = useUIElements();
 
   useEffect(() => {
     setDoctorName((doctorDetails && doctorDetails.displayName) || '');
@@ -210,8 +210,26 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
         },
         fetchPolicy: 'no-cache',
       })
-      .then(({ data }) => {
-        data && data.getDoctorAppointments && setgetAppointments(data.getDoctorAppointments);
+      .then(async ({ data }) => {
+        if (data && data.getDoctorAppointments) {
+          setgetAppointments(data.getDoctorAppointments);
+          const requestStatus = JSON.parse(
+            (await AsyncStorage.getItem('requestCompleted')) || 'false'
+          );
+
+          if (
+            data.getDoctorAppointments.appointmentsHistory &&
+            data.getDoctorAppointments.appointmentsHistory.length === 0 &&
+            !requestStatus
+          ) {
+            AsyncStorage.setItem('requestCompleted', 'true');
+            showAphAlert &&
+              showAphAlert({
+                title: 'Alert!',
+                description: 'Not able to find appointment. Try again',
+              });
+          }
+        }
       })
       .catch((err) => {
         setgetAppointments(undefined);
@@ -424,6 +442,7 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
             navigation={props.navigation}
             appointmentsHistory={(getAppointments && getAppointments.appointmentsHistory) || []}
             newPatientsList={(getAppointments && getAppointments.newPatientsList) || []}
+            openAppointment={openAppointment}
           />
         )}
       </View>

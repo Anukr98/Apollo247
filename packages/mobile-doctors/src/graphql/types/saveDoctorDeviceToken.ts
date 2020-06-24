@@ -11,7 +11,6 @@ import { SaveDoctorDeviceTokenInput, DOCTOR_DEVICE_TYPE } from "./globalTypes";
 export interface saveDoctorDeviceToken_saveDoctorDeviceToken_deviceToken {
   __typename: "DoctorDeviceTokens";
   id: string;
-  doctorId: string;
   deviceType: DOCTOR_DEVICE_TYPE;
   deviceOS: string;
   deviceToken: string;
