@@ -106,6 +106,20 @@ export const Reload: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('../../images/icons/ic_reset.png')} />
 );
 
+export const Reset: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('../../images/icons/ic_reload.png')} />
+);
+
+export const Link: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('../../images/icons/link.png')} />
+);
+export const ConnectCall: React.FC<IconProps> = (props) => (
+  <IconBase size="xs" {...props} source={require('../../images/icons/group_44.png')} />
+);
+export const CloseWhite: React.FC<IconProps> = (props) => (
+  <IconBase size="xs" {...props} source={require('../../images/icons/close_white.png')} />
+);
+
 export const SortDecreasing: React.FC<IconProps> = (props) => (
   <IconBase {...props} source={require('../../images/icons/ic_sort_decreasing.png')} />
 );

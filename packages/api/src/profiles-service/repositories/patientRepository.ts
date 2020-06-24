@@ -1,5 +1,5 @@
-import { EntityRepository, Repository, AfterUpdate, Not } from 'typeorm';
-import { Patient, PRISM_DOCUMENT_CATEGORY } from 'profiles-service/entities';
+import { EntityRepository, Repository, Not, AfterUpdate } from 'typeorm';
+import { Patient, PRISM_DOCUMENT_CATEGORY, PatientAddress } from 'profiles-service/entities';
 import { ApiConstants } from 'ApiConstants';
 import { UhidCreateResult } from 'types/uhidCreateTypes';
 import { pool } from 'profiles-service/database/connectRedis';
@@ -241,6 +241,13 @@ export class PatientRepository extends Repository<Patient> {
 
   async findDetailsByMobileNumber(mobileNumber: string) {
     return (await this.getByMobileCache(mobileNumber))[0];
+  }
+
+  getPatientAddressById(id: PatientAddress['id']) {
+    return PatientAddress.findOne({
+      where: { id },
+      select: ['addressLine1', 'addressLine2', 'landmark', 'city', 'state', 'zipcode'],
+    });
   }
 
   updatePatientAllergies(id: string, allergies: string) {

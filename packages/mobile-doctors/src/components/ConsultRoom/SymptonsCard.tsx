@@ -57,24 +57,26 @@ export const SymptonsCard: React.FC<CapsuleViewProps> = (props) => {
             )}
           </View>
         </View>
-        <View style={{ marginTop: -5 }}>
-          {days && (
-            <Text numberOfLines={1} style={styles.tabdata}>
-              {days}
-            </Text>
-          )}
-          {howoften && (
-            <Text numberOfLines={1} style={styles.tabdata}>
-              {howoften}
-            </Text>
-          )}
-          {seviarity && (
-            <Text numberOfLines={1} style={styles.tabdata}>
-              {seviarity}
-            </Text>
-          )}
-          {details && <Text style={styles.tabdata}>{details}</Text>}
-        </View>
+        {days || howoften || seviarity || details ? (
+          <View style={{ marginTop: -5 }}>
+            {days && (
+              <Text numberOfLines={1} style={styles.tabdata}>
+                {days}
+              </Text>
+            )}
+            {howoften && (
+              <Text numberOfLines={1} style={styles.tabdata}>
+                {howoften}
+              </Text>
+            )}
+            {seviarity && (
+              <Text numberOfLines={1} style={styles.tabdata}>
+                {seviarity}
+              </Text>
+            )}
+            {details && <Text style={styles.tabdata}>{details}</Text>}
+          </View>
+        ) : null}
       </View>
     </View>
   );
