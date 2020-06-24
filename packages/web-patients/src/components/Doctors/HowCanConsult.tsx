@@ -329,6 +329,7 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
             id="btnActive"
             onClick={() => {
               setPhysicalDirection(true);
+              setOnlineDirection(false);
             }}
           >
             <span>Meet in Person</span>
