@@ -404,6 +404,8 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
   const shopAddress = g(orderDetails, 'shopAddress');
   const shopName = (JSON.parse(shopAddress || '{}') || {}).storename;
   const offlineOrderNumber = g(orderDetails, 'billNumber');
+  const offlineOrdeDiscount = (offlineOrderNumber && g(orderDetails, 'productDiscount')) || 0;
+  const offlineOrdeRedeemedAmount = (offlineOrderNumber && g(orderDetails, 'redeemedAmount')) || 0;
 
   return (
     <View>
@@ -604,7 +606,7 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
                 </Text>
               </View>
             ) : null}
-            {!newOrders ? (
+            {!newOrders && !offlineOrderNumber ? (
               <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                 <Text style={styles.paymentLeftText}>{string.OrderSummery.delivery_charges}</Text>
                 <Text style={[styles.paymentLeftText, { textAlign: 'right' }]}>
@@ -620,12 +622,30 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
                 </Text>
               </View>
             ) : null}
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-              <Text style={styles.paymentLeftText}>{string.OrderSummery.packaging_charges}</Text>
-              <Text style={[styles.paymentLeftText, { textAlign: 'right' }]}>
-                + Rs. {(packaging_charges || 0).toFixed(2)}
-              </Text>
-            </View>
+            {!offlineOrderNumber && (
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                <Text style={styles.paymentLeftText}>{string.OrderSummery.packaging_charges}</Text>
+                <Text style={[styles.paymentLeftText, { textAlign: 'right' }]}>
+                  + Rs. {(packaging_charges || 0).toFixed(2)}
+                </Text>
+              </View>
+            )}
+            {!!offlineOrderNumber && (
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                <Text style={styles.paymentLeftText}>{string.OrderSummaryText.discount_total}</Text>
+                <Text style={[styles.paymentLeftText, { textAlign: 'right' }]}>
+                  - Rs. {(offlineOrdeDiscount || 0).toFixed(2)}
+                </Text>
+              </View>
+            )}
+            {!!offlineOrderNumber && (
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                <Text style={styles.paymentLeftText}>{string.OrderSummery.redeemed_amount}</Text>
+                <Text style={[styles.paymentLeftText, { textAlign: 'right' }]}>
+                  - Rs. {(offlineOrdeRedeemedAmount || 0).toFixed(2)}
+                </Text>
+              </View>
+            )}
             <View style={[styles.horizontalline, { marginTop: 4, marginBottom: 7 }]} />
             <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
               <Text style={[styles.boldTotal]}>{string.OrderSummery.total.toUpperCase()}</Text>

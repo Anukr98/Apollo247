@@ -301,6 +301,7 @@
     "store_address": "Store Address - ",
     "paymentDetails": "PAYMENT DETAILS",
     "mrp_total": "MRP Total",
+    "redeemed_amount": "Redeemed Amount",
     "product_discount": "Product Discount",
     "coupon_discount": "Coupon Discount",
     "delivery_charges": "Delivery Charges",
