@@ -220,7 +220,10 @@ const SaveMedicineOrderPaymentMq: Resolver<
 
     let statusMsg = '';
     if (medicinePaymentMqInput.paymentStatus == 'TXN_FAILURE') {
-      if (medicinePaymentMqInput.responseCode == '141') {
+      if (
+        medicinePaymentMqInput.responseCode == '141' ||
+        medicinePaymentMqInput.responseCode == '810'
+      ) {
         currentStatus = MEDICINE_ORDER_STATUS.PAYMENT_ABORTED;
         errorCode = -1;
         errorMessage = 'Payment Aborted';
