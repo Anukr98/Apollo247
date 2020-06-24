@@ -1344,6 +1344,18 @@
             "deprecationReason": null
           },
           {
+            "name": "getAllCities",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "OBJECT",
+              "name": "CitiesResult",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
             "name": "SearchDoctorAndSpecialtyByName",
             "description": null,
             "args": [
@@ -1933,6 +1945,33 @@
             "deprecationReason": null
           },
           {
+            "name": "getPatientPersonalizedAppointments",
+            "description": null,
+            "args": [
+              {
+                "name": "patientUhid",
+                "description": null,
+                "type": {
+                  "kind": "SCALAR",
+                  "name": "String",
+                  "ofType": null
+                },
+                "defaultValue": null
+              }
+            ],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "OBJECT",
+                "name": "PersonalizedAppointmentResult",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
             "name": "getDoctorNextAvailableSlot",
             "description": null,
             "args": [
@@ -2490,6 +2529,26 @@
                   "ofType": null
                 },
                 "defaultValue": null
+              },
+              {
+                "name": "deviceType",
+                "description": null,
+                "type": {
+                  "kind": "ENUM",
+                  "name": "DEVICETYPE",
+                  "ofType": null
+                },
+                "defaultValue": null
+              },
+              {
+                "name": "callSource",
+                "description": null,
+                "type": {
+                  "kind": "ENUM",
+                  "name": "BOOKINGSOURCE",
+                  "ofType": null
+                },
+                "defaultValue": null
               }
             ],
             "type": {
@@ -3029,6 +3088,16 @@
             "args": [
               {
                 "name": "appointmentId",
+                "description": null,
+                "type": {
+                  "kind": "SCALAR",
+                  "name": "String",
+                  "ofType": null
+                },
+                "defaultValue": null
+              },
+              {
+                "name": "chatMessage",
                 "description": null,
                 "type": {
                   "kind": "SCALAR",
@@ -4991,6 +5060,18 @@
             "deprecationReason": null
           },
           {
+            "name": "redeemedAmount",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "Float",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
             "name": "showPrescriptionAtStore",
             "description": null,
             "args": [],
@@ -5121,6 +5202,18 @@
             "type": {
               "kind": "OBJECT",
               "name": "Patient",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "customerComment",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
               "ofType": null
             },
             "isDeprecated": false,
@@ -8495,6 +8588,22 @@
             },
             "isDeprecated": false,
             "deprecationReason": null
+          },
+          {
+            "name": "testResultFiles",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "LIST",
+              "name": null,
+              "ofType": {
+                "kind": "OBJECT",
+                "name": "PrecriptionFileParameters",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
           }
         ],
         "inputFields": null,
@@ -8587,6 +8696,89 @@
       },
       {
         "kind": "OBJECT",
+        "name": "PrecriptionFileParameters",
+        "description": null,
+        "fields": [
+          {
+            "name": "id",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "fileName",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "mimeType",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "content",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "byteContent",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "dateCreated",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "Int",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
+        "inputFields": null,
+        "interfaces": [],
+        "enumValues": null,
+        "possibleTypes": null
+      },
+      {
+        "kind": "OBJECT",
         "name": "PrescriptionDownloadResponse",
         "description": null,
         "fields": [
@@ -8636,22 +8828,6 @@
               "ofType": {
                 "kind": "OBJECT",
                 "name": "PrescriptionsBaseResponse",
-                "ofType": null
-              }
-            },
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
-            "name": "prescriptionFiles",
-            "description": null,
-            "args": [],
-            "type": {
-              "kind": "LIST",
-              "name": null,
-              "ofType": {
-                "kind": "OBJECT",
-                "name": "PrecriptionFileParameters",
                 "ofType": null
               }
             },
@@ -8848,86 +9024,19 @@
             },
             "isDeprecated": false,
             "deprecationReason": null
-          }
-        ],
-        "inputFields": null,
-        "interfaces": [],
-        "enumValues": null,
-        "possibleTypes": null
-      },
-      {
-        "kind": "OBJECT",
-        "name": "PrecriptionFileParameters",
-        "description": null,
-        "fields": [
-          {
-            "name": "id",
-            "description": null,
-            "args": [],
-            "type": {
-              "kind": "SCALAR",
-              "name": "String",
-              "ofType": null
-            },
-            "isDeprecated": false,
-            "deprecationReason": null
           },
           {
-            "name": "fileName",
+            "name": "prescriptionFiles",
             "description": null,
             "args": [],
             "type": {
-              "kind": "SCALAR",
-              "name": "String",
-              "ofType": null
-            },
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
-            "name": "mimeType",
-            "description": null,
-            "args": [],
-            "type": {
-              "kind": "SCALAR",
-              "name": "String",
-              "ofType": null
-            },
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
-            "name": "content",
-            "description": null,
-            "args": [],
-            "type": {
-              "kind": "SCALAR",
-              "name": "String",
-              "ofType": null
-            },
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
-            "name": "byteContent",
-            "description": null,
-            "args": [],
-            "type": {
-              "kind": "SCALAR",
-              "name": "String",
-              "ofType": null
-            },
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
-            "name": "dateCreated",
-            "description": null,
-            "args": [],
-            "type": {
-              "kind": "SCALAR",
-              "name": "Int",
-              "ofType": null
+              "kind": "LIST",
+              "name": null,
+              "ofType": {
+                "kind": "OBJECT",
+                "name": "PrecriptionFileParameters",
+                "ofType": null
+              }
             },
             "isDeprecated": false,
             "deprecationReason": null
@@ -14278,6 +14387,33 @@
       },
       {
         "kind": "OBJECT",
+        "name": "CitiesResult",
+        "description": null,
+        "fields": [
+          {
+            "name": "city",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "LIST",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "String",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
+        "inputFields": null,
+        "interfaces": [],
+        "enumValues": null,
+        "possibleTypes": null
+      },
+      {
+        "kind": "OBJECT",
         "name": "SearchDoctorAndSpecialtyByNameResult",
         "description": null,
         "fields": [
@@ -19281,6 +19417,112 @@
                   "ofType": null
                 }
               }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
+        "inputFields": null,
+        "interfaces": [],
+        "enumValues": null,
+        "possibleTypes": null
+      },
+      {
+        "kind": "OBJECT",
+        "name": "PersonalizedAppointmentResult",
+        "description": null,
+        "fields": [
+          {
+            "name": "appointmentDetails",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "OBJECT",
+              "name": "PersonalizedAppointment",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
+        "inputFields": null,
+        "interfaces": [],
+        "enumValues": null,
+        "possibleTypes": null
+      },
+      {
+        "kind": "OBJECT",
+        "name": "PersonalizedAppointment",
+        "description": null,
+        "fields": [
+          {
+            "name": "id",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "hospitalLocation",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "appointmentDateTime",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "DateTime",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "appointmentType",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "ENUM",
+              "name": "APPOINTMENT_TYPE",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "doctorId",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "doctorDetails",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "OBJECT",
+              "name": "DoctorDetailsWithStatusExclude",
+              "ofType": null
             },
             "isDeprecated": false,
             "deprecationReason": null
@@ -27090,6 +27332,18 @@
             "deprecationReason": null
           },
           {
+            "name": "generateDeepLinksByCron",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
             "name": "generateSitemap",
             "description": null,
             "args": [],
@@ -30313,6 +30567,16 @@
               "ofType": null
             },
             "defaultValue": null
+          },
+          {
+            "name": "customerComment",
+            "description": null,
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "defaultValue": null
           }
         ],
         "interfaces": null,
@@ -31083,6 +31347,16 @@
             "type": {
               "kind": "SCALAR",
               "name": "Int",
+              "ofType": null
+            },
+            "defaultValue": null
+          },
+          {
+            "name": "customerComment",
+            "description": null,
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
               "ofType": null
             },
             "defaultValue": null
@@ -37789,6 +38063,36 @@
             "type": {
               "kind": "ENUM",
               "name": "REQUEST_ROLES",
+              "ofType": null
+            },
+            "defaultValue": null
+          },
+          {
+            "name": "deviceType",
+            "description": null,
+            "type": {
+              "kind": "ENUM",
+              "name": "DEVICETYPE",
+              "ofType": null
+            },
+            "defaultValue": null
+          },
+          {
+            "name": "callSource",
+            "description": null,
+            "type": {
+              "kind": "ENUM",
+              "name": "BOOKINGSOURCE",
+              "ofType": null
+            },
+            "defaultValue": null
+          },
+          {
+            "name": "callType",
+            "description": null,
+            "type": {
+              "kind": "ENUM",
+              "name": "APPT_CALL_TYPE",
               "ofType": null
             },
             "defaultValue": null

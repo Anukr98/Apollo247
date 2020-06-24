@@ -23,6 +23,8 @@ import {
   DOCTOR_CALL_TYPE,
   APPT_CALL_TYPE,
   STATUS,
+  DEVICETYPE,
+  BOOKINGSOURCE,
 } from 'graphql/types/globalTypes';
 import {
   GetJuniorDoctorCaseSheet,
@@ -1177,6 +1179,8 @@ export const ConsultTabs: React.FC = () => {
           appointmentId: appointmentId,
           callType: callType,
           doctorType: DOCTOR_CALL_TYPE.SENIOR,
+          deviceType: DEVICETYPE.DESKTOP,
+          callSource: BOOKINGSOURCE.WEB,
         },
       })
       .then((_data) => {
@@ -1206,6 +1210,8 @@ export const ConsultTabs: React.FC = () => {
             appointmentId: appointmentId,
             callType: callType,
             doctorType: DOCTOR_CALL_TYPE.SENIOR,
+            deviceType: DEVICETYPE.DESKTOP,
+            callSource: BOOKINGSOURCE.WEB,
           }),
           appointmentId: appointmentId,
           doctorId: currentPatient!.id,

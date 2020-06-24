@@ -1,3 +1,4 @@
+//this service is not in use, used for First version of PRISM
 import AbortController from 'abort-controller';
 import { PrismGetAuthTokenResponse, PrismGetUsersResponse } from 'types/prism';
 import { ServiceBusService } from 'azure-sb';
