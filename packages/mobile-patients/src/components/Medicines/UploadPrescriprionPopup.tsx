@@ -181,7 +181,10 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
       })
         .then((response) => {
           setshowSpinner(false);
-          props.onResponse('CAMERA', formatResponse([response] as ImageCropPickerResponse[]));
+          props.onResponse(
+            'CAMERA_AND_GALLERY',
+            formatResponse([response] as ImageCropPickerResponse[])
+          );
         })
         .catch((e: Error) => {
           CommonBugFender('UploadPrescriprionPopup_onClickTakePhoto', e);
@@ -254,7 +257,10 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
         //console.log('res', response);
 
         setshowSpinner(false);
-        props.onResponse('GALLERY', formatResponse(response as ImageCropPickerResponse[]));
+        props.onResponse(
+          'CAMERA_AND_GALLERY',
+          formatResponse(response as ImageCropPickerResponse[])
+        );
       })
       .catch((e: Error) => {
         CommonBugFender('UploadPrescriprionPopup_onClickGallery', e);
@@ -373,9 +379,9 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
       >
         {!!props.optionTexts.camera && (
           <TouchableOpacity
-            disabled={isOptionDisabled('CAMERA')}
+            disabled={isOptionDisabled('CAMERA_AND_GALLERY')}
             activeOpacity={1}
-            style={[styles.cardContainer, getOptionStyle('CAMERA')]}
+            style={[styles.cardContainer, getOptionStyle('CAMERA_AND_GALLERY')]}
             onPress={onClickTakePhoto}
           >
             <CameraIcon />
@@ -384,9 +390,9 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
         )}
         {!!props.optionTexts.gallery && (
           <TouchableOpacity
-            disabled={isOptionDisabled('GALLERY')}
+            disabled={isOptionDisabled('CAMERA_AND_GALLERY')}
             activeOpacity={1}
-            style={[styles.cardContainer, getOptionStyle('GALLERY')]}
+            style={[styles.cardContainer, getOptionStyle('CAMERA_AND_GALLERY')]}
             onPress={onClickGallery}
           >
             <GalleryIcon />

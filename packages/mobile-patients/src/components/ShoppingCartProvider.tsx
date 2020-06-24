@@ -53,7 +53,7 @@ export interface PharmaCoupon extends validatePharmaCoupon_validatePharmaCoupon 
   code: string;
 }
 
-export type EPrescriptionDisableOption = 'CAMERA' | 'GALLERY' | 'E-PRESCRIPTION' | 'NONE';
+export type EPrescriptionDisableOption = 'CAMERA_AND_GALLERY' | 'E-PRESCRIPTION' | 'NONE';
 
 export interface ShoppingCartContextProps {
   cartItems: ShoppingCartItem[];
