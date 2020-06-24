@@ -105,9 +105,9 @@ export const PincodePopup: React.FC<PincodePopupProps> = (props) => {
             Pincode: pincode,
           };
           postWebEngageEvent(WebEngageEventName.PHARMACY_PINCODE_NONSERVICABLE, eventAttributes);
-          globalLoading!(false);
           getNearByStoreDetailsApi(pincode)
             .then((response: any) => {
+              globalLoading!(false);
               setShowCallToPharmacy(true);
               setPharmacyPhoneNumber(
                 response.data && response.data.phoneNumber
@@ -117,6 +117,7 @@ export const PincodePopup: React.FC<PincodePopupProps> = (props) => {
               setError('We are servicing your area through the nearest Pharmacy, ');
             })
             .catch((error) => {
+              globalLoading!(false);
               setShowCallToPharmacy(false);
               setError(
                 'Sorry, we are not servicing your area currently. Call 1860 500 0101 for Pharmacy stores nearby.'
