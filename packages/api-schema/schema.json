@@ -27332,7 +27332,7 @@
             "deprecationReason": null
           },
           {
-            "name": "insertDeepLinksByCron",
+            "name": "generateDeepLinksByCron",
             "description": null,
             "args": [],
             "type": {
