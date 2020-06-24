@@ -759,14 +759,6 @@ export const MedicineDetails: React.FC = (props) => {
     ));
   };
 
-  const renderTabName = (overView: MedicineOverView) => {
-    const data = getData(overView);
-    data.map((item, index) => {
-      console.log('item', item, index, tabValue);
-      return tabValue === index && item.key;
-    });
-  };
-
   const renderInfo = () => {
     return (
       medicineDetails.description &&

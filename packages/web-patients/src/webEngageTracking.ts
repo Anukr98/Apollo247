@@ -281,7 +281,7 @@ export const pharmacyPdpPincodeTracking = (data: any) => {
     const { productName, productId, customerId, pinCode } = data;
     try {
       window.webengage.track('Filter option clicked', {
-        'Product ID': productId.toString(),
+        'Product ID': productId,
         'Product Name': productName,
         'Customer ID': customerId,
         'PIN Code': Number(pinCode),
@@ -297,6 +297,35 @@ export const pharmacyPdpOverviewTracking = (result: string) => {
     try {
       window.webengage.track('Pharmacy PDP Pharma overview clicked', {
         'Type of information': result,
+      });
+    } catch (err) {
+      console.log('WebEngage Err: ', err);
+    }
+  }
+};
+
+export const pharmacyPdpSubstituteTracking = (data: any) => {
+  if (window && window.webengage) {
+    const { productName, productId } = data;
+    try {
+      window.webengage.track('Filter option clicked', {
+        'Product ID': productId,
+        'Product Name': productName,
+      });
+    } catch (err) {
+      console.log('WebEngage Err: ', err);
+    }
+  }
+};
+
+export const pharmacyConfigSectionTracking = (data: any) => {
+  if (window && window.webengage) {
+    const { productName, productId, sectionName } = data;
+    try {
+      window.webengage.track('Filter option clicked', {
+        'Section name': sectionName,
+        'Product ID': productId,
+        'Product Name': productName,
       });
     } catch (err) {
       console.log('WebEngage Err: ', err);

@@ -519,12 +519,15 @@ export const MedicineLanding: React.FC = (props: any) => {
       key: 'Deals of the day',
       value: <DayDeals data={data.deals_of_the_day} />,
     },
-    { key: 'Hot Sellers', value: <HotSellers data={data.hot_sellers} /> },
+    { key: 'Hot Sellers', value: <HotSellers data={data.hot_sellers} section="Hotsellers" /> },
     {
       key: 'Shop by Category',
       value: <ShopByCategory data={data.shop_by_category} />,
     },
-    { key: 'Monsoon Essentials', value: <HotSellers data={data.monsoon_essentials} /> },
+    {
+      key: 'Monsoon Essentials',
+      value: <HotSellers data={data.monsoon_essentials} section="Monsoon Essentials" />,
+    },
     { key: 'Shop by Brand', value: <ShopByBrand data={data.shop_by_brand} /> },
   ];
 
@@ -539,8 +542,10 @@ export const MedicineLanding: React.FC = (props: any) => {
   };
   const metaTagProps = {
     title: 'Buy/Order Medicines And Health Products - Online Pharmacy Store - Apollo 247',
-    description: 'Order medicines and health products online at Apollo 247 - a leading online pharmacy store. Buy all medicines you need from home in just a few clicks. Apollo 247 is a one-stop solution for all your medical needs.',
-    canonicalLink: window && window.location && window.location.origin && `${window.location.origin}/medicines`,
+    description:
+      'Order medicines and health products online at Apollo 247 - a leading online pharmacy store. Buy all medicines you need from home in just a few clicks. Apollo 247 is a one-stop solution for all your medical needs.',
+    canonicalLink:
+      window && window.location && window.location.origin && `${window.location.origin}/medicines`,
   };
 
   return (

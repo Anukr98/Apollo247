@@ -597,10 +597,10 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                       }}
                       onClick={() => {
                         checkDeliveryTime(pinCode);
-                        const { id, name } = data;
+                        const { sku, name } = data;
                         const eventData = {
                           pinCode,
-                          productId: id,
+                          productId: sku,
                           productName: name,
                           customerId: currentPatient && currentPatient.id,
                         };
