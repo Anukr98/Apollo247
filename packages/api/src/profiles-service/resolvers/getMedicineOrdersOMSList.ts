@@ -293,7 +293,7 @@ const getMedicineOrderOMSDetails: Resolver<
   ProfilesServiceContext,
   MedicineOrderOMSDetailsResult
 > = async (parent, args, { profilesDb }) => {
-  let medicineOrderDetails: any = {};
+  let medicineOrderDetails: any = '';
   if (args.billNumber && args.billNumber != '' && args.billNumber != '0') {
     const ordersResp = await fetch(
       process.env.PRISM_GET_OFFLINE_ORDERS
@@ -372,6 +372,9 @@ const getMedicineOrderOMSDetails: Resolver<
           medicineOrderDetails = offlineList;
         }
       });
+    }
+    if (medicineOrderDetails == '' || medicineOrderDetails == null) {
+      throw new AphError(AphErrorMessages.INVALID_MEDICINE_ORDER_ID, undefined, {});
     }
   } else {
     const patientRepo = profilesDb.getCustomRepository(PatientRepository);

@@ -233,16 +233,22 @@ const getPatientPersonalizedAppointments: Resolver<
   let apptDetails: any = '';
   if (offlineApptsList.errorCode == 0) {
     //console.log(offlineApptsList.response, offlineApptsList.response.length);
-    let doctorId = '';
-    console.log(ApiConstants.DEV_DOC_ID.toString(), process.env.NODE_ENV, 'input data');
-    if (process.env.NODE_ENV == 'local') doctorId = ApiConstants.LOCAL_DOC_ID.toString();
-    else if (process.env.NODE_ENV == 'development') doctorId = ApiConstants.DEV_DOC_ID.toString();
-    else if (process.env.NODE_ENV == 'staging') doctorId = ApiConstants.QA_DOC_ID.toString();
+    let doctorId2 = '';
+    if (process.env.NODE_ENV == 'local') doctorId2 = ApiConstants.LOCAL_DOC_ID.toString();
+    else if (process.env.NODE_ENV == 'development') doctorId2 = ApiConstants.DEV_DOC_ID.toString();
+    else if (process.env.NODE_ENV == 'staging') doctorId2 = ApiConstants.QA_DOC_ID.toString();
     else offlineApptsList.response[0].doctorid_247;
-    doctorId = '74c93b2e-8aab-4b6c-8391-5407f4afb833';
+    const doctorId = '74c93b2e-8aab-4b6c-8391-5407f4afb833';
     const apptDetailsOffline: PersonalizedAppointment = {
       id: offlineApptsList.response[0].appointmentid,
-      hospitalLocation: offlineApptsList.response[0].location_name,
+      hospitalLocation:
+        offlineApptsList.response[0].location_name +
+        '-' +
+        ApiConstants.DEV_DOC_ID.toString() +
+        '-' +
+        process.env.NODE_ENV +
+        '-' +
+        doctorId2,
       appointmentDateTime: new Date(offlineApptsList.response[0].consultedtime),
       appointmentType:
         offlineApptsList.response[0].appointmenttype == 'WALKIN'
