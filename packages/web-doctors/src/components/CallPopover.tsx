@@ -2624,7 +2624,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                               }
                             }}
                           >
-                            End or Cancel Consult
+                            Cancel Consult
                           </li>
                         )}
                     </>

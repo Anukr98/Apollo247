@@ -391,14 +391,14 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
             <li className={classes.blueText}>
               <span>
                 <img
-                  src={require(physicalDirection
+                  src={require(onlineDirection
                     ? 'images/ic_video-blue.svg'
                     : 'images/ic_hospital.svg')}
                   alt=""
                 />
               </span>
               <span>
-                {physicalDirection
+                {onlineDirection
                   ? 'Speak to the doctor via video/audio/chat'
                   : 'Visit the doctor at Hospital/Clinic'}
               </span>
