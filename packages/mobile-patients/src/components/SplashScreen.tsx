@@ -391,8 +391,11 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       case 'Speciality':
         console.log('Speciality id', id);
         setBugFenderLog('APPS_FLYER_DEEP_LINK_COMPLETE', id);
+        const filtersData = id ? id.split('%20') : '';
         props.navigation.navigate(AppRoutes.DoctorSearchListing, {
-          specialityId: id ? id : '',
+          specialityId: filtersData[0] ? filtersData[0] : '',
+          typeOfConsult: filtersData.length > 1 ? filtersData[1] : '',
+          doctorType: filtersData.length > 2 ? filtersData[2] : '',
         });
         // props.navigation.replace(AppRoutes.DoctorSearchListing, {
         //   specialityId: id ? id : '',
