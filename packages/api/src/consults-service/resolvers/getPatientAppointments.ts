@@ -7,6 +7,7 @@ import { PatientRepository } from 'profiles-service/repositories/patientReposito
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { ApiConstants } from 'ApiConstants';
+import { DoctorHospitalRepository } from 'doctors-service/repositories/doctorHospitalRepository';
 
 export const getPatinetAppointmentsTypeDefs = gql`
   type PatinetAppointments {
@@ -217,9 +218,12 @@ const getPatientPersonalizedAppointments: Resolver<
   ConsultServiceContext,
   PersonalizedAppointmentResult
 > = async (parent, args, { consultsDb, doctorsDb }) => {
+  let uhid = args.patientUhid;
+  if (process.env.NODE_ENV == 'local') uhid = ApiConstants.CURRENT_UHID.toString();
+  else if (process.env.NODE_ENV == 'dev') uhid = ApiConstants.CURRENT_UHID.toString();
   const apptsResp = await fetch(
     process.env.PRISM_GET_OFFLINE_APPOINTMENTS
-      ? process.env.PRISM_GET_OFFLINE_APPOINTMENTS + ApiConstants.CURRENT_UHID
+      ? process.env.PRISM_GET_OFFLINE_APPOINTMENTS + uhid
       : '',
     {
       method: 'GET',
@@ -232,22 +236,26 @@ const getPatientPersonalizedAppointments: Resolver<
   let apptDetails: PersonalizedAppointment;
   if (offlineApptsList.errorCode == 0) {
     //console.log(offlineApptsList.response, offlineApptsList.response.length);
-    let doctorId = '';
-    if (process.env.NODE_ENV == 'local') doctorId = ApiConstants.LOCAL_DOC_ID.toString();
-    else if (process.env.NODE_ENV == 'dev') doctorId = ApiConstants.DEV_DOC_ID.toString();
-    else if (process.env.NODE_ENV == 'staging') doctorId = ApiConstants.QA_DOC_ID.toString();
-    else offlineApptsList.response[0].doctorid_247;
-    const apptDetailsOffline: PersonalizedAppointment = {
-      id: offlineApptsList.response[0].appointmentid,
-      hospitalLocation: offlineApptsList.response[0].location_name,
-      appointmentDateTime: new Date(offlineApptsList.response[0].consultedtime),
-      appointmentType:
-        offlineApptsList.response[0].appointmenttype == 'WALKIN'
-          ? APPOINTMENT_TYPE.PHYSICAL
-          : APPOINTMENT_TYPE.ONLINE,
-      doctorId,
-    };
-    apptDetails = apptDetailsOffline;
+    const doctorRepo = doctorsDb.getCustomRepository(DoctorHospitalRepository);
+    const doctorDets = await doctorRepo.getDoctorIdByMedmantraId(
+      offlineApptsList.response[0].doctorid
+    );
+    console.log(doctorDets, 'sel doctor dets');
+    if (doctorDets) {
+      const apptDetailsOffline: PersonalizedAppointment = {
+        id: offlineApptsList.response[0].appointmentid,
+        hospitalLocation: offlineApptsList.response[0].location_name,
+        appointmentDateTime: new Date(offlineApptsList.response[0].consultedtime),
+        appointmentType:
+          offlineApptsList.response[0].appointmenttype == 'WALKIN'
+            ? APPOINTMENT_TYPE.PHYSICAL
+            : APPOINTMENT_TYPE.ONLINE,
+        doctorId: doctorDets.doctor.id,
+      };
+      apptDetails = apptDetailsOffline;
+    } else {
+      throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID);
+    }
   } else {
     console.log(offlineApptsList.errorMsg, offlineApptsList.errorCode, 'offline consults error');
     throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
