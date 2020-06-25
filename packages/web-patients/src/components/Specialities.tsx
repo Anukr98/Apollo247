@@ -83,14 +83,27 @@ const useStyles = makeStyles((theme: Theme) => {
       justifyContent: 'center',
     },
     rightArrow: {
-      marginLeft: 'auto',
+      top: 5,
+      right: 0,
+      position: 'absolute',
     },
     specialityDetails: {
       fontSize: 12,
       fontWeight: 500,
+      color: 'rgba(2,71,91,0.6)',
+      padding: '0 0 10px',
+    },
+    symptoms: {
+      fontSize: 10,
+      fontWeight: 600,
       color: '#02475b',
-      opacity: 0.6,
-      paddingTop: 5,
+      padding: '10px 0 0',
+      borderTop: '1px solid rgba(2,71,91,0.3)',
+    },
+    spContent: {
+      width: '100%',
+      padding: '0 10px 0 0',
+      position: 'relative',
     },
   });
 });
@@ -146,19 +159,17 @@ export const Specialities: React.FC = (props) => {
                             src={specialityDetails.image || ''}
                             className={classes.bigAvatar}
                           />
-                          <div>
+                          <div className={classes.spContent}>
                             <div>{specialityDetails.name}</div>
                             <div className={classes.specialityDetails}>
                               {/* {specialityDetails.userFriendlyNomenclature} */}
                               {specialityDetails.shortDescription}
                             </div>
+                            <div className={classes.symptoms}>{specialityDetails.symptoms}</div>
+                            <span className={classes.rightArrow}>
+                              <img src={require('images/ic_arrow_right.svg')} />
+                            </span>
                           </div>
-                          <div className={classes.specialityDetails}>
-                            {specialityDetails.symptoms}
-                          </div>
-                          <span className={classes.rightArrow}>
-                            <img src={require('images/ic_arrow_right.svg')} />
-                          </span>
                         </div>
                       </Grid>
                     )}

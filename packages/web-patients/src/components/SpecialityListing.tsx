@@ -641,7 +641,7 @@ const useStyles = makeStyles((theme: Theme) => {
       left: 0,
       right: 0,
       zIndex: 5,
-      height: 300,
+      maxHeight: 300,
       overflow: 'auto',
       padding: 20,
       background: '#fff',
@@ -700,7 +700,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     sContent: {
       margin: '10px 0 0',
-      padding: '15px 0',
+      padding: '15px 0 0',
       borderTop: '1px solid rgba(1,71,91,0.5)',
     },
     sList: {
@@ -754,6 +754,7 @@ export const SpecialityListing: React.FC = (props) => {
   const prakticeSDKSpecialties = localStorage.getItem('symptomTracker');
   const [searchKeyword, setSearchKeyword] = useState<string>('');
   const [locationPopup, setLocationPopup] = useState<boolean>(false);
+  const [searchContent, setSearchcontent] = useState<boolean>(false);
 
   const handleChange = (panel: string) => (event: React.ChangeEvent<{}>, isExpanded: boolean) => {
     setExpanded(isExpanded ? panel : false);
@@ -822,42 +823,44 @@ export const SpecialityListing: React.FC = (props) => {
                           setSearchKeyword(searchValue);
                         }}
                       />
-                      <div className={classes.searchContent}>
-                        <div className={classes.docContent}>
-                          <Typography component="h6">Doctors</Typography>
-                          <ul className={classes.doctorList}>
-                            <li>
-                              <div className={classes.doctorContent}>
-                                <div className={classes.dImg}></div>
-                                <div className={classes.doctorDetails}>
-                                  <Typography component="h2">Dr. Radha Kumar</Typography>
-                                  <Typography>
-                                    Urogynaecology | Apollo Hospitals Greams Road Chennai
-                                  </Typography>
+                      {searchContent ? (
+                        <div className={classes.searchContent}>
+                          <div className={classes.docContent}>
+                            <Typography component="h6">Doctors</Typography>
+                            <ul className={classes.doctorList}>
+                              <li>
+                                <div className={classes.doctorContent}>
+                                  <div className={classes.dImg}></div>
+                                  <div className={classes.doctorDetails}>
+                                    <Typography component="h2">Dr. Radha Kumar</Typography>
+                                    <Typography>
+                                      Urogynaecology | Apollo Hospitals Greams Road Chennai
+                                    </Typography>
+                                  </div>
                                 </div>
-                              </div>
-                            </li>
-                            <li>
-                              <div className={classes.doctorContent}>
-                                <div className={classes.dImg}></div>
-                                <div className={classes.doctorDetails}>
-                                  <Typography component="h2">Dr. Rakesh Gupta</Typography>
-                                  <Typography>
-                                    Urogynaecology | Apollo Hospitals Greams Road Chennai
-                                  </Typography>
+                              </li>
+                              <li>
+                                <div className={classes.doctorContent}>
+                                  <div className={classes.dImg}></div>
+                                  <div className={classes.doctorDetails}>
+                                    <Typography component="h2">Dr. Rakesh Gupta</Typography>
+                                    <Typography>
+                                      Urogynaecology | Apollo Hospitals Greams Road Chennai
+                                    </Typography>
+                                  </div>
                                 </div>
-                              </div>
-                            </li>
-                          </ul>
+                              </li>
+                            </ul>
+                          </div>
+                          <div className={classes.sContent}>
+                            <Typography component="h6">Specialities</Typography>
+                            <ul className={classes.sList}>
+                              <li>Radiology</li>
+                              <li>Reproductive Medicine and Infertility</li>
+                            </ul>
+                          </div>
                         </div>
-                        <div className={classes.sContent}>
-                          <Typography component="h6">Speciality</Typography>
-                          <ul className={classes.sList}>
-                            <li>Radiology</li>
-                            <li>Reproductive Medicine and Infertility</li>
-                          </ul>
-                        </div>
-                      </div>
+                      ) : null}
                     </div>
                   </div>
                   <div className={classes.pastSearch}>
