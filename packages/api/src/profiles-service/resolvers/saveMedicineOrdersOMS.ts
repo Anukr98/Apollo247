@@ -49,6 +49,7 @@ export const saveMedicineOrderOMSTypeDefs = gql`
     packagingCharges: Float
     showPrescriptionAtStore: Boolean
     shopAddress: ShopAddress
+    customerComment: String
   }
 
   input ShopAddress {
@@ -105,6 +106,7 @@ type MedicineCartOMSInput = {
   packagingCharges: number;
   showPrescriptionAtStore: boolean;
   shopAddress: ShopAddress;
+  customerComment: string;
 };
 
 type ShopAddress = {
@@ -265,6 +267,7 @@ const saveMedicineOrderOMS: Resolver<
     packagingCharges: medicineCartOMSInput.packagingCharges,
     showPrescriptionAtStore: medicineCartOMSInput.showPrescriptionAtStore,
     shopAddress: JSON.stringify(medicineCartOMSInput.shopAddress),
+    customerComment: medicineCartOMSInput.customerComment,
     isOmsOrder: true,
   };
 
@@ -420,7 +423,7 @@ const validatePharmaItems = async (medicineCartOMSInput: MedicineCartOMSInput) =
         itemId: orderLineItem.sku,
         productName: orderLineItem.name,
         productType:
-          orderLineItem.type_id == 'PHARMA'
+          (orderLineItem.type_id && orderLineItem.type_id.toLowerCase()) == 'pharma'
             ? CouponCategoryApplicable.PHARMA
             : CouponCategoryApplicable.FMCG,
         mrp: orderLineItem.price,

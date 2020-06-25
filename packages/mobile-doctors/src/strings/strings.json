@@ -160,7 +160,22 @@
     "enter_mobile_num_to_access_ac": "Enter the mobile number you’d like to assign access of your account to",
     "add_consult_hours": "ADD CONSULTATION HOURS",
     "thanku_dr": "thank you, dr.",
-    "profile_tab_descr": "Let’s go over now to see the Apollo24x7 portal and start consultations!"
+    "profile_tab_descr": "Let’s go over now to see the Apollo24x7 portal and start consultations!",
+    "share_heading": "Share a link with your contacts\nprivately to book a consult with you",
+    "share_text": "SHARE MY PROFILE",
+    "share_header": "SHARE YOUR PROFILE",
+    "share_title": "Invite your contacts to consult with you on Apollo247",
+    "share_url": "Invite via Private URL",
+    "share_sms": "Invite via SMS",
+    "share_sms_placeholder": "Enter recipient’s mobile number",
+    "share_sms_csv_title": "Have a large bunch of contacts to invite? Upload a .CSV File of your contact list here to bulk share.",
+    "share_sms_csv": "UPLOAD CSV",
+    "share_email": "Invite via EMAIL",
+    "share_email_placeholder": "Enter recipient’s email address",
+    "valid_mobile": "Please enter valid mobile number",
+    "valid_email": "Please enter valid email address",
+    "message": "Hi,  Dr. {0} has invited you to the Apollo247 application.\nClick here {1} to book the consultation with Doctor.",
+    "message_title": "Invitation to join Apollo247 application"
   },
   "otp": {
     "try_again": " Try again after —",
@@ -168,7 +183,16 @@
     "more": "more",
     "reach_out_admin": "Sorry, this application is invite only. Please reach out to us at admin@apollo247.com in case you wish to enroll."
   },
-
+  "exoTel": {
+    "connect_via_call": "Connect via phone call",
+    "proceed": "PROCEED TO CONNECT",
+    "note": "*Note : Your personal phone number will not be shared.",
+    "heading": "Connect to your patient via phone call !",
+    "subHeading": "Please follow the steps to connect to your patient :",
+    "point1": "Answer the call from ‘040-48214566’ to connect.",
+    "point2": "Wait for the patient to connect.",
+    "toastMessage": "You will get a call from 040-48214566.\nPlease pick up the call !"
+  },
   "smartPrescr": {
     "smart_prescr_header": "SMART PRESCRIPTION",
     "add_doct": "ADD DOCTOR",
@@ -380,7 +404,8 @@
     "pulmologist": "Pulmologist",
     "submitted_by": "Submitted by Dr.",
     "on": "on",
-    "select_Speciality": "Select Speciality"
+    "select_Speciality": "Select Speciality",
+    "med_remove": "This medicine has been discontinued"
   },
   "consult_room": {
     "patient_is_not_acitve_descr": "We are sorry, but it seems your patient is no longer active on the application. You may wish to reschedule this consult.",
@@ -412,7 +437,8 @@
     "ringing": "RINGING",
     "case_sheet": "Case Sheet",
     "chat": "Chat",
-    "why_do_you_reschudule": "Why do you want to reschedule this consult?"
+    "why_do_you_reschudule": "Why do you want to reschedule this consult?",
+    "connecting": "Connecting..."
   },
   "medicine": {
     "dosage": "Dosage",

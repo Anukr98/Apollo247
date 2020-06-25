@@ -24,6 +24,14 @@ export const timeTo12HrFormat = (time: string) => {
   return moment(time).format('h:mm a');
 };
 
+export const isPhoneNumberValid = (number: string) => {
+  const isValidNumber = /^[6-9]{1}\d{0,9}$/.test(number);
+  return isValidNumber;
+};
+export const isSatisfyingEmailRegex = (value: string) =>
+  /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(
+    value
+  );
 type TimeArray = {
   label: string;
   time: string[];

@@ -21,7 +21,7 @@ public class MyFirebaseMessagingService
                 WebEngage.get().receive(data);
             } else {
                 try {
-                    Log.e("Invertase", remoteMessage.getData().toString());
+                    // Log.e("Invertase", remoteMessage.getData().toString());
 
                     if(remoteMessage.getData().get("author") != null){
                         VitaTasksNotificationsManager.INSTANCE.createNotificationTwilio(this, remoteMessage.getData());

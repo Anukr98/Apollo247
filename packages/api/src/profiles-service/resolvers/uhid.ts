@@ -4,13 +4,7 @@ import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext'
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
-import {
-  prismAuthentication,
-  prismGetUsers,
-  prismGetUserDetails,
-  linkUhid,
-  delinkUhid,
-} from 'helpers/prismCall';
+import { linkUhid, delinkUhid } from 'helpers/phrV1Services';
 
 export const uhidTypeDefs = gql`
   extend type Mutation {
@@ -160,26 +154,12 @@ const callPrismApis = async (
   linkedUhids: string[],
   link: boolean
 ) => {
-  const authoken = await prismAuthentication(mobileNumber);
-  if (!authoken.response)
-    throw new AphError(AphErrorMessages.PRISM_AUTH_TOKEN_ERROR, undefined, {});
-
-  const authToken = authoken.response;
-
-  const getUsersPrism = await prismGetUsers(mobileNumber, authToken);
-  if (!getUsersPrism.response)
-    throw new AphError(AphErrorMessages.PRISM_GET_USERS_ERROR, undefined, {});
-
-  const getUserDetailsPrism = await prismGetUserDetails(primaryUhid, authToken);
-  if (!getUserDetailsPrism.response)
-    throw new AphError(AphErrorMessages.PRISM_GET_USER_DETAILS_ERROR, undefined, {});
-
   if (link) {
-    const prismLinkUhid = await linkUhid(primaryUhid, authToken, linkedUhids.join(','));
+    const prismLinkUhid = await linkUhid(primaryUhid, linkedUhids.join(','));
     if (!prismLinkUhid.response)
       throw new AphError(AphErrorMessages.PRISM_LINK_UHID_ERROR, undefined, {});
   } else {
-    const prismDeLinkUhid = await delinkUhid(primaryUhid, authToken, linkedUhids.join(','));
+    const prismDeLinkUhid = await delinkUhid(primaryUhid, linkedUhids.join(','));
     if (!prismDeLinkUhid.response)
       throw new AphError(AphErrorMessages.PRISM_DELINK_UHID_ERROR, undefined, {});
   }

@@ -8,6 +8,7 @@ import {
   Settings,
   SmartPrescription,
   UserPlaceHolder,
+  Link,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
 import { GetDoctorDetails_getDoctorDetails } from '@aph/mobile-doctors/src/graphql/types/GetDoctorDetails';
@@ -30,6 +31,7 @@ import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { apiRoutes } from '@aph/mobile-doctors/src/helpers/apiRoutes';
 import { AppConfig } from '@aph/mobile-doctors/src/helpers/AppConfig';
 import { getBuildEnvironment } from '@aph/mobile-doctors/src/helpers/helperFunctions';
+import { string } from '@aph/mobile-doctors/src/strings/string';
 
 const { width } = Dimensions.get('window');
 const styles = BasicAccountStyles;
@@ -136,6 +138,23 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
       </View>
     );
   };
+  const renderShareLink = () => {
+    return (
+      <View style={styles.shareLinkContainer}>
+        <Text style={styles.shareHeaderText}>{string.account.share_heading}</Text>
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={() => {
+            props.navigation.navigate(AppRoutes.SharingScreen);
+          }}
+          style={styles.linkIconContainer}
+        >
+          <Link />
+          <Text style={styles.shareText}>{string.account.share_text}</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  };
 
   return (
     <View style={theme.viewStyles.container}>
@@ -165,6 +184,7 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
                   <View style={styles.shadow}>
                     {renderProfileData(doctorDetails)}
                     {renderMciNumberData(doctorDetails)}
+                    {renderShareLink()}
                   </View>
                   {renderData()}
                   <View style={{ height: 92, marginBottom: 0 }}>

@@ -268,6 +268,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
 
   const [deleteProfile, setDeleteProfile] = useState<boolean>(false);
   const [uploadVisible, setUploadVisible] = useState<boolean>(false);
+  const [showSelectedRelation, setShowSelectedRelation] = useState<boolean>(false);
   const [profileData, setProfileData] = useState<
     getPatientByMobileNumber_getPatientByMobileNumber_patients
   >(props.navigation.getParam('profileData'));
@@ -328,8 +329,9 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
       setFirstName(profileData.firstName || '');
       setLastName(profileData.lastName || '');
       setDate(new Date(profileData.dateOfBirth!));
-      setGender(profileData!.gender!);
       setRelation(relationArray.find((relation) => relation.key === profileData.relation));
+      setShowSelectedRelation(true);
+      setGender(profileData!.gender!);
       setEmail(profileData.emailAddress || '');
       setPhotoUrl(profileData.photoUrl || '');
     }
@@ -373,6 +375,76 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
         setSelectedGenderRelationArray(maleRelationArray);
       } else if (gender == Gender.FEMALE) {
         setRelation(undefined);
+        const femaleRelationArray: RelationArray[] = [
+          { key: Relation.ME, title: 'Self' },
+          {
+            key: Relation.MOTHER,
+            title: 'Mother',
+          },
+          {
+            key: Relation.DAUGHTER,
+            title: 'Daughter',
+          },
+          {
+            key: Relation.WIFE,
+            title: 'Wife',
+          },
+          {
+            key: Relation.GRANDMOTHER,
+            title: 'Grandmother',
+          },
+          {
+            key: Relation.GRANDDAUGHTER,
+            title: 'Granddaughter',
+          },
+          {
+            key: Relation.COUSIN,
+            title: 'Cousin',
+          },
+          {
+            key: Relation.OTHER,
+            title: 'Other',
+          },
+        ];
+        setSelectedGenderRelationArray(femaleRelationArray);
+      }
+    } else {
+      if (gender == Gender.MALE) {
+        showSelectedRelation ? setShowSelectedRelation(false) : setRelation(undefined);
+        const maleRelationArray: RelationArray[] = [
+          { key: Relation.ME, title: 'Self' },
+          {
+            key: Relation.FATHER,
+            title: 'Father',
+          },
+          {
+            key: Relation.SON,
+            title: 'Son',
+          },
+          {
+            key: Relation.HUSBAND,
+            title: 'Husband',
+          },
+          {
+            key: Relation.GRANDFATHER,
+            title: 'Grandfather',
+          },
+          {
+            key: Relation.GRANDSON,
+            title: 'Grandson',
+          },
+          {
+            key: Relation.COUSIN,
+            title: 'Cousin',
+          },
+          {
+            key: Relation.OTHER,
+            title: 'Other',
+          },
+        ];
+        setSelectedGenderRelationArray(maleRelationArray);
+      } else if (gender == Gender.FEMALE) {
+        showSelectedRelation ? setShowSelectedRelation(false) : setRelation(undefined);
         const femaleRelationArray: RelationArray[] = [
           { key: Relation.ME, title: 'Self' },
           {

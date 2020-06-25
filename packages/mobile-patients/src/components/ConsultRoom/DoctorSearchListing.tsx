@@ -182,6 +182,8 @@ export type filterDataType = {
 export type locationType = { lat: number | string; lng: number | string };
 export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) => {
   const specialistPluralTerm = props.navigation.getParam('specialistPluralTerm');
+  const typeOfConsult = props.navigation.getParam('typeOfConsult');
+  const doctorTypeFilter = props.navigation.getParam('doctorType');
   const filterData: filterDataType[] = [
     {
       label: 'Experience In Years',
@@ -261,6 +263,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const [searchIconClicked, setSearchIconClicked] = useState<boolean>(false);
 
   useEffect(() => {
+    setDeepLinkFilter();
+    setDeepLinkDoctorTypeFilter();
     if (!currentPatient) {
       getPatientApiCall();
     }
@@ -404,7 +408,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       setcurrentLocation(locationDetails.displayName);
       setLocationSearchText(locationDetails.displayName);
     }
-    callPermissions();
+    // callPermissions();
     return () => {
       didFocusSubscription && didFocusSubscription.remove();
       willBlurSubscription && willBlurSubscription.remove();
@@ -428,16 +432,16 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     type: string
   ) => {
     if (type == 'APOLLO') {
-      let apolloDoctors = data.filter((item) => {
-        return item?.doctorType == 'APOLLO';
+      const apolloDoctors = data.filter((item) => {
+        return item && item.doctorType == 'APOLLO';
       });
       setFilteredDoctorsList(apolloDoctors);
       console.log(apolloDoctors.length);
       setApolloDocsNumber(apolloDoctors.length);
     } else {
-      let otherDoctors = data.filter((item) => {
-        console.log(item?.doctorType);
-        return item?.doctorType != 'APOLLO';
+      const otherDoctors = data.filter((item) => {
+        console.log(item && item.doctorType);
+        return item && item.doctorType != 'APOLLO';
       });
       setFilteredDoctorsList(otherDoctors);
     }
@@ -595,9 +599,14 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         vaueChange(data);
         //log data
         const doctorInfo =
-          data.getDoctorsBySpecialtyAndFilters?.doctors === null
+          data &&
+          data.getDoctorsBySpecialtyAndFilters &&
+          data.getDoctorsBySpecialtyAndFilters.doctors === null
             ? {}
-            : data.getDoctorsBySpecialtyAndFilters?.doctors[0];
+            : data &&
+              data.getDoctorsBySpecialtyAndFilters &&
+              data.getDoctorsBySpecialtyAndFilters.doctors &&
+              data.getDoctorsBySpecialtyAndFilters.doctors[0];
         setBugFenderLog('DOCTOR_FILTER_DATA', JSON.stringify(doctorInfo));
         //end log data
       })
@@ -1186,6 +1195,23 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const [physicalCheckBox, setPhysicalCheckbox] = useState<boolean>(true);
   const [nearyByFlag, setNearyByFlag] = useState<boolean>(false);
   const [availabilityFlag, setAvailabilityFlag] = useState<boolean>(true);
+
+  const setDeepLinkDoctorTypeFilter = () => {
+    if (doctorTypeFilter === 'apollo') {
+      setDoctorsType('APOLLO');
+      filterDoctors(doctorsList, 'APOLLO');
+    } else if (doctorTypeFilter === 'partners') {
+      setDoctorsType('PARTNERS');
+      filterDoctors(doctorsList, 'PARTNERS');
+    }
+  };
+  const setDeepLinkFilter = () => {
+    if (typeOfConsult === 'online') {
+      setPhysicalCheckbox(false);
+    } else if (typeOfConsult === 'inperson') {
+      setOnlineCheckbox(false);
+    }
+  };
 
   const renderBottomOptions = () => {
     return (

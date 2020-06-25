@@ -59,14 +59,12 @@ export const UserCard: React.FC = () => {
         title={`${patientDetails!.firstName} ${patientDetails!.lastName}`}
       />
       <CardContent>
-        {patientDetails!.firstName &&
-          patientDetails!.firstName !== '' &&
-          patientDetails!.lastName &&
-          patientDetails!.lastName !== '' && (
-            <Typography gutterBottom variant="h4" component="h2">
-              {patientDetails!.firstName + ' ' + patientDetails!.lastName}
-            </Typography>
-          )}
+        {((patientDetails!.firstName && patientDetails!.firstName !== '') ||
+          (patientDetails!.lastName && patientDetails!.lastName !== '')) && (
+          <Typography gutterBottom variant="h4" component="h2">
+            {patientDetails!.firstName + ' ' + patientDetails!.lastName}
+          </Typography>
+        )}
         <Typography variant="h5" color="textSecondary" component="h5">
           {userCardStrip.join(', ')}
         </Typography>

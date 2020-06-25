@@ -157,7 +157,7 @@ const useStyles = makeStyles((theme: Theme) =>
       },
     },
     medicinePopup: {
-      width: 480,
+      width: 500,
       margin: '60px auto 0 auto',
       boxShadow: 'none',
       outline: 'none',
@@ -302,22 +302,6 @@ const useStyles = makeStyles((theme: Theme) =>
       color: '#02475b',
       fontWeight: 500,
       marginBottom: 0,
-      '& button': {
-        border: '1px solid #00b38e',
-        padding: '0 10px',
-        fontSize: 12,
-        fontWeight: 'normal',
-        borderRadius: 14,
-        marginRight: 15,
-        cursor: 'pointer',
-        color: '#00b38e',
-        backgroundColor: '#fff',
-        textTransform: 'none',
-        boxShadow: 'none',
-        '&:focus': {
-          outline: 'none',
-        },
-      },
       '& input': {
         '&:focus': {
           transition: 'all 0.2s',
@@ -328,14 +312,33 @@ const useStyles = makeStyles((theme: Theme) =>
         },
       },
     },
+    dayButton: {
+      border: '1px solid #00b38e',
+      padding: '5px 10px',
+      fontSize: 12,
+      fontWeight: 'normal',
+      borderRadius: 14,
+      marginRight: 6,
+      color: '#00b38e',
+      backgroundColor: '#fff',
+      cursor: 'pointer',
+      '&:focus': {
+        outline: 'none',
+      },
+      '&:nth-child(5)': {
+        border: '1px solid #e50000',
+        color: '#e50000',
+      },
+      '&:nth-child(6)': {
+        border: '1px solid #e50000',
+        color: '#e50000',
+      },
+    },
     daysInWeek: {
       margin: '0 0 10px 0 !important',
     },
     daysOfWeek: {
-      '& button:last-child': {
-        border: '1px solid #e50000 !important',
-        color: '#e50000',
-      },
+      padding: 0,
     },
     instructionText: {
       margin: '0 0 8px 0 !important',
@@ -345,19 +348,19 @@ const useStyles = makeStyles((theme: Theme) =>
       position: 'relative',
       top: -5,
     },
-    activeBtn: {
-      backgroundColor: '#00b38e !important',
-      color: '#fff !important',
+    dayBtnActive: {
+      backgroundColor: '#00b38e',
+      color: '#fff',
       fontWeight: 600,
-    },
-    activeBtnRed: {
-      backgroundColor: '#00b38e !important',
-      color: '#fff !important',
-      fontWeight: 600,
-      '&:last-child': {
-        backgroundColor: '#e50000 !important',
+      '&:nth-child(5)': {
+        border: '1px solid #e50000',
+        backgroundColor: '#e50000',
         color: '#fff',
-        border: '1px solid #e50000 !important',
+      },
+      '&:nth-child(6)': {
+        border: '1px solid #e50000',
+        backgroundColor: '#e50000',
+        color: '#fff',
       },
     },
     helpText: {
@@ -513,6 +516,7 @@ const useStyles = makeStyles((theme: Theme) =>
         width: '30%',
         color: 'rgba(2, 71, 91, 0.8)',
         fontSize: 14,
+        marginLeft: 0,
         '& span': {
           fontWeight: 500,
           fontSize: 14,
@@ -767,7 +771,7 @@ export const MedicinePrescription: React.FC = () => {
     },
     {
       id: 'NOT_SPECIFIC',
-      value: 'not specific',
+      value: 'Not Specific',
       selected: false,
     },
   ]);
@@ -1495,7 +1499,11 @@ export const MedicinePrescription: React.FC = () => {
       setCustomDosageNight('');
       setIsCustomForm(false);
     }
-    setConsumptionDuration(idx.medicineConsumptionDurationInDays);
+    setConsumptionDuration(
+      idx.medicineConsumptionDurationInDays && Number(idx.medicineConsumptionDurationInDays) !== 0
+        ? idx.medicineConsumptionDurationInDays
+        : ''
+    );
     setMedicineInstruction(idx.medicineInstructions);
     setFrequency(idx.medicineFrequency! ? idx.medicineFrequency! : dosageFrequency[0].id);
     setRoaOption(idx.routeOfAdministration! ? idx.routeOfAdministration! : roaOptionsList[0].id);
@@ -1624,9 +1632,9 @@ export const MedicinePrescription: React.FC = () => {
   const daySlotsHtml = daySlots.map((_daySlotitem: SlotsObject | null, index: number) => {
     const daySlotitem = _daySlotitem!;
     return (
-      <AphButton
+      <button
         key={daySlotitem.id}
-        className={`${daySlotitem.selected ? classes.activeBtnRed : ''} ${
+        className={`${classes.dayButton} ${daySlotitem.selected ? classes.dayBtnActive : ''} ${
           isCustomform && (daySlotitem.id === 'AS_NEEDED' || daySlotitem.id === 'NOT_SPECIFIC')
             ? classes.none
             : ''
@@ -1638,7 +1646,7 @@ export const MedicinePrescription: React.FC = () => {
         }}
       >
         {daySlotitem.value}
-      </AphButton>
+      </button>
     );
   });
   const addUpdateMedicines = () => {
@@ -1911,15 +1919,15 @@ export const MedicinePrescription: React.FC = () => {
   const tobeTakenHtml = toBeTakenSlots.map((_tobeTakenitem: SlotsObject | null, index: number) => {
     const tobeTakenitem = _tobeTakenitem!;
     return (
-      <AphButton
+      <button
         key={tobeTakenitem.id}
-        className={tobeTakenitem.selected ? classes.activeBtn : ''}
+        className={`${classes.dayButton} ${tobeTakenitem.selected ? classes.dayBtnActive : ''}`}
         onClick={() => {
           toBeTakenSlotsToggleAction(tobeTakenitem.id);
         }}
       >
         {tobeTakenitem.value}
-      </AphButton>
+      </button>
     );
   });
 
@@ -2184,13 +2192,13 @@ export const MedicinePrescription: React.FC = () => {
         if (medicine.medicineCustomDosage && medicine.medicineCustomDosage !== '') {
           const dosageTimingArray = medicine.medicineCustomDosage!.split('-');
           const customTimingArray = [];
-          if (dosageTimingArray && dosageTimingArray[0])
+          if (dosageTimingArray && dosageTimingArray[0] && dosageTimingArray[0] !== '0')
             customTimingArray.push(dosageTimingArray[0] + unitHtmls);
-          if (dosageTimingArray && dosageTimingArray[1])
+          if (dosageTimingArray && dosageTimingArray[1] && dosageTimingArray[1] !== '0')
             customTimingArray.push(dosageTimingArray[1] + unitHtmls);
-          if (dosageTimingArray && dosageTimingArray[2])
+          if (dosageTimingArray && dosageTimingArray[2] && dosageTimingArray[2] !== '0')
             customTimingArray.push(dosageTimingArray[2] + unitHtmls);
-          if (dosageTimingArray && dosageTimingArray[3])
+          if (dosageTimingArray && dosageTimingArray[3] && dosageTimingArray[3] !== '0')
             customTimingArray.push(dosageTimingArray[3] + unitHtmls);
           dosageHtml = customTimingArray.join(' - ');
         } else {
@@ -2320,12 +2328,12 @@ export const MedicinePrescription: React.FC = () => {
             <div className={classes.mediceneContainer}>
               {favouriteMedicine.map((_favMedicine: any, id, index) => {
                 const favMedicine = _favMedicine!;
-                const forFavHtml = favMedicine.medicineConsumptionDurationInDays
-                  ? ` for ${Number(favMedicine.medicineConsumptionDurationInDays)}`
-                  : ' ';
-                const favDurations = `${forFavHtml} ${Number(
-                  favMedicine.medicineConsumptionDurationInDays
-                )} ${
+                const forFavHtml =
+                  favMedicine.medicineConsumptionDurationInDays &&
+                  favMedicine.medicineConsumptionDurationInDays !== '0'
+                    ? ` for ${Number(favMedicine.medicineConsumptionDurationInDays)}`
+                    : ' ';
+                const favDurations = `${forFavHtml} ${
                   favMedicine.medicineConsumptionDurationUnit &&
                   favMedicine.medicineConsumptionDurationUnit !==
                     MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW
@@ -2371,13 +2379,29 @@ export const MedicinePrescription: React.FC = () => {
                 if (favMedicine.medicineCustomDosage && favMedicine.medicineCustomDosage !== '') {
                   const favdosageTimingArray = favMedicine.medicineCustomDosage!.split('-');
                   const favCustomTimingArray = [];
-                  if (favdosageTimingArray && favdosageTimingArray[0])
+                  if (
+                    favdosageTimingArray &&
+                    favdosageTimingArray[0] &&
+                    favdosageTimingArray[0] !== '0'
+                  )
                     favCustomTimingArray.push(favdosageTimingArray[0] + favUnitHtmls);
-                  if (favdosageTimingArray && favdosageTimingArray[1])
+                  if (
+                    favdosageTimingArray &&
+                    favdosageTimingArray[1] &&
+                    favdosageTimingArray[1] !== '0'
+                  )
                     favCustomTimingArray.push(favdosageTimingArray[1] + favUnitHtmls);
-                  if (favdosageTimingArray && favdosageTimingArray[2])
+                  if (
+                    favdosageTimingArray &&
+                    favdosageTimingArray[2] &&
+                    favdosageTimingArray[2] !== '0'
+                  )
                     favCustomTimingArray.push(favdosageTimingArray[2] + favUnitHtmls);
-                  if (favdosageTimingArray && favdosageTimingArray[3])
+                  if (
+                    favdosageTimingArray &&
+                    favdosageTimingArray[3] &&
+                    favdosageTimingArray[3] !== '0'
+                  )
                     favCustomTimingArray.push(favdosageTimingArray[3] + favUnitHtmls);
                   favDosageHtml = favCustomTimingArray.join(' - ');
                 } else {

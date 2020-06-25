@@ -12,6 +12,7 @@ export type PharmacyHomepageInfo = {
 export enum AppEnv {
   DEV = 'DEV',
   QA = 'QA',
+  STAGING = 'STAGING',
   PROD = 'PROD',
   PERFORM = 'PERFORM',
   VAPT = 'VAPT',
@@ -45,6 +46,9 @@ const appStaticVariables = {
   TAT_API_TIMEOUT_IN_SEC: 10,
   PACKAGING_CHARGES: 0,
   MIN_VALUE_TO_NUDGE_USERS_TO_AVAIL_FREE_DELIVERY: 0,
+  EXOTEL_CALL_API_URL:
+    'https://157e9636faf8c1b7296a749deb8789fa84314b27598eb7a9:82ac24fd451cbf85373a4ea90f083c9d321040ee9c3d26ed@api.exotel.com/v1/Accounts/apollo2471/Calls/connect.json',
+  EXOTEL_CALLER_ID: '04049171522',
   HOME_SCREEN_COVID_HEADER_TEXT: string.common.covidHeading,
   HOME_SCREEN_EMERGENCY_BANNER_TEXT: string.common.emergencyBannerText,
   HOME_SCREEN_COVID_CONTACT_TEXT: string.common.covidContactText,
@@ -103,7 +107,107 @@ const appStaticVariables = {
       visible: true,
     },
   ] as PharmacyHomepageInfo[],
+  HOTSELLERS_MAX_QUANTITY: 20, // max. allowed qty to add hot sellers to cart
 };
+
+const DEV_top6_specailties = [
+  {
+    speciality_id: '4dc1c5de-e062-4b3b-aec9-090389687865',
+    speciality_order: '1',
+    speciality_name: 'General Physician/ Internal Medicine"',
+  },
+  {
+    speciality_id: 'dfe0b6a4-d0d4-4f54-a4b0-9f5c9bd7b39c',
+    speciality_order: '5',
+    speciality_name: 'Cardiology',
+  },
+  {
+    speciality_id: '4fc00d0f-95d9-4040-a1d4-41515a2aaa0e',
+    speciality_order: '6',
+    speciality_name: 'Gastroenterology/ GI Medicine',
+  },
+  {
+    speciality_id: 'fba32e11-eb1c-4e18-8d45-8c25f45d7672',
+    speciality_order: '3',
+    speciality_name: 'Dermatology',
+  },
+  {
+    speciality_id: '3b69e637-684d-4545-aace-91810bc5739d',
+    speciality_order: '2',
+    speciality_name: 'Obstetrics & Gynaecology',
+  },
+  {
+    speciality_id: '91cee893-55cf-41fd-9d6b-73157c6518a9',
+    speciality_order: '4',
+    speciality_name: 'Paediatrics',
+  },
+];
+
+const QA_top6_specailties = [
+  {
+    speciality_id: '4145727e-e3a4-4219-814b-d0f10df9b2f1',
+    speciality_order: '1',
+    speciality_name: 'General Physician/ Internal Medicine"',
+  },
+  {
+    speciality_id: 'bf0cc02f-1422-45e6-86ee-4ab2b35ffc02',
+    speciality_order: '5',
+    speciality_name: 'Cardiology',
+  },
+  {
+    speciality_id: '3ea4faf5-05b2-4c58-8e00-f6ee71f4eb7d',
+    speciality_order: '6',
+    speciality_name: 'Gastroenterology/ GI Medicine',
+  },
+  {
+    speciality_id: 'e3ede210-b0bb-4100-919d-2086afdbe89e',
+    speciality_order: '3',
+    speciality_name: 'Dermatology',
+  },
+  {
+    speciality_id: '22bd8220-327c-433f-a112-2a2f89216859',
+    speciality_order: '2',
+    speciality_name: 'Obstetrics & Gynaecology',
+  },
+  {
+    speciality_id: '0735146e-bd51-4b7c-b7a1-234efc1b259d',
+    speciality_order: '4',
+    speciality_name: 'Paediatrics',
+  },
+];
+
+const top6_specailties = [
+  {
+    speciality_id: '615ebc75-4172-4f46-9ba0-b3688c053fcc',
+    speciality_order: '1',
+    speciality_name: 'General Physician/ Internal Medicine"',
+  },
+  {
+    speciality_id: 'f325ede7-8710-49a6-b0ea-32ddc06f2b4c',
+    speciality_order: '5',
+    speciality_name: 'Cardiology',
+  },
+  {
+    speciality_id: '789b2a65-1d81-4023-92c8-39959ca8a7ed',
+    speciality_order: '6',
+    speciality_name: 'Gastroenterology/ GI Medicine',
+  },
+  {
+    speciality_id: '73dae7a6-ec1f-45c4-98bd-0c8acb6e4eca',
+    speciality_order: '3',
+    speciality_name: 'Dermatology',
+  },
+  {
+    speciality_id: 'd67d4978-a14a-46c8-8af8-697823bfcadf',
+    speciality_order: '2',
+    speciality_name: 'Obstetrics & Gynaecology',
+  },
+  {
+    speciality_id: '1f110338-87d5-430c-b10a-8b3eddd54732',
+    speciality_order: '4',
+    speciality_name: 'Paediatrics',
+  },
+];
 
 export const updateAppConfig = (key: keyof typeof Configuration, value: object) => {
   Configuration[key] = value as never;
@@ -205,10 +309,11 @@ const ConfigurationDev = {
   PRO_PUBNUB_SUBSCRIBER: 'sub-c-9cc337b6-e0f4-11e9-8d21-f2f6e193974b',
   DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
+  TOP_SPECIALITIES: DEV_top6_specailties,
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
-  iOS_Version: '2.611',
-  Android_Version: '2.611',
+  iOS_Version: '2.612',
+  Android_Version: '2.612',
   CONDITIONAL_MANAGENET_BASE_URL: 'https://aph.staging.pmt.popcornapps.com',
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e', //7839e425f4acbd8e6ff3f907281addca <-- popcornapps key
   COVID_RISK_LEVEL_URL:
@@ -243,6 +348,7 @@ const ConfigurationQA = {
   PRO_PUBNUB_SUBSCRIBER: 'sub-c-9cc337b6-e0f4-11e9-8d21-f2f6e193974b',
   DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
+  TOP_SPECIALITIES: QA_top6_specailties,
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
   iOS_Version: '2.541',
@@ -255,6 +361,42 @@ const ConfigurationQA = {
     'https://aph.staging.web-patients.popcornapps.com/covid19?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Covid19%20Content',
 };
 
+// staging
+const ConfigurationStaging = {
+  LOG_ENVIRONMENT: 'release',
+  ANALYTICAL_ENIVRONMENT: 'release',
+  MEDICINE_PAST_SEARCHES_SHOW_COUNT: 5,
+  PAYMENT_GATEWAY_BASE_URL: 'https://stagingpmt.apollo247.com',
+  PAYMENT_GATEWAY_SUCCESS_PATH: '/mob?',
+  PAYMENT_GATEWAY_ERROR_PATH: '/mob-error?',
+  CONSULT_PG_BASE_URL: 'https://stagingpmt.apollo247.com',
+  CONSULT_PG_SUCCESS_PATH: '/consultpg-success?',
+  CONSULT_PG_ERROR_PATH: '/consultpg-error?',
+  CONSULT_PG_PENDING_PATH: '/consultpg-pending',
+  CONSULT_PG_REDIRECT_PATH: '/consultpg-redirect?',
+  DIAGNOSTICS_PG_BASE_URL: 'https://stagingpmt.apollo247.com',
+  DIAGNOSTICS_PG_SUCCESS_PATH: '/diagnostic-pg-success?',
+  DIAGNOSTICS_PG_ERROR_PATH: '/diagnostic-pg-error?',
+  DIAGNOSTICS_PG_CANCEL_PATH: '/diagnostic-pg-cancel-url',
+  MIN_CART_VALUE_FOR_FREE_DELIVERY: 200,
+  DELIVERY_CHARGES: 25,
+  DIASGNOS_DELIVERY_CHARGES: 0,
+  PRAKTISE_API_KEY: 'AFF2F0D8-5320-4E4D-A673-33626CD1C3F2', //'4A8C9CCC-C5A3-11E9-9A19-8C85900A8328',
+  PRO_TOKBOX_KEY: '46429002',
+  PRO_PUBNUB_PUBLISH: 'pub-c-75e6dc17-2d81-4969-8410-397064dae70e',
+  PRO_PUBNUB_SUBSCRIBER: 'sub-c-9cc337b6-e0f4-11e9-8d21-f2f6e193974b',
+  DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
+  GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
+  ...PharmaApiConfig.dev,
+  ...appStaticVariables,
+  iOS_Version: '2.541',
+  Android_Version: '2.541',
+  CONDITIONAL_MANAGENET_BASE_URL: 'https://stagingpmt.apollo247.com',
+  BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e',
+  COVID_RISK_LEVEL_URL: 'https://staging.patients.apollo247.com/covid19/scan?utm_source=mobile_app',
+  COVID_LATEST_ARTICLES_URL:
+    'https://staging.patients.apollo247.com/covid19?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Covid19%20Content',
+};
 //Production
 const ConfigurationProd = {
   LOG_ENVIRONMENT: 'release',
@@ -281,10 +423,11 @@ const ConfigurationProd = {
   PRO_PUBNUB_SUBSCRIBER: 'sub-c-517dafbc-d955-11e9-aa3a-6edd521294c5', // PRODUCTION
   DOCUMENT_BASE_URL: 'https://prodaphstorage.blob.core.windows.net/prodaphstorage/prodaphstorage/', //Production
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
+  TOP_SPECIALITIES: top6_specailties,
   ...PharmaApiConfig.prod,
   ...appStaticVariables,
-  iOS_Version: '2.54',
-  Android_Version: '2.54',
+  iOS_Version: '2.61',
+  Android_Version: '2.61',
   CONDITIONAL_MANAGENET_BASE_URL: 'https://pmt.apollo247.com',
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e',
   COVID_RISK_LEVEL_URL: 'https://www.apollo247.com/covid19/scan?utm_source=mobile_app',
@@ -318,6 +461,7 @@ const ConfigurationPERFORM = {
   PRO_PUBNUB_SUBSCRIBER: 'sub-c-9cc337b6-e0f4-11e9-8d21-f2f6e193974b',
   DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
+  TOP_SPECIALITIES: DEV_top6_specailties,
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
   iOS_Version: '1.7',
@@ -356,6 +500,7 @@ const ConfigurationVAPT = {
   PRO_PUBNUB_SUBSCRIBER: 'sub-c-9cc337b6-e0f4-11e9-8d21-f2f6e193974b',
   DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
+  TOP_SPECIALITIES: DEV_top6_specailties,
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
   iOS_Version: '2.112',
@@ -394,6 +539,7 @@ const ConfigurationDevReplica = {
   PRO_PUBNUB_SUBSCRIBER: 'sub-c-9cc337b6-e0f4-11e9-8d21-f2f6e193974b',
   DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
+  TOP_SPECIALITIES: QA_top6_specailties,
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
   iOS_Version: '1.811',
@@ -411,6 +557,8 @@ const Configuration =
     ? ConfigurationProd
     : APP_ENV == AppEnv.QA
     ? ConfigurationQA
+    : APP_ENV == AppEnv.STAGING
+    ? ConfigurationStaging
     : APP_ENV == AppEnv.PERFORM
     ? ConfigurationPERFORM
     : APP_ENV == AppEnv.VAPT

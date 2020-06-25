@@ -1213,6 +1213,9 @@ export class AppointmentRepository extends Repository<Appointment> {
       .leftJoinAndSelect('appointment.appointmentRefunds', 'appointmentRefunds')
       .where('appointment.patientId IN (:...ids)', { ids })
       .andWhere('appointment.discountedAmount not in(:discountedAmount)', { discountedAmount: 0 })
+      .andWhere('appointment.status not in(:status1)', {
+        status1: STATUS.PAYMENT_ABORTED,
+      })
       .orderBy('appointment.bookingDate', 'ASC')
       .getMany();
   }
@@ -1495,6 +1498,23 @@ export class AppointmentRepository extends Repository<Appointment> {
       })
       .andWhere('appointment.appointmentType = :appointmentType', {
         appointmentType: appointmentType,
+      })
+      .andWhere('appointment.status in(:status1)', {
+        status1: STATUS.PENDING,
+      })
+      .andWhere('appointment.appointmentState != :state', {
+        state: APPOINTMENT_STATE.AWAITING_RESCHEDULE,
+      })
+      .getMany();
+  }
+
+  getSpecificMinuteBothAppointments(nextMin: number) {
+    const apptDateTime = addMinutes(new Date(), nextMin);
+    const formatDateTime =
+      format(apptDateTime, 'yyyy-MM-dd') + 'T' + format(apptDateTime, 'HH:mm') + ':00.000Z';
+    return this.createQueryBuilder('appointment')
+      .where('(appointment.appointmentDateTime = :fromDate)', {
+        fromDate: formatDateTime,
       })
       .andWhere('appointment.status in(:status1)', {
         status1: STATUS.PENDING,

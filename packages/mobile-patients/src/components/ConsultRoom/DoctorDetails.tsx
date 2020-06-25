@@ -233,7 +233,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       .catch((e) => {
         CommonBugFender('DoctorDetails_getNetStatus', e);
       });
-    callPermissions();
+    // callPermissions();
   }, []);
 
   useEffect(() => {
@@ -972,7 +972,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   };
 
   const postBookAppointmentWEGEvent = () => {
-    const doctorClinics = (doctorDetails?.doctorHospital || []).filter((item) => {
+    const doctorClinics = ((doctorDetails && doctorDetails.doctorHospital) || []).filter((item) => {
       if (item && item.facility && item.facility.facilityType)
         return item.facility.facilityType === 'HOSPITAL';
     });
@@ -1070,7 +1070,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
               title={'BOOK APPOINTMENT'}
               onPress={() => {
                 postBookAppointmentWEGEvent();
-                callPermissions();
+                // callPermissions();
                 getNetStatus()
                   .then((status) => {
                     if (status) {

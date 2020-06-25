@@ -23,6 +23,7 @@ import { UploadPrescription } from 'components/Prescriptions/UploadPrescription'
 import { UploadEPrescriptionCard } from 'components/Prescriptions/UploadEPrescriptionCard';
 import { useCurrentPatient } from 'hooks/authHooks';
 import moment from 'moment';
+import { gtmTracking } from 'gtmTracking';
 import { MetaTagsComp } from 'MetaTagsComp';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -314,6 +315,39 @@ export const SearchByMedicine: React.FC = (props) => {
                 setMedicineList(data.products);
                 setHeading('');
                 setIsLoading(false);
+                /** gtm code start */
+                let gtmItems: any[] = [];
+                if (data.products.length) {
+                  data.products.map((prod: MedicineProduct, key: number) => {
+                    const { name, sku, price, type_id } = prod;
+                    gtmItems.push({
+                      item_name: name,
+                      item_id: sku,
+                      price: price,
+                      item_category: 'Pharmacy',
+                      item_category_2: type_id
+                        ? type_id.toLowerCase() === 'pharma'
+                          ? 'Drugs'
+                          : 'FMCG'
+                        : null,
+                      // 'item_category_4': '',             // park for future use
+                      item_variant: 'Default',
+                      index: key + 1,
+                      quantity: 1,
+                    });
+                  });
+                }
+                gtmTracking({
+                  category: 'Pharmacy',
+                  action: 'List Views',
+                  label: '',
+                  value: null,
+                  ecommObj: {
+                    event: 'view_item_list',
+                    ecommerce: { items: gtmItems },
+                  },
+                });
+                /** gtm code end */
               }
             })
             .catch((e) => {
@@ -459,15 +493,30 @@ export const SearchByMedicine: React.FC = (props) => {
     uploadPrescriptionTracking({ ...patient, age });
     setIsUploadPreDialogOpen(true);
   };
+
+  const getMetaTitle =
+    paramSearchType === 'shop-by-category'
+      ? `Buy ${paramSearchText} - Online Pharmacy Store - Apollo 247`
+      : paramSearchType === 'shop-by-brand'
+      ? `Buy ${paramSearchText} Medicines Online - Apollo 247`
+      : `${paramSearchText} Online - Buy Special Medical Kits Online - Apollo 247`;
+
+  const getMetaDescription =
+    paramSearchType === 'shop-by-category'
+      ? `Buy ${paramSearchText} online at Apollo 247 - India's online pharmacy store. Get ${paramSearchText} medicines in just a few clicks. Buy ${paramSearchText} at best prices in India.`
+      : paramSearchType === 'shop-by-brand'
+      ? `Buy medicines from ${paramSearchText} online at Apollo 247 - India's online pharmacy store. Get all the medicines from ${paramSearchText} in a single place and buy them in just a few clicks.`
+      : `${paramSearchText} by Apollo 247. Get ${paramSearchText} to buy pre grouped essential medicines online. Buy medicines online at Apollo 247 in just a few clicks.`;
+
   const metaTagProps = {
-    title: `Buy ${params.searchMedicineType} - Online Pharmacy Store - Apollo 247`,
-    desciption: `Buy ${params.searchMedicineType} online at Apollo 247 - India's online pharmacy store. Get ${params.searchMedicineType} medicines in just a few clicks. Buy ${params.searchMedicineType} at best prices in India.`,
-    canonicalLink: window && window.location && window.location.href,
+    title: getMetaTitle,
+    description: getMetaDescription,
+    canonicalLink: window && window.location && window.location && window.location.href,
   };
 
   return (
     <div className={classes.root}>
-      <MetaTagsComp {...metaTagProps} />
+      {paramSearchType !== 'search-medicines' && <MetaTagsComp {...metaTagProps} />}
       <Header />
       <div className={classes.container}>
         <div className={classes.searchByBrandPage}>
@@ -503,7 +552,10 @@ export const SearchByMedicine: React.FC = (props) => {
               <div
                 className={classes.specialOffer}
                 onClick={() =>
-                  (window.location.href = clientRoutes.searchByMedicine('deals-of-the-day', '1195'))
+                  (window.location.href = clientRoutes.searchByMedicine(
+                    'deals-of-the-day',
+                    'offer1'
+                  ))
                 }
               >
                 <span>
