@@ -4,6 +4,7 @@ import { Theme } from '@material-ui/core';
 import Slider from 'react-slick';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
+import { pharmacyHomeBannerTracking } from 'webEngageTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -51,6 +52,9 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 14,
       '& img': {
         maxWidth: '100%',
+      },
+      '&:hover': {
+        cursor: 'pointer',
       },
     },
     button: {
@@ -104,10 +108,11 @@ export const CarouselBanner: React.FC<BanneDataArray> = (props) => {
   return (
     <div className={classes.root}>
       <Slider {...sliderSettings}>
-        {props.bannerData.map((sidebaner) => (
+        {props.bannerData.map((sidebaner, index) => (
           <div
             className={classes.card}
             onClick={() => {
+              pharmacyHomeBannerTracking(index + 1);
               if (sidebaner.sku_url_key) {
                 props.history.push(clientRoutes.medicineDetails(sidebaner.sku_url_key));
               } else if (sidebaner.category_url_key) {
