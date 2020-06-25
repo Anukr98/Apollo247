@@ -438,9 +438,6 @@ export class Doctor extends BaseEntity {
   @Column({ default: false })
   skipAutoQuestions: Boolean;
 
-  @Column({ nullable: true })
-  medmantraId: string;
-
   @BeforeUpdate()
   updateDateUpdate() {
     this.updatedDate = new Date();
@@ -465,6 +462,9 @@ export class DoctorAndHospital extends BaseEntity {
 
   @PrimaryGeneratedColumn('uuid')
   id: string;
+
+  @Column({ nullable: true })
+  medmantraId: string;
 
   @Column({ nullable: true })
   updatedDate: Date;
