@@ -265,8 +265,8 @@ const ConfigurationPERFORM = {
 
 //VAPT
 const ConfigurationVAPT = {
-  LOG_ENVIRONMENT: 'release',
-  ANALYTICAL_ENIVRONMENT: 'release',
+  LOG_ENVIRONMENT: 'vapt',
+  ANALYTICAL_ENIVRONMENT: 'vapt',
   MEDICINE_PAST_SEARCHES_SHOW_COUNT: 5,
   PAYMENT_GATEWAY_BASE_URL: 'https://stagingpmt.apollo247.com',
   PAYMENT_GATEWAY_SUCCESS_PATH: '/mob?',
