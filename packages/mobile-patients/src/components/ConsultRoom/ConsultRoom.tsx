@@ -41,6 +41,7 @@ import {
   CommonLogEvent,
   CommonSetUserBugsnag,
   DeviceHelper,
+  setBugFenderLog,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
   GET_DIAGNOSTICS_CITES,
@@ -1371,9 +1372,22 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   const onPressKavach = () => {
     postHomeWEGEvent(WebEngageEventName.APOLLO_KAVACH_PROGRAM);
-    props.navigation.navigate(AppRoutes.CovidScan, {
-      covidUrl: AppConfig.Configuration.KAVACH_URL,
-    });
+
+    try {
+      const openUrl = AppConfig.Configuration.KAVACH_URL;
+      Linking.canOpenURL(openUrl).then((supported) => {
+        if (supported) {
+          Linking.openURL(openUrl);
+        } else {
+          setBugFenderLog('CONSULT_ROOM_FAILED_OPEN_URL', openUrl);
+          console.log("Don't know how to open URI: " + this.props.url);
+        }
+      });
+    } catch (e) {}
+
+    // props.navigation.navigate(AppRoutes.CovidScan, {
+    //   covidUrl: AppConfig.Configuration.KAVACH_URL,
+    // });
   };
 
   // const onPressMentalHealth = () => {
