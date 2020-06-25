@@ -35,7 +35,15 @@ import {
   SendMessageToMobileNumberVariables,
 } from '@aph/mobile-doctors/src/graphql/types/SendMessageToMobileNumber';
 import { useUIElements } from '@aph/mobile-doctors/src/components/ui/UIElementsProvider';
-// import { Browser, BrowserUnselect } from '@aph/mobile-doctors/src/components/ui/Icons';
+import { Remove } from '@aph/mobile-doctors/src/components/ui/Icons';
+import {
+  URLActive,
+  URLInActive,
+  ChatActive,
+  ChatInActive,
+  MailActive,
+  MailInActive,
+} from '@aph/mobile-doctors/src/components/ui/Icons';
 
 const styles = SharingScreenStyles;
 
@@ -45,10 +53,11 @@ export const SharingScreen: React.FC<SharingScreenProps> = (props) => {
   const tabsData = [
     {
       title: 'URL',
-      // selectedIcon: <Browser />, unselectedIcon: <BrowserUnselect />
+      selectedIcon: <URLActive />,
+      unselectedIcon: <URLInActive />,
     },
-    { title: 'SMS' },
-    { title: 'EMAIL' },
+    { title: 'SMS', selectedIcon: <ChatActive />, unselectedIcon: <ChatInActive /> },
+    // { title: 'EMAIL', selectedIcon: <MailActive />, unselectedIcon: <MailInActive /> },
   ];
   const { doctorDetails } = useAuth();
   const [selectedTab, setSelectedTab] = useState<string>(tabsData[0].title);
@@ -88,7 +97,23 @@ export const SharingScreen: React.FC<SharingScreenProps> = (props) => {
 
   const renderHeader = () => {
     return (
-      <Header headerText={string.account.share_header} containerStyle={styles.headerContainer} />
+      <Header
+        headerText={string.account.share_header}
+        containerStyle={styles.headerContainer}
+        rightComponent={
+          <TouchableOpacity
+            activeOpacity={1}
+            onPress={() => props.navigation.goBack()}
+            style={{
+              height: 35,
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <Remove style={{ height: 24, width: 24 }} />
+          </TouchableOpacity>
+        }
+      />
     );
   };
 
@@ -100,6 +125,7 @@ export const SharingScreen: React.FC<SharingScreenProps> = (props) => {
           selectedTab={selectedTab}
           onChange={setSelectedTab}
           tabViewStyle={{ borderBottomWidth: 2 }}
+          showTextIcons={true}
         />
       </View>
     );
@@ -247,6 +273,10 @@ export const SharingScreen: React.FC<SharingScreenProps> = (props) => {
                             showAphAlert({
                               title: 'Success',
                               description: `We have sent the app invite to +91${mobile}`,
+                              onPressOk: () => {
+                                hideAphAlert && hideAphAlert();
+                                props.navigation.goBack();
+                              },
                             });
                         } else {
                           showAphAlert &&
