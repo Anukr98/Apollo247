@@ -488,7 +488,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
 
   const openConsultPopup = (consultType: ConsultMode) => {
     postBookAppointmentWEGEvent();
-    callPermissions();
+    // callPermissions();
     getNetStatus()
       .then((status) => {
         if (status) {
