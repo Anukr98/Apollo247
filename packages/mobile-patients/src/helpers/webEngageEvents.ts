@@ -173,6 +173,10 @@ export interface SpecialityClickedEvent extends PatientInfo {
   'Speciality ID': string;
 }
 
+export interface ReorderMedicines extends PatientInfo {
+  source: 'Order Details' | 'PHR';
+}
+
 export interface WebEngageEvents {
   // ********** AppEvents ********** \\
 
@@ -786,7 +790,7 @@ export interface WebEngageEvents {
     Type: 'Prescription' | 'Test Result';
   };
 
-  [WebEngageEventName.REORDER_MEDICINES]: PatientInfo;
+  [WebEngageEventName.REORDER_MEDICINES]: ReorderMedicines;
 
   [WebEngageEventName.PHR_ORDER_MEDS_TESTS]: PatientInfoWithConsultId;
 

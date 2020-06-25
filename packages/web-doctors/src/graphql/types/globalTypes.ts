@@ -23,6 +23,11 @@ export enum AccountType {
   SAVINGS = "SAVINGS",
 }
 
+export enum BOOKINGSOURCE {
+  MOBILE = "MOBILE",
+  WEB = "WEB",
+}
+
 export enum CASESHEET_STATUS {
   COMPLETED = "COMPLETED",
   PENDING = "PENDING",
@@ -37,6 +42,12 @@ export enum ConsultMode {
 export enum ConsultType {
   FIXED = "FIXED",
   PREFERRED = "PREFERRED",
+}
+
+export enum DEVICETYPE {
+  ANDROID = "ANDROID",
+  DESKTOP = "DESKTOP",
+  IOS = "IOS",
 }
 
 export enum DOCTOR_CALL_TYPE {
@@ -55,6 +66,7 @@ export enum DoctorType {
   CRADLE = "CRADLE",
   DOCTOR_CONNECT = "DOCTOR_CONNECT",
   FERTILITY = "FERTILITY",
+  HOMECARE = "HOMECARE",
   JUNIOR = "JUNIOR",
   PAYROLL = "PAYROLL",
   SPECTRA = "SPECTRA",
@@ -330,6 +342,9 @@ export interface EndAppointmentSessionInput {
   appointmentId: string;
   status: STATUS;
   noShowBy?: REQUEST_ROLES | null;
+  deviceType?: DEVICETYPE | null;
+  callSource?: BOOKINGSOURCE | null;
+  callType?: APPT_CALL_TYPE | null;
 }
 
 export interface MedicinePrescriptionInput {

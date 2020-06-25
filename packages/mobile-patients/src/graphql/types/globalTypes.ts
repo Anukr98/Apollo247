@@ -21,6 +21,12 @@ export enum APPOINTMENT_TYPE {
   PHYSICAL = "PHYSICAL",
 }
 
+export enum APPT_CALL_TYPE {
+  AUDIO = "AUDIO",
+  CHAT = "CHAT",
+  VIDEO = "VIDEO",
+}
+
 export enum AccountType {
   CURRENT = "CURRENT",
   SAVINGS = "SAVINGS",
@@ -476,7 +482,7 @@ export interface AddMedicalRecordParametersInput {
 }
 
 export interface AlertMedicineOrderPickupInput {
-  orderId?: number | null;
+  orderId: number;
   patientId: string;
   remarks?: string | null;
 }
@@ -635,6 +641,9 @@ export interface EndAppointmentSessionInput {
   appointmentId: string;
   status: STATUS;
   noShowBy?: REQUEST_ROLES | null;
+  deviceType?: DEVICETYPE | null;
+  callSource?: BOOKINGSOURCE | null;
+  callType?: APPT_CALL_TYPE | null;
 }
 
 export interface FilterDoctorInput {
@@ -694,6 +703,7 @@ export interface MedicineCartOMSInput {
   packagingCharges?: number | null;
   showPrescriptionAtStore?: boolean | null;
   shopAddress?: ShopAddress | null;
+  customerComment?: string | null;
 }
 
 export interface MedicineCartOMSItem {
@@ -837,6 +847,7 @@ export interface PrescriptionMedicineOrderOMSInput {
   shopAddress?: ShopAddress | null;
   prescriptionOptionSelected?: string | null;
   durationDays?: number | null;
+  customerComment?: string | null;
 }
 
 export interface PrescriptionMedicinePaymentOMSDetails {

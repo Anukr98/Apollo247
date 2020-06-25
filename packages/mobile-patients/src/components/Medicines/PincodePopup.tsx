@@ -3,13 +3,15 @@ import {
   useAppCommonData,
 } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
-import { CrossPopup } from '@aph/mobile-patients/src/components/ui/Icons';
+import { CrossPopup, SmallOrangeCallIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
   getPlaceInfoByPincode,
   pinCodeServiceabilityApi,
+  getNearByStoreDetailsApi,
+  exotelCallAPI,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { getFormattedLocation } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -21,6 +23,7 @@ import {
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
 const styles = StyleSheet.create({
   blurView: {
@@ -37,7 +40,7 @@ const styles = StyleSheet.create({
     top: Dimensions.get('window').height * 0.15,
   },
   popupView: {
-    width: '75%',
+    width: '79%',
     height: 'auto',
     backgroundColor: '#fff',
     borderRadius: 8,
@@ -73,7 +76,8 @@ export const PincodePopup: React.FC<PincodePopupProps> = (props) => {
   const { setLoading: globalLoading } = useUIElements();
   const { setPharmacyLocation } = useAppCommonData();
   const { currentPatient } = useAllCurrentPatients();
-
+  const [showCallToPharmacy, setShowCallToPharmacy] = useState<boolean>(false);
+  const [pharmacyPhoneNumber, setPharmacyPhoneNumber] = useState<string>('');
   const handleUpdatePlaceInfoByPincodeError = (e: Error) => {
     CommonBugFender('AddAddress_updateCityStateByPincode', e);
     setError('Sorry, invalid pincode.');
@@ -101,10 +105,24 @@ export const PincodePopup: React.FC<PincodePopupProps> = (props) => {
             Pincode: pincode,
           };
           postWebEngageEvent(WebEngageEventName.PHARMACY_PINCODE_NONSERVICABLE, eventAttributes);
-          globalLoading!(false);
-          setError(
-            'Sorry, we are not servicing your area currently. Call 1860 500 0101 for Pharmacy stores nearby.'
-          );
+          getNearByStoreDetailsApi(pincode)
+            .then((response: any) => {
+              globalLoading!(false);
+              setShowCallToPharmacy(true);
+              setPharmacyPhoneNumber(
+                response.data && response.data.phoneNumber
+                  ? response.data.phoneNumber.toString()
+                  : ''
+              );
+              setError('We are servicing your area through the nearest Pharmacy, ');
+            })
+            .catch((error) => {
+              globalLoading!(false);
+              setShowCallToPharmacy(false);
+              setError(
+                'Sorry, we are not servicing your area currently. Call 1860 500 0101 for Pharmacy stores nearby.'
+              );
+            });
         } else {
           updatePlaceInfoByPincode(pincode);
         }
@@ -113,6 +131,20 @@ export const PincodePopup: React.FC<PincodePopupProps> = (props) => {
         globalLoading!(false);
         CommonBugFender('Medicine_pinCodeServiceabilityApi', e);
         setError('Sorry, unable to check serviceability.');
+      });
+  };
+
+  const onPressCallNearestPharmacy = () => {
+    let from = currentPatient.mobileNumber;
+    let to = pharmacyPhoneNumber;
+    let caller_id = AppConfig.Configuration.EXOTEL_CALLER_ID;
+    const param = `From=${from}&To=${to}&CallerId=${caller_id}`;
+    exotelCallAPI(param)
+      .then((response) => {
+        console.log('exotelCallAPI response', response, 'params', param);
+      })
+      .catch((error) => {
+        console.log('exotelCallAPI error', error, 'params', param);
       });
   };
 
@@ -165,13 +197,56 @@ export const PincodePopup: React.FC<PincodePopupProps> = (props) => {
             placeholder="Enter pincode here"
             maxLength={6}
           />
-          {!!error && <Text style={styles.errorText}>{error}</Text>}
-          <Button
-            disabled={pincode.length !== 6}
-            style={styles.submitButton}
-            title="SUBMIT"
-            onPress={() => checkServiceabilityAndUpdatePlaceInfo(pincode)}
-          />
+          {!!error && !showCallToPharmacy && <Text style={styles.errorText}>{error}</Text>}
+          {!!error && showCallToPharmacy ? (
+            <Text style={styles.errorText}>
+              {error}
+              <Text
+                style={{
+                  ...theme.viewStyles.text('B', 11, '#890000'),
+                  textDecorationLine: 'underline',
+                }}
+              >
+                {'Call to Order!'}
+              </Text>
+            </Text>
+          ) : null}
+          {showCallToPharmacy ? (
+            <TouchableOpacity
+              activeOpacity={1}
+              style={{
+                backgroundColor: '#fc9916',
+                borderRadius: 5,
+                height: 38,
+                marginBottom: 5,
+                justifyContent: 'flex-start',
+                alignItems: 'center',
+                flexDirection: 'row',
+                shadowColor: 'rgba(0,0,0,0.2)',
+                shadowOffset: { width: 0, height: 0 },
+                shadowOpacity: 0,
+                shadowRadius: 0,
+                elevation: 0,
+                width: '100%',
+                paddingLeft: 9,
+                marginTop: 12,
+                alignSelf: 'center',
+              }}
+              onPress={onPressCallNearestPharmacy}
+            >
+              <SmallOrangeCallIcon style={{ width: 18, height: 18, marginRight: 5 }} />
+              <Text style={{ ...theme.viewStyles.text('B', 12, '#ffffff', 1, 24, 0) }}>
+                {'CALL THE NEAREST PHARMACY'}
+              </Text>
+            </TouchableOpacity>
+          ) : (
+            <Button
+              disabled={pincode.length !== 6}
+              style={styles.submitButton}
+              title="SUBMIT"
+              onPress={() => checkServiceabilityAndUpdatePlaceInfo(pincode)}
+            />
+          )}
         </View>
         {renderCloseIcon()}
       </View>
