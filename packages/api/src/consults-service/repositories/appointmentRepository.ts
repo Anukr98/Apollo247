@@ -1855,6 +1855,7 @@ export class AppointmentRepository extends Repository<Appointment> {
   }
 
   saveAppointmentHistory(historyAttrs: Partial<AppointmentUpdateHistory>) {
+    historyAttrs.updatedAt = new Date();
     return AppointmentUpdateHistory.create(historyAttrs).save();
   }
 }
