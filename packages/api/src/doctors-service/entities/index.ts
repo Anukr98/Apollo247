@@ -435,6 +435,12 @@ export class Doctor extends BaseEntity {
   @Column({ nullable: true })
   zip: string;
 
+  @Column({ default: false })
+  skipAutoQuestions: Boolean;
+
+  @Column({ nullable: true })
+  medmantraId: string;
+
   @BeforeUpdate()
   updateDateUpdate() {
     this.updatedDate = new Date();
