@@ -1598,7 +1598,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
           }}
           className={classes.menuBtnGroup}
         >
-          <AphButton>End or Cancel Consult</AphButton>
+          <AphButton>Cancel Consult</AphButton>
         </div>
       </Popover>
       <Modal

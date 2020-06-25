@@ -567,7 +567,7 @@ export const MedicineLanding: React.FC = (props: any) => {
                   </div>
                 )}
                 {data && data.mainbanners_desktop && data.mainbanners_desktop.length > 0 && (
-                  <CarouselBanner bannerData={data.mainbanners_desktop} />
+                  <CarouselBanner bannerData={data.mainbanners_desktop} history={props.history} />
                 )}
               </div>
 

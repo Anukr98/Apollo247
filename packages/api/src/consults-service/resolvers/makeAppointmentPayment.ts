@@ -346,7 +346,7 @@ const makeAppointmentPayment: Resolver<
       apptsRepo.updateJdQuestionStatusbyIds([processingAppointment.id]);
     }
   } else if (paymentInput.paymentStatus == 'TXN_FAILURE') {
-    if (paymentInput.responseCode == '141') {
+    if (paymentInput.responseCode == '141' || paymentInput.responseCode == '810') {
       await apptsRepo.updateAppointment(processingAppointment.id, {
         status: STATUS.PAYMENT_ABORTED,
         paymentInfo,
