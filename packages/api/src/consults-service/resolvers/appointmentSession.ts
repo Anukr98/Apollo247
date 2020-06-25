@@ -484,7 +484,9 @@ const endAppointmentSession: Resolver<
   if (endAppointmentSessionInput.callSource && endAppointmentSessionInput.deviceType) {
     const appointmentCallDetailsAttrs: Partial<AppointmentCallDetails> = {
       appointment: apptDetails,
-      callType: endAppointmentSessionInput.callType,
+      callType: endAppointmentSessionInput.callType
+        ? endAppointmentSessionInput.callType
+        : APPT_CALL_TYPE.CHAT,
       doctorType: DOCTOR_CALL_TYPE.SENIOR,
       startTime: new Date(),
       endTime: new Date(),
