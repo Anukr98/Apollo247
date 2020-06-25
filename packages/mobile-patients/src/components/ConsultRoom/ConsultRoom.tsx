@@ -10,6 +10,7 @@ import {
   CartIcon,
   ConsultationRoom,
   CovidExpert,
+  KavachIcon,
   CovidRiskLevel,
   Diabetes,
   DoctorIcon,
@@ -1297,6 +1298,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           <CovidExpert style={{ width: 24, height: 24 }} />,
           `${AppConfig.Configuration.HOME_SCREEN_EMERGENCY_BANNER_TEXT}`
         )}
+        {renderCovidBlueButtons(
+          onPressKavach,
+          <KavachIcon style={{ width: 24, height: 24 }} />,
+          `${AppConfig.Configuration.HOME_SCREEN_KAVACH_TEXT}`
+        )}
       </View>
     );
   };
@@ -1360,6 +1366,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     postHomeWEGEvent(WebEngageEventName.CHECK_YOUR_RISK_LEVEL);
     props.navigation.navigate(AppRoutes.CovidScan, {
       covidUrl: AppConfig.Configuration.COVID_RISK_LEVEL_URL,
+    });
+  };
+
+  const onPressKavach = () => {
+    postHomeWEGEvent(WebEngageEventName.APOLLO_KAVACH_PROGRAM);
+    props.navigation.navigate(AppRoutes.CovidScan, {
+      covidUrl: AppConfig.Configuration.KAVACH_URL,
     });
   };
 
