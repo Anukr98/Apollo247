@@ -43,6 +43,7 @@ import {
   APPOINTMENT_TYPE,
   DEVICETYPE,
   BOOKINGSOURCE,
+  APPT_CALL_TYPE
 } from 'graphql/types/globalTypes';
 import * as _ from 'lodash';
 import { CaseSheetContext } from 'context/CaseSheetContext';
@@ -1192,6 +1193,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               noShowBy: REQUEST_ROLES.PATIENT,
               deviceType: DEVICETYPE.DESKTOP,
               callSource: BOOKINGSOURCE.WEB,
+              callType: APPT_CALL_TYPE.CHAT
             },
           },
           fetchPolicy: 'no-cache',

@@ -1485,6 +1485,7 @@ export const ConsultTabs: React.FC = () => {
             status: STATUS.COMPLETED,
             deviceType: DEVICETYPE.DESKTOP,
             callSource: BOOKINGSOURCE.WEB,
+            callType: APPT_CALL_TYPE.CHAT
           },
         },
         fetchPolicy: 'no-cache',
