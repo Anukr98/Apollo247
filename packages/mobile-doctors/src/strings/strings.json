@@ -454,7 +454,7 @@
     "error": "Something went wrong!! Trying to connect",
     "fallback": "Falling back to audio due to bad network",
     "reconnecting": "There is a problem with network connection. Reconnecting, Please wait...",
-    "videoBack": "Switching back to video due to",
+    "videoBack": "Network improved switching back to video",
     "reconnected": "Reconnected"
   }
 }

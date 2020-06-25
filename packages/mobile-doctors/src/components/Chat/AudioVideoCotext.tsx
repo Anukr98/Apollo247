@@ -89,6 +89,11 @@ type OpenTokSessionConnect = {
   connection: OpentokConnect;
   streamId: string;
 };
+
+type OpentokVideoWarn = {
+  reason: string;
+  stream: OpentokStreamObject;
+};
 export type CallBackOptions = {
   onCallEnd: (callType: string, callDuration: string) => void;
   onCallMinimize: (callType: string) => void;
@@ -197,6 +202,7 @@ export const AudioVideoProvider: React.FC = (props) => {
   const name = doctorDetails ? doctorDetails.displayName || 'Doctor' : 'Doctor';
   const [callerAudio, setCallerAudio] = useState<boolean>(true);
   const [callerVideo, setCallerVideo] = useState<boolean>(true);
+  const [downgradeToAudio, setDowngradeToAudio] = useState<boolean>(false);
   const [audioEnabled, setAudioEnabled] = useState<boolean>(true);
   const [videoEnabled, setVideoEnabled] = useState<boolean>(true);
   const [cameraPosition, setCameraPosition] = useState<'front' | 'back'>('front');
@@ -341,7 +347,7 @@ export const AudioVideoProvider: React.FC = (props) => {
       <View
         style={[
           isMinimized ? styles.imageContainerMinimized : styles.imageContainer,
-          !callerVideo || isAudio ? { zIndex: 103 } : {},
+          !callerVideo || isAudio || downgradeToAudio ? { zIndex: 103 } : {},
         ]}
       >
         {patientImage ? (
@@ -408,6 +414,7 @@ export const AudioVideoProvider: React.FC = (props) => {
     setCallerVideo(true);
     setAudioEnabled(true);
     setVideoEnabled(true);
+    setDowngradeToAudio(false);
     if (audioTrack) {
       setPrevVolume();
       audioTrack.stop();
@@ -584,17 +591,29 @@ export const AudioVideoProvider: React.FC = (props) => {
     disconnected: () => {
       errorPopup(strings.toastMessages.error, theme.colors.APP_RED);
     },
-    videoDisabled: (reason: string) => {
-      console.log('Subscribe videoDisabled', reason);
+    videoDisabled: (event: OpentokVideoWarn) => {
+      if (event.reason === 'quality') {
+        errorPopup(strings.toastMessages.fallback, theme.colors.APP_YELLOW);
+        setDowngradeToAudio(true);
+        setVideoEnabled(false);
+      }
     },
-    videoEnabled: (reason: string) => {
-      console.log('Subscribe videoEnabled', reason);
+    videoEnabled: (event: OpentokVideoWarn) => {
+      if (event.reason === 'quality') {
+        errorPopup(strings.toastMessages.videoBack, theme.colors.APP_GREEN);
+        setDowngradeToAudio(false);
+        setVideoEnabled(true);
+      }
     },
     videoDisableWarning: () => {
-      console.log('Subscribe videoWarn');
+      errorPopup(strings.toastMessages.fallback, theme.colors.APP_YELLOW);
+      setDowngradeToAudio(true);
+      setVideoEnabled(false);
     },
     videoDisableWarningLifted: () => {
-      console.log('Subscribe warnLift');
+      errorPopup(strings.toastMessages.videoBack, theme.colors.APP_GREEN);
+      setDowngradeToAudio(false);
+      setVideoEnabled(true);
     },
     audioNetworkStats: (event: OpenTokAudioStream) => {
       // setCallerAudio(event.stream.hasAudio);
@@ -627,6 +646,7 @@ export const AudioVideoProvider: React.FC = (props) => {
       setCallAccepted(false);
       setCallConnected(false);
       setMessageReceived(false);
+      setDowngradeToAudio(false);
       console.log('session stream connectionDestroyed!', event);
     },
     sessionConnected: (event: OpenTokSessionConnect) => {
