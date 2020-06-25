@@ -1017,6 +1017,18 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     }
   };
 
+  const checkNudgeScreenVisibility = async () => {
+    const hideNudgeScreenappointmentID = (await AsyncStorage.getItem(appointmentData.id)) || '';
+    // console.log('hideNudgeScreenappointmentID', hideNudgeScreenappointmentID);
+    if (hideNudgeScreenappointmentID != appointmentData.id) {
+      setDisplayUploadHealthRecords(true);
+      console.log('if hideNudgeScreenappointmentID', hideNudgeScreenappointmentID);
+    } else {
+      setDisplayUploadHealthRecords(false);
+      console.log('else hideNudgeScreenappointmentID', hideNudgeScreenappointmentID);
+    }
+  };
+
   const requestToJrDoctor = async () => {
     //new code
     if (userAnswers) {
@@ -1947,6 +1959,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     if (appointmentData.isJdQuestionsComplete) {
       console.log({});
       requestToJrDoctor();
+      checkNudgeScreenVisibility();
       // startJoinTimer(0);
       // thirtySecondCall();
       // minuteCaller();
@@ -6074,6 +6087,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           activeOpacity={1}
           onPress={() => {
             setDisplayUploadHealthRecords(false);
+            AsyncStorage.setItem(appointmentData.id, appointmentData.id);
           }}
         >
           <View
@@ -6117,6 +6131,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   CommonLogEvent(AppRoutes.ChatRoom, 'Upload document clicked.');
                   setDropdownVisible(!isDropdownVisible);
                   setDisplayUploadHealthRecords(false);
+                  AsyncStorage.setItem(appointmentData.id, appointmentData.id);
                 }}
               >
                 <UploadHealthRecords
