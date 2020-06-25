@@ -22,7 +22,6 @@ import {
   NotificationIcon,
   Person,
   PrescriptionMenu,
-  PrimaryIcon,
   Scan,
   Symptomtracker,
   TestsCartIcon,
@@ -57,8 +56,17 @@ import {
   saveDeviceToken,
   saveDeviceTokenVariables,
 } from '@aph/mobile-patients/src/graphql/types/saveDeviceToken';
-import { GenerateTokenforCM, notifcationsApi } from '@aph/mobile-patients/src/helpers/apiCalls';
+import {
+  GenerateTokenforCM,
+  notifcationsApi,
+  pinCodeServiceabilityApi,
+} from '@aph/mobile-patients/src/helpers/apiCalls';
 import { apiRoutes } from '@aph/mobile-patients/src/helpers/apiRoutes';
+import {
+  FirebaseEventName,
+  PatientInfoFirebase,
+  PatientInfoWithSourceFirebase,
+} from '@aph/mobile-patients/src/helpers/firebaseEvents';
 import {
   doRequestAndAccessLocationModified,
   g,
@@ -71,11 +79,6 @@ import {
   PatientInfoWithSource,
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
-import { 
-  FirebaseEventName,
-  PatientInfoFirebase,
-  PatientInfoWithSourceFirebase,
-} from '@aph/mobile-patients/src/helpers/firebaseEvents';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import KotlinBridge from '@aph/mobile-patients/src/KotlinBridge';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
@@ -104,7 +107,9 @@ import firebase from 'react-native-firebase';
 import { ScrollView } from 'react-native-gesture-handler';
 import WebEngage from 'react-native-webengage';
 import { NavigationScreenProps } from 'react-navigation';
-import { pinCodeServiceabilityApi } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { getPatientPersonalizedAppointments_getPatientPersonalizedAppointments_appointmentDetails } from '../../graphql/types/getPatientPersonalizedAppointments';
+import { getPatientPersonalizedAppointmentList } from '../../helpers/clientCalls';
+import { ConsultPersonalizedCard } from '../ui/ConsultPersonalizedCard';
 
 const { Vitals } = NativeModules;
 
@@ -268,6 +273,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     setNotificationCount,
     setAllNotifications,
     setisSelected,
+    appointmentsPersonalized,
+    setAppointmentsPersonalized,
   } = useAppCommonData();
 
   // const startDoctor = string.home.startDoctor;
@@ -292,6 +299,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const { showAphAlert, hideAphAlert, setLoading } = useUIElements();
   const [isWEGFired, setWEGFired] = useState(false);
   const [serviceable, setserviceable] = useState<String>('');
+  const [personalizedData, setPersonalizedData] = useState<any>([]);
+  const [isPersonalizedCard, setisPersonalizedCard] = useState(false);
+
   const webengage = new WebEngage();
 
   const updateLocation = () => {
@@ -305,6 +315,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   useEffect(() => {
+    //TODO: if deeplinks is causing issue comment handleDeepLink here and uncomment in SplashScreen useEffect
+    // handleDeepLink(props.navigation);
     isserviceable();
     if (diagnosticsCities.length) {
       // Don't call getDiagnosticsCites API if already fetched
@@ -461,15 +473,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     source?: PatientInfoWithSourceFirebase['Source']
   ) => {
     const eventAttributes: PatientInfoFirebase = {
-      'PatientName': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
-      'PatientUHID': g(currentPatient, 'uhid'),
+      PatientName: `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      PatientUHID: g(currentPatient, 'uhid'),
       Relation: g(currentPatient, 'relation'),
-      'PatientAge': Math.round(
-        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
-      ),
-      'PatientGender': g(currentPatient, 'gender'),
-      'MobileNumber': g(currentPatient, 'mobileNumber'),
-      'CustomerID': g(currentPatient, 'id'),
+      PatientAge: Math.round(moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)),
+      PatientGender: g(currentPatient, 'gender'),
+      MobileNumber: g(currentPatient, 'mobileNumber'),
+      CustomerID: g(currentPatient, 'id'),
     };
     if (source) {
       (eventAttributes as PatientInfoWithSourceFirebase)['Source'] = source;
@@ -625,6 +635,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         ? allPatients.find((patient: any) => patient.relation === Relation.ME) || allPatients[0]
         : null;
 
+      getPersonalizesAppointments(patientDetails);
       const array: any = await AsyncStorage.getItem('allNotification');
       const arraySelected = JSON.parse(array);
       const selectedCount = arraySelected.filter((item: any) => {
@@ -711,6 +722,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         return 'DEV';
       case 'https://aph.staging.api.popcornapps.com//graphql':
         return 'QA';
+      case 'https://stagingapi.apollo247.com//graphql':
+        return 'STAGING';
       case 'https://aph.uat.api.popcornapps.com//graphql':
         return 'UAT';
       case 'https://aph.vapt.api.popcornapps.com//graphql':
@@ -922,6 +935,34 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       })
       .catch((e) => {
         CommonBugFender('ConsultRoom_callDeviceTokenAPI', e);
+      });
+  };
+
+  const getPersonalizesAppointments = async (details: any) => {
+    const uhid = g(details, 'uhid');
+
+    if (Object.keys(appointmentsPersonalized).length != 0) {
+      console.log('appointmentsPersonalized', appointmentsPersonalized);
+
+      setPersonalizedData(appointmentsPersonalized as any);
+      setisPersonalizedCard(true);
+    }
+
+    getPatientPersonalizedAppointmentList(client, uhid)
+      .then((data: any) => {
+        const appointmentsdata =
+          g(data, 'data', 'data', 'getPatientPersonalizedAppointments', 'appointmentDetails') || [];
+        console.log('appointmentsdata', appointmentsdata);
+
+        setPersonalizedData(appointmentsdata as any);
+        setisPersonalizedCard(true);
+        setAppointmentsPersonalized &&
+          setAppointmentsPersonalized(
+            appointmentsdata as getPatientPersonalizedAppointments_getPatientPersonalizedAppointments_appointmentDetails[]
+          );
+      })
+      .catch((e) => {
+        CommonBugFender('ConsultRoom_getPatientPersonalizedAppointmentList', e);
       });
   };
 
@@ -1559,6 +1600,21 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     );
   };
 
+  const renderAppointmentsScreen = () => {
+    return (
+      <View>
+        <ConsultPersonalizedCard
+          rowData={personalizedData}
+          onClickButton={() => {
+            props.navigation.navigate(AppRoutes.DoctorDetails, {
+              doctorId: personalizedData ? personalizedData.doctorDetails.id : '',
+            });
+          }}
+        />
+      </View>
+    );
+  };
+
   return (
     <View style={{ flex: 1, backgroundColor: 'white' }}>
       <SafeAreaView style={{ ...theme.viewStyles.container }}>
@@ -1574,7 +1630,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 <View style={{ height: 100 }} />
                 <View style={{ flexDirection: 'row' }}>{renderProfileDrop()}</View>
               </ImageBackground>
-              <Text style={styles.descriptionTextStyle}>{string.home.description}</Text>
+              {/* <Text style={styles.descriptionTextStyle}>{string.home.description}</Text> */}
+              {isPersonalizedCard && renderAppointmentsScreen()}
               {renderMenuOptions()}
               <View style={{ backgroundColor: '#f0f1ec' }}>{renderListView()}</View>
               {renderCovidMainView()}

@@ -4,10 +4,10 @@ import React, { useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { useAuth } from 'hooks/authHooks';
-import { useParams } from 'hooks/routerHooks';
 import { useShoppingCart } from 'components/MedicinesCartProvider';
 import { useDiagnosticsCart } from 'components/Tests/DiagnosticsCartProvider';
 import { getAppStoreLink } from 'helpers/dateHelpers';
+import { useParams } from 'hooks/routerHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -188,7 +188,11 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const Navigation: React.FC = (props) => {
+interface NavigationProps {
+  activeMedicineRoutes: Array<string>;
+}
+
+export const Navigation: React.FC<NavigationProps> = (props) => {
   const classes = useStyles({});
   const currentPath = window.location.pathname;
   const { isSigningIn, isSignedIn, setVerifyOtpError } = useAuth();
@@ -197,18 +201,19 @@ export const Navigation: React.FC = (props) => {
   const cartPopoverRef = useRef(null);
   const [isCartPopoverOpen, setIsCartPopoverOpen] = React.useState<boolean>(false);
   const params = useParams<{
-    searchMedicineType: string;
-    searchText: string;
-    sku: string;
+    specialty: string;
+    doctorName: string;
+    doctorId: string;
+    payType: string;
   }>();
-
-  const medcineRoutes = [
-    clientRoutes.medicines(),
-    clientRoutes.searchByMedicine(params.searchMedicineType, params.searchText),
-    clientRoutes.medicineCategoryDetails(params.searchMedicineType, params.sku),
-    clientRoutes.medicineDetails(params.sku),
-    clientRoutes.medicineAllBrands(),
-    clientRoutes.prescriptionsLanding(),
+  const doctorRoutes = [
+    clientRoutes.specialityListing(),
+    clientRoutes.specialties(params.specialty),
+    clientRoutes.specialtyDoctorDetails(params.specialty, params.doctorName, params.doctorId),
+    clientRoutes.doctorDetails(params.doctorName, params.doctorId),
+    clientRoutes.payOnlineConsult(),
+    clientRoutes.payOnlineClinicConsult(),
+    clientRoutes.payMedicine(params.payType),
   ];
 
   return (
@@ -225,6 +230,26 @@ export const Navigation: React.FC = (props) => {
       {isSignedIn ? (
         <>
           <Link
+            className={
+              doctorRoutes.find((route) => route === currentPath) ||
+              currentPath.includes('specialties') ||
+              currentPath.includes('doctors')
+                ? classes.menuItemActive
+                : ''
+            }
+            to={clientRoutes.specialityListing()}
+            title={'Doctors'}
+          >
+            Doctors
+          </Link>
+          <Link
+            className={currentPath === clientRoutes.covidLanding() ? classes.menuItemActive : ''}
+            to={clientRoutes.covidLanding()}
+            title={'Covid 19'}
+          >
+            Covid 19
+          </Link>
+          <Link
             className={currentPath === clientRoutes.appointments() ? classes.menuItemActive : ''}
             to={clientRoutes.appointments()}
             title={'Appointments'}
@@ -234,7 +259,9 @@ export const Navigation: React.FC = (props) => {
           <Link
             to={clientRoutes.medicines()}
             className={
-              medcineRoutes.find((route) => route === currentPath) ? classes.menuItemActive : ''
+              props.activeMedicineRoutes.find((route) => route === currentPath)
+                ? classes.menuItemActive
+                : ''
             }
             title={'Medicines'}
           >
@@ -258,8 +285,13 @@ export const Navigation: React.FC = (props) => {
       ) : (
         <>
           <Link
-            className={currentPath === clientRoutes.doctorsLanding() ? classes.menuItemActive : ''}
-            to={clientRoutes.doctorsLanding()}
+            className={
+              doctorRoutes.find((route) => route === currentPath) ||
+              currentPath.includes('specialties')
+                ? classes.menuItemActive
+                : ''
+            }
+            to={clientRoutes.specialityListing()}
             title={'Doctors'}
           >
             <span className={classes.menuTitle}>Doctors</span>
@@ -271,7 +303,9 @@ export const Navigation: React.FC = (props) => {
           <Link
             to={clientRoutes.medicines()}
             className={
-              medcineRoutes.find((route) => route === currentPath) ? classes.menuItemActive : ''
+              props.activeMedicineRoutes.find((route) => route === currentPath)
+                ? classes.menuItemActive
+                : ''
             }
             title={'Pharmacy'}
           >
@@ -301,7 +335,7 @@ export const Navigation: React.FC = (props) => {
           </Link>
         </>
       )}
-      {currentPath === clientRoutes.welcome() ||
+      {/* {currentPath === clientRoutes.welcome() ||
       currentPath === clientRoutes.termsConditions() ||
       currentPath === clientRoutes.aboutUs() ? (
         <div className={`${classes.appDownloadBtn}`}>
@@ -311,7 +345,7 @@ export const Navigation: React.FC = (props) => {
         </div>
       ) : (
         ''
-      )}
+      )} */}
       <div
         id="cartId"
         onClick={() => setIsCartPopoverOpen(!isCartPopoverOpen)}

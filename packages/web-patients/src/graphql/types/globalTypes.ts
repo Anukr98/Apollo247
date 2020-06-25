@@ -117,6 +117,7 @@ export enum DoctorType {
   CRADLE = "CRADLE",
   DOCTOR_CONNECT = "DOCTOR_CONNECT",
   FERTILITY = "FERTILITY",
+  HOMECARE = "HOMECARE",
   JUNIOR = "JUNIOR",
   PAYROLL = "PAYROLL",
   SPECTRA = "SPECTRA",
@@ -144,6 +145,7 @@ export enum LOGIN_TYPE {
 export enum MEDICINE_CONSUMPTION_DURATION {
   DAYS = "DAYS",
   MONTHS = "MONTHS",
+  TILL_NEXT_REVIEW = "TILL_NEXT_REVIEW",
   WEEKS = "WEEKS",
 }
 
@@ -200,6 +202,7 @@ export enum MEDICINE_ORDER_STATUS {
   PICKEDUP = "PICKEDUP",
   PRESCRIPTION_CART_READY = "PRESCRIPTION_CART_READY",
   PRESCRIPTION_UPLOADED = "PRESCRIPTION_UPLOADED",
+  PURCHASED_IN_STORE = "PURCHASED_IN_STORE",
   QUOTE = "QUOTE",
   READY_AT_STORE = "READY_AT_STORE",
   RETURN_ACCEPTED = "RETURN_ACCEPTED",
@@ -217,6 +220,7 @@ export enum MEDICINE_TIMINGS {
   MORNING = "MORNING",
   NIGHT = "NIGHT",
   NOON = "NOON",
+  NOT_SPECIFIC = "NOT_SPECIFIC",
 }
 
 export enum MEDICINE_TO_BE_TAKEN {
@@ -230,9 +234,11 @@ export enum MEDICINE_UNIT {
   CAPSULE = "CAPSULE",
   CREAM = "CREAM",
   DROP = "DROP",
+  DROPS = "DROPS",
   GEL = "GEL",
   GM = "GM",
   INJECTION = "INJECTION",
+  INTERNATIONAL_UNIT = "INTERNATIONAL_UNIT",
   LOTION = "LOTION",
   MG = "MG",
   ML = "ML",
@@ -250,6 +256,7 @@ export enum MEDICINE_UNIT {
   SUSPENSION = "SUSPENSION",
   SYRUP = "SYRUP",
   TABLET = "TABLET",
+  TEASPOON = "TEASPOON",
   UNIT = "UNIT",
 }
 
@@ -408,6 +415,7 @@ export interface AddMedicalRecordInput {
   sourceName?: string | null;
   testDate?: any | null;
   testName: string;
+  testResultFiles?: LabResultFileProperties | null;
 }
 
 export interface AddMedicalRecordParametersInput {
@@ -561,6 +569,12 @@ export interface HelpEmailInput {
   comments?: string | null;
   patientId?: string | null;
   email?: string | null;
+}
+
+export interface LabResultFileProperties {
+  fileName: string;
+  mimeType: string;
+  content: string;
 }
 
 export interface MedicineCartInput {
@@ -775,6 +789,8 @@ export interface PrescriptionMedicineOrderOMSInput {
   NonCartOrderCity?: NonCartOrderOMSCity | null;
   orderAutoId?: number | null;
   shopAddress?: ShopAddress | null;
+  prescriptionOptionSelected?: string | null;
+  durationDays?: number | null;
 }
 
 export interface PrescriptionMedicinePaymentDetails {
@@ -857,6 +873,7 @@ export interface UpdatePatientInput {
   relation?: Relation | null;
   photoUrl?: string | null;
   deviceCode?: string | null;
+  employeeId?: string | null;
 }
 
 export interface UploadDocumentInput {

@@ -1,16 +1,8 @@
-import { EntityRepository, Repository } from 'typeorm';
-import { Patient, PRISM_DOCUMENT_CATEGORY, Gender } from 'profiles-service/entities';
+import { EntityRepository, Repository, Not, AfterUpdate } from 'typeorm';
+import { Patient, PRISM_DOCUMENT_CATEGORY, PatientAddress } from 'profiles-service/entities';
 import { ApiConstants } from 'ApiConstants';
-import requestPromise from 'request-promise';
 import { UhidCreateResult } from 'types/uhidCreateTypes';
-
-import {
-  PrismGetAuthTokenResponse,
-  PrismGetAuthTokenError,
-  PrismGetUsersError,
-  PrismGetUsersResponse,
-  PrismSignUpUserData,
-} from 'types/prism';
+import { PrismSignUpUserData } from 'types/prism';
 
 import { UploadDocumentInput } from 'profiles-service/resolvers/uploadDocumentToPrism';
 
@@ -19,6 +11,13 @@ import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { format, getUnixTime } from 'date-fns';
 import { AthsTokenResponse } from 'types/uhidCreateTypes';
 import { debugLog } from 'customWinstonLogger';
+import { createPrismUser } from 'helpers/phrV1Services';
+import {
+  PrescriptionInputArgs,
+  prescriptionSource,
+  uploadPrescriptions,
+} from 'profiles-service/resolvers/prescriptionUpload';
+import { LabResultsInputArgs, uploadLabResults } from 'profiles-service/resolvers/labResultsUpload';
 
 type DeviceCount = {
   mobilenumber: string;
@@ -34,8 +33,40 @@ const dLogger = debugLog(
 
 @EntityRepository(Patient)
 export class PatientRepository extends Repository<Patient> {
-  findById(id: string) {
-    return this.findOne({ where: { id } });
+  async findById(id: string) {
+    const relations = [
+      'lifeStyle',
+      'healthVault',
+      'familyHistory',
+      'patientAddress',
+      'patientDeviceTokens',
+      'patientNotificationSettings',
+      'patientMedicalHistory',
+    ];
+    return this.findOne({
+      where: { id, isActive: true },
+      relations: relations,
+    });
+  }
+
+  async findOrCreatePatient(
+    findOptions: { mobileNumber: Patient['mobileNumber'] },
+    createOptions: Partial<Patient>
+  ) {
+    return this.findOne({
+      where: { mobileNumber: findOptions.mobileNumber },
+    }).then((existingPatient) => {
+      return existingPatient || this.create(createOptions).save();
+    });
+  }
+
+  findEmpId(empId: string, patientId: string) {
+    return this.findOne({
+      where: {
+        employeeId: empId,
+        id: Not(patientId),
+      },
+    });
   }
 
   findPatientDetailsByIdsAndFields(ids: string[], fields: string[]) {
@@ -52,31 +83,33 @@ export class PatientRepository extends Repository<Patient> {
   }
 
   async getDeviceCodeCount(deviceCode: string) {
-    const deviceCodeCount: DeviceCount[] = await this.createQueryBuilder('patient')
-      .select(['"mobileNumber" as mobilenumber', 'count("mobileNumber") as mobilecount'])
+    const deviceCodeCount: number = (await this.createQueryBuilder('patient')
+      .select(['"mobileNumber" as mobilenumber'])
       .where('patient."deviceCode" = :deviceCode', { deviceCode })
       .groupBy('patient."mobileNumber"')
-      .getRawMany();
-    return deviceCodeCount.length;
+      .getRawMany()).length;
+    return deviceCodeCount;
   }
-  getPatientDetails(id: string) {
+
+  async getPatientDetails(id: string) {
+    const relations = [
+      'lifeStyle',
+      'healthVault',
+      'familyHistory',
+      'patientAddress',
+      'patientDeviceTokens',
+      'patientNotificationSettings',
+      'patientMedicalHistory',
+    ];
     return this.findOne({
       where: { id, isActive: true },
-      relations: [
-        'lifeStyle',
-        'healthVault',
-        'familyHistory',
-        'patientAddress',
-        'patientDeviceTokens',
-        'patientNotificationSettings',
-        'patientMedicalHistory',
-      ],
+      relations: relations,
     });
   }
 
-  findByMobileNumber(mobileNumber: string) {
-    return this.find({
-      where: { mobileNumber, isActive: true },
+  async findByMobileNumber(mobileNumber: string) {
+    return await this.find({
+      where: { mobileNumber: mobileNumber, isActive: true },
       relations: [
         'lifeStyle',
         'healthVault',
@@ -90,12 +123,10 @@ export class PatientRepository extends Repository<Patient> {
   }
 
   async findByMobileNumberLogin(mobileNumber: string) {
-    const patientList = await this.find({
-      where: { mobileNumber, isActive: true },
-    });
+    const patientList = await this.findByMobileNumber(mobileNumber);
     console.log('patient list count', patientList.length);
     if (patientList.length > 1) {
-      patientList.map((patient) => {
+      patientList.map(async (patient) => {
         if (patient.firstName == '' || patient.uhid == '') {
           console.log(patient.id, 'blank card');
           this.update(patient.id, { isActive: false });
@@ -108,33 +139,17 @@ export class PatientRepository extends Repository<Patient> {
         this.update(patientList[0].id, { primaryPatientId: patientList[0].id });
       }
     }
-
-    return this.find({
-      where: { mobileNumber, isActive: true },
-      relations: [
-        'lifeStyle',
-        'healthVault',
-        'familyHistory',
-        'patientAddress',
-        'patientDeviceTokens',
-        'patientNotificationSettings',
-        'patientMedicalHistory',
-      ],
-    });
+    return await this.findByMobileNumber(mobileNumber);
   }
 
-  findDetailsByMobileNumber(mobileNumber: string) {
-    return this.findOne({
-      where: { mobileNumber, isActive: true },
-      relations: [
-        'lifeStyle',
-        'healthVault',
-        'familyHistory',
-        'patientAddress',
-        'patientDeviceTokens',
-        'patientNotificationSettings',
-        'patientMedicalHistory',
-      ],
+  async findDetailsByMobileNumber(mobileNumber: string) {
+    return (await this.findByMobileNumber(mobileNumber))[0];
+  }
+
+  getPatientAddressById(id: PatientAddress['id']) {
+    return PatientAddress.findOne({
+      where: { id },
+      select: ['addressLine1', 'addressLine2', 'landmark', 'city', 'state', 'zipcode'],
     });
   }
 
@@ -142,7 +157,7 @@ export class PatientRepository extends Repository<Patient> {
     return this.update(id, { allergies });
   }
 
-  //utility method to get prism auth token
+  /*//utility method to get prism auth token
   async getPrismAuthToken(mobileNumber: string) {
     const prismHeaders = {
       method: 'GET',
@@ -171,7 +186,7 @@ export class PatientRepository extends Repository<Patient> {
     return authTokenResult !== null ? authTokenResult.response : null;
   }
 
-  //utility method to get prism users list
+    //utility method to get prism users list
   async getPrismUsersList(mobileNumber: string, authToken: string) {
     const prismHeaders = {
       method: 'GET',
@@ -227,7 +242,7 @@ export class PatientRepository extends Repository<Patient> {
     );
 
     return authTokenResult !== null ? authTokenResult.response : null;
-  }
+  }*/
 
   async validateAndGetUHID(id: string, prismUsersList: PrismSignUpUserData[]) {
     const reqStartTime = new Date();
@@ -258,7 +273,7 @@ export class PatientRepository extends Repository<Patient> {
         uhid = matchedUser[0].UHID;
       } else {
         //creating existing new medmentra uhids in prism
-        await this.createPrismUser(patientData, patientData.uhid);
+        await createPrismUser(patientData, patientData.uhid);
         uhid = patientData.uhid;
       }
     }
@@ -267,7 +282,7 @@ export class PatientRepository extends Repository<Patient> {
   }
 
   //utility method to get prism user details
-  async getPrismUsersDetails(uhid: string, authToken: string) {
+  /* async getPrismUsersDetails(uhid: string, authToken: string) {
     const prismHeaders = {
       method: 'GET',
       timeOut: ApiConstants.PRISM_TIMEOUT,
@@ -295,7 +310,7 @@ export class PatientRepository extends Repository<Patient> {
     );
 
     return detailsResult;
-  }
+  }*/
 
   async uploadDocumentToPrism(uhid: string, prismAuthToken: string, docInput: UploadDocumentInput) {
     let category = docInput.category ? docInput.category : PRISM_DOCUMENT_CATEGORY.OpSummary;
@@ -307,173 +322,72 @@ export class PatientRepository extends Repository<Patient> {
     const randomNumber = Math.floor(Math.random() * 10000);
     const fileFormat = docInput.fileType.toLowerCase();
     const documentName = `${currentTimeStamp}${randomNumber}.${fileFormat}`;
-    const formData = {
-      file: docInput.base64FileInput,
-      authtoken: prismAuthToken,
-      format: fileFormat,
-      tag: category,
-      programe: ApiConstants.PRISM_UPLOAD_DOCUMENT_PROGRAME,
-      date: currentTimeStamp,
-      uhid: uhid,
-      category: category,
-      filename: documentName,
-    };
 
-    const url = `${process.env.PRISM_UPLOAD_RECORDS_API}`;
-    const options = {
-      method: 'POST',
-      url: url,
-      headers: {
-        Connection: 'keep-alive',
-        'Accept-Encoding': 'gzip, deflate',
-        Host: `${process.env.PRISM_HOST}`,
-        Accept: '*/*',
-      },
-      formData: formData,
-    };
-
-    const reqStartTime = new Date();
-    const uploadResult = await requestPromise(options)
-      .then((res) => {
-        return JSON.parse(res);
-      })
-      .catch((error) => {
-        dLogger(
-          reqStartTime,
-          'uploadDocumentToPrism PRISM_UPLOAD_RECORDS_API_CALL___ERROR',
-          `${url} --- ${JSON.stringify(formData)} --- ${JSON.stringify(error)}`
-        );
-        throw new AphError(AphErrorMessages.FILE_SAVE_ERROR);
+    if (category == PRISM_DOCUMENT_CATEGORY.OpSummary) {
+      const prescriptionFiles = [];
+      prescriptionFiles.push({
+        id: '',
+        fileName: documentName,
+        mimeType: 'images/' + fileFormat,
+        content: docInput.base64FileInput,
+        dateCreated: getUnixTime(new Date()) * 1000,
       });
-    dLogger(
-      reqStartTime,
-      'uploadDocumentToPrism PRISM_UPLOAD_RECORDS_API_CALL___END',
-      `${url} --- ${JSON.stringify(formData)} --- ${JSON.stringify(uploadResult)}`
-    );
 
-    if (uploadResult.errorCode != '0' || uploadResult.response == 'fail') {
-      throw new AphError(AphErrorMessages.FILE_SAVE_ERROR);
+      const prescriptionInputArgs: PrescriptionInputArgs = {
+        prescriptionInput: {
+          prescribedBy: 'RECORD_FROM_OLD_APP',
+          prescriptionName: documentName,
+          dateOfPrescription: getUnixTime(new Date()) * 1000,
+          startDate: 0,
+          endDate: 0,
+          notes: '',
+          prescriptionSource: prescriptionSource.SELF,
+          prescriptionDetail: [],
+          prescriptionFiles: prescriptionFiles,
+        },
+        uhid: uhid,
+      };
+
+      const uploadedResult = (await uploadPrescriptions(null, prescriptionInputArgs, null)) as {
+        recordId: string;
+      };
+      return `${uploadedResult.recordId}_${documentName}`;
     }
 
-    return uploadResult && uploadResult.response
-      ? `${uploadResult.response}_${documentName}`
-      : null;
-  }
-
-  async getPatientLabResults(uhid: string, authToken: string) {
-    const prismHeaders = {
-      method: 'GET',
-      timeOut: ApiConstants.PRISM_TIMEOUT,
-    };
-
-    const url = `${process.env.PRISM_GET_USER_LAB_RESULTS_API}?authToken=${authToken}&uhid=${uhid}`;
-    const reqStartTime = new Date();
-    const labResults = await fetch(url, prismHeaders)
-      .then((res) => {
-        return res.json();
-      })
-      .catch((error) => {
-        dLogger(
-          reqStartTime,
-          'getPatientLabResults PRISM_GET_USER_LAB_RESULTS_API_CALL___ERROR',
-          `${url} --- ${JSON.stringify(labResults)}`
-        );
-        throw new AphError(AphErrorMessages.GET_MEDICAL_RECORDS_ERROR);
+    if (category == PRISM_DOCUMENT_CATEGORY.TestReports) {
+      const TestResultsParameter = [];
+      TestResultsParameter.push({
+        id: '',
+        fileName: documentName,
+        mimeType: 'images/' + fileFormat,
+        content: docInput.base64FileInput,
+        dateCreated: getUnixTime(new Date()) * 1000,
       });
-    dLogger(
-      reqStartTime,
-      'getPatientLabResults PRISM_GET_USER_LAB_RESULTS_API_CALL___END',
-      `${url} --- ${JSON.stringify(labResults)}`
-    );
 
-    return labResults.errorCode == '0' ? labResults.response : [];
-  }
+      const labResultsInputArgs: LabResultsInputArgs = {
+        labResultsInput: {
+          labTestName: documentName,
+          labTestDate: getUnixTime(new Date()) * 1000,
+          labTestRefferedBy: 'RECORD_FROM_OLD_APP',
+          observation: '',
+          identifier: '',
+          additionalNotes: '',
+          labTestResults: [],
+          labTestSource: ApiConstants.LABTEST_SOURCE_SELF_UPLOADED.toString(),
+          visitId: '',
+          testResultFiles: TestResultsParameter,
+        },
+        uhid: uhid,
+      };
 
-  async getPatientHealthChecks(uhid: string, authToken: string) {
-    const prismHeaders = {
-      method: 'GET',
-      timeOut: ApiConstants.PRISM_TIMEOUT,
-    };
+      const uploadedResult = (await uploadLabResults(null, labResultsInputArgs, null)) as {
+        recordId: string;
+      };
 
-    const url = `${process.env.PRISM_GET_USER_HEALTH_CHECKS_API}?authToken=${authToken}&uhid=${uhid}`;
-    const reqStartTime = new Date();
-    const healthChecks = await fetch(url, prismHeaders)
-      .then((res) => {
-        return res.json();
-      })
-      .catch((error) => {
-        dLogger(
-          reqStartTime,
-          'getPatientHealthChecks PRISM_GET_USER_HEALTH_CHECKS_API_CALL___ERROR',
-          `${url} --- ${JSON.stringify(error)}`
-        );
-        throw new AphError(AphErrorMessages.GET_MEDICAL_RECORDS_ERROR);
-      });
-    dLogger(
-      reqStartTime,
-      'getPatientHealthChecks PRISM_GET_USER_HEALTH_CHECKS_API_CALL___END',
-      `${url} --- ${JSON.stringify(healthChecks)}`
-    );
+      return `${uploadedResult.recordId}_${documentName}`;
+    }
 
-    return healthChecks.errorCode == '0' ? healthChecks.response : [];
-  }
-
-  async getPatientHospitalizations(uhid: string, authToken: string) {
-    const prismHeaders = {
-      method: 'GET',
-      timeOut: ApiConstants.PRISM_TIMEOUT,
-    };
-
-    const url = `${process.env.PRISM_GET_USER_HOSPITALIZATIONS_API}?authToken=${authToken}&uhid=${uhid}`;
-    const reqStartTime = new Date();
-    const hospitalizations = await fetch(url, prismHeaders)
-      .then((res) => {
-        return res.json();
-      })
-      .catch((error) => {
-        dLogger(
-          reqStartTime,
-          'getPatientHospitalizations PRISM_GET_USER_HOSPITALIZATIONS_API_CALL___ERROR',
-          `${url} --- ${JSON.stringify(error)}`
-        );
-        throw new AphError(AphErrorMessages.GET_MEDICAL_RECORDS_ERROR);
-      });
-    dLogger(
-      reqStartTime,
-      'getPatientHospitalizations PRISM_GET_USER_HOSPITALIZATIONS_API_CALL___END',
-      `${url} --- ${JSON.stringify(hospitalizations)}`
-    );
-
-    return hospitalizations.errorCode == '0' ? hospitalizations.response : [];
-  }
-
-  async getPatientOpPrescriptions(uhid: string, authToken: string) {
-    const prismHeaders = {
-      method: 'GET',
-      timeOut: ApiConstants.PRISM_TIMEOUT,
-    };
-
-    const url = `${process.env.PRISM_GET_USER_OP_PRESCRIPTIONS_API}?authToken=${authToken}&uhid=${uhid}`;
-    const reqStartTime = new Date();
-    const opPrescriptions = await fetch(url, prismHeaders)
-      .then((res) => {
-        return res.json();
-      })
-      .catch((error) => {
-        dLogger(
-          reqStartTime,
-          'getPatientOpPrescriptions PRISM_GET_USER_OP_PRESCRIPTIONS_API_CALL___ERROR',
-          `${url} --- ${JSON.stringify(error)}`
-        );
-        throw new AphError(AphErrorMessages.GET_MEDICAL_RECORDS_ERROR);
-      });
-    dLogger(
-      reqStartTime,
-      'getPatientOpPrescriptions PRISM_GET_USER_OP_PRESCRIPTIONS_API_CALL___END',
-      `${url} --- ${JSON.stringify(opPrescriptions)}`
-    );
-
-    return opPrescriptions.errorCode == '0' ? opPrescriptions.response : [];
+    return null;
   }
 
   saveNewProfile(patientAttrs: Partial<Patient>) {
@@ -668,67 +582,10 @@ export class PatientRepository extends Repository<Patient> {
     let newUhid = '';
     if (uhidResp.retcode == '0') {
       this.updateUhid(id, uhidResp.result.toString());
-      this.createPrismUser(patientDetails, uhidResp.result.toString());
+      createPrismUser(patientDetails, uhidResp.result.toString());
       newUhid = uhidResp.result;
     }
     return newUhid;
-  }
-
-  async createPrismUser(patientData: Patient, uhid: string) {
-    //date of birth formatting
-
-    if (patientData.firstName === null || patientData.firstName === '') {
-      patientData.firstName = 'New';
-    }
-    if (patientData.lastName === null || patientData.lastName === '') {
-      patientData.lastName = 'User';
-    }
-    if (patientData.gender === null) {
-      patientData.gender = Gender.MALE;
-    }
-    if (patientData.emailAddress === null) {
-      patientData.emailAddress = '';
-    }
-    let utc_dob = new Date().getTime();
-    if (patientData.dateOfBirth != null) {
-      utc_dob = new Date(patientData.dateOfBirth).getTime();
-    }
-
-    const queryParams = `securitykey=${
-      process.env.PRISM_SECURITY_KEY
-    }&gender=${patientData.gender.toLowerCase()}&firstName=${patientData.firstName}&lastName=${
-      patientData.lastName
-    }&mobile=${patientData.mobileNumber.substr(3)}&uhid=${uhid}&CountryPhoneCode=${
-      ApiConstants.COUNTRY_CODE
-    }&dob=${utc_dob}&sitekey=&martialStatus=&pincode=&email=${
-      patientData.emailAddress
-    }&state=&country=&city=&address=`;
-
-    const createUserAPI = `${process.env.PRISM_CREATE_UHID_USER_API}?${queryParams}`;
-
-    const reqStartTime = new Date();
-    const uhidUserResp = await fetch(createUserAPI, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    }).catch((error) => {
-      dLogger(
-        reqStartTime,
-        'createPrismUser PRISM_CREATE_UHID_USER_API_CALL___ERROR',
-        `${createUserAPI} --- ${JSON.stringify(error)}`
-      );
-      throw new AphError(AphErrorMessages.PRISM_CREATE_UHID_ERROR);
-    });
-
-    const textRes = await uhidUserResp.text();
-    dLogger(
-      reqStartTime,
-      'createPrismUser PRISM_CREATE_UHID_USER_API_CALL___END',
-      `${createUserAPI} --- ${textRes}`
-    );
-
-    return textRes;
   }
 
   async createAthsToken(id: string) {
@@ -789,16 +646,14 @@ export class PatientRepository extends Repository<Patient> {
     );
   }
 
-  getIdsByMobileNumber(mobileNumber: string) {
-    return this.find({
-      where: { mobileNumber, isActive: true },
-    });
+  async getIdsByMobileNumber(mobileNumber: string) {
+    return await this.findByMobileNumber(mobileNumber);
   }
 
   async getLinkedPatientIds(patientId: string) {
     const linkedPatient = await this.findOne({ where: { id: patientId } });
     const primaryPatientIds: string[] = [];
-    if (linkedPatient) {
+    if (linkedPatient && linkedPatient.uhid != '' && linkedPatient.uhid != null) {
       const patientsList = await this.find({
         where: { primaryPatientId: linkedPatient.primaryPatientId },
       });
@@ -807,6 +662,8 @@ export class PatientRepository extends Repository<Patient> {
           primaryPatientIds.push(patientDetails.id);
         });
       }
+    } else {
+      primaryPatientIds.push(patientId);
     }
     return primaryPatientIds;
   }

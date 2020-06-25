@@ -222,6 +222,25 @@ export interface GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription
   medicineCustomDosage: string | null;
 }
 
+export interface GetCaseSheet_getCaseSheet_caseSheetDetails_removedMedicinePrescription {
+  __typename: "MedicinePrescription";
+  id: string | null;
+  externalId: string | null;
+  medicineName: string | null;
+  medicineDosage: string | null;
+  medicineToBeTaken: (MEDICINE_TO_BE_TAKEN | null)[] | null;
+  medicineInstructions: string | null;
+  medicineTimings: (MEDICINE_TIMINGS | null)[] | null;
+  medicineUnit: MEDICINE_UNIT | null;
+  medicineConsumptionDurationInDays: string | null;
+  medicineConsumptionDuration: string | null;
+  medicineFormTypes: MEDICINE_FORM_TYPES | null;
+  medicineFrequency: MEDICINE_FREQUENCY | null;
+  medicineConsumptionDurationUnit: MEDICINE_CONSUMPTION_DURATION | null;
+  routeOfAdministration: ROUTE_OF_ADMINISTRATION | null;
+  medicineCustomDosage: string | null;
+}
+
 export interface GetCaseSheet_getCaseSheet_caseSheetDetails_otherInstructions {
   __typename: "OtherInstructions";
   instruction: string | null;
@@ -260,6 +279,7 @@ export interface GetCaseSheet_getCaseSheet_caseSheetDetails {
   appointment: GetCaseSheet_getCaseSheet_caseSheetDetails_appointment | null;
   createdDoctorProfile: GetCaseSheet_getCaseSheet_caseSheetDetails_createdDoctorProfile | null;
   medicinePrescription: (GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription | null)[] | null;
+  removedMedicinePrescription: (GetCaseSheet_getCaseSheet_caseSheetDetails_removedMedicinePrescription | null)[] | null;
   otherInstructions: (GetCaseSheet_getCaseSheet_caseSheetDetails_otherInstructions | null)[] | null;
   symptoms: (GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms | null)[] | null;
   diagnosis: (GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis | null)[] | null;
@@ -271,6 +291,7 @@ export interface GetCaseSheet_getCaseSheet_caseSheetDetails {
   consultType: string | null;
   notes: string | null;
   updatedDate: any | null;
+  version: number | null;
 }
 
 export interface GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_diagnosis {
@@ -294,14 +315,40 @@ export interface GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_symptoms {
 
 export interface GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_medicinePrescription {
   __typename: "MedicinePrescription";
+  id: string | null;
+  externalId: string | null;
   medicineName: string | null;
-  medicineTimings: (MEDICINE_TIMINGS | null)[] | null;
+  medicineDosage: string | null;
+  medicineToBeTaken: (MEDICINE_TO_BE_TAKEN | null)[] | null;
   medicineInstructions: string | null;
+  medicineTimings: (MEDICINE_TIMINGS | null)[] | null;
+  medicineUnit: MEDICINE_UNIT | null;
   medicineConsumptionDurationInDays: string | null;
   medicineConsumptionDuration: string | null;
   medicineFormTypes: MEDICINE_FORM_TYPES | null;
   medicineFrequency: MEDICINE_FREQUENCY | null;
   medicineConsumptionDurationUnit: MEDICINE_CONSUMPTION_DURATION | null;
+  routeOfAdministration: ROUTE_OF_ADMINISTRATION | null;
+  medicineCustomDosage: string | null;
+}
+
+export interface GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_removedMedicinePrescription {
+  __typename: "MedicinePrescription";
+  id: string | null;
+  externalId: string | null;
+  medicineName: string | null;
+  medicineDosage: string | null;
+  medicineToBeTaken: (MEDICINE_TO_BE_TAKEN | null)[] | null;
+  medicineInstructions: string | null;
+  medicineTimings: (MEDICINE_TIMINGS | null)[] | null;
+  medicineUnit: MEDICINE_UNIT | null;
+  medicineConsumptionDurationInDays: string | null;
+  medicineConsumptionDuration: string | null;
+  medicineFormTypes: MEDICINE_FORM_TYPES | null;
+  medicineFrequency: MEDICINE_FREQUENCY | null;
+  medicineConsumptionDurationUnit: MEDICINE_CONSUMPTION_DURATION | null;
+  routeOfAdministration: ROUTE_OF_ADMINISTRATION | null;
+  medicineCustomDosage: string | null;
 }
 
 export interface GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_otherInstructions {
@@ -322,8 +369,10 @@ export interface GetCaseSheet_getCaseSheet_pastAppointments_caseSheet {
   followUpAfterInDays: string | null;
   followUp: boolean | null;
   medicinePrescription: (GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_medicinePrescription | null)[] | null;
+  removedMedicinePrescription: (GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_removedMedicinePrescription | null)[] | null;
   otherInstructions: (GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_otherInstructions | null)[] | null;
   notes: string | null;
+  version: number | null;
 }
 
 export interface GetCaseSheet_getCaseSheet_pastAppointments {

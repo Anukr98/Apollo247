@@ -400,7 +400,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
           : special_price
         : undefined,
       prescriptionRequired: is_prescription_required == '1',
-      isMedicine: type_id == 'Pharma',
+      isMedicine: (type_id || '').toLowerCase() == 'pharma',
       quantity: Number(selectedQuantity),
       thumbnail: thumbnail,
       isInStock: true,

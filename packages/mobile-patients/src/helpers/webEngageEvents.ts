@@ -2,9 +2,8 @@ import {
   DoctorType,
   MEDICINE_ORDER_STATUS,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { string } from '../strings/string';
 
-type YesOrNo = { value: 'Yes' | 'No' };
+type YesOrNo = 'Yes' | 'No';
 
 export enum WebEngageEventName {
   ONBOARDING_SCREEN_1 = 'Onboarding Screen 1',
@@ -24,6 +23,9 @@ export enum WebEngageEventName {
   PHARMACY_PRODUCT_CLICKED = 'Pharmacy Product Clicked',
   NOTIFY_ME = 'Notify Me',
   CATEGORY_CLICKED = 'Pharmacy Category Clicked',
+  SHOW_PRESCRIPTION_AT_STORE_SELECTED = 'Show prescription at store selected',
+  PHARMACY_STORE_PICKUP_VIEWED = 'Pharmacy store pickup viewed', // Every time a new pincode is entered, the event must be triggered
+  PHARMACY_STORE_SELECTED_SUCCESS = 'Pharmacy store selected success',
   PHARMACY_ADD_TO_CART = 'Pharmacy Add to cart',
   PHARMACY_ADD_TO_CART_NONSERVICEABLE = 'Pharmacy Add to cart Nonserviceable',
   DIAGNOSTIC_ADD_TO_CART = 'Diagnostic Add to cart',
@@ -114,6 +116,7 @@ export enum WebEngageEventName {
   CANCEL_CONSULTATION_CLICKED = 'Cancel Consultation Clicked', // In appointment details screen
   CONTINUE_CONSULTATION_CLICKED = 'Continue Consultation Clicked', // In appointment details screen
   NO_SLOTS_FOUND = 'No Slots Found', // In appointment details screen
+  DOCTOR_RESCHEDULE_CLAIM_REFUND = 'Doctor reschedule and Claim Refund button click',
 
   // Medicine Events
   PHARMACY_AUTO_SELECT_LOCATION_CLICKED = 'Pharmacy Auto Select Location Clicked',
@@ -161,6 +164,10 @@ export interface SpecialityClickedEvent extends PatientInfo {
   'Speciality ID': string;
 }
 
+export interface ReorderMedicines extends PatientInfo {
+  source: 'Order Details' | 'PHR';
+}
+
 export interface WebEngageEvents {
   // ********** AppEvents ********** \\
 
@@ -171,8 +178,8 @@ export interface WebEngageEvents {
   [WebEngageEventName.ONBOARDING_SKIP_CLICKED]: {};
   [WebEngageEventName.MOBILE_ENTRY]: {};
   [WebEngageEventName.MOBILE_NUMBER_ENTERED]: { mobilenumber: string };
-  [WebEngageEventName.OTP_ENTERED]: YesOrNo;
-  [WebEngageEventName.PRE_APOLLO_CUSTOMER]: YesOrNo;
+  [WebEngageEventName.OTP_ENTERED]: { value: YesOrNo };
+  [WebEngageEventName.PRE_APOLLO_CUSTOMER]: { value: YesOrNo };
   [WebEngageEventName.OTP_VERIFICATION_SUCCESS]: {
     'Mobile Number': string;
   };
@@ -247,6 +254,20 @@ export interface WebEngageEvents {
     'Section Name': string;
     imageUrl: string;
   };
+  [WebEngageEventName.SHOW_PRESCRIPTION_AT_STORE_SELECTED]: {
+    value: boolean;
+  };
+  [WebEngageEventName.PHARMACY_STORE_PICKUP_VIEWED]: {
+    Pincode: string;
+    'Store display success': YesOrNo;
+  };
+  [WebEngageEventName.PHARMACY_STORE_SELECTED_SUCCESS]: {
+    Pincode: string;
+    'Store Id': string;
+    'Store Name': string;
+    'Store Number': string;
+    'Store Address': string;
+  };
   [WebEngageEventName.PHARMACY_ADD_TO_CART]: {
     'product name': string;
     'product id': string; // (SKUID)
@@ -265,7 +286,8 @@ export interface WebEngageEvents {
     'category name'?: string;
     'category ID'?: string;
     Section?: string;
-    revenue: number;
+    af_revenue: number;
+    af_currency: string;
     // 'Patient Name': string;
     // 'Patient UHID': string;
     // Relation: string;
@@ -352,6 +374,8 @@ export interface WebEngageEvents {
     'Delivery Date Time'?: string; // Optional (only if Home)
     'Pin Code': string | number;
     'Service Area': 'Pharmacy' | 'Diagnostic';
+    'Store Id'?: string;
+    'Store Name'?: string;
   };
   [WebEngageEventName.DIAGNOSTIC_PROCEED_TO_PAY_CLICKED]: {
     'Total items in cart': number;
@@ -409,7 +433,8 @@ export interface WebEngageEvents {
     'Store Name'?: string;
     'Store Number'?: string;
     'Store Address'?: string;
-    revenue: number;
+    af_revenue: number;
+    af_currency: string;
   };
   [WebEngageEventName.DIAGNOSTIC_CHECKOUT_COMPLETED]: {
     'Order ID': string | number;
@@ -594,7 +619,8 @@ export interface WebEngageEvents {
     'Doctor ID': string;
     'Doctor Name': string;
     'Net Amount': number;
-    revenue: number;
+    af_revenue: number;
+    af_currency: string;
   };
   [WebEngageEventName.CONSULT_FEEDBACK_GIVEN]: {
     'Doctor Name': string;
@@ -641,20 +667,20 @@ export interface WebEngageEvents {
   };
   [WebEngageEventName.PHARMACY_ADD_NEW_ADDRESS_COMPLETED]: {
     Source: 'My Account' | 'Upload Prescription' | 'Cart' | 'Diagnostics Cart';
-    Success?: 'Yes' | 'No'; // Yes / No (If Error message shown because it is unservicable)
+    Success?: YesOrNo; // Yes / No (If Error message shown because it is unservicable)
     'Delivery address': string;
     Pincode: string;
   };
   [WebEngageEventName.PHARMACY_CART_ADDRESS_SELECTED_SUCCESS]: {
     'TAT Displayed'?: Date;
-    'Delivery Successful': 'Yes' | 'No'; // Yes / No (If Error message shown because it is unservicable)
+    'Delivery Successful': YesOrNo; // Yes / No (If Error message shown because it is unservicable)
     'Delivery Address': string;
     Pincode: string;
   };
 
   [WebEngageEventName.PHARMACY_CART_ADDRESS_SELECTED_FAILURE]: {
     'TAT Displayed'?: string;
-    'Delivery Successful': 'Yes' | 'No'; // Yes / No (If Error message shown because it is unservicable)
+    'Delivery Successful': YesOrNo; // Yes / No (If Error message shown because it is unservicable)
     'Delivery Address': string;
     Pincode: string;
   };
@@ -706,7 +732,7 @@ export interface WebEngageEvents {
     Type: 'Prescription' | 'Test Result';
   };
 
-  [WebEngageEventName.REORDER_MEDICINES]: PatientInfo;
+  [WebEngageEventName.REORDER_MEDICINES]: ReorderMedicines;
 
   [WebEngageEventName.PHR_ORDER_MEDS_TESTS]: PatientInfoWithConsultId;
 
@@ -1030,4 +1056,9 @@ export interface WebEngageEvents {
     'Patient Gender': string;
     'Customer ID': string;
   };
+  [WebEngageEventName.DOCTOR_RESCHEDULE_CLAIM_REFUND]: {
+    'Appointment ID': string;
+    'Call Type': string;
+    'Patient Id': string;
+  }
 }

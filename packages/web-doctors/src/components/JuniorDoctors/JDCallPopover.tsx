@@ -24,6 +24,8 @@ import { CircularProgress } from '@material-ui/core';
 import { JDConsultRoomParams } from 'helpers/clientRoutes';
 import { TestCall } from '../TestCall';
 
+const ringtoneUrl = require('../../images/phone_ringing.mp3');
+
 const handleBrowserUnload = (event: BeforeUnloadEvent) => {
   event.preventDefault();
   event.returnValue = '';
@@ -601,6 +603,17 @@ const useStyles = makeStyles((theme: Theme) => {
       margin: '0 20px',
       padding: '0 15px 15px 15px',
     },
+    ringtone: {
+      position: 'absolute',
+      zIndex: -1,
+      height: 1,
+      width: 1,
+      padding: 0,
+      margin: -1,
+      overflow: 'hidden',
+      clip: 'rect(0,0,0,0)',
+      border: 0,
+    },
   };
 });
 
@@ -641,6 +654,9 @@ interface CallPopoverProps {
   isAudioVideoCallEnded: (isAudioVideoCall: boolean) => void;
   endCallNotificationAction: (callId: boolean) => void;
   hasCameraMicPermission: boolean;
+  setSessionError: (error: any) => void;
+  setPublisherError: (error: any) => void;
+  setSubscriberError: (error: any) => void;
 }
 
 let intervalId: any;
@@ -756,6 +772,8 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
   const [isNewMsg, setIsNewMsg] = useState<boolean>(false);
   const [showVideo, setShowVideo] = useState<boolean>(false);
   const [convertVideo, setConvertVideo] = useState<boolean>(false);
+  const [playRingtone, setPlayRingtone] = useState<boolean>(false);
+
   const toggelChatVideo = () => {
     setIsNewMsg(false);
     setShowVideoChat(!showVideoChat);
@@ -783,6 +801,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
     setIsCallAccepted(false);
     setShowVideo(false);
     setShowVideoChat(false);
+    setPlayRingtone(false);
     const cookieStr = `action=`;
     document.cookie = cookieStr + ';path=/;';
     props.isAudioVideoCallEnded(false);
@@ -842,6 +861,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
       },
       (status, response) => {}
     );
+    setPlayRingtone(true);
     actionBtn();
   };
   const actionBtn = () => {
@@ -1151,6 +1171,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
           setIsNewMsg(false);
         }
         if (message.message && message.message.message === acceptcallMsg) {
+          setPlayRingtone(false);
           setIsCallAccepted(true);
         }
       },
@@ -1350,6 +1371,12 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
 
   return (
     <div>
+      {playRingtone && (
+        <audio controls autoPlay loop className={classes.ringtone}>
+          <source src={ringtoneUrl} type="audio/mpeg" />
+          Your browser does not support the audio tag.
+        </audio>
+      )}
       <div className={classes.pageSubHeader}>
         <div className={classes.headerLeftGroup}>
           <div className={classes.consultName}>
@@ -1571,7 +1598,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
           }}
           className={classes.menuBtnGroup}
         >
-          <AphButton>End or Cancel Consult</AphButton>
+          <AphButton>Cancel Consult</AphButton>
         </div>
       </Popover>
       <Modal
@@ -1955,6 +1982,9 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
               isNewMsg={isNewMsg}
               convertCall={() => convertCall()}
               JDPhotoUrl={currentPatient && currentPatient.photoUrl ? currentPatient.photoUrl : ''}
+              setSessionError={props.setSessionError}
+              setPublisherError={props.setPublisherError}
+              setSubscriberError={props.setSubscriberError}
             />
           )}
         </div>

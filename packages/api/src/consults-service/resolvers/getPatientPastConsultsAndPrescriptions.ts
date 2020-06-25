@@ -10,11 +10,10 @@ import {
 import { MedicineOrders } from 'profiles-service/entities';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
-import { MedicineOrdersRepository } from 'profiles-service/repositories/MedicineOrdersRepository';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
-import { AphError } from 'AphError';
-import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
+
 import _ from 'lodash';
+import { MedicineOrdersRepository } from 'profiles-service/repositories/MedicineOrdersRepository';
 //import { PatientLabResults, LabTestResults, TestResultFiles } from 'types/labResults';
 
 export const getPatientConsultsAndPrescriptionsTypeDefs = gql`
@@ -56,6 +55,7 @@ export const getPatientConsultsAndPrescriptionsTypeDefs = gql`
     ORDER_CONFIRMED
     CANCEL_REQUEST
     READY_AT_STORE
+    PURCHASED_IN_STORE
   }
 
   input PatientConsultsAndOrdersInput {
@@ -191,9 +191,10 @@ const getPatientPastConsultsAndPrescriptions: Resolver<
     );
   }
 
-  const medicineOrdersRepo = patientsDb.getCustomRepository(MedicineOrdersRepository);
+  //commented to support backward compatability
   let patientMedicineOrders: MedicineOrders[] = [];
   let uniqueMedicineRxOrders: MedicineOrders[] = [];
+  const medicineOrdersRepo = patientsDb.getCustomRepository(MedicineOrdersRepository);
   if (hasFilter(CONSULTS_RX_SEARCH_FILTER.PRESCRIPTION, filter)) {
     patientMedicineOrders = await medicineOrdersRepo.findByPatientIds(
       primaryPatientIds,
@@ -222,7 +223,7 @@ const getPatientLabResults: Resolver<
   ConsultServiceContext,
   boolean
 > = async (parent, args, { mobileNumber, patientsDb }) => {
-  const patientsRepo = patientsDb.getCustomRepository(PatientRepository);
+  /*const patientsRepo = patientsDb.getCustomRepository(PatientRepository);
   //get authtoken for the logged in user mobile number
   const prismAuthToken = await patientsRepo.getPrismAuthToken(mobileNumber);
 
@@ -248,7 +249,7 @@ const getPatientLabResults: Resolver<
   //just call get prism user details with the corresponding uhid
   await patientsRepo.getPrismUsersDetails(uhid, prismAuthToken);
   const labResults = await patientsRepo.getPatientLabResults(uhid, prismAuthToken);
-  console.log(labResults);
+  console.log(labResults); */
   return false;
 };
 

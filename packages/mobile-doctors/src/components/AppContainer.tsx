@@ -7,6 +7,7 @@ import { setJSExceptionHandler, setNativeExceptionHandler } from 'react-native-e
 import { getBuildEnvironment } from '@aph/mobile-doctors/src/helpers/helperFunctions';
 import RNExitApp from 'react-native-exit-app';
 import { NotificationProvider } from '@aph/mobile-doctors/src/components/Notification/NotificationContext';
+import { AudioVideoProvider } from '@aph/mobile-doctors/src/components/Chat/AudioVideoCotext';
 
 const reporter = (error: Error, type: 'JS' | 'Native') => {
   // Logic for reporting to devs
@@ -65,7 +66,9 @@ export const AppContainer: React.FC = () => {
     <AuthProvider>
       <UIElementsProvider>
         <NotificationProvider>
-          <NavigatorContainer />
+          <AudioVideoProvider>
+            <NavigatorContainer />
+          </AudioVideoProvider>
         </NotificationProvider>
       </UIElementsProvider>
     </AuthProvider>

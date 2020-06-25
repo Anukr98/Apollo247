@@ -21,6 +21,7 @@ import { SelectDeliveryAddress } from '@aph/mobile-patients/src/components/Medic
 import { StorePickupScene } from '@aph/mobile-patients/src/components/Medicines/StorePickupScene';
 import { UploadPrescription } from '@aph/mobile-patients/src/components/Medicines/UploadPrescription';
 import { YourCart } from '@aph/mobile-patients/src/components/Medicines/YourCart';
+import { YourCartUploadPrescriptions } from '@aph/mobile-patients/src/components/Medicines/YourCartUploadPrescriptions';
 import { MultiSignup } from '@aph/mobile-patients/src/components/MultiSignup';
 import { Onboarding } from '@aph/mobile-patients/src/components/Onboarding';
 import { OrderDetailsScene } from '@aph/mobile-patients/src/components/OrderDetailsScene';
@@ -119,6 +120,7 @@ export enum AppRoutes {
   YourOrdersScene = 'YourOrdersScene',
   OrderDetailsScene = 'OrderDetailsScene',
   YourCart = 'YourCart',
+  YourCartUploadPrescriptions = 'YourCartUploadPrescriptions',
   CheckoutScene = 'CheckoutScene',
   TestsCheckoutScene = 'TestsCheckoutScene',
   PaymentScene = 'PaymentScene',
@@ -277,6 +279,7 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.ChatRoom]: {
     screen: ChatRoom,
+    path: 'ChatRoomPage',
     navigationOptions: {
       gesturesEnabled: false,
     },
@@ -304,6 +307,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.YourCart]: {
     screen: YourCart,
+  },
+  [AppRoutes.YourCartUploadPrescriptions]: {
+    screen: YourCartUploadPrescriptions,
   },
   [AppRoutes.AddAddress]: {
     screen: AddAddress,

@@ -16,6 +16,7 @@ import {
   GetCaseSheet_getCaseSheet_caseSheetDetails_otherInstructions,
   GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms,
   GetCaseSheet_getCaseSheet_caseSheetDetails_patientDetails_patientMedicalHistory,
+  GetCaseSheet_getCaseSheet_caseSheetDetails_removedMedicinePrescription,
 } from '@aph/mobile-doctors/src/graphql/types/GetCaseSheet';
 import { APPOINTMENT_TYPE } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
 import { g, medicineDescription } from '@aph/mobile-doctors/src/helpers/helperFunctions';
@@ -42,6 +43,9 @@ export interface PreviewPrescriptionProps
       | (GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription | null)[]
       | null
       | undefined;
+    removedMedicine:
+      | (GetCaseSheet_getCaseSheet_caseSheetDetails_removedMedicinePrescription | null)[]
+      | null;
     tests:
       | (GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription | null)[]
       | null
@@ -87,6 +91,9 @@ export const PreviewPrescription: React.FC<PreviewPrescriptionProps> = (props) =
   const medicine =
     props.navigation.getParam('medicine') ||
     g(caseSheet, 'caseSheetDetails', 'medicinePrescription');
+  const removedMedicine =
+    props.navigation.getParam('removedMedicine') ||
+    g(caseSheet, 'caseSheetDetails', 'removedMedicinePrescription');
   const tests =
     props.navigation.getParam('tests') ||
     g(caseSheet, 'caseSheetDetails', 'diagnosticPrescription');
@@ -258,6 +265,8 @@ export const PreviewPrescription: React.FC<PreviewPrescriptionProps> = (props) =
   };
 
   const renderMedicine = () => {
+    const totalLength =
+      ((medicine && medicine.length) || 0) + ((removedMedicine && removedMedicine.length) || 0);
     return (
       <View style={styles.mainContainer}>
         {renderHeading('Medication Prescribed', <MedicineIcon />)}
@@ -268,13 +277,35 @@ export const PreviewPrescription: React.FC<PreviewPrescriptionProps> = (props) =
                 return (
                   <View
                     style={
-                      index !== medicine.length - 1
-                        ? styles.itemContainer
-                        : styles.lastItemContainer
+                      index !== totalLength - 1 ? styles.itemContainer : styles.lastItemContainer
                     }
                   >
                     {renderSubHeading(`${index + 1}. ${item.medicineName}`)}
                     {renderDescription(medicineDescription(item))}
+                  </View>
+                );
+              }
+            })}
+        </View>
+        <View style={styles.subContainer}>
+          {removedMedicine &&
+            removedMedicine.map((item, index) => {
+              if (item) {
+                return (
+                  <View
+                    style={[
+                      index + ((medicine && medicine.length) || 0) !== totalLength - 1
+                        ? styles.itemContainer
+                        : styles.lastItemContainer,
+                    ]}
+                  >
+                    {renderSubHeading(
+                      `${((medicine && medicine.length) || 0) + index + 1}. ${item.medicineName}`,
+                      { textDecorationLine: 'line-through' }
+                    )}
+                    {renderDescription(`(${string.case_sheet.med_remove})`, {
+                      color: theme.colors.DARK_RED,
+                    })}
                   </View>
                 );
               }
@@ -488,7 +519,9 @@ export const PreviewPrescription: React.FC<PreviewPrescriptionProps> = (props) =
         {appointmentDetails && renderAppointmentData()}
         {renderComplaints()}
         {diagnosis && diagnosis.length > 0 && renderDiagnosis()}
-        {medicine && medicine.length > 0 && renderMedicine()}
+        {(medicine && medicine.length > 0) || (removedMedicine && removedMedicine.length > 0)
+          ? renderMedicine()
+          : null}
         {tests && tests.length > 0 && renderTest()}
         {(advice && advice.length > 0) ||
         (referralData && referralData.referTo) ||

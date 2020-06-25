@@ -603,7 +603,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
             // quantity: parseInt(medPrescription[index]!.medicineDosage!),
             quantity: qty,
             prescriptionRequired: medicineDetails.is_prescription_required == '1',
-            isMedicine: medicineDetails.type_id == 'Pharma',
+            isMedicine: (medicineDetails.type_id || '').toLowerCase() == 'pharma',
             thumbnail: medicineDetails.thumbnail || medicineDetails.image,
             isInStock: !!medicineDetails.is_in_stock,
           } as ShoppingCartItem;
@@ -1045,6 +1045,23 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
     }
   };
 
+  const getFileName = () => {
+    if (props.navigation.state.params!.DoctorInfo && props.navigation.state.params!.DisplayId) {
+      return (
+        'Prescription_' +
+        props.navigation.state.params!.DisplayId +
+        '_' +
+        moment(caseSheetDetails!.appointment!.appointmentDateTime).format('DD MM YYYY') +
+        '_' +
+        props.navigation.state.params!.DoctorInfo.displayName +
+        '_Apollo 247' +
+        '.pdf'
+      );
+    } else {
+      return 'Prescription_Apollo 247.pdf';
+    }
+  };
+
   const renderData = () => {
     if (caseSheetDetails)
       return (
@@ -1087,11 +1104,13 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                       let dirs = RNFetchBlob.fs.dirs;
 
                       console.log('blollb', props.navigation.state.params!.BlobName);
-                      let fileName: string =
-                        props.navigation.state.params!.BlobName.substring(
-                          0,
-                          props.navigation.state.params!.BlobName.indexOf('.pdf')
-                        ) + '.pdf';
+                      let fileName: string = getFileName();
+
+                      // props.navigation.state.params!.BlobName.substring(
+                      //   0,
+                      //   props.navigation.state.params!.BlobName.indexOf('.pdf')
+                      // )
+
                       const downloadPath =
                         Platform.OS === 'ios'
                           ? (dirs.DocumentDir || dirs.MainBundleDir) +

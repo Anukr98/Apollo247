@@ -18,4 +18,12 @@ export class DoctorDeviceTokenRepository extends Repository<DoctorDeviceTokens> 
   findDeviceToken(doctor: string, deviceToken: string) {
     return this.findOne({ where: { doctor, deviceToken } });
   }
+
+  deleteDeviceToken(deviceToken: string) {
+    return this.delete({ deviceToken });
+  }
+
+  getDeviceTokens(doctor: string) {
+    return this.find({ where: { doctor } });
+  }
 }

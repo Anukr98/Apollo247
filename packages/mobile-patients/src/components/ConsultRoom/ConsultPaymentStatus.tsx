@@ -29,6 +29,7 @@ import {
   Dimensions,
   PermissionsAndroid,
   Platform,
+  Linking,
   ScrollView,
   StatusBar,
   StyleSheet,
@@ -44,7 +45,10 @@ import {
   getAppointmentDataVariables,
 } from '../../graphql/types/getAppointmentData';
 import { AppsFlyerEventName } from '../../helpers/AppsFlyerEvents';
-import { FirebaseEventName } from '../../helpers/firebaseEvents';
+import { FirebaseEvents, FirebaseEventName } from '../../helpers/firebaseEvents';
+import firebase from 'react-native-firebase';
+import { Button } from '@aph/mobile-patients/src/components/ui/Button';
+import { NotificationPermissionAlert } from '@aph/mobile-patients/src/components/ui/NotificationPermissionAlert';
 import { Snackbar } from 'react-native-paper';
 
 const windowWidth = Dimensions.get('window').width;
@@ -63,14 +67,17 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
   const orderId = props.navigation.getParam('orderId');
   const doctorName = props.navigation.getParam('doctorName');
   const doctorID = props.navigation.getParam('doctorID');
+  const doctor = props.navigation.getParam('doctor');
   const appointmentDateTime = props.navigation.getParam('appointmentDateTime');
   const appointmentType = props.navigation.getParam('appointmentType');
   const webEngageEventAttributes = props.navigation.getParam('webEngageEventAttributes');
   const fireBaseEventAttributes = props.navigation.getParam('fireBaseEventAttributes');
+  const coupon = props.navigation.getParam('coupon');
   const client = useApolloClient();
   const { success, failure, pending } = Payment;
   const { showAphAlert } = useUIElements();
   const { currentPatient } = useAllCurrentPatients();
+  const [notificationAlert, setNotificationAlert] = useState(false);
   const [copiedText, setCopiedText] = useState('');
   const [snackbarState, setSnackbarState] = useState<boolean>(false);
   const copyToClipboard = (refId: string) => {
@@ -84,8 +91,8 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
     });
 
   useEffect(() => {
-    requestReadSmsPermission();
     // getTxnStatus(orderId)
+    console.log(webEngageEventAttributes['Consult Mode']);
     client
       .query({
         query: GET_TRANSACTION_STATUS,
@@ -110,6 +117,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
             postWebEngageEvent(WebEngageEventName.CONSULTATION_BOOKED, webEngageEventAttributes);
             postAppsFlyerEvent(AppsFlyerEventName.CONSULTATION_BOOKED, webEngageEventAttributes);
             postFirebaseEvent(FirebaseEventName.CONSULTATION_BOOKED, fireBaseEventAttributes);
+            firePurchaseEvent();
           } catch (error) {}
         }
         setrefNo(res.data.paymentTransactionStatus.appointment.bankTxnId);
@@ -117,6 +125,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
         setdisplayId(res.data.paymentTransactionStatus.appointment.displayId);
         setpaymentRefId(res.data.paymentTransactionStatus.appointment.paymentRefId);
         setLoading(false);
+        fireBaseFCM();
       })
       .catch((error) => {
         CommonBugFender('fetchingTxnStutus', error);
@@ -130,7 +139,53 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
     };
   }, []);
 
-  const requestReadSmsPermission = async () => {
+  const fireBaseFCM = async () => {
+    const enabled = await firebase.messaging().hasPermission();
+    if (enabled) {
+      // user has permissions
+      console.log('enabled', enabled);
+    } else {
+      // user doesn't have permission
+      console.log('not enabled');
+      setNotificationAlert(true);
+      try {
+        const authorized = await firebase.messaging().requestPermission();
+        console.log('authorized', authorized);
+
+        // User has authorised
+      } catch (error) {
+        // User has rejected permissions
+        CommonBugFender('Login_fireBaseFCM_try', error);
+        console.log('not enabled error', error);
+      }
+    }
+  };
+
+  const firePurchaseEvent = () => {
+    const eventAttributes: FirebaseEvents[FirebaseEventName.PURCHASE] = {
+      COUPON: coupon,
+      CURRENCY: 'INR',
+      ITEMS: [
+        {
+          item_name: doctorName, // Product Name or Doctor Name
+          item_id: doctorID, // Product SKU or Doctor ID
+          price: price, // Product Price After discount or Doctor VC price (create another item in array for PC price)
+          item_brand: doctor.doctorType, // Product brand or Apollo (for Apollo doctors) or Partner Doctors (for 3P doctors)
+          item_category: 'Consultations', // 'Pharmacy' or 'Consultations'
+          item_category2: doctor.specialty.name, // FMCG or Drugs (for Pharmacy) or Specialty Name (for Consultations)
+          item_category3: doctor.city, // City Name (for Consultations)
+          item_variant: webEngageEventAttributes['Consult Mode'], // "Default" (for Pharmacy) or Virtual / Physcial (for Consultations)
+          index: 1, // Item sequence number in the list
+          quantity: 1, // "1" or actual quantity
+        },
+      ],
+      TRANSACTION_ID: orderId,
+      VALUE: Number(price),
+    };
+    postFirebaseEvent(FirebaseEventName.PURCHASE, eventAttributes);
+  };
+
+  const requestStoragePermission = async () => {
     try {
       const resuts = await PermissionsAndroid.requestMultiple([
         PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
@@ -147,6 +202,8 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
       ) {
       }
       if (resuts) {
+        console.log(resuts);
+        downloadInvoice();
       }
     } catch (error) {
       CommonBugFender('PaymentStatusScreen_requestReadSmsPermission_try', error);
@@ -218,7 +275,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
         <TouchableOpacity
           style={{ justifyContent: 'flex-end' }}
           onPress={() => {
-            downloadInvoice();
+            requestStoragePermission();
           }}
         >
           {textComponent('VIEW INVOICE', undefined, theme.colors.APP_YELLOW, false)}
@@ -500,7 +557,6 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#01475b" />
       <Header leftIcon="backArrow" title="PAYMENT STATUS" onPressLeftIcon={() => handleBack()} />
-
       {!loading ? (
         <ScrollView style={styles.container}>
           {renderStatusCard()}
@@ -513,6 +569,15 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
         <Spinner />
       )}
       {showSpinner && <Spinner />}
+      {notificationAlert && (
+        <NotificationPermissionAlert
+          onPressOutside={() => setNotificationAlert(false)}
+          onButtonPress={() => {
+            setNotificationAlert(false);
+            Linking.openSettings();
+          }}
+        />
+      )}
     </View>
   );
 };

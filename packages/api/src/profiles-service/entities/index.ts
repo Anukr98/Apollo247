@@ -30,6 +30,36 @@ export enum ONE_APOLLO_STORE_CODE {
   WEBCUS = 'WEBCUS',
 }
 
+export enum ONE_APOLLO_PRODUCT_CATEGORY {
+  PRIVATE_LABEL = 'A247',
+  NON_PHARMA = 'F247',
+  PHARMA = 'P247',
+}
+
+export type OneApollTransaction = {
+  BillNo: string;
+  BU: string;
+  StoreCode: string;
+  NetAmount: number;
+  GrossAmount: number;
+  TransactionDate: Date;
+  MobileNumber: string;
+  SendCommunication: boolean;
+  CalculateHealthCredits: boolean;
+  Gender: Gender;
+  Discount: number;
+  TransactionLineItems: Partial<TransactionLineItems>[];
+};
+
+export type TransactionLineItems = {
+  ProductCode: string;
+  ProductName: string;
+  ProductCategory: ONE_APOLLO_PRODUCT_CATEGORY;
+  NetAmount: number;
+  GrossAmount: number;
+  DiscountAmount: number;
+};
+
 export enum CouponApplicability {
   CONSULT = 'CONSULT',
   PHARMACY = 'PHARMACY',
@@ -122,6 +152,8 @@ export enum MEDICINE_ORDER_STATUS {
   CANCEL_REQUEST = 'CANCEL_REQUEST',
   READY_AT_STORE = 'READY_AT_STORE',
   ORDER_BILLED = 'ORDER_BILLED',
+  PURCHASED_IN_STORE = 'PURCHASED_IN_STORE',
+  PAYMENT_ABORTED = 'PAYMENT_ABORTED',
 }
 
 export enum UPLOAD_FILE_TYPES {
@@ -166,6 +198,7 @@ export enum MEDICINE_ORDER_PAYMENT_TYPE {
 export enum BOOKING_SOURCE {
   WEB = 'WEB',
   MOBILE = 'MOBILE',
+  ORDER_PUNCHING_TOOL = 'ORDER_PUNCHING_TOOL',
 }
 
 export enum DEVICE_TYPE {
@@ -258,6 +291,12 @@ export enum OTP_STATUS {
 enum customerTypeInCoupons {
   FIRST = 'FIRST',
   RECURRING = 'RECURRING',
+}
+
+export enum PROFILE_SOURCE {
+  WEB = 'WEB',
+  MOBILE = 'MOBILE',
+  ORDER_PUNCHING_TOOL = 'ORDER_PUNCHING_TOOL',
 }
 
 //medicine orders starts
@@ -354,6 +393,9 @@ export class MedicineOrders extends BaseEntity {
   })
   shopAddress: string;
 
+  @Column({ default: false, nullable: true })
+  alertStore: boolean;
+
   @Column({
     nullable: true,
     type: 'jsonb',
@@ -362,6 +404,9 @@ export class MedicineOrders extends BaseEntity {
     default: () => "'{}'",
   })
   paymentInfo: Partial<MedicineOrderPayments>;
+
+  @Column({ nullable: true })
+  customerComment: string;
 
   @Column({ nullable: true })
   isOmsOrder: boolean;
@@ -704,6 +749,9 @@ export class Patient extends BaseEntity {
   dateOfBirth: Date;
 
   @Column({ nullable: true })
+  employeeId: string;
+
+  @Column({ nullable: true })
   @IsOptional()
   emailAddress: string;
 
@@ -796,6 +844,7 @@ export class Patient extends BaseEntity {
   @Column({ nullable: true })
   primaryPatientId: string;
 
+  @Index('Patient_uhid')
   @Column({ nullable: true })
   uhid: string;
 
@@ -804,6 +853,9 @@ export class Patient extends BaseEntity {
 
   @Column({ nullable: true })
   relation: Relation;
+
+  @Column({ nullable: true })
+  source: PROFILE_SOURCE;
 
   @Index('Patient_isActive')
   @Column({ nullable: true, default: true })

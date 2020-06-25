@@ -1,4 +1,4 @@
-import { EntityRepository, Repository, Not, Between, In } from 'typeorm';
+import { EntityRepository, Repository, Not, Between, In, MoreThan } from 'typeorm';
 import {
   MedicineOrders,
   MedicineOrderLineItems,
@@ -10,6 +10,7 @@ import {
   MedicineOrderShipments,
   MedicineOrderCancelReason,
   ONE_APOLLO_USER_REG,
+  OneApollTransaction,
 } from 'profiles-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
@@ -62,6 +63,32 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
     } catch (e) {
       throw new AphError(AphErrorMessages.CREATE_ONEAPOLLO_USER_ERROR, undefined, { e });
     }
+  }
+  async createOneApolloTransaction(transaction: Partial<OneApollTransaction>) {
+    try {
+      const response = await fetch(process.env.ONEAPOLLO_BASE_URL + '/transaction/create', {
+        method: 'POST',
+        body: JSON.stringify(transaction),
+        headers: {
+          'Content-Type': 'application/json',
+          AccessToken: <string>process.env.ONEAPOLLO_ACCESS_TOKEN,
+          APIKey: <string>process.env.ONEAPOLLO_API_KEY,
+        },
+      });
+      return response.json();
+    } catch (e) {
+      throw new AphError(AphErrorMessages.CREATE_ONEAPOLLO_USER_TRANSACTION_ERROR, undefined, {
+        e,
+      });
+    }
+  }
+
+  getInvoiceDetailsByOrderId(orderId: MedicineOrders['orderAutoId']) {
+    const startDateTime = '2020-06-10 15:45:29.453';
+    return MedicineOrderInvoice.find({
+      select: ['billDetails', 'itemDetails'],
+      where: { orderNo: orderId, createdDate: MoreThan(startDateTime) },
+    });
   }
 
   async getOneApolloUserTransactions(mobileNumber: string) {
@@ -169,6 +196,21 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
     });
   }
 
+  getMedicineOrderLineItemByOrderId(id: MedicineOrders['id']) {
+    return MedicineOrderLineItems.find({
+      where: { medicineOrders: id },
+      select: ['medicineSKU', 'quantity'],
+    });
+  }
+
+  getMedicineOrderDetailsByOrderId(orderAutoId: number) {
+    return this.findOne({
+      select: ['id', 'currentStatus', 'orderAutoId', 'patientAddressId', 'isOmsOrder', 'patient'],
+      where: { orderAutoId },
+      relations: ['patient'],
+    });
+  }
+
   getMedicineOrderDetailsByAp(apOrderNo: string) {
     return this.findOne({
       where: { apOrderNo },
@@ -258,6 +300,14 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
         'medicineOrderInvoice',
         'patient',
       ],
+    });
+  }
+
+  getMedicineOrdersListWithPayments(patientIds: String[]) {
+    return this.find({
+      where: { patient: In(patientIds) },
+      order: { createdDate: 'DESC' },
+      relations: ['medicineOrderPayments'],
     });
   }
 

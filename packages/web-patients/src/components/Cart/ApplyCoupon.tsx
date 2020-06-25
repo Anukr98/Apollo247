@@ -15,10 +15,9 @@ import {
   validatePharmaCoupon_validatePharmaCoupon,
   validatePharmaCoupon,
 } from 'graphql/types/validatePharmaCoupon';
-import { CouponCategoryApplicable } from 'graphql/types/globalTypes';
 import { useShoppingCart } from 'components/MedicinesCartProvider';
 import { gtmTracking } from '../../gtmTracking';
-import _lowerCase from 'lodash/lowerCase';
+import { getTypeOfProduct } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -178,24 +177,13 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
   const [selectCouponCode, setSelectCouponCode] = useState<string>(props.couponCode);
   const [availableCoupons, setAvailableCoupons] = useState<
     (getPharmaCouponList_getPharmaCouponList_coupons | null)[]
-  >([]);
+  >(null);
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [muationLoading, setMuationLoading] = useState<boolean>(false);
 
   const getCouponMutation = useMutation<getPharmaCouponList>(PHRAMA_COUPONS_LIST, {
     fetchPolicy: 'no-cache',
   });
-
-  const getTypeOfProduct = (type: string) => {
-    switch (_lowerCase(type)) {
-      case 'pharma':
-        return CouponCategoryApplicable.PHARMA;
-      case 'fmcg':
-        return CouponCategoryApplicable.FMCG;
-      default:
-        return null;
-    }
-  };
 
   const validateCoupon = useMutation<validatePharmaCoupon>(VALIDATE_PHARMA_COUPONS, {
     variables: {
@@ -224,7 +212,7 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
   }, []);
 
   useEffect(() => {
-    if (availableCoupons.length === 0) {
+    if (!availableCoupons) {
       setIsLoading(true);
       getCouponMutation()
         .then(({ data }) => {
@@ -238,12 +226,12 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
               (coupon) => coupon.displayStatus
             );
             setAvailableCoupons(visibleCoupons);
-            setIsLoading(false);
           }
         })
         .catch((e) => {
-          setIsLoading(false);
-        });
+          console.log(e);
+        })
+        .finally(() => setIsLoading(false));
     }
   }, [availableCoupons]);
 
@@ -301,7 +289,7 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
           <div className={classes.customScrollBar}>
             <div className={classes.root}>
               <div className={classes.addressGroup}>
-                {availableCoupons.length > 0 && (
+                {availableCoupons && availableCoupons.length > 0 && (
                   <div className={classes.pinSearch}>
                     <AphTextField
                       inputProps={{
@@ -342,7 +330,7 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
                 )}
                 <div className={classes.sectionHeader}>Coupons For You</div>
                 <ul>
-                  {availableCoupons.length > 0 ? (
+                  {availableCoupons && availableCoupons.length > 0 ? (
                     availableCoupons.map(
                       (couponDetails, index) =>
                         couponDetails && (

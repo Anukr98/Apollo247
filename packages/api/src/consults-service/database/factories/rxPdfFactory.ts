@@ -48,6 +48,7 @@ export const buildRxPdfData = (): RxPdfData => {
   const diagnosesTests = [
     {
       itemname: '',
+      testInstruction: '',
     },
   ];
   const caseSheetSymptoms = [{ symptom: '', since: '', howOften: '', severity: '', details: '' }];

@@ -527,20 +527,18 @@ export const PayMedicine: React.FC = (props) => {
                 : Number(getItemSpecialPrice(cartItemDetails)),
             quantity: cartItemDetails.quantity,
             itemValue: cartItemDetails.quantity * cartItemDetails.price,
-            itemDiscount:
-              cartItemDetails.quantity *
-              (couponCode && couponCode.length > 0 && validateCouponResult // validateCouponResult check is needed because there are some cases we will have code but coupon discount=0  when coupon discount <= product discount
-                ? cartItemDetails.price - Number(getDiscountedLineItemPrice(cartItemDetails.id))
-                : cartItemDetails.price - Number(getItemSpecialPrice(cartItemDetails))),
+            itemDiscount: Number(
+              (
+                cartItemDetails.quantity *
+                (couponCode && couponCode.length > 0 && validateCouponResult // validateCouponResult check is needed because there are some cases we will have code but coupon discount=0  when coupon discount <= product discount
+                  ? cartItemDetails.price - Number(getDiscountedLineItemPrice(cartItemDetails.id))
+                  : cartItemDetails.price - Number(getItemSpecialPrice(cartItemDetails)))
+              ).toFixed(2)
+            ),
             mrp: cartItemDetails.price,
             isPrescriptionNeeded: cartItemDetails.is_prescription_required ? 1 : 0,
             mou: parseInt(cartItemDetails.mou),
-            isMedicine:
-              _lowerCase(cartItemDetails.type_id) === 'pharma'
-                ? '1'
-                : _lowerCase(cartItemDetails.type_id) === 'fmcg'
-                ? '0'
-                : null,
+            isMedicine: _lowerCase(cartItemDetails.type_id) === 'pharma' ? '1' : '0',
             specialPrice: Number(getItemSpecialPrice(cartItemDetails)),
           };
         })
@@ -640,6 +638,24 @@ export const PayMedicine: React.FC = (props) => {
     paymentMutation()
       .then((res) => {
         /**Gtm code start  */
+        let ecommItems: any[] = [];
+        cartItems.map((items, key) => {
+          ecommItems.push({
+            item_name: items.name,
+            item_id: items.sku,
+            price: items.price,
+            item_category: 'Pharmacy',
+            item_category_2: items.type_id
+              ? items.type_id.toLowerCase() === 'pharma'
+                ? 'Drugs'
+                : 'FMCG'
+              : null,
+            // 'item_category_4': '', // for future
+            item_variant: 'Default',
+            index: key + 1,
+            quantity: items.mou,
+          });
+        });
         _obTracking({
           userLocation: city,
           paymentType: value === 'COD' ? 'COD' : 'Prepaid',
@@ -647,6 +663,11 @@ export const PayMedicine: React.FC = (props) => {
           couponCode: couponCode ? couponCode : null,
           couponValue: couponValue ? couponValue : null,
           finalBookingValue: totalWithCouponDiscount,
+          ecommObj: {
+            ecommerce: {
+              items: ecommItems,
+            },
+          },
         });
         /**Gtm code end  */
 

@@ -104,23 +104,23 @@ export interface SearchByBrandProps
   extends NavigationScreenProps<{
     title: string;
     category_id: string;
-    isTest?: boolean; // Ignoring for now
     movedFrom?: string;
+    products?: MedicineProduct[];
   }> {}
 
 export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
+  const products = props.navigation.getParam('products');
   const category_id = props.navigation.getParam('category_id');
   const pageTitle = props.navigation.getParam('title');
-  const isTest = props.navigation.getParam('isTest');
   const [searchText, setSearchText] = useState<string>('');
-  const [productsList, setProductsList] = useState<MedicineProduct[]>([]);
+  const [productsList, setProductsList] = useState<MedicineProduct[]>(products || []);
   const [medicineList, setMedicineList] = useState<MedicineProduct[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isLoading, setIsLoading] = useState<boolean>(products ? false : true);
   const [searchSate, setsearchSate] = useState<'load' | 'success' | 'fail' | undefined>();
   const medicineListRef = useRef<FlatList<MedicineProduct> | null>();
   const [pageCount, setPageCount] = useState<number>(1);
-  const [listFetching, setListFetching] = useState<boolean>(true);
-  const [endReached, setEndReached] = useState<boolean>(false);
+  const [listFetching, setListFetching] = useState<boolean>(false);
+  const [endReached, setEndReached] = useState<boolean>(products ? true : false);
   const [prevData, setPrevData] = useState<MedicineProduct[]>();
   const [itemsLoading, setItemsLoading] = useState<{ [key: string]: boolean }>({});
   const { currentPatient } = useAllCurrentPatients();
@@ -139,6 +139,9 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
   }, [currentPatient]);
 
   useEffect(() => {
+    if (products) {
+      return;
+    }
     getProductsByCategoryApi(category_id, pageCount)
       .then(({ data }) => {
         console.log(data, 'getProductsByCategoryApi');
@@ -197,7 +200,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
             : special_price
           : undefined,
         prescriptionRequired: is_prescription_required == '1',
-        isMedicine: type_id == 'Pharma',
+        isMedicine: (type_id || '').toLowerCase() == 'pharma',
         quantity: 1,
         thumbnail,
         isInStock: true,
@@ -648,54 +651,57 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
     }
 
     return filteredProductsList.length ? (
-      <FlatList
-        removeClippedSubviews={true}
-        onScroll={() => Keyboard.dismiss()}
-        ref={(ref) => {
-          medicineListRef.current = ref;
-        }}
-        data={filteredProductsList}
-        renderItem={({ item, index }) => renderMedicineCard(item, index, filteredProductsList)}
-        keyExtractor={(_, index) => `${index}`}
-        bounces={false}
-        ListFooterComponent={
-          listFetching ? (
-            <View style={{ marginBottom: 20 }}>
-              <ActivityIndicator animating={true} size="large" color="green" />
-            </View>
-          ) : null
-        }
-        onEndReachedThreshold={0.5}
-        onEndReached={() => {
-          if (!listFetching && !endReached) {
-            setListFetching(true);
-            getProductsByCategoryApi(category_id, pageCount)
-              .then(({ data }) => {
-                const products = data.products || [];
-                if (prevData && JSON.stringify(prevData) !== JSON.stringify(products)) {
-                  setProductsList([...productsList, ...products]);
-                  setPageCount(pageCount + 1);
-                  setPrevData(products);
-                } else {
-                  setEndReached(true);
-                  showAphAlert &&
-                    showAphAlert({
-                      title: 'Alert!',
-                      description: "You've reached the end of the list",
-                    });
-                }
-              })
-              .catch((err) => {
-                CommonBugFender('SearchByBrand_getProductsByCategoryApi', err);
-                console.log(err, 'errr');
-              })
-              .finally(() => {
-                setIsLoading(false);
-                setListFetching(false);
-              });
-          }
-        }}
-      />
+      <>
+        <FlatList
+          removeClippedSubviews={true}
+          onScroll={() => Keyboard.dismiss()}
+          ref={(ref) => {
+            medicineListRef.current = ref;
+          }}
+          data={filteredProductsList}
+          renderItem={({ item, index }) => renderMedicineCard(item, index, filteredProductsList)}
+          keyExtractor={(_, index) => `${index}`}
+          bounces={false}
+          onEndReachedThreshold={0.5}
+          onEndReached={() => {
+            if (!listFetching && !endReached) {
+              setListFetching(true);
+              getProductsByCategoryApi(category_id, pageCount)
+                .then(({ data }) => {
+                  const products = data.products || [];
+                  if (prevData && JSON.stringify(prevData) !== JSON.stringify(products)) {
+                    setProductsList([...productsList, ...products]);
+                    setPageCount(pageCount + 1);
+                    setPrevData(products);
+                  } else {
+                    setEndReached(true);
+                    showAphAlert &&
+                      showAphAlert({
+                        title: 'Alert!',
+                        description: "You've reached the end of the list",
+                      });
+                  }
+                })
+                .catch((err) => {
+                  CommonBugFender('SearchByBrand_getProductsByCategoryApi', err);
+                  console.log(err, 'errr');
+                })
+                .finally(() => {
+                  setIsLoading(false);
+                  setListFetching(false);
+                });
+            }
+          }}
+        />
+        {listFetching ? (
+          <ActivityIndicator
+            style={{ backgroundColor: 'transparent' }}
+            animating={listFetching}
+            size="large"
+            color="green"
+          />
+        ) : null}
+      </>
     ) : (
       renderEmptyData()
     );

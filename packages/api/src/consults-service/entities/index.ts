@@ -59,6 +59,7 @@ export enum STATUS {
   JUNIOR_DOCTOR_ENDED = 'JUNIOR_DOCTOR_ENDED',
   CALL_ABANDON = 'CALL_ABANDON',
   UNAVAILABLE_MEDMANTRA = 'UNAVAILABLE_MEDMANTRA',
+  PAYMENT_ABORTED = 'PAYMENT_ABORTED',
 }
 
 export enum REFUND_STATUS {
@@ -560,6 +561,12 @@ export class AppointmentCallDetails extends BaseEntity {
   callType: string;
 
   @Column({ nullable: true })
+  deviceType: DEVICETYPE;
+
+  @Column({ nullable: true })
+  callSource: BOOKINGSOURCE;
+
+  @Column({ nullable: true })
   doctorId: string;
 
   @Column({ nullable: true })
@@ -649,6 +656,7 @@ export enum MEDICINE_CONSUMPTION_DURATION {
   DAYS = 'DAYS',
   MONTHS = 'MONTHS',
   WEEKS = 'WEEKS',
+  TILL_NEXT_REVIEW = 'TILL_NEXT_REVIEW',
 }
 export enum MEDICINE_FREQUENCY {
   AS_NEEDED = 'AS_NEEDED',
@@ -674,6 +682,7 @@ export enum MEDICINE_TIMINGS {
   MORNING = 'MORNING',
   NIGHT = 'NIGHT',
   NOON = 'NOON',
+  NOT_SPECIFIC = 'NOT_SPECIFIC',
 }
 export enum MEDICINE_TO_BE_TAKEN {
   AFTER_FOOD = 'AFTER_FOOD',
@@ -690,10 +699,12 @@ export enum MEDICINE_UNIT {
   BOTTLE = 'BOTTLE',
   CAPSULE = 'CAPSULE',
   CREAM = 'CREAM',
-  DROPS = 'DROP',
+  DROPS = 'DROPS',
+  DROP = 'DROP',
   GEL = 'GEL',
   GM = 'GM',
   INJECTION = 'INJECTION',
+  INTERNATIONAL_UNIT = 'INTERNATIONAL_UNIT',
   LOTION = 'LOTION',
   ML = 'ML',
   MG = 'MG',
@@ -711,6 +722,7 @@ export enum MEDICINE_UNIT {
   SUSPENSION = 'SUSPENSION',
   SYRUP = 'SYRUP',
   TABLET = 'TABLET',
+  TEASPOON = 'TEASPOON',
   UNIT = 'UNIT',
 }
 
@@ -739,6 +751,7 @@ export type CaseSheetMedicinePrescription = {
 export type CaseSheetDiagnosis = { name: string };
 export type CaseSheetDiagnosisPrescription = {
   itemname: string;
+  testInstruction: string;
 };
 export type CaseSheetOtherInstruction = { instruction: string };
 export type CaseSheetSymptom = {
@@ -1714,6 +1727,7 @@ export interface RxPdfData {
     frequency: string;
     instructions?: string;
     routeOfAdministration?: string;
+    medicineFormTypes?: string;
   }[];
   generalAdvice: CaseSheetOtherInstruction[];
   diagnoses: CaseSheetDiagnosis[];

@@ -440,6 +440,10 @@ export const NotificationIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_notification.png')} />
 );
 
+export const NotificationIconWhite: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/mask.png')} />
+);
+
 export const CartIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_cart.png')} />
 );
@@ -504,6 +508,26 @@ export const OrderPlacedIcon: React.FC<IconProps> = (props) => (
 
 export const DiscountIcon: React.FC<IconProps> = (props) => (
   <IconBase size="lg" {...props} source={require('./icons/discount.png')} />
+);
+
+export const FreeShippingIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="lg" {...props} source={require('./icons/ic_priority_high.png')} />
+);
+
+export const UploadHealthRecords: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/upload_records.png')} />
+);
+
+export const FreeArrowIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/ic_free_arrow.png')} />
+)
+
+export const OrangeCallIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/ic_orange_phone.png')} />
+);
+
+export const SmallOrangeCallIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/ic_small_orange_phone.png')} />
 );
 
 export const OrderOnHoldIcon: React.FC<IconProps> = (props) => (
@@ -859,10 +883,6 @@ export const NotificationCartIcon: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/ic_notification_b.png')} />
 );
 
-export const HandBlue: React.FC<IconProps> = (props) => (
-  <IconBase size="md" {...props} source={require('./icons/link-uhid/hand/hand.png')} />
-);
-
 export const PrimaryUHIDIconWhite: React.FC<IconProps> = (props) => (
   <IconBase
     size="md"
@@ -884,106 +904,6 @@ export const SecondaryUHIDIconBlue: React.FC<IconProps> = (props) => (
     size="md"
     {...props}
     source={require('./icons/link-uhid/linkedSecondary/secondary.png')}
-  />
-);
-
-export const LinkUHIDStep1: React.FC<IconProps> = (props) => (
-  <IconBase size="md" {...props} source={require('./icons/link-uhid/linkuhid-step1-1/step1.png')} />
-);
-
-export const Arrow1: React.FC<IconProps> = (props) => (
-  <IconBase size="md" {...props} source={require('./icons/link-uhid/arrows/arrow-1.png')} />
-);
-
-export const LinkUHIDStep2first: React.FC<IconProps> = (props) => (
-  <IconBase
-    size="md"
-    {...props}
-    source={require('./icons/link-uhid/linkuhid-step2-1/link-uhid.png')}
-  />
-);
-
-export const Arrow2: React.FC<IconProps> = (props) => (
-  <IconBase size="md" {...props} source={require('./icons/link-uhid/arrows/arrow-2.png')} />
-);
-
-export const LinkUHIDStep2second: React.FC<IconProps> = (props) => (
-  <IconBase
-    size="md"
-    {...props}
-    source={require('./icons/link-uhid/linkuhid-step2-2/link-popup.png')}
-  />
-);
-
-export const Arrow3: React.FC<IconProps> = (props) => (
-  <IconBase size="md" {...props} source={require('./icons/link-uhid/arrows/arrow-3.png')} />
-);
-
-export const LinkUHIDStep2third: React.FC<IconProps> = (props) => (
-  <IconBase
-    size="md"
-    {...props}
-    source={require('./icons/link-uhid/linkuhid-step2-3/link-other-profile.png')}
-  />
-);
-
-export const LinkUHIDStep3: React.FC<IconProps> = (props) => (
-  <IconBase
-    size="md"
-    {...props}
-    source={require('./icons/link-uhid/linkuhid-step3-1/access-link-uhid.png')}
-  />
-);
-
-export const Arrow4: React.FC<IconProps> = (props) => (
-  <IconBase size="md" {...props} source={require('./icons/link-uhid/arrows/arrow-4.png')} />
-);
-
-export const LinkUHIDStep4first: React.FC<IconProps> = (props) => (
-  <IconBase
-    size="md"
-    {...props}
-    source={require('./icons/link-uhid/linkuhid-step4-1/delink-uhid.png')}
-  />
-);
-
-export const Arrow5: React.FC<IconProps> = (props) => (
-  <IconBase size="md" {...props} source={require('./icons/link-uhid/arrows/arrow-6.png')} />
-);
-
-export const DottedArrow1: React.FC<IconProps> = (props) => (
-  <IconBase size="md" {...props} source={require('./icons/link-uhid/arrows/dotted-arrow-1.png')} />
-);
-
-export const DottedArrow2: React.FC<IconProps> = (props) => (
-  <IconBase size="md" {...props} source={require('./icons/link-uhid/arrows/dotted-arrow-2.png')} />
-);
-
-export const DottedArrow3: React.FC<IconProps> = (props) => (
-  <IconBase size="md" {...props} source={require('./icons/link-uhid/arrows/dotted-arrow-3.png')} />
-);
-
-export const LinkUHIDStep4second: React.FC<IconProps> = (props) => (
-  <IconBase
-    size="md"
-    {...props}
-    source={require('./icons/link-uhid/linkuhid-step4-2/manage-delink-post-delink.png')}
-  />
-);
-
-export const LinkUHIDStep4third: React.FC<IconProps> = (props) => (
-  <IconBase
-    size="md"
-    {...props}
-    source={require('./icons/link-uhid/linkuhid-step4-3/post-delink.png')}
-  />
-);
-
-export const LinkUHIDStep4fourth: React.FC<IconProps> = (props) => (
-  <IconBase
-    size="md"
-    {...props}
-    source={require('./icons/link-uhid/linkuhid-step4-4/manage-delink-post-delink.png')}
   />
 );
 
@@ -1055,6 +975,10 @@ export const TxnIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/txnicon.png')} />
 );
 
+export const SympTrackerIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/ic-symptomtracker.png')} />
+);
+
 export const InPersonHeader: React.FC<IconProps> = (props) => (
   <IconBase
     style={{ width: 49, height: 56 }}
@@ -1110,4 +1034,24 @@ export const SearchIcon: React.FC<IconProps> = (props) => (
     source={require('./icons/loupe.png')}
     resizeMode="contain"
   />
+);
+
+export const LinkUHIDReadMore: React.FC<IconProps> = (props) => (
+  <IconBase size="lg" {...props} source={require('./icons/read-more.png')} />
+);
+
+export const RectangularIcon: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/rectangleIcon.png')} />
+);
+
+export const ApolloDoctorIcon: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/ApolloDoctor.png')} />
+);
+
+export const ApolloPartnerIcon: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/ApolloPatner.png')} />
+);
+
+export const VideoPlayIcon: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/Play.png')} />
 );

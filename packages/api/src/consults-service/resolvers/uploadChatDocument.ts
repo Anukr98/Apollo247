@@ -167,34 +167,17 @@ const uploadChatDocumentToPrism: Resolver<
     throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
 
   const patientsRepo = patientsDb.getCustomRepository(PatientRepository);
-  //get authtoken for the logged in user mobile number
-  const prismAuthToken = await patientsRepo.getPrismAuthToken(mobileNumber);
-  if (!prismAuthToken) return { status: false, fileId: '' };
+  const patientDetails = await patientsRepo.findById(args.patientId);
+  if (!patientDetails) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
 
-  //get users list for the mobile number
-  const prismUserList = await patientsRepo.getPrismUsersList(mobileNumber, prismAuthToken);
-
-  //check if current user uhid matches with response uhids
-  const uhid = await patientsRepo.validateAndGetUHID(args.patientId, prismUserList);
-
-  if (!uhid) {
-    return { status: false, fileId: '' };
-  }
-
-  //get authtoken for the logged in user mobile number
-  const prismUHIDAuthToken = await patientsRepo.getPrismAuthTokenByUHID(uhid);
-
-  if (!prismUHIDAuthToken) return { status: false, fileId: '' };
-
-  //just call get prism user details with the corresponding uhid
-  await patientsRepo.getPrismUsersDetails(uhid, prismUHIDAuthToken);
+  if (!patientDetails.uhid) throw new AphError(AphErrorMessages.INVALID_UHID);
 
   const uploadDocInput = {
     ...args,
     category: PRISM_DOCUMENT_CATEGORY.OpSummary,
   };
 
-  const fileId = await patientsRepo.uploadDocumentToPrism(uhid, prismUHIDAuthToken, uploadDocInput);
+  const fileId = await patientsRepo.uploadDocumentToPrism(patientDetails.uhid, '', uploadDocInput);
 
   //upload file to blob storage & save to appointment documents
   uploadFileToBlobStorage(
