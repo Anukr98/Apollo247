@@ -644,6 +644,85 @@ const useStyles = makeStyles((theme: Theme) => {
         fontWeight: 700,
       },
     },
+    searchContent: {
+      position: 'absolute',
+      top: 36,
+      left: 0,
+      right: 0,
+      zIndex: 5,
+      height: 300,
+      overflow: 'auto',
+      padding: 20,
+      background: '#fff',
+      borderRadius: 5,
+      boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
+
+      '& h6': {
+        fontSize: 12,
+        color: 'rgba(1,71,91, 0.6)',
+        fontWeight: 700,
+        textTransform: 'uppercase',
+      },
+      '&::-webkit-scrollbar': {
+        width: 8,
+      },
+      '&::-webkit-scrollbar-track': {
+        background: '#fff',
+      },
+      '&::-webkit-scrollbar-thumb': {
+        background: '#d8d8d8',
+        borderRadius: 4,
+      },
+    },
+    doctorContent: {
+      display: 'flex',
+      alignItems: 'center',
+    },
+    dImg: {
+      width: 44,
+      height: 44,
+      borderRadius: '50%',
+      border: '1px solid #ccc',
+      margin: '0 15px 0 0',
+    },
+    doctorDetails: {},
+    doctorList: {
+      padding: 0,
+      margin: 0,
+      listStyle: 'none',
+      '& li': {
+        padding: '10px 0',
+      },
+    },
+    docContent: {
+      '& h2': {
+        fontSize: 16,
+        color: '#02475b',
+        fontWeight: 500,
+        margin: '0 0 5px',
+      },
+      '& p': {
+        fontSize: 12,
+        color: 'rgba(2,71,91,0.7)',
+        fontWeight: 500,
+      },
+    },
+    sContent: {
+      margin: '10px 0 0',
+      padding: '15px 0',
+      borderTop: '1px solid rgba(1,71,91,0.5)',
+    },
+    sList: {
+      padding: 0,
+      margin: 0,
+      listStyle: 'none',
+      '& li': {
+        fontSize: 16,
+        color: '#02475b',
+        padding: '5px 0',
+        fontWeight: 500,
+      },
+    },
   };
 });
 
@@ -856,6 +935,42 @@ export const SpecialityListing: React.FC = (props) => {
                         className={classes.searchInput}
                         placeholder="Search doctors or specialities"
                       />
+                      <div className={classes.searchContent}>
+                        <div className={classes.docContent}>
+                          <Typography component="h6">Doctors</Typography>
+                          <ul className={classes.doctorList}>
+                            <li>
+                              <div className={classes.doctorContent}>
+                                <div className={classes.dImg}></div>
+                                <div className={classes.doctorDetails}>
+                                  <Typography component="h2">Dr. Radha Kumar</Typography>
+                                  <Typography>
+                                    Urogynaecology | Apollo Hospitals Greams Road Chennai
+                                  </Typography>
+                                </div>
+                              </div>
+                            </li>
+                            <li>
+                              <div className={classes.doctorContent}>
+                                <div className={classes.dImg}></div>
+                                <div className={classes.doctorDetails}>
+                                  <Typography component="h2">Dr. Rakesh Gupta</Typography>
+                                  <Typography>
+                                    Urogynaecology | Apollo Hospitals Greams Road Chennai
+                                  </Typography>
+                                </div>
+                              </div>
+                            </li>
+                          </ul>
+                        </div>
+                        <div className={classes.sContent}>
+                          <Typography component="h6">Speciality</Typography>
+                          <ul className={classes.sList}>
+                            <li>Radiology</li>
+                            <li>Reproductive Medicine and Infertility</li>
+                          </ul>
+                        </div>
+                      </div>
                     </div>
                   </div>
                   <div className={classes.pastSearch}>
