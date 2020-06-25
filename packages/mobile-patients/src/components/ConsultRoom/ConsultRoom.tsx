@@ -78,6 +78,7 @@ import {
   PatientInfo,
   PatientInfoWithSource,
   WebEngageEventName,
+  WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import KotlinBridge from '@aph/mobile-patients/src/KotlinBridge';
@@ -1606,6 +1607,20 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         <ConsultPersonalizedCard
           rowData={personalizedData}
           onClickButton={() => {
+            const {doctorDetails} = personalizedData;
+            const eventAttributes: WebEngageEvents[WebEngageEventName.HOMEPAGE_WIDGET_FOLLOWUP_CLICK] = {
+              'Doctor ID': doctorDetails.id,
+              'Speciality ID': doctorDetails.specialty.id,
+              'Hospital City': personalizedData.hospitalLocation,
+              'Consult Mode': personalizedData.appointmentType,
+              'Doctor Speciality': doctorDetails.specialty.name,
+              'Customer ID': currentPatient.id,
+              'Patient Name': currentPatient.firstName,
+              'Patient Age': Math.round(moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)),
+              'Patient Gender': currentPatient.gender,
+              'Patient UHID': currentPatient.uhid,
+            };
+            postWebEngageEvent(WebEngageEventName.HOMEPAGE_WIDGET_FOLLOWUP_CLICK, eventAttributes);
             props.navigation.navigate(AppRoutes.DoctorDetails, {
               doctorId: personalizedData ? personalizedData.doctorDetails.id : '',
             });

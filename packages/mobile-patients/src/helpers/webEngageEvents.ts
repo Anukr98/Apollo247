@@ -64,6 +64,11 @@ export enum WebEngageEventName {
   PHARMACY_FEEDBACK_GIVEN = 'Pharmacy Feedback Given',
   PAST_DOCTOR_SEARCH = 'Past Doctor Search',
   CONSULT_TYPE_SELECTION = 'Consult Type Selection',
+  HOMEPAGE_WIDGET_FOLLOWUP_CLICK = 'Home Page Consult Widget Follow Up Click',
+  DOCTOR_CARD_CONSULT_CLICK = 'Doctor card Consult in x minutes clicked',
+  DOCTOR_CONNECT_CARD_CLICK = 'Doctor Connect Card Click',
+  CONSULTED_WITH_DOCTOR_BEFORE = 'Chat Window Consulted with doctor before alert',
+  DOCTOR_SPECIALITY_SEARCH_NO_RESULT = 'Doctor Speciality Fuzzy Search No Result',
 
   MY_ORDERS_CLICKED = 'My Orders Clicked',
   ORDER_SUMMARY_CLICKED = 'Order Summary Clicked',
@@ -178,6 +183,10 @@ export interface SpecialityClickedEvent extends PatientInfo {
 
 export interface ReorderMedicines extends PatientInfo {
   source: 'Order Details' | 'PHR';
+}
+
+export interface ConsultedBefore extends PatientInfo {
+  ConsultedBefore: 'Yes' | 'No';
 }
 
 export interface WebEngageEvents {
@@ -576,6 +585,40 @@ export interface WebEngageEvents {
     'Physical Price': number;
     'Doctor Speciality': string;
   };
+  [WebEngageEventName.DOCTOR_CARD_CONSULT_CLICK]: {
+    'Patient Name': string;
+    'Doctor ID': string;
+    'Speciality ID': string;
+    'Doctor Speciality': string;
+    'Doctor Experience': number;
+    'Language Known': string;
+    'Hospital Name': string;
+    'Hospital City': string | null;
+    'Availability Minutes': number;
+    'Source': 'List' | 'Profile';
+    'Patient UHID': string;
+    'Relation': string;
+    'Patient Age': number;
+    'Patient Gender': string;
+    'Customer ID': string;
+  };
+  [WebEngageEventName.DOCTOR_CONNECT_CARD_CLICK]: {
+    'Online Price': number;
+    'Physical Price': number;
+    'Doctor Speciality': string;
+    'Doctor Name': string;
+    'Source': 'List' | 'Profile';
+    'Language known': string;
+  };
+  [WebEngageEventName.CONSULTED_WITH_DOCTOR_BEFORE]: ConsultedBefore;
+  [WebEngageEventName.DOCTOR_SPECIALITY_SEARCH_NO_RESULT]: {
+    'Text Searched': string;
+    'Patient name': string;
+    'Patient UHID': string;
+    'Relation': string;
+    'Patient Age': number;
+    'Patient Gender': string;
+  };
   [WebEngageEventName.CONSULT_NOW_CLICKED]: {
     'Language Known': string; // Comma separated values
     Source: 'List' | 'Profile'; // List/Profile
@@ -605,6 +648,18 @@ export interface WebEngageEvents {
     'Patient UHID': string;
     'Mobile Number': string;
     'Customer ID': string;
+  };
+  [WebEngageEventName.HOMEPAGE_WIDGET_FOLLOWUP_CLICK]: {
+    'Doctor ID': string;
+    'Speciality ID': string;
+    'Hospital City': string;
+    'Consult Mode': string;
+    'Doctor Speciality': string;
+    'Customer ID': string;
+    'Patient Name': string;
+    'Patient Age': number;
+    'Patient Gender': string;
+    'Patient UHID': string;
   };
   // confirm the type of data for the below
   [WebEngageEventName.CONSULT_SCHEDULE_FOR_LATER_CLICKED]: {
