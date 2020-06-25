@@ -481,16 +481,18 @@ const endAppointmentSession: Resolver<
   const apptSession = await apptSessionRepo.getAppointmentSession(
     endAppointmentSessionInput.appointmentId
   );
-  const appointmentCallDetailsAttrs: Partial<AppointmentCallDetails> = {
-    appointment: apptDetails,
-    callType: endAppointmentSessionInput.callType,
-    doctorType: DOCTOR_CALL_TYPE.SENIOR,
-    startTime: new Date(),
-    endTime: new Date(),
-    deviceType: endAppointmentSessionInput.deviceType,
-    callSource: endAppointmentSessionInput.callSource,
-  };
-  await callDetailsRepo.saveAppointmentCallDetails(appointmentCallDetailsAttrs);
+  if (endAppointmentSessionInput.callSource && endAppointmentSessionInput.deviceType) {
+    const appointmentCallDetailsAttrs: Partial<AppointmentCallDetails> = {
+      appointment: apptDetails,
+      callType: endAppointmentSessionInput.callType,
+      doctorType: DOCTOR_CALL_TYPE.SENIOR,
+      startTime: new Date(),
+      endTime: new Date(),
+      deviceType: endAppointmentSessionInput.deviceType,
+      callSource: endAppointmentSessionInput.callSource,
+    };
+    await callDetailsRepo.saveAppointmentCallDetails(appointmentCallDetailsAttrs);
+  }
   if (apptSession) {
     await apptSessionRepo.endAppointmentSession(apptSession.id, new Date());
   }
