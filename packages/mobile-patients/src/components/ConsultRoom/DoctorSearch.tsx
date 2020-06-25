@@ -138,11 +138,11 @@ const styles = StyleSheet.create({
   topSpecialityName: {
     ...theme.fonts.IBMPlexSansMedium(14),
     marginVertical: 7,
-    marginHorizontal: 10,
+    marginHorizontal: 8,
     textAlign: 'center',
     alignItems: 'center',
     color: theme.colors.SHERPA_BLUE,
-    lineHeight: 24,
+    lineHeight: 18,
   },
   topSpecialityDescription: {
     ...theme.fonts.IBMPlexSansMedium(12),
@@ -999,6 +999,8 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
                           alignItems: 'center',
                           borderBottomWidth: 0.2,
                           borderBottomColor: theme.colors.BORDER_BOTTOM_COLOR,
+                          height: 50,
+                          justifyContent: 'center',
                         }}
                       >
                         <Text numberOfLines={2} style={styles.topSpecialityName}>
@@ -1101,7 +1103,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
             <Video
               source={{
                 uri:
-                  'https://prodaphstorage.blob.core.windows.net/videos/Consult%20An%20Apollo%20Doctor%20(Horizontal).mp4',
+                  'https://player.vimeo.com/external/432445688.hd.mp4?s=abfa637fd2a47a4548c71ce2ac4cc48819a2d1a5&profile_id=174',
               }}
               onLoad={(data) => {
                 console.log(JSON.stringify(data));
