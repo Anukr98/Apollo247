@@ -98,12 +98,13 @@ export const caseSheetTypeDefs = gql`
     CRADLE
     DOCTOR_CONNECT
     FERTILITY
-    HOMECARE
     JUNIOR
     PAYROLL
     SPECTRA
     STAR_APOLLO
     SUGAR
+    WHITE_DENTAL
+    APOLLO_HOMECARE
   }
 
   enum Gender {
