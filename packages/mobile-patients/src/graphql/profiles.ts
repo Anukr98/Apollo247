@@ -1400,7 +1400,6 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS = gql`
         deliveryType
         currentStatus
         patientAddressId
-        alertStore
         medicineOrdersStatus {
           id
           orderStatus

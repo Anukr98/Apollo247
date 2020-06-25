@@ -259,7 +259,14 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
                 marginRight: 24,
               }}
               activeOpacity={1}
-              onPress={() => setFilterVisible(true)}
+              onPress={() => {
+                const eventAttributes: WebEngageEvents[WebEngageEventName.CATEGORY_FILTER_CLICKED] = {
+                  'category ID': category_id,
+                  'category name': pageTitle,
+                };
+                postWebEngageEvent(WebEngageEventName.CATEGORY_FILTER_CLICKED, eventAttributes);
+                setFilterVisible(true);
+              }}
             >
               <Filter />
             </TouchableOpacity>
@@ -597,6 +604,16 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
           setSortBy(sortBy);
           medicineListRef.current && medicineListRef.current.scrollToOffset({ offset: 0 });
           setIsLoading(false);
+          
+          const dicountRangeEvent = discountRange.from + '-' + discountRange.to;
+          const eventAttributes: WebEngageEvents[WebEngageEventName.CATEGORY_FILTER_APPLIED] = {
+            'category ID': category_id,
+            'category name': pageTitle,
+            'discount': dicountRangeEvent === '0-100' ? '' : dicountRangeEvent,
+            'price': typeof priceRange.from === 'undefined' ? '' : priceRange.from + '-' + priceRange.to,
+            'sort by': typeof sortBy === 'undefined' ? '' : JSON.stringify(sortBy),
+          };
+          postWebEngageEvent(WebEngageEventName.CATEGORY_FILTER_APPLIED, eventAttributes);
         }}
       />
     );

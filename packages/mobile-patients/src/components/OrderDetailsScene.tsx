@@ -1346,8 +1346,26 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     );
   };
 
+  const getFormattedOrderPlacedDateTime = (
+    orderDetails: getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails
+  ) => {
+    const medicineOrdersStatus = g(orderDetails, 'medicineOrdersStatus') || [];
+    const statusDate = g(medicineOrdersStatus[0], 'statusDate');
+    return moment(statusDate).format('ddd, D MMMM, hh:mm A');
+  };
+
   const renderOrderSummary = () => {
     scrollToSlots();
+    const eventAttributes: WebEngageEvents[WebEngageEventName.ORDER_SUMMARY_CLICKED] = {
+      orderId: orderDetails.id,
+      orderDate: getFormattedOrderPlacedDateTime(orderDetails),
+      orderType: orderDetails.orderType == MEDICINE_ORDER_TYPE.UPLOAD_PRESCRIPTION ? 'Non Cart' : 'Cart',
+      customerId: currentPatient && currentPatient.id,
+      deliveryDate: orderDetails.orderTat ? moment(orderDetails.orderTat).format('ddd, D MMMM, hh:mm A') : '',
+      mobileNumber: currentPatient && currentPatient.mobileNumber,
+      orderStatus: orderDetails!.currentStatus,
+    };
+    postWebEngageEvent(WebEngageEventName.ORDER_SUMMARY_CLICKED, eventAttributes);
     return (
       <View>
         <OrderSummary orderDetails={orderDetails as any} addressData={addressData} />

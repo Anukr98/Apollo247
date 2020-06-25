@@ -203,10 +203,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     postWebEngageEvent(WebEngageEventName.CATEGORY_CLICKED, eventAttributes);
   };
 
-  const WebEngageEventForNonServicablePinCode = (pincode: string) => {
+  const WebEngageEventForNonServicablePinCode = (pincode: string, serviceable: boolean) => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_PINCODE_NONSERVICABLE] = {
       'Mobile Number': currentPatient.mobileNumber,
       Pincode: pincode,
+      Servicable: serviceable,
     };
     postWebEngageEvent(WebEngageEventName.PHARMACY_PINCODE_NONSERVICABLE, eventAttributes);
   };
@@ -221,7 +222,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       .then(({ data: { Availability } }) => {
         setServiceabilityMsg(Availability ? '' : 'Services unavailable. Change delivery location.');
         if (!Availability) {
-          WebEngageEventForNonServicablePinCode(pincode);
+          WebEngageEventForNonServicablePinCode(pincode, false);
           showAphAlert!({
             title: 'We’re sorry!',
             description:
@@ -236,6 +237,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               },
             ],
           });
+        } else {
+          WebEngageEventForNonServicablePinCode(pincode, true);
         }
       })
       .catch((e) => {
@@ -460,7 +463,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       .then((response) => {
         globalLoading!(false);
         response && setPharmacyLocation!(response);
-        response && WebEngageEventForNonServicablePinCode(response.pincode);
+        response && WebEngageEventForNonServicablePinCode(response.pincode, true);
       })
       .catch((e) => {
         CommonBugFender('Medicine__ALLOW_AUTO_DETECT', e);
@@ -708,8 +711,12 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     );
   };
 
-  const renderSliderItem = ({ item }: { item: OfferBannerSection }) => {
+  const renderSliderItem = ({ item, index }: { item: OfferBannerSection, index: number }) => {
     const handleOnPress = () => {
+      const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_BANNER_CLICK] = {
+        BannerPosition: index + 1,
+      };
+      postWebEngageEvent(WebEngageEventName.PHARMACY_BANNER_CLICK, eventAttributes);
       if (item.category_id) {
         props.navigation.navigate(AppRoutes.SearchByBrand, {
           category_id: item.category_id,
@@ -1167,6 +1174,12 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       isAddedToCart: foundMedicineInCart,
       onAddOrRemoveCartItem: foundMedicineInCart ? removeFromCart : addToCart,
       onPress: () => {
+        const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_CATEGORY_SECTION_PRODUCT_CLICK] = {
+          SectionName: title,
+          ProductId: sku,
+          ProductName: name,
+        };
+        postWebEngageEvent(WebEngageEventName.PHARMACY_CATEGORY_SECTION_PRODUCT_CLICK, eventAttributes);
         postwebEngageProductClickedEvent(data.item, title, 'Home');
         props.navigation.navigate(AppRoutes.MedicineDetailsScene, { sku });
       },
