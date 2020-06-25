@@ -107,6 +107,7 @@ import firebase from 'react-native-firebase';
 import { ScrollView } from 'react-native-gesture-handler';
 import WebEngage from 'react-native-webengage';
 import { NavigationScreenProps } from 'react-navigation';
+import { getPatientPersonalizedAppointments_getPatientPersonalizedAppointments_appointmentDetails } from '../../graphql/types/getPatientPersonalizedAppointments';
 import { getPatientPersonalizedAppointmentList } from '../../helpers/clientCalls';
 import { ConsultPersonalizedCard } from '../ui/ConsultPersonalizedCard';
 
@@ -272,6 +273,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     setNotificationCount,
     setAllNotifications,
     setisSelected,
+    appointmentsPersonalized,
+    setAppointmentsPersonalized,
   } = useAppCommonData();
 
   // const startDoctor = string.home.startDoctor;
@@ -937,7 +940,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   const getPersonalizesAppointments = async (details: any) => {
     const uhid = g(details, 'uhid');
-    console.log('uhid', uhid);
+
+    if (Object.keys(appointmentsPersonalized).length != 0) {
+      console.log('appointmentsPersonalized', appointmentsPersonalized);
+
+      setPersonalizedData(appointmentsPersonalized as any);
+      setisPersonalizedCard(true);
+    }
 
     getPatientPersonalizedAppointmentList(client, uhid)
       .then((data: any) => {
@@ -947,9 +956,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
         setPersonalizedData(appointmentsdata as any);
         setisPersonalizedCard(true);
+        setAppointmentsPersonalized &&
+          setAppointmentsPersonalized(
+            appointmentsdata as getPatientPersonalizedAppointments_getPatientPersonalizedAppointments_appointmentDetails[]
+          );
       })
       .catch((e) => {
-        CommonBugFender('ConsultRoom_GET_DIAGNOSTICS_CITES', e);
+        CommonBugFender('ConsultRoom_getPatientPersonalizedAppointmentList', e);
       });
   };
 
