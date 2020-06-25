@@ -2269,7 +2269,7 @@ const sendChatMessageToDoctor: Resolver<
       databaseURL: `https://${process.env.FIREBASE_PROJECT_ID}.firebaseio.com`,
     };
     let admin = require('firebase-admin');
-    let notificationResponse: any;
+    let notificationResponse: PushNotificationSuccessMessage;
     admin = !firebaseAdmin.apps.length ? firebaseAdmin.initializeApp(config) : firebaseAdmin.app();
     const options = {
       priority: NotificationPriority.high,
@@ -2331,13 +2331,12 @@ const sendChatMessageToDoctor: Resolver<
           console.log('notification results saved');
         });
         //}
+        console.log(notificationResponse, 'notificationResponse');
       })
       .catch((error: JSON) => {
         console.log('PushNotification Failed::' + error);
         throw new AphError(AphErrorMessages.PUSH_NOTIFICATION_FAILED);
       });
-
-    console.log(notificationResponse, 'notificationResponse');
   }
   return { status: true };
 };
@@ -2366,7 +2365,7 @@ const sendDoctorReminderNotifications: Resolver<
     databaseURL: `https://${process.env.FIREBASE_PROJECT_ID}.firebaseio.com`,
   };
   let admin = require('firebase-admin');
-  let notificationResponse: any;
+  let notificationResponse: PushNotificationSuccessMessage;
   admin = !firebaseAdmin.apps.length ? firebaseAdmin.initializeApp(config) : firebaseAdmin.app();
   const options = {
     priority: NotificationPriority.high,
@@ -2467,7 +2466,7 @@ export async function sendDoctorAppointmentNotification(
     databaseURL: `https://${process.env.FIREBASE_PROJECT_ID}.firebaseio.com`,
   };
   let admin = require('firebase-admin');
-  let notificationResponse: any;
+  let notificationResponse: PushNotificationSuccessMessage;
   admin = !firebaseAdmin.apps.length ? firebaseAdmin.initializeApp(config) : firebaseAdmin.app();
   const options = {
     priority: NotificationPriority.high,
@@ -2528,13 +2527,12 @@ export async function sendDoctorAppointmentNotification(
           console.log('notification results saved');
         });
         //}
+        console.log(notificationResponse, 'notificationResponse');
       })
       .catch((error: JSON) => {
         console.log('PushNotification Failed::' + error);
         throw new AphError(AphErrorMessages.PUSH_NOTIFICATION_FAILED);
       });
-
-    console.log(notificationResponse, 'notificationResponse');
   }
   console.log('doctor appt notification end');
   return { status: true };
