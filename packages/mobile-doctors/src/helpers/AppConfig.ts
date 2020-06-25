@@ -4,6 +4,7 @@ export enum AppEnv {
   PROD = 'PROD',
   PERFORM = 'PERFORM',
   VAPT = 'VAPT',
+  STAGING = 'STAGING',
 }
 
 export const updateAppConfig = (key: keyof typeof Configuration, value: object) => {
