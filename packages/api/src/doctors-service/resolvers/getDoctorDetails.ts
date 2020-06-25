@@ -37,12 +37,13 @@ export const getDoctorDetailsTypeDefs = gql`
     CRADLE
     DOCTOR_CONNECT
     FERTILITY
-    HOMECARE
     JUNIOR
     PAYROLL
     SPECTRA
     STAR_APOLLO
     SUGAR
+    APOLLO_HOMECARE
+    WHITE_DENTAL
   }
 
   enum LoggedInUserType {
