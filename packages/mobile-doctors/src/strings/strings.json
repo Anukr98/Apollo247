@@ -449,5 +449,12 @@
     "enter_instruction_here": "Enter instructions here..",
     "instruction_label": "Instructions (if any)",
     "please_select_feilds": "Please select all fields"
+  },
+  "toastMessages": {
+    "error": "Something went wrong!! Trying to connect",
+    "fallback": "Falling back to audio due to bad network",
+    "reconnecting": "There is a problem with network connection. Reconnecting, Please wait...",
+    "videoBack": "Switching back to video due to",
+    "reconnected": "Reconnected"
   }
 }
