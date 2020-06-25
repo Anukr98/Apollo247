@@ -391,8 +391,11 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       case 'Speciality':
         console.log('Speciality id', id);
         setBugFenderLog('APPS_FLYER_DEEP_LINK_COMPLETE', id);
+        const filtersData = id ? id.split('%20') : '';
         props.navigation.navigate(AppRoutes.DoctorSearchListing, {
-          specialityId: id ? id : '',
+          specialityId: filtersData[0] ? filtersData[0] : '',
+          typeOfConsult: filtersData.length > 1 ? filtersData[1] : '',
+          doctorType: filtersData.length > 2 ? filtersData[2] : '',
         });
         // props.navigation.replace(AppRoutes.DoctorSearchListing, {
         //   specialityId: id ? id : '',
@@ -463,6 +466,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         return 'DEV';
       case 'https://aph.staging.api.popcornapps.com//graphql':
         return 'QA';
+      case 'https://stagingapi.apollo247.com//graphql':
+        return 'STAGING';
       case 'https://aph.uat.api.popcornapps.com//graphql':
         return 'UAT';
       case 'https://aph.vapt.api.popcornapps.com//graphql':
@@ -544,10 +549,15 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
               'Pharmacy_Delivery_Charges',
               'home_screen_emergency_banner',
               'home_screen_emergency_number',
+              'QA_top6_specailties',
+              'DEV_top6_specailties',
+              'top6_specailties',
               'QA_min_value_to_nudge_users_to_avail_free_delivery',
               'min_value_to_nudge_users_to_avail_free_delivery',
               'QA_pharmacy_homepage',
               'pharmacy_homepage',
+              'QA_hotsellers_max_quantity',
+              'hotsellers_max_quantity',
             ]);
         })
         .then((snapshot) => {
@@ -615,6 +625,28 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           const homeScreenEmergencyBannerNumber = snapshot['home_screen_emergency_number'].val();
           homeScreenEmergencyBannerNumber &&
             updateAppConfig('HOME_SCREEN_EMERGENCY_BANNER_NUMBER', homeScreenEmergencyBannerNumber);
+
+          if (buildName() === 'DEV') {
+            const DEV_top6_specailties = snapshot['DEV_top6_specailties'].val();
+            DEV_top6_specailties &&
+              updateAppConfig('TOP_SPECIALITIES', JSON.parse(DEV_top6_specailties));
+          } else if (buildName() === 'QA') {
+            const QA_top6_specailties = snapshot['QA_top6_specailties'].val();
+            QA_top6_specailties &&
+              updateAppConfig('TOP_SPECIALITIES', JSON.parse(QA_top6_specailties));
+          } else {
+            const top6_specailties = snapshot['top6_specailties'].val();
+            top6_specailties && updateAppConfig('TOP_SPECIALITIES', JSON.parse(top6_specailties));
+          }
+          const qaHotsellersMaxQuantity = snapshot['QA_hotsellers_max_quantity'].val();
+          qaHotsellersMaxQuantity &&
+            AppConfig.APP_ENV != AppEnv.PROD &&
+            updateAppConfig('HOTSELLERS_MAX_QUANTITY', qaHotsellersMaxQuantity);
+
+          const hotsellersMaxQuantity = snapshot['hotsellers_max_quantity'].val();
+          hotsellersMaxQuantity &&
+            AppConfig.APP_ENV == AppEnv.PROD &&
+            updateAppConfig('HOTSELLERS_MAX_QUANTITY', hotsellersMaxQuantity);
 
           const myValye = snapshot;
           let index: number = 0;

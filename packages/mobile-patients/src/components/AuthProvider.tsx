@@ -23,7 +23,10 @@ import {
 import { DEVICE_TYPE, Relation } from '../graphql/types/globalTypes';
 import { GetCurrentPatientsVariables } from '../graphql/types/GetCurrentPatients';
 import { AppConfig } from '../strings/AppConfig';
-import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import {
+  CommonBugFender,
+  setBugFenderLog,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
   getPatientByMobileNumber,
   getPatientByMobileNumberVariables,
@@ -119,6 +122,7 @@ const buildApolloClient = (authToken: string, handleUnauthenticated: () => void)
       // return forward(operation);
     }
   });
+  setBugFenderLog(!authToken ? 'NO_AUTH_TOKEN' : 'AUTH_TOKEN_AVAILABLE', authToken);
   const authLink = setContext(async (_, { headers }) => ({
     headers: {
       ...headers,

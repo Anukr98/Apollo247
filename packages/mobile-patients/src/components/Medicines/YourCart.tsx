@@ -768,7 +768,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
                     })
                   );
                 } else {
-                  props.navigation.navigate(AppRoutes.SearchMedicineScene);
+                  props.navigation.navigate('MEDICINES', { focusSearch: true });
                   setCoupon!(null);
                   // to stop triggering useEffect on every change in cart items
                   setStoreId!('');
@@ -825,9 +825,10 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         : `0${cartItems.length}`;
     const FreeShipping =
       AppConfig.Configuration.MIN_VALUE_TO_NUDGE_USERS_TO_AVAIL_FREE_DELIVERY > 0 &&
-      cartTotal - couponDiscount >=
+      cartTotal - couponDiscount - productDiscount >=
         AppConfig.Configuration.MIN_VALUE_TO_NUDGE_USERS_TO_AVAIL_FREE_DELIVERY &&
-      cartTotal - couponDiscount < AppConfig.Configuration.MIN_CART_VALUE_FOR_FREE_DELIVERY &&
+      cartTotal - couponDiscount - productDiscount <
+        AppConfig.Configuration.MIN_CART_VALUE_FOR_FREE_DELIVERY &&
       AppConfig.Configuration.MIN_CART_VALUE_FOR_FREE_DELIVERY -
         (cartTotal - couponDiscount - productDiscount);
     return (

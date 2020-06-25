@@ -131,7 +131,7 @@ export const Alerts: React.FC<Alertprops> = (props) => {
                 <AphButton
                   onClick={() => {
                     if (props.consult) {
-                      history.push(clientRoutes.doctorsLanding());
+                      history.push(clientRoutes.specialityListing());
                       props.setIsAlertOpen(false);
                     }
                     props.setIsAlertOpen(false);

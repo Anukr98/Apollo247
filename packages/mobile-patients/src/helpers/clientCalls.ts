@@ -17,6 +17,7 @@ import {
   UPDATE_WHATSAPP_STATUS,
   UPDATE_SAVE_EXTERNAL_CONNECT,
   PAST_APPOINTMENTS_COUNT,
+  GET_PERSONALIZED_APPOITNMENTS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { GetDoctorNextAvailableSlot } from '@aph/mobile-patients/src/graphql/types/GetDoctorNextAvailableSlot';
 import ApolloClient from 'apollo-client';
@@ -60,6 +61,10 @@ import {
   getPastAppointmentsCount,
   getPastAppointmentsCountVariables,
 } from '../graphql/types/getPastAppointmentsCount';
+import {
+  getPatientPersonalizedAppointments,
+  getPatientPersonalizedAppointmentsVariables,
+} from '../graphql/types/getPatientPersonalizedAppointments';
 
 export const getNextAvailableSlots = (
   client: ApolloClient<object>,
@@ -477,6 +482,29 @@ export const getPastAppoinmentCount = (
         variables: {
           doctorId: doctorId,
           patientId: patientId,
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((data: any) => {
+        res({ data });
+      })
+      .catch((e) => {
+        CommonBugFender('clientCalls_addToConsultQueueWithAutomatedQuestions', e);
+        rej({ error: e });
+      });
+  });
+};
+
+export const getPatientPersonalizedAppointmentList = (
+  client: ApolloClient<object>,
+  patientUhid: string
+) => {
+  return new Promise((res, rej) => {
+    client
+      .query<getPatientPersonalizedAppointments, getPatientPersonalizedAppointmentsVariables>({
+        query: GET_PERSONALIZED_APPOITNMENTS,
+        variables: {
+          patientUhid: patientUhid,
         },
         fetchPolicy: 'no-cache',
       })

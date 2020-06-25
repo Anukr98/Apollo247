@@ -33,8 +33,10 @@ import { WeekView } from './WeekView';
 import { NotificationListener } from '@aph/mobile-doctors/src/components/NotificationListener';
 import { CommonNotificationHeader } from '@aph/mobile-doctors/src/components/ui/CommonNotificationHeader';
 import { useNotification } from '@aph/mobile-doctors/src/components/Notification/NotificationContext';
+import { useUIElements } from '@aph/mobile-doctors/src/components/ui/UIElementsProvider';
 
 const styles = AppointmentsStyles;
+let timerId: NodeJS.Timeout;
 
 const monthsName = [
   'January',
@@ -64,7 +66,7 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
   const [date, setDate] = useState<Date>(new Date());
   const [calendarDate, setCalendarDate] = useState<Date>(new Date()); // to maintain a sync between week view change and calendar month
   const [isCalendarVisible, setCalendarVisible] = useState(false);
-  const [showNeedHelp, setshowNeedHelp] = useState(false);
+
   const [currentmonth, setCurrentMonth] = useState(monthsName[new Date().getMonth()]);
   const [getAppointments, setgetAppointments] = useState<
     GetDoctorAppointments_getDoctorAppointments
@@ -72,6 +74,7 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
 
   const { doctorDetails } = useAuth();
+  const { isAlertVisible } = useUIElements();
 
   useEffect(() => {
     setDoctorName((doctorDetails && doctorDetails.displayName) || '');
@@ -87,13 +90,15 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
   };
 
   useEffect(() => {
-    let timerId: NodeJS.Timeout;
     getAppointmentsApi();
-    if (!isPastDate(date)) {
+    if (!isPastDate(date) && !isAlertVisible) {
       console.log('future dates', date, new Date());
       timerId = setInterval(() => {
         getAppointmentsApi();
       }, intervalTime);
+    }
+    if (isAlertVisible) {
+      timerId && clearInterval(timerId);
     }
     const _didFocusSubscription = props.navigation.addListener('didFocus', () => {
       console.log('didFocus');
@@ -117,7 +122,7 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
       _willBlurSubscription && _willBlurSubscription.remove();
       timerId && clearInterval(timerId);
     };
-  }, [date]);
+  }, [date, isAlertVisible]);
 
   const client = useApolloClient();
 

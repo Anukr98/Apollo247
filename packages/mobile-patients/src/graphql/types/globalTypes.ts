@@ -21,6 +21,12 @@ export enum APPOINTMENT_TYPE {
   PHYSICAL = "PHYSICAL",
 }
 
+export enum APPT_CALL_TYPE {
+  AUDIO = "AUDIO",
+  CHAT = "CHAT",
+  VIDEO = "VIDEO",
+}
+
 export enum AccountType {
   CURRENT = "CURRENT",
   SAVINGS = "SAVINGS",
@@ -211,7 +217,6 @@ export enum MEDICINE_ORDER_STATUS {
   READY_AT_STORE = "READY_AT_STORE",
   RETURN_ACCEPTED = "RETURN_ACCEPTED",
   RETURN_INITIATED = "RETURN_INITIATED",
-  PURCHASED_IN_STORE = "PURCHASED_IN_STORE",
 }
 
 export enum MEDICINE_ORDER_TYPE {
@@ -465,6 +470,7 @@ export interface AddMedicalRecordInput {
   sourceName?: string | null;
   testDate?: any | null;
   testName: string;
+  testResultFiles?: LabResultFileProperties | null;
 }
 
 export interface AddMedicalRecordParametersInput {
@@ -476,7 +482,7 @@ export interface AddMedicalRecordParametersInput {
 }
 
 export interface AlertMedicineOrderPickupInput {
-  orderId?: number | null;
+  orderId: number;
   patientId: string;
   remarks?: string | null;
 }
@@ -635,6 +641,9 @@ export interface EndAppointmentSessionInput {
   appointmentId: string;
   status: STATUS;
   noShowBy?: REQUEST_ROLES | null;
+  deviceType?: DEVICETYPE | null;
+  callSource?: BOOKINGSOURCE | null;
+  callType?: APPT_CALL_TYPE | null;
 }
 
 export interface FilterDoctorInput {
@@ -668,6 +677,12 @@ export interface HelpEmailInput {
   email?: string | null;
 }
 
+export interface LabResultFileProperties {
+  fileName: string;
+  mimeType: string;
+  content: string;
+}
+
 export interface MedicineCartOMSInput {
   quoteId?: string | null;
   shopId?: string | null;
@@ -688,6 +703,7 @@ export interface MedicineCartOMSInput {
   packagingCharges?: number | null;
   showPrescriptionAtStore?: boolean | null;
   shopAddress?: ShopAddress | null;
+  customerComment?: string | null;
 }
 
 export interface MedicineCartOMSItem {
@@ -831,6 +847,7 @@ export interface PrescriptionMedicineOrderOMSInput {
   shopAddress?: ShopAddress | null;
   prescriptionOptionSelected?: string | null;
   durationDays?: number | null;
+  customerComment?: string | null;
 }
 
 export interface PrescriptionMedicinePaymentOMSDetails {

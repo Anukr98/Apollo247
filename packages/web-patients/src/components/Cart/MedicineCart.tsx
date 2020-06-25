@@ -769,11 +769,14 @@ export const MedicineCart: React.FC = (props) => {
                 : Number(getItemSpecialPrice(cartItemDetails)),
             quantity: cartItemDetails.quantity,
             itemValue: cartItemDetails.quantity * cartItemDetails.price,
-            itemDiscount:
-              cartItemDetails.quantity *
-              (couponCode.length > 0 && validateCouponResult // validateCouponResult check is needed because there are some cases we will have code but coupon discount=0  when coupon discount <= product discount
-                ? cartItemDetails.price - Number(getDiscountedLineItemPrice(cartItemDetails.id))
-                : cartItemDetails.price - Number(getItemSpecialPrice(cartItemDetails))),
+            itemDiscount: Number(
+              (
+                cartItemDetails.quantity *
+                (couponCode && couponCode.length > 0 && validateCouponResult // validateCouponResult check is needed because there are some cases we will have code but coupon discount=0  when coupon discount <= product discount
+                  ? cartItemDetails.price - Number(getDiscountedLineItemPrice(cartItemDetails.id))
+                  : cartItemDetails.price - Number(getItemSpecialPrice(cartItemDetails)))
+              ).toFixed(2)
+            ),
             mrp: cartItemDetails.price,
             isPrescriptionNeeded: cartItemDetails.is_prescription_required ? 1 : 0,
             mou: parseInt(cartItemDetails.mou),
@@ -1009,7 +1012,7 @@ export const MedicineCart: React.FC = (props) => {
           const uploadUrlscheck = data.map(({ data }: any) =>
             data && data.uploadDocument && data.uploadDocument.status ? data.uploadDocument : null
           );
-          const filtered = uploadUrlscheck.filter(function (el) {
+          const filtered = uploadUrlscheck.filter(function(el) {
             return el != null;
           });
           const phyPresUrls = filtered.map((item) => item.filePath).filter((i) => i);
@@ -1208,7 +1211,7 @@ export const MedicineCart: React.FC = (props) => {
                         <div className={classes.consultDoctor}>
                           <span>Don’t have a prescription? Don’t worry!</span>
                           <Link
-                            to={clientRoutes.doctorsLanding()}
+                            to={clientRoutes.specialityListing()}
                             className={classes.consultDoctoLink}
                           >
                             Consult A Doctor
@@ -1357,9 +1360,9 @@ export const MedicineCart: React.FC = (props) => {
                       validateCouponResult.discountedTotals &&
                       validateCouponResult.discountedTotals.couponDiscount > 0 && (
                         <div className={classes.discountTotal}>
-                          Savings of Rs.
-                          {validateCouponResult.discountedTotals.couponDiscount.toFixed(2)}
-                          on the bill
+                          {`Savings of Rs.
+                          ${validateCouponResult.discountedTotals.couponDiscount.toFixed(2)}
+                           on the bill`}
                         </div>
                       )}
                     {errorMessage.length > 0 && (

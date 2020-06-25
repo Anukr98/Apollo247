@@ -22,7 +22,6 @@ import moment from 'moment';
 import AsyncStorage from '@react-native-community/async-storage';
 import { Alert, Dimensions, Platform, Linking } from 'react-native';
 import RNAndroidLocationEnabler from 'react-native-android-location-enabler';
-import Geocoder from 'react-native-geocoding';
 import Permissions from 'react-native-permissions';
 import { DiagnosticsCartItem } from '../components/DiagnosticsCartProvider';
 import { getCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription } from '../graphql/types/getCaseSheet';
@@ -64,6 +63,7 @@ import { UIElementsContextProps } from '@aph/mobile-patients/src/components/UIEl
 import { NavigationScreenProp, NavigationRoute } from 'react-navigation';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { postReorderMedicines } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 
 const googleApiKey = AppConfig.Configuration.GOOGLE_API_KEY;
 let onInstallConversionDataCanceller: any;
@@ -152,6 +152,9 @@ export const getOrderStatusText = (status: MEDICINE_ORDER_STATUS): string => {
       break;
     case MEDICINE_ORDER_STATUS.RETURN_INITIATED:
       statusString = 'Return Requested';
+      break;
+    case MEDICINE_ORDER_STATUS.PURCHASED_IN_STORE:
+      statusString = 'Purchased In-store';
       break;
     case 'TO_BE_DELIVERED' as any:
       statusString = 'Expected Order Delivery';
@@ -607,57 +610,6 @@ export const doRequestAndAccessLocation = (): Promise<LocationData> => {
   });
 };
 
-export const getUserCurrentPosition = async () => {
-  const item = await AsyncStorage.getItem('location');
-  const location = item ? JSON.parse(item) : null;
-
-  if (location) {
-    console.log(location, 'location');
-
-    return {
-      latlong: location.latlong,
-      name: location.name.toUpperCase(),
-    };
-  } else {
-    return new Promise(async (resolve, reject) => {
-      Permissions.request('location')
-        .then((response) => {
-          if (response === 'authorized') {
-            Geolocation.getCurrentPosition(
-              async (position) => {
-                console.log(position, 'position');
-
-                (Geocoder as any).init(googleApiKey);
-                const jsonData = await (Geocoder as any).from(
-                  position.coords.latitude,
-                  position.coords.longitude
-                );
-                if (jsonData) {
-                  const result = jsonData.results[0];
-                  const addressComponent = result.address_components[1].long_name || '';
-                  const pincode = result.address_components.slice(-1)[0].long_name || '';
-                  console.log(jsonData, addressComponent, 'addressComponent', pincode);
-                  resolve({
-                    latlong: result.geometry.location,
-                    name: addressComponent,
-                    zipcode: pincode,
-                  });
-                }
-                reject(null);
-              },
-              (error) => console.log(JSON.stringify(error)),
-              { enableHighAccuracy: false, timeout: 20000 }
-            );
-          }
-        })
-        .catch((error) => {
-          CommonBugFender('helperFunctions_getUserCurrentPosition', error);
-          console.log(error, 'error permission');
-        });
-    });
-  }
-};
-
 const { height } = Dimensions.get('window');
 
 // export const isIphone5s = () => height === 568;
@@ -680,6 +632,7 @@ export const reOrderMedicines = async (
   order: getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails,
   currentPatient: any
 ) => {
+  postReorderMedicines('Order Details', currentPatient);
   // Medicines
   // use billedItems for delivered orders
   const billedItems = g(
@@ -693,6 +646,7 @@ export const reOrderMedicines = async (
   const billedLineItems = billedItems
     ? (JSON.parse(billedItems) as MedicineOrderBilledItem[])
     : null;
+  const isOfflineOrder = !!g(order, 'billNumber');
   const lineItems = (g(order, 'medicineOrderLineItems') ||
     []) as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrderLineItems[];
   const lineItemsSkus = billedLineItems
@@ -709,7 +663,13 @@ export const reOrderMedicines = async (
         price: parseNumber(item.price),
         specialPrice: item.special_price ? parseNumber(item.special_price) : undefined,
         quantity: Math.ceil(
-          (billedLineItems ? billedLineItems[index].issuedQty : lineItems[index].quantity) || 1
+          (billedLineItems
+            ? billedLineItems[index].issuedQty
+            : isOfflineOrder
+            ? Math.ceil(
+                lineItems[index].price! / lineItems[index].mrp! / lineItems[index].quantity!
+              )
+            : lineItems[index].quantity) || 1
         ),
         prescriptionRequired: item.is_prescription_required == '1',
         isMedicine: (item.type_id || '').toLowerCase() == 'pharma',
@@ -821,6 +781,8 @@ export const getBuildEnvironment = () => {
       return 'DEV';
     case 'https://aph.staging.api.popcornapps.com//graphql':
       return 'QA';
+    case 'https://stagingapi.apollo247.com//graphql':
+      return 'STAGING';
     case 'https://aph.uat.api.popcornapps.com//graphql':
       return 'UAT';
     case 'https://aph.vapt.api.popcornapps.com//graphql':

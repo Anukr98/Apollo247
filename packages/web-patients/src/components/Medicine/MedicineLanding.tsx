@@ -539,8 +539,10 @@ export const MedicineLanding: React.FC = (props: any) => {
   };
   const metaTagProps = {
     title: 'Buy/Order Medicines And Health Products - Online Pharmacy Store - Apollo 247',
-    description: 'Buy/Order Medicines And Health Products - Online Pharmacy Store - Apollo 247',
-    canonicalLink: window && window.location && window.location.origin && `${window.location.origin}/medicines`,
+    description:
+      'Order medicines and health products online at Apollo 247 - a leading online pharmacy store. Buy all medicines you need from home in just a few clicks. Apollo 247 is a one-stop solution for all your medical needs.',
+    canonicalLink:
+      window && window.location && window.location.origin && `${window.location.origin}/medicines`,
   };
 
   return (
@@ -562,7 +564,7 @@ export const MedicineLanding: React.FC = (props: any) => {
                   </div>
                 )}
                 {data && data.mainbanners_desktop && data.mainbanners_desktop.length > 0 && (
-                  <CarouselBanner bannerData={data.mainbanners_desktop} />
+                  <CarouselBanner bannerData={data.mainbanners_desktop} history={props.history} />
                 )}
               </div>
 

@@ -179,7 +179,7 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
       const lineItemsLength = lineItems.length;
       title =
         lineItemsLength > 1
-          ? `${firstItem} + ${lineItemsLength - 1} item${lineItemsLength > 2 ? 's' : ''}`
+          ? `${firstItem} + ${lineItemsLength - 1} item${lineItemsLength > 2 ? 's ' : ' '}`
           : firstItem;
     }
 
@@ -202,7 +202,8 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
         orderId={`#${orderNumber}`}
         onPress={() => {
           props.navigation.navigate(AppRoutes.OrderDetailsScene, {
-            orderAutoId: orderNumber,
+            orderAutoId: order.orderAutoId,
+            billNumber: order.billNumber,
             orderDetails: order.medicineOrdersStatus,
             setOrders: (orders: MedOrder[]) => {
               setOrders(orders);

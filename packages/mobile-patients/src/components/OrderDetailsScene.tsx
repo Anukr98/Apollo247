@@ -145,6 +145,7 @@ type OrderRefetch = (
 export interface OrderDetailsSceneProps
   extends NavigationScreenProps<{
     orderAutoId?: string;
+    billNumber?: string;
     showOrderSummaryTab?: boolean;
     goToHomeOnBack?: boolean;
     refetchOrders: OrderRefetch;
@@ -158,6 +159,7 @@ export interface OrderDetailsSceneProps
 
 export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   const orderAutoId = props.navigation.getParam('orderAutoId');
+  const billNumber = props.navigation.getParam('billNumber');
   const goToHomeOnBack = props.navigation.getParam('goToHomeOnBack');
   const showOrderSummaryTab = props.navigation.getParam('showOrderSummaryTab');
   const setOrders = props.navigation.getParam('setOrders');
@@ -195,7 +197,8 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   const { showAphAlert, hideAphAlert, setLoading } = useUIElements();
   const vars: getMedicineOrderOMSDetailsVariables = {
     patientId: currentPatient && currentPatient.id,
-    orderAutoId: Number(orderAutoId),
+    orderAutoId: billNumber ? 0 : Number(orderAutoId),
+    billNumber: billNumber || '',
   };
   const refetchOrders: OrderRefetch =
     props.navigation.getParam('refetch') ||
@@ -356,7 +359,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         order.deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP && order.shopAddress
           ? JSON.parse(order.shopAddress)
           : null;
-          storePhone && setStorePhoneNumber(shopAddress.phone);
+      storePhone && setStorePhoneNumber(shopAddress.phone);
       setEventFired(true);
     } else {
       setOMSAPIError(true);
@@ -457,7 +460,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   };
 
   const renderFeedbackPopup = () => {
-    const orderAutoId: string = orderDetails.orderAutoId!?.toString();
+    const orderAutoId: string = `${orderDetails.orderAutoId}`;
     const orderId: string = orderDetails.id;
     const title: string = `Medicines — #${orderAutoId}`;
     const subtitle: string = `Delivered On: ${orderDetails.orderTat &&
@@ -667,9 +670,10 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
             isDelivered.statusDate &&
             getFormattedDateTime(isDelivered.statusDate)}.`;
 
-    const showNotifyStoreAlert = orderDetails.deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP
-      && (orderDetails.currentStatus == MEDICINE_ORDER_STATUS.ORDER_VERIFIED 
-      || orderDetails.currentStatus == MEDICINE_ORDER_STATUS.READY_AT_STORE);
+    const showNotifyStoreAlert =
+      orderDetails.deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP &&
+      (orderDetails.currentStatus == MEDICINE_ORDER_STATUS.ORDER_VERIFIED ||
+        orderDetails.currentStatus == MEDICINE_ORDER_STATUS.READY_AT_STORE);
 
     const getOrderDescription = (
       status: MEDICINE_ORDER_STATUS,
@@ -1036,9 +1040,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           containerStyle={{ marginTop: 20, marginBottom: 30 }}
           navigation={props.navigation}
         /> */}
-        {
-          showNotifyStoreAlert && renderNotifyStoreAlert()
-        }
+        {showNotifyStoreAlert && renderNotifyStoreAlert()}
       </View>
     );
   };
@@ -1067,14 +1069,16 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
               color: theme.colors.LIGHT_BLUE,
               marginLeft: 10,
             }}
-          >NOTIFY STORE</Text>
+          >
+            NOTIFY STORE
+          </Text>
         </View>
         <View
           style={{
             ...theme.viewStyles.cardViewStyle,
             marginLeft: 20,
             marginRight: 20,
-            padding: 20
+            padding: 20,
           }}
         >
           <Text
@@ -1082,7 +1086,10 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
               ...theme.fonts.IBMPlexSansMedium(13),
               color: theme.colors.LIGHT_BLUE,
             }}
-          >Kindly alert the store 10 minutes before you are about to reach, so that we can keep the items ready!</Text>
+          >
+            Kindly alert the store 10 minutes before you are about to reach, so that we can keep the
+            items ready!
+          </Text>
           <View style={styles.flexRow}>
             <Text
               style={{
@@ -1090,7 +1097,9 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
                 color: theme.colors.LIGHT_BLUE,
                 marginTop: 10,
               }}
-            >Stores Contact No. :  </Text>
+            >
+              Stores Contact No. :{' '}
+            </Text>
             <Text
               style={{
                 ...theme.fonts.IBMPlexSansMedium(13),
@@ -1098,32 +1107,37 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
                 marginTop: 10,
                 opacity: 0.7,
               }}
-            >{storePhoneNumber}</Text>
-          </View>
-          <View style={[styles.flexRow, { justifyContent: showAlertStore ? 'space-between' : 'flex-end', marginTop: 15 }]}>
-            {
-              showAlertStore && (
-                <TouchableOpacity
-                  onPress={() => alertTheStore()}
-                >
-                  <Text
-                    style={{
-                      color: theme.colors.APP_YELLOW,
-                      ...theme.fonts.IBMPlexSansBold(13)
-                    }}
-                  >ALERT THE STORE</Text>
-                </TouchableOpacity>
-              )
-            }
-            <TouchableOpacity
-              onPress={() => Linking.openURL(`tel:${storePhoneNumber}`)}
             >
+              {storePhoneNumber}
+            </Text>
+          </View>
+          <View
+            style={[
+              styles.flexRow,
+              { justifyContent: showAlertStore ? 'space-between' : 'flex-end', marginTop: 15 },
+            ]}
+          >
+            {showAlertStore && (
+              <TouchableOpacity onPress={() => alertTheStore()}>
+                <Text
+                  style={{
+                    color: theme.colors.APP_YELLOW,
+                    ...theme.fonts.IBMPlexSansBold(13),
+                  }}
+                >
+                  ALERT THE STORE
+                </Text>
+              </TouchableOpacity>
+            )}
+            <TouchableOpacity onPress={() => Linking.openURL(`tel:${storePhoneNumber}`)}>
               <Text
                 style={{
                   color: theme.colors.APP_YELLOW,
-                  ...theme.fonts.IBMPlexSansBold(13)
+                  ...theme.fonts.IBMPlexSansBold(13),
                 }}
-              >CALL THE STORE</Text>
+              >
+                CALL THE STORE
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -1137,7 +1151,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       alertMedicineOrderPickupInput: {
         orderId: typeof orderAutoId == 'string' ? parseInt(orderAutoId, 10) : orderAutoId,
         patientId: currentPatient && currentPatient.id ? currentPatient.id : '',
-        remarks: ''
+        remarks: '',
       },
     };
 
@@ -1474,7 +1488,8 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         item!.orderStatus == MEDICINE_ORDER_STATUS.DELIVERED ||
         item!.orderStatus == MEDICINE_ORDER_STATUS.CANCELLED ||
         item!.orderStatus == MEDICINE_ORDER_STATUS.PAYMENT_FAILED ||
-        item!.orderStatus == MEDICINE_ORDER_STATUS.ORDER_FAILED
+        item!.orderStatus == MEDICINE_ORDER_STATUS.ORDER_FAILED ||
+        item!.orderStatus == MEDICINE_ORDER_STATUS.PURCHASED_IN_STORE
     );
     const cannotCancelOrder = orderStatusList.find(
       (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.ORDER_BILLED
@@ -1530,13 +1545,12 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     const isDelivered = orderStatusList.find(
       (item) =>
         item!.orderStatus == MEDICINE_ORDER_STATUS.DELIVERED ||
+        item!.orderStatus == MEDICINE_ORDER_STATUS.PURCHASED_IN_STORE ||
         item!.orderStatus == MEDICINE_ORDER_STATUS.PICKEDUP
     );
-    const isHomeDelivery = orderDetails.deliveryType == MEDICINE_DELIVERY_TYPE.HOME_DELIVERY;
 
     return (
-      !!isDelivered &&
-      !!isHomeDelivery && (
+      !!isDelivered && (
         <View>
           {Array.from({ length: 10 })
             .reverse()
