@@ -10,7 +10,7 @@ import {
 } from '@aph/web-ui-components';
 import { GET_ALL_CITIES } from 'graphql/specialities';
 import { getAllCities } from 'graphql/types/getAllCities';
-import { useQueryWithSkip } from 'hooks/apolloHooks';
+import { useQuery } from 'react-apollo-hooks';
 import _lowerCase from 'lodash/lowerCase';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -38,14 +38,11 @@ const useStyles = makeStyles((theme: Theme) => {
         color: '#02475b',
       },
       '& button': {
-        margin: '0 15px 0 0',
+        margin: '0 15px 15px 0',
         color: '#00b38e',
         borderRadius: 10,
         fontSize: 12,
         textTransform: 'none',
-        [theme.breakpoints.down(500)]: {
-          margin: '0 15px 15px 0',
-        },
       },
     },
     btnContainer: {
@@ -62,14 +59,18 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: 20,
       justifyContent: 'center',
     },
+    cityContainer: {
+      position: 'relative',
+    },
     autoSearchPopover: {
+      padding: '15px 10px 15px 20px',
       position: 'absolute',
-      top: 53,
+      top: 46,
       left: 0,
+      right: 0,
       backgroundColor: theme.palette.common.white,
-      boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
-      borderRadius: 10,
-      width: '100%',
+      boxShadow: '0 1px 10px 0 rgba(128, 128, 128, 0.75)',
+      borderRadius: 5,
       zIndex: 9,
     },
     progressLoader: {
@@ -77,31 +78,27 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: 20,
     },
     searchList: {
-      '& ul': {
-        padding: 0,
-        margin: 0,
-        '& li': {
-          listStyleType: 'none',
-          borderBottom: '0.5px solid rgba(2,71,91,0.1)',
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          '& a': {
-            display: 'flex',
-            alignItems: 'center',
-            padding: '12px 12px',
-            flex: 1,
-          },
-          '&:hover': {
-            backgroundColor: '#f7f8f5',
-          },
-          '&:focus': {
-            backgroundColor: '#f7f8f5',
-          },
-          '&:last-child': {
-            borderBottom: 0,
-          },
-        },
+      padding: 0,
+      margin: 0,
+      listStyle: 'none',
+      maxHeight: 120,
+      overflow: 'auto',
+      '&::-webkit-scrollbar': {
+        width: 8,
+      },
+      '&::-webkit-scrollbar-track': {
+        background: '#fff',
+      },
+      '&::-webkit-scrollbar-thumb': {
+        background: '#d8d8d8',
+        borderRadius: 4,
+      },
+      '& li': {
+        padding: '6px 0',
+        flex: 1,
+        fontSize: 16,
+        fontWeight: 500,
+        color: '#02475b',
       },
     },
     buttonActive: {
@@ -120,7 +117,7 @@ export const Cities: React.FC<CitiesProps> = (props) => {
   const classes = useStyles({});
   const { locationPopup, setLocationPopup } = props;
 
-  const { error, loading, data } = useQueryWithSkip<getAllCities>(GET_ALL_CITIES);
+  const { error, loading, data } = useQuery<getAllCities>(GET_ALL_CITIES);
   const [searchText, setSearchText] = useState<string>('');
   const [cityName, setCityName] = useState<string>('');
 
@@ -138,14 +135,43 @@ export const Cities: React.FC<CitiesProps> = (props) => {
           Select a city to see the recommended healthcare services
         </AphDialogTitle>
         <div className={classes.locationContainer}>
-          <AphInput
-            placeholder="Select for a city"
-            onChange={(e) => {
-              setCityName('');
-              setSearchText(e.target.value);
-            }}
-          />
-
+          <div className={classes.cityContainer}>
+            <AphInput
+              placeholder="Select for a city"
+              onChange={(e) => {
+                setCityName('');
+                setSearchText(e.target.value);
+              }}
+            />
+            {searchText.length > 0 && (
+              <div className={classes.autoSearchPopover}>
+                {loading ? (
+                  <div className={classes.progressLoader}>
+                    <CircularProgress size={30} />
+                  </div>
+                ) : (
+                  citiesList &&
+                  citiesList.length > 0 && (
+                    <ul className={classes.searchList}>
+                      {citiesList.map(
+                        (city: string) =>
+                          _lowerCase(city).includes(_lowerCase(searchText)) && (
+                            <li
+                              key={city}
+                              onClick={() => {
+                                setCityName(city);
+                              }}
+                            >
+                              {city}
+                            </li>
+                          )
+                      )}
+                    </ul>
+                  )
+                )}
+              </div>
+            )}
+          </div>
           <div className={classes.popularCities}>
             {loading ? (
               <div className={classes.circlularProgress}>
@@ -176,36 +202,6 @@ export const Cities: React.FC<CitiesProps> = (props) => {
           </div>
         </div>
       </AphDialog>
-      {searchText.length > 0 && (
-        <Paper className={classes.autoSearchPopover}>
-          {loading ? (
-            <div className={classes.progressLoader}>
-              <CircularProgress size={30} />
-            </div>
-          ) : (
-            citiesList &&
-            citiesList.length > 0 && (
-              <div className={classes.searchList}>
-                <ul>
-                  {citiesList.map(
-                    (city: string) =>
-                      _lowerCase(city).includes(_lowerCase(searchText)) && (
-                        <li
-                          key={city}
-                          onClick={() => {
-                            setCityName(city);
-                          }}
-                        >
-                          {city}
-                        </li>
-                      )
-                  )}
-                </ul>
-              </div>
-            )
-          )}
-        </Paper>
-      )}
     </div>
   );
 };
