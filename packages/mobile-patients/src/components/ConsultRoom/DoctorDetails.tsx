@@ -1102,7 +1102,8 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           appointmentId={props.navigation.state.params!.appointmentId}
           consultModeSelected={consultMode}
           externalConnect={null}
-          availableMode={consultType}
+          availableMode={ConsultMode.BOTH}
+          // availableMode={consultType}
         />
       )}
       <Animated.View
