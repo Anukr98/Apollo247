@@ -588,7 +588,7 @@ export const Consultations: React.FC<ConsultationProps> = (props) => {
                       </div>
                       <div className={classes.reportsDetails}>
                         <label>Source</label>
-                        <p>{activeConsult.prescriptionSource}</p>
+                        <p>{activeConsult.prescriptionSource || '-'}</p>
                       </div>
                       <div className={classes.reportsDetails}>
                         <label>Referring Doctor</label>
