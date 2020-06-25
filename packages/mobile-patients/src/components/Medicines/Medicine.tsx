@@ -99,7 +99,7 @@ import {
   getMedicineOrdersOMSListVariables,
 } from '../../graphql/types/getMedicineOrdersOMSList';
 import { MedicineSearchSuggestionItem } from '@aph/mobile-patients/src/components/Medicines/MedicineSearchSuggestionItem';
-import AppIntroSlider from 'react-native-app-intro-slider';
+import Carousel from 'react-native-snap-carousel';
 import {
   getRecommendedProductsList,
   getRecommendedProductsListVariables,
@@ -131,7 +131,13 @@ const styles = StyleSheet.create({
     marginHorizontal: 5,
     marginBottom: 6,
   },
-  sliderDotStyle: { height: 8, width: 8, borderRadius: 4, marginHorizontal: 4, marginBottom: -105 },
+  sliderDotStyle: {
+    height: 8,
+    width: 8,
+    borderRadius: 4,
+    marginHorizontal: 4,
+    marginTop: 9,
+  },
   sliderPlaceHolderStyle: {
     width: '100%',
     alignContent: 'center',
@@ -474,7 +480,13 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       setItemsWithQtyRestriction!(hotSellers.map((v) => v.sku));
     }
   }, [hotSellers]);
- 
+
+  useEffect(() => {
+    if (!loading && !banners.length) {
+      setBannerLoading(false);
+    }
+  }, [loading]);
+
   useEffect(() => {
     if (!ordersLoading) {
       const data = (g(orders, 'getMedicineOrdersOMSList', 'medicineOrdersList') || []).filter(
@@ -788,7 +800,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     const imageUri = g(banners, '0' as any, 'image');
     const imageFullUri = imageUri ? productsThumbnailUrl(imageUri) : '';
     return (
-      !!imageFullUri && (
+      !!imageFullUri &&
+      bannerLoading && (
         <View style={{ height: 0 }}>
           <ImageNative
             onLoad={(value) => {
@@ -829,6 +842,12 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     );
   };
 
+  const [slideIndex, setSlideIndex] = useState(1);
+
+  const renderDot = (active: boolean) => (
+    <View style={[styles.sliderDotStyle, { backgroundColor: active ? '#aaa' : '#d8d8d8' }]} />
+  );
+
   const renderBanners = () => {
     if (loading || bannerLoading) {
       return (
@@ -841,15 +860,21 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       );
     } else if (banners.length) {
       return (
-        <View style={{ marginBottom: 17 }}>
-          <AppIntroSlider
-            slides={banners}
-            showNextButton={false}
-            showDoneButton={false}
-            dotStyle={[styles.sliderDotStyle, { backgroundColor: '#d8d8d8' }]}
-            activeDotStyle={[styles.sliderDotStyle, { backgroundColor: '#aaa' }]}
+        <View>
+          <Carousel
+            onSnapToItem={setSlideIndex}
+            data={banners}
             renderItem={renderSliderItem}
+            sliderWidth={winWidth}
+            itemWidth={winWidth}
+            loop={true}
+            autoplay={true}
+            autoplayDelay={500}
+            autoplayInterval={3000}
           />
+          <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
+            {banners.map((_, index) => (index == slideIndex ? renderDot(true) : renderDot(false)))}
+          </View>
         </View>
       );
     }
