@@ -7,7 +7,6 @@ import { PatientRepository } from 'profiles-service/repositories/patientReposito
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { ApiConstants } from 'ApiConstants';
-import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 
 export const getPatinetAppointmentsTypeDefs = gql`
   type PatinetAppointments {
@@ -230,7 +229,7 @@ const getPatientPersonalizedAppointments: Resolver<
   const textRes = await apptsResp.text();
   const offlineApptsList = JSON.parse(textRes);
 
-  let apptDetails: any = '';
+  let apptDetails: PersonalizedAppointment;
   if (offlineApptsList.errorCode == 0) {
     //console.log(offlineApptsList.response, offlineApptsList.response.length);
     let doctorId = '';
@@ -238,7 +237,6 @@ const getPatientPersonalizedAppointments: Resolver<
     else if (process.env.NODE_ENV == 'dev') doctorId = ApiConstants.DEV_DOC_ID.toString();
     else if (process.env.NODE_ENV == 'staging') doctorId = ApiConstants.QA_DOC_ID.toString();
     else offlineApptsList.response[0].doctorid_247;
-    //const doctorId = '74c93b2e-8aab-4b6c-8391-5407f4afb833';
     const apptDetailsOffline: PersonalizedAppointment = {
       id: offlineApptsList.response[0].appointmentid,
       hospitalLocation: offlineApptsList.response[0].location_name,
@@ -250,8 +248,11 @@ const getPatientPersonalizedAppointments: Resolver<
       doctorId,
     };
     apptDetails = apptDetailsOffline;
+  } else {
+    console.log(offlineApptsList.errorMsg, offlineApptsList.errorCode, 'offline consults error');
+    throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
   }
-  if (apptDetails == '') throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
+  //if (apptDetails == null) throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
   return { appointmentDetails: apptDetails };
 };
 

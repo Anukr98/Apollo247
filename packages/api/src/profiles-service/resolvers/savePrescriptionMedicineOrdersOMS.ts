@@ -133,7 +133,7 @@ const savePrescriptionMedicineOrderOMS: Resolver<
   ProfilesServiceContext,
   SavePrescriptionMedicineOrderOMSResult
 > = async (parent, { prescriptionMedicineOMSInput }, { profilesDb }) => {
-  let errorCode = 0,
+  const errorCode = 0,
     errorMessage = '',
     orderStatus: MEDICINE_ORDER_STATUS = MEDICINE_ORDER_STATUS.QUOTE;
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);

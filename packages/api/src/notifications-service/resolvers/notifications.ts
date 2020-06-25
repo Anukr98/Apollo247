@@ -2269,7 +2269,7 @@ const sendChatMessageToDoctor: Resolver<
       databaseURL: `https://${process.env.FIREBASE_PROJECT_ID}.firebaseio.com`,
     };
     let admin = require('firebase-admin');
-    let notificationResponse: any;
+    let notificationResponse: PushNotificationSuccessMessage;
     admin = !firebaseAdmin.apps.length ? firebaseAdmin.initializeApp(config) : firebaseAdmin.app();
     const options = {
       priority: NotificationPriority.high,
@@ -2284,7 +2284,7 @@ const sendChatMessageToDoctor: Resolver<
         title:
           appointment.patientName +
           ' sent 1 message | ' +
-          format(new Date(), 'yyyy-MM-dd HH:mm:ss'),
+          format(addMilliseconds(new Date(), 19800000), 'yyyy-MM-dd HH:mm:ss'),
         body: chatMsg,
         sound: ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString(),
       },
@@ -2331,13 +2331,12 @@ const sendChatMessageToDoctor: Resolver<
           console.log('notification results saved');
         });
         //}
+        console.log(notificationResponse, 'notificationResponse');
       })
       .catch((error: JSON) => {
         console.log('PushNotification Failed::' + error);
         throw new AphError(AphErrorMessages.PUSH_NOTIFICATION_FAILED);
       });
-
-    console.log(notificationResponse, 'notificationResponse');
   }
   return { status: true };
 };
@@ -2366,7 +2365,7 @@ const sendDoctorReminderNotifications: Resolver<
     databaseURL: `https://${process.env.FIREBASE_PROJECT_ID}.firebaseio.com`,
   };
   let admin = require('firebase-admin');
-  let notificationResponse: any;
+  let notificationResponse: PushNotificationSuccessMessage;
   admin = !firebaseAdmin.apps.length ? firebaseAdmin.initializeApp(config) : firebaseAdmin.app();
   const options = {
     priority: NotificationPriority.high,
@@ -2384,7 +2383,9 @@ const sendDoctorReminderNotifications: Resolver<
               ? 'In-person appointment'
               : 'OnlineAppointment',
           body:
-            apptId.patientName + ' ' + format(apptId.appointmentDateTime, 'yyyy-MM-dd HH:mm:ss'),
+            apptId.patientName +
+            ' ' +
+            format(addMilliseconds(apptId.appointmentDateTime, 19800000), 'yyyy-MM-dd HH:mm:ss'),
           sound: ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString(),
         },
         data: {
@@ -2392,7 +2393,9 @@ const sendDoctorReminderNotifications: Resolver<
           appointmentId: apptId.id,
           patientName: apptId.patientName,
           content:
-            apptId.patientName + ' ' + format(apptId.appointmentDateTime, 'yyyy-MM-dd HH:mm:ss'),
+            apptId.patientName +
+            ' ' +
+            format(addMilliseconds(apptId.appointmentDateTime, 19800000), 'yyyy-MM-dd HH:mm:ss'),
         },
       };
 
@@ -2463,7 +2466,7 @@ export async function sendDoctorAppointmentNotification(
     databaseURL: `https://${process.env.FIREBASE_PROJECT_ID}.firebaseio.com`,
   };
   let admin = require('firebase-admin');
-  let notificationResponse: any;
+  let notificationResponse: PushNotificationSuccessMessage;
   admin = !firebaseAdmin.apps.length ? firebaseAdmin.initializeApp(config) : firebaseAdmin.app();
   const options = {
     priority: NotificationPriority.high,
@@ -2473,14 +2476,14 @@ export async function sendDoctorAppointmentNotification(
   const payload = {
     notification: {
       title: 'A New Appointment is scheduled with ' + patientName,
-      body: format(appointmentDateTime, 'yyyy-MM-dd HH:mm:ss'),
+      body: format(addMilliseconds(appointmentDateTime, 19800000), 'yyyy-MM-dd HH:mm:ss'),
       sound: ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString(),
     },
     data: {
       type: 'doctor_new_appointment_booked',
       appointmentId: apptId,
       patientName: patientName,
-      content: format(appointmentDateTime, 'yyyy-MM-dd HH:mm:ss'),
+      content: format(addMilliseconds(appointmentDateTime, 19800000), 'yyyy-MM-dd HH:mm:ss'),
     },
   };
   const doctorTokenRepo = doctorsDb.getCustomRepository(DoctorDeviceTokenRepository);
@@ -2524,13 +2527,12 @@ export async function sendDoctorAppointmentNotification(
           console.log('notification results saved');
         });
         //}
+        console.log(notificationResponse, 'notificationResponse');
       })
       .catch((error: JSON) => {
         console.log('PushNotification Failed::' + error);
         throw new AphError(AphErrorMessages.PUSH_NOTIFICATION_FAILED);
       });
-
-    console.log(notificationResponse, 'notificationResponse');
   }
   console.log('doctor appt notification end');
   return { status: true };
