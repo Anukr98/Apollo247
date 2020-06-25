@@ -17,3 +17,11 @@ export const GET_ALL_SPECIALITIES = gql`
     }
   }
 `;
+
+export const GET_ALL_CITIES = gql`
+  query getAllCities {
+    getAllCities {
+      city
+    }
+  }
+`;

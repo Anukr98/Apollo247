@@ -19,7 +19,8 @@ import { PastSearches } from 'components/PastSearches';
 import { useAuth } from 'hooks/authHooks';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { Link } from 'react-router-dom';
-import { AphButton, AphDialog, AphDialogClose, AphDialogTitle } from '@aph/web-ui-components';
+import { AphButton } from '@aph/web-ui-components';
+import { Cities } from './Cities';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -672,7 +673,6 @@ export const SpecialityListing: React.FC = (props) => {
   const [expanded, setExpanded] = React.useState<string | false>(false);
   const [value, setValue] = React.useState(0);
   const prakticeSDKSpecialties = localStorage.getItem('symptomTracker');
-  const [specialtyId, setSpecialtyId] = useState<string>('');
   const [searchKeyword, setSearchKeyword] = useState<string>('');
   const [locationPopup, setLocationPopup] = useState<boolean>(false);
 
@@ -1084,27 +1084,7 @@ export const SpecialityListing: React.FC = (props) => {
       <div className={classes.footerLinks}>
         <BottomLinks />
       </div>
-      <AphDialog open={locationPopup} maxWidth="md">
-        <AphDialogClose onClick={() => setLocationPopup(false)} title={'Close'} />
-        <AphDialogTitle className={classes.dialogTitle}>
-          Select a city to see the recommended healthcare services
-        </AphDialogTitle>
-        <div className={classes.locationContainer}>
-          <AphInput placeholder="Select for a city" />
-
-          <div className={classes.popularCities}>
-            <Typography component="h6">Popular Cities</Typography>
-            <AphButton>Hyderabad</AphButton>
-            <AphButton>Chennai</AphButton>
-            <AphButton>Mumbai</AphButton>
-            <AphButton>Kolkata</AphButton>
-            <AphButton>Bangalore</AphButton>
-          </div>
-          <div className={classes.btnContainer}>
-            <AphButton color="primary">Okay</AphButton>
-          </div>
-        </div>
-      </AphDialog>
+      <Cities locationPopup={locationPopup} setLocationPopup={setLocationPopup} />
     </div>
   );
 };
