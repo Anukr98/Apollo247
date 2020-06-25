@@ -1617,7 +1617,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 <View style={{ height: 100 }} />
                 <View style={{ flexDirection: 'row' }}>{renderProfileDrop()}</View>
               </ImageBackground>
-              <Text style={styles.descriptionTextStyle}>{string.home.description}</Text>
+              {/* <Text style={styles.descriptionTextStyle}>{string.home.description}</Text> */}
               {isPersonalizedCard && renderAppointmentsScreen()}
               {renderMenuOptions()}
               <View style={{ backgroundColor: '#f0f1ec' }}>{renderListView()}</View>
