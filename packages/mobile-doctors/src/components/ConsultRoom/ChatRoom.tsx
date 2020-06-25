@@ -1,5 +1,5 @@
 import {
-  AddAttachmentIcon,
+  AttachmentIcon,
   ChatCallIcon,
   ChatSend,
   DoctorImage,
@@ -99,7 +99,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const flatListRef = useRef<FlatList<never> | undefined | null>();
   const [messageText, setMessageText] = useState<string>('');
   const [heightList, setHeightList] = useState<number>(height - changedHeight);
-
+  const [hideSend, setHideSend] = useState<boolean>(true);
   const patientImage = patientDetails && (
     <Image style={styles.imageStyle} source={{ uri: patientDetails.photoUrl || '' }} />
   );
@@ -875,7 +875,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       >
         <View
           style={{
-            width: width,
             height: 66,
             backgroundColor: 'white',
             bottom: isIphoneX() ? 36 : 0,
@@ -884,93 +883,104 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         >
           <View
             style={{
+              flex: 1,
               flexDirection: 'row',
-              width: width,
+              alignItems: 'center',
             }}
           >
             <TouchableOpacity
               activeOpacity={1}
-              style={{
-                width: 40,
-                height: 40,
-                marginTop: 9,
-                marginLeft: 5,
-              }}
               onPress={async () => {
                 props.setDropdownVisible(!props.isDropdownVisible);
               }}
             >
-              <AddAttachmentIcon
-                style={{
-                  width: 24,
-                  height: 24,
-                  marginTop: 10,
-                  marginLeft: 14,
-                }}
-              />
-            </TouchableOpacity>
-            <View>
-              <TextInput
-                autoCorrect={false}
-                placeholder={strings.smartPrescr.type_here}
-                multiline={true}
-                style={{
-                  marginLeft: 16,
-                  marginTop: 5,
-                  height: 40,
-                  width: width - 120,
-                  ...theme.fonts.IBMPlexSansMedium(16),
-                }}
-                value={messageText}
-                blurOnSubmit={false}
-                // returnKeyType="send"
-                onChangeText={(value) => {
-                  setMessageText(value);
-                  props.setDropdownVisible(false);
-                }}
-                onFocus={() => props.setDropdownVisible(false)}
-                onSubmitEditing={() => {
-                  Keyboard.dismiss();
-                }}
-              />
               <View
                 style={{
-                  marginLeft: 16,
-                  marginTop: 0,
-                  height: 2,
-                  width: width - 120,
-                  backgroundColor: '#00b38e',
+                  flexDirection: 'row',
+                  marginLeft: 20,
+                  height: 40,
+                  marginRight: 16,
+                  justifyContent: 'center',
+                  alignItems: 'center',
                 }}
-              />
-            </View>
-            <TouchableOpacity
-              activeOpacity={1}
+              >
+                {hideSend ? (
+                  <Text style={theme.viewStyles.text('M', 16, theme.colors.LIGHT_BLUE)}>
+                    Attach
+                  </Text>
+                ) : null}
+                <AttachmentIcon
+                  style={{
+                    width: 24,
+                    height: 24,
+                  }}
+                />
+              </View>
+            </TouchableOpacity>
+            <View
               style={{
-                width: 40,
+                flex: 1,
+                flexDirection: 'row',
+                alignItems: 'center',
                 height: 40,
-                marginTop: 10,
-                marginLeft: 2,
-              }}
-              onPress={async () => {
-                const textMessage = messageText.trim();
-                console.log('ChatSend', textMessage);
-
-                if (textMessage.length == 0) {
-                  Alert.alert(strings.common.apollo, strings.consult_room.Please_write_something);
-                  return;
-                }
-                props.send(textMessage);
-                setMessageText('');
-                flatListRef.current && flatListRef.current!.scrollToEnd();
+                borderBottomWidth: 2,
+                borderColor: theme.colors.APP_GREEN,
+                marginRight: 20,
               }}
             >
-              <ChatSend
-                style={{
-                  marginTop: 8,
-                  marginLeft: 14,
-                }}
-              />
-            </TouchableOpacity>
+              <View style={{ flex: 1 }}>
+                <TextInput
+                  autoCorrect={false}
+                  placeholder={strings.smartPrescr.type_here}
+                  multiline={true}
+                  style={{
+                    height: 40,
+                    ...theme.fonts.IBMPlexSansMedium(16),
+                  }}
+                  value={messageText}
+                  blurOnSubmit={false}
+                  onChangeText={(value) => {
+                    setMessageText(value);
+                    props.setDropdownVisible(false);
+                  }}
+                  onFocus={() => {
+                    props.setDropdownVisible(false);
+                    setHideSend(false);
+                  }}
+                  onBlur={() => {
+                    setHideSend(true);
+                  }}
+                  onSubmitEditing={() => {
+                    Keyboard.dismiss();
+                  }}
+                  underlineColorAndroid={theme.colors.TRANSPARENT}
+                  selectionColor={theme.colors.APP_GREEN}
+                />
+              </View>
+
+              {!hideSend ? (
+                <TouchableOpacity
+                  activeOpacity={1}
+                  onPress={async () => {
+                    const textMessage = messageText.trim();
+                    console.log('ChatSend', textMessage);
+
+                    if (textMessage.length == 0) {
+                      Alert.alert(
+                        strings.common.apollo,
+                        strings.consult_room.Please_write_something
+                      );
+                      return;
+                    }
+                    props.send(textMessage);
+                    setMessageText('');
+                    flatListRef.current && flatListRef.current!.scrollToEnd();
+                  }}
+                >
+                  <ChatSend />
+                </TouchableOpacity>
+              ) : null}
+            </View>
           </View>
         </View>
       </KeyboardAvoidingView>

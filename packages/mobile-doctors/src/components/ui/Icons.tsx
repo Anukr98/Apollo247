@@ -449,7 +449,7 @@ export const VideoOffIcon: React.FC<IconProps> = (props) => (
 );
 
 export const AttachmentIcon: React.FC<IconProps> = (props) => (
-  <IconBase size="lg" {...props} source={require('../../images/icons/ic_attachment.png')} />
+  <IconBase size="sm" {...props} source={require('../../images/icons/round-attach-24-px.png')} />
 );
 
 export const MuteIcon: React.FC<IconProps> = (props) => (
