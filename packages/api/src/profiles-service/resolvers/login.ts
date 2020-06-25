@@ -118,7 +118,7 @@ const resendOtp: Resolver<
 
   //validate resend params
   resendLogger('QUERY___START');
-  const validResendRecord = await otpRepo.getValidOtpRecord(id, mobileNumber);
+  const validResendRecord = await otpRepo.getValidOtpRecord(id);
   resendLogger('QUERY___END');
 
   if (!validResendRecord) {
@@ -195,23 +195,6 @@ const testSendSMS: Resolver<
   };
 };
 
-export const archiveOtpRecord = async (otpRecordId: string, profilesDb: Connection) => {
-  const otpRepo = profilesDb.getCustomRepository(LoginOtpRepository);
-  const otpRecord = await otpRepo.findById(otpRecordId);
-  if (otpRecord) {
-    const recordAttrs = {
-      loginType: otpRecord.loginType,
-      mobileNumber: otpRecord.mobileNumber,
-      otp: otpRecord.otp,
-      status: otpRecord.status,
-      incorrectAttempts: otpRecord.incorrectAttempts,
-    };
-
-    const otpArchiveRepo = profilesDb.getCustomRepository(LoginOtpArchiveRepository);
-    await otpArchiveRepo.archiveOtpRecord(recordAttrs);
-    otpRepo.deleteOtpRecord(otpRecord.id);
-  }
-};
 
 //returns random 6 digit number string
 export const generateOTP = () => {
