@@ -939,7 +939,9 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       return (
         <View style={{ alignItems: 'center', marginVertical: 15 }}>
           <Text style={styles.specialityText}>Start your care now by choosing from</Text>
-          <Text style={styles.specialityText}>500 doctors and 65 specialities</Text>
+          <Text style={styles.specialityText}>
+            over 2000 doctors and {SpecialitiesList.length + 4} specialities
+          </Text>
         </View>
       );
     }
