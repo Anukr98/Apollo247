@@ -23,6 +23,7 @@ export interface TabsComponentProps {
   onChange: (title: string) => void;
   style?: StyleProp<ViewStyle>;
   showIcons?: boolean;
+  showTextIcons?: boolean;
   textStyle?: StyleProp<ViewStyle>;
   height?: number;
   scrollable?: boolean;
@@ -66,6 +67,35 @@ export const TabsComponent: React.FC<TabsComponentProps> = (props) => {
             >
               {isSelected ? item.selectedIcon : null}
               {selected !== item.title ? item.unselectedIcon : null}
+            </View>
+          ) : props.showTextIcons ? (
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <View
+                style={{
+                  paddingTop: 18,
+                  paddingBottom: 10,
+                }}
+              >
+                {isSelected ? item.selectedIcon : null}
+                {selected !== item.title ? item.unselectedIcon : null}
+              </View>
+              <Text
+                style={[
+                  styles.textStyle,
+                  { marginLeft: 14, marginTop: 5 },
+                  isSelected ? { color: theme.colors.LIGHT_BLUE } : {},
+                  props.textStyle,
+                  props.scrollable
+                    ? {
+                        paddingLeft: index === 0 ? 20 : 15,
+                        paddingRight: index + 1 === props.data.length ? 20 : 15,
+                      }
+                    : {},
+                  isSelected ? props.selectedTitleStyle : props.titleStyle,
+                ]}
+              >
+                {item.title}
+              </Text>
             </View>
           ) : (
             <Text

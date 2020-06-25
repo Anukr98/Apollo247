@@ -113,6 +113,36 @@ export const Reset: React.FC<IconProps> = (props) => (
 export const Link: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('../../images/icons/link.png')} />
 );
+export const ChatActive: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('../../images/icons/chat_active.png')} />
+);
+export const ChatInActive: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('../../images/icons/chat_inactive.png')} />
+);
+
+export const MailActive: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('../../images/icons/mail_select.png')} />
+);
+export const MailInActive: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('../../images/icons/mail_deselect.png')} />
+);
+
+export const URLActive: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ width: 25, height: 20 }}
+    {...props}
+    source={require('../../images/icons/url_active.png')}
+  />
+);
+
+export const URLInActive: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ width: 25, height: 20 }}
+    {...props}
+    source={require('../../images/icons/url_inactive.png')}
+  />
+);
+
 export const ConnectCall: React.FC<IconProps> = (props) => (
   <IconBase size="xs" {...props} source={require('../../images/icons/group_44.png')} />
 );
