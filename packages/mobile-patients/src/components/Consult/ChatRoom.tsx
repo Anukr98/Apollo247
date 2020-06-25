@@ -1357,7 +1357,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       console.log('Subscribe stream connected!', event);
     },
     disconnected: (event: string) => {
-      setSnackBar();
+      setSnackbarState(true);
+      setHandlerMessage('Falling back to audio due to bad network!!');
       console.log('Subscribe stream disconnected!', event);
     },
     otrnError: (error: string) => {
