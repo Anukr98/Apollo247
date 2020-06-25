@@ -37,6 +37,7 @@ import { FirebaseEvents, FirebaseEventName } from '../helpers/firebaseEvents';
 import { AppsFlyerEventName } from '../helpers/AppsFlyerEvents';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { getDate } from '@aph/mobile-patients/src/utils/dateUtil';
+import { Snackbar } from 'react-native-paper';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -61,9 +62,10 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
   const paymentTypeID = props.navigation.getParam('paymentTypeID');
   const { currentPatient } = useAllCurrentPatients();
   const [copiedText, setCopiedText] = useState('');
-
+  const [snackbarState, setSnackbarState] = useState<boolean>(false);
   const copyToClipboard = (refId: string) => {
     Clipboard.setString(refId);
+    setSnackbarState(true);
   };
   const PaymentModes: any = {
     DC: 'Debit Card',
@@ -228,6 +230,16 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
             <Copy style={styles.iconStyle} />
           </TouchableOpacity>
         </View>
+        <Snackbar
+          style={{ position: 'absolute' }}
+          visible={snackbarState}
+          onDismiss={() => {
+            setSnackbarState(false);
+          }}
+          duration={1000}
+        >
+          Copied
+        </Snackbar>
       </View>
     );
   };
