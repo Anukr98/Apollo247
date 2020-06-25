@@ -524,7 +524,6 @@ export const MyAccount: React.FC = (props) => {
             data.data.sendMessageToMobileNumber.status === 'OK'
           ) {
             alert(`We have sent the app invite to ${mobileNumberWithPrefix}`);
-            setDeepLink('');
             setMobileNumber('');
           } else {
             alert('An error occuered in sending message to mobile number');

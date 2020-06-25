@@ -1483,6 +1483,8 @@ export const ConsultTabs: React.FC = () => {
           endAppointmentSessionInput: {
             appointmentId: appointmentId,
             status: STATUS.COMPLETED,
+            deviceType: DEVICETYPE.DESKTOP,
+            callSource: BOOKINGSOURCE.WEB,
           },
         },
         fetchPolicy: 'no-cache',
