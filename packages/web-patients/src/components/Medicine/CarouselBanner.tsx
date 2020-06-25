@@ -86,11 +86,12 @@ const apiDetails = {
 };
 interface BanneDataArray {
   bannerData: BannerData[];
+  history?: any;
 }
 export const CarouselBanner: React.FC<BanneDataArray> = (props) => {
   const classes = useStyles({});
   const sliderSettings = {
-    infinite: false,
+    infinite: true,
     dots: true,
     arrows: false,
     speed: 500,
@@ -108,11 +109,10 @@ export const CarouselBanner: React.FC<BanneDataArray> = (props) => {
             className={classes.card}
             onClick={() => {
               if (sidebaner.sku_url_key) {
-                window.location.href = clientRoutes.medicineDetails(sidebaner.sku_url_key);
+                props.history.push(clientRoutes.medicineDetails(sidebaner.sku_url_key));
               } else if (sidebaner.category_url_key) {
-                window.location.href = clientRoutes.searchByMedicine(
-                  'healthareas',
-                  sidebaner.category_url_key
+                props.history.push(
+                  clientRoutes.searchByMedicine('healthareas', sidebaner.category_url_key)
                 );
               }
             }}
