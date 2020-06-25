@@ -121,7 +121,7 @@ const resendOtp: Resolver<
   const validResendRecord = await otpRepo.getValidOtpRecord(id, mobileNumber);
   resendLogger('QUERY___END');
 
-  if (validResendRecord.length === 0) {
+  if (!validResendRecord) {
     resendLogger('VALIDATION_FAILED_API_CALL___END');
     return {
       status: false,
@@ -151,8 +151,6 @@ const resendOtp: Resolver<
   };
   const otpSaveResponse = await otpRepo.insertOtp(optAttrs);
 
-  //archive the old resend record and then delete it
-  archiveOtpRecord(validResendRecord[0].id, profilesDb);
   resendLogger('UPDATION_END');
 
   //if performance environment(as), return the response without sending SMS
