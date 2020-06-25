@@ -53,6 +53,7 @@ export enum WebEngageEventName {
   SPECIALITY_CLICKED = 'Speciality Clicked',
   DOCTOR_CLICKED = 'Doctor Clicked',
   BOOK_APPOINTMENT = 'Book Appointment',
+  TYPE_OF_CONSULT_SELECTED = 'Type of consultation seleted',
   CONSULT_SORT = 'Consult Sort',
   CONSULT_NOW_CLICKED = 'Consult Now clicked',
   CONSULT_SCHEDULE_FOR_LATER_CLICKED = 'Consult Schedule for Later clicked',
@@ -131,11 +132,12 @@ export enum WebEngageEventName {
   PHARMACY_ENTER_DELIVERY_PINCODE_SUBMITTED = 'Pharmacy Enter Delivery Pincode Submitted ',
   PHARMACY_PINCODE_NONSERVICABLE = 'Pharmacy location nonservicable',
   PHARMACY_CATEGORY_SECTION_PRODUCT_CLICK = 'Pharmacy Category Section Product Click',
-  PHARMACY_BANNER_CLICK = 'Pharmacy Homepage Banner click';
+  PHARMACY_BANNER_CLICK = 'Pharmacy Homepage Banner click',
 
   // Payments Events
   PAYMENT_INSTRUMENT = 'Payment Instrument',
   PAYMENT_STATUS = 'Payment Status',
+  CONSULT_PAYMENT_MODE_SELECTED = 'Consult booking payment mode selected',
 }
 
 export interface PatientInfo {
@@ -519,6 +521,9 @@ export interface WebEngageEvents {
 
   // ********** ConsultEvents ********** \\
 
+  [WebEngageEventName.CONSULT_PAYMENT_MODE_SELECTED]: {
+    'Payment Mode': string;
+  }
   [WebEngageEventName.DOCTOR_SEARCH]: {
     'Search Text': string;
     'Patient Name': string;
@@ -548,6 +553,18 @@ export interface WebEngageEvents {
     'Hospital Name': string;
     'Hospital City': string;
   };
+  [WebEngageEventName.TYPE_OF_CONSULT_SELECTED]: {
+    'Consultation Type': string;
+    'Patient Name': string;
+    'Patient UHID': string;
+    'Doctor ID': string;
+    'Speciality ID': string;
+    'Doctor Speciality': string;
+    'Relation': string;
+    'Patient Age': number;
+    'Patient Gender': string;
+    'Customer ID': string;
+  }
   [WebEngageEventName.DOCTOR_CLICKED]: {
     'Doctor Name': string;
     Source: 'List' | 'Search';
