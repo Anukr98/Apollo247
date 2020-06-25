@@ -82,6 +82,7 @@ import {
   Dimensions,
   Platform,
   StyleSheet,
+  Linking,
   Text,
   TouchableOpacity,
   View,
@@ -91,6 +92,8 @@ import { NavigationActions, NavigationScreenProps, StackActions } from 'react-na
 import { AppsFlyerEventName } from '../../helpers/AppsFlyerEvents';
 import { WhatsAppStatus } from '../ui/WhatsAppStatus';
 import { FirebaseEvents, FirebaseEventName } from '../../helpers/firebaseEvents';
+import firebase from 'react-native-firebase';
+import { NotificationPermissionAlert } from '@aph/mobile-patients/src/components/ui/NotificationPermissionAlert';
 
 const { width, height } = Dimensions.get('window');
 
@@ -129,6 +132,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   const [date, setDate] = useState<Date>(new Date());
   const [coupon, setCoupon] = useState('');
   const [whatsAppUpdate, setWhatsAppUpdate] = useState<boolean>(true);
+  const [notificationAlert, setNotificationAlert] = useState(false);
 
   const doctorFees =
     tabs[0].title === selectedTab
@@ -684,6 +688,28 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
     );
   };
 
+  const fireBaseFCM = async () => {
+    const enabled = await firebase.messaging().hasPermission();
+    if (enabled) {
+      // user has permissions
+      console.log('enabled', enabled);
+    } else {
+      // user doesn't have permission
+      console.log('not enabled');
+      setNotificationAlert(true);
+      try {
+        const authorized = await firebase.messaging().requestPermission();
+        console.log('authorized', authorized);
+
+        // User has authorised
+      } catch (error) {
+        // User has rejected permissions
+        CommonBugFender('Login_fireBaseFCM_try', error);
+        console.log('not enabled error', error);
+      }
+    }
+  };
+
   const validateAndApplyCoupon = (
     couponValue: string,
     isOnlineConsult: boolean,
@@ -727,6 +753,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
                 'Coupon Applied': true,
               };
               postWebEngageEvent(WebEngageEventName.CONSULT_COUPON_APPLIED, eventAttributes);
+              fireBaseFCM();
             }
           } else {
             if (!dontFireEvent) {
@@ -1011,6 +1038,15 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
           </View>
         </View>
       </View>
+      {notificationAlert && (
+        <NotificationPermissionAlert
+          onPressOutside={() => setNotificationAlert(false)}
+          onButtonPress={() => {
+            setNotificationAlert(false);
+            Linking.openSettings();
+          }}
+        />
+      )}
       {showSpinner && <Spinner />}
       {showOfflinePopup && <NoInterNetPopup onClickClose={() => setshowOfflinePopup(false)} />}
     </View>
