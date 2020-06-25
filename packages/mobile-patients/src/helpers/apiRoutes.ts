@@ -5,12 +5,10 @@ export const apiBaseUrl =
     ? 'https://api.apollo247.com/'
     : AppConfig.APP_ENV == AppEnv.QA
     ? 'https://aph.staging.api.popcornapps.com/'
-    : AppConfig.APP_ENV == AppEnv.STAGING
-    ? 'https://stagingapi.apollo247.com//graphql'
     : AppConfig.APP_ENV == AppEnv.PERFORM
     ? 'https://asapi.apollo247.com/'
     : AppConfig.APP_ENV == AppEnv.VAPT
-    ? 'https://aph.vapt.api.popcornapps.com/'
+    ? 'https://stagingapi.popcornapps.com/'
     : AppConfig.APP_ENV == AppEnv.DEV
     ? 'https://aph.dev.api.popcornapps.com/'
     : AppConfig.APP_ENV == AppEnv.DEVReplica
