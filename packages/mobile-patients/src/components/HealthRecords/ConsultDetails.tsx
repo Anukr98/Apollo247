@@ -975,10 +975,16 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
             caseSheetDetails!.diagnosticPrescription !== null ? (
               <View>
                 {caseSheetDetails!.diagnosticPrescription.map((item, index, array) => {
+                  console.log('item===>', caseSheetDetails);
                   return (
                     <>
                       <Text style={styles.labelStyle}>{item!.itemname}</Text>
                       <Spearator style={{ marginBottom: index == array.length - 1 ? 2.5 : 11.5 }} />
+                      {item!.itemname ? (
+                        <Text style={styles.dataTextStyle}>Instuctions: {item!.itemname}</Text>
+                      ) : (
+                        ''
+                      )}
                     </>
                   );
                 })}
