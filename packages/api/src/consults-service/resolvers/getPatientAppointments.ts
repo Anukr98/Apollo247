@@ -160,9 +160,19 @@ const getPatinetAppointments: Resolver<
   AppointmentInputArgs,
   ConsultServiceContext,
   PatientAppointmentsResult
-> = async (parent, { patientAppointmentsInput }, { consultsDb, doctorsDb, patientsDb }) => {
-  const appts = consultsDb.getCustomRepository(AppointmentRepository);
+> = async (
+  parent,
+  { patientAppointmentsInput },
+  { consultsDb, doctorsDb, patientsDb, mobileNumber }
+) => {
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
+  const patientData = await patientRepo.checkMobileIdInfo(
+    mobileNumber,
+    '',
+    patientAppointmentsInput.patientId
+  );
+  if (!patientData) throw new AphError(AphErrorMessages.INVALID_PATIENT_DETAILS);
+  const appts = consultsDb.getCustomRepository(AppointmentRepository);
   const primaryPatientIds = await patientRepo.getLinkedPatientIds(
     patientAppointmentsInput.patientId
   );
@@ -198,9 +208,11 @@ const getPatientAllAppointments: Resolver<
   { patientId: string; offset: number; limit: number },
   ConsultServiceContext,
   PatientAllAppointmentsResult
-> = async (parent, args, { consultsDb, patientsDb }) => {
-  const appts = consultsDb.getCustomRepository(AppointmentRepository);
+> = async (parent, args, { consultsDb, patientsDb, mobileNumber }) => {
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
+  const patientData = await patientRepo.checkMobileIdInfo(mobileNumber, '', args.patientId);
+  if (!patientData) throw new AphError(AphErrorMessages.INVALID_PATIENT_DETAILS);
+  const appts = consultsDb.getCustomRepository(AppointmentRepository);
   const primaryPatientIds = await patientRepo.getLinkedPatientIds(args.patientId);
 
   const appointments = await appts.getPatientAllAppointments(
@@ -217,7 +229,10 @@ const getPatientPersonalizedAppointments: Resolver<
   { patientUhid: string },
   ConsultServiceContext,
   PersonalizedAppointmentResult
-> = async (parent, args, { consultsDb, doctorsDb }) => {
+> = async (parent, args, { consultsDb, doctorsDb, patientsDb, mobileNumber }) => {
+  const patientRepo = patientsDb.getCustomRepository(PatientRepository);
+  const patientData = await patientRepo.checkMobileIdInfo(mobileNumber, args.patientUhid, '');
+  if (!patientData) throw new AphError(AphErrorMessages.INVALID_PATIENT_DETAILS);
   let uhid = args.patientUhid;
   if (process.env.NODE_ENV == 'local') uhid = ApiConstants.CURRENT_UHID.toString();
   else if (process.env.NODE_ENV == 'dev') uhid = ApiConstants.CURRENT_UHID.toString();
