@@ -91,6 +91,7 @@ import { NavigationActions, NavigationScreenProps, StackActions } from 'react-na
 import { AppsFlyerEventName } from '../../helpers/AppsFlyerEvents';
 import { WhatsAppStatus } from '../ui/WhatsAppStatus';
 import { FirebaseEvents, FirebaseEventName } from '../../helpers/firebaseEvents';
+import { validateConsultCoupon } from '@aph/mobile-patients/src/helpers/apiCalls';
 
 const { width, height } = Dimensions.get('window');
 
@@ -264,7 +265,8 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       'Doctor ID': g(props.doctor, 'id')!,
       'Doctor Name': g(props.doctor, 'fullName')!,
       'Net Amount': coupon ? doctorDiscountedFees : Number(doctorFees),
-      revenue: coupon ? doctorDiscountedFees : Number(doctorFees),
+      af_revenue: coupon ? doctorDiscountedFees : Number(doctorFees),
+      af_currency: 'INR',
     };
     return eventAttributes;
   };
@@ -750,8 +752,58 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
     setDoctorDiscountedFees(0);
   };
 
+  const validateCoupon = (coupon: string) => {
+    let types = [{ title: 'Consult Online' }, { title: 'Visit Clinic' }];
+    const timeSlot =
+      types[0].title === selectedTab &&
+      isConsultOnline &&
+      availableInMin! <= 60 &&
+      0 < availableInMin!
+        ? nextAvailableSlot
+        : selectedTimeSlot;
+
+    const data = {
+      mobile: g(currentPatient, 'mobileNumber'),
+      billAmount: Number(doctorFees),
+      coupon: coupon,
+      paymentType: '', //CASH,NetBanking, CARD, COD
+      pinCode: '560093',
+      consultations: [
+        {
+          hospitalId: g(props.doctor, 'doctorHospital')![0].facility.id,
+          doctorId: g(props.doctor, 'id'),
+          specialityId: g(props.doctor, 'specialty', 'id'),
+          consultationTime: timeSlot, //Unix timestamp“
+          consultationType: selectedTab === 'Consult Online' ? 1 : 0, //Physical 0, Virtual 1,  All -1
+          cost: Number(doctorFees),
+          rescheduling: false,
+        },
+      ],
+    };
+
+    console.log('validateCouponData', data);
+    return new Promise((res, rej) => {
+      validateConsultCoupon(data)
+        .then((data: any) => {
+          if (data.errorCode == 0) {
+            res();
+          } else {
+            rej(data.errorMsg);
+          }
+        })
+        .catch((error) => {
+          CommonBugFender('validatingConsultCoupon', error);
+          console.log(error);
+          props.navigation.navigate(AppRoutes.DoctorSearch);
+          rej();
+          renderErrorPopup(`Something went wrong, plaease try again after sometime`);
+        });
+    });
+  };
+
   const onApplyCoupon = (value: string) => {
-    return validateAndApplyCoupon(value, isConsultOnline);
+    // return validateAndApplyCoupon(value, isConsultOnline);
+    return validateCoupon(value);
   };
 
   const renderApplyCoupon = () => {

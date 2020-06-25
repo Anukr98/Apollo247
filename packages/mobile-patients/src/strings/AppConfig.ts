@@ -315,6 +315,7 @@ const ConfigurationDev = {
     'https://aph.staging.web-patients.popcornapps.com/covid19/scan?utm_source=mobile_app',
   COVID_LATEST_ARTICLES_URL:
     'https://aph.dev.web-patients.popcornapps.com/covid19?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Covid19%20Content',
+  CONSULT_COUPON_BASE_URL: 'http://uatvalidcoupon.apollo247.com',
 };
 
 // QA
@@ -354,6 +355,7 @@ const ConfigurationQA = {
     'https://aph.staging.web-patients.popcornapps.com/covid19/scan?utm_source=mobile_app',
   COVID_LATEST_ARTICLES_URL:
     'https://aph.staging.web-patients.popcornapps.com/covid19?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Covid19%20Content',
+  CONSULT_COUPON_BASE_URL: 'http://uatvalidcoupon.apollo247.com',
 };
 
 //Production
@@ -392,6 +394,7 @@ const ConfigurationProd = {
   COVID_RISK_LEVEL_URL: 'https://www.apollo247.com/covid19/scan?utm_source=mobile_app',
   COVID_LATEST_ARTICLES_URL:
     'https://www.apollo247.com/covid19?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Covid19%20Content',
+  CONSULT_COUPON_BASE_URL: 'http://uatvalidcoupon.apollo247.com',
 };
 
 //PERFORMANCE
@@ -431,6 +434,7 @@ const ConfigurationPERFORM = {
     'https://aph.staging.web-patients.popcornapps.com/covid19/scan?utm_source=mobile_app',
   COVID_LATEST_ARTICLES_URL:
     'https://aph.staging.web-patients.popcornapps.com/covid19?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Covid19%20Content',
+  CONSULT_COUPON_BASE_URL: 'http://uatvalidcoupon.apollo247.com',
 };
 
 //VAPT
@@ -470,6 +474,7 @@ const ConfigurationVAPT = {
     'https://aph.staging.web-patients.popcornapps.com/covid19/scan?utm_source=mobile_app',
   COVID_LATEST_ARTICLES_URL:
     'https://aph.staging.web-patients.popcornapps.com/covid19?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Covid19%20Content',
+  CONSULT_COUPON_BASE_URL: 'http://uatvalidcoupon.apollo247.com',
 };
 
 //DevelopmentReplica
@@ -509,6 +514,7 @@ const ConfigurationDevReplica = {
     'https://aph.staging.web-patients.popcornapps.com/covid19/scan?utm_source=mobile_app',
   COVID_LATEST_ARTICLES_URL:
     'https://aph.staging.web-patients.popcornapps.com/covid19?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Covid19%20Content',
+  CONSULT_COUPON_BASE_URL: 'http://uatvalidcoupon.apollo247.com',
 };
 
 const Configuration =
