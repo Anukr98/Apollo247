@@ -925,7 +925,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                       .local()
                       .format('DD MMMM, hh:mm A')}
                   </Text>
-                  <View style={styles.separatorStyle} />
+                  {/* <View style={styles.separatorStyle} />
                   <View style={{ flexDirection: 'row' }}>
                     {Appointments[0].symptoms.map((name, index) => (
                       <CapsuleView
@@ -936,7 +936,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                         titleTextStyle={{ color: theme.colors.SKY_BLUE }}
                       />
                     ))}
-                  </View>
+                  </View> */}
                 </View>
               </TouchableOpacity>
             )}
@@ -1102,7 +1102,8 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           appointmentId={props.navigation.state.params!.appointmentId}
           consultModeSelected={consultMode}
           externalConnect={null}
-          availableMode={consultType}
+          availableMode={ConsultMode.BOTH}
+          // availableMode={consultType}
         />
       )}
       <Animated.View
