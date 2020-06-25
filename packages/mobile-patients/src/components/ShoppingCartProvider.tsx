@@ -58,6 +58,7 @@ export type EPrescriptionDisableOption = 'CAMERA_AND_GALLERY' | 'E-PRESCRIPTION'
 export interface ShoppingCartContextProps {
   cartItems: ShoppingCartItem[];
   setCartItems: ((items: ShoppingCartItem[]) => void) | null;
+  setItemsWithQtyRestriction: ((itemSkus: string[]) => void) | null;
   addCartItem: ((item: ShoppingCartItem) => void) | null;
   addMultipleCartItems: ((items: ShoppingCartItem[]) => void) | null;
   removeCartItem: ((itemId: ShoppingCartItem['id']) => void) | null;
@@ -119,6 +120,7 @@ export interface ShoppingCartContextProps {
 export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   cartItems: [],
   setCartItems: null,
+  setItemsWithQtyRestriction: null,
   addCartItem: null,
   addMultipleCartItems: null,
   removeCartItem: null,
@@ -176,11 +178,12 @@ const AsyncStorageKeys = {
 };
 
 const showGenericAlert = (message: string) => {
-  Alert.alert('Alert', message);
+  Alert.alert('Uh oh.. :(', message);
 };
 
 export const ShoppingCartProvider: React.FC = (props) => {
   const [cartItems, _setCartItems] = useState<ShoppingCartContextProps['cartItems']>([]);
+  const [itemsWithQtyRestriction, setItemsWithQtyRestriction] = useState<string[]>([]);
   const [couponDiscount, setCouponDiscount] = useState<ShoppingCartContextProps['couponDiscount']>(
     0
   );
@@ -256,7 +259,21 @@ export const ShoppingCartProvider: React.FC = (props) => {
     });
   };
 
+  const validateCartItemsQty = (
+    itemToAddOrUpdate: Partial<ShoppingCartItem> & { id: ShoppingCartItem['id'] }
+  ) => {
+    if (itemsWithQtyRestriction.find((item) => itemToAddOrUpdate.id == item)) {
+      const maxQty = AppConfig.Configuration.HOTSELLERS_MAX_QUANTITY;
+      if (maxQty && itemToAddOrUpdate.quantity && itemToAddOrUpdate.quantity > maxQty) {
+        showGenericAlert(`Maximum quantity allowed for this item is ${maxQty}.`);
+        return true;
+      }
+    }
+    return false;
+  };
+
   const addCartItem: ShoppingCartContextProps['addCartItem'] = (itemToAdd) => {
+    if (validateCartItemsQty(itemToAdd)) return;
     if (cartItems.find((item) => item.id == itemToAdd.id)) {
       return;
     }
@@ -283,6 +300,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
     setCartItems(newCartItems);
   };
   const updateCartItem: ShoppingCartContextProps['updateCartItem'] = (itemUpdates) => {
+    if (validateCartItemsQty(itemUpdates)) return;
     const foundIndex = cartItems.findIndex((item) => item.id == itemUpdates.id);
     if (foundIndex !== -1) {
       cartItems[foundIndex] = { ...cartItems[foundIndex], ...itemUpdates };
@@ -465,6 +483,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
       value={{
         cartItems,
         setCartItems,
+        setItemsWithQtyRestriction,
         addCartItem,
         addMultipleCartItems,
         removeCartItem,

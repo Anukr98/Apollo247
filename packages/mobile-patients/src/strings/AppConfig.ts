@@ -12,6 +12,7 @@ export type PharmacyHomepageInfo = {
 export enum AppEnv {
   DEV = 'DEV',
   QA = 'QA',
+  STAGING = 'STAGING',
   PROD = 'PROD',
   PERFORM = 'PERFORM',
   VAPT = 'VAPT',
@@ -45,6 +46,9 @@ const appStaticVariables = {
   TAT_API_TIMEOUT_IN_SEC: 10,
   PACKAGING_CHARGES: 0,
   MIN_VALUE_TO_NUDGE_USERS_TO_AVAIL_FREE_DELIVERY: 0,
+  EXOTEL_CALL_API_URL:
+    'https://157e9636faf8c1b7296a749deb8789fa84314b27598eb7a9:82ac24fd451cbf85373a4ea90f083c9d321040ee9c3d26ed@api.exotel.com/v1/Accounts/apollo2471/Calls/connect.json',
+  EXOTEL_CALLER_ID: '04049171522',
   HOME_SCREEN_COVID_HEADER_TEXT: string.common.covidHeading,
   HOME_SCREEN_EMERGENCY_BANNER_TEXT: string.common.emergencyBannerText,
   HOME_SCREEN_COVID_CONTACT_TEXT: string.common.covidContactText,
@@ -103,6 +107,7 @@ const appStaticVariables = {
       visible: true,
     },
   ] as PharmacyHomepageInfo[],
+  HOTSELLERS_MAX_QUANTITY: 20, // max. allowed qty to add hot sellers to cart
 };
 
 const DEV_top6_specailties = [
