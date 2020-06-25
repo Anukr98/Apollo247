@@ -753,7 +753,9 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
                 'Coupon Applied': true,
               };
               postWebEngageEvent(WebEngageEventName.CONSULT_COUPON_APPLIED, eventAttributes);
-              fireBaseFCM();
+              if (Number(revisedAmount) == 0) {
+                fireBaseFCM();
+              }
             }
           } else {
             if (!dontFireEvent) {
