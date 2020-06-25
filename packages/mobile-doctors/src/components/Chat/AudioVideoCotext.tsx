@@ -10,19 +10,12 @@ import {
   UserPlaceHolder,
   VideoOffIcon,
   VideoOnIcon,
+  CloseWhite,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import {
-  StatusBar,
-  Text,
-  TouchableOpacity,
-  View,
-  AppState,
-  AppStateStatus,
-  Platform,
-} from 'react-native';
+import { StatusBar, Text, TouchableOpacity, View, AppState, AppStateStatus } from 'react-native';
 import { Image } from 'react-native-elements';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import { OTPublisher, OTSession, OTSubscriber } from 'opentok-react-native';
@@ -34,18 +27,29 @@ import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
 import SystemSetting from 'react-native-system-setting';
 import AsyncStorage from '@react-native-community/async-storage';
 import InCallManager from 'react-native-incall-manager';
+import { useUIElements } from '@aph/mobile-doctors/src/components/ui/UIElementsProvider';
 
 export type OpenTokKeys = {
   sessionId: string;
   token: string;
 };
+type OpentokConnect = {
+  connectionId: string;
+  creationTime: string;
+  data: string;
+};
 
+type OpentokError = {
+  code: string;
+  message: string;
+};
+type OpentokArchive = {
+  archiveId: string;
+  name: string;
+  sessionId: string;
+};
 type OpentokStreamObject = {
-  connection: {
-    connectionId: string;
-    creationTime: string;
-    data: string;
-  };
+  connection: OpentokConnect;
   connectionId: string;
   creationTime: string;
   hasAudio: boolean;
@@ -74,13 +78,17 @@ type OpenTokVideoStream = {
   stream: OpentokStreamObject;
 };
 
-type OptntokChangeProp = {
+type OpentokChangeProp = {
   changedProperty: string;
   newValue: string;
   oldValue: boolean;
   stream: OpentokStreamObject;
 };
 
+type OpenTokSessionConnect = {
+  connection: OpentokConnect;
+  streamId: string;
+};
 export type CallBackOptions = {
   onCallEnd: (callType: string, callDuration: string) => void;
   onCallMinimize: (callType: string) => void;
@@ -184,6 +192,7 @@ export const AudioVideoProvider: React.FC = (props) => {
   });
   const [missedCallCount, setmMissedCallCount] = useState<number>(0);
 
+  const { showPopup, hidePopup } = useUIElements();
   const { doctorDetails } = useAuth();
   const name = doctorDetails ? doctorDetails.displayName || 'Doctor' : 'Doctor';
   const [callerAudio, setCallerAudio] = useState<boolean>(true);
@@ -514,8 +523,25 @@ export const AudioVideoProvider: React.FC = (props) => {
       </View>
     );
   };
+  const errorPopup = (message: string, color: string) => {
+    showPopup({
+      description: message,
+      style: [styles.exoToastContainer, { backgroundColor: color }],
+      mainStyle: { backgroundColor: theme.colors.TRANSPARENT },
+      popUpPointerStyle: { width: 0, height: 0 },
+      descriptionTextStyle: theme.viewStyles.text('M', 12, theme.colors.WHITE, 1, 20),
+      hideOk: true,
+      icon: (
+        <View style={styles.exoCloseContainer}>
+          <CloseWhite style={{ width: 16, height: 16 }} />
+        </View>
+      ),
+      timer: 50,
+    });
+  };
+
   const publisherEventHandlers = {
-    streamCreated: (event: string) => {
+    streamCreated: (event: OpentokStreamObject) => {
       console.log('Publisher stream created!', event);
       setCallConnected(false);
       if (!callAccepted && !callConnected) {
@@ -529,24 +555,46 @@ export const AudioVideoProvider: React.FC = (props) => {
         }
       }
     },
-    streamDestroyed: (event: string) => {
+    streamDestroyed: (event: OpentokStreamObject) => {
       console.log('Publisher stream destroyed!', event);
+    },
+    error: (event: OpentokError) => {
+      errorPopup(strings.toastMessages.error, theme.colors.APP_RED);
+    },
+    otrnError: (event: string) => {
+      errorPopup(strings.toastMessages.error, theme.colors.APP_RED);
     },
   };
 
   const subscriberEventHandlers = {
-    error: (error: string) => {
-      console.log(`There was an error with the subscriber: ${error}`);
+    error: (error: OpentokError) => {
+      errorPopup(strings.toastMessages.error, theme.colors.APP_RED);
     },
-    connected: (event: string) => {
+    otrnError: (event: string) => {
+      errorPopup(strings.toastMessages.error, theme.colors.APP_RED);
+    },
+    connected: () => {
       setCallConnected(true);
       if (audioTrack) {
         setPrevVolume();
         audioTrack.stop(() => {});
       }
+      hidePopup();
     },
     disconnected: () => {
-      console.log('Subscribe stream disconnected!');
+      errorPopup(strings.toastMessages.error, theme.colors.APP_RED);
+    },
+    videoDisabled: (reason: string) => {
+      console.log('Subscribe videoDisabled', reason);
+    },
+    videoEnabled: (reason: string) => {
+      console.log('Subscribe videoEnabled', reason);
+    },
+    videoDisableWarning: () => {
+      console.log('Subscribe videoWarn');
+    },
+    videoDisableWarningLifted: () => {
+      console.log('Subscribe warnLift');
     },
     audioNetworkStats: (event: OpenTokAudioStream) => {
       // setCallerAudio(event.stream.hasAudio);
@@ -557,11 +605,15 @@ export const AudioVideoProvider: React.FC = (props) => {
   };
 
   const sessionEventHandlers = {
-    error: (error: string) => {
-      console.log(`There was an error with the session: ${error}`);
+    error: (error: OpentokError) => {
+      errorPopup(strings.toastMessages.error, theme.colors.APP_RED);
+    },
+    otrnError: (event: string) => {
+      errorPopup(strings.toastMessages.error, theme.colors.APP_RED);
     },
     connectionCreated: (event: string) => {
       connectionCount++;
+      hidePopup();
       // console.log('otSessionRef', otSessionRef);
       // console.log('Another client connected. ' + connectionCount + ' total.');
       console.log('session stream connectionCreated!', event);
@@ -577,14 +629,16 @@ export const AudioVideoProvider: React.FC = (props) => {
       setMessageReceived(false);
       console.log('session stream connectionDestroyed!', event);
     },
-    sessionConnected: (event: string) => {
+    sessionConnected: (event: OpenTokSessionConnect) => {
       console.log('session stream sessionConnected!', event);
+      hidePopup();
     },
-    sessionDisconnected: (event: string) => {
+    sessionDisconnected: (event: { sessionId: string }) => {
       console.log('session stream sessionDisconnected!', event);
     },
     sessionReconnected: (event: string) => {
       console.log('session stream sessionReconnected!', event);
+      hidePopup();
     },
     sessionReconnecting: (event: string) => {
       console.log('session stream sessionReconnecting!', event);
@@ -592,7 +646,14 @@ export const AudioVideoProvider: React.FC = (props) => {
     signal: (event: string) => {
       console.log('session stream signal!', event);
     },
-    streamPropertyChanged: (event: OptntokChangeProp) => {
+    streamCreated: (event: OpentokStreamObject) => {
+      console.log('session streamCreated!', event);
+    },
+    streamDestroyed: (event: string) => {
+      console.log('session streamDestroyed!', event);
+    },
+    streamPropertyChanged: (event: OpentokChangeProp) => {
+      console.log('session streamPropertyChanged!', event);
       if (event.stream.name !== name) {
         setCallerAudio(event.stream.hasAudio);
         setCallerVideo(event.stream.hasVideo);
@@ -613,7 +674,6 @@ export const AudioVideoProvider: React.FC = (props) => {
             eventHandlers={sessionEventHandlers}
             ref={otSessionRef}
             options={{
-              connectionEventsSuppressed: true, // default is false
               androidZOrder: 'onTop', // Android only - valid options are 'mediaOverlay' or 'onTop'
               androidOnTop: 'publisher', // Android only - valid options are 'publisher' or 'subscriber'
               useTextureViews: true, // Android only - default is false
