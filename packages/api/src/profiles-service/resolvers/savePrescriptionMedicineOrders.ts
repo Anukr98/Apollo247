@@ -121,6 +121,9 @@ const SavePrescriptionMedicineOrder: Resolver<
   let errorCode = 0,
     errorMessage = '',
     orderStatus: MEDICINE_ORDER_STATUS = MEDICINE_ORDER_STATUS.QUOTE;
+
+  throw new AphError(AphErrorMessages.SAVE_MEDICINE_ORDER_ERROR, undefined, {});
+
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
   const patientDetails = await patientRepo.findById(prescriptionMedicineInput.patientId);
   if (!patientDetails) {
