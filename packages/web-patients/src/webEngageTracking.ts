@@ -266,7 +266,7 @@ export const pharmacyFilterTracking = (data: any) => {
   if (window && window.webengage) {
     const { categoryName, categoryId } = data;
     try {
-      window.webengage.track('Filter option clicked', {
+      window.webengage.track('Filter apply option clicked', {
         'Category Name': categoryName,
         'Category ID': categoryId,
       });
