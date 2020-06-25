@@ -4,6 +4,7 @@ import { Theme, MenuItem } from '@material-ui/core';
 import { AphButton, AphTextField, AphSelect } from '@aph/web-ui-components';
 import Scrollbars from 'react-custom-scrollbars';
 import { MedicineProduct } from './../../helpers/MedicineApiCalls';
+import { pharmacyFilterTracking } from 'webEngageTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -283,6 +284,8 @@ interface MedicineFilterProps {
   manageFilter: (disableFilters: boolean) => void;
   showResponsiveFilter: boolean;
   setShowResponsiveFilter: (showResponsiveFilter: boolean) => void;
+  categoryName?: string;
+  categoryId?: string;
 }
 
 export type SortByOptions = 'A-Z' | 'Z-A' | 'Price-H-L' | 'Price-L-H' | '';
@@ -564,6 +567,10 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
           disabled={disableApplyFilter}
           fullWidth
           onClick={(e) => {
+            const data = { categoryName: props.categoryName, categoryId: props.categoryId };
+            locationUrl &&
+              !locationUrl.includes('search-medicines') &&
+              pharmacyFilterTracking(data);
             filterByPriceAndCategory();
             props.setShowResponsiveFilter(false);
           }}

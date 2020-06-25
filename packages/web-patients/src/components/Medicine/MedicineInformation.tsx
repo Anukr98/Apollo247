@@ -5,7 +5,7 @@ import { AphButton, AphTextField, AphCustomDropdown } from '@aph/web-ui-componen
 import Scrollbars from 'react-custom-scrollbars';
 
 import { NotifyMeNotification } from './NotifyMeNotification';
-import { notifyMeTracking } from '../../webEngageTracking';
+import { notifyMeTracking, pharmacyPdpPincodeTracking } from 'webEngageTracking';
 import { SubstituteDrugsList } from 'components/Medicine/SubstituteDrugsList';
 import { MedicineProductDetails, MedicineProduct } from '../../helpers/MedicineApiCalls';
 import { useParams } from 'hooks/routerHooks';
@@ -27,6 +27,7 @@ import { Alerts } from 'components/Alerts/Alerts';
 import { findAddrComponents } from 'helpers/commonHelpers';
 import { CartTypes } from 'components/MedicinesCartProvider';
 import _lowerCase from 'lodash/lowerCase';
+import { useAllCurrentPatients } from 'hooks/authHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -311,6 +312,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
     setPharmaAddressDetails,
     setHeaderPincodeError,
   } = useShoppingCart();
+  const { currentPatient } = useAllCurrentPatients();
   const [medicineQty, setMedicineQty] = React.useState(1);
   const notifyPopRef = useRef(null);
   const addToCartRef = useRef(null);
@@ -595,6 +597,14 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                       }}
                       onClick={() => {
                         checkDeliveryTime(pinCode);
+                        const { sku, name } = data;
+                        const eventData = {
+                          pinCode,
+                          productId: sku,
+                          productName: name,
+                          customerId: currentPatient && currentPatient.id,
+                        };
+                        pharmacyPdpPincodeTracking(eventData);
                       }}
                     >
                       {tatLoading ? <CircularProgress size={20} /> : ' Check'}
