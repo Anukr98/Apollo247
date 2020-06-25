@@ -11,23 +11,13 @@ import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
-import { GET_ALL_SPECIALITIES } from 'graphql/specialities';
-import { useApolloClient } from 'react-apollo-hooks';
 import { useAllCurrentPatients } from 'hooks/authHooks';
-import { useLocationDetails } from 'components/LocationProvider';
 import { gtmTracking } from '../gtmTracking';
-import { SearchObject } from 'components/DoctorsFilter';
+// import { SearchObject } from 'components/DoctorsFilter';
 import { BottomLinks } from 'components/BottomLinks';
 import { PastSearches } from 'components/PastSearches';
 import { useAuth } from 'hooks/authHooks';
 import { clientRoutes } from 'helpers/clientRoutes';
-import {
-  SearchDoctorAndSpecialtyByNameVariables,
-  SearchDoctorAndSpecialtyByName,
-} from 'graphql/types/SearchDoctorAndSpecialtyByName';
-import { readableParam } from 'helpers/commonHelpers';
-import { SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME } from 'graphql/doctors';
-import { useParams } from 'hooks/routerHooks';
 import { Link } from 'react-router-dom';
 import { AphButton, AphDialog, AphDialogClose, AphDialogTitle } from '@aph/web-ui-components';
 
@@ -251,7 +241,7 @@ const useStyles = makeStyles((theme: Theme) => {
       '& >div': {
         '& >div': {
           '&:first-child': {
-            display: 'none',
+            display: 'block',
           },
         },
       },
@@ -674,41 +664,17 @@ function a11yProps(index: any) {
     'aria-controls': `simple-tabpanel-${index}`,
   };
 }
-const searchObject: SearchObject = {
-  searchKeyword: '',
-  cityName: [],
-  experience: [],
-  availability: [],
-  fees: [],
-  gender: [],
-  language: [],
-  dateSelected: '',
-  specialtyName: '',
-  prakticeSpecialties: '',
-};
-interface DoctorsLandingProps {
-  history: History;
-}
 
 export const SpecialityListing: React.FC = (props) => {
   const classes = useStyles({});
+  const { currentPatient } = useAllCurrentPatients();
+  const { isSignedIn } = useAuth();
   const [expanded, setExpanded] = React.useState<string | false>(false);
   const [value, setValue] = React.useState(0);
-  const urlParams = new URLSearchParams(window.location.search);
-  const failedStatus = urlParams.get('status') ? String(urlParams.get('status')) : null;
   const prakticeSDKSpecialties = localStorage.getItem('symptomTracker');
-  const [matchingSpecialities, setMatchingSpecialities] = useState<number>(0);
-  const [specialitySelected, setSpecialitySelected] = useState<string>('');
-  const apolloClient = useApolloClient();
   const [specialtyId, setSpecialtyId] = useState<string>('');
-  const [filterOptions, setFilterOptions] = useState<SearchObject>(searchObject);
-  const { currentPatient } = useAllCurrentPatients();
-  const [data, setData] = useState<any>();
-  const [loading, setLoading] = useState<boolean>(false);
-  const [showSearchAndPastSearch, setShowSearchAndPastSearch] = useState<boolean>(true);
-  const [disableFilters, setDisableFilters] = useState<boolean>(true);
+  const [searchKeyword, setSearchKeyword] = useState<string>('');
   const [locationPopup, setLocationPopup] = useState<boolean>(false);
-  const { isSignedIn } = useAuth();
 
   const handleChange = (panel: string) => (event: React.ChangeEvent<{}>, isExpanded: boolean) => {
     setExpanded(isExpanded ? panel : false);
@@ -717,17 +683,6 @@ export const SpecialityListing: React.FC = (props) => {
   const handleTabChange = (event: React.ChangeEvent<{}>, newValue: number) => {
     setValue(newValue);
   };
-
-  const {
-    currentPincode,
-    currentLong,
-    currentLat,
-    getCurrentLocationPincode,
-  } = useLocationDetails();
-
-  const params = useParams<{
-    specialty: string;
-  }>();
 
   useEffect(() => {
     /**Gtm code start start */
@@ -738,78 +693,6 @@ export const SpecialityListing: React.FC = (props) => {
     });
     /**Gtm code start end */
   }, []);
-
-  useEffect(() => {
-    if (params && params.specialty) {
-      const decoded = decodeURIComponent(params.specialty);
-      const specialityName = readableParam(decoded);
-      apolloClient
-        .query({
-          query: GET_ALL_SPECIALITIES,
-          variables: {},
-          fetchPolicy: 'no-cache',
-        })
-        .then((response) => {
-          response.data &&
-            response.data.getAllSpecialties &&
-            response.data.getAllSpecialties.map((specialty: any) => {
-              if (specialty && specialty.name && specialty.name.toLowerCase() === specialityName) {
-                setSpecialtyId(specialty.id);
-                setSpecialitySelected(specialty.name);
-              }
-            });
-        });
-    }
-  }, []);
-
-  useEffect(() => {
-    if (filterOptions.searchKeyword.length > 2 && specialitySelected.length === 0) {
-      setLoading(true);
-      apolloClient
-        .query<SearchDoctorAndSpecialtyByName, SearchDoctorAndSpecialtyByNameVariables>({
-          query: SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME,
-          variables: {
-            searchText: filterOptions.searchKeyword,
-            patientId: currentPatient ? currentPatient.id : '',
-            pincode: currentPincode ? currentPincode : localStorage.getItem('currentPincode') || '',
-          },
-          fetchPolicy: 'no-cache',
-        })
-        .then((response) => {
-          setData(response.data);
-          setLoading(false);
-        });
-    }
-  }, [filterOptions.searchKeyword, specialitySelected, currentPincode]);
-
-  useEffect(() => {
-    if (specialitySelected.length > 0) {
-      const specialityName = specialitySelected.split('_');
-      setFilterOptions({
-        searchKeyword: specialityName[0],
-        specialtyName: specialityName[0], // this is used to disable filter if specialty selected and changed.
-        cityName: [],
-        experience: [],
-        availability: [],
-        fees: [],
-        gender: [],
-        language: [],
-        dateSelected: '',
-        prakticeSpecialties: '',
-      });
-      setShowSearchAndPastSearch(false);
-
-      /**Gtm code start start */
-      gtmTracking({
-        category: 'Consultations',
-        action: specialitySelected,
-        label: 'Listing Page Viewed',
-      });
-      /**Gtm code start end */
-    }
-  }, [specialitySelected]);
-
-  const specialityNames = specialitySelected.length > 0 ? specialitySelected.split('_') : '';
 
   return (
     <div className={classes.slContainer}>
@@ -855,27 +738,19 @@ export const SpecialityListing: React.FC = (props) => {
                       <AphInput
                         className={classes.searchInput}
                         placeholder="Search doctors or specialities"
+                        onChange={(e) => {
+                          const searchValue = e.target.value;
+                          setSearchKeyword(searchValue);
+                        }}
                       />
                     </div>
                   </div>
                   <div className={classes.pastSearch}>
                     <Typography component="h6">{isSignedIn ? 'Past Searches' : ''}</Typography>
                     <div className={classes.pastSearchList}>
-                      {currentPatient &&
-                      currentPatient.id &&
-                      filterOptions.searchKeyword.length <= 0 &&
-                      specialitySelected.length === 0 &&
-                      showSearchAndPastSearch ? (
-                        <PastSearches
-                          speciality={(specialitySelected) =>
-                            setSpecialitySelected(specialitySelected)
-                          }
-                          disableFilter={(disableFilters) => {
-                            setDisableFilters(disableFilters);
-                          }}
-                          specialityId={(specialityId: string) => setSpecialtyId(specialityId)}
-                        />
-                      ) : null}
+                      {currentPatient && currentPatient.id && searchKeyword.length <= 0 && (
+                        <PastSearches />
+                      )}
                     </div>
                   </div>
                   <Typography component="h2">
@@ -945,24 +820,7 @@ export const SpecialityListing: React.FC = (props) => {
                       <Typography component="h2">Other Specialites</Typography>
                     </div>
                     <div className={classes.osContainer}>
-                      <Specialities
-                        keyword={filterOptions.searchKeyword}
-                        matched={(matchingSpecialities) =>
-                          setMatchingSpecialities(matchingSpecialities)
-                        }
-                        speciality={(specialitySelected) =>
-                          setSpecialitySelected(specialitySelected)
-                        }
-                        specialityId={(specialityId: string) => setSpecialtyId(specialityId)}
-                        disableFilter={(disableFilters) => {
-                          setDisableFilters(disableFilters);
-                        }}
-                        subHeading={
-                          filterOptions.searchKeyword !== '' && showSearchAndPastSearch
-                            ? 'Matching Specialities'
-                            : 'Specialities'
-                        }
-                      />
+                      <Specialities />
                     </div>
                   </div>
                 </div>

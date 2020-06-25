@@ -10,6 +10,10 @@ export const GET_ALL_SPECIALITIES = gql`
       specialistPluralTerm
       userFriendlyNomenclature
       displayOrder
+      slugName
+      symptoms
+      commonSearchWords
+      shortDescription
     }
   }
 `;
