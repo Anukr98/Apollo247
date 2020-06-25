@@ -1,8 +1,6 @@
-import loadingVideo from '@aph/mobile-patients/src/Video/9seconds.mp4';
 import React, { useEffect, useState } from 'react';
-import { Platform, StyleProp, StyleSheet, ViewStyle, View } from 'react-native';
+import { StyleProp, StyleSheet, ViewStyle } from 'react-native';
 import VideoPlayer from 'react-native-video-controls';
-import { WebView } from 'react-native-webview';
 
 const styles = StyleSheet.create({
   headerView: {
@@ -32,55 +30,25 @@ export const CommonVideoPlayer: React.FC<CommonVideoPlayerProps> = (props) => {
   }, [isPlayClicked]);
 
   return (
-    <View style={[styles.headerView, style]}>
-      <View
-        style={{
-          flex: 1,
-          overflow: 'hidden',
-          backgroundColor: 'white',
-        }}
-      >
-        <WebView
-          style={{
-            flex: 1,
-            backgroundColor: 'white',
-          }}
-          javaScriptEnabled={true}
-          source={{
-            uri: 'https://player.vimeo.com/video/427597466',
-          }}
-          onLoadStart={() => {
-            console.log('onLoadStart');
-          }}
-          onLoadEnd={() => {
-            console.log('onLoadEnd');
-          }}
-          onLoad={() => {
-            console.log('onLoad');
-          }}
-        />
-      </View>
-    </View>
+    <VideoPlayer
+      style={[styles.headerView, style]}
+      source={{
+        uri:
+          'https://vod-progressive.akamaized.net/exp=1593091982~acl=%2Fvimeo-prod-skyfire-std-us%2F01%2F519%2F17%2F427597466%2F1854721107.mp4~hmac=f4659c7d8b16d6130b2e19a5ee90bc908b860226d516cc123a58c402422c8ef3/vimeo-prod-skyfire-std-us/01/519/17/427597466/1854721107.mp4?filename=Dr+Venkata+Kartikeyan+Chennai+Sample.mp4',
+      }}
+      repeat
+      showOnStart={false}
+      controlTimeout={10}
+      resizeMode={'contain'}
+      paused={playVideo}
+      muted={false}
+      playInBackground={false}
+      playWhenInactive={true}
+      rate={1.0}
+      volume={1.0}
+      ignoreSilentSwitch={'ignore'}
+      progressUpdateInterval={1000}
+      // navigator={props.navigation}
+    />
   );
-
-  // return (
-  //   <VideoPlayer
-  //     style={[styles.headerView, style]}
-  //     source={{ uri: 'https://vjs.zencdn.net/v/oceans.mp4' }}
-  //     // source={Platform.OS === 'ios' ? { uri: '9seconds', type: 'mp4' } : loadingVideo}
-  //     repeat
-  //     showOnStart={false}
-  //     controlTimeout={10}
-  //     resizeMode={'cover'}
-  //     paused={playVideo}
-  //     muted={false}
-  //     playInBackground={false}
-  //     playWhenInactive={true}
-  //     rate={1.0}
-  //     volume={1.0}
-  //     ignoreSilentSwitch={'ignore'}
-  //     progressUpdateInterval={1000}
-  //     // navigator={props.navigation}
-  //   />
-  // );
 };
