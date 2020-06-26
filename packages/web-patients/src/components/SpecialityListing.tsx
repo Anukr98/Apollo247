@@ -147,7 +147,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     specialityContent: {
-      '& h2': {
+      '& >h2': {
         fontSize: 16,
         margin: '10px 0',
         color: '#00a7b9',
@@ -196,7 +196,7 @@ const useStyles = makeStyles((theme: Theme) => {
       alignItems: 'center',
       width: '100%',
       position: 'relative',
-      '& img': {
+      '&  >img': {
         position: 'absolute',
         left: 0,
       },
@@ -327,13 +327,17 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: '20px 0',
     },
     specialityCard: {
-      height: 160,
+      height: 180,
       background: '#fff',
       borderRadius: 10,
       boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
       padding: 10,
       textAlign: 'center',
       position: 'relative',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      flexDirection: 'column',
       '& h3': {
         fontSize: 14,
         fontWeight: 500,
@@ -360,15 +364,10 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     symptoms: {
-      position: 'absolute',
-      bottom: 10,
       fontSize: '10px !important',
-      margin: '20px 0 0',
       fontWeight: 500,
       color: '#02475b !important',
       padding: '0 !important',
-      left: 0,
-      right: 0,
       textAlign: 'center',
       [theme.breakpoints.down(700)]: {
         padding: '0 10px !important',
@@ -592,7 +591,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     specialitySearch: {
-      padding: '10px 0 0',
+      padding: '10px 0',
       display: 'flex',
       alignItems: 'center',
       [theme.breakpoints.down(700)]: {
@@ -682,10 +681,8 @@ const useStyles = makeStyles((theme: Theme) => {
       alignItems: 'center',
     },
     dImg: {
-      paddingRight: 16,
-      margin: '0 15px 50px 0',
+      margin: '0 15px 0 0',
       '& img': {
-        maxWidth: 40,
         width: 44,
         height: 44,
         borderRadius: '50%',
@@ -897,20 +894,20 @@ export const SpecialityListing: React.FC = (props) => {
                                     <Typography component="h6">Doctors</Typography>
                                     <ul className={classes.doctorList}>
                                       {searchDoctors.map((doctor: DoctorsType) => (
-                                        <Link
-                                          key={doctor.id}
-                                          to={clientRoutes.specialtyDoctorDetails(
-                                            doctor.specialty && doctor.specialty.name
-                                              ? _lowerCase(doctor.specialty.name).replace(
-                                                  /[/ / /]/g,
-                                                  '-'
-                                                )
-                                              : '',
-                                            _lowerCase(doctor.fullName).replace(/ /g, '-'),
-                                            doctor.id
-                                          )}
-                                        >
-                                          <li key={doctor.id}>
+                                        <li key={doctor.id}>
+                                          <Link
+                                            key={doctor.id}
+                                            to={clientRoutes.specialtyDoctorDetails(
+                                              doctor.specialty && doctor.specialty.name
+                                                ? _lowerCase(doctor.specialty.name).replace(
+                                                    /[/ / /]/g,
+                                                    '-'
+                                                  )
+                                                : '',
+                                              _lowerCase(doctor.fullName).replace(/ /g, '-'),
+                                              doctor.id
+                                            )}
+                                          >
                                             <div className={classes.doctorContent}>
                                               <div className={classes.dImg}>
                                                 <img src={doctor.photoUrl} />
@@ -927,8 +924,8 @@ export const SpecialityListing: React.FC = (props) => {
                                                 </Typography>
                                               </div>
                                             </div>
-                                          </li>
-                                        </Link>
+                                          </Link>
+                                        </li>
                                       ))}
                                     </ul>
                                   </div>
