@@ -42,25 +42,20 @@ export const BookBest: React.FC<BookBestProps> = (props) => {
   const classes = useStyles({});
   const [remainInFaqData, setRemainInFaqData] = useState<boolean>(false);
   const { faqData } = props;
-  return (
+  return faqData && faqData.consultReasons ? (
     <div className={classes.root}>
-      {faqData && (
-        <>
-          <h3>{faqData.title}</h3>
-          <p>{faqData.about}</p>
-          <h3>You can consult a {faqData.title} if</h3>
-          <ul>
-            {faqData.consultReasons &&
-              (!remainInFaqData
-                ? faqData.consultReasons.map(
-                    (item: any, index: number) => index < 2 && <li key={index}>{item}</li>
-                  )
-                : faqData.consultReasons.map((fq: any, index: number) => (
-                    <li key={index}>{fq}</li>
-                  )))}
-          </ul>
-        </>
-      )}
+      <h3>{faqData.title}</h3>
+      <p>{faqData.about}</p>
+      <h3>You can consult a {faqData.title} if</h3>
+      <ul>
+        {faqData.consultReasons.map((item: any, index: number) => {
+          if (!remainInFaqData) {
+            return index < 2 && <li key={index}>{item}</li>;
+          } else {
+            return <li key={index}>{item}</li>;
+          }
+        })}
+      </ul>
       {!remainInFaqData && (
         <Link
           className={classes.readMore}
@@ -73,5 +68,5 @@ export const BookBest: React.FC<BookBestProps> = (props) => {
         </Link>
       )}
     </div>
-  );
+  ) : null;
 };

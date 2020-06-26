@@ -79,7 +79,7 @@ interface FrequentlyQuestionsProps {
 export const FrequentlyQuestions: React.FC<FrequentlyQuestionsProps> = (props) => {
   const classes = useStyles({});
   const { faqData } = props;
-  return (
+  return faqData ? (
     <div className={classes.root}>
       <h2>Frequently asked questions</h2>
       {faqData.map((fq: any) => (
@@ -102,5 +102,5 @@ export const FrequentlyQuestions: React.FC<FrequentlyQuestionsProps> = (props) =
         </ExpansionPanel>
       ))}
     </div>
-  );
+  ) : null;
 };
