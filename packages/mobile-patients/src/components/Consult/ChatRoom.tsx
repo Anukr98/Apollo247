@@ -6085,7 +6085,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             justifyContent: 'flex-end',
           }}
           activeOpacity={1}
-          onPress={async () => {
+          onPress={() => {
             setDisplayUploadHealthRecords(false);
             AsyncStorage.setItem(appointmentData.id, appointmentData.id);
           }}
