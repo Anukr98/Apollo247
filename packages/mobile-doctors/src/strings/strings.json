@@ -393,8 +393,8 @@
     "search": "Search",
     "family_history": "Family History",
     "allergies": "Allergies",
-    "hello_dr": "hello",
-    "here_are_all_patients": "here are all your patients",
+    "hello_dr": "Hello",
+    "here_are_all_patients": "Here are all your patients",
     "sort_by": "SORT BY",
     "symptoms": "Symptoms",
     "patients_medi_family_history": "Patient’s Medical & Family History",
@@ -456,5 +456,12 @@
     "reconnecting": "There is a problem with network connection. Reconnecting, Please wait...",
     "videoBack": "Network improved switching back to video",
     "reconnected": "Reconnected"
+  },
+  "patientsSearch": {
+    "searchBody": "Search results will be displayed here ...",
+    "noPatientText1": "No patient records could be found for",
+    "noPatientText2": "Please try checking your spelling or use another term.",
+    "searchResult": "Search results with “{0}”",
+    "searchCharLimit": "Enter atleast 3 characters to search."
   }
 }

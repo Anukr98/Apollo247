@@ -226,8 +226,22 @@ export const GET_DOCTOR_APPOINTMENTS = gql`
   }
 `;
 export const GET_PATIENT_LOG = gql`
-  query getPatientLog($limit: Int, $offset: Int, $sortBy: patientLogSort, $type: patientLogType) {
-    getPatientLog(limit: $limit, offset: $offset, sortBy: $sortBy, type: $type) {
+  query getPatientLog(
+    $limit: Int
+    $offset: Int
+    $sortBy: patientLogSort
+    $type: patientLogType
+    $patientName: String
+    $doctorId: ID
+  ) {
+    getPatientLog(
+      limit: $limit
+      offset: $offset
+      sortBy: $sortBy
+      type: $type
+      patientName: $patientName
+      doctorId: $doctorId
+    ) {
       patientLog {
         patientid
         consultscount

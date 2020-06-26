@@ -125,7 +125,7 @@ import {
 } from 'react-native';
 import firebase from 'react-native-firebase';
 import KeepAwake from 'react-native-keep-awake';
-import { NavigationScreenProps } from 'react-navigation';
+import { NavigationScreenProps, ScrollView } from 'react-navigation';
 
 const { width } = Dimensions.get('window');
 let joinTimerNoShow: NodeJS.Timeout;
@@ -193,7 +193,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     preselectTabIndex ? tabsData[preselectTabIndex].title : tabsData[0].title
   );
   const flatListRef = useRef<FlatList<never> | undefined | null>();
-
+  const [messageText, setMessageText] = useState<string>('');
   const [messages, setMessages] = useState([]);
   const [displayReSchedulePopUp, setDisplayReSchedulePopUp] = useState<boolean>(false);
 
@@ -1649,13 +1649,30 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       appointmentData: appointmentData,
     });
   };
+  const SrollRef = useRef<any>();
+  useEffect(() => {
+    if (SrollRef.current) {
+      if (activeTabIndex === tabsData[0].title) {
+        SrollRef.current.scrollTo({ x: 0, y: 0, animated: false });
+      } else {
+        SrollRef.current.scrollToEnd({ animated: false });
+        setTimeout(() => {
+          flatListRef.current && flatListRef.current.scrollToEnd();
+        }, 1000);
+      }
+    }
+  }, [SrollRef, activeTabIndex, tabsData]);
+
   const renderTabPage = () => {
     return (
       <>
         <View style={[styles.shadowview]}>
           <TabsComponent
             data={tabsData}
-            onChange={(index) => setActiveTabIndex(index)}
+            onChange={(index) => {
+              Keyboard.dismiss();
+              setActiveTabIndex(index);
+            }}
             selectedTab={activeTabIndex}
           />
         </View>
@@ -1665,101 +1682,105 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               flex: 1,
             }}
           >
-            {activeTabIndex == tabsData[0].title ? (
-              <CaseSheetView
-                // disableConsultButton={!!PatientConsultTime}
-                caseSheetVersion={caseSheetVersion}
-                overlayDisplay={(component) => {
-                  setOverlayDisplay(component);
-                }}
-                onStartConsult={onStartConsult}
-                onEndConsult={onEndConsult}
-                onStopConsult={onStopConsult}
-                startConsult={startConsult}
-                navigation={props.navigation}
-                messagePublish={(message: any) => {
-                  pubnub.publish(
-                    {
-                      message,
-                      channel: channel,
-                      storeInHistory: true,
-                    },
-                    (status, response) => {}
-                  );
-                }}
-                inCall={callOptions.isVideo || callOptions.isAudio}
-                chatFiles={chatFiles}
-                setUrl={setUrl}
-                setPatientImageshow={setPatientImageshow}
-                setShowPDF={setShowPDF}
-                favList={favList}
-                favMed={favMed}
-                favTest={favTest}
-                caseSheet={caseSheet}
-                getdetails={() => getCaseSheetAPI()}
-                saveDetails={(
-                  showLoading: boolean,
-                  inputdata?: ModifyCaseSheetInput,
-                  callBack?: () => void
-                ) => saveDetails(showLoading, false, inputdata, callBack)}
-                caseSheetEdit={caseSheetEdit}
-                setCaseSheetEdit={setCaseSheetEdit}
-                showEditPreviewButtons={showEditPreviewButtons}
-                setShowEditPreviewButtons={setShowEditPreviewButtons}
-                symptonsData={symptonsData}
-                setSymptonsData={(data) => setSymptonsData(data)}
-                pastList={pastList}
-                setPastList={setPastList}
-                lifeStyleData={lifeStyleData}
-                setLifeStyleData={setLifeStyleData}
-                medicalHistory={medicalHistory}
-                setMedicalHistory={setMedicalHistory}
-                familyValues={familyValues}
-                setFamilyValues={setFamilyValues}
-                patientDetails={patientDetails}
-                setPatientDetails={setPatientDetails}
-                healthWalletArrayData={healthWalletArrayData}
-                setHealthWalletArrayData={setHealthWalletArrayData}
-                tests={tests}
-                setTests={setTests}
-                addedAdvices={addedAdvices}
-                setAddedAdvices={setAddedAdvices}
-                juniordoctornotes={juniordoctornotes}
-                setJuniorDoctorNotes={setJuniorDoctorNotes}
-                diagnosisData={diagnosisData}
-                setDiagnosisData={setDiagnosisData}
-                medicinePrescriptionData={medicinePrescriptionData}
-                setMedicinePrescriptionData={setMedicinePrescriptionData}
-                selectedMedicinesId={selectedMedicinesId}
-                setSelectedMedicinesId={setSelectedMedicinesId}
-                existingMedicineId={existingMedicineId}
-                removedMedicinePrescriptionData={removedMedicinePrescriptionData}
-                setRemovedMedicinePrescriptionData={setRemovedMedicinePrescriptionData}
-                switchValue={switchValue}
-                setSwitchValue={setSwitchValue}
-                followupDays={followupDays}
-                setFollowupDays={setFollowupDays}
-                followUpConsultationType={followUpConsultationType}
-                setFollowUpConsultationType={setFollowUpConsultationType}
-                doctorNotes={doctorNotes}
-                setDoctorNotes={setDoctorNotes}
-                displayId={displayId}
-                setDisplayId={setDisplayId}
-                prescriptionPdf={prescriptionPdf}
-                setPrescriptionPdf={setPrescriptionPdf}
-                selectedReferral={selectedReferral}
-                setSelectedReferral={setSelectedReferral}
-                referralReason={referralReason}
-                setReferralReason={setReferralReason}
-              />
-            ) : (
-              <View
-                style={{
-                  flex: 1,
-                  width: '100%',
-                }}
-              >
+            <ScrollView
+              ref={SrollRef}
+              horizontal
+              scrollEnabled={false}
+              showsHorizontalScrollIndicator={false}
+              keyboardShouldPersistTaps={'always'}
+            >
+              <View style={{ width: width }}>
+                <CaseSheetView
+                  // disableConsultButton={!!PatientConsultTime}
+                  caseSheetVersion={caseSheetVersion}
+                  overlayDisplay={(component) => {
+                    setOverlayDisplay(component);
+                  }}
+                  onStartConsult={onStartConsult}
+                  onEndConsult={onEndConsult}
+                  onStopConsult={onStopConsult}
+                  startConsult={startConsult}
+                  navigation={props.navigation}
+                  messagePublish={(message: any) => {
+                    pubnub.publish(
+                      {
+                        message,
+                        channel: channel,
+                        storeInHistory: true,
+                      },
+                      (status, response) => {}
+                    );
+                  }}
+                  inCall={callOptions.isVideo || callOptions.isAudio}
+                  chatFiles={chatFiles}
+                  setUrl={setUrl}
+                  setPatientImageshow={setPatientImageshow}
+                  setShowPDF={setShowPDF}
+                  favList={favList}
+                  favMed={favMed}
+                  favTest={favTest}
+                  caseSheet={caseSheet}
+                  getdetails={() => getCaseSheetAPI()}
+                  saveDetails={(
+                    showLoading: boolean,
+                    inputdata?: ModifyCaseSheetInput,
+                    callBack?: () => void
+                  ) => saveDetails(showLoading, false, inputdata, callBack)}
+                  caseSheetEdit={caseSheetEdit}
+                  setCaseSheetEdit={setCaseSheetEdit}
+                  showEditPreviewButtons={showEditPreviewButtons}
+                  setShowEditPreviewButtons={setShowEditPreviewButtons}
+                  symptonsData={symptonsData}
+                  setSymptonsData={(data) => setSymptonsData(data)}
+                  pastList={pastList}
+                  setPastList={setPastList}
+                  lifeStyleData={lifeStyleData}
+                  setLifeStyleData={setLifeStyleData}
+                  medicalHistory={medicalHistory}
+                  setMedicalHistory={setMedicalHistory}
+                  familyValues={familyValues}
+                  setFamilyValues={setFamilyValues}
+                  patientDetails={patientDetails}
+                  setPatientDetails={setPatientDetails}
+                  healthWalletArrayData={healthWalletArrayData}
+                  setHealthWalletArrayData={setHealthWalletArrayData}
+                  tests={tests}
+                  setTests={setTests}
+                  addedAdvices={addedAdvices}
+                  setAddedAdvices={setAddedAdvices}
+                  juniordoctornotes={juniordoctornotes}
+                  setJuniorDoctorNotes={setJuniorDoctorNotes}
+                  diagnosisData={diagnosisData}
+                  setDiagnosisData={setDiagnosisData}
+                  medicinePrescriptionData={medicinePrescriptionData}
+                  setMedicinePrescriptionData={setMedicinePrescriptionData}
+                  selectedMedicinesId={selectedMedicinesId}
+                  setSelectedMedicinesId={setSelectedMedicinesId}
+                  existingMedicineId={existingMedicineId}
+                  removedMedicinePrescriptionData={removedMedicinePrescriptionData}
+                  setRemovedMedicinePrescriptionData={setRemovedMedicinePrescriptionData}
+                  switchValue={switchValue}
+                  setSwitchValue={setSwitchValue}
+                  followupDays={followupDays}
+                  setFollowupDays={setFollowupDays}
+                  followUpConsultationType={followUpConsultationType}
+                  setFollowUpConsultationType={setFollowUpConsultationType}
+                  doctorNotes={doctorNotes}
+                  setDoctorNotes={setDoctorNotes}
+                  displayId={displayId}
+                  setDisplayId={setDisplayId}
+                  prescriptionPdf={prescriptionPdf}
+                  setPrescriptionPdf={setPrescriptionPdf}
+                  selectedReferral={selectedReferral}
+                  setSelectedReferral={setSelectedReferral}
+                  referralReason={referralReason}
+                  setReferralReason={setReferralReason}
+                />
+              </View>
+              <View style={{ width: width }}>
                 <ChatRoom
+                  messageText={messageText}
+                  setMessageText={setMessageText}
                   patientId={patientId}
                   returnToCall={returnToCall}
                   setReturnToCall={setReturnToCall}
@@ -1780,7 +1801,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                   }
                 />
               </View>
-            )}
+            </ScrollView>
           </View>
         ) : null}
       </>

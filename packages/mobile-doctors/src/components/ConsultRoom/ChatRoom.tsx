@@ -2,7 +2,6 @@ import {
   AttachmentIcon,
   ChatCallIcon,
   ChatSend,
-  DoctorImage,
   DoctorPlaceholderImage,
   FileBig,
   Mascot,
@@ -12,12 +11,13 @@ import {
 } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
 import { useUIElements } from '@aph/mobile-doctors/src/components/ui/UIElementsProvider';
+import { GetCaseSheet_getCaseSheet_caseSheetDetails_patientDetails } from '@aph/mobile-doctors/src/graphql/types/GetCaseSheet';
 import { getPrismUrls } from '@aph/mobile-doctors/src/helpers/clientCalls';
 import { messageCodes } from '@aph/mobile-doctors/src/helpers/helperFunctions';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import moment from 'moment';
-import React, { useEffect, useRef, useState, Dispatch, SetStateAction } from 'react';
+import React, { Dispatch, SetStateAction, useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   Alert,
@@ -33,10 +33,9 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { Image as ImageNative, Image } from 'react-native-elements';
+import { Image, Image as ImageNative } from 'react-native-elements';
 import { isIphoneX } from 'react-native-iphone-x-helper';
 import { NavigationScreenProps } from 'react-navigation';
-import { GetCaseSheet_getCaseSheet_caseSheetDetails_patientDetails } from '@aph/mobile-doctors/src/graphql/types/GetCaseSheet';
 
 const { height, width } = Dimensions.get('window');
 
@@ -84,6 +83,8 @@ export interface ChatRoomProps extends NavigationScreenProps {
   patientDetails: GetCaseSheet_getCaseSheet_caseSheetDetails_patientDetails | null | undefined;
   extendedHeader?: boolean;
   patientId: string;
+  messageText: string;
+  setMessageText: React.Dispatch<React.SetStateAction<string>>;
 }
 export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   // const [isDropdownVisible, setDropdownVisible] = useState(false);
@@ -96,14 +97,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const doctorId = props.navigation.getParam('DoctorId');
   const patientId = props.patientId || props.navigation.getParam('PatientId');
 
-  const flatListRef = useRef<FlatList<never> | undefined | null>();
-  const [messageText, setMessageText] = useState<string>('');
   const [heightList, setHeightList] = useState<number>(height - changedHeight);
   const [hideSend, setHideSend] = useState<boolean>(true);
   const patientImage = patientDetails && (
     <Image style={styles.imageStyle} source={{ uri: patientDetails.photoUrl || '' }} />
   );
-  const { messages } = props;
+  const { messages, messageText, setMessageText, flatListRef } = props;
 
   const keyboardDidShow = (e: KeyboardEvent) => {
     if (Platform.OS === 'ios') {
@@ -124,8 +123,15 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       flatListRef.current && flatListRef.current.scrollToEnd();
     }, 1000);
 
-    const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', keyboardDidShow);
-    const keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', keyboardDidHide);
+    const keyboardDidShowListener = Keyboard.addListener(
+      Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
+      keyboardDidShow
+    );
+    const keyboardDidHideListener = Keyboard.addListener(
+      Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide',
+      keyboardDidHide
+    );
+
     return () => {
       keyboardDidShowListener.remove();
       keyboardDidHideListener.remove();
@@ -771,7 +777,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             contentContainerStyle={{
               marginHorizontal: 20,
               marginTop: 0,
-              paddingBottom: isIphoneX ? 50 : 0,
+              // paddingBottom: isIphoneX ? 5000 : 100,
             }}
             removeClippedSubviews={false}
             bounces={false}
@@ -860,6 +866,16 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     );
   };
 
+  const onSubmitText = (text?: string) => {
+    const textMessage = text ? text.trim() : messageText.trim();
+    if (textMessage.length == 0) {
+      Alert.alert(strings.common.apollo, strings.consult_room.Please_write_something);
+      return;
+    }
+    props.send(textMessage);
+    setMessageText('');
+    flatListRef.current && flatListRef.current!.scrollToEnd();
+  };
   return (
     <View
       style={{
@@ -870,7 +886,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       {renderChatView()}
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 40 : 0}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 40 : 10}
         enabled
       >
         <View
@@ -899,7 +915,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   flexDirection: 'row',
                   marginLeft: 20,
                   height: 40,
-                  marginRight: 16,
                   justifyContent: 'center',
                   alignItems: 'center',
                 }}
@@ -926,6 +941,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 borderBottomWidth: 2,
                 borderColor: theme.colors.APP_GREEN,
                 marginRight: 20,
+                marginLeft: 16,
               }}
             >
               <View style={{ flex: 1 }}>
@@ -934,13 +950,16 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   placeholder={strings.smartPrescr.type_here}
                   multiline={true}
                   style={{
-                    height: 40,
+                    minHeight: 40,
                     ...theme.fonts.IBMPlexSansMedium(16),
+                    padding: 0,
+                    paddingBottom: hideSend ? 0 : 12,
                   }}
                   value={messageText}
                   blurOnSubmit={false}
                   onChangeText={(value) => {
                     setMessageText(value);
+                    flatListRef.current && flatListRef.current.scrollToEnd();
                     props.setDropdownVisible(false);
                   }}
                   onFocus={() => {
@@ -959,26 +978,17 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               </View>
 
               {!hideSend ? (
-                <TouchableOpacity
-                  activeOpacity={1}
-                  onPress={async () => {
-                    const textMessage = messageText.trim();
-                    console.log('ChatSend', textMessage);
-
-                    if (textMessage.length == 0) {
-                      Alert.alert(
-                        strings.common.apollo,
-                        strings.consult_room.Please_write_something
-                      );
-                      return;
-                    }
-                    props.send(textMessage);
-                    setMessageText('');
-                    flatListRef.current && flatListRef.current!.scrollToEnd();
-                  }}
-                >
-                  <ChatSend />
-                </TouchableOpacity>
+                <View style={{ height: 40 }}>
+                  <TouchableOpacity
+                    style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}
+                    activeOpacity={1}
+                    onPress={() => {
+                      onSubmitText();
+                    }}
+                  >
+                    <ChatSend />
+                  </TouchableOpacity>
+                </View>
               ) : null}
             </View>
           </View>
