@@ -210,13 +210,7 @@ export const CouponCodeConsult: React.FC<ApplyCouponProps> = (props) => {
   const verifyCoupon = () => {
     if (currentPatient && currentPatient.id) {
       setMuationLoading(true);
-      fetchUtil(
-        process.env.VALIDATE_CONSULT_COUPONS,
-        'POST',
-        validateCouponBody,
-        '',
-        false
-      )
+      fetchUtil(process.env.VALIDATE_CONSULT_COUPONS, 'POST', validateCouponBody, '', false)
         .then((data: any) => {
           if (data && data.response) {
             const couponValidateResult = data.response;
@@ -232,10 +226,10 @@ export const CouponCodeConsult: React.FC<ApplyCouponProps> = (props) => {
                 action: props.speciality,
                 label: `Coupon Applied - ${selectCouponCode}`,
                 value:
-                  couponValidateResult && couponValidateResult.discount
+                  couponValidateResult && couponValidateResult.valid
                     ? Number(
-                      (props.cartValue - parseFloat(couponValidateResult.discount)).toFixed(2)
-                    )
+                        (props.cartValue - parseFloat(couponValidateResult.discount)).toFixed(2)
+                      )
                     : null,
               });
               /*GTM TRACKING END */
@@ -288,17 +282,17 @@ export const CouponCodeConsult: React.FC<ApplyCouponProps> = (props) => {
                           <img src={require('images/ic_tickmark.svg')} alt="" />
                         </div>
                       ) : (
-                          <AphButton
-                            classes={{
-                              disabled: classes.buttonDisabled,
-                            }}
-                            className={classes.searchBtn}
-                            disabled={disableCoupon}
-                            onClick={() => verifyCoupon()}
-                          >
-                            <img src={require('images/ic_send.svg')} alt="" />
-                          </AphButton>
-                        )}
+                        <AphButton
+                          classes={{
+                            disabled: classes.buttonDisabled,
+                          }}
+                          className={classes.searchBtn}
+                          disabled={disableCoupon}
+                          onClick={() => verifyCoupon()}
+                        >
+                          <img src={require('images/ic_send.svg')} alt="" />
+                        </AphButton>
+                      )}
                     </div>
                   </div>
                 }
@@ -329,7 +323,7 @@ export const CouponCodeConsult: React.FC<ApplyCouponProps> = (props) => {
                                 props.setValidityStatus(false);
                                 setSelectCouponCode(couponDetails.coupon);
                               }}
-                            // disabled={props.cartValue < 200}
+                              // disabled={props.cartValue < 200}
                             />
                             {couponDetails && couponDetails.message && (
                               <div className={classes.couponText}>{couponDetails.message}</div>
@@ -340,8 +334,8 @@ export const CouponCodeConsult: React.FC<ApplyCouponProps> = (props) => {
                   ) : isLoading ? (
                     <CircularProgress className={classes.loader} />
                   ) : (
-                        <div className={classes.noCoupons}>No available Coupons</div>
-                      )}
+                    <div className={classes.noCoupons}>No available Coupons</div>
+                  )}
                 </ul>
               </div>
             </div>

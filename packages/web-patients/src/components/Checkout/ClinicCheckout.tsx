@@ -554,7 +554,7 @@ export const ClinicCheckout: React.FC = () => {
                         Savings of Rs.{' '}
                         {validateCouponResult && validateCouponResult.valid
                           ? validateCouponResult.discount.toFixed(2)
-                          : consultCouponValue}{' '}
+                          : consultCouponValue && consultCouponValue.toFixed(2)}{' '}
                         on the bill
                       </div>
                     )}

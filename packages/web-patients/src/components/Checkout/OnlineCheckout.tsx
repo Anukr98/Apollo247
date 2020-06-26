@@ -566,7 +566,7 @@ export const OnlineCheckout: React.FC = () => {
                         Savings of Rs.{' '}
                         {validateCouponResult && validateCouponResult.valid
                           ? validateCouponResult.discount.toFixed(2)
-                          : consultCouponValue}{' '}
+                          : consultCouponValue && consultCouponValue.toFixed(2)}{' '}
                         on the bill
                       </div>
                     )}
@@ -581,7 +581,7 @@ export const OnlineCheckout: React.FC = () => {
                     </span>
                   </div>
                   {(validateCouponResult && validateCouponResult.valid) ||
-                  (consultCouponCodeInitial && consultCouponCodeInitial.length > 0) ? (
+                  (consultCouponCodeInitial && consultCouponCodeInitial.length) ? (
                     <div className={`${classes.priceRow} ${classes.discountRow}`}>
                       <span>
                         Coupon Applied <br /> ({couponCode})

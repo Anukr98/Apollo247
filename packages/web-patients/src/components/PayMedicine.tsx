@@ -485,7 +485,6 @@ export const PayMedicine: React.FC = (props) => {
   });
 
   useEffect(() => {
-    console.log('validateConsultCouponResult', validateConsultCouponResult);
     if (validateConsultCouponResult && validateConsultCouponResult.valid) {
       console.log('validateConsultCouponResult', validateConsultCouponResult);
       setRevisedAmount(
