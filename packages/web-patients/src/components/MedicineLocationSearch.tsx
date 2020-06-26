@@ -173,11 +173,6 @@ const useStyles = makeStyles((theme: Theme) => {
   });
 });
 
-const apiDetails = {
-  authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
-  service_url: process.env.PHARMACY_SERVICE_AVAILABILITY,
-};
-
 export const MedicineLocationSearch: React.FC = (props) => {
   const classes = useStyles({});
   const locationRef = useRef(null);
@@ -266,6 +261,27 @@ export const MedicineLocationSearch: React.FC = (props) => {
     return 'No location';
   };
 
+  const setAddressDetails = (addrComponents: any) => {
+    const pincode = findAddrComponents('postal_code', addrComponents);
+    const city =
+      findAddrComponents('administrative_area_level_2', addrComponents) ||
+      findAddrComponents('locality', addrComponents);
+    const state = findAddrComponents('administrative_area_level_1', addrComponents);
+    const country = findAddrComponents('country', addrComponents);
+    setMedicineAddress(city);
+    setPharmaAddressDetails({
+      city,
+      state,
+      pincode,
+      country,
+    });
+    setIsPincodeDialogOpen(false);
+    setIsLocationPopover(false);
+    setPincode('');
+    setPincodeError(false);
+    setMutationLoading(false);
+  };
+
   const getCurrentLocationDetails = async (currentLat: string, currentLong: string) => {
     await axios
       .get(
@@ -275,24 +291,7 @@ export const MedicineLocationSearch: React.FC = (props) => {
         try {
           if (data && data.results[0] && data.results[0].address_components) {
             const addrComponents = data.results[0].address_components || [];
-            const pincode = findAddrComponents('postal_code', addrComponents);
-            const city =
-              findAddrComponents('administrative_area_level_2', addrComponents) ||
-              findAddrComponents('locality', addrComponents);
-            const state = findAddrComponents('administrative_area_level_1', addrComponents);
-            const country = findAddrComponents('country', addrComponents);
-            setMedicineAddress(city);
-            setPharmaAddressDetails({
-              city,
-              state,
-              pincode,
-              country,
-            });
-            setIsPincodeDialogOpen(false);
-            setIsLocationPopover(false);
-            setPincode('');
-            setPincodeError(false);
-            setMutationLoading(false);
+            setAddressDetails(addrComponents);
           }
         } catch {
           (e: AxiosError) => {
@@ -319,8 +318,8 @@ export const MedicineLocationSearch: React.FC = (props) => {
       .then(({ data }) => {
         try {
           if (data && data.results[0] && data.results[0].address_components) {
-            const { lat, lng } = data.results[0].geometry.location;
-            getCurrentLocationDetails(lat, lng);
+            const addrComponents = data.results[0].address_components || [];
+            setAddressDetails(addrComponents);
           }
         } catch {
           (e: AxiosError) => {

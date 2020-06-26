@@ -41,6 +41,7 @@ export const saveMedicineOrderTypeDefs = gql`
     ORDER_CONFIRMED
     CANCEL_REQUEST
     READY_AT_STORE
+    PURCHASED_IN_STORE
   }
 
   enum MEDICINE_DELIVERY_TYPE {
@@ -142,6 +143,8 @@ const SaveMedicineOrder: Resolver<
 > = async (parent, { MedicineCartInput }, { profilesDb }) => {
   const errorCode = 0,
     errorMessage = '';
+
+  throw new AphError(AphErrorMessages.SAVE_MEDICINE_ORDER_ERROR, undefined, {});
 
   if (!MedicineCartInput.items || MedicineCartInput.items.length == 0) {
     throw new AphError(AphErrorMessages.CART_EMPTY_ERROR, undefined, {});

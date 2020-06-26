@@ -378,6 +378,9 @@ interface ConsultRoomProps {
   disableChat: boolean;
   isNewMessage: (isNewMessage: boolean) => void;
   autoCloseCaseSheet: boolean;
+  setSessionError: (error: any) => void;
+  setPublisherError: (error: any) => void;
+  setSubscriberError: (error: any) => void;
 }
 
 export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
@@ -1002,6 +1005,9 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
             isNewMsg={isNewMsg}
             convertCall={() => convertCall()}
             JDPhotoUrl={''}
+            setSessionError={props.setSessionError}
+            setPublisherError={props.setPublisherError}
+            setSubscriberError={props.setSubscriberError}
           />
         )}
         {(!showVideo || showVideoChat) && (
@@ -1028,7 +1034,9 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
                 disabled={fileUploading}
               >
                 <span>Attach</span>
-                <span><img src={require('images/round-attach.svg')} alt="" /></span>
+                <span>
+                  <img src={require('images/round-attach.svg')} alt="" />
+                </span>
                 <input
                   type="file"
                   style={{ display: 'none' }}

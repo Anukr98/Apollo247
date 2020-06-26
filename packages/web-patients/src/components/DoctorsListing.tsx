@@ -21,7 +21,10 @@ import { clientRoutes } from 'helpers/clientRoutes';
 import { readableParam } from 'helpers/commonHelpers';
 import moment from 'moment';
 import { useApolloClient } from 'react-apollo-hooks';
+import { useParams } from 'hooks/routerHooks';
 import { SchemaMarkup } from 'SchemaMarkup';
+import { MetaTagsComp } from 'MetaTagsComp';
+import { gtmTracking } from 'gtmTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -196,16 +199,12 @@ const convertAvailabilityToDate = (availability: String[], dateSelectedFromFilte
     availableNow = {};
   }
   const availabilityArray: String[] = [];
-  const today = moment(new Date())
-    .utc()
-    .format('YYYY-MM-DD');
+  const today = moment(new Date()).utc().format('YYYY-MM-DD');
   if (availability.length > 0) {
     availability.forEach((value: String) => {
       if (value === 'now') {
         availableNow = {
-          availableNow: moment(new Date())
-            .utc()
-            .format('YYYY-MM-DD hh:mm'),
+          availableNow: moment(new Date()).utc().format('YYYY-MM-DD hh:mm'),
         };
       } else if (value === 'today') {
         availabilityArray.push(today);
@@ -335,6 +334,10 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
     pincode: currentPincode ? currentPincode : localStorage.getItem('currentPincode') || '',
   };
 
+  const params = useParams<{
+    specialty: string;
+  }>();
+
   useEffect(() => {
     setLoading(true);
     apolloClient
@@ -359,11 +362,16 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
               potentialActionSchema.push({
                 '@type': 'EntryPoint',
                 name: doctorDetails.fullName,
-                url: `${window.location.origin}${clientRoutes.specialtyDoctorDetails(
-                  specialityName,
-                  readableParam(doctorDetails.fullName),
-                  doctorDetails.id
-                )}`,
+                url: params.specialty
+                  ? `${window.location.origin}${clientRoutes.specialtyDoctorDetails(
+                      params.specialty,
+                      readableParam(doctorDetails.fullName),
+                      doctorDetails.id
+                    )}`
+                  : `${window.location.origin}${clientRoutes.doctorDetails(
+                      readableParam(doctorDetails.fullName),
+                      doctorDetails.id
+                    )}`,
               });
           });
         }
@@ -385,6 +393,47 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
   useEffect(() => {
     disableFilter && disableFilter(loading);
   }, [loading]);
+
+  useEffect(() => {
+    if (
+      data &&
+      data.getDoctorsBySpecialtyAndFilters &&
+      data.getDoctorsBySpecialtyAndFilters.doctors
+    ) {
+      /**Gtm code start start */
+      let ecommItems: any[] = [];
+      data.getDoctorsBySpecialtyAndFilters.doctors.map((doc: docDetails, ind: number) => {
+        ecommItems.push({
+          item_name: doc.fullName,
+          item_id: doc.id,
+          item_category: 'Consultations',
+          item_category_2: doc.specialty && doc.specialty.name,
+          item_category_3:
+            doc.doctorHospital &&
+            doc.doctorHospital.length &&
+            doc.doctorHospital[0].facility &&
+            doc.doctorHospital[0].facility.city,
+          // 'item_category_4': '', // Future USe
+          item_variant: 'Virtual / Physcial',
+          index: ind + 1,
+          quantity: '1',
+        });
+      });
+      gtmTracking({
+        category: 'Consultations',
+        action: 'Landing Page',
+        label: 'Listing Page Viewed',
+        value: null,
+        ecommObj: {
+          event: 'view_item_list',
+          ecommerce: {
+            items: ecommItems,
+          },
+        },
+      });
+      /**Gtm code start end */
+    }
+  }, [data]);
 
   if (loading)
     <div className={classes.circlularProgress}>
@@ -498,8 +547,15 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
       : scrollbar.current.scrollToTop();
   };
 
+  const metaTagProps = {
+    title: `${specialityName} - Book Online Appointments And Consultations - Apollo 247`,
+    description: `Book online appointments with ${specialityName} in just a few clicks. Consult the best ${specialityName} in India at the best prices. Apollo 247 is the one-stop solution to all your medical needs.`,
+    canonicalLink: window && window.location && window.location.href,
+  };
+
   return (
     <div className={classes.root}>
+      <MetaTagsComp {...metaTagProps} />
       {structuredJSON && <SchemaMarkup structuredJSON={structuredJSON} />}
       <div className={classes.sectionHead} ref={mascotRef}>
         <div className={classes.pageHeader}>

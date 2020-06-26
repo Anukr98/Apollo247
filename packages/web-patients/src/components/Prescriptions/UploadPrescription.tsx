@@ -162,19 +162,22 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
 
   return (
     <div className={classes.root}>
-      <div className={classes.orderSteps}>
-        Order medicines in 2 simple steps —
-        <div className={classes.stepsInfo}>
-          <div className={classes.steps}>
-            Upload <br />
-            your prescription
+      {!props.isPresReview && (
+        <div className={classes.orderSteps}>
+          Order medicines in 2 simple steps —
+          <div className={classes.stepsInfo}>
+            <div className={classes.steps}>
+              Upload <br />
+              your prescription
+            </div>
+            <div className={classes.stepsArrow}>
+              <img src={require('images/ic_steps_arrow.svg')} alt="" />
+            </div>
+            <div className={classes.steps}>Order Through our customer care</div>
           </div>
-          <div className={classes.stepsArrow}>
-            <img src={require('images/ic_steps_arrow.svg')} alt="" />
-          </div>
-          <div className={classes.steps}>Order Through our customer care</div>
         </div>
-      </div>
+      )}
+
       <div className={classes.dialogContent}>
         <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(43vh - 52px)'}>
           <div className={classes.customScrollBar}>
@@ -287,13 +290,15 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
               <ol>
                 <li>Take clear Picture of your entire prescription.</li>
                 <li>Doctor details &amp; date of the prescription should be clearly visible.</li>
-                <li>Medicines will be dispensed as per prescription</li>
+                {!props.isPresReview && <li>Medicines will be dispensed as per prescription</li>}
               </ol>
             </div>
-            <div className={classes.bottomNotes}>
-              * Our pharmacist will dispense medicines only if the prescription is valid &amp; it
-              meets all government regulations.
-            </div>
+            {!props.isPresReview && (
+              <div className={classes.bottomNotes}>
+                * Our pharmacist will dispense medicines only if the prescription is valid &amp; it
+                meets all government regulations.
+              </div>
+            )}
           </div>
         </Scrollbars>
       </div>

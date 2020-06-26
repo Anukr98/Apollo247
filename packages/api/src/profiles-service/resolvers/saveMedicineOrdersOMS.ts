@@ -49,6 +49,49 @@ export const saveMedicineOrderOMSTypeDefs = gql`
     packagingCharges: Float
     showPrescriptionAtStore: Boolean
     shopAddress: ShopAddress
+    customerComment: String
+  }
+
+  enum MEDICINE_DELIVERY_TYPE {
+    HOME_DELIVERY
+    STORE_PICKUP
+  }
+
+  enum MEDICINE_ORDER_TYPE {
+    UPLOAD_PRESCRIPTION
+    CART_ORDER
+  }
+
+  enum MEDICINE_ORDER_STATUS {
+    QUOTE
+    ORDER_BILLED
+    PAYMENT_SUCCESS
+    PAYMENT_PENDING
+    PAYMENT_FAILED
+    ORDER_INITIATED
+    ORDER_PLACED
+    ORDER_VERIFIED
+    DELIVERED
+    CANCELLED
+    OUT_FOR_DELIVERY
+    PICKEDUP
+    RETURN_INITIATED
+    ITEMS_RETURNED
+    RETURN_ACCEPTED
+    PRESCRIPTION_UPLOADED
+    ORDER_FAILED
+    PRESCRIPTION_CART_READY
+    ORDER_CONFIRMED
+    CANCEL_REQUEST
+    READY_AT_STORE
+    PURCHASED_IN_STORE
+  }
+
+  type SaveMedicineOrderResult {
+    errorCode: Int
+    errorMessage: String
+    orderId: ID!
+    orderAutoId: Int!
   }
 
   input ShopAddress {
@@ -105,6 +148,7 @@ type MedicineCartOMSInput = {
   packagingCharges: number;
   showPrescriptionAtStore: boolean;
   shopAddress: ShopAddress;
+  customerComment: string;
 };
 
 type ShopAddress = {
@@ -265,6 +309,7 @@ const saveMedicineOrderOMS: Resolver<
     packagingCharges: medicineCartOMSInput.packagingCharges,
     showPrescriptionAtStore: medicineCartOMSInput.showPrescriptionAtStore,
     shopAddress: JSON.stringify(medicineCartOMSInput.shopAddress),
+    customerComment: medicineCartOMSInput.customerComment,
     isOmsOrder: true,
   };
 
@@ -420,7 +465,7 @@ const validatePharmaItems = async (medicineCartOMSInput: MedicineCartOMSInput) =
         itemId: orderLineItem.sku,
         productName: orderLineItem.name,
         productType:
-          orderLineItem.type_id == 'PHARMA'
+          (orderLineItem.type_id && orderLineItem.type_id.toLowerCase()) == 'pharma'
             ? CouponCategoryApplicable.PHARMA
             : CouponCategoryApplicable.FMCG,
         mrp: orderLineItem.price,

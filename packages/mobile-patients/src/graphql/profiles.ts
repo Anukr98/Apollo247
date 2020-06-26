@@ -141,6 +141,8 @@ export const PAST_APPOINTMENTS_COUNT = gql`
   query getPastAppointmentsCount($doctorId: String!, $patientId: String!) {
     getPastAppointmentsCount(doctorId: $doctorId, patientId: $patientId) {
       count
+      completedCount
+      yesCount
     }
   }
 `;
@@ -677,6 +679,8 @@ export const GET_ALL_SPECIALTIES = gql`
       specialistPluralTerm
       userFriendlyNomenclature
       # displayOrder
+      shortDescription
+      symptoms
     }
   }
 `;
@@ -699,6 +703,7 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
       city
       awards
       photoUrl
+      availableModes
       specialty {
         id
         name
@@ -1048,6 +1053,7 @@ export const GET_CASESHEET_DETAILS = gql`
         }
         diagnosticPrescription {
           itemname
+          testInstruction
         }
         blobName
         doctorId
@@ -1125,6 +1131,24 @@ export const GET_PATIENT_PAST_MEDICINE_SEARCHES = gql`
   }
 `;
 
+export const GET_RECOMMENDED_PRODUCTS_LIST = gql`
+  query getRecommendedProductsList($patientUhid: String!) {
+    getRecommendedProductsList(patientUhid: $patientUhid) {
+      recommendedProducts {
+        productSku
+        productName
+        productImage
+        productPrice
+        productSpecialPrice
+        isPrescriptionNeeded
+        categoryName
+        status
+        mou
+      }
+    }
+  }
+`;
+
 export const SAVE_MEDICINE_ORDER_OMS = gql`
   mutation saveMedicineOrderOMS($medicineCartOMSInput: MedicineCartOMSInput!) {
     saveMedicineOrderOMS(medicineCartOMSInput: $medicineCartOMSInput) {
@@ -1147,48 +1171,28 @@ export const SAVE_MEDICINE_ORDER_PAYMENT = gql`
   }
 `;
 
-export const GET_MEDICINE_ORDERS_LIST = gql`
-  query GetMedicineOrdersList($patientId: String) {
-    getMedicineOrdersList(patientId: $patientId) {
-      MedicineOrdersList {
-        id
-        orderAutoId
-        deliveryType
-        currentStatus
-        medicineOrdersStatus {
-          id
-          orderStatus
-          statusDate
-          hideStatus
-        }
-      }
-    }
-  }
-`;
-
 export const GET_MEDICINE_ORDERS_OMS__LIST = gql`
   query getMedicineOrdersOMSList($patientId: String) {
     getMedicineOrdersOMSList(patientId: $patientId) {
       medicineOrdersList {
         id
         orderAutoId
+        billNumber
+        shopAddress
         deliveryType
         currentStatus
         medicineOrdersStatus {
           id
           statusDate
           orderStatus
+          hideStatus
+        }
+        medicineOrderLineItems {
+          medicineName
         }
         medicineOrderShipments {
-          id
-          siteId
-          siteName
-          apOrderNo
-          currentStatus
-          medicineOrdersStatus {
-            statusDate
-            hideStatus
-            orderStatus
+          medicineOrderInvoice {
+            itemDetails
           }
         }
       }
@@ -1374,72 +1378,21 @@ export const UPDATE_DIAGNOSTIC_ORDER = gql`
   }
 `;
 
-export const GET_MEDICINE_ORDER_DETAILS = gql`
-  query GetMedicineOrderDetails($patientId: String, $orderAutoId: Int) {
-    getMedicineOrderDetails(patientId: $patientId, orderAutoId: $orderAutoId) {
-      MedicineOrderDetails {
-        id
-        orderAutoId
-        devliveryCharges
-        estimatedAmount
-        prescriptionImageUrl
-        orderTat
-        orderType
-        currentStatus
-        patientAddressId
-        currentStatus
-        medicineOrderPayments {
-          id
-          paymentType
-          amountPaid
-          paymentRefId
-          paymentStatus
-          paymentDateTime
-          responseCode
-          responseMessage
-          bankTxnId
-        }
-        medicineOrdersStatus {
-          id
-          orderStatus
-          statusDate
-          hideStatus
-        }
-        medicineOrderLineItems {
-          medicineSKU
-          medicineName
-          price
-          mrp
-          quantity
-          isMedicine
-          mou
-        }
-        patient {
-          firstName
-          lastName
-          addressList {
-            id
-            addressLine1
-            addressLine2
-            city
-            state
-            zipcode
-          }
-        }
-      }
-    }
-  }
-`;
-
 export const GET_MEDICINE_ORDER_OMS_DETAILS = gql`
-  query getMedicineOrderOMSDetails($patientId: String, $orderAutoId: Int) {
-    getMedicineOrderOMSDetails(patientId: $patientId, orderAutoId: $orderAutoId) {
+  query getMedicineOrderOMSDetails($patientId: String, $orderAutoId: Int, $billNumber: String) {
+    getMedicineOrderOMSDetails(
+      patientId: $patientId
+      orderAutoId: $orderAutoId
+      billNumber: $billNumber
+    ) {
       medicineOrderDetails {
         id
         orderAutoId
+        billNumber
         devliveryCharges
         couponDiscount
         productDiscount
+        redeemedAmount
         estimatedAmount
         prescriptionImageUrl
         orderTat
@@ -1449,6 +1402,7 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS = gql`
         deliveryType
         currentStatus
         patientAddressId
+        # alertStore
         medicineOrdersStatus {
           id
           orderStatus
@@ -2169,6 +2123,15 @@ export const CANCEL_MEDICINE_ORDER_OMS = gql`
   }
 `;
 
+export const ALERT_MEDICINE_ORDER_PICKUP = gql`
+  mutation alertMedicineOrderPickup($alertMedicineOrderPickupInput: AlertMedicineOrderPickupInput) {
+    alertMedicineOrderPickup(alertMedicineOrderPickupInput: $alertMedicineOrderPickupInput) {
+      status
+      message
+    }
+  }
+`;
+
 export const GET_MEDICINE_ORDER_CANCEL_REASONS = gql`
   query GetMedicineOrderCancelReasons {
     getMedicineOrderCancelReasons {
@@ -2579,6 +2542,7 @@ export const GET_ONEAPOLLO_USERTXNS = gql`
     }
   }
 `;
+
 export const UPDATE_WHATSAPP_STATUS = gql`
   mutation updateWhatsAppStatus(
     $whatsAppMedicine: Boolean
@@ -2591,6 +2555,47 @@ export const UPDATE_WHATSAPP_STATUS = gql`
       patientId: $patientId
     ) {
       status
+    }
+  }
+`;
+
+export const UPDATE_SAVE_EXTERNAL_CONNECT = gql`
+  mutation updateSaveExternalConnect(
+    $doctorId: String!
+    $patientId: String!
+    $externalConnect: Boolean
+  ) {
+    updateSaveExternalConnect(
+      doctorId: $doctorId
+      patientId: $patientId
+      externalConnect: $externalConnect
+    ) {
+      status
+    }
+  }
+`;
+
+export const GET_PERSONALIZED_APPOITNMENTS = gql`
+  query getPatientPersonalizedAppointments($patientUhid: String!) {
+    getPatientPersonalizedAppointments(patientUhid: $patientUhid) {
+      appointmentDetails {
+        id
+        hospitalLocation
+        appointmentDateTime
+        appointmentType
+        doctorId
+        doctorDetails {
+          id
+          firstName
+          experience
+          photoUrl
+          displayName
+          specialty {
+            id
+            name
+          }
+        }
+      }
     }
   }
 `;

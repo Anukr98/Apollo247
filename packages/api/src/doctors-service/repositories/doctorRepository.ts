@@ -392,6 +392,14 @@ export class DoctorRepository extends Repository<Doctor> {
       .getMany();
   }
 
+  getListBySpecialty() {
+    return this.createQueryBuilder('doctor')
+      .leftJoinAndSelect('doctor.specialty', 'specialty')
+      .where('doctor.doctorType != :junior', { junior: DoctorType.JUNIOR })
+      .andWhere('doctor.isActive = true')
+      .getMany();
+  }
+
   findOtherDoctorsOfSpecialty(specialtyId: string, doctorId: string) {
     return this.createQueryBuilder('doctor')
       .leftJoinAndSelect('doctor.specialty', 'specialty')
@@ -1043,12 +1051,21 @@ export class DoctorRepository extends Repository<Doctor> {
       return doc.length;
     }
   }
+
   async getSpecialityDoctors(specialty: string) {
     const queryBuilder = this.createQueryBuilder('doctor').where('doctor.specialty = :specialty', {
       specialty,
     });
     const doctorsResult = await queryBuilder.getMany();
     return doctorsResult;
+  }
+
+  async getSeniorDoctorsFromExcludeList(ids: string[]) {
+    return this.createQueryBuilder('doctor')
+      .andWhere('doctor.isActive = true')
+      .andWhere('doctor.doctorType != :junior', { junior: DoctorType.JUNIOR })
+      .andWhere('doctor.id not in (:...ids)', { ids })
+      .getMany();
   }
 }
 

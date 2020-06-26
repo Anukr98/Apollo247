@@ -332,9 +332,9 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
       <View style={styles.options}>
         {!!props.optionTexts.camera && (
           <TouchableOpacity
-            disabled={isOptionDisabled('CAMERA')}
+            disabled={isOptionDisabled('CAMERA_AND_GALLERY')}
             activeOpacity={1}
-            style={[styles.cardContainer, getOptionStyle('CAMERA')]}
+            style={[styles.cardContainer, getOptionStyle('CAMERA_AND_GALLERY')]}
             onPress={onClickTakePhoto}
           >
             <CameraIcon />
@@ -343,9 +343,9 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
         )}
         {!!props.optionTexts.gallery && (
           <TouchableOpacity
-            disabled={isOptionDisabled('GALLERY')}
+            disabled={isOptionDisabled('CAMERA_AND_GALLERY')}
             activeOpacity={1}
-            style={[styles.cardContainer, getOptionStyle('GALLERY')]}
+            style={[styles.cardContainer, getOptionStyle('CAMERA_AND_GALLERY')]}
             onPress={onClickGallery}
           >
             <GalleryIcon />

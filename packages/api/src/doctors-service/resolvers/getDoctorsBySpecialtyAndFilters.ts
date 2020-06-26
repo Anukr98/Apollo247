@@ -7,6 +7,7 @@ import {
   ConsultMode,
   SpecialtySearchType,
   DOCTOR_ONLINE_STATUS,
+  DoctorType,
 } from 'doctors-service/entities/';
 import { Client, RequestParams } from '@elastic/elasticsearch';
 import { differenceInMinutes } from 'date-fns';
@@ -26,6 +27,7 @@ export const getDoctorsBySpecialtyAndFiltersTypeDefs = gql`
     doctorsNextAvailability: [DoctorSlotAvailability]
     doctorsAvailability: [DoctorConsultModeAvailability]
     specialty: DoctorSpecialty
+    doctorType : DoctorType
     sort: String
   }
   type DoctorSlotAvailability {
@@ -60,6 +62,7 @@ export const getDoctorsBySpecialtyAndFiltersTypeDefs = gql`
     geolocation: Geolocation
     consultMode: ConsultMode
     pincode: String
+    doctorType: String
     sort: String
   }
   extend type Query {
@@ -72,6 +75,7 @@ type FilterDoctorsResult = {
   doctorsNextAvailability: DoctorSlotAvailability[];
   doctorsAvailability: DoctorConsultModeAvailability[];
   specialty?: DoctorSpecialty;
+  doctorType?: DoctorType;
   sort: string;
 };
 
@@ -104,6 +108,7 @@ export type FilterDoctorInput = {
   geolocation: Geolocation;
   consultMode: ConsultMode;
   pincode: string;
+  doctorType: String;
   sort: string;
 };
 
@@ -138,7 +143,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
   { filterInput: FilterDoctorInput },
   DoctorsServiceContext,
   FilterDoctorsResult
-> = async (parent, args, {}) => {
+> = async (parent, args, { }) => {
   apiCallId = Math.floor(Math.random() * 1000000);
   callStartTime = new Date();
   identifier = args.filterInput.patientId;
@@ -186,7 +191,8 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     elasticMatch.push({ match: { 'specialty.name': ApiConstants.GENERAL_PHYSICIAN.toString() } });
   }
   if (args.filterInput.experience && args.filterInput.experience.length > 0) {
-    let elasticExperience: { [index: string]: any } = [];
+    //eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const elasticExperience: { [index: string]: any } = [];
     args.filterInput.experience.forEach((experience) => {
       elasticExperience.push({
         range: { experience: { gte: experience.minimum, lte: experience.maximum } },
@@ -197,7 +203,8 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     }
   }
   if (args.filterInput.fees && args.filterInput.fees.length > 0) {
-    let elasticFee: { [index: string]: any } = [];
+    //eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const elasticFee: { [index: string]: any } = [];
     args.filterInput.fees.forEach((fee) => {
       elasticFee.push({
         range: { onlineConsultationFees: { gte: fee.minimum, lte: fee.maximum } },
@@ -215,6 +222,10 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
       elasticMatch.push({ match: { languages: language } });
     });
   }
+  if (args.filterInput.doctorType) {
+    elasticMatch.push({ match: { doctorType: args.filterInput.doctorType } });
+  }
+
   const searchParams: RequestParams.Search = {
     index: 'doctors',
     body: {
@@ -421,7 +432,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
         i < earlyAvailableStarApolloDoctors.length &&
         (j >= earlyAvailableNonStarApolloDoctors.length ||
           earlyAvailableStarApolloDoctors[i].earliestSlotavailableInMinutes <=
-            earlyAvailableNonStarApolloDoctors[j].earliestSlotavailableInMinutes)
+          earlyAvailableNonStarApolloDoctors[j].earliestSlotavailableInMinutes)
       ) {
         earlyAvailableApolloDoctors.push(earlyAvailableStarApolloDoctors[i]);
         i++;
@@ -445,7 +456,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
         i < starDoctor.length &&
         (j >= nonStarDoctor.length ||
           starDoctor[i].earliestSlotavailableInMinutes <=
-            nonStarDoctor[j].earliestSlotavailableInMinutes)
+          nonStarDoctor[j].earliestSlotavailableInMinutes)
       ) {
         docs.push(starDoctor[i]);
         i++;

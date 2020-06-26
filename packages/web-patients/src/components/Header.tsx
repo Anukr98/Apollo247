@@ -231,7 +231,7 @@ export const Header: React.FC = (props) => {
     sku: string;
   }>();
   const handleClick = (e: any) => {
-    if (node.current.contains(e.target) && !_isEmpty(e.target)) {
+    if (node.current && node.current.contains(e.target) && !_isEmpty(e.target)) {
       // inside click
       return;
     }
@@ -251,7 +251,7 @@ export const Header: React.FC = (props) => {
   const MedicineRoutes = [
     clientRoutes.medicines(),
     clientRoutes.searchByMedicine(params.searchMedicineType, params.searchText),
-    clientRoutes.medicineCategoryDetails(params.searchMedicineType, params.sku),
+    clientRoutes.medicineCategoryDetails(params.searchMedicineType, params.searchText, params.sku),
     clientRoutes.medicineDetails(params.sku),
     clientRoutes.medicineAllBrands(),
     clientRoutes.prescriptionsLanding(),

@@ -117,6 +117,7 @@ export interface getDoctorDetailsById_getDoctorDetailsById {
   city: string | null;
   awards: string | null;
   photoUrl: string | null;
+  availableModes: (ConsultMode | null)[] | null;
   specialty: getDoctorDetailsById_getDoctorDetailsById_specialty | null;
   registrationNumber: string;
   onlineConsultationFees: string;

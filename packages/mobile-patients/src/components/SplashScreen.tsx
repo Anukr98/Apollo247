@@ -33,6 +33,12 @@ import {
   APPStateInActive,
   APPStateActive,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { useApolloClient } from 'react-apollo-hooks';
+import {
+  getAppointmentData as getAppointmentDataQuery,
+  getAppointmentDataVariables,
+} from '@aph/mobile-patients/src/graphql/types/getAppointmentData';
+import { GET_APPOINTMENT_DATA } from '@aph/mobile-patients/src/graphql/profiles';
 // The moment we import from sdk @praktice/navigator-react-native-sdk,
 // finally not working on all promises.
 
@@ -86,7 +92,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const { setAllPatients, setMobileAPICalled } = useAuth();
   const { showAphAlert, hideAphAlert } = useUIElements();
   const [appState, setAppState] = useState(AppState.currentState);
-
+  const client = useApolloClient();
   // const { setVirtualConsultationFee } = useAppCommonData();
 
   useEffect(() => {
@@ -204,9 +210,11 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           console.log('MedicineCart handleopen');
           getData('MedicineCart', data.length === 2 ? linkId : undefined);
           break;
-
+        case 'ChatRoom':
+          if (data.length === 2) getAppointmentDataAndNavigate(linkId);
+          break;
         default:
-          getData('ConsultRoom');
+          getData('ConsultRoom', undefined, true);
           break;
       }
       console.log('route', route);
@@ -322,13 +330,31 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           }
           SplashScreenView.hide();
         },
-        timeout ? 1500 : 0
+        timeout ? 2000 : 0
       );
     }
     fetchData();
   };
-
-  const pushTheView = (routeName: String, id?: String) => {
+  const getAppointmentDataAndNavigate = (appointmentID: string) => {
+    client
+      .query<getAppointmentDataQuery, getAppointmentDataVariables>({
+        query: GET_APPOINTMENT_DATA,
+        variables: {
+          appointmentId: appointmentID,
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((_data) => {
+        const appointmentData: any = _data.data.getAppointmentData!.appointmentsHistory;
+        if (appointmentData[0]!.doctorInfo !== null) {
+          getData('ChatRoom', appointmentData[0]);
+        }
+      })
+      .catch((error) => {
+        CommonBugFender('SplashFetchingAppointmentData', error);
+      });
+  };
+  const pushTheView = (routeName: String, id?: any) => {
     console.log('pushTheView', routeName);
     setBugFenderLog('DEEP_LINK_PUSHVIEW', { routeName, id });
     switch (routeName) {
@@ -365,8 +391,11 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       case 'Speciality':
         console.log('Speciality id', id);
         setBugFenderLog('APPS_FLYER_DEEP_LINK_COMPLETE', id);
+        const filtersData = id ? id.split('%20') : '';
         props.navigation.navigate(AppRoutes.DoctorSearchListing, {
-          specialityId: id ? id : '',
+          specialityId: filtersData[0] ? filtersData[0] : '',
+          typeOfConsult: filtersData.length > 1 ? filtersData[1] : '',
+          doctorType: filtersData.length > 2 ? filtersData[2] : '',
         });
         // props.navigation.replace(AppRoutes.DoctorSearchListing, {
         //   specialityId: id ? id : '',
@@ -401,7 +430,13 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           movedFrom: 'splashscreen',
         });
         break;
-
+      case 'ChatRoom':
+        props.navigation.navigate(AppRoutes.ChatRoom, {
+          data: id,
+          callType: '',
+          prescription: '',
+        });
+        break;
       default:
         break;
     }
@@ -431,6 +466,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         return 'DEV';
       case 'https://aph.staging.api.popcornapps.com//graphql':
         return 'QA';
+      case 'https://stagingapi.apollo247.com//graphql':
+        return 'STAGING';
       case 'https://aph.uat.api.popcornapps.com//graphql':
         return 'UAT';
       case 'https://aph.vapt.api.popcornapps.com//graphql':
@@ -508,11 +545,19 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
               'QA_Virtual_consultation_fee',
               'Need_Help_To_Contact_In',
               'Min_Value_For_Pharmacy_Free_Delivery',
+              'QA_Min_Value_For_Pharmacy_Free_Delivery',
               'Pharmacy_Delivery_Charges',
               'home_screen_emergency_banner',
               'home_screen_emergency_number',
+              'QA_top6_specailties',
+              'DEV_top6_specailties',
+              'top6_specailties',
+              'QA_min_value_to_nudge_users_to_avail_free_delivery',
+              'min_value_to_nudge_users_to_avail_free_delivery',
               'QA_pharmacy_homepage',
               'pharmacy_homepage',
+              'QA_hotsellers_max_quantity',
+              'hotsellers_max_quantity',
             ]);
         })
         .then((snapshot) => {
@@ -540,8 +585,35 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           const minValueForPharmacyFreeDelivery = snapshot[
             'Min_Value_For_Pharmacy_Free_Delivery'
           ].val();
+          const QAMinValueForPharmacyFreeDelivery = snapshot[
+            'QA_Min_Value_For_Pharmacy_Free_Delivery'
+          ].val();
+          const QAMinValueToNudgeUsersToAvailFreeDelivery = snapshot[
+            'QA_min_value_to_nudge_users_to_avail_free_delivery'
+          ].val();
+          QAMinValueToNudgeUsersToAvailFreeDelivery &&
+            AppConfig.APP_ENV != AppEnv.PROD &&
+            updateAppConfig(
+              'MIN_VALUE_TO_NUDGE_USERS_TO_AVAIL_FREE_DELIVERY',
+              QAMinValueToNudgeUsersToAvailFreeDelivery
+            );
+          const minValueToNudgeUsersToAvailFreeDelivery = snapshot[
+            'min_value_to_nudge_users_to_avail_free_delivery'
+          ].val();
+          minValueToNudgeUsersToAvailFreeDelivery &&
+            AppConfig.APP_ENV == AppEnv.PROD &&
+            updateAppConfig(
+              'MIN_VALUE_TO_NUDGE_USERS_TO_AVAIL_FREE_DELIVERY',
+              minValueToNudgeUsersToAvailFreeDelivery
+            );
+
           minValueForPharmacyFreeDelivery &&
+            AppConfig.APP_ENV == AppEnv.PROD &&
             updateAppConfig('MIN_CART_VALUE_FOR_FREE_DELIVERY', minValueForPharmacyFreeDelivery);
+
+          QAMinValueForPharmacyFreeDelivery &&
+            AppConfig.APP_ENV != AppEnv.PROD &&
+            updateAppConfig('MIN_CART_VALUE_FOR_FREE_DELIVERY', QAMinValueForPharmacyFreeDelivery);
 
           const pharmacyDeliveryCharges = snapshot['Pharmacy_Delivery_Charges'].val();
           pharmacyDeliveryCharges && updateAppConfig('DELIVERY_CHARGES', pharmacyDeliveryCharges);
@@ -553,6 +625,28 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           const homeScreenEmergencyBannerNumber = snapshot['home_screen_emergency_number'].val();
           homeScreenEmergencyBannerNumber &&
             updateAppConfig('HOME_SCREEN_EMERGENCY_BANNER_NUMBER', homeScreenEmergencyBannerNumber);
+
+          if (buildName() === 'DEV') {
+            const DEV_top6_specailties = snapshot['DEV_top6_specailties'].val();
+            DEV_top6_specailties &&
+              updateAppConfig('TOP_SPECIALITIES', JSON.parse(DEV_top6_specailties));
+          } else if (buildName() === 'QA') {
+            const QA_top6_specailties = snapshot['QA_top6_specailties'].val();
+            QA_top6_specailties &&
+              updateAppConfig('TOP_SPECIALITIES', JSON.parse(QA_top6_specailties));
+          } else {
+            const top6_specailties = snapshot['top6_specailties'].val();
+            top6_specailties && updateAppConfig('TOP_SPECIALITIES', JSON.parse(top6_specailties));
+          }
+          const qaHotsellersMaxQuantity = snapshot['QA_hotsellers_max_quantity'].val();
+          qaHotsellersMaxQuantity &&
+            AppConfig.APP_ENV != AppEnv.PROD &&
+            updateAppConfig('HOTSELLERS_MAX_QUANTITY', qaHotsellersMaxQuantity);
+
+          const hotsellersMaxQuantity = snapshot['hotsellers_max_quantity'].val();
+          hotsellersMaxQuantity &&
+            AppConfig.APP_ENV == AppEnv.PROD &&
+            updateAppConfig('HOTSELLERS_MAX_QUANTITY', hotsellersMaxQuantity);
 
           const myValye = snapshot;
           let index: number = 0;
