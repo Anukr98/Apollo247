@@ -4,7 +4,6 @@ import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
 import { NavigationBottom } from 'components/NavigationBottom';
 import { AphInput } from '@aph/web-ui-components';
-import { Specialities } from 'components/Specialities';
 import ExpansionPanel from '@material-ui/core/ExpansionPanel';
 import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
 import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
@@ -21,6 +20,8 @@ import { clientRoutes } from 'helpers/clientRoutes';
 import { Link } from 'react-router-dom';
 import { AphButton } from '@aph/web-ui-components';
 import { Cities } from './Cities';
+import fetchUtil from 'helpers/fetch';
+import { SpecialtyDivision } from './SpecialtyDivision';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -755,6 +756,8 @@ export const SpecialityListing: React.FC = (props) => {
   const [searchKeyword, setSearchKeyword] = useState<string>('');
   const [locationPopup, setLocationPopup] = useState<boolean>(false);
   const [searchContent, setSearchcontent] = useState<boolean>(false);
+  const [faqs, setFaqs] = useState<any | null>(null);
+  const [selectedCity, setSelectedCity] = useState<string>('');
 
   const handleChange = (panel: string) => (event: React.ChangeEvent<{}>, isExpanded: boolean) => {
     setExpanded(isExpanded ? panel : false);
@@ -773,6 +776,17 @@ export const SpecialityListing: React.FC = (props) => {
     });
     /**Gtm code start end */
   }, []);
+
+  useEffect(() => {
+    if (!faqs) {
+      fetchUtil(process.env.SPECIALTY_LISTING_FAQS, 'GET', {}, '', true).then((res: any) => {
+        if (res && res.success === 'true' && res.data) {
+          console.log(res);
+          setFaqs(res.data);
+        }
+      });
+    }
+  }, [faqs]);
 
   return (
     <div className={classes.slContainer}>
@@ -809,7 +823,9 @@ export const SpecialityListing: React.FC = (props) => {
                     <div className={classes.location} onClick={() => setLocationPopup(true)}>
                       <img src={require('images/location.svg')} alt="" />
                       <div className={classes.userLocation}>
-                        <Typography>Select Your City</Typography>
+                        <Typography>
+                          {selectedCity === '' ? 'Select Your City' : selectedCity}
+                        </Typography>
                         <img src={require('images/ic_dropdown_green.svg')} alt="" />
                       </div>
                     </div>
@@ -871,76 +887,7 @@ export const SpecialityListing: React.FC = (props) => {
                       )}
                     </div>
                   </div>
-                  <Typography component="h2">
-                    Start your care now by choosing from 500 doctors and 65 specialities
-                  </Typography>
-                  <div className={classes.topSpeciality}>
-                    <div className={classes.sectionHeader}>
-                      <Typography component="h2">Top Specialites</Typography>
-                    </div>
-                    <div className={classes.tsContent}>
-                      <Grid container spacing={2}>
-                        <Grid item xs={6} md={3}>
-                          <div className={classes.specialityCard}>
-                            <Link to={clientRoutes.specialties('paediatrics')}>
-                              <Typography component="h3">Paediatrics</Typography>
-                              <img src={require('images/ic-baby.svg')} />
-                              <Typography>For your child’s health problems</Typography>
-                              {/* <Typography className={classes.symptoms}>
-                                Fever, cough, diarrhoea
-                              </Typography> */}
-                            </Link>
-                          </div>
-                        </Grid>
-                        <Grid item xs={6} md={3}>
-                          <div className={classes.specialityCard}>
-                            <Link
-                              to={clientRoutes.specialties('general-physician-internal-medicine')}
-                            >
-                              <Typography component="h3">General Physician</Typography>
-                              <img src={require('images/ic_doctor_consult.svg')} />
-                              <Typography>For any common health issue</Typography>
-                              {/* <Typography className={classes.symptoms}>
-                                Fever, headache, asthma
-                              </Typography> */}
-                            </Link>
-                          </div>
-                        </Grid>
-                        <Grid item xs={6} md={3}>
-                          <div className={classes.specialityCard}>
-                            <Link to={clientRoutes.specialties('dermatology')}>
-                              <Typography component="h3">Dermatology</Typography>
-                              <img src={require('images/ic-hair.svg')} />
-                              <Typography>For skin &amp; hair problems</Typography>
-                              {/* <Typography className={classes.symptoms}>
-                                Skin rash, acne, skin patch
-                              </Typography> */}
-                            </Link>
-                          </div>
-                        </Grid>
-                        <Grid item xs={6} md={3}>
-                          <div className={classes.specialityCard}>
-                            <Link to={clientRoutes.specialties('obstetrics--gynaecology')}>
-                              <Typography component="h3">Gynaecology</Typography>
-                              <img src={require('images/ic-gynaec.svg')} />
-                              <Typography>For women’s health </Typography>
-                              {/* <Typography className={classes.symptoms}>
-                                Irregular periods, pregnancy
-                              </Typography> */}
-                            </Link>
-                          </div>
-                        </Grid>
-                      </Grid>
-                    </div>
-                  </div>
-                  <div className={classes.otherSpeciality}>
-                    <div className={classes.sectionHeader}>
-                      <Typography component="h2">Other Specialites</Typography>
-                    </div>
-                    <div className={classes.osContainer}>
-                      <Specialities />
-                    </div>
-                  </div>
+                  <SpecialtyDivision />
                 </div>
               </Grid>
               <Grid item xs={12} md={4}>
@@ -1093,116 +1040,53 @@ export const SpecialityListing: React.FC = (props) => {
               </Grid>
             </Grid>
           </div>
-          <div className={classes.faq}>
-            <Typography component="h2">Frequently asked questions</Typography>
-            <ExpansionPanel
-              className={classes.panelRoot}
-              expanded={expanded === 'panel1'}
-              onChange={handleChange('panel1')}
-            >
-              <ExpansionPanelSummary
-                expandIcon={<ExpandMoreIcon />}
-                classes={{
-                  root: classes.panelHeader,
-                  content: classes.summaryContent,
-                  expandIcon: classes.expandIcon,
-                  expanded: classes.panelExpanded,
-                }}
-              >
-                <Typography className={classes.panelHeading} component="h3">
-                  How do I book an online consultation?
-                </Typography>
-              </ExpansionPanelSummary>
-              <ExpansionPanelDetails className={classes.panelDetails}>
-                <div className={classes.detailsContent}>
-                  <Typography>
-                    You can book an online consultation either on the website or mobile app of
-                    Apollo 24/7 in two ways.
-                  </Typography>
-                  <ul className={classes.faqList}>
-                    <li>
-                      Click on the ‘Find a Doctor’ button on the homepage of the website/app, select
-                      a specialty or type the name of the doctor directly. Once you select a doctor,
-                      you can click on the “Consult Now’ button to start the online consultation.
-                    </li>
-                    <li>
-                      If you're looking for a doctor based on your symptoms, you may start by going
-                      to the homepage of the website/app. Then click on the ‘Track Symptoms’ tab,
-                      search for your symptoms or select a few of them based on your health
-                      condition. Click ‘Show Doctors’, select a doctor and click on the ‘Consult
-                      Now’ button to start the online consultation.
-                    </li>
-                  </ul>
-                </div>
-              </ExpansionPanelDetails>
-            </ExpansionPanel>
-            <ExpansionPanel
-              className={classes.panelRoot}
-              expanded={expanded === 'panel2'}
-              onChange={handleChange('panel2')}
-            >
-              <ExpansionPanelSummary
-                expandIcon={<ExpandMoreIcon />}
-                classes={{
-                  root: classes.panelHeader,
-                  content: classes.summaryContent,
-                  expandIcon: classes.expandIcon,
-                  expanded: classes.panelExpanded,
-                }}
-              >
-                <Typography className={classes.panelHeading} component="h3">
-                  For how long can I speak to the doctor??
-                </Typography>
-              </ExpansionPanelSummary>
-              <ExpansionPanelDetails className={classes.panelDetails}>
-                <div className={classes.detailsContent}>
-                  <Typography>
-                    Once you book an online consultation on our app, you will get 15 minutes to
-                    speak to the doctor. This window can, however, change according to your health
-                    condition and the number of queries you have.
-                  </Typography>
-                </div>
-              </ExpansionPanelDetails>
-            </ExpansionPanel>
-            <ExpansionPanel
-              className={classes.panelRoot}
-              expanded={expanded === 'panel3'}
-              onChange={handleChange('panel3')}
-            >
-              <ExpansionPanelSummary
-                expandIcon={<ExpandMoreIcon />}
-                classes={{
-                  root: classes.panelHeader,
-                  content: classes.summaryContent,
-                  expandIcon: classes.expandIcon,
-                  expanded: classes.panelExpanded,
-                }}
-              >
-                <Typography className={classes.panelHeading} component="h3">
-                  How do I book a follow-up session with the same doctor on the app?
-                </Typography>
-              </ExpansionPanelSummary>
-              <ExpansionPanelDetails className={classes.panelDetails}>
-                <div className={classes.detailsContent}>
-                  <Typography>
-                    To book a follow-up session with the same doctor, select the ‘Active
-                    Appointments’ tab on the home page or ‘Appointments’ tab on the bottom menu bar
-                    of the app. After that, you can click on the ‘Schedule A Follow-Up’ button to
-                    book a follow-up consultation. Alternatively, you can also go to ‘Health
-                    Records’ section on the app, select ‘Consults &amp; Rx’, select the appointment
-                    card and click on the ‘Schedule A Follow-Up’ button.
-                  </Typography>
-                </div>
-              </ExpansionPanelDetails>
-            </ExpansionPanel>
-          </div>
+          {faqs &&
+            faqs.length > 0 &&
+            faqs[2] &&
+            faqs[2].specialityFaq &&
+            faqs[2].specialityFaq['online-consultation'] &&
+            faqs[2].specialityFaq['online-consultation'].length > 0 && (
+              <div className={classes.faq}>
+                <Typography component="h2">Frequently asked questions</Typography>
+                {faqs[2].specialityFaq['online-consultation'].map((que: any) => (
+                  <ExpansionPanel
+                    className={classes.panelRoot}
+                    expanded={expanded === que.id}
+                    onChange={handleChange(que.id)}
+                  >
+                    <ExpansionPanelSummary
+                      expandIcon={<ExpandMoreIcon />}
+                      classes={{
+                        root: classes.panelHeader,
+                        content: classes.summaryContent,
+                        expandIcon: classes.expandIcon,
+                        expanded: classes.panelExpanded,
+                      }}
+                    >
+                      <Typography className={classes.panelHeading} component="h3">
+                        {que.faqQuestion}
+                      </Typography>
+                    </ExpansionPanelSummary>
+                    <ExpansionPanelDetails className={classes.panelDetails}>
+                      <div className={classes.detailsContent}>{que.faqAnswer}</div>
+                    </ExpansionPanelDetails>
+                  </ExpansionPanel>
+                ))}
+              </div>
+            )}
         </div>
       </div>
       <NavigationBottom />
       <div className={classes.footerLinks}>
         <BottomLinks />
       </div>
-      <Cities locationPopup={locationPopup} setLocationPopup={setLocationPopup} />
+      {locationPopup && (
+        <Cities
+          setSelectedCity={setSelectedCity}
+          locationPopup={locationPopup}
+          setLocationPopup={setLocationPopup}
+        />
+      )}
     </div>
   );
 };
