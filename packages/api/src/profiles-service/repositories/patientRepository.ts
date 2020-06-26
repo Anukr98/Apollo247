@@ -111,6 +111,7 @@ export class PatientRepository extends Repository<Patient> {
   }
 
   async getPatientData(id: string | number) {
+    console.log("reached getPatientData")
     const relations = [
       'lifeStyle',
       'healthVault',

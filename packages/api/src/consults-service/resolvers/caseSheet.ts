@@ -1,6 +1,7 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
+import { pool } from 'profiles-service/database/connectRedis';
 import { CaseSheetRepository } from 'consults-service/repositories/caseSheetRepository';
 import {
   CaseSheet,
@@ -826,9 +827,11 @@ const modifyCaseSheet: Resolver<
   }
 
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
+  console.log('casesheet patient id', getCaseSheetData.patientId);
   const patientData = await patientRepo.getPatientData(getCaseSheetData.patientId);
+  console.log('casesheet patientData', patientData);
   if (patientData == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
-
+  console.log('entering family history');
   //familyHistory upsert starts
   if (!(inputArguments.familyHistory === undefined)) {
     const familyHistoryInputs: Partial<PatientFamilyHistory> = {
@@ -843,9 +846,11 @@ const modifyCaseSheet: Resolver<
 
     if (familyHistoryRecord == null) {
       //create
+      console.log('entering create family history');
       familyHistoryRepo.savePatientFamilyHistory(familyHistoryInputs);
     } else {
       //update
+      console.log('entering update family history');
       familyHistoryRepo.updatePatientFamilyHistory(familyHistoryRecord.id, familyHistoryInputs);
     }
   }
