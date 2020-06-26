@@ -390,7 +390,7 @@ export class Doctor extends BaseEntity {
   @Column()
   registrationNumber: string;
 
-  @Column({ nullable: true, length: 10 })
+  @Column({ nullable: false, type: 'text', default: 'Dr.' })
   salutation: string;
 
   @Column({ nullable: true, type: 'text' })
