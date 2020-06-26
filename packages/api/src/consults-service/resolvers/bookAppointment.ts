@@ -123,8 +123,8 @@ type BookAppointmentInput = {
   bookingSource?: BOOKINGSOURCE;
   deviceType?: DEVICETYPE;
   couponCode: string;
-  actualAmount: number;
-  discountedAmount: number;
+  actualAmount?: number;
+  discountedAmount?: number;
   externalConnect?: boolean;
   pinCode?: string;
 };
