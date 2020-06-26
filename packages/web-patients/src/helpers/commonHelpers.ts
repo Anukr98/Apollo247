@@ -265,7 +265,6 @@ const getSymptoms = (symptoms: string) => {
   const structuredSymptomString = symptomsList.map((symptom: string) => {
     return _upperFirst(symptom.trim());
   });
-  console.log(structuredSymptomString.join(','));
   return structuredSymptomString.join(', ');
 };
 
