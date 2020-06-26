@@ -29,6 +29,7 @@ export interface HeaderProps {
   textStyles?: StyleProp<TextStyle>;
   timerremaintext?: string;
   headingContainer?: StyleProp<ViewStyle>;
+  subView?: React.ReactNode;
 }
 
 export const NotificationHeader: React.FC<HeaderProps> = (props) => {
@@ -39,55 +40,61 @@ export const NotificationHeader: React.FC<HeaderProps> = (props) => {
     rightComponent,
     containerStyle,
     iconMarginRight,
+    subView,
   } = props;
   return (
-    <View style={[styles.container, containerStyle]}>
-      {leftComponent ? (
-        leftComponent
-      ) : (
-        <View style={styles.iconContainer}>
-          {leftIcons &&
-            leftIcons.map((icon, i) => (
-              <TouchableOpacity
-                activeOpacity={1}
-                onPress={icon.onPress}
-                key={i}
-                style={{
-                  marginRight: i !== leftIcons.length - 1 ? iconMarginRight || 12 : 0,
-                }}
-              >
-                {icon.icon}
-              </TouchableOpacity>
-            ))}
+    <View style={[styles.maincontainer]}>
+      <View style={[styles.container, containerStyle]}>
+        {leftComponent ? (
+          leftComponent
+        ) : (
+          <View style={styles.iconContainer}>
+            {leftIcons &&
+              leftIcons.map((icon, i) => (
+                <TouchableOpacity
+                  activeOpacity={1}
+                  onPress={icon.onPress}
+                  key={i}
+                  style={{
+                    marginRight: i !== leftIcons.length - 1 ? iconMarginRight || 12 : 0,
+                  }}
+                >
+                  {icon.icon}
+                </TouchableOpacity>
+              ))}
+          </View>
+        )}
+        <View style={[styles.headingContainer, props.headingContainer]}>
+          <Text style={[styles.doctorNameStyles, props.textStyles]}>{props.middleText}</Text>
+          <View style={{ flexDirection: 'row' }}>
+            {props.timerText && <Text style={styles.timerTextStyle}>{props.timerText}</Text>}
+            {props.timerremaintext && (
+              <Text style={styles.timeStyles}>{props.timerremaintext}</Text>
+            )}
+          </View>
         </View>
-      )}
-      <View style={[styles.headingContainer, props.headingContainer]}>
-        <Text style={[styles.doctorNameStyles, props.textStyles]}>{props.middleText}</Text>
-        <View style={{ flexDirection: 'row' }}>
-          {props.timerText && <Text style={styles.timerTextStyle}>{props.timerText}</Text>}
-          {props.timerremaintext && <Text style={styles.timeStyles}>{props.timerremaintext}</Text>}
-        </View>
-      </View>
 
-      {rightComponent ? (
-        rightComponent
-      ) : (
-        <View style={styles.iconContainer}>
-          {rightIcons &&
-            rightIcons.map((icon, i) => (
-              <TouchableOpacity
-                activeOpacity={1}
-                onPress={icon.onPress}
-                key={i}
-                style={{
-                  marginRight: i !== rightIcons.length - 1 ? iconMarginRight || 12 : 0,
-                }}
-              >
-                {icon.icon}
-              </TouchableOpacity>
-            ))}
-        </View>
-      )}
+        {rightComponent ? (
+          rightComponent
+        ) : (
+          <View style={styles.iconContainer}>
+            {rightIcons &&
+              rightIcons.map((icon, i) => (
+                <TouchableOpacity
+                  activeOpacity={1}
+                  onPress={icon.onPress}
+                  key={i}
+                  style={{
+                    marginRight: i !== rightIcons.length - 1 ? iconMarginRight || 12 : 0,
+                  }}
+                >
+                  {icon.icon}
+                </TouchableOpacity>
+              ))}
+          </View>
+        )}
+      </View>
+      {subView ? subView : null}
     </View>
   );
 };

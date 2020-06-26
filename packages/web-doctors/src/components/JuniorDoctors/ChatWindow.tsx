@@ -124,8 +124,11 @@ const useStyles = makeStyles((theme: Theme) => {
       boxShadow: 'none',
       minWidth: 'auto',
       padding: 0,
-      marginRight: 16,
+      marginRight: 10,
       paddingTop: 8,
+      fontSize: 16,
+      fontWeight: 500,
+      textTransform: 'none',
       '&:hover': {
         backgroundColor: 'transparent',
         boxShadow: 'none',
@@ -133,6 +136,9 @@ const useStyles = makeStyles((theme: Theme) => {
       '&:focus': {
         backgroundColor: 'transparent',
         boxShadow: 'none',
+      },
+      '& img': {
+        verticalAlign: 'middle',
       },
     },
     missCall: {
@@ -372,6 +378,9 @@ interface ConsultRoomProps {
   disableChat: boolean;
   isNewMessage: (isNewMessage: boolean) => void;
   autoCloseCaseSheet: boolean;
+  setSessionError: (error: any) => void;
+  setPublisherError: (error: any) => void;
+  setSubscriberError: (error: any) => void;
 }
 
 export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
@@ -996,6 +1005,9 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
             isNewMsg={isNewMsg}
             convertCall={() => convertCall()}
             JDPhotoUrl={''}
+            setSessionError={props.setSessionError}
+            setPublisherError={props.setPublisherError}
+            setSubscriberError={props.setSubscriberError}
           />
         )}
         {(!showVideo || showVideoChat) && (
@@ -1021,7 +1033,10 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
                 component="label"
                 disabled={fileUploading}
               >
-                <img src={require('images/ic_add_circle.svg')} alt="" />
+                <span>Attach</span>
+                <span>
+                  <img src={require('images/round-attach.svg')} alt="" />
+                </span>
                 <input
                   type="file"
                   style={{ display: 'none' }}

@@ -115,14 +115,13 @@ const pharmaStateCodeMapping: PharmaStateCodeMappingType = {
 const customerCareNumber = '04048217222';
 
 const readableParam = (param: string) => {
-  const first =
+  const replaceSpace =
     param && param.includes('-')
       ? param.replace(/-/g, ' ')
       : param.replace(/\s+/g, '-').toLowerCase();
-  const second =
-    first && first.includes('/') ? first.replace(/[\/]/g, '_') : first.replace(/_/g, '/');
-  return first && second ? second.replace(/\./, '') : '';
+  return (replaceSpace && replaceSpace.replace(/[&\/\\#,+()$~%.'":*?<>{}]/g, '')) || '';
 };
+
 const dayMapping = {
   MONDAY: 'Mo',
   TUESDAY: 'Tu',
@@ -162,7 +161,29 @@ const getDiffInDays = (nextAvailability: string) => {
     return 0;
   }
 };
+const getDiffInMinutes = (doctorAvailablePhysicalSlots: string) => {
+  if (doctorAvailablePhysicalSlots && doctorAvailablePhysicalSlots.length > 0) {
+    const nextAvailabilityTime =
+      doctorAvailablePhysicalSlots && moment(doctorAvailablePhysicalSlots);
+    const currentTime = moment(new Date());
+    const differenceInMinutes = currentTime.diff(nextAvailabilityTime, 'minutes') * -1;
+    return differenceInMinutes + 1; // for some reason moment is returning 1 second less. so that 1 is added.;
+  } else {
+    return 0;
+  }
+};
 
+const getDiffInHours = (doctorAvailablePhysicalSlots: string) => {
+  if (doctorAvailablePhysicalSlots && doctorAvailablePhysicalSlots.length > 0) {
+    const nextAvailabilityTime =
+      doctorAvailablePhysicalSlots && moment(doctorAvailablePhysicalSlots);
+    const currentTime = moment(new Date());
+    const differenceInHours = currentTime.diff(nextAvailabilityTime, 'hours') * -1;
+    return Math.round(differenceInHours) + 1;
+  } else {
+    return 0;
+  }
+};
 const acceptedFilesNamesForFileUpload = ['png', 'jpg', 'jpeg', 'pdf'];
 const MAX_FILE_SIZE_FOR_UPLOAD = 2000000;
 const INVALID_FILE_SIZE_ERROR = 'Invalid File Size. File size must be less than 2MB';
@@ -183,6 +204,50 @@ const findAddrComponents = (
   return findItem ? findItem.short_name || findItem.long_name : '';
 };
 
+const ORDER_BILLING_STATUS_STRINGS = {
+  TOTAL_ORDER_BILLED: 'Total Ordered Value',
+  TOTAL_BILLED_VALUE: 'Total Billed Value',
+  COD_AMOUNT_TO_PAY: 'COD amount to Pay',
+  REFUND_TO_BE_INITIATED: 'Refund to be initiated',
+  AMOUNT_TO_BE_PAID_ON_DELIVERY: 'Amount to be paid on delivery',
+};
+
+// Starting of doctors list based on specialty related changes
+
+enum DOCTOR_CATEGORY {
+  APOLLO = 'APOLLO',
+  PARTNER = 'PARTNER',
+}
+
+interface SearchObject {
+  searchKeyword: string;
+  cityName: string[] | null;
+  experience: string[] | null;
+  availability: string[] | null;
+  fees: string[] | null;
+  gender: string[] | null;
+  language: string[] | null;
+  dateSelected: string;
+  specialtyName: string;
+  prakticeSpecialties: string | null;
+}
+
+const feeInRupees = ['100 - 500', '500 - 1000', '1000+'];
+const experienceList = [
+  { key: '0-5', value: '0 - 5' },
+  { key: '6-10', value: '6 - 10' },
+  { key: '11-15', value: '11 - 15' },
+  { key: '16+', value: '16 +' },
+];
+const genderList = [
+  { key: 'MALE', value: 'Male' },
+  { key: 'FEMALE', value: 'Female' },
+];
+const languageList = ['English', 'Telugu'];
+const availabilityList = ['Now', 'Today', 'Tomorrow', 'Next 3 days'];
+
+// End of doctors list based on specialty related changes
+
 const getTypeOfProduct = (type: string) => {
   switch (_lowerCase(type)) {
     case 'pharma':
@@ -196,7 +261,16 @@ const getTypeOfProduct = (type: string) => {
 
 export {
   getTypeOfProduct,
+  feeInRupees,
+  experienceList,
+  genderList,
+  languageList,
+  availabilityList,
+  SearchObject,
+  DOCTOR_CATEGORY,
   getDiffInDays,
+  getDiffInMinutes,
+  getDiffInHours,
   NO_SERVICEABLE_MESSAGE,
   sortByProperty,
   locationRoutesBlackList,
@@ -214,4 +288,5 @@ export {
   toBase64,
   TAT_API_TIMEOUT_IN_MILLI_SEC,
   findAddrComponents,
+  ORDER_BILLING_STATUS_STRINGS,
 };

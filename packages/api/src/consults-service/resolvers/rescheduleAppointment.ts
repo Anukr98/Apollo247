@@ -25,6 +25,7 @@ import {
   sendReminderNotification,
   NotificationType,
   sendNotification,
+  sendDoctorAppointmentNotification,
 } from 'notifications-service/resolvers/notifications';
 import { addMilliseconds, differenceInDays } from 'date-fns';
 import { BlockedCalendarItemRepository } from 'doctors-service/repositories/blockedCalendarItemRepository';
@@ -355,6 +356,7 @@ const bookRescheduleAppointment: Resolver<
   if (!patientDetails) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
+  //eslint-disable-next-line @typescript-eslint/no-explicit-any
   async function updateSlotsInEs(appointment: any, appointmentDateTime: any, status: string) {
     const slotApptDt = format(appointmentDateTime, 'yyyy-MM-dd') + ' 18:30:00';
     const actualApptDt = format(appointmentDateTime, 'yyyy-MM-dd');
@@ -372,7 +374,7 @@ const bookRescheduleAppointment: Resolver<
     console.log(slotApptDt, apptDt, sl, appointment.doctorId, 'appoint date time');
     const esDocotrStatusOpen =
       status === 'OPEN' ? ES_DOCTOR_SLOT_STATUS.OPEN : ES_DOCTOR_SLOT_STATUS.BOOKED;
-    const DoctorSLotStatus = await appointmentRepo.updateDoctorSlotStatusES(
+    await appointmentRepo.updateDoctorSlotStatusES(
       appointment.doctorId,
       apptDt,
       sl,
@@ -591,6 +593,14 @@ const bookRescheduleAppointment: Resolver<
     messageContent: mailContent,
   };
   sendMail(emailContent);
+
+  sendDoctorAppointmentNotification(
+    rescheduledapptDetails.appointmentDateTime,
+    rescheduledapptDetails.patientName,
+    rescheduledapptDetails.id,
+    rescheduledapptDetails.doctorId,
+    doctorsDb
+  );
 
   //send mail to doctor admin start
   if (bookRescheduleAppointmentInput.initiatedBy == TRANSFER_INITIATED_TYPE.PATIENT) {

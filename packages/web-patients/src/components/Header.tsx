@@ -1,10 +1,11 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { makeStyles } from '@material-ui/styles';
 import { Theme, CircularProgress } from '@material-ui/core';
 import { Link } from 'react-router-dom';
 import Popover from '@material-ui/core/Popover';
 import Paper from '@material-ui/core/Paper';
 import { SignIn } from 'components/SignIn';
+import _isEmpty from 'lodash/isEmpty';
 import { Navigation } from 'components/Navigation';
 import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
 import { clientRoutes } from 'helpers/clientRoutes';
@@ -15,6 +16,7 @@ import { LocationProvider, LocationContext } from 'components/LocationProvider';
 import { MedicinesCartContext } from 'components/MedicinesCartProvider';
 import { getAppStoreLink } from 'helpers/dateHelpers';
 import { MedicineLocationSearch } from 'components/MedicineLocationSearch';
+import { AphButton } from '@aph/web-ui-components';
 import { useParams } from 'hooks/routerHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -167,32 +169,93 @@ const useStyles = makeStyles((theme: Theme) => {
     hideVisibility: {
       visibility: 'hidden',
     },
+    userOptions: {
+      position: 'absolute',
+      top: 89,
+      right: 0,
+      left: 'auto',
+      width: 0,
+      borderRadius: 10,
+      textAlign: 'center',
+      transition: '0.1s ease',
+      overflow: 'hidden',
+      zIndex: 9,
+    },
+    userAccountList: {
+      padding: 0,
+      margin: 0,
+      listStyle: 'none',
+      textAlign: 'left',
+      '& li': {
+        '& a': {
+          padding: '10px 20px',
+          display: 'flex',
+          alignItems: 'center',
+          borderBottom: '1px solid rgba(2, 71, 91, 0.3)',
+          '& img': {
+            margin: '0 10px 0 0',
+          },
+        },
+      },
+    },
+    downloadAppBtn: {
+      margin: '10px auto',
+      boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
+      borderRadius: 10,
+      fontSize: 13,
+      fontWeight: 'bold',
+      padding: '8px 20px',
+      display: 'block',
+    },
+    userListActive: {
+      width: '300px !important',
+    },
   };
 });
 
 export const Header: React.FC = (props) => {
   const classes = useStyles({});
   const avatarRef = useRef(null);
-  const { isSigningIn, isSignedIn, setVerifyOtpError } = useAuth();
+  const { isSigningIn, isSignedIn, setVerifyOtpError, signOut } = useAuth();
   const { isLoginPopupVisible, setIsLoginPopupVisible } = useLoginPopupState();
+  const [profileVisible, setProfileVisible] = React.useState<boolean>(false);
   const [mobileNumber, setMobileNumber] = React.useState('');
   const [otp, setOtp] = React.useState('');
   const currentPath = window.location.pathname;
   const isMobileView = screen.width <= 768;
+  const node = useRef(null);
 
   const params = useParams<{
     searchMedicineType: string;
     searchText: string;
     sku: string;
   }>();
+  const handleClick = (e: any) => {
+    if (node.current && node.current.contains(e.target) && !_isEmpty(e.target)) {
+      // inside click
+      return;
+    }
+    // outside click
+    setProfileVisible(false);
+  };
+
+  useEffect(() => {
+    // add when mounted
+    document.addEventListener('mousedown', handleClick);
+    // return function to be called when unmounted
+    return () => {
+      document.removeEventListener('mousedown', handleClick);
+    };
+  }, []);
 
   const MedicineRoutes = [
     clientRoutes.medicines(),
     clientRoutes.searchByMedicine(params.searchMedicineType, params.searchText),
-    clientRoutes.medicineCategoryDetails(params.searchMedicineType, params.sku),
+    clientRoutes.medicineCategoryDetails(params.searchMedicineType, params.searchText, params.sku),
     clientRoutes.medicineDetails(params.sku),
     clientRoutes.medicineAllBrands(),
     clientRoutes.prescriptionsLanding(),
+    clientRoutes.prescriptionReview(),
   ];
 
   return (
@@ -222,13 +285,71 @@ export const Header: React.FC = (props) => {
               {isSignedIn ? (
                 <Link
                   className={`${classes.userCircle} ${isSignedIn ? classes.userActive : ''}`}
-                  to={clientRoutes.myAccount()}
+                  to={profileVisible ? clientRoutes.myAccount() : '#'}
                   title={'Control profile'}
+                  ref={node}
+                  onClick={(e) => {
+                    if (!profileVisible) {
+                      setProfileVisible(true);
+                    }
+                  }}
                 >
                   {isSigningIn ? (
                     <CircularProgress />
                   ) : (
-                    <img src={require('images/ic_account.svg')} />
+                    <>
+                      <img src={require('images/ic_account.svg')} />
+                      {profileVisible && (
+                        <Paper
+                          className={`${classes.userOptions} ${
+                            profileVisible ? classes.userListActive : ''
+                          }`}
+                        >
+                          <ul className={classes.userAccountList}>
+                            <li>
+                              <Link to={clientRoutes.myAccount()}>
+                                <img src={require('images/ic_manageprofile.svg')} alt="" /> Manage
+                                Profiles
+                              </Link>
+                            </li>
+                            <li>
+                              <Link to={clientRoutes.myPayments()}>
+                                <img src={require('images/ic_fees.svg')} alt="" /> My Payments
+                              </Link>
+                            </li>
+                            <li>
+                              <Link to={clientRoutes.healthRecords()}>
+                                <img src={require('images/ic_notificaiton_accounts.svg')} alt="" />{' '}
+                                Health Records
+                              </Link>
+                            </li>
+                            <li>
+                              <Link to={clientRoutes.addressBook()}>
+                                <img src={require('images/ic_location.svg')} alt="" /> Address Book
+                              </Link>
+                            </li>
+                            <li>
+                              <Link to={clientRoutes.needHelp()}>
+                                <img src={require('images/ic_round_live_help.svg')} alt="" /> Need
+                                Help
+                              </Link>
+                            </li>
+                            <li>
+                              <a href="javascript:void(0)" onClick={() => signOut()}>
+                                <img src={require('images/ic_logout.svg')} alt="" /> Logout
+                              </a>
+                            </li>
+                          </ul>
+                          <AphButton
+                            color="primary"
+                            onClick={() => window.open(getAppStoreLink())}
+                            className={classes.downloadAppBtn}
+                          >
+                            Download App
+                          </AphButton>
+                        </Paper>
+                      )}
+                    </>
                   )}
                 </Link>
               ) : (
@@ -263,9 +384,7 @@ export const Header: React.FC = (props) => {
                   )}
                 </ProtectedWithLoginPopup>
               )}
-              {isSignedIn ? (
-                ''
-              ) : (
+              {!isSignedIn && (
                 <Popover
                   open={isLoginPopupVisible}
                   anchorEl={avatarRef.current}

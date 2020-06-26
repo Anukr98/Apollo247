@@ -70,7 +70,7 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingRight: 20,
       position: 'sticky',
       top: 88,
-      zIndex: 99,
+      zIndex: 5,
       [theme.breakpoints.down('xs')]: {
         top: 70,
         paddingLeft: 0,
@@ -787,7 +787,7 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
                             <AphButton
                               color="primary"
                               onClick={() => {
-                                history.push(clientRoutes.doctorsLanding());
+                                history.push(clientRoutes.specialityListing());
                               }}
                               title={'Book an Appointment'}
                             >
@@ -822,7 +822,7 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
                             <AphButton
                               color="primary"
                               onClick={() => {
-                                history.push(clientRoutes.doctorsLanding());
+                                history.push(clientRoutes.specialityListing());
                               }}
                               title={'Book an Appointment'}
                             >

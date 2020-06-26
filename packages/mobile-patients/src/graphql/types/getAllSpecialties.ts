@@ -11,6 +11,8 @@ export interface getAllSpecialties_getAllSpecialties {
   id: string;
   name: string;
   image: string | null;
+  specialistSingularTerm: string | null;
+  specialistPluralTerm: string | null;
   userFriendlyNomenclature: string | null;
 }
 

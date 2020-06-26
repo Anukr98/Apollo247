@@ -31,15 +31,17 @@ export enum ConsultMode {
 
 export enum DoctorType {
   APOLLO = 'APOLLO',
-  PAYROLL = 'PAYROLL',
-  STAR_APOLLO = 'STAR_APOLLO',
-  JUNIOR = 'JUNIOR',
-  DOCTOR_CONNECT = 'DOCTOR_CONNECT',
-  CRADLE = 'CRADLE',
   CLINIC = 'CLINIC',
-  SPECTRA = 'SPECTRA',
+  CRADLE = 'CRADLE',
+  DOCTOR_CONNECT = 'DOCTOR_CONNECT',
   FERTILITY = 'FERTILITY',
+  JUNIOR = 'JUNIOR',
+  PAYROLL = 'PAYROLL',
+  SPECTRA = 'SPECTRA',
+  STAR_APOLLO = 'STAR_APOLLO',
   SUGAR = 'SUGAR',
+  APOLLO_HOMECARE = 'APOLLO_HOMECARE',
+  WHITE_DENTAL = 'WHITE_DENTAL',
 }
 
 export enum FacilityType {
@@ -56,13 +58,6 @@ export enum Gender {
   MALE = 'MALE',
   FEMALE = 'FEMALE',
   OTHER = 'OTHER',
-}
-
-export enum Salutation {
-  MR = 'MR',
-  MRS = 'MRS',
-  DR = 'DR',
-  MS = 'MS',
 }
 
 export enum WeekDay {
@@ -94,6 +89,7 @@ export enum MEDICINE_CONSUMPTION_DURATION {
   DAYS = 'DAYS',
   MONTHS = 'MONTHS',
   WEEKS = 'WEEKS',
+  TILL_NEXT_REVIEW = 'TILL_NEXT_REVIEW',
 }
 export enum MEDICINE_FREQUENCY {
   AS_NEEDED = 'AS_NEEDED',
@@ -119,6 +115,7 @@ export enum MEDICINE_TIMINGS {
   MORNING = 'MORNING',
   NIGHT = 'NIGHT',
   NOON = 'NOON',
+  NOT_SPECIFIC = 'NOT_SPECIFIC',
 }
 export enum MEDICINE_TO_BE_TAKEN {
   AFTER_FOOD = 'AFTER_FOOD',
@@ -138,8 +135,13 @@ export enum ROUTE_OF_ADMINISTRATION {
   ORAL_DROPS = 'ORAL_DROPS',
   NASAL_DROPS = 'NASAL_DROPS',
   EYE_DROPS = 'EYE_DROPS',
+  EYE_OINTMENT = 'EYE_OINTMENT',
   EAR_DROPS = 'EAR_DROPS',
   INTRAVAGINAL = 'INTRAVAGINAL',
+  NASALLY = 'NASALLY',
+  INTRANASAL_SPRAY = 'INTRANASAL_SPRAY',
+  INTRA_ARTICULAR = 'INTRA_ARTICULAR',
+  TRIGGER_POINT_INJECTION = 'TRIGGER_POINT_INJECTION',
 }
 
 export type ConsultHoursData = {
@@ -388,8 +390,8 @@ export class Doctor extends BaseEntity {
   @Column()
   registrationNumber: string;
 
-  @Column({ nullable: true })
-  salutation: Salutation;
+  @Column({ nullable: true, length: 10 })
+  salutation: string;
 
   @Column({ nullable: true, type: 'text' })
   signature: string;
@@ -427,6 +429,9 @@ export class Doctor extends BaseEntity {
   @Column({ nullable: true })
   zip: string;
 
+  @Column({ default: false })
+  skipAutoQuestions: Boolean;
+
   @BeforeUpdate()
   updateDateUpdate() {
     this.updatedDate = new Date();
@@ -451,6 +456,9 @@ export class DoctorAndHospital extends BaseEntity {
 
   @PrimaryGeneratedColumn('uuid')
   id: string;
+
+  @Column({ nullable: true })
+  medmantraId: string;
 
   @Column({ nullable: true })
   updatedDate: Date;
@@ -515,6 +523,15 @@ export class DoctorSpecialty extends BaseEntity {
   createdDate: Date;
 
   @Column({ nullable: true })
+  shortDescription: string;
+
+  @Column({ nullable: true })
+  symptoms: string;
+
+  @Column({ nullable: true })
+  commonSearchWords: string;
+
+  @Column({ nullable: true })
   displayOrder: Number;
 
   @Column({ nullable: true })
@@ -543,6 +560,9 @@ export class DoctorSpecialty extends BaseEntity {
 
   @Column({ nullable: true })
   commonSearchTerm: string;
+
+  @Column({ nullable: true })
+  slugName: string;
 
   @Column({ nullable: true })
   updatedDate: Date;

@@ -132,14 +132,9 @@ type clinicHoursData = {
   time: string;
 };
 
-export interface TestsCartProps extends NavigationScreenProps {
-  isComingFromConsult: boolean;
-}
-{
-}
+export interface TestsCartProps extends NavigationScreenProps {}
 
 export const TestsCart: React.FC<TestsCartProps> = (props) => {
-  const isComingFromConsult = props.navigation.getParam('isComingFromConsult');
   const {
     removeCartItem,
     cartItems,
@@ -354,13 +349,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           <View>
             <TouchableOpacity
               activeOpacity={1}
-              onPress={() => {
-                if (isComingFromConsult)
-                  props.navigation.navigate(AppRoutes.SearchTestScene, {
-                    isComingFromConsult,
-                  });
-                else props.navigation.goBack();
-              }}
+              onPress={() => props.navigation.navigate('TESTS', { focusSearch: true })}
             >
               <Text
                 style={{

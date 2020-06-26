@@ -124,7 +124,7 @@ import {
 import { format, differenceInMilliseconds } from 'date-fns';
 import { winstonLogger } from 'customWinstonLogger';
 
-import {exotelCallingResolvers, exotelTypeDefs} from 'consults-service/resolvers/exotelCalling';
+import { exotelCallingResolvers, exotelTypeDefs } from 'consults-service/resolvers/exotelCalling';
 
 (async () => {
   await connect();

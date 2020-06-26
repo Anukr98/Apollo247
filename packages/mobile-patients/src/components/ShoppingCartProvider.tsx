@@ -1,6 +1,6 @@
 import { MEDICINE_DELIVERY_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
-import { Store } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { Store, GetStoreInventoryResponse } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Alert } from 'react-native';
@@ -58,6 +58,7 @@ export type EPrescriptionDisableOption = 'CAMERA_AND_GALLERY' | 'E-PRESCRIPTION'
 export interface ShoppingCartContextProps {
   cartItems: ShoppingCartItem[];
   setCartItems: ((items: ShoppingCartItem[]) => void) | null;
+  setItemsWithQtyRestriction: ((itemSkus: string[]) => void) | null;
   addCartItem: ((item: ShoppingCartItem) => void) | null;
   addMultipleCartItems: ((items: ShoppingCartItem[]) => void) | null;
   removeCartItem: ((itemId: ShoppingCartItem['id']) => void) | null;
@@ -69,11 +70,15 @@ export interface ShoppingCartContextProps {
   couponDiscount: number;
   productDiscount: number;
   deliveryCharges: number;
+  packagingCharges: number;
   grandTotal: number;
   uploadPrescriptionRequired: boolean;
-
+  showPrescriptionAtStore: boolean;
+  setShowPrescriptionAtStore: ((value: boolean) => void) | null;
   stores: Store[];
   setStores: ((store: Store[]) => void) | null;
+  storesInventory: GetStoreInventoryResponse[];
+  setStoresInventory: ((store: GetStoreInventoryResponse[]) => void) | null;
 
   ePrescriptions: EPrescription[];
   addEPrescription: ((item: EPrescription) => void) | null;
@@ -115,6 +120,7 @@ export interface ShoppingCartContextProps {
 export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   cartItems: [],
   setCartItems: null,
+  setItemsWithQtyRestriction: null,
   addCartItem: null,
   addMultipleCartItems: null,
   removeCartItem: null,
@@ -124,6 +130,7 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   couponDiscount: 0,
   productDiscount: 0,
   deliveryCharges: 0,
+  packagingCharges: 0,
   grandTotal: 0,
   uploadPrescriptionRequired: false,
 
@@ -141,6 +148,11 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
 
   stores: [],
   setStores: null,
+  storesInventory: [],
+  setStoresInventory: null,
+
+  showPrescriptionAtStore: false,
+  setShowPrescriptionAtStore: null,
   pinCode: '',
   setPinCode: null,
 
@@ -166,11 +178,12 @@ const AsyncStorageKeys = {
 };
 
 const showGenericAlert = (message: string) => {
-  Alert.alert('Alert', message);
+  Alert.alert('Uh oh.. :(', message);
 };
 
 export const ShoppingCartProvider: React.FC = (props) => {
   const [cartItems, _setCartItems] = useState<ShoppingCartContextProps['cartItems']>([]);
+  const [itemsWithQtyRestriction, setItemsWithQtyRestriction] = useState<string[]>([]);
   const [couponDiscount, setCouponDiscount] = useState<ShoppingCartContextProps['couponDiscount']>(
     0
   );
@@ -181,6 +194,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
     savePatientAddress_savePatientAddress_patientAddress[]
   >([]);
   const [stores, setStores] = useState<Store[]>([]);
+  const [storesInventory, setStoresInventory] = useState<GetStoreInventoryResponse[]>([]);
   const [pinCode, setPinCode] = useState<string>('');
   const [deliveryAddressId, _setDeliveryAddressId] = useState<
     ShoppingCartContextProps['deliveryAddressId']
@@ -188,6 +202,9 @@ export const ShoppingCartProvider: React.FC = (props) => {
   const [storeId, _setStoreId] = useState<ShoppingCartContextProps['storeId']>('');
   const [coupon, setCoupon] = useState<ShoppingCartContextProps['coupon']>(null);
   const [deliveryType, setDeliveryType] = useState<ShoppingCartContextProps['deliveryType']>(null);
+  const [showPrescriptionAtStore, setShowPrescriptionAtStore] = useState<
+    ShoppingCartContextProps['showPrescriptionAtStore']
+  >(false);
 
   const [physicalPrescriptions, _setPhysicalPrescriptions] = useState<
     ShoppingCartContextProps['physicalPrescriptions']
@@ -242,7 +259,21 @@ export const ShoppingCartProvider: React.FC = (props) => {
     });
   };
 
+  const validateCartItemsQty = (
+    itemToAddOrUpdate: Partial<ShoppingCartItem> & { id: ShoppingCartItem['id'] }
+  ) => {
+    if (itemsWithQtyRestriction.find((item) => itemToAddOrUpdate.id == item)) {
+      const maxQty = AppConfig.Configuration.HOTSELLERS_MAX_QUANTITY;
+      if (maxQty && itemToAddOrUpdate.quantity && itemToAddOrUpdate.quantity > maxQty) {
+        showGenericAlert(`Maximum quantity allowed for this item is ${maxQty}.`);
+        return true;
+      }
+    }
+    return false;
+  };
+
   const addCartItem: ShoppingCartContextProps['addCartItem'] = (itemToAdd) => {
+    if (validateCartItemsQty(itemToAdd)) return;
     if (cartItems.find((item) => item.id == itemToAdd.id)) {
       return;
     }
@@ -269,6 +300,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
     setCartItems(newCartItems);
   };
   const updateCartItem: ShoppingCartContextProps['updateCartItem'] = (itemUpdates) => {
+    if (validateCartItemsQty(itemUpdates)) return;
     const foundIndex = cartItems.findIndex((item) => item.id == itemUpdates.id);
     if (foundIndex !== -1) {
       cartItems[foundIndex] = { ...cartItems[foundIndex], ...itemUpdates };
@@ -297,6 +329,8 @@ export const ShoppingCartProvider: React.FC = (props) => {
         cartTotal - couponDiscount < AppConfig.Configuration.MIN_CART_VALUE_FOR_FREE_DELIVERY
       ? AppConfig.Configuration.DELIVERY_CHARGES
       : 0;
+
+  const packagingCharges = AppConfig.Configuration.PACKAGING_CHARGES;
 
   const grandTotal = parseFloat(
     (cartTotal + deliveryCharges - couponDiscount - productDiscount).toFixed(2)
@@ -437,11 +471,19 @@ export const ShoppingCartProvider: React.FC = (props) => {
     }
   }, [cartTotalOfRxProducts]);
 
+  useEffect(() => {
+    // updating I will show the prescription at the store option on change in address
+    if (deliveryAddressId) {
+      setShowPrescriptionAtStore(false);
+    }
+  }, [deliveryAddressId]);
+
   return (
     <ShoppingCartContext.Provider
       value={{
         cartItems,
         setCartItems,
+        setItemsWithQtyRestriction,
         addCartItem,
         addMultipleCartItems,
         removeCartItem,
@@ -452,6 +494,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
         couponDiscount,
         productDiscount,
         deliveryCharges,
+        packagingCharges,
         uploadPrescriptionRequired,
 
         ePrescriptions,
@@ -474,8 +517,12 @@ export const ShoppingCartProvider: React.FC = (props) => {
 
         stores,
         setStores,
+        storesInventory,
+        setStoresInventory,
         storeId,
         setStoreId,
+        showPrescriptionAtStore,
+        setShowPrescriptionAtStore,
 
         pinCode,
         setPinCode,

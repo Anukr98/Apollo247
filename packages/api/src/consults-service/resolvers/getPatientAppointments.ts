@@ -6,6 +6,8 @@ import { AppointmentRepository } from 'consults-service/repositories/appointment
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
+import { ApiConstants } from 'ApiConstants';
+import { DoctorHospitalRepository } from 'doctors-service/repositories/doctorHospitalRepository';
 
 export const getPatinetAppointmentsTypeDefs = gql`
   type PatinetAppointments {
@@ -58,6 +60,19 @@ export const getPatinetAppointmentsTypeDefs = gql`
     consultsCount: Int
   }
 
+  type PersonalizedAppointmentResult {
+    appointmentDetails: PersonalizedAppointment
+  }
+
+  type PersonalizedAppointment {
+    id: String
+    hospitalLocation: String
+    appointmentDateTime: DateTime
+    appointmentType: APPOINTMENT_TYPE
+    doctorId: String
+    doctorDetails: DoctorDetailsWithStatusExclude @provides(fields: "id")
+  }
+
   extend type Query {
     getPatinetAppointments(
       patientAppointmentsInput: PatientAppointmentsInput
@@ -68,6 +83,7 @@ export const getPatinetAppointmentsTypeDefs = gql`
       offset: Int
       limit: Int
     ): PatientAllAppointmentsResult!
+    getPatientPersonalizedAppointments(patientUhid: String): PersonalizedAppointmentResult!
   }
 `;
 
@@ -120,6 +136,18 @@ type AppointmentPayment = {
   orderId: string;
 };
 
+type PersonalizedAppointmentResult = {
+  appointmentDetails: PersonalizedAppointment | '';
+};
+
+type PersonalizedAppointment = {
+  id: string;
+  hospitalLocation: string;
+  appointmentDateTime: Date;
+  appointmentType: APPOINTMENT_TYPE;
+  doctorId: string;
+};
+
 type Doctor = {
   id: string;
   doctorName: string;
@@ -132,9 +160,19 @@ const getPatinetAppointments: Resolver<
   AppointmentInputArgs,
   ConsultServiceContext,
   PatientAppointmentsResult
-> = async (parent, { patientAppointmentsInput }, { consultsDb, doctorsDb, patientsDb }) => {
-  const appts = consultsDb.getCustomRepository(AppointmentRepository);
+> = async (
+  parent,
+  { patientAppointmentsInput },
+  { consultsDb, doctorsDb, patientsDb, mobileNumber }
+) => {
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
+  const patientData = await patientRepo.checkMobileIdInfo(
+    mobileNumber,
+    '',
+    patientAppointmentsInput.patientId
+  );
+  if (!patientData) throw new AphError(AphErrorMessages.INVALID_PATIENT_DETAILS);
+  const appts = consultsDb.getCustomRepository(AppointmentRepository);
   const primaryPatientIds = await patientRepo.getLinkedPatientIds(
     patientAppointmentsInput.patientId
   );
@@ -170,9 +208,11 @@ const getPatientAllAppointments: Resolver<
   { patientId: string; offset: number; limit: number },
   ConsultServiceContext,
   PatientAllAppointmentsResult
-> = async (parent, args, { consultsDb, patientsDb }) => {
-  const appts = consultsDb.getCustomRepository(AppointmentRepository);
+> = async (parent, args, { consultsDb, patientsDb, mobileNumber }) => {
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
+  const patientData = await patientRepo.checkMobileIdInfo(mobileNumber, '', args.patientId);
+  if (!patientData) throw new AphError(AphErrorMessages.INVALID_PATIENT_DETAILS);
+  const appts = consultsDb.getCustomRepository(AppointmentRepository);
   const primaryPatientIds = await patientRepo.getLinkedPatientIds(args.patientId);
 
   const appointments = await appts.getPatientAllAppointments(
@@ -184,15 +224,78 @@ const getPatientAllAppointments: Resolver<
   return { appointments };
 };
 
+const getPatientPersonalizedAppointments: Resolver<
+  null,
+  { patientUhid: string },
+  ConsultServiceContext,
+  PersonalizedAppointmentResult
+> = async (parent, args, { consultsDb, doctorsDb, patientsDb, mobileNumber }) => {
+  const patientRepo = patientsDb.getCustomRepository(PatientRepository);
+  const patientData = await patientRepo.checkMobileIdInfo(mobileNumber, args.patientUhid, '');
+  if (!patientData) throw new AphError(AphErrorMessages.INVALID_PATIENT_DETAILS);
+  let uhid = args.patientUhid;
+  if (process.env.NODE_ENV == 'local') uhid = ApiConstants.CURRENT_UHID.toString();
+  else if (process.env.NODE_ENV == 'dev') uhid = ApiConstants.CURRENT_UHID.toString();
+  const apptsResp = await fetch(
+    process.env.PRISM_GET_OFFLINE_APPOINTMENTS
+      ? process.env.PRISM_GET_OFFLINE_APPOINTMENTS + uhid
+      : '',
+    {
+      method: 'GET',
+      headers: {},
+    }
+  );
+  const textRes = await apptsResp.text();
+  const offlineApptsList = JSON.parse(textRes);
+
+  let apptDetails: PersonalizedAppointment;
+  if (offlineApptsList.errorCode == 0) {
+    //console.log(offlineApptsList.response, offlineApptsList.response.length);
+    const doctorRepo = doctorsDb.getCustomRepository(DoctorHospitalRepository);
+    const doctorDets = await doctorRepo.getDoctorIdByMedmantraId(
+      offlineApptsList.response[0].doctorid
+    );
+    console.log(doctorDets, 'sel doctor dets');
+    if (doctorDets) {
+      const apptDetailsOffline: PersonalizedAppointment = {
+        id: offlineApptsList.response[0].appointmentid,
+        hospitalLocation: offlineApptsList.response[0].location_name,
+        appointmentDateTime: new Date(offlineApptsList.response[0].consultedtime),
+        appointmentType:
+          offlineApptsList.response[0].appointmenttype == 'WALKIN'
+            ? APPOINTMENT_TYPE.PHYSICAL
+            : APPOINTMENT_TYPE.ONLINE,
+        doctorId: doctorDets.doctor.id,
+      };
+      apptDetails = apptDetailsOffline;
+    } else {
+      throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID);
+    }
+  } else {
+    console.log(offlineApptsList.errorMsg, offlineApptsList.errorCode, 'offline consults error');
+    throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
+  }
+  //if (apptDetails == null) throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
+  return { appointmentDetails: apptDetails };
+};
+
 export const getPatinetAppointmentsResolvers = {
   PatinetAppointments: {
     doctorInfo(appointments: PatinetAppointments) {
       return { __typename: 'DoctorDetailsWithStatusExclude', id: appointments.doctorId };
     },
   },
+
+  PersonalizedAppointment: {
+    doctorDetails(appointment: PersonalizedAppointment) {
+      return { __typename: 'DoctorDetailsWithStatusExclude', id: appointment.doctorId };
+    },
+  },
+
   Query: {
     getPatinetAppointments,
     getPatientFutureAppointmentCount,
     getPatientAllAppointments,
+    getPatientPersonalizedAppointments,
   },
 };

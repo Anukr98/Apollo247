@@ -138,6 +138,9 @@ const initateConferenceTelephoneCall: Resolver<
   const exotelCallerId: string | undefined = process.env.EXOTEL_CALLER_ID;
   let exotelUrl: string | undefined = process.env.EXOTEL_API_URL;
 
+  let fromMobileNumber = undefined;
+  let toMobileNumber = undefined;
+
   if (!exotelInput.from && !exotelInput.to) {
     // check if appointmentId exist
     if (!exotelInput.appointmentId) {
@@ -169,15 +172,8 @@ const initateConferenceTelephoneCall: Resolver<
     }
 
     // we have got both phone numbers as doctor.mobileNumber and patient.mobileNumber
-    let exotelRequest = {
-      From: doctor.mobileNumber,
-      To: patient.mobileNumber,
-      CallerId: exotelCallerId,
-      Record: true,
-      RecordingChannels: 'single',
-    };
-
-    return await exotelCalling({ exotelUrl, exotelRequest });
+    fromMobileNumber = doctor.mobileNumber;
+    toMobileNumber = patient.mobileNumber;
   }
 
   if (exotelInput.from && !exotelInput.to) {
@@ -188,20 +184,21 @@ const initateConferenceTelephoneCall: Resolver<
     throw new AphError(AphErrorMessages.INVALID_PARAMETERS, undefined, {});
   }
 
-  // const reg = new RegExp(/^\d{10}$/);
-  // if(!reg.test(exotelInput.from) || !reg.test(exotelInput.to)){
-  //   throw new AphError(AphErrorMessages.INVALID_PARAMETERS, undefined, {});
-  // }
-
+  // TODO: Put back this condition
+  //const reg = new RegExp(/^\d{10}$/);
+  //if (!reg.test(exotelInput.from) || !reg.test(exotelInput.to)) {
+  //  throw new AphError(AphErrorMessages.INVALID_PARAMETERS, undefined, {});
+  //}
   // else we have both mobile numbers in params.
   // check for validity of both numbers.
 
+  fromMobileNumber = exotelInput.from;
+  toMobileNumber = exotelInput.to;
+
   let exotelRequest = {
-    From: exotelInput.from,
-    To: exotelInput.to,
+    From: fromMobileNumber,
+    To: toMobileNumber,
     CallerId: exotelCallerId,
-    Record: true,
-    RecordingChannels: 'single',
   };
   return await exotelCalling({ exotelUrl, exotelRequest });
 };

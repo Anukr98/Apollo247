@@ -15,7 +15,7 @@ target 'ApolloDoctor' do
  pod 'FirebaseAnalytics'
  pod 'FirebaseAuth'
  pod 'GoogleAppMeasurement'
- pod 'OpenTok', '~> 2.16.3'
+ pod 'OpenTok', '~> 2.17.0'
   # pod 'react-native-splash-screen', :path => '../node_modules/react-native-splash-screen'
 
   # pod 'react-native-image-picker', :path => '../node_modules/react-native-image-picker'
@@ -50,7 +50,6 @@ target 'ApolloDoctor' do
   pod 'Folly', :podspec => '../node_modules/react-native/third-party-podspecs/Folly.podspec'
   pod 'RNFirebase', :path => '../node_modules/react-native-firebase/ios'
   # Pods for testing
-  pod 'opentok-react-native', :path => '../node_modules/opentok-react-native'
   pod 'RNCAsyncStorage', :path => '../node_modules/@react-native-community/async-storage'
   use_native_modules!
   pod 'RNImageCropPicker', :path => '../node_modules/react-native-image-crop-picker'
@@ -70,5 +69,13 @@ target 'ApolloDoctor' do
   pod 'RNPermissions', :path => '../node_modules/react-native-permissions'
 
   pod 'react-native-keep-awake', :path => '../node_modules/react-native-keep-awake'
+
+  pod 'RCTCallDetection', :path => '../node_modules/react-native-call-detection'
+
+  pod 'opentok-react-native', :path => '../node_modules/opentok-react-native'
+
+  pod 'RNSound', :path => '../node_modules/react-native-sound'
+
+  pod 'RCTSystemSetting', :path => '../node_modules/react-native-system-setting'
 
 end

@@ -8,9 +8,10 @@ import { DoctorPlaceholderImage, More } from '@aph/mobile-patients/src/component
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
+import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import {
-  CommonLogEvent,
   CommonBugFender,
+  CommonLogEvent,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
   BOOK_APPOINTMENT_RESCHEDULE,
@@ -31,21 +32,26 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/checkIfReschedule';
 import {
   APPOINTMENT_STATE,
-  REQUEST_ROLES,
-  TRANSFER_INITIATED_TYPE,
-  STATUS,
   APPOINTMENT_TYPE,
-  NOSHOW_REASON,
+  REQUEST_ROLES,
+  STATUS,
+  TRANSFER_INITIATED_TYPE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { getNextAvailableSlots } from '@aph/mobile-patients/src/helpers/clientCalls';
 import {
-  getNetStatus,
-  statusBarHeight,
+  dataSavedUserID,
   g,
+  getNetStatus,
   postWebEngageEvent,
+  statusBarHeight,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  WebEngageEventName,
+  WebEngageEvents,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
+import AsyncStorage from '@react-native-community/async-storage';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
@@ -59,13 +65,6 @@ import {
   View,
 } from 'react-native';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
-import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
-import { getPatinetAppointments_getPatinetAppointments_patinetAppointments } from '../../graphql/types/getPatinetAppointments';
-import AsyncStorage from '@react-native-community/async-storage';
-import {
-  WebEngageEvents,
-  WebEngageEventName,
-} from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { getPatientAllAppointments_getPatientAllAppointments_appointments } from '../../graphql/types/getPatientAllAppointments';
 
 const { width, height } = Dimensions.get('window');
@@ -292,17 +291,17 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
       });
   };
 
-  const cancelAppointmentApi = () => {
+  const cancelAppointmentApi = async () => {
     setshowSpinner(true);
+    const userId = await dataSavedUserID('selectedProfileId');
+
     const appointmentTransferInput = {
       appointmentId: data.id,
       cancelReason: '',
       cancelledBy: REQUEST_ROLES.PATIENT, //appointmentDate,
-      cancelledById: data.patientId,
+      cancelledById: userId ? userId : data.patientId,
     };
-    // console.log(appointmentTransferInput, 'appointmentTransferInput');
-    //if (!deviceTokenApICalled) {
-    // setDeviceTokenApICalled(true);
+
     client
       .mutate<cancelAppointment, cancelAppointmentVariables>({
         mutation: CANCEL_APPOINTMENT,
@@ -317,13 +316,6 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
         // setSucessPopup(true);
         showAppointmentCancellSuccessAlert();
         console.log(data, 'datacancel');
-        // props.navigation.dispatch(
-        //   StackActions.reset({
-        //     index: 0,
-        //     key: null,
-        //     actions: [NavigationActions.navigate({ routeName: AppRoutes.TabBar })],
-        //   })
-        // );
       })
       .catch((e: any) => {
         CommonBugFender('AppointmentOnlineDetails_cancelAppointmentApi', e);
@@ -340,7 +332,6 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
           });
         }
       });
-    // }
   };
 
   const showAppointmentCancellSuccessAlert = () => {
