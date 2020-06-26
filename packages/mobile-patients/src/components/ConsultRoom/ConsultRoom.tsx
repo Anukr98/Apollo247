@@ -1380,7 +1380,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           Linking.openURL(openUrl);
         } else {
           setBugFenderLog('CONSULT_ROOM_FAILED_OPEN_URL', openUrl);
-          console.log("Don't know how to open URI: " + this.props.url);
         }
       });
     } catch (e) {}
