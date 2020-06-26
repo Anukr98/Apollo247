@@ -847,7 +847,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     );
   };
 
-  const renderSliderItem = ({ item, index }: { item: OfferBannerSection, index: number }) => {
+  const renderSliderItem = ({ item, index }: { item: OfferBannerSection; index: number }) => {
     const handleOnPress = () => {
       const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_BANNER_CLICK] = {
         BannerPosition: index + 1,
@@ -952,8 +952,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         style={[
           {
             ...theme.viewStyles.card(),
-            marginTop: 20,
-            marginBottom: 12,
+            marginTop: 10,
+            marginBottom: 16,
           },
           medicineList.length > 0 && searchText
             ? {
@@ -981,7 +981,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             loading: ordersLoading,
           });
         }}
-        container={{ marginBottom: 24 }}
+        container={{ marginBottom: 24, marginTop: 20 }}
         title={'My Orders'}
         leftIcon={<MedicineIcon />}
       />
@@ -1327,7 +1327,10 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           ProductId: sku,
           ProductName: name,
         };
-        postWebEngageEvent(WebEngageEventName.PHARMACY_CATEGORY_SECTION_PRODUCT_CLICK, eventAttributes);
+        postWebEngageEvent(
+          WebEngageEventName.PHARMACY_CATEGORY_SECTION_PRODUCT_CLICK,
+          eventAttributes
+        );
         postwebEngageProductClickedEvent(data.item, title, 'Home');
         props.navigation.navigate(AppRoutes.MedicineDetailsScene, { sku });
       },
@@ -1828,10 +1831,10 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       >
         {renderBannerImageToGetAspectRatio()}
         {renderBanners()}
-        {renderUploadPrescriptionSection()}
         {renderYourOrders()}
         {renderRecommendedProducts()}
         {loading ? renderSectionLoader() : !error && renderSectionsWithOrdering()}
+        {renderUploadPrescriptionSection()}
         {!error && <View style={{ height: 20 }} />}
       </TouchableOpacity>
     );
