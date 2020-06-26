@@ -127,15 +127,17 @@ export const Specialities: React.FC<SpecialitiesProps> = (props) => {
                         key={specialityDetails.id}
                         title={specialityDetails.name}
                         onClick={(e) => {
-                          saveSearchMutation({
-                            variables: {
-                              saveSearchInput: {
-                                type: SEARCH_TYPE.SPECIALTY,
-                                typeId: specialityDetails.id,
-                                patient: currentPatient ? currentPatient.id : '',
+                          currentPatient &&
+                            currentPatient.id &&
+                            saveSearchMutation({
+                              variables: {
+                                saveSearchInput: {
+                                  type: SEARCH_TYPE.SPECIALTY,
+                                  typeId: specialityDetails.id,
+                                  patient: currentPatient ? currentPatient.id : '',
+                                },
                               },
-                            },
-                          });
+                            });
                           const specialityUpdated = readableParam(`${e.currentTarget.title}`);
                           history.push(clientRoutes.specialties(`${specialityUpdated}`));
                         }}
