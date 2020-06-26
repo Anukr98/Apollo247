@@ -11815,6 +11815,16 @@
             "defaultValue": null
           },
           {
+            "name": "doctorType",
+            "description": null,
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "defaultValue": null
+          },
+          {
             "name": "sort",
             "description": null,
             "type": {
@@ -12011,6 +12021,18 @@
             "type": {
               "kind": "OBJECT",
               "name": "DoctorSpecialty",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "doctorType",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "ENUM",
+              "name": "DoctorType",
               "ofType": null
             },
             "isDeprecated": false,
@@ -37348,6 +37370,36 @@
             "type": {
               "kind": "SCALAR",
               "name": "Boolean",
+              "ofType": null
+            },
+            "defaultValue": null
+          },
+          {
+            "name": "pinCode",
+            "description": null,
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "defaultValue": null
+          },
+          {
+            "name": "actualAmount",
+            "description": null,
+            "type": {
+              "kind": "SCALAR",
+              "name": "Float",
+              "ofType": null
+            },
+            "defaultValue": null
+          },
+          {
+            "name": "discountedAmount",
+            "description": null,
+            "type": {
+              "kind": "SCALAR",
+              "name": "Float",
               "ofType": null
             },
             "defaultValue": null
