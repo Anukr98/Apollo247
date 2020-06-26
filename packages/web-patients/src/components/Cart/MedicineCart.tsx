@@ -872,7 +872,7 @@ export const MedicineCart: React.FC = (props) => {
           prismPrescriptionFileId: [
             ...ePrescriptionData!.map((item) => item.prismPrescriptionFileId),
           ].join(','),
-          orderTat: deliveryAddressId && moment(deliveryTime).isValid() ? deliveryTime : '',
+          orderTat: deliveryTime,
           items: cartItemsForApi,
           coupon: couponCode,
           deviceType: getDeviceType(),
@@ -1012,7 +1012,7 @@ export const MedicineCart: React.FC = (props) => {
           const uploadUrlscheck = data.map(({ data }: any) =>
             data && data.uploadDocument && data.uploadDocument.status ? data.uploadDocument : null
           );
-          const filtered = uploadUrlscheck.filter(function(el) {
+          const filtered = uploadUrlscheck.filter(function (el) {
             return el != null;
           });
           const phyPresUrls = filtered.map((item) => item.filePath).filter((i) => i);
@@ -1489,7 +1489,7 @@ export const MedicineCart: React.FC = (props) => {
                   fullWidth
                   disabled={
                     (!nonCartFlow
-                      ? !cartTat
+                      ? !cartTat && deliveryTime === ''
                       : !deliveryAddressId ||
                         (deliveryAddressId && deliveryAddressId.length === 0)) ||
                     !isPaymentButtonEnable ||
@@ -1497,7 +1497,7 @@ export const MedicineCart: React.FC = (props) => {
                   }
                   className={
                     (!nonCartFlow
-                      ? !cartTat
+                      ? !cartTat && deliveryTime === ''
                       : !deliveryAddressId ||
                         (deliveryAddressId && deliveryAddressId.length === 0)) ||
                     !isPaymentButtonEnable ||
