@@ -33,15 +33,17 @@ export const getDoctorDetailsTypeDefs = gql`
   }
   enum DoctorType {
     APOLLO
-    PAYROLL
-    STAR_APOLLO
-    JUNIOR
-    DOCTOR_CONNECT
-    CRADLE
     CLINIC
-    SPECTRA
+    CRADLE
+    DOCTOR_CONNECT
     FERTILITY
+    JUNIOR
+    PAYROLL
+    SPECTRA
+    STAR_APOLLO
     SUGAR
+    APOLLO_HOMECARE
+    WHITE_DENTAL
   }
 
   enum LoggedInUserType {
@@ -143,6 +145,7 @@ export const getDoctorDetailsTypeDefs = gql`
     packages: [Packages]
     specialty: DoctorSpecialties
     starTeam: [StarTeam]
+    availableModes: [ConsultMode]
   }
 
   type DoctorDetailsWithStatusExclude @key(fields: "id") {
@@ -357,15 +360,21 @@ const getDoctorDetailsById: Resolver<null, { id: string }, DoctorsServiceContext
     doctorData.id = doctorData.doctorId;
     doctorData.specialty.id = doctorData.specialty.specialtyId;
     doctorData.doctorHospital = [];
+    const availableModes: string[] = [];
     for (const consultHour of doctorData.consultHours) {
       consultHour['id'] = consultHour['consultHoursId'];
+      if (!availableModes.includes(consultHour['consultMode'])) {
+        availableModes.push(consultHour['consultMode']);
+      }
     }
+
     facilities = doctorData.facility;
     facilities = Array.isArray(facilities) ? facilities : [facilities];
     for (const facility of facilities) {
       facility.id = facility.facilityId;
       doctorData.doctorHospital.push({ facility });
     }
+    doctorData.availableModes = availableModes;
   }
   // console.log(getDetails.body.hits.hits, getDetails.body.hits.hits.length + 1, 'searchhitCount');
   return doctorData;

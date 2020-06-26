@@ -137,7 +137,7 @@ export const Header: React.FC<HeaderProps> = (props) => {
             {rightText.title}
           </Text>
         )}
-        {rightIcons && (
+        {rightIcons && rightIcons.length > 0 ? (
           <View style={styles.iconContainer}>
             {rightIcons.map((icon, i) => (
               <TouchableOpacity
@@ -160,7 +160,7 @@ export const Header: React.FC<HeaderProps> = (props) => {
               </TouchableOpacity>
             ))}
           </View>
-        )}
+        ) : null}
         {rightIcon && rightIcon}
         {props.rightComponent ? props.rightComponent : null}
       </View>

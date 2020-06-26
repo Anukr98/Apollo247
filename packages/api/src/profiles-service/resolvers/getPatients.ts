@@ -115,8 +115,10 @@ const getPatientById: Resolver<
   { patientId: string },
   ProfilesServiceContext,
   PatientInfo
-> = async (parent, args, { profilesDb }) => {
+> = async (parent, args, { profilesDb, mobileNumber }) => {
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
+  const patientData = await patientRepo.checkMobileIdInfo(mobileNumber, '', args.patientId);
+  if (!patientData) throw new AphError(AphErrorMessages.INVALID_PATIENT_DETAILS);
   const patient = await patientRepo.findById(args.patientId);
   if (!patient) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
@@ -129,7 +131,10 @@ const getPatientByMobileNumber: Resolver<
   { mobileNumber: string },
   ProfilesServiceContext,
   PatientList
-> = async (parent, args, { profilesDb }) => {
+> = async (parent, args, { mobileNumber, profilesDb }) => {
+  if (mobileNumber != args.mobileNumber) {
+    throw new AphError(AphErrorMessages.INVALID_MOBILE_NUMBER, undefined, {});
+  }
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
   const patients = await patientRepo.findByMobileNumber(args.mobileNumber);
   if (!patients) {

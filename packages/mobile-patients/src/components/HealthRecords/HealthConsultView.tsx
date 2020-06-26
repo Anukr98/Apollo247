@@ -169,6 +169,24 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
     Platform.OS === 'android' && requestReadSmsPermission();
   });
 
+  const getFileName = () => {
+    console.log('PastData', props.PastData);
+    if (props.PastData!) {
+      return (
+        'Prescription_' +
+        g(props.PastData, 'displayId') +
+        '_' +
+        moment(g(props.PastData, 'appointmentDateTime')).format('DD MM YYYY') +
+        '_' +
+        g(props.PastData, 'doctorInfo', 'displayName') +
+        '_Apollo 247' +
+        '.pdf'
+      );
+    } else {
+      return 'Prescription_Apollo 247.pdf';
+    }
+  };
+
   const downloadPrescription = () => {
     console.log('pharama', item);
     if (item.blobName == null) {
@@ -176,7 +194,7 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
     } else {
       let dirs = RNFetchBlob.fs.dirs;
 
-      let fileName: string = item.blobName.substring(0, item.blobName.indexOf('.pdf')) + '.pdf';
+      let fileName: string = getFileName();
       const downloadPath =
         Platform.OS === 'ios'
           ? (dirs.DocumentDir || dirs.MainBundleDir) + '/' + (fileName || 'Apollo_Prescription.pdf')

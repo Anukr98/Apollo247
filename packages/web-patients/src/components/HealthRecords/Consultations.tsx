@@ -10,16 +10,13 @@ import { Diagnosis } from 'components/HealthRecords/Diagnosis';
 import { PrescribedTests } from 'components/HealthRecords/PrescribedTests';
 import { GeneralAdvice } from 'components/HealthRecords/GeneralAdvice';
 import { FollowUp } from 'components/HealthRecords/FollowUp';
-import { PaymentInvoice } from 'components/HealthRecords/PaymentInvoice';
-import { PrescriptionPreview } from 'components/HealthRecords/PrescriptionPreview';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import moment from 'moment';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet as CaseSheetType } from '../../graphql/types/getPatientPastConsultsAndPrescriptions';
 import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
-// import { phrConsultCardClickTracking } from '../../webEngageTracking';
-// import { useCurrentPatient } from 'hooks/authHooks';
+import { ToplineReport } from 'components/HealthRecords/ToplineReport';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -298,6 +295,56 @@ const useStyles = makeStyles((theme: Theme) => {
         },
       },
     },
+    medicalRecordsDetails: {
+      paddingLeft: 20,
+      paddingRight: 15,
+      paddingTop: 10,
+      [theme.breakpoints.down('xs')]: {
+        padding: 20,
+        paddingBottom: 10,
+      },
+    },
+    cbcDetails: {
+      backgroundColor: theme.palette.common.white,
+      boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
+      borderRadius: 10,
+      marginBottom: 12,
+      padding: 14,
+      display: 'flex',
+      '&:before': {
+        display: 'none',
+      },
+      [theme.breakpoints.down('xs')]: {
+        display: 'block',
+      },
+      '& >div:first-child': {
+        paddingLeft: 0,
+      },
+      '& >div:last-child': {
+        paddingRight: 0,
+      },
+    },
+    reportsDetails: {
+      paddingLeft: 5,
+      paddingRight: 5,
+      [theme.breakpoints.down('xs')]: {
+        paddingLeft: 5,
+        paddingRight: 5,
+      },
+      '& label': {
+        fontSize: 12,
+        fontWeight: 500,
+        color: '#01475b',
+        paddingBottom: 3,
+      },
+      '& p': {
+        fontSize: 14,
+        fontWeight: 500,
+        color: '#0087ba',
+        margin: 0,
+        wordBreak: 'break-word',
+      },
+    },
   };
 });
 
@@ -311,17 +358,17 @@ type ConsultationProps = {
   error: boolean;
   consultsData: any;
   allConsultsData: any;
-  setConsultsData: (consultsData: any) => void;
 };
 
 export const Consultations: React.FC<ConsultationProps> = (props) => {
   const classes = useStyles({});
+  const { loading, error, allConsultsData } = props;
   const isMediumScreen = useMediaQuery('(min-width:768px) and (max-width:990px)');
   const isSmallScreen = useMediaQuery('(max-width:767px)');
   const [filter, setFilter] = useState<string>('ALL');
   const [activeConsult, setActiveConsult] = useState<any | null>(null);
   const [showMobileDetails, setShowMobileDetails] = useState<boolean>(false);
-  const { loading, error, consultsData, allConsultsData, setConsultsData } = props;
+  const [filteredData, setFiltedData] = useState<any | null>(null);
 
   useEffect(() => {
     if (allConsultsData) {
@@ -335,7 +382,7 @@ export const Consultations: React.FC<ConsultationProps> = (props) => {
             }
           });
       }
-      setConsultsData(filteredConsults);
+      setFiltedData(filteredConsults);
       if (!isSmallScreen) {
         setActiveConsult(filteredConsults ? filteredConsults[0] : null);
       }
@@ -361,7 +408,6 @@ export const Consultations: React.FC<ConsultationProps> = (props) => {
       <span>{moment(new Date(date)).format('DD MMM YYYY')}</span>
     );
   };
-  const currentPath = window.location.pathname;
 
   const downloadPrescription = () => {
     const filterCaseSheet =
@@ -390,8 +436,7 @@ export const Consultations: React.FC<ConsultationProps> = (props) => {
       const interval = setInterval(download, 300, imageList);
     }
   };
-  // const patient = useCurrentPatient();
-  // const age = patient && patient.dateOfBirth ? moment().diff(patient.dateOfBirth, 'years') : null;
+
   return (
     <div className={classes.root}>
       <div className={classes.leftSection}>
@@ -435,15 +480,14 @@ export const Consultations: React.FC<ConsultationProps> = (props) => {
           }
         >
           <div className={classes.consultationsList}>
-            {consultsData &&
-              consultsData.length > 0 &&
-              consultsData.map(
+            {filteredData &&
+              filteredData.length > 0 &&
+              filteredData.map(
                 (consult: any) =>
                   consult && (
                     <div
                       className={classes.consultGroup}
                       onClick={() => {
-                        // phrConsultCardClickTracking({ ...patient, age, consultId: consult.id });
                         setActiveConsult(consult);
                         if (isSmallScreen) {
                           setShowMobileDetails(true);
@@ -454,7 +498,7 @@ export const Consultations: React.FC<ConsultationProps> = (props) => {
                         <div className={classes.circle}></div>
                         {consult.patientId
                           ? showDate(consult.appointmentDateTime)
-                          : showDate(consult.quoteDateTime)}
+                          : showDate(consult.quoteDateTime || consult.date)}
                       </div>
                       <DoctorConsultCard
                         consult={consult}
@@ -465,7 +509,7 @@ export const Consultations: React.FC<ConsultationProps> = (props) => {
                   )
               )}
           </div>
-          {isSmallScreen && consultsData && consultsData.length === 0 && (
+          {isSmallScreen && filteredData && filteredData.length === 0 && (
             <div className={classes.noRecordFoundWrapper}>
               <img src={require('images/ic_records.svg')} />
               <p>
@@ -486,7 +530,7 @@ export const Consultations: React.FC<ConsultationProps> = (props) => {
           isSmallScreen && !showMobileDetails ? '' : classes.mobileOverlay
         }`}
       >
-        {consultsData && consultsData.length > 0 ? (
+        {filteredData && filteredData.length > 0 ? (
           <>
             <div className={classes.sectionHeader}>
               <div className={classes.headerBackArrow}>
@@ -503,7 +547,7 @@ export const Consultations: React.FC<ConsultationProps> = (props) => {
               </div>
               <div className={classes.headerActions}>
                 {/* <AphButton>View Consult</AphButton>  */}
-                {consultsData && consultsData.length > 0 && (
+                {activeConsult && activeConsult.patientId && (
                   <div className={classes.downloadIcon} onClick={() => downloadPrescription()}>
                     <img src={require('images/ic_download.svg')} alt="" />
                   </div>
@@ -523,7 +567,7 @@ export const Consultations: React.FC<ConsultationProps> = (props) => {
             >
               <div className={classes.consultationDetails}>
                 {(!isSmallScreen && activeConsult && activeConsult.patientId) ||
-                (isSmallScreen && showMobileDetails && activeConsult) ? (
+                (isSmallScreen && showMobileDetails && activeConsult.patientId) ? (
                   <>
                     <Symptoms caseSheetList={activeConsult.caseSheet} />
                     <Prescription caseSheetList={activeConsult.caseSheet} />
@@ -534,7 +578,40 @@ export const Consultations: React.FC<ConsultationProps> = (props) => {
                     {/* <PaymentInvoice />
                 <PrescriptionPreview /> */}
                   </>
+                ) : // when it is prescription
+                activeConsult && activeConsult.prescriptionName ? (
+                  <div className={classes.medicalRecordsDetails}>
+                    <div className={classes.cbcDetails}>
+                      <div className={classes.reportsDetails}>
+                        <label>Check-up Date</label>
+                        <p>{moment(activeConsult.date).format('DD MMM YYYY')}</p>
+                      </div>
+                      <div className={classes.reportsDetails}>
+                        <label>Source</label>
+                        <p>{activeConsult.prescriptionSource || '-'}</p>
+                      </div>
+                      <div className={classes.reportsDetails}>
+                        <label>Referring Doctor</label>
+                        <p>{!!activeConsult.prescribedBy ? activeConsult.prescribedBy : '-'}</p>
+                      </div>
+                    </div>
+                    {(activeConsult.observations || activeConsult.additionalNotes) && (
+                      <ToplineReport activeData={activeConsult} />
+                    )}
+                    {activeConsult.fileUrl &&
+                      activeConsult.fileUrl.length > 0 &&
+                      (activeConsult.fileUrl.includes('.pdf') ? (
+                        <div className={classes.prescriptionImage}>
+                          <a href={activeConsult.prescriptionImageUrl}>Download File</a>
+                        </div>
+                      ) : (
+                        <div className={classes.prescriptionImage}>
+                          <img src={activeConsult.fileUrl} alt="Prescription Preview" />
+                        </div>
+                      ))}
+                  </div>
                 ) : (
+                  // when it is med record
                   activeConsult &&
                   activeConsult.prescriptionImageUrl &&
                   (activeConsult.prescriptionImageUrl.includes('.pdf') ? (

@@ -18,11 +18,13 @@ import { ManageProfile } from 'components/ManageProfile';
 import { hasOnePrimaryUser } from '../../helpers/onePrimaryUser';
 import { BottomLinks } from 'components/BottomLinks';
 import { MedicineAutoSearch } from 'components/Medicine/MedicineAutoSearch';
-import { uploadPrescriptionTracking } from '../../webEngageTracking';
+import { uploadPrescriptionTracking, pharmacySearchEnterTracking } from 'webEngageTracking';
 import { UploadPrescription } from 'components/Prescriptions/UploadPrescription';
 import { UploadEPrescriptionCard } from 'components/Prescriptions/UploadEPrescriptionCard';
 import { useCurrentPatient } from 'hooks/authHooks';
 import moment from 'moment';
+import { gtmTracking } from 'gtmTracking';
+import { MetaTagsComp } from 'MetaTagsComp';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -208,6 +210,7 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 const apiDetails = {
+  skuUrl: process.env.PHARMACY_MED_PROD_SKU_URL,
   url: process.env.PHARMACY_MED_CATEGORY_LIST,
   authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
   imageUrl: process.env.PHARMACY_MED_IMAGES_BASE_URL,
@@ -232,6 +235,7 @@ export const SearchByMedicine: React.FC = (props) => {
   const [showResponsiveFilter, setShowResponsiveFilter] = useState<boolean>(false);
   const [disableFilters, setDisableFilters] = useState<boolean>(true);
   const [isReloaded, setIsReloaded] = useState(false);
+  const [categoryId, setCategoryId] = useState<string>('');
 
   const [isUploadPreDialogOpen, setIsUploadPreDialogOpen] = React.useState<boolean>(false);
   const [isEPrescriptionOpen, setIsEPrescriptionOpen] = React.useState<boolean>(false);
@@ -267,6 +271,7 @@ export const SearchByMedicine: React.FC = (props) => {
         }
       )
       .then(({ data }) => {
+        pharmacySearchEnterTracking(data.products && data.products.length);
         setMedicineList(data.products);
         setMedicineListFiltered(data.products);
         setHeading(data.search_heading || '');
@@ -280,32 +285,81 @@ export const SearchByMedicine: React.FC = (props) => {
   };
 
   useEffect(() => {
-    if (!medicineList && paramSearchType !== 'search-medicines' && Number(paramSearchText) > 0) {
+    if (!medicineList && paramSearchType !== 'search-medicines') {
       setIsLoading(true);
       axios
         .post(
-          apiDetails.url || '',
-          {
-            category_id: paramSearchText,
-            page_id: 1,
-          },
+          apiDetails.skuUrl || '',
+          { params: paramSearchText, level: 'category' },
           {
             headers: {
               Authorization: apiDetails.authToken,
-              Accept: '*/*',
             },
           }
         )
         .then(({ data }) => {
-          if (data && data.products) {
-            setMedicineList(data.products);
-            setHeading('');
-            setIsLoading(false);
-          }
+          setCategoryId(data.category_id || paramSearchText);
+          axios
+            .post(
+              apiDetails.url || '',
+              {
+                category_id: data.category_id || paramSearchText,
+                page_id: 1,
+              },
+              {
+                headers: {
+                  Authorization: apiDetails.authToken,
+                  Accept: '*/*',
+                },
+              }
+            )
+            .then(({ data }) => {
+              if (data && data.products) {
+                setMedicineList(data.products);
+                setHeading('');
+                setIsLoading(false);
+                /** gtm code start */
+                let gtmItems: any[] = [];
+                if (data.products.length) {
+                  data.products.map((prod: MedicineProduct, key: number) => {
+                    const { name, sku, price, type_id } = prod;
+                    gtmItems.push({
+                      item_name: name,
+                      item_id: sku,
+                      price: price,
+                      item_category: 'Pharmacy',
+                      item_category_2: type_id
+                        ? type_id.toLowerCase() === 'pharma'
+                          ? 'Drugs'
+                          : 'FMCG'
+                        : null,
+                      // 'item_category_4': '',             // park for future use
+                      item_variant: 'Default',
+                      index: key + 1,
+                      quantity: 1,
+                    });
+                  });
+                }
+                gtmTracking({
+                  category: 'Pharmacy',
+                  action: 'List Views',
+                  label: '',
+                  value: null,
+                  ecommObj: {
+                    event: 'view_item_list',
+                    ecommerce: { items: gtmItems },
+                  },
+                });
+                /** gtm code end */
+              }
+            })
+            .catch((e) => {
+              setIsLoading(false);
+              setHeading('');
+            });
         })
         .catch((e) => {
-          setIsLoading(false);
-          setHeading('');
+          console.log(e);
         });
     } else if (!medicineList && paramSearchText.length > 0) {
       onSearchMedicine();
@@ -443,8 +497,29 @@ export const SearchByMedicine: React.FC = (props) => {
     setIsUploadPreDialogOpen(true);
   };
 
+  const getMetaTitle =
+    paramSearchType === 'shop-by-category'
+      ? `Buy ${paramSearchText} - Online Pharmacy Store - Apollo 247`
+      : paramSearchType === 'shop-by-brand'
+      ? `Buy ${paramSearchText} Medicines Online - Apollo 247`
+      : `${paramSearchText} Online - Buy Special Medical Kits Online - Apollo 247`;
+
+  const getMetaDescription =
+    paramSearchType === 'shop-by-category'
+      ? `Buy ${paramSearchText} online at Apollo 247 - India's online pharmacy store. Get ${paramSearchText} medicines in just a few clicks. Buy ${paramSearchText} at best prices in India.`
+      : paramSearchType === 'shop-by-brand'
+      ? `Buy medicines from ${paramSearchText} online at Apollo 247 - India's online pharmacy store. Get all the medicines from ${paramSearchText} in a single place and buy them in just a few clicks.`
+      : `${paramSearchText} by Apollo 247. Get ${paramSearchText} to buy pre grouped essential medicines online. Buy medicines online at Apollo 247 in just a few clicks.`;
+
+  const metaTagProps = {
+    title: getMetaTitle,
+    description: getMetaDescription,
+    canonicalLink: window && window.location && window.location && window.location.href,
+  };
+
   return (
     <div className={classes.root}>
+      {paramSearchType !== 'search-medicines' && <MetaTagsComp {...metaTagProps} />}
       <Header />
       <div className={classes.container}>
         <div className={classes.searchByBrandPage}>
@@ -480,7 +555,10 @@ export const SearchByMedicine: React.FC = (props) => {
               <div
                 className={classes.specialOffer}
                 onClick={() =>
-                  (window.location.href = clientRoutes.searchByMedicine('deals-of-the-day', '1195'))
+                  (window.location.href = clientRoutes.searchByMedicine(
+                    'deals-of-the-day',
+                    'offer1'
+                  ))
                 }
               >
                 <span>
@@ -505,6 +583,8 @@ export const SearchByMedicine: React.FC = (props) => {
               setDiscountFilter={setDiscountFilter}
               setFilterData={setFilterData}
               setSortBy={setSortBy}
+              categoryName={paramSearchText}
+              categoryId={categoryId}
             />
             <div className={classes.searchSection}>
               <Scrollbars className={classes.scrollBar} autoHide={true}>

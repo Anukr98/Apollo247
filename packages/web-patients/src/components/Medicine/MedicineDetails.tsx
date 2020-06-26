@@ -22,9 +22,10 @@ import { MedicineAutoSearch } from 'components/Medicine/MedicineAutoSearch';
 import { AphButton, AphDialog, AphDialogTitle, AphDialogClose } from '@aph/web-ui-components';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { useCurrentPatient } from 'hooks/authHooks';
-import { uploadPrescriptionTracking } from '../../webEngageTracking';
+import { uploadPrescriptionTracking, pharmacyPdpOverviewTracking } from 'webEngageTracking';
 import { UploadPrescription } from 'components/Prescriptions/UploadPrescription';
 import { UploadEPrescriptionCard } from 'components/Prescriptions/UploadEPrescriptionCard';
+import { MetaTagsComp } from 'MetaTagsComp';
 import moment from 'moment';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -84,7 +85,7 @@ const useStyles = makeStyles((theme: Theme) => {
         padding: '20px',
       },
       [theme.breakpoints.down('xs')]: {
-        marginTop: 50,
+        marginTop: 99,
       },
     },
     medicineDetailsHeader: {
@@ -441,6 +442,7 @@ export const MedicineDetails: React.FC = (props) => {
   const [drugSchemaJSON, setDrugSchemaJSON] = React.useState(null);
   const [isUploadPreDialogOpen, setIsUploadPreDialogOpen] = React.useState<boolean>(false);
   const [isEPrescriptionOpen, setIsEPrescriptionOpen] = React.useState<boolean>(false);
+  const [metaTagProps, setMetaTagProps] = React.useState(null);
 
   const apiDetails = {
     skuUrl: process.env.PHARMACY_MED_PROD_SKU_URL,
@@ -460,7 +462,7 @@ export const MedicineDetails: React.FC = (props) => {
     await axios
       .post(
         apiDetails.skuUrl || '',
-        { params: sku },
+        { params: sku, level: 'product' },
         {
           headers: {
             Authorization: apiDetails.authToken,
@@ -492,6 +494,7 @@ export const MedicineDetails: React.FC = (props) => {
               type_id,
               PharmaOverview,
               url_key,
+              mou,
             } = data.productdp[0];
             let { description } = data.productdp[0];
             window.history.replaceState(null, '', url_key);
@@ -537,7 +540,6 @@ export const MedicineDetails: React.FC = (props) => {
               });
             }
             /**schema markup End */
-
             /**Gtm code start  */
             data &&
               data.productdp &&
@@ -545,9 +547,45 @@ export const MedicineDetails: React.FC = (props) => {
               gtmTracking({
                 category: 'Pharmacy',
                 action: 'Product Views',
-                label: data.productdp[0].name,
+                label: name,
+                value: null,
+                ecommObj: {
+                  event: 'view_item',
+                  ecommerce: {
+                    items: [
+                      {
+                        item_name: name, // Name or ID is required.
+                        item_id: sku,
+                        price,
+                        item_brand: manufacturer,
+                        item_category: 'Pharmacy',
+                        item_category_2: type_id
+                          ? type_id.toLowerCase() === 'pharma'
+                            ? 'Drugs'
+                            : 'FMCG'
+                          : null,
+                        // 'item_category_4': '', //parked for future
+                        item_variant: 'Default',
+                        index: 1,
+                        quantity: mou,
+                      },
+                    ],
+                  },
+                },
               });
             /**Gtm code End  */
+            data &&
+              data.productdp &&
+              data.productdp.length &&
+              setMetaTagProps({
+                title: `Buy / Order ${data.productdp[0].name} Online At Best Price - Pharmacy Store - Apollo 247`,
+                description: `Buy ${data.productdp[0].name} online in just a few clicks on Apollo 247 - one of India's leading online pharmacy store. Get ${data.productdp[0].name} and a lot more at best prices. Head straight to Apollo 247 to know more.`,
+                canonicalLink:
+                  window &&
+                  window.location &&
+                  window.location.origin &&
+                  `${window.location.origin}/medicine/${params.sku}`,
+              });
           })
           .catch((e) => {
             console.log(e);
@@ -740,6 +778,7 @@ export const MedicineDetails: React.FC = (props) => {
 
   return (
     <div className={classes.root}>
+      <MetaTagsComp {...metaTagProps} />
       {productSchemaJSON && <SchemaMarkup structuredJSON={productSchemaJSON} />}
       {drugSchemaJSON && <SchemaMarkup structuredJSON={drugSchemaJSON} />}
       <MedicinesCartContext.Consumer>
@@ -856,6 +895,11 @@ export const MedicineDetails: React.FC = (props) => {
                                   }}
                                   onChange={(e, newValue) => {
                                     setTabValue(newValue);
+                                    const overviewData = getData(
+                                      medicinePharmacyDetails[0].Overview
+                                    );
+                                    const tabName = overviewData[newValue].key;
+                                    pharmacyPdpOverviewTracking(tabName);
                                   }}
                                 >
                                   {renderOverviewTabs(medicinePharmacyDetails[0].Overview)}

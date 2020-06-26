@@ -7,6 +7,7 @@ import { useAuth } from 'hooks/authHooks';
 import { useShoppingCart } from 'components/MedicinesCartProvider';
 import { useDiagnosticsCart } from 'components/Tests/DiagnosticsCartProvider';
 import { getAppStoreLink } from 'helpers/dateHelpers';
+import { useParams } from 'hooks/routerHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -199,6 +200,21 @@ export const Navigation: React.FC<NavigationProps> = (props) => {
   const { diagnosticsCartItems } = useDiagnosticsCart();
   const cartPopoverRef = useRef(null);
   const [isCartPopoverOpen, setIsCartPopoverOpen] = React.useState<boolean>(false);
+  const params = useParams<{
+    specialty: string;
+    doctorName: string;
+    doctorId: string;
+    payType: string;
+  }>();
+  const doctorRoutes = [
+    clientRoutes.specialityListing(),
+    clientRoutes.specialties(params.specialty),
+    clientRoutes.specialtyDoctorDetails(params.specialty, params.doctorName, params.doctorId),
+    clientRoutes.doctorDetails(params.doctorName, params.doctorId),
+    clientRoutes.payOnlineConsult(),
+    clientRoutes.payOnlineClinicConsult(),
+    clientRoutes.payMedicine(params.payType),
+  ];
 
   return (
     <div
@@ -214,8 +230,14 @@ export const Navigation: React.FC<NavigationProps> = (props) => {
       {isSignedIn ? (
         <>
           <Link
-            className={currentPath === clientRoutes.doctorsLanding() ? classes.menuItemActive : ''}
-            to={clientRoutes.doctorsLanding()}
+            className={
+              doctorRoutes.find((route) => route === currentPath) ||
+              currentPath.includes('specialties') ||
+              currentPath.includes('doctors')
+                ? classes.menuItemActive
+                : ''
+            }
+            to={clientRoutes.specialityListing()}
             title={'Doctors'}
           >
             Doctors
@@ -263,8 +285,13 @@ export const Navigation: React.FC<NavigationProps> = (props) => {
       ) : (
         <>
           <Link
-            className={currentPath === clientRoutes.doctorsLanding() ? classes.menuItemActive : ''}
-            to={clientRoutes.doctorsLanding()}
+            className={
+              doctorRoutes.find((route) => route === currentPath) ||
+              currentPath.includes('specialties')
+                ? classes.menuItemActive
+                : ''
+            }
+            to={clientRoutes.specialityListing()}
             title={'Doctors'}
           >
             <span className={classes.menuTitle}>Doctors</span>

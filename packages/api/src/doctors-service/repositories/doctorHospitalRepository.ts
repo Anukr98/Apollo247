@@ -45,4 +45,8 @@ export class DoctorHospitalRepository extends Repository<DoctorAndHospital> {
       });
     });
   }
+
+  getDoctorIdByMedmantraId(medmantraId: string) {
+    return this.findOne({ where: { medmantraId }, relations: ['doctor'] });
+  }
 }

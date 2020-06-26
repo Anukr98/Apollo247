@@ -22,7 +22,8 @@
     "covidHelpText": "We are here to help you.",
     "covidMessageText": "Apollo 247 has curated fact-based information from reputed sources on Coronavirus. Now you can get reliable answers to common questions at one place.",
     "covidYouCanText": "You can also",
-    "Rs": "₹"
+    "Rs": "₹",
+    "KavachText": "Apollo Kavach Program"
   },
   "consultType": {
     "mainHeading": "How would you like to consult with",
@@ -210,27 +211,51 @@
     "filter_data": [
       {
         "label": "City",
-        "options": ["Hyderabad", "Chennai"]
+        "options": [
+          "Hyderabad",
+          "Chennai"
+        ]
       },
       {
         "label": "Experience In Years",
-        "options": ["0 - 5", "6 - 10", "11 - 15", "15+"]
+        "options": [
+          "0 - 5",
+          "6 - 10",
+          "11 - 15",
+          "15+"
+        ]
       },
       {
         "label": "Availability",
-        "options": ["Now", "Today", "Tomorrow", "Next 3 Days"]
+        "options": [
+          "Now",
+          "Today",
+          "Tomorrow",
+          "Next 3 Days"
+        ]
       },
       {
         "label": "Fees In Rupees",
-        "options": ["100 - 500", "501 - 1000", "1000+"]
+        "options": [
+          "100 - 500",
+          "501 - 1000",
+          "1000+"
+        ]
       },
       {
         "label": "Gender",
-        "options": ["Male", "Female"]
+        "options": [
+          "Male",
+          "Female"
+        ]
       },
       {
         "label": "Language",
-        "options": ["Hindi", "English", "Telugu"]
+        "options": [
+          "Hindi",
+          "English",
+          "Telugu"
+        ]
       }
     ]
   },
@@ -241,6 +266,8 @@
     "tatUnServiceableAlertRemoveCTA": "REMOVE ITEMS",
     "tatUnServiceableAlertChangeCTA": "CHANGE THE ADDRESS",
     "pharmaAddressUnServiceableAlert": "Sorry! We’re working hard to get to this area! In the meantime, you can either pick up from a nearby store, or change the pincode.\nYou can also call 1860 500 0101 for Apollo Pharmacy retail customer care.",
+    "pharmaAddressServiceabilityFailure": "Sorry! We’re unable to check serviceability. In the meantime, you can either pick up from a nearby store, or call 1860 500 0101 for Apollo Pharmacy retail customer care.",
+    "cartUpdatedAfterPriceCheckMsg": "Your Cart has been updated! MRP of some items may have changed or some items may be removed due to unavailability.",
     "addItemsForStoresAlert": "Please add items to your cart to view the list of stores available.",
     "storeItemsAvailabilityApiFailMsg": "Sorry! We’re unable to check availability of cart items for the selected store. Please try later or opt for Home Delivery.",
     "cartItemsNotAvailableInStore": "The item(s) you have selected are not available in the nearby stores. Kindly opt for Home Delivery and we will deliver them to you directly at your doorstep."
@@ -265,14 +292,17 @@
   "OrderSummery": {
     "total": "Total",
     "order": "ORDER",
+    "bill": "BILL",
     "orderPlaced": "Order Placed",
     "paymentMethod": "Payment Method",
-    "shipping_address": "SHIPPING ADDRESS",
+    "shipping_address_heading": "SHIPPING ADDRESS",
+    "store_address_heading": "STORE ADDRESS",
     "name": "Name - ",
     "address": "Address - ",
     "store_address": "Store Address - ",
     "paymentDetails": "PAYMENT DETAILS",
     "mrp_total": "MRP Total",
+    "redeemed_amount": "Redeemed Amount",
     "product_discount": "Product Discount",
     "coupon_discount": "Coupon Discount",
     "delivery_charges": "Delivery Charges",

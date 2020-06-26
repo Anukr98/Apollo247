@@ -1,4 +1,4 @@
-import { EntityRepository, Repository, Not, Between, In } from 'typeorm';
+import { EntityRepository, Repository, Not, Between, In, MoreThan } from 'typeorm';
 import {
   MedicineOrders,
   MedicineOrderLineItems,
@@ -84,9 +84,10 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
   }
 
   getInvoiceDetailsByOrderId(orderId: MedicineOrders['orderAutoId']) {
+    const startDateTime = '2020-06-10 15:45:29.453';
     return MedicineOrderInvoice.find({
       select: ['billDetails', 'itemDetails'],
-      where: { orderNo: orderId },
+      where: { orderNo: orderId, createdDate: MoreThan(startDateTime) },
     });
   }
 
@@ -195,6 +196,21 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
     });
   }
 
+  getMedicineOrderLineItemByOrderId(id: MedicineOrders['id']) {
+    return MedicineOrderLineItems.find({
+      where: { medicineOrders: id },
+      select: ['medicineSKU', 'quantity'],
+    });
+  }
+
+  getMedicineOrderDetailsByOrderId(orderAutoId: number) {
+    return this.findOne({
+      select: ['id', 'currentStatus', 'orderAutoId', 'patientAddressId', 'isOmsOrder', 'patient'],
+      where: { orderAutoId },
+      relations: ['patient'],
+    });
+  }
+
   getMedicineOrderDetailsByAp(apOrderNo: string) {
     return this.findOne({
       where: { apOrderNo },
@@ -284,6 +300,14 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
         'medicineOrderInvoice',
         'patient',
       ],
+    });
+  }
+
+  getMedicineOrdersListWithPayments(patientIds: String[]) {
+    return this.find({
+      where: { patient: In(patientIds) },
+      order: { createdDate: 'DESC' },
+      relations: ['medicineOrderPayments'],
     });
   }
 
