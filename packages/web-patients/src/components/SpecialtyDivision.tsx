@@ -10,6 +10,7 @@ import {
 } from 'graphql/types/GetAllSpecialties';
 import { GET_ALL_SPECIALITIES } from 'graphql/specialities';
 import { useQuery } from 'react-apollo-hooks';
+import { getSymptoms } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -361,84 +362,10 @@ const useStyles = makeStyles((theme: Theme) => {
         fontWeight: 700,
       },
     },
-    searchContent: {
-      position: 'absolute',
-      top: 36,
-      left: 0,
-      right: 0,
-      zIndex: 5,
-      maxHeight: 300,
-      overflow: 'auto',
-      padding: 20,
-      background: '#fff',
-      borderRadius: 5,
-      boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
-
-      '& h6': {
-        fontSize: 12,
-        color: 'rgba(1,71,91, 0.6)',
-        fontWeight: 700,
-        textTransform: 'uppercase',
-      },
-      '&::-webkit-scrollbar': {
-        width: 8,
-      },
-      '&::-webkit-scrollbar-track': {
-        background: '#fff',
-      },
-      '&::-webkit-scrollbar-thumb': {
-        background: '#d8d8d8',
-        borderRadius: 4,
-      },
-    },
-    doctorContent: {
-      display: 'flex',
-      alignItems: 'center',
-    },
-    dImg: {
-      width: 44,
-      height: 44,
-      borderRadius: '50%',
-      border: '1px solid #ccc',
-      margin: '0 15px 0 0',
-    },
-    doctorDetails: {},
-    doctorList: {
-      padding: 0,
-      margin: 0,
-      listStyle: 'none',
-      '& li': {
-        padding: '10px 0',
-      },
-    },
-    docContent: {
-      '& h2': {
-        fontSize: 16,
-        color: '#02475b',
-        fontWeight: 500,
-        margin: '0 0 5px',
-      },
-      '& p': {
-        fontSize: 12,
-        color: 'rgba(2,71,91,0.7)',
-        fontWeight: 500,
-      },
-    },
     sContent: {
       margin: '10px 0 0',
       padding: '15px 0 0',
       borderTop: '1px solid rgba(1,71,91,0.5)',
-    },
-    sList: {
-      padding: 0,
-      margin: 0,
-      listStyle: 'none',
-      '& li': {
-        fontSize: 16,
-        color: '#02475b',
-        padding: '5px 0',
-        fontWeight: 500,
-      },
     },
     circlularProgress: {
       display: 'flex',
@@ -480,14 +407,14 @@ export const SpecialtyDivision: React.FC = (props) => {
               allSpecialties.map(
                 (specialityDetails: SpecialtyType) =>
                   showSpecialty(specialityDetails.name) && (
-                    <Grid item xs={6} md={3}>
+                    <Grid key={specialityDetails.id} item xs={6} md={3}>
                       <div className={classes.specialityCard}>
                         <Link to={clientRoutes.specialties('paediatrics')}>
                           <Typography component="h3">{specialityDetails.name}</Typography>
                           <img src={specialityDetails.image} />
                           <Typography>{specialityDetails.shortDescription}</Typography>
                           <Typography className={classes.symptoms}>
-                            {specialityDetails.symptoms}
+                            {getSymptoms(specialityDetails.symptoms)}
                           </Typography>
                         </Link>
                       </div>

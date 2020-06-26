@@ -14,6 +14,7 @@ import { Route } from 'react-router-dom';
 import { readableParam } from 'helpers/commonHelpers';
 import { useMutation } from 'react-apollo-hooks';
 import { GetAllSpecialties_getAllSpecialties as SpecialtyType } from 'graphql/types/GetAllSpecialties';
+import { getSymptoms } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -117,11 +118,13 @@ export const Specialities: React.FC<SpecialitiesProps> = (props) => {
               (specialityDetails: SpecialtyType) =>
                 specialityDetails && (
                   <Route
+                    key={specialityDetails.id}
                     render={({ history }) => (
                       <Grid
                         item
                         xs={12}
                         sm={6}
+                        key={specialityDetails.id}
                         title={specialityDetails.name}
                         onClick={(e) => {
                           saveSearchMutation({
@@ -146,10 +149,11 @@ export const Specialities: React.FC<SpecialitiesProps> = (props) => {
                           <div className={classes.spContent}>
                             <div>{specialityDetails.name}</div>
                             <div className={classes.specialityDetails}>
-                              {/* {specialityDetails.userFriendlyNomenclature} */}
                               {specialityDetails.shortDescription}
                             </div>
-                            <div className={classes.symptoms}>{specialityDetails.symptoms}</div>
+                            <div className={classes.symptoms}>
+                              {getSymptoms(specialityDetails.symptoms)}
+                            </div>
                             <span className={classes.rightArrow}>
                               <img src={require('images/ic_arrow_right.svg')} />
                             </span>
