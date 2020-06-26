@@ -70,6 +70,8 @@ import {
   getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_healthChecks,
   getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_hospitalizations,
   getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labTests,
+  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labResults_response,
+  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_prescriptions_response,
 } from '../../graphql/types/getPatientPrismMedicalRecords';
 import { TabHeader } from '../ui/TabHeader';
 import { useUIElements } from '../UIElementsProvider';
@@ -168,6 +170,16 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   >([]);
   const [hospitalizations, sethospitalizations] = useState<
     | (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_hospitalizations | null)[]
+    | null
+    | undefined
+  >([]);
+  const [labResults, setLabResults] = useState<
+    | (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labResults_response | null)[]
+    | null
+    | undefined
+  >([]);
+  const [prescriptions, setPrescriptions] = useState<
+    | (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_prescriptions_response | null)[]
     | null
     | undefined
   >([]);
@@ -312,12 +324,29 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
       })
       .then(({ data }) => {
         console.log('data', data);
-        const labTestsData = g(data, 'getPatientPrismMedicalRecords', 'labTests');
-        const healthChecksData = g(data, 'getPatientPrismMedicalRecords', 'healthChecks');
-        const hospitalizationsData = g(data, 'getPatientPrismMedicalRecords', 'hospitalizations');
-        setlabTests(labTestsData);
-        sethealthChecks(healthChecksData);
-        sethospitalizations(hospitalizationsData);
+        // const labTestsData = g(data, 'getPatientPrismMedicalRecords', 'labTests');
+        // const healthChecksData = g(data, 'getPatientPrismMedicalRecords', 'healthChecks');
+        // const hospitalizationsData = g(data, 'getPatientPrismMedicalRecords', 'hospitalizations');
+        const labResultsData = g(data, 'getPatientPrismMedicalRecords', 'labResults', 'response');
+        const prescriptionsData = g(
+          data,
+          'getPatientPrismMedicalRecords',
+          'prescriptions',
+          'response'
+        );
+        // console.log(
+        //   'labResultsData',
+        //   labResultsData,
+        //   'prescriptionsData',
+        //   prescriptionsData,
+        //   'hospitalizationsData',
+        //   hospitalizationsData
+        // );
+        // setlabTests(labTestsData);
+        // sethealthChecks(healthChecksData);
+        // sethospitalizations(hospitalizationsData);
+        setLabResults(labResultsData);
+        setPrescriptions(prescriptionsData);
       })
       .catch((error) => {
         CommonBugFender('HealthRecordsHome_fetchTestData', error);
@@ -329,17 +358,17 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
 
   useEffect(() => {
     setPastDataLoader(true);
-    setMedicalRecordsLoader(true);
+    // setMedicalRecordsLoader(true);
     setPrismdataLoader(true);
     fetchPastData();
-    fetchData();
+    // fetchData();
     fetchTestData();
   }, [currentPatient]);
 
   useEffect(() => {
     const didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
       fetchPastData();
-      fetchData();
+      // fetchData();
       fetchTestData();
       setDisplayFilter(false);
     });
@@ -798,6 +827,8 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
               labTestsData={labTests}
               healthChecksData={healthChecks}
               hospitalizationsData={hospitalizations}
+              labResultsData={labResults}
+              prescriptionsData={prescriptions}
             />
           )}
         </ScrollView>
