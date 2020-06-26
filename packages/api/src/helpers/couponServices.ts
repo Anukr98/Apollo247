@@ -9,11 +9,11 @@ import {
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 
-const prismTimeoutMillSeconds = Number(process.env.COUPON_TIMEOUT_IN_MILLISECONDS);
+const couponTimeoutMillSeconds = Number(process.env.COUPON_TIMEOUT_IN_MILLISECONDS);
 
 const dLogger = debugLog(
   'profileServiceLogger',
-  'prismCall',
+  'couponCall',
   Math.floor(Math.random() * 100000000)
 );
 
@@ -29,7 +29,7 @@ export async function validateCoupon(
   const controller = new AbortController();
   const timeout = setTimeout(() => {
     controller.abort();
-  }, prismTimeoutMillSeconds);
+  }, couponTimeoutMillSeconds);
   return await fetch(apiUrl, {
     method: 'POST',
     headers: {
@@ -78,7 +78,7 @@ export async function acceptCoupon(payload: AcceptCouponRequest): Promise<Accept
   const controller = new AbortController();
   const timeout = setTimeout(() => {
     controller.abort();
-  }, prismTimeoutMillSeconds);
+  }, couponTimeoutMillSeconds);
   return await fetch(apiUrl, {
     method: 'GET',
     headers: {
