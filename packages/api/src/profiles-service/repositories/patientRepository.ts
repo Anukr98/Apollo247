@@ -1,4 +1,4 @@
-import { EntityRepository, Repository, AfterUpdate } from 'typeorm';
+import { EntityRepository, Repository } from 'typeorm';
 import { Patient, PRISM_DOCUMENT_CATEGORY, Gender } from 'profiles-service/entities';
 import { ApiConstants } from 'ApiConstants';
 import requestPromise from 'request-promise';
@@ -618,13 +618,13 @@ export class PatientRepository extends Repository<Patient> {
     const patient = await this.getByIdCache(id);
     if (patient) {
       Object.assign(patient, {
+        id,
         uhid,
         uhidCreatedDate: new Date(),
         primaryUhid: uhid,
         primaryPatientId: id,
       });
-      this.dropPatientCache(`${REDIS_PATIENT_ID_KEY_PREFIX}${patient.id}`);
-      return this.save(patient);
+      return await this.save(patient);
     } else return null;
   }
 

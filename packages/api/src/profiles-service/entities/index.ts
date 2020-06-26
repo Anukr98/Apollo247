@@ -1023,10 +1023,12 @@ export class PatientAddress extends BaseEntity {
     this.updatedDate = new Date();
   }
 
+  @AfterInsert()
   @AfterUpdate()
   async dropPatientAddressList() {
     const redis = await pool.getTedis();
     await redis.del(`address:list:patient:${this.patientId}`);
+    await redis.del(`patient:${this.patientId}`);
     pool.putTedis(redis);
   }
 }
