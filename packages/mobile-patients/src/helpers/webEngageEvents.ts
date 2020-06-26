@@ -77,6 +77,7 @@ export enum WebEngageEventName {
   MY_ACCOUNT = 'My Account',
   FIND_A_DOCTOR = 'Find a Doctor',
   TABBAR_APPOINTMENTS_CLICKED = 'Appointments Clicked on tab bar',
+  APOLLO_KAVACH_PROGRAM = 'Apollo Kavach Program',
 
   // Diagnostics Events
   FEATURED_TEST_CLICKED = 'Featured Test Clicked',
@@ -197,6 +198,7 @@ export interface WebEngageEvents {
   [WebEngageEventName.CORONA_VIRUS_TALK_TO_OUR_EXPERT]: { clicked: true };
   [WebEngageEventName.LEARN_MORE_ABOUT_CORONAVIRUS]: { clicked: true };
   [WebEngageEventName.CHECK_YOUR_RISK_LEVEL]: { clicked: true };
+  [WebEngageEventName.APOLLO_KAVACH_PROGRAM]: { clicked: true };
   [WebEngageEventName.NOTIFICATION_ICON]: { clicked: true };
   [WebEngageEventName.ACTIVE_APPOINTMENTS]: { clicked: true };
   [WebEngageEventName.NEED_HELP]: PatientInfoWithNeedHelp; // source values may change later
