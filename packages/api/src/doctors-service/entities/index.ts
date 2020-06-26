@@ -35,12 +35,13 @@ export enum DoctorType {
   CRADLE = 'CRADLE',
   DOCTOR_CONNECT = 'DOCTOR_CONNECT',
   FERTILITY = 'FERTILITY',
-  HOMECARE = 'HOMECARE',
   JUNIOR = 'JUNIOR',
   PAYROLL = 'PAYROLL',
   SPECTRA = 'SPECTRA',
   STAR_APOLLO = 'STAR_APOLLO',
   SUGAR = 'SUGAR',
+  APOLLO_HOMECARE = 'APOLLO_HOMECARE',
+  WHITE_DENTAL = 'WHITE_DENTAL',
 }
 
 export enum FacilityType {
@@ -435,6 +436,9 @@ export class Doctor extends BaseEntity {
   @Column({ nullable: true })
   zip: string;
 
+  @Column({ default: false })
+  skipAutoQuestions: Boolean;
+
   @BeforeUpdate()
   updateDateUpdate() {
     this.updatedDate = new Date();
@@ -459,6 +463,9 @@ export class DoctorAndHospital extends BaseEntity {
 
   @PrimaryGeneratedColumn('uuid')
   id: string;
+
+  @Column({ nullable: true })
+  medmantraId: string;
 
   @Column({ nullable: true })
   updatedDate: Date;

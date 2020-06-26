@@ -101,16 +101,9 @@ const useStyles = makeStyles((theme: Theme) => {
   });
 });
 
-interface PastSearchProps {
-  speciality: (specialitySelected: string) => void;
-  disableFilter: (disableFilters: boolean) => void;
-  specialityId?: (specialityId: string) => void;
-}
-
-export const PastSearches: React.FC<PastSearchProps> = (props) => {
+export const PastSearches: React.FC = (props) => {
   const classes = useStyles({});
   const { currentPatient } = useAllCurrentPatients();
-  const { speciality, disableFilter, specialityId } = props;
 
   const { data } = useQueryWithSkip<GetPatientPastSearches, GetPatientPastSearchesVariables>(
     PATIENT_PAST_SEARCHES,
@@ -155,9 +148,6 @@ export const PastSearches: React.FC<PastSearchProps> = (props) => {
                     lg={3}
                     title={(searchDetails && searchDetails.name) || ''}
                     onClick={(e) => {
-                      specialityId && specialityId((searchDetails && searchDetails.typeId) || '');
-                      speciality(e.currentTarget.title);
-                      disableFilter(false);
                       const specialityUpdated = readableParam(`${e.currentTarget.title}`);
                       const encoded = encodeURIComponent(specialityUpdated);
                       history.push(clientRoutes.specialties(`${specialityUpdated}`));

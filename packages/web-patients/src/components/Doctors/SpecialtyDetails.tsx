@@ -32,7 +32,11 @@ import _filter from 'lodash/filter';
 import { MetaTagsComp } from 'MetaTagsComp';
 import { GET_ALL_SPECIALITIES } from 'graphql/specialities';
 import { NavigationBottom } from 'components/NavigationBottom';
-
+import { SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME } from 'graphql/doctors';
+import {
+  SearchDoctorAndSpecialtyByNameVariables,
+  SearchDoctorAndSpecialtyByName,
+} from 'graphql/types/SearchDoctorAndSpecialtyByName';
 const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
@@ -366,7 +370,7 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
   const [structuredJSON, setStructuredJSON] = useState(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [filter, setFilter] = useState<SearchObject>(searchObject);
-  const [filteredDoctorData, setFilteredDoctorData] = useState<DoctorDetails[] | null>(null);
+  const [filteredDoctorData, setFilteredDoctorData] = useState<any>(null);
   const [doctorData, setDoctorData] = useState<DoctorDetails[] | null>(null);
   const [isOnlineSelected, setIsOnlineSelected] = useState<boolean>(false);
   const [isPhysicalSelected, setIsPhysicalSelected] = useState<boolean>(false);
@@ -374,7 +378,32 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
   const [onlyFilteredCount, setOnlyFilteredCount] = useState<number>(0);
   const [specialtyId, setSpecialtyId] = useState<string>('');
   const [specialtyName, setSpecialtyName] = useState<string>('');
+  const [searchKey, setSearchKey] = useState<string>('');
 
+  useEffect(() => {
+    if (searchKey.length > 3) {
+      setLoading(true);
+      apolloClient
+        .query<SearchDoctorAndSpecialtyByName, SearchDoctorAndSpecialtyByNameVariables>({
+          query: SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME,
+          variables: {
+            searchText: searchKey,
+            patientId: currentPatient ? currentPatient.id : '',
+            pincode: currentPincode ? currentPincode : localStorage.getItem('currentPincode') || '',
+          },
+          fetchPolicy: 'no-cache',
+        })
+        .then((response) => {
+          const searchData =
+            response &&
+            response.data &&
+            response.data.SearchDoctorAndSpecialtyByName &&
+            response.data.SearchDoctorAndSpecialtyByName.doctors;
+          setFilteredDoctorData(searchData);
+          setLoading(false);
+        });
+    }
+  }, [searchKey]);
   useEffect(() => {
     if (params && params.specialty) {
       apolloClient
@@ -636,7 +665,12 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
                   <div className={classes.inputIcon}>
                     <img src={require('images/ic-search.svg')} alt="" />
                   </div>
-                  <AphTextField placeholder="Search for Doctors, Specialities or Hospitals" />
+                  <AphTextField
+                    placeholder="Search for Doctors, Specialities or Hospitals"
+                    onChange={(event) => {
+                      setSearchKey(event.target.value);
+                    }}
+                  />
                 </div>
               </div>
               <div className={classes.tabsFilter}>

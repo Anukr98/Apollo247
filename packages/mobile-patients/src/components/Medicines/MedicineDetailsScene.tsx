@@ -67,6 +67,7 @@ import {
   WebEngageEvents,
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import { useAllCurrentPatients } from '../../hooks/authHooks';
 
 const { width, height } = Dimensions.get('window');
 
@@ -219,6 +220,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     {} as MedicineProductDetails
   );
   const { locationDetails, pharmacyLocation } = useAppCommonData();
+  const { currentPatient } = useAllCurrentPatients();
   const pharmacyPincode = g(pharmacyLocation, 'pincode') || g(locationDetails, 'pincode');
 
   const [apiError, setApiError] = useState<boolean>(false);
@@ -417,6 +419,13 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   };
 
   const fetchDeliveryTime = () => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.PRODUCT_DETAIL_PINCODE_CHECK] = {
+      'product id': sku,
+      'product name': medicineDetails.name,
+      'pincode': parseInt(pincode),
+      'customer id': currentPatient && currentPatient.id ? currentPatient.id : '',
+    };
+    postWebEngageEvent(WebEngageEventName.PRODUCT_DETAIL_PINCODE_CHECK, eventAttributes);
     const unServiceableMsg = 'Sorry, not serviceable in your area.';
     const genericServiceableDate = moment()
       .add(2, 'days')
@@ -798,7 +807,13 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
         <TabsComponent
           data={data}
           selectedTab={selectedTab}
-          onChange={(selectedTab) => setselectedTab(selectedTab)}
+          onChange={(selectedTab) => {
+            const eventAttributes: WebEngageEvents[WebEngageEventName.PRODUCT_DETAIL_TAB_CLICKED] = {
+              tabName: selectedTab,
+            };
+            postWebEngageEvent(WebEngageEventName.PRODUCT_DETAIL_TAB_CLICKED, eventAttributes);
+            setselectedTab(selectedTab);
+          }}
           scrollable={true}
           tabViewStyle={{ width: 'auto' }}
           selectedTitleStyle={theme.viewStyles.text('SB', 14, theme.colors.LIGHT_BLUE)}
@@ -1106,6 +1121,11 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
                   <TouchableOpacity
                     style={styles.textViewStyle}
                     onPress={() => {
+                      const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_PRODUCT_DETAIL_SUBSTITUTE_CLICKED] = {
+                        'product id': item.sku,
+                        'product name': item.name,
+                      };
+                      postWebEngageEvent(WebEngageEventName.PHARMACY_PRODUCT_DETAIL_SUBSTITUTE_CLICKED, eventAttributes);
                       CommonLogEvent(
                         AppRoutes.MedicineDetailsScene,
                         'Navigate to Medicine Details scene with sku'

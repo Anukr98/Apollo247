@@ -9,6 +9,9 @@ import {
   APPOINTMENT_PAYMENT_TYPE,
   ES_DOCTOR_SLOT_STATUS,
   CASESHEET_STATUS,
+  AppointmentUpdateHistory,
+  VALUE_TYPE,
+  APPOINTMENT_UPDATED_BY,
 } from 'consults-service/entities';
 import { initiateRefund, PaytmResponse } from 'consults-service/helpers/refundHelper';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
@@ -344,9 +347,28 @@ const makeAppointmentPayment: Resolver<
       };
       caseSheetRepo.savecaseSheet(casesheetAttrs);
       apptsRepo.updateJdQuestionStatusbyIds([processingAppointment.id]);
+      const historyAttrs: Partial<AppointmentUpdateHistory> = {
+        appointment: processingAppointment,
+        userType: APPOINTMENT_UPDATED_BY.PATIENT,
+        fromValue: STATUS.PENDING,
+        toValue: STATUS.PENDING,
+        valueType: VALUE_TYPE.STATUS,
+        userName: processingAppointment.patientId,
+        reason: ApiConstants.APPOINTMENT_AUTO_SUBMIT_HISTORY.toString(),
+      };
+      apptsRepo.saveAppointmentHistory(historyAttrs);
     }
   } else if (paymentInput.paymentStatus == 'TXN_FAILURE') {
-    if (paymentInput.responseCode == '141') {
+    const historyAttrs: Partial<AppointmentUpdateHistory> = {
+      appointment: processingAppointment,
+      userType: APPOINTMENT_UPDATED_BY.PATIENT,
+      fromValue: STATUS.PAYMENT_PENDING,
+      toValue: STATUS.PAYMENT_FAILED,
+      valueType: VALUE_TYPE.STATUS,
+      userName: processingAppointment.patientId,
+    };
+    apptsRepo.saveAppointmentHistory(historyAttrs);
+    if (paymentInput.responseCode == '141' || paymentInput.responseCode == '810') {
       await apptsRepo.updateAppointment(processingAppointment.id, {
         status: STATUS.PAYMENT_ABORTED,
         paymentInfo,
@@ -368,6 +390,15 @@ const makeAppointmentPayment: Resolver<
           consultsDb,
           doctorsDb
         );
+        const historyAttrs: Partial<AppointmentUpdateHistory> = {
+          appointment: processingAppointment,
+          userType: APPOINTMENT_UPDATED_BY.PATIENT,
+          fromValue: STATUS.PAYMENT_PENDING,
+          toValue: STATUS.PAYMENT_PENDING_PG,
+          valueType: VALUE_TYPE.STATUS,
+          userName: processingAppointment.patientId,
+        };
+        apptsRepo.saveAppointmentHistory(historyAttrs);
       }
     }
   } else if (paymentInput.paymentStatus == 'PENDING') {

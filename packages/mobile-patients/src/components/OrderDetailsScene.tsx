@@ -254,8 +254,10 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
             addresses !== data.data.getPatientAddressList.addressList
           ) {
             setAddresses &&
-              setAddresses(data.data.getPatientAddressList
-                .addressList as savePatientAddress_savePatientAddress_patientAddress[]);
+              setAddresses(
+                data.data.getPatientAddressList
+                  .addressList as savePatientAddress_savePatientAddress_patientAddress[]
+              );
             selectedAddressIndex = data.data.getPatientAddressList.addressList.find(
               (address) => address.id == order!.patientAddressId
             ) as savePatientAddress_savePatientAddress_patientAddress;
@@ -357,7 +359,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         order.deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP && order.shopAddress
           ? JSON.parse(order.shopAddress)
           : null;
-          storePhone && setStorePhoneNumber(shopAddress.phone);
+      storePhone && setStorePhoneNumber(shopAddress.phone);
       setEventFired(true);
     } else {
       setOMSAPIError(true);
@@ -458,7 +460,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   };
 
   const renderFeedbackPopup = () => {
-    const orderAutoId: string = orderDetails.orderAutoId!.toString();
+    const orderAutoId: string = `${orderDetails.orderAutoId}`;
     const orderId: string = orderDetails.id;
     const title: string = `Medicines — #${orderAutoId}`;
     const subtitle: string = `Delivered On: ${orderDetails.orderTat &&
@@ -668,9 +670,10 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
             isDelivered.statusDate &&
             getFormattedDateTime(isDelivered.statusDate)}.`;
 
-    const showNotifyStoreAlert = orderDetails.deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP
-      && (orderDetails.currentStatus == MEDICINE_ORDER_STATUS.ORDER_VERIFIED 
-      || orderDetails.currentStatus == MEDICINE_ORDER_STATUS.READY_AT_STORE);
+    const showNotifyStoreAlert =
+      orderDetails.deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP &&
+      (orderDetails.currentStatus == MEDICINE_ORDER_STATUS.ORDER_VERIFIED ||
+        orderDetails.currentStatus == MEDICINE_ORDER_STATUS.READY_AT_STORE);
 
     const getOrderDescription = (
       status: MEDICINE_ORDER_STATUS,
@@ -1037,9 +1040,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           containerStyle={{ marginTop: 20, marginBottom: 30 }}
           navigation={props.navigation}
         /> */}
-        {
-          showNotifyStoreAlert && renderNotifyStoreAlert()
-        }
+        {showNotifyStoreAlert && renderNotifyStoreAlert()}
       </View>
     );
   };
@@ -1068,14 +1069,16 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
               color: theme.colors.LIGHT_BLUE,
               marginLeft: 10,
             }}
-          >NOTIFY STORE</Text>
+          >
+            NOTIFY STORE
+          </Text>
         </View>
         <View
           style={{
             ...theme.viewStyles.cardViewStyle,
             marginLeft: 20,
             marginRight: 20,
-            padding: 20
+            padding: 20,
           }}
         >
           <Text
@@ -1083,7 +1086,10 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
               ...theme.fonts.IBMPlexSansMedium(13),
               color: theme.colors.LIGHT_BLUE,
             }}
-          >Kindly alert the store 10 minutes before you are about to reach, so that we can keep the items ready!</Text>
+          >
+            Kindly alert the store 10 minutes before you are about to reach, so that we can keep the
+            items ready!
+          </Text>
           <View style={styles.flexRow}>
             <Text
               style={{
@@ -1091,7 +1097,9 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
                 color: theme.colors.LIGHT_BLUE,
                 marginTop: 10,
               }}
-            >Stores Contact No. :  </Text>
+            >
+              Stores Contact No. :{' '}
+            </Text>
             <Text
               style={{
                 ...theme.fonts.IBMPlexSansMedium(13),
@@ -1099,32 +1107,37 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
                 marginTop: 10,
                 opacity: 0.7,
               }}
-            >{storePhoneNumber}</Text>
-          </View>
-          <View style={[styles.flexRow, { justifyContent: showAlertStore ? 'space-between' : 'flex-end', marginTop: 15 }]}>
-            {
-              showAlertStore && (
-                <TouchableOpacity
-                  onPress={() => alertTheStore()}
-                >
-                  <Text
-                    style={{
-                      color: theme.colors.APP_YELLOW,
-                      ...theme.fonts.IBMPlexSansBold(13)
-                    }}
-                  >ALERT THE STORE</Text>
-                </TouchableOpacity>
-              )
-            }
-            <TouchableOpacity
-              onPress={() => Linking.openURL(`tel:${storePhoneNumber}`)}
             >
+              {storePhoneNumber}
+            </Text>
+          </View>
+          <View
+            style={[
+              styles.flexRow,
+              { justifyContent: showAlertStore ? 'space-between' : 'flex-end', marginTop: 15 },
+            ]}
+          >
+            {showAlertStore && (
+              <TouchableOpacity onPress={() => alertTheStore()}>
+                <Text
+                  style={{
+                    color: theme.colors.APP_YELLOW,
+                    ...theme.fonts.IBMPlexSansBold(13),
+                  }}
+                >
+                  ALERT THE STORE
+                </Text>
+              </TouchableOpacity>
+            )}
+            <TouchableOpacity onPress={() => Linking.openURL(`tel:${storePhoneNumber}`)}>
               <Text
                 style={{
                   color: theme.colors.APP_YELLOW,
-                  ...theme.fonts.IBMPlexSansBold(13)
+                  ...theme.fonts.IBMPlexSansBold(13),
                 }}
-              >CALL THE STORE</Text>
+              >
+                CALL THE STORE
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -1138,7 +1151,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       alertMedicineOrderPickupInput: {
         orderId: typeof orderAutoId == 'string' ? parseInt(orderAutoId, 10) : orderAutoId,
         patientId: currentPatient && currentPatient.id ? currentPatient.id : '',
-        remarks: ''
+        remarks: '',
       },
     };
 
@@ -1346,8 +1359,26 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     );
   };
 
+  const getFormattedOrderPlacedDateTime = (
+    orderDetails: getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails
+  ) => {
+    const medicineOrdersStatus = g(orderDetails, 'medicineOrdersStatus') || [];
+    const statusDate = g(medicineOrdersStatus[0], 'statusDate');
+    return moment(statusDate).format('ddd, D MMMM, hh:mm A');
+  };
+
   const renderOrderSummary = () => {
     scrollToSlots();
+    const eventAttributes: WebEngageEvents[WebEngageEventName.ORDER_SUMMARY_CLICKED] = {
+      orderId: orderDetails.id,
+      orderDate: getFormattedOrderPlacedDateTime(orderDetails),
+      orderType: orderDetails.orderType == MEDICINE_ORDER_TYPE.UPLOAD_PRESCRIPTION ? 'Non Cart' : 'Cart',
+      customerId: currentPatient && currentPatient.id,
+      deliveryDate: orderDetails.orderTat ? moment(orderDetails.orderTat).format('ddd, D MMMM, hh:mm A') : '',
+      mobileNumber: currentPatient && currentPatient.mobileNumber,
+      orderStatus: orderDetails!.currentStatus,
+    };
+    postWebEngageEvent(WebEngageEventName.ORDER_SUMMARY_CLICKED, eventAttributes);
     return (
       <View>
         <OrderSummary orderDetails={orderDetails as any} addressData={addressData} />

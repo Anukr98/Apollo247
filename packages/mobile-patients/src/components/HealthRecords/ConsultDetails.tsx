@@ -979,6 +979,11 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                     <>
                       <Text style={styles.labelStyle}>{item!.itemname}</Text>
                       <Spearator style={{ marginBottom: index == array.length - 1 ? 2.5 : 11.5 }} />
+                      {item!.testInstruction ? (
+                        <Text style={styles.dataTextStyle}>
+                          Instuctions: {item!.testInstruction}
+                        </Text>
+                      ) : null}
                     </>
                   );
                 })}

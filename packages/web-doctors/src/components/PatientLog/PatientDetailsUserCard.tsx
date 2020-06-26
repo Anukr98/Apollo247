@@ -101,10 +101,8 @@ export const PatientDetailsUserCard: React.FC<PatientDetailsProps> = (props) => 
       />
       <CardContent>
         {patientDetails &&
-          patientDetails!.firstName &&
-          patientDetails!.firstName !== '' &&
-          patientDetails!.lastName &&
-          patientDetails!.lastName !== '' && (
+          ((patientDetails!.firstName && patientDetails!.firstName !== '') ||
+            (patientDetails!.lastName && patientDetails!.lastName !== '')) && (
             <Typography gutterBottom variant="h4" component="h2">
               {patientDetails!.firstName + ' ' + patientDetails!.lastName}
             </Typography>

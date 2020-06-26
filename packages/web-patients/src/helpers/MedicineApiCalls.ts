@@ -186,9 +186,11 @@ export interface DealsOfTheDaySection {
   position: number;
 }
 interface OfferBannerSection {
+  category_url_key: string;
   name: string;
   status: '0' | '1';
   image: string; // full url
+  sku_url_key: string;
   start_time: string; // '2019-02-10 01:21:00';
   end_time: string;
 }

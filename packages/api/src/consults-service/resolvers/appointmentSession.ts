@@ -16,6 +16,9 @@ import {
   DEVICETYPE,
   BOOKINGSOURCE,
   AppointmentCallDetails,
+  APPOINTMENT_UPDATED_BY,
+  AppointmentUpdateHistory,
+  VALUE_TYPE,
 } from 'consults-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
@@ -216,6 +219,16 @@ const createJuniorAppointmentSession: Resolver<
     doctorsDb
   );
   console.log(notificationResult, 'notificationResult');
+  const historyAttrs: Partial<AppointmentUpdateHistory> = {
+    appointment: apptDetails,
+    userType: APPOINTMENT_UPDATED_BY.PATIENT,
+    fromValue: STATUS.PENDING,
+    toValue: STATUS.PENDING,
+    valueType: VALUE_TYPE.STATUS,
+    userName: apptDetails.doctorId,
+    reason: 'JD ' + ApiConstants.APPT_SESSION_HISTORY.toString(),
+  };
+  apptRepo.saveAppointmentHistory(historyAttrs);
   return {
     sessionId: sessionId,
     appointmentToken: token,
@@ -403,6 +416,16 @@ const createAppointmentSession: Resolver<
       sendNotificationSMS(patientData.mobileNumber, messageBody);
     }
   }
+  const historyAttrs: Partial<AppointmentUpdateHistory> = {
+    appointment: apptDetails,
+    userType: APPOINTMENT_UPDATED_BY.DOCTOR,
+    fromValue: STATUS.PENDING,
+    toValue: STATUS.IN_PROGRESS,
+    valueType: VALUE_TYPE.STATUS,
+    userName: apptDetails.doctorId,
+    reason: 'SD ' + ApiConstants.APPT_SESSION_HISTORY.toString(),
+  };
+  apptRepo.saveAppointmentHistory(historyAttrs);
   return {
     sessionId: sessionId,
     appointmentToken: token,
@@ -458,19 +481,34 @@ const endAppointmentSession: Resolver<
   const apptSession = await apptSessionRepo.getAppointmentSession(
     endAppointmentSessionInput.appointmentId
   );
-  const appointmentCallDetailsAttrs: Partial<AppointmentCallDetails> = {
-    appointment: apptDetails,
-    callType: endAppointmentSessionInput.callType,
-    doctorType: DOCTOR_CALL_TYPE.SENIOR,
-    startTime: new Date(),
-    endTime: new Date(),
-    deviceType: endAppointmentSessionInput.deviceType,
-    callSource: endAppointmentSessionInput.callSource,
-  };
-  await callDetailsRepo.saveAppointmentCallDetails(appointmentCallDetailsAttrs);
+  if (endAppointmentSessionInput.callSource && endAppointmentSessionInput.deviceType) {
+    const appointmentCallDetailsAttrs: Partial<AppointmentCallDetails> = {
+      appointment: apptDetails,
+      callType: endAppointmentSessionInput.callType
+        ? endAppointmentSessionInput.callType
+        : APPT_CALL_TYPE.CHAT,
+      doctorType: DOCTOR_CALL_TYPE.SENIOR,
+      startTime: new Date(),
+      endTime: new Date(),
+      deviceType: endAppointmentSessionInput.deviceType,
+      callSource: endAppointmentSessionInput.callSource,
+    };
+    await callDetailsRepo.saveAppointmentCallDetails(appointmentCallDetailsAttrs);
+  }
   if (apptSession) {
     await apptSessionRepo.endAppointmentSession(apptSession.id, new Date());
   }
+
+  const historyAttrs: Partial<AppointmentUpdateHistory> = {
+    appointment: apptDetails,
+    userType: APPOINTMENT_UPDATED_BY.DOCTOR,
+    fromValue: apptDetails.status,
+    toValue: endAppointmentSessionInput.status,
+    valueType: VALUE_TYPE.STATUS,
+    userName: apptDetails.doctorId,
+    reason: 'SD ' + ApiConstants.APPT_SESSION_COMPLETE_HISTORY.toString(),
+  };
+  apptRepo.saveAppointmentHistory(historyAttrs);
 
   if (
     endAppointmentSessionInput.status == STATUS.NO_SHOW ||

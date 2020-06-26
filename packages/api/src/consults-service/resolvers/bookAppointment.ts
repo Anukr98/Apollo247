@@ -7,6 +7,9 @@ import {
   BOOKINGSOURCE,
   DEVICETYPE,
   PATIENT_TYPE,
+  APPOINTMENT_UPDATED_BY,
+  AppointmentUpdateHistory,
+  VALUE_TYPE,
 } from 'consults-service/entities';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
@@ -20,6 +23,7 @@ import { BlockedCalendarItemRepository } from 'doctors-service/repositories/bloc
 import { DoctorPatientExternalConnectRepository } from 'doctors-service/repositories/DoctorPatientExternalConnectRepository';
 import { CouponRepository } from 'profiles-service/repositories/couponRepository';
 import { discountCalculation } from 'helpers/couponCommonFunctions';
+import { ApiConstants } from 'ApiConstants';
 
 export const bookAppointmentTypeDefs = gql`
   enum STATUS {
@@ -350,6 +354,17 @@ const bookAppointment: Resolver<
     };
     externalConnectRepo.saveExternalConnectData(attrs);
   }
+
+  const historyAttrs: Partial<AppointmentUpdateHistory> = {
+    appointment,
+    userType: APPOINTMENT_UPDATED_BY.PATIENT,
+    fromValue: '',
+    toValue: STATUS.PAYMENT_PENDING,
+    valueType: VALUE_TYPE.STATUS,
+    userName: appointmentInput.patientId,
+    reason: ApiConstants.BOOK_APPOINTMENT_HISTORY_REASON.toString(),
+  };
+  appts.saveAppointmentHistory(historyAttrs);
 
   return { appointment };
 };

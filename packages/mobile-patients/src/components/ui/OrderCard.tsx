@@ -1,8 +1,5 @@
 import { MedicineIcon, OrderPlacedIcon } from '@aph/mobile-patients/src/components/ui/Icons';
-import {
-  MEDICINE_ORDER_STATUS,
-  DIAGNOSTIC_ORDER_STATUS,
-} from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { MEDICINE_ORDER_STATUS } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
 import { StyleProp, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
