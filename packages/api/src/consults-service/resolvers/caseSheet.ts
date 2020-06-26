@@ -1,7 +1,6 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
-import { pool } from 'profiles-service/database/connectRedis';
 import { CaseSheetRepository } from 'consults-service/repositories/caseSheetRepository';
 import {
   CaseSheet,
@@ -548,7 +547,7 @@ const getJuniorDoctorCaseSheet: Resolver<
 
   //get patient info
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
-  const patientDetails = await patientRepo.getPatientData(appointmentData.patientId);
+  const patientDetails = await patientRepo.getPatientDetails(appointmentData.patientId);
   if (patientDetails == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
 
   const primaryPatientIds = await patientRepo.getLinkedPatientIds(appointmentData.patientId);
@@ -615,7 +614,7 @@ const getCaseSheet: Resolver<
 
   //get patient info
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
-  const patientDetails = await patientRepo.getPatientData(appointmentData.patientId);
+  const patientDetails = await patientRepo.getPatientDetails(appointmentData.patientId);
   if (patientDetails == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
 
   //check if logged in mobile number is associated with doctor
@@ -828,7 +827,7 @@ const modifyCaseSheet: Resolver<
 
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
   console.log('casesheet patient id', getCaseSheetData.patientId);
-  const patientData = await patientRepo.getPatientData(getCaseSheetData.patientId);
+  const patientData = await patientRepo.getPatientDetails(getCaseSheetData.patientId);
   console.log('casesheet patientData', patientData);
   if (patientData == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
   console.log('entering family history');
@@ -1193,7 +1192,7 @@ const updatePatientPrescriptionSentStatus: Resolver<
   if (getCaseSheetData == null) throw new AphError(AphErrorMessages.INVALID_CASESHEET_ID);
 
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
-  const patientData = await patientRepo.getPatientData(getCaseSheetData.patientId);
+  const patientData = await patientRepo.getPatientDetails(getCaseSheetData.patientId);
   if (patientData == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
 
   let caseSheetAttrs: Partial<CaseSheet> = {
@@ -1270,7 +1269,7 @@ const generatePrescriptionTemp: Resolver<
   if (getCaseSheetData == null) throw new AphError(AphErrorMessages.INVALID_CASESHEET_ID);
 
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
-  const patientData = await patientRepo.getPatientData(getCaseSheetData.patientId);
+  const patientData = await patientRepo.getPatientDetails(getCaseSheetData.patientId);
   if (patientData == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
 
   let caseSheetAttrs: Partial<CaseSheet> = {

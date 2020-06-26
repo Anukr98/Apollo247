@@ -72,7 +72,7 @@ export class PatientRepository extends Repository<Patient> {
 
   async getDeviceCodeCount(deviceCode: string) {
     const redis = await pool.getTedis();
-    const cacheCount = redis.get(`${REDIS_PATIENT_DEVICE_COUNT_KEY_PREFIX}${deviceCode}`);
+    const cacheCount = await redis.get(`${REDIS_PATIENT_DEVICE_COUNT_KEY_PREFIX}${deviceCode}`);
     pool.putTedis(redis);
     if (typeof cacheCount === 'string') {
       return parseInt(cacheCount);
@@ -114,7 +114,7 @@ export class PatientRepository extends Repository<Patient> {
   }
 
   async getPatientData(id: string | number) {
-    console.log("reached getPatientData")
+    console.log('reached getPatientData');
     const relations = [
       'lifeStyle',
       'healthVault',
