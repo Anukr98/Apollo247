@@ -2640,8 +2640,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               <Button
                 className={classes.consultIcon}
                 aria-describedby={idThreeDots}
-<<<<<<< HEAD
-=======
                 // disabled={
                 //   props.appointmentStatus === STATUS.COMPLETED ||
                 //   props.appointmentStatus === STATUS.CANCELLED ||
@@ -2660,7 +2658,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                     props.appointmentStatus === STATUS.COMPLETED &&
                     !props.sentToPatient)
                 }
->>>>>>> development
                 onClick={(e) => handleClickThreeDots(e)}
               >
                 <img src={require('images/ic_more.svg')} />
