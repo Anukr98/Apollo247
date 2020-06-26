@@ -4,7 +4,6 @@ import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
 import { NavigationBottom } from 'components/NavigationBottom';
 import { AphInput } from '@aph/web-ui-components';
-import { Specialities } from 'components/Specialities';
 import ExpansionPanel from '@material-ui/core/ExpansionPanel';
 import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
 import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
@@ -21,6 +20,8 @@ import { clientRoutes } from 'helpers/clientRoutes';
 import { Link } from 'react-router-dom';
 import { AphButton } from '@aph/web-ui-components';
 import { Cities } from './Cities';
+import fetchUtil from 'helpers/fetch';
+import { SpecialtyDivision } from './SpecialtyDivision';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -755,6 +756,8 @@ export const SpecialityListing: React.FC = (props) => {
   const [searchKeyword, setSearchKeyword] = useState<string>('');
   const [locationPopup, setLocationPopup] = useState<boolean>(false);
   const [searchContent, setSearchcontent] = useState<boolean>(false);
+  const [faqs, setFaqs] = useState<any | null>(null);
+  const [selectedCity, setSelectedCity] = useState<string>('');
 
   const handleChange = (panel: string) => (event: React.ChangeEvent<{}>, isExpanded: boolean) => {
     setExpanded(isExpanded ? panel : false);
@@ -773,6 +776,23 @@ export const SpecialityListing: React.FC = (props) => {
     });
     /**Gtm code start end */
   }, []);
+
+  useEffect(() => {
+    if (!faqs) {
+      fetchUtil(
+        'https://uatcms.apollo247.com/api/specialty-details/specialty-listing',
+        'GET',
+        {},
+        '',
+        true
+      ).then((res: any) => {
+        if (res && res.success && res.data) {
+          console.log(res);
+          setFaqs(res.data);
+        }
+      });
+    }
+  }, [faqs]);
 
   return (
     <div className={classes.slContainer}>
@@ -809,7 +829,9 @@ export const SpecialityListing: React.FC = (props) => {
                     <div className={classes.location} onClick={() => setLocationPopup(true)}>
                       <img src={require('images/location.svg')} alt="" />
                       <div className={classes.userLocation}>
-                        <Typography>Select Your City</Typography>
+                        <Typography>
+                          {selectedCity === '' ? 'Select Your City' : selectedCity}
+                        </Typography>
                         <img src={require('images/ic_dropdown_green.svg')} alt="" />
                       </div>
                     </div>
@@ -871,76 +893,7 @@ export const SpecialityListing: React.FC = (props) => {
                       )}
                     </div>
                   </div>
-                  <Typography component="h2">
-                    Start your care now by choosing from 500 doctors and 65 specialities
-                  </Typography>
-                  <div className={classes.topSpeciality}>
-                    <div className={classes.sectionHeader}>
-                      <Typography component="h2">Top Specialites</Typography>
-                    </div>
-                    <div className={classes.tsContent}>
-                      <Grid container spacing={2}>
-                        <Grid item xs={6} md={3}>
-                          <div className={classes.specialityCard}>
-                            <Link to={clientRoutes.specialties('paediatrics')}>
-                              <Typography component="h3">Paediatrics</Typography>
-                              <img src={require('images/ic-baby.svg')} />
-                              <Typography>For your child’s health problems</Typography>
-                              {/* <Typography className={classes.symptoms}>
-                                Fever, cough, diarrhoea
-                              </Typography> */}
-                            </Link>
-                          </div>
-                        </Grid>
-                        <Grid item xs={6} md={3}>
-                          <div className={classes.specialityCard}>
-                            <Link
-                              to={clientRoutes.specialties('general-physician-internal-medicine')}
-                            >
-                              <Typography component="h3">General Physician</Typography>
-                              <img src={require('images/ic_doctor_consult.svg')} />
-                              <Typography>For any common health issue</Typography>
-                              {/* <Typography className={classes.symptoms}>
-                                Fever, headache, asthma
-                              </Typography> */}
-                            </Link>
-                          </div>
-                        </Grid>
-                        <Grid item xs={6} md={3}>
-                          <div className={classes.specialityCard}>
-                            <Link to={clientRoutes.specialties('dermatology')}>
-                              <Typography component="h3">Dermatology</Typography>
-                              <img src={require('images/ic-hair.svg')} />
-                              <Typography>For skin &amp; hair problems</Typography>
-                              {/* <Typography className={classes.symptoms}>
-                                Skin rash, acne, skin patch
-                              </Typography> */}
-                            </Link>
-                          </div>
-                        </Grid>
-                        <Grid item xs={6} md={3}>
-                          <div className={classes.specialityCard}>
-                            <Link to={clientRoutes.specialties('obstetrics--gynaecology')}>
-                              <Typography component="h3">Gynaecology</Typography>
-                              <img src={require('images/ic-gynaec.svg')} />
-                              <Typography>For women’s health </Typography>
-                              {/* <Typography className={classes.symptoms}>
-                                Irregular periods, pregnancy
-                              </Typography> */}
-                            </Link>
-                          </div>
-                        </Grid>
-                      </Grid>
-                    </div>
-                  </div>
-                  <div className={classes.otherSpeciality}>
-                    <div className={classes.sectionHeader}>
-                      <Typography component="h2">Other Specialites</Typography>
-                    </div>
-                    <div className={classes.osContainer}>
-                      <Specialities />
-                    </div>
-                  </div>
+                  <SpecialtyDivision />
                 </div>
               </Grid>
               <Grid item xs={12} md={4}>
@@ -967,12 +920,11 @@ export const SpecialityListing: React.FC = (props) => {
                   </div>
                   <div className={classes.card}>
                     <Typography component="h5">Why Apollo247</Typography>
-                    <ul className={classes.cardList}>
-                      <li>Verified doctor listing</li>
-                      <li>99% +ve feedback</li>
-                      <li>Free follow-up session</li>
-                      <li>In hac habitasse platea dictumst. Vivamus adipiscing fermentum </li>
-                    </ul>
+                    {faqs && (
+                      <div
+                        dangerouslySetInnerHTML={{ __html: faqs[0].specialityWhyApollo247 }}
+                      ></div>
+                    )}
                   </div>
                   <div className={classes.card}>
                     <Typography component="h5">How it works</Typography>
@@ -1151,7 +1103,7 @@ export const SpecialityListing: React.FC = (props) => {
                 }}
               >
                 <Typography className={classes.panelHeading} component="h3">
-                  For how long can I speak to the doctor??
+                  For how long can I speak to the doctor?
                 </Typography>
               </ExpansionPanelSummary>
               <ExpansionPanelDetails className={classes.panelDetails}>
@@ -1202,7 +1154,13 @@ export const SpecialityListing: React.FC = (props) => {
       <div className={classes.footerLinks}>
         <BottomLinks />
       </div>
-      <Cities locationPopup={locationPopup} setLocationPopup={setLocationPopup} />
+      {locationPopup && (
+        <Cities
+          setSelectedCity={setSelectedCity}
+          locationPopup={locationPopup}
+          setLocationPopup={setLocationPopup}
+        />
+      )}
     </div>
   );
 };
