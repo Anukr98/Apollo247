@@ -239,7 +239,7 @@ export const sendNotificationWhatsapp = async (
 
 export const sendNotificationSMS = async (mobileNumber: string, message: string) => {
   //Adding Apollo 247 string at starting of the body
-  message = '[Apollo 247] ' + message;
+  message = '[Apollo 247] ' + message;
 
   const apiBaseUrl = process.env.KALEYRA_OTP_API_BASE_URL;
   const apiUrlWithKey = `${apiBaseUrl}?api_key=${process.env.KALEYRA_NOTIFICATION_API_KEY}`;
