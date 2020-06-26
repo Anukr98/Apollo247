@@ -307,11 +307,13 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
         setshowSpinner(false);
         // const address = saveAddressResult.data!.savePatientAddress.patientAddress!;
         const address = g(saveAddressResult.data, 'savePatientAddress', 'patientAddress')!;
+        const isAddressServiceable =
+          pinAvailabilityResult && pinAvailabilityResult.data.Availability;
         addAddress!(address);
         addDiagnosticAddress!(address);
 
         const formattedAddress = formatAddress(address);
-        if ((pinAvailabilityResult && pinAvailabilityResult.data.Availability) || addOnly) {
+        if (isAddressServiceable || addOnly) {
           if (source != 'Diagnostics Cart') {
             postPharmacyAddNewAddressCompleted(
               source,
