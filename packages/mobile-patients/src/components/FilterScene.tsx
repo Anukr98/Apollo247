@@ -311,7 +311,7 @@ export const FilterScene: React.FC<FilterSceneProps> = (props) => {
             >
               <IconBase
                 size="md"
-                style={{ width: 100, height: 40 }}
+                style={{ width: 110, height: 40, borderRadius: 15 }}
                 source={{
                   uri:
                     'https://png.pngtree.com/png-clipart/20190516/original/pngtree-instagram-social-media-icon-design-template-vector-png-image_3654775.jpg',
