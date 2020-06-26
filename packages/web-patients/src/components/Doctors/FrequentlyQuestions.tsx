@@ -1,6 +1,11 @@
 import React from 'react';
 import { makeStyles, createStyles } from '@material-ui/styles';
-import { Theme, ExpansionPanel, ExpansionPanelSummary, ExpansionPanelDetails } from '@material-ui/core';
+import {
+  Theme,
+  ExpansionPanel,
+  ExpansionPanelSummary,
+  ExpansionPanelDetails,
+} from '@material-ui/core';
 import { Link } from 'react-router-dom';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -22,7 +27,7 @@ const useStyles = makeStyles((theme: Theme) => {
         fontSize: 16,
         fontWeight: 600,
         lineHeight: '25px',
-      },      
+      },
     },
     panelRoot: {
       marginBottom: '0px !important',
@@ -67,68 +72,37 @@ const useStyles = makeStyles((theme: Theme) => {
     },
   });
 });
+interface FrequentlyQuestionsProps {
+  faqData: any;
+}
 
-export const FrequentlyQuestions: React.FC = (props) => {
+export const FrequentlyQuestions: React.FC<FrequentlyQuestionsProps> = (props) => {
   const classes = useStyles({});
-
+  const { faqData } = props;
   return (
     <div className={classes.root}>
       <h2>Frequently asked questions</h2>
-      <ExpansionPanel
-        className={classes.panelRoot}
-      >
-        <ExpansionPanelSummary
-          expandIcon={<img src={require('images/ic_accordion_down.svg')} alt="" />}
-          classes={{
-            root: classes.panelHeader,
-            content: classes.summaryContent,
-            expandIcon: classes.expandIcon,
-            expanded: classes.panelExpanded,
-          }}
-        >
-          How do I book a diagnostic test on Apollo 24/7?
-        </ExpansionPanelSummary>
-        <ExpansionPanelDetails className={classes.panelDetails}>
-          To book a test on Apollo 24/7, click on the ‘Order Tests’ section on the website/app, select the test, and click on ‘Add to Cart’. Then go to the cart and choose either ‘Home Visit’ or ‘Clinic Visit’ and click on ‘Proceed to Payment. Please note that currently all the tests booked on Apollo 24/7 will be Cash on Delivery (COD).
-        </ExpansionPanelDetails>
-      </ExpansionPanel>
-      <ExpansionPanel
-        className={classes.panelRoot}
-      >
-        <ExpansionPanelSummary
-          expandIcon={<img src={require('images/ic_accordion_down.svg')} alt="" />}
-          classes={{
-            root: classes.panelHeader,
-            content: classes.summaryContent,
-            expandIcon: classes.expandIcon,
-            expanded: classes.panelExpanded,
-          }}
-        >
-          Can I cancel a test that I have booked and how do I do it?
-        </ExpansionPanelSummary>
-        <ExpansionPanelDetails className={classes.panelDetails}>
-          To book a test on Apollo 24/7, click on the ‘Order Tests’ section on the website/app, select the test, and click on ‘Add to Cart’. Then go to the cart and choose either ‘Home Visit’ or ‘Clinic Visit’ and click on ‘Proceed to Payment. Please note that currently all the tests booked on Apollo 24/7 will be Cash on Delivery (COD).
-        </ExpansionPanelDetails>
-      </ExpansionPanel>
-      <ExpansionPanel
-        className={classes.panelRoot}
-      >
-        <ExpansionPanelSummary
-          expandIcon={<img src={require('images/ic_accordion_down.svg')} alt="" />}
-          classes={{
-            root: classes.panelHeader,
-            content: classes.summaryContent,
-            expandIcon: classes.expandIcon,
-            expanded: classes.panelExpanded,
-          }}
-        >
-          How do I reschedule a test?
-        </ExpansionPanelSummary>
-        <ExpansionPanelDetails className={classes.panelDetails}>
-          To book a test on Apollo 24/7, click on the ‘Order Tests’ section on the website/app, select the test, and click on ‘Add to Cart’. Then go to the cart and choose either ‘Home Visit’ or ‘Clinic Visit’ and click on ‘Proceed to Payment. Please note that currently all the tests booked on Apollo 24/7 will be Cash on Delivery (COD).
-        </ExpansionPanelDetails>
-      </ExpansionPanel>
+      {faqData.map((fq: any) => {
+        return (
+          <ExpansionPanel className={classes.panelRoot}>
+            <ExpansionPanelSummary
+              expandIcon={<img src={require('images/ic_accordion_down.svg')} alt="" />}
+              key={fq.id}
+              classes={{
+                root: classes.panelHeader,
+                content: classes.summaryContent,
+                expandIcon: classes.expandIcon,
+                expanded: classes.panelExpanded,
+              }}
+            >
+              {fq.faqQuestion}
+            </ExpansionPanelSummary>
+            <ExpansionPanelDetails className={classes.panelDetails}>
+              {fq.faqAnswer}
+            </ExpansionPanelDetails>
+          </ExpansionPanel>
+        );
+      })}
     </div>
   );
 };
-
