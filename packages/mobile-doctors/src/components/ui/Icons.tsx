@@ -250,6 +250,13 @@ export const BackArrow: React.FC<IconProps> = (props) => (
     source={require('../../images/icons/backArrow.png')}
   />
 );
+export const BackArrowOrange: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 16, width: 25 }}
+    {...props}
+    source={require('../../images/icons/backArrow_orange.png')}
+  />
+);
 
 export const NextButton: React.FC<IconProps> = (props) => (
   <IconBase
@@ -814,4 +821,11 @@ export const TestsIcon: React.FC<IconProps> = (props) => (
 );
 export const AdviceIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('../../images/icons/advice_icon.png')} />
+);
+export const SearchIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 36, width: 36 }}
+    {...props}
+    source={require('../../images/icons/search_icon.png')}
+  />
 );
