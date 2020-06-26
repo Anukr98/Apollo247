@@ -1053,6 +1053,7 @@ export const GET_CASESHEET_DETAILS = gql`
         }
         diagnosticPrescription {
           itemname
+          testInstruction
         }
         blobName
         doctorId
