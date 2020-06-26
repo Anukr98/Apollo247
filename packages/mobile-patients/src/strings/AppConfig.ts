@@ -108,6 +108,7 @@ const appStaticVariables = {
     },
   ] as PharmacyHomepageInfo[],
   HOTSELLERS_MAX_QUANTITY: 20, // max. allowed qty to add hot sellers to cart
+  HOME_SCREEN_KAVACH_TEXT: string.common.KavachText,
 };
 
 const DEV_top6_specailties = [
@@ -320,6 +321,7 @@ const ConfigurationDev = {
     'https://aph.staging.web-patients.popcornapps.com/covid19/scan?utm_source=mobile_app',
   COVID_LATEST_ARTICLES_URL:
     'https://aph.dev.web-patients.popcornapps.com/covid19?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Covid19%20Content',
+  KAVACH_URL: 'https://www.apollo247.com/covid19/kavach?utm_source=mobile_app&utm_medium=Webview',
 };
 
 // QA
@@ -359,6 +361,7 @@ const ConfigurationQA = {
     'https://aph.staging.web-patients.popcornapps.com/covid19/scan?utm_source=mobile_app',
   COVID_LATEST_ARTICLES_URL:
     'https://aph.staging.web-patients.popcornapps.com/covid19?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Covid19%20Content',
+  KAVACH_URL: 'https://www.apollo247.com/covid19/kavach?utm_source=mobile_app&utm_medium=Webview',
 };
 
 // staging
@@ -433,6 +436,7 @@ const ConfigurationProd = {
   COVID_RISK_LEVEL_URL: 'https://www.apollo247.com/covid19/scan?utm_source=mobile_app',
   COVID_LATEST_ARTICLES_URL:
     'https://www.apollo247.com/covid19?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Covid19%20Content',
+  KAVACH_URL: 'https://www.apollo247.com/covid19/kavach?utm_source=mobile_app&utm_medium=Webview',
 };
 
 //PERFORMANCE
@@ -472,6 +476,7 @@ const ConfigurationPERFORM = {
     'https://aph.staging.web-patients.popcornapps.com/covid19/scan?utm_source=mobile_app',
   COVID_LATEST_ARTICLES_URL:
     'https://aph.staging.web-patients.popcornapps.com/covid19?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Covid19%20Content',
+  KAVACH_URL: 'https://www.apollo247.com/covid19/kavach?utm_source=mobile_app&utm_medium=Webview',
 };
 
 //VAPT
@@ -511,6 +516,7 @@ const ConfigurationVAPT = {
     'https://aph.staging.web-patients.popcornapps.com/covid19/scan?utm_source=mobile_app',
   COVID_LATEST_ARTICLES_URL:
     'https://aph.staging.web-patients.popcornapps.com/covid19?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Covid19%20Content',
+  KAVACH_URL: 'https://www.apollo247.com/covid19/kavach?utm_source=mobile_app&utm_medium=Webview',
 };
 
 //DevelopmentReplica
@@ -550,6 +556,7 @@ const ConfigurationDevReplica = {
     'https://aph.staging.web-patients.popcornapps.com/covid19/scan?utm_source=mobile_app',
   COVID_LATEST_ARTICLES_URL:
     'https://aph.staging.web-patients.popcornapps.com/covid19?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Covid19%20Content',
+  KAVACH_URL: 'https://www.apollo247.com/covid19/kavach?utm_source=mobile_app&utm_medium=Webview',
 };
 
 const Configuration =

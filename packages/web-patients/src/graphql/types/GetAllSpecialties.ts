@@ -16,6 +16,10 @@ export interface GetAllSpecialties_getAllSpecialties {
   specialistPluralTerm: string | null;
   userFriendlyNomenclature: string | null;
   displayOrder: number | null;
+  slugName: string | null;
+  symptoms: string | null;
+  commonSearchWords: string | null;
+  shortDescription: string | null;
 }
 
 export interface GetAllSpecialties {

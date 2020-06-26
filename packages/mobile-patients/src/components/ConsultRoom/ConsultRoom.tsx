@@ -10,6 +10,7 @@ import {
   CartIcon,
   ConsultationRoom,
   CovidExpert,
+  KavachIcon,
   CovidRiskLevel,
   Diabetes,
   DoctorIcon,
@@ -39,6 +40,7 @@ import {
   CommonLogEvent,
   CommonSetUserBugsnag,
   DeviceHelper,
+  setBugFenderLog,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
   GET_DIAGNOSTICS_CITES,
@@ -1337,6 +1339,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           <CovidExpert style={{ width: 24, height: 24 }} />,
           `${AppConfig.Configuration.HOME_SCREEN_EMERGENCY_BANNER_TEXT}`
         )}
+        {renderCovidBlueButtons(
+          onPressKavach,
+          <KavachIcon style={{ width: 24, height: 24 }} />,
+          `${AppConfig.Configuration.HOME_SCREEN_KAVACH_TEXT}`
+        )}
       </View>
     );
   };
@@ -1401,6 +1408,25 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     props.navigation.navigate(AppRoutes.CovidScan, {
       covidUrl: AppConfig.Configuration.COVID_RISK_LEVEL_URL,
     });
+  };
+
+  const onPressKavach = () => {
+    postHomeWEGEvent(WebEngageEventName.APOLLO_KAVACH_PROGRAM);
+
+    try {
+      const openUrl = AppConfig.Configuration.KAVACH_URL;
+      Linking.canOpenURL(openUrl).then((supported) => {
+        if (supported) {
+          Linking.openURL(openUrl);
+        } else {
+          setBugFenderLog('CONSULT_ROOM_FAILED_OPEN_URL', openUrl);
+        }
+      });
+    } catch (e) {}
+
+    // props.navigation.navigate(AppRoutes.CovidScan, {
+    //   covidUrl: AppConfig.Configuration.KAVACH_URL,
+    // });
   };
 
   // const onPressMentalHealth = () => {

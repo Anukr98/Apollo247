@@ -48,7 +48,7 @@ import {
   pinCodeServiceabilityApi,
   MedicinePageSection,
   getNearByStoreDetailsApi,
-  exotelCallAPI,
+  callToExotelApi,
   OfferBannerSection,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
@@ -236,13 +236,26 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       let from = currentPatient.mobileNumber;
       let to = pharmacyPhoneNumber;
       let caller_id = AppConfig.Configuration.EXOTEL_CALLER_ID;
-      const param = `From=${from}&To=${to}&CallerId=${caller_id}`;
-      exotelCallAPI(param)
+      // const param = `fromPhone=${from}&toPhone=${to}&callerId=${caller_id}`;
+      const param = {
+        fromPhone: from,
+        toPhone: to,
+        callerId: caller_id,
+      };
+      globalLoading!(true);
+      callToExotelApi(param)
         .then((response) => {
           hideAphAlert!();
+          globalLoading!(false);
           console.log('exotelCallAPI response', response, 'params', param);
         })
         .catch((error) => {
+          hideAphAlert!();
+          globalLoading!(false);
+          showAphAlert!({
+            title: string.common.uhOh,
+            description: 'We could not connect to the pharmacy now. Please try later.',
+          });
           console.log('exotelCallAPI error', error, 'params', param);
         });
     };

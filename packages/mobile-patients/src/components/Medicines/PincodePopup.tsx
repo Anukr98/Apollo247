@@ -11,7 +11,7 @@ import {
   getPlaceInfoByPincode,
   pinCodeServiceabilityApi,
   getNearByStoreDetailsApi,
-  exotelCallAPI,
+  callToExotelApi,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { getFormattedLocation } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -24,6 +24,7 @@ import {
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 
 const styles = StyleSheet.create({
   blurView: {
@@ -73,7 +74,7 @@ export interface PincodePopupProps {
 export const PincodePopup: React.FC<PincodePopupProps> = (props) => {
   const [pincode, setPincode] = useState<string>('');
   const [error, setError] = useState<string>('');
-  const { setLoading: globalLoading } = useUIElements();
+  const { showAphAlert, setLoading: globalLoading } = useUIElements();
   const { setPharmacyLocation } = useAppCommonData();
   const { currentPatient } = useAllCurrentPatients();
   const [showCallToPharmacy, setShowCallToPharmacy] = useState<boolean>(false);
@@ -138,12 +139,26 @@ export const PincodePopup: React.FC<PincodePopupProps> = (props) => {
     let from = currentPatient.mobileNumber;
     let to = pharmacyPhoneNumber;
     let caller_id = AppConfig.Configuration.EXOTEL_CALLER_ID;
-    const param = `From=${from}&To=${to}&CallerId=${caller_id}`;
-    exotelCallAPI(param)
+    // const param = `From=${from}&To=${to}&CallerId=${caller_id}`;
+    const param = {
+      fromPhone: from,
+      toPhone: to,
+      callerId: caller_id,
+    };
+    globalLoading!(true);
+    callToExotelApi(param)
       .then((response) => {
+        props.onClickClose();
+        globalLoading!(false);
         console.log('exotelCallAPI response', response, 'params', param);
       })
       .catch((error) => {
+        props.onClickClose();
+        globalLoading!(false);
+        showAphAlert!({
+          title: string.common.uhOh,
+          description: 'We could not connect to the pharmacy now. Please try later.',
+        });
         console.log('exotelCallAPI error', error, 'params', param);
       });
   };

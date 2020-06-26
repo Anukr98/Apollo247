@@ -32,7 +32,7 @@ import { useAuth } from 'hooks/authHooks';
 import { ManageProfile } from 'components/ManageProfile';
 import { BottomLinks } from 'components/BottomLinks';
 import { gtmTracking } from 'gtmTracking';
-import { getOpeningHrs } from '../helpers/commonHelpers';
+import { getOpeningHrs, readableParam } from '../helpers/commonHelpers';
 import { SchemaMarkup } from 'SchemaMarkup';
 import { MetaTagsComp } from 'MetaTagsComp';
 import { DoctorTimings } from 'components/DoctorTimings';
@@ -350,9 +350,8 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
               window &&
               window.location &&
               window.location.origin &&
-              `${window.location.origin}/doctors/${id}`,
+              `${window.location.origin}/doctors/${readableParam(fullName)}-${id}`,
           });
-          console.log('id', id);
         }
       });
   }, []);

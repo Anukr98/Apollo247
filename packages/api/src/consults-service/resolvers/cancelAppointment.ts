@@ -5,6 +5,9 @@ import {
   REQUEST_ROLES,
   APPOINTMENT_STATE,
   ES_DOCTOR_SLOT_STATUS,
+  AppointmentUpdateHistory,
+  APPOINTMENT_UPDATED_BY,
+  VALUE_TYPE,
 } from 'consults-service/entities';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
@@ -70,6 +73,7 @@ const cancelAppointment: Resolver<
     throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
   }
 
+  const currentStatus = appointment.status;
   if (
     (appointment.status == STATUS.IN_PROGRESS ||
       appointment.status == STATUS.NO_SHOW ||
@@ -167,6 +171,23 @@ const cancelAppointment: Resolver<
     appointment.appointmentType,
     ES_DOCTOR_SLOT_STATUS.BOOKED
   );
+
+  const historyAttrs: Partial<AppointmentUpdateHistory> = {
+    appointment,
+    userType:
+      cancelAppointmentInput.cancelledBy == 'PATIENT'
+        ? APPOINTMENT_UPDATED_BY.PATIENT
+        : APPOINTMENT_UPDATED_BY.DOCTOR,
+    fromValue: currentStatus,
+    toValue: STATUS.CANCELLED,
+    valueType: VALUE_TYPE.STATUS,
+    userName:
+      cancelAppointmentInput.cancelledBy == 'PATIENT'
+        ? appointment.patientId
+        : appointment.doctorId,
+    reason: cancelAppointmentInput.cancelReason,
+  };
+  appointmentRepo.saveAppointmentHistory(historyAttrs);
 
   //remove from consult queue
   const cqRepo = consultsDb.getCustomRepository(ConsultQueueRepository);
