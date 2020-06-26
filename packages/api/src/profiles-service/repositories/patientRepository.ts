@@ -49,6 +49,12 @@ export class PatientRepository extends Repository<Patient> {
     });
   }
 
+  async findByIdWithoutRelations(id: string) {
+    return this.findOne({
+      where: { id, isActive: true },
+    });
+  }
+
   async findOrCreatePatient(
     findOptions: { mobileNumber: Patient['mobileNumber'] },
     createOptions: Partial<Patient>
