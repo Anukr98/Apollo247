@@ -248,7 +248,6 @@ const getPatientPersonalizedAppointments: Resolver<
   PersonalizedAppointmentResult
 > = async (parent, args, { consultsDb, doctorsDb, patientsDb, mobileNumber }) => {
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
-  mobileNumber = '+918019677178';
   const patientData = await patientRepo.checkMobileIdInfo(mobileNumber, args.patientUhid, '');
   if (!patientData) throw new AphError(AphErrorMessages.INVALID_PATIENT_DETAILS);
   let uhid = args.patientUhid;
