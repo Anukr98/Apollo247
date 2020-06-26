@@ -667,45 +667,32 @@ export const JDConsultRoom: React.FC = () => {
           );
 
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.diagnosis !== null
-            ? setDiagnosis(
-                (_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
-                  .diagnosis as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_diagnosis[]
-              )
+            ? setDiagnosis((_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+                .diagnosis as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_diagnosis[])
             : setDiagnosis([]);
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.symptoms
-            ? setSymptoms(
-                (_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
-                  .symptoms as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_symptoms[]
-              )
+            ? setSymptoms((_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+                .symptoms as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_symptoms[])
             : setSymptoms([]);
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.otherInstructions
-            ? setOtherInstructions(
-                (_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
-                  .otherInstructions as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_otherInstructions[]
-              )
+            ? setOtherInstructions((_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+                .otherInstructions as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_otherInstructions[])
             : setOtherInstructions([]);
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.diagnosticPrescription
-            ? setDiagnosticPrescription(
-                (_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
-                  .diagnosticPrescription as unknown) as any[]
-              )
+            ? setDiagnosticPrescription((_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+                .diagnosticPrescription as unknown) as any[])
             : setDiagnosticPrescription([]);
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.medicinePrescription
-            ? setMedicinePrescription(
-                (_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
-                  .medicinePrescription as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_medicinePrescription[]
-              )
+            ? setMedicinePrescription((_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+                .medicinePrescription as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_medicinePrescription[])
             : setMedicinePrescription([]);
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.notes
-            ? setNotes(
-                (_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
-                  .notes as unknown) as string
-              )
+            ? setNotes((_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+                .notes as unknown) as string)
             : setNotes('');
           _data!.data!.getJuniorDoctorCaseSheet!.juniorDoctorNotes
-            ? setJuniorDoctorNotes(
-                (_data!.data!.getJuniorDoctorCaseSheet!.juniorDoctorNotes as unknown) as string
-              )
+            ? setJuniorDoctorNotes((_data!.data!.getJuniorDoctorCaseSheet!
+                .juniorDoctorNotes as unknown) as string)
             : setJuniorDoctorNotes('');
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.consultType
             ? setConsultType(([
