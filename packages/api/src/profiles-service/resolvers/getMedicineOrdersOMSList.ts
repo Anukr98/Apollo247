@@ -409,6 +409,8 @@ const getMedicineOrderOMSDetails: Resolver<
           );
           if (cancellationReasons) {
             reasonCode.statusMessage = cancellationReasons.displayMessage;
+          } else {
+            reasonCode.statusMessage = '';
           }
         } catch (e) {
           console.log(e);

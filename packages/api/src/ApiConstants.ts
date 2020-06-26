@@ -63,7 +63,7 @@ export enum ApiConstants {
 
   //medicine order out for delivery
   ORDER_PLACED_TITLE = 'Medicine order is placed',
-  ORDER_PLACED_BODY = 'Thanks for choosing Apollo24|7, {0} :) Your order {1} is placed with us successfully.',
+  ORDER_PLACED_BODY = 'Hi {0}, we have received your order {1}. Our team may get in touch with you, in case of any clarifications. Click below to reach out to us through whatsapp for any concerns- https://bit.ly/apollo247Medicine',
 
   // medicine order out for delivery
   UPLOAD_PRESCRIPTION_TITLE = 'Upload Prescription medicine order placed ',
@@ -72,21 +72,32 @@ export enum ApiConstants {
   ORDER_CONFIRMED_TITLE = 'Medicine order is confirmed',
   ORDER_CONFIRMED_BODY = 'Hi {0}! Your order no {1} has been verified & successfully processed. Order will be delivered {2}',
 
+  //medicine order items changed
+  MEDICINE_ORDER_CHANGED_TITLE = 'Medicine order is changed',
+  MEDICINE_ORDER_CHANGED_BODY = 'Hi {0}, Items have been modified and your order is billed {1}. Please feel free to reach out to us on WhatsApp in case you have any questions: https://bit.ly/apollo247Medicine',
+
   //medicine order ready at store
   ORDER_READY_AT_STORE_TITLE = 'Medicine order is ready',
   ORDER_READY_AT_STORE_BODY = 'Hi {0}! items for your order {1} are ready for pickup at your selected store {2}. Store Contact Number: {3}. Kindly contact the store 20 minutes before reaching the store.',
 
   //medicine order picked up
   ORDER_PICKEDUP_TITLE = 'Medicine order is pickedup',
-  ORDER_PICKEDUP_BODY = 'Order Picked Up: Greetings from Apollo 24|7 Your order {0} is picked up successfully. Please take a moment & review your experience here - https://onelink.to/nfbwva',
+  ORDER_PICKEDUP_BODY = '"Greetings from Apollo 24|7 Your order {1} has been picked up successfully. Our team is working round the clock to fulfill your health needs. Please take a moment & review your experience here - https://onelink.to/nfbwva"',
 
   //medicine order out for delivery
   ORDER_OUT_FOR_DELIVERY_TITLE = 'Medicine order is out for delivery',
-  ORDER_OUT_FOR_DELIVERY_BODY = 'Hi {0}! Your order {1} is out for delivery. Our executive will be there soon :)',
+  ORDER_OUT_FOR_DELIVERY_BODY = 'Hi {0}! Your order {1} has been dispatched and will be delivered to you very soon.',
 
   //medicine order delivered
   ORDER_DELIVERY_TITLE = 'Medicine order is delivered',
-  ORDER_DELIVERY_BODY = 'Hi {0}! Your order {1} has been delivered successfully',
+  ORDER_DELIVERY_BODY = 'Greetings from Apollo 24|7 Your order {1} is delivered successfully. Our team is working round the clock to fulfill your health needs. Please take a moment & review your experience here - https://onelink.to/nfbwva',
+
+  //medicine order delivered late
+  ORDER_LATE_DELIVERY_BODY = 'Greetings from Apollo 24|7 Your order {1} is delivered successfully. Our team is working round the clock to fulfill your health needs in the current situation.',
+
+  //medicine order cancelled
+  ORDER_CANCEL_COD = 'Dear Customer, In referrence to your Apollo 247 Order {0}, {1}. Refund related communication (if any) will be sent separately',
+  ORDER_CANCEL_PREPAID = 'For Order {0} the refund amount of Rs {1} will be transferred to the source a/c within 10-14 working days. We apologise for the inconvenience caused.',
 
   //appointment cancellation
   CANCEL_APPT_TITLE = 'Your appointment has been cancelled',
