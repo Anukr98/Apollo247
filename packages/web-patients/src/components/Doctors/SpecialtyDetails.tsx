@@ -485,16 +485,12 @@ const convertAvailabilityToDate = (availability: String[], dateSelectedFromFilte
     availableNow = {};
   }
   const availabilityArray: String[] = [];
-  const today = moment(new Date())
-    .utc()
-    .format('YYYY-MM-DD');
+  const today = moment(new Date()).utc().format('YYYY-MM-DD');
   if (availability.length > 0) {
     availability.forEach((value: String) => {
       if (value === 'Now') {
         availableNow = {
-          availableNow: moment(new Date())
-            .utc()
-            .format('YYYY-MM-DD hh:mm'),
+          availableNow: moment(new Date()).utc().format('YYYY-MM-DD hh:mm'),
         };
       } else if (value === 'Today') {
         availabilityArray.push(today);
@@ -566,7 +562,6 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
   const [searchDoctors, setSearchDoctors] = useState<DoctorsType[] | null>(null);
   const [searchLoading, setSearchLoading] = useState<boolean>(false);
   const [slugName, setSlugName] = useState<string>('');
-  const [faqResponse, setFaqResponse] = useState<boolean>(false);
   const [faqData, setFaqData] = useState<any>();
   const { isSignedIn } = useAuth();
 
@@ -624,16 +619,17 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
   }, []);
 
   useEffect(() => {
-    axios
-      .get(`${process.env.CMS_BASE_URL}/api/specialty-details/${slugName}`, {
-        headers: { 'Content-Type': 'application/json', Authorization: process.env.CMS_TOKEN },
-      })
-      .then((res: any) => {
-        if (res && res.data) {
-          setFaqData(res && res.data && res.data.data);
-          setFaqResponse(res && res.data && res.data.success);
-        }
-      });
+    if (slugName !== '') {
+      axios
+        .get(`${process.env.CMS_BASE_URL}/api/specialty-details/${slugName}`, {
+          headers: { 'Content-Type': 'application/json', Authorization: process.env.CMS_TOKEN },
+        })
+        .then((res: any) => {
+          if (res && res.data && res.data.success) {
+            setFaqData(res && res.data && res.data.data);
+          }
+        });
+    }
   }, [slugName]);
   let expRange: Range = [],
     feeRange: Range = [];
@@ -1052,10 +1048,10 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
                   'no results found'
                 )}
               </div>
-              {faqResponse && (
+              {faqData && faqData.length > 0 && (
                 <>
-                  <BookBest faqData={faqData} />
-                  <FrequentlyQuestions faqData={faqData && faqData[0].specialityFaq} />
+                  <BookBest faqData={faqData[0]} />
+                  <FrequentlyQuestions faqData={faqData[0].specialityFaq} />
                 </>
               )}
             </div>

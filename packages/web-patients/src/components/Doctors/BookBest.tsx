@@ -40,33 +40,33 @@ interface BookBestProps {
 
 export const BookBest: React.FC<BookBestProps> = (props) => {
   const classes = useStyles({});
-  const [remaininFaqData, setRemaininFaqData] = useState<boolean>(false);
+  const [remainInFaqData, setRemainInFaqData] = useState<boolean>(false);
   const { faqData } = props;
-  const faqlimitData = [];
-  for (let i = 0; i < 2; i++) {
-    faqlimitData.push(faqData && faqData[0].consultReasons[i]);
-  }
   return (
     <div className={classes.root}>
-      <h3>{faqData && faqData[0].title}</h3>
-      <p>{faqData && faqData[0].about}</p>
-      <h3>You can consult a {faqData && faqData[0].title} if</h3>
-      <ul>
-        {!remaininFaqData
-          ? faqlimitData.map((item: any, index: number) => {
-              return <li key={index}>{item}</li>;
-            })
-          : faqData &&
-            faqData[0].consultReasons.map((fq: any, index: number) => {
-              return <li key={index}>{fq}</li>;
-            })}
-      </ul>
-      {!remaininFaqData && (
+      {faqData && (
+        <>
+          <h3>{faqData.title}</h3>
+          <p>{faqData.about}</p>
+          <h3>You can consult a {faqData.title} if</h3>
+          <ul>
+            {faqData.consultReasons &&
+              (!remainInFaqData
+                ? faqData.consultReasons.map(
+                    (item: any, index: number) => index < 2 && <li key={index}>{item}</li>
+                  )
+                : faqData.consultReasons.map((fq: any, index: number) => (
+                    <li key={index}>{fq}</li>
+                  )))}
+          </ul>
+        </>
+      )}
+      {!remainInFaqData && (
         <Link
           className={classes.readMore}
           to="#"
           onClick={() => {
-            setRemaininFaqData(true);
+            setRemainInFaqData(true);
           }}
         >
           Read More

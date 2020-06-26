@@ -82,27 +82,25 @@ export const FrequentlyQuestions: React.FC<FrequentlyQuestionsProps> = (props) =
   return (
     <div className={classes.root}>
       <h2>Frequently asked questions</h2>
-      {faqData.map((fq: any) => {
-        return (
-          <ExpansionPanel className={classes.panelRoot}>
-            <ExpansionPanelSummary
-              expandIcon={<img src={require('images/ic_accordion_down.svg')} alt="" />}
-              key={fq.id}
-              classes={{
-                root: classes.panelHeader,
-                content: classes.summaryContent,
-                expandIcon: classes.expandIcon,
-                expanded: classes.panelExpanded,
-              }}
-            >
-              {fq.faqQuestion}
-            </ExpansionPanelSummary>
-            <ExpansionPanelDetails className={classes.panelDetails}>
-              {fq.faqAnswer}
-            </ExpansionPanelDetails>
-          </ExpansionPanel>
-        );
-      })}
+      {faqData.map((fq: any) => (
+        <ExpansionPanel key={fq.id} className={classes.panelRoot}>
+          <ExpansionPanelSummary
+            expandIcon={<img src={require('images/ic_accordion_down.svg')} alt="" />}
+            key={fq.id}
+            classes={{
+              root: classes.panelHeader,
+              content: classes.summaryContent,
+              expandIcon: classes.expandIcon,
+              expanded: classes.panelExpanded,
+            }}
+          >
+            {fq.faqQuestion}
+          </ExpansionPanelSummary>
+          <ExpansionPanelDetails className={classes.panelDetails}>
+            {fq.faqAnswer}
+          </ExpansionPanelDetails>
+        </ExpansionPanel>
+      ))}
     </div>
   );
 };
