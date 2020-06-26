@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Theme, Grid, CircularProgress, Popover, Typography } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { Specialities } from 'components/Specialities';
@@ -11,6 +11,7 @@ import {
 import { GET_ALL_SPECIALITIES } from 'graphql/specialities';
 import { useQuery } from 'react-apollo-hooks';
 import { getSymptoms } from 'helpers/commonHelpers';
+import { readableParam } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -409,7 +410,7 @@ export const SpecialtyDivision: React.FC = (props) => {
                   showSpecialty(specialityDetails.name) && (
                     <Grid key={specialityDetails.id} item xs={6} md={3}>
                       <div className={classes.specialityCard}>
-                        <Link to={clientRoutes.specialties('paediatrics')}>
+                        <Link to={clientRoutes.specialties(readableParam(specialityDetails.name))}>
                           <Typography component="h3">{specialityDetails.name}</Typography>
                           <img src={specialityDetails.image} />
                           <Typography>{specialityDetails.shortDescription}</Typography>

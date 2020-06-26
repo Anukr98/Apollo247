@@ -22,6 +22,17 @@ import { AphButton } from '@aph/web-ui-components';
 import { Cities } from './Cities';
 import fetchUtil from 'helpers/fetch';
 import { SpecialtyDivision } from './SpecialtyDivision';
+import {
+  SearchDoctorAndSpecialtyByNameVariables,
+  SearchDoctorAndSpecialtyByName,
+  SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctors as DoctorsType,
+  SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_specialties as SpecialtyType,
+} from 'graphql/types/SearchDoctorAndSpecialtyByName';
+import { SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME } from 'graphql/doctors';
+import { useApolloClient } from 'react-apollo-hooks';
+import { useLocationDetails } from 'components/LocationProvider';
+import { readableParam } from 'helpers/commonHelpers';
+import _lowerCase from 'lodash/lowerCase';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -671,11 +682,15 @@ const useStyles = makeStyles((theme: Theme) => {
       alignItems: 'center',
     },
     dImg: {
-      width: 44,
-      height: 44,
-      borderRadius: '50%',
-      border: '1px solid #ccc',
-      margin: '0 15px 0 0',
+      paddingRight: 16,
+      margin: '0 15px 50px 0',
+      '& img': {
+        maxWidth: 40,
+        width: 44,
+        height: 44,
+        borderRadius: '50%',
+        border: '1px solid #ccc',
+      },
     },
     doctorDetails: {},
     doctorList: {
@@ -748,14 +763,18 @@ function a11yProps(index: any) {
 
 export const SpecialityListing: React.FC = (props) => {
   const classes = useStyles({});
+  const { currentPincode } = useLocationDetails();
   const { currentPatient } = useAllCurrentPatients();
+  const apolloClient = useApolloClient();
   const { isSignedIn } = useAuth();
   const [expanded, setExpanded] = React.useState<string | false>(false);
   const [value, setValue] = React.useState(0);
   const prakticeSDKSpecialties = localStorage.getItem('symptomTracker');
   const [searchKeyword, setSearchKeyword] = useState<string>('');
   const [locationPopup, setLocationPopup] = useState<boolean>(false);
-  const [searchContent, setSearchcontent] = useState<boolean>(false);
+  const [searchSpecialty, setSearchSpecialty] = useState<SpecialtyType[] | null>(null);
+  const [searchDoctors, setSearchDoctors] = useState<DoctorsType[] | null>(null);
+  const [searchLoading, setSearchLoading] = useState<boolean>(false);
   const [faqs, setFaqs] = useState<any | null>(null);
   const [selectedCity, setSelectedCity] = useState<string>('');
 
@@ -780,13 +799,40 @@ export const SpecialityListing: React.FC = (props) => {
   useEffect(() => {
     if (!faqs) {
       fetchUtil(process.env.SPECIALTY_LISTING_FAQS, 'GET', {}, '', true).then((res: any) => {
-        if (res && res.success === 'true' && res.data) {
-          console.log(res);
-          setFaqs(res.data);
+        if (res && res.success === 'true' && res.data && res.data.length > 0) {
+          setFaqs(res.data[0]);
         }
       });
     }
   }, [faqs]);
+
+  useEffect(() => {
+    if (searchKeyword.length > 2) {
+      setSearchLoading(true);
+      apolloClient
+        .query<SearchDoctorAndSpecialtyByName, SearchDoctorAndSpecialtyByNameVariables>({
+          query: SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME,
+          variables: {
+            searchText: searchKeyword,
+            patientId: currentPatient ? currentPatient.id : '',
+            pincode: currentPincode ? currentPincode : localStorage.getItem('currentPincode') || '',
+          },
+          fetchPolicy: 'no-cache',
+        })
+        .then((response) => {
+          const specialtiesAndDoctorsList =
+            response && response.data && response.data.SearchDoctorAndSpecialtyByName;
+          if (specialtiesAndDoctorsList) {
+            const doctorsArray = specialtiesAndDoctorsList.doctors || [];
+            const specialtiesArray = specialtiesAndDoctorsList.specialties || [];
+            setSearchSpecialty(specialtiesArray);
+            setSearchDoctors(doctorsArray);
+          }
+          setSearchLoading(false);
+        })
+        .catch((e) => console.log(e));
+    }
+  }, [searchKeyword]);
 
   return (
     <div className={classes.slContainer}>
@@ -839,54 +885,85 @@ export const SpecialityListing: React.FC = (props) => {
                           setSearchKeyword(searchValue);
                         }}
                       />
-                      {searchContent ? (
-                        <div className={classes.searchContent}>
-                          <div className={classes.docContent}>
-                            <Typography component="h6">Doctors</Typography>
-                            <ul className={classes.doctorList}>
-                              <li>
-                                <div className={classes.doctorContent}>
-                                  <div className={classes.dImg}></div>
-                                  <div className={classes.doctorDetails}>
-                                    <Typography component="h2">Dr. Radha Kumar</Typography>
-                                    <Typography>
-                                      Urogynaecology | Apollo Hospitals Greams Road Chennai
-                                    </Typography>
+                      {(searchSpecialty || searchDoctors || searchLoading) &&
+                        searchKeyword.length > 0 && (
+                          <div className={classes.searchContent}>
+                            {searchLoading ? (
+                              <CircularProgress />
+                            ) : (
+                              <>
+                                {searchDoctors && searchDoctors.length > 0 && (
+                                  <div className={classes.docContent}>
+                                    <Typography component="h6">Doctors</Typography>
+                                    <ul className={classes.doctorList}>
+                                      {searchDoctors.map((doctor: DoctorsType) => (
+                                        <Link
+                                          key={doctor.id}
+                                          to={clientRoutes.specialtyDoctorDetails(
+                                            doctor.specialty && doctor.specialty.name
+                                              ? _lowerCase(doctor.specialty.name).replace(
+                                                  /[/ / /]/g,
+                                                  '-'
+                                                )
+                                              : '',
+                                            _lowerCase(doctor.fullName).replace(/ /g, '-'),
+                                            doctor.id
+                                          )}
+                                        >
+                                          <li key={doctor.id}>
+                                            <div className={classes.doctorContent}>
+                                              <div className={classes.dImg}>
+                                                <img src={doctor.photoUrl} />
+                                              </div>
+                                              <div className={classes.doctorDetails}>
+                                                <Typography component="h2">
+                                                  {doctor.salutation} {doctor.fullName}
+                                                </Typography>
+                                                <Typography>
+                                                  {doctor.specialty && doctor.specialty.name
+                                                    ? doctor.specialty.name
+                                                    : ''}{' '}
+                                                  | Apollo Hospitals Greams Road Chennai
+                                                </Typography>
+                                              </div>
+                                            </div>
+                                          </li>
+                                        </Link>
+                                      ))}
+                                    </ul>
                                   </div>
-                                </div>
-                              </li>
-                              <li>
-                                <div className={classes.doctorContent}>
-                                  <div className={classes.dImg}></div>
-                                  <div className={classes.doctorDetails}>
-                                    <Typography component="h2">Dr. Rakesh Gupta</Typography>
-                                    <Typography>
-                                      Urogynaecology | Apollo Hospitals Greams Road Chennai
-                                    </Typography>
+                                )}
+                                {searchSpecialty && searchSpecialty.length > 0 && (
+                                  <div className={classes.sContent}>
+                                    <Typography component="h6">Specialities</Typography>
+                                    <ul className={classes.sList}>
+                                      {searchSpecialty.map((specialty: SpecialtyType) => (
+                                        <Link
+                                          key={specialty.id}
+                                          to={clientRoutes.specialties(
+                                            readableParam(specialty.name)
+                                          )}
+                                        >
+                                          <li key={specialty.id}>{specialty.name}</li>
+                                        </Link>
+                                      ))}
+                                    </ul>
                                   </div>
-                                </div>
-                              </li>
-                            </ul>
+                                )}
+                              </>
+                            )}
                           </div>
-                          <div className={classes.sContent}>
-                            <Typography component="h6">Specialities</Typography>
-                            <ul className={classes.sList}>
-                              <li>Radiology</li>
-                              <li>Reproductive Medicine and Infertility</li>
-                            </ul>
-                          </div>
-                        </div>
-                      ) : null}
+                        )}
                     </div>
                   </div>
-                  <div className={classes.pastSearch}>
-                    <Typography component="h6">{isSignedIn ? 'Past Searches' : ''}</Typography>
-                    <div className={classes.pastSearchList}>
-                      {currentPatient && currentPatient.id && searchKeyword.length <= 0 && (
+                  {currentPatient && currentPatient.id && searchKeyword.length <= 0 && (
+                    <div className={classes.pastSearch}>
+                      <Typography component="h6">{isSignedIn ? 'Past Searches' : ''}</Typography>
+                      <div className={classes.pastSearchList}>
                         <PastSearches />
-                      )}
+                      </div>
                     </div>
-                  </div>
+                  )}
                   <SpecialtyDivision />
                 </div>
               </Grid>
@@ -1040,40 +1117,36 @@ export const SpecialityListing: React.FC = (props) => {
               </Grid>
             </Grid>
           </div>
-          {faqs &&
-            faqs.length > 0 &&
-            faqs[2] &&
-            faqs[2].specialityFaq &&
-            faqs[2].specialityFaq['online-consultation'] &&
-            faqs[2].specialityFaq['online-consultation'].length > 0 && (
-              <div className={classes.faq}>
-                <Typography component="h2">Frequently asked questions</Typography>
-                {faqs[2].specialityFaq['online-consultation'].map((que: any) => (
-                  <ExpansionPanel
-                    className={classes.panelRoot}
-                    expanded={expanded === que.id}
-                    onChange={handleChange(que.id)}
+          {faqs && faqs.onlineConsultation && faqs.onlineConsultation.length > 0 && (
+            <div className={classes.faq}>
+              <Typography component="h2">Frequently asked questions</Typography>
+              {faqs.onlineConsultation.map((que: any) => (
+                <ExpansionPanel
+                  key={que.id}
+                  className={classes.panelRoot}
+                  expanded={expanded === que.id}
+                  onChange={handleChange(que.id)}
+                >
+                  <ExpansionPanelSummary
+                    expandIcon={<ExpandMoreIcon />}
+                    classes={{
+                      root: classes.panelHeader,
+                      content: classes.summaryContent,
+                      expandIcon: classes.expandIcon,
+                      expanded: classes.panelExpanded,
+                    }}
                   >
-                    <ExpansionPanelSummary
-                      expandIcon={<ExpandMoreIcon />}
-                      classes={{
-                        root: classes.panelHeader,
-                        content: classes.summaryContent,
-                        expandIcon: classes.expandIcon,
-                        expanded: classes.panelExpanded,
-                      }}
-                    >
-                      <Typography className={classes.panelHeading} component="h3">
-                        {que.faqQuestion}
-                      </Typography>
-                    </ExpansionPanelSummary>
-                    <ExpansionPanelDetails className={classes.panelDetails}>
-                      <div className={classes.detailsContent}>{que.faqAnswer}</div>
-                    </ExpansionPanelDetails>
-                  </ExpansionPanel>
-                ))}
-              </div>
-            )}
+                    <Typography className={classes.panelHeading} component="h3">
+                      {que.faqQuestion}
+                    </Typography>
+                  </ExpansionPanelSummary>
+                  <ExpansionPanelDetails className={classes.panelDetails}>
+                    <div className={classes.detailsContent}>{que.faqAnswer}</div>
+                  </ExpansionPanelDetails>
+                </ExpansionPanel>
+              ))}
+            </div>
+          )}
         </div>
       </div>
       <NavigationBottom />

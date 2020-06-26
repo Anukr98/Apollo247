@@ -171,6 +171,7 @@ export const SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME = gql`
           name
           userFriendlyNomenclature
         }
+        salutation
         experience
         photoUrl
         thumbnailUrl

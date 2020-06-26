@@ -297,6 +297,7 @@ export const Filters: React.FC<FilterProps> = (props) => {
                 <div className={classes.filterBtns}>
                   {experienceList.map((obj, idx) => (
                     <AphButton
+                      key={obj.key}
                       className={applyClass(localFilter.experience, obj.key)}
                       onClick={() => {
                         setFilterValues('experience', obj.key);
@@ -310,8 +311,9 @@ export const Filters: React.FC<FilterProps> = (props) => {
               <div className={classes.filterType}>
                 <h4>Availability</h4>
                 <div className={classes.filterBtns}>
-                  {availabilityList.map((availability: string) => (
+                  {availabilityList.map((availability: string, idx: number) => (
                     <AphButton
+                      key={idx}
                       className={applyClass(localFilter.availability, availability)}
                       onClick={() => {
                         setFilterValues('availability', availability);
@@ -325,8 +327,9 @@ export const Filters: React.FC<FilterProps> = (props) => {
               <div className={classes.filterType}>
                 <h4>Fees In Rupees</h4>
                 <div className={classes.filterBtns}>
-                  {feeInRupees.map((fee) => (
+                  {feeInRupees.map((fee, idx) => (
                     <AphButton
+                      key={idx}
                       className={applyClass(localFilter.fees, fee)}
                       onClick={() => {
                         setFilterValues('fee', fee);
@@ -342,6 +345,7 @@ export const Filters: React.FC<FilterProps> = (props) => {
                 <div className={classes.filterBtns}>
                   {genderList.map((gender) => (
                     <AphButton
+                      key={gender.key}
                       className={applyClass(localFilter.gender, gender.key)}
                       onClick={() => {
                         setFilterValues('gender', gender.key);
@@ -355,8 +359,9 @@ export const Filters: React.FC<FilterProps> = (props) => {
               <div className={classes.filterType}>
                 <h4>Language</h4>
                 <div className={classes.filterBtns}>
-                  {languageList.map((language: string) => (
+                  {languageList.map((language: string, id: number) => (
                     <AphButton
+                      key={id}
                       className={applyClass(localFilter.language, language)}
                       onClick={() => {
                         setFilterValues('language', language);
