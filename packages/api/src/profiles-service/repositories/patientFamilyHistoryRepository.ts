@@ -22,9 +22,7 @@ export class PatientFamilyHistoryRepository extends Repository<PatientFamilyHist
   }
 
   updatePatientFamilyHistory(id: string, patientFamilyHistoryAttrs: Partial<PatientFamilyHistory>) {
-    patientFamilyHistoryAttrs.id = id;
-    const familyHistory = this.create(patientFamilyHistoryAttrs);
-    return familyHistory.save();
+    return this.update(id, patientFamilyHistoryAttrs);
   }
 
   findById(id: string) {

@@ -22,9 +22,7 @@ export class PatientLifeStyleRepository extends Repository<PatientLifeStyle> {
   }
 
   updatePatientLifeStyle(id: string, patientLifeStyleAttrs: Partial<PatientLifeStyle>) {
-    patientLifeStyleAttrs.id = id;
-    const lifestyle = this.create(patientLifeStyleAttrs);
-    return lifestyle.save();
+    return this.update(id, patientLifeStyleAttrs);
   }
 
   findById(id: string) {

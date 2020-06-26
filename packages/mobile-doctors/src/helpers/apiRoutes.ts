@@ -8,7 +8,7 @@ export const apiBaseUrl =
     : AppConfig.APP_ENV == AppEnv.PERFORM
     ? 'https://asapi.apollo247.com/'
     : AppConfig.APP_ENV == AppEnv.VAPT
-    ? 'https://stagingapi.apollo247.com/'
+    ? 'https://aph.vapt.api.popcornapps.com/'
     : AppConfig.APP_ENV == AppEnv.DEV
     ? 'https://aph.dev.api.popcornapps.com/'
     : 'http://localhost:4000';
