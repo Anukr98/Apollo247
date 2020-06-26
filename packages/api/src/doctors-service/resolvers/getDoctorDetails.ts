@@ -54,13 +54,6 @@ export const getDoctorDetailsTypeDefs = gql`
     JDADMIN
   }
 
-  enum Salutation {
-    MR
-    MRS
-    DR
-    MS
-  }
-
   enum DOCTOR_ONLINE_STATUS {
     ONLINE
     AWAY
@@ -129,7 +122,7 @@ export const getDoctorDetailsTypeDefs = gql`
     physicalConsultationFees: String!
     qualification: String
     registrationNumber: String!
-    salutation: Salutation
+    salutation: String
     signature: String
     specialization: String
     state: String
@@ -173,7 +166,7 @@ export const getDoctorDetailsTypeDefs = gql`
     physicalConsultationFees: String!
     qualification: String
     registrationNumber: String!
-    salutation: Salutation
+    salutation: String
     signature: String
     specialization: String
     state: String
@@ -275,7 +268,7 @@ export const getDoctorDetailsTypeDefs = gql`
     onlineStatus: DOCTOR_ONLINE_STATUS!
     photoUrl: String
     qualification: String
-    salutation: Salutation
+    salutation: String
     signature: String
     state: String
     streetLine1: String
