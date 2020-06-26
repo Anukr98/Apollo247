@@ -55,6 +55,7 @@ import {
   Text,
   TouchableOpacity,
   View,
+  Platform,
 } from 'react-native';
 import { FlatList, NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
 import { AppsFlyerEventName } from '../../helpers/AppsFlyerEvents';
@@ -149,7 +150,7 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     padding: 12,
     ...theme.viewStyles.shadowStyle,
-    height: 110,
+    height: Platform.OS == 'android' ? 115 : 110,
   },
 });
 type Appointments = {
@@ -578,7 +579,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                       style={{
                         position: 'absolute',
                         width: (width - 42) / 2,
-                        height: 129,
+                        height: Platform.OS == 'android' ? 134 : 129,
                         flex: 2,
                         left: -3,
                         top: -2,
@@ -654,7 +655,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                       style={{
                         position: 'absolute',
                         width: (width - 42) / 2,
-                        height: 129,
+                        height: Platform.OS == 'android' ? 134 : 129,
                         flex: 2,
                         left: -3,
                         top: -2,
