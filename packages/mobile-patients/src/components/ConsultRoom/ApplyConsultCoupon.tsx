@@ -169,7 +169,7 @@ export const ApplyConsultCoupon: React.FC<ApplyConsultCouponProps> = (props) => 
     );
   };
 
-  const isCouponTextValid = (couponText: string) => /^[a-zA-Z0-9]{5,15}$/.test(couponText);
+  const isCouponTextValid = (couponText: string) => /^[a-zA-Z0-9]{4,15}$/.test(couponText);
 
   const rightIcon = () => {
     return (
