@@ -81,6 +81,7 @@ import {
   TouchableOpacity,
   View,
   ViewStyle,
+  Platform,
 } from 'react-native';
 import {
   NavigationActions,
@@ -991,7 +992,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         'Text Searched': doctorSearch,
         'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
         'Patient UHID': g(currentPatient, 'uhid'),
-        'Relation': g(currentPatient, 'relation'),
+        Relation: g(currentPatient, 'relation'),
         'Patient Age': Math.round(
           moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
         ),
@@ -1033,6 +1034,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             contentContainerStyle={{
               marginTop: 10,
               marginBottom: 8,
+              paddingTop: Platform.OS == 'android' ? 10 : 1,
             }}
             bounces={false}
             data={doctors}
