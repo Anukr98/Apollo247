@@ -386,6 +386,9 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       bookingSource: BOOKINGSOURCE.MOBILE,
       deviceType: Platform.OS == 'android' ? DEVICETYPE.ANDROID : DEVICETYPE.IOS,
       ...externalConnectParam,
+      actualAmount: Number(doctorFees),
+      discountedAmount: doctorDiscountedFees,
+      pinCode: locationDetails && locationDetails.pincode,
     };
     console.log(appointmentInput, 'input');
     const price = coupon ? doctorDiscountedFees : Number(doctorFees);
