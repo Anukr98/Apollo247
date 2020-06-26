@@ -1,4 +1,4 @@
-import { format, getTime, addMilliseconds } from 'date-fns';
+import { format, getTime, addMilliseconds, getUnixTime } from 'date-fns';
 import path from 'path';
 import util from 'util';
 
@@ -25,9 +25,14 @@ import { FacilityRepository } from 'doctors-service/repositories/facilityReposit
 import { Patient } from 'profiles-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
-import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { UploadDocumentInput } from 'profiles-service/resolvers/uploadDocumentToPrism';
 import { ApiConstants } from 'ApiConstants';
+import {
+  uploadPrescriptions,
+  prescriptionSource,
+  PrescriptionInputArgs,
+} from 'profiles-service/resolvers/prescriptionUpload';
+import { Doctor } from 'doctors-service/entities';
 
 export const convertCaseSheetToRxPdfData = async (
   caseSheet: Partial<CaseSheet>,
@@ -509,14 +514,14 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
       .fillColor('#02475b')
       .text(nameLine, 370, margin);
 
-    /*if (doctorInfo.qualifications) {
+    if (doctorInfo.qualifications) {
       doc
         .moveDown(0.3)
         .fontSize(9)
         .font(assetsDir + '/fonts/IBMPlexSans-Regular.ttf')
         .fillColor('#02475b')
         .text(`${doctorInfo.qualifications}`);
-    }*/
+    }
 
     doc
       .fontSize(9)
@@ -922,14 +927,14 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
         .fillColor('#02475b')
         .text(nameLine, margin + 15);
 
-      /*if (doctorInfo.qualifications) {
+      if (doctorInfo.qualifications) {
         doc
           .fontSize(9)
           .font(assetsDir + '/fonts/IBMPlexSans-Regular.ttf')
           .fillColor('#02475b')
           .text(`${doctorInfo.qualifications}`, margin + 15)
           .moveDown(0.5);
-      } */
+      }
 
       doc
         .fontSize(9)
@@ -1043,9 +1048,11 @@ const convertPdfUrlToBase64 = async (pdfUrl: string) => {
 export const uploadPdfBase64ToPrism = async (
   uploadDocInput: UploadDocumentInput,
   patientDetails: Patient,
-  patientsDb: Connection
+  patientsDb: Connection,
+  doctorData: Doctor,
+  caseSheet: CaseSheet
 ) => {
-  const patientsRepo = patientsDb.getCustomRepository(PatientRepository);
+  /*const patientsRepo = patientsDb.getCustomRepository(PatientRepository);
   const mobileNumber = patientDetails.mobileNumber;
 
   //get authtoken for the logged in user mobile number
@@ -1071,7 +1078,42 @@ export const uploadPdfBase64ToPrism = async (
   //just call get prism user details with the corresponding uhid
   await patientsRepo.getPrismUsersDetails(uhid, prismUHIDAuthToken);
 
-  const fileId = await patientsRepo.uploadDocumentToPrism(uhid, prismUHIDAuthToken, uploadDocInput);
+  const fileId = await patientsRepo.uploadDocumentToPrism(uhid, prismUHIDAuthToken, uploadDocInput);*/
+  const currentTimeStamp = getUnixTime(new Date()) * 1000;
+  const randomNumber = Math.floor(Math.random() * 10000);
+  const fileFormat = uploadDocInput.fileType.toLowerCase();
+  const documentName = `${currentTimeStamp}${randomNumber}.${fileFormat}`;
+
+  const prescriptionFiles = [];
+  prescriptionFiles.push({
+    id: '',
+    fileName: documentName,
+    mimeType: 'application/pdf',
+    content: uploadDocInput.base64FileInput,
+    dateCreated: getUnixTime(new Date()) * 1000,
+  });
+
+  const prescriptionInputArgs: PrescriptionInputArgs = {
+    prescriptionInput: {
+      prescribedBy: doctorData.fullName,
+      prescriptionName: caseSheet.id,
+      dateOfPrescription: getUnixTime(new Date()) * 1000,
+      startDate: 0,
+      endDate: 0,
+      notes: '',
+      prescriptionSource: prescriptionSource.EPRESCRIPTION,
+      prescriptionDetail: [],
+      prescriptionFiles: prescriptionFiles,
+    },
+    uhid: patientDetails.uhid,
+  };
+
+  const uploadedResult = (await uploadPrescriptions(null, prescriptionInputArgs, null)) as {
+    recordId: string;
+  };
+
+  console.log('uploadedResult', uploadedResult);
+  const fileId = uploadedResult.recordId;
 
   return fileId ? { status: true, fileId } : { status: false, fileId: '' };
 };

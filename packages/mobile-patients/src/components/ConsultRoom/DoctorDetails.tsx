@@ -27,6 +27,7 @@ import {
   postWebEngageEvent,
   callPermissions,
   postAppsFlyerEvent,
+  postFirebaseEvent
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -60,6 +61,7 @@ import {
   WebEngageEvents,
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import { FirebaseEvents, FirebaseEventName } from '@aph/mobile-patients/src/helpers/firebaseEvents';
 import moment from 'moment';
 import { AppsFlyerEventName } from '../../helpers/AppsFlyerEvents';
 // import { NotificationListener } from '../NotificationListener';
@@ -346,6 +348,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         }
       })
       .catch((e) => {
+        props.navigation.navigate(AppRoutes.ConsultRoom, {});
         CommonBugFender('DoctorDetails_fetchDoctorDetails', e);
         setshowSpinner(false);
         console.log('Error occured', e);
@@ -457,7 +460,8 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                 {doctorDetails.specialty && doctorDetails.specialty.name
                   ? doctorDetails.specialty.name
                   : ''}{' '}
-                | {doctorDetails.experience} YR{Number(doctorDetails.experience) == 1 ? '' : 'S'} EXP
+                | {doctorDetails.experience} YR{Number(doctorDetails.experience) == 1 ? '' : 'S'}{' '}
+                EXP
               </Text>
               <Text style={styles.educationTextStyles}>{doctorDetails.qualification}</Text>
               <Text style={[styles.educationTextStyles, { paddingBottom: 12 }]}>
@@ -575,12 +579,13 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                         >
                           {/* {clinic.image && ( */}
                           <Image
-                            source={{
-                              uri:
-                                item && item.facility && item.facility.imageUrl
-                                  ? item.facility.imageUrl
-                                  : 'https://via.placeholder.com/328x136',
-                            }}
+                            source={
+                              item && item.facility && item.facility.imageUrl
+                                ? {
+                                    uri: item.facility.imageUrl,
+                                  }
+                                : require('@aph/mobile-patients/src/images/apollo/Hospital_Image.png')
+                            }
                             style={{
                               height: 136,
                               width: '100%',
@@ -856,6 +861,8 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     };
     postWebEngageEvent(WebEngageEventName.BOOK_APPOINTMENT, eventAttributes);
     postAppsFlyerEvent(AppsFlyerEventName.BOOK_APPOINTMENT, eventAttributes);
+    postFirebaseEvent(FirebaseEventName.BOOK_APPOINTMENT, eventAttributes);
+
   };
 
   const moveBack = () => {
@@ -948,6 +955,8 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           FollowUp={props.navigation.state.params!.FollowUp}
           appointmentType={props.navigation.state.params!.appointmentType}
           appointmentId={props.navigation.state.params!.appointmentId}
+          consultModeSelected={props.navigation.getParam('consultModeSelected')}
+          externalConnect={props.navigation.getParam('externalConnect')}
           // availableSlots={availableSlots}
         />
       )}

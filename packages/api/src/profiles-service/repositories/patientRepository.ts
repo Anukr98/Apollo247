@@ -1,4 +1,4 @@
-import { EntityRepository, Repository } from 'typeorm';
+import { EntityRepository, Repository, Not } from 'typeorm';
 import { Patient, PRISM_DOCUMENT_CATEGORY, Gender } from 'profiles-service/entities';
 import { ApiConstants } from 'ApiConstants';
 import requestPromise from 'request-promise';
@@ -46,6 +46,14 @@ export class PatientRepository extends Repository<Patient> {
       where: { mobileNumber: findOptions.mobileNumber },
     }).then((existingPatient) => {
       return existingPatient || this.create(createOptions).save();
+    });
+  }
+  findEmpId(empId: string, patientId: string) {
+    return this.findOne({
+      where: {
+        employeeId: empId,
+        id: Not(patientId),
+      },
     });
   }
 

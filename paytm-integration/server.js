@@ -80,13 +80,6 @@ app.get('/updateDoctorSlotsEs', cronTabs.updateDoctorSlotsEs);
 app.get('/invokeDashboardSummaries', (req, res) => {
   const currentDate = format(new Date(), 'yyyy-MM-dd');
 
-  const updateSpecialtyCountRequestJSON = {
-    query: `mutation{
-      updateSpecialtyCount(specialityId:"0"){
-        updated
-      }
-    }`,
-  };
   const updateUtilizationCapacityRequestJSON = {
     query: `mutation{
       updateUtilizationCapacity(specialityId:"0"){
@@ -135,27 +128,6 @@ app.get('/invokeDashboardSummaries', (req, res) => {
         '\n---------------------------\n' +
         '\nupdateUtilizationCapacity Response\n' +
         JSON.stringify(response.data.data.updateUtilizationCapacity) +
-        '\n-------------------\n';
-      fs.appendFile(fileName, content, function (err) {
-        if (err) throw err;
-        console.log('Updated!');
-      });
-    })
-    .catch((error) => {
-      console.log('error', error);
-    });
-  //updateSpecilaityCount api call
-  axios
-    .post(process.env.API_URL, updateSpecialtyCountRequestJSON)
-    .then((response) => {
-      console.log(response.data.data.updateSpecialtyCount, 'Summary response is....');
-      const fileName =
-        process.env.PHARMA_LOGS_PATH + new Date().toDateString() + '-dashboardSummary.txt';
-      let content =
-        new Date().toString() +
-        '\n---------------------------\n' +
-        '\nupdateSpecialtyCount Response\n' +
-        JSON.stringify(response.data.data.updateSpecialtyCount) +
         '\n-------------------\n';
       fs.appendFile(fileName, content, function (err) {
         if (err) throw err;
@@ -235,6 +207,42 @@ app.get('/invokeDashboardSummaries', (req, res) => {
     message: res.data,
   });
 });
+app.get('/updateSpecialtyCount', (req, res) => {
+  const updateSpecialtyCountRequestJSON = {
+    query: `mutation{
+    updateSpecialtyCount(specialityId:"0"){
+      updated
+    }
+  }`,
+  };
+  //updateSpecilaityCount api call
+  axios.defaults.headers.common['authorization'] = process.env.API_TOKEN;
+  axios
+    .post(process.env.API_URL, updateSpecialtyCountRequestJSON)
+    .then((response) => {
+      console.log(response.data.data.updateSpecialtyCount, 'Summary response is....');
+      const fileName =
+        process.env.PHARMA_LOGS_PATH + new Date().toDateString() + '-dashboardSummary.txt';
+      let content =
+        new Date().toString() +
+        '\n---------------------------\n' +
+        '\nupdateSpecialtyCount Response\n' +
+        JSON.stringify(response.data.data.updateSpecialtyCount) +
+        '\n-------------------\n';
+      fs.appendFile(fileName, content, function (err) {
+        if (err) throw err;
+        console.log('Updated!');
+      });
+    })
+    .catch((error) => {
+      console.log('error', error);
+    });
+  res.send({
+    status: 'success',
+    message: res.data,
+  });
+});
+//updateSpecilaityCount api call end
 app.get('/updateDoctorsAwayAndOnlineCount', (req, res) => {
   const currentDate = format(new Date(), 'yyyy-MM-dd');
   const updateDoctorsAwayAndOnlineCountRequestJSON = {

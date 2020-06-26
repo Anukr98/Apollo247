@@ -478,7 +478,8 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                                     quantity: qty,
                                     prescriptionRequired:
                                       medicineDetails.is_prescription_required == '1',
-                                    isMedicine: medicineDetails.type_id == 'Pharma',
+                                    isMedicine:
+                                      (medicineDetails.type_id || '').toLowerCase() == 'pharma',
                                     thumbnail: medicineDetails.thumbnail || medicineDetails.image,
                                     isInStock: !!medicineDetails.is_in_stock,
                                   } as ShoppingCartItem;
@@ -581,9 +582,7 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                               })
                               .finally(() => {
                                 setGlobalLoading!(false);
-                                props.navigation.navigate(AppRoutes.MedAndTestCart, {
-                                  isComingFromConsult: true,
-                                });
+                                props.navigation.navigate(AppRoutes.MedAndTestCart);
                               });
                           } else {
                             Alert.alert('No Medicines');

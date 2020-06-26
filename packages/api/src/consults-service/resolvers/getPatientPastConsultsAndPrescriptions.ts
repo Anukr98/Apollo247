@@ -10,7 +10,6 @@ import {
 import { MedicineOrders } from 'profiles-service/entities';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
-import { MedicineOrdersRepository } from 'profiles-service/repositories/MedicineOrdersRepository';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
@@ -191,9 +190,10 @@ const getPatientPastConsultsAndPrescriptions: Resolver<
     );
   }
 
-  const medicineOrdersRepo = patientsDb.getCustomRepository(MedicineOrdersRepository);
-  let patientMedicineOrders: MedicineOrders[] = [];
+  //commented to support backward compatability
+  /*let patientMedicineOrders: MedicineOrders[] = [];
   let uniqueMedicineRxOrders: MedicineOrders[] = [];
+  const medicineOrdersRepo = patientsDb.getCustomRepository(MedicineOrdersRepository);
   if (hasFilter(CONSULTS_RX_SEARCH_FILTER.PRESCRIPTION, filter)) {
     patientMedicineOrders = await medicineOrdersRepo.findByPatientIds(
       primaryPatientIds,
@@ -211,9 +211,9 @@ const getPatientPastConsultsAndPrescriptions: Resolver<
         return true;
       }
     });
-  }
+  } */
 
-  return { consults: patientAppointments, medicineOrders: uniqueMedicineRxOrders };
+  return { consults: patientAppointments, medicineOrders: [] };
 };
 
 const getPatientLabResults: Resolver<

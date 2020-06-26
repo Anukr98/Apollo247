@@ -131,7 +131,7 @@ export const PastSearches: React.FC<PastSearchProps> = (props) => {
             return searchDetails && searchDetails.searchType === SEARCH_TYPE.DOCTOR ? (
               <Grid item xs={6} sm={6} md={4} lg={3} key={_uniqueId('psearch_doctor_')}>
                 <Link
-                  to={`/doctors/${searchDetails.name}-${searchDetails.typeId}`}
+                  to={`/doctors/${readableParam(searchDetails.name)}-${searchDetails.typeId}`}
                   title={searchDetails && `${_startCase(_toLower(searchDetails.name || ''))}`}
                 >
                   <div className={classes.contentBox}>
@@ -160,7 +160,7 @@ export const PastSearches: React.FC<PastSearchProps> = (props) => {
                       disableFilter(false);
                       const specialityUpdated = readableParam(`${e.currentTarget.title}`);
                       const encoded = encodeURIComponent(specialityUpdated);
-                      history.push(clientRoutes.specialties(encoded));
+                      history.push(clientRoutes.specialties(`${encoded}${searchDetails.typeId}`));
                     }}
                     key={_uniqueId('psearch_spl_')}
                   >

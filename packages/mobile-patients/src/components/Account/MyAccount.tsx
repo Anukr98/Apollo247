@@ -7,6 +7,7 @@ import {
   Location,
   ManageProfileIcon,
   NeedHelpIcon,
+  OneApollo,
   PrimaryIcon,
   LinkedUhidIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
@@ -489,8 +490,16 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
               // refetch: ordersRefetch,
               // error: ordersError,
               // loading: ordersLoading,
-              patientId: currentPatient,
+              patientId: currentPatient.id,
+              fromNotification: false,
             });
+          }}
+        />
+        <ListCard
+          title={'OneApollo Membership'}
+          leftIcon={<OneApollo style={{ height: 20, width: 26 }} />}
+          onPress={() => {
+            props.navigation.navigate(AppRoutes.OneApolloMembership);
           }}
         />
         <ListCard

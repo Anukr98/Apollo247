@@ -55,6 +55,7 @@ import {
   postWebEngageEvent,
   postAppsFlyerEvent,
   postFirebaseEvent,
+  postWEGReferralCodeEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEvents,
@@ -205,7 +206,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
     // console.log('deeplinkReferalCode', deeplinkReferalCode);
 
     if (deeplinkReferalCode !== null && deeplinkReferalCode !== undefined) {
-      setBugFenderLog('Signup_Referral_Code', deeplinkReferalCode);
+      // setBugFenderLog('Signup_Referral_Code', deeplinkReferalCode);
       setReferral(deeplinkReferalCode);
     }
   };
@@ -454,6 +455,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
       if (referral) {
         // only send if referral has a value
         eventFirebaseAttributes['Referral_Code'] = referral;
+        postWEGReferralCodeEvent(referral);
       }
 
       postWebEngageEvent(WebEngageEventName.REGISTRATION_DONE, eventAttributes);
@@ -470,7 +472,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
       const event: any = await AsyncStorage.getItem('deeplink');
 
       // const id = data[1];
-      setBugFenderLog('signup_handleOpenURL', event);
+      // setBugFenderLog('signup_handleOpenURL', event);
 
       if (event !== null) {
         let route = event.replace('apollopatients://', '');
@@ -479,7 +481,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
         route = data[0];
 
         console.log(data, 'handleOpenURL');
-        setBugFenderLog('signup_handleOpenURL_route', route);
+        // setBugFenderLog('signup_handleOpenURL_route', route);
 
         switch (route) {
           case 'Consult':
@@ -531,7 +533,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
             break;
 
           default:
-            setBugFenderLog('signup_handleOpenURL', 'not_worked');
+            // setBugFenderLog('signup_handleOpenURL', 'not_worked');
             pushTheView('ConsultRoom');
             break;
         }
@@ -545,7 +547,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
   const pushTheView = (routeName: String, id?: String) => {
     try {
       console.log('pushTheView', routeName, id);
-      setBugFenderLog('signup_pushTheView', routeName);
+      // setBugFenderLog('signup_pushTheView', routeName);
 
       setTimeout(() => {
         setVerifyingPhoneNumber(false);
@@ -833,7 +835,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
                   {error
                     ? (signOut(),
                       // handleGraphQlError(error),
-                      setBugFenderLog('SIGNUP_FAIL', error),
+                      // setBugFenderLog('SIGNUP_FAIL', error),
                       console.log('updatePatient error', error),
                       AsyncStorage.setItem('userLoggedIn', 'false'),
                       AsyncStorage.setItem('multiSignUp', 'false'),

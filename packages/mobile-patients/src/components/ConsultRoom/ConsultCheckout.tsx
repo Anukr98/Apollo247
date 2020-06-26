@@ -18,7 +18,7 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import { NavigationScreenProps } from 'react-navigation';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { g, postFirebaseEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useApolloClient } from 'react-apollo-hooks';
 import { bookAppointment } from '@aph/mobile-patients/src/graphql/types/bookAppointment';
 import { BOOK_APPOINTMENT } from '@aph/mobile-patients/src/graphql/profiles';
@@ -164,6 +164,8 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
       'Doctor ID': g(doctor, 'id')!,
       'Doctor Name': g(doctor, 'fullName')!,
       'Net Amount': price,
+      af_revenue: price,
+      af_currency: 'INR',
     };
     return eventAttributes;
   };
@@ -198,6 +200,8 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
       Mobile_Number: g(currentPatient, 'mobileNumber'),
       Customer_ID: g(currentPatient, 'id'),
       Consult_ID: id,
+      af_revenue: price,
+      af_currency: 'INR',
     };
     return eventAttributes;
   };
@@ -219,8 +223,10 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
             Payment_Mode: item.paymentMode,
             Type: 'Consultation',
             Appointment_Id: g(data, 'data', 'bookAppointment', 'appointment', 'id'),
+            Mobile_Number: g(currentPatient, 'mobileNumber'),
           };
           postWebEngageEvent(WebEngageEventName.PAYMENT_INSTRUMENT, paymentEventAttributes);
+          postFirebaseEvent(FirebaseEventName.PAYMENT_INSTRUMENT, paymentEventAttributes);
         } catch (error) {}
         const apptmt = g(data, 'data', 'bookAppointment', 'appointment');
 
@@ -269,11 +275,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
         } catch (error) {
           CommonBugFender('ConsultOverlay_onSubmitBookAppointment_try', error);
         }
-        if (
-          message == 'APPOINTMENT_EXIST_ERROR' ||
-          message === 'APPOINTMENT_BOOK_DATE_ERROR' ||
-          message === 'DOCTOR_SLOT_BLOCKED'
-        ) {
+        if (message == 'APPOINTMENT_EXIST_ERROR') {
           props.navigation.navigate(AppRoutes.DoctorSearch);
           renderErrorPopup(
             `Oops ! The selected slot is unavailable. Please choose a different one`
@@ -282,6 +284,14 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
           props.navigation.navigate(AppRoutes.DoctorSearch);
           renderErrorPopup(
             `Sorry! You have cancelled 3 appointments with this doctor in past 7 days, please try later or choose another doctor.`
+          );
+        } else if (
+          message === 'OUT_OF_CONSULT_HOURS' ||
+          message === 'DOCTOR_SLOT_BLOCKED' ||
+          message === 'APPOINTMENT_BOOK_DATE_ERROR'
+        ) {
+          renderErrorPopup(
+            `Slot you are trying to book is no longer available. Please try a different slot.`
           );
         } else {
           props.navigation.navigate(AppRoutes.DoctorSearch);
