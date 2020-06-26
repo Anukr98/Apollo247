@@ -488,7 +488,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
 
   const openConsultPopup = (consultType: ConsultMode) => {
     postBookAppointmentWEGEvent();
-    callPermissions();
+    // callPermissions();
     getNetStatus()
       .then((status) => {
         if (status) {
@@ -586,6 +586,19 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                     activeOpacity={1}
                     onPress={() => {
                       setOnlineSelected(true);
+                      const eventAttributes:WebEngageEvents[WebEngageEventName.TYPE_OF_CONSULT_SELECTED] = {
+                        'Doctor Speciality': g(doctorDetails, 'specialty', 'name')!,
+                        'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+                        'Patient UHID': g(currentPatient, 'uhid'),
+                        'Relation': g(currentPatient, 'relation'),
+                        'Patient Age': Math.round(Moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)),
+                        'Patient Gender': g(currentPatient, 'gender'),
+                        'Customer ID': g(currentPatient, 'id'),
+                        'Doctor ID': g(doctorDetails, 'id')!,
+                        'Speciality ID': g(doctorDetails, 'specialty', 'id')!,
+                        'Consultation Type': 'online',
+                      };
+                      postWebEngageEvent(WebEngageEventName.TYPE_OF_CONSULT_SELECTED, eventAttributes);
                     }}
                   >
                     <View>
@@ -641,6 +654,19 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                     activeOpacity={1}
                     onPress={() => {
                       {
+                        const eventAttributes:WebEngageEvents[WebEngageEventName.TYPE_OF_CONSULT_SELECTED] = {
+                          'Doctor Speciality': g(doctorDetails, 'specialty', 'name')!,
+                          'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+                          'Patient UHID': g(currentPatient, 'uhid'),
+                          'Relation': g(currentPatient, 'relation'),
+                          'Patient Age': Math.round(Moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)),
+                          'Patient Gender': g(currentPatient, 'gender'),
+                          'Customer ID': g(currentPatient, 'id'),
+                          'Doctor ID': g(doctorDetails, 'id')!,
+                          'Speciality ID': g(doctorDetails, 'specialty', 'id')!,
+                          'Consultation Type': 'physical',
+                        };
+                        postWebEngageEvent(WebEngageEventName.TYPE_OF_CONSULT_SELECTED, eventAttributes);
                         doctorDetails.doctorType !== DoctorType.PAYROLL && setOnlineSelected(false);
                       }
                     }}
@@ -925,7 +951,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                       .local()
                       .format('DD MMMM, hh:mm A')}
                   </Text>
-                  <View style={styles.separatorStyle} />
+                  {/* <View style={styles.separatorStyle} />
                   <View style={{ flexDirection: 'row' }}>
                     {Appointments[0].symptoms.map((name, index) => (
                       <CapsuleView
@@ -936,7 +962,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                         titleTextStyle={{ color: theme.colors.SKY_BLUE }}
                       />
                     ))}
-                  </View>
+                  </View> */}
                 </View>
               </TouchableOpacity>
             )}
@@ -1102,7 +1128,8 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           appointmentId={props.navigation.state.params!.appointmentId}
           consultModeSelected={consultMode}
           externalConnect={null}
-          availableMode={consultType}
+          availableMode={ConsultMode.BOTH}
+          // availableMode={consultType}
         />
       )}
       <Animated.View

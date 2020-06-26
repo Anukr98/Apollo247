@@ -19,7 +19,7 @@ import {
   getCallDetailsVariables,
 } from '@aph/mobile-patients/src/graphql/types/getCallDetails';
 import { getMedicineDetailsApi } from '@aph/mobile-patients/src/helpers/apiCalls';
-import { dataSavedUserID, aphConsole, g } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { dataSavedUserID, aphConsole, g, postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
@@ -39,6 +39,7 @@ import {
   getMedicineOrderOMSDetailsVariables,
 } from '../graphql/types/getMedicineOrderOMSDetails';
 import { NotificationIconWhite } from './ui/Icons';
+import { WebEngageEvents, WebEngageEventName } from '../helpers/webEngageEvents';
 
 const styles = StyleSheet.create({
   rescheduleTextStyles: {
@@ -486,6 +487,12 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
               {
                 text: 'CLAIM REFUND',
                 onPress: () => {
+                  const eventAttributes: WebEngageEvents[WebEngageEventName.DOCTOR_RESCHEDULE_CLAIM_REFUND] = {
+                    'Patient Id': currentPatient.id,
+                    'Appointment ID': data.appointmentId,
+                    'Call Type': data.callType,
+                  };
+                  postWebEngageEvent(WebEngageEventName.DOCTOR_RESCHEDULE_CLAIM_REFUND, eventAttributes);
                   hideAphAlert && hideAphAlert();
                 },
                 type: 'white-button',

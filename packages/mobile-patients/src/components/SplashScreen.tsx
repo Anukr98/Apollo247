@@ -556,6 +556,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
               'min_value_to_nudge_users_to_avail_free_delivery',
               'QA_pharmacy_homepage',
               'pharmacy_homepage',
+              'QA_hotsellers_max_quantity',
+              'hotsellers_max_quantity',
             ]);
         })
         .then((snapshot) => {
@@ -636,6 +638,15 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
             const top6_specailties = snapshot['top6_specailties'].val();
             top6_specailties && updateAppConfig('TOP_SPECIALITIES', JSON.parse(top6_specailties));
           }
+          const qaHotsellersMaxQuantity = snapshot['QA_hotsellers_max_quantity'].val();
+          qaHotsellersMaxQuantity &&
+            AppConfig.APP_ENV != AppEnv.PROD &&
+            updateAppConfig('HOTSELLERS_MAX_QUANTITY', qaHotsellersMaxQuantity);
+
+          const hotsellersMaxQuantity = snapshot['hotsellers_max_quantity'].val();
+          hotsellersMaxQuantity &&
+            AppConfig.APP_ENV == AppEnv.PROD &&
+            updateAppConfig('HOTSELLERS_MAX_QUANTITY', hotsellersMaxQuantity);
 
           const myValye = snapshot;
           let index: number = 0;

@@ -49,6 +49,7 @@ import { FirebaseEvents, FirebaseEventName } from '../../helpers/firebaseEvents'
 import firebase from 'react-native-firebase';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { NotificationPermissionAlert } from '@aph/mobile-patients/src/components/ui/NotificationPermissionAlert';
+import { Snackbar } from 'react-native-paper';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -78,9 +79,10 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
   const { currentPatient } = useAllCurrentPatients();
   const [notificationAlert, setNotificationAlert] = useState(false);
   const [copiedText, setCopiedText] = useState('');
-
+  const [snackbarState, setSnackbarState] = useState<boolean>(false);
   const copyToClipboard = (refId: string) => {
     Clipboard.setString(refId);
+    setSnackbarState(true);
   };
   const renderErrorPopup = (desc: string) =>
     showAphAlert!({
@@ -388,6 +390,16 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
           <View style={{ flex: 0.4, justifyContent: 'flex-start', alignItems: 'center' }}>
             {renderViewInvoice()}
           </View>
+          <Snackbar
+            style={{ position: 'absolute' }}
+            visible={snackbarState}
+            onDismiss={() => {
+              setSnackbarState(false);
+            }}
+            duration={1000}
+          >
+            Copied
+          </Snackbar>
         </View>
       </View>
     );

@@ -11,25 +11,16 @@ import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
-import { GET_ALL_SPECIALITIES } from 'graphql/specialities';
-import { useApolloClient } from 'react-apollo-hooks';
 import { useAllCurrentPatients } from 'hooks/authHooks';
-import { useLocationDetails } from 'components/LocationProvider';
 import { gtmTracking } from '../gtmTracking';
-import { SearchObject } from 'components/DoctorsFilter';
+// import { SearchObject } from 'components/DoctorsFilter';
 import { BottomLinks } from 'components/BottomLinks';
 import { PastSearches } from 'components/PastSearches';
 import { useAuth } from 'hooks/authHooks';
 import { clientRoutes } from 'helpers/clientRoutes';
-import {
-  SearchDoctorAndSpecialtyByNameVariables,
-  SearchDoctorAndSpecialtyByName,
-} from 'graphql/types/SearchDoctorAndSpecialtyByName';
-import { readableParam } from 'helpers/commonHelpers';
-import { SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME } from 'graphql/doctors';
-import { useParams } from 'hooks/routerHooks';
 import { Link } from 'react-router-dom';
-import { AphButton, AphDialog, AphDialogClose, AphDialogTitle } from '@aph/web-ui-components';
+import { AphButton } from '@aph/web-ui-components';
+import { Cities } from './Cities';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -251,7 +242,7 @@ const useStyles = makeStyles((theme: Theme) => {
       '& >div': {
         '& >div': {
           '&:first-child': {
-            display: 'none',
+            display: 'block',
           },
         },
       },
@@ -644,6 +635,85 @@ const useStyles = makeStyles((theme: Theme) => {
         fontWeight: 700,
       },
     },
+    searchContent: {
+      position: 'absolute',
+      top: 36,
+      left: 0,
+      right: 0,
+      zIndex: 5,
+      maxHeight: 300,
+      overflow: 'auto',
+      padding: 20,
+      background: '#fff',
+      borderRadius: 5,
+      boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
+
+      '& h6': {
+        fontSize: 12,
+        color: 'rgba(1,71,91, 0.6)',
+        fontWeight: 700,
+        textTransform: 'uppercase',
+      },
+      '&::-webkit-scrollbar': {
+        width: 8,
+      },
+      '&::-webkit-scrollbar-track': {
+        background: '#fff',
+      },
+      '&::-webkit-scrollbar-thumb': {
+        background: '#d8d8d8',
+        borderRadius: 4,
+      },
+    },
+    doctorContent: {
+      display: 'flex',
+      alignItems: 'center',
+    },
+    dImg: {
+      width: 44,
+      height: 44,
+      borderRadius: '50%',
+      border: '1px solid #ccc',
+      margin: '0 15px 0 0',
+    },
+    doctorDetails: {},
+    doctorList: {
+      padding: 0,
+      margin: 0,
+      listStyle: 'none',
+      '& li': {
+        padding: '10px 0',
+      },
+    },
+    docContent: {
+      '& h2': {
+        fontSize: 16,
+        color: '#02475b',
+        fontWeight: 500,
+        margin: '0 0 5px',
+      },
+      '& p': {
+        fontSize: 12,
+        color: 'rgba(2,71,91,0.7)',
+        fontWeight: 500,
+      },
+    },
+    sContent: {
+      margin: '10px 0 0',
+      padding: '15px 0 0',
+      borderTop: '1px solid rgba(1,71,91,0.5)',
+    },
+    sList: {
+      padding: 0,
+      margin: 0,
+      listStyle: 'none',
+      '& li': {
+        fontSize: 16,
+        color: '#02475b',
+        padding: '5px 0',
+        fontWeight: 500,
+      },
+    },
   };
 });
 
@@ -674,41 +744,17 @@ function a11yProps(index: any) {
     'aria-controls': `simple-tabpanel-${index}`,
   };
 }
-const searchObject: SearchObject = {
-  searchKeyword: '',
-  cityName: [],
-  experience: [],
-  availability: [],
-  fees: [],
-  gender: [],
-  language: [],
-  dateSelected: '',
-  specialtyName: '',
-  prakticeSpecialties: '',
-};
-interface DoctorsLandingProps {
-  history: History;
-}
 
 export const SpecialityListing: React.FC = (props) => {
   const classes = useStyles({});
+  const { currentPatient } = useAllCurrentPatients();
+  const { isSignedIn } = useAuth();
   const [expanded, setExpanded] = React.useState<string | false>(false);
   const [value, setValue] = React.useState(0);
-  const urlParams = new URLSearchParams(window.location.search);
-  const failedStatus = urlParams.get('status') ? String(urlParams.get('status')) : null;
   const prakticeSDKSpecialties = localStorage.getItem('symptomTracker');
-  const [matchingSpecialities, setMatchingSpecialities] = useState<number>(0);
-  const [specialitySelected, setSpecialitySelected] = useState<string>('');
-  const apolloClient = useApolloClient();
-  const [specialtyId, setSpecialtyId] = useState<string>('');
-  const [filterOptions, setFilterOptions] = useState<SearchObject>(searchObject);
-  const { currentPatient } = useAllCurrentPatients();
-  const [data, setData] = useState<any>();
-  const [loading, setLoading] = useState<boolean>(false);
-  const [showSearchAndPastSearch, setShowSearchAndPastSearch] = useState<boolean>(true);
-  const [disableFilters, setDisableFilters] = useState<boolean>(true);
+  const [searchKeyword, setSearchKeyword] = useState<string>('');
   const [locationPopup, setLocationPopup] = useState<boolean>(false);
-  const { isSignedIn } = useAuth();
+  const [searchContent, setSearchcontent] = useState<boolean>(false);
 
   const handleChange = (panel: string) => (event: React.ChangeEvent<{}>, isExpanded: boolean) => {
     setExpanded(isExpanded ? panel : false);
@@ -717,17 +763,6 @@ export const SpecialityListing: React.FC = (props) => {
   const handleTabChange = (event: React.ChangeEvent<{}>, newValue: number) => {
     setValue(newValue);
   };
-
-  const {
-    currentPincode,
-    currentLong,
-    currentLat,
-    getCurrentLocationPincode,
-  } = useLocationDetails();
-
-  const params = useParams<{
-    specialty: string;
-  }>();
 
   useEffect(() => {
     /**Gtm code start start */
@@ -738,78 +773,6 @@ export const SpecialityListing: React.FC = (props) => {
     });
     /**Gtm code start end */
   }, []);
-
-  useEffect(() => {
-    if (params && params.specialty) {
-      const decoded = decodeURIComponent(params.specialty);
-      const specialityName = readableParam(decoded);
-      apolloClient
-        .query({
-          query: GET_ALL_SPECIALITIES,
-          variables: {},
-          fetchPolicy: 'no-cache',
-        })
-        .then((response) => {
-          response.data &&
-            response.data.getAllSpecialties &&
-            response.data.getAllSpecialties.map((specialty: any) => {
-              if (specialty && specialty.name && specialty.name.toLowerCase() === specialityName) {
-                setSpecialtyId(specialty.id);
-                setSpecialitySelected(specialty.name);
-              }
-            });
-        });
-    }
-  }, []);
-
-  useEffect(() => {
-    if (filterOptions.searchKeyword.length > 2 && specialitySelected.length === 0) {
-      setLoading(true);
-      apolloClient
-        .query<SearchDoctorAndSpecialtyByName, SearchDoctorAndSpecialtyByNameVariables>({
-          query: SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME,
-          variables: {
-            searchText: filterOptions.searchKeyword,
-            patientId: currentPatient ? currentPatient.id : '',
-            pincode: currentPincode ? currentPincode : localStorage.getItem('currentPincode') || '',
-          },
-          fetchPolicy: 'no-cache',
-        })
-        .then((response) => {
-          setData(response.data);
-          setLoading(false);
-        });
-    }
-  }, [filterOptions.searchKeyword, specialitySelected, currentPincode]);
-
-  useEffect(() => {
-    if (specialitySelected.length > 0) {
-      const specialityName = specialitySelected.split('_');
-      setFilterOptions({
-        searchKeyword: specialityName[0],
-        specialtyName: specialityName[0], // this is used to disable filter if specialty selected and changed.
-        cityName: [],
-        experience: [],
-        availability: [],
-        fees: [],
-        gender: [],
-        language: [],
-        dateSelected: '',
-        prakticeSpecialties: '',
-      });
-      setShowSearchAndPastSearch(false);
-
-      /**Gtm code start start */
-      gtmTracking({
-        category: 'Consultations',
-        action: specialitySelected,
-        label: 'Listing Page Viewed',
-      });
-      /**Gtm code start end */
-    }
-  }, [specialitySelected]);
-
-  const specialityNames = specialitySelected.length > 0 ? specialitySelected.split('_') : '';
 
   return (
     <div className={classes.slContainer}>
@@ -855,27 +818,57 @@ export const SpecialityListing: React.FC = (props) => {
                       <AphInput
                         className={classes.searchInput}
                         placeholder="Search doctors or specialities"
+                        onChange={(e) => {
+                          const searchValue = e.target.value;
+                          setSearchKeyword(searchValue);
+                        }}
                       />
+                      {searchContent ? (
+                        <div className={classes.searchContent}>
+                          <div className={classes.docContent}>
+                            <Typography component="h6">Doctors</Typography>
+                            <ul className={classes.doctorList}>
+                              <li>
+                                <div className={classes.doctorContent}>
+                                  <div className={classes.dImg}></div>
+                                  <div className={classes.doctorDetails}>
+                                    <Typography component="h2">Dr. Radha Kumar</Typography>
+                                    <Typography>
+                                      Urogynaecology | Apollo Hospitals Greams Road Chennai
+                                    </Typography>
+                                  </div>
+                                </div>
+                              </li>
+                              <li>
+                                <div className={classes.doctorContent}>
+                                  <div className={classes.dImg}></div>
+                                  <div className={classes.doctorDetails}>
+                                    <Typography component="h2">Dr. Rakesh Gupta</Typography>
+                                    <Typography>
+                                      Urogynaecology | Apollo Hospitals Greams Road Chennai
+                                    </Typography>
+                                  </div>
+                                </div>
+                              </li>
+                            </ul>
+                          </div>
+                          <div className={classes.sContent}>
+                            <Typography component="h6">Specialities</Typography>
+                            <ul className={classes.sList}>
+                              <li>Radiology</li>
+                              <li>Reproductive Medicine and Infertility</li>
+                            </ul>
+                          </div>
+                        </div>
+                      ) : null}
                     </div>
                   </div>
                   <div className={classes.pastSearch}>
                     <Typography component="h6">{isSignedIn ? 'Past Searches' : ''}</Typography>
                     <div className={classes.pastSearchList}>
-                      {currentPatient &&
-                      currentPatient.id &&
-                      filterOptions.searchKeyword.length <= 0 &&
-                      specialitySelected.length === 0 &&
-                      showSearchAndPastSearch ? (
-                        <PastSearches
-                          speciality={(specialitySelected) =>
-                            setSpecialitySelected(specialitySelected)
-                          }
-                          disableFilter={(disableFilters) => {
-                            setDisableFilters(disableFilters);
-                          }}
-                          specialityId={(specialityId: string) => setSpecialtyId(specialityId)}
-                        />
-                      ) : null}
+                      {currentPatient && currentPatient.id && searchKeyword.length <= 0 && (
+                        <PastSearches />
+                      )}
                     </div>
                   </div>
                   <Typography component="h2">
@@ -945,24 +938,7 @@ export const SpecialityListing: React.FC = (props) => {
                       <Typography component="h2">Other Specialites</Typography>
                     </div>
                     <div className={classes.osContainer}>
-                      <Specialities
-                        keyword={filterOptions.searchKeyword}
-                        matched={(matchingSpecialities) =>
-                          setMatchingSpecialities(matchingSpecialities)
-                        }
-                        speciality={(specialitySelected) =>
-                          setSpecialitySelected(specialitySelected)
-                        }
-                        specialityId={(specialityId: string) => setSpecialtyId(specialityId)}
-                        disableFilter={(disableFilters) => {
-                          setDisableFilters(disableFilters);
-                        }}
-                        subHeading={
-                          filterOptions.searchKeyword !== '' && showSearchAndPastSearch
-                            ? 'Matching Specialities'
-                            : 'Specialities'
-                        }
-                      />
+                      <Specialities />
                     </div>
                   </div>
                 </div>
@@ -1226,27 +1202,7 @@ export const SpecialityListing: React.FC = (props) => {
       <div className={classes.footerLinks}>
         <BottomLinks />
       </div>
-      <AphDialog open={locationPopup} maxWidth="md">
-        <AphDialogClose onClick={() => setLocationPopup(false)} title={'Close'} />
-        <AphDialogTitle className={classes.dialogTitle}>
-          Select a city to see the recommended healthcare services
-        </AphDialogTitle>
-        <div className={classes.locationContainer}>
-          <AphInput placeholder="Select for a city" />
-
-          <div className={classes.popularCities}>
-            <Typography component="h6">Popular Cities</Typography>
-            <AphButton>Hyderabad</AphButton>
-            <AphButton>Chennai</AphButton>
-            <AphButton>Mumbai</AphButton>
-            <AphButton>Kolkata</AphButton>
-            <AphButton>Bangalore</AphButton>
-          </div>
-          <div className={classes.btnContainer}>
-            <AphButton color="primary">Okay</AphButton>
-          </div>
-        </div>
-      </AphDialog>
+      <Cities locationPopup={locationPopup} setLocationPopup={setLocationPopup} />
     </div>
   );
 };

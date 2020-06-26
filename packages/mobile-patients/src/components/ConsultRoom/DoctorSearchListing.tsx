@@ -987,6 +987,17 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           )
         : doctors;
     if (doctors.length === 0 && !showSpinner) {
+      const eventAttributes: WebEngageEvents[WebEngageEventName.DOCTOR_SPECIALITY_SEARCH_NO_RESULT] = {
+        'Text Searched': doctorSearch,
+        'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+        'Patient UHID': g(currentPatient, 'uhid'),
+        'Relation': g(currentPatient, 'relation'),
+        'Patient Age': Math.round(
+          moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+        ),
+        'Patient Gender': g(currentPatient, 'gender'),
+      };
+      postWebEngageEvent(WebEngageEventName.DOCTOR_SPECIALITY_SEARCH_NO_RESULT, eventAttributes);
       const specialistSingular =
         specialities && specialities.specialistSingularTerm
           ? specialities.specialistSingularTerm

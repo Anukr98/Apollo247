@@ -486,6 +486,12 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
                   isSelected={selectedMedicineOption == item.id}
                   onPress={() => {
                     setSelectedMedicineOption(item.id);
+                    const optionSelected = item.id === 'search' ? 'Search and add' :
+                      item.id === 'prescribed' ? 'All Medicine' : 'call'
+                    const eventAttribute: WebEngageEvents[WebEngageEventName.UPLOAD_PRESCRIPTION_OPTION_SELECTED] = {
+                      OptionSelected: optionSelected,
+                    };
+                    postWebEngageEvent(WebEngageEventName.UPLOAD_PRESCRIPTION_OPTION_SELECTED, eventAttribute);
                   }}
                   containerStyle={{ 
                     ...theme.fonts.IBMPlexSansMedium(16),

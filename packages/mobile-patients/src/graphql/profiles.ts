@@ -1401,7 +1401,7 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS = gql`
         deliveryType
         currentStatus
         patientAddressId
-        alertStore
+        # alertStore
         medicineOrdersStatus {
           id
           orderStatus
@@ -2570,6 +2570,31 @@ export const UPDATE_SAVE_EXTERNAL_CONNECT = gql`
       externalConnect: $externalConnect
     ) {
       status
+    }
+  }
+`;
+
+export const GET_PERSONALIZED_APPOITNMENTS = gql`
+  query getPatientPersonalizedAppointments($patientUhid: String!) {
+    getPatientPersonalizedAppointments(patientUhid: $patientUhid) {
+      appointmentDetails {
+        id
+        hospitalLocation
+        appointmentDateTime
+        appointmentType
+        doctorId
+        doctorDetails {
+          id
+          firstName
+          experience
+          photoUrl
+          displayName
+          specialty {
+            id
+            name
+          }
+        }
+      }
     }
   }
 `;

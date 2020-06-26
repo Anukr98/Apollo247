@@ -275,12 +275,11 @@ const getMedicineOrdersOMSList: Resolver<
         ],
         medicineOrderShipments: [],
       };
-      console.log(offlineList, 'offlineList');
       //offlineList.push(orderDetails)
       medicineOrdersList.push(offlineList);
     });
   }
-  function GetSortOrder(a: any, b: any) {
+  function GetSortOrder(a: MedicineOrders, b: MedicineOrders) {
     return new Date(b.createdDate).getTime() - new Date(a.createdDate).getTime();
   }
   medicineOrdersList.sort(GetSortOrder);

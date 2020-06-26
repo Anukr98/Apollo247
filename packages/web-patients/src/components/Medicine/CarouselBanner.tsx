@@ -4,6 +4,7 @@ import { Theme } from '@material-ui/core';
 import Slider from 'react-slick';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
+import { pharmacyHomeBannerTracking } from 'webEngageTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -52,6 +53,9 @@ const useStyles = makeStyles((theme: Theme) => {
       '& img': {
         maxWidth: '100%',
       },
+      '&:hover': {
+        cursor: 'pointer',
+      },
     },
     button: {
       backgroundColor: '#fff',
@@ -73,33 +77,52 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 type BannerData = {
+  category_url_key: string;
   end_time: string;
   image: string;
   name: string;
+  sku_url_key: string;
   start_time: string;
   status: string;
 };
 const apiDetails = {
   imageUrl: process.env.PHARMACY_MED_IMAGES_BASE_URL,
 };
-type BanneDataArray = { bannerData: BannerData[] };
+interface BanneDataArray {
+  bannerData: BannerData[];
+  history?: any;
+}
 export const CarouselBanner: React.FC<BanneDataArray> = (props) => {
   const classes = useStyles({});
   const sliderSettings = {
-    infinite: false,
+    infinite: true,
     dots: true,
     arrows: false,
     speed: 500,
     slidesToShow: 1,
     slidesToScroll: 1,
+    autoPlaySpeed: 5000,
+    autoplay: true,
   };
 
   return (
     <div className={classes.root}>
       <Slider {...sliderSettings}>
-        {props.bannerData.map((sidebaneer) => (
-          <div className={classes.card}>
-            <img src={`${apiDetails.imageUrl}${sidebaneer.image}`} />
+        {props.bannerData.map((sidebaner, index) => (
+          <div
+            className={classes.card}
+            onClick={() => {
+              pharmacyHomeBannerTracking(index + 1);
+              if (sidebaner.sku_url_key) {
+                props.history.push(clientRoutes.medicineDetails(sidebaner.sku_url_key));
+              } else if (sidebaner.category_url_key) {
+                props.history.push(
+                  clientRoutes.searchByMedicine('healthareas', sidebaner.category_url_key)
+                );
+              }
+            }}
+          >
+            <img src={`${apiDetails.imageUrl}${sidebaner.image}`} />
           </div>
         ))}
       </Slider>

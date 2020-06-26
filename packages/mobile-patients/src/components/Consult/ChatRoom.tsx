@@ -656,6 +656,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const getUpdateExternalConnect = (connected: boolean) => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.CONSULTED_WITH_DOCTOR_BEFORE] = {
+      ...currentPatient,
+      ConsultedBefore: connected ? 'Yes' : 'No',
+    };
+    postWebEngageEvent(WebEngageEventName.CONSULTED_WITH_DOCTOR_BEFORE, eventAttributes);
     setLoading(true);
 
     updateExternalConnect(client, doctorId, patientId, connected)
@@ -1357,7 +1362,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       console.log('Subscribe stream connected!', event);
     },
     disconnected: (event: string) => {
-      setSnackBar();
+      setSnackbarState(true);
+      setHandlerMessage('Falling back to audio due to bad network!!');
       console.log('Subscribe stream disconnected!', event);
     },
     otrnError: (error: string) => {

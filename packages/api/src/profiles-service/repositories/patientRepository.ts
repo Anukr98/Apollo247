@@ -671,4 +671,16 @@ export class PatientRepository extends Repository<Patient> {
   updateWhatsAppStatus(id: string, whatsAppConsult: Boolean, whatsAppMedicine: Boolean) {
     return this.update(id, { whatsAppConsult, whatsAppMedicine });
   }
+
+  checkMobileIdInfo(mobileNumber: string, uhid: string, patientId: string) {
+    if (uhid != '') {
+      const getData = this.findOne({ where: { uhid, mobileNumber } });
+      if (getData) return true;
+      else return false;
+    } else if (patientId != '') {
+      const getData = this.findOne({ where: { id: patientId, mobileNumber } });
+      if (getData) return true;
+      else return false;
+    }
+  }
 }
