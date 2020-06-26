@@ -583,6 +583,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       specialty: props.navigation.getParam('specialityId') || '',
       // city: SearchData[0].selectedOptions,
       pincode: pinCode || g(locationDetails, 'pincode') || null,
+      brand: SearchData[1].selectedOptions,
+      city: SearchData[0].selectedOptions,
       experience: experienceArray,
       availability: availabilityArray,
       fees: feesArray,
