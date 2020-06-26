@@ -218,10 +218,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     postWebEngageEvent(WebEngageEventName.CATEGORY_CLICKED, eventAttributes);
   };
 
-  const WebEngageEventForNonServicablePinCode = (pincode: string) => {
+  const WebEngageEventForNonServicablePinCode = (pincode: string, serviceable: boolean) => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_PINCODE_NONSERVICABLE] = {
       'Mobile Number': currentPatient.mobileNumber,
       Pincode: pincode,
+      Servicable: serviceable,
     };
     postWebEngageEvent(WebEngageEventName.PHARMACY_PINCODE_NONSERVICABLE, eventAttributes);
   };
@@ -264,7 +265,23 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       .then(({ data: { Availability } }) => {
         setServiceabilityMsg(Availability ? '' : 'Services unavailable. Change delivery location.');
         if (!Availability) {
-          WebEngageEventForNonServicablePinCode(pincode);
+          WebEngageEventForNonServicablePinCode(pincode, false);
+          showAphAlert!({
+            title: 'We’re sorry!',
+            description:
+              'We are not serviceable in your area. Please change your location or call 1860 500 0101 for Pharmacy stores nearby.',
+            titleStyle: theme.viewStyles.text('SB', 18, '#890000'),
+            ctaContainerStyle: { justifyContent: 'flex-end' },
+            CTAs: [
+              {
+                text: 'CHANGE THE ADDRESS',
+                type: 'orange-link',
+                onPress: onPresChangeAddress,
+              },
+            ],
+          });
+        } else {
+          WebEngageEventForNonServicablePinCode(pincode, true);
           getNearByStoreDetailsApi(pincode)
             .then((response: any) => {
               showAphAlert!({
@@ -581,7 +598,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       .then((response) => {
         globalLoading!(false);
         response && setPharmacyLocation!(response);
-        response && WebEngageEventForNonServicablePinCode(response.pincode);
+        response && WebEngageEventForNonServicablePinCode(response.pincode, true);
       })
       .catch((e) => {
         CommonBugFender('Medicine__ALLOW_AUTO_DETECT', e);
@@ -830,8 +847,12 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     );
   };
 
-  const renderSliderItem = ({ item }: { item: OfferBannerSection }) => {
+  const renderSliderItem = ({ item, index }: { item: OfferBannerSection, index: number }) => {
     const handleOnPress = () => {
+      const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_BANNER_CLICK] = {
+        BannerPosition: index + 1,
+      };
+      postWebEngageEvent(WebEngageEventName.PHARMACY_BANNER_CLICK, eventAttributes);
       if (item.category_id) {
         props.navigation.navigate(AppRoutes.SearchByBrand, {
           category_id: item.category_id,
@@ -1301,6 +1322,12 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       isAddedToCart: foundMedicineInCart,
       onAddOrRemoveCartItem: foundMedicineInCart ? removeFromCart : addToCart,
       onPress: () => {
+        const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_CATEGORY_SECTION_PRODUCT_CLICK] = {
+          SectionName: title,
+          ProductId: sku,
+          ProductName: name,
+        };
+        postWebEngageEvent(WebEngageEventName.PHARMACY_CATEGORY_SECTION_PRODUCT_CLICK, eventAttributes);
         postwebEngageProductClickedEvent(data.item, title, 'Home');
         props.navigation.navigate(AppRoutes.MedicineDetailsScene, { sku });
       },
@@ -1526,6 +1553,12 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                 Source: 'Pharmacy Home',
               };
               postWebEngageEvent(WebEngageEventName.PHARMACY_SEARCH_RESULTS, eventAttributes);
+
+              const searchEventAttribute: WebEngageEvents[WebEngageEventName.SEARCH_ENTER_CLICK] = {
+                keyword: searchText,
+                numberofresults: medicineList.length,
+              };
+              postWebEngageEvent(WebEngageEventName.SEARCH_ENTER_CLICK, searchEventAttribute);
               props.navigation.navigate(AppRoutes.SearchMedicineScene, { searchText });
             }
           }}

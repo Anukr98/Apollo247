@@ -24,7 +24,7 @@ import {
   SEARCH_TYPE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { saveSearch } from '@aph/mobile-patients/src/graphql/types/saveSearch';
-import { g, mhdMY, nameFormater } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { g, mhdMY, nameFormater, postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 // import { Star } from '@aph/mobile-patients/src/components/ui/Icons';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -43,6 +43,7 @@ import {
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_possibleMatches_doctors } from '../../graphql/types/SearchDoctorAndSpecialtyByName';
+import { WebEngageEvents, WebEngageEventName } from '../../helpers/webEngageEvents';
 
 const styles = StyleSheet.create({
   doctorView: {
@@ -299,6 +300,17 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
         activeOpacity={1}
         style={[styles.doctorView, props.style]}
         onPress={() => {
+          if (rowData.doctorType === DoctorType.PAYROLL) {
+            const eventAttributes: WebEngageEvents[WebEngageEventName.DOCTOR_CONNECT_CARD_CLICK] = {
+              'Online Price': Number(g(rowData, 'onlineConsultationFees')),
+              'Physical Price': Number(g(rowData, 'physicalConsultationFees')),
+              'Doctor Speciality': g(rowData, 'specialty', 'name')!,
+              'Doctor Name': g(rowData, 'fullName')!,
+              'Source': 'List',
+              'Language known': rowData.languages,
+            };
+            postWebEngageEvent(WebEngageEventName.DOCTOR_CONNECT_CARD_CLICK, eventAttributes);
+          }
           props.onPress ? props.onPress(rowData.id!) : navigateToDetails(rowData.id!);
         }}
       >
@@ -422,6 +434,24 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                   activeOpacity={1}
                   style={styles.buttonView}
                   onPress={() => {
+                    const eventAttributes: WebEngageEvents[WebEngageEventName.DOCTOR_CARD_CONSULT_CLICK]= {
+                      'Patient Name': currentPatient.firstName,
+                      'Doctor ID': rowData.id,
+                      'Speciality ID': g(rowData, 'specialty', 'id')!,
+                      'Doctor Speciality': g(rowData, 'specialty', 'name')!,
+                      'Doctor Experience': Number(g(rowData, 'experience')!),
+                      'Language Known': rowData.languages,
+                      'Hospital Name': rowData.doctorHospital[0].facility.name,
+                      'Hospital City': rowData.doctorHospital[0].facility.city,
+                      'Availability Minutes': parseInt(availableTime),
+                      'Source': 'List',
+                      'Patient UHID': currentPatient.uhid,
+                      'Relation': g(currentPatient, 'relation'),
+                      'Patient Age': Math.round(moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)),
+                      'Patient Gender': currentPatient.gender,
+                      'Customer ID': currentPatient.id,
+                    };
+                    postWebEngageEvent(WebEngageEventName.DOCTOR_CARD_CONSULT_CLICK, eventAttributes);
                     props.onPressConsultNowOrBookAppointment &&
                       props.onPressConsultNowOrBookAppointment(
                         availableTime && moment(availableTime).isValid()
