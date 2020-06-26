@@ -848,7 +848,7 @@ export const JDConsultRoom: React.FC = () => {
           }
           // -------------------------------------------------------------- //
           navigator.mediaDevices
-            .getUserMedia({ audio: true, video: false })
+            .getUserMedia({ audio: true, video: true })
             .then(function(stream) {
               console.log('Got stream', stream);
               setCameraMicPermission(true);
