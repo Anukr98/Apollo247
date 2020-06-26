@@ -627,6 +627,7 @@ export interface MedicineCartOMSInput {
   packagingCharges?: number | null;
   showPrescriptionAtStore?: boolean | null;
   shopAddress?: ShopAddress | null;
+  customerComment?: string | null;
 }
 
 export interface MedicineCartOMSItem {
@@ -791,6 +792,7 @@ export interface PrescriptionMedicineOrderOMSInput {
   shopAddress?: ShopAddress | null;
   prescriptionOptionSelected?: string | null;
   durationDays?: number | null;
+  customerComment?: string | null;
 }
 
 export interface PrescriptionMedicinePaymentDetails {

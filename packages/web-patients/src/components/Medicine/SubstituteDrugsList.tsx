@@ -5,6 +5,7 @@ import { Theme } from '@material-ui/core';
 import Scrollbars from 'react-custom-scrollbars';
 import { MedicineProductDetails, MedicineProduct } from '../../helpers/MedicineApiCalls';
 import { clientRoutes } from 'helpers/clientRoutes';
+import { pharmacyPdpSubstituteTracking } from 'webEngageTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -64,8 +65,10 @@ export const SubstituteDrugsList: React.FC<SubstituteDrugsListProps> = (props) =
             props.data.map((substitute) => (
               <li
                 onClick={() => {
+                  const { url_key, sku, name } = substitute;
                   props.setIsSubDrugsPopoverOpen(false);
-                  window.location.href = clientRoutes.medicineDetails(substitute.url_key);
+                  window.location.href = clientRoutes.medicineDetails(url_key);
+                  pharmacyPdpSubstituteTracking({ productId: sku, productName: name });
                 }}
               >
                 <div className={classes.name}>{substitute.name}</div>

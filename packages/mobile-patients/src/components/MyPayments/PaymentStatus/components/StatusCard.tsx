@@ -14,6 +14,8 @@ import { textComponent } from './GenericText';
 import ViewInvoice from './ViewInvoice';
 import PaymentStatusConstants from '../../constants';
 import { Copy } from '@aph/mobile-patients/src/components/ui/Icons';
+import { Snackbar } from 'react-native-paper';
+
 interface StatusCardProps {
   item: any;
   paymentFor: string;
@@ -27,9 +29,10 @@ const StatusCard: FC<StatusCardProps> = (props) => {
   const { SUCCESS, FAILED, REFUND } = PaymentStatusConstants;
   const { paymentFailed, paymentPending, paymentSuccessful, paymentRefund } = LocalStrings;
   const [copiedText, setCopiedText] = useState('');
-
+  const [snackbarState, setSnackbarState] = useState<boolean>(false);
   const copyToClipboard = (refId: string) => {
     Clipboard.setString(refId);
+    setSnackbarState(true);
   };
 
   const statusItemValues = () => {
@@ -152,6 +155,16 @@ const StatusCard: FC<StatusCardProps> = (props) => {
         paymentFor={props.paymentFor}
         patientId={props.patientId}
       />
+      <Snackbar
+        style={{ position: 'absolute' }}
+        visible={snackbarState}
+        onDismiss={() => {
+          setSnackbarState(false);
+        }}
+        duration={1000}
+      >
+        Copied
+      </Snackbar>
     </View>
   );
 };

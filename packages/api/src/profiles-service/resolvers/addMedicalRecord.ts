@@ -202,7 +202,7 @@ const addPatientMedicalRecord: Resolver<
 
     const prescriptionInputArgs: PrescriptionInputArgs = {
       prescriptionInput: {
-        prescribedBy: addMedicalRecordInput.referringDoctor,
+        prescribedBy: addMedicalRecordInput.issuingDoctor,
         prescriptionName: addMedicalRecordInput.testName,
         dateOfPrescription: addMedicalRecordInput.testDate
           ? getUnixTime(addMedicalRecordInput.testDate) * 1000

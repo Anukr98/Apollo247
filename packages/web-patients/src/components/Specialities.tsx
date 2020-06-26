@@ -1,23 +1,25 @@
 import React from 'react';
 import { makeStyles, createStyles } from '@material-ui/styles';
-import { Theme, Grid, Avatar } from '@material-ui/core';
+import { Theme, Grid, Avatar, CircularProgress } from '@material-ui/core';
 import _uniqueId from 'lodash/uniqueId';
 import _map from 'lodash/map';
 import _filter from 'lodash/filter';
 import _startsWith from 'lodash/startsWith';
 import _toLower from 'lodash/toLower';
+import {
+  GetAllSpecialties,
+  GetAllSpecialties_getAllSpecialties as SpecialtyType,
+} from 'graphql/types/GetAllSpecialties';
 import { GET_ALL_SPECIALITIES } from 'graphql/specialities';
-import { GetAllSpecialties } from 'graphql/types/GetAllSpecialties';
-import CircularProgress from '@material-ui/core/CircularProgress';
-import { Mutation } from 'react-apollo';
-import { SaveSearch, SaveSearchVariables } from 'graphql/types/SaveSearch';
 import { SAVE_PATIENT_SEARCH } from 'graphql/pastsearches';
 import { SEARCH_TYPE } from 'graphql/types/globalTypes';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { useQuery } from 'react-apollo-hooks';
+import { useLocationDetails } from 'components/LocationProvider';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { Route } from 'react-router-dom';
 import { readableParam } from 'helpers/commonHelpers';
+import { useMutation } from 'react-apollo-hooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -81,144 +83,104 @@ const useStyles = makeStyles((theme: Theme) => {
       justifyContent: 'center',
     },
     rightArrow: {
-      marginLeft: 'auto',
+      top: 5,
+      right: 0,
+      position: 'absolute',
     },
     specialityDetails: {
       fontSize: 12,
       fontWeight: 500,
+      color: 'rgba(2,71,91,0.6)',
+      padding: '0 0 10px',
+    },
+    symptoms: {
+      fontSize: 10,
+      fontWeight: 600,
       color: '#02475b',
-      opacity: 0.6,
-      paddingTop: 5,
+      padding: '10px 0 0',
+      borderTop: '1px solid rgba(2,71,91,0.3)',
+    },
+    spContent: {
+      width: '100%',
+      padding: '0 10px 0 0',
+      position: 'relative',
     },
   });
 });
 
-export interface SpecialitiesProps {
-  keyword: string;
-  matched: (matchedSpecialities: number) => void;
-  speciality: (specialitySelected: string) => void;
-  disableFilter: (disableFilters: boolean) => void;
-  subHeading: string;
-  specialityId?: (specialityId: string) => void;
-  // filteredSpecialties?: any;
-}
-
-export const Specialities: React.FC<SpecialitiesProps> = (props) => {
+export const Specialities: React.FC = (props) => {
   const classes = useStyles({});
-  const { loading, error, data } = useQuery<GetAllSpecialties>(GET_ALL_SPECIALITIES);
-
-  const { keyword, matched, speciality, disableFilter, specialityId, subHeading } = props;
-
   const { currentPatient } = useAllCurrentPatients();
 
-  if (loading) {
-    return (
-      <div className={classes.circlularProgress}>
-        <CircularProgress />
-      </div>
-    );
-  }
+  const { loading, error, data } = useQuery<GetAllSpecialties>(GET_ALL_SPECIALITIES);
 
   if (error) {
-    return <div>Error! {error.message}</div>;
+    return <div>Error! </div>;
   }
 
-  const filterValues = (data: GetAllSpecialties) => {
-    const filteredValues = _filter(data.getAllSpecialties, (specialityDetails) =>
-      _startsWith(_toLower(specialityDetails.name || ''), _toLower(keyword))
-    );
-    matched(filteredValues.length);
-    return filteredValues;
-  };
+  const saveSearchMutation = useMutation(SAVE_PATIENT_SEARCH);
 
-  if (data && data.getAllSpecialties) {
-    const filterSpecialites =
-      keyword !== '' && Object.keys(data) ? filterValues(data) : data.getAllSpecialties;
-    return (
-      <>
-        {subHeading !== '' && filterSpecialites.length > 0 ? (
-          <div className={classes.sectionHeader}>
-            <span>{subHeading}</span>
-            {/* <span className={classes.count}>
-              {filterSpecialites.length > 0
-                ? filterSpecialites.length.toString().padStart(2, '0')
-                : filterSpecialites.length}
-            </span> */}
-          </div>
-        ) : null}
-        <div className={classes.root}>
-          <div className={classes.searchList}>
-            <Grid container spacing={1}>
-              {_map(filterSpecialites, (specialityDetails) => {
-                const specialityName = specialityDetails && specialityDetails.name;
-                // const specialitySingular =
-                //   specialityDetails && specialityDetails.specialistSingularTerm;
-                // const specialityPlural =
-                //   specialityDetails && specialityDetails.specialistPluralTerm;
-                const userFriendlyName =
-                  specialityDetails && specialityDetails.userFriendlyNomenclature;
-                const title = specialityName;
-                return (
-                  <Mutation<SaveSearch, SaveSearchVariables>
-                    mutation={SAVE_PATIENT_SEARCH}
-                    variables={{
-                      saveSearchInput: {
-                        type: SEARCH_TYPE.SPECIALTY,
-                        typeId: specialityDetails.id,
-                        patient: currentPatient ? currentPatient.id : '',
-                      },
-                    }}
-                    key={_uniqueId('special_')}
-                  >
-                    {(mutation) => (
-                      <Route
-                        render={({ history }) => (
-                          <Grid
-                            item
-                            xs={12}
-                            sm={6}
-                            title={title}
-                            onClick={(e) => {
-                              mutation();
-                              speciality(e.currentTarget.title);
-                              const specialityUpdated = readableParam(`${e.currentTarget.title}`);
-                              history.push(clientRoutes.specialties(`${specialityUpdated}`));
-                              specialityId && specialityId(specialityDetails.id);
-                              disableFilter(false);
-                            }}
-                          >
-                            <div className={classes.contentBox}>
-                              <Avatar
-                                alt={specialityDetails.name || ''}
-                                src={specialityDetails.image || ''}
-                                className={classes.bigAvatar}
-                              />
-                              <div>
-                                <div>{specialityDetails.name}</div>
-                                <div className={classes.specialityDetails}>{userFriendlyName}</div>
-                              </div>
-                              <span className={classes.rightArrow}>
-                                <img src={require('images/ic_arrow_right.svg')} />
-                              </span>
+  return loading ? (
+    <div className={classes.circlularProgress}>
+      <CircularProgress color="primary" />
+    </div>
+  ) : data && data.getAllSpecialties && data && data.getAllSpecialties.length > 0 ? (
+    <>
+      <div className={classes.root}>
+        <div className={classes.searchList}>
+          <Grid container spacing={1}>
+            {data.getAllSpecialties.map(
+              (specialityDetails: SpecialtyType) =>
+                specialityDetails && (
+                  <Route
+                    render={({ history }) => (
+                      <Grid
+                        item
+                        xs={12}
+                        sm={6}
+                        title={specialityDetails.name}
+                        onClick={(e) => {
+                          saveSearchMutation({
+                            variables: {
+                              saveSearchInput: {
+                                type: SEARCH_TYPE.SPECIALTY,
+                                typeId: specialityDetails.id,
+                                patient: currentPatient ? currentPatient.id : '',
+                              },
+                            },
+                          });
+                          const specialityUpdated = readableParam(`${e.currentTarget.title}`);
+                          history.push(clientRoutes.specialties(`${specialityUpdated}`));
+                        }}
+                      >
+                        <div className={classes.contentBox}>
+                          <Avatar
+                            alt={specialityDetails.name || ''}
+                            src={specialityDetails.image || ''}
+                            className={classes.bigAvatar}
+                          />
+                          <div className={classes.spContent}>
+                            <div>{specialityDetails.name}</div>
+                            <div className={classes.specialityDetails}>
+                              {/* {specialityDetails.userFriendlyNomenclature} */}
+                              {specialityDetails.shortDescription}
                             </div>
-                          </Grid>
-                        )}
-                      />
+                            <div className={classes.symptoms}>{specialityDetails.symptoms}</div>
+                            <span className={classes.rightArrow}>
+                              <img src={require('images/ic_arrow_right.svg')} />
+                            </span>
+                          </div>
+                        </div>
+                      </Grid>
                     )}
-                  </Mutation>
-                );
-              })}
-            </Grid>
-          </div>
+                  />
+                )
+            )}
+          </Grid>
         </div>
-      </>
-    );
-    return <></>;
-  } else {
-    return (
-      <div className={classes.circlularProgress}>
-        <CircularProgress />
       </div>
-    );
-  }
+    </>
+  ) : (
+    <p>No results found</p>
+  );
 };

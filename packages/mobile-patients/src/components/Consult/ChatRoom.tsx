@@ -328,7 +328,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [sessionId, setsessionId] = useState<string>('');
   const [token, settoken] = useState<string>('');
   const [cameraPosition, setCameraPosition] = useState<string>('front');
-  const [tame, setTame] = useState<boolean>(true);
+  const [isPublishAudio, setIsPublishAudio] = useState<boolean>(true);
   const [showVideo, setShowVideo] = useState<boolean>(true);
   const [PipView, setPipView] = useState<boolean>(false);
   const [isCall, setIsCall] = useState<boolean>(false);
@@ -372,7 +372,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     right: 0,
     bottom: 0,
     zIndex: 100,
-    backgroundColor: 'white',
+    backgroundColor: 'black',
   });
   const [audioCallImageStyles, setAudioCallImageStyles] = useState<object>({
     width,
@@ -438,6 +438,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [sendMessageToDoctor, setSendMessageToDoctor] = useState<boolean>(false);
   const [callerAudio, setCallerAudio] = useState<boolean>(true);
   const [callerVideo, setCallerVideo] = useState<boolean>(true);
+  const [downgradeToAudio, setDowngradeToAudio] = React.useState<boolean>(false);
 
   const videoCallMsg = '^^callme`video^^';
   const audioCallMsg = '^^callme`audio^^';
@@ -655,6 +656,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const getUpdateExternalConnect = (connected: boolean) => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.CONSULTED_WITH_DOCTOR_BEFORE] = {
+      ...currentPatient,
+      ConsultedBefore: connected ? 'Yes' : 'No',
+    };
+    postWebEngageEvent(WebEngageEventName.CONSULTED_WITH_DOCTOR_BEFORE, eventAttributes);
     setLoading(true);
 
     updateExternalConnect(client, doctorId, patientId, connected)
@@ -1081,6 +1087,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               stopSound();
               changeAudioStyles();
               setConvertVideo(false);
+              setDowngradeToAudio(false);
+              setCallerAudio(true);
+              setCallerVideo(true);
               changeVideoStyles();
               setDropdownVisible(false);
               if (token) {
@@ -1353,7 +1362,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       console.log('Subscribe stream connected!', event);
     },
     disconnected: (event: string) => {
-      setSnackBar();
+      setSnackbarState(true);
+      setHandlerMessage('Falling back to audio due to bad network!!');
       console.log('Subscribe stream disconnected!', event);
     },
     otrnError: (error: string) => {
@@ -1361,16 +1371,19 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       console.log(`There was an error with the subscriberEventHandlers: ${JSON.stringify(error)}`);
     },
     videoDisabled: (error: any) => {
-      // console.log(`videoDisabled subscriberEventHandlers: ${JSON.stringify(error)}`);
+      console.log(`videoDisabled subscriberEventHandlers: ${JSON.stringify(error)}`, error.reason);
+      console.log('error.reason', error.reason, error.reason === 'quality');
       if (error.reason === 'quality') {
         setSnackbarState(true);
-        setHandlerMessage('Poor network connection detected!!');
+        setHandlerMessage('Falling back to audio due to bad network!!');
+        setDowngradeToAudio(true);
       }
     },
     videoEnabled: (error: any) => {
-      console.log(`videoDisabled: ${JSON.stringify(error)}`);
+      console.log(`videoEnabled: ${JSON.stringify(error)}`);
       if (error.reason === 'quality') {
         setSnackbarState(false);
+        setDowngradeToAudio(false);
       }
     },
     videoDisableWarning: (error: string) => {
@@ -1446,8 +1459,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     setCallAccepted(false);
     setHideStatusBar(false);
     setConvertVideo(false);
+    setDowngradeToAudio(false);
     KeepAwake.activate();
-    setTame(true);
+    setIsPublishAudio(true);
     setShowVideo(true);
     setCameraPosition('front');
     setChatReceived(false);
@@ -2151,6 +2165,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         thirtySecondTimer && clearTimeout(thirtySecondTimer);
         minuteTimer && clearTimeout(minuteTimer);
         setConvertVideo(false);
+        setDowngradeToAudio(false);
         addMessages(message);
         //setShowFeedback(true);
         // ************* SHOW FEEDBACK POUP ************* \\
@@ -2158,6 +2173,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         console.log('listener remainingTime', remainingTime);
         stopInterval();
         setConvertVideo(false);
+        setDowngradeToAudio(false);
         setShowFeedback(true);
         abondmentStarted = false;
         APIForUpdateAppointmentData(true);
@@ -2180,9 +2196,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       } else if (message.message.message === covertVideoMsg) {
         console.log('covertVideoMsg', covertVideoMsg);
         setConvertVideo(true);
+        // setDowngradeToAudio(false);
       } else if (message.message.message === covertAudioMsg) {
         console.log('covertVideoMsg', covertAudioMsg);
         setConvertVideo(false);
+        // setDowngradeToAudio(false);
       } else if (message.message.message === consultPatientStartedMsg) {
         console.log('consultPatientStartedMsg');
         addMessages(message);
@@ -4576,7 +4594,34 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   const VideoCall = () => {
     return (
-      <View style={talkStyles}>
+      <View style={[talkStyles, { zIndex: 1001 }]}>
+        {downgradeToAudio && (
+          <View>
+            {appointmentData.doctorInfo.photoUrl ? (
+              <View style={[audioCallImageStyles, { backgroundColor: 'white' }]}>
+                <Image
+                  source={{ uri: appointmentData.doctorInfo.photoUrl }}
+                  style={audioCallImageStyles}
+                  resizeMode={'contain'}
+                />
+              </View>
+            ) : (
+              <View
+                style={[
+                  audioCallImageStyles,
+                  {
+                    backgroundColor: 'black',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    opacity: 0.6,
+                  },
+                ]}
+              >
+                <DoctorPlaceholderImage />
+              </View>
+            )}
+          </View>
+        )}
         {isCall && (
           <View style={{ flex: 1, flexDirection: 'row' }}>
             <OTSession
@@ -4595,26 +4640,44 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               }}
             >
               <OTPublisher
-                style={publisherStyles}
+                style={
+                  !downgradeToAudio
+                    ? publisherStyles
+                    : {
+                        position: 'absolute',
+                        top: 44,
+                        right: 20,
+                        width: 1,
+                        height: 1,
+                        zIndex: 1000,
+                      }
+                }
                 properties={{
                   cameraPosition: cameraPosition,
-                  publishVideo: showVideo,
-                  publishAudio: tame,
-                  videoTrack: showVideo,
-                  audioTrack: tame,
+                  publishVideo: !downgradeToAudio ? showVideo : false,
+                  publishAudio: isPublishAudio,
+                  videoTrack: !downgradeToAudio ? showVideo : false,
+                  audioTrack: isPublishAudio,
                   audioVolume: 100,
                   name: g(currentPatient, 'firstName') || 'patient',
+                  resolution: '352x288',
                 }}
-                resolution={'352x288'}
                 eventHandlers={publisherEventHandlers}
               />
               <OTSubscriber
-                style={subscriberStyles}
+                style={
+                  !downgradeToAudio
+                    ? subscriberStyles
+                    : {
+                        width: 1,
+                        height: 1,
+                      }
+                }
                 // subscribeToSelf={true}
                 eventHandlers={subscriberEventHandlers}
                 properties={{
                   subscribeToAudio: true,
-                  subscribeToVideo: true,
+                  subscribeToVideo: !downgradeToAudio ? true : false,
                   audioVolume: 100,
                 }}
               />
@@ -4662,6 +4725,16 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             )}
 
             <Text style={timerStyles}>{callAccepted ? callTimerStarted : 'INCOMING'}</Text>
+            <Snackbar
+              style={{ marginBottom: 100, zIndex: 1001 }}
+              visible={snackbarState}
+              onDismiss={() => {
+                setSnackbarState(false);
+              }}
+              duration={5000}
+            >
+              {handlerMessage}
+            </Snackbar>
             {renderBusyMessages(!PipView, isIphoneX() ? 171 : 161)}
 
             {PipView && renderOnCallPipButtons('video')}
@@ -4751,13 +4824,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             properties={{
               cameraPosition: cameraPosition,
               publishVideo: convertVideo ? true : false,
-              publishAudio: tame,
+              publishAudio: isPublishAudio,
               audioVolume: 100,
               videoTrack: convertVideo ? true : false,
-              audioTrack: tame,
+              audioTrack: isPublishAudio,
               name: g(currentPatient, 'firstName') || 'patient',
+              resolution: '352x288',
             }}
-            resolution={'352x288'}
             eventHandlers={publisherEventHandlers}
           />
           <OTSubscriber
@@ -4801,7 +4874,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         )}
         <Text style={timerStyles}>{callAccepted ? callTimerStarted : 'INCOMING'}</Text>
         <Snackbar
-          style={{ marginBottom: 80 }}
+          style={{ marginBottom: 80, zIndex: 1001 }}
           visible={snackbarState}
           onDismiss={() => {
             setSnackbarState(false);
@@ -4817,7 +4890,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       </View>
     );
   };
-
+  const showMessage = (isPaused: any) => {
+    if (downgradeToAudio) {
+      return `Falling back to audio due to bad network!!`;
+    }
+    return `Doctor’s ${isPaused} ${isPaused.indexOf('/') > -1 ? 'are' : 'is'} Paused`;
+  };
   const renderBusyMessages = (showPip: boolean, insetTop: any) => {
     return (
       <>
@@ -4853,7 +4931,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   padding: 0,
                   flexWrap: 'wrap',
                 }}
-              >{`Doctor’s ${isPaused} ${isPaused.indexOf('/') > -1 ? 'are' : 'is'} Paused`}</Text>
+              >
+                {showMessage(isPaused)}
+              </Text>
             </View>
           </View>
         ) : null}
@@ -4901,7 +4981,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       right: 0,
       bottom: 0,
       zIndex: 100,
-      backgroundColor: 'white',
+      backgroundColor: 'black',
     });
     setAudioCallImageStyles({
       width,
@@ -4992,7 +5072,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 right: 8,
                 height: 205,
                 width: 155,
-                backgroundColor: 'white',
+                backgroundColor: 'black',
               });
               setAudioCallImageStyles({
                 height: 205,
@@ -5037,10 +5117,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           <TouchableOpacity
             activeOpacity={1}
             onPress={() => {
-              tame === true ? setTame(false) : setTame(true);
+              isPublishAudio === true ? setIsPublishAudio(false) : setIsPublishAudio(true);
             }}
           >
-            {tame === true ? (
+            {isPublishAudio === true ? (
               <UnMuteIcon style={{ height: 60, width: 60 }} />
             ) : (
               <MuteIcon style={{ height: 60, width: 60 }} />
@@ -5052,7 +5132,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               setIsAudioCall(false);
               stopTimer();
               setHideStatusBar(false);
-              setTame(true);
+              setIsPublishAudio(true);
               setShowVideo(true);
               setCameraPosition('front');
 
@@ -5120,7 +5200,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           onPress={() => {
             pipType === 'audio' && setIsAudioCall(false);
             pipType === 'video' && setIsCall(false);
-            setTame(true);
+            setIsPublishAudio(true);
             setShowVideo(true);
             setCameraPosition('front');
             stopTimer();
@@ -5313,10 +5393,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           <TouchableOpacity
             activeOpacity={1}
             onPress={() => {
-              tame === true ? setTame(false) : setTame(true);
+              isPublishAudio === true ? setIsPublishAudio(false) : setIsPublishAudio(true);
             }}
           >
-            {tame === true ? (
+            {isPublishAudio === true ? (
               <UnMuteIcon style={{ height: 60, width: 60 }} />
             ) : (
               <MuteIcon style={{ height: 60, width: 60 }} />
@@ -5326,7 +5406,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             activeOpacity={1}
             onPress={() => {
               setIsCall(false);
-              setTame(true);
+              setIsPublishAudio(true);
               setShowVideo(true);
               setCameraPosition('front');
               stopTimer();
@@ -5450,6 +5530,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               stopSound();
               changeAudioStyles();
               setConvertVideo(false);
+              setDowngradeToAudio(false);
               changeVideoStyles();
               setDropdownVisible(false);
               setCallerAudio(true);

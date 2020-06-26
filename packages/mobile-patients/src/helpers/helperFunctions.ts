@@ -63,6 +63,7 @@ import { UIElementsContextProps } from '@aph/mobile-patients/src/components/UIEl
 import { NavigationScreenProp, NavigationRoute } from 'react-navigation';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { postReorderMedicines } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 
 const googleApiKey = AppConfig.Configuration.GOOGLE_API_KEY;
 let onInstallConversionDataCanceller: any;
@@ -631,6 +632,7 @@ export const reOrderMedicines = async (
   order: getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails,
   currentPatient: any
 ) => {
+  postReorderMedicines('Order Details', currentPatient);
   // Medicines
   // use billedItems for delivered orders
   const billedItems = g(
@@ -779,6 +781,8 @@ export const getBuildEnvironment = () => {
       return 'DEV';
     case 'https://aph.staging.api.popcornapps.com//graphql':
       return 'QA';
+    case 'https://stagingapi.apollo247.com//graphql':
+      return 'STAGING';
     case 'https://aph.uat.api.popcornapps.com//graphql':
       return 'UAT';
     case 'https://aph.vapt.api.popcornapps.com//graphql':

@@ -4,6 +4,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-community/async-storage';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { getDoctorsBySpecialtyAndFilters } from '@aph/mobile-patients/src/graphql/types/getDoctorsBySpecialtyAndFilters';
+import { getPatientPersonalizedAppointments_getPatientPersonalizedAppointments_appointmentDetails } from '../graphql/types/getPatientPersonalizedAppointments';
 
 export interface LocationData {
   displayName: string;
@@ -52,6 +53,12 @@ export interface AppCommonDataContextProps {
   setisSelected: ((arg0: any[]) => void) | null;
   isUHID: string[];
   setisUHID: ((arg0: string[]) => void) | null;
+  appointmentsPersonalized: getPatientPersonalizedAppointments_getPatientPersonalizedAppointments_appointmentDetails[];
+  setAppointmentsPersonalized:
+    | ((
+        items: getPatientPersonalizedAppointments_getPatientPersonalizedAppointments_appointmentDetails[]
+      ) => void)
+    | null;
 }
 
 export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
@@ -61,6 +68,8 @@ export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
   setPharmacyLocation: null,
   diagnosticsCities: [],
   setDiagnosticsCities: null,
+  appointmentsPersonalized: [],
+  setAppointmentsPersonalized: null,
   locationForDiagnostics: null,
   VirtualConsultationFee: '',
   setVirtualConsultationFee: null,
@@ -102,6 +111,11 @@ export const AppCommonDataProvider: React.FC = (props) => {
   const [diagnosticsCities, setDiagnosticsCities] = useState<
     AppCommonDataContextProps['diagnosticsCities']
   >([]);
+
+  const [appointmentsPersonalized, setAppointmentsPersonalized] = useState<
+    AppCommonDataContextProps['appointmentsPersonalized']
+  >([]);
+
   const [VirtualConsultationFee, setVirtualConsultationFee] = useState<string>('');
   const [generalPhysicians, setGeneralPhysicians] = useState<{
     id: string;
@@ -220,6 +234,8 @@ export const AppCommonDataProvider: React.FC = (props) => {
         setisSelected,
         isUHID,
         setisUHID,
+        appointmentsPersonalized,
+        setAppointmentsPersonalized,
       }}
     >
       {props.children}

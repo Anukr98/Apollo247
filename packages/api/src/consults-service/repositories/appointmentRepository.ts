@@ -21,6 +21,7 @@ import {
   REQUEST_ROLES,
   PATIENT_TYPE,
   ES_DOCTOR_SLOT_STATUS,
+  AppointmentUpdateHistory,
 } from 'consults-service/entities';
 import { AppointmentDateTime } from 'doctors-service/resolvers/getDoctorsBySpecialtyAndFilters';
 import { AphError } from 'AphError';
@@ -1851,5 +1852,10 @@ export class AppointmentRepository extends Repository<Appointment> {
         order: { bookingDate: 'DESC' },
       });
     }
+  }
+
+  saveAppointmentHistory(historyAttrs: Partial<AppointmentUpdateHistory>) {
+    historyAttrs.updatedAt = new Date();
+    return AppointmentUpdateHistory.create(historyAttrs).save();
   }
 }

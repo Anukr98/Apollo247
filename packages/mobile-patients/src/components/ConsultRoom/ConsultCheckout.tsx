@@ -227,6 +227,11 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
           };
           postWebEngageEvent(WebEngageEventName.PAYMENT_INSTRUMENT, paymentEventAttributes);
           postFirebaseEvent(FirebaseEventName.PAYMENT_INSTRUMENT, paymentEventAttributes);
+
+          const paymentModeEventAttribute: WebEngageEvents[WebEngageEventName.CONSULT_PAYMENT_MODE_SELECTED] = {
+            'Payment Mode': item.paymentMode,
+          };
+          postWebEngageEvent(WebEngageEventName.CONSULT_PAYMENT_MODE_SELECTED, paymentModeEventAttribute);
         } catch (error) {}
         const apptmt = g(data, 'data', 'bookAppointment', 'appointment');
 
@@ -234,6 +239,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
           ? props.navigation.navigate(AppRoutes.ConsultPaymentnew, {
               doctorName: doctorName,
               doctorID: doctor.id,
+              doctor: doctor,
               appointmentId: g(data, 'data', 'bookAppointment', 'appointment', 'id'),
               price: price,
               paymentTypeID: item.paymentMode,
@@ -250,6 +256,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
           : props.navigation.navigate(AppRoutes.ConsultPaymentnew, {
               doctorName: doctorName,
               doctorID: doctor.id,
+              doctor: doctor,
               appointmentId: g(data, 'data', 'bookAppointment', 'appointment', 'id'),
               price: price,
               paymentTypeID: item.paymentMode,
