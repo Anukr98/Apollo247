@@ -275,6 +275,8 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
         primaryPatientId: addString,
         familyHistory: null,
         lifeStyle: null,
+        whatsAppMedicine: null,
+        whatsAppConsult: null,
       });
     }
     return pArray;
