@@ -132,6 +132,25 @@ export type Resolver<Parent, Args, Context, Result> = (
         return gatewayContext;
       }
 
+      //added beare toek with mobile number encoded with base64
+      if (jwt.startsWith('Bearer QVBPTExPMjQ3')) {
+        const token = jwt.split('QVBPTExPMjQ3');
+        if (token.length == 2) {
+          const buff = new Buffer(token[1], 'base64');
+          const mobileNumber = buff.toString('ascii');
+          console.log(mobileNumber, 'decoded');
+          if (mobileNumber == '' || mobileNumber == null) {
+            throw new AphAuthenticationError(AphErrorMessages.FIREBASE_AUTH_TOKEN_ERROR);
+          }
+          const gatewayContext: GatewayContext = {
+            mobileNumber,
+          };
+          return gatewayContext;
+        } else {
+          throw new AphAuthenticationError(AphErrorMessages.FIREBASE_AUTH_TOKEN_ERROR);
+        }
+      }
+
       const isLocal = process.env.NODE_ENV === 'local';
       const isFromLocalPlayground = jwt === 'FromLocalPlayground';
       if (isLocal && isFromLocalPlayground) {
