@@ -49,12 +49,6 @@ const generateSitemap: Resolver<null, {}, DoctorsServiceContext, string> = async
   const doctorList = await doctorRepo.getListBySpecialty();
   if (doctorList.length > 0) {
     doctorList.forEach((doctor) => {
-      const specialtyName = doctor.specialty.name
-        .trim()
-        .toLowerCase()
-        .replace(/\s/g, '-')
-        .replace('/', '_')
-        .replace('&', '%26');
       const doctorName =
         doctor.displayName
           .trim()
@@ -67,9 +61,7 @@ const generateSitemap: Resolver<null, {}, DoctorsServiceContext, string> = async
       const docStr =
         '<url>\n<loc>' +
         process.env.SITEMAP_BASE_URL +
-        'specialties/' +
-        specialtyName +
-        '/' +
+        'doctors/' +
         doctorName +
         '</loc>\n<lastmod>' +
         modifiedDate +
@@ -93,15 +85,22 @@ const generateSitemap: Resolver<null, {}, DoctorsServiceContext, string> = async
   const cmsUrlsList = JSON.parse(textRes);
   const modifiedDate =
     format(new Date(), 'yyyy-MM-dd') + 'T' + format(new Date(), 'hh:mm:ss') + '+00:00';
-  let cmsUrls = '\nCMS links\n';
+  let cmsUrls = '\n<!--CMS links-->\n';
   if (cmsUrlsList && cmsUrlsList.data.length > 0) {
     cmsUrlsList.data.forEach((link: string) => {
       const url = process.env.CMS_BASE_URL + link;
       cmsUrls += '<url>\n<loc>' + url + '</loc>\n<lastmod>' + modifiedDate + '</lastmod>\n</url>\n';
     });
   }
-
-  sitemapStr += doctorsStr + cmsUrls + '</urlset>';
+  const brandsPage =
+    '\n<!--Brands url-->\n<url>\n<loc>' +
+    process.env.SITEMAP_BASE_URL +
+    'medicine/brands</loc>\n<lastmod>' +
+    format(new Date(), 'yyyy-MM-dd') +
+    'T' +
+    format(new Date(), 'hh:mm:ss') +
+    '+00:00</lastmod>\n</url>\n';
+  sitemapStr += doctorsStr + cmsUrls + brandsPage + '</urlset>';
   const fileName = 'sitemap.xml';
   const uploadPath = assetsDir + '/' + fileName;
   fs.writeFile(uploadPath, sitemapStr, {}, (err) => {

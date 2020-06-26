@@ -28,6 +28,7 @@ import { CancelAppointment, CancelAppointmentVariables } from 'graphql/types/Can
 import { Consult } from 'components/Consult';
 import { CircularProgress } from '@material-ui/core';
 import { TestCall } from './TestCall';
+import Alert from './Alert';
 
 import {
   EndAppointmentSession,
@@ -40,6 +41,8 @@ import {
   STATUS,
   DoctorType,
   APPOINTMENT_TYPE,
+  DEVICETYPE,
+  BOOKINGSOURCE,
 } from 'graphql/types/globalTypes';
 import * as _ from 'lodash';
 import { CaseSheetContext } from 'context/CaseSheetContext';
@@ -867,6 +870,11 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     checkBox: {
       paddingTop: 15,
+      '& label': {
+        '& >span:first-child': {
+          color: '#00b38e',
+        },
+      },
     },
     bottomActions: {
       display: 'flex',
@@ -896,12 +904,29 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#fff',
       marginLeft: 16,
       minWidth: 210,
+      '&:hover': {
+        backgroundColor: '#fc9916',
+        color: '#fff',
+      },
     },
     sendBtnDisabled: {
       opacity: 0.6,
     },
+    ringtone: {
+      position: 'absolute',
+      zIndex: -1,
+      height: 1,
+      width: 1,
+      padding: 0,
+      margin: -1,
+      overflow: 'hidden',
+      clip: 'rect(0,0,0,0)',
+      border: 0,
+    },
   };
 });
+
+const ringtoneUrl = require('../images/phone_ringing.mp3');
 
 interface errorObject {
   reasonError: boolean;
@@ -1165,6 +1190,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               appointmentId: props.appointmentId,
               status: status,
               noShowBy: REQUEST_ROLES.PATIENT,
+              deviceType: DEVICETYPE.DESKTOP,
+              callSource: BOOKINGSOURCE.WEB,
             },
           },
           fetchPolicy: 'no-cache',
@@ -1283,6 +1310,12 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const [cancelError, setCancelError] = useState<string | null>(null);
   const [consultStart, setConsultStart] = useState<boolean>(false);
   const [sendToPatientButtonDisable, setSendToPatientButtonDisable] = useState<boolean>(false);
+  const [playRingtone, setPlayRingtone] = useState<boolean>(false);
+
+  //OT Error state
+  const [sessionError, setSessionError] = React.useState<boolean>(null);
+  const [publisherError, setPublisherError] = React.useState<boolean>(null);
+  const [subscriberError, setSubscriberError] = React.useState<boolean>(null);
 
   const toggelChatVideo = () => {
     setIsNewMsg(false);
@@ -1336,6 +1369,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     setShowVideoChat(false);
     setDisableOnCancel(false);
     clearInterval(intervalMissCall);
+    setPlayRingtone(false);
     const cookieStr = `action=`;
     document.cookie = cookieStr + ';path=/;';
     const text = {
@@ -1395,6 +1429,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       },
       (status: any, response: any) => {}
     );
+    setPlayRingtone(true);
     actionBtn();
   };
   const actionBtn = () => {
@@ -1662,6 +1697,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       }
       if (lastMsg.message && lastMsg.message.message === acceptcallMsg) {
         setIsCallAccepted(true);
+        setPlayRingtone(false);
         clearInterval(intervalMissCall);
         missedCallCounter = 0;
       }
@@ -2087,6 +2123,13 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
 
   return (
     <div className={classes.stickyHeader}>
+      {playRingtone && (
+        <audio controls autoPlay loop className={classes.ringtone}>
+          <source src={ringtoneUrl} type="audio/mpeg" />
+          Your browser does not support the audio tag.
+        </audio>
+      )}
+
       <div className={classes.breadcrumbs}>
         <div>
           {(props.appointmentStatus !== STATUS.COMPLETED || props.isClickedOnEdit) && (
@@ -2585,7 +2628,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                               }
                             }}
                           >
-                            End or Cancel Consult
+                            Cancel Consult
                           </li>
                         )}
                     </>
@@ -2990,6 +3033,9 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               isCallAccepted={isCallAccepted}
               isNewMsg={isNewMsg}
               convertCall={() => convertCall()}
+              setSessionError={setSessionError}
+              setPublisherError={setPublisherError}
+              setSubscriberError={setSubscriberError}
             />
           )}
         </div>
@@ -3307,7 +3353,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                 <FormControlLabel
                   control={
                     <Checkbox
-                      color="primary"
                       checked={isConfirmationChecked}
                       onChange={(event) => {
                         setIsConfirmationChecked(event.target.checked);
@@ -3352,6 +3397,26 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         </Paper>
       </Modal>
       {/* referral field required popup end */}
+      {/* Ot Errors Start */}
+      <Alert
+        error={sessionError}
+        onClose={() => {
+          setSessionError(null);
+        }}
+      />
+      <Alert
+        error={publisherError}
+        onClose={() => {
+          setPublisherError(null);
+        }}
+      />
+      <Alert
+        error={subscriberError}
+        onClose={() => {
+          setSubscriberError(null);
+        }}
+      />
+      {/* Ot Errors Ends */}
     </div>
   );
 };

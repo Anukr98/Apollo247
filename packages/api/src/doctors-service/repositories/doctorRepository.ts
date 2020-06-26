@@ -1051,12 +1051,21 @@ export class DoctorRepository extends Repository<Doctor> {
       return doc.length;
     }
   }
+
   async getSpecialityDoctors(specialty: string) {
     const queryBuilder = this.createQueryBuilder('doctor').where('doctor.specialty = :specialty', {
       specialty,
     });
     const doctorsResult = await queryBuilder.getMany();
     return doctorsResult;
+  }
+
+  async getSeniorDoctorsFromExcludeList(ids: string[]) {
+    return this.createQueryBuilder('doctor')
+      .andWhere('doctor.isActive = true')
+      .andWhere('doctor.doctorType != :junior', { junior: DoctorType.JUNIOR })
+      .andWhere('doctor.id not in (:...ids)', { ids })
+      .getMany();
   }
 }
 

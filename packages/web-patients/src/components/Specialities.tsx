@@ -182,10 +182,7 @@ export const Specialities: React.FC<SpecialitiesProps> = (props) => {
                               mutation();
                               speciality(e.currentTarget.title);
                               const specialityUpdated = readableParam(`${e.currentTarget.title}`);
-                              const encoded = encodeURIComponent(specialityUpdated);
-                              history.push(
-                                clientRoutes.specialties(`${encoded}${specialityDetails.id}`)
-                              );
+                              history.push(clientRoutes.specialties(`${specialityUpdated}`));
                               specialityId && specialityId(specialityDetails.id);
                               disableFilter(false);
                             }}

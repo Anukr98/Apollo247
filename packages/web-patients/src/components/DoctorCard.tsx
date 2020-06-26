@@ -25,7 +25,12 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
 import { useAuth } from 'hooks/authHooks';
 import { useParams } from 'hooks/routerHooks';
-import { readableParam, getDiffInDays } from 'helpers/commonHelpers';
+import {
+  readableParam,
+  getDiffInDays,
+  getDiffInHours,
+  getDiffInMinutes,
+} from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -156,28 +161,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
     specialty: string;
   }>();
 
-  const getDiffInMinutes = () => {
-    if (nextAvailability && nextAvailability.length > 0) {
-      const nextAvailabilityTime = nextAvailability && moment(nextAvailability);
-      const currentTime = moment(new Date());
-      const differenceInMinutes = currentTime.diff(nextAvailabilityTime, 'minutes') * -1;
-      return differenceInMinutes + 1; // for some reason moment is returning 1 second less. so that 1 is added.;
-    } else {
-      return 0;
-    }
-  };
-
-  const getDiffInHours = () => {
-    if (nextAvailability && nextAvailability.length > 0) {
-      const nextAvailabilityTime = nextAvailability && moment(nextAvailability);
-      const currentTime = moment(new Date());
-      const differenceInHours = currentTime.diff(nextAvailabilityTime, 'hours') * -1;
-      return Math.round(differenceInHours) + 1;
-    } else {
-      return 0;
-    }
-  };
-  const differenceInMinutes = getDiffInMinutes();
+  const differenceInMinutes = getDiffInMinutes(nextAvailability);
   const availabilityMarkup = () => {
     if (nextAvailability && nextAvailability.length > 0) {
       if (differenceInMinutes === 0) {
@@ -196,7 +180,9 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
         );
       } else if (differenceInMinutes >= 60 && differenceInMinutes < 1380) {
         return (
-          <div className={`${classes.availability}`}>AVAILABLE IN {getDiffInHours()} HOURS</div>
+          <div className={`${classes.availability}`}>
+            AVAILABLE IN {getDiffInHours(nextAvailability)} HOURS
+          </div>
         );
       } else if (differenceInMinutes >= 1380) {
         return (
@@ -356,14 +342,16 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                   color="primary"
                   className={classes.button}
                   title={
-                    getDiffInMinutes() > 0 && getDiffInMinutes() <= 60
+                    getDiffInMinutes(nextAvailability) > 0 &&
+                    getDiffInMinutes(nextAvailability) <= 60
                       ? 'Consult now'
                       : 'Book appointments'
                   }
                 >
                   {popupLoading ? (
                     <CircularProgress size={22} color="secondary" />
-                  ) : getDiffInMinutes() > 0 && getDiffInMinutes() <= 60 ? (
+                  ) : getDiffInMinutes(nextAvailability) > 0 &&
+                    getDiffInMinutes(nextAvailability) <= 60 ? (
                     'CONSULT NOW'
                   ) : (
                     'BOOK APPOINTMENT'

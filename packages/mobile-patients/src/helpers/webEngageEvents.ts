@@ -116,6 +116,7 @@ export enum WebEngageEventName {
   CANCEL_CONSULTATION_CLICKED = 'Cancel Consultation Clicked', // In appointment details screen
   CONTINUE_CONSULTATION_CLICKED = 'Continue Consultation Clicked', // In appointment details screen
   NO_SLOTS_FOUND = 'No Slots Found', // In appointment details screen
+  DOCTOR_RESCHEDULE_CLAIM_REFUND = 'Doctor reschedule and Claim Refund button click',
 
   // Medicine Events
   PHARMACY_AUTO_SELECT_LOCATION_CLICKED = 'Pharmacy Auto Select Location Clicked',
@@ -161,6 +162,10 @@ export interface PatientInfoWithNeedHelp extends PatientInfo {
 export interface SpecialityClickedEvent extends PatientInfo {
   'Speciality Name': string;
   'Speciality ID': string;
+}
+
+export interface ReorderMedicines extends PatientInfo {
+  source: 'Order Details' | 'PHR';
 }
 
 export interface WebEngageEvents {
@@ -727,7 +732,7 @@ export interface WebEngageEvents {
     Type: 'Prescription' | 'Test Result';
   };
 
-  [WebEngageEventName.REORDER_MEDICINES]: PatientInfo;
+  [WebEngageEventName.REORDER_MEDICINES]: ReorderMedicines;
 
   [WebEngageEventName.PHR_ORDER_MEDS_TESTS]: PatientInfoWithConsultId;
 
@@ -1051,4 +1056,9 @@ export interface WebEngageEvents {
     'Patient Gender': string;
     'Customer ID': string;
   };
+  [WebEngageEventName.DOCTOR_RESCHEDULE_CLAIM_REFUND]: {
+    'Appointment ID': string;
+    'Call Type': string;
+    'Patient Id': string;
+  }
 }

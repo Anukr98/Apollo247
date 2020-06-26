@@ -89,8 +89,11 @@ target 'ApolloPatient' do
   pod 'RNBugfender', :path => '../node_modules/@bugfender/rn-bugfender'
   pod 'RCTSystemSetting', :path => '../node_modules/react-native-system-setting'
   pod 'RNSound', :path => '../node_modules/react-native-sound'
+  pod 'react-native-video', :path => '../node_modules/react-native-video'
 
   # ServiceExtension Target
+
+  pod 'react-native-video', :path => '../node_modules/react-native-video'
 
   target 'NotificationService' do
       platform :ios, '10.0'

@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Theme, Grid, CircularProgress, Popover, Link, Typography } from '@material-ui/core';
+import { Theme, Grid, CircularProgress, Popover, Typography } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
 import { NavigationBottom } from 'components/NavigationBottom';
-import { AphInput, AphButton } from '@aph/web-ui-components';
+import { AphInput } from '@aph/web-ui-components';
 import { Specialities } from 'components/Specialities';
 import ExpansionPanel from '@material-ui/core/ExpansionPanel';
 import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
@@ -18,14 +18,18 @@ import { useLocationDetails } from 'components/LocationProvider';
 import { gtmTracking } from '../gtmTracking';
 import { SearchObject } from 'components/DoctorsFilter';
 import { BottomLinks } from 'components/BottomLinks';
+import { PastSearches } from 'components/PastSearches';
+import { useAuth } from 'hooks/authHooks';
+import { clientRoutes } from 'helpers/clientRoutes';
 import {
   SearchDoctorAndSpecialtyByNameVariables,
   SearchDoctorAndSpecialtyByName,
 } from 'graphql/types/SearchDoctorAndSpecialtyByName';
 import { readableParam } from 'helpers/commonHelpers';
 import { SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME } from 'graphql/doctors';
-import { MedicineLocationSearch } from 'components/MedicineLocationSearch';
 import { useParams } from 'hooks/routerHooks';
+import { Link } from 'react-router-dom';
+import { AphButton, AphDialog, AphDialogClose, AphDialogTitle } from '@aph/web-ui-components';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -43,11 +47,16 @@ const useStyles = makeStyles((theme: Theme) => {
           top: 0,
           right: 0,
           left: 0,
-          height: 320,
+          height: 270,
           background: '#fff',
           bottom: 'auto',
           zIndex: -1,
           boxShadow: ' 0 5px 20px 0 rgba(128, 128, 128, 0.3)',
+        },
+      },
+      [theme.breakpoints.down(650)]: {
+        '&:after': {
+          height: 320,
         },
       },
     },
@@ -106,7 +115,7 @@ const useStyles = makeStyles((theme: Theme) => {
           fontWeight: 'bold',
           color: '#fca317',
           textTransform: 'uppercase',
-          padding: '0 15px',
+          padding: '0 4px 0 7px',
           position: 'relative',
           '&:after': {
             content: "''",
@@ -140,6 +149,9 @@ const useStyles = makeStyles((theme: Theme) => {
         margin: '10px 0',
         color: '#00a7b9',
         fontWeight: 'bold',
+        [theme.breakpoints.down('sm')]: {
+          margin: '30px 0 10px',
+        },
       },
     },
     slWrapper: {
@@ -149,29 +161,45 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     location: {
-      '& >div': {
-        margin: '0 10px 0 0 !important',
-        border: 'none',
-        padding: '0 !important',
+      display: 'flex',
+      alignItems: 'center',
+      borderBottom: '2px solid #00b38e',
+      padding: '5px 0',
+      margin: '0 10px 0 0',
+      cursor: 'pointer',
+      '& >img': {
+        margin: '0 10px 0 0',
       },
       [theme.breakpoints.down(600)]: {
-        width: '100%',
-        '& >div': {
-          width: '100%',
-          margin: '0 0 10px !important',
-          '& >div': {
-            maxWidth: '100%',
-            '& >div': {
-              '&:last-child': {
-                display: 'block',
-              },
-            },
-          },
-        },
+        margin: '0 0 10px',
+      },
+    },
+    userLocation: {
+      display: 'flex',
+      alignItems: 'center',
+      '& p': {
+        fontSize: 16,
+        color: 'rgba(2,71,91, 0.3)',
+        fontWeight: 700,
+        margin: '0 10px 0 0',
+        width: 120,
+      },
+    },
+    searchInput: {
+      padding: '0 0 0 30px',
+    },
+    searchContainer: {
+      display: 'flex',
+      alignItems: 'center',
+      width: '100%',
+      position: 'relative',
+      '& img': {
+        position: 'absolute',
+        left: 0,
       },
     },
     pastSearch: {
-      padding: '20px 0',
+      padding: '20px 0 0',
       '& h6': {
         fontSize: 14,
         fontWeight: 'bold',
@@ -179,7 +207,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     pastSearchList: {
       margin: 0,
-      padding: '20px 0',
+      padding: '20px ',
       listStyle: 'none',
       display: 'flex',
       alignItems: 'center',
@@ -213,12 +241,21 @@ const useStyles = makeStyles((theme: Theme) => {
       borderBottom: '0.5px solid rgba(2,71,91,0.3)',
       '& h2': {
         fontSize: 14,
-        fontWeight: 'bold',
+        fontWeight: 700,
+        color: '#02475b',
         textTransform: 'uppercase',
         margin: 0,
       },
     },
-    otherSpeciality: {},
+    otherSpeciality: {
+      '& >div': {
+        '& >div': {
+          '&:first-child': {
+            display: 'none',
+          },
+        },
+      },
+    },
     faq: {
       padding: '20px',
       background: '#ffffff',
@@ -281,11 +318,7 @@ const useStyles = makeStyles((theme: Theme) => {
       listStyle: 'decimal',
     },
     tsContent: {
-      // display: 'flex',
-      // alignItems: 'center',
-      // justifyContent: 'space-between',
       padding: '20px 0',
-      // flexWrap: 'wrap',
     },
     osContainer: {
       padding: '20px 0',
@@ -338,9 +371,7 @@ const useStyles = makeStyles((theme: Theme) => {
         padding: '0 10px !important',
       },
     },
-    specialityDetails: {
-      // padding: '20px 0',
-    },
+    specialityDetails: {},
     videoContainer: {
       height: 180,
       border: '1px solid #eee',
@@ -351,7 +382,7 @@ const useStyles = makeStyles((theme: Theme) => {
       background: '#ffffff',
       borderRadius: 5,
       padding: 15,
-      margin: '20px 0 0',
+      margin: '0 0 20px',
       '& h5': {
         fontSize: 16,
         fontWeight: 600,
@@ -467,6 +498,12 @@ const useStyles = makeStyles((theme: Theme) => {
         borderLeft: ' 40px solid transparent',
         borderRight: '40px solid transparent',
       },
+      [theme.breakpoints.down('sm')]: {
+        minWidth: 100,
+        '&:first-child': {
+          margin: '0 20px 0 0',
+        },
+      },
     },
     tabSelected: {
       borderColor: '#00b38e',
@@ -565,6 +602,48 @@ const useStyles = makeStyles((theme: Theme) => {
         display: 'none',
       },
     },
+    locationContainer: {
+      padding: 30,
+      [theme.breakpoints.down(600)]: {
+        padding: 20,
+      },
+    },
+    dialogTitle: {
+      textAlign: 'left',
+      [theme.breakpoints.down(600)]: {
+        '& h2': {
+          fontSize: 14,
+        },
+      },
+    },
+    popularCities: {
+      padding: '20px 0',
+      '& h6': {
+        fontSize: 14,
+        fontWeight: 700,
+        margin: '0 0 10px',
+        color: '#02475b',
+      },
+      '& button': {
+        margin: '0 15px 0 0',
+        color: '#00b38e',
+        borderRadius: 10,
+        fontSize: 12,
+        textTransform: 'none',
+        [theme.breakpoints.down(500)]: {
+          margin: '0 15px 15px 0',
+        },
+      },
+    },
+    btnContainer: {
+      display: 'flex',
+      justifyContent: 'flex-end',
+      '& button': {
+        width: 180,
+        fontSize: 13,
+        fontWeight: 700,
+      },
+    },
   };
 });
 
@@ -628,6 +707,8 @@ export const SpecialityListing: React.FC = (props) => {
   const [loading, setLoading] = useState<boolean>(false);
   const [showSearchAndPastSearch, setShowSearchAndPastSearch] = useState<boolean>(true);
   const [disableFilters, setDisableFilters] = useState<boolean>(true);
+  const [locationPopup, setLocationPopup] = useState<boolean>(false);
+  const { isSignedIn } = useAuth();
 
   const handleChange = (panel: string) => (event: React.ChangeEvent<{}>, isExpanded: boolean) => {
     setExpanded(isExpanded ? panel : false);
@@ -643,6 +724,7 @@ export const SpecialityListing: React.FC = (props) => {
     currentLat,
     getCurrentLocationPincode,
   } = useLocationDetails();
+
   const params = useParams<{
     specialty: string;
   }>();
@@ -727,19 +809,23 @@ export const SpecialityListing: React.FC = (props) => {
     }
   }, [specialitySelected]);
 
+  const specialityNames = specialitySelected.length > 0 ? specialitySelected.split('_') : '';
+
   return (
     <div className={classes.slContainer}>
       <Header />
       <div className={classes.container}>
         <div className={classes.slContent}>
           <div className={classes.pageHeader}>
-            <div className={classes.backArrow} title={'Back to home page'}>
-              <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
-              <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
-            </div>
+            <Link to={clientRoutes.welcome()}>
+              <div className={classes.backArrow} title={'Back to home page'}>
+                <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
+                <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
+              </div>
+            </Link>
             <ol className={classes.breadcrumbs}>
               <li>
-                <a href="javascript:void(0);">Home</a>
+                <Link to={clientRoutes.welcome()}>Home</Link>
               </li>
               <li className="active">
                 <a href="javascript:void(0);">Specialities</a>
@@ -752,29 +838,45 @@ export const SpecialityListing: React.FC = (props) => {
                 <div className={classes.specialityContent}>
                   <div className={classes.sHeader}>
                     <Typography component="h1">Book Doctor Appointments Online</Typography>
-                    <a href="javascript:void(0);">
+                    {/* <a href="javascript:void(0);">
                       <img src={require('images/ic_round-share.svg')} />
-                    </a>
+                    </a> */}
                   </div>
                   <div className={classes.specialitySearch}>
-                    <div className={classes.location}>
-                      <MedicineLocationSearch />
+                    <div className={classes.location} onClick={() => setLocationPopup(true)}>
+                      <img src={require('images/location.svg')} alt="" />
+                      <div className={classes.userLocation}>
+                        <Typography>Select Your City</Typography>
+                        <img src={require('images/ic_dropdown_green.svg')} alt="" />
+                      </div>
                     </div>
-                    <AphInput placeholder="Search doctors or specialities" />
+                    <div className={classes.searchContainer}>
+                      <img src={require('images/ic-search.svg')} alt="" />
+                      <AphInput
+                        className={classes.searchInput}
+                        placeholder="Search doctors or specialities"
+                      />
+                    </div>
                   </div>
                   <div className={classes.pastSearch}>
-                    <Typography component="h6">Past Searches</Typography>
-                    <ul className={classes.pastSearchList}>
-                      <li>
-                        <a href="javascript:void(0)">Dr. Alok Mehta</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0)">Cardiology</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0)">Paediatrician</a>
-                      </li>
-                    </ul>
+                    <Typography component="h6">{isSignedIn ? 'Past Searches' : ''}</Typography>
+                    <div className={classes.pastSearchList}>
+                      {currentPatient &&
+                      currentPatient.id &&
+                      filterOptions.searchKeyword.length <= 0 &&
+                      specialitySelected.length === 0 &&
+                      showSearchAndPastSearch ? (
+                        <PastSearches
+                          speciality={(specialitySelected) =>
+                            setSpecialitySelected(specialitySelected)
+                          }
+                          disableFilter={(disableFilters) => {
+                            setDisableFilters(disableFilters);
+                          }}
+                          specialityId={(specialityId: string) => setSpecialtyId(specialityId)}
+                        />
+                      ) : null}
+                    </div>
                   </div>
                   <Typography component="h2">
                     Start your care now by choosing from 500 doctors and 65 specialities
@@ -787,42 +889,52 @@ export const SpecialityListing: React.FC = (props) => {
                       <Grid container spacing={2}>
                         <Grid item xs={6} md={3}>
                           <div className={classes.specialityCard}>
-                            <Typography component="h3">Paediatrics</Typography>
-                            <img src={require('images/ic-baby.svg')} />
-                            <Typography>For your child’s health problems</Typography>
-                            <Typography className={classes.symptoms}>
-                              Fever, cough, diarrhoea
-                            </Typography>
+                            <Link to={clientRoutes.specialties('paediatrics')}>
+                              <Typography component="h3">Paediatrics</Typography>
+                              <img src={require('images/ic-baby.svg')} />
+                              <Typography>For your child’s health problems</Typography>
+                              {/* <Typography className={classes.symptoms}>
+                                Fever, cough, diarrhoea
+                              </Typography> */}
+                            </Link>
                           </div>
                         </Grid>
                         <Grid item xs={6} md={3}>
                           <div className={classes.specialityCard}>
-                            <Typography component="h3">General Physician</Typography>
-                            <img src={require('images/ic_doctor_consult.svg')} />
-                            <Typography>For any common health issue</Typography>
-                            <Typography className={classes.symptoms}>
-                              Fever, headache, asthma
-                            </Typography>
+                            <Link
+                              to={clientRoutes.specialties('general-physician-internal-medicine')}
+                            >
+                              <Typography component="h3">General Physician</Typography>
+                              <img src={require('images/ic_doctor_consult.svg')} />
+                              <Typography>For any common health issue</Typography>
+                              {/* <Typography className={classes.symptoms}>
+                                Fever, headache, asthma
+                              </Typography> */}
+                            </Link>
                           </div>
                         </Grid>
                         <Grid item xs={6} md={3}>
                           <div className={classes.specialityCard}>
-                            <Typography component="h3">Dermatology</Typography>
-                            <img src={require('images/ic-hair.svg')} />
-                            <Typography>For skin &amp; hair problems</Typography>
-                            <Typography className={classes.symptoms}>
-                              Skin rash, acne, skin patch
-                            </Typography>
+                            <Link to={clientRoutes.specialties('dermatology')}>
+                              <Typography component="h3">Dermatology</Typography>
+                              <img src={require('images/ic-hair.svg')} />
+                              <Typography>For skin &amp; hair problems</Typography>
+                              {/* <Typography className={classes.symptoms}>
+                                Skin rash, acne, skin patch
+                              </Typography> */}
+                            </Link>
                           </div>
                         </Grid>
                         <Grid item xs={6} md={3}>
                           <div className={classes.specialityCard}>
-                            <Typography component="h3">Gynaecology</Typography>
-                            <img src={require('images/ic-gynaec.svg')} />
-                            <Typography>For women’s health </Typography>
-                            <Typography className={classes.symptoms}>
-                              Irregular periods, pregnancy
-                            </Typography>
+                            <Link to={clientRoutes.specialties('obstetrics--gynaecology')}>
+                              <Typography component="h3">Gynaecology</Typography>
+                              <img src={require('images/ic-gynaec.svg')} />
+                              <Typography>For women’s health </Typography>
+                              {/* <Typography className={classes.symptoms}>
+                                Irregular periods, pregnancy
+                              </Typography> */}
+                            </Link>
                           </div>
                         </Grid>
                       </Grid>
@@ -857,7 +969,7 @@ export const SpecialityListing: React.FC = (props) => {
               </Grid>
               <Grid item xs={12} md={4}>
                 <div className={classes.specialityDetails}>
-                  <div className={classes.videoContainer}></div>
+                  {/* <div className={classes.videoContainer}></div> */}
                   <div className={classes.card}>
                     <div className={classes.symptomContainer}>
                       <img src={require('images/ic-symptomtracker.svg')} />
@@ -865,7 +977,15 @@ export const SpecialityListing: React.FC = (props) => {
                         <Typography component="h6">
                           Not sure about which speciality to choose?
                         </Typography>
-                        <a href="javascript:void(0)">Track your Symptoms</a>
+                        <Link
+                          to={
+                            isSignedIn
+                              ? clientRoutes.symptomsTrackerFor()
+                              : clientRoutes.symptomsTracker()
+                          }
+                        >
+                          Track your Symptoms
+                        </Link>
                       </div>
                     </div>
                   </div>
@@ -1106,6 +1226,27 @@ export const SpecialityListing: React.FC = (props) => {
       <div className={classes.footerLinks}>
         <BottomLinks />
       </div>
+      <AphDialog open={locationPopup} maxWidth="md">
+        <AphDialogClose onClick={() => setLocationPopup(false)} title={'Close'} />
+        <AphDialogTitle className={classes.dialogTitle}>
+          Select a city to see the recommended healthcare services
+        </AphDialogTitle>
+        <div className={classes.locationContainer}>
+          <AphInput placeholder="Select for a city" />
+
+          <div className={classes.popularCities}>
+            <Typography component="h6">Popular Cities</Typography>
+            <AphButton>Hyderabad</AphButton>
+            <AphButton>Chennai</AphButton>
+            <AphButton>Mumbai</AphButton>
+            <AphButton>Kolkata</AphButton>
+            <AphButton>Bangalore</AphButton>
+          </div>
+          <div className={classes.btnContainer}>
+            <AphButton color="primary">Okay</AphButton>
+          </div>
+        </div>
+      </AphDialog>
     </div>
   );
 };

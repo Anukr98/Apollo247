@@ -250,6 +250,28 @@ export const MedicineCard: React.FC<MedicineInformationProps> = (props) => {
                             action: 'Add to Cart',
                             label: product.name,
                             value: product.special_price || product.price,
+                            ecommObj: {
+                              event: 'add_to_cart',
+                              ecommerce: {
+                                items: [
+                                  {
+                                    item_name: product.name,
+                                    item_id: product.sku,
+                                    price: product.price,
+                                    item_category: 'Pharmacy',
+                                    item_category_2: product.type_id
+                                      ? product.type_id.toLowerCase() === 'pharma'
+                                        ? 'Drugs'
+                                        : 'FMCG'
+                                      : null,
+                                    // 'item_category_4': '', // future reference
+                                    item_variant: 'Default',
+                                    index: 1,
+                                    quantity: 1,
+                                  },
+                                ],
+                              },
+                            },
                           });
                           /**Gtm code End  */
                           const index = cartItems.findIndex((item) => item.id === cartItem.id);
@@ -317,9 +339,31 @@ export const MedicineCard: React.FC<MedicineInformationProps> = (props) => {
                           /* Gtm code start  */
                           gtmTracking({
                             category: 'Pharmacy',
-                            action: 'Updating Cart Item by decreasing quantity 1',
+                            action: 'Remove From Cart',
                             label: product.name,
                             value: product.special_price || product.price,
+                            ecommObj: {
+                              event: 'remove_from_cart',
+                              ecommerce: {
+                                items: [
+                                  {
+                                    item_name: product.name,
+                                    item_id: product.sku,
+                                    price: product.price,
+                                    item_category: 'Pharmacy',
+                                    item_category_2: product.type_id
+                                      ? product.type_id.toLowerCase() === 'pharma'
+                                        ? 'Drugs'
+                                        : 'FMCG'
+                                      : null,
+                                    // 'item_category_4': '', // future reference
+                                    item_variant: 'Default',
+                                    index: 1,
+                                    quantity: 1,
+                                  },
+                                ],
+                              },
+                            },
                           });
                           /* Gtm code end  */
                           updateCartItem && updateCartItem(cartItem);
@@ -355,9 +399,31 @@ export const MedicineCard: React.FC<MedicineInformationProps> = (props) => {
                           /* Gtm code start  */
                           gtmTracking({
                             category: 'Pharmacy',
-                            action: 'Updating Cart Item by increasing quantity 1',
+                            action: 'Add to Cart',
                             label: product.name,
                             value: product.special_price || product.price,
+                            ecommObj: {
+                              event: 'add_to_cart',
+                              ecommerce: {
+                                items: [
+                                  {
+                                    item_name: product.name,
+                                    item_id: product.sku,
+                                    price: product.price,
+                                    item_category: 'Pharmacy',
+                                    item_category_2: product.type_id
+                                      ? product.type_id.toLowerCase() === 'pharma'
+                                        ? 'Drugs'
+                                        : 'FMCG'
+                                      : null,
+                                    // 'item_category_4': '', // future reference
+                                    item_variant: 'Default',
+                                    index: 1,
+                                    quantity: 1,
+                                  },
+                                ],
+                              },
+                            },
                           });
                           /* Gtm code end  */
                           updateCartItem && updateCartItem(cartItem);
