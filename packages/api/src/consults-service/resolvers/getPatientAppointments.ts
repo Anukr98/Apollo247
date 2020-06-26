@@ -248,6 +248,7 @@ const getPatientPersonalizedAppointments: Resolver<
   PersonalizedAppointmentResult
 > = async (parent, args, { consultsDb, doctorsDb, patientsDb, mobileNumber }) => {
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
+  mobileNumber = '+918019677178';
   const patientData = await patientRepo.checkMobileIdInfo(mobileNumber, args.patientUhid, '');
   if (!patientData) throw new AphError(AphErrorMessages.INVALID_PATIENT_DETAILS);
   let uhid = args.patientUhid;
@@ -264,14 +265,14 @@ const getPatientPersonalizedAppointments: Resolver<
   );
   const textRes = await apptsResp.text();
   const offlineApptsList = JSON.parse(textRes);
+
   function getApptDetails() {
     return new Promise<PersonalizedAppointment>(async (resolve) => {
       const doctorRepo = doctorsDb.getCustomRepository(DoctorHospitalRepository);
       offlineApptsList.response.forEach(async (appt: offlineAppointment) => {
         if (Math.abs(differenceInDays(new Date(), new Date(appt.consultedtime))) <= 30) {
-          const doctorDets = await doctorRepo.getDoctorIdByMedmantraId(
-            offlineApptsList.response[0].doctorid
-          );
+          const doctorDets = await doctorRepo.getDoctorIdByMedmantraId(appt.doctorid);
+          console.log(doctorDets, 'doctorDets');
           if (doctorDets) {
             const apptDetailsOffline: PersonalizedAppointment = {
               id: appt.appointmentid,
@@ -288,6 +289,7 @@ const getPatientPersonalizedAppointments: Resolver<
             throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID);
           }
         }
+        console.log(apptDetails, 'apptDetails');
         resolve(apptDetails);
       });
     });
@@ -300,6 +302,7 @@ const getPatientPersonalizedAppointments: Resolver<
     console.log(offlineApptsList.errorMsg, offlineApptsList.errorCode, 'offline consults error');
     throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
   }
+  console.log(apptDetails, 'apptDetails final');
   return { appointmentDetails: apptDetails };
 };
 
