@@ -876,7 +876,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     );
   };
 
-  const [slideIndex, setSlideIndex] = useState(1);
+  const [slideIndex, setSlideIndex] = useState(0);
 
   const renderDot = (active: boolean) => (
     <View style={[styles.sliderDotStyle, { backgroundColor: active ? '#aaa' : '#d8d8d8' }]} />
@@ -903,7 +903,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             itemWidth={winWidth}
             loop={true}
             autoplay={true}
-            autoplayDelay={500}
+            autoplayDelay={3000}
             autoplayInterval={3000}
           />
           <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
