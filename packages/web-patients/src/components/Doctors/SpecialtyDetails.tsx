@@ -47,7 +47,6 @@ import {
   SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_specialties as SpecialtyType,
 } from 'graphql/types/SearchDoctorAndSpecialtyByName';
 import _lowerCase from 'lodash/lowerCase';
-import { PastSearches } from 'components/PastSearches';
 import { useAuth } from 'hooks/authHooks';
 import { Cities } from '../Cities';
 import axios from 'axios';
@@ -927,14 +926,6 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
                   )}
                 </div>
               </div>
-              {currentPatient && currentPatient.id && searchKeyword.length <= 0 && (
-                <div className={classes.pastSearch}>
-                  <Typography component="h6">{isSignedIn ? 'Past Searches' : ''}</Typography>
-                  <div className={classes.pastSearchList}>
-                    <PastSearches />
-                  </div>
-                </div>
-              )}
               {/* <div className={classes.topSearch}>
                 <div className={classes.selectCity}>
                   <div className={classes.inputIcon}>
