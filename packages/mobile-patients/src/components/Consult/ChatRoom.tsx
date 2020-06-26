@@ -1022,6 +1022,18 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     }
   };
 
+  const checkNudgeScreenVisibility = async () => {
+    const hideNudgeScreenappointmentID = (await AsyncStorage.getItem(appointmentData.id)) || '';
+    // console.log('hideNudgeScreenappointmentID', hideNudgeScreenappointmentID);
+    if (hideNudgeScreenappointmentID != appointmentData.id) {
+      setDisplayUploadHealthRecords(true);
+      console.log('if hideNudgeScreenappointmentID', hideNudgeScreenappointmentID);
+    } else {
+      setDisplayUploadHealthRecords(false);
+      console.log('else hideNudgeScreenappointmentID', hideNudgeScreenappointmentID);
+    }
+  };
+
   const requestToJrDoctor = async () => {
     //new code
     if (userAnswers) {
@@ -1952,6 +1964,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     if (appointmentData.isJdQuestionsComplete) {
       console.log({});
       requestToJrDoctor();
+      checkNudgeScreenVisibility();
       // startJoinTimer(0);
       // thirtySecondCall();
       // minuteCaller();
@@ -5818,7 +5831,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const uploadPrescriptionPopup = () => {
-    return (
+    return isDropdownVisible ? (
       <UploadPrescriprionPopup
         heading="Attach File(s)"
         instructionHeading="Instructions For Uploading Files"
@@ -5827,7 +5840,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           'Doctor details & date of the test should be clearly visible.',
           'Only JPG / PNG type files up to 2 mb are allowed',
         ]}
-        isVisible={isDropdownVisible}
         disabledOption={'NONE'}
         blockCamera={isCall}
         blockCameraMessage={strings.alerts.Open_camera_in_video_call}
@@ -5851,7 +5863,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           }
         }}
       />
-    );
+    ) : null;
   };
   const renderPrescriptionModal = () => {
     return (
@@ -6079,6 +6091,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           activeOpacity={1}
           onPress={() => {
             setDisplayUploadHealthRecords(false);
+            AsyncStorage.setItem(appointmentData.id, appointmentData.id);
           }}
         >
           <View
@@ -6122,6 +6135,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   CommonLogEvent(AppRoutes.ChatRoom, 'Upload document clicked.');
                   setDropdownVisible(!isDropdownVisible);
                   setDisplayUploadHealthRecords(false);
+                  AsyncStorage.setItem(appointmentData.id, appointmentData.id);
                 }}
               >
                 <UploadHealthRecords
