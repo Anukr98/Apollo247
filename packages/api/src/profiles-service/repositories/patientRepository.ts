@@ -99,7 +99,7 @@ export class PatientRepository extends Repository<Patient> {
 
   async getByIdCache(id: string | number) {
     const redis = await pool.getTedis();
-    const cache = await redis.get(`${REDIS_PATIENT_ID_KEY_PREFIX}${id}`);
+    const cache = await redis.get(`${REDIS_PATIENT_ID_KEY_PREFIX}${id}`).catch();
     pool.putTedis(redis);
     dLogger(
       new Date(),
@@ -114,7 +114,6 @@ export class PatientRepository extends Repository<Patient> {
   }
 
   async getPatientData(id: string | number) {
-    console.log('reached getPatientData');
     const relations = [
       'lifeStyle',
       'healthVault',
@@ -212,7 +211,6 @@ export class PatientRepository extends Repository<Patient> {
   async findByMobileNumberLogin(mobileNumber: string) {
     const patientList = await this.getByMobileCache(mobileNumber);
     let finalList: Patient[] = patientList;
-    console.log('patient list count', patientList.length);
     if (patientList.length > 1) {
       patientList.map(async (patient) => {
         if (patient.firstName == '' || patient.uhid == '') {
@@ -245,7 +243,7 @@ export class PatientRepository extends Repository<Patient> {
   async updatePatientAllergies(id: string, allergies: string) {
     const patient = await this.getPatientDetails(id);
     if (patient) {
-      this.dropPatientCache(`${REDIS_PATIENT_ID_KEY_PREFIX}${patient.id}`);
+      patient.allergies = allergies;
       return await this.save(patient);
     } else return null;
   }
@@ -669,13 +667,14 @@ export class PatientRepository extends Repository<Patient> {
     }
   }
 
-  updateToken(id: string, athsToken: string) {
-    return this.update(id, { athsToken });
+  async updateToken(id: string, athsToken: string) {
+    const patient = this.create({ id, athsToken });
+    return await patient.save();
   }
 
-  deleteProfile(id: string) {
-    this.dropPatientCache(`${REDIS_PATIENT_ID_KEY_PREFIX}${id}`);
-    return this.update(id, { isActive: false });
+  async deleteProfile(id: string) {
+    const patient = this.create({ id, isActive: false });
+    return await patient.save();
   }
 
   async createNewUhid(id: string) {
@@ -793,7 +792,7 @@ export class PatientRepository extends Repository<Patient> {
     const uhidResp: UhidCreateResult = JSON.parse(textProcessRes);
     let newUhid = '';
     if (uhidResp.retcode == '0') {
-      this.updateUhid(id, uhidResp.result.toString());
+      await this.updateUhid(id, uhidResp.result.toString());
       this.createPrismUser(patientDetails, uhidResp.result.toString());
       newUhid = uhidResp.result;
     }
