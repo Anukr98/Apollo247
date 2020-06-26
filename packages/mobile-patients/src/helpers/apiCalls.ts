@@ -594,6 +594,19 @@ export const getNearByStoreDetailsApi = (pincode: any): Promise<AxiosResponse<an
   });
 };
 
+export const callToExotelApi = (params: any): Promise<AxiosResponse<any>> => {
+  const url = `https://notifications.apollo247.com/webhooks/exotel/call`;
+  return Axios.post(
+    url,
+    { ...params },
+    {
+      headers: {
+        'x-api-key': 'gNXyYhY2VDxwzv8f6TwJqvfYmPmj',
+      },
+    }
+  );
+};
+
 export const fetchPaymentOptions = (): Promise<AxiosResponse<any>> => {
   const baseUrl = AppConfig.Configuration.CONSULT_PG_BASE_URL;
   const url = `${baseUrl}/list-of-payment-methods`;

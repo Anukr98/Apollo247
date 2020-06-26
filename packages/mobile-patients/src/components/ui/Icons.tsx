@@ -1116,3 +1116,12 @@ export const SearchIcon: React.FC<IconProps> = (props) => (
     resizeMode="contain"
   />
 );
+
+export const KavachIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ width: 24, height: 24 }}
+    {...props}
+    source={require('./icons/bitmap.png')}
+    resizeMode="contain"
+  />
+);
