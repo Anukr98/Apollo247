@@ -822,7 +822,6 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
       )}
       {displayOrderPopup && (
         <UploadPrescriprionPopup
-          isVisible={displayOrderPopup}
           disabledOption="NONE"
           type="nonCartFlow"
           heading={'Upload Prescription(s)'}

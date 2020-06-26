@@ -789,9 +789,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   };
 
   const renderUploadPrescriprionPopup = () => {
-    return (
+    return ShowPopop ? (
       <UploadPrescriprionPopup
-        isVisible={ShowPopop}
         disabledOption="NONE"
         type="nonCartFlow"
         heading={'Upload Prescription(s)'}
@@ -819,7 +818,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           }
         }}
       />
-    );
+    ) : null;
   };
 
   const [imgHeight, setImgHeight] = useState(120);
