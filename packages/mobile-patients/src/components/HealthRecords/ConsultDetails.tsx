@@ -983,9 +983,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                         <Text style={styles.dataTextStyle}>
                           Instuctions: {item!.testInstruction}
                         </Text>
-                      ) : (
-                        ''
-                      )}
+                      ) : null}
                     </>
                   );
                 })}
