@@ -121,8 +121,15 @@ export const PastSearches: React.FC = (props) => {
         {/* <div className={classes.sectionHeader}>Your Past Searches</div> */}
         <Grid container spacing={2}>
           {data.getPatientPastSearches.map((searchDetails) => {
-            return searchDetails && searchDetails.searchType === SEARCH_TYPE.DOCTOR ? (
-              <Grid item xs={6} sm={6} md={4} lg={3} key={_uniqueId('psearch_doctor_')}>
+            return searchDetails && searchDetails ? (
+              <Grid
+                item
+                xs={6}
+                sm={6}
+                md={4}
+                lg={3}
+                key={`${_uniqueId('psearch_doctor_')}- ${searchDetails.typeId}`}
+              >
                 <Link
                   to={`/doctors/${readableParam(searchDetails.name)}-${searchDetails.typeId}`}
                   title={searchDetails && `${_startCase(_toLower(searchDetails.name || ''))}`}
@@ -152,7 +159,7 @@ export const PastSearches: React.FC = (props) => {
                       const encoded = encodeURIComponent(specialityUpdated);
                       history.push(clientRoutes.specialties(`${specialityUpdated}`));
                     }}
-                    key={_uniqueId('psearch_spl_')}
+                    key={`${_uniqueId('psearch_spl_')}- ${searchDetails.typeId}`}
                   >
                     <div className={classes.contentBox}>
                       <Avatar
