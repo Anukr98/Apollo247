@@ -316,7 +316,7 @@ const bookAppointment: Resolver<
     //chnage the code
     const payload: ValidateCouponRequest = {
       mobile: patientDetails.mobileNumber.replace('+91', ''),
-      billAmount: appointmentInput.discountedAmount,
+      billAmount: appointmentInput.discountedAmount ? appointmentInput.discountedAmount : 0,
       coupon: appointmentInput.couponCode,
       paymentType: '',
       pinCode: appointmentInput.pinCode ? appointmentInput.pinCode : '',
@@ -332,7 +332,7 @@ const bookAppointment: Resolver<
               : appointmentInput.appointmentType == APPOINTMENT_TYPE.PHYSICAL
               ? 0
               : -1,
-          cost: appointmentInput.discountedAmount,
+          cost: appointmentInput.discountedAmount ? appointmentInput.discountedAmount : 0,
           rescheduling: false,
         },
       ],
