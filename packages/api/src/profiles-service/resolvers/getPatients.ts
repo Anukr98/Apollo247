@@ -154,7 +154,7 @@ const getPatientByMobileNumber: Resolver<
     appointmentList.push(patientObj);
   }
 
-  appointmentList = _.sortBy(appointmentList, 'appointmentCount');
+  appointmentList = _.sortBy(appointmentList, 'appointmentCount').reverse();
   var patientResult = [];
 
   for (var i = 0; i < appointmentList.length; i++) {
