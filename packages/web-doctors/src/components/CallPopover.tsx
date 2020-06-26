@@ -43,7 +43,7 @@ import {
   APPOINTMENT_TYPE,
   DEVICETYPE,
   BOOKINGSOURCE,
-  APPT_CALL_TYPE
+  APPT_CALL_TYPE,
 } from 'graphql/types/globalTypes';
 import * as _ from 'lodash';
 import { CaseSheetContext } from 'context/CaseSheetContext';
@@ -872,6 +872,7 @@ const useStyles = makeStyles((theme: Theme) => {
       justifyContent: 'flex-end',
       marginRight: 20,
       marginTop: 40,
+    },
     content: {
       position: 'relative',
       borderRadius: '5px',
@@ -1008,7 +1009,6 @@ const useStyles = makeStyles((theme: Theme) => {
     },
   };
 });
-
 const ringtoneUrl = require('../images/phone_ringing.mp3');
 
 interface errorObject {
@@ -1275,7 +1275,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               noShowBy: REQUEST_ROLES.PATIENT,
               deviceType: DEVICETYPE.DESKTOP,
               callSource: BOOKINGSOURCE.WEB,
-              callType: APPT_CALL_TYPE.CHAT
+              callType: APPT_CALL_TYPE.CHAT,
             },
           },
           fetchPolicy: 'no-cache',
