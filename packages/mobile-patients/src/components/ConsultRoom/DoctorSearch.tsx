@@ -402,7 +402,27 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     }
   }, [currentPatient]);
 
+  useEffect(() => {
+    const _didFocus = props.navigation.addListener('didFocus', (payload) => {
+      BackHandler.addEventListener('hardwareBackPress', handleBack);
+    });
+
+    const _willBlur = props.navigation.addListener('willBlur', (payload) => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBack);
+      return () => {
+        _didFocus && _didFocus.remove();
+        _willBlur && _willBlur.remove();
+      };
+    });
+  }, []);
+
   const client = useApolloClient();
+
+  const handleBack = async () => {
+    BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    props.navigation.goBack();
+    return false;
+  };
 
   const fetchDoctorData = (id: string, speciality: string) => {
     let geolocation = {} as any;
@@ -1705,6 +1725,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
         visible={showProfilePopUp}
         onRequestClose={() => {
           setShowProfilePopUp(false);
+          handleBack();
         }}
         onDismiss={() => {
           setShowProfilePopUp(false);
