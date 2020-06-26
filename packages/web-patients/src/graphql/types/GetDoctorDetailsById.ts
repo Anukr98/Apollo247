@@ -3,7 +3,7 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-import { Salutation, DoctorType, ConsultMode, ConsultType, WeekDay } from "./globalTypes";
+import { DoctorType, ConsultMode, ConsultType, WeekDay } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: GetDoctorDetailsById
@@ -96,7 +96,7 @@ export interface GetDoctorDetailsById_getDoctorDetailsById_consultHours {
 export interface GetDoctorDetailsById_getDoctorDetailsById {
   __typename: "DoctorDetails";
   id: string;
-  salutation: Salutation | null;
+  salutation: string | null;
   firstName: string;
   lastName: string;
   fullName: string | null;
