@@ -22,7 +22,7 @@ import {
   GET_MEDICINE_ORDER_CANCEL_REASONS,
   GET_MEDICINE_ORDER_OMS_DETAILS,
   CANCEL_MEDICINE_ORDER_OMS,
-  GET_PATIENT_ADDRESS_LIST,
+  GET_PATIENT_ADDRESS_BY_ID,
   ALERT_MEDICINE_ORDER_PICKUP,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
@@ -37,7 +37,6 @@ import {
   FEEDBACKTYPE,
   MEDICINE_DELIVERY_TYPE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { getPatientAddressList } from '@aph/mobile-patients/src/graphql/types/getPatientAddressList';
 import {
   aphConsole,
   g,
@@ -45,6 +44,7 @@ import {
   handleGraphQlError,
   postWebEngageEvent,
   reOrderMedicines,
+  formatOrderAddress,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -93,6 +93,10 @@ import {
   MedicineReOrderOverlay,
   MedicineReOrderOverlayProps,
 } from '@aph/mobile-patients/src/components/Medicines/MedicineReOrderOverlay';
+import {
+  getPatientAddressById,
+  getPatientAddressByIdVariables,
+} from '@aph/mobile-patients/src/graphql/types/getPatientAddressById';
 
 const styles = StyleSheet.create({
   headerShadowContainer: {
@@ -172,12 +176,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   };
 
   const { currentPatient } = useAllCurrentPatients();
-  const {
-    addMultipleCartItems,
-    addMultipleEPrescriptions,
-    addresses,
-    setAddresses,
-  } = useShoppingCart();
+  const { addMultipleCartItems, addMultipleEPrescriptions, addresses } = useShoppingCart();
   const { showAphAlert, hideAphAlert, setLoading } = useUIElements();
   const vars: getMedicineOrderOMSDetailsVariables = {
     patientId: currentPatient && currentPatient.id,
@@ -208,101 +207,28 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     ? 0
     : g(data, 'getMedicineOrderOMSDetails', 'medicineOrderDetails', 'billNumber');
 
-  const getAddressDatails = () => {
-    let selectedAddressIndex = addresses.find((address) => address.id == order!.patientAddressId);
-    if (!selectedAddressIndex) {
-      console.log('!selectedAddressIndex', selectedAddressIndex);
-      setShowSpinner(true);
-      client
-        .query<getPatientAddressList>({
-          query: GET_PATIENT_ADDRESS_LIST,
-          fetchPolicy: 'no-cache',
-          variables: {
-            patientId: currentPatient && currentPatient.id ? currentPatient.id : '',
-          },
-        })
-        .then((data) => {
-          if (
-            data.data &&
-            data.data.getPatientAddressList &&
-            data.data.getPatientAddressList.addressList &&
-            addresses !== data.data.getPatientAddressList.addressList
-          ) {
-            setAddresses &&
-              setAddresses(
-                data.data.getPatientAddressList
-                  .addressList as savePatientAddress_savePatientAddress_patientAddress[]
-              );
-            selectedAddressIndex = data.data.getPatientAddressList.addressList.find(
-              (address) => address.id == order!.patientAddressId
-            ) as savePatientAddress_savePatientAddress_patientAddress;
-            if (selectedAddressIndex) {
-              console.log('if selectedAddressIndex', selectedAddressIndex);
-              if (!selectedAddressIndex.addressLine1) {
-                setAddressData(
-                  `${selectedAddressIndex.addressLine2}, ${selectedAddressIndex.city}, ${selectedAddressIndex.state}, ${selectedAddressIndex.zipcode}`
-                );
-              } else if (!selectedAddressIndex.addressLine2) {
-                setAddressData(
-                  `${selectedAddressIndex.addressLine1}, ${selectedAddressIndex.city}, ${selectedAddressIndex.state}, ${selectedAddressIndex.zipcode}`
-                );
-              } else if (!selectedAddressIndex.city) {
-                setAddressData(
-                  `${selectedAddressIndex.addressLine1}, ${selectedAddressIndex.addressLine2}, ${selectedAddressIndex.state}, ${selectedAddressIndex.zipcode}`
-                );
-              } else if (!selectedAddressIndex.state) {
-                setAddressData(
-                  `${selectedAddressIndex.addressLine1} ${selectedAddressIndex.addressLine2}, ${selectedAddressIndex.city}, ${selectedAddressIndex.zipcode}`
-                );
-              } else if (!selectedAddressIndex.zipcode) {
-                setAddressData(
-                  `${selectedAddressIndex.addressLine1} ${selectedAddressIndex.addressLine2}, ${selectedAddressIndex.city}, ${selectedAddressIndex.state}`
-                );
-              } else {
-                setAddressData(
-                  `${selectedAddressIndex.addressLine1}, ${selectedAddressIndex.addressLine2}, ${selectedAddressIndex.city}, ${selectedAddressIndex.state}, ${selectedAddressIndex.zipcode}`
-                );
-              }
-            } else {
-              setAddressData('');
-            }
-          }
-        })
-        .catch((error) => {
-          handleGraphQlError(error);
-        })
-        .finally(() => {
-          setShowSpinner(false);
-        });
-    } else {
-      console.log('else selectedAddressIndex', selectedAddressIndex);
-      if (!selectedAddressIndex.addressLine1) {
-        setAddressData(
-          `${selectedAddressIndex.addressLine2}, ${selectedAddressIndex.city}, ${selectedAddressIndex.state}, ${selectedAddressIndex.zipcode}`
-        );
-      } else if (!selectedAddressIndex.addressLine2) {
-        setAddressData(
-          `${selectedAddressIndex.addressLine1}, ${selectedAddressIndex.city}, ${selectedAddressIndex.state}, ${selectedAddressIndex.zipcode}`
-        );
-      } else if (!selectedAddressIndex.city) {
-        setAddressData(
-          `${selectedAddressIndex.addressLine1}, ${selectedAddressIndex.addressLine2}, ${selectedAddressIndex.state}, ${selectedAddressIndex.zipcode}`
-        );
-      } else if (!selectedAddressIndex.state) {
-        setAddressData(
-          `${selectedAddressIndex.addressLine1} ${selectedAddressIndex.addressLine2}, ${selectedAddressIndex.city}, ${selectedAddressIndex.zipcode}`
-        );
-      } else if (!selectedAddressIndex.zipcode) {
-        setAddressData(
-          `${selectedAddressIndex.addressLine1} ${selectedAddressIndex.addressLine2}, ${selectedAddressIndex.city}, ${selectedAddressIndex.state}`
-        );
+  const getAddressDatails = async () => {
+    try {
+      const address = addresses.find((a) => a.id == order!.patientAddressId);
+      let formattedAddress = '';
+      if (address) {
+        formattedAddress = formatOrderAddress(address);
       } else {
-        setAddressData(
-          selectedAddressIndex
-            ? `${selectedAddressIndex.addressLine1}, ${selectedAddressIndex.addressLine2}, ${selectedAddressIndex.city}, ${selectedAddressIndex.state}, ${selectedAddressIndex.zipcode}`
-            : ''
+        const getPatientAddressByIdResponse = await client.query<
+          getPatientAddressById,
+          getPatientAddressByIdVariables
+        >({
+          query: GET_PATIENT_ADDRESS_BY_ID,
+          variables: { id: order!.patientAddressId },
+        });
+        formattedAddress = formatOrderAddress(
+          getPatientAddressByIdResponse.data.getPatientAddressById
+            .patientAddress as savePatientAddress_savePatientAddress_patientAddress
         );
       }
+      setAddressData(formattedAddress);
+    } catch (error) {
+      CommonBugFender(`${AppRoutes.OrderDetailsScene}_getAddressDatails`, error);
     }
   };
 

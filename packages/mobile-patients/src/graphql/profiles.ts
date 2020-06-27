@@ -929,6 +929,10 @@ export const GET_PATIENT_ADDRESS_BY_ID = gql`
   query getPatientAddressById($id: String) {
     getPatientAddressById(id: $id) {
       patientAddress {
+        addressLine1
+        addressLine2
+        city
+        state
         zipcode
       }
     }
