@@ -22,9 +22,13 @@ export class LoginOtpRepository extends Repository<LoginOtp> {
   async insertOtp(otpAttrs: Partial<LoginOtp>) {
     let id = uuidv1();
     const redis = await pool.getTedis();
-    redis.set(this.cacheKey(REDIS_OTP_MOBILE_PREFIX, id), JSON.stringify({ ...otpAttrs, id }));
-    redis.expire(this.cacheKey(REDIS_OTP_MOBILE_PREFIX, id), ApiConstants.CACHE_EXPIRATION_120);
-    pool.putTedis(redis);
+    try {
+      redis.set(this.cacheKey(REDIS_OTP_MOBILE_PREFIX, id), JSON.stringify({ ...otpAttrs, id }));
+      redis.expire(this.cacheKey(REDIS_OTP_MOBILE_PREFIX, id), ApiConstants.CACHE_EXPIRATION_120);
+    } catch (e) {
+    } finally {
+      pool.putTedis(redis);
+    }
     return { id };
   }
 
@@ -32,29 +36,46 @@ export class LoginOtpRepository extends Repository<LoginOtp> {
     const { id } = otpAttrs;
     if (id) {
       const redis = await pool.getTedis();
-      const validOtpRecord = await redis.get(this.cacheKey(REDIS_OTP_MOBILE_PREFIX, id));
-      if (typeof validOtpRecord === 'string') {
-        return JSON.parse(validOtpRecord);
-      } else return null;
+      try {
+        const validOtpRecord = await redis.get(this.cacheKey(REDIS_OTP_MOBILE_PREFIX, id));
+        if (typeof validOtpRecord === 'string') {
+          return JSON.parse(validOtpRecord);
+        } else return null;
+      } catch (e) {
+      } finally {
+        pool.putTedis(redis);
+      }
     }
   }
 
   async getValidOtpRecord(id: string) {
     const redis = await pool.getTedis();
-    const OtpRecord = await redis.get(this.cacheKey(REDIS_OTP_MOBILE_PREFIX, id));
-    if (typeof OtpRecord === 'string') {
-      const validOtpRecord = JSON.parse(OtpRecord);
-      return validOtpRecord && validOtpRecord.status == OTP_STATUS.NOT_VERIFIED
-        ? validOtpRecord
-        : null;
-    } else return null;
+    try {
+      const OtpRecord = await redis.get(this.cacheKey(REDIS_OTP_MOBILE_PREFIX, id));
+      if (typeof OtpRecord === 'string') {
+        const validOtpRecord = JSON.parse(OtpRecord);
+        return validOtpRecord && validOtpRecord.status == OTP_STATUS.NOT_VERIFIED
+          ? validOtpRecord
+          : null;
+      } else return null;
+    } catch (e) {
+    } finally {
+      pool.putTedis(redis);
+    }
   }
 
   async updateOtpStatus(id: string, updateAttrs: Partial<LoginOtp>) {
     const redis = await pool.getTedis();
-    await redis.set(this.cacheKey(REDIS_OTP_MOBILE_PREFIX, id), JSON.stringify(updateAttrs));
-    redis.expire(this.cacheKey(REDIS_OTP_MOBILE_PREFIX, id), ApiConstants.CACHE_EXPIRATION_120);
-    pool.putTedis(redis);
+    try {
+      await redis.set(this.cacheKey(REDIS_OTP_MOBILE_PREFIX, id), JSON.stringify(updateAttrs));
+      await redis.expire(
+        this.cacheKey(REDIS_OTP_MOBILE_PREFIX, id),
+        ApiConstants.CACHE_EXPIRATION_120
+      );
+    } catch (e) {
+    } finally {
+      pool.putTedis(redis);
+    }
   }
 
   deleteOtpRecord(id: string) {

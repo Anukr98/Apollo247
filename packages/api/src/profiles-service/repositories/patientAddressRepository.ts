@@ -37,29 +37,40 @@ export class PatientAddressRepository extends Repository<PatientAddress> {
 
   async getPatientAdresslistFromCache(id: string) {
     const redis = await pool.getTedis();
-    const response = redis.get(this.cacheKey(REDIS_ADDRESS_PATIENT_ID_KEY_PREFIX, id));
-    pool.putTedis(redis);
-    dLogger(
-      new Date(),
-      'Redis Cache Read of address',
-      `Cache hit ${this.cacheKey(REDIS_ADDRESS_PATIENT_ID_KEY_PREFIX, id)}${id}`
-    );
-    if (response && typeof response === 'string') {
-      return JSON.parse(response);
-    } else return await this.savePatientAdresslistToCache(id);
+    try {
+      const response = await redis.get(this.cacheKey(REDIS_ADDRESS_PATIENT_ID_KEY_PREFIX, id));
+      dLogger(
+        new Date(),
+        'Redis Cache Read of address',
+        `Cache hit ${this.cacheKey(REDIS_ADDRESS_PATIENT_ID_KEY_PREFIX, id)}${id}`
+      );
+      if (response && typeof response === 'string') {
+        return JSON.parse(response);
+      } else return await this.savePatientAdresslistToCache(id);
+    } catch (e) {
+    } finally {
+      pool.putTedis(redis);
+    }
   }
   async savePatientAdresslistToCache(id: string) {
     const redis = await pool.getTedis();
-    const queryResult = await this.getPatientAddressesFromDb(id);
-    redis.set(this.cacheKey(REDIS_ADDRESS_PATIENT_ID_KEY_PREFIX, id), JSON.stringify(queryResult));
-    redis.expire(this.cacheKey(REDIS_ADDRESS_PATIENT_ID_KEY_PREFIX, id), 3600);
-    pool.putTedis(redis);
-    dLogger(
-      new Date(),
-      'Redis Cache set of address',
-      `Cache hit ${this.cacheKey(REDIS_ADDRESS_PATIENT_ID_KEY_PREFIX, id)}`
-    );
-    return queryResult;
+    try {
+      const queryResult = await this.getPatientAddressesFromDb(id);
+      await redis.set(
+        this.cacheKey(REDIS_ADDRESS_PATIENT_ID_KEY_PREFIX, id),
+        JSON.stringify(queryResult)
+      );
+      redis.expire(this.cacheKey(REDIS_ADDRESS_PATIENT_ID_KEY_PREFIX, id), 3600);
+      dLogger(
+        new Date(),
+        'Redis Cache set of address',
+        `Cache hit ${this.cacheKey(REDIS_ADDRESS_PATIENT_ID_KEY_PREFIX, id)}`
+      );
+      return queryResult;
+    } catch (e) {
+    } finally {
+      pool.putTedis(redis);
+    }
   }
 
   async updatePatientAddress(id: string, patientAddressAttrs: Partial<PatientAddress>) {

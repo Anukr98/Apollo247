@@ -884,15 +884,23 @@ export class Patient extends BaseEntity {
   @AfterInsert()
   async dropPatientMobileCache() {
     const redis = await pool.getTedis();
-    await redis.del(`patient:mobile:${this.mobileNumber}`);
-    await pool.putTedis(redis);
+    try {
+      await redis.del(`patient:mobile:${this.mobileNumber}`);
+    } catch (e) {
+    } finally {
+      pool.putTedis(redis);
+    }
   }
 
   @AfterUpdate()
   async dropPatientCache() {
     const redis = await pool.getTedis();
-    await redis.del(`patient:${this.id}`);
-    await pool.putTedis(redis);
+    try {
+      await redis.del(`patient:${this.id}`);
+    } catch (e) {
+    } finally {
+      await pool.putTedis(redis);
+    }
   }
 }
 //patient Ends
@@ -1027,9 +1035,13 @@ export class PatientAddress extends BaseEntity {
   @AfterUpdate()
   async dropPatientAddressList() {
     const redis = await pool.getTedis();
-    await redis.del(`address:list:patient:${this.patientId}`);
-    await redis.del(`patient:${this.patientId}`);
-    pool.putTedis(redis);
+    try {
+      await redis.del(`address:list:patient:${this.patientId}`);
+      await redis.del(`patient:${this.patientId}`);
+    } catch (e) {
+    } finally {
+      pool.putTedis(redis);
+    }
   }
 }
 //patientAddress Ends
@@ -1072,8 +1084,12 @@ export class PatientFamilyHistory extends BaseEntity {
   @AfterUpdate()
   async dropPatientAddressList() {
     const redis = await pool.getTedis();
-    await redis.del(`patient:${this.patientId}`);
-    pool.putTedis(redis);
+    try {
+      await redis.del(`patient:${this.patientId}`);
+    } catch (e) {
+    } finally {
+      pool.putTedis(redis);
+    }
   }
 }
 //patient family history ends
@@ -1117,8 +1133,12 @@ export class PatientLifeStyle extends BaseEntity {
   @AfterUpdate()
   async dropPatientAddressList() {
     const redis = await pool.getTedis();
-    await redis.del(`patient:${this.patientId}`);
-    pool.putTedis(redis);
+    try {
+      await redis.del(`patient:${this.patientId}`);
+    } catch (e) {
+    } finally {
+      pool.putTedis(redis);
+    }
   }
 }
 //patientLifestyle ends
@@ -1543,8 +1563,12 @@ export class PatientMedicalHistory extends BaseEntity {
   @AfterUpdate()
   async dropPatientCache() {
     const redis = await pool.getTedis();
-    await redis.del(`patient:${this.patientId}`);
-    pool.putTedis(redis);
+    try {
+      await redis.del(`patient:${this.patientId}`);
+    } catch (e) {
+    } finally {
+      pool.putTedis(redis);
+    }
   }
 }
 //patientMedicalHistory ends
