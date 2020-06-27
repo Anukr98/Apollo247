@@ -2,7 +2,7 @@ import { Theme } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import React from 'react';
 import moment from 'moment';
-
+import { GetDoctorDetailsById_getDoctorDetailsById_consultHours } from 'graphql/types/GetDoctorDetailsById';
 const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
@@ -66,7 +66,7 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 interface DoctorTimingsProps {
-  doctorTimings: any;
+  doctorTimings: (GetDoctorDetailsById_getDoctorDetailsById_consultHours | null)[] | null;
 }
 
 export const DoctorTimings: React.FC<DoctorTimingsProps> = (props) => {
@@ -95,35 +95,18 @@ export const DoctorTimings: React.FC<DoctorTimingsProps> = (props) => {
                 .local()
                 .format('hh:mm a');
               return (
-                (item.consultMode === 'ONLINE' || item.consultMode === 'BOTH') &&
-                (actualDay !== 'SATURDAY' ? (
+                (item.consultMode === 'ONLINE' || item.consultMode === 'BOTH') && (
                   <div className={classes.row}>
                     <span>{actualDay}</span>
                     <span>{`${weeDaysStartTime}-${weeDaysEndTime}`}</span>
                   </div>
-                ) : (
-                  <div className={classes.row}>
-                    <span>{item.actualDay === 'SATURDAY' && 'SAT'}</span>
-                    <span>
-                      {moment
-                        .utc(`${today} ${item.startTime}`)
-                        .local()
-                        .format('hh:mm a')}
-                      -
-                      {moment
-                        .utc(`${today} ${item.endTime}`)
-                        .local()
-                        .format('hh:mm a')}
-                    </span>
-                  </div>
-                ))
+                )
               );
             })}
           </div>
         </div>
         <div className={classes.timingsRow}>
           <div className={classes.label}>Clinic:</div>
-
           <div className={classes.rightGroup}>
             {doctorTimings.map((item: any) => {
               const actualDay = item.actualDay;
@@ -136,28 +119,12 @@ export const DoctorTimings: React.FC<DoctorTimingsProps> = (props) => {
                 .local()
                 .format('hh:mm a');
               return (
-                (item.consultMode === 'PHYSICAL' || item.consultMode === 'BOTH') &&
-                (actualDay !== 'SATURDAY' ? (
+                (item.consultMode === 'PHYSICAL' || item.consultMode === 'BOTH') && (
                   <div className={classes.row}>
                     <span>{actualDay}</span>
                     <span>{`${weeDaysStartTime}-${weeDaysEndTime}`}</span>
                   </div>
-                ) : (
-                  <div className={classes.row}>
-                    <span>{item.actualDay === 'SATURDAY' && 'SAT'}</span>
-                    <span>
-                      {moment
-                        .utc(`${today} ${item.startTime}`)
-                        .local()
-                        .format('hh:mm a')}
-                      -
-                      {moment
-                        .utc(`${today} ${item.endTime}`)
-                        .local()
-                        .format('hh:mm a')}
-                    </span>
-                  </div>
-                ))
+                )
               );
             })}
           </div>
