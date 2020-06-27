@@ -189,7 +189,7 @@ type PushNotificationInputArgs = { pushNotificationInput: PushNotificationInput 
   console.log(smsResp, 'sms resp');
 }*/
 
-export const sendNotificationWhatsapp = async (
+export const sendNotificationWhatsapp = (
   mobileNumber: string,
   message: string,
   loginType: number
@@ -203,33 +203,25 @@ export const sendNotificationWhatsapp = async (
     '&password=' +
     process.env.WHATSAPP_PASSWORD +
     '&auth_scheme=plain&format=text&v=1.1&channel=WHATSAPP';
-  const optInResponse = await fetch(apiUrl)
-    .then(async (res) => {
-      console.log(res, 'res of opt id');
-      if (loginType == 1) {
-        const sendApiUrl =
-          process.env.WHATSAPP_URL +
-          '?method=SendMessage&send_to=' +
-          mobileNumber +
-          '&userid=' +
-          process.env.WHATSAPP_USERNAME +
-          '&password=' +
-          process.env.WHATSAPP_PASSWORD +
-          '&auth_scheme=plain&msg_type=TEXT&format=text&v=1.1&msg=' +
-          message;
-        await fetch(sendApiUrl)
-          .then((res) => {
-            console.log(res, 'res of actual msg send');
-          })
-          .catch((error) => {
-            console.log(error, 'send message api error');
-          });
-      }
-    })
-    .catch((error) => {
-      console.log(error, 'optInResponse error');
-    });
-  console.log(optInResponse);
+  return new Promise((resolve, reject) => {
+    const optInResponse = fetch(apiUrl)
+      .then(async (res) => {
+        if (loginType == 1) {
+          const sendApiUrl = `${process.env.WHATSAPP_URL}?method=SendMessage&send_to=${mobileNumber}&userid=${process.env.WHATSAPP_USERNAME}&password=${process.env.WHATSAPP_PASSWORD}&auth_scheme=plain&msg_type=TEXT&format=text&v=1.1&msg=${message}`;
+          fetch(sendApiUrl)
+            .then((res) => {
+              resolve(res);
+            })
+            .catch((error) => {
+              throw new AphError(AphErrorMessages.MESSAGE_SEND_WHATSAPP_ERROR);
+            });
+        }
+      })
+      .catch((error) => {
+        throw new AphError(AphErrorMessages.GET_OTP_ERROR);
+      });
+  });
+
 };
 
 export const sendNotificationSMS = async (mobileNumber: string, message: string) => {
@@ -480,9 +472,9 @@ export async function sendNotification(
     notificationBody = notificationBody.replace('{3}', apptDate);
     let cancelApptSMS = process.env.SMS_LINK_BOOK_APOINTMENT
       ? ' Click here ' +
-        process.env.SMS_LINK_BOOK_APOINTMENT +
-        ' ' +
-        ApiConstants.PATIENT_CANCEL_APPT_BODY_END
+      process.env.SMS_LINK_BOOK_APOINTMENT +
+      ' ' +
+      ApiConstants.PATIENT_CANCEL_APPT_BODY_END
       : '';
     cancelApptSMS = notificationBody + cancelApptSMS;
 
@@ -622,22 +614,22 @@ export async function sendNotification(
           content = content.replace(
             '{4}',
             facilityDets.name +
-              ' ' +
-              facilityDets.streetLine1 +
-              ' ' +
-              facilityDets.city +
-              ' ' +
-              facilityDets.state
+            ' ' +
+            facilityDets.streetLine1 +
+            ' ' +
+            facilityDets.city +
+            ' ' +
+            facilityDets.state
           );
           smsLink = smsLink.replace(
             '{4}',
             facilityDets.name +
-              ' ' +
-              facilityDets.streetLine1 +
-              ' ' +
-              facilityDets.city +
-              ' ' +
-              facilityDets.state
+            ' ' +
+            facilityDets.streetLine1 +
+            ' ' +
+            facilityDets.city +
+            ' ' +
+            facilityDets.state
           );
         }
       }
@@ -1160,12 +1152,12 @@ export async function sendReminderNotification(
           notificationBody = notificationBody.replace(
             '{2}',
             facilityDets.name +
-              ' ' +
-              facilityDets.streetLine1 +
-              ' ' +
-              facilityDets.city +
-              ' ' +
-              facilityDets.state
+            ' ' +
+            facilityDets.streetLine1 +
+            ' ' +
+            facilityDets.city +
+            ' ' +
+            facilityDets.state
           );
         }
       }
@@ -1198,12 +1190,12 @@ export async function sendReminderNotification(
         notificationBody = notificationBody.replace(
           '{1}',
           facilityDets.name +
-            ' ' +
-            facilityDets.streetLine1 +
-            ' ' +
-            facilityDets.city +
-            ' ' +
-            facilityDets.state
+          ' ' +
+          facilityDets.streetLine1 +
+          ' ' +
+          facilityDets.city +
+          ' ' +
+          facilityDets.state
         );
       }
     }
@@ -1247,12 +1239,12 @@ export async function sendReminderNotification(
           notificationBody = notificationBody.replace(
             '{1}',
             facilityDets.name +
-              ' ' +
-              facilityDets.streetLine1 +
-              ' ' +
-              facilityDets.city +
-              ' ' +
-              facilityDets.state
+            ' ' +
+            facilityDets.streetLine1 +
+            ' ' +
+            facilityDets.city +
+            ' ' +
+            facilityDets.state
           );
         }
       }
@@ -1459,7 +1451,7 @@ export async function sendReminderNotification(
   if (
     pushNotificationInput.notificationType == NotificationType.APPOINTMENT_CASESHEET_REMINDER_15 ||
     pushNotificationInput.notificationType ==
-      NotificationType.APPOINTMENT_CASESHEET_REMINDER_15_VIRTUAL
+    NotificationType.APPOINTMENT_CASESHEET_REMINDER_15_VIRTUAL
   ) {
     const smsLink = process.env.SMS_LINK ? process.env.SMS_LINK : '';
     notificationBody = notificationBody + ApiConstants.CLICK_HERE + smsLink;
@@ -2047,7 +2039,7 @@ const testPushNotification: Resolver<
   { deviceToken: String },
   NotificationsServiceContext,
   PushNotificationSuccessMessage | undefined
-> = async (parent, args, {}) => {
+> = async (parent, args, { }) => {
   //initialize firebaseadmin
   const config = {
     credential: firebaseAdmin.credential.applicationDefault(),
