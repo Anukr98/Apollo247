@@ -131,7 +131,7 @@ export class PatientRepository extends Repository<Patient> {
   async setCache(key: string, value: string) {
     const redis = await pool.getTedis();
     await redis.set(key, value);
-    await redis.expire(key, 3600);
+    await redis.expire(key, 14400);
     pool.putTedis(redis);
   }
   async dropCache(key: string) {
