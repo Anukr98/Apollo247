@@ -76,7 +76,6 @@ export const DoctorTimings: React.FC<DoctorTimingsProps> = (props) => {
     2,
     '0'
   )}-${new Date().getDate()}`;
-  console.log(today, 'doctorTimings');
 
   return (
     <div className={classes.root}>
@@ -95,17 +94,10 @@ export const DoctorTimings: React.FC<DoctorTimingsProps> = (props) => {
                 .utc(`${today} ${item.endTime}`)
                 .local()
                 .format('hh:mm a');
-              let weekDay = '';
-              let weekDayTime = '';
-              // if (actualDay === ('MONDAY') {
-              //   weekDay = 'MON - FRI';
-              //   weekDayTime = `${weeDaysStartTime}-${weeDaysEndTime}`;
-              // }
               return (
                 (item.consultMode === 'ONLINE' || item.consultMode === 'BOTH') &&
                 (actualDay !== 'SATURDAY' ? (
                   <div className={classes.row}>
-                    {/* <span>Mon - Fri</span> */}
                     <span>{actualDay}</span>
                     <span>{`${weeDaysStartTime}-${weeDaysEndTime}`}</span>
                   </div>
@@ -143,17 +135,10 @@ export const DoctorTimings: React.FC<DoctorTimingsProps> = (props) => {
                 .utc(`${today} ${item.endTime}`)
                 .local()
                 .format('hh:mm a');
-              let weekDay = '';
-              let weekDayTime = '';
-              // if (actualDay === ('MONDAY' ) {
-              //   weekDay = 'MON - FRI';
-              //   weekDayTime = `${weeDaysStartTime}-${weeDaysEndTime}`;
-              // }
               return (
                 (item.consultMode === 'PHYSICAL' || item.consultMode === 'BOTH') &&
                 (actualDay !== 'SATURDAY' ? (
                   <div className={classes.row}>
-                    {/* <span>Mon - Fri</span> */}
                     <span>{actualDay}</span>
                     <span>{`${weeDaysStartTime}-${weeDaysEndTime}`}</span>
                   </div>
