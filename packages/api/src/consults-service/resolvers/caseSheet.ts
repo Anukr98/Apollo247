@@ -835,7 +835,9 @@ const modifyCaseSheet: Resolver<
         inputArguments.familyHistory.length > 0 ? inputArguments.familyHistory : undefined,
     };
     const familyHistoryRepo = patientsDb.getCustomRepository(PatientFamilyHistoryRepository);
-    const familyHistoryRecord = patientData.familyHistory[0];
+    const familyHistoryRecord = await familyHistoryRepo.getPatientFamilyHistory(
+      getCaseSheetData.patientId
+    );
 
     if (familyHistoryRecord == null) {
       //create
@@ -859,7 +861,7 @@ const modifyCaseSheet: Resolver<
       lifeStyleInputs.occupationHistory = inputArguments.occupationHistory;
     }
     const lifeStyleRepo = patientsDb.getCustomRepository(PatientLifeStyleRepository);
-    const lifeStyleRecord = patientData.lifeStyle[0];
+    const lifeStyleRecord = await lifeStyleRepo.getPatientLifeStyle(getCaseSheetData.patientId);
 
     if (lifeStyleRecord == null) {
       //create
@@ -920,8 +922,9 @@ const modifyCaseSheet: Resolver<
       inputArguments.dietAllergies.length > 0 ? inputArguments.dietAllergies : undefined;
 
   const medicalHistoryRepo = patientsDb.getCustomRepository(PatientMedicalHistoryRepository);
-  const medicalHistoryRecord = patientData.patientMedicalHistory;
-
+  const medicalHistoryRecord = await medicalHistoryRepo.getPatientMedicalHistory(
+    getCaseSheetData.patientId
+  );
   if (medicalHistoryRecord == null) {
     //create
     medicalHistoryRepo.savePatientMedicalHistory(medicalHistoryInputs);
