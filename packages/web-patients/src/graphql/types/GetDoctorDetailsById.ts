@@ -91,6 +91,7 @@ export interface GetDoctorDetailsById_getDoctorDetailsById_consultHours {
   startTime: string;
   weekDay: WeekDay;
   isActive: boolean;
+  actualDay: WeekDay | null;
 }
 
 export interface GetDoctorDetailsById_getDoctorDetailsById {

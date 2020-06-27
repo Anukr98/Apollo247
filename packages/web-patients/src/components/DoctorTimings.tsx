@@ -1,6 +1,7 @@
 import { Theme } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import React from 'react';
+import moment from 'moment';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -27,7 +28,7 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.up('sm')]: {
         display: 'flex',
         marginLeft: -10,
-        marginRight: -10,  
+        marginRight: -10,
       },
     },
     timingsRow: {
@@ -64,10 +65,18 @@ const useStyles = makeStyles((theme: Theme) => {
     },
   };
 });
+interface DoctorTimingsProps {
+  doctorTimings: any;
+}
 
-
-export const DoctorTimings: React.FC = (props) => {
+export const DoctorTimings: React.FC<DoctorTimingsProps> = (props) => {
   const classes = useStyles({});
+  const { doctorTimings } = props;
+  const today = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(
+    2,
+    '0'
+  )}-${new Date().getDate()}`;
+  console.log(today, 'doctorTimings');
 
   return (
     <div className={classes.root}>
@@ -76,27 +85,96 @@ export const DoctorTimings: React.FC = (props) => {
         <div className={classes.timingsRow}>
           <div className={classes.label}>Online:</div>
           <div className={classes.rightGroup}>
-            <div className={classes.row}>
-              <span>Mon - Fri</span>
-              <span>8:00 am - 12:00 pm</span>
-            </div>
-            <div className={classes.row}>
-              <span>Sat</span>
-              <span>9:00 am - 11:00 am</span>
-            </div>
+            {doctorTimings.map((item: any) => {
+              const actualDay = item.actualDay;
+              const weeDaysStartTime = moment
+                .utc(`${today} ${item.startTime}`)
+                .local()
+                .format('hh:mm a');
+              const weeDaysEndTime = moment
+                .utc(`${today} ${item.endTime}`)
+                .local()
+                .format('hh:mm a');
+              let weekDay = '';
+              let weekDayTime = '';
+              // if (actualDay === ('MONDAY') {
+              //   weekDay = 'MON - FRI';
+              //   weekDayTime = `${weeDaysStartTime}-${weeDaysEndTime}`;
+              // }
+              return (
+                (item.consultMode === 'ONLINE' || item.consultMode === 'BOTH') &&
+                (actualDay !== 'SATURDAY' ? (
+                  <div className={classes.row}>
+                    {/* <span>Mon - Fri</span> */}
+                    <span>{actualDay}</span>
+                    <span>{`${weeDaysStartTime}-${weeDaysEndTime}`}</span>
+                  </div>
+                ) : (
+                  <div className={classes.row}>
+                    <span>{item.actualDay === 'SATURDAY' && 'SAT'}</span>
+                    <span>
+                      {moment
+                        .utc(`${today} ${item.startTime}`)
+                        .local()
+                        .format('hh:mm a')}
+                      -
+                      {moment
+                        .utc(`${today} ${item.endTime}`)
+                        .local()
+                        .format('hh:mm a')}
+                    </span>
+                  </div>
+                ))
+              );
+            })}
           </div>
         </div>
         <div className={classes.timingsRow}>
           <div className={classes.label}>Clinic:</div>
+
           <div className={classes.rightGroup}>
-            <div className={classes.row}>
-              <span>Mon - Fri</span>
-              <span>8:00 am - 12:00 pm</span>
-            </div>
-            <div className={classes.row}>
-              <span>Sat</span>
-              <span>9:00 am - 11:00 am</span>
-            </div>
+            {doctorTimings.map((item: any) => {
+              const actualDay = item.actualDay;
+              const weeDaysStartTime = moment
+                .utc(`${today} ${item.startTime}`)
+                .local()
+                .format('hh:mm a');
+              const weeDaysEndTime = moment
+                .utc(`${today} ${item.endTime}`)
+                .local()
+                .format('hh:mm a');
+              let weekDay = '';
+              let weekDayTime = '';
+              // if (actualDay === ('MONDAY' ) {
+              //   weekDay = 'MON - FRI';
+              //   weekDayTime = `${weeDaysStartTime}-${weeDaysEndTime}`;
+              // }
+              return (
+                (item.consultMode === 'PHYSICAL' || item.consultMode === 'BOTH') &&
+                (actualDay !== 'SATURDAY' ? (
+                  <div className={classes.row}>
+                    {/* <span>Mon - Fri</span> */}
+                    <span>{actualDay}</span>
+                    <span>{`${weeDaysStartTime}-${weeDaysEndTime}`}</span>
+                  </div>
+                ) : (
+                  <div className={classes.row}>
+                    <span>{item.actualDay === 'SATURDAY' && 'SAT'}</span>
+                    <span>
+                      {moment
+                        .utc(`${today} ${item.startTime}`)
+                        .local()
+                        .format('hh:mm a')}
+                      -
+                      {moment
+                        .utc(`${today} ${item.endTime}`)
+                        .local()
+                        .format('hh:mm a')}
+                    </span>
+                  </div>
+                ))
+              );
+            })}
           </div>
         </div>
       </div>
