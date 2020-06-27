@@ -81,7 +81,7 @@ export class PatientRepository extends Repository<Patient> {
       if (typeof cacheCount === 'string') {
         return parseInt(cacheCount);
       }
-      const deviceCodeCount: number = (await this.createQueryBuilder('patient')
+      const deviceCodeCount = (await this.createQueryBuilder('patient')
         .select(['"mobileNumber" as mobilenumber'])
         .where('patient."deviceCode" = :deviceCode', { deviceCode })
         .groupBy('patient."mobileNumber"')
@@ -92,6 +92,11 @@ export class PatientRepository extends Repository<Patient> {
       );
       return deviceCodeCount;
     } catch (e) {
+      return (await this.createQueryBuilder('patient')
+        .select(['"mobileNumber" as mobilenumber'])
+        .where('patient."deviceCode" = :deviceCode', { deviceCode })
+        .groupBy('patient."mobileNumber"')
+        .getRawMany()).length;
     } finally {
       pool.putTedis(redis);
     }
@@ -116,11 +121,14 @@ export class PatientRepository extends Repository<Patient> {
         `Cache hit ${REDIS_PATIENT_ID_KEY_PREFIX}${id}`
       );
       if (cache && typeof cache === 'string') {
-        const patient: Patient = JSON.parse(cache);
+        let patient: Patient = JSON.parse(cache);
         patient.dateOfBirth = new Date(patient.dateOfBirth);
         return patient;
-      } else return await this.setByIdCache(id);
+      } else {
+        return await this.setByIdCache(id);
+      }
     } catch (e) {
+      return await this.getPatientData(id);
     } finally {
       pool.putTedis(redis);
     }
