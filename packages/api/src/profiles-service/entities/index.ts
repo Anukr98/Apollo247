@@ -1072,7 +1072,6 @@ export class PatientFamilyHistory extends BaseEntity {
   @AfterUpdate()
   async dropPatientAddressList() {
     const redis = await pool.getTedis();
-    await redis.del(`address:list:patient:${this.patientId}`);
     await redis.del(`patient:${this.patientId}`);
     pool.putTedis(redis);
   }
@@ -1118,7 +1117,6 @@ export class PatientLifeStyle extends BaseEntity {
   @AfterUpdate()
   async dropPatientAddressList() {
     const redis = await pool.getTedis();
-    await redis.del(`address:list:patient:${this.patientId}`);
     await redis.del(`patient:${this.patientId}`);
     pool.putTedis(redis);
   }
