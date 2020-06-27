@@ -149,7 +149,7 @@ const addNewProfile: Resolver<
   if (pateintDetails == null || pateintDetails.length == 0)
     throw new AphError(AphErrorMessages.INVALID_PATIENT_DETAILS, undefined, {});
   const savePatient = await patientRepo.saveNewProfile(patientProfileInput);
-  patientRepo.createNewUhid(savePatient.id);
+  await patientRepo.createNewUhid(savePatient.id);
   patientRepo.createAthsToken(savePatient.id);
   const patient = await patientRepo.getPatientDetails(savePatient.id);
   if (!patient || patient == null) {
@@ -171,7 +171,8 @@ const editProfile: Resolver<
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
   const patientId = editProfileInput.id;
   delete editProfileInput.id;
-  const patient = await patientRepo.updateProfile(patientId, editProfileInput);
+  await patientRepo.updateProfile(patientId, editProfileInput);
+  const patient = await patientRepo.findById(patientId);
   if (patient == null) throw new AphError(AphErrorMessages.UPDATE_PROFILE_ERROR, undefined, {});
   return { patient };
 };
