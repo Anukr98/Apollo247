@@ -35,7 +35,7 @@ export class PatientMedicalHistoryRepository extends Repository<PatientMedicalHi
       patientMedicalHistoryAttrs.id = id;
     }
     const patientMedicalHistory = this.create(patientMedicalHistoryAttrs);
-    return patientMedicalHistory.save();
+    return this.save(patientMedicalHistory);
   }
 
   findById(id: string) {

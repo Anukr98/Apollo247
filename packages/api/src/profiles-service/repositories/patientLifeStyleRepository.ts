@@ -30,7 +30,7 @@ export class PatientLifeStyleRepository extends Repository<PatientLifeStyle> {
       patientLifeStyleAttrs.id = id;
     }
     const patientLifeStyle = this.create(patientLifeStyleAttrs);
-    return patientLifeStyle.save();
+    return this.save(patientLifeStyle);
   }
 
   findById(id: string) {
