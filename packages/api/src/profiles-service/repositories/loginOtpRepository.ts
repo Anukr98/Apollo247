@@ -38,6 +38,7 @@ export class LoginOtpRepository extends Repository<LoginOtp> {
       const redis = await pool.getTedis();
       try {
         const validOtpRecord = await redis.get(this.cacheKey(REDIS_OTP_MOBILE_PREFIX, id));
+        pool.putTedis(redis);
         if (typeof validOtpRecord === 'string') {
           return JSON.parse(validOtpRecord);
         } else return null;
@@ -52,6 +53,7 @@ export class LoginOtpRepository extends Repository<LoginOtp> {
     const redis = await pool.getTedis();
     try {
       const OtpRecord = await redis.get(this.cacheKey(REDIS_OTP_MOBILE_PREFIX, id));
+      pool.putTedis(redis);
       if (typeof OtpRecord === 'string') {
         const validOtpRecord = JSON.parse(OtpRecord);
         return validOtpRecord && validOtpRecord.status == OTP_STATUS.NOT_VERIFIED
