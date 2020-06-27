@@ -367,7 +367,7 @@ export const Header: React.FC = (props) => {
             // endDate: "2020-05-07"
           },
           fetchPolicy: 'no-cache',
-          pollInterval: pageRefreshTimeInSeconds * 1000,
+          pollInterval: pageRefreshTimeInSeconds * 1000 * 10, //Changed to 5 min see ticket 2715
           notifyOnNetworkStatusChange: true,
         })
       : { data: {}, loading: false };
