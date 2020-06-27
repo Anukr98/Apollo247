@@ -2,7 +2,6 @@ import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
 import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
 import { LOGIN_TYPE, LoginOtp, OTP_STATUS } from 'profiles-service/entities';
-import { archiveOtpRecord } from 'profiles-service/resolvers/login';
 import { LoginOtpRepository } from 'profiles-service/repositories/loginOtpRepository';
 import * as firebaseAdmin from 'firebase-admin';
 import { debugLog } from 'customWinstonLogger';
@@ -53,8 +52,6 @@ const verifyLoginOtp: Resolver<
   ProfilesServiceContext,
   OtpVerificationResult
 > = async (parent, { otpVerificationInput }, { profilesDb }) => {
-
-
   const apiCallId = Math.floor(Math.random() * 1000000);
   //API_CALL___START
   const callStartTime = new Date();
@@ -99,8 +96,8 @@ const verifyLoginOtp: Resolver<
       ...matchedOtpRes,
       ...{
         incorrectAttempts,
-        status: OTP_STATUS.NOT_VERIFIED
-      }
+        status: OTP_STATUS.NOT_VERIFIED,
+      },
     };
     if (incorrectAttempts > 2) updateAttrs.status = OTP_STATUS.BLOCKED;
     await otpRepo.updateOtpStatus(matchedOtpRes.id, updateAttrs);
