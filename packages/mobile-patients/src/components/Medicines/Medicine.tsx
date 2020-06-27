@@ -34,10 +34,8 @@ import {
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
   SAVE_SEARCH,
-  GET_MEDICINE_ORDERS_OMS__LIST,
   GET_RECOMMENDED_PRODUCTS_LIST,
 } from '@aph/mobile-patients/src/graphql/profiles';
-import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import { SEARCH_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   Brand,
@@ -93,11 +91,6 @@ import {
 } from 'react-native';
 import { Image, Input } from 'react-native-elements';
 import { FlatList, NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
-import {
-  getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrdersList,
-  getMedicineOrdersOMSList,
-  getMedicineOrdersOMSListVariables,
-} from '../../graphql/types/getMedicineOrdersOMSList';
 import { MedicineSearchSuggestionItem } from '@aph/mobile-patients/src/components/Medicines/MedicineSearchSuggestionItem';
 import Carousel from 'react-native-snap-carousel';
 import {
@@ -167,13 +160,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
   const cartItemsCount = cartItems.length + diagnosticCartItems.length;
   const { currentPatient } = useAllCurrentPatients();
-  const [profile, setProfile] = useState<GetCurrentPatients_getCurrentPatients_patients>(
-    currentPatient!
-  );
   const [allBrandData, setAllBrandData] = useState<Brand[]>([]);
-  const [ordersFetched, setOrdersFetched] = useState<
-    (getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrdersList | null)[]
-  >([]);
   const [serviceabilityMsg, setServiceabilityMsg] = useState('');
 
   const { showAphAlert, hideAphAlert, setLoading: globalLoading } = useUIElements();
@@ -379,30 +366,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   }, [pharmacyPincode]);
 
   useEffect(() => {
-    if (currentPatient && profile && profile.id !== currentPatient.id) {
-      globalLoading!(true);
-      setProfile(currentPatient);
-      ordersRefetch()
-        .then(({ data }) => {
-          const ordersData = (
-            g(data, 'getMedicineOrdersOMSList', 'medicineOrdersList') || []
-          ).filter(
-            (item) =>
-              !(
-                (item!.medicineOrdersStatus || []).length == 1 &&
-                (item!.medicineOrdersStatus || []).find((item) => !item!.hideStatus)
-              )
-          );
-          globalLoading!(false);
-          setOrdersFetched(ordersData);
-        })
-        .catch((e) => {
-          CommonBugFender('Medicine_ordersRefetch_useEffect', e);
-        });
-    }
-  }, [currentPatient]);
-
-  useEffect(() => {
     fetchRecommendedProducts();
     // getting from local storage first for immediate rendering
     AsyncStorage.getItem(MEDICINE_LANDING_PAGE_DATA)
@@ -448,24 +411,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           description: "We're unable to fetch products, try later.",
         });
       });
-    if (ordersFetched.length === 0) {
-      ordersRefetch()
-        .then(({ data }) => {
-          const ordersData = (
-            g(data, 'getMedicineOrdersOMSList', 'medicineOrdersList') || []
-          ).filter(
-            (item) =>
-              !(
-                (item!.medicineOrdersStatus || []).length == 1 &&
-                (item!.medicineOrdersStatus || []).find((item) => !item!.hideStatus)
-              )
-          );
-          ordersData.length > 0 && setOrdersFetched(ordersData);
-        })
-        .catch((e) => {
-          CommonBugFender('Medicine_ordersRefetch', e);
-        });
-    }
   }, []);
 
   const [recommendedProducts, setRecommendedProducts] = useState<MedicineProduct[]>([]);
@@ -492,19 +437,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const widget3 = g(data, 'widget_3', 'products') || [];
   const widget3CategoryId = g(data, 'widget_3', 'category_id') || 0;
 
-  const {
-    data: orders,
-    error: ordersError,
-    loading: ordersLoading,
-    refetch: ordersRefetch,
-  } = useQuery<getMedicineOrdersOMSList, getMedicineOrdersOMSListVariables>(
-    GET_MEDICINE_ORDERS_OMS__LIST,
-    {
-      variables: { patientId: currentPatient && currentPatient.id },
-      fetchPolicy: 'cache-first',
-    }
-  );
-
   useEffect(() => {
     if (hotSellers.length) {
       setItemsWithQtyRestriction!(hotSellers.map((v) => v.sku));
@@ -516,20 +448,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       setBannerLoading(false);
     }
   }, [loading]);
-
-  useEffect(() => {
-    if (!ordersLoading) {
-      const data = (g(orders, 'getMedicineOrdersOMSList', 'medicineOrdersList') || []).filter(
-        (item) =>
-          !(
-            (item!.medicineOrdersStatus || []).length == 1 &&
-            (item!.medicineOrdersStatus || []).find((item) => !item!.hideStatus)
-          )
-      );
-
-      data.length > 0 && setOrdersFetched(data);
-    }
-  }, [ordersLoading]);
 
   const getImageUrl = (fileIds: string) => {
     return fileIds
@@ -968,24 +886,15 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
   const renderYourOrders = () => {
     return (
-      // (ordersFetched.length > 0 && (
       <ListCard
         onPress={() => {
           postMyOrdersClicked('Pharmacy Home', currentPatient);
-          globalLoading!(true);
-          props.navigation.navigate(AppRoutes.YourOrdersScene, {
-            orders: ordersFetched,
-            refetch: ordersRefetch,
-            error: ordersError,
-            loading: ordersLoading,
-          });
+          props.navigation.navigate(AppRoutes.YourOrdersScene);
         }}
         container={{ marginBottom: 24, marginTop: 20 }}
         title={'My Orders'}
         leftIcon={<MedicineIcon />}
       />
-      // )) ||
-      // null
     );
   };
 

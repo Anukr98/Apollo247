@@ -2107,14 +2107,6 @@ export const UPLOAD_CHAT_FILE = gql`
   }
 `;
 
-export const CANCEL_MEDICINE_ORDER = gql`
-  mutation cancelMedicineOrder($medicineOrderCancelInput: MedicineOrderCancelInput) {
-    cancelMedicineOrder(medicineOrderCancelInput: $medicineOrderCancelInput) {
-      orderStatus
-    }
-  }
-`;
-
 export const CANCEL_MEDICINE_ORDER_OMS = gql`
   mutation CancelMedicineOrderOMS($medicineOrderCancelOMSInput: MedicineOrderCancelOMSInput) {
     cancelMedicineOrderOMS(medicineOrderCancelOMSInput: $medicineOrderCancelOMSInput) {

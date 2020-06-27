@@ -21,7 +21,6 @@ import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsPro
 import {
   GET_MEDICINE_ORDER_CANCEL_REASONS,
   GET_MEDICINE_ORDER_OMS_DETAILS,
-  GET_MEDICINE_ORDERS_OMS__LIST,
   CANCEL_MEDICINE_ORDER_OMS,
   GET_PATIENT_ADDRESS_LIST,
   ALERT_MEDICINE_ORDER_PICKUP,
@@ -47,11 +46,10 @@ import {
   postWebEngageEvent,
   reOrderMedicines,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { FeedbackPopup } from './FeedbackPopup';
-import { ApolloQueryResult } from 'apollo-client';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient, useQuery } from 'react-apollo-hooks';
@@ -72,11 +70,6 @@ import {
   ScrollView,
   StackActions,
 } from 'react-navigation';
-import {
-  getMedicineOrdersOMSList,
-  getMedicineOrdersOMSListVariables,
-  getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrdersList,
-} from '../graphql/types/getMedicineOrdersOMSList';
 import { CommonBugFender, isIphone5s } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { postPharmacyMyOrderTrackingClicked } from '../helpers/webEngageEventHelpers';
 import {
@@ -138,31 +131,22 @@ const styles = StyleSheet.create({
   },
 });
 
-type OrderRefetch = (
-  variables?: getMedicineOrdersOMSListVariables
-) => Promise<ApolloQueryResult<getMedicineOrdersOMSList>>;
-
 export interface OrderDetailsSceneProps
   extends NavigationScreenProps<{
+    /** One of @orderAutoId or @billNumber is mandatory */
     orderAutoId?: string;
     billNumber?: string;
     showOrderSummaryTab?: boolean;
     goToHomeOnBack?: boolean;
-    refetchOrders: OrderRefetch;
-    setOrders: (
-      orders: getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrdersList[]
-    ) => void;
-    refetch: (
-      variables?: getMedicineOrdersOMSListVariables | undefined
-    ) => Promise<ApolloQueryResult<getMedicineOrdersOMSList>>;
+    refetchOrders?: () => void;
   }> {}
 
 export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   const orderAutoId = props.navigation.getParam('orderAutoId');
   const billNumber = props.navigation.getParam('billNumber');
+  const refetchOrders = props.navigation.getParam('refetchOrders');
   const goToHomeOnBack = props.navigation.getParam('goToHomeOnBack');
   const showOrderSummaryTab = props.navigation.getParam('showOrderSummaryTab');
-  const setOrders = props.navigation.getParam('setOrders');
   const [cancellationReasons, setCancellationReasons] = useState<
     GetMedicineOrderCancelReasons_getMedicineOrderCancelReasons_cancellationReasons[]
   >([]);
@@ -181,7 +165,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     total: 0,
     unavailable: [],
   });
-  const scrollViewRef = React.useRef<any>(null);
+  const scrollViewRef = React.useRef<ScrollView | null>(null);
   const scrollToSlots = () => {
     scrollViewRef.current &&
       scrollViewRef.current.scrollTo({ x: 0, y: scrollYValue, animated: true });
@@ -200,15 +184,6 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     orderAutoId: billNumber ? 0 : Number(orderAutoId),
     billNumber: billNumber || '',
   };
-  const refetchOrders: OrderRefetch =
-    props.navigation.getParam('refetch') ||
-    useQuery<getMedicineOrdersOMSList, getMedicineOrdersOMSListVariables>(
-      GET_MEDICINE_ORDERS_OMS__LIST,
-      {
-        variables: { patientId: currentPatient && currentPatient.id },
-        fetchPolicy: 'cache-first',
-      }
-    ).refetch;
   const { data, loading, refetch } = useQuery<
     getMedicineOrderOMSDetails,
     getMedicineOrderOMSDetailsVariables
@@ -1033,13 +1008,6 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
             )}
           </View>
         ) : null}
-        {/* <NeedHelpAssistant
-          onNeedHelpPress={() => {
-            postWEGNeedHelpEvent(currentPatient, 'Medicines');
-          }}
-          containerStyle={{ marginTop: 20, marginBottom: 30 }}
-          navigation={props.navigation}
-        /> */}
         {showNotifyStoreAlert && renderNotifyStoreAlert()}
       </View>
     );
@@ -1213,7 +1181,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
             (cancellationReasons, i) =>
               ({
                 onPress: () => {
-                  setSelectedReason(cancellationReasons.description);
+                  setSelectedReason(cancellationReasons.description!);
                   setOverlayDropdown(false);
                 },
                 optionText: cancellationReasons.description,
@@ -1372,11 +1340,14 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.ORDER_SUMMARY_CLICKED] = {
       orderId: orderDetails.id,
       orderDate: getFormattedOrderPlacedDateTime(orderDetails),
-      orderType: orderDetails.orderType == MEDICINE_ORDER_TYPE.UPLOAD_PRESCRIPTION ? 'Non Cart' : 'Cart',
+      orderType:
+        orderDetails.orderType == MEDICINE_ORDER_TYPE.UPLOAD_PRESCRIPTION ? 'Non Cart' : 'Cart',
       customerId: currentPatient && currentPatient.id,
-      deliveryDate: orderDetails.orderTat ? moment(orderDetails.orderTat).format('ddd, D MMMM, hh:mm A') : '',
+      deliveryDate: orderDetails.orderTat
+        ? moment(orderDetails.orderTat).format('ddd, D MMMM, hh:mm A')
+        : '',
       mobileNumber: currentPatient && currentPatient.mobileNumber,
-      orderStatus: orderDetails!.currentStatus,
+      orderStatus: orderDetails.currentStatus!,
     };
     postWebEngageEvent(WebEngageEventName.ORDER_SUMMARY_CLICKED, eventAttributes);
     return (
@@ -1432,26 +1403,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
               CommonBugFender('OrderDetailsScene_refetch', e);
               setInitialSate();
             });
-          refetchOrders &&
-            refetchOrders()
-              .then((data) => {
-                const _orders = (
-                  g(data, 'data', 'getMedicineOrdersOMSList', 'medicineOrdersList') || []
-                ).filter(
-                  (item) =>
-                    !(
-                      (item!.medicineOrdersStatus || []).length == 1 &&
-                      (item!.medicineOrdersStatus || []).find((item) => !item!.hideStatus)
-                    )
-                );
-                console.log(_orders, 'hdub');
-                setOrders(
-                  _orders as getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrdersList[]
-                );
-              })
-              .catch((e) => {
-                CommonBugFender('OrderDetailsScene_onPressConfirmCancelOrder', e);
-              });
+          refetchOrders && refetchOrders();
         } else {
           Alert.alert('Error', g(data, 'cancelMedicineOrderOMS', 'orderStatus')!);
         }
