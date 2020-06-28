@@ -86,6 +86,7 @@ export class PatientRepository extends Repository<Patient> {
         .where('patient."deviceCode" = :deviceCode', { deviceCode })
         .groupBy('patient."mobileNumber"')
         .getRawMany()).length;
+
       this.setCache(
         `${REDIS_PATIENT_DEVICE_COUNT_KEY_PREFIX}${deviceCode}`,
         deviceCodeCount.toString()
@@ -113,7 +114,7 @@ export class PatientRepository extends Repository<Patient> {
   async getByIdCache(id: string | number) {
     const redis = await pool.getTedis();
     try {
-      const cache = await redis.get(`${REDIS_PATIENT_ID_KEY_PREFIX}${id}`).catch();
+      const cache = await redis.get(`${REDIS_PATIENT_ID_KEY_PREFIX}${id}`);
 
       dLogger(
         new Date(),
@@ -128,7 +129,6 @@ export class PatientRepository extends Repository<Patient> {
         return await this.setByIdCache(id);
       }
     } catch (e) {
-      return await this.getPatientData(id);
     } finally {
       pool.putTedis(redis);
     }
@@ -188,6 +188,18 @@ export class PatientRepository extends Repository<Patient> {
     try {
       ids = await redis.get(`${REDIS_PATIENT_MOBILE_KEY_PREFIX}${mobile}`);
     } catch (e) {
+      return await this.find({
+        where: { mobileNumber: mobile, isActive: true },
+        relations: [
+          'lifeStyle',
+          'healthVault',
+          'familyHistory',
+          'patientAddress',
+          'patientDeviceTokens',
+          'patientNotificationSettings',
+          'patientMedicalHistory',
+        ],
+      });
     } finally {
       pool.putTedis(redis);
     }
