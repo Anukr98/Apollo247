@@ -276,7 +276,7 @@ export const Calendar: React.FC = () => {
           endDate: format(range.end as number | Date, 'yyyy-MM-dd'),
         },
         fetchPolicy: 'no-cache',
-        pollInterval: !isDialogOpen && pageRefreshTimeInSeconds * 1000,
+        pollInterval: !isDialogOpen && pageRefreshTimeInSeconds * 1000 * 10, //Changed to 5 min suggested by ajay bansal
         notifyOnNetworkStatusChange: true,
       })
     : { data: [], loading: false };
