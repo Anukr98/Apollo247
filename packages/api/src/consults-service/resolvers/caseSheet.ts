@@ -834,17 +834,13 @@ const modifyCaseSheet: Resolver<
       description:
         inputArguments.familyHistory.length > 0 ? inputArguments.familyHistory : undefined,
     };
-    console.log('familyHistoryRepo');
     const familyHistoryRepo = patientsDb.getCustomRepository(PatientFamilyHistoryRepository);
-    console.log('familyHistoryRepo', familyHistoryRepo);
     const familyHistoryRecord = patientData.familyHistory[0];
-    console.log('familyHistoryRecord', familyHistoryRecord);
     if (familyHistoryRecord == null) {
       //create
       familyHistoryRepo.savePatientFamilyHistory(familyHistoryInputs);
     } else {
       //update
-      console.log('familyHistoryRepo update');
       familyHistoryRepo.updatePatientFamilyHistory(familyHistoryRecord.id, familyHistoryInputs);
     }
   }
