@@ -360,8 +360,7 @@ const HeaderComponent: React.FC<any> = (props) => {
     !isAdminDoctor &&
     !isSecretary &&
     currentPatient &&
-    currentPatient.id &&
-    isCalendarPage
+    currentPatient.id
       ? useQuery(GET_NOTIFICATION, {
           variables: {
             toId: currentPatient.id,
@@ -370,7 +369,7 @@ const HeaderComponent: React.FC<any> = (props) => {
             // endDate: "2020-05-07"
           },
           fetchPolicy: 'no-cache',
-          pollInterval: pageRefreshTimeInSeconds * 1000 * 2 * 10, //Changed to 10 min see ticket 2715
+          pollInterval: isCalendarPage && pageRefreshTimeInSeconds * 1000 * 2 * 10, //Changed to 10 min see ticket 2715
           notifyOnNetworkStatusChange: true,
         })
       : { data: {}, loading: false };
