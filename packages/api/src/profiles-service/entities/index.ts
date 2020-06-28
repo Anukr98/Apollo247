@@ -694,13 +694,13 @@ export class PatientDeviceTokens extends BaseEntity {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
 
+  @Index('device_token')
   @Column({ type: 'text' })
   deviceToken: string;
 
   @Column()
   deviceOS: string;
 
-  @Index('device_type')
   @Column()
   deviceType: DEVICE_TYPE;
 
