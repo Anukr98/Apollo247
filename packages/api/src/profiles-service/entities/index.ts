@@ -700,6 +700,7 @@ export class PatientDeviceTokens extends BaseEntity {
   @Column()
   deviceOS: string;
 
+  @Index('device_type')
   @Column()
   deviceType: DEVICE_TYPE;
 
