@@ -188,18 +188,6 @@ export class PatientRepository extends Repository<Patient> {
     try {
       ids = await redis.get(`${REDIS_PATIENT_MOBILE_KEY_PREFIX}${mobile}`);
     } catch (e) {
-      return await this.find({
-        where: { mobileNumber: mobile, isActive: true },
-        relations: [
-          'lifeStyle',
-          'healthVault',
-          'familyHistory',
-          'patientAddress',
-          'patientDeviceTokens',
-          'patientNotificationSettings',
-          'patientMedicalHistory',
-        ],
-      });
     } finally {
       pool.putTedis(redis);
     }
