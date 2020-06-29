@@ -237,7 +237,7 @@ export const ManageProfiles: React.FC = (props) => {
                 }}
                 title={'Update Profile'}
               >
-                {firstName !== null ? (
+                {firstName && (
                   <div className={classes.profileCard}>
                     <div className={classes.profileImg}>
                       <img src={photoUrl ? photoUrl : require('images/no_photo.png')} alt="" />
@@ -266,7 +266,7 @@ export const ManageProfiles: React.FC = (props) => {
                       </div>
                     </div>
                   </div>
-                ) : null}
+                )}
               </div>
             );
           })}
