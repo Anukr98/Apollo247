@@ -1104,26 +1104,30 @@ export const uploadPdfBase64ToPrism = async (
   const generalAdvice = JSON.parse(
     JSON.stringify(caseSheet.otherInstructions)
   ) as CaseSheetOtherInstruction[];
-  generalAdvice.forEach((advice) => {
-    instructions.push(advice.instruction);
-  });
+  if (generalAdvice)
+    generalAdvice.forEach((advice) => {
+      instructions.push(advice.instruction);
+    });
 
   const diagnosticPrescription: string[] = [];
   const diagnosesTests = JSON.parse(
     JSON.stringify(caseSheet.diagnosticPrescription)
   ) as CaseSheetDiagnosisPrescription[];
 
-  diagnosesTests.forEach((tests) => {
-    diagnosticPrescription.push(tests.itemname);
-  });
+  if (diagnosesTests)
+    diagnosesTests.forEach((tests) => {
+      diagnosticPrescription.push(tests.itemname);
+    });
 
-  const caseSheetMedicinePrescription = JSON.parse(
+  let caseSheetMedicinePrescription: CaseSheetMedicinePrescription[] = [];
+  caseSheetMedicinePrescription = JSON.parse(
     JSON.stringify(caseSheet.medicinePrescription)
   ) as CaseSheetMedicinePrescription[];
 
-  caseSheetMedicinePrescription.forEach((element) => {
-    element.externalId = '';
-  });
+  if (caseSheetMedicinePrescription)
+    caseSheetMedicinePrescription.forEach((element) => {
+      element.externalId = '';
+    });
 
   const prescriptionInputArgs: PrescriptionInputArgs = {
     prescriptionInput: {
