@@ -1,5 +1,8 @@
 import { ApolloLogo } from '@aph/mobile-patients/src/components/ApolloLogo';
-import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import {
+  useAppCommonData,
+  LocationData,
+} from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { NotificationListener } from '@aph/mobile-patients/src/components/NotificationListener';
@@ -69,6 +72,8 @@ import {
   postFirebaseEvent,
   postWebEngageEvent,
   UnInstallAppsFlyer,
+  getlocationDataFromLatLang,
+  distanceBwTwoLatLng,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   PatientInfo,
@@ -299,14 +304,38 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   const webengage = new WebEngage();
 
-  const updateLocation = () => {
-    doRequestAndAccessLocationModified()
-      .then((response) => {
-        response && setLocationDetails!(response);
-      })
-      .catch((e) => {
-        CommonBugFender('ConsultRoom_updateLocation', e);
-      });
+  const updateLocation = async (locationDetails: LocationData) => {
+    try {
+      // Don't ask location if it's updated less than 10 minutes ago
+      if (
+        locationDetails.lastUpdated &&
+        moment(locationDetails.lastUpdated).add(10, 'minutes') > moment()
+      ) {
+        return;
+      }
+      const { latitude, longitude } = await doRequestAndAccessLocationModified(true);
+      const isSameLatLng =
+        locationDetails.latitude &&
+        locationDetails.longitude &&
+        latitude == locationDetails.latitude &&
+        longitude == locationDetails.longitude;
+      // Check if same latLng or distance b/w co-ordinates is less than 2kms
+      if (
+        isSameLatLng ||
+        distanceBwTwoLatLng(
+          latitude!,
+          longitude!,
+          locationDetails.latitude!,
+          locationDetails.longitude!
+        ) < 2
+      ) {
+        return;
+      }
+      const loc = await getlocationDataFromLatLang(latitude!, longitude!);
+      setLocationDetails!(loc);
+    } catch (e) {
+      CommonBugFender('ConsultRoom_updateLocation', e);
+    }
   };
 
   useEffect(() => {
@@ -380,7 +409,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       isserviceable();
       if (!isCurrentLocationFetched) {
         setCurrentLocationFetched!(true);
-        updateLocation();
+        updateLocation(locationDetails);
       }
     } else {
       askLocationPermission();

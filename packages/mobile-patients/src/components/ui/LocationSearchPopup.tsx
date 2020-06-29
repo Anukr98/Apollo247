@@ -10,12 +10,12 @@ import {
   autoCompletePlaceSearch,
   getPlaceInfoByLatLng,
   getPlaceInfoByPlaceId,
-  GooglePlacesType,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   g,
   getNetStatus,
   findAddrComponents,
+  getFormattedLocation,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState } from 'react';
@@ -118,43 +118,19 @@ export const LocationSearchPopup: React.FC<LocationSearchPopupProps> = (props) =
     getPlaceInfoByPlaceId(item.placeId)
       .then((response) => {
         const addrComponents = g(response, 'data', 'result', 'address_components') || [];
-        const { lat, lng } = g(response, 'data', 'result', 'geometry', 'location')! || {};
-        const city =
-          findAddrComponents('locality', addrComponents) ||
-          findAddrComponents('administrative_area_level_2', addrComponents);
+        const latLng = g(response, 'data', 'result', 'geometry', 'location')! || {};
+        const loc = getFormattedLocation(addrComponents, latLng);
         if (
-          city.toLowerCase() !=
+          loc.city.toLowerCase() !=
           ((locationForDiagnostics && locationForDiagnostics.city) || '').toLowerCase()
         ) {
           clearCartInfo && clearCartInfo();
         }
         if (addrComponents.length > 0) {
-          const locationData: LocationData = {
-            displayName: item.name,
-            latitude: lat,
-            longitude: lng,
-            area: [
-              findAddrComponents('route', addrComponents),
-              findAddrComponents('sublocality_level_2', addrComponents),
-              findAddrComponents('sublocality_level_1', addrComponents),
-            ]
-              .filter((i) => i)
-              .join(', '),
-            city,
-            state: findAddrComponents('administrative_area_level_1', addrComponents),
-            stateCode: findAddrComponents(
-              'administrative_area_level_1',
-              addrComponents,
-              'short_name'
-            ),
-            country: findAddrComponents('country', addrComponents),
-            pincode: findAddrComponents('postal_code', addrComponents),
-            lastUpdated: new Date().getTime(),
-          };
-
+          const locationData: LocationData = { ...loc, displayName: item.name };
           setLocationDetails!(locationData);
 
-          getPlaceInfoByLatLng(lat, lng)
+          getPlaceInfoByLatLng(latLng.lat, latLng.lng)
             .then((response) => {
               const addrComponents =
                 g(response, 'data', 'results', '0' as any, 'address_components') || [];
