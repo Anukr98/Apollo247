@@ -839,7 +839,7 @@ export const ConsultTabs: React.FC = () => {
           }
           // -------------------------------------------------------------- //
           navigator.mediaDevices
-            .getUserMedia({ audio: true, video: true })
+            .getUserMedia({ audio: true, video: false })
             .then((stream) => {
               console.log('Got stream', stream);
               setCameraMicPermission(true);
@@ -1483,6 +1483,9 @@ export const ConsultTabs: React.FC = () => {
           endAppointmentSessionInput: {
             appointmentId: appointmentId,
             status: STATUS.COMPLETED,
+            deviceType: DEVICETYPE.DESKTOP,
+            callSource: BOOKINGSOURCE.WEB,
+            callType: APPT_CALL_TYPE.CHAT,
           },
         },
         fetchPolicy: 'no-cache',

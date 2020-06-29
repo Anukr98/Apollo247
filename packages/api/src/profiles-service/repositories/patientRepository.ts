@@ -49,6 +49,12 @@ export class PatientRepository extends Repository<Patient> {
     });
   }
 
+  async findByIdWithoutRelations(id: string) {
+    return this.findOne({
+      where: { id, isActive: true },
+    });
+  }
+
   async findOrCreatePatient(
     findOptions: { mobileNumber: Patient['mobileNumber'] },
     createOptions: Partial<Patient>
@@ -670,5 +676,17 @@ export class PatientRepository extends Repository<Patient> {
 
   updateWhatsAppStatus(id: string, whatsAppConsult: Boolean, whatsAppMedicine: Boolean) {
     return this.update(id, { whatsAppConsult, whatsAppMedicine });
+  }
+
+  async checkMobileIdInfo(mobileNumber: string, uhid: string, patientId: string) {
+    if (uhid != '') {
+      const getData = await this.findOne({ where: { uhid, mobileNumber } });
+      if (getData) return true;
+      else return false;
+    } else if (patientId != '') {
+      const getData = await this.findOne({ where: { id: patientId, mobileNumber } });
+      if (getData) return true;
+      else return false;
+    }
   }
 }

@@ -80,8 +80,8 @@ const alertMedicineOrderPickup: Resolver<
     customerName: patientDetails.firstName,
     remarks: alertMedicineOrderPickupInput.remarks || '',
     mobile: patientDetails.mobileNumber.substr(3),
-    orderId: 245002686,
-    apolloId: 'FL20200611000003',
+    orderId: orderDetails.orderAutoId,
+    apolloId: orderDetails.medicineOrderShipments[0].apOrderNo,
   });
   log(
     'profileServiceLogger',

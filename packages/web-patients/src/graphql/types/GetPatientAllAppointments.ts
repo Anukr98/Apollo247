@@ -3,7 +3,7 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-import { APPOINTMENT_TYPE, STATUS, APPOINTMENT_STATE, DoctorType, Gender, DOCTOR_ONLINE_STATUS, Salutation, AccountType, ConsultMode, ConsultType, WeekDay } from "./globalTypes";
+import { APPOINTMENT_TYPE, STATUS, APPOINTMENT_STATE, DoctorType, Gender, DOCTOR_ONLINE_STATUS, AccountType, ConsultMode, ConsultType, WeekDay } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: GetPatientAllAppointments
@@ -138,7 +138,7 @@ export interface GetPatientAllAppointments_getPatientAllAppointments_appointment
   physicalConsultationFees: string;
   qualification: string | null;
   registrationNumber: string;
-  salutation: Salutation | null;
+  salutation: string | null;
   signature: string | null;
   specialization: string | null;
   state: string | null;

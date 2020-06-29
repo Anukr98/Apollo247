@@ -21,6 +21,7 @@ import {
   REQUEST_ROLES,
   PATIENT_TYPE,
   ES_DOCTOR_SLOT_STATUS,
+  AppointmentUpdateHistory,
 } from 'consults-service/entities';
 import { AppointmentDateTime } from 'doctors-service/resolvers/getDoctorsBySpecialtyAndFilters';
 import { AphError } from 'AphError';
@@ -66,6 +67,12 @@ export class AppointmentRepository extends Repository<Appointment> {
       .andWhere('appointment.patientId = :patientId', { patientId })
       .andWhere('appointment.doctorId = :doctorId', { doctorId })
       .andWhere('appointment.status = :status', { status: STATUS.COMPLETED })
+      .getCount();
+  }
+
+  getPatientAppointmentCountByPatientIds(patientId: string) {
+    return this.createQueryBuilder('appointment')
+      .andWhere('appointment.patientId = :patientId', { patientId })
       .getCount();
   }
 
@@ -799,9 +806,9 @@ export class AppointmentRepository extends Repository<Appointment> {
         .getUTCHours()
         .toString()
         .padStart(2, '0')}:${appointmentDate
-        .getUTCMinutes()
-        .toString()
-        .padStart(2, '0')}:00.000Z`;
+          .getUTCMinutes()
+          .toString()
+          .padStart(2, '0')}:00.000Z`;
       console.log(availableSlots, 'availableSlots final list');
       console.log(availableSlots.indexOf(sl), 'indexof');
       console.log(checkStart, checkEnd, 'check start end');
@@ -958,9 +965,9 @@ export class AppointmentRepository extends Repository<Appointment> {
             .getUTCHours()
             .toString()
             .padStart(2, '0')}:${doctorAppointment.appointmentDateTime
-            .getUTCMinutes()
-            .toString()
-            .padStart(2, '0')}:00.000Z`;
+              .getUTCMinutes()
+              .toString()
+              .padStart(2, '0')}:00.000Z`;
           if (availableSlots.indexOf(aptSlot) >= 0) {
             availableSlots.splice(availableSlots.indexOf(aptSlot), 1);
           }
@@ -1256,9 +1263,9 @@ export class AppointmentRepository extends Repository<Appointment> {
             .getUTCHours()
             .toString()
             .padStart(2, '0')}:${blockedSlot.start
-            .getUTCMinutes()
-            .toString()
-            .padStart(2, '0')}:00.000Z`;
+              .getUTCMinutes()
+              .toString()
+              .padStart(2, '0')}:00.000Z`;
 
           let blockedSlotsCount =
             (Math.abs(differenceInMinutes(blockedSlot.end, blockedSlot.start)) / 60) * duration;
@@ -1316,9 +1323,9 @@ export class AppointmentRepository extends Repository<Appointment> {
               .getUTCHours()
               .toString()
               .padStart(2, '0')}:${slot
-              .getUTCMinutes()
-              .toString()
-              .padStart(2, '0')}:00.000Z`;
+                .getUTCMinutes()
+                .toString()
+                .padStart(2, '0')}:00.000Z`;
           }
           console.log('start slot', slot);
 
@@ -1851,5 +1858,10 @@ export class AppointmentRepository extends Repository<Appointment> {
         order: { bookingDate: 'DESC' },
       });
     }
+  }
+
+  saveAppointmentHistory(historyAttrs: Partial<AppointmentUpdateHistory>) {
+    historyAttrs.updatedAt = new Date();
+    return AppointmentUpdateHistory.create(historyAttrs).save();
   }
 }

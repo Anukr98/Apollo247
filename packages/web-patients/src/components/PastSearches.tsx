@@ -101,16 +101,9 @@ const useStyles = makeStyles((theme: Theme) => {
   });
 });
 
-interface PastSearchProps {
-  speciality: (specialitySelected: string) => void;
-  disableFilter: (disableFilters: boolean) => void;
-  specialityId?: (specialityId: string) => void;
-}
-
-export const PastSearches: React.FC<PastSearchProps> = (props) => {
+export const PastSearches: React.FC = (props) => {
   const classes = useStyles({});
   const { currentPatient } = useAllCurrentPatients();
-  const { speciality, disableFilter, specialityId } = props;
 
   const { data } = useQueryWithSkip<GetPatientPastSearches, GetPatientPastSearchesVariables>(
     PATIENT_PAST_SEARCHES,
@@ -128,8 +121,15 @@ export const PastSearches: React.FC<PastSearchProps> = (props) => {
         {/* <div className={classes.sectionHeader}>Your Past Searches</div> */}
         <Grid container spacing={2}>
           {data.getPatientPastSearches.map((searchDetails) => {
-            return searchDetails && searchDetails.searchType === SEARCH_TYPE.DOCTOR ? (
-              <Grid item xs={6} sm={6} md={4} lg={3} key={_uniqueId('psearch_doctor_')}>
+            return searchDetails && searchDetails ? (
+              <Grid
+                item
+                xs={6}
+                sm={6}
+                md={4}
+                lg={3}
+                key={`${_uniqueId('psearch_doctor_')}- ${searchDetails.typeId}`}
+              >
                 <Link
                   to={`/doctors/${readableParam(searchDetails.name)}-${searchDetails.typeId}`}
                   title={searchDetails && `${_startCase(_toLower(searchDetails.name || ''))}`}
@@ -155,14 +155,11 @@ export const PastSearches: React.FC<PastSearchProps> = (props) => {
                     lg={3}
                     title={(searchDetails && searchDetails.name) || ''}
                     onClick={(e) => {
-                      specialityId && specialityId((searchDetails && searchDetails.typeId) || '');
-                      speciality(e.currentTarget.title);
-                      disableFilter(false);
                       const specialityUpdated = readableParam(`${e.currentTarget.title}`);
                       const encoded = encodeURIComponent(specialityUpdated);
                       history.push(clientRoutes.specialties(`${specialityUpdated}`));
                     }}
-                    key={_uniqueId('psearch_spl_')}
+                    key={`${_uniqueId('psearch_spl_')}- ${searchDetails.typeId}`}
                   >
                     <div className={classes.contentBox}>
                       <Avatar

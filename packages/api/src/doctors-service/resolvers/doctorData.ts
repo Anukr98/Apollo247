@@ -8,7 +8,6 @@ import {
   FacilityType,
   DoctorAndHospital,
   ConsultType,
-  Salutation,
   CityPincodeMapper,
 } from 'doctors-service/entities';
 import {
@@ -102,6 +101,7 @@ const insertData: Resolver<null, {}, DoctorsServiceContext, string> = async (
           AC: 'IMAGEURL',
           AD: 'THUMBNAILURL',
           AE: 'DISPLAYNAME',
+          AF: 'SALUTATION',
         },
       },
       {
@@ -190,7 +190,7 @@ const insertData: Resolver<null, {}, DoctorsServiceContext, string> = async (
         : element.THUMBNAILURL;
 
     const DoctorDetails: Partial<Doctor> = {};
-    DoctorDetails.salutation = Salutation.DR;
+    DoctorDetails.salutation = element.SALUTATION;
     DoctorDetails.fullName = element.FULLNAME;
     DoctorDetails.doctorType = element.TYPE;
     DoctorDetails.firstName = element.FIRSTNAME;

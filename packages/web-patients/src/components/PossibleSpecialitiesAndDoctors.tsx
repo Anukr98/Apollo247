@@ -8,7 +8,6 @@ import LinearProgress from '@material-ui/core/LinearProgress';
 
 import { useQueryWithSkip } from 'hooks/apolloHooks';
 import { SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME } from 'graphql/doctors';
-import { SpecialitiesProps } from 'components/Specialities';
 import { Specialities } from 'components/Specialities';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -144,10 +143,10 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const PossibleSpecialitiesAndDoctors: React.FC<SpecialitiesProps> = (props) => {
+export const PossibleSpecialitiesAndDoctors: React.FC = (props) => {
   const classes = useStyles({});
 
-  const { matched, speciality, disableFilter } = props;
+  // const { matched } = props;
   const { data, loading } = useQueryWithSkip(SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME, {
     variables: { searchText: '' },
   });
@@ -177,14 +176,14 @@ export const PossibleSpecialitiesAndDoctors: React.FC<SpecialitiesProps> = (prop
             })}
           </Grid>
         </div>
-        <Specialities
+        {/* <Specialities
           keyword=""
           matched={matched}
           speciality={speciality}
           disableFilter={disableFilter}
           subHeading="Possible Specialities"
-          // filteredSpecialties={[]}
-        />
+          filteredSpecialties={[]}
+        /> */}
       </>
     );
   } else {

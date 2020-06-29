@@ -16,6 +16,7 @@ import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet as CaseSheetType } from '../../graphql/types/getPatientPastConsultsAndPrescriptions';
 import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
+import { ToplineReport } from 'components/HealthRecords/ToplineReport';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -294,6 +295,56 @@ const useStyles = makeStyles((theme: Theme) => {
         },
       },
     },
+    medicalRecordsDetails: {
+      paddingLeft: 20,
+      paddingRight: 15,
+      paddingTop: 10,
+      [theme.breakpoints.down('xs')]: {
+        padding: 20,
+        paddingBottom: 10,
+      },
+    },
+    cbcDetails: {
+      backgroundColor: theme.palette.common.white,
+      boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
+      borderRadius: 10,
+      marginBottom: 12,
+      padding: 14,
+      display: 'flex',
+      '&:before': {
+        display: 'none',
+      },
+      [theme.breakpoints.down('xs')]: {
+        display: 'block',
+      },
+      '& >div:first-child': {
+        paddingLeft: 0,
+      },
+      '& >div:last-child': {
+        paddingRight: 0,
+      },
+    },
+    reportsDetails: {
+      paddingLeft: 5,
+      paddingRight: 5,
+      [theme.breakpoints.down('xs')]: {
+        paddingLeft: 5,
+        paddingRight: 5,
+      },
+      '& label': {
+        fontSize: 12,
+        fontWeight: 500,
+        color: '#01475b',
+        paddingBottom: 3,
+      },
+      '& p': {
+        fontSize: 14,
+        fontWeight: 500,
+        color: '#0087ba',
+        margin: 0,
+        wordBreak: 'break-word',
+      },
+    },
   };
 });
 
@@ -528,16 +579,37 @@ export const Consultations: React.FC<ConsultationProps> = (props) => {
                 <PrescriptionPreview /> */}
                   </>
                 ) : // when it is prescription
-                activeConsult && activeConsult.fileUrl ? (
-                  activeConsult.fileUrl.includes('.pdf') ? (
-                    <div className={classes.prescriptionImage}>
-                      <a href={activeConsult.prescriptionImageUrl}>Download File</a>
+                activeConsult && activeConsult.prescriptionName ? (
+                  <div className={classes.medicalRecordsDetails}>
+                    <div className={classes.cbcDetails}>
+                      <div className={classes.reportsDetails}>
+                        <label>Check-up Date</label>
+                        <p>{moment(activeConsult.date).format('DD MMM YYYY')}</p>
+                      </div>
+                      <div className={classes.reportsDetails}>
+                        <label>Source</label>
+                        <p>{activeConsult.prescriptionSource || '-'}</p>
+                      </div>
+                      <div className={classes.reportsDetails}>
+                        <label>Referring Doctor</label>
+                        <p>{!!activeConsult.prescribedBy ? activeConsult.prescribedBy : '-'}</p>
+                      </div>
                     </div>
-                  ) : (
-                    <div className={classes.prescriptionImage}>
-                      <img src={activeConsult.fileUrl} alt="Prescription Preview" />
-                    </div>
-                  )
+                    {(activeConsult.observations || activeConsult.additionalNotes) && (
+                      <ToplineReport activeData={activeConsult} />
+                    )}
+                    {activeConsult.fileUrl &&
+                      activeConsult.fileUrl.length > 0 &&
+                      (activeConsult.fileUrl.includes('.pdf') ? (
+                        <div className={classes.prescriptionImage}>
+                          <a href={activeConsult.prescriptionImageUrl}>Download File</a>
+                        </div>
+                      ) : (
+                        <div className={classes.prescriptionImage}>
+                          <img src={activeConsult.fileUrl} alt="Prescription Preview" />
+                        </div>
+                      ))}
+                  </div>
                 ) : (
                   // when it is med record
                   activeConsult &&
