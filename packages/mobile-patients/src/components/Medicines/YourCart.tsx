@@ -1682,6 +1682,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     onComplete: () => void
   ) => {
     try {
+      // to get better proximity of lat-long
       const pincodeAndAddress = [address.zipcode, address.addressLine1]
         .filter((v) => (v || '').trim())
         .join(',');
