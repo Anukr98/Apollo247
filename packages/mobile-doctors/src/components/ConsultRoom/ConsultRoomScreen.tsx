@@ -375,13 +375,18 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   ) => {
     if (familyValues) {
       let familyHistory: string = '';
-      familyValues.forEach((i) => {
-        if (i) {
-          familyHistory += i.relation
-            ? i.relation + ': ' + (i.description || '') + '\n'
-            : (i.description || '') + '\n';
-        }
-      });
+      if (familyValues[0]) {
+        familyHistory += familyValues[0].relation
+          ? familyValues[0].relation + ': ' + (familyValues[0].description || '') + '\n'
+          : (familyValues[0].description || '') + '\n';
+      }
+      // familyValues.forEach((i) => {
+      //   if (i) {
+      //     familyHistory += i.relation
+      //       ? i.relation + ': ' + (i.description || '') + '\n'
+      //       : (i.description || '') + '\n';
+      //   }
+      // });
       return familyHistory.slice(0, -1);
     } else {
       return '';
@@ -812,13 +817,13 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           .filter((i) => i !== '')
           .join('\n')
           .trim(),
-      familyHistory:
-        familyValues &&
-        getFamilyHistoryObject(familyValues)
-          .map((i) => (i ? (i.relation ? i.relation + ': ' + i.description : i.description) : ''))
-          .filter((i) => i !== '')
-          .join('\n')
-          .trim(),
+      familyHistory: familyValues,
+      //  &&
+      // getFamilyHistoryObject(familyValues)
+      //   .map((i) => (i ? (i.relation ? i.relation + ': ' + i.description : i.description) : ''))
+      //   .filter((i) => i !== '')
+      //   .join('\n')
+      //   .trim(),
       dietAllergies: medicalHistory ? medicalHistory.dietAllergies || '' : '',
       drugAllergies: medicalHistory ? medicalHistory.drugAllergies || '' : '',
       height: medicalHistory ? medicalHistory.height || '' : '',
