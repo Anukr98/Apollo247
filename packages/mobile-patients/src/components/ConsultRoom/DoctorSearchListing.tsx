@@ -172,6 +172,7 @@ const styles = StyleSheet.create({
 });
 
 let latlng: locationType | null = null;
+let doctors: (getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors | null)[];
 
 export interface DoctorSearchListingProps extends NavigationScreenProps {}
 export type filterDataType = {
@@ -226,6 +227,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   >([]);
   const [doctorsType, setDoctorsType] = useState<string>('APOLLO');
   const [apolloDocsNumber, setApolloDocsNumber] = useState<number>(0);
+  const [partnerDocsNumber, setPartnerDocsNumber] = useState<number>(0);
   const [FilterData, setFilterData] = useState<filterDataType[]>([...filterData]);
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
   const [locationSearchList, setlocationSearchList] = useState<{ name: string; placeId: string }[]>(
@@ -430,17 +432,30 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
 
   const filterDoctors = (
     data: (getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors | null)[],
-    type: string
+    type: string,
+    searchText: string = doctorSearch
   ) => {
+    const doctorsApollo =
+      data && data.length && searchText
+        ? data.filter(
+            (i) =>
+              i &&
+              (i.fullName || '')
+                .toString()
+                .toLowerCase()
+                .includes(searchText.toLowerCase())
+          )
+        : data;
     if (type == 'APOLLO') {
-      const apolloDoctors = data.filter((item) => {
+      const apolloDoctors = doctorsApollo.filter((item) => {
         return item && item.doctorType == 'APOLLO';
       });
       setFilteredDoctorsList(apolloDoctors);
       console.log(apolloDoctors.length);
       setApolloDocsNumber(apolloDoctors.length);
+      setPartnerDocsNumber(doctorsApollo.length - apolloDoctors.length);
     } else {
-      const otherDoctors = data.filter((item) => {
+      const otherDoctors = doctorsApollo.filter((item) => {
         console.log(item && item.doctorType);
         return item && item.doctorType != 'APOLLO';
       });
@@ -849,6 +864,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
               onPress={() => {
                 console.log('data1111111111');
                 setSearchIconClicked(!searchIconClicked);
+                setDoctorSearch('');
+                filterDoctors(doctorsList, doctorsType, '');
               }}
             >
               <View
@@ -966,7 +983,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   };
 
   const renderDoctorSearches = (filter?: ConsultMode, searchText?: string) => {
-    let doctors =
+    doctors =
       filteredDoctorsList.length && filter
         ? filteredDoctorsList.filter(
             (
@@ -976,17 +993,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             }
           )
         : filteredDoctorsList;
-    doctors =
-      doctors.length && searchText
-        ? doctors.filter(
-            (i) =>
-              i &&
-              (i.fullName || '')
-                .toString()
-                .toLowerCase()
-                .includes(searchText.toLowerCase())
-          )
-        : doctors;
+
     if (doctors.length === 0 && !showSpinner) {
       const eventAttributes: WebEngageEvents[WebEngageEventName.DOCTOR_SPECIALITY_SEARCH_NO_RESULT] = {
         'Text Searched': doctorSearch,
@@ -1198,6 +1205,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           onChangeText={(value) => {
             if (isValidSearch(value)) {
               setDoctorSearch(value);
+              filterDoctors(doctorsList, doctorsType, value);
             }
           }}
         />
@@ -1438,7 +1446,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
                 color: doctorsType == 'PARTNERS' ? theme.colors.LIGHT_BLUE : 'rgba(1,28,36,0.6)',
               }}
             >
-              Doctor Partners ({doctorsList.length - apolloDocsNumber})
+              Doctor Partners ({partnerDocsNumber})
             </Text>
           </TouchableOpacity>
         </View>
