@@ -4,12 +4,10 @@ import { CouponServiceContext } from 'coupons-service/couponServiceContext';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
-import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
+
 import { CouponRepository } from 'profiles-service/repositories/couponRepository';
 import { APPOINTMENT_TYPE } from 'consults-service/entities';
-import { ApiConstants } from 'ApiConstants';
-import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
-import { discountCalculation, genericRuleCheck } from 'helpers/couponCommonFunctions';
+
 import { Coupon } from 'profiles-service/entities';
 
 export const validateConsultCouponTypeDefs = gql`

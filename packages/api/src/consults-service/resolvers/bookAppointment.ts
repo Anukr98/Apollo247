@@ -24,8 +24,6 @@ import { DoctorPatientExternalConnectRepository } from 'doctors-service/reposito
 import { ApiConstants } from 'ApiConstants';
 import { validateCoupon } from 'helpers/couponServices';
 import { ValidateCouponRequest } from 'types/coupons';
-import { CouponRepository } from 'profiles-service/repositories/couponRepository';
-import { discountCalculation } from 'helpers/couponCommonFunctions';
 
 export const bookAppointmentTypeDefs = gql`
   enum STATUS {
