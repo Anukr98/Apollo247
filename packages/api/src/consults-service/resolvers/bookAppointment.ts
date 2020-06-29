@@ -315,53 +315,37 @@ const bookAppointment: Resolver<
 
   //calculate coupon discount value
   if (appointmentInput.couponCode) {
-    if (appointmentInput.actualAmount && appointmentInput.pinCode) {
-      const payload: ValidateCouponRequest = {
-        mobile: patientDetails.mobileNumber.replace('+91', ''),
-        billAmount: appointmentInput.actualAmount,
-        coupon: appointmentInput.couponCode,
-        paymentType: '',
-        pinCode: appointmentInput.pinCode,
-        consultations: [
-          {
-            hospitalId: appointmentInput.hospitalId,
-            doctorId: appointmentInput.doctorId,
-            specialityId: docDetails.specialty.id,
-            consultationTime: appointmentInput.appointmentDateTime.getTime(),
-            consultationType:
-              appointmentInput.appointmentType == APPOINTMENT_TYPE.ONLINE
-                ? 1
-                : appointmentInput.appointmentType == APPOINTMENT_TYPE.PHYSICAL
-                ? 0
-                : -1,
-            cost: appointmentInput.actualAmount,
-            rescheduling: false,
-          },
-        ],
-      };
-      const couponData = await validateCoupon(payload);
-      if (!couponData || !couponData.response || !couponData.response.valid)
-        throw new AphError(AphErrorMessages.INVALID_COUPON_CODE);
-    } else {
-      const couponRepo = patientsDb.getCustomRepository(CouponRepository);
-      const couponData = await couponRepo.findCouponByCode(appointmentInput.couponCode);
-      if (couponData == null) throw new AphError(AphErrorMessages.INVALID_COUPON_CODE);
-
-      let doctorFees = 0;
-      if (appointmentInput.appointmentType === APPOINTMENT_TYPE.ONLINE)
-        doctorFees = <number>docDetails.onlineConsultationFees;
-      else doctorFees = <number>docDetails.physicalConsultationFees;
-      const couponGenericRulesData = couponData.couponGenericRule;
-
-      if (couponGenericRulesData.discountType && couponGenericRulesData.discountValue >= 0) {
-        appointmentInput.actualAmount = doctorFees;
-        appointmentInput.discountedAmount = await discountCalculation(
-          doctorFees,
-          couponGenericRulesData.discountType,
-          couponGenericRulesData.discountValue
-        );
-      }
-    }
+    const amount = appointmentInput.actualAmount
+      ? appointmentInput.actualAmount
+      : appointmentInput.appointmentType == APPOINTMENT_TYPE.PHYSICAL
+      ? docDetails.physicalConsultationFees
+      : docDetails.onlineConsultationFees;
+    const payload: ValidateCouponRequest = {
+      mobile: patientDetails.mobileNumber.replace('+91', ''),
+      billAmount: parseInt(amount.toString(), 10),
+      coupon: appointmentInput.couponCode,
+      paymentType: '',
+      pinCode: appointmentInput.pinCode ? appointmentInput.pinCode : '',
+      consultations: [
+        {
+          hospitalId: appointmentInput.hospitalId,
+          doctorId: appointmentInput.doctorId,
+          specialityId: docDetails.specialty.id,
+          consultationTime: appointmentInput.appointmentDateTime.getTime(),
+          consultationType:
+            appointmentInput.appointmentType == APPOINTMENT_TYPE.ONLINE
+              ? 1
+              : appointmentInput.appointmentType == APPOINTMENT_TYPE.PHYSICAL
+              ? 0
+              : -1,
+          cost: parseInt(amount.toString(), 10),
+          rescheduling: false,
+        },
+      ],
+    };
+    const couponData = await validateCoupon(payload);
+    if (!couponData || !couponData.response || !couponData.response.valid)
+      throw new AphError(AphErrorMessages.INVALID_COUPON_CODE);
   } else {
     let doctorFees = 0;
     if (appointmentInput.appointmentType === APPOINTMENT_TYPE.ONLINE)
