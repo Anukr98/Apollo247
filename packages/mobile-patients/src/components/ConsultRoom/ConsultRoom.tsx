@@ -43,15 +43,9 @@ import {
   setBugFenderLog,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
-  GET_DIAGNOSTICS_CITES,
   GET_PATIENT_FUTURE_APPOINTMENT_COUNT,
   SAVE_DEVICE_TOKEN,
 } from '@aph/mobile-patients/src/graphql/profiles';
-import {
-  getDiagnosticsCites,
-  getDiagnosticsCitesVariables,
-  getDiagnosticsCites_getDiagnosticsCites_diagnosticsCities,
-} from '@aph/mobile-patients/src/graphql/types/getDiagnosticsCites';
 import { getPatientFutureAppointmentCount } from '@aph/mobile-patients/src/graphql/types/getPatientFutureAppointmentCount';
 import { DEVICE_TYPE, Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
@@ -270,8 +264,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     locationDetails,
     isCurrentLocationFetched,
     setCurrentLocationFetched,
-    setDiagnosticsCities,
-    diagnosticsCities,
     notificationCount,
     setNotificationCount,
     setAllNotifications,
@@ -321,30 +313,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     //TODO: if deeplinks is causing issue comment handleDeepLink here and uncomment in SplashScreen useEffect
     // handleDeepLink(props.navigation);
     isserviceable();
-    if (diagnosticsCities.length) {
-      // Don't call getDiagnosticsCites API if already fetched
-      return;
-    }
-    if (g(currentPatient, 'id') && g(locationDetails, 'city')) {
-      client
-        .query<getDiagnosticsCites, getDiagnosticsCitesVariables>({
-          query: GET_DIAGNOSTICS_CITES,
-          variables: {
-            cityName: locationDetails!.city,
-            patientId: currentPatient.id || '',
-          },
-        })
-        .then(({ data }) => {
-          const cities = g(data, 'getDiagnosticsCites', 'diagnosticsCities') || [];
-          setDiagnosticsCities!(
-            cities as getDiagnosticsCites_getDiagnosticsCites_diagnosticsCities[]
-          );
-        })
-        .catch((e) => {
-          CommonBugFender('ConsultRoom_GET_DIAGNOSTICS_CITES', e);
-        });
-    }
-  }, [locationDetails, currentPatient, diagnosticsCities]);
+  }, [locationDetails, currentPatient]);
 
   const askLocationPermission = () => {
     showAphAlert!({
@@ -1633,7 +1602,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         <ConsultPersonalizedCard
           rowData={personalizedData}
           onClickButton={() => {
-            const {doctorDetails} = personalizedData;
+            const { doctorDetails } = personalizedData;
             const eventAttributes: WebEngageEvents[WebEngageEventName.HOMEPAGE_WIDGET_FOLLOWUP_CLICK] = {
               'Doctor ID': doctorDetails.id,
               'Speciality ID': doctorDetails.specialty.id,
@@ -1642,7 +1611,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               'Doctor Speciality': doctorDetails.specialty.name,
               'Customer ID': currentPatient.id,
               'Patient Name': currentPatient.firstName,
-              'Patient Age': Math.round(moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)),
+              'Patient Age': Math.round(
+                moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+              ),
               'Patient Gender': currentPatient.gender,
               'Patient UHID': currentPatient.uhid,
             };

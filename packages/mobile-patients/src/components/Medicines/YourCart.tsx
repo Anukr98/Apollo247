@@ -240,6 +240,10 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   }, []);
 
   useEffect(() => {
+    fetchAddresses();
+  }, []);
+
+  useEffect(() => {
     if (cartItems.length) {
       const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_CART_VIEWED] = {
         'Total items in cart': cartItems.length,
@@ -291,41 +295,6 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
       checkServicability(selectedAddress);
     }
   }, []);
-
-  useEffect(() => {
-    getUserAddress();
-  }, []);
-
-  const getUserAddress = async () => {
-    setLoading!(true);
-    const userId = await dataSavedUserID('selectedProfileId');
-    ((navigatedFrom === 'splashscreen' || 'registration') &&
-      addresses.length == 0 &&
-      client
-        .query<getPatientAddressList, getPatientAddressListVariables>({
-          query: GET_PATIENT_ADDRESS_LIST,
-          variables: {
-            patientId:
-              userId !== g(currentPatient, 'id') ? g(currentPatient, 'id') || userId : userId,
-          },
-          fetchPolicy: 'no-cache',
-        })
-        .then(
-          ({
-            data: {
-              getPatientAddressList: { addressList },
-            },
-          }) => {
-            setLoading!(false);
-            setAddresses && setAddresses(addressList!);
-          }
-        )
-        .catch((e) => {
-          setLoading!(false);
-          renderAlert(`Something went wrong, unable to fetch addresses.`);
-        })) ||
-      setLoading!(false);
-  };
 
   useEffect(() => {
     onFinishUpload();
@@ -487,6 +456,37 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
       title: string.common.uhOh,
       description: message,
     });
+  };
+
+  const fetchAddresses = async () => {
+    try {
+      if (addresses.length) {
+        return;
+      }
+      setLoading!(true);
+      // To handle from deeplink, sometimes currentPatientId might be null.
+      const isNavigatedFrom = navigatedFrom === 'splashscreen' || navigatedFrom === 'registration';
+      const userId =
+        (isNavigatedFrom && (await dataSavedUserID('selectedProfileId'))) ||
+        g(currentPatient, 'id');
+      const addressApiCall = await client.query<
+        getPatientAddressList,
+        getPatientAddressListVariables
+      >({
+        query: GET_PATIENT_ADDRESS_LIST,
+        variables: { patientId: userId },
+        fetchPolicy: 'no-cache',
+      });
+      const addressList =
+        (addressApiCall.data.getPatientAddressList
+          .addressList as savePatientAddress_savePatientAddress_patientAddress[]) || [];
+      setAddresses!(addressList);
+      setTestAddresses!(addressList);
+      setLoading!(false);
+    } catch (error) {
+      setLoading!(false);
+      renderAlert(`Something went wrong, unable to fetch addresses.`);
+    }
   };
 
   const fetchInventoryAndUpdateCartPricesAfterTat = async (
@@ -990,7 +990,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             <ActivityIndicator size="large" color="green" />
           </View>
         ) : null}
-        {slicedAddressList.map((item, index, array) => {
+        {addresses.slice(0, 2).map((item, index, array) => {
           return (
             <RadioSelectionItem
               key={item.id}
@@ -1154,9 +1154,6 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   };
 
   const [slicedStoreList, setSlicedStoreList] = useState<Store[]>([]);
-  const [slicedAddressList, setSlicedAddressList] = useState<
-    savePatientAddress_savePatientAddress_patientAddress[]
-  >([]);
 
   const updateStoreSelection = () => {
     const selectedStoreIndex = activeStores.findIndex(({ storeid }) => storeid == storeId);
@@ -1168,32 +1165,18 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     setSlicedStoreList(_slicedStoreList);
   };
 
-  const updateAddressSelection = () => {
-    const selectedAddressIndex = addresses.findIndex((address) => address.id == deliveryAddressId);
-    const addressListLength = addresses.length;
-    const spliceStartIndex =
-      selectedAddressIndex == addressListLength - 1
-        ? selectedAddressIndex - 1
-        : selectedAddressIndex;
-    const startIndex = spliceStartIndex == -1 ? 0 : spliceStartIndex;
-    const _slicedAddressList = [...addresses].slice(startIndex, startIndex + 2);
-    setSlicedAddressList(_slicedAddressList);
-  };
-
   useEffect(() => {
     const _didFocusSubscription = props.navigation.addListener('didFocus', () => {
       updateStoreSelection();
-      updateAddressSelection();
     });
     const _willBlurSubscription = props.navigation.addListener('willBlur', () => {
       updateStoreSelection();
-      updateAddressSelection();
     });
     return () => {
       _didFocusSubscription && _didFocusSubscription.remove();
       _willBlurSubscription && _willBlurSubscription.remove();
     };
-  }, [activeStores, storeId, addresses, deliveryAddressId]);
+  }, [activeStores, storeId]);
 
   useEffect(() => {
     pinCode.length !== 6 && setSlicedStoreList([]);
