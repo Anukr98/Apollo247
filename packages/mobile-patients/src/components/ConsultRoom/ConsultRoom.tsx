@@ -1596,7 +1596,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     );
   };
 
-  const renderAppointmentsScreen = () => {
+  const renderAppointmentWidget = () => {
     return (
       <View>
         <ConsultPersonalizedCard
@@ -1643,7 +1643,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 <View style={{ flexDirection: 'row' }}>{renderProfileDrop()}</View>
               </ImageBackground>
               {/* <Text style={styles.descriptionTextStyle}>{string.home.description}</Text> */}
-              {isPersonalizedCard && renderAppointmentsScreen()}
+              {isPersonalizedCard && renderAppointmentWidget()}
               {renderMenuOptions()}
               <View style={{ backgroundColor: '#f0f1ec' }}>{renderListView()}</View>
               {renderCovidMainView()}
