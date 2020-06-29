@@ -267,7 +267,7 @@
   },
   "appointments": {
     "notifications_title": "NOTIFICATIONS",
-    "no_consults_scheduled": "No consults scheduled ",
+    "no_consults_scheduled": "No consults scheduled",
     "up_next": "UP NEXT: ",
     "new": "NEW",
     "appointment_will_reschedule": "This appointment will be rescheduled for",
@@ -283,7 +283,10 @@
     "upload_prescr_descr": " * Our pharmacist will dispense medicines only if the prescription is valid & it meets all government regulations.",
     "here_your_schedule": "here’s your schedule for",
     "block_Calendar": "Block Calendar",
-    "manage_calendar": "Manage Calendar"
+    "manage_calendar": "Manage Calendar",
+    "reload": "reload",
+    "reload_header": "There seemed to be a problem while loading your data. Please Retry by clicking on ",
+    "reload_header_cont": " below"
   },
   "need_help": {
     "need_help_q": "NEED HELP?",

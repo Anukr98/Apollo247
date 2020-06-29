@@ -2,7 +2,7 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
-import { DoctorType, Gender, Salutation } from "./globalTypes";
+import { DoctorType, Gender } from "./globalTypes";
 
 // ====================================================
 // GraphQL mutation operation: RemoveDelegateNumber
@@ -31,7 +31,7 @@ export interface RemoveDelegateNumber_removeDelegateNumber {
   mobileNumber: string;
   photoUrl: string | null;
   qualification: string | null;
-  salutation: Salutation | null;
+  salutation: string | null;
   state: string | null;
   streetLine1: string | null;
   streetLine2: string | null;

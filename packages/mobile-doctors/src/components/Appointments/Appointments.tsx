@@ -1,4 +1,4 @@
-import AppointmentsStyles from '@aph/mobile-doctors/src/components/Appointments/Appointments.styles';
+import { AppointmentsStyles } from '@aph/mobile-doctors/src/components/Appointments/Appointments.styles';
 import { AppointmentsList } from '@aph/mobile-doctors/src/components/Appointments/AppointmentsList';
 import { useNotification } from '@aph/mobile-doctors/src/components/Notification/NotificationContext';
 import { NotificationListener } from '@aph/mobile-doctors/src/components/NotificationListener';
@@ -9,6 +9,8 @@ import {
   Down,
   NoCalenderData,
   Up,
+  ReloadBackground,
+  ReloadGreen,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { Loader } from '@aph/mobile-doctors/src/components/ui/Loader';
 import { useUIElements } from '@aph/mobile-doctors/src/components/ui/UIElementsProvider';
@@ -41,6 +43,7 @@ import { CalendarList } from 'react-native-calendars';
 import firebase from 'react-native-firebase';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { WeekView } from './WeekView';
+import { string } from '@aph/mobile-doctors/src/strings/string';
 
 const styles = AppointmentsStyles;
 let timerId: NodeJS.Timeout;
@@ -83,6 +86,7 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
     GetDoctorAppointments_getDoctorAppointments
   >();
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
+  const [appointmentError, setAppointmentError] = useState<boolean>(false);
 
   const { doctorDetails } = useAuth();
   const { isAlertVisible, showAphAlert } = useUIElements();
@@ -199,7 +203,7 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
 
   const getAppointmentsApi = (selectedDate = date) => {
     const recordsDate = moment(selectedDate).format('YYYY-MM-DD');
-
+    setAppointmentError(false);
     setshowSpinner(true);
     client
       .query<GetDoctorAppointments, GetDoctorAppointmentsVariables>({
@@ -233,6 +237,7 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
       })
       .catch((err) => {
         setgetAppointments(undefined);
+        setAppointmentError(true);
       })
       .finally(() => {
         setshowSpinner(false);
@@ -398,7 +403,32 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
             style={styles.noAppointmentsText}
           >{`${strings.appointments.no_consults_scheduled} ${getCurrentDaytext}!`}</Text>
         </View>
+        <TouchableOpacity activeOpacity={1} onPress={() => getAppointmentsApi()}>
+          <View style={styles.appointmentErrorReload}>
+            <Text style={styles.appointmentErrorReloadText}>{string.appointments.reload}</Text>
+            <ReloadGreen />
+          </View>
+        </TouchableOpacity>
       </ScrollView>
+    );
+  };
+
+  const renderAppointmentError = () => {
+    return (
+      <View style={styles.appointmentErrorContainer}>
+        <ReloadBackground />
+        <Text style={styles.appointmentErrorText}>
+          {string.appointments.reload_header}
+          <Text style={styles.appointmentErrorText2}>{`‘${string.appointments.reload}’`}</Text>
+          {string.appointments.reload_header_cont}
+        </Text>
+        <TouchableOpacity activeOpacity={1} onPress={() => getAppointmentsApi()}>
+          <View style={styles.appointmentErrorReload}>
+            <Text style={styles.appointmentErrorReloadText}>{string.appointments.reload}</Text>
+            <ReloadGreen />
+          </View>
+        </TouchableOpacity>
+      </View>
     );
   };
 
@@ -430,6 +460,8 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
         </View>
         {showSpinner ? (
           <Loader flex1 />
+        ) : appointmentError ? (
+          renderAppointmentError()
         ) : (
             (getAppointments &&
               getAppointments.appointmentsHistory &&
