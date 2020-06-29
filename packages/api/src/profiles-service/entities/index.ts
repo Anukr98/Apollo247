@@ -10,11 +10,13 @@ import {
   BeforeInsert,
   BeforeUpdate,
   Index,
+  AfterUpdate,
+  AfterInsert,
 } from 'typeorm';
 import { Validate, IsOptional } from 'class-validator';
 import { NameValidator, MobileNumberValidator } from 'validators/entityValidators';
 import { ConsultMode } from 'doctors-service/entities';
-
+import { pool } from 'profiles-service/database/connectRedis';
 export type ONE_APOLLO_USER_REG = {
   FirstName: string;
   LastName: string;
@@ -692,6 +694,7 @@ export class PatientDeviceTokens extends BaseEntity {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
 
+  @Index('device_token')
   @Column({ type: 'text' })
   deviceToken: string;
 
@@ -882,6 +885,27 @@ export class Patient extends BaseEntity {
   updateDateUpdate() {
     this.updatedDate = new Date();
   }
+  @AfterInsert()
+  async dropPatientMobileCache() {
+    const redis = await pool.getTedis();
+    try {
+      await redis.del(`patient:mobile:${this.mobileNumber}`);
+    } catch (e) {
+    } finally {
+      pool.putTedis(redis);
+    }
+  }
+
+  @AfterUpdate()
+  async dropPatientCache() {
+    const redis = await pool.getTedis();
+    try {
+      await redis.del(`patient:${this.id}`);
+    } catch (e) {
+    } finally {
+      await pool.putTedis(redis);
+    }
+  }
 }
 //patient Ends
 
@@ -989,7 +1013,11 @@ export class PatientAddress extends BaseEntity {
   stateCode: string;
 
   @ManyToOne((type) => Patient, (patient) => patient.patientAddress)
+  @JoinColumn({ name: 'patientId' })
   patient: Patient;
+
+  @Column('string', { nullable: true })
+  patientId: string;
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
@@ -1005,6 +1033,19 @@ export class PatientAddress extends BaseEntity {
   @BeforeUpdate()
   updateDateUpdate() {
     this.updatedDate = new Date();
+  }
+
+  @AfterInsert()
+  @AfterUpdate()
+  async dropPatientAddressList() {
+    const redis = await pool.getTedis();
+    try {
+      await redis.del(`address:list:patient:${this.patientId}`);
+      await redis.del(`patient:${this.patientId}`);
+    } catch (e) {
+    } finally {
+      pool.putTedis(redis);
+    }
   }
 }
 //patientAddress Ends
@@ -1022,7 +1063,11 @@ export class PatientFamilyHistory extends BaseEntity {
   id: string;
 
   @ManyToOne((type) => Patient, (patient) => patient.familyHistory)
+  @JoinColumn({ name: 'patientId' })
   patient: Patient;
+
+  @Column('string', { nullable: true })
+  patientId: string;
 
   @Column({ nullable: true })
   relation: Relation;
@@ -1038,6 +1083,17 @@ export class PatientFamilyHistory extends BaseEntity {
   @BeforeUpdate()
   updateDateUpdate() {
     this.updatedDate = new Date();
+  }
+  @AfterInsert()
+  @AfterUpdate()
+  async dropPatientAddressList() {
+    const redis = await pool.getTedis();
+    try {
+      await redis.del(`patient:${this.patientId}`);
+    } catch (e) {
+    } finally {
+      pool.putTedis(redis);
+    }
   }
 }
 //patient family history ends
@@ -1058,7 +1114,11 @@ export class PatientLifeStyle extends BaseEntity {
   occupationHistory: string;
 
   @ManyToOne((type) => Patient, (patient) => patient.lifeStyle)
+  @JoinColumn({ name: 'patientId' })
   patient: Patient;
+
+  @Column('string', { nullable: true })
+  patientId: string;
 
   @Column({ type: 'timestamp', nullable: true })
   updatedDate: Date;
@@ -1071,6 +1131,18 @@ export class PatientLifeStyle extends BaseEntity {
   @BeforeUpdate()
   updateDateUpdate() {
     this.updatedDate = new Date();
+  }
+
+  @AfterInsert()
+  @AfterUpdate()
+  async dropPatientAddressList() {
+    const redis = await pool.getTedis();
+    try {
+      await redis.del(`patient:${this.patientId}`);
+    } catch (e) {
+    } finally {
+      pool.putTedis(redis);
+    }
   }
 }
 //patientLifestyle ends
@@ -1460,8 +1532,11 @@ export class PatientMedicalHistory extends BaseEntity {
   pastSurgicalHistory: string;
 
   @OneToOne((type) => Patient, (patient) => patient.patientMedicalHistory)
-  @JoinColumn()
+  @JoinColumn({ name: 'patientId' })
   patient: Patient;
+
+  @Column({ nullable: true, type: 'text' })
+  patientId: string;
 
   @PrimaryGeneratedColumn('uuid')
   id: string;
@@ -1486,6 +1561,18 @@ export class PatientMedicalHistory extends BaseEntity {
   @BeforeUpdate()
   updateDateUpdate() {
     this.updatedDate = new Date();
+  }
+
+  @AfterInsert()
+  @AfterUpdate()
+  async dropPatientCache() {
+    const redis = await pool.getTedis();
+    try {
+      await redis.del(`patient:${this.patientId}`);
+    } catch (e) {
+    } finally {
+      pool.putTedis(redis);
+    }
   }
 }
 //patientMedicalHistory ends

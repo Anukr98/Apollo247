@@ -226,6 +226,10 @@ export enum ApiConstants {
 
   COUNTRY_CODE = '91',
 
+  CACHE_EXPIRATION_120 = 120, // 2 mins mostly for otp
+  CACHE_EXPIRATION_600 = 600,  // 10 mins
+  CACHE_EXPIRATION_900 = 900, //30 mins
+  CACHE_EXPIRATION_3600 = 3600, // 1hour
   //doctor no-photo url
   DOCTOR_DEFAULT_PHOTO_URL = 'https://prodaphstorage.blob.core.windows.net/doctors/no_photo.png',
 
