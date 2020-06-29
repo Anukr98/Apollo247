@@ -150,9 +150,11 @@ export const Specialities: React.FC<SpecialitiesProps> = (props) => {
                           />
                           <div className={classes.spContent}>
                             <div>{specialityDetails.name}</div>
-                            <div className={classes.specialityDetails}>
-                              {specialityDetails.shortDescription}
-                            </div>
+                            {specialityDetails.shortDescription && (
+                              <div className={classes.specialityDetails}>
+                                {specialityDetails.shortDescription}
+                              </div>
+                            )}
                             {specialityDetails.symptoms && (
                               <div className={classes.symptoms}>
                                 {getSymptoms(specialityDetails.symptoms)}

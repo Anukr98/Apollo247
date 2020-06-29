@@ -413,7 +413,9 @@ export const SpecialtyDivision: React.FC = (props) => {
                         <Link to={clientRoutes.specialties(readableParam(specialityDetails.name))}>
                           <Typography component="h3">{specialityDetails.name}</Typography>
                           <img src={specialityDetails.image} />
-                          <Typography>{specialityDetails.shortDescription}</Typography>
+                          {specialityDetails.shortDescription && (
+                            <Typography>{specialityDetails.shortDescription}</Typography>
+                          )}
                           {specialityDetails.symptoms && (
                             <Typography className={classes.symptoms}>
                               {getSymptoms(specialityDetails.symptoms)}
