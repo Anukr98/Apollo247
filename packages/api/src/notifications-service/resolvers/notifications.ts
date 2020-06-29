@@ -495,9 +495,9 @@ export async function sendNotification(
     notificationBody = notificationBody.replace('{3}', apptDate);
     let cancelApptSMS = process.env.SMS_LINK_BOOK_APOINTMENT
       ? ' Click here ' +
-        process.env.SMS_LINK_BOOK_APOINTMENT +
-        ' ' +
-        ApiConstants.PATIENT_CANCEL_APPT_BODY_END
+      process.env.SMS_LINK_BOOK_APOINTMENT +
+      ' ' +
+      ApiConstants.PATIENT_CANCEL_APPT_BODY_END
       : '';
     cancelApptSMS = notificationBody + cancelApptSMS;
 
@@ -637,22 +637,22 @@ export async function sendNotification(
           content = content.replace(
             '{4}',
             facilityDets.name +
-              ' ' +
-              facilityDets.streetLine1 +
-              ' ' +
-              facilityDets.city +
-              ' ' +
-              facilityDets.state
+            ' ' +
+            facilityDets.streetLine1 +
+            ' ' +
+            facilityDets.city +
+            ' ' +
+            facilityDets.state
           );
           smsLink = smsLink.replace(
             '{4}',
             facilityDets.name +
-              ' ' +
-              facilityDets.streetLine1 +
-              ' ' +
-              facilityDets.city +
-              ' ' +
-              facilityDets.state
+            ' ' +
+            facilityDets.streetLine1 +
+            ' ' +
+            facilityDets.city +
+            ' ' +
+            facilityDets.state
           );
         }
       }
@@ -1188,12 +1188,12 @@ export async function sendReminderNotification(
           notificationBody = notificationBody.replace(
             '{2}',
             facilityDets.name +
-              ' ' +
-              facilityDets.streetLine1 +
-              ' ' +
-              facilityDets.city +
-              ' ' +
-              facilityDets.state
+            ' ' +
+            facilityDets.streetLine1 +
+            ' ' +
+            facilityDets.city +
+            ' ' +
+            facilityDets.state
           );
         }
       }
@@ -1226,12 +1226,12 @@ export async function sendReminderNotification(
         notificationBody = notificationBody.replace(
           '{1}',
           facilityDets.name +
-            ' ' +
-            facilityDets.streetLine1 +
-            ' ' +
-            facilityDets.city +
-            ' ' +
-            facilityDets.state
+          ' ' +
+          facilityDets.streetLine1 +
+          ' ' +
+          facilityDets.city +
+          ' ' +
+          facilityDets.state
         );
       }
     }
@@ -1275,12 +1275,12 @@ export async function sendReminderNotification(
           notificationBody = notificationBody.replace(
             '{1}',
             facilityDets.name +
-              ' ' +
-              facilityDets.streetLine1 +
-              ' ' +
-              facilityDets.city +
-              ' ' +
-              facilityDets.state
+            ' ' +
+            facilityDets.streetLine1 +
+            ' ' +
+            facilityDets.city +
+            ' ' +
+            facilityDets.state
           );
         }
       }
@@ -1487,10 +1487,21 @@ export async function sendReminderNotification(
   if (
     pushNotificationInput.notificationType == NotificationType.APPOINTMENT_CASESHEET_REMINDER_15 ||
     pushNotificationInput.notificationType ==
-      NotificationType.APPOINTMENT_CASESHEET_REMINDER_15_VIRTUAL
+    NotificationType.APPOINTMENT_CASESHEET_REMINDER_15_VIRTUAL
   ) {
-    const smsLink = process.env.SMS_LINK ? process.env.SMS_LINK : '';
-    notificationBody = notificationBody + ApiConstants.CLICK_HERE + smsLink;
+
+    let chatroom_sms_link = ''
+    if (process.env.SMS_DEEPLINK_APPOINTMENT_CHATROOM) {
+      chatroom_sms_link = process.env.SMS_DEEPLINK_APPOINTMENT_CHATROOM;
+      chatroom_sms_link = chatroom_sms_link.replace('{0}', appointment.id.toString()); //Replacing the placeholder with appointmentid
+    }
+    else {
+      console.error('Could not find the env variable for appointments chatroom sms deeplink');
+    }
+
+    //Final deeplink URL
+    notificationBody = notificationBody + ApiConstants.CLICK_HERE + chatroom_sms_link;
+    console.log(notificationBody);
   }
   //send SMS notification
   if (pushNotificationInput.notificationType != NotificationType.APPOINTMENT_REMINDER_15) {
@@ -2075,7 +2086,7 @@ const testPushNotification: Resolver<
   { deviceToken: String },
   NotificationsServiceContext,
   PushNotificationSuccessMessage | undefined
-> = async (parent, args, {}) => {
+> = async (parent, args, { }) => {
   //initialize firebaseadmin
   const config = {
     credential: firebaseAdmin.credential.applicationDefault(),
