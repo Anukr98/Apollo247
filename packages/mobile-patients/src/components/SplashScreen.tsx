@@ -225,7 +225,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           if (data.length === 2) getData('Order', linkId);
           break;
         case 'MyOrders':
-          if (data.length === 2) getData('MyOrders', linkId);
+          getData('MyOrders');
           break;
         default:
           getData('ConsultRoom', undefined, true);
@@ -369,9 +369,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       });
   };
 
-  const getPatientIDAndNavigate = (patientID: string) => {
-    props.navigation.navigate(AppRoutes.YourOrdersScene, {});
-  };
   const pushTheView = (routeName: String, id?: any) => {
     console.log('pushTheView', routeName);
     setBugFenderLog('DEEP_LINK_PUSHVIEW', { routeName, id });
@@ -462,7 +459,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         });
         break;
       case 'MyOrders':
-        getPatientIDAndNavigate(id);
+        props.navigation.navigate(AppRoutes.YourOrdersScene);
         break;
       default:
         break;
