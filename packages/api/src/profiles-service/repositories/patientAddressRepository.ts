@@ -45,7 +45,12 @@ export class PatientAddressRepository extends Repository<PatientAddress> {
         `Cache hit ${this.cacheKey(REDIS_ADDRESS_PATIENT_ID_KEY_PREFIX, id)}${id}`
       );
       if (response && typeof response === 'string') {
-        return JSON.parse(response);
+        const address_list = JSON.parse(response);
+        for (let index = 0; index < address_list.length; index++) {
+          address_list[index].createdDate = new Date(address_list[index].createdDate);
+          address_list[index].updatedDate = new Date(address_list[index].updatedDate);
+        }
+        return address_list;
       } else return await this.savePatientAdresslistToCache(id);
     } catch (e) {
     } finally {
