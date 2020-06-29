@@ -36,6 +36,7 @@ export const bookAppointmentTypeDefs = gql`
     JUNIOR_DOCTOR_ENDED
     CALL_ABANDON
     UNAVAILABLE_MEDMANTRA
+    PAYMENT_ABORTED
   }
 
   enum APPOINTMENT_TYPE {

@@ -5317,6 +5317,12 @@
             "description": null,
             "isDeprecated": false,
             "deprecationReason": null
+          },
+          {
+            "name": "PAYMENT_ABORTED",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
           }
         ],
         "possibleTypes": null
@@ -16417,6 +16423,12 @@
           },
           {
             "name": "UNAVAILABLE_MEDMANTRA",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "PAYMENT_ABORTED",
             "description": null,
             "isDeprecated": false,
             "deprecationReason": null
