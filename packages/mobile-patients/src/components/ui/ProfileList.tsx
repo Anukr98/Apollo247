@@ -246,7 +246,7 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
         menuHidden={() => {
           props.menuHidden && props.menuHidden();
         }}
-        options={usersList[0] === undefined ? [usersList[1]] : usersList}
+        options={usersList[0] === undefined ? pickerData : usersList}
         defaultOptions={[]}
         selectedText={profile && profile!.id}
         menuContainerStyle={[
