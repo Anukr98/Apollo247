@@ -153,9 +153,11 @@ export const Specialities: React.FC<SpecialitiesProps> = (props) => {
                             <div className={classes.specialityDetails}>
                               {specialityDetails.shortDescription}
                             </div>
-                            <div className={classes.symptoms}>
-                              {getSymptoms(specialityDetails.symptoms)}
-                            </div>
+                            {specialityDetails.symptoms && (
+                              <div className={classes.symptoms}>
+                                {getSymptoms(specialityDetails.symptoms)}
+                              </div>
+                            )}
                             <span className={classes.rightArrow}>
                               <img src={require('images/ic_arrow_right.svg')} />
                             </span>

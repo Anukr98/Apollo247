@@ -414,9 +414,11 @@ export const SpecialtyDivision: React.FC = (props) => {
                           <Typography component="h3">{specialityDetails.name}</Typography>
                           <img src={specialityDetails.image} />
                           <Typography>{specialityDetails.shortDescription}</Typography>
-                          <Typography className={classes.symptoms}>
-                            {getSymptoms(specialityDetails.symptoms)}
-                          </Typography>
+                          {specialityDetails.symptoms && (
+                            <Typography className={classes.symptoms}>
+                              {getSymptoms(specialityDetails.symptoms)}
+                            </Typography>
+                          )}
                         </Link>
                       </div>
                     </Grid>
