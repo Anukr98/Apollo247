@@ -12,6 +12,8 @@ export const clientRoutes = {
   doctorsLanding: () => '/doctors',
   // specialties: (specialty: string) => `/specialties/${specialty}`,
   specialties: (specialty: string) => `/specialties/${specialty}`,
+  citySpecialties: (city: string, specialty: string) =>
+    `/specialties/specialty/${city}/${specialty}`,
   appointments: () => '/appointments',
   appointmentSuccess: () => `/appointments/${status}`,
   testsAndMedicine: () => '/tests-medicines',
