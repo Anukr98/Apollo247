@@ -201,7 +201,7 @@ type PushNotificationInputArgs = { pushNotificationInput: PushNotificationInput 
   console.log(smsResp, 'sms resp');
 }*/
 
-export const sendNotificationWhatsapp = async (
+export const sendNotificationWhatsapp = (
   mobileNumber: string,
   message: string,
   loginType: number
@@ -215,33 +215,24 @@ export const sendNotificationWhatsapp = async (
     '&password=' +
     process.env.WHATSAPP_PASSWORD +
     '&auth_scheme=plain&format=text&v=1.1&channel=WHATSAPP';
-  const optInResponse = await fetch(apiUrl)
-    .then(async (res) => {
-      console.log(res, 'res of opt id');
-      if (loginType == 1) {
-        const sendApiUrl =
-          process.env.WHATSAPP_URL +
-          '?method=SendMessage&send_to=' +
-          mobileNumber +
-          '&userid=' +
-          process.env.WHATSAPP_USERNAME +
-          '&password=' +
-          process.env.WHATSAPP_PASSWORD +
-          '&auth_scheme=plain&msg_type=TEXT&format=text&v=1.1&msg=' +
-          message;
-        await fetch(sendApiUrl)
-          .then((res) => {
-            console.log(res, 'res of actual msg send');
-          })
-          .catch((error) => {
-            console.log(error, 'send message api error');
-          });
-      }
-    })
-    .catch((error) => {
-      console.log(error, 'optInResponse error');
-    });
-  console.log(optInResponse);
+  return new Promise((resolve, reject) => {
+    const optInResponse = fetch(apiUrl)
+      .then(async (res) => {
+        if (loginType == 1) {
+          const sendApiUrl = `${process.env.WHATSAPP_URL}?method=SendMessage&send_to=${mobileNumber}&userid=${process.env.WHATSAPP_USERNAME}&password=${process.env.WHATSAPP_PASSWORD}&auth_scheme=plain&msg_type=TEXT&format=text&v=1.1&msg=${message}`;
+          fetch(sendApiUrl)
+            .then((res) => {
+              resolve(res);
+            })
+            .catch((error) => {
+              throw new AphError(AphErrorMessages.MESSAGE_SEND_WHATSAPP_ERROR);
+            });
+        }
+      })
+      .catch((error) => {
+        throw new AphError(AphErrorMessages.GET_OTP_ERROR);
+      });
+  });
 };
 
 export const sendNotificationSMS = async (mobileNumber: string, message: string) => {

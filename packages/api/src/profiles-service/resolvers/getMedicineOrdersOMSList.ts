@@ -16,9 +16,15 @@ import { getUnixTime, format } from 'date-fns';
 import { Tedis } from 'redis-typescript';
 import { ApiConstants } from 'ApiConstants';
 
+const path = require('path');
+
 export const getMedicineOrdersOMSListTypeDefs = gql`
   type MedicineOrdersOMSListResult {
     medicineOrdersList: [MedicineOrdersOMS]
+  }
+
+  type getMedicineOrdersListResult {
+    updatedSkus: [String]
   }
 
   type MedicineOrderOMSDetailsResult {
@@ -151,8 +157,13 @@ export const getMedicineOrdersOMSListTypeDefs = gql`
     getMedicineOMSPaymentOrder: MedicineOrdersOMSListResult!
     getRecommendedProductsList(patientUhid: String!): RecommendedProductsListResult!
     checkIfProductsOnline(productSkus: [String]): ProductAvailabilityResult!
+    updateMedicineDataRedis(limit: Int, offset: Int): getMedicineOrdersListResult
   }
 `;
+
+type getMedicineOrdersListResult = {
+  updatedSkus: string[];
+};
 
 type MedicineOrdersOMSListResult = {
   medicineOrdersList: MedicineOrders[];
@@ -535,6 +546,95 @@ const checkIfProductsOnline: Resolver<
   await Promise.all(promises);
   return { productAvailabilityList: productAvailability };
 };
+const updateMedicineDataRedis: Resolver<
+  null,
+  { limit: number; offset: number },
+  ProfilesServiceContext,
+  getMedicineOrdersListResult
+> = async (parent, args, context) => {
+  const tedis = new Tedis({
+    port: <number>ApiConstants.REDIS_PORT,
+    host: ApiConstants.REDIS_URL.toString(),
+    password: ApiConstants.REDIS_PWD.toString(),
+  });
+
+  const excelToJson = require('convert-excel-to-json');
+  const fileDirectory = path.resolve('/apollo-hospitals/packages/api/src/assets');
+  console.log(fileDirectory + '/Online_Master.xlsx');
+
+  const rowData = excelToJson({
+    sourceFile: fileDirectory + '/Online_Master.xlsx',
+    sheets: [
+      {
+        name: 'Sheet1',
+        header: {
+          rows: 1,
+        },
+        columnToKey: {
+          A: 'sku',
+          B: 'name',
+          C: 'status',
+          D: 'price',
+          E: 'special_price',
+          F: 'special_price_from',
+          G: 'special_price_to',
+          H: 'qty',
+          I: 'description',
+          J: 'url_key',
+          K: 'base_image',
+          L: 'is_prescription_required',
+          M: 'category_name',
+          N: 'product_discount_category',
+          O: 'sell_online',
+          P: 'molecules',
+          Q: 'manufacturer',
+          R: 'mou',
+          S: 'gallery_images',
+        },
+      },
+    ],
+  });
+  const updatedSkus: string[] = [];
+  for (let k = args.offset; k <= args.offset + args.limit - 1; k++) {
+    console.log('rowData.Sheet1[k]', rowData.Sheet1[k].sku);
+    await tedis.hmset(rowData.Sheet1[k].sku, {
+      name: encodeURIComponent(rowData.Sheet1[k].name),
+      status: encodeURIComponent(rowData.Sheet1[k].status),
+      price: encodeURIComponent(rowData.Sheet1[k].price),
+      special_price:
+        rowData.Sheet1[k].special_price != undefined
+          ? encodeURIComponent(rowData.Sheet1[k].special_price)
+          : '',
+      special_price_from:
+        rowData.Sheet1[k].special_price_from != undefined
+          ? encodeURIComponent(rowData.Sheet1[k].special_price_from)
+          : '',
+      special_price_to:
+        rowData.Sheet1[k].special_price_to != undefined
+          ? encodeURIComponent(rowData.Sheet1[k].special_price_to)
+          : '',
+      qty: encodeURIComponent(rowData.Sheet1[k].qty),
+      description: encodeURIComponent(rowData.Sheet1[k].description),
+      url_key: encodeURIComponent(rowData.Sheet1[k].url_key),
+      base_image: rowData.Sheet1[k].base_image,
+      is_prescription_required: encodeURIComponent(rowData.Sheet1[k].is_prescription_required),
+      category_name: encodeURIComponent(rowData.Sheet1[k].category_name),
+      product_discount_category: encodeURIComponent(rowData.Sheet1[k].product_discount_category),
+      sell_online: encodeURIComponent(rowData.Sheet1[k].sell_online),
+      molecules:
+        rowData.Sheet1[k].molecules != undefined
+          ? encodeURIComponent(rowData.Sheet1[k].molecules)
+          : '',
+      mou: encodeURIComponent(rowData.Sheet1[k].mou),
+      gallery_images: encodeURIComponent(rowData.Sheet1[k].gallery_images),
+      manufacturer: encodeURIComponent(rowData.Sheet1[k].manufacturer),
+    });
+    if (!updatedSkus.includes(rowData.Sheet1[k].sku)) {
+      updatedSkus.push(rowData.Sheet1[k].sku);
+    }
+  }
+  return { updatedSkus: updatedSkus };
+};
 
 export const getMedicineOrdersOMSListResolvers = {
   Query: {
@@ -543,5 +643,6 @@ export const getMedicineOrdersOMSListResolvers = {
     getMedicineOMSPaymentOrder,
     getRecommendedProductsList,
     checkIfProductsOnline,
+    updateMedicineDataRedis,
   },
 };

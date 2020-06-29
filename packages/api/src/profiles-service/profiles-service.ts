@@ -202,7 +202,6 @@ import {
   createPatientTypeDefs,
   createPatientResolvers,
 } from 'profiles-service/resolvers/createPatient';
-
 import {
   labResultsUploadTypeDefs,
   labResultsUploadResolvers,
