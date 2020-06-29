@@ -103,7 +103,15 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     buttonActive: {
       backgroundColor: '#00b38e',
-      color: '#02475b',
+      color: '#fff !important',
+      '&:hover': {
+        backgroundColor: '#00b38e',
+        color: theme.palette.common.white,
+      },
+    },
+    disabledButton: {
+      color: '#00b38e !important',
+      opacity: 0.5,
     },
   };
 });
@@ -111,21 +119,28 @@ const useStyles = makeStyles((theme: Theme) => {
 interface CitiesProps {
   locationPopup: boolean;
   setLocationPopup: (locationPopup: boolean) => void;
+  setSelectedCity: (selectedCity: string) => void;
 }
 
 export const Cities: React.FC<CitiesProps> = (props) => {
   const classes = useStyles({});
-  const { locationPopup, setLocationPopup } = props;
+  const { locationPopup, setLocationPopup, setSelectedCity } = props;
 
   const { error, loading, data } = useQuery<getAllCities>(GET_ALL_CITIES);
   const [searchText, setSearchText] = useState<string>('');
   const [cityName, setCityName] = useState<string>('');
+  const [showDropdown, setShowDropdown] = useState<boolean>(false);
 
   if (error) {
     return <div>Error! </div>;
   }
 
   const citiesList = data && data.getAllCities && data.getAllCities.city;
+
+  const populatCities = ['Hyderabad', 'Chennai', 'Mumbai', 'Kolkata', 'Bangalore'];
+
+  const filteredCities =
+    citiesList && citiesList.filter((city) => _lowerCase(city).includes(_lowerCase(searchText)));
 
   return (
     <div>
@@ -138,28 +153,33 @@ export const Cities: React.FC<CitiesProps> = (props) => {
           <div className={classes.cityContainer}>
             <AphInput
               placeholder="Select for a city"
+              value={searchText}
               onChange={(e) => {
-                setCityName('');
                 setSearchText(e.target.value);
+                setShowDropdown(true);
               }}
             />
-            {searchText.length > 0 && (
-              <div className={classes.autoSearchPopover}>
-                {loading ? (
-                  <div className={classes.progressLoader}>
-                    <CircularProgress size={30} />
-                  </div>
-                ) : (
-                  citiesList &&
-                  citiesList.length > 0 && (
+            {showDropdown &&
+              searchText.length > 0 &&
+              (loading ? (
+                <div className={classes.progressLoader}>
+                  <CircularProgress size={30} />
+                </div>
+              ) : (
+                filteredCities &&
+                filteredCities.length > 0 && (
+                  <div className={classes.autoSearchPopover}>
                     <ul className={classes.searchList}>
-                      {citiesList.map(
+                      {filteredCities.map(
                         (city: string) =>
                           _lowerCase(city).includes(_lowerCase(searchText)) && (
                             <li
+                              style={{ cursor: 'pointer' }}
                               key={city}
                               onClick={() => {
+                                setSearchText(city);
                                 setCityName(city);
+                                setShowDropdown(false);
                               }}
                             >
                               {city}
@@ -167,35 +187,40 @@ export const Cities: React.FC<CitiesProps> = (props) => {
                           )
                       )}
                     </ul>
-                  )
-                )}
-              </div>
-            )}
+                  </div>
+                )
+              ))}
           </div>
           <div className={classes.popularCities}>
-            {loading ? (
-              <div className={classes.circlularProgress}>
-                <CircularProgress color="primary" />
-              </div>
-            ) : citiesList && citiesList.length > 0 ? (
-              <>
-                <Typography component="h6">Popular Cities</Typography>
-                {citiesList.map((city: string) => (
-                  <AphButton
-                    className={cityName === city ? classes.buttonActive : ''}
-                    onClick={(e) => setCityName(city)}
-                  >
-                    {city}
-                  </AphButton>
-                ))}
-              </>
-            ) : null}
+            <Typography component="h6">Popular Cities</Typography>
+            {populatCities.map((city: string) => (
+              <AphButton
+                key={city}
+                className={cityName === city ? classes.buttonActive : ''}
+                onClick={(e) => {
+                  if (city === cityName) {
+                    setCityName('');
+                    setSearchText('');
+                  } else {
+                    setCityName(city);
+                    setSearchText(city);
+                  }
+                  setShowDropdown(false);
+                }}
+              >
+                {city}
+              </AphButton>
+            ))}
           </div>
           <div className={classes.btnContainer}>
             <AphButton
+              className={cityName === '' ? classes.disabledButton : ''}
               disabled={cityName === ''}
               color="primary"
-              onClick={() => setLocationPopup(false)}
+              onClick={() => {
+                setSelectedCity(cityName);
+                setLocationPopup(false);
+              }}
             >
               Okay
             </AphButton>

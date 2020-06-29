@@ -193,19 +193,23 @@ const getMedicineOrdersOMSList: Resolver<
   { patientId: string; orderAutoId?: number },
   ProfilesServiceContext,
   MedicineOrdersOMSListResult
-> = async (parent, args, { profilesDb }) => {
+> = async (parent, args, { profilesDb, mobileNumber }) => {
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
   const patientDetails = await patientRepo.findById(args.patientId);
   if (!patientDetails) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
+  if (mobileNumber != patientDetails.mobileNumber) {
+    throw new AphError(AphErrorMessages.INVALID_PATIENT_DETAILS, undefined, {});
+  }
   const primaryPatientIds = await patientRepo.getLinkedPatientIds(args.patientId);
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
   const medicineOrdersList: any = await medicineOrdersRepo.getMedicineOrdersList(primaryPatientIds);
+  let uhid = patientDetails.uhid;
+  if (process.env.NODE_ENV == 'local') uhid = ApiConstants.CURRENT_UHID.toString();
+  else if (process.env.NODE_ENV == 'dev') uhid = ApiConstants.CURRENT_UHID.toString();
   const ordersResp = await fetch(
-    process.env.PRISM_GET_OFFLINE_ORDERS
-      ? process.env.PRISM_GET_OFFLINE_ORDERS + ApiConstants.CURRENT_UHID
-      : '',
+    process.env.PRISM_GET_OFFLINE_ORDERS ? process.env.PRISM_GET_OFFLINE_ORDERS + uhid : '',
     {
       method: 'GET',
       headers: {},
@@ -293,11 +297,15 @@ const getMedicineOrderOMSDetails: Resolver<
   MedicineOrderOMSDetailsResult
 > = async (parent, args, { profilesDb }) => {
   let medicineOrderDetails: any = '';
-  if (args.billNumber && args.billNumber != '' && args.billNumber != '0') {
+  if (args.billNumber && args.billNumber != '' && args.billNumber != '0' && args.patientId) {
+    const patientRepo = profilesDb.getCustomRepository(PatientRepository);
+    const patientDetails = await patientRepo.findById(args.patientId);
+    if (!patientDetails) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
+    let uhid = patientDetails.uhid;
+    if (process.env.NODE_ENV == 'local') uhid = ApiConstants.CURRENT_UHID.toString();
+    else if (process.env.NODE_ENV == 'dev') uhid = ApiConstants.CURRENT_UHID.toString();
     const ordersResp = await fetch(
-      process.env.PRISM_GET_OFFLINE_ORDERS
-        ? process.env.PRISM_GET_OFFLINE_ORDERS + ApiConstants.CURRENT_UHID
-        : '',
+      process.env.PRISM_GET_OFFLINE_ORDERS ? process.env.PRISM_GET_OFFLINE_ORDERS + uhid : '',
       {
         method: 'GET',
         headers: {},
@@ -409,6 +417,8 @@ const getMedicineOrderOMSDetails: Resolver<
           );
           if (cancellationReasons) {
             reasonCode.statusMessage = cancellationReasons.displayMessage;
+          } else {
+            reasonCode.statusMessage = '';
           }
         } catch (e) {
           console.log(e);
@@ -444,11 +454,14 @@ const getRecommendedProductsList: Resolver<
     host: ApiConstants.REDIS_URL.toString(),
     password: ApiConstants.REDIS_PWD.toString(),
   });
+  let uhid = args.patientUhid;
+  if (process.env.NODE_ENV == 'local') uhid = ApiConstants.CURRENT_UHID.toString();
+  else if (process.env.NODE_ENV == 'dev') uhid = ApiConstants.CURRENT_UHID.toString();
   //const redisKeys = await tedis.keys('*');
   const recommendedProductsList: RecommendedProducts[] = [];
   const listResp = await fetch(
     process.env.PRISM_GET_RECOMMENDED_PRODUCTS
-      ? process.env.PRISM_GET_RECOMMENDED_PRODUCTS + ApiConstants.CURRENT_UHID
+      ? process.env.PRISM_GET_RECOMMENDED_PRODUCTS + uhid
       : '',
     {
       method: 'GET',

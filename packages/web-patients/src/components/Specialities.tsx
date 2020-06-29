@@ -6,20 +6,16 @@ import _map from 'lodash/map';
 import _filter from 'lodash/filter';
 import _startsWith from 'lodash/startsWith';
 import _toLower from 'lodash/toLower';
-import {
-  GetAllSpecialties,
-  GetAllSpecialties_getAllSpecialties as SpecialtyType,
-} from 'graphql/types/GetAllSpecialties';
-import { GET_ALL_SPECIALITIES } from 'graphql/specialities';
 import { SAVE_PATIENT_SEARCH } from 'graphql/pastsearches';
 import { SEARCH_TYPE } from 'graphql/types/globalTypes';
 import { useAllCurrentPatients } from 'hooks/authHooks';
-import { useQuery } from 'react-apollo-hooks';
-import { useLocationDetails } from 'components/LocationProvider';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { Route } from 'react-router-dom';
 import { readableParam } from 'helpers/commonHelpers';
 import { useMutation } from 'react-apollo-hooks';
+import { GetAllSpecialties_getAllSpecialties as SpecialtyType } from 'graphql/types/GetAllSpecialties';
+import { getSymptoms } from 'helpers/commonHelpers';
+import _lowerCase from 'lodash/lowerCase';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -77,11 +73,6 @@ const useStyles = makeStyles((theme: Theme) => {
         maxHeight: '100%',
       },
     },
-    circlularProgress: {
-      display: 'flex',
-      padding: 20,
-      justifyContent: 'center',
-    },
     rightArrow: {
       top: 5,
       right: 0,
@@ -108,49 +99,56 @@ const useStyles = makeStyles((theme: Theme) => {
   });
 });
 
-export const Specialities: React.FC = (props) => {
+interface SpecialitiesProps {
+  data: SpecialtyType[];
+  selectedCity: string;
+}
+
+export const Specialities: React.FC<SpecialitiesProps> = (props) => {
   const classes = useStyles({});
   const { currentPatient } = useAllCurrentPatients();
-
-  const { loading, error, data } = useQuery<GetAllSpecialties>(GET_ALL_SPECIALITIES);
-
-  if (error) {
-    return <div>Error! </div>;
-  }
+  const { data, selectedCity } = props;
 
   const saveSearchMutation = useMutation(SAVE_PATIENT_SEARCH);
 
-  return loading ? (
-    <div className={classes.circlularProgress}>
-      <CircularProgress color="primary" />
-    </div>
-  ) : data && data.getAllSpecialties && data && data.getAllSpecialties.length > 0 ? (
+  return data.length > 0 ? (
     <>
       <div className={classes.root}>
         <div className={classes.searchList}>
           <Grid container spacing={1}>
-            {data.getAllSpecialties.map(
+            {data.map(
               (specialityDetails: SpecialtyType) =>
                 specialityDetails && (
                   <Route
+                    key={specialityDetails.id}
                     render={({ history }) => (
                       <Grid
                         item
                         xs={12}
                         sm={6}
+                        key={specialityDetails.id}
                         title={specialityDetails.name}
                         onClick={(e) => {
-                          saveSearchMutation({
-                            variables: {
-                              saveSearchInput: {
-                                type: SEARCH_TYPE.SPECIALTY,
-                                typeId: specialityDetails.id,
-                                patient: currentPatient ? currentPatient.id : '',
+                          currentPatient &&
+                            currentPatient.id &&
+                            saveSearchMutation({
+                              variables: {
+                                saveSearchInput: {
+                                  type: SEARCH_TYPE.SPECIALTY,
+                                  typeId: specialityDetails.id,
+                                  patient: currentPatient ? currentPatient.id : '',
+                                },
                               },
-                            },
-                          });
+                            });
                           const specialityUpdated = readableParam(`${e.currentTarget.title}`);
-                          history.push(clientRoutes.specialties(`${specialityUpdated}`));
+                          history.push(
+                            selectedCity === ''
+                              ? clientRoutes.specialties(specialityUpdated)
+                              : clientRoutes.citySpecialties(
+                                  _lowerCase(selectedCity),
+                                  specialityUpdated
+                                )
+                          );
                         }}
                       >
                         <div className={classes.contentBox}>
@@ -161,11 +159,16 @@ export const Specialities: React.FC = (props) => {
                           />
                           <div className={classes.spContent}>
                             <div>{specialityDetails.name}</div>
-                            <div className={classes.specialityDetails}>
-                              {/* {specialityDetails.userFriendlyNomenclature} */}
-                              {specialityDetails.shortDescription}
-                            </div>
-                            <div className={classes.symptoms}>{specialityDetails.symptoms}</div>
+                            {specialityDetails.shortDescription && (
+                              <div className={classes.specialityDetails}>
+                                {specialityDetails.shortDescription}
+                              </div>
+                            )}
+                            {specialityDetails.symptoms && (
+                              <div className={classes.symptoms}>
+                                {getSymptoms(specialityDetails.symptoms)}
+                              </div>
+                            )}
                             <span className={classes.rightArrow}>
                               <img src={require('images/ic_arrow_right.svg')} />
                             </span>

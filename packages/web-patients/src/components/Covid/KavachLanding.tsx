@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Theme, Typography, Grid, CircularProgress, Popover } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { AphSelect, AphButton, AphInput, AphTextField } from '@aph/web-ui-components';
@@ -16,10 +16,14 @@ import FormControl from '@material-ui/core/FormControl';
 import Select from '@material-ui/core/Select';
 import { MascotWithMessage } from '../MascotWithMessage';
 import fetchUtil from 'helpers/fetch';
+import { Route } from 'react-router-dom';
+import { clientRoutes } from 'helpers/clientRoutes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
-    kavachLanding: {},
+    kavachLanding: {
+      width: '100%',
+    },
     kavachContent: {
       padding: 30,
       background: '#f7f8f5',
@@ -77,6 +81,7 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: '24px 0',
     },
     kavachBanner: {
+      // height: '100%',
       '& img': {
         width: '100%',
         height: '100%',
@@ -102,6 +107,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     formControl: {
       width: '100%',
+      margin: '0 0 15px',
       '& svg': {
         color: '#00b38e',
       },
@@ -168,13 +174,18 @@ const useStyles = makeStyles((theme: Theme) => {
           fontWeight: 500,
         },
       },
+      '& button': {
+        margin: '20px auto 0',
+        width: 180,
+        display: 'block',
+      },
     },
     mb20: {
       marginBottom: '20px !important',
     },
     packages: {},
     videoContainer: {
-      height: 360,
+      height: 416,
       borderRadius: 5,
       overflow: 'hidden',
     },
@@ -305,8 +316,14 @@ const useStyles = makeStyles((theme: Theme) => {
 
 export const KavachLanding: React.FC = (props) => {
   const classes = useStyles({});
+
+  interface ServicesLocationsInterface {
+    [key: string]: any;
+  }
+
   const [expanded, setExpanded] = React.useState<string | false>(false);
   const [location, setLocation] = React.useState('');
+  const [service, setService] = React.useState('');
   const [showmore, setShowmore] = React.useState<boolean>(false);
   const [userEmail, setUserEmail] = useState<string>('');
   const [userName, setUserName] = useState<string>('');
@@ -317,6 +334,33 @@ export const KavachLanding: React.FC = (props) => {
   const [mobileNumberValid, setMobileNumberValid] = useState<boolean>(true);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
+  const [serviceOptions, setServiceOptions] = useState<any>([]);
+  const [locationOptions, setLocationOptions] = useState<any>([]);
+  const [servicesLocations, setServicesLocations] = useState<ServicesLocationsInterface>({});
+  const scrollToRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    fetchUtil(process.env.KAVACH_SERVICES_LOCATIONS_URL, 'GET', {}, '', true)
+      .then((res: any) => {
+        if (res && res.data) {
+          setServicesLocations(res.data);
+          const services = Object.keys(res.data);
+          setServiceOptions(services);
+          const locations = [].concat(...Object.values(res.data));
+          const removeDuplicates = (data: {
+            filter: (arg0: (value: any, index: any) => boolean) => void;
+            indexOf: (arg0: any) => void;
+          }) => data.filter((value: any, index: any) => data.indexOf(value) === index);
+          setLocationOptions(removeDuplicates(locations));
+        }
+      })
+      .catch((err) => console.log(err));
+  }, []);
+  useEffect(() => {
+    scrollToRef &&
+      scrollToRef.current &&
+      scrollToRef.current.scrollIntoView({ behavior: 'auto', block: 'end' });
+  }, []);
 
   useEffect(() => {
     if (
@@ -324,13 +368,15 @@ export const KavachLanding: React.FC = (props) => {
       isNameValid(userName) &&
       isMobileNumberValid(userMobileNumber) &&
       location &&
-      location.length
+      location.length &&
+      service &&
+      service.length
     ) {
       setIsPostSubmitDisable(false);
     } else {
       setIsPostSubmitDisable(true);
     }
-  }, [userEmail, userName, location, userMobileNumber]);
+  }, [userEmail, userName, location, userMobileNumber, service]);
 
   const handleEmailValidityCheck = () => {
     if (userEmail.length && !isEmailValid(userEmail)) {
@@ -364,6 +410,17 @@ export const KavachLanding: React.FC = (props) => {
 
   const handleSelectChange = (event: React.ChangeEvent<{ value: unknown }>) => {
     setLocation(event.target.value as string);
+    const services = Object.keys(servicesLocations).map((service) => {
+      if (servicesLocations[service].includes(event.target.value)) {
+        return service;
+      }
+    });
+    setServiceOptions(services);
+  };
+
+  const handleServiceChange = (event: React.ChangeEvent<{ value: unknown }>) => {
+    setService(event.target.value as string);
+    setLocationOptions(servicesLocations[event.target.value as string]);
   };
 
   const submitKavachForm = () => {
@@ -373,6 +430,7 @@ export const KavachLanding: React.FC = (props) => {
       mobileNumber: userMobileNumber,
       email: userEmail,
       location,
+      stayAt: service,
     };
     fetchUtil(process.env.KAVACH_FORM_SUBMIT_URL, 'POST', userData, '', true).then((res: any) => {
       if (res && res.success) {
@@ -381,6 +439,7 @@ export const KavachLanding: React.FC = (props) => {
         setUserName('');
         setLocation('');
         setIsPopoverOpen(true);
+        setService('');
       } else {
         alert('something went wrong');
       }
@@ -392,7 +451,7 @@ export const KavachLanding: React.FC = (props) => {
       <Header />
       <div className={classes.container}>
         <div className={classes.kavachContent}>
-          <div className={classes.kavachIntro}>
+          <div className={classes.kavachIntro} ref={scrollToRef}>
             <Typography component="h1">Keeping you safe from Covid. Always</Typography>
             <div className={classes.imgContainer}>
               <img src={require('images/apollo-kavach.png')} />
@@ -410,7 +469,7 @@ export const KavachLanding: React.FC = (props) => {
                   <Typography component="h2">Share your details</Typography>
                   <form>
                     <AphTextField
-                      onChange={(event) => handleNameChange(event)}
+                      onChange={(event: any) => handleNameChange(event)}
                       value={userName}
                       placeholder="Name"
                       className={classes.formInput}
@@ -418,7 +477,7 @@ export const KavachLanding: React.FC = (props) => {
                     {!userNameValid && <div className={classes.error}>Invalid name</div>}
 
                     <AphTextField
-                      onChange={(event) => handleMobileNumberChange(event)}
+                      onChange={(event: any) => handleMobileNumberChange(event)}
                       value={userMobileNumber}
                       inputProps={{
                         maxLength: 10,
@@ -432,7 +491,9 @@ export const KavachLanding: React.FC = (props) => {
 
                     <AphTextField
                       placeholder="Email"
-                      onChange={(event) => setUserEmail(event.target.value)}
+                      onChange={(event: { target: { value: React.SetStateAction<string> } }) =>
+                        setUserEmail(event.target.value)
+                      }
                       value={userEmail}
                       onBlur={handleEmailValidityCheck}
                       className={classes.formInput}
@@ -452,11 +513,27 @@ export const KavachLanding: React.FC = (props) => {
                         <MenuItem value="" disabled>
                           Select location
                         </MenuItem>
-                        <MenuItem value={'Hyderabad'}>Hyderabad</MenuItem>
-                        <MenuItem value={'Chennai'}>Chennai</MenuItem>
-                        <MenuItem value={'Delhi'}>New Delhi</MenuItem>
-                        <MenuItem value={'Bengaluru'}>Bengaluru</MenuItem>
-                        <MenuItem value={'Kolkata'}>Kolkata</MenuItem>
+                        {locationOptions.map((location: string) => (
+                          <MenuItem value={location}>{location}</MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                    <FormControl className={classes.formControl}>
+                      <Select
+                        labelId="demo-simple-select-label"
+                        id="demo-simple-select"
+                        value={service}
+                        onChange={(e) => handleServiceChange(e)}
+                        displayEmpty
+                        className={classes.selectEmpty}
+                        inputProps={{ 'aria-label': 'Without label' }}
+                      >
+                        <MenuItem value="" disabled>
+                          Service Type
+                        </MenuItem>
+                        {serviceOptions.map((service: string) => (
+                          <MenuItem value={service}>{service}</MenuItem>
+                        ))}
                       </Select>
                     </FormControl>
                     {!isLoading ? (
@@ -550,6 +627,19 @@ export const KavachLanding: React.FC = (props) => {
                     <li>Waste disposal bags for laundry &amp; waste collection</li>
                     <li>Spiral note pad &amp; pen for record-keeping</li>
                   </ul>
+                  <Route
+                    render={({ history }) => (
+                      <AphButton
+                        onClick={() =>
+                          history.push(clientRoutes.searchByMedicine('corona-virus-care', '1891'))
+                        }
+                        variant="contained"
+                        color="primary"
+                      >
+                        Buy Now
+                      </AphButton>
+                    )}
+                  />
                 </div>
               </Grid>
               <Grid item xs={12} md={8}>

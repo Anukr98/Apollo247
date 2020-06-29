@@ -232,6 +232,7 @@ export enum STATUS {
   PAYMENT_PENDING_PG = "PAYMENT_PENDING_PG",
   PENDING = "PENDING",
   UNAVAILABLE_MEDMANTRA = "UNAVAILABLE_MEDMANTRA",
+  PAYMENT_ABORTED = "PAYMENT_ABORTED",
 }
 
 export enum Salutation {
@@ -499,6 +500,12 @@ export interface Vitals {
   weight?: string | null;
   temperature?: string | null;
   bp?: string | null;
+}
+
+export interface exotelInput {
+  from?: string | null;
+  to?: string | null;
+  appointmentId?: string | null;
 }
 
 //==============================================================

@@ -8,6 +8,7 @@ import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { ApiConstants } from 'ApiConstants';
 import { DoctorHospitalRepository } from 'doctors-service/repositories/doctorHospitalRepository';
+import { differenceInDays } from 'date-fns';
 
 export const getPatinetAppointmentsTypeDefs = gql`
   type PatinetAppointments {
@@ -140,6 +141,22 @@ type PersonalizedAppointmentResult = {
   appointmentDetails: PersonalizedAppointment | '';
 };
 
+type offlineAppointment = {
+  id: string;
+  appointmentid: string;
+  specialityid: string;
+  speciality: string;
+  doctorid: string;
+  doctorid_247: string;
+  uhid: string;
+  consultedtime: string;
+  appointmenttype: string;
+  modeofappointment: string;
+  doctor_name: string;
+  locationid: string;
+  location_name: string;
+};
+
 type PersonalizedAppointment = {
   id: string;
   hospitalLocation: string;
@@ -247,35 +264,45 @@ const getPatientPersonalizedAppointments: Resolver<
   );
   const textRes = await apptsResp.text();
   const offlineApptsList = JSON.parse(textRes);
-
-  let apptDetails: PersonalizedAppointment;
+  let doctorFlag = 1;
+  function getApptDetails() {
+    return new Promise<PersonalizedAppointment>(async (resolve) => {
+      const doctorRepo = doctorsDb.getCustomRepository(DoctorHospitalRepository);
+      offlineApptsList.response.forEach(async (appt: offlineAppointment) => {
+        if (Math.abs(differenceInDays(new Date(), new Date(appt.consultedtime))) <= 30) {
+          const doctorDets = await doctorRepo.getDoctorIdByMedmantraId(appt.doctorid);
+          if (doctorDets) {
+            const apptDetailsOffline: PersonalizedAppointment = {
+              id: appt.appointmentid,
+              hospitalLocation: appt.location_name,
+              appointmentDateTime: new Date(appt.consultedtime),
+              appointmentType:
+                appt.appointmenttype == 'WALKIN'
+                  ? APPOINTMENT_TYPE.PHYSICAL
+                  : APPOINTMENT_TYPE.ONLINE,
+              doctorId: doctorDets.doctor.id,
+            };
+            apptDetails = apptDetailsOffline;
+            doctorFlag = 1;
+          } else {
+            doctorFlag = 0;
+            resolve(apptDetails);
+          }
+        }
+        resolve(apptDetails);
+      });
+    });
+  }
+  let apptDetails: any;
   if (offlineApptsList.errorCode == 0) {
     //console.log(offlineApptsList.response, offlineApptsList.response.length);
-    const doctorRepo = doctorsDb.getCustomRepository(DoctorHospitalRepository);
-    const doctorDets = await doctorRepo.getDoctorIdByMedmantraId(
-      offlineApptsList.response[0].doctorid
-    );
-    console.log(doctorDets, 'sel doctor dets');
-    if (doctorDets) {
-      const apptDetailsOffline: PersonalizedAppointment = {
-        id: offlineApptsList.response[0].appointmentid,
-        hospitalLocation: offlineApptsList.response[0].location_name,
-        appointmentDateTime: new Date(offlineApptsList.response[0].consultedtime),
-        appointmentType:
-          offlineApptsList.response[0].appointmenttype == 'WALKIN'
-            ? APPOINTMENT_TYPE.PHYSICAL
-            : APPOINTMENT_TYPE.ONLINE,
-        doctorId: doctorDets.doctor.id,
-      };
-      apptDetails = apptDetailsOffline;
-    } else {
-      throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID);
-    }
+    await getApptDetails();
   } else {
     console.log(offlineApptsList.errorMsg, offlineApptsList.errorCode, 'offline consults error');
     throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
   }
-  //if (apptDetails == null) throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
+  if (doctorFlag == 0) throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID);
+  if (apptDetails == null) throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
   return { appointmentDetails: apptDetails };
 };
 

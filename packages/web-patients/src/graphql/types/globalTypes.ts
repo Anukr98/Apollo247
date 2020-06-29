@@ -113,16 +113,17 @@ export enum DiscountType {
 
 export enum DoctorType {
   APOLLO = "APOLLO",
+  APOLLO_HOMECARE = "APOLLO_HOMECARE",
   CLINIC = "CLINIC",
   CRADLE = "CRADLE",
   DOCTOR_CONNECT = "DOCTOR_CONNECT",
   FERTILITY = "FERTILITY",
-  HOMECARE = "HOMECARE",
   JUNIOR = "JUNIOR",
   PAYROLL = "PAYROLL",
   SPECTRA = "SPECTRA",
   STAR_APOLLO = "STAR_APOLLO",
   SUGAR = "SUGAR",
+  WHITE_DENTAL = "WHITE_DENTAL",
 }
 
 export enum FEEDBACKTYPE {
@@ -207,6 +208,7 @@ export enum MEDICINE_ORDER_STATUS {
   READY_AT_STORE = "READY_AT_STORE",
   RETURN_ACCEPTED = "RETURN_ACCEPTED",
   RETURN_INITIATED = "RETURN_INITIATED",
+  PAYMENT_ABORTED = "PAYMENT_ABORTED",
 }
 
 export enum MEDICINE_ORDER_TYPE {
@@ -275,10 +277,6 @@ export enum MedicalTestUnit {
   GM_SLASH_DL = "GM_SLASH_DL",
   NONE = "NONE",
   _PERCENT_ = "_PERCENT_",
-}
-
-export enum NonCartOrderCity {
-  CHENNAI = "CHENNAI",
 }
 
 export enum NonCartOrderOMSCity {
@@ -360,13 +358,7 @@ export enum STATUS {
   PAYMENT_PENDING_PG = "PAYMENT_PENDING_PG",
   PENDING = "PENDING",
   UNAVAILABLE_MEDMANTRA = "UNAVAILABLE_MEDMANTRA",
-}
-
-export enum Salutation {
-  DR = "DR",
-  MR = "MR",
-  MRS = "MRS",
-  MS = "MS",
+  PAYMENT_ABORTED = "PAYMENT_ABORTED",
 }
 
 export enum SpecialtySearchType {
@@ -456,6 +448,9 @@ export interface BookAppointmentInput {
   deviceType?: DEVICETYPE | null;
   couponCode?: string | null;
   externalConnect?: boolean | null;
+  pinCode?: string | null;
+  actualAmount?: number | null;
+  discountedAmount?: number | null;
 }
 
 export interface BookRescheduleAppointmentInput {
@@ -555,6 +550,7 @@ export interface FilterDoctorInput {
   geolocation?: Geolocation | null;
   consultMode?: ConsultMode | null;
   pincode?: string | null;
+  doctorType?: string | null;
   sort?: string | null;
 }
 
@@ -575,36 +571,6 @@ export interface LabResultFileProperties {
   fileName: string;
   mimeType: string;
   content: string;
-}
-
-export interface MedicineCartInput {
-  quoteId?: string | null;
-  shopId?: string | null;
-  estimatedAmount?: number | null;
-  patientId: string;
-  medicineDeliveryType: MEDICINE_DELIVERY_TYPE;
-  bookingSource?: BOOKINGSOURCE | null;
-  deviceType?: DEVICETYPE | null;
-  patientAddressId: string;
-  devliveryCharges?: number | null;
-  prescriptionImageUrl?: string | null;
-  prismPrescriptionFileId?: string | null;
-  orderTat?: string | null;
-  items?: (MedicineCartItem | null)[] | null;
-  coupon?: string | null;
-}
-
-export interface MedicineCartItem {
-  medicineSKU?: string | null;
-  medicineName?: string | null;
-  price?: number | null;
-  quantity?: number | null;
-  mrp?: number | null;
-  isPrescriptionNeeded?: number | null;
-  prescriptionImageUrl?: string | null;
-  prismPrescriptionFileId?: string | null;
-  mou?: number | null;
-  isMedicine?: string | null;
 }
 
 export interface MedicineCartOMSInput {
@@ -755,24 +721,6 @@ export interface PharmaCouponInput {
   orderLineItems?: (OrderLineItems | null)[] | null;
 }
 
-export interface PrescriptionMedicineInput {
-  quoteId?: string | null;
-  shopId?: string | null;
-  patientId: string;
-  bookingSource?: BOOKING_SOURCE | null;
-  deviceType?: DEVICE_TYPE | null;
-  medicineDeliveryType: MEDICINE_DELIVERY_TYPE;
-  patinetAddressId?: string | null;
-  prescriptionImageUrl: string;
-  prismPrescriptionFileId: string;
-  appointmentId?: string | null;
-  isEprescription?: number | null;
-  payment?: PrescriptionMedicinePaymentDetails | null;
-  email?: string | null;
-  NonCartOrderCity?: NonCartOrderCity | null;
-  orderAutoId?: number | null;
-}
-
 export interface PrescriptionMedicineOrderOMSInput {
   quoteId?: string | null;
   shopId?: string | null;
@@ -793,14 +741,6 @@ export interface PrescriptionMedicineOrderOMSInput {
   prescriptionOptionSelected?: string | null;
   durationDays?: number | null;
   customerComment?: string | null;
-}
-
-export interface PrescriptionMedicinePaymentDetails {
-  paymentType?: MEDICINE_ORDER_PAYMENT_TYPE | null;
-  amountPaid?: number | null;
-  paymentRefId?: string | null;
-  paymentStatus?: string | null;
-  paymentDateTime?: any | null;
 }
 
 export interface PrescriptionMedicinePaymentOMSDetails {
