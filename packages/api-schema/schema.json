@@ -1374,6 +1374,16 @@
                 "defaultValue": null
               },
               {
+                "name": "city",
+                "description": null,
+                "type": {
+                  "kind": "SCALAR",
+                  "name": "String",
+                  "ofType": null
+                },
+                "defaultValue": null
+              },
+              {
                 "name": "patientId",
                 "description": null,
                 "type": {
@@ -5407,6 +5417,12 @@
           },
           {
             "name": "PURCHASED_IN_STORE",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "PAYMENT_ABORTED",
             "description": null,
             "isDeprecated": false,
             "deprecationReason": null
@@ -16558,6 +16574,12 @@
           },
           {
             "name": "UNAVAILABLE_MEDMANTRA",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "PAYMENT_ABORTED",
             "description": null,
             "isDeprecated": false,
             "deprecationReason": null

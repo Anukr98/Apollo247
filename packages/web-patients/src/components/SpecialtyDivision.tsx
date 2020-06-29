@@ -1,7 +1,7 @@
 import React from 'react';
 import { Theme, Grid, CircularProgress, Popover, Typography } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
-import { Specialities } from 'components/Specialities';
+import { Specialties } from 'components/Specialties';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { Link } from 'react-router-dom';
 import {
@@ -456,7 +456,7 @@ export const SpecialtyDivision: React.FC<SpecialtyDivisionProps> = (props) => {
           ) : error ? (
             <div>Error! </div>
           ) : (
-            allSpecialties && <Specialities selectedCity={selectedCity} data={allSpecialties} />
+            allSpecialties && <Specialties selectedCity={selectedCity} data={allSpecialties} />
           )}
         </div>
       </div>

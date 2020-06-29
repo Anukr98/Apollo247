@@ -35,6 +35,7 @@ export const searchDoctorAndSpecialtyByNameTypeDefs = gql`
   extend type Query {
     SearchDoctorAndSpecialtyByName(
       searchText: String!
+      city: String
       patientId: ID
       geolocation: Geolocation
       pincode: String
@@ -62,7 +63,13 @@ let identifier: string;
 let callStartTime: Date;
 const SearchDoctorAndSpecialtyByName: Resolver<
   null,
-  { searchText: string; patientId: string; geolocation: Geolocation; pincode: string },
+  {
+    searchText: string;
+    city: string;
+    patientId: string;
+    geolocation: Geolocation;
+    pincode: string;
+  },
   DoctorsServiceContext,
   SearchDoctorAndSpecialtyByNameResult
 > = async (parent, args, { doctorsDb, consultsDb }) => {
@@ -104,7 +111,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
 
   const client = new Client({ node: process.env.ELASTIC_CONNECTION_URL });
   searchLogger(`GET_MATCHED_DOCTORS_AND_SPECIALTIES___START`);
-  const PerfectdocSearchParams: RequestParams.Search = {
+  let PerfectdocSearchParams: RequestParams.Search = {
     index: 'doctors',
     body: {
       size: 1000,
@@ -130,8 +137,33 @@ const SearchDoctorAndSpecialtyByName: Resolver<
       },
     },
   };
-  const responsePerfectMatchDoctors = await client.search(PerfectdocSearchParams);
 
+  if (args.city && args.city != '') {
+    const PerfectdocCitySearchParams: RequestParams.Search = {
+      index: 'doctors',
+      body: {
+        size: 1000,
+        query: {
+          bool: {
+            must: [
+              { match: { 'doctorSlots.slots.status': 'OPEN' } },
+              {
+                multi_match: {
+                  fields: ['facility.city'],
+                  type: 'phrase_prefix',
+                  query: args.city,
+                },
+              },
+            ],
+          },
+        },
+      },
+    };
+    PerfectdocSearchParams = PerfectdocCitySearchParams;
+  }
+
+  const responsePerfectMatchDoctors = await client.search(PerfectdocSearchParams);
+  console.log(responsePerfectMatchDoctors.body.hits.hits, 'city hits');
   for (const doc of responsePerfectMatchDoctors.body.hits.hits) {
     const doctor = doc._source;
     doctor['id'] = doctor.doctorId;

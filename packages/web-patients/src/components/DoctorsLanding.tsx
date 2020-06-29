@@ -4,7 +4,7 @@ import { Header } from 'components/Header';
 import React, { useState, useEffect } from 'react';
 import { DoctorsFilter } from 'components/DoctorsFilter';
 import { PastSearches } from 'components/PastSearches';
-import { Specialities } from 'components/Specialities';
+import { Specialties } from 'components/Specialties';
 import { DoctorCard } from 'components/DoctorCard';
 import { DoctorsListing } from 'components/DoctorsListing';
 import { SearchObject } from 'components/DoctorsFilter';
