@@ -37,6 +37,8 @@ import { appointmentPaymentEmailTemplate } from 'helpers/emailTemplates/appointm
 import { log } from 'customWinstonLogger';
 import { CaseSheetRepository } from 'consults-service/repositories/caseSheetRepository';
 import { ConsultQueueRepository } from 'consults-service/repositories/consultQueueRepository';
+import { acceptCoupon } from 'helpers/couponServices';
+import { AcceptCouponRequest } from 'types/coupons';
 
 export const makeAppointmentPaymentTypeDefs = gql`
   enum APPOINTMENT_PAYMENT_TYPE {
@@ -205,6 +207,18 @@ const makeAppointmentPayment: Resolver<
 
   //update appointment status to PENDING
   if (paymentInput.paymentStatus == 'TXN_SUCCESS') {
+    if (processingAppointment.couponCode) {
+      const patient = patientsDb.getCustomRepository(PatientRepository);
+      const patientDetails = await patient.findByIdWithoutRelations(
+        processingAppointment.patientId
+      );
+      if (!patientDetails) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
+      const payload: AcceptCouponRequest = {
+        mobile: patientDetails.mobileNumber.replace('+91', ''),
+        coupon: processingAppointment.couponCode,
+      };
+      await acceptCoupon(payload);
+    }
     //check if any appointment already exists in this slot before confirming payment
     const apptCount = await apptsRepo.checkIfAppointmentExistWithId(
       processingAppointment.doctorId,

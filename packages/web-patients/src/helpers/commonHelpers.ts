@@ -4,6 +4,7 @@ import moment from 'moment';
 import { GooglePlacesType } from 'components/LocationProvider';
 import { CouponCategoryApplicable } from 'graphql/types/globalTypes';
 import _lowerCase from 'lodash/lowerCase';
+import _upperFirst from 'lodash/upperFirst';
 
 declare global {
   interface Window {
@@ -259,7 +260,16 @@ const getTypeOfProduct = (type: string) => {
   }
 };
 
+const getSymptoms = (symptoms: string) => {
+  const symptomsList = symptoms.split(', ');
+  const structuredSymptomString = symptomsList.map((symptom: string) => {
+    return _upperFirst(symptom.trim());
+  });
+  return structuredSymptomString.join(', ');
+};
+
 export {
+  getSymptoms,
   getTypeOfProduct,
   feeInRupees,
   experienceList,
