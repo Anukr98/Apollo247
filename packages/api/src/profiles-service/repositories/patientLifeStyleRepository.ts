@@ -6,6 +6,9 @@ import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 @EntityRepository(PatientLifeStyle)
 export class PatientLifeStyleRepository extends Repository<PatientLifeStyle> {
   savePatientLifeStyle(patientLifeStyleAttrs: Partial<PatientLifeStyle>) {
+    if (patientLifeStyleAttrs.patient) {
+      patientLifeStyleAttrs.patientId = patientLifeStyleAttrs.patient.id;
+    }
     return this.save(this.create(patientLifeStyleAttrs)).catch((patientLifeStyleError) => {
       throw new AphError(AphErrorMessages.SAVE_PATIENT_LIFE_STYLE_ERROR, undefined, {
         patientLifeStyleError,
@@ -22,9 +25,12 @@ export class PatientLifeStyleRepository extends Repository<PatientLifeStyle> {
   }
 
   updatePatientLifeStyle(id: string, patientLifeStyleAttrs: Partial<PatientLifeStyle>) {
-    patientLifeStyleAttrs.id = id;
-    const lifestyle = this.create(patientLifeStyleAttrs);
-    return lifestyle.save();
+    if (patientLifeStyleAttrs.patient) {
+      patientLifeStyleAttrs.patientId = patientLifeStyleAttrs.patient.id;
+      patientLifeStyleAttrs.id = id;
+    }
+    const patientLifeStyle = this.create(patientLifeStyleAttrs);
+    return patientLifeStyle.save();
   }
 
   findById(id: string) {
