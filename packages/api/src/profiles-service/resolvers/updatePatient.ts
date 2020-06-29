@@ -143,6 +143,7 @@ const updatePatient: Resolver<
   return { patient };
 };
 
+
 const updatePatientAllergies: Resolver<
   null,
   { patientId: string; allergies: string },
