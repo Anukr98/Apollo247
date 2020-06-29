@@ -130,7 +130,7 @@ export const ApplyConsultCoupon: React.FC<ApplyConsultCouponProps> = (props) => 
       .catch((error) => {
         CommonBugFender('fetchingConsultCoupons', error);
         console.log(error);
-        props.navigation.navigate(AppRoutes.DoctorSearch);
+        props.navigation.goBack();
         renderErrorPopup(`Something went wrong, plaease try again after sometime`);
       });
   }, []);
