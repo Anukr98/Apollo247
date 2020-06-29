@@ -2589,6 +2589,7 @@ export const GET_PERSONALIZED_APPOITNMENTS = gql`
           specialty {
             id
             name
+            userFriendlyNomenclature
           }
         }
       }
