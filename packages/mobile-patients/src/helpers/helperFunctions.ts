@@ -1280,23 +1280,30 @@ export const addPharmaItemToCart = (
   setLoading: UIElementsContextProps['setLoading'],
   navigation: NavigationScreenProp<NavigationRoute<object>, object>,
   currentPatient: GetCurrentPatients_getCurrentPatients_patients,
+  isLocationServeiceable: boolean,
   onComplete?: () => void
 ) => {
   const unServiceableMsg = 'Sorry, not serviceable in your area.';
   const navigate = () => {
-    const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART_NONSERVICEABLE] = {
-      'product name': cartItem.name,
-      'product id': cartItem.id,
-      pincode: pincode,
-      'Mobile Number': g(currentPatient, 'mobileNumber')!,
-    };
-    console.log('eventAttributes------------------------', eventAttributes);
-    postWebEngageEvent(WebEngageEventName.PHARMACY_ADD_TO_CART_NONSERVICEABLE, eventAttributes);
+    if (!isLocationServeiceable) {
+      const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART_NONSERVICEABLE] = {
+        'product name': cartItem.name,
+        'product id': cartItem.id,
+        pincode: pincode,
+        'Mobile Number': g(currentPatient, 'mobileNumber')!,
+      };
+      postWebEngageEvent(WebEngageEventName.PHARMACY_ADD_TO_CART_NONSERVICEABLE, eventAttributes);
+    }
     navigation.navigate(AppRoutes.MedicineDetailsScene, {
       sku: cartItem.id,
       deliveryError: unServiceableMsg,
     });
   };
+  if (!isLocationServeiceable) {
+    navigate();
+    return;
+  }
+
   setLoading && setLoading(true);
   getDeliveryTime({
     postalcode: pincode,

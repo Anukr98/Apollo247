@@ -518,6 +518,9 @@ export interface BookAppointmentInput {
   deviceType?: DEVICETYPE | null;
   couponCode?: string | null;
   externalConnect?: boolean | null;
+  actualAmount?: number;
+  discountedAmount?: number;
+  pinCode?: string | null;
 }
 
 export interface BookFollowUpAppointmentInput {
