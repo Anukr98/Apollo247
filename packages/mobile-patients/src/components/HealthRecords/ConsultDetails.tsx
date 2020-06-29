@@ -668,7 +668,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
   ) => {
     const type = item.medicineFormTypes === MEDICINE_FORM_TYPES.OTHERS ? 'Take' : 'Apply';
     const customDosage = item.medicineCustomDosage
-      ? item.medicineCustomDosage.split('-').filter((i) => i !== '')
+      ? item.medicineCustomDosage.split('-').filter((i) => i !== '' && i != '0')
       : [];
     const medTimingsArray = [
       MEDICINE_TIMINGS.MORNING,
