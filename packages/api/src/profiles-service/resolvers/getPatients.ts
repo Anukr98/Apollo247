@@ -1,8 +1,10 @@
 import gql from 'graphql-tag';
+import _ from 'lodash';
 import { Resolver } from 'api-gateway';
 import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
 import { Patient, Gender, Relation } from 'profiles-service/entities';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
+import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import {
@@ -115,8 +117,10 @@ const getPatientById: Resolver<
   { patientId: string },
   ProfilesServiceContext,
   PatientInfo
-> = async (parent, args, { profilesDb }) => {
+> = async (parent, args, { profilesDb, mobileNumber }) => {
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
+  const patientData = await patientRepo.checkMobileIdInfo(mobileNumber, '', args.patientId);
+  if (!patientData) throw new AphError(AphErrorMessages.INVALID_PATIENT_DETAILS);
   const patient = await patientRepo.findById(args.patientId);
   if (!patient) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
@@ -129,13 +133,40 @@ const getPatientByMobileNumber: Resolver<
   { mobileNumber: string },
   ProfilesServiceContext,
   PatientList
-> = async (parent, args, { profilesDb }) => {
+> = async (parent, args, { mobileNumber, profilesDb, consultsDb }) => {
+  if (mobileNumber != args.mobileNumber) {
+    throw new AphError(AphErrorMessages.INVALID_MOBILE_NUMBER, undefined, {});
+  }
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
-  const patients = await patientRepo.findByMobileNumber(args.mobileNumber);
+  var patients = await patientRepo.findByMobileNumber(args.mobileNumber);
   if (!patients) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_DETAILS, undefined, {});
   }
-  return { patients };
+  const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
+  var appointmentList = [];
+
+  for (var i = 0; i < patients.length; i++) {
+    const appointmentCount = await appointmentRepo.getPatientAppointmentCountByPatientIds(patients[i].id);
+    var patientObj = {
+      appointmentCount: appointmentCount,
+      patientId: patients[i].id
+    }
+    appointmentList.push(patientObj);
+  }
+
+  appointmentList = _.sortBy(appointmentList, 'appointmentCount').reverse();
+  var patientResult = [];
+
+  for (var i = 0; i < appointmentList.length; i++) {
+    var id = appointmentList[i].patientId;
+    var objResult = patients.find(x => x.id == id);
+    if (!objResult) {
+      continue;
+    }
+    patientResult.push(objResult);
+  }
+
+  return { patients: patientResult };
 };
 
 const addNewProfile: Resolver<

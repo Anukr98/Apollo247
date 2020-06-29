@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { makeStyles, createStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
 import { AphButton } from '@aph/web-ui-components';
+import { getAppStoreLink } from 'helpers/dateHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -13,6 +14,10 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 500,
       lineHeight: '23px',
       marginTop: 20,
+      [theme.breakpoints.down('xs')]: {
+        borderRadius: 0,
+        marginBottom: 20,
+      },
       '& h3': {
         margin: 0,
         color: '#01667c',
@@ -46,36 +51,39 @@ const useStyles = makeStyles((theme: Theme) => {
     btnActive: {
       border: '1px solid #00b38e',
       '&:before': {
-        top: '100%',
-        left: '50%',
-        border: 'solid transparent',
-        content: '""',
-        height: 0,
-        width: 0,
+        content: "''",
         position: 'absolute',
-        pointerEvents: 'none',
-        borderColor: 'rgba(0, 179, 142, 0)',
-        borderTopColor: '#00b38e',
-        borderWidth: 11,
-        marginLeft: -11,
+        bottom: -38,
+        left: 0,
+        right: 0,
+        zIndex: 2,
+        width: 20,
+        height: '100%',
+        margin: '0 auto',
+        borderRadius: 4,
+        borderTop: '10px solid #f7f8f5',
+        borderBottom: '10px solid transparent',
+        borderLeft: ' 40px solid transparent',
+        borderRight: '40px solid transparent',
       },
       '&:after': {
-        top: '100%',
-        left: '50%',
-        border: 'solid transparent',
-        content: '""',
-        height: 0,
-        width: 0,
+        content: "''",
         position: 'absolute',
-        pointerEvents: 'none',
-        borderColor: 'rgba(247, 248, 142, 0)',
-        borderTopColor: '#f7f8f5',
-        borderWidth: 10,
-        marginLeft: -10,
-      },    
+        bottom: -39,
+        left: 0,
+        right: 0,
+        zIndex: 1,
+        width: 20,
+        height: '100%',
+        margin: '0 auto',
+        borderRadius: 4,
+        borderTop: '10px solid #00b38e',
+        borderBottom: '10px solid transparent',
+        borderLeft: ' 40px solid transparent',
+        borderRight: '40px solid transparent',
+      },
     },
-    consultGroup: {
-    },
+    consultGroup: {},
     groupHead: {
       display: 'flex',
       alignItems: 'center',
@@ -93,7 +101,7 @@ const useStyles = makeStyles((theme: Theme) => {
         color: '#0589bb',
         fontWeight: 500,
         textTransform: 'uppercase',
-      }
+      },
     },
     groupContent: {
       paddingTop: 20,
@@ -155,79 +163,99 @@ const useStyles = makeStyles((theme: Theme) => {
 
 export const HowItWorks: React.FC = (props) => {
   const classes = useStyles({});
+  const [onlineDirection, setOnlineDirection] = useState<boolean>(true);
+  const [physicalDirection, setPhysicalDirection] = useState<boolean>(false);
 
   return (
     <div className={classes.root}>
       <h3>How it works</h3>
       <div className={classes.tabButtons}>
-        <AphButton className={`${classes.button} ${classes.btnActive}`}>Chat/Audio/Video</AphButton>
-        <AphButton className={`${classes.button}`}>Meet in Person</AphButton>
+        <AphButton
+          className={
+            onlineDirection ? `${classes.button} ${classes.btnActive}` : `${classes.button}`
+          }
+          onClick={() => {
+            setOnlineDirection(true);
+            setPhysicalDirection(false);
+          }}
+        >
+          Chat/Audio/Video
+        </AphButton>
+        <AphButton
+          className={
+            physicalDirection ? `${classes.button} ${classes.btnActive}` : `${classes.button}`
+          }
+          onClick={() => {
+            setOnlineDirection(false);
+            setPhysicalDirection(true);
+          }}
+        >
+          Meet in Person
+        </AphButton>
       </div>
       <div className={classes.consultGroup}>
         <div className={classes.groupHead}>
           <span>
-            <img src={require('images/video-calling.svg')} alt="" />
+            <img
+              src={require(onlineDirection
+                ? 'images/video-calling.svg'
+                : 'images/ic-specialist.svg')}
+              alt=""
+            />
           </span>
-          <h4>How to consult via chat/audio/video?</h4>
+          <h4>
+            {onlineDirection ? 'How to consult via chat/audio/video?' : 'How to consult in person'}
+          </h4>
         </div>
         <div className={classes.groupContent}>
           <ul>
             <li>
-              <span><img src={require('images/ic_doctor_small.svg')} alt="" /></span>
+              <span>
+                <img src={require('images/ic_doctor_small.svg')} alt="" />
+              </span>
               <span>Choose the doctor</span>
             </li>
             <li>
-              <span><img src={require('images/ic_book-slot.svg')} alt="" /></span>
+              <span>
+                <img src={require('images/ic_book-slot.svg')} alt="" />
+              </span>
               <span>Book a slot</span>
             </li>
             <li>
-              <span><img src={require('images/ic-payment.svg')} alt="" /></span>
+              <span>
+                <img src={require('images/ic-payment.svg')} alt="" />
+              </span>
               <span>Make payment</span>
             </li>
             <li className={classes.blueText}>
-              <span><img src={require('images/ic_video-blue.svg')} alt="" /></span>
-              <span>Speak to the doctor via video/audio/chat</span>
+              <span>
+                <img
+                  src={require(onlineDirection
+                    ? 'images/ic_video-blue.svg'
+                    : 'images/ic_hospital.svg')}
+                  alt=""
+                />
+              </span>
+              <span>
+                {onlineDirection
+                  ? 'Speak to the doctor via video/audio/chat'
+                  : 'Visit the doctor at Hospital/Clinic'}
+              </span>
             </li>
             <li>
-              <span><img src={require('images/ic_prescription-sm.svg')} alt="" /></span>
+              <span>
+                <img src={require('images/ic_prescription-sm.svg')} alt="" />
+              </span>
               <span>Receive prescriptions instantly</span>
             </li>
-            <li className={classes.blueText}>
-              <span><img src={require('images/ic_chat.svg')} alt="" /></span>
-              <span>Chat with the doctor for 6 days after your consult</span>
-            </li>
-          </ul>
-        </div>
-      </div>
-      <div className={classes.consultGroup}>
-        <div className={classes.groupHead}>
-          <span>
-            <img src={require('images/ic-specialist.svg')} alt="" />
-          </span>
-          <h4>How to consult in person</h4>
-        </div>
-        <div className={classes.groupContent}>
-          <ul>
-            <li>
-              <span><img src={require('images/ic_doctor_small.svg')} alt="" /></span>
-              <span>Choose the doctor</span>
-            </li>
-            <li>
-              <span><img src={require('images/ic_book-slot.svg')} alt="" /></span>
-              <span>Book a slot</span>
-            </li>
-            <li>
-              <span><img src={require('images/ic-payment.svg')} alt="" /></span>
-              <span>Make payment</span>
-            </li>
-            <li className={classes.blueText}>
-              <span><img src={require('images/ic_video-blue.svg')} alt="" /></span>
-              <span>Visit the doctor at Hospital/Clinic</span>
-            </li>
-            <li>
-              <span><img src={require('images/ic_prescription-sm.svg')} alt="" /></span>
-              <span>Receive prescriptions instantly </span>
-            </li>
+            {onlineDirection && (
+              <li className={classes.blueText}>
+                <span>
+                  <img src={require('images/ic_chat.svg')} alt="" />
+                </span>
+                <span>Chat with the doctor for 6 days after your consult</span>
+              </li>
+            )}
           </ul>
         </div>
       </div>
@@ -235,11 +263,12 @@ export const HowItWorks: React.FC = (props) => {
         <h4>Consultancy works only on our mobile app</h4>
         <p>To enjoy enhanced consultation experience download our mobile app</p>
         <div className={classes.appDownload}>
-          <span><img src={require('images/apollo-logo.jpg')} alt="" /></span>
-          <AphButton>Download the App</AphButton>
+          <span>
+            <img src={require('images/apollo-logo.jpg')} alt="" />
+          </span>
+          <AphButton onClick={() => window.open(getAppStoreLink())}>Download the App</AphButton>
         </div>
       </div>
     </div>
   );
 };
-

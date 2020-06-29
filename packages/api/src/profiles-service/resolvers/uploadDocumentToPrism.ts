@@ -7,6 +7,8 @@ import fs from 'fs';
 import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
 import { format } from 'date-fns';
 import path from 'path';
+import { AphError } from 'AphError';
+import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 
 export const uploadDocumentTypeDefs = gql`
   enum PRISM_DOCUMENT_CATEGORY {
@@ -56,32 +58,14 @@ const uploadDocument: Resolver<
   //upload file to blob storage
   const blobUrl = await uploadFileToBlobStorage(uploadDocumentInput);
 
-  //get authtoken for the logged in user mobile number
-  const prismAuthToken = await patientsRepo.getPrismAuthToken(mobileNumber);
+  const patientDetails = await patientsRepo.findById(uploadDocumentInput.patientId);
+  if (!patientDetails) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
 
-  if (!prismAuthToken) return { status: false, fileId: '', filePath: blobUrl };
-
-  //get users list for the mobile number
-  const prismUserList = await patientsRepo.getPrismUsersList(mobileNumber, prismAuthToken);
-
-  //check if current user uhid matches with response uhids
-  const uhid = await patientsRepo.validateAndGetUHID(uploadDocumentInput.patientId, prismUserList);
-
-  if (!uhid) {
-    return { status: false, fileId: '', filePath: blobUrl };
-  }
-
-  //get authtoken for the logged in user mobile number
-  const prismUHIDAuthToken = await patientsRepo.getPrismAuthTokenByUHID(uhid);
-
-  if (!prismUHIDAuthToken) return { status: false, fileId: '', filePath: blobUrl };
-
-  //just call get prism user details with the corresponding uhid
-  await patientsRepo.getPrismUsersDetails(uhid, prismUHIDAuthToken);
+  if (!patientDetails.uhid) throw new AphError(AphErrorMessages.INVALID_UHID);
 
   const fileId = await patientsRepo.uploadDocumentToPrism(
-    uhid,
-    prismUHIDAuthToken,
+    patientDetails.uhid,
+    '',
     uploadDocumentInput
   );
 
@@ -90,7 +74,7 @@ const uploadDocument: Resolver<
     : { status: false, fileId: '', filePath: blobUrl };
 };
 
-const uploadFileToBlobStorage = async (args: UploadDocumentInput) => {
+export const uploadFileToBlobStorage = async (args: UploadDocumentInput) => {
   let assetsDir = path.resolve('/apollo-hospitals/packages/api/src/assets');
   if (process.env.NODE_ENV != 'local') {
     assetsDir = path.resolve(<string>process.env.ASSETS_DIRECTORY);

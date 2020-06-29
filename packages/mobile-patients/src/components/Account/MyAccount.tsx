@@ -164,6 +164,8 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
         return 'DEV';
       case 'https://aph.staging.api.popcornapps.com//graphql':
         return 'QA';
+      case 'https://stagingapi.apollo247.com//graphql':
+        return 'STAGING';
       case 'https://aph.uat.api.popcornapps.com//graphql':
         return 'UAT';
       case 'https://aph.vapt.api.popcornapps.com//graphql':

@@ -75,14 +75,20 @@ const pharmacyOrders: Resolver<
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
   const primaryPatientIds = await patientRepo.getLinkedPatientIds(args.patientId);
 
-  const medicineOrders = await medicineOrderRepo.getMedicineOrdersList(primaryPatientIds);
+  const medicineOrders = await medicineOrderRepo.getMedicineOrdersListWithPayments(
+    primaryPatientIds
+  );
   // console.log('pharmacy Response', JSON.stringify(medicineOrders, null, 2));
   if (medicineOrders && medicineOrders.length > 0) {
     const excludeNullPayments = _.filter(medicineOrders, (o) => {
       return o.medicineOrderPayments.length > 0;
     });
     const result = _.filter(excludeNullPayments, (o) => {
-      return o.medicineOrderPayments[0].paymentType !== 'COD' && o.currentStatus !== 'QUOTE';
+      return (
+        o.medicineOrderPayments[0].paymentType !== 'COD' &&
+        o.currentStatus !== 'QUOTE' &&
+        o.currentStatus !== 'PAYMENT_ABORTED'
+      );
     });
     return { pharmaOrders: result };
   } else if (medicineOrders.length == 0) return { pharmaOrders: [] };

@@ -37,6 +37,9 @@ const appStaticVariables = {
   TAT_UNSERVICEABLE_DAY_COUNT: 10, // no. of days upto which cart item is considered as serviceable
   TAT_API_TIMEOUT_IN_SEC: 20,
   PACKAGING_CHARGES: 0,
+  EXOTEL_CALL_API_URL:
+    'https://157e9636faf8c1b7296a749deb8789fa84314b27598eb7a9:82ac24fd451cbf85373a4ea90f083c9d321040ee9c3d26ed@api.exotel.com/v1/Accounts/apollo2471/Calls/connect.json',
+  EXOTEL_CALLER_ID: '04049171522',
   HOME_SCREEN_COVID_HEADER_TEXT: string.common.covidHeading,
   HOME_SCREEN_EMERGENCY_BANNER_TEXT: string.common.emergencyBannerText,
   HOME_SCREEN_COVID_CONTACT_TEXT: string.common.covidContactText,
@@ -45,6 +48,8 @@ const appStaticVariables = {
   CHENNAI_PHARMA_DELIVERY_PINCODES: ChennaiDeliveryPinCodes,
   CRYPTO_SECRET_KEY: 'z2iQxQAuyLC0j2GNryyZ2JuGLTQyT0mK',
   PHARMA_STATE_CODE_MAPPING: PharmaStateCodeMapping,
+  HOTSELLERS_MAX_QUANTITY: 20, // max. allowed qty to add hot sellers to cart
+  HOME_SCREEN_KAVACH_TEXT: string.common.KavachText,
 };
 
 export const updateAppConfig = (key: keyof typeof Configuration, value: object) => {
@@ -157,6 +162,7 @@ const ConfigurationDev = {
     'https://aph.staging.web-patients.popcornapps.com/covid19/scan?utm_source=mobile_app',
   COVID_LATEST_ARTICLES_URL:
     'https://aph.dev.web-patients.popcornapps.com/covid19?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Covid19%20Content',
+  KAVACH_URL: 'https://www.apollo247.com/covid19/kavach?utm_source=mobile_app&utm_medium=Webview',
 };
 
 // QA
@@ -195,8 +201,45 @@ const ConfigurationQA = {
     'https://aph.staging.web-patients.popcornapps.com/covid19/scan?utm_source=mobile_app',
   COVID_LATEST_ARTICLES_URL:
     'https://aph.staging.web-patients.popcornapps.com/covid19?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Covid19%20Content',
+  KAVACH_URL: 'https://www.apollo247.com/covid19/kavach?utm_source=mobile_app&utm_medium=Webview',
 };
 
+// staging
+const ConfigurationStaging = {
+  LOG_ENVIRONMENT: 'release',
+  ANALYTICAL_ENIVRONMENT: 'release',
+  MEDICINE_PAST_SEARCHES_SHOW_COUNT: 5,
+  PAYMENT_GATEWAY_BASE_URL: 'https://stagingpmt.apollo247.com',
+  PAYMENT_GATEWAY_SUCCESS_PATH: '/mob?',
+  PAYMENT_GATEWAY_ERROR_PATH: '/mob-error?',
+  CONSULT_PG_BASE_URL: 'https://stagingpmt.apollo247.com',
+  CONSULT_PG_SUCCESS_PATH: '/consultpg-success?',
+  CONSULT_PG_ERROR_PATH: '/consultpg-error?',
+  CONSULT_PG_PENDING_PATH: '/consultpg-pending',
+  CONSULT_PG_REDIRECT_PATH: '/consultpg-redirect?',
+  DIAGNOSTICS_PG_BASE_URL: 'https://stagingpmt.apollo247.com',
+  DIAGNOSTICS_PG_SUCCESS_PATH: '/diagnostic-pg-success?',
+  DIAGNOSTICS_PG_ERROR_PATH: '/diagnostic-pg-error?',
+  DIAGNOSTICS_PG_CANCEL_PATH: '/diagnostic-pg-cancel-url',
+  MIN_CART_VALUE_FOR_FREE_DELIVERY: 200,
+  DELIVERY_CHARGES: 25,
+  DIASGNOS_DELIVERY_CHARGES: 0,
+  PRAKTISE_API_KEY: 'AFF2F0D8-5320-4E4D-A673-33626CD1C3F2', //'4A8C9CCC-C5A3-11E9-9A19-8C85900A8328',
+  PRO_TOKBOX_KEY: '46429002',
+  PRO_PUBNUB_PUBLISH: 'pub-c-75e6dc17-2d81-4969-8410-397064dae70e',
+  PRO_PUBNUB_SUBSCRIBER: 'sub-c-9cc337b6-e0f4-11e9-8d21-f2f6e193974b',
+  DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
+  GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
+  ...PharmaApiConfig.dev,
+  ...appStaticVariables,
+  iOS_Version: '2.541',
+  Android_Version: '2.541',
+  CONDITIONAL_MANAGENET_BASE_URL: 'https://stagingpmt.apollo247.com',
+  BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e',
+  COVID_RISK_LEVEL_URL: 'https://staging.patients.apollo247.com/covid19/scan?utm_source=mobile_app',
+  COVID_LATEST_ARTICLES_URL:
+    'https://staging.patients.apollo247.com/covid19?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Covid19%20Content',
+};
 //Production
 const ConfigurationProd = {
   LOG_ENVIRONMENT: 'release',
@@ -225,13 +268,14 @@ const ConfigurationProd = {
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   ...PharmaApiConfig.prod,
   ...appStaticVariables,
-  iOS_Version: '2.54',
-  Android_Version: '2.54',
+  iOS_Version: '2.57',
+  Android_Version: '2.57',
   CONDITIONAL_MANAGENET_BASE_URL: 'https://pmt.apollo247.com',
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e',
   COVID_RISK_LEVEL_URL: 'https://www.apollo247.com/covid19/scan?utm_source=mobile_app',
   COVID_LATEST_ARTICLES_URL:
     'https://www.apollo247.com/covid19?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Covid19%20Content',
+  KAVACH_URL: 'https://www.apollo247.com/covid19/kavach?utm_source=mobile_app&utm_medium=Webview',
 };
 
 //PERFORMANCE
@@ -270,6 +314,7 @@ const ConfigurationPERFORM = {
     'https://aph.staging.web-patients.popcornapps.com/covid19/scan?utm_source=mobile_app',
   COVID_LATEST_ARTICLES_URL:
     'https://aph.staging.web-patients.popcornapps.com/covid19?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Covid19%20Content',
+  KAVACH_URL: 'https://www.apollo247.com/covid19/kavach?utm_source=mobile_app&utm_medium=Webview',
 };
 
 //VAPT
@@ -308,6 +353,7 @@ const ConfigurationVAPT = {
     'https://aph.staging.web-patients.popcornapps.com/covid19/scan?utm_source=mobile_app',
   COVID_LATEST_ARTICLES_URL:
     'https://aph.staging.web-patients.popcornapps.com/covid19?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Covid19%20Content',
+  KAVACH_URL: 'https://www.apollo247.com/covid19/kavach?utm_source=mobile_app&utm_medium=Webview',
 };
 
 //DevelopmentReplica
@@ -346,6 +392,7 @@ const ConfigurationDevReplica = {
     'https://aph.staging.web-patients.popcornapps.com/covid19/scan?utm_source=mobile_app',
   COVID_LATEST_ARTICLES_URL:
     'https://aph.staging.web-patients.popcornapps.com/covid19?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Covid19%20Content',
+  KAVACH_URL: 'https://www.apollo247.com/covid19/kavach?utm_source=mobile_app&utm_medium=Webview',
 };
 
 const Configuration =
@@ -353,6 +400,8 @@ const Configuration =
     ? ConfigurationProd
     : APP_ENV == AppEnv.QA
     ? ConfigurationQA
+    : APP_ENV == AppEnv.STAGING
+    ? ConfigurationStaging
     : APP_ENV == AppEnv.PERFORM
     ? ConfigurationPERFORM
     : APP_ENV == AppEnv.VAPT

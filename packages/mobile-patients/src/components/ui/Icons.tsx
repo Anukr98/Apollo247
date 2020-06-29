@@ -503,6 +503,14 @@ export const DiscountIcon: React.FC<IconProps> = (props) => (
   <IconBase size="lg" {...props} source={require('./icons/discount.png')} />
 );
 
+export const OrangeCallIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/ic_orange_phone.png')} />
+);
+
+export const SmallOrangeCallIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/ic_small_orange_phone.png')} />
+);
+
 export const OrderOnHoldIcon: React.FC<IconProps> = (props) => (
   <IconBase size="lg" {...props} source={require('./icons/ic_hold.png')} />
 );
@@ -1105,6 +1113,15 @@ export const SearchIcon: React.FC<IconProps> = (props) => (
     style={{ width: 23, height: 23 }}
     {...props}
     source={require('./icons/loupe.png')}
+    resizeMode="contain"
+  />
+);
+
+export const KavachIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ width: 24, height: 24 }}
+    {...props}
+    source={require('./icons/bitmap.png')}
     resizeMode="contain"
   />
 );

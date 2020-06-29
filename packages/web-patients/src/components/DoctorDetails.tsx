@@ -25,7 +25,6 @@ import LinearProgress from '@material-ui/core/LinearProgress';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { LocationProvider } from 'components/LocationProvider';
-import Scrollbars from 'react-custom-scrollbars';
 import { AphButton } from '@aph/web-ui-components';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
@@ -33,9 +32,14 @@ import { useAuth } from 'hooks/authHooks';
 import { ManageProfile } from 'components/ManageProfile';
 import { BottomLinks } from 'components/BottomLinks';
 import { gtmTracking } from 'gtmTracking';
-import { getOpeningHrs } from '../helpers/commonHelpers';
+import { getOpeningHrs, readableParam } from '../helpers/commonHelpers';
 import { SchemaMarkup } from 'SchemaMarkup';
 import { MetaTagsComp } from 'MetaTagsComp';
+import { DoctorTimings } from 'components/DoctorTimings';
+import { HowCanConsult } from 'components/Doctors/HowCanConsult';
+import { AppDownload } from 'components/Doctors/AppDownload';
+import { NavigationBottom } from 'components/NavigationBottom';
+import { GetDoctorNextAvailableSlot } from 'graphql/types/GetDoctorNextAvailableSlot';
 export interface DoctorDetailsProps {
   id: string;
 }
@@ -43,7 +47,7 @@ export interface DoctorDetailsProps {
 const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
-      width: '100%',
+      padding: 0,
     },
     container: {
       maxWidth: 1064,
@@ -52,54 +56,62 @@ const useStyles = makeStyles((theme: Theme) => {
     doctorDetailsPage: {
       backgroundColor: '#f7f8f5',
       [theme.breakpoints.down('xs')]: {
-        backgroundColor: 'transparent',
-        position: 'absolute',
-        top: 0,
-        zIndex: 99,
-        width: '100%',
+        backgroundColor: '#f0f1ec',
+        marginTop: -14,
       },
     },
-    breadcrumbs: {
-      marginLeft: 20,
-      marginRight: 20,
-      fontSize: 13,
-      paddingTop: 17,
-      paddingBottom: 11,
-      fontWeight: 600,
-      color: theme.palette.secondary.dark,
-      textTransform: 'uppercase',
-      borderBottom: '0.5px solid rgba(2,71,91,0.3)',
-      position: 'relative',
-      zIndex: 1,
+    breadcrumbLinks: {
       display: 'flex',
       alignItems: 'center',
+      fontSize: 13,
+      color: '#007c93',
+      fontWeight: 600,
+      textTransform: 'uppercase',
+      padding: 20,
       [theme.breakpoints.down('xs')]: {
-        borderBottom: 'none',
-        backgroundColor: theme.palette.common.white,
-        margin: 0,
-        boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
-        padding: '16px 20px',
+        backgroundColor: '#fff',
         position: 'fixed',
+        padding: '17px 20px',
+        zIndex: 99,
+        top: 0,
         width: '100%',
+        boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
+      },
+      '& a': {
+        paddingLeft: 5,
+        paddingRight: 5,
+        color: '#fca317',
+      },
+      '& span': {
+        paddingLeft: 5,
+        paddingRight: 5,
       },
     },
     doctorProfileSection: {
       [theme.breakpoints.down('xs')]: {
         backgroundColor: '#dcdfce',
-        marginTop: 56,
-        paddingBottom: 80,
+        paddingBottom: 20,
       },
       [theme.breakpoints.up('sm')]: {
         display: 'flex',
-        padding: '20px 3px 20px 20px',
+        padding: 20,
+        paddingTop: 0,
       },
     },
-    searchSection: {
+    leftSection: {
       width: 'calc(100% - 328px)',
+      paddingRight: 20,
       marginLeft: 'auto',
       [theme.breakpoints.down('xs')]: {
         width: '100%',
         paddingLeft: 0,
+        paddingRight: 0,
+      },
+    },
+    rightSideBar: {
+      width: 328,
+      [theme.breakpoints.down('xs')]: {
+        width: '100%',
       },
     },
     modalBox: {
@@ -148,48 +160,7 @@ const useStyles = makeStyles((theme: Theme) => {
         top: -48,
       },
     },
-    backArrow: {
-      cursor: 'pointer',
-      marginRight: 20,
-      [theme.breakpoints.up(1220)]: {
-        position: 'absolute',
-        left: -82,
-        width: 48,
-        height: 48,
-        top: 0,
-        lineHeight: '36px',
-        borderRadius: '50%',
-        textAlign: 'center',
-        backgroundColor: '#02475b',
-      },
-      '& img': {
-        verticalAlign: 'bottom',
-      },
-    },
-    whiteArrow: {
-      verticalAlign: 'middle',
-      [theme.breakpoints.down(1220)]: {
-        display: 'none',
-      },
-    },
-    blackArrow: {
-      verticalAlign: 'middle',
-      [theme.breakpoints.up(1220)]: {
-        display: 'none',
-      },
-    },
-    customScroll: {
-      paddingLeft: 20,
-      paddingRight: 17,
-      [theme.breakpoints.down('xs')]: {
-        padding: 0,
-      },
-    },
     bookAppointment: {
-      position: 'absolute',
-      right: 20,
-      top: 12,
-      minWidth: 200,
       [theme.breakpoints.down(900)]: {
         display: 'none',
       },
@@ -213,9 +184,28 @@ const useStyles = makeStyles((theme: Theme) => {
       top: -88,
       zIndex: 999,
     },
-    footerLinks: {
-      [theme.breakpoints.down(900)]: {
+    doctorProfile: {
+      borderRadius: 5,
+      boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
+      backgroundColor: '#ffffff',
+      [theme.breakpoints.down('xs')]: {
+        borderRadius: 0,
+      },
+    },
+    doctorTimings: {
+      paddingTop: 20,
+    },
+    mHide: {
+      [theme.breakpoints.down('xs')]: {
         display: 'none',
+      },
+    },
+    backArrow: {
+      [theme.breakpoints.up('sm')]: {
+        display: 'none',
+      },
+      '& img': {
+        verticalAlign: 'middle',
       },
     },
   };
@@ -241,9 +231,20 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const [loading, setLoading] = useState<boolean>(false);
   const [structuredJSON, setStructuredJSON] = useState(null);
   const [metaTagProps, setMetaTagProps] = useState(null);
-
+  const [doctorAvailableSlots, setDoctorAvailableSlots] = useState<GetDoctorNextAvailableSlot>();
   const currentUserId = currentPatient && currentPatient.id;
 
+  const doctorPhysicalSlot =
+    doctorAvailableSlots &&
+    doctorAvailableSlots.getDoctorNextAvailableSlot &&
+    doctorAvailableSlots.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0] &&
+    doctorAvailableSlots.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0].physicalAvailableSlot;
+
+  const doctorAvailableOnlineSlot =
+    doctorAvailableSlots &&
+    doctorAvailableSlots.getDoctorNextAvailableSlot &&
+    doctorAvailableSlots.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0] &&
+    doctorAvailableSlots.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0].availableSlot;
   useEffect(() => {
     setLoading(true);
     apolloClient
@@ -271,7 +272,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
               onlineConsultationFees,
               physicalConsultationFees,
               consultHours,
-              salutation
+              salutation,
             },
           } = response.data;
           const openingHours = consultHours ? getOpeningHrs(consultHours) : '';
@@ -340,10 +341,17 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
             medicalSpecialty: specialty ? specialty.name : '',
           });
           setMetaTagProps({
-            title: `${salutation}: ${fullName} - Online Consultation/Appointment - Apollo 247`,
-            description: `Book an appointment with ${fullName} - ${specialty && specialty.name} and consult online at Apollo 247. Know more about ${fullName} and his work here. Get medical help online in just a few clicks at Apollo 247.`,
-            canonicalLink: `https://www.apollo247.com/doctors/${fullName}-${id}`
-          })
+            title: `${fullName}: ${
+              specialty && specialty.name ? specialty.name : ''
+            } - Online Consultation/Appointment - Apollo 247`,
+            description: `Book an appointment with ${fullName} - ${specialty &&
+              specialty.name} and consult online at Apollo 247. Know more about ${fullName} and his work here. Get medical help online in just a few clicks at Apollo 247.`,
+            canonicalLink:
+              window &&
+              window.location &&
+              window.location.origin &&
+              `${window.location.origin}/doctors/${readableParam(fullName)}-${id}`,
+          });
         }
       });
   }, []);
@@ -356,7 +364,10 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     availableForVirtualConsultation = true;
 
   const doctorDetails = data && data.getDoctorDetailsById ? data : null;
-
+  const doctorTimings =
+    data && data.getDoctorDetailsById && data.getDoctorDetailsById.consultHours
+      ? data && data.getDoctorDetailsById.consultHours
+      : null;
   const gtmTrackingFunc = () => {
     /* Gtm code start */
     const speciality =
@@ -410,101 +421,76 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
 
     return (
       <div className={classes.root}>
-        <MetaTagsComp {...metaTagProps}/>
-        <Header />
+        <MetaTagsComp {...metaTagProps} />
+        <div className={classes.mHide}>
+          <Header />
+        </div>
         {structuredJSON && <SchemaMarkup structuredJSON={structuredJSON} />}
         <div className={classes.container}>
           <div className={classes.doctorDetailsPage}>
-            <div className={classes.breadcrumbs}>
-              <Link
-                to={
-                  params.specialty
-                    ? clientRoutes.specialties(params.specialty)
-                    : clientRoutes.doctorsLanding()
-                }
-                title={'Back to doctors search'}
-              >
-                <div className={classes.backArrow}>
-                  <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
-                  <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
-                </div>
+            <div className={classes.breadcrumbLinks}>
+              <Link className={classes.backArrow} to={clientRoutes.specialityListing()}>
+                <img src={require('images/ic_back.svg')} alt="" />
               </Link>
-              Doctor Details
+              <Link to={clientRoutes.specialityListing()}>Doctor</Link>
+              <img src={require('images/triangle.svg')} alt="" />
+              <Link to={clientRoutes.specialityListing()}>Specialities</Link>
+              <img src={require('images/triangle.svg')} alt="" />
+              <span>Doctor Details</span>
             </div>
-            <Scrollbars
-              autoHide={true}
-              autoHeight
-              autoHeightMax={
-                isMediumScreen
-                  ? 'calc(100vh - 240px)'
-                  : isSmallScreen
-                  ? 'auto'
-                  : 'calc(100vh - 154px)'
-              }
-            >
-              <div className={classes.doctorProfileSection}>
-                <DoctorProfile
-                  doctorDetails={doctorDetails}
-                  avaPhy={availableForPhysicalConsultation}
-                  avaOnline={availableForVirtualConsultation}
-                />
-                <ProtectedWithLoginPopup>
-                  {({ protectWithLoginPopup }) => (
-                    <div className={classes.searchSection}>
-                      <AphButton
-                        onClick={(e) => {
-                          if (!isSignedIn) {
-                            protectWithLoginPopup();
-                          } else {
-                            setIsPopoverOpen(true);
-                            gtmTrackingFunc();
-                          }
-                        }}
-                        color="primary"
-                        className={classes.bookAppointment}
-                        title={' Book Appointment'}
-                      >
-                        Book Appointment
-                      </AphButton>
-                      <div className={classes.customScroll}>
-                        {!isPayrollDoctor && (
-                          <>
-                            <DoctorClinics doctorDetails={doctorDetails} />
-                            {hasStarTeam && <StarDoctorTeam doctorDetails={doctorDetails} />}
-                          </>
-                        )}
-                        <AppointmentHistory doctorId={doctorId} patientId={currentUserId || ' '} />
-                      </div>
-                    </div>
+            <div className={classes.doctorProfileSection}>
+              <div className={classes.leftSection}>
+                <div className={classes.doctorProfile}>
+                  <DoctorProfile
+                    doctorDetails={doctorDetails}
+                    avaPhy={availableForPhysicalConsultation}
+                    avaOnline={availableForVirtualConsultation}
+                    getDoctorAvailableSlots={(value: GetDoctorNextAvailableSlot) => {
+                      setDoctorAvailableSlots(value);
+                    }}
+                  />
+                  {!isPayrollDoctor && (
+                    <>
+                      <DoctorClinics doctorDetails={doctorDetails} />
+                      {hasStarTeam && <StarDoctorTeam doctorDetails={doctorDetails} />}
+                    </>
                   )}
-                </ProtectedWithLoginPopup>
+                  <DoctorTimings doctorTimings={doctorTimings} />
+                </div>
+                <AppointmentHistory doctorId={doctorId} patientId={currentUserId || ' '} />
               </div>
-            </Scrollbars>
+              <div className={classes.rightSideBar}>
+                <HowCanConsult
+                  doctorDetails={doctorDetails}
+                  doctorAvailablePhysicalSlots={doctorPhysicalSlot}
+                  doctorAvailableOnlineSlot={doctorAvailableOnlineSlot}
+                />
+                <AppDownload />
+                {/* <ProtectedWithLoginPopup>
+                    {({ protectWithLoginPopup }) => (
+                      <>
+                        <AphButton
+                          onClick={(e) => {
+                            if (!isSignedIn) {
+                              protectWithLoginPopup();
+                            } else {
+                              setIsPopoverOpen(true);
+                              gtmTrackingFunc();
+                            }
+                          }}
+                          color="primary"
+                          className={classes.bookAppointment}
+                          title={' Book Appointment'}
+                        >
+                          Book Appointment
+                        </AphButton>
+                      </>
+                    )}
+                  </ProtectedWithLoginPopup> */}
+              </div>
+            </div>
           </div>
         </div>
-        <div className={classes.footerLinks}>
-          <BottomLinks />
-        </div>
-        <ProtectedWithLoginPopup>
-          {({ protectWithLoginPopup }) => (
-            <div className={classes.flotingBtn}>
-              <AphButton
-                onClick={(e) => {
-                  if (!isSignedIn) {
-                    protectWithLoginPopup();
-                  } else {
-                    setIsPopoverOpen(true);
-                    gtmTrackingFunc();
-                  }
-                }}
-                color="primary"
-                title={' Book Appointment'}
-              >
-                Book Appointment
-              </AphButton>
-            </div>
-          )}
-        </ProtectedWithLoginPopup>
         <Modal
           open={isPopoverOpen}
           onClose={() => setIsPopoverOpen(false)}
@@ -570,7 +556,8 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
             )}
           </Paper>
         </Modal>
-        <ManageProfile />
+        <BottomLinks />
+        <NavigationBottom />
       </div>
     );
   } else {

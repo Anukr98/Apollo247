@@ -45,10 +45,6 @@ import {
   getPatientNotificationSettingsTypeDefs,
 } from 'profiles-service/resolvers/getPatientNotificationSettings';
 import {
-  saveMedicineOrderTypeDefs,
-  saveMedicineOrderResolvers,
-} from 'profiles-service/resolvers/saveMedicineOrders';
-import {
   paymentStatusTypeDefs,
   paymentStatusResolvers,
 } from 'profiles-service/resolvers/pharmaPaymentStatus';
@@ -56,11 +52,6 @@ import {
   saveMedicineOrderOMSTypeDefs,
   saveMedicineOrderOMSResolvers,
 } from 'profiles-service/resolvers/saveMedicineOrdersOMS';
-
-import {
-  savePrescriptionMedicineOrderTypeDefs,
-  savePrescriptionMedicineOrderResolvers,
-} from 'profiles-service/resolvers/savePrescriptionMedicineOrders';
 import {
   savePrescriptionMedicineOrderOMSTypeDefs,
   savePrescriptionMedicineOrderOMSResolvers,
@@ -215,10 +206,16 @@ import {
   labResultsUploadTypeDefs,
   labResultsUploadResolvers,
 } from 'profiles-service/resolvers/labResultsUpload';
+
 import {
   prescriptionUploadTypeDefs,
   prescriptionUploadResolvers,
 } from 'profiles-service/resolvers/prescriptionUpload';
+
+import {
+  alertMedicineOrderPickupTypeDefs,
+  alertMedicineOrderPickupResolvers,
+} from 'profiles-service/resolvers/alertMedicineOrderPickup';
 
 (async () => {
   await connect();
@@ -302,20 +299,12 @@ import {
         resolvers: getPatientNotificationSettingsResolvers,
       },
       {
-        typeDefs: saveMedicineOrderTypeDefs,
-        resolvers: saveMedicineOrderResolvers,
-      },
-      {
         typeDefs: getMedicineOrdersOMSListTypeDefs,
         resolvers: getMedicineOrdersOMSListResolvers,
       },
       {
         typeDefs: saveMedicineOrderOMSTypeDefs,
         resolvers: saveMedicineOrderOMSResolvers,
-      },
-      {
-        typeDefs: savePrescriptionMedicineOrderTypeDefs,
-        resolvers: savePrescriptionMedicineOrderResolvers,
       },
       {
         typeDefs: savePrescriptionMedicineOrderOMSTypeDefs,
@@ -484,6 +473,10 @@ import {
       {
         typeDefs: prescriptionUploadTypeDefs,
         resolvers: prescriptionUploadResolvers,
+      },
+      {
+        typeDefs: alertMedicineOrderPickupTypeDefs,
+        resolvers: alertMedicineOrderPickupResolvers,
       },
     ]),
     plugins: [

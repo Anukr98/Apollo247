@@ -84,6 +84,7 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
         startTime
         weekDay
         isActive
+        actualDay
       }
     }
   }
@@ -171,6 +172,7 @@ export const SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME = gql`
           name
           userFriendlyNomenclature
         }
+        salutation
         experience
         photoUrl
         thumbnailUrl

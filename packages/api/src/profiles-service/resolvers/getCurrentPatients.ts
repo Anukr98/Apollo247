@@ -16,6 +16,7 @@ import { ApiConstants } from 'ApiConstants';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { debugLog } from 'customWinstonLogger';
 import { Gender } from 'doctors-service/entities';
+import { getRegisteredUsers } from 'helpers/phrV1Services';
 
 export const getCurrentPatientsTypeDefs = gql`
   enum Gender {
@@ -127,7 +128,7 @@ export const getCurrentPatientsTypeDefs = gql`
 
   extend type Query {
     getCurrentPatients(appVersion: String, deviceType: DEVICE_TYPE): GetCurrentPatientsResult
-    getLoginPatients(appVersion: String, deviceType: DEVICE_TYPE): GetCurrentPatientsResult
+    #getLoginPatients(appVersion: String, deviceType: DEVICE_TYPE): GetCurrentPatientsResult
   }
 `;
 
@@ -139,166 +140,7 @@ export type GetCurrentPatientsResult = {
 const apiCallId = Math.floor(Math.random() * 10000000);
 const dLogger = debugLog('profileServiceLogger', 'getCurrentPatients', apiCallId);
 
-const getCurrentPatients: Resolver<
-  null,
-  { appVersion: string; deviceType: DEVICE_TYPE },
-  ProfilesServiceContext,
-  GetCurrentPatientsResult
-> = async (parent, args, { mobileNumber, profilesDb }) => {
-  const patientRepo = profilesDb.getCustomRepository(PatientRepository);
-  let patients;
-  patients = await patientRepo.findByMobileNumber(mobileNumber);
-  if (patients.length == 0) {
-    let isPrismWorking = 1,
-      isUserDetails = 0;
-    const prismUrl = process.env.PRISM_GET_USERS_URL ? process.env.PRISM_GET_USERS_URL : '';
-    const prismHost = process.env.PRISM_HOST ? process.env.PRISM_HOST : '';
-    const prismBaseUrl = prismUrl + '/data';
-    const prismHeaders = {
-      method: 'get',
-      headers: { Host: prismHost },
-      timeOut: ApiConstants.PRISM_TIMEOUT,
-    };
-
-    const apiUrl = `${prismBaseUrl}/getauthtoken?mobile=${mobileNumber}`;
-
-    let uhids;
-    let reqStartTime = new Date();
-    try {
-      const prismAuthToken = await fetch(apiUrl, prismHeaders)
-        .then((res) => res.json() as Promise<PrismGetAuthTokenResponse>)
-        .catch((prismGetAuthTokenError: PrismGetAuthTokenError) => {
-          dLogger(
-            reqStartTime,
-            'getCurrentPatients PRISM_GET_AUTHTOKEN_API_CALL___ERROR',
-            `${apiUrl} --- ${JSON.stringify(prismGetAuthTokenError)}`
-          );
-          isPrismWorking = 0;
-        });
-      dLogger(
-        reqStartTime,
-        'getCurrentPatients PRISM_GET_AUTHTOKEN_API_CALL___END',
-        `${apiUrl} --- ${JSON.stringify(prismAuthToken)}`
-      );
-
-      if (prismAuthToken != null) {
-        const getUserApiUrl = `${prismBaseUrl}/getusers?authToken=${prismAuthToken.response}&mobile=${mobileNumber}`;
-
-        reqStartTime = new Date();
-        uhids = await fetch(getUserApiUrl, prismHeaders)
-          .then((res) => res.json() as Promise<PrismGetUsersResponse>)
-          .catch((prismGetUsersError: PrismGetUsersError) => {
-            dLogger(
-              reqStartTime,
-              'getCurrentPatients PRISM_GET_USERS_API_CALL___ERROR',
-              `${getUserApiUrl} --- ${JSON.stringify(prismGetUsersError)}`
-            );
-            isPrismWorking = 0;
-            isUserDetails = 1;
-          });
-        dLogger(
-          reqStartTime,
-          'getCurrentPatients PRISM_GET_USERS_API_CALL___END',
-          `${getUserApiUrl} --- ${JSON.stringify(uhids)}`
-        );
-      } else {
-        isUserDetails = 1;
-      }
-    } catch (e) {
-      isPrismWorking = 0;
-      isUserDetails = 1;
-    }
-
-    reqStartTime = new Date();
-    const findOrCreatePatient = (
-      findOptions: { uhid?: Patient['uhid']; mobileNumber: Patient['mobileNumber'] },
-      createOptions: Partial<Patient>
-    ): Promise<Patient> => {
-      return Patient.findOne({
-        where: { uhid: findOptions.uhid, mobileNumber: findOptions.mobileNumber },
-      }).then((existingPatient) => {
-        return existingPatient || Patient.create(createOptions).save();
-      });
-    };
-
-    let patientPromises: Object[] = [];
-    //if prism is working - process with prism uhids and 24x7 database
-    if (uhids != null && uhids.response != null) {
-      isPrismWorking = 1;
-      patientPromises = uhids.response!.signUpUserData.map((data) => {
-        return findOrCreatePatient(
-          { uhid: data.UHID, mobileNumber },
-          {
-            firstName: data.userName,
-            lastName: '',
-            gender: data.gender
-              ? data.gender.toUpperCase() === Gender.FEMALE
-                ? Gender.FEMALE
-                : Gender.MALE
-              : undefined,
-            mobileNumber,
-            uhid: data.UHID,
-            dateOfBirth: data.dob == 0 ? undefined : new Date(data.dob),
-            primaryUhid: data.UHID,
-          }
-        );
-      });
-    } else {
-      isPrismWorking = 0;
-      isUserDetails = 1;
-    }
-
-    //if prism is not working - process with 24x7 database
-    //isPrismWorking = 0;
-    const checkPatients = await patientRepo.findByMobileNumber(mobileNumber);
-    if (isPrismWorking == 0 && isUserDetails == 1) {
-      if (checkPatients == null || checkPatients.length == 0) {
-        patientPromises = [
-          findOrCreatePatient(
-            { uhid: '', mobileNumber },
-            {
-              firstName: '',
-              lastName: '',
-              gender: undefined,
-              mobileNumber,
-              uhid: '',
-              primaryUhid: '',
-            }
-          ),
-        ];
-      }
-    }
-    const updatePatients = await Promise.all(patientPromises).catch((findOrCreateErrors) => {
-      throw new AphError(AphErrorMessages.UPDATE_PROFILE_ERROR, undefined, { findOrCreateErrors });
-    });
-    dLogger(
-      reqStartTime,
-      'getCurrentPatients CREATE_OR_RETURN_PATIENTS___END',
-      `${updatePatients}`
-    );
-
-    reqStartTime = new Date();
-    //patients = await patientRepo.findByMobileNumber(mobileNumber);
-    patients = await patientRepo.findByMobileNumberLogin(mobileNumber);
-    if (args.appVersion && args.deviceType) {
-      const versionUpdateRecords = patients.map((patient) => {
-        return args.deviceType === DEVICE_TYPE.ANDROID
-          ? { id: patient.id, androidVersion: args.appVersion }
-          : { id: patient.id, iosVersion: args.appVersion };
-      });
-
-      const updatedProfiles = patientRepo.updateProfiles(versionUpdateRecords);
-      dLogger(
-        reqStartTime,
-        'getCurrentPatients ASYNC_UPDATE_APP_VERSION___END',
-        `${JSON.stringify(versionUpdateRecords)} --- ${JSON.stringify(updatedProfiles)}`
-      );
-    }
-  }
-
-  return { patients };
-};
-
+//TODO : remove if not needed
 const getLoginPatients: Resolver<
   null,
   { appVersion: string; deviceType: DEVICE_TYPE },
@@ -434,6 +276,78 @@ const getLoginPatients: Resolver<
       `${JSON.stringify(versionUpdateRecords)} --- ${JSON.stringify(updatedProfiles)}`
     );
   }
+
+  return { patients };
+};
+
+const getCurrentPatients: Resolver<
+  null,
+  { appVersion: string; deviceType: DEVICE_TYPE },
+  ProfilesServiceContext,
+  GetCurrentPatientsResult
+> = async (parent, args, { mobileNumber, profilesDb }) => {
+  const patientRepo = profilesDb.getCustomRepository(PatientRepository);
+  let patients = await patientRepo.findByMobileNumber(mobileNumber);
+
+  if (patients.length > 0) return { patients };
+
+  const findOrCreatePatient = async (
+    findOptions: { uhid?: Patient['uhid']; mobileNumber: Patient['mobileNumber']; isActive: true },
+    createOptions: Partial<Patient>
+  ): Promise<Patient> => {
+    const existingPatient = await Patient.findOne({
+      where: { uhid: findOptions.uhid, mobileNumber: findOptions.mobileNumber, isActive: true },
+    });
+    return existingPatient || Patient.create(createOptions).save();
+  };
+
+  let patientPromises: Object[] = [];
+  const uhids = await getRegisteredUsers(mobileNumber.replace('+91', ''));
+
+  if (uhids.errorCode == 0) {
+    //data exist in PRISM
+    patientPromises = uhids.response.map((data) => {
+      return findOrCreatePatient(
+        { uhid: data.uhid, mobileNumber, isActive: true },
+        {
+          firstName: data.userName,
+          lastName: '',
+          gender: data.gender
+            ? data.gender.toUpperCase() === Gender.FEMALE
+              ? Gender.FEMALE
+              : Gender.MALE
+            : undefined,
+          mobileNumber,
+          uhid: data.uhid,
+          dateOfBirth: data.dob.length == 0 ? undefined : new Date(data.dob),
+          androidVersion: args.deviceType === DEVICE_TYPE.ANDROID ? args.appVersion : undefined,
+          iosVersion: args.deviceType === DEVICE_TYPE.IOS ? args.appVersion : undefined,
+          primaryUhid: data.uhid,
+        }
+      );
+    });
+  } else if (uhids.errorCode == -1014) {
+    //create new user flow, data not in prism
+    patientPromises = [
+      findOrCreatePatient(
+        { uhid: '', mobileNumber, isActive: true },
+        {
+          firstName: '',
+          lastName: '',
+          gender: undefined,
+          mobileNumber,
+          uhid: '',
+          primaryUhid: '',
+        }
+      ),
+    ];
+  } else throw new AphError(AphErrorMessages.PRISM_GET_USERS_ERROR);
+
+  await Promise.all(patientPromises).catch((findOrCreateErrors) => {
+    throw new AphError(AphErrorMessages.UPDATE_PROFILE_ERROR, undefined, { findOrCreateErrors });
+  });
+
+  patients = await patientRepo.findByMobileNumberLogin(mobileNumber);
 
   return { patients };
 };

@@ -10,7 +10,7 @@ import { ApiConstants } from 'ApiConstants';
 import { Patient, MedicineOrders, DiagnosticOrders } from 'profiles-service/entities';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { AppointmentRefundsRepository } from 'consults-service/repositories/appointmentRefundsRepository';
-
+import { DoctorDeviceTokenRepository } from 'doctors-service/repositories/doctorDeviceTokenRepository';
 import { PatientDeviceTokenRepository } from 'profiles-service/repositories/patientDeviceTokenRepository';
 import { TransferAppointmentRepository } from 'consults-service/repositories/tranferAppointmentRepository';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
@@ -20,7 +20,7 @@ import { addMilliseconds, format, differenceInHours, differenceInMinutes, addDay
 import path from 'path';
 import fs from 'fs';
 import { log } from 'customWinstonLogger';
-import { APPOINTMENT_TYPE, Appointment } from 'consults-service/entities';
+import { APPOINTMENT_TYPE, Appointment, STATUS } from 'consults-service/entities';
 import Pubnub from 'pubnub';
 import fetch from 'node-fetch';
 
@@ -85,8 +85,12 @@ export const getNotificationsTypeDefs = gql`
     testPushNotification(deviceToken: String): PushNotificationSuccessMessage
     sendDailyAppointmentSummary: String
     sendFollowUpNotification: String
-    sendChatMessageToDoctor(appointmentId: String): SendChatMessageToDoctorResult
+    sendChatMessageToDoctor(
+      appointmentId: String
+      chatMessage: String
+    ): SendChatMessageToDoctorResult
     sendMessageToMobileNumber(mobileNumber: String, textToSend: String): SendSMS
+    sendDoctorReminderNotifications(nextMin: Int): SendChatMessageToDoctorResult
   }
 `;
 
@@ -142,6 +146,7 @@ export enum NotificationType {
   PAYMENT_PENDING_SUCCESS = 'PAYMENT_PENDING_SUCCESS',
   PAYMENT_PENDING_FAILURE = 'PAYMENT_PENDING_FAILURE',
   APPOINTMENT_PAYMENT_REFUND = 'APPOINTMENT_PAYMENT_REFUND',
+  DOCTOR_APPOINTMENT_REMINDER = 'DOCTOR_APPOINTMENT_REMINDER',
 }
 
 export enum APPT_CALL_TYPE {
@@ -221,10 +226,12 @@ export const sendNotificationWhatsapp = (
         throw new AphError(AphErrorMessages.GET_OTP_ERROR);
       });
   });
-
 };
 
 export const sendNotificationSMS = async (mobileNumber: string, message: string) => {
+  //Adding Apollo 247 string at starting of the body
+  message = '[Apollo 247] ' + message;
+
   const apiBaseUrl = process.env.KALEYRA_OTP_API_BASE_URL;
   const apiUrlWithKey = `${apiBaseUrl}?api_key=${process.env.KALEYRA_NOTIFICATION_API_KEY}`;
   const queryParams = `&method=${ApiConstants.KALEYRA_OTP_SMS_METHOD}&message=${message}&to=${mobileNumber}&sender=${ApiConstants.KALEYRA_OTP_SENDER}`;
@@ -472,9 +479,9 @@ export async function sendNotification(
     notificationBody = notificationBody.replace('{3}', apptDate);
     let cancelApptSMS = process.env.SMS_LINK_BOOK_APOINTMENT
       ? ' Click here ' +
-      process.env.SMS_LINK_BOOK_APOINTMENT +
-      ' ' +
-      ApiConstants.PATIENT_CANCEL_APPT_BODY_END
+        process.env.SMS_LINK_BOOK_APOINTMENT +
+        ' ' +
+        ApiConstants.PATIENT_CANCEL_APPT_BODY_END
       : '';
     cancelApptSMS = notificationBody + cancelApptSMS;
 
@@ -614,22 +621,22 @@ export async function sendNotification(
           content = content.replace(
             '{4}',
             facilityDets.name +
-            ' ' +
-            facilityDets.streetLine1 +
-            ' ' +
-            facilityDets.city +
-            ' ' +
-            facilityDets.state
+              ' ' +
+              facilityDets.streetLine1 +
+              ' ' +
+              facilityDets.city +
+              ' ' +
+              facilityDets.state
           );
           smsLink = smsLink.replace(
             '{4}',
             facilityDets.name +
-            ' ' +
-            facilityDets.streetLine1 +
-            ' ' +
-            facilityDets.city +
-            ' ' +
-            facilityDets.state
+              ' ' +
+              facilityDets.streetLine1 +
+              ' ' +
+              facilityDets.city +
+              ' ' +
+              facilityDets.state
           );
         }
       }
@@ -654,7 +661,20 @@ export async function sendNotification(
     //sendNotificationWhatsapp(patientDetails.mobileNumber, smsLink);
 
     //send sms to doctor if Appointment DateTime is less than 24 hours
-
+    const todaysDate = new Date(format(new Date(), 'yyyy-mm-dd') + ' 18:30:00');
+    const yesterdaysDate = new Date(format(addDays(new Date(), -1), 'yyyy-mm-dd') + ' 18:30:00');
+    if (
+      appointment.appointmentDateTime <= todaysDate &&
+      appointment.appointmentDateTime >= yesterdaysDate
+    ) {
+      const doctorWhatsAppMessage = ApiConstants.DOCTOR_BOOK_APPOINTMENT_WHATSAPP.replace(
+        '{0}',
+        doctorDetails.fullName
+      )
+        .replace('{1}', patientDetails.firstName)
+        .replace('{2}', apptDate.toString());
+      sendNotificationWhatsapp(doctorDetails.mobileNumber, doctorWhatsAppMessage, 1);
+    }
     let doctorSMS = ApiConstants.DOCTOR_BOOK_APPOINTMENT_SMS.replace('{0}', doctorDetails.fullName);
     doctorSMS = doctorSMS.replace('{1}', appointment.displayId.toString());
     doctorSMS = doctorSMS.replace('{2}', patientDetails.firstName);
@@ -1152,12 +1172,12 @@ export async function sendReminderNotification(
           notificationBody = notificationBody.replace(
             '{2}',
             facilityDets.name +
-            ' ' +
-            facilityDets.streetLine1 +
-            ' ' +
-            facilityDets.city +
-            ' ' +
-            facilityDets.state
+              ' ' +
+              facilityDets.streetLine1 +
+              ' ' +
+              facilityDets.city +
+              ' ' +
+              facilityDets.state
           );
         }
       }
@@ -1190,12 +1210,12 @@ export async function sendReminderNotification(
         notificationBody = notificationBody.replace(
           '{1}',
           facilityDets.name +
-          ' ' +
-          facilityDets.streetLine1 +
-          ' ' +
-          facilityDets.city +
-          ' ' +
-          facilityDets.state
+            ' ' +
+            facilityDets.streetLine1 +
+            ' ' +
+            facilityDets.city +
+            ' ' +
+            facilityDets.state
         );
       }
     }
@@ -1239,12 +1259,12 @@ export async function sendReminderNotification(
           notificationBody = notificationBody.replace(
             '{1}',
             facilityDets.name +
-            ' ' +
-            facilityDets.streetLine1 +
-            ' ' +
-            facilityDets.city +
-            ' ' +
-            facilityDets.state
+              ' ' +
+              facilityDets.streetLine1 +
+              ' ' +
+              facilityDets.city +
+              ' ' +
+              facilityDets.state
           );
         }
       }
@@ -1451,7 +1471,7 @@ export async function sendReminderNotification(
   if (
     pushNotificationInput.notificationType == NotificationType.APPOINTMENT_CASESHEET_REMINDER_15 ||
     pushNotificationInput.notificationType ==
-    NotificationType.APPOINTMENT_CASESHEET_REMINDER_15_VIRTUAL
+      NotificationType.APPOINTMENT_CASESHEET_REMINDER_15_VIRTUAL
   ) {
     const smsLink = process.env.SMS_LINK ? process.env.SMS_LINK : '';
     notificationBody = notificationBody + ApiConstants.CLICK_HERE + smsLink;
@@ -2039,7 +2059,7 @@ const testPushNotification: Resolver<
   { deviceToken: String },
   NotificationsServiceContext,
   PushNotificationSuccessMessage | undefined
-> = async (parent, args, { }) => {
+> = async (parent, args, {}) => {
   //initialize firebaseadmin
   const config = {
     credential: firebaseAdmin.credential.applicationDefault(),
@@ -2105,16 +2125,21 @@ const sendDailyAppointmentSummary: Resolver<
       let onlineAppointments = 0;
       let physicalAppointments = 0;
       appointments.forEach((appointment) => {
-        if (appointment.appointmentType == APPOINTMENT_TYPE.PHYSICAL) {
-          physicalAppointments++;
-        } else if (appointment.appointmentType == APPOINTMENT_TYPE.ONLINE) {
-          onlineAppointments++;
+        if (appointment.status != STATUS.COMPLETED) {
+          if (appointment.appointmentType == APPOINTMENT_TYPE.PHYSICAL) {
+            physicalAppointments++;
+          } else if (appointment.appointmentType == APPOINTMENT_TYPE.ONLINE) {
+            onlineAppointments++;
+          }
         }
       });
+
       const totalAppointments = onlineAppointments + physicalAppointments;
+
       if (totalAppointments > 0) {
         doctorsCount++;
-
+        const whatsAppLink =
+          ApiConstants.WHATSAPP_LINK + '' + process.env.WHATSAPP_LINK_BOOK_APOINTMENT;
         let whatsAppMessageBody = ApiConstants.DAILY_WHATSAPP_NOTIFICATION.replace(
           '{0}',
           doctor.firstName
@@ -2132,7 +2157,8 @@ const sendDailyAppointmentSummary: Resolver<
             ? ApiConstants.PHYSICAL_APPOINTMENTS.replace('{0}', physicalAppointments.toString())
             : '';
         messageBody += onlineAppointmentsText + physicalAppointmentsText;
-        whatsAppMessageBody += onlineAppointmentsText + ' ' + physicalAppointmentsText;
+        whatsAppMessageBody +=
+          onlineAppointmentsText + '' + physicalAppointmentsText + whatsAppLink;
         sendBrowserNotitication(doctor.id, messageBody);
         sendNotificationSMS(doctor.mobileNumber, messageBody);
         sendNotificationWhatsapp(doctor.mobileNumber, whatsAppMessageBody, 1);
@@ -2197,7 +2223,7 @@ const sendFollowUpSmsToPatients = async (
 
 const sendChatMessageToDoctor: Resolver<
   null,
-  { appointmentId: string },
+  { appointmentId: string; chatMessage: string },
   NotificationsServiceContext,
   SendChatMessageToDoctorResult
 > = async (parent, args, { doctorsDb, consultsDb, patientsDb }) => {
@@ -2212,10 +2238,12 @@ const sendChatMessageToDoctor: Resolver<
   const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
   const doctorDetails = await doctorRepo.findById(appointment.doctorId);
   if (!doctorDetails) throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID, undefined, {});
-  const whatsAppMessageBody = ApiConstants.WHATSAPP_SD_CHAT_NOTIFICATION.replace(
+  const whatsAppLink = process.env.WHATSAPP_LINK_BOOK_APOINTMENT;
+  let whatsAppMessageBody = ApiConstants.WHATSAPP_SD_CHAT_NOTIFICATION.replace(
     '{0}',
     doctorDetails.firstName
   ).replace('{1}', patientDetails.firstName);
+  whatsAppMessageBody = whatsAppMessageBody + whatsAppLink;
   await sendNotificationWhatsapp(doctorDetails.mobileNumber, whatsAppMessageBody, 1);
   const messageBody = ApiConstants.CHAT_MESSGAE_TEXT.replace(
     '{0}',
@@ -2223,7 +2251,87 @@ const sendChatMessageToDoctor: Resolver<
   ).replace('{1}', patientDetails.firstName);
   await sendNotificationSMS(doctorDetails.mobileNumber, messageBody);
   //sendNotificationWhatsapp(doctorDetails.mobileNumber, messageBody);
+  const doctorTokenRepo = doctorsDb.getCustomRepository(DoctorDeviceTokenRepository);
+  const deviceTokensList = await doctorTokenRepo.getDeviceTokens(appointment.doctorId);
+  //if (deviceTokensList.length == 0) return { status: true };
 
+  const registrationToken: string[] = [];
+  if (deviceTokensList.length > 0) {
+    //initialize firebaseadmin
+    const config = {
+      credential: firebaseAdmin.credential.applicationDefault(),
+      databaseURL: `https://${process.env.FIREBASE_PROJECT_ID}.firebaseio.com`,
+    };
+    let admin = require('firebase-admin');
+    let notificationResponse: PushNotificationSuccessMessage;
+    admin = !firebaseAdmin.apps.length ? firebaseAdmin.initializeApp(config) : firebaseAdmin.app();
+    const options = {
+      priority: NotificationPriority.high,
+      timeToLive: 60 * 60 * 24, //wait for one day.. if device is offline
+    };
+    let chatMsg = '';
+    if (args.chatMessage) {
+      chatMsg = args.chatMessage;
+    }
+    const payload = {
+      notification: {
+        title:
+          appointment.patientName +
+          ' sent 1 message | ' +
+          format(addMilliseconds(new Date(), 19800000), 'yyyy-MM-dd HH:mm:ss'),
+        body: chatMsg,
+        sound: ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString(),
+      },
+      data: {
+        type: 'doctor_chat_message',
+        appointmentId: appointment.id,
+        patientName: appointment.patientName,
+        content: chatMsg,
+      },
+    };
+
+    deviceTokensList.forEach((values: { deviceToken: string }) => {
+      registrationToken.push(values.deviceToken);
+    });
+
+    console.log(registrationToken, 'registrationToken doctor');
+    admin
+      .messaging()
+      .sendToDevice(registrationToken, payload, options)
+      .then((response: PushNotificationSuccessMessage) => {
+        notificationResponse = response;
+        //if (pushNotificationInput.notificationType == NotificationType.CALL_APPOINTMENT) {
+        const fileName =
+          process.env.NODE_ENV +
+          '_doctorapptnotification_' +
+          format(new Date(), 'yyyyMMdd') +
+          '.txt';
+        let assetsDir = path.resolve('/apollo-hospitals/packages/api/src/assets');
+        if (process.env.NODE_ENV != 'local') {
+          assetsDir = path.resolve(<string>process.env.ASSETS_DIRECTORY);
+        }
+        let content =
+          format(new Date(), 'yyyy-MM-dd hh:mm') +
+          '\n apptid: ' +
+          appointment.id.toString() +
+          '\n multicastId: ';
+        content +=
+          response.multicastId.toString() +
+          '\n------------------------------------------------------------------------------------\n';
+        fs.appendFile(assetsDir + '/' + fileName, content, (err) => {
+          if (err) {
+            console.log('file saving error', err);
+          }
+          console.log('notification results saved');
+        });
+        //}
+        console.log(notificationResponse, 'notificationResponse');
+      })
+      .catch((error: JSON) => {
+        console.log('PushNotification Failed::' + error);
+        throw new AphError(AphErrorMessages.PUSH_NOTIFICATION_FAILED);
+      });
+  }
   return { status: true };
 };
 
@@ -2237,6 +2345,193 @@ const sendMessageToMobileNumber: Resolver<
   return { status: messageResponse.status, message: messageResponse.message };
 };
 
+const sendDoctorReminderNotifications: Resolver<
+  null,
+  { nextMin: number },
+  NotificationsServiceContext,
+  SendChatMessageToDoctorResult
+> = async (parent, args, { doctorsDb, consultsDb, patientsDb }) => {
+  const apptRepo = consultsDb.getCustomRepository(AppointmentRepository);
+  const doctorTokenRepo = doctorsDb.getCustomRepository(DoctorDeviceTokenRepository);
+  //initialize firebaseadmin
+  const config = {
+    credential: firebaseAdmin.credential.applicationDefault(),
+    databaseURL: `https://${process.env.FIREBASE_PROJECT_ID}.firebaseio.com`,
+  };
+  let admin = require('firebase-admin');
+  let notificationResponse: PushNotificationSuccessMessage;
+  admin = !firebaseAdmin.apps.length ? firebaseAdmin.initializeApp(config) : firebaseAdmin.app();
+  const options = {
+    priority: NotificationPriority.high,
+    timeToLive: 60 * 60 * 24, //wait for one day.. if device is offline
+  };
+  //get all appointments
+  const apptsList = await apptRepo.getSpecificMinuteBothAppointments(args.nextMin);
+  if (apptsList.length > 0) {
+    apptsList.forEach(async (apptId) => {
+      //building payload
+      const payload = {
+        notification: {
+          title:
+            apptId.appointmentType == APPOINTMENT_TYPE.PHYSICAL
+              ? 'In-person appointment'
+              : 'OnlineAppointment',
+          body:
+            apptId.patientName +
+            ' ' +
+            format(addMilliseconds(apptId.appointmentDateTime, 19800000), 'yyyy-MM-dd HH:mm:ss'),
+          sound: ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString(),
+        },
+        data: {
+          type: 'doctor_appointment_reminder',
+          appointmentId: apptId.id,
+          patientName: apptId.patientName,
+          content:
+            apptId.patientName +
+            ' ' +
+            format(addMilliseconds(apptId.appointmentDateTime, 19800000), 'yyyy-MM-dd HH:mm:ss'),
+        },
+      };
+
+      const deviceTokensList = await doctorTokenRepo.getDeviceTokens(apptId.doctorId);
+      //if (deviceTokensList.length == 0) return { status: true };
+
+      const registrationToken: string[] = [];
+      if (deviceTokensList.length > 0) {
+        deviceTokensList.forEach((values) => {
+          registrationToken.push(values.deviceToken);
+        });
+
+        console.log(registrationToken, 'registrationToken doctor');
+        admin
+          .messaging()
+          .sendToDevice(registrationToken, payload, options)
+          .then((response: PushNotificationSuccessMessage) => {
+            notificationResponse = response;
+            //if (pushNotificationInput.notificationType == NotificationType.CALL_APPOINTMENT) {
+            const fileName =
+              process.env.NODE_ENV +
+              '_doctorapptnotification_' +
+              format(new Date(), 'yyyyMMdd') +
+              '.txt';
+            let assetsDir = path.resolve('/apollo-hospitals/packages/api/src/assets');
+            if (process.env.NODE_ENV != 'local') {
+              assetsDir = path.resolve(<string>process.env.ASSETS_DIRECTORY);
+            }
+            let content =
+              format(new Date(), 'yyyy-MM-dd hh:mm') +
+              '\n apptid: ' +
+              apptId.id.toString() +
+              '\n multicastId: ';
+            content +=
+              response.multicastId.toString() +
+              '\n------------------------------------------------------------------------------------\n';
+            fs.appendFile(assetsDir + '/' + fileName, content, (err) => {
+              if (err) {
+                console.log('file saving error', err);
+              }
+              console.log('notification results saved');
+            });
+            //}
+          })
+          .catch((error: JSON) => {
+            console.log('PushNotification Failed::' + error);
+            throw new AphError(AphErrorMessages.PUSH_NOTIFICATION_FAILED);
+          });
+
+        console.log(notificationResponse, 'notificationResponse');
+      }
+    });
+  }
+  return { status: true };
+};
+
+export async function sendDoctorAppointmentNotification(
+  appointmentDateTime: Date,
+  patientName: string,
+  apptId: string,
+  doctorId: string,
+  doctorsDb: Connection
+) {
+  console.log('doctor appt notification begin');
+  //initialize firebaseadmin
+  const config = {
+    credential: firebaseAdmin.credential.applicationDefault(),
+    databaseURL: `https://${process.env.FIREBASE_PROJECT_ID}.firebaseio.com`,
+  };
+  let admin = require('firebase-admin');
+  let notificationResponse: PushNotificationSuccessMessage;
+  admin = !firebaseAdmin.apps.length ? firebaseAdmin.initializeApp(config) : firebaseAdmin.app();
+  const options = {
+    priority: NotificationPriority.high,
+    timeToLive: 60 * 60 * 24, //wait for one day.. if device is offline
+  };
+  //building payload
+  const payload = {
+    notification: {
+      title: 'A New Appointment is scheduled with ' + patientName,
+      body: format(addMilliseconds(appointmentDateTime, 19800000), 'yyyy-MM-dd HH:mm:ss'),
+      sound: ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString(),
+    },
+    data: {
+      type: 'doctor_new_appointment_booked',
+      appointmentId: apptId,
+      patientName: patientName,
+      content: format(addMilliseconds(appointmentDateTime, 19800000), 'yyyy-MM-dd HH:mm:ss'),
+    },
+  };
+  const doctorTokenRepo = doctorsDb.getCustomRepository(DoctorDeviceTokenRepository);
+  const deviceTokensList = await doctorTokenRepo.getDeviceTokens(doctorId);
+  //if (deviceTokensList.length == 0) return { status: true };
+
+  const registrationToken: string[] = [];
+  if (deviceTokensList.length > 0) {
+    deviceTokensList.forEach((values) => {
+      registrationToken.push(values.deviceToken);
+    });
+
+    console.log(registrationToken, 'registrationToken doctor');
+    admin
+      .messaging()
+      .sendToDevice(registrationToken, payload, options)
+      .then((response: PushNotificationSuccessMessage) => {
+        notificationResponse = response;
+        //if (pushNotificationInput.notificationType == NotificationType.CALL_APPOINTMENT) {
+        const fileName =
+          process.env.NODE_ENV +
+          '_doctorapptnotification_' +
+          format(new Date(), 'yyyyMMdd') +
+          '.txt';
+        let assetsDir = path.resolve('/apollo-hospitals/packages/api/src/assets');
+        if (process.env.NODE_ENV != 'local') {
+          assetsDir = path.resolve(<string>process.env.ASSETS_DIRECTORY);
+        }
+        let content =
+          format(new Date(), 'yyyy-MM-dd hh:mm') +
+          '\n apptid: ' +
+          apptId.toString() +
+          '\n multicastId: ';
+        content +=
+          response.multicastId.toString() +
+          '\n------------------------------------------------------------------------------------\n';
+        fs.appendFile(assetsDir + '/' + fileName, content, (err) => {
+          if (err) {
+            console.log('file saving error', err);
+          }
+          console.log('notification results saved');
+        });
+        //}
+        console.log(notificationResponse, 'notificationResponse');
+      })
+      .catch((error: JSON) => {
+        console.log('PushNotification Failed::' + error);
+        throw new AphError(AphErrorMessages.PUSH_NOTIFICATION_FAILED);
+      });
+  }
+  console.log('doctor appt notification end');
+  return { status: true };
+}
+
 export const getNotificationsResolvers = {
   Query: {
     sendPushNotification,
@@ -2245,5 +2540,6 @@ export const getNotificationsResolvers = {
     sendFollowUpNotification,
     sendChatMessageToDoctor,
     sendMessageToMobileNumber,
+    sendDoctorReminderNotifications,
   },
 };

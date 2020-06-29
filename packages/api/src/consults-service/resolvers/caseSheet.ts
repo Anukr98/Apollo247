@@ -13,6 +13,9 @@ import {
   CaseSheetOtherInstruction,
   APPOINTMENT_TYPE,
   STATUS,
+  VALUE_TYPE,
+  APPOINTMENT_UPDATED_BY,
+  AppointmentUpdateHistory,
 } from 'consults-service/entities';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { AphError } from 'AphError';
@@ -91,15 +94,17 @@ export const caseSheetTypeDefs = gql`
 
   enum DoctorType {
     APOLLO
+    CLINIC
+    CRADLE
+    DOCTOR_CONNECT
+    FERTILITY
     JUNIOR
     PAYROLL
-    STAR_APOLLO
-    DOCTOR_CONNECT
-    CRADLE
-    CLINIC
     SPECTRA
-    FERTILITY
+    STAR_APOLLO
     SUGAR
+    WHITE_DENTAL
+    APOLLO_HOMECARE
   }
 
   enum Gender {
@@ -114,6 +119,7 @@ export const caseSheetTypeDefs = gql`
     NIGHT
     NOON
     AS_NEEDED
+    NOT_SPECIFIC
   }
 
   enum MEDICINE_TO_BE_TAKEN {
@@ -1045,6 +1051,16 @@ const createJuniorDoctorCaseSheet: Resolver<
   }
 
   caseSheetDetails = await caseSheetRepo.savecaseSheet(caseSheetAttrs);
+  const historyAttrs: Partial<AppointmentUpdateHistory> = {
+    appointment: appointmentData,
+    userType: APPOINTMENT_UPDATED_BY.DOCTOR,
+    fromValue: appointmentData.status,
+    toValue: appointmentData.status,
+    valueType: VALUE_TYPE.STATUS,
+    userName: doctorData.id,
+    reason: 'JD ' + ApiConstants.CASESHEET_CREATED_HISTORY.toString() + ', ' + doctorData.id,
+  };
+  appointmentRepo.saveAppointmentHistory(historyAttrs);
   return caseSheetDetails;
 };
 
@@ -1089,6 +1105,17 @@ const createSeniorDoctorCaseSheet: Resolver<
       createdDoctorId: appointmentData.doctorId,
       doctorType: doctorData.doctorType,
     };
+    const historyAttrs: Partial<AppointmentUpdateHistory> = {
+      appointment: appointmentData,
+      userType: APPOINTMENT_UPDATED_BY.DOCTOR,
+      fromValue: appointmentData.status,
+      toValue: appointmentData.status,
+      valueType: VALUE_TYPE.STATUS,
+      userName: appointmentData.doctorId,
+      reason:
+        'SD ' + ApiConstants.CASESHEET_CREATED_HISTORY.toString() + ', ' + appointmentData.doctorId,
+    };
+    appointmentRepo.saveAppointmentHistory(historyAttrs);
     return await caseSheetRepo.savecaseSheet(caseSheetAttrs);
   }
 
@@ -1118,6 +1145,16 @@ const createSeniorDoctorCaseSheet: Resolver<
       isJdConsultStarted: sdCaseSheets[0].isJdConsultStarted,
       notes: sdCaseSheets[0].notes,
     };
+    const historyAttrs: Partial<AppointmentUpdateHistory> = {
+      appointment: appointmentData,
+      userType: APPOINTMENT_UPDATED_BY.DOCTOR,
+      fromValue: appointmentData.status,
+      toValue: appointmentData.status,
+      valueType: VALUE_TYPE.STATUS,
+      userName: appointmentData.doctorId,
+      reason: 'SD ' + ApiConstants.CASESHEET_CREATED_HISTORY.toString() + ', ' + doctorData.id,
+    };
+    appointmentRepo.saveAppointmentHistory(historyAttrs);
     return await caseSheetRepo.savecaseSheet(caseSheetAttrs);
   }
 
@@ -1192,7 +1229,16 @@ const submitJDCaseSheet: Resolver<
     };
     await caseSheetRepo.savecaseSheet(casesheetAttrsToAdd);
   }
-
+  const historyAttrs: Partial<AppointmentUpdateHistory> = {
+    appointment: appointmentData,
+    userType: APPOINTMENT_UPDATED_BY.DOCTOR,
+    fromValue: appointmentData.status,
+    toValue: appointmentData.status,
+    valueType: VALUE_TYPE.STATUS,
+    userName: virtualJDId,
+    reason: 'Virtaul JD ' + ApiConstants.CASESHEET_COMPLETED_HISTORY.toString(),
+  };
+  appointmentRepo.saveAppointmentHistory(historyAttrs);
   return true;
 };
 
@@ -1295,6 +1341,20 @@ const updatePatientPrescriptionSentStatus: Resolver<
   }
 
   await caseSheetRepo.updateCaseSheet(args.caseSheetId, caseSheetAttrs);
+  const apptRepo = consultsDb.getCustomRepository(AppointmentRepository);
+  const appointment = await apptRepo.findById(getCaseSheetData.appointment.id);
+  if (appointment) {
+    const historyAttrs: Partial<AppointmentUpdateHistory> = {
+      appointment,
+      userType: APPOINTMENT_UPDATED_BY.PATIENT,
+      fromValue: appointment.status,
+      toValue: appointment.status,
+      valueType: VALUE_TYPE.STATUS,
+      userName: appointment.patientId,
+      reason: ApiConstants.CASESHEET_COMPLETED_HISTORY.toString(),
+    };
+    apptRepo.saveAppointmentHistory(historyAttrs);
+  }
   return {
     success: true,
     blobName: caseSheetAttrs.blobName || '',

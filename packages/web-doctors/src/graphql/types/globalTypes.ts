@@ -23,6 +23,11 @@ export enum AccountType {
   SAVINGS = 'SAVINGS',
 }
 
+export enum BOOKINGSOURCE {
+  MOBILE = 'MOBILE',
+  WEB = 'WEB',
+}
+
 export enum CASESHEET_STATUS {
   COMPLETED = 'COMPLETED',
   PENDING = 'PENDING',
@@ -37,6 +42,12 @@ export enum ConsultMode {
 export enum ConsultType {
   FIXED = 'FIXED',
   PREFERRED = 'PREFERRED',
+}
+
+export enum DEVICETYPE {
+  ANDROID = 'ANDROID',
+  DESKTOP = 'DESKTOP',
+  IOS = 'IOS',
 }
 
 export enum DOCTOR_CALL_TYPE {
@@ -55,6 +66,7 @@ export enum DoctorType {
   CRADLE = 'CRADLE',
   DOCTOR_CONNECT = 'DOCTOR_CONNECT',
   FERTILITY = 'FERTILITY',
+  HOMECARE = 'HOMECARE',
   JUNIOR = 'JUNIOR',
   PAYROLL = 'PAYROLL',
   SPECTRA = 'SPECTRA',
@@ -118,6 +130,7 @@ export enum MEDICINE_TIMINGS {
   MORNING = 'MORNING',
   NIGHT = 'NIGHT',
   NOON = 'NOON',
+  NOT_SPECIFIC = 'NOT_SPECIFIC',
 }
 
 export enum MEDICINE_TO_BE_TAKEN {
@@ -168,6 +181,7 @@ export enum REQUEST_ROLES {
 export enum ROUTE_OF_ADMINISTRATION {
   EAR_DROPS = 'EAR_DROPS',
   EYE_DROPS = 'EYE_DROPS',
+  EYE_OINTMENT = 'EYE_OINTMENT',
   GARGLE = 'GARGLE',
   INHALE = 'INHALE',
   INTRAMUSCULAR = 'INTRAMUSCULAR',
@@ -328,6 +342,9 @@ export interface EndAppointmentSessionInput {
   appointmentId: string;
   status: STATUS;
   noShowBy?: REQUEST_ROLES | null;
+  deviceType?: DEVICETYPE | null;
+  callSource?: BOOKINGSOURCE | null;
+  callType?: APPT_CALL_TYPE | null;
 }
 
 export interface MedicinePrescriptionInput {
@@ -474,6 +491,7 @@ export interface UpdatePatientInput {
   relation?: Relation | null;
   photoUrl?: string | null;
   deviceCode?: string | null;
+  employeeId?: string | null;
 }
 
 export interface exotelInput {

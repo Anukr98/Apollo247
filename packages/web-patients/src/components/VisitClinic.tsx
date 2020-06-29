@@ -248,10 +248,7 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
     afternoonSlots: number[] = [],
     eveningSlots: number[] = [],
     lateNightSlots: number[] = [];
-  const doctorAvailableTime =
-    moment()
-      .add(props.doctorAvailableIn, 'm')
-      .toDate() || new Date();
+  const doctorAvailableTime = moment().add(props.doctorAvailableIn, 'm').toDate() || new Date();
   const apiDateFormat =
     dateSelected === ''
       ? moment(doctorAvailableTime).format('YYYY-MM-DD')
@@ -452,6 +449,61 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
           label: 'Order Success',
           value: revisedAmount,
         });
+
+        const {
+          city,
+          fullName,
+          id,
+          doctorType,
+          doctorHospital,
+          onlineConsultationFees,
+        } = doctorDetails.getDoctorDetailsById;
+        let items = [],
+          count = 0;
+        onlineConsultationFees &&
+          items.push({
+            item_name: fullName,
+            item_id: id,
+            price: Number(onlineConsultationFees),
+            item_brand:
+              doctorType && doctorType.toLocaleLowerCase() === 'apollo'
+                ? 'Apollo'
+                : 'Partner Doctors',
+            item_category: 'Consultations',
+            item_category_2: specialty,
+            item_category_3:
+              city ||
+              (doctorHospital &&
+                doctorHospital.length &&
+                doctorHospital[0].facility &&
+                doctorHospital[0].facility.city),
+            // 'item_category_4': '', // For Future
+            item_variant: 'Virtual',
+            index: ++count,
+            quantity: 1,
+          });
+        physicalConsultationFees &&
+          items.push({
+            item_name: fullName,
+            item_id: id,
+            price: Number(physicalConsultationFees),
+            item_brand:
+              doctorType && doctorType.toLocaleLowerCase() === 'apollo'
+                ? 'Apollo'
+                : 'Partner Doctors',
+            item_category: 'Consultations',
+            item_category_2: specialty,
+            item_category_3:
+              city ||
+              (doctorHospital &&
+                doctorHospital.length &&
+                doctorHospital[0].facility &&
+                doctorHospital[0].facility.city),
+            // 'item_category_4': '', // For Future
+            item_variant: 'Physcial',
+            index: ++count,
+            quantity: 1,
+          });
         _cbTracking({
           specialty: specialty,
           bookingType: AppointmentType.PHYSICAL,
@@ -459,6 +511,11 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
           couponCode: couponCode ? couponCode : null,
           couponValue: couponValue ? couponValue : null,
           finalBookingValue: revisedAmount,
+          ecommObj: {
+            ecommerce: {
+              items: items,
+            },
+          },
         });
         /* Gtm code END */
         if (res && res.data && res.data.bookAppointment && res.data.bookAppointment.appointment) {

@@ -587,10 +587,35 @@ export const notifcationsApi = (params: {
   });
 };
 
+export const getNearByStoreDetailsApi = (pincode: any): Promise<AxiosResponse<any>> => {
+  const url = `https://notifications.apollo247.com/webhooks/store/${pincode}`;
+  return Axios.get(url, {
+    headers: { 'x-api-key': 'gNXyYhY2VDxwzv8f6TwJqvfYmPmj' },
+  });
+};
+
+export const callToExotelApi = (params: any): Promise<AxiosResponse<any>> => {
+  const url = `https://notifications.apollo247.com/webhooks/exotel/call`;
+  return Axios.post(
+    url,
+    { ...params },
+    {
+      headers: {
+        'x-api-key': 'gNXyYhY2VDxwzv8f6TwJqvfYmPmj',
+      },
+    }
+  );
+};
+
 export const fetchPaymentOptions = (): Promise<AxiosResponse<any>> => {
   const baseUrl = AppConfig.Configuration.CONSULT_PG_BASE_URL;
   const url = `${baseUrl}/list-of-payment-methods`;
   return Axios.get(url);
+};
+
+export const exotelCallAPI = (params: any): Promise<AxiosResponse<any>> => {
+  const url = AppConfig.Configuration.EXOTEL_CALL_API_URL;
+  return Axios.post(url, params);
 };
 
 export const getTxnStatus = (orderID: string): Promise<AxiosResponse<any>> => {

@@ -49,4 +49,12 @@ export class DeeplinkRepository extends Repository<Deeplink> {
       });
     }
   }
+
+  async getDoctorsWithDeepLink() {
+    return this.find({ select: ['doctorId'] }).catch((deepLinkError) => {
+      throw new AphError(AphErrorMessages.GET_DEEPLINK_ERROR, undefined, {
+        deepLinkError,
+      });
+    });
+  }
 }

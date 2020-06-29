@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { makeStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
 import moment from 'moment';
@@ -23,6 +23,7 @@ import {
 import { GET_PATIENT_ADDRESSES_LIST } from 'graphql/address';
 import { deliveredOrderDetails } from './OrderStatusCard';
 import { ORDER_BILLING_STATUS_STRINGS } from 'helpers/commonHelpers';
+import { pharmacyOrderSummaryTracking } from 'webEngageTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -317,7 +318,7 @@ export const OrdersSummary: React.FC<OrdersSummaryProps> = (props) => {
     return JSON.parse(itemDetails);
   };
 
-  const getFormattedDateTime = () => {
+  const getFormattedDateTime = (field?: string) => {
     const orderPlacedExist =
       orderStatusList &&
       orderStatusList.find(
@@ -325,7 +326,9 @@ export const OrdersSummary: React.FC<OrdersSummaryProps> = (props) => {
       );
     if (orderPlacedExist) {
       const statusDate = orderPlacedExist.statusDate;
-      return moment(statusDate).format('ddd, D MMMM, hh:mm A');
+      return field
+        ? moment(statusDate).format('DD-MM-YYYY')
+        : moment(statusDate).format('ddd, D MMMM, hh:mm A');
     }
     return null;
   };
@@ -446,7 +449,7 @@ export const OrdersSummary: React.FC<OrdersSummaryProps> = (props) => {
   };
 
   const isPrescriptionUploadOrder =
-    orderDetailsData.orderType === MEDICINE_ORDER_TYPE.UPLOAD_PRESCRIPTION;
+    orderDetailsData && orderDetailsData.orderType === MEDICINE_ORDER_TYPE.UPLOAD_PRESCRIPTION;
 
   const noDiscountFound =
     orderDetailsData &&
@@ -459,6 +462,28 @@ export const OrdersSummary: React.FC<OrdersSummaryProps> = (props) => {
     orderDetailsData &&
     Math.round(orderDetailsData.productDiscount + orderDetailsData.couponDiscount) <
       Math.round(billedPaymentDetails && billedPaymentDetails.discountValue);
+
+  useEffect(() => {
+    if (orderDetailsData) {
+      const {
+        id,
+        orderTat,
+        orderType,
+        currentStatus,
+        patient: { id: customerId, mobileNumber },
+      } = orderDetailsData;
+      const data = {
+        orderId: id,
+        orderDate: getFormattedDateTime('webengage'),
+        orderType,
+        customerId,
+        deliveryDate: moment(orderTat).format('DD-MM-YYYY'),
+        mobileNumber,
+        orderStatus: currentStatus,
+      };
+      pharmacyOrderSummaryTracking(data);
+    }
+  }, []);
 
   return isLoading ? (
     <div className={classes.loader}>
