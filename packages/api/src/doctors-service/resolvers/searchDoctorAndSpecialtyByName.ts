@@ -138,7 +138,38 @@ const SearchDoctorAndSpecialtyByName: Resolver<
     },
   };
 
-  if (args.city && args.city != '') {
+  if (args.city && args.city != '' && args.searchText != '') {
+    PerfectdocSearchParams = {
+      index: 'doctors',
+      body: {
+        size: 1000,
+        query: {
+          bool: {
+            must: [
+              { match: { 'doctorSlots.slots.status': 'OPEN' } },
+              { match: { 'facility.city': args.city } },
+              {
+                multi_match: {
+                  fields: [
+                    'fullName',
+                    'specialty.name',
+                    'specialty.groupName',
+                    'specialty.commonSearchTerm',
+                    'specialty.userFriendlyNomenclature',
+                  ],
+                  type: 'phrase_prefix',
+                  query: searchTextLowerCase,
+                  operator: 'and',
+                },
+              },
+            ],
+          },
+        },
+      },
+    };
+  }
+
+  if (args.city && args.city != '' && args.searchText == '') {
     const PerfectdocCitySearchParams: RequestParams.Search = {
       index: 'doctors',
       body: {
@@ -161,9 +192,13 @@ const SearchDoctorAndSpecialtyByName: Resolver<
     };
     PerfectdocSearchParams = PerfectdocCitySearchParams;
   }
-
+  console.log(
+    PerfectdocSearchParams,
+    PerfectdocSearchParams.body.query.bool,
+    'PerfectdocSearchParams'
+  );
   const responsePerfectMatchDoctors = await client.search(PerfectdocSearchParams);
-  console.log(responsePerfectMatchDoctors.body.hits.hits, 'city hits');
+  //console.log(responsePerfectMatchDoctors.body.hits.hits, 'city hits');
   for (const doc of responsePerfectMatchDoctors.body.hits.hits) {
     const doctor = doc._source;
     doctor['id'] = doctor.doctorId;
@@ -355,9 +390,9 @@ const SearchDoctorAndSpecialtyByName: Resolver<
       }
     }
   }
-  console.log('earlyAvailableApolloMatchedDoctors', earlyAvailableApolloMatchedDoctors);
-  console.log('earlyAvailableNonApolloMatchedDoctors', earlyAvailableNonApolloMatchedDoctors);
-  console.log('matchedDoctors', matchedDoctors);
+  //console.log('earlyAvailableApolloMatchedDoctors', earlyAvailableApolloMatchedDoctors);
+  //console.log('earlyAvailableNonApolloMatchedDoctors', earlyAvailableNonApolloMatchedDoctors);
+  //console.log('matchedDoctors', matchedDoctors);
   matchedSpecialties = await specialtyRepository.searchByName(searchTextLowerCase);
   searchLogger(`GET_MATCHED_DOCTORS_AND_SPECIALTIES___END`);
 

@@ -109,8 +109,8 @@ const updatePatient: Resolver<
     updateAttrs.referralCode = referralCode;
   }
 
-  const patientRepo = await profilesDb.getCustomRepository(PatientRepository);
-  let patient = await patientRepo.getPatientDetails(patientInput.id);
+  //const patientRepo = await profilesDb.getCustomRepository(PatientRepository);
+  const patient = await patientRepo.getPatientDetails(patientInput.id);
   if (!patient || patient == null) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
