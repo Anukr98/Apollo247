@@ -4,7 +4,7 @@ import { CouponServiceContext } from 'coupons-service/couponServiceContext';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
-
+import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { CouponRepository } from 'profiles-service/repositories/couponRepository';
 import { APPOINTMENT_TYPE } from 'consults-service/entities';
 import { Coupon } from 'profiles-service/entities';
