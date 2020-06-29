@@ -15,7 +15,7 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import firebase from 'react-native-firebase';
 import SplashScreenView from 'react-native-splash-screen';
 import { Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { useAuth, useAllCurrentPatients } from '../hooks/authHooks';
+import { useAuth } from '../hooks/authHooks';
 import { AppConfig, updateAppConfig, PharmacyHomepageInfo, AppEnv } from '../strings/AppConfig';
 import { PrefetchAPIReuqest } from '@praktice/navigator-react-native-sdk';
 import { Button } from './ui/Button';
@@ -28,25 +28,17 @@ import {
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import {
-  g,
   doRequestAndAccessLocation,
   InitiateAppsFlyer,
   APPStateInActive,
   APPStateActive,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { useApolloClient, useQuery } from 'react-apollo-hooks';
+import { useApolloClient } from 'react-apollo-hooks';
 import {
   getAppointmentData as getAppointmentDataQuery,
   getAppointmentDataVariables,
 } from '@aph/mobile-patients/src/graphql/types/getAppointmentData';
-import {
-  getMedicineOrdersOMSList,
-  getMedicineOrdersOMSListVariables,
-} from '@aph/mobile-patients/src/graphql/types/getMedicineOrdersOMSList';
-import {
-  GET_APPOINTMENT_DATA,
-  GET_MEDICINE_ORDERS_OMS__LIST,
-} from '@aph/mobile-patients/src/graphql/profiles';
+import { GET_APPOINTMENT_DATA } from '@aph/mobile-patients/src/graphql/profiles';
 // The moment we import from sdk @praktice/navigator-react-native-sdk,
 // finally not working on all promises.
 
