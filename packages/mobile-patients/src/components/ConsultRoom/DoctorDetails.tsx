@@ -1200,7 +1200,9 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           doctorDetails &&
           doctorDetails &&
           doctorDetails.photoUrl &&
-          doctorDetails.photoUrl.match(/(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG)/) ? (
+          doctorDetails.photoUrl.match(
+            /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jpeg|JPEG)/
+          ) ? (
             <>
               <View style={{ height: 20, width: '100%' }} />
               <Animated.Image

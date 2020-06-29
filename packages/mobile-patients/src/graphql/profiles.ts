@@ -929,6 +929,10 @@ export const GET_PATIENT_ADDRESS_BY_ID = gql`
   query getPatientAddressById($id: String) {
     getPatientAddressById(id: $id) {
       patientAddress {
+        addressLine1
+        addressLine2
+        city
+        state
         zipcode
       }
     }
@@ -2107,14 +2111,6 @@ export const UPLOAD_CHAT_FILE = gql`
   }
 `;
 
-export const CANCEL_MEDICINE_ORDER = gql`
-  mutation cancelMedicineOrder($medicineOrderCancelInput: MedicineOrderCancelInput) {
-    cancelMedicineOrder(medicineOrderCancelInput: $medicineOrderCancelInput) {
-      orderStatus
-    }
-  }
-`;
-
 export const CANCEL_MEDICINE_ORDER_OMS = gql`
   mutation CancelMedicineOrderOMS($medicineOrderCancelOMSInput: MedicineOrderCancelOMSInput) {
     cancelMedicineOrderOMS(medicineOrderCancelOMSInput: $medicineOrderCancelOMSInput) {
@@ -2593,6 +2589,7 @@ export const GET_PERSONALIZED_APPOITNMENTS = gql`
           specialty {
             id
             name
+            userFriendlyNomenclature
           }
         }
       }

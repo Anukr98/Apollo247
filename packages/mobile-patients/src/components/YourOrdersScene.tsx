@@ -8,21 +8,19 @@ import { g, getOrderStatusText } from '@aph/mobile-patients/src/helpers/helperFu
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import { ApolloQueryResult } from 'apollo-client';
 import moment from 'moment';
-import React, { useEffect, useState } from 'react';
-import { SafeAreaView, StyleSheet, View } from 'react-native';
-import { NavigationScreenProps, ScrollView, FlatList } from 'react-navigation';
+import React from 'react';
+import { SafeAreaView, StyleSheet, View, ScrollView, FlatList } from 'react-native';
+import { NavigationScreenProps } from 'react-navigation';
 import { useQuery } from 'react-apollo-hooks';
 import { GET_MEDICINE_ORDERS_OMS__LIST } from '@aph/mobile-patients/src/graphql/profiles';
-import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
   getMedicineOrdersOMSListVariables,
   getMedicineOrdersOMSList,
   getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrdersList,
-  getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrdersList_medicineOrdersStatus,
 } from '@aph/mobile-patients/src/graphql/types/getMedicineOrdersOMSList';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 
 const styles = StyleSheet.create({
   noDataCard: {
@@ -34,67 +32,35 @@ const styles = StyleSheet.create({
   },
 });
 
-type OrderRefetch = (
-  variables?: getMedicineOrdersOMSListVariables
-) => Promise<ApolloQueryResult<getMedicineOrdersOMSList>>;
 type MedOrder = getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrdersList;
-
-export interface YourOrdersSceneProps
-  extends NavigationScreenProps<{
-    refetch: OrderRefetch;
-    orders: MedOrder[];
-    error: object;
-    header: string;
-  }> {}
+export interface YourOrdersSceneProps extends NavigationScreenProps<{ header: string }> {}
 
 export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
-  const { loading, setLoading } = useUIElements();
-  // const ordersFetched = props.navigation.getParam('orders');
-  const [orders, setOrders] = useState<MedOrder[]>(props.navigation.getParam('orders'));
-  const refetch: OrderRefetch =
-    props.navigation.getParam('refetch') ||
-    useQuery<getMedicineOrdersOMSList, getMedicineOrdersOMSListVariables>(
-      GET_MEDICINE_ORDERS_OMS__LIST,
-      {
-        variables: { patientId: currentPatient && currentPatient.id },
-        fetchPolicy: 'cache-first',
-      }
-    ).refetch;
-  const error = props.navigation.getParam('error');
-  // const loading = props.navigation.getParam('loading');
-  const [isChanged, setisChanged] = useState<boolean>(false);
-  useEffect(() => {
-    setLoading!(true);
-    refetch &&
-      refetch()
-        .then(({ data }) => {
-          const _orders = (g(data, 'getMedicineOrdersOMSList', 'medicineOrdersList')! || []).filter(
-            (item) =>
-              !(
-                (item!.medicineOrdersStatus || []).length == 1 &&
-                (item!.medicineOrdersStatus || []).find((item) => !item!.hideStatus)
-              )
-          );
-          setLoading!(false);
-          setOrders(_orders as MedOrder[]);
-          setisChanged(!isChanged);
-        })
-        .catch((e) => {
-          CommonBugFender('YourOrdersScene_refetch', e);
-        });
-  }, []);
+  const { data, error, loading, refetch } = useQuery<
+    getMedicineOrdersOMSList,
+    getMedicineOrdersOMSListVariables
+  >(GET_MEDICINE_ORDERS_OMS__LIST, {
+    variables: { patientId: currentPatient && currentPatient.id },
+    fetchPolicy: 'no-cache',
+  });
+  const orders = loading
+    ? []
+    : ((g(data, 'getMedicineOrdersOMSList', 'medicineOrdersList') as MedOrder[]) || []).filter(
+        (item) =>
+          !(
+            (item.medicineOrdersStatus || []).length == 1 &&
+            (item.medicineOrdersStatus || []).find((s) => !s!.hideStatus)
+          )
+      );
 
-  useEffect(() => {
-    const filteredOrders = orders.filter(
-      (item) =>
-        !(
-          (item!.medicineOrdersStatus || []).length == 1 &&
-          (item!.medicineOrdersStatus || []).find((item) => !item!.hideStatus)
-        )
-    );
-    setOrders(filteredOrders);
-  }, [isChanged]);
+  const refetchOrders = async () => {
+    try {
+      await refetch();
+    } catch (e) {
+      CommonBugFender(`${AppRoutes.YourOrdersScene}_refetchOrders`, e);
+    }
+  };
 
   const getDeliverTypeOrDescription = (
     order: getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrdersList
@@ -121,6 +87,7 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
     }
   };
 
+  /*
   const getSortedList = (
     orderStatusList: (getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrdersList_medicineOrdersStatus | null)[]
   ) => {
@@ -134,21 +101,20 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
           .getTime()
     );
   };
-  /*
   const getStatusType = (
     orderStatusList: (getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrdersList_medicineOrdersStatus | null)[]
   ) => {
     const sortedList = getSortedList(orderStatusList);
     return g(sortedList[0], 'orderStatus')!;
   };
-
   const getStatusDesc = (
     orderStatusList: (getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrdersList_medicineOrdersStatus | null)[]
   ) => {
     const sortedList = getSortedList(orderStatusList);
     return getOrderStatusText(g(sortedList[0], 'orderStatus')!);
   };
-*/
+  */
+
   const getFormattedTime = (time: string) => {
     return moment(time).format('D MMM YY, hh:mm A');
   };
@@ -204,12 +170,7 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
           props.navigation.navigate(AppRoutes.OrderDetailsScene, {
             orderAutoId: order.orderAutoId,
             billNumber: order.billNumber,
-            orderDetails: order.medicineOrdersStatus,
-            setOrders: (orders: MedOrder[]) => {
-              setOrders(orders);
-              setisChanged(!isChanged);
-            },
-            refetch: refetch,
+            refetchOrders: refetchOrders,
           });
         }}
         title={getOrderTitle(order)}
@@ -225,6 +186,7 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
     return (
       <View>
         <FlatList
+          keyExtractor={(_, index) => `${index}`}
           bounces={false}
           data={orders}
           renderItem={({ item, index }) => renderOrder(item, index)}
@@ -284,6 +246,7 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
           {renderError()}
         </ScrollView>
       </SafeAreaView>
+      {loading && <Spinner />}
     </View>
   );
 };

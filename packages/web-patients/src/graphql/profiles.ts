@@ -475,18 +475,6 @@ export const DELETE_PATIENT_MEDICAL_RECORD = gql`
   }
 `;
 
-export const SAVE_PRESCRIPTION_MEDICINE_ORDER = gql`
-  mutation SavePrescriptionMedicineOrder($prescriptionMedicineInput: PrescriptionMedicineInput) {
-    SavePrescriptionMedicineOrder(prescriptionMedicineInput: $prescriptionMedicineInput) {
-      status
-      orderId
-      orderAutoId
-      errorCode
-      errorMessage
-    }
-  }
-`;
-
 export const SEND_HELP_EMAIL = gql`
   query SendHelpEmail($helpEmailInput: HelpEmailInput) {
     sendHelpEmail(helpEmailInput: $helpEmailInput)

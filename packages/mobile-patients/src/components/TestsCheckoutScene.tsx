@@ -617,11 +617,11 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
     });
     let code: any = coupon ? coupon.code : null;
     const eventAttributes: FirebaseEvents[FirebaseEventName.PURCHASE] = {
-      COUPON: code,
-      CURRENCY: 'INR',
-      ITEMS: items,
-      TRANSACTION_ID: orderId,
-      VALUE: Number(grandTotal),
+      coupon: code,
+      currency: 'INR',
+      items: items,
+      transaction_id: orderId,
+      value: Number(grandTotal),
     };
     postFirebaseEvent(FirebaseEventName.PURCHASE, eventAttributes);
   };

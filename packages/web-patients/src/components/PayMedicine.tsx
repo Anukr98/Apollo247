@@ -387,10 +387,7 @@ export const PayMedicine: React.FC = (props) => {
   const [isApplyCouponDialogOpen, setIsApplyCouponDialogOpen] = React.useState<boolean>(false);
   const [showZeroPaymentButton, setShowZeroPaymentButton] = React.useState<boolean>(true);
 
-  const [
-    validateConsultCouponResult,
-    setValidateConsultCouponResult,
-  ] = useState<ValidateConsultCoupon_validateConsultCoupon | null>(null);
+  const [validateConsultCouponResult, setValidateConsultCouponResult] = useState<any>({});
   const [consultCouponCode, setConsultCouponCode] = React.useState<string>('');
   const [revisedAmount, setRevisedAmount] = React.useState<number>(0);
   const [consult, setConsult] = useState<boolean>(false);
@@ -457,7 +454,7 @@ export const PayMedicine: React.FC = (props) => {
     speciality,
   } = consultBookDetails;
 
-  const { city } = useLocationDetails();
+  const { city, currentPincode } = useLocationDetails();
   const { authToken } = useAuth();
   const onlineConsultationFees = amount;
   useEffect(() => {
@@ -488,14 +485,16 @@ export const PayMedicine: React.FC = (props) => {
   });
 
   useEffect(() => {
-    if (validateConsultCouponResult && validateConsultCouponResult.revisedAmount) {
-      setRevisedAmount(parseFloat(validateConsultCouponResult.revisedAmount));
+    if (validateConsultCouponResult && validateConsultCouponResult.valid) {
+      console.log('validateConsultCouponResult', validateConsultCouponResult);
+      setRevisedAmount(
+        validateConsultCouponResult.billAmount - validateConsultCouponResult.discount
+      );
       localStorage.setItem(
         'consultBookDetails',
         JSON.stringify({
           ...consultBookDetails,
-          consultCouponValue:
-            parseFloat(amount) - parseFloat(validateConsultCouponResult.revisedAmount),
+          consultCouponValue: validateConsultCouponResult.discount,
           consultCouponCodeInitial: consultCouponCode,
         })
       );
@@ -733,6 +732,12 @@ export const PayMedicine: React.FC = (props) => {
           hospitalId: hospitalId,
           couponCode: consultCouponCode,
           deviceType: getDeviceType(),
+          actualAmount: Number(amount),
+          discountedAmount:
+            validateConsultCouponResult && validateConsultCouponResult.valid
+              ? Number(validateConsultCouponResult.amount - validateConsultCouponResult.discount)
+              : Number(revisedAmount),
+          pinCode: currentPincode || '',
           // couponDiscount: couponValue,
         },
       },
@@ -893,8 +898,9 @@ export const PayMedicine: React.FC = (props) => {
                       {mutationLoading ? (
                         <CircularProgress size={22} color="secondary" />
                       ) : (
-                        `Pay Rs.${totalWithCouponDiscount &&
-                          totalWithCouponDiscount.toFixed(2)} on delivery`
+                        `Pay Rs.${
+                          totalWithCouponDiscount && totalWithCouponDiscount.toFixed(2)
+                        } on delivery`
                       )}
                     </AphButton>
                   )}
@@ -950,12 +956,9 @@ export const PayMedicine: React.FC = (props) => {
                     {consultCouponCode.length > 0 && (
                       <div className={classes.discountTotal}>
                         Savings of Rs.{' '}
-                        {validateConsultCouponResult && validateConsultCouponResult.revisedAmount
-                          ? (
-                              parseFloat(onlineConsultationFees) -
-                              parseFloat(validateConsultCouponResult.revisedAmount)
-                            ).toFixed(2)
-                          : parseFloat(consultCouponValue).toFixed(2)}{' '}
+                        {validateConsultCouponResult && validateConsultCouponResult.valid
+                          ? validateConsultCouponResult.discount.toFixed()
+                          : consultCouponValue.toFixed(2)}{' '}
                         on the bill
                       </div>
                     )}
@@ -999,20 +1002,20 @@ export const PayMedicine: React.FC = (props) => {
                       <p>Coupon Applied</p>{' '}
                       <p>
                         - Rs.
-                        {validateConsultCouponResult && validateConsultCouponResult.revisedAmount
-                          ? (
-                              parseFloat(amount) -
-                              parseFloat(validateConsultCouponResult.revisedAmount)
-                            ).toFixed(2)
-                          : parseFloat(consultCouponValue).toFixed(2) || 0}
+                        {validateConsultCouponResult && validateConsultCouponResult.valid
+                          ? validateConsultCouponResult.discount.toFixed(2)
+                          : consultCouponValue.toFixed(2)}
                       </p>
                     </div>
                     <div className={`${classes.charges} ${classes.total}`}>
                       <p>To Pay</p>{' '}
                       <p>
                         Rs.
-                        {validateConsultCouponResult && validateConsultCouponResult.revisedAmount
-                          ? parseFloat(validateConsultCouponResult.revisedAmount).toFixed(2)
+                        {validateConsultCouponResult && validateConsultCouponResult.valid
+                          ? (
+                              validateConsultCouponResult.billAmount -
+                              validateConsultCouponResult.discount
+                            ).toFixed(2)
                           : revisedAmount.toFixed(2)}
                       </p>
                     </div>

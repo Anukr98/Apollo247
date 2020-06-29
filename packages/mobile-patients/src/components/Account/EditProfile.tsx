@@ -722,7 +722,8 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
     return (
       <View style={styles.profilePicContainer}>
         <View style={styles.profileImageContainer}>
-          {photoUrl && photoUrl.match(/(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG)/) ? (
+          {photoUrl &&
+          photoUrl.match(/(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jpeg|JPEG)/) ? (
             <Image
               style={styles.profileImage}
               source={{

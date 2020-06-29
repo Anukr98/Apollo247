@@ -94,11 +94,11 @@ export const TestPayment: React.FC<TestPaymentProps> = (props) => {
     });
     let code: any = coupon ? coupon.code : null;
     const eventAttributes: FirebaseEvents[FirebaseEventName.PURCHASE] = {
-      COUPON: code,
-      CURRENCY: 'INR',
-      ITEMS: items,
-      TRANSACTION_ID: orderId,
-      VALUE: Number(price),
+      coupon: code,
+      currency: 'INR',
+      items: items,
+      transaction_id: orderId,
+      value: Number(price),
     };
     postFirebaseEvent(FirebaseEventName.PURCHASE, eventAttributes);
   };
