@@ -207,6 +207,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
   };
 
   const initiatePayment = (item) => {
+    console.log('appointmentInput---------------', appointmentInput);
     setLoading && setLoading(true);
     client
       .mutate<bookAppointment>({
@@ -231,7 +232,10 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
           const paymentModeEventAttribute: WebEngageEvents[WebEngageEventName.CONSULT_PAYMENT_MODE_SELECTED] = {
             'Payment Mode': item.paymentMode,
           };
-          postWebEngageEvent(WebEngageEventName.CONSULT_PAYMENT_MODE_SELECTED, paymentModeEventAttribute);
+          postWebEngageEvent(
+            WebEngageEventName.CONSULT_PAYMENT_MODE_SELECTED,
+            paymentModeEventAttribute
+          );
         } catch (error) {}
         const apptmt = g(data, 'data', 'bookAppointment', 'appointment');
 
