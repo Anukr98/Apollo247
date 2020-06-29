@@ -145,7 +145,13 @@ export interface MedicineProps
 
 export const Medicine: React.FC<MedicineProps> = (props) => {
   const focusSearch = props.navigation.getParam('focusSearch');
-  const { locationDetails, pharmacyLocation, setPharmacyLocation } = useAppCommonData();
+  const {
+    locationDetails,
+    pharmacyLocation,
+    setPharmacyLocation,
+    isPharmacyLocationServiceable,
+    setPharmacyLocationServiceable,
+  } = useAppCommonData();
   const [ShowPopop, setShowPopop] = useState<boolean>(false);
   const [pincodePopupVisible, setPincodePopupVisible] = useState<boolean>(false);
   const [isSelectPrescriptionVisible, setSelectPrescriptionVisible] = useState(false);
@@ -251,24 +257,9 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     pinCodeServiceabilityApi(pincode)
       .then(({ data: { Availability } }) => {
         setServiceabilityMsg(Availability ? '' : 'Services unavailable. Change delivery location.');
+        setPharmacyLocationServiceable!(Availability ? true : false);
         if (!Availability) {
           WebEngageEventForNonServicablePinCode(pincode, false);
-          showAphAlert!({
-            title: 'We’re sorry!',
-            description:
-              'We are not serviceable in your area. Please change your location or call 1860 500 0101 for Pharmacy stores nearby.',
-            titleStyle: theme.viewStyles.text('SB', 18, '#890000'),
-            ctaContainerStyle: { justifyContent: 'flex-end' },
-            CTAs: [
-              {
-                text: 'CHANGE THE ADDRESS',
-                type: 'orange-link',
-                onPress: onPresChangeAddress,
-              },
-            ],
-          });
-        } else {
-          WebEngageEventForNonServicablePinCode(pincode, true);
           getNearByStoreDetailsApi(pincode)
             .then((response: any) => {
               showAphAlert!({
@@ -1208,7 +1199,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         addCartItem,
         globalLoading,
         props.navigation,
-        currentPatient
+        currentPatient,
+        isPharmacyLocationServiceable
       );
 
       postwebEngageAddToCartEvent(data.item, 'Pharmacy Home', title);
@@ -1558,6 +1550,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       null,
       props.navigation,
       currentPatient,
+      isPharmacyLocationServiceable,
       () => setItemsLoading({ ...itemsLoading, [sku]: false })
     );
     postwebEngageAddToCartEvent(item, 'Pharmacy Partial Search');
@@ -1751,7 +1744,10 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const renderPincodePopup = () => {
     const onClose = (serviceable?: boolean, response?: LocationData) => {
       setPincodePopupVisible(false);
-      if (serviceable) setServiceabilityMsg('');
+      if (serviceable) {
+        setServiceabilityMsg('');
+        setPharmacyLocationServiceable!(true);
+      }
     };
     return pincodePopupVisible && <PincodePopup onClickClose={onClose} onComplete={onClose} />;
   };

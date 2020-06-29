@@ -186,7 +186,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
   const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
   const { showAphAlert, setLoading: globalLoading } = useUIElements();
   const { getPatientApiCall } = useAuth();
-  const { locationDetails, pharmacyLocation } = useAppCommonData();
+  const { locationDetails, pharmacyLocation, isPharmacyLocationServiceable } = useAppCommonData();
   const pharmacyPincode = g(pharmacyLocation, 'pincode') || g(locationDetails, 'pincode');
 
   const getSpecialPrice = (special_price?: string | number) =>
@@ -348,6 +348,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
       suggestionItem ? null : globalLoading,
       props.navigation,
       currentPatient,
+      isPharmacyLocationServiceable,
       suggestionItem ? () => setItemsLoading({ ...itemsLoading, [sku]: false }) : undefined
     );
     postwebEngageAddToCartEvent(item, 'Pharmacy Full Search');
@@ -976,8 +977,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         {renderOverlay()}
       </View>
       {renderFilterView()}
-      {
-        showButton && 
+      {showButton && (
         <StickyBottomComponent style={{ position: 'relative' }} defaultBG>
           <Button
             title={'PROCEED'}
@@ -985,7 +985,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
             style={{ marginHorizontal: 40, flex: 1 }}
           />
         </StickyBottomComponent>
-      }
+      )}
     </SafeAreaView>
   );
 };
