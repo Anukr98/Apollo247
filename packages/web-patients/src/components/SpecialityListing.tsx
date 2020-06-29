@@ -825,9 +825,15 @@ export const SpecialityListing: React.FC = (props) => {
             setSearchSpecialty(specialtiesArray);
             setSearchDoctors(doctorsArray);
           }
-          setSearchLoading(false);
         })
-        .catch((e) => console.log(e));
+        .catch((e) => {
+          console.log(e);
+          setSearchSpecialty([]);
+          setSearchDoctors([]);
+        })
+        .finally(() => {
+          setSearchLoading(false);
+        });
     }
   }, [searchKeyword]);
 
@@ -968,6 +974,11 @@ export const SpecialityListing: React.FC = (props) => {
                                 )}
                               </>
                             )}
+                            {!searchLoading &&
+                              searchDoctors &&
+                              searchDoctors.length === 0 &&
+                              searchSpecialty &&
+                              searchSpecialty.length === 0 && <p>No Results Found</p>}
                           </div>
                         )}
                     </div>
