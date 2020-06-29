@@ -607,7 +607,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         ? allPatients.find((patient: any) => patient.relation === Relation.ME) || allPatients[0]
         : null;
 
-      getPersonalizesAppointments(patientDetails);
       const array: any = await AsyncStorage.getItem('allNotification');
       const arraySelected = JSON.parse(array);
       const selectedCount = arraySelected.filter((item: any) => {
@@ -722,6 +721,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       if (selectedProfile !== currentPatient.id) {
         setAppointmentLoading(true);
         setSelectedProfile(currentPatient.id);
+        getPersonalizesAppointments(currentPatient);
         client
           .query<getPatientFutureAppointmentCount>({
             query: GET_PATIENT_FUTURE_APPOINTMENT_COUNT,
@@ -913,11 +913,18 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const getPersonalizesAppointments = async (details: any) => {
     const uhid = g(details, 'uhid');
 
-    if (Object.keys(appointmentsPersonalized).length != 0) {
-      console.log('appointmentsPersonalized', appointmentsPersonalized);
+    const uhidSelected = await AsyncStorage.getItem('UHIDused');
+    console.log('uhidSelected', uhidSelected);
 
-      setPersonalizedData(appointmentsPersonalized as any);
-      setisPersonalizedCard(true);
+    if (uhidSelected !== null) {
+      if (uhidSelected === uhid) {
+        if (Object.keys(appointmentsPersonalized).length != 0) {
+          console.log('appointmentsPersonalized', appointmentsPersonalized);
+
+          setPersonalizedData(appointmentsPersonalized as any);
+          setisPersonalizedCard(true);
+        }
+      }
     }
 
     getPatientPersonalizedAppointmentList(client, uhid)
@@ -925,6 +932,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         const appointmentsdata =
           g(data, 'data', 'data', 'getPatientPersonalizedAppointments', 'appointmentDetails') || [];
         console.log('appointmentsdata', appointmentsdata);
+        AsyncStorage.setItem('UHIDused', uhid);
 
         setPersonalizedData(appointmentsdata as any);
         setisPersonalizedCard(true);
