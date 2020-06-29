@@ -195,6 +195,7 @@ export const Cities: React.FC<CitiesProps> = (props) => {
             <Typography component="h6">Popular Cities</Typography>
             {populatCities.map((city: string) => (
               <AphButton
+                key={city}
                 className={cityName === city ? classes.buttonActive : ''}
                 onClick={(e) => {
                   if (city === cityName) {

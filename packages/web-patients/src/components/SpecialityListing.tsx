@@ -3,7 +3,7 @@ import { Theme, Grid, CircularProgress, Popover, Typography } from '@material-ui
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
 import { NavigationBottom } from 'components/NavigationBottom';
-import { AphInput } from '@aph/web-ui-components';
+import { AphInput, AphButton } from '@aph/web-ui-components';
 import ExpansionPanel from '@material-ui/core/ExpansionPanel';
 import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
 import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
@@ -18,7 +18,6 @@ import { PastSearches } from 'components/PastSearches';
 import { useAuth } from 'hooks/authHooks';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { Link } from 'react-router-dom';
-import { AphButton } from '@aph/web-ui-components';
 import { Cities } from './Cities';
 import fetchUtil from 'helpers/fetch';
 import { SpecialtyDivision } from './SpecialtyDivision';
@@ -957,7 +956,15 @@ export const SpecialityListing: React.FC = (props) => {
                                                   {doctor.specialty && doctor.specialty.name
                                                     ? doctor.specialty.name
                                                     : ''}{' '}
-                                                  | Apollo Hospitals Greams Road Chennai
+                                                  |{' '}
+                                                  {doctor.doctorHospital &&
+                                                  doctor.doctorHospital[0] &&
+                                                  doctor.doctorHospital[0].facility
+                                                    ? `${doctor.doctorHospital[0].facility.name ||
+                                                        ''} ${doctor.doctorHospital[0].facility
+                                                        .streetLine1 || ''} ${doctor
+                                                        .doctorHospital[0].facility.city || ''} `
+                                                    : ''}
                                                 </Typography>
                                               </div>
                                             </div>
@@ -974,9 +981,16 @@ export const SpecialityListing: React.FC = (props) => {
                                       {searchSpecialty.map((specialty: SpecialtyType) => (
                                         <Link
                                           key={specialty.id}
-                                          to={clientRoutes.specialties(
-                                            readableParam(specialty.name)
-                                          )}
+                                          to={
+                                            selectedCity === ''
+                                              ? clientRoutes.specialties(
+                                                  readableParam(specialty.name)
+                                                )
+                                              : clientRoutes.citySpecialties(
+                                                  _lowerCase(selectedCity),
+                                                  readableParam(specialty.name)
+                                                )
+                                          }
                                         >
                                           <li key={specialty.id}>{specialty.name}</li>
                                         </Link>
@@ -1004,9 +1018,9 @@ export const SpecialityListing: React.FC = (props) => {
                       doctors from any city using Chat/Audio/Video.
                     </Typography>
                     <Typography>
-                      How ? Choose a doctor > Book a slot > Make a payment > Consult via
-                      video/audio/chat > Receive prescription instantly > Chat with the doctor for 6
-                      days after your consult
+                      How ? Choose a doctor &gt; Book a slot &gt; Make a payment &gt; Consult via
+                      video/audio/chat &gt; Receive prescription instantly &gt; Chat with the doctor
+                      for 6 days after your consult
                     </Typography>
                   </div>
                   <SpecialtyDivision />

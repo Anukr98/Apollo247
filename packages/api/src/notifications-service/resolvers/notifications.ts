@@ -7,7 +7,12 @@ import { NotificationsServiceContext } from 'notifications-service/Notifications
 import { Connection } from 'typeorm';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { ApiConstants } from 'ApiConstants';
-import { Patient, MedicineOrders, DiagnosticOrders } from 'profiles-service/entities';
+import {
+  Patient,
+  MedicineOrders,
+  DiagnosticOrders,
+  MEDICINE_ORDER_PAYMENT_TYPE,
+} from 'profiles-service/entities';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { AppointmentRefundsRepository } from 'consults-service/repositories/appointmentRefundsRepository';
 import { DoctorDeviceTokenRepository } from 'doctors-service/repositories/doctorDeviceTokenRepository';
@@ -123,6 +128,7 @@ export enum NotificationType {
   MEDICINE_ORDER_PAYMENT_FAILED = 'MEDICINE_ORDER_PAYMENT_FAILED',
   MEDICINE_ORDER_OUT_FOR_DELIVERY = 'MEDICINE_ORDER_OUT_FOR_DELIVERY',
   MEDICINE_ORDER_DELIVERED = 'MEDICINE_ORDER_DELIVERED',
+  MEDICINE_ORDER_DELIVERED_LATE = 'MEDICINE_ORDER_DELIVERED_LATE',
   MEDICINE_ORDER_PICKEDUP = 'MEDICINE_ORDER_PICKEDUP',
   MEDICINE_ORDER_READY_AT_STORE = 'MEDICINE_ORDER_READY_AT_STORE',
   DOCTOR_CANCEL_APPOINTMENT = 'DOCTOR_CANCEL_APPOINTMENT',
@@ -147,6 +153,7 @@ export enum NotificationType {
   PAYMENT_PENDING_FAILURE = 'PAYMENT_PENDING_FAILURE',
   APPOINTMENT_PAYMENT_REFUND = 'APPOINTMENT_PAYMENT_REFUND',
   DOCTOR_APPOINTMENT_REMINDER = 'DOCTOR_APPOINTMENT_REMINDER',
+  MEDICINE_ORDER_BILL_CHANGED = 'MEDICINE_ORDER_BILL_CHANGED',
 }
 
 export enum APPT_CALL_TYPE {
@@ -1580,21 +1587,14 @@ export async function sendCartNotification(
   if (pushNotificationInput.notificationType == NotificationType.MEDICINE_CART_READY) {
     notificationTitle = ApiConstants.CART_READY_TITLE;
     notificationBody = ApiConstants.CART_READY_BODY.replace('{0}', patientDetails.firstName);
-  } else if (pushNotificationInput.notificationType == NotificationType.MEDICINE_ORDER_DELIVERED) {
-    notificationTitle = ApiConstants.ORDER_DELIVERY_TITLE;
-    notificationBody = ApiConstants.ORDER_DELIVERY_BODY.replace('{0}', patientDetails.firstName);
+  } else if (pushNotificationInput.notificationType == NotificationType.MEDICINE_ORDER_CONFIRMED) {
+    notificationTitle = ApiConstants.ORDER_CONFIRMED_TITLE;
+    notificationBody = ApiConstants.ORDER_CONFIRMED_BODY;
+    notificationBody = notificationBody.replace('{0}', patientDetails.firstName);
     notificationBody = notificationBody.replace(
       '{1}',
       pushNotificationInput.orderAutoId.toString()
     );
-    sendNotificationSMS(patientDetails.mobileNumber, notificationBody);
-  } else if (pushNotificationInput.notificationType == NotificationType.MEDICINE_ORDER_PICKEDUP) {
-    notificationTitle = ApiConstants.ORDER_PICKEDUP_TITLE;
-    notificationBody = ApiConstants.ORDER_PICKEDUP_BODY.replace(
-      '{0}',
-      pushNotificationInput.orderAutoId.toString()
-    );
-    sendNotificationSMS(patientDetails.mobileNumber, notificationBody);
   }
 
   //initialize firebaseadmin
@@ -1621,23 +1621,6 @@ export async function sendCartNotification(
       content: notificationBody,
     },
   };
-
-  if (
-    pushNotificationInput.notificationType == NotificationType.MEDICINE_ORDER_DELIVERED ||
-    pushNotificationInput.notificationType == NotificationType.MEDICINE_ORDER_PICKEDUP
-  ) {
-    payload.data = {
-      type:
-        pushNotificationInput.notificationType == NotificationType.MEDICINE_ORDER_DELIVERED
-          ? 'Order_Delivered'
-          : 'Order_pickedup',
-      orderAutoId: pushNotificationInput.orderAutoId.toString(),
-      orderId: medicineOrderDetails.id,
-      deliveredDate: format(new Date(), 'yyyy-MM-dd HH:mm'),
-      firstName: patientDetails.firstName,
-      content: notificationBody,
-    };
-  }
 
   console.log(payload, 'notification payload', pushNotificationInput.notificationType);
   //options
@@ -1880,10 +1863,30 @@ export async function sendMedicineOrderStatusNotification(
       notificationTitle = ApiConstants.ORDER_READY_AT_STORE_TITLE;
       notificationBody = ApiConstants.ORDER_READY_AT_STORE_BODY;
       break;
+    case NotificationType.MEDICINE_ORDER_DELIVERED:
+      payloadDataType = 'Order_delivered';
+      notificationTitle = ApiConstants.ORDER_DELIVERY_TITLE;
+      notificationBody = ApiConstants.ORDER_DELIVERY_BODY;
+      break;
+    case NotificationType.MEDICINE_ORDER_DELIVERED_LATE:
+      payloadDataType = 'Order_delivered';
+      notificationTitle = ApiConstants.ORDER_DELIVERY_TITLE;
+      notificationBody = ApiConstants.ORDER_LATE_DELIVERY_BODY;
+      break;
+    case NotificationType.MEDICINE_ORDER_PICKEDUP:
+      payloadDataType = 'Order_pickedup';
+      notificationTitle = ApiConstants.ORDER_PICKEDUP_TITLE;
+      notificationBody = ApiConstants.ORDER_PICKEDUP_BODY;
+      break;
     case NotificationType.MEDICINE_ORDER_PAYMENT_FAILED:
       payloadDataType = 'Order_Payment_Failed';
       notificationTitle = ApiConstants.MEDICINE_ORDER_PAYMENT_FAILED_TITLE;
       notificationBody = ApiConstants.MEDICINE_ORDER_PAYMENT_FAILED_BODY;
+      break;
+    case NotificationType.MEDICINE_ORDER_BILL_CHANGED:
+      payloadDataType = 'Order_bill_changed';
+      notificationTitle = ApiConstants.MEDICINE_ORDER_CHANGED_TITLE;
+      notificationBody = ApiConstants.MEDICINE_ORDER_CHANGED_BODY;
       break;
     default:
       payloadDataType = 'Order_Placed';
@@ -1943,6 +1946,10 @@ export async function sendMedicineOrderStatusNotification(
 
   //send SMS notification
   sendNotificationSMS(patientDetails.mobileNumber, notificationBody);
+
+  if (notificationType == NotificationType.MEDICINE_ORDER_OUT_FOR_DELIVERY) {
+    return { status: true };
+  }
 
   //initialize firebaseadmin
   const admin = await getInitializedFirebaseAdmin();
@@ -2539,6 +2546,35 @@ export async function sendDoctorAppointmentNotification(
   }
   console.log('doctor appt notification end');
   return { status: true };
+}
+
+export async function medicineOrderCancelled(
+  orderDetails: MedicineOrders,
+  reasonCode: string,
+  patientsDb: Connection
+) {
+  const paymentInfo = orderDetails.paymentInfo;
+  let msgText = '';
+  if (paymentInfo.paymentType == MEDICINE_ORDER_PAYMENT_TYPE.COD) {
+    msgText = ApiConstants.ORDER_CANCEL_COD;
+    const medicineOrdersRepo = patientsDb.getCustomRepository(MedicineOrdersRepository);
+    const cancellationReasons = await medicineOrdersRepo.getMedicineOrderCancelReasonByCode(
+      reasonCode
+    );
+    if (cancellationReasons) {
+      msgText.replace('{1}', cancellationReasons.displayMessage);
+    } else {
+      msgText.replace('{1}', 'Your order has been cancelled');
+    }
+  } else {
+    msgText = ApiConstants.ORDER_CANCEL_PREPAID;
+    if (paymentInfo.amountPaid) {
+      msgText = msgText.replace('{1}', paymentInfo.amountPaid.toString());
+    }
+  }
+  msgText = msgText.replace('{0}', orderDetails.orderAutoId.toString());
+
+  sendNotificationSMS(orderDetails.patient.mobileNumber, msgText);
 }
 
 export const getNotificationsResolvers = {
