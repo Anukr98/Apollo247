@@ -101,19 +101,18 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
     (profileArray &&
       profileArray!.map((i) => {
         return {
-          key: i.id,
-          value: titleCase(i.firstName || i.lastName || ''),
-          isPrimary: i.isUhidPrimary,
-          uhid: i.uhid,
+          key: i!.id,
+          value: titleCase(i!.firstName || i!.lastName || ''),
+          isPrimary: i!.isUhidPrimary,
+          uhid: i!.uhid,
         };
       })) ||
     [];
   const moveSelectedToTop = () => {
-    console.log('profile===>', profile);
     if (profile !== undefined) {
       const patientLinkedProfiles = [
-        pickerData.find((item) => item.uhid === profile.uhid),
-        ...pickerData.filter((item) => item.uhid !== profile.uhid),
+        pickerData.find((item) => item.uhid === profile!.uhid),
+        ...pickerData.filter((item) => item.uhid !== profile!.uhid),
       ];
       return patientLinkedProfiles;
     }
@@ -240,13 +239,14 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
   };
 
   const renderPicker = () => {
+    const usersList = moveSelectedToTop();
     return (
       <MaterialMenu
         showMenu={props.showList}
         menuHidden={() => {
           props.menuHidden && props.menuHidden();
         }}
-        options={pickerData}
+        options={usersList[0] === undefined ? [usersList[1]] : usersList}
         defaultOptions={[]}
         selectedText={profile && profile!.id}
         menuContainerStyle={[
