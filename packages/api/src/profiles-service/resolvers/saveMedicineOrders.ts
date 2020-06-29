@@ -42,6 +42,7 @@ export const saveMedicineOrderTypeDefs = gql`
     CANCEL_REQUEST
     READY_AT_STORE
     PURCHASED_IN_STORE
+    PAYMENT_ABORTED
   }
 
   enum MEDICINE_DELIVERY_TYPE {
