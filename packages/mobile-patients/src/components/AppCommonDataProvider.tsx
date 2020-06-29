@@ -24,6 +24,8 @@ export interface AppCommonDataContextProps {
   pharmacyLocation: LocationData | null;
   setLocationDetails: ((items: LocationData) => void) | null;
   setPharmacyLocation: ((items: LocationData) => void) | null;
+  isPharmacyLocationServiceable: boolean;
+  setPharmacyLocationServiceable: ((value: boolean) => void) | null;
   diagnosticsCities: getDiagnosticsCites_getDiagnosticsCites_diagnosticsCities[];
   setDiagnosticsCities:
     | ((items: getDiagnosticsCites_getDiagnosticsCites_diagnosticsCities[]) => void)
@@ -66,6 +68,8 @@ export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
   pharmacyLocation: null,
   setLocationDetails: null,
   setPharmacyLocation: null,
+  isPharmacyLocationServiceable: false,
+  setPharmacyLocationServiceable: null,
   diagnosticsCities: [],
   setDiagnosticsCities: null,
   appointmentsPersonalized: [],
@@ -107,6 +111,10 @@ export const AppCommonDataProvider: React.FC = (props) => {
   const [pharmacyLocation, _setPharmacyLocation] = useState<
     AppCommonDataContextProps['pharmacyLocation']
   >(null);
+
+  const [isPharmacyLocationServiceable, setPharmacyLocationServiceable] = useState<
+    AppCommonDataContextProps['isPharmacyLocationServiceable']
+  >(false);
 
   const [diagnosticsCities, setDiagnosticsCities] = useState<
     AppCommonDataContextProps['diagnosticsCities']
@@ -211,6 +219,8 @@ export const AppCommonDataProvider: React.FC = (props) => {
         setLocationDetails,
         pharmacyLocation,
         setPharmacyLocation,
+        isPharmacyLocationServiceable,
+        setPharmacyLocationServiceable,
         diagnosticsCities,
         setDiagnosticsCities,
         locationForDiagnostics,
