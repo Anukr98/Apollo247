@@ -12,6 +12,7 @@ import { GET_ALL_SPECIALITIES } from 'graphql/specialities';
 import { useQuery } from 'react-apollo-hooks';
 import { getSymptoms } from 'helpers/commonHelpers';
 import { readableParam } from 'helpers/commonHelpers';
+import _lowerCase from 'lodash/lowerCase';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -43,20 +44,13 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: '20px 0',
     },
     specialityCard: {
-      height: 180,
+      height: 160,
       background: '#fff',
       borderRadius: 10,
       boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
       padding: 10,
       textAlign: 'center',
       position: 'relative',
-      '& a': {
-        height: '100%',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        flexDirection: 'column',
-      },
       '& h3': {
         fontSize: 14,
         fontWeight: 500,
@@ -83,11 +77,15 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     symptoms: {
+      position: 'absolute',
+      bottom: 10,
       fontSize: '10px !important',
       margin: '20px 0 0',
       fontWeight: 500,
       color: '#02475b !important',
       padding: '0 !important',
+      left: 0,
+      right: 0,
       textAlign: 'center',
       [theme.breakpoints.down(700)]: {
         padding: '0 10px !important',
@@ -379,8 +377,13 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const SpecialtyDivision: React.FC = (props) => {
+interface SpecialtyDivisionProps {
+  selectedCity: string;
+}
+
+export const SpecialtyDivision: React.FC<SpecialtyDivisionProps> = (props) => {
   const classes = useStyles({});
+  const { selectedCity } = props;
   const { loading, error, data } = useQuery<GetAllSpecialties>(GET_ALL_SPECIALITIES);
 
   const showSpecialty = (specialtyName: string) => {
@@ -413,7 +416,16 @@ export const SpecialtyDivision: React.FC = (props) => {
                   showSpecialty(specialityDetails.name) && (
                     <Grid key={specialityDetails.id} item xs={6} md={3}>
                       <div className={classes.specialityCard}>
-                        <Link to={clientRoutes.specialties(readableParam(specialityDetails.name))}>
+                        <Link
+                          to={
+                            selectedCity === ''
+                              ? clientRoutes.specialties(readableParam(specialityDetails.name))
+                              : clientRoutes.citySpecialties(
+                                  _lowerCase(selectedCity),
+                                  readableParam(specialityDetails.name)
+                                )
+                          }
+                        >
                           <Typography component="h3">{specialityDetails.name}</Typography>
                           <img src={specialityDetails.image} />
                           <Typography>{specialityDetails.shortDescription}</Typography>
@@ -440,7 +452,7 @@ export const SpecialtyDivision: React.FC = (props) => {
           ) : error ? (
             <div>Error! </div>
           ) : (
-            allSpecialties && <Specialities data={allSpecialties} />
+            allSpecialties && <Specialities selectedCity={selectedCity} data={allSpecialties} />
           )}
         </div>
       </div>

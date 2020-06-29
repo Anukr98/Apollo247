@@ -920,7 +920,19 @@ export const SpecialityListing: React.FC = (props) => {
                                                   {doctor.specialty && doctor.specialty.name
                                                     ? doctor.specialty.name
                                                     : ''}{' '}
-                                                  | Apollo Hospitals Greams Road Chennai
+                                                  |{' '}
+                                                  {doctor.doctorHospital &&
+                                                  doctor.doctorHospital[0] &&
+                                                  doctor.doctorHospital[0].facility
+                                                    ? `${
+                                                        doctor.doctorHospital[0].facility.name || ''
+                                                      } ${
+                                                        doctor.doctorHospital[0].facility
+                                                          .streetLine1 || ''
+                                                      } ${
+                                                        doctor.doctorHospital[0].facility.city || ''
+                                                      } `
+                                                    : ''}
                                                 </Typography>
                                               </div>
                                             </div>
@@ -937,9 +949,16 @@ export const SpecialityListing: React.FC = (props) => {
                                       {searchSpecialty.map((specialty: SpecialtyType) => (
                                         <Link
                                           key={specialty.id}
-                                          to={clientRoutes.specialties(
-                                            readableParam(specialty.name)
-                                          )}
+                                          to={
+                                            selectedCity === ''
+                                              ? clientRoutes.specialties(
+                                                  readableParam(specialty.name)
+                                                )
+                                              : clientRoutes.citySpecialties(
+                                                  _lowerCase(selectedCity),
+                                                  readableParam(specialty.name)
+                                                )
+                                          }
                                         >
                                           <li key={specialty.id}>{specialty.name}</li>
                                         </Link>
@@ -961,7 +980,7 @@ export const SpecialityListing: React.FC = (props) => {
                       </div>
                     </div>
                   )}
-                  <SpecialtyDivision />
+                  <SpecialtyDivision selectedCity={selectedCity} />
                 </div>
               </Grid>
               <Grid item xs={12} md={4}>
