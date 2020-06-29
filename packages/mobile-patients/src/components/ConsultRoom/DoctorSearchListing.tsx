@@ -188,37 +188,37 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const filterData: filterDataType[] = [
     {
       label: 'City',
-      options: docFilters['city'],
+      options: docFiltersOptions['city'],
       selectedOptions: [],
     },
     {
       label: 'Brands',
-      options: docFilters['brands'],
+      options: docFiltersOptions['brands'],
       selectedOptions: [],
     },
     {
       label: 'In Years',
-      options: getValuesArray(docFilters['experience']),
+      options: getValuesArray(docFiltersOptions['experience']),
       selectedOptions: [],
     },
     {
       label: 'Availability',
-      options: getValuesArray(docFilters['availability']),
+      options: getValuesArray(docFiltersOptions['availability']),
       selectedOptions: [],
     },
     {
       label: 'In Rupees',
-      options: getValuesArray(docFilters['fees']),
+      options: getValuesArray(docFiltersOptions['fees']),
       selectedOptions: [],
     },
     {
       label: '',
-      options: getValuesArray(docFilters['gender']),
+      options: getValuesArray(docFiltersOptions['gender']),
       selectedOptions: [],
     },
     {
       label: '',
-      options: getValuesArray(docFilters['language']),
+      options: getValuesArray(docFiltersOptions['language']),
       selectedOptions: [],
     },
   ];
@@ -272,7 +272,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const [value, setValue] = useState<boolean>(false);
   const [sortValue, setSortValue] = useState<string>('');
   const [searchIconClicked, setSearchIconClicked] = useState<boolean>(false);
-
+  const [docFiltersOptions, setDocFilterOptions] = useState<any>({});
   useEffect(() => {
     setDeepLinkFilter();
     setDeepLinkDoctorTypeFilter();
@@ -462,6 +462,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     try {
       const filterGetData =
         data && data.getDoctorsBySpecialtyAndFilters ? data.getDoctorsBySpecialtyAndFilters : null;
+      setDocFilterOptions(filterGetData.filters ? filterGetData.filters : {});
       if (filterGetData) {
         if (filterGetData.doctors) {
           setDoctorsList(filterGetData.doctors);
