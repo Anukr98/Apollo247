@@ -275,7 +275,7 @@ const getOrderInvoice: Resolver<
       `${nameLine}`,
       'Doctor Speciality',
       `${specialty}`,
-      doc.y + 20
+      doc.y + 10
     );
 
     const formattedDate = format(
@@ -290,7 +290,7 @@ const getOrderInvoice: Resolver<
       doc.y + 10
     );
 
-    doc.moveDown(4);
+    // doc.moveDown(4);
 
     doc
       .moveTo(margin, doc.y)
@@ -303,7 +303,7 @@ const getOrderInvoice: Resolver<
       .fontSize(12)
       .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
       .fillColor('#01475b')
-      .text('Apollo 24X7 Online Teleconsultation Fees', margin + 150, doc.y, {
+      .text('Apollo 24X7 Online Teleconsultation Fees', margin + 160, doc.y, {
         lineBreak: false,
         align: 'right',
       })
@@ -317,7 +317,7 @@ const getOrderInvoice: Resolver<
       .fontSize(12)
       .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
       .fillColor('#0087ba')
-      .text('Discount Applied', margin + 280, doc.y, {
+      .text('Discount Applied', margin + 300, doc.y, {
         lineBreak: false,
         align: 'right',
       })

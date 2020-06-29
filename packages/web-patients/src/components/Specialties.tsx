@@ -15,6 +15,7 @@ import { readableParam } from 'helpers/commonHelpers';
 import { useMutation } from 'react-apollo-hooks';
 import { GetAllSpecialties_getAllSpecialties as SpecialtyType } from 'graphql/types/GetAllSpecialties';
 import { getSymptoms } from 'helpers/commonHelpers';
+import _lowerCase from 'lodash/lowerCase';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -98,14 +99,15 @@ const useStyles = makeStyles((theme: Theme) => {
   });
 });
 
-interface SpecialitiesProps {
+interface SpecialtiesProps {
   data: SpecialtyType[];
+  selectedCity: string;
 }
 
-export const Specialities: React.FC<SpecialitiesProps> = (props) => {
+export const Specialties: React.FC<SpecialtiesProps> = (props) => {
   const classes = useStyles({});
   const { currentPatient } = useAllCurrentPatients();
-  const { data } = props;
+  const { data, selectedCity } = props;
 
   const saveSearchMutation = useMutation(SAVE_PATIENT_SEARCH);
 
@@ -139,7 +141,14 @@ export const Specialities: React.FC<SpecialitiesProps> = (props) => {
                               },
                             });
                           const specialityUpdated = readableParam(`${e.currentTarget.title}`);
-                          history.push(clientRoutes.specialties(`${specialityUpdated}`));
+                          history.push(
+                            selectedCity === ''
+                              ? clientRoutes.specialties(specialityUpdated)
+                              : clientRoutes.citySpecialties(
+                                  _lowerCase(selectedCity),
+                                  specialityUpdated
+                                )
+                          );
                         }}
                       >
                         <div className={classes.contentBox}>

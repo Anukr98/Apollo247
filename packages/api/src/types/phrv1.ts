@@ -1,3 +1,5 @@
+import { CaseSheetMedicinePrescription } from 'consults-service/entities';
+
 export interface GetUsersResponse {
   errorCode: null;
   errorMsg: null;
@@ -117,6 +119,15 @@ export interface PrescriptionUploadRequest {
     dateCreated: number;
     content: string;
   }[];
+  speciality: string;
+  hospital_name: string;
+  address: string;
+  city: string;
+  pincode: string;
+  instructions: string[];
+  diagnosis: string[];
+  diagnosticPrescription: string[];
+  medicinePrescriptions: CaseSheetMedicinePrescription[];
 }
 
 export interface PrescriptionUploadResponse {

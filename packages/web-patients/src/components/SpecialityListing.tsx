@@ -3,7 +3,7 @@ import { Theme, Grid, CircularProgress, Popover, Typography } from '@material-ui
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
 import { NavigationBottom } from 'components/NavigationBottom';
-import { AphInput } from '@aph/web-ui-components';
+import { AphInput, AphButton } from '@aph/web-ui-components';
 import ExpansionPanel from '@material-ui/core/ExpansionPanel';
 import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
 import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
@@ -18,7 +18,6 @@ import { PastSearches } from 'components/PastSearches';
 import { useAuth } from 'hooks/authHooks';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { Link } from 'react-router-dom';
-import { AphButton } from '@aph/web-ui-components';
 import { Cities } from './Cities';
 import fetchUtil from 'helpers/fetch';
 import { SpecialtyDivision } from './SpecialtyDivision';
@@ -57,9 +56,23 @@ const useStyles = makeStyles((theme: Theme) => {
           boxShadow: ' 0 5px 20px 0 rgba(128, 128, 128, 0.3)',
         },
       },
+
       [theme.breakpoints.down(650)]: {
         '&:after': {
           height: 320,
+        },
+      },
+    },
+    slnoDoctor: {
+      [theme.breakpoints.down(650)]: {
+        '&:after': {
+          height: 400,
+        },
+      },
+
+      [theme.breakpoints.down(340)]: {
+        '&:after': {
+          height: 440,
         },
       },
     },
@@ -147,7 +160,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     specialityContent: {
-      '& h2': {
+      '& >h2': {
         fontSize: 16,
         margin: '10px 0',
         color: '#00a7b9',
@@ -185,7 +198,9 @@ const useStyles = makeStyles((theme: Theme) => {
         color: 'rgba(2,71,91, 0.3)',
         fontWeight: 700,
         margin: '0 10px 0 0',
-        width: 120,
+        minWidth: 50,
+        maxWidth: 120,
+        whiteSpace: 'nowrap',
       },
     },
     searchInput: {
@@ -196,7 +211,7 @@ const useStyles = makeStyles((theme: Theme) => {
       alignItems: 'center',
       width: '100%',
       position: 'relative',
-      '& img': {
+      '&  >img': {
         position: 'absolute',
         left: 0,
       },
@@ -307,7 +322,7 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 500,
     },
     detailsContent: {
-      width: '80%',
+      width: '95%',
       '& p': {
         margin: '0 0 10px',
         '&:last-child': {
@@ -327,13 +342,17 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: '20px 0',
     },
     specialityCard: {
-      height: 160,
+      height: 180,
       background: '#fff',
       borderRadius: 10,
       boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
       padding: 10,
       textAlign: 'center',
       position: 'relative',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      flexDirection: 'column',
       '& h3': {
         fontSize: 14,
         fontWeight: 500,
@@ -360,15 +379,10 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     symptoms: {
-      position: 'absolute',
-      bottom: 10,
       fontSize: '10px !important',
-      margin: '20px 0 0',
       fontWeight: 500,
       color: '#02475b !important',
       padding: '0 !important',
-      left: 0,
-      right: 0,
       textAlign: 'center',
       [theme.breakpoints.down(700)]: {
         padding: '0 10px !important',
@@ -592,7 +606,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     specialitySearch: {
-      padding: '10px 0 0',
+      padding: '10px 0',
       display: 'flex',
       alignItems: 'center',
       [theme.breakpoints.down(700)]: {
@@ -610,6 +624,9 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down(600)]: {
         padding: 20,
       },
+    },
+    cityActive: {
+      color: '#02475b !important',
     },
     dialogTitle: {
       textAlign: 'left',
@@ -682,10 +699,8 @@ const useStyles = makeStyles((theme: Theme) => {
       alignItems: 'center',
     },
     dImg: {
-      paddingRight: 16,
-      margin: '0 15px 50px 0',
+      margin: '0 15px 0 0',
       '& img': {
-        maxWidth: 40,
         width: 44,
         height: 44,
         borderRadius: '50%',
@@ -728,6 +743,22 @@ const useStyles = makeStyles((theme: Theme) => {
         color: '#02475b',
         padding: '5px 0',
         fontWeight: 500,
+      },
+    },
+    noDoctorContent: {
+      padding: '10px 0',
+      '& h2': {
+        fontSize: 16,
+        margin: '10px 0',
+        color: '#00a7b9',
+        fontWeight: 'bold',
+      },
+      '& p': {
+        fontSize: 14,
+        fontWeight: 700,
+      },
+      [theme.breakpoints.down(769)]: {
+        padding: 0,
       },
     },
   };
@@ -828,9 +859,15 @@ export const SpecialityListing: React.FC = (props) => {
             setSearchSpecialty(specialtiesArray);
             setSearchDoctors(doctorsArray);
           }
-          setSearchLoading(false);
         })
-        .catch((e) => console.log(e));
+        .catch((e) => {
+          console.log(e);
+          setSearchSpecialty([]);
+          setSearchDoctors([]);
+        })
+        .finally(() => {
+          setSearchLoading(false);
+        });
     }
   }, [searchKeyword]);
 
@@ -839,6 +876,8 @@ export const SpecialityListing: React.FC = (props) => {
       <Header />
       <div className={classes.container}>
         <div className={classes.slContent}>
+          {' '}
+          {/* Please add a class slnoDoctor here when showing up noDoctor Content */}
           <div className={classes.pageHeader}>
             <Link to={clientRoutes.welcome()}>
               <div className={classes.backArrow} title={'Back to home page'}>
@@ -869,7 +908,7 @@ export const SpecialityListing: React.FC = (props) => {
                     <div className={classes.location} onClick={() => setLocationPopup(true)}>
                       <img src={require('images/location.svg')} alt="" />
                       <div className={classes.userLocation}>
-                        <Typography>
+                        <Typography className={selectedCity ? classes.cityActive : null}>
                           {selectedCity === '' ? 'Select Your City' : selectedCity}
                         </Typography>
                         <img src={require('images/ic_dropdown_green.svg')} alt="" />
@@ -897,20 +936,20 @@ export const SpecialityListing: React.FC = (props) => {
                                     <Typography component="h6">Doctors</Typography>
                                     <ul className={classes.doctorList}>
                                       {searchDoctors.map((doctor: DoctorsType) => (
-                                        <Link
-                                          key={doctor.id}
-                                          to={clientRoutes.specialtyDoctorDetails(
-                                            doctor.specialty && doctor.specialty.name
-                                              ? _lowerCase(doctor.specialty.name).replace(
-                                                  /[/ / /]/g,
-                                                  '-'
-                                                )
-                                              : '',
-                                            _lowerCase(doctor.fullName).replace(/ /g, '-'),
-                                            doctor.id
-                                          )}
-                                        >
-                                          <li key={doctor.id}>
+                                        <li key={doctor.id}>
+                                          <Link
+                                            key={doctor.id}
+                                            to={clientRoutes.specialtyDoctorDetails(
+                                              doctor.specialty && doctor.specialty.name
+                                                ? _lowerCase(doctor.specialty.name).replace(
+                                                    /[/ / /]/g,
+                                                    '-'
+                                                  )
+                                                : '',
+                                              _lowerCase(doctor.fullName).replace(/ /g, '-'),
+                                              doctor.id
+                                            )}
+                                          >
                                             <div className={classes.doctorContent}>
                                               <div className={classes.dImg}>
                                                 <img src={doctor.photoUrl} />
@@ -923,12 +962,20 @@ export const SpecialityListing: React.FC = (props) => {
                                                   {doctor.specialty && doctor.specialty.name
                                                     ? doctor.specialty.name
                                                     : ''}{' '}
-                                                  | Apollo Hospitals Greams Road Chennai
+                                                  |{' '}
+                                                  {doctor.doctorHospital &&
+                                                  doctor.doctorHospital[0] &&
+                                                  doctor.doctorHospital[0].facility
+                                                    ? `${doctor.doctorHospital[0].facility.name ||
+                                                        ''} ${doctor.doctorHospital[0].facility
+                                                        .streetLine1 || ''} ${doctor
+                                                        .doctorHospital[0].facility.city || ''} `
+                                                    : ''}
                                                 </Typography>
                                               </div>
                                             </div>
-                                          </li>
-                                        </Link>
+                                          </Link>
+                                        </li>
                                       ))}
                                     </ul>
                                   </div>
@@ -940,9 +987,16 @@ export const SpecialityListing: React.FC = (props) => {
                                       {searchSpecialty.map((specialty: SpecialtyType) => (
                                         <Link
                                           key={specialty.id}
-                                          to={clientRoutes.specialties(
-                                            readableParam(specialty.name)
-                                          )}
+                                          to={
+                                            selectedCity === ''
+                                              ? clientRoutes.specialties(
+                                                  readableParam(specialty.name)
+                                                )
+                                              : clientRoutes.citySpecialties(
+                                                  _lowerCase(selectedCity),
+                                                  readableParam(specialty.name)
+                                                )
+                                          }
                                         >
                                           <li key={specialty.id}>{specialty.name}</li>
                                         </Link>
@@ -952,6 +1006,11 @@ export const SpecialityListing: React.FC = (props) => {
                                 )}
                               </>
                             )}
+                            {!searchLoading &&
+                              searchDoctors &&
+                              searchDoctors.length === 0 &&
+                              searchSpecialty &&
+                              searchSpecialty.length === 0 && <p>No Results Found</p>}
                           </div>
                         )}
                     </div>
@@ -964,7 +1023,18 @@ export const SpecialityListing: React.FC = (props) => {
                       </div>
                     </div>
                   )}
-                  <SpecialtyDivision />
+                  <div className={classes.noDoctorContent}>
+                    <Typography component="h2">
+                      No Specialties/Doctors found near Chityal. Don’t worry, now you can consult
+                      doctors from any city using Chat/Audio/Video.
+                    </Typography>
+                    <Typography>
+                      How ? Choose a doctor &gt; Book a slot &gt; Make a payment &gt; Consult via
+                      video/audio/chat &gt; Receive prescription instantly &gt; Chat with the doctor
+                      for 6 days after your consult
+                    </Typography>
+                  </div>
+                  <SpecialtyDivision selectedCity={selectedCity} />
                 </div>
               </Grid>
               <Grid item xs={12} md={4}>

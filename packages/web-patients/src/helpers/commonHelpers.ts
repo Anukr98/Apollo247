@@ -205,6 +205,17 @@ const findAddrComponents = (
   return findItem ? findItem.short_name || findItem.long_name : '';
 };
 
+const getTypeOfProduct = (type: string) => {
+  switch (_lowerCase(type)) {
+    case 'pharma':
+      return CouponCategoryApplicable.PHARMA;
+    case 'fmcg':
+      return CouponCategoryApplicable.FMCG;
+    default:
+      return CouponCategoryApplicable.FMCG;
+  }
+};
+
 const ORDER_BILLING_STATUS_STRINGS = {
   TOTAL_ORDER_BILLED: 'Total Ordered Value',
   TOTAL_BILLED_VALUE: 'Total Billed Value',
@@ -249,17 +260,6 @@ const availabilityList = ['Now', 'Today', 'Tomorrow', 'Next 3 days'];
 
 // End of doctors list based on specialty related changes
 
-const getTypeOfProduct = (type: string) => {
-  switch (_lowerCase(type)) {
-    case 'pharma':
-      return CouponCategoryApplicable.PHARMA;
-    case 'fmcg':
-      return CouponCategoryApplicable.FMCG;
-    default:
-      return CouponCategoryApplicable.FMCG;
-  }
-};
-
 const getSymptoms = (symptoms: string) => {
   const symptomsList = symptoms.split(', ');
   const structuredSymptomString = symptomsList.map((symptom: string) => {
@@ -270,7 +270,6 @@ const getSymptoms = (symptoms: string) => {
 
 export {
   getSymptoms,
-  getTypeOfProduct,
   feeInRupees,
   experienceList,
   genderList,
@@ -299,4 +298,5 @@ export {
   TAT_API_TIMEOUT_IN_MILLI_SEC,
   findAddrComponents,
   ORDER_BILLING_STATUS_STRINGS,
+  getTypeOfProduct,
 };
