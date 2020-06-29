@@ -1079,37 +1079,17 @@ export const uploadPdfBase64ToPrism = async (
   doctorData: Doctor,
   caseSheet: CaseSheet
 ) => {
-  /*const patientsRepo = patientsDb.getCustomRepository(PatientRepository);
-  const mobileNumber = patientDetails.mobileNumber;
-
-  //get authtoken for the logged in user mobile number
-  const prismAuthToken = await patientsRepo.getPrismAuthToken(mobileNumber);
-
-  if (!prismAuthToken) return { status: false, fileId: '' };
-
-  //get users list for the mobile number
-  const prismUserList = await patientsRepo.getPrismUsersList(mobileNumber, prismAuthToken);
-
-  //check if current user uhid matches with response uhids
-  const uhid = await patientsRepo.validateAndGetUHID(patientDetails.id, prismUserList);
-
-  if (!uhid) {
-    return { status: false, fileId: '' };
-  }
-
-  //get authtoken for the logged in user mobile number
-  const prismUHIDAuthToken = await patientsRepo.getPrismAuthTokenByUHID(uhid);
-
-  if (!prismUHIDAuthToken) return { status: false, fileId: '' };
-
-  //just call get prism user details with the corresponding uhid
-  await patientsRepo.getPrismUsersDetails(uhid, prismUHIDAuthToken);
-
-  const fileId = await patientsRepo.uploadDocumentToPrism(uhid, prismUHIDAuthToken, uploadDocInput);*/
   const currentTimeStamp = getUnixTime(new Date()) * 1000;
   const randomNumber = Math.floor(Math.random() * 10000);
   const fileFormat = uploadDocInput.fileType.toLowerCase();
   const documentName = `${currentTimeStamp}${randomNumber}.${fileFormat}`;
+
+  const doctorFacilities = doctorData.doctorHospital;
+  const appointmentFacilityId = caseSheet.appointment.hospitalId;
+  const doctorHospital = doctorFacilities.filter(
+    (item) => item.facility.id == appointmentFacilityId
+  );
+  const hospitalDetails = doctorHospital[0].facility;
 
   const prescriptionFiles = [];
   prescriptionFiles.push({
@@ -1118,6 +1098,31 @@ export const uploadPdfBase64ToPrism = async (
     mimeType: 'application/pdf',
     content: uploadDocInput.base64FileInput,
     dateCreated: getUnixTime(new Date()) * 1000,
+  });
+
+  const instructions: string[] = [];
+  const generalAdvice = JSON.parse(
+    JSON.stringify(caseSheet.otherInstructions)
+  ) as CaseSheetOtherInstruction[];
+  generalAdvice.forEach((advice) => {
+    instructions.push(advice.instruction);
+  });
+
+  const diagnosticPrescription: string[] = [];
+  const diagnosesTests = JSON.parse(
+    JSON.stringify(caseSheet.diagnosticPrescription)
+  ) as CaseSheetDiagnosisPrescription[];
+
+  diagnosesTests.forEach((tests) => {
+    diagnosticPrescription.push(tests.itemname);
+  });
+
+  const caseSheetMedicinePrescription = JSON.parse(
+    JSON.stringify(caseSheet.medicinePrescription)
+  ) as CaseSheetMedicinePrescription[];
+
+  caseSheetMedicinePrescription.forEach((element) => {
+    element.externalId = '';
   });
 
   const prescriptionInputArgs: PrescriptionInputArgs = {
@@ -1131,6 +1136,15 @@ export const uploadPdfBase64ToPrism = async (
       prescriptionSource: prescriptionSource.EPRESCRIPTION,
       prescriptionDetail: [],
       prescriptionFiles: prescriptionFiles,
+      speciality: doctorData.specialty.name,
+      hospital_name: hospitalDetails.name,
+      address: hospitalDetails.streetLine1,
+      city: hospitalDetails.city,
+      pincode: hospitalDetails.zipcode,
+      instructions: instructions,
+      diagnosis: [],
+      diagnosticPrescription: diagnosticPrescription,
+      medicinePrescriptions: caseSheetMedicinePrescription,
     },
     uhid: patientDetails.uhid,
   };
@@ -1138,9 +1152,6 @@ export const uploadPdfBase64ToPrism = async (
   const uploadedResult = (await uploadPrescriptions(null, prescriptionInputArgs, null)) as {
     recordId: string;
   };
-
-  console.log('uploadedResult', uploadedResult);
   const fileId = uploadedResult.recordId;
-
   return fileId ? { status: true, fileId } : { status: false, fileId: '' };
 };
