@@ -364,7 +364,10 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     availableForVirtualConsultation = true;
 
   const doctorDetails = data && data.getDoctorDetailsById ? data : null;
-
+  const doctorTimings =
+    data && data.getDoctorDetailsById && data.getDoctorDetailsById.consultHours
+      ? data && data.getDoctorDetailsById.consultHours
+      : null;
   const gtmTrackingFunc = () => {
     /* Gtm code start */
     const speciality =
@@ -452,7 +455,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                       {hasStarTeam && <StarDoctorTeam doctorDetails={doctorDetails} />}
                     </>
                   )}
-                  <DoctorTimings />
+                  <DoctorTimings doctorTimings={doctorTimings} />
                 </div>
                 <AppointmentHistory doctorId={doctorId} patientId={currentUserId || ' '} />
               </div>

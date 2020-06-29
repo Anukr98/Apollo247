@@ -1,4 +1,4 @@
-import { Doctor, DoctorType, Salutation, DOCTOR_ONLINE_STATUS } from 'doctors-service/entities';
+import { Doctor, DoctorType, DOCTOR_ONLINE_STATUS } from 'doctors-service/entities';
 import faker from 'faker';
 import { randomEnum, randomValue, randomValues } from 'helpers/factoryHelpers';
 import _random from 'lodash/random';
@@ -37,7 +37,7 @@ export const buildDoctor = (attrs: Partial<Doctor> = {}) => {
   doctor.physicalConsultationFees = _random(100, 999);
   doctor.qualification = randomValues(allQualifications).join(', ');
   doctor.registrationNumber = faker.random.alphaNumeric(8).toUpperCase();
-  doctor.salutation = randomEnum(Salutation);
+  doctor.salutation = 'Dr.';
   doctor.specialization = randomValue(allSpecializations);
   doctor.state = faker.address.state();
   doctor.zip = faker.address.zipCode();

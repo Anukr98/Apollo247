@@ -162,3 +162,10 @@ export interface CreateNewUsersResponse {
   errorType: string;
   response: string; //"A new User has been successfully added"
 }
+
+export interface GetAuthTokenResponse {
+  errorCode: null;
+  errorMsg: null;
+  errorType: null;
+  response: string;
+}

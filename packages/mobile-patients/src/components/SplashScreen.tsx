@@ -213,6 +213,12 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         case 'ChatRoom':
           if (data.length === 2) getAppointmentDataAndNavigate(linkId);
           break;
+        case 'Order':
+          if (data.length === 2) getData('Order', linkId);
+          break;
+        case 'MyOrders':
+          getData('MyOrders');
+          break;
         default:
           getData('ConsultRoom', undefined, true);
           break;
@@ -354,6 +360,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         CommonBugFender('SplashFetchingAppointmentData', error);
       });
   };
+
   const pushTheView = (routeName: String, id?: any) => {
     console.log('pushTheView', routeName);
     setBugFenderLog('DEEP_LINK_PUSHVIEW', { routeName, id });
@@ -436,6 +443,15 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           callType: '',
           prescription: '',
         });
+        break;
+      case 'Order':
+        props.navigation.navigate(AppRoutes.OrderDetailsScene, {
+          goToHomeOnBack: true,
+          orderAutoId: id,
+        });
+        break;
+      case 'MyOrders':
+        props.navigation.navigate(AppRoutes.YourOrdersScene);
         break;
       default:
         break;

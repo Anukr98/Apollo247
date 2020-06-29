@@ -5838,7 +5838,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const uploadPrescriptionPopup = () => {
-    return (
+    return isDropdownVisible ? (
       <UploadPrescriprionPopup
         heading="Attach File(s)"
         instructionHeading="Instructions For Uploading Files"
@@ -5847,7 +5847,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           'Doctor details & date of the test should be clearly visible.',
           'Only JPG / PNG type files up to 2 mb are allowed',
         ]}
-        isVisible={isDropdownVisible}
         disabledOption={'NONE'}
         blockCamera={isCall}
         blockCameraMessage={strings.alerts.Open_camera_in_video_call}
@@ -5871,7 +5870,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           }
         }}
       />
-    );
+    ) : null;
   };
   const renderPrescriptionModal = () => {
     return (

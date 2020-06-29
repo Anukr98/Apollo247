@@ -120,7 +120,7 @@ export const productsThumbnailUrl = (filePath: string, baseUrl?: string) =>
 
 export const formatAddress = (address: savePatientAddress_savePatientAddress_patientAddress) => {
   const addrLine1 = [address.addressLine1, address.addressLine2].filter((v) => v).join(', ');
-  // to resolve state value getting twice
+  // to handle state value getting twice
   const addrLine2 = [address.city, address.state]
     .filter((v) => v)
     .join(', ')
@@ -130,6 +130,21 @@ export const formatAddress = (address: savePatientAddress_savePatientAddress_pat
     .join(', ');
   const formattedZipcode = address.zipcode ? ` - ${address.zipcode}` : '';
   return `${addrLine1}\n${addrLine2}${formattedZipcode}`;
+};
+
+export const formatOrderAddress = (
+  address: savePatientAddress_savePatientAddress_patientAddress
+) => {
+  // to handle state value getting twice
+  const addrLine = [address.addressLine1, address.addressLine2, address.city, address.state]
+    .filter((v) => v)
+    .join(', ')
+    .split(',')
+    .map((v) => v.trim())
+    .filter((item, idx, array) => array.indexOf(item) === idx)
+    .join(', ');
+  const formattedZipcode = address.zipcode ? ` - ${address.zipcode}` : '';
+  return `${addrLine}${formattedZipcode}`;
 };
 
 export const getOrderStatusText = (status: MEDICINE_ORDER_STATUS): string => {
@@ -452,48 +467,54 @@ export const findAddrComponents = (
   ];
 };
 
+/**
+ * Calculates great-circle distances between the two points – that is, the shortest distance over the earth’s surface – using the ‘Haversine’ formula.
+ */
+export const distanceBwTwoLatLng = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+  const deg2rad = (deg: number) => deg * (Math.PI / 180);
+  const R = 6371; // Radius of the earth in km
+  const dLat = deg2rad(lat2 - lat1); // deg2rad below
+  const dLon = deg2rad(lon2 - lon1);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  const d = R * c; // Distance in km
+  console.log(`Distance in km(s): ${d}`);
+  return d;
+};
+
+export const getlocationDataFromLatLang = async (latitude: number, longitude: number) => {
+  const placeInfo = await getPlaceInfoByLatLng(latitude, longitude);
+  const addrComponents = g(placeInfo, 'data', 'results', '0' as any, 'address_components') || [];
+  if (addrComponents.length == 0) {
+    throw 'Unable to get location.';
+  } else {
+    return getFormattedLocation(addrComponents, { lat: latitude, lng: longitude });
+  }
+};
+
 const getlocationData = (
   resolve: (value?: LocationData | PromiseLike<LocationData> | undefined) => void,
-  reject: (reason?: any) => void
+  reject: (reason?: any) => void,
+  latLngOnly?: boolean
 ) => {
   Geolocation.getCurrentPosition(
     (position) => {
       const { latitude, longitude } = position.coords;
+      if (latLngOnly) {
+        resolve({ latitude, longitude } as LocationData);
+        return;
+      }
       getPlaceInfoByLatLng(latitude, longitude)
         .then((response) => {
           const addrComponents =
             g(response, 'data', 'results', '0' as any, 'address_components') || [];
           if (addrComponents.length == 0) {
-            console.log('er78h98r');
-
+            console.log('Unable to get location info using latitude & longitude from Google API.');
             reject('Unable to get location.');
           } else {
-            const area = [
-              findAddrComponents('route', addrComponents),
-              findAddrComponents('sublocality_level_2', addrComponents),
-              findAddrComponents('sublocality_level_1', addrComponents),
-            ].filter((i) => i);
-            resolve({
-              displayName:
-                (area || []).pop() ||
-                findAddrComponents('locality', addrComponents) ||
-                findAddrComponents('administrative_area_level_2', addrComponents),
-              latitude,
-              longitude,
-              area: area.join(', '),
-              city:
-                findAddrComponents('locality', addrComponents) ||
-                findAddrComponents('administrative_area_level_2', addrComponents),
-              state: findAddrComponents('administrative_area_level_1', addrComponents),
-              stateCode: findAddrComponents(
-                'administrative_area_level_1',
-                addrComponents,
-                'short_name'
-              ),
-              country: findAddrComponents('country', addrComponents),
-              pincode: findAddrComponents('postal_code', addrComponents),
-              lastUpdated: new Date().getTime(),
-            });
+            resolve(getFormattedLocation(addrComponents, { lat: latitude, lng: longitude }));
           }
         })
         .catch((e) => {
@@ -510,7 +531,7 @@ const getlocationData = (
   );
 };
 
-export const doRequestAndAccessLocationModified = (): Promise<LocationData> => {
+export const doRequestAndAccessLocationModified = (latLngOnly?: boolean): Promise<LocationData> => {
   return new Promise((resolve, reject) => {
     Permissions.request('location')
       .then((response) => {
@@ -521,14 +542,14 @@ export const doRequestAndAccessLocationModified = (): Promise<LocationData> => {
               fastInterval: 5000,
             })
               .then(() => {
-                getlocationData(resolve, reject);
+                getlocationData(resolve, reject, latLngOnly);
               })
               .catch((e: Error) => {
                 CommonBugFender('helperFunctions_RNAndroidLocationEnabler', e);
                 reject('Unable to get location.');
               });
           } else {
-            getlocationData(resolve, reject);
+            getlocationData(resolve, reject, latLngOnly);
           }
         } else {
           if (response === 'denied' || response === 'restricted') {
@@ -1259,23 +1280,30 @@ export const addPharmaItemToCart = (
   setLoading: UIElementsContextProps['setLoading'],
   navigation: NavigationScreenProp<NavigationRoute<object>, object>,
   currentPatient: GetCurrentPatients_getCurrentPatients_patients,
+  isLocationServeiceable: boolean,
   onComplete?: () => void
 ) => {
   const unServiceableMsg = 'Sorry, not serviceable in your area.';
   const navigate = () => {
-    const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART_NONSERVICEABLE] = {
-      'product name': cartItem.name,
-      'product id': cartItem.id,
-      pincode: pincode,
-      'Mobile Number': g(currentPatient, 'mobileNumber')!,
-    };
-    console.log('eventAttributes------------------------', eventAttributes);
-    postWebEngageEvent(WebEngageEventName.PHARMACY_ADD_TO_CART_NONSERVICEABLE, eventAttributes);
+    if (!isLocationServeiceable) {
+      const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART_NONSERVICEABLE] = {
+        'product name': cartItem.name,
+        'product id': cartItem.id,
+        pincode: pincode,
+        'Mobile Number': g(currentPatient, 'mobileNumber')!,
+      };
+      postWebEngageEvent(WebEngageEventName.PHARMACY_ADD_TO_CART_NONSERVICEABLE, eventAttributes);
+    }
     navigation.navigate(AppRoutes.MedicineDetailsScene, {
       sku: cartItem.id,
       deliveryError: unServiceableMsg,
     });
   };
+  if (!isLocationServeiceable) {
+    navigate();
+    return;
+  }
+
   setLoading && setLoading(true);
   getDeliveryTime({
     postalcode: pincode,

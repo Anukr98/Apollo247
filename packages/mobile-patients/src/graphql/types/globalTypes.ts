@@ -123,16 +123,17 @@ export enum DiscountType {
 
 export enum DoctorType {
   APOLLO = "APOLLO",
+  APOLLO_HOMECARE = "APOLLO_HOMECARE",
   CLINIC = "CLINIC",
   CRADLE = "CRADLE",
   DOCTOR_CONNECT = "DOCTOR_CONNECT",
   FERTILITY = "FERTILITY",
-  HOMECARE = "HOMECARE",
   JUNIOR = "JUNIOR",
   PAYROLL = "PAYROLL",
   SPECTRA = "SPECTRA",
   STAR_APOLLO = "STAR_APOLLO",
   SUGAR = "SUGAR",
+  WHITE_DENTAL = "WHITE_DENTAL",
 }
 
 export enum FEEDBACKTYPE {
@@ -404,13 +405,6 @@ export enum STATUS {
   UNAVAILABLE_MEDMANTRA = "UNAVAILABLE_MEDMANTRA",
 }
 
-export enum Salutation {
-  DR = "DR",
-  MR = "MR",
-  MRS = "MRS",
-  MS = "MS",
-}
-
 export enum SpecialtySearchType {
   ID = "ID",
   NAME = "NAME",
@@ -522,6 +516,9 @@ export interface BookAppointmentInput {
   deviceType?: DEVICETYPE | null;
   couponCode?: string | null;
   externalConnect?: boolean | null;
+  pinCode?: string | null;
+  actualAmount?: number | null;
+  discountedAmount?: number | null;
 }
 
 export interface BookFollowUpAppointmentInput {
@@ -666,6 +663,7 @@ export interface FilterDoctorInput {
   geolocation?: Geolocation | null;
   consultMode?: ConsultMode | null;
   pincode?: string | null;
+  doctorType?: string | null;
   sort?: string | null;
 }
 
@@ -734,11 +732,6 @@ export interface MedicineCartOMSItem {
   mou?: number | null;
   isMedicine: string;
   specialPrice: number;
-}
-
-export interface MedicineOrderCancelInput {
-  orderNo?: number | null;
-  remarksCode?: string | null;
 }
 
 export interface MedicineOrderCancelOMSInput {

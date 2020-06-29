@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { makeStyles, createStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
 import { Link } from 'react-router-dom';
@@ -34,21 +34,39 @@ const useStyles = makeStyles((theme: Theme) => {
     },
   });
 });
+interface BookBestProps {
+  faqData: any;
+}
 
-export const BookBest: React.FC = (props) => {
+export const BookBest: React.FC<BookBestProps> = (props) => {
   const classes = useStyles({});
-
-  return (
+  const [remainInFaqData, setRemainInFaqData] = useState<boolean>(false);
+  const { faqData } = props;
+  return faqData && faqData.consultReasons ? (
     <div className={classes.root}>
-      <h3>Family Physicians</h3>
-      <p>A family physician, more commonly referred as a family doctor, specialises on providing comprehensive medical care to each member of the family, regardless of age and gender. Since a family doctor is trained on treating almost all kinds of diseases and across various parts of the body, he/she is also often known as a primary care physician.</p>
-      <h3>You can consult a family doctor if</h3>
+      <h3>{faqData.title}</h3>
+      <p>{faqData.about}</p>
+      <h3>You can consult a {faqData.title} if</h3>
       <ul>
-        <li>Any one of your family members is suffering from a medical condition</li>
-        <li>You are unsure about the condition or which doctor to consult</li>
+        {faqData.consultReasons.map((item: any, index: number) => {
+          if (!remainInFaqData) {
+            return index < 2 && <li key={index}>{item}</li>;
+          } else {
+            return <li key={index}>{item}</li>;
+          }
+        })}
       </ul>
-      <Link className={classes.readMore} to="#">Read More</Link>
+      {!remainInFaqData && (
+        <Link
+          className={classes.readMore}
+          to="#"
+          onClick={() => {
+            setRemainInFaqData(true);
+          }}
+        >
+          Read More
+        </Link>
+      )}
     </div>
-  );
+  ) : null;
 };
-

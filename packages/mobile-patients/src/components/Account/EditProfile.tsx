@@ -664,11 +664,10 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
   };
 
   const renderUploadSelection = () => {
-    return (
+    return uploadVisible ? (
       <UploadPrescriprionPopup
         isProfileImage={true}
         heading="Upload Profile Picture"
-        isVisible={uploadVisible}
         hideTAndCs
         optionTexts={{
           camera: 'TAKE A PHOTO',
@@ -701,7 +700,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
           setUploadVisible(false);
         }}
       />
-    );
+    ) : null;
   };
 
   const renderHeader = () => {
@@ -723,7 +722,8 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
     return (
       <View style={styles.profilePicContainer}>
         <View style={styles.profileImageContainer}>
-          {photoUrl && photoUrl.match(/(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG)/) ? (
+          {photoUrl &&
+          photoUrl.match(/(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jpeg|JPEG)/) ? (
             <Image
               style={styles.profileImage}
               source={{

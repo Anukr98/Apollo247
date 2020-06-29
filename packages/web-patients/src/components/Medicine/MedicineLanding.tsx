@@ -633,11 +633,22 @@ export const MedicineLanding: React.FC = (props: any) => {
                 list.map((item, index) => (
                   <div key={index} className={classes.sliderSection}>
                     <div className={classes.sectionTitle}>
-                      {item.key === 'Shop by Brand' ? (
+                      {item.key === 'Shop by Brand' || item.key === 'Monsoon Essentials' ? (
                         <>
                           <span>{item.key}</span>
                           <div className={classes.viewAllLink}>
-                            <Link to={clientRoutes.medicineAllBrands()}>View All</Link>
+                            <Link
+                              to={
+                                item.key === 'Shop by Brand'
+                                  ? clientRoutes.medicineAllBrands()
+                                  : clientRoutes.searchByMedicine(
+                                      'shop-by-category',
+                                      'monsoon-essentials'
+                                    )
+                              }
+                            >
+                              View All
+                            </Link>
                           </div>
                         </>
                       ) : (
