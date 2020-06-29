@@ -2564,7 +2564,7 @@ export async function medicineOrderCancelled(
     if (cancellationReasons) {
       msgText.replace('{1}', cancellationReasons.displayMessage);
     } else {
-      msgText.replace(', {1}', '');
+      msgText.replace('{1}', 'Your order has been cancelled');
     }
   } else {
     msgText = ApiConstants.ORDER_CANCEL_PREPAID;

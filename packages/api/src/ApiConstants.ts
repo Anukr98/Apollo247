@@ -82,7 +82,7 @@ export enum ApiConstants {
 
   //medicine order picked up
   ORDER_PICKEDUP_TITLE = 'Medicine order is pickedup',
-  ORDER_PICKEDUP_BODY = '"Greetings from Apollo 24|7 Your order {1} has been picked up successfully. Our team is working round the clock to fulfill your health needs. Please take a moment & review your experience here - https://onelink.to/nfbwva"',
+  ORDER_PICKEDUP_BODY = 'Greetings from Apollo 24|7 Your order {1} has been picked up successfully. Our team is working round the clock to fulfill your health needs. Please take a moment & review your experience here - https://onelink.to/nfbwva',
 
   //medicine order out for delivery
   ORDER_OUT_FOR_DELIVERY_TITLE = 'Medicine order is out for delivery',
