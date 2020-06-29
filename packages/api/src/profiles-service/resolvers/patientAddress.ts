@@ -171,11 +171,11 @@ const updatePatientAddress: Resolver<
   const updatePatientAddressAttrs: Omit<UpdatePatientAddressInput, 'id'> = {
     ...UpdatePatientAddressInput,
   };
-  await patientAddressRepo.updatePatientAddress(
+  const patientAddress = await patientAddressRepo.updatePatientAddress(
     UpdatePatientAddressInput.id,
     updatePatientAddressAttrs
   );
-  const patientAddress = await patientAddressRepo.findById(UpdatePatientAddressInput.id);
+
   if (!patientAddress) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }

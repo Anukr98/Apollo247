@@ -254,6 +254,10 @@ export enum ApiConstants {
   DEV_DOC_ID = '74c93b2e-8aab-4b6c-8391-5407f4afb833',
   QA_DOC_ID = '',
 
+  CACHE_EXPIRATION_120 = 120, // 2 mins mostly for otp
+  CACHE_EXPIRATION_600 = 600, // 10 mins
+  CACHE_EXPIRATION_900 = 900, //30 mins
+  CACHE_EXPIRATION_3600 = 3600, // 1hour
   //doctor no-photo url
   DOCTOR_DEFAULT_PHOTO_URL = 'https://prodaphstorage.blob.core.windows.net/doctors/no_photo.png',
 
