@@ -68,7 +68,7 @@ export interface AppointmentsProps extends NavigationScreenProps {
   goToDate?: Date;
   openAppointment?: string;
 }
-const intervalTime = 30 * 1000;
+const intervalTime = 300 * 1000;
 export const Appointments: React.FC<AppointmentsProps> = (props) => {
   const [doctorName, setDoctorName] = useState<string>(
     (props.navigation.state.params && props.navigation.state.params.displayName) || ''
