@@ -101,10 +101,10 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
     (profileArray &&
       profileArray!.map((i) => {
         return {
-          key: i!.id,
-          value: titleCase(i!.firstName || i!.lastName || ''),
-          isPrimary: i!.isUhidPrimary,
-          uhid: i!.uhid,
+          key: i.id,
+          value: titleCase(i.firstName || i.lastName || ''),
+          isPrimary: i.isUhidPrimary,
+          uhid: i.uhid,
         };
       })) ||
     [];
