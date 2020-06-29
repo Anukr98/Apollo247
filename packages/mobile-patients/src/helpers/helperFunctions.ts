@@ -120,7 +120,7 @@ export const productsThumbnailUrl = (filePath: string, baseUrl?: string) =>
 
 export const formatAddress = (address: savePatientAddress_savePatientAddress_patientAddress) => {
   const addrLine1 = [address.addressLine1, address.addressLine2].filter((v) => v).join(', ');
-  // to resolve state value getting twice
+  // to handle state value getting twice
   const addrLine2 = [address.city, address.state]
     .filter((v) => v)
     .join(', ')
@@ -130,6 +130,21 @@ export const formatAddress = (address: savePatientAddress_savePatientAddress_pat
     .join(', ');
   const formattedZipcode = address.zipcode ? ` - ${address.zipcode}` : '';
   return `${addrLine1}\n${addrLine2}${formattedZipcode}`;
+};
+
+export const formatOrderAddress = (
+  address: savePatientAddress_savePatientAddress_patientAddress
+) => {
+  // to handle state value getting twice
+  const addrLine = [address.addressLine1, address.addressLine2, address.city, address.state]
+    .filter((v) => v)
+    .join(', ')
+    .split(',')
+    .map((v) => v.trim())
+    .filter((item, idx, array) => array.indexOf(item) === idx)
+    .join(', ');
+  const formattedZipcode = address.zipcode ? ` - ${address.zipcode}` : '';
+  return `${addrLine}${formattedZipcode}`;
 };
 
 export const getOrderStatusText = (status: MEDICINE_ORDER_STATUS): string => {

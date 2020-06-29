@@ -929,6 +929,10 @@ export const GET_PATIENT_ADDRESS_BY_ID = gql`
   query getPatientAddressById($id: String) {
     getPatientAddressById(id: $id) {
       patientAddress {
+        addressLine1
+        addressLine2
+        city
+        state
         zipcode
       }
     }
@@ -2103,14 +2107,6 @@ export const UPLOAD_CHAT_FILE = gql`
       appointmentId: $appointmentId
     ) {
       filePath
-    }
-  }
-`;
-
-export const CANCEL_MEDICINE_ORDER = gql`
-  mutation cancelMedicineOrder($medicineOrderCancelInput: MedicineOrderCancelInput) {
-    cancelMedicineOrder(medicineOrderCancelInput: $medicineOrderCancelInput) {
-      orderStatus
     }
   }
 `;
