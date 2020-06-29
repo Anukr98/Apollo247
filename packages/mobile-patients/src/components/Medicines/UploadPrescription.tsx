@@ -168,7 +168,10 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
     onComplete: () => void
   ) => {
     try {
-      const data = await getPlaceInfoByPincode(address.zipcode!);
+      const pincodeAndAddress = [address.zipcode, address.addressLine1]
+        .filter((v) => (v || '').trim())
+        .join(',');
+      const data = await getPlaceInfoByPincode(pincodeAndAddress);
       const { lat, lng } = data.data.results[0].geometry.location;
       const state = findAddrComponents(
         'administrative_area_level_1',
