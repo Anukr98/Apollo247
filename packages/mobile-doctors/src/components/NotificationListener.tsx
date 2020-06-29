@@ -7,6 +7,7 @@ import firebase from 'react-native-firebase';
 import { Notification, NotificationOpen } from 'react-native-firebase/notifications';
 import { NavigationScreenProps } from 'react-navigation';
 import moment from 'moment';
+import { useNotification } from '@aph/mobile-doctors/src/components/Notification/NotificationContext';
 
 type CustomNotificationType =
   | 'doctor_appointment_reminder'
@@ -24,6 +25,7 @@ export interface NotificationListenerProps extends NavigationScreenProps {}
 
 export const NotificationListener: React.FC<NotificationListenerProps> = (props) => {
   const { showAphAlert, hideAphAlert } = useUIElements();
+  const { markAsRead, fetchNotifications } = useNotification();
 
   useEffect(() => {
     try {
@@ -117,6 +119,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
     }
     const data = notification.data as NotificationBody;
     if (data.type === 'doctor_chat_message') {
+      fetchNotifications();
       showAphAlert &&
         showAphAlert({
           title: `${data.patientName || 'Patient'} sent message`,
@@ -138,6 +141,11 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
                   AppId: data.appointmentId,
                   activeTabIndex: 1,
                 });
+                if (data.appointmentId) {
+                  markAsRead(data.appointmentId, () => {
+                    fetchNotifications();
+                  });
+                }
               },
             },
           ],
