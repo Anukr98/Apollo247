@@ -1,4 +1,4 @@
-import { EntityRepository, Repository, Not, AfterUpdate } from 'typeorm';
+import { EntityRepository, Repository, Not } from 'typeorm';
 import { Patient, PRISM_DOCUMENT_CATEGORY, PatientAddress } from 'profiles-service/entities';
 import { ApiConstants } from 'ApiConstants';
 import { UhidCreateResult } from 'types/uhidCreateTypes';
@@ -350,6 +350,15 @@ export class PatientRepository extends Repository<Patient> {
           prescriptionSource: prescriptionSource.SELF,
           prescriptionDetail: [],
           prescriptionFiles: prescriptionFiles,
+          speciality: '',
+          hospital_name: '',
+          address: '',
+          city: '',
+          pincode: '',
+          instructions: [],
+          diagnosis: [],
+          diagnosticPrescription: [],
+          medicinePrescriptions: [],
         },
         uhid: uhid,
       };
