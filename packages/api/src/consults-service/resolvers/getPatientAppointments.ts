@@ -264,7 +264,7 @@ const getPatientPersonalizedAppointments: Resolver<
   );
   const textRes = await apptsResp.text();
   const offlineApptsList = JSON.parse(textRes);
-
+  let doctorFlag = 1;
   function getApptDetails() {
     return new Promise<PersonalizedAppointment>(async (resolve) => {
       const doctorRepo = doctorsDb.getCustomRepository(DoctorHospitalRepository);
@@ -283,8 +283,10 @@ const getPatientPersonalizedAppointments: Resolver<
               doctorId: doctorDets.doctor.id,
             };
             apptDetails = apptDetailsOffline;
+            doctorFlag = 1;
           } else {
-            throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID);
+            doctorFlag = 0;
+            resolve(apptDetails);
           }
         }
         resolve(apptDetails);
@@ -299,6 +301,8 @@ const getPatientPersonalizedAppointments: Resolver<
     console.log(offlineApptsList.errorMsg, offlineApptsList.errorCode, 'offline consults error');
     throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
   }
+  if (doctorFlag == 0) throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID);
+  if (apptDetails == null) throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
   return { appointmentDetails: apptDetails };
 };
 
