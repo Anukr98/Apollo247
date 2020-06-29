@@ -198,7 +198,7 @@ const useStyles = makeStyles((theme: Theme) => {
         color: 'rgba(2,71,91, 0.3)',
         fontWeight: 700,
         margin: '0 10px 0 0',
-        minWidth: 70,
+        minWidth: 50,
         maxWidth: 120,
         whiteSpace: 'nowrap',
       },
@@ -1023,7 +1023,7 @@ export const SpecialityListing: React.FC = (props) => {
                       for 6 days after your consult
                     </Typography>
                   </div>
-                  <SpecialtyDivision />
+                  <SpecialtyDivision selectedCity={selectedCity} />
                 </div>
               </Grid>
               <Grid item xs={12} md={4}>
