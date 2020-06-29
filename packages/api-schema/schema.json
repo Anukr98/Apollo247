@@ -25986,33 +25986,12 @@
                 "description": null,
                 "type": {
                   "kind": "INPUT_OBJECT",
-<<<<<<< HEAD
                   "name": "CreatePatientInput"
                 }
-              }]
-            },
-            {
-=======
-                  "name": "CreatePatientInput",
-                  "ofType": null
-                },
-                "defaultValue": null
               }
-            ],
-            "type": {
-              "kind": "NON_NULL",
-              "name": null,
-              "ofType": {
-                "kind": "OBJECT",
-                "name": "CreatePatientResult",
-                "ofType": null
-              }
-            },
-            "isDeprecated": false,
-            "deprecationReason": null
+            ]
           },
           {
->>>>>>> 1b03c81d0964339a5d0905c1bf91e98f89b3bd02
             "name": "uploadLabResults",
             "description": null,
             "args": [
@@ -26077,8 +26056,9 @@
                 "kind": "OBJECT",
                 "name": "CreatePatientResult",
                 "ofType": null
-              }},
-"type": {
+              }
+            },
+            "type": {
               "kind": "OBJECT",
               "name": "PrescriptionResponse",
               "ofType": null
@@ -28568,7 +28548,7 @@
         "enumValues": null,
         "possibleTypes": null
       },
-
+      {
         "kind": "INPUT_OBJECT",
         "name": "UpdatePatientInput",
         "description": null,
@@ -42094,11 +42074,7 @@
       {
         "name": "include",
         "description": "Directs the executor to include this field or fragment only when the `if` argument is true.",
-        "locations": [
-          "FIELD",
-          "FRAGMENT_SPREAD",
-          "INLINE_FRAGMENT"
-        ],
+        "locations": ["FIELD", "FRAGMENT_SPREAD", "INLINE_FRAGMENT"],
         "args": [
           {
             "name": "if",
@@ -42119,11 +42095,7 @@
       {
         "name": "skip",
         "description": "Directs the executor to skip this field or fragment when the `if` argument is true.",
-        "locations": [
-          "FIELD",
-          "FRAGMENT_SPREAD",
-          "INLINE_FRAGMENT"
-        ],
+        "locations": ["FIELD", "FRAGMENT_SPREAD", "INLINE_FRAGMENT"],
         "args": [
           {
             "name": "if",
@@ -42144,10 +42116,7 @@
       {
         "name": "deprecated",
         "description": "Marks an element of a GraphQL schema as no longer supported.",
-        "locations": [
-          "FIELD_DEFINITION",
-          "ENUM_VALUE"
-        ],
+        "locations": ["FIELD_DEFINITION", "ENUM_VALUE"],
         "args": [
           {
             "name": "reason",
@@ -42164,10 +42133,7 @@
       {
         "name": "key",
         "description": "",
-        "locations": [
-          "OBJECT",
-          "INTERFACE"
-        ],
+        "locations": ["OBJECT", "INTERFACE"],
         "args": [
           {
             "name": "fields",
@@ -42188,26 +42154,19 @@
       {
         "name": "extends",
         "description": "",
-        "locations": [
-          "OBJECT"
-        ],
+        "locations": ["OBJECT"],
         "args": []
       },
       {
         "name": "external",
         "description": "",
-        "locations": [
-          "OBJECT",
-          "FIELD_DEFINITION"
-        ],
+        "locations": ["OBJECT", "FIELD_DEFINITION"],
         "args": []
       },
       {
         "name": "requires",
         "description": "",
-        "locations": [
-          "FIELD_DEFINITION"
-        ],
+        "locations": ["FIELD_DEFINITION"],
         "args": [
           {
             "name": "fields",
@@ -42228,9 +42187,7 @@
       {
         "name": "provides",
         "description": "",
-        "locations": [
-          "FIELD_DEFINITION"
-        ],
+        "locations": ["FIELD_DEFINITION"],
         "args": [
           {
             "name": "fields",
