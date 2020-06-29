@@ -51,10 +51,13 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: 10,
       textAlign: 'center',
       position: 'relative',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      flexDirection: 'column',
+      '& a': {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        flexDirection: 'column',
+        height: '100%',
+      },
       '& h3': {
         fontSize: 14,
         fontWeight: 500,
@@ -82,7 +85,6 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     symptoms: {
       fontSize: '10px !important',
-      margin: '20px 0 0',
       fontWeight: 500,
       color: '#02475b !important',
       padding: '0 !important',
