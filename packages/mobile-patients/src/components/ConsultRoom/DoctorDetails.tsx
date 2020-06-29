@@ -58,7 +58,7 @@ import {
   Platform,
 } from 'react-native';
 import { FlatList, NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
-import { AppsFlyerEventName } from '../../helpers/AppsFlyerEvents';
+import { AppsFlyerEventName, AppsFlyerEvents } from '../../helpers/AppsFlyerEvents';
 import { useAppCommonData } from '../AppCommonDataProvider';
 import { CommonVideoPlayer } from '../ui/CommonVideoPlayer';
 import { ConsultTypeCard } from '../ui/ConsultTypeCard';
@@ -1051,7 +1051,10 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           : '',
     };
     postWebEngageEvent(WebEngageEventName.BOOK_APPOINTMENT, eventAttributes);
-    postAppsFlyerEvent(AppsFlyerEventName.BOOK_APPOINTMENT, eventAttributes);
+    const appsflyereventAttributes: AppsFlyerEvents[AppsFlyerEventName.BOOK_APPOINTMENT] = {
+      'customer id': currentPatient ? currentPatient.id : '',
+    };
+    postAppsFlyerEvent(AppsFlyerEventName.BOOK_APPOINTMENT, appsflyereventAttributes);
     postFirebaseEvent(FirebaseEventName.BOOK_APPOINTMENT, eventAttributes);
   };
 

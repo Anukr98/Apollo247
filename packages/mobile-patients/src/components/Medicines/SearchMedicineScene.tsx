@@ -351,7 +351,8 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
       suggestionItem ? () => setItemsLoading({ ...itemsLoading, [sku]: false }) : undefined
     );
     postwebEngageAddToCartEvent(item, 'Pharmacy Full Search');
-    postAppsFlyerAddToCartEvent(item, 'Pharmacy List');
+    let id = currentPatient && currentPatient.id ? currentPatient.id : '';
+    postAppsFlyerAddToCartEvent(item, id);
   };
 
   const onRemoveCartItem = ({ sku }: MedicineProduct) => {
@@ -976,8 +977,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         {renderOverlay()}
       </View>
       {renderFilterView()}
-      {
-        showButton && 
+      {showButton && (
         <StickyBottomComponent style={{ position: 'relative' }} defaultBG>
           <Button
             title={'PROCEED'}
@@ -985,7 +985,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
             style={{ marginHorizontal: 40, flex: 1 }}
           />
         </StickyBottomComponent>
-      }
+      )}
     </SafeAreaView>
   );
 };

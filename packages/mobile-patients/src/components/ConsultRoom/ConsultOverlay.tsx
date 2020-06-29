@@ -89,7 +89,7 @@ import {
 } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
-import { AppsFlyerEventName } from '../../helpers/AppsFlyerEvents';
+import { AppsFlyerEventName, AppsFlyerEvents } from '../../helpers/AppsFlyerEvents';
 import { WhatsAppStatus } from '../ui/WhatsAppStatus';
 import { FirebaseEvents, FirebaseEventName } from '../../helpers/firebaseEvents';
 import { validateConsultCoupon } from '@aph/mobile-patients/src/helpers/apiCalls';
@@ -275,6 +275,19 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
     return eventAttributes;
   };
 
+  const getConsultationBookedAppsFlyerEventAttributes = (id: string) => {
+    const eventAttributes: AppsFlyerEvents[AppsFlyerEventName.CONSULTATION_BOOKED] = {
+      'customer id': g(currentPatient, 'id'),
+      'doctor id': g(props.doctor, 'id')!,
+      'specialty id': g(props.doctor, 'specialty', 'id')!,
+      'consult type': 'Consult Online' === selectedTab ? 'online' : 'clinic',
+      af_revenue: coupon ? doctorDiscountedFees : Number(doctorFees),
+      af_currency: 'INR',
+      'consult id': id,
+      'coupon applied': coupon ? true : false,
+    };
+    return eventAttributes;
+  };
   // const getConsultationBookedFirebaseEventAttributes = () => {
   //   const eventAttributes: FirebaseEvents[FirebaseEventName.IN_APP_PURCHASE] = {
   //     type: 'Consultation',
@@ -311,8 +324,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
         );
         postAppsFlyerEvent(
           AppsFlyerEventName.CONSULTATION_BOOKED,
-          getConsultationBookedEventAttributes(
-            paymentDateTime,
+          getConsultationBookedAppsFlyerEventAttributes(
             g(data, 'makeAppointmentPayment', 'appointment', 'id')!
           )
         );
@@ -462,6 +474,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
         doctorName: `${g(props.doctor, 'fullName')}`,
         price: coupon ? doctorDiscountedFees : Number(doctorFees),
         appointmentInput: appointmentInput,
+        couponApplied: coupon == '' ? false : true,
       });
     }
   };

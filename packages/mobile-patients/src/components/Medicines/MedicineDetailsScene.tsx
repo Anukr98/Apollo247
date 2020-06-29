@@ -408,7 +408,8 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       isInStock: true,
     });
     postwebEngageAddToCartEvent(item, 'Pharmacy PDP');
-    postAppsFlyerAddToCartEvent(item, 'Pharmacy PDP');
+    let id = currentPatient && currentPatient.id ? currentPatient.id : '';
+    postAppsFlyerAddToCartEvent(item, id);
   };
 
   const updateQuantityCartItem = ({ sku }: MedicineProduct) => {
@@ -422,7 +423,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     const eventAttributes: WebEngageEvents[WebEngageEventName.PRODUCT_DETAIL_PINCODE_CHECK] = {
       'product id': sku,
       'product name': medicineDetails.name,
-      'pincode': parseInt(pincode),
+      pincode: parseInt(pincode),
       'customer id': currentPatient && currentPatient.id ? currentPatient.id : '',
     };
     postWebEngageEvent(WebEngageEventName.PRODUCT_DETAIL_PINCODE_CHECK, eventAttributes);
@@ -1125,7 +1126,10 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
                         'product id': item.sku,
                         'product name': item.name,
                       };
-                      postWebEngageEvent(WebEngageEventName.PHARMACY_PRODUCT_DETAIL_SUBSTITUTE_CLICKED, eventAttributes);
+                      postWebEngageEvent(
+                        WebEngageEventName.PHARMACY_PRODUCT_DETAIL_SUBSTITUTE_CLICKED,
+                        eventAttributes
+                      );
                       CommonLogEvent(
                         AppRoutes.MedicineDetailsScene,
                         'Navigate to Medicine Details scene with sku'

@@ -35,6 +35,7 @@ import { fetchPaymentOptions } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { FirebaseEvents, FirebaseEventName } from '../../helpers/firebaseEvents';
 import { postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { AppsFlyerEventName, AppsFlyerEvents } from '../../helpers/AppsFlyerEvents';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -55,6 +56,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const [loading, setLoading] = useState(true);
   const { showAphAlert } = useUIElements();
+  const couponApplied = props.navigation.getParam('couponApplied');
 
   type bankOptions = {
     name: string;
@@ -170,6 +172,20 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
     return eventAttributes;
   };
 
+  const getConsultationBookedAppsFlyerEventAttributes = (id: string) => {
+    const eventAttributes: AppsFlyerEvents[AppsFlyerEventName.CONSULTATION_BOOKED] = {
+      'customer id': g(currentPatient, 'id'),
+      'doctor id': g(doctor, 'id')!,
+      'specialty id': g(doctor, 'specialty', 'id')!,
+      'consult type': 'Consult Online' === selectedTab ? 'online' : 'clinic',
+      af_revenue: price,
+      af_currency: 'INR',
+      'consult id': id,
+      'coupon applied': couponApplied,
+    };
+    return eventAttributes;
+  };
+
   const getConsultationBookedFirebaseEventAttributes = (time: string, id: string) => {
     const localTimeSlot = moment(new Date(time));
     console.log(localTimeSlot.format('DD-MM-YYY, hh:mm A'));
@@ -252,6 +268,9 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
                 g(apptmt, 'appointmentDateTime'),
                 g(data, 'data', 'bookAppointment', 'appointment', 'id')!
               ),
+              appsflyerEventAttributes: getConsultationBookedAppsFlyerEventAttributes(
+                g(data, 'data', 'bookAppointment', 'appointment', 'id')!
+              ),
               fireBaseEventAttributes: getConsultationBookedFirebaseEventAttributes(
                 g(apptmt, 'appointmentDateTime'),
                 g(data, 'data', 'bookAppointment', 'appointment', 'id')!
@@ -268,6 +287,9 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
               bankCode: item.bankCode,
               webEngageEventAttributes: getConsultationBookedEventAttributes(
                 g(apptmt, 'appointmentDateTime'),
+                g(data, 'data', 'bookAppointment', 'appointment', 'id')!
+              ),
+              appsflyerEventAttributes: getConsultationBookedAppsFlyerEventAttributes(
                 g(data, 'data', 'bookAppointment', 'appointment', 'id')!
               ),
               fireBaseEventAttributes: getConsultationBookedFirebaseEventAttributes(
