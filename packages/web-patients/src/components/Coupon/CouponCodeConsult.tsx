@@ -190,7 +190,7 @@ export const CouponCodeConsult: React.FC<ApplyCouponProps> = (props) => {
   }, []);
 
   const validateCouponBody = {
-    mobile: currentPatient.mobileNumber,
+    mobile: currentPatient && currentPatient.mobileNumber,
     billAmount: Number(props.cartValue),
     coupon: selectCouponCode,
     pinCode: currentPincode ? currentPincode : localStorage.getItem('currentPincode') || '',
@@ -313,10 +313,7 @@ export const CouponCodeConsult: React.FC<ApplyCouponProps> = (props) => {
                               value={couponDetails.coupon}
                               control={<AphRadio color="primary" />}
                               label={
-                                <span className={classes.couponCode}>
-                                  {couponDetails.coupon}
-                                  {<span>{couponDetails.message}</span>}
-                                </span>
+                                <span className={classes.couponCode}>{couponDetails.coupon}</span>
                               }
                               onChange={() => {
                                 setErrorMessage('');
