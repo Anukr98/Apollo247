@@ -172,7 +172,6 @@ const styles = StyleSheet.create({
 });
 
 let latlng: locationType | null = null;
-let doctors: (getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors | null)[];
 
 export interface DoctorSearchListingProps extends NavigationScreenProps {}
 export type filterDataType = {
@@ -983,7 +982,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   };
 
   const renderDoctorSearches = (filter?: ConsultMode, searchText?: string) => {
-    doctors =
+    const doctors =
       filteredDoctorsList.length && filter
         ? filteredDoctorsList.filter(
             (
