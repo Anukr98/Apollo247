@@ -213,6 +213,9 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         case 'ChatRoom':
           if (data.length === 2) getAppointmentDataAndNavigate(linkId);
           break;
+        case 'Order':
+          if (data.length === 2) getData('Order', linkId);
+          break;
         default:
           getData('ConsultRoom', undefined, true);
           break;
@@ -435,6 +438,12 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           data: id,
           callType: '',
           prescription: '',
+        });
+        break;
+      case 'Order':
+        props.navigation.navigate(AppRoutes.OrderDetailsScene, {
+          goToHomeOnBack: true,
+          orderAutoId: id,
         });
         break;
       default:
