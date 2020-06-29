@@ -1374,6 +1374,16 @@
                 "defaultValue": null
               },
               {
+                "name": "city",
+                "description": null,
+                "type": {
+                  "kind": "SCALAR",
+                  "name": "String",
+                  "ofType": null
+                },
+                "defaultValue": null
+              },
+              {
                 "name": "patientId",
                 "description": null,
                 "type": {
