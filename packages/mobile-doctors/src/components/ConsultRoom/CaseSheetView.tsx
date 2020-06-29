@@ -1052,7 +1052,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
             )}
             {renderFields(
               strings.case_sheet.lifestyle_habits,
-              (lifeStyleData && lifeStyleData.map((i) => i && i.description).join('\n')) || '',
+              lifeStyleData && lifeStyleData[0] ? lifeStyleData[0].description || '' : '',
               (text) => {
                 setLifeStyleData([
                   {
@@ -1067,8 +1067,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
             )}
             {renderFields(
               strings.case_sheet.occupational_history,
-              (lifeStyleData && lifeStyleData.map((i) => i && i.occupationHistory).join('\n')) ||
-                '',
+              lifeStyleData && lifeStyleData[0] ? lifeStyleData[0].occupationHistory || '' : '',
               (text) => {
                 setLifeStyleData([
                   {
