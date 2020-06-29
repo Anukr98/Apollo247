@@ -44,13 +44,20 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: '20px 0',
     },
     specialityCard: {
-      height: 160,
+      height: 180,
       background: '#fff',
       borderRadius: 10,
       boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
       padding: 10,
       textAlign: 'center',
       position: 'relative',
+      '& a': {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        flexDirection: 'column',
+        height: '100%',
+      },
       '& h3': {
         fontSize: 14,
         fontWeight: 500,
@@ -77,15 +84,10 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     symptoms: {
-      position: 'absolute',
-      bottom: 10,
       fontSize: '10px !important',
-      margin: '20px 0 0',
       fontWeight: 500,
       color: '#02475b !important',
       padding: '0 !important',
-      left: 0,
-      right: 0,
       textAlign: 'center',
       [theme.breakpoints.down(700)]: {
         padding: '0 10px !important',
