@@ -501,6 +501,12 @@ export interface Vitals {
   bp?: string | null;
 }
 
+export interface exotelInput {
+  from?: string | null;
+  to?: string | null;
+  appointmentId?: string | null;
+}
+
 //==============================================================
 // END Enums and Input Objects
 //==============================================================

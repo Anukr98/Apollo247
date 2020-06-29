@@ -60,13 +60,6 @@ export enum Gender {
   OTHER = 'OTHER',
 }
 
-export enum Salutation {
-  MR = 'MR',
-  MRS = 'MRS',
-  DR = 'DR',
-  MS = 'MS',
-}
-
 export enum WeekDay {
   SUNDAY = 'SUNDAY',
   MONDAY = 'MONDAY',
@@ -397,8 +390,8 @@ export class Doctor extends BaseEntity {
   @Column()
   registrationNumber: string;
 
-  @Column({ nullable: true })
-  salutation: Salutation;
+  @Column({ nullable: false, type: 'text', default: 'Dr.' })
+  salutation: string;
 
   @Column({ nullable: true, type: 'text' })
   signature: string;

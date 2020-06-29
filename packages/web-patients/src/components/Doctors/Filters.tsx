@@ -295,8 +295,9 @@ export const Filters: React.FC<FilterProps> = (props) => {
               <div className={classes.filterType}>
                 <h4>Experience In Years</h4>
                 <div className={classes.filterBtns}>
-                  {experienceList.map((obj, idx) => (
+                  {experienceList.map((obj) => (
                     <AphButton
+                      key={obj.key}
                       className={applyClass(localFilter.experience, obj.key)}
                       onClick={() => {
                         setFilterValues('experience', obj.key);
@@ -312,6 +313,7 @@ export const Filters: React.FC<FilterProps> = (props) => {
                 <div className={classes.filterBtns}>
                   {availabilityList.map((availability: string) => (
                     <AphButton
+                      key={availability}
                       className={applyClass(localFilter.availability, availability)}
                       onClick={() => {
                         setFilterValues('availability', availability);
@@ -327,6 +329,7 @@ export const Filters: React.FC<FilterProps> = (props) => {
                 <div className={classes.filterBtns}>
                   {feeInRupees.map((fee) => (
                     <AphButton
+                      key={fee}
                       className={applyClass(localFilter.fees, fee)}
                       onClick={() => {
                         setFilterValues('fee', fee);
@@ -342,6 +345,7 @@ export const Filters: React.FC<FilterProps> = (props) => {
                 <div className={classes.filterBtns}>
                   {genderList.map((gender) => (
                     <AphButton
+                      key={gender.key}
                       className={applyClass(localFilter.gender, gender.key)}
                       onClick={() => {
                         setFilterValues('gender', gender.key);
@@ -357,6 +361,7 @@ export const Filters: React.FC<FilterProps> = (props) => {
                 <div className={classes.filterBtns}>
                   {languageList.map((language: string) => (
                     <AphButton
+                      key={language}
                       className={applyClass(localFilter.language, language)}
                       onClick={() => {
                         setFilterValues('language', language);

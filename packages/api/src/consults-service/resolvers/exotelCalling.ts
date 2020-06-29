@@ -84,6 +84,8 @@ async function exotelCalling(callInputs: callInputs): Promise<exotelCalling> {
     method: 'POST',
   })
     .then((res) => {
+      console.log('API_response==>', res);
+
       log(
         'consultServiceLogger',
         'API_CALL_RESPONSE',
@@ -103,6 +105,8 @@ async function exotelCalling(callInputs: callInputs): Promise<exotelCalling> {
       return exotelResult;
     })
     .catch((error) => {
+      console.error('exotelError:', error);
+
       log(
         'consultServiceLogger',
         'API_CALL_ERROR',
