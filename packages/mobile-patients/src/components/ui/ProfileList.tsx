@@ -122,6 +122,7 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
       })) ||
     [];
   const moveSelectedToTop = () => {
+    console.log('profile===>', profile);
     if (profile !== undefined) {
       const patientLinkedProfiles = [
         pickerData.find((item) => item.uhid === profile.uhid),
@@ -129,7 +130,7 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
       ];
       return patientLinkedProfiles;
     }
-    return [];
+    return pickerData;
   };
   useEffect(() => {
     if (isUHID) {
@@ -289,7 +290,7 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
         menuHidden={() => {
           props.menuHidden && props.menuHidden();
         }}
-        options={moveSelectedToTop()}
+        options={pickerData}
         defaultOptions={[]}
         selectedText={profile && profile!.id}
         menuContainerStyle={[
