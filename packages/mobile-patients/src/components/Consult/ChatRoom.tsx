@@ -5708,27 +5708,61 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           .then((data) => {
             console.log('upload data', data);
             setLoading(false);
-            const fileUrl = g(data.data!, 'uploadMediaDocument', 'fileUrl');
-            if (fileUrl) {
-              console.log('api call data', fileUrl);
-              const text = {
-                id: patientId,
-                message: imageconsult,
-                fileType: (item.fileType || '').match(/\.(pdf)$/) ? 'pdf' : 'image',
-                url: fileUrl || '',
-                messageDate: new Date(),
-              };
-              pubnub.publish(
-                {
-                  channel: channel,
-                  message: text,
-                  storeInHistory: true,
-                  sendByPost: true,
-                },
-                (status, response) => {}
-              );
-              InsertMessageToDoctor('ImageUploaded');
-              KeepAwake.activate();
+            const recordId = g(data.data!, 'uploadMediaDocument', 'recordId');
+            // if (fileUrl) {
+            //   console.log('api call data', fileUrl);
+            //   const text = {
+            //     id: patientId,
+            //     message: imageconsult,
+            //     fileType: (item.fileType || '').match(/\.(pdf)$/) ? 'pdf' : 'image',
+            //     url: fileUrl || '',
+            //     messageDate: new Date(),
+            //   };
+            //   pubnub.publish(
+            //     {
+            //       channel: channel,
+            //       message: text,
+            //       storeInHistory: true,
+            //       sendByPost: true,
+            //     },
+            //     (status, response) => {}
+            //   );
+            //   InsertMessageToDoctor('ImageUploaded');
+            //   KeepAwake.activate();
+            if (recordId) {
+              // const prismFeildId = data.data!.uploadChatDocumentToPrism.fileId || '';
+              getPrismUrls(client, patientId, [recordId])
+                .then((data: any) => {
+                  console.log('api call data', data);
+                  const text = {
+                    id: patientId,
+                    message: imageconsult,
+                    fileType: ((data.urls && data.urls[0]) || '').match(/\.(pdf)$/)
+                      ? 'pdf'
+                      : 'image',
+                    prismId: recordId,
+                    url: (data.urls && data.urls[0]) || '',
+                    messageDate: new Date(),
+                  };
+                  pubnub.publish(
+                    {
+                      channel: channel,
+                      message: text,
+                      storeInHistory: true,
+                      sendByPost: true,
+                    },
+                    (status, response) => {}
+                  );
+                  InsertMessageToDoctor('ImageUploaded');
+                  KeepAwake.activate();
+                })
+                .catch((e) => {
+                  CommonBugFender('ChatRoom_getPrismUrls_uploadDocument', e);
+                  console.log('Error occured', e);
+                })
+                .finally(() => {
+                  setLoading(false);
+                });
             } else {
               Alert.alert('Upload document failed');
             }

@@ -39,7 +39,11 @@ import {
   getPatientMedicalRecords,
   getPatientMedicalRecords_getPatientMedicalRecords_medicalRecords,
 } from '@aph/mobile-patients/src/graphql/types/getPatientMedicalRecords';
-import { getPatientPastConsultsAndPrescriptions } from '@aph/mobile-patients/src/graphql/types/getPatientPastConsultsAndPrescriptions';
+import {
+  getPatientPastConsultsAndPrescriptions,
+  getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults as ConsultsType,
+  getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_medicineOrders as medicineOrders,
+} from '@aph/mobile-patients/src/graphql/types/getPatientPastConsultsAndPrescriptions';
 import {
   g,
   handleGraphQlError,
@@ -188,6 +192,9 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   const [FilterData, setFilterData] = useState<filterDataType[]>(filterData);
   const [displayFilter, setDisplayFilter] = useState<boolean>(false);
   const [displayOrderPopup, setdisplayOrderPopup] = useState<boolean>(false);
+  const [consultsData, setConsultsData] = useState<(ConsultsType | null)[] | null>(null);
+  const [medicineOrders, setMedicineOrders] = useState<(medicineOrders | null)[] | null>(null);
+  const [combination, setCombination] = useState<{ type: string; data: any }[]>();
   // const [loading, setLoading && setLoading] = useState<boolean>(true);
   const { loading, setLoading } = useUIElements();
   const [prismdataLoader, setPrismdataLoader] = useState<boolean>(false);
@@ -246,7 +253,8 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         const consults = _data.data.getPatientPastConsultsAndPrescriptions!.consults || [];
         const medOrders = _data.data.getPatientPastConsultsAndPrescriptions!.medicineOrders || [];
         const consultsAndMedOrders: { [key: string]: any } = {};
-
+        setConsultsData(consults);
+        setMedicineOrders(medOrders);
         consults.forEach((c) => {
           consultsAndMedOrders[c!.bookingDate] = {
             ...consultsAndMedOrders[c!.bookingDate],
@@ -287,6 +295,14 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         //Alert.alert('Error', error);
       })
       .finally(() => setPastDataLoader(false));
+  };
+
+  const sortByDate = (array: { type: string; data: any }[]) => {
+    return array.sort(({ data: data1 }, { data: data2 }) => {
+      let date1 = new Date(data1.date || data1.bookingDate || data1.quoteDateTime);
+      let date2 = new Date(data2.date || data2.bookingDate || data2.quoteDateTime);
+      return date1 > date2 ? -1 : date1 < date2 ? 1 : 0;
+    });
   };
 
   const fetchData = useCallback(() => {
@@ -376,6 +392,27 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
       didFocusSubscription && didFocusSubscription.remove();
     };
   }, [props.navigation, currentPatient]);
+
+  useEffect(() => {
+    if (consultsData && medicineOrders && prescriptions) {
+      let mergeArray: { type: string; data: any }[] = [];
+      arrayValues!.forEach((item: any) => {
+        mergeArray.push({ type: 'pastConsults', data: item });
+      });
+      prescriptions!.forEach((c) => {
+        mergeArray.push({ type: 'prescriptions', data: c });
+      });
+      setCombination(sortByDate(mergeArray));
+      // console.log(
+      //   'sortedcombination',
+      //   // sortedData,
+      //   'combination',
+      //   combination,
+      //   'arrayValues',
+      //   arrayValues
+      // );
+    }
+  }, [arrayValues, prescriptions]);
 
   const renderDeleteMedicalOrder = (MedicaId: string) => {
     client
@@ -588,23 +625,27 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           setdisplayOrderPopup(true);
         }}
         onClickCard={() => {
-          if (item.doctorInfo) {
-            postConsultCardClickEvent(item.id);
+          if (item.data.doctorInfo) {
+            postConsultCardClickEvent(item.data.id);
             props.navigation.navigate(AppRoutes.ConsultDetails, {
-              CaseSheet: item.id,
-              DoctorInfo: item.doctorInfo,
-              FollowUp: item.isFollowUp,
-              appointmentType: item.appointmentType,
-              DisplayId: item.displayId,
-              BlobName: g(doctorType(item), 'blobName'),
+              CaseSheet: item.data.id,
+              DoctorInfo: item.data.doctorInfo,
+              FollowUp: item.data.isFollowUp,
+              appointmentType: item.data.appointmentType,
+              DisplayId: item.data.displayId,
+              BlobName: g(doctorType(item.data), 'blobName'),
+            });
+          } else if (item.data.date) {
+            props.navigation.navigate(AppRoutes.RecordDetails, {
+              data: item.data,
             });
           }
         }}
-        PastData={item}
+        PastData={item.data}
         navigation={props.navigation}
         onFollowUpClick={() => {
-          if (item.doctorInfo) {
-            onFollowUpClick(item);
+          if (item.data.doctorInfo) {
+            onFollowUpClick(item.data);
           }
         }}
       />
@@ -659,9 +700,9 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   const renderConsults = () => {
     return (
       <View>
-        {arrayValues && arrayValues.length !== 0 && renderFilter()}
+        {combination && combination.length !== 0 && renderFilter()}
         <FlatList
-          data={arrayValues}
+          data={combination || []}
           renderItem={({ item, index }) => renderConsult(item, index)}
           ListEmptyComponent={renderEmptyConsult()}
         />

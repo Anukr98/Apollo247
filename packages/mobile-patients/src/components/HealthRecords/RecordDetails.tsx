@@ -211,7 +211,13 @@ export const RecordDetails: React.FC<RecordDetailsProps> = (props) => {
             <Text style={styles.timeStyle}>
               {`Check-up Date: ${moment(data.date && data.date).format(
                 'DD MMM YYYY'
-              )}\nReferring Doctor: Dr. ${!!data.referringDoctor ? data.referringDoctor : '-'}`}
+              )}\nReferring Doctor: Dr. ${
+                !!data.prescribedBy
+                  ? data.prescribedBy
+                  : !!data.labTestRefferedBy
+                  ? data.labTestRefferedBy
+                  : '-'
+              }`}
             </Text>
             {/* <Text style={styles.timeStyle}>
               {`Check-up Date: ${moment(
