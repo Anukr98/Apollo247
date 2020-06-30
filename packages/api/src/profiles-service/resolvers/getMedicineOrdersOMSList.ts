@@ -229,7 +229,7 @@ const getMedicineOrdersOMSList: Resolver<
   );
   const textRes = await ordersResp.text();
   const offlineOrdersList = JSON.parse(textRes);
-  console.log(offlineOrdersList.response, offlineOrdersList.response.length, 'offlineOrdersList');
+  //console.log(offlineOrdersList.response, offlineOrdersList.response.length, 'offlineOrdersList');
   if (offlineOrdersList.errorCode == 0) {
     //const orderDate = fromUnixTime(offlineOrdersList.response[0].billDateTime)
     offlineOrdersList.response.forEach((order: any) => {
@@ -619,7 +619,7 @@ const updateMedicineDataRedis: Resolver<
       qty: encodeURIComponent(rowData.Sheet1[k].qty),
       description: encodeURIComponent(rowData.Sheet1[k].description),
       url_key: encodeURIComponent(rowData.Sheet1[k].url_key),
-      base_image: rowData.Sheet1[k].base_image,
+      base_image: encodeURIComponent(rowData.Sheet1[k].base_image),
       is_prescription_required: encodeURIComponent(rowData.Sheet1[k].is_prescription_required),
       category_name: encodeURIComponent(rowData.Sheet1[k].category_name),
       product_discount_category: encodeURIComponent(rowData.Sheet1[k].product_discount_category),
