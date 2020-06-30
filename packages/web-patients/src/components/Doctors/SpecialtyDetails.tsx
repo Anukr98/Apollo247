@@ -575,6 +575,7 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
             searchText: searchKeyword,
             patientId: currentPatient ? currentPatient.id : '',
             pincode: currentPincode ? currentPincode : localStorage.getItem('currentPincode') || '',
+            city: selectedCity,
           },
           fetchPolicy: 'no-cache',
         })
@@ -1071,6 +1072,7 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
           setSelectedCity={setSelectedCity}
           locationPopup={locationPopup}
           setLocationPopup={setLocationPopup}
+          selectedCity={selectedCity}
         />
       )}
     </div>

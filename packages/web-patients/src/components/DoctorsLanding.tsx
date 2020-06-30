@@ -288,6 +288,7 @@ export const DoctorsLanding: React.FC<DoctorsLandingProps> = (props) => {
         .query<SearchDoctorAndSpecialtyByName, SearchDoctorAndSpecialtyByNameVariables>({
           query: SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME,
           variables: {
+            city: '',
             searchText: filterOptions.searchKeyword,
             patientId: currentPatient ? currentPatient.id : '',
             pincode: currentPincode ? currentPincode : localStorage.getItem('currentPincode') || '',
