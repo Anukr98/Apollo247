@@ -940,7 +940,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
         <View style={{ alignItems: 'center', marginVertical: 15 }}>
           <Text style={styles.specialityText}>Start your care now by choosing from</Text>
           <Text style={styles.specialityText}>
-            over 2000 doctors and {SpecialitiesList.length + 4} specialities
+            over 2000 doctors and {SpecialitiesList.length + 6} specialities
           </Text>
         </View>
       );
@@ -1075,9 +1075,12 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
               onEndReachedThreshold={0.5}
               renderItem={({ item, index }) =>
                 index == 6
-                  ? renderBookConsultVideo()
-                  : index == 12
-                  ? renderTrackSymptoms()
+                  ? renderBookConsultVideo(
+                      item,
+                      index,
+                      SpecialitiesList.length,
+                      searchText.length > 2
+                    )
                   : renderSpecialistRow(item, index, SpecialitiesList.length, searchText.length > 2)
               }
               keyExtractor={(_, index) => index.toString()}
@@ -1089,9 +1092,15 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     }
   };
 
-  const renderBookConsultVideo = () => {
+  const renderBookConsultVideo = (
+    item: getAllSpecialties_getAllSpecialties | null,
+    index: number,
+    length: number,
+    isSearchResult?: boolean
+  ) => {
     return (
       <View>
+        {renderSpecialistRow(item, index, length, isSearchResult)}
         <Text style={styles.bookConsultTxt}>How to Book Consult?</Text>
         <TouchableOpacity
           activeOpacity={1}
