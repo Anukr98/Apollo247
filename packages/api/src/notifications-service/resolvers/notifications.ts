@@ -493,12 +493,9 @@ export async function sendNotification(
       doctorDetails.firstName + ' ' + doctorDetails.lastName
     );
     notificationBody = notificationBody.replace('{3}', apptDate);
-    let cancelApptSMS = process.env.SMS_LINK_BOOK_APOINTMENT
-      ? ' Click here ' +
-      process.env.SMS_LINK_BOOK_APOINTMENT +
-      ' ' +
-      ApiConstants.PATIENT_CANCEL_APPT_BODY_END
-      : '';
+    
+    const finalString = ` Click here ${process.env.SMS_LINK_BOOK_APOINTMENT} ${ApiConstants.PATIENT_CANCEL_APPT_BODY_END}`;
+    let cancelApptSMS = process.env.SMS_LINK_BOOK_APOINTMENT? finalString: '';
     cancelApptSMS = notificationBody + cancelApptSMS;
 
     console.log('cancelApptSMS======================', cancelApptSMS);
@@ -1490,18 +1487,11 @@ export async function sendReminderNotification(
     NotificationType.APPOINTMENT_CASESHEET_REMINDER_15_VIRTUAL
   ) {
 
-    let chatroom_sms_link = ''
-    if (process.env.SMS_DEEPLINK_APPOINTMENT_CHATROOM) {
-      chatroom_sms_link = process.env.SMS_DEEPLINK_APPOINTMENT_CHATROOM;
-      chatroom_sms_link = chatroom_sms_link.replace('{0}', appointment.id.toString()); //Replacing the placeholder with appointmentid
-    }
-    else {
-      console.error('Could not find the env variable for appointments chatroom sms deeplink');
-    }
+    if(!(appointment && appointment.id)){throw new AphError('Apoointment Id not found for sending appt 15 min reminder sms')};
+    const chatroom_sms_link = process.env.SMS_DEEPLINK_APPOINTMENT_CHATROOM||"".replace('{0}', appointment.id.toString()); //Replacing the placeholder with appointmentid
 
     //Final deeplink URL
     notificationBody = notificationBody + ApiConstants.CLICK_HERE + chatroom_sms_link;
-    console.log(notificationBody);
   }
   //send SMS notification
   if (pushNotificationInput.notificationType != NotificationType.APPOINTMENT_REMINDER_15) {
