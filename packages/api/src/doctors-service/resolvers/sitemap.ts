@@ -116,7 +116,6 @@ const generateSitemap: Resolver<null, {}, DoctorsServiceContext, string> = async
   );
   const healthAreaTextRes = await healthAreaListResp.text();
   const healthAreasUrlsList = JSON.parse(healthAreaTextRes);
-  console.log(healthAreasUrlsList.healthareas, 'health areas');
   let healthAreaUrls = '\n<!--Health Area links-->\n';
   if (healthAreasUrlsList.healthareas && healthAreasUrlsList.healthareas.length > 0) {
     healthAreasUrlsList.healthareas.forEach((link: any) => {
