@@ -160,9 +160,10 @@ export const PastSearches: React.FC = (props) => {
         <Typography component="h6">{isSignedIn ? 'Past Searches' : ''}</Typography>
         <div className={classes.pastSearchList}>
           <div className={classes.searchList}>
+            {/* <div className={classes.sectionHeader}>Your Past Searches</div> */}
             <Grid container spacing={2}>
-              {data.getPatientPastSearches.map((searchDetails, index) => {
-                return index < 4 && searchDetails ? (
+              {data.getPatientPastSearches.map((searchDetails) => {
+                return searchDetails && searchDetails ? (
                   <Grid
                     item
                     xs={6}

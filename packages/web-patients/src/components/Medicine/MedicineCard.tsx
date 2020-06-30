@@ -257,7 +257,7 @@ export const MedicineCard: React.FC<MedicineInformationProps> = (props) => {
                                   {
                                     item_name: product.name,
                                     item_id: product.sku,
-                                    price: product.price,
+                                    price: product.special_price || product.price,
                                     item_category: 'Pharmacy',
                                     item_category_2: product.type_id
                                       ? product.type_id.toLowerCase() === 'pharma'
@@ -349,7 +349,7 @@ export const MedicineCard: React.FC<MedicineInformationProps> = (props) => {
                                   {
                                     item_name: product.name,
                                     item_id: product.sku,
-                                    price: product.price,
+                                    price: product.special_price || product.price,
                                     item_category: 'Pharmacy',
                                     item_category_2: product.type_id
                                       ? product.type_id.toLowerCase() === 'pharma'
@@ -409,7 +409,7 @@ export const MedicineCard: React.FC<MedicineInformationProps> = (props) => {
                                   {
                                     item_name: product.name,
                                     item_id: product.sku,
-                                    price: product.price,
+                                    price: product.special_price || product.price,
                                     item_category: 'Pharmacy',
                                     item_category_2: product.type_id
                                       ? product.type_id.toLowerCase() === 'pharma'
