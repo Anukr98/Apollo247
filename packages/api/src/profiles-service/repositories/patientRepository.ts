@@ -105,7 +105,7 @@ export class PatientRepository extends Repository<Patient> {
     try {
       const cacheCount = await redis.get(`${REDIS_PATIENT_DEVICE_COUNT_KEY_PREFIX}${deviceCode}`);
       if (typeof cacheCount === 'string') {
-        return parseInt(cacheCount);
+        return parseInt(cacheCount, 10);
       }
       const deviceCodeCount = (await this.createQueryBuilder('patient')
         .select(['"mobileNumber" as mobilenumber'])
@@ -148,7 +148,7 @@ export class PatientRepository extends Repository<Patient> {
         `Cache hit ${REDIS_PATIENT_ID_KEY_PREFIX}${id}`
       );
       if (cache && typeof cache === 'string') {
-        let patient: Patient = JSON.parse(cache);
+        const patient: Patient = JSON.parse(cache);
         patient.dateOfBirth = new Date(patient.dateOfBirth);
         return patient;
       } else {
@@ -227,7 +227,7 @@ export class PatientRepository extends Repository<Patient> {
       const patientIds: string[] = ids.split(',');
       const patients: Patient[] = [];
       for (let index = 0; index < patientIds.length; index++) {
-        let patient = await this.getByIdCache(patientIds[index]);
+        const patient = await this.getByIdCache(patientIds[index]);
         if (patient) {
           patients.push(patient);
         }
@@ -271,7 +271,7 @@ export class PatientRepository extends Repository<Patient> {
 
   async findByMobileNumberLogin(mobileNumber: string) {
     const patientList = await this.getByMobileCache(mobileNumber);
-    let finalList: Patient[] = patientList;
+    //const finalList: Patient[] = patientList;
     if (patientList.length > 1) {
       patientList.map(async (patient) => {
         if (patient.firstName == '' || patient.uhid == '') {
