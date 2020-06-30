@@ -197,7 +197,7 @@ export const ApplyConsultCoupon: React.FC<ApplyConsultCouponProps> = (props) => 
           textInputprops={{
             ...(!isValidCoupon && couponText.length > 0 ? { selectionColor: '#e50000' } : {}),
             maxLength: 15,
-            autoFocus: true,
+            // autoFocus: true,
             autoCapitalize: 'characters',
           }}
           inputStyle={[
@@ -276,18 +276,18 @@ export const ApplyConsultCoupon: React.FC<ApplyConsultCouponProps> = (props) => 
           container={{ borderBottomWidth: 0 }}
           onPressLeftIcon={() => props.navigation.goBack()}
         />
-        <KeyboardAvoidingView
+        {/* <KeyboardAvoidingView
           behavior={'padding'}
           style={{ flex: 1 }}
           {...keyboardVerticalOffset}
           enabled
-        >
-          <View style={{ flex: 1 }}>
-            <ScrollView bounces={false}>{renderCouponCard()}</ScrollView>
-            {renderBottomButtons()}
-          </View>
-          {validating && <Spinner style={{ backgroundColor: 'rgba(0,0,0, 0)' }} />}
-        </KeyboardAvoidingView>
+        > */}
+        <View style={{ flex: 1 }}>
+          <ScrollView bounces={false}>{renderCouponCard()}</ScrollView>
+          {renderBottomButtons()}
+        </View>
+        {validating && <Spinner style={{ backgroundColor: 'rgba(0,0,0, 0)' }} />}
+        {/* </KeyboardAvoidingView> */}
       </SafeAreaView>
     </View>
   );
