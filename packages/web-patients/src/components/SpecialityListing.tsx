@@ -18,7 +18,6 @@ import { PastSearches } from 'components/PastSearches';
 import { useAuth } from 'hooks/authHooks';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { Link } from 'react-router-dom';
-import { Cities } from './Cities';
 import fetchUtil from 'helpers/fetch';
 import { SpecialtyDivision } from './SpecialtyDivision';
 import {
@@ -29,9 +28,7 @@ import {
 } from 'graphql/types/SearchDoctorAndSpecialtyByName';
 import { SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME } from 'graphql/doctors';
 import { useApolloClient } from 'react-apollo-hooks';
-import { useLocationDetails } from 'components/LocationProvider';
-import { readableParam } from 'helpers/commonHelpers';
-import _lowerCase from 'lodash/lowerCase';
+import { SpecialtySearch } from './SpecialtySearch';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -174,46 +171,6 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: '20px 0',
       [theme.breakpoints.down('sm')]: {
         padding: '20px',
-      },
-    },
-    location: {
-      display: 'flex',
-      alignItems: 'center',
-      borderBottom: '2px solid #00b38e',
-      padding: '5px 0',
-      margin: '0 10px 0 0',
-      cursor: 'pointer',
-      '& >img': {
-        margin: '0 10px 0 0',
-      },
-      [theme.breakpoints.down(600)]: {
-        margin: '0 0 10px',
-      },
-    },
-    userLocation: {
-      display: 'flex',
-      alignItems: 'center',
-      '& p': {
-        fontSize: 16,
-        color: 'rgba(2,71,91, 0.3)',
-        fontWeight: 700,
-        margin: '0 10px 0 0',
-        minWidth: 50,
-        maxWidth: 120,
-        whiteSpace: 'nowrap',
-      },
-    },
-    searchInput: {
-      padding: '0 0 0 30px',
-    },
-    searchContainer: {
-      display: 'flex',
-      alignItems: 'center',
-      width: '100%',
-      position: 'relative',
-      '&  >img': {
-        position: 'absolute',
-        left: 0,
       },
     },
     topSpeciality: {},
@@ -568,15 +525,6 @@ const useStyles = makeStyles((theme: Theme) => {
         alignItems: 'flex-start',
       },
     },
-    specialitySearch: {
-      padding: '10px 0',
-      display: 'flex',
-      alignItems: 'center',
-      [theme.breakpoints.down(700)]: {
-        flexDirection: 'column',
-        alignItems: 'flex-start',
-      },
-    },
     footerLinks: {
       [theme.breakpoints.down(900)]: {
         display: 'none',
@@ -587,9 +535,6 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down(600)]: {
         padding: 20,
       },
-    },
-    cityActive: {
-      color: '#02475b !important',
     },
     dialogTitle: {
       textAlign: 'left',
@@ -625,71 +570,6 @@ const useStyles = makeStyles((theme: Theme) => {
         width: 180,
         fontSize: 13,
         fontWeight: 700,
-      },
-    },
-    searchContent: {
-      position: 'absolute',
-      top: 36,
-      left: 0,
-      right: 0,
-      zIndex: 5,
-      maxHeight: 300,
-      overflow: 'auto',
-      padding: 20,
-      background: '#fff',
-      borderRadius: 5,
-      boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
-
-      '& h6': {
-        fontSize: 12,
-        color: 'rgba(1,71,91, 0.6)',
-        fontWeight: 700,
-        textTransform: 'uppercase',
-      },
-      '&::-webkit-scrollbar': {
-        width: 8,
-      },
-      '&::-webkit-scrollbar-track': {
-        background: '#fff',
-      },
-      '&::-webkit-scrollbar-thumb': {
-        background: '#d8d8d8',
-        borderRadius: 4,
-      },
-    },
-    doctorContent: {
-      display: 'flex',
-      alignItems: 'center',
-    },
-    dImg: {
-      margin: '0 15px 0 0',
-      '& img': {
-        width: 44,
-        height: 44,
-        borderRadius: '50%',
-        border: '1px solid #ccc',
-      },
-    },
-    doctorDetails: {},
-    doctorList: {
-      padding: 0,
-      margin: 0,
-      listStyle: 'none',
-      '& li': {
-        padding: '10px 0',
-      },
-    },
-    docContent: {
-      '& h2': {
-        fontSize: 16,
-        color: '#02475b',
-        fontWeight: 500,
-        margin: '0 0 5px',
-      },
-      '& p': {
-        fontSize: 12,
-        color: 'rgba(2,71,91,0.7)',
-        fontWeight: 500,
       },
     },
     sContent: {
@@ -862,125 +742,18 @@ export const SpecialityListing: React.FC = (props) => {
                 <div className={classes.specialityContent}>
                   <div className={classes.sHeader}>
                     <Typography component="h1">Book Doctor Appointments Online</Typography>
-                    {/* <a href="javascript:void(0);">
-                      <img src={require('images/ic_round-share.svg')} />
-                    </a> */}
                   </div>
-                  <div className={classes.specialitySearch}>
-                    <div className={classes.location} onClick={() => setLocationPopup(true)}>
-                      <img src={require('images/location.svg')} alt="" />
-                      <div className={classes.userLocation}>
-                        <Typography className={selectedCity ? classes.cityActive : null}>
-                          {selectedCity === '' ? 'Select Your City' : selectedCity}
-                        </Typography>
-                        <img src={require('images/ic_dropdown_green.svg')} alt="" />
-                      </div>
-                    </div>
-                    <div className={classes.searchContainer}>
-                      <img src={require('images/ic-search.svg')} alt="" />
-                      <AphInput
-                        className={classes.searchInput}
-                        placeholder="Search doctors or specialities"
-                        onChange={(e) => {
-                          const searchValue = e.target.value;
-                          setSearchKeyword(searchValue);
-                        }}
-                      />
-                      {(searchSpecialty || searchDoctors || searchLoading) &&
-                        searchKeyword.length > 0 && (
-                          <div className={classes.searchContent}>
-                            {searchLoading ? (
-                              <CircularProgress />
-                            ) : (
-                              <>
-                                {searchDoctors && searchDoctors.length > 0 && (
-                                  <div className={classes.docContent}>
-                                    <Typography component="h6">Doctors</Typography>
-                                    <ul className={classes.doctorList}>
-                                      {searchDoctors.map((doctor: DoctorsType) => (
-                                        <li key={doctor.id}>
-                                          <Link
-                                            key={doctor.id}
-                                            to={clientRoutes.specialtyDoctorDetails(
-                                              doctor.specialty && doctor.specialty.name
-                                                ? _lowerCase(doctor.specialty.name).replace(
-                                                    /[/ / /]/g,
-                                                    '-'
-                                                  )
-                                                : '',
-                                              _lowerCase(doctor.fullName).replace(/ /g, '-'),
-                                              doctor.id
-                                            )}
-                                          >
-                                            <div className={classes.doctorContent}>
-                                              <div className={classes.dImg}>
-                                                <img src={doctor.photoUrl} />
-                                              </div>
-                                              <div className={classes.doctorDetails}>
-                                                <Typography component="h2">
-                                                  {doctor.salutation} {doctor.fullName}
-                                                </Typography>
-                                                <Typography>
-                                                  {doctor.specialty && doctor.specialty.name
-                                                    ? doctor.specialty.name
-                                                    : ''}{' '}
-                                                  |{' '}
-                                                  {doctor.doctorHospital &&
-                                                  doctor.doctorHospital[0] &&
-                                                  doctor.doctorHospital[0].facility
-                                                    ? `${
-                                                        doctor.doctorHospital[0].facility.name || ''
-                                                      } ${
-                                                        doctor.doctorHospital[0].facility
-                                                          .streetLine1 || ''
-                                                      } ${
-                                                        doctor.doctorHospital[0].facility.city || ''
-                                                      } `
-                                                    : ''}
-                                                </Typography>
-                                              </div>
-                                            </div>
-                                          </Link>
-                                        </li>
-                                      ))}
-                                    </ul>
-                                  </div>
-                                )}
-                                {searchSpecialty && searchSpecialty.length > 0 && (
-                                  <div className={classes.sContent}>
-                                    <Typography component="h6">Specialities</Typography>
-                                    <ul className={classes.sList}>
-                                      {searchSpecialty.map((specialty: SpecialtyType) => (
-                                        <Link
-                                          key={specialty.id}
-                                          to={
-                                            selectedCity === ''
-                                              ? clientRoutes.specialties(
-                                                  readableParam(specialty.name)
-                                                )
-                                              : clientRoutes.citySpecialties(
-                                                  _lowerCase(selectedCity),
-                                                  readableParam(specialty.name)
-                                                )
-                                          }
-                                        >
-                                          <li key={specialty.id}>{specialty.name}</li>
-                                        </Link>
-                                      ))}
-                                    </ul>
-                                  </div>
-                                )}
-                              </>
-                            )}
-                            {!searchLoading &&
-                              searchDoctors &&
-                              searchDoctors.length === 0 &&
-                              searchSpecialty &&
-                              searchSpecialty.length === 0 && <p>No Results Found</p>}
-                          </div>
-                        )}
-                    </div>
-                  </div>
+                  <SpecialtySearch
+                    setSearchKeyword={setSearchKeyword}
+                    searchKeyword={searchKeyword}
+                    selectedCity={selectedCity}
+                    searchSpecialty={searchSpecialty}
+                    searchDoctors={searchDoctors}
+                    searchLoading={searchLoading}
+                    setLocationPopup={setLocationPopup}
+                    locationPopup={locationPopup}
+                    setSelectedCity={setSelectedCity}
+                  />
                   {currentPatient && currentPatient.id && searchKeyword.length <= 0 && (
                     <PastSearches />
                   )}
@@ -1189,14 +962,6 @@ export const SpecialityListing: React.FC = (props) => {
       <div className={classes.footerLinks}>
         <BottomLinks />
       </div>
-      {locationPopup && (
-        <Cities
-          setSelectedCity={setSelectedCity}
-          locationPopup={locationPopup}
-          setLocationPopup={setLocationPopup}
-          selectedCity={selectedCity}
-        />
-      )}
     </div>
   );
 };
