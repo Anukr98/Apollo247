@@ -216,7 +216,7 @@ export const sendNotificationWhatsapp = (
     process.env.WHATSAPP_PASSWORD +
     '&auth_scheme=plain&format=text&v=1.1&channel=WHATSAPP';
   return new Promise((resolve, reject) => {
-    const optInResponse = fetch(apiUrl)
+    fetch(apiUrl)
       .then(async (res) => {
         if (loginType == 1) {
           const sendApiUrl = `${process.env.WHATSAPP_URL}?method=SendMessage&send_to=${mobileNumber}&userid=${process.env.WHATSAPP_USERNAME}&password=${process.env.WHATSAPP_PASSWORD}&auth_scheme=plain&msg_type=TEXT&format=text&v=1.1&msg=${message}`;
