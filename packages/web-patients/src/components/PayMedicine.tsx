@@ -683,7 +683,11 @@ export const PayMedicine: React.FC = (props) => {
           });
           /* Webengage Code End */
           if (orderAutoId && orderAutoId > 0 && value !== 'COD') {
-            const pgUrl = `${process.env.PHARMACY_PG_URL}/paymed?amount=${totalWithCouponDiscount}&oid=${orderAutoId}&token=${authToken}&pid=${currentPatiendId}&source=web&paymentTypeID=${value}&paymentModeOnly=YES`;
+            const pgUrl = `${
+              process.env.PHARMACY_PG_URL
+            }/paymed?amount=${totalWithCouponDiscount.toFixed(
+              2
+            )}&oid=${orderAutoId}&token=${authToken}&pid=${currentPatiendId}&source=web&paymentTypeID=${value}&paymentModeOnly=YES`;
             window.location.href = pgUrl;
           } else if (orderAutoId && orderAutoId > 0 && value === 'COD') {
             placeOrder(orderId, orderAutoId, false, '');
