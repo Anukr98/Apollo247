@@ -3,12 +3,10 @@ import { Resolver } from 'api-gateway';
 import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
 import { LoginOtp, LOGIN_TYPE, OTP_STATUS } from 'profiles-service/entities';
 import { LoginOtpRepository } from 'profiles-service/repositories/loginOtpRepository';
-import { LoginOtpArchiveRepository } from 'profiles-service/repositories/loginOtpArchiveRepository';
 import { ApiConstants } from 'ApiConstants';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { log } from 'customWinstonLogger';
-import { Connection } from 'typeorm';
 import { debugLog } from 'customWinstonLogger';
 import { sendNotificationWhatsapp } from 'notifications-service/resolvers/notifications';
 
@@ -67,13 +65,12 @@ const login: Resolver<
   const { mobileNumber, loginType, hashCode } = args;
   const otpRepo = profilesDb.getCustomRepository(LoginOtpRepository);
 
-
   loginLogger('OTP_GENERATION_START');
   let otp = generateOTP();
   loginLogger('OTP_GENERATION_END');
   // get static otp env specific
-  let staticOTP = getStaticOTP({ mobileNumber });
-  otp = (staticOTP) ? staticOTP : otp;
+  const staticOTP = getStaticOTP({ mobileNumber });
+  otp = staticOTP ? staticOTP : otp;
 
   loginLogger('OTP_INSERT_START');
   const optAttrs: Partial<LoginOtp> = {
@@ -86,9 +83,8 @@ const login: Resolver<
   loginLogger('OTP_INSERT_END');
 
   // bypass otp env specific
-  let bypassRes = OTPBypass({ otpSaveResponse, logger: loginLogger });
+  const bypassRes = OTPBypass({ otpSaveResponse, logger: loginLogger });
   if (bypassRes) return bypassRes;
-
 
   //call sms gateway service to send the OTP here
   return sendMessage({ mobileNumber, otp, hashCode, logger: loginLogger, otpSaveResponse });
@@ -165,7 +161,6 @@ const resendOtp: Resolver<
 
   //call sms gateway service to send the OTP here
   return sendMessage({ mobileNumber, otp, hashCode, logger: resendLogger, otpSaveResponse });
-
 };
 type testSMSResult = {
   send: Boolean;
@@ -194,7 +189,6 @@ const testSendSMS: Resolver<
     send: true,
   };
 };
-
 
 //returns random 6 digit number string
 export const generateOTP = () => {
@@ -295,23 +289,24 @@ export const loginResolvers = {
   },
 };
 
-
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const sendMessage = async (args: any) => {
-
   const { loginType, mobileNumber, otp, hashCode, logger, otpSaveResponse } = args;
   logger('SEND_SMS___START');
-  let smsResult;
+  //let smsResult;
   if (loginType == LOGIN_TYPE.DOCTOR) {
     const message = ApiConstants.DOCTOR_WHATSAPP_OTP.replace('{0}', otp);
-    let promiseSendNotification = sendNotificationWhatsapp(mobileNumber, message, 1);
-    let promiseSendSMS = sendSMS(mobileNumber, otp, hashCode);
-    let messageSentResponse = await Promise.all([promiseSendNotification.catch(err => err), promiseSendSMS.catch(err => err)]);
-    smsResult = messageSentResponse[1];
+    const promiseSendNotification = sendNotificationWhatsapp(mobileNumber, message, 1);
+    const promiseSendSMS = sendSMS(mobileNumber, otp, hashCode);
+    const messageSentResponse = await Promise.all([
+      promiseSendNotification.catch((err) => err),
+      promiseSendSMS.catch((err) => err),
+    ]);
+    messageSentResponse[1];
   } else {
-    smsResult = await sendSMS(mobileNumber, otp, hashCode);
+    await sendSMS(mobileNumber, otp, hashCode);
   }
   logger('SEND_SMS___END');
-
 
   logger('API_CALL___END');
   return {
@@ -319,11 +314,9 @@ const sendMessage = async (args: any) => {
     loginId: otpSaveResponse.id,
     message: ApiConstants.OTP_SUCCESS_MESSAGE.toString(),
   };
-}
+};
 
-
-
-
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const OTPBypass = (args: any) => {
   const { mobileNumber, otpSaveResponse, logger } = args;
   //if production environment, and specific mobileNumber, return the response without sending SMS
@@ -350,9 +343,9 @@ const OTPBypass = (args: any) => {
     };
   }
   return null;
-}
+};
 
-
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const getStaticOTP = (args: any) => {
   const { mobileNumber } = args;
   //if performance environment(as), use the static otp
@@ -374,4 +367,4 @@ const getStaticOTP = (args: any) => {
   }
 
   return null;
-}
+};
