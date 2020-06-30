@@ -543,6 +543,7 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
   const { currentPincode, currentLong, currentLat } = useLocationDetails();
   const { currentPatient } = useAllCurrentPatients();
   const params = useParams<{
+    city: string;
     specialty: string;
   }>();
   const prakticeSDKSpecialties = localStorage.getItem('symptomTracker');
@@ -561,7 +562,9 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
   const [specialtyName, setSpecialtyName] = useState<string>('');
   const [searchKey, setSearchKey] = useState<string>('');
   const [locationPopup, setLocationPopup] = useState<boolean>(false);
-  const [selectedCity, setSelectedCity] = useState<string>('');
+  const [selectedCity, setSelectedCity] = useState<string>(
+    params && params.city ? params.city : ''
+  );
   const [searchSpecialty, setSearchSpecialty] = useState<SpecialtyType[] | null>(null);
   const [searchKeyword, setSearchKeyword] = useState<string>('');
   const [searchDoctors, setSearchDoctors] = useState<DoctorsType[] | null>(null);
@@ -569,7 +572,7 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
   const [slugName, setSlugName] = useState<string>('');
   const [faqData, setFaqData] = useState<any>();
   const { isSignedIn } = useAuth();
-
+  
   /* Gtm code start */
   useEffect(() => {
     if (doctorData && doctorData.length > 0) {
@@ -666,7 +669,7 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
   useEffect(() => {
     if (slugName !== '') {
       axios
-        .get(`${process.env.CMS_BASE_URL}/api/specialty-details/${slugName}`, {
+        .get(`${process.env.CMS_BASE_URL}/api/specialty-details/${readableParam(specialtyName)}`, {
           headers: { 'Content-Type': 'application/json', Authorization: process.env.CMS_TOKEN },
         })
         .then((res: any) => {
