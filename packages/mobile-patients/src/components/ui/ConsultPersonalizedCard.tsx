@@ -2,24 +2,17 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
 import React from 'react';
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { CapsuleView } from './CapsuleView';
-import { DoctorPlaceholderImage, OnlineConsult, PhysicalConsult } from './Icons';
 import { getPatientPersonalizedAppointments_getPatientPersonalizedAppointments } from '../../graphql/types/getPatientPersonalizedAppointments';
+import { DoctorPlaceholderImage, OnlineConsult, PhysicalConsult } from './Icons';
 
 const styles = StyleSheet.create({
-  availableView: {
-    position: 'absolute',
-    right: 0,
-    top: 0,
-    minWidth: 112,
-  },
   imageView: {
-    margin: 16,
-    marginTop: 32,
+    margin: 15,
+    marginTop: 10,
     width: 60,
   },
   doctorNameStyles: {
-    paddingTop: 40,
+    paddingTop: 15,
     paddingLeft: 0,
     textTransform: 'capitalize',
     ...theme.fonts.IBMPlexSansMedium(18),
@@ -33,8 +26,8 @@ const styles = StyleSheet.create({
     color: theme.colors.SKY_BLUE,
   },
   consultTextStyles: {
-    paddingVertical: 11.5,
-    paddingLeft: 0,
+    paddingTop: 11,
+    paddingLeft: 10,
     ...theme.fonts.IBMPlexSansMedium(14),
     color: theme.colors.LIGHT_BLUE,
   },
@@ -64,48 +57,25 @@ export const ConsultPersonalizedCard: React.FC<ConsultPersonalizedCardProps> = (
   const renderAppointmentsScreen = () => {
     const item: any = rowData && rowData;
 
-    const tomorrowDate = moment(new Date())
-      .add(1, 'days')
-      .format('DD MMM');
-    // console.log(tomorrow, 'tomorrow');
-    const appointmentDateTomarrow = moment(item.appointmentDateTime).format('DD MMM');
-    // console.log(appointmentDateTomarrow, 'apptomorrow', tomorrowDate);
-
     const appointmentDateTime = moment
       .utc(item.appointmentDateTime)
       .local()
-      .format('YYYY-MM-DD HH:mm:ss');
-    const minutes = moment.duration(moment(appointmentDateTime).diff(new Date())).asMinutes();
-    const title =
-      minutes > 0 && minutes <= 15
-        ? `${Math.ceil(minutes)} MIN${Math.ceil(minutes) > 1 ? 'S' : ''}`
-        : tomorrowDate == appointmentDateTomarrow
-        ? 'TOMORROW, ' + moment(appointmentDateTime).format('h:mm A')
-        : moment(appointmentDateTime).format(
-            appointmentDateTime.split(' ')[0] === new Date().toISOString().split('T')[0]
-              ? 'h:mm A'
-              : 'DD MMM, h:mm A'
-          );
-    const isActive = minutes > 0 && minutes <= 15 ? true : false;
+      .format('DD MMM, HH:mm A');
     return (
       <View style={{ margin: 20, ...theme.viewStyles.cardViewStyle }}>
         <TouchableOpacity
           activeOpacity={1}
           onPress={() => {
             props.onClickButton();
-            // props.navigation.navigate(AppRoutes.DoctorDetails, {
-            //   doctorId: item.doctorDetails.id,
-            // });
           }}
         >
           <View style={{ overflow: 'hidden', flex: 1 }}>
             <View style={{ flexDirection: 'row' }}>
-              <CapsuleView title={title} style={styles.availableView} isActive={isActive} />
               <View style={styles.imageView}>
                 {item.doctorDetails &&
                 item.doctorDetails.photoUrl &&
                 item.doctorDetails.photoUrl.match(
-                  /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG)/
+                  /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jpeg|JPEG)/
                 ) ? (
                   <Image
                     style={{
@@ -134,7 +104,7 @@ export const ConsultPersonalizedCard: React.FC<ConsultPersonalizedCardProps> = (
 
                 <Text style={styles.doctorSpecializationStyles}>
                   {item.doctorDetails && item.doctorDetails.specialty
-                    ? item.doctorDetails.specialty.name.toUpperCase()
+                    ? item.doctorDetails.specialty.userFriendlyNomenclature.toUpperCase()
                     : ''}
                   {item.doctorDetails
                     ? ` | ${item.doctorDetails.experience} YR${
@@ -147,20 +117,35 @@ export const ConsultPersonalizedCard: React.FC<ConsultPersonalizedCardProps> = (
                 <View
                   style={{
                     flexDirection: 'row',
-                    justifyContent: 'space-between',
                     alignItems: 'flex-start',
                   }}
                 >
-                  <Text style={styles.consultTextStyles}>{item.hospitalLocation}</Text>
                   {item.appointmentType === 'ONLINE' ? (
-                    <OnlineConsult style={{ marginTop: 13, height: 15, width: 15 }} />
+                    <OnlineConsult style={{ marginTop: 13, height: 17, width: 17 }} />
                   ) : (
-                    <PhysicalConsult style={{ marginTop: 13, height: 15, width: 15 }} />
+                    <PhysicalConsult style={{ marginTop: 13, height: 17, width: 17 }} />
                   )}
+                  <View>
+                    <Text style={styles.consultTextStyles}>{item.hospitalLocation}</Text>
+                    <Text
+                      style={{
+                        paddingBottom: 12,
+                        paddingLeft: 10,
+                        ...theme.viewStyles.text('M', 10, '#02475b', 0.6, 20, 0),
+                      }}
+                    >
+                      {`Last Appointment: ${appointmentDateTime}`}
+                    </Text>
+                  </View>
                 </View>
               </View>
             </View>
-            <View style={[styles.separatorStyle, { marginHorizontal: 16 }]} />
+            <View
+              style={[
+                styles.separatorStyle,
+                { marginHorizontal: 16, borderBottomColor: 'rgba(2, 71, 91, 0.6)' },
+              ]}
+            />
 
             <View>
               <Text style={styles.prepareForConsult}>BOOK A FOLLOW UP</Text>

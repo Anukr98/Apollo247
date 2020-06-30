@@ -565,7 +565,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                       {item.doctorInfo &&
                       item.doctorInfo.thumbnailUrl &&
                       item.doctorInfo.thumbnailUrl.match(
-                        /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG)/
+                        /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jpeg|JPEG)/
                       ) ? (
                         <Image
                           style={{

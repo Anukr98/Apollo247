@@ -1642,6 +1642,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
               onPress={() => {
                 setShowProfilePopUp(false);
                 selectUser(item);
+                fetchPastSearches();
               }}
               style={[styles.ctaWhiteButtonViewStyle]}
             >

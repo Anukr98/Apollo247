@@ -76,7 +76,7 @@ export enum FirebaseEventName {
   PAYMENT_INSTRUMENT = 'PAYMENT_INSTRUMENT',
   PAYMENT_STATUS = 'PAYMENT_STATUS',
 
-  PURCHASE = 'PURCHASE',
+  PURCHASE = 'purchase',
 }
 
 export interface PatientInfo {
@@ -566,10 +566,10 @@ export interface FirebaseEvents {
   };
 
   [FirebaseEventName.PURCHASE]: {
-    COUPON?: string;
-    CURRENCY: string;
-    ITEMS: any;
-    TRANSACTION_ID: string;
-    VALUE: number;
+    coupon?: string;
+    currency: string;
+    items: any;
+    transaction_id: string;
+    value: number;
   };
 }

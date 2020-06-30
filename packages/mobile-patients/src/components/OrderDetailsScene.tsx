@@ -605,8 +605,8 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           `Your order is ready for pickup at your selected ${addressData}`,
         ],
         [MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY]: [
-          'Out for delivery: ',
-          `Your order #${orderAutoId} would be reaching your doorstep soon.`,
+          '',
+          `Your order has been picked up from our store!`,
         ],
         [MEDICINE_ORDER_STATUS.PAYMENT_FAILED]: [
           '',

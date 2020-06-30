@@ -405,13 +405,6 @@ export enum STATUS {
   UNAVAILABLE_MEDMANTRA = "UNAVAILABLE_MEDMANTRA",
 }
 
-export enum Salutation {
-  DR = "DR",
-  MR = "MR",
-  MRS = "MRS",
-  MS = "MS",
-}
-
 export enum SpecialtySearchType {
   ID = "ID",
   NAME = "NAME",
@@ -518,9 +511,9 @@ export interface BookAppointmentInput {
   deviceType?: DEVICETYPE | null;
   couponCode?: string | null;
   externalConnect?: boolean | null;
-  actualAmount?: number;
-  discountedAmount?: number;
   pinCode?: string | null;
+  actualAmount?: number | null;
+  discountedAmount?: number | null;
 }
 
 export interface BookFollowUpAppointmentInput {

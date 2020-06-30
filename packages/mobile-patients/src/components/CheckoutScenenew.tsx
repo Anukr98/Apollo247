@@ -515,11 +515,11 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     });
     let code: any = coupon ? coupon.code : null;
     const eventAttributes: FirebaseEvents[FirebaseEventName.PURCHASE] = {
-      COUPON: code,
-      CURRENCY: 'INR',
-      ITEMS: items,
-      TRANSACTION_ID: orderId,
-      VALUE: getFormattedAmount(grandTotal),
+      coupon: code,
+      currency: 'INR',
+      items: items,
+      transaction_id: orderId,
+      value: getFormattedAmount(grandTotal),
     };
     postFirebaseEvent(FirebaseEventName.PURCHASE, eventAttributes);
   };

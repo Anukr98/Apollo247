@@ -459,6 +459,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         return item && item.doctorType != 'APOLLO';
       });
       setFilteredDoctorsList(otherDoctors);
+      setApolloDocsNumber(doctorsApollo.length - otherDoctors.length);
+      setPartnerDocsNumber(otherDoctors.length);
     }
   };
 

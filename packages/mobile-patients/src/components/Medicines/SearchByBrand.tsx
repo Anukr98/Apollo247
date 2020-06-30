@@ -129,7 +129,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
   const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
   const { getPatientApiCall } = useAuth();
   const { showAphAlert, setLoading: globalLoading } = useUIElements();
-  const { locationDetails, pharmacyLocation } = useAppCommonData();
+  const { locationDetails, pharmacyLocation, isPharmacyLocationServiceable } = useAppCommonData();
   const pharmacyPincode = g(pharmacyLocation, 'pincode') || g(locationDetails, 'pincode');
 
   useEffect(() => {
@@ -210,6 +210,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
       suggestionItem ? null : globalLoading,
       props.navigation,
       currentPatient,
+      isPharmacyLocationServiceable,
       suggestionItem ? () => setItemsLoading({ ...itemsLoading, [sku]: false }) : undefined
     );
     postwebEngageAddToCartEvent(item, 'Pharmacy List');

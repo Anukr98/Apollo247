@@ -154,11 +154,11 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
       items.push(itemObj);
     });
     const eventAttributes: FirebaseEvents[FirebaseEventName.PURCHASE] = {
-      COUPON: coupon,
-      CURRENCY: 'INR',
-      ITEMS: items,
-      TRANSACTION_ID: orderId,
-      VALUE: totalAmount,
+      coupon: coupon,
+      currency: 'INR',
+      items: items,
+      transaction_id: orderId,
+      value: totalAmount,
     };
     postFirebaseEvent(FirebaseEventName.PURCHASE, eventAttributes);
   };
