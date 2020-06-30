@@ -557,7 +557,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                     </Text>
                   ) : null}
                 </View>
-                {doctorDetails.doctorType === 'APOLLO' ? (
+                {doctorDetails.doctorType !== 'DOCTOR_CONNECT' ? (
                   <ApolloDoctorIcon style={{ marginVertical: 12, width: 80, height: 32 }} />
                 ) : (
                   <ApolloPartnerIcon style={{ marginVertical: 12, width: 80, height: 32 }} />
