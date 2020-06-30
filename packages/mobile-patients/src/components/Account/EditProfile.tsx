@@ -690,9 +690,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
                 },
               })
               .then((data) => {
-                console.log('---------------------------------');
                 console.log(data);
-                console.log('---------------------------------');
                 data!.data!.uploadFile && setPhotoUrl(data!.data!.uploadFile!.filePath!);
                 setUploadVisible(false);
               })
