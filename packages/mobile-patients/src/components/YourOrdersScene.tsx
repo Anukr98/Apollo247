@@ -44,15 +44,16 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
     variables: { patientId: currentPatient && currentPatient.id },
     fetchPolicy: 'no-cache',
   });
-  const orders = loading
-    ? []
-    : ((g(data, 'getMedicineOrdersOMSList', 'medicineOrdersList') as MedOrder[]) || []).filter(
-        (item) =>
-          !(
-            (item.medicineOrdersStatus || []).length == 1 &&
-            (item.medicineOrdersStatus || []).find((s) => !s!.hideStatus)
-          )
-      );
+  const orders =
+    loading || error
+      ? []
+      : ((g(data, 'getMedicineOrdersOMSList', 'medicineOrdersList') as MedOrder[]) || []).filter(
+          (item) =>
+            !(
+              (item.medicineOrdersStatus || []).length == 1 &&
+              (item.medicineOrdersStatus || []).find((s) => !s!.hideStatus)
+            )
+        );
 
   const refetchOrders = async () => {
     try {
