@@ -216,43 +216,6 @@ const useStyles = makeStyles((theme: Theme) => {
         left: 0,
       },
     },
-    pastSearch: {
-      padding: '20px 0 0',
-      '& h6': {
-        fontSize: 14,
-        fontWeight: 'bold',
-      },
-    },
-    pastSearchList: {
-      margin: 0,
-      padding: '20px ',
-      listStyle: 'none',
-      display: 'flex',
-      alignItems: 'center',
-      '& li': {
-        margin: '0 16px 0 0',
-        minWidth: 150,
-        textAlign: 'center',
-        '& a': {
-          padding: 12,
-          background: '#ffffff',
-          borderRadius: 10,
-          boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
-          color: '#fc9916',
-          fontsize: 13,
-          textTransform: 'uppercase',
-          display: 'block',
-          fontWeight: 'bold',
-        },
-        '& :last-child': {
-          margin: 0,
-        },
-      },
-      [theme.breakpoints.down('sm')]: {
-        width: '100%',
-        overflowX: 'auto',
-      },
-    },
     topSpeciality: {},
     sectionHeader: {
       padding: '10px 0',
@@ -794,7 +757,6 @@ function a11yProps(index: any) {
 
 export const SpecialityListing: React.FC = (props) => {
   const classes = useStyles({});
-  const { currentPincode } = useLocationDetails();
   const { currentPatient } = useAllCurrentPatients();
   const apolloClient = useApolloClient();
   const { isSignedIn } = useAuth();
@@ -838,7 +800,7 @@ export const SpecialityListing: React.FC = (props) => {
   }, [faqs]);
 
   useEffect(() => {
-    if (searchKeyword.length > 2) {
+    if (searchKeyword.length > 2 || selectedCity.length) {
       setSearchLoading(true);
       apolloClient
         .query<SearchDoctorAndSpecialtyByName, SearchDoctorAndSpecialtyByNameVariables>({
@@ -846,7 +808,7 @@ export const SpecialityListing: React.FC = (props) => {
           variables: {
             searchText: searchKeyword,
             patientId: currentPatient ? currentPatient.id : '',
-            pincode: currentPincode ? currentPincode : localStorage.getItem('currentPincode') || '',
+            city: selectedCity,
           },
           fetchPolicy: 'no-cache',
         })
@@ -869,7 +831,7 @@ export const SpecialityListing: React.FC = (props) => {
           setSearchLoading(false);
         });
     }
-  }, [searchKeyword]);
+  }, [searchKeyword, selectedCity]);
 
   return (
     <div className={classes.slContainer}>
@@ -966,10 +928,14 @@ export const SpecialityListing: React.FC = (props) => {
                                                   {doctor.doctorHospital &&
                                                   doctor.doctorHospital[0] &&
                                                   doctor.doctorHospital[0].facility
-                                                    ? `${doctor.doctorHospital[0].facility.name ||
-                                                        ''} ${doctor.doctorHospital[0].facility
-                                                        .streetLine1 || ''} ${doctor
-                                                        .doctorHospital[0].facility.city || ''} `
+                                                    ? `${
+                                                        doctor.doctorHospital[0].facility.name || ''
+                                                      } ${
+                                                        doctor.doctorHospital[0].facility
+                                                          .streetLine1 || ''
+                                                      } ${
+                                                        doctor.doctorHospital[0].facility.city || ''
+                                                      } `
                                                     : ''}
                                                 </Typography>
                                               </div>
@@ -1016,25 +982,25 @@ export const SpecialityListing: React.FC = (props) => {
                     </div>
                   </div>
                   {currentPatient && currentPatient.id && searchKeyword.length <= 0 && (
-                    <div className={classes.pastSearch}>
-                      <Typography component="h6">{isSignedIn ? 'Past Searches' : ''}</Typography>
-                      <div className={classes.pastSearchList}>
-                        <PastSearches />
-                      </div>
+                    <PastSearches />
+                  )}
+                  {selectedCity !== '' && searchDoctors && searchDoctors.length === 0 && (
+                    <div className={classes.noDoctorContent}>
+                      <Typography component="h2">
+                        No Specialties/Doctors found near {selectedCity}. Don’t worry, now you can
+                        consult doctors from any city using Chat/Audio/Video.
+                      </Typography>
+                      <Typography>
+                        How ? Choose a doctor &gt; Book a slot &gt; Make a payment &gt; Consult via
+                        video/audio/chat &gt; Receive prescription instantly &gt; Chat with the
+                        doctor for 6 days after your consult
+                      </Typography>
                     </div>
                   )}
-                  <div className={classes.noDoctorContent}>
-                    <Typography component="h2">
-                      No Specialties/Doctors found near Chityal. Don’t worry, now you can consult
-                      doctors from any city using Chat/Audio/Video.
-                    </Typography>
-                    <Typography>
-                      How ? Choose a doctor &gt; Book a slot &gt; Make a payment &gt; Consult via
-                      video/audio/chat &gt; Receive prescription instantly &gt; Chat with the doctor
-                      for 6 days after your consult
-                    </Typography>
-                  </div>
-                  <SpecialtyDivision selectedCity={selectedCity} />
+                  <SpecialtyDivision
+                    selectedCity={selectedCity}
+                    doctorsCount={searchDoctors ? searchDoctors.length : 0}
+                  />
                 </div>
               </Grid>
               <Grid item xs={12} md={4}>
@@ -1228,6 +1194,7 @@ export const SpecialityListing: React.FC = (props) => {
           setSelectedCity={setSelectedCity}
           locationPopup={locationPopup}
           setLocationPopup={setLocationPopup}
+          selectedCity={selectedCity}
         />
       )}
     </div>

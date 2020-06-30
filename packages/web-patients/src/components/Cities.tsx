@@ -120,15 +120,16 @@ interface CitiesProps {
   locationPopup: boolean;
   setLocationPopup: (locationPopup: boolean) => void;
   setSelectedCity: (selectedCity: string) => void;
+  selectedCity: string;
 }
 
 export const Cities: React.FC<CitiesProps> = (props) => {
   const classes = useStyles({});
-  const { locationPopup, setLocationPopup, setSelectedCity } = props;
+  const { locationPopup, setLocationPopup, setSelectedCity, selectedCity } = props;
 
   const { error, loading, data } = useQuery<getAllCities>(GET_ALL_CITIES);
-  const [searchText, setSearchText] = useState<string>('');
-  const [cityName, setCityName] = useState<string>('');
+  const [searchText, setSearchText] = useState<string>(selectedCity);
+  const [cityName, setCityName] = useState<string>(selectedCity);
   const [showDropdown, setShowDropdown] = useState<boolean>(false);
 
   if (error) {

@@ -381,11 +381,12 @@ const useStyles = makeStyles((theme: Theme) => {
 
 interface SpecialtyDivisionProps {
   selectedCity: string;
+  doctorsCount: number;
 }
 
 export const SpecialtyDivision: React.FC<SpecialtyDivisionProps> = (props) => {
   const classes = useStyles({});
-  const { selectedCity } = props;
+  const { selectedCity, doctorsCount } = props;
   const { loading, error, data } = useQuery<GetAllSpecialties>(GET_ALL_SPECIALITIES);
 
   const showSpecialty = (specialtyName: string) => {
@@ -402,7 +403,7 @@ export const SpecialtyDivision: React.FC<SpecialtyDivisionProps> = (props) => {
   return (
     <>
       <Typography component="h2">
-        Start your care now by choosing from {/*  500 doctors and{' '}  */}
+        Start your care now by choosing from {doctorsCount ? `${doctorsCount} doctors and ` : ''}
         {allSpecialties && allSpecialties.length} specialities
       </Typography>
       <div className={classes.topSpeciality}>
