@@ -64,7 +64,7 @@ type DoctorResponse = {
   registrationNumber: string;
 };
 type Specialty = {
-  name: string
+  name: string;
 };
 type AppointmentPayment = {
   amountPaid: number;
