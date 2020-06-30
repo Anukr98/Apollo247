@@ -15,6 +15,7 @@ import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { NotificationBinRepository } from 'notifications-service/repositories/notificationBinRepository';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
+import { CaseSheetRepository } from 'consults-service/repositories/caseSheetRepository';
 
 export const getAppointmentHistoryTypeDefs = gql`
   enum patientLogSort {
@@ -169,11 +170,29 @@ const getAppointmentHistory: Resolver<
   const primaryPatientIds = await patientRepo.getLinkedPatientIds(
     appointmentHistoryInput.patientId
   );
-  //console.log(primaryPatientIds, 'primary patient ids');
+
   const appointmentsHistory = await appointmentRepo.getPatientAppointments(
     appointmentHistoryInput.doctorId,
     primaryPatientIds
   );
+
+  const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
+  const appointmentIds: string[] = [];
+
+  if (appointmentsHistory.length > 0)
+    appointmentsHistory.forEach((item) => {
+      appointmentIds.push(item.id);
+    });
+
+  if (appointmentIds.length > 0) {
+    const caseSheetDetails = await caseSheetRepo.getSDLatestCompletedCaseSheetByAppointments(
+      appointmentIds
+    );
+    appointmentsHistory.forEach((item) => {
+      item.caseSheet = caseSheetDetails.filter((casesheet) => casesheet.appointment.id == item.id);
+    });
+  }
+
   return { appointmentsHistory };
 };
 

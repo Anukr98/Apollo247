@@ -59,9 +59,12 @@ type PatientResponse = {
 type DoctorResponse = {
   firstName: string;
   lastName: string;
-  specialization: string;
+  specialty: Specialty;
   salutation: string;
   registrationNumber: string;
+};
+type Specialty = {
+  name: string;
 };
 type AppointmentPayment = {
   amountPaid: number;
@@ -269,7 +272,7 @@ const getOrderInvoice: Resolver<
 
     const nameLine = `${doctorInfo.salutation}. ${doctorInfo.firstName} ${doctorInfo.lastName}`;
 
-    const specialty = doctorInfo.specialization;
+    const specialty = doctorInfo.specialty.name;
     renderFourColumnRow(
       'Doctor Name',
       `${nameLine}`,
@@ -303,7 +306,7 @@ const getOrderInvoice: Resolver<
       .fontSize(12)
       .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
       .fillColor('#01475b')
-      .text('Apollo 24X7 Online Teleconsultation Fees', margin + 160, doc.y, {
+      .text('Apollo 24X7 Online Teleconsultation Fees', margin + 165, doc.y, {
         lineBreak: false,
         align: 'right',
       })

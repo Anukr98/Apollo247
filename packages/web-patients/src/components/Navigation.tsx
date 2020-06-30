@@ -213,7 +213,7 @@ export const Navigation: React.FC<NavigationProps> = (props) => {
     clientRoutes.doctorDetails(params.doctorName, params.doctorId),
     clientRoutes.payOnlineConsult(),
     clientRoutes.payOnlineClinicConsult(),
-    clientRoutes.payMedicine(params.payType),
+    // clientRoutes.payMedicine(params.payType),
   ];
 
   return (

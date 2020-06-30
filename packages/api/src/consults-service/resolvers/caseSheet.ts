@@ -667,9 +667,7 @@ const getCaseSheet: Resolver<
   let juniorDoctorNotes = '';
 
   //check whether there is a senior doctor case-sheet
-  const caseSheetDetails = await caseSheetRepo.getSeniorDoctorCompletedCaseSheet(
-    appointmentData.id
-  );
+  const caseSheetDetails = await caseSheetRepo.getSeniorDoctorLatestCaseSheet(appointmentData.id);
   if (caseSheetDetails == null) throw new AphError(AphErrorMessages.NO_CASESHEET_EXIST);
 
   const juniorDoctorCaseSheet = await caseSheetRepo.getJuniorDoctorCaseSheet(appointmentData.id);

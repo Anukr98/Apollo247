@@ -216,7 +216,9 @@ const getMedicineOrdersOMSList: Resolver<
   }
   const primaryPatientIds = await patientRepo.getLinkedPatientIds(args.patientId);
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
-  const medicineOrdersList: any = await medicineOrdersRepo.getMedicineOrdersList(primaryPatientIds);
+  const medicineOrdersList: any = await medicineOrdersRepo.getMedicineOrdersListWithoutAbortedStatus(
+    primaryPatientIds
+  );
   let uhid = patientDetails.uhid;
   if (process.env.NODE_ENV == 'local') uhid = ApiConstants.CURRENT_UHID.toString();
   else if (process.env.NODE_ENV == 'dev') uhid = ApiConstants.CURRENT_UHID.toString();
@@ -229,7 +231,7 @@ const getMedicineOrdersOMSList: Resolver<
   );
   const textRes = await ordersResp.text();
   const offlineOrdersList = JSON.parse(textRes);
-  console.log(offlineOrdersList.response, offlineOrdersList.response.length, 'offlineOrdersList');
+  //console.log(offlineOrdersList.response, offlineOrdersList.response.length, 'offlineOrdersList');
   if (offlineOrdersList.errorCode == 0) {
     //const orderDate = fromUnixTime(offlineOrdersList.response[0].billDateTime)
     offlineOrdersList.response.forEach((order: any) => {
@@ -559,7 +561,10 @@ const updateMedicineDataRedis: Resolver<
   });
 
   const excelToJson = require('convert-excel-to-json');
-  const fileDirectory = path.resolve('/apollo-hospitals/packages/api/src/assets');
+  let fileDirectory = path.resolve('/apollo-hospitals/packages/api/src/assets');
+  if (process.env.NODE_ENV != 'local') {
+    fileDirectory = path.resolve(<string>process.env.ASSETS_DIRECTORY);
+  }
   console.log(fileDirectory + '/Online_Master.xlsx');
 
   const rowData = excelToJson({
@@ -598,6 +603,7 @@ const updateMedicineDataRedis: Resolver<
   for (let k = args.offset; k <= args.offset + args.limit - 1; k++) {
     console.log('rowData.Sheet1[k]', rowData.Sheet1[k].sku);
     await tedis.hmset(rowData.Sheet1[k].sku, {
+      sku: encodeURIComponent(rowData.Sheet1[k].sku),
       name: encodeURIComponent(rowData.Sheet1[k].name),
       status: encodeURIComponent(rowData.Sheet1[k].status),
       price: encodeURIComponent(rowData.Sheet1[k].price),
@@ -616,7 +622,7 @@ const updateMedicineDataRedis: Resolver<
       qty: encodeURIComponent(rowData.Sheet1[k].qty),
       description: encodeURIComponent(rowData.Sheet1[k].description),
       url_key: encodeURIComponent(rowData.Sheet1[k].url_key),
-      base_image: rowData.Sheet1[k].base_image,
+      base_image: encodeURIComponent(rowData.Sheet1[k].base_image),
       is_prescription_required: encodeURIComponent(rowData.Sheet1[k].is_prescription_required),
       category_name: encodeURIComponent(rowData.Sheet1[k].category_name),
       product_discount_category: encodeURIComponent(rowData.Sheet1[k].product_discount_category),

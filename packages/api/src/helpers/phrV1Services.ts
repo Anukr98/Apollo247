@@ -1,5 +1,6 @@
 import AbortController from 'abort-controller';
 import { debugLog } from 'customWinstonLogger';
+import fetch from 'node-fetch';
 import {
   LabResultsUploadResponse,
   LabResultsUploadRequest,
