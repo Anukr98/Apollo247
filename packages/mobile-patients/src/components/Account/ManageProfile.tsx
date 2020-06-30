@@ -189,6 +189,7 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
       }
     });
     setShowLinkUHIDButton(count !== profiles.length);
+    setShowLinkUhid(profiles.length !== 1);
 
     if (areUhidsLinked) {
       // shuffle array as [primary, [...secondary], [...unlined]]
@@ -624,18 +625,19 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
 
   const renderBottomStickyComponent = () => {
     return (
-      <StickyBottomComponent defaultBG style={{ minHeight: 120 }}>
-        {showLinkUhid && (
-          <View
-            style={{
-              position: 'absolute',
-              bottom: 10,
-              left: 0,
-              right: 0,
-              display: 'flex',
-              flexDirection: 'column',
-            }}
-          >
+      <StickyBottomComponent defaultBG style={{ minHeight: showLinkUhid ? 120 : 60 }}>
+        <View
+          style={{
+            position: 'absolute',
+            bottom: 10,
+            left: 0,
+            right: 0,
+            display: 'flex',
+            flexDirection: 'column',
+          }}
+        >
+          {
+            showLinkUhid &&
             <Button
               title="LINK UHID"
               style={{
@@ -652,24 +654,24 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
                 });
               }}
             />
-            <Button
-              title="ADD NEW PROFILE"
-              style={{
-                flex: 1,
-                marginHorizontal: 20,
-                width: '75%',
-                alignSelf: 'center',
-                backgroundColor: theme.colors.LIGHT_BLUE,
-              }}
-              onPress={() => {
-                props.navigation.navigate(AppRoutes.EditProfile, {
-                  isEdit: false,
-                  mobileNumber: currentPatient && currentPatient!.mobileNumber,
-                });
-              }}
-            />
-          </View>
-        )}
+          }
+          <Button
+            title="ADD NEW PROFILE"
+            style={{
+              flex: 1,
+              marginHorizontal: 20,
+              width: '75%',
+              alignSelf: 'center',
+              backgroundColor: theme.colors.LIGHT_BLUE,
+            }}
+            onPress={() => {
+              props.navigation.navigate(AppRoutes.EditProfile, {
+                isEdit: false,
+                mobileNumber: currentPatient && currentPatient!.mobileNumber,
+              });
+            }}
+          />
+        </View>
       </StickyBottomComponent>
     );
   };
