@@ -793,10 +793,6 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                     {' '}
                     {addMutationLoading ? (
                       <CircularProgress size={22} color="secondary" />
-                    ) : itemIndexInCart(data) !== -1 && isUpdateQuantity ? (
-                      'Update Cart'
-                    ) : itemIndexInCart(data) !== -1 ? (
-                      'Added To Cart'
                     ) : (
                       'Add To Cart'
                     )}
