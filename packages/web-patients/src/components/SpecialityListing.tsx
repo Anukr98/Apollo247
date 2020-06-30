@@ -18,6 +18,7 @@ import { PastSearches } from 'components/PastSearches';
 import { useAuth } from 'hooks/authHooks';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { Link } from 'react-router-dom';
+import { Cities } from './Cities';
 import fetchUtil from 'helpers/fetch';
 import { SpecialtyDivision } from './SpecialtyDivision';
 import {
@@ -28,8 +29,9 @@ import {
 } from 'graphql/types/SearchDoctorAndSpecialtyByName';
 import { SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME } from 'graphql/doctors';
 import { useApolloClient } from 'react-apollo-hooks';
+import { useLocationDetails } from 'components/LocationProvider';
+import { readableParam } from 'helpers/commonHelpers';
 import _lowerCase from 'lodash/lowerCase';
-import { SpecialtySearch } from './SpecialtySearch';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -860,41 +862,141 @@ export const SpecialityListing: React.FC = (props) => {
                 <div className={classes.specialityContent}>
                   <div className={classes.sHeader}>
                     <Typography component="h1">Book Doctor Appointments Online</Typography>
+                    {/* <a href="javascript:void(0);">
+                      <img src={require('images/ic_round-share.svg')} />
+                    </a> */}
                   </div>
-                  <SpecialtySearch
-                    setSearchKeyword={setSearchKeyword}
-                    searchKeyword={searchKeyword}
-                    selectedCity={selectedCity}
-                    searchSpecialty={searchSpecialty}
-                    searchDoctors={searchDoctors}
-                    searchLoading={searchLoading}
-                    setLocationPopup={setLocationPopup}
-                    locationPopup={locationPopup}
-                    setSelectedCity={setSelectedCity}
-                  />
+                  <div className={classes.specialitySearch}>
+                    <div className={classes.location} onClick={() => setLocationPopup(true)}>
+                      <img src={require('images/location.svg')} alt="" />
+                      <div className={classes.userLocation}>
+                        <Typography className={selectedCity ? classes.cityActive : null}>
+                          {selectedCity === '' ? 'Select Your City' : selectedCity}
+                        </Typography>
+                        <img src={require('images/ic_dropdown_green.svg')} alt="" />
+                      </div>
+                    </div>
+                    <div className={classes.searchContainer}>
+                      <img src={require('images/ic-search.svg')} alt="" />
+                      <AphInput
+                        className={classes.searchInput}
+                        placeholder="Search doctors or specialities"
+                        onChange={(e) => {
+                          const searchValue = e.target.value;
+                          setSearchKeyword(searchValue);
+                        }}
+                      />
+                      {(searchSpecialty || searchDoctors || searchLoading) &&
+                        searchKeyword.length > 0 && (
+                          <div className={classes.searchContent}>
+                            {searchLoading ? (
+                              <CircularProgress />
+                            ) : (
+                              <>
+                                {searchDoctors && searchDoctors.length > 0 && (
+                                  <div className={classes.docContent}>
+                                    <Typography component="h6">Doctors</Typography>
+                                    <ul className={classes.doctorList}>
+                                      {searchDoctors.map((doctor: DoctorsType) => (
+                                        <li key={doctor.id}>
+                                          <Link
+                                            key={doctor.id}
+                                            to={clientRoutes.specialtyDoctorDetails(
+                                              doctor.specialty && doctor.specialty.name
+                                                ? _lowerCase(doctor.specialty.name).replace(
+                                                    /[/ / /]/g,
+                                                    '-'
+                                                  )
+                                                : '',
+                                              _lowerCase(doctor.fullName).replace(/ /g, '-'),
+                                              doctor.id
+                                            )}
+                                          >
+                                            <div className={classes.doctorContent}>
+                                              <div className={classes.dImg}>
+                                                <img src={doctor.photoUrl} />
+                                              </div>
+                                              <div className={classes.doctorDetails}>
+                                                <Typography component="h2">
+                                                  {doctor.salutation} {doctor.fullName}
+                                                </Typography>
+                                                <Typography>
+                                                  {doctor.specialty && doctor.specialty.name
+                                                    ? doctor.specialty.name
+                                                    : ''}{' '}
+                                                  |{' '}
+                                                  {doctor.doctorHospital &&
+                                                  doctor.doctorHospital[0] &&
+                                                  doctor.doctorHospital[0].facility
+                                                    ? `${
+                                                        doctor.doctorHospital[0].facility.name || ''
+                                                      } ${
+                                                        doctor.doctorHospital[0].facility
+                                                          .streetLine1 || ''
+                                                      } ${
+                                                        doctor.doctorHospital[0].facility.city || ''
+                                                      } `
+                                                    : ''}
+                                                </Typography>
+                                              </div>
+                                            </div>
+                                          </Link>
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  </div>
+                                )}
+                                {searchSpecialty && searchSpecialty.length > 0 && (
+                                  <div className={classes.sContent}>
+                                    <Typography component="h6">Specialities</Typography>
+                                    <ul className={classes.sList}>
+                                      {searchSpecialty.map((specialty: SpecialtyType) => (
+                                        <Link
+                                          key={specialty.id}
+                                          to={
+                                            selectedCity === ''
+                                              ? clientRoutes.specialties(
+                                                  readableParam(specialty.name)
+                                                )
+                                              : clientRoutes.citySpecialties(
+                                                  _lowerCase(selectedCity),
+                                                  readableParam(specialty.name)
+                                                )
+                                          }
+                                        >
+                                          <li key={specialty.id}>{specialty.name}</li>
+                                        </Link>
+                                      ))}
+                                    </ul>
+                                  </div>
+                                )}
+                              </>
+                            )}
+                            {!searchLoading &&
+                              searchDoctors &&
+                              searchDoctors.length === 0 &&
+                              searchSpecialty &&
+                              searchSpecialty.length === 0 && <p>No Results Found</p>}
+                          </div>
+                        )}
+                    </div>
+                  </div>
                   {currentPatient && currentPatient.id && searchKeyword.length <= 0 && (
                     <PastSearches />
                   )}
-                  {searchLoading ||
-                    (selectedCity !== '' && searchDoctors && searchDoctors.length === 0 && (
-                      <div className={classes.noDoctorContent}>
-                        {searchLoading ? (
-                          <CircularProgress />
-                        ) : (
-                          <>
-                            <Typography component="h2">
-                              No Specialties/Doctors found near {selectedCity}. Don’t worry, now you
-                              can consult doctors from any city using Chat/Audio/Video.
-                            </Typography>
-                            <Typography>
-                              How ? Choose a doctor &gt; Book a slot &gt; Make a payment &gt;
-                              Consult via video/audio/chat &gt; Receive prescription instantly &gt;
-                              Chat with the doctor for 6 days after your consult
-                            </Typography>
-                          </>
-                        )}
-                      </div>
-                    ))}
+                  {selectedCity !== '' && searchDoctors && searchDoctors.length === 0 && (
+                    <div className={classes.noDoctorContent}>
+                      <Typography component="h2">
+                        No Specialties/Doctors found near {selectedCity}. Don’t worry, now you can
+                        consult doctors from any city using Chat/Audio/Video.
+                      </Typography>
+                      <Typography>
+                        How ? Choose a doctor &gt; Book a slot &gt; Make a payment &gt; Consult via
+                        video/audio/chat &gt; Receive prescription instantly &gt; Chat with the
+                        doctor for 6 days after your consult
+                      </Typography>
+                    </div>
+                  )}
                   <SpecialtyDivision
                     selectedCity={selectedCity}
                     doctorsCount={searchDoctors ? searchDoctors.length : 0}
@@ -1087,6 +1189,14 @@ export const SpecialityListing: React.FC = (props) => {
       <div className={classes.footerLinks}>
         <BottomLinks />
       </div>
+      {locationPopup && (
+        <Cities
+          setSelectedCity={setSelectedCity}
+          locationPopup={locationPopup}
+          setLocationPopup={setLocationPopup}
+          selectedCity={selectedCity}
+        />
+      )}
     </div>
   );
 };

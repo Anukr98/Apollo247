@@ -423,7 +423,7 @@ export const MedicineAutoSearch: React.FC = (props) => {
                                       {
                                         item_name: medicine.name,
                                         item_id: medicine.sku,
-                                        price: medicine.price,
+                                        price: medicine.special_price || medicine.price,
                                         item_category: 'Pharmacy',
                                         item_category_2: medicine.type_id
                                           ? medicine.type_id.toLowerCase() === 'pharma'
@@ -511,7 +511,7 @@ export const MedicineAutoSearch: React.FC = (props) => {
                                         {
                                           item_name: medicine.name,
                                           item_id: medicine.sku,
-                                          price: medicine.price,
+                                          price: medicine.special_price || medicine.price,
                                           item_category: 'Pharmacy',
                                           item_category_2: medicine.type_id
                                             ? medicine.type_id.toLowerCase() === 'pharma'
@@ -571,7 +571,7 @@ export const MedicineAutoSearch: React.FC = (props) => {
                                         {
                                           item_name: medicine.name,
                                           item_id: medicine.sku,
-                                          price: medicine.price,
+                                          price: medicine.special_price || medicine.price,
                                           item_category: 'Pharmacy',
                                           item_category_2: medicine.type_id
                                             ? medicine.type_id.toLowerCase() === 'pharma'

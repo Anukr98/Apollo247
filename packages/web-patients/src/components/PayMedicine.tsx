@@ -449,6 +449,7 @@ export const PayMedicine: React.FC = (props) => {
     consultCouponCodeInitial,
     consultCouponValue = 0,
     doctorId,
+    doctorName,
     hospitalId,
     patientId,
     speciality,
@@ -755,6 +756,25 @@ export const PayMedicine: React.FC = (props) => {
           couponCode: couponCode ? couponCode : null,
           couponValue: couponValue ? couponValue : null,
           finalBookingValue: revisedAmount,
+          ecommObj: {
+            ecommerce: {
+              items: [
+                {
+                  item_name: doctorName,
+                  item_id: doctorId,
+                  price: revisedAmount,
+                  item_brand: 'Apollo',
+                  item_category: 'Consultations',
+                  item_category_2: speciality,
+                  item_category_3: city || '',
+                  // 'item_category_4': '', // for future
+                  item_variant: appointmentType.toLowerCase() === 'online' ? 'Virtual' : 'Physical',
+                  index: 1,
+                  quantity: 1,
+                },
+              ],
+            },
+          },
         });
         /* Gtm code END */
         if (res && res.data && res.data.bookAppointment && res.data.bookAppointment.appointment) {
@@ -902,9 +922,8 @@ export const PayMedicine: React.FC = (props) => {
                       {mutationLoading ? (
                         <CircularProgress size={22} color="secondary" />
                       ) : (
-                        `Pay Rs.${
-                          totalWithCouponDiscount && totalWithCouponDiscount.toFixed(2)
-                        } on delivery`
+                        `Pay Rs.${totalWithCouponDiscount &&
+                          totalWithCouponDiscount.toFixed(2)} on delivery`
                       )}
                     </AphButton>
                   )}
