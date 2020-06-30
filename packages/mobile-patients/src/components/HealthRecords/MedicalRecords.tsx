@@ -92,12 +92,12 @@ export const MedicalRecords: React.FC<MedicalRecordsProps> = (props) => {
     labResultsData!.forEach((item) => {
       mergeArray.push({ type: 'lab', data: item });
     });
-    prescriptionsData!.forEach((item) => {
-      mergeArray.push({ type: 'prescription', data: item });
-    });
+    // prescriptionsData!.forEach((item) => {
+    //   mergeArray.push({ type: 'prescription', data: item });
+    // });
     console.log('combination after', mergeArray);
     setCombination(sortByDate(mergeArray));
-  }, [labResultsData, prescriptionsData]);
+  }, [labResultsData]);
 
   const sortByDate = (array: { type: string; data: any }[]) => {
     return array.sort(({ data: data1 }, { data: data2 }) => {
