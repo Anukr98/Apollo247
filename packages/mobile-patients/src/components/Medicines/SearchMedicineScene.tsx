@@ -352,7 +352,8 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
       suggestionItem ? () => setItemsLoading({ ...itemsLoading, [sku]: false }) : undefined
     );
     postwebEngageAddToCartEvent(item, 'Pharmacy Full Search');
-    postAppsFlyerAddToCartEvent(item, 'Pharmacy List');
+    let id = currentPatient && currentPatient.id ? currentPatient.id : '';
+    postAppsFlyerAddToCartEvent(item, id);
   };
 
   const onRemoveCartItem = ({ sku }: MedicineProduct) => {

@@ -214,7 +214,8 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
       suggestionItem ? () => setItemsLoading({ ...itemsLoading, [sku]: false }) : undefined
     );
     postwebEngageAddToCartEvent(item, 'Pharmacy List');
-    postAppsFlyerAddToCartEvent(item, 'Pharmacy List');
+    let id = currentPatient && currentPatient.id ? currentPatient.id : '';
+    postAppsFlyerAddToCartEvent(item, id);
   };
 
   const onRemoveCartItem = ({ sku }: MedicineProduct) => {
