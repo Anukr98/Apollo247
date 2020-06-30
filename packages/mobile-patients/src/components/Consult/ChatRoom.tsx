@@ -5670,7 +5670,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     console.log('upload fileType', type);
     console.log('chanel', channel);
     console.log('resource', resource);
-    console.log('mimeType', mimeType(resource[0].title + '.' + type));
+    // console.log('mimeType', mimeType(resource[0].title + '.' + type));
     CommonLogEvent(AppRoutes.ChatRoom, 'Upload document');
     resource.map((item: any) => {
       if (
@@ -5682,7 +5682,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         // console.log('item', item.base64, item.fileType);
         const formattedDate = moment(new Date()).format('YYYY-MM-DD');
         const prescriptionFile: prescriptionFileProperties = {
-          fileName: resource[0].title,
+          fileName: resource[0].title + '.' + type,
           mimeType: mimeType(resource[0].title + '.' + type),
           content: base66,
         };
