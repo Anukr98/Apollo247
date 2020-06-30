@@ -250,10 +250,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   // const currentTime = new Date().getTime();
   // const autoSlot = getAutoSlot();
-  const doctorAvailableTime =
-    moment()
-      .add(props.doctorAvailableIn, 'm')
-      .toDate() || new Date();
+  const doctorAvailableTime = moment().add(props.doctorAvailableIn, 'm').toDate() || new Date();
 
   const { doctorDetails, setIsPopoverOpen, tabValue, isShownOnce, setIsShownOnce } = props;
 
@@ -872,7 +869,6 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
                   JSON.stringify({
                     patientId: currentPatient ? currentPatient.id : '',
                     doctorId: doctorId,
-                    doctorName,
                     appointmentDateTime: appointmentDateTime,
                     appointmentType: AppointmentType.ONLINE,
                     hospitalId: hospitalId,

@@ -322,11 +322,11 @@ export const SearchByMedicine: React.FC = (props) => {
                 let gtmItems: any[] = [];
                 if (data.products.length) {
                   data.products.map((prod: MedicineProduct, key: number) => {
-                    const { name, sku, price, type_id, special_price } = prod;
+                    const { name, sku, price, type_id } = prod;
                     gtmItems.push({
                       item_name: name,
                       item_id: sku,
-                      price: special_price || price,
+                      price: price,
                       item_category: 'Pharmacy',
                       item_category_2: type_id
                         ? type_id.toLowerCase() === 'pharma'

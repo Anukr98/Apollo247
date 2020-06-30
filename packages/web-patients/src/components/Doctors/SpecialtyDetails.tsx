@@ -48,9 +48,10 @@ import {
 } from 'graphql/types/SearchDoctorAndSpecialtyByName';
 import _lowerCase from 'lodash/lowerCase';
 import { useAuth } from 'hooks/authHooks';
-import { Cities } from '../Cities';
 import axios from 'axios';
+import { SpecialtySearch } from '../SpecialtySearch';
 import { gtmTracking } from 'gtmTracking';
+
 const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
@@ -486,16 +487,12 @@ const convertAvailabilityToDate = (availability: String[], dateSelectedFromFilte
     availableNow = {};
   }
   const availabilityArray: String[] = [];
-  const today = moment(new Date())
-    .utc()
-    .format('YYYY-MM-DD');
+  const today = moment(new Date()).utc().format('YYYY-MM-DD');
   if (availability.length > 0) {
     availability.forEach((value: String) => {
       if (value === 'Now') {
         availableNow = {
-          availableNow: moment(new Date())
-            .utc()
-            .format('YYYY-MM-DD hh:mm'),
+          availableNow: moment(new Date()).utc().format('YYYY-MM-DD hh:mm'),
         };
       } else if (value === 'Today') {
         availabilityArray.push(today);
@@ -572,7 +569,7 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
   const [slugName, setSlugName] = useState<string>('');
   const [faqData, setFaqData] = useState<any>();
   const { isSignedIn } = useAuth();
-  
+
   /* Gtm code start */
   useEffect(() => {
     if (doctorData && doctorData.length > 0) {
@@ -885,129 +882,18 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
                   <img src={require('images/ic-share-green.svg')} alt="" />
                 </AphButton>
               </div>
-              <div className={classes.specialitySearch}>
-                <div className={classes.location} onClick={() => setLocationPopup(true)}>
-                  <img src={require('images/location.svg')} alt="" />
-                  <div className={classes.userLocation}>
-                    <Typography>
-                      {selectedCity === '' ? 'Select Your City' : selectedCity}
-                    </Typography>
-                    <img src={require('images/ic_dropdown_green.svg')} alt="" />
-                  </div>
-                </div>
-                <div className={classes.searchContainer}>
-                  <img src={require('images/ic-search.svg')} alt="" />
-                  <AphInput
-                    className={classes.searchInput}
-                    placeholder="Search doctors or specialities"
-                    onChange={(e) => {
-                      const searchValue = e.target.value;
-                      setSearchKeyword(searchValue);
-                    }}
-                  />
-                  {(searchSpecialty || searchDoctors || searchLoading) && searchKeyword.length > 0 && (
-                    <div className={classes.searchContent}>
-                      {searchLoading ? (
-                        <CircularProgress />
-                      ) : (
-                        <>
-                          {searchDoctors && searchDoctors.length > 0 && (
-                            <div className={classes.docContent}>
-                              <Typography component="h6">Doctors</Typography>
-                              <ul className={classes.doctorList}>
-                                {searchDoctors.map((doctor: DoctorsType) => (
-                                  <Link
-                                    key={doctor.id}
-                                    to={clientRoutes.specialtyDoctorDetails(
-                                      doctor.specialty && doctor.specialty.name
-                                        ? _lowerCase(doctor.specialty.name).replace(/[/ / /]/g, '-')
-                                        : '',
-                                      _lowerCase(doctor.fullName).replace(/ /g, '-'),
-                                      doctor.id
-                                    )}
-                                  >
-                                    <li key={doctor.id}>
-                                      <div className={classes.doctorContent}>
-                                        <div className={classes.dImg}>
-                                          <img src={doctor.photoUrl} />
-                                        </div>
-                                        <div className={classes.doctorDetails}>
-                                          <Typography component="h2">
-                                            {doctor.salutation} {doctor.fullName}
-                                          </Typography>
-                                          <Typography>
-                                            {doctor.specialty && doctor.specialty.name
-                                              ? doctor.specialty.name
-                                              : ''}{' '}
-                                            | Apollo Hospitals Greams Road Chennai
-                                          </Typography>
-                                        </div>
-                                      </div>
-                                    </li>
-                                  </Link>
-                                ))}
-                              </ul>
-                            </div>
-                          )}
-                          {searchSpecialty && searchSpecialty.length > 0 && (
-                            <div className={classes.sContent}>
-                              <Typography component="h6">Specialities</Typography>
-                              <ul className={classes.sList}>
-                                {searchSpecialty.map((specialty: SpecialtyType) => (
-                                  <Link
-                                    key={specialty.id}
-                                    to={clientRoutes.specialties(readableParam(specialty.name))}
-                                  >
-                                    <li key={specialty.id}>{specialty.name}</li>
-                                  </Link>
-                                ))}
-                              </ul>
-                            </div>
-                          )}
-                        </>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </div>
-              {/* <div className={classes.topSearch}>
-                <div className={classes.selectCity}>
-                  <div className={classes.inputIcon}>
-                    <img src={require('images/location.svg')} alt="" />
-                  </div>
-                  <AphSelect value={1}>
-                    <MenuItem
-                      classes={{
-                        root: classes.menuRoot,
-                        selected: classes.menuSelected,
-                      }}
-                      value={1}
-                    >
-                      Hyderabad
-                    </MenuItem>
-                    <MenuItem
-                      classes={{
-                        root: classes.menuRoot,
-                        selected: classes.menuSelected,
-                      }}
-                      value={2}
-                    >
-                      Chennai
-                    </MenuItem>
-                  </AphSelect>
-                </div>
-                <div className={classes.inputSearch}>
-                  <div className={classes.inputIcon}>
-                    <img src={require('images/ic-search.svg')} alt="" />
-                  </div>
-                  <AphTextField
-                    placeholder="Search for Doctors, Specialities or Hospitals"
-                    onChange={(event) => {
-                      setSearchKey(event.target.value);
-                    }}
-                  />
-                </div>
-              </div> */}
+              <SpecialtySearch
+                setSearchKeyword={setSearchKeyword}
+                searchKeyword={searchKeyword}
+                selectedCity={selectedCity}
+                searchSpecialty={searchSpecialty}
+                searchDoctors={searchDoctors}
+                searchLoading={searchLoading}
+                setLocationPopup={setLocationPopup}
+                locationPopup={locationPopup}
+                setSelectedCity={setSelectedCity}
+              />
+              {/* <div className={classes.specialitySearch}> */}
               <div className={classes.tabsFilter}>
                 <h2>{filteredDoctorData ? filteredDoctorData.length : 0} Doctors found</h2>
                 <div className={classes.filterButtons}>
@@ -1114,14 +1000,6 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
       </div>
       <BottomLinks />
       <NavigationBottom />
-      {locationPopup && (
-        <Cities
-          setSelectedCity={setSelectedCity}
-          locationPopup={locationPopup}
-          setLocationPopup={setLocationPopup}
-          selectedCity={selectedCity}
-        />
-      )}
     </div>
   );
 };

@@ -305,7 +305,7 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
                                     {
                                       item_name: hotSeller.name,
                                       item_id: hotSeller.sku,
-                                      price: hotSeller.special_price || hotSeller.price,
+                                      price: hotSeller.price,
                                       item_category: 'Pharmacy',
                                       item_variant: 'Default',
                                       index: 1,

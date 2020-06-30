@@ -657,7 +657,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                                       {
                                         item_name: data.name,
                                         item_id: data.sku,
-                                        price: data.special_price || data.price,
+                                        price: data.price,
                                         item_category: 'Pharmacy',
                                         item_category_2: data.type_id
                                           ? data.type_id.toLowerCase() === 'pharma'
@@ -768,7 +768,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                               {
                                 item_name: data.name,
                                 item_id: data.sku,
-                                price: data.special_price || data.price,
+                                price: data.price,
                                 item_category: 'Pharmacy',
                                 item_category_2: data.type_id
                                   ? data.type_id.toLowerCase() === 'pharma'
