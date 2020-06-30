@@ -485,12 +485,16 @@ const convertAvailabilityToDate = (availability: String[], dateSelectedFromFilte
     availableNow = {};
   }
   const availabilityArray: String[] = [];
-  const today = moment(new Date()).utc().format('YYYY-MM-DD');
+  const today = moment(new Date())
+    .utc()
+    .format('YYYY-MM-DD');
   if (availability.length > 0) {
     availability.forEach((value: String) => {
       if (value === 'Now') {
         availableNow = {
-          availableNow: moment(new Date()).utc().format('YYYY-MM-DD hh:mm'),
+          availableNow: moment(new Date())
+            .utc()
+            .format('YYYY-MM-DD hh:mm'),
         };
       } else if (value === 'Today') {
         availabilityArray.push(today);
@@ -538,6 +542,7 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
   const { currentPincode, currentLong, currentLat } = useLocationDetails();
   const { currentPatient } = useAllCurrentPatients();
   const params = useParams<{
+    city: string;
     specialty: string;
   }>();
   const prakticeSDKSpecialties = localStorage.getItem('symptomTracker');
@@ -556,7 +561,9 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
   const [specialtyName, setSpecialtyName] = useState<string>('');
   const [searchKey, setSearchKey] = useState<string>('');
   const [locationPopup, setLocationPopup] = useState<boolean>(false);
-  const [selectedCity, setSelectedCity] = useState<string>('');
+  const [selectedCity, setSelectedCity] = useState<string>(
+    params && params.city ? params.city : ''
+  );
   const [searchSpecialty, setSearchSpecialty] = useState<SpecialtyType[] | null>(null);
   const [searchKeyword, setSearchKeyword] = useState<string>('');
   const [searchDoctors, setSearchDoctors] = useState<DoctorsType[] | null>(null);
@@ -564,7 +571,6 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
   const [slugName, setSlugName] = useState<string>('');
   const [faqData, setFaqData] = useState<any>();
   const { isSignedIn } = useAuth();
-
   useEffect(() => {
     if (searchKeyword.length > 2) {
       setSearchLoading(true);
@@ -622,7 +628,7 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
   useEffect(() => {
     if (slugName !== '') {
       axios
-        .get(`${process.env.CMS_BASE_URL}/api/specialty-details/${slugName}`, {
+        .get(`${process.env.CMS_BASE_URL}/api/specialty-details/${readableParam(specialtyName)}`, {
           headers: { 'Content-Type': 'application/json', Authorization: process.env.CMS_TOKEN },
         })
         .then((res: any) => {

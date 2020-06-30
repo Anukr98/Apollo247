@@ -408,7 +408,7 @@ export const SpecialtyDivision: React.FC<SpecialtyDivisionProps> = (props) => {
       </Typography>
       <div className={classes.topSpeciality}>
         <div className={classes.sectionHeader}>
-          <Typography component="h2">Top Specialites</Typography>
+          <Typography component="h2">Top Specialties</Typography>
         </div>
         <div className={classes.tsContent}>
           <Grid container spacing={2}>
@@ -449,7 +449,7 @@ export const SpecialtyDivision: React.FC<SpecialtyDivisionProps> = (props) => {
       </div>
       <div className={classes.otherSpeciality}>
         <div className={classes.sectionHeader}>
-          <Typography component="h2">Other Specialites</Typography>
+          <Typography component="h2">Other Specialties</Typography>
         </div>
         <div className={classes.osContainer}>
           {loading ? (
