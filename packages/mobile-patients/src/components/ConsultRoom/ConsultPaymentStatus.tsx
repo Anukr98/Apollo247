@@ -115,7 +115,9 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
         console.log(res.data);
         if (res.data.paymentTransactionStatus.appointment.paymentStatus == success) {
           try {
-            postWebEngageEvent(WebEngageEventName.CONSULTATION_BOOKED, webEngageEventAttributes);
+            let eventAttributes = webEngageEventAttributes;
+            eventAttributes['Display ID'] = res.data.paymentTransactionStatus.appointment.displayId;
+            postWebEngageEvent(WebEngageEventName.CONSULTATION_BOOKED, eventAttributes);
             postAppsFlyerEvent(AppsFlyerEventName.CONSULTATION_BOOKED, appsflyerEventAttributes);
             postFirebaseEvent(FirebaseEventName.CONSULTATION_BOOKED, fireBaseEventAttributes);
             firePurchaseEvent();

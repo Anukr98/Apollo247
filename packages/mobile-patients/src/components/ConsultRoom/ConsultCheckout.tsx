@@ -131,7 +131,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
 
   const getConsultationBookedEventAttributes = (time: string, id: string) => {
     const localTimeSlot = moment(new Date(time));
-    console.log(localTimeSlot.format('DD-MM-YYY, hh:mm A'));
+    console.log(localTimeSlot.format('DD MMM YYYY, h:mm A'));
 
     const doctorClinics = (g(doctor, 'doctorHospital') || []).filter((item) => {
       if (item && item.facility && item.facility.facilityType)
@@ -153,7 +153,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
       'Customer ID': g(currentPatient, 'id'),
       'Consult ID': id,
       'Speciality ID': g(doctor, 'specialty', 'id'),
-      'Consult Date Time': localTimeSlot,
+      'Consult Date Time': localTimeSlot.format('DD MMM YYYY, h:mm A'),
       'Consult Mode': tabs[0].title === selectedTab ? 'Online' : 'Physical',
       'Hospital Name':
         doctorClinics.length > 0 && doctor!.doctorType !== DoctorType.PAYROLL

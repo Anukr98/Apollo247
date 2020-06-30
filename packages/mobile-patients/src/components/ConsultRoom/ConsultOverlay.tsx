@@ -233,8 +233,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   };
 
   const getConsultationBookedEventAttributes = (time: string, id: string) => {
-    const localTimeSlot = new Date(time);
-    console.log(localTimeSlot);
+    const localTimeSlot = moment(new Date(time));
 
     const doctorClinics = (g(props.doctor, 'doctorHospital') || []).filter((item) => {
       if (item && item.facility && item.facility.facilityType)
@@ -256,7 +255,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       'Customer ID': g(currentPatient, 'id'),
       'Consult ID': id,
       'Speciality ID': g(props.doctor, 'specialty', 'id')!,
-      'Consult Date Time': localTimeSlot,
+      'Consult Date Time': localTimeSlot.format('DD MMM YYYY, h:mm A'),
       'Consult Mode': tabs[0].title === selectedTab ? 'Online' : 'Physical',
       'Hospital Name':
         doctorClinics.length > 0 && props.doctor!.doctorType !== DoctorType.PAYROLL
