@@ -869,4 +869,8 @@ export class PatientRepository extends Repository<Patient> {
       else return false;
     }
   }
+
+  findByUhid(uhid: string) {
+    return this.findOne({ where: { uhid } });
+  }
 }
