@@ -145,6 +145,8 @@ const SaveMedicineOrder: Resolver<
   const errorCode = 0,
     errorMessage = '';
 
+  throw new AphError(AphErrorMessages.SAVE_MEDICINE_ORDER_ERROR, undefined, {});
+
   if (!MedicineCartInput.items || MedicineCartInput.items.length == 0) {
     throw new AphError(AphErrorMessages.CART_EMPTY_ERROR, undefined, {});
   }

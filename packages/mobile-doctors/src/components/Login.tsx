@@ -139,7 +139,7 @@ export const Login: React.FC<LoginProps> = (props) => {
           } else {
             AsyncStorage.setItem('phoneNumber', phoneNumber);
             setShowSpinner(true);
-
+            firebase.analytics().logEvent('Doctor_login', { phoneNumber: phoneNumber });
             loginAPI('+91' + phoneNumber, appSign)
               .then((confirmResult) => {
                 console.log(confirmResult, 'confirmResult');

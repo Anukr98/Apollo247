@@ -17,6 +17,9 @@ const useStyles = makeStyles((theme: Theme) => {
     root: {
       marginTop: 10,
       marginBottom: 14,
+      [theme.breakpoints.down('xs')]: {
+        marginTop: 0,
+      },
     },
     filters: {
       backgroundColor: '#fff',
@@ -27,6 +30,10 @@ const useStyles = makeStyles((theme: Theme) => {
       alignItems: 'center',
       fontSize: 12,
       fontWeight: 500,
+      [theme.breakpoints.down('xs')]: {
+        borderRadius: 0,
+        marginTop: 0,
+      },
       '& label': {
         marginLeft: 0,
         '& span': {
@@ -109,6 +116,7 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingLeft: 16,
       paddingRight: 8,
       borderRight: '0.5px solid rgba(2,71,91,0.3)',
+      width: '20%',
       '& h4': {
         fontSize: 12,
         fontWeight: 500,
@@ -132,6 +140,7 @@ const useStyles = makeStyles((theme: Theme) => {
         color: '#00b38e',
         textTransform: 'none',
         fontSize: 12,
+        lineHeight: '14px',
         fontWeight: 500,
         padding: '8px 8px',
         margin: '4px 0',
@@ -286,8 +295,9 @@ export const Filters: React.FC<FilterProps> = (props) => {
               <div className={classes.filterType}>
                 <h4>Experience In Years</h4>
                 <div className={classes.filterBtns}>
-                  {experienceList.map((obj, idx) => (
+                  {experienceList.map((obj) => (
                     <AphButton
+                      key={obj.key}
                       className={applyClass(localFilter.experience, obj.key)}
                       onClick={() => {
                         setFilterValues('experience', obj.key);
@@ -303,6 +313,7 @@ export const Filters: React.FC<FilterProps> = (props) => {
                 <div className={classes.filterBtns}>
                   {availabilityList.map((availability: string) => (
                     <AphButton
+                      key={availability}
                       className={applyClass(localFilter.availability, availability)}
                       onClick={() => {
                         setFilterValues('availability', availability);
@@ -318,6 +329,7 @@ export const Filters: React.FC<FilterProps> = (props) => {
                 <div className={classes.filterBtns}>
                   {feeInRupees.map((fee) => (
                     <AphButton
+                      key={fee}
                       className={applyClass(localFilter.fees, fee)}
                       onClick={() => {
                         setFilterValues('fee', fee);
@@ -333,6 +345,7 @@ export const Filters: React.FC<FilterProps> = (props) => {
                 <div className={classes.filterBtns}>
                   {genderList.map((gender) => (
                     <AphButton
+                      key={gender.key}
                       className={applyClass(localFilter.gender, gender.key)}
                       onClick={() => {
                         setFilterValues('gender', gender.key);
@@ -348,6 +361,7 @@ export const Filters: React.FC<FilterProps> = (props) => {
                 <div className={classes.filterBtns}>
                   {languageList.map((language: string) => (
                     <AphButton
+                      key={language}
                       className={applyClass(localFilter.language, language)}
                       onClick={() => {
                         setFilterValues('language', language);

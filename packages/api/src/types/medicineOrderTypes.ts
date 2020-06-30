@@ -69,3 +69,8 @@ export interface StoreItemDetail {
   qty: number;
   mrp: number;
 }
+
+export interface StoreAlertResp {
+  RequestStatus: boolean;
+  RequestMessage: string;
+}

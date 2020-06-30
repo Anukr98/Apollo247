@@ -4,7 +4,7 @@ import { Header } from 'components/Header';
 import React, { useState, useEffect } from 'react';
 import { DoctorsFilter } from 'components/DoctorsFilter';
 import { PastSearches } from 'components/PastSearches';
-import { Specialities } from 'components/Specialities';
+import { Specialties } from 'components/Specialties';
 import { DoctorCard } from 'components/DoctorCard';
 import { DoctorsListing } from 'components/DoctorsListing';
 import { SearchObject } from 'components/DoctorsFilter';
@@ -288,6 +288,7 @@ export const DoctorsLanding: React.FC<DoctorsLandingProps> = (props) => {
         .query<SearchDoctorAndSpecialtyByName, SearchDoctorAndSpecialtyByNameVariables>({
           query: SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME,
           variables: {
+            city: '',
             searchText: filterOptions.searchKeyword,
             patientId: currentPatient ? currentPatient.id : '',
             pincode: currentPincode ? currentPincode : localStorage.getItem('currentPincode') || '',
@@ -550,15 +551,15 @@ export const DoctorsLanding: React.FC<DoctorsLandingProps> = (props) => {
                             specialitySelected.length === 0 &&
                             showSearchAndPastSearch ? (
                               <PastSearches
-                                speciality={(specialitySelected) =>
-                                  setSpecialitySelected(specialitySelected)
-                                }
-                                disableFilter={(disableFilters) => {
-                                  setDisableFilters(disableFilters);
-                                }}
-                                specialityId={(specialityId: string) =>
-                                  setSpecialtyId(specialityId)
-                                }
+                              // speciality={(specialitySelected) =>
+                              //   setSpecialitySelected(specialitySelected)
+                              // }
+                              // disableFilter={(disableFilters) => {
+                              //   setDisableFilters(disableFilters);
+                              // }}
+                              // specialityId={(specialityId: string) =>
+                              //   setSpecialtyId(specialityId)
+                              // }
                               />
                             ) : null}
                             {matchingDoctorsFound > 0 || matchingSpecialitesFound > 0 ? (
@@ -674,26 +675,27 @@ export const DoctorsLanding: React.FC<DoctorsLandingProps> = (props) => {
                                     </div>
                                   </>
                                 ) : (
-                                  <Specialities
-                                    keyword={filterOptions.searchKeyword}
-                                    matched={(matchingSpecialities) =>
-                                      setMatchingSpecialities(matchingSpecialities)
-                                    }
-                                    speciality={(specialitySelected) =>
-                                      setSpecialitySelected(specialitySelected)
-                                    }
-                                    specialityId={(specialityId: string) =>
-                                      setSpecialtyId(specialityId)
-                                    }
-                                    disableFilter={(disableFilters) => {
-                                      setDisableFilters(disableFilters);
-                                    }}
-                                    subHeading={
-                                      filterOptions.searchKeyword !== '' && showSearchAndPastSearch
-                                        ? 'Matching Specialities'
-                                        : 'Specialities'
-                                    }
-                                  />
+                                  <></>
+                                  // <Specialities
+                                  //   keyword={filterOptions.searchKeyword}
+                                  //   matched={(matchingSpecialities) =>
+                                  //     setMatchingSpecialities(matchingSpecialities)
+                                  //   }
+                                  //   speciality={(specialitySelected) =>
+                                  //     setSpecialitySelected(specialitySelected)
+                                  //   }
+                                  //   specialityId={(specialityId: string) =>
+                                  //     setSpecialtyId(specialityId)
+                                  //   }
+                                  //   disableFilter={(disableFilters) => {
+                                  //     setDisableFilters(disableFilters);
+                                  //   }}
+                                  //   subHeading={
+                                  //     filterOptions.searchKeyword !== '' && showSearchAndPastSearch
+                                  //       ? 'Matching Specialities'
+                                  //       : 'Specialities'
+                                  //   }
+                                  // />
                                 )}
                               </>
                             ) : (
@@ -772,7 +774,7 @@ export const DoctorsLanding: React.FC<DoctorsLandingProps> = (props) => {
                                         : '0'}
                                     </span>
                                   </div> */}
-                                  <Specialities
+                                  {/* <Specialities 
                                     keyword=""
                                     matched={(matchingSpecialities) =>
                                       setMatchingSpecialities(matchingSpecialities)
@@ -787,8 +789,8 @@ export const DoctorsLanding: React.FC<DoctorsLandingProps> = (props) => {
                                       setDisableFilters(disableFilters);
                                     }}
                                     subHeading="Specialities"
-                                    // filteredSpecialties={[]}
-                                  />
+                                    filteredSpecialties={[]}
+                                  />*/}
                                 </>
                               </>
                             )}

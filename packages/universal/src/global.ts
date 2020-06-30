@@ -80,5 +80,6 @@ declare namespace NodeJS {
     AZURE_STORAGE_CONTAINER_NAME_SIGNATURE: string;
 
     COUNTRY_CODES: string;
+    COUPON_VALIDATE_API: string;
   }
 }

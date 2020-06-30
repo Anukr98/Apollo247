@@ -123,10 +123,10 @@ const SaveMedicineOrderPaymentMq: Resolver<
   );
 
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
-  const orderDetails = await medicineOrdersRepo.getMedicineOrderDetails(
+  const orderDetails = await medicineOrdersRepo.getMedicineOrderDetailsByOrderId(
     medicinePaymentMqInput.orderAutoId
   );
-  if (!orderDetails) {
+  if (!orderDetails || !orderDetails.patient) {
     log(
       'profileServiceLogger',
       'Invalid Order ID',
@@ -136,10 +136,8 @@ const SaveMedicineOrderPaymentMq: Resolver<
     );
     throw new AphError(AphErrorMessages.INVALID_MEDICINE_ORDER_ID, undefined, {});
   }
-  //get patient address
-  const patientAddress = orderDetails.patient.patientAddress.filter(
-    (item) => item.id === orderDetails.patientAddressId
-  );
+
+  const patientAddressId = orderDetails.patientAddressId;
 
   if (medicinePaymentMqInput.paymentType == MEDICINE_ORDER_PAYMENT_TYPE.COD) {
     medicinePaymentMqInput.paymentDateTime = new Date();
@@ -148,7 +146,7 @@ const SaveMedicineOrderPaymentMq: Resolver<
 
   const paymentAttrs: Partial<MedicineOrderPayments> = {
     medicineOrders: orderDetails,
-    paymentDateTime: medicinePaymentMqInput.paymentDateTime,
+    paymentDateTime: medicinePaymentMqInput.paymentDateTime || new Date(),
     paymentStatus: medicinePaymentMqInput.paymentStatus,
     paymentType: medicinePaymentMqInput.paymentType,
     amountPaid: medicinePaymentMqInput.amountPaid,
@@ -170,52 +168,39 @@ const SaveMedicineOrderPaymentMq: Resolver<
     paymentAttrs.refundAmount = medicinePaymentMqInput.refundAmount;
   }
 
+  let savePaymentDetails: MedicineOrderPayments | undefined;
+  if ((savePaymentDetails = await medicineOrdersRepo.findMedicineOrderPayment(orderDetails.id))) {
+    await medicineOrdersRepo.updateMedicineOrderPayment(
+      orderDetails.id,
+      orderDetails.orderAutoId,
+      paymentAttrs
+    );
+  } else {
+    savePaymentDetails = await medicineOrdersRepo.saveMedicineOrderPayment(paymentAttrs);
+    if (!savePaymentDetails) {
+      log(
+        'profileServiceLogger',
+        'saveMedicineOrderPayment failed ',
+        'SaveMedicineOrderPaymentMq()->saveMedicineOrderPayment',
+        JSON.stringify(paymentAttrs),
+        ''
+      );
+      throw new AphError(AphErrorMessages.INVALID_MEDICINE_ORDER_ID, undefined, {});
+    }
+    delete savePaymentDetails.medicineOrders;
+  }
+  orderStatus = orderDetails.currentStatus;
+
   if (
     orderDetails.currentStatus == MEDICINE_ORDER_STATUS.QUOTE ||
     orderDetails.currentStatus == MEDICINE_ORDER_STATUS.PAYMENT_PENDING
   ) {
-    let savePaymentDetails: MedicineOrderPayments | undefined;
-    if ((savePaymentDetails = await medicineOrdersRepo.findMedicineOrderPayment(orderDetails.id))) {
-      await medicineOrdersRepo.updateMedicineOrderPayment(
-        orderDetails.id,
-        orderDetails.orderAutoId,
-        paymentAttrs
-      );
-    } else {
-      savePaymentDetails = await medicineOrdersRepo.saveMedicineOrderPayment(paymentAttrs);
-      if (!savePaymentDetails) {
-        log(
-          'profileServiceLogger',
-          'saveMedicineOrderPayment failed ',
-          'SaveMedicineOrderPaymentMq()->saveMedicineOrderPayment',
-          JSON.stringify(paymentAttrs),
-          ''
-        );
-        throw new AphError(AphErrorMessages.INVALID_MEDICINE_ORDER_ID, undefined, {});
-      }
-      delete savePaymentDetails.medicineOrders;
-    }
-
     let currentStatus = MEDICINE_ORDER_STATUS.PAYMENT_SUCCESS;
     if (medicinePaymentMqInput.paymentStatus === 'PENDING') {
       currentStatus = MEDICINE_ORDER_STATUS.PAYMENT_PENDING;
     }
     if (medicinePaymentMqInput.paymentType == MEDICINE_ORDER_PAYMENT_TYPE.COD) {
-      medicinePaymentMqInput.paymentDateTime = new Date();
       currentStatus = MEDICINE_ORDER_STATUS.ORDER_INITIATED;
-    }
-
-    const patientRepo = profilesDb.getCustomRepository(PatientRepository);
-    const patientDetails = await patientRepo.findById(orderDetails.patient.id);
-    if (!patientDetails) {
-      log(
-        'profileServiceLogger',
-        'Patient details not found',
-        'SaveMedicineOrderPaymentMq()->patientRepo.findById()',
-        `${orderDetails.orderAutoId} - ${orderDetails.patient.id}`,
-        ''
-      );
-      throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
     }
 
     let statusMsg = '';
@@ -283,7 +268,7 @@ const SaveMedicineOrderPaymentMq: Resolver<
         if (topicError) {
           log(
             'profileServiceLogger',
-            'Failed to send message queue',
+            'Failed to create message queue',
             `SaveMedicineOrderPaymentMq()->${queueName}`,
             JSON.stringify(topicError),
             JSON.stringify(topicError)
@@ -291,7 +276,8 @@ const SaveMedicineOrderPaymentMq: Resolver<
           console.log('topic create error', topicError);
         }
         console.log('connected to topic', queueName);
-        const message = 'MEDICINE_ORDER:' + orderDetails.orderAutoId + ':' + patientDetails.id;
+        const message =
+          'MEDICINE_ORDER:' + orderDetails.orderAutoId + ':' + orderDetails.patient.id;
         azureServiceBus.sendTopicMessage(queueName, message, (sendMsgError) => {
           if (sendMsgError) {
             log(
@@ -307,82 +293,59 @@ const SaveMedicineOrderPaymentMq: Resolver<
         });
       });
     }
-  } else {
-    const paymentAttrsWebhook: Partial<MedicineOrderPayments> = {
-      responseCode: medicinePaymentMqInput.responseCode,
-      responseMessage: medicinePaymentMqInput.responseMessage,
-    };
-    orderStatus = orderDetails.currentStatus;
-
-    if (medicinePaymentMqInput.bankName) {
-      paymentAttrsWebhook.bankName = medicinePaymentMqInput.bankName;
-    }
-
-    if (medicinePaymentMqInput.refundAmount) {
-      paymentAttrsWebhook.refundAmount = medicinePaymentMqInput.refundAmount;
-    }
-    if (Object.keys(paymentAttrsWebhook).length) {
-      const updatePaymentDetails = await medicineOrdersRepo.updateMedicineOrderPayment(
-        orderDetails.id,
-        orderDetails.orderAutoId,
-        paymentAttrsWebhook
-      );
-      log(
-        'profileServiceLogger',
-        'Updated Payment Details',
-        'SaveMedicineOrderPaymentMq()',
-        JSON.stringify(updatePaymentDetails),
-        ''
-      );
-      if (!updatePaymentDetails) {
-        errorCode = -1;
-        errorMessage = 'Could not update payment status';
-      }
-    }
   }
 
   //send email notifictaion id if the city sent is in CODCity
-  if (
-    orderDetails.medicineOrderLineItems &&
-    medicinePaymentMqInput.CODCity &&
-    medicinePaymentMqInput.CODCity.length > 0
-  ) {
-    const mailContent = medicineCOD({ orderDetails, patientAddress: patientAddress[0] });
+  if (medicinePaymentMqInput.CODCity && medicinePaymentMqInput.CODCity.length > 0) {
+    const patientRepo = profilesDb.getCustomRepository(PatientRepository);
+    const medicineOrderLineItems = await medicineOrdersRepo.getMedicineOrderLineItemByOrderId(
+      orderDetails.id
+    );
+    let patientAddress = null;
+    if (patientAddressId)
+      patientAddress = await patientRepo.getPatientAddressById(patientAddressId);
+    if (medicineOrderLineItems.length) {
+      const mailContent = medicineCOD({
+        orderDetails,
+        patientAddress: patientAddress,
+        medicineOrderLineItems: medicineOrderLineItems,
+      });
 
-    const subjectLine = ApiConstants.ORDER_PLACED_TITLE;
-    const subject =
-      process.env.NODE_ENV == 'production'
-        ? subjectLine
-        : subjectLine + ' from ' + process.env.NODE_ENV;
+      const subjectLine = ApiConstants.ORDER_PLACED_TITLE;
+      const subject =
+        process.env.NODE_ENV == 'production'
+          ? subjectLine
+          : subjectLine + ' from ' + process.env.NODE_ENV;
 
-    const toEmailId =
-      process.env.NODE_ENV == 'dev' ||
-      process.env.NODE_ENV == 'development' ||
-      process.env.NODE_ENV == 'local'
-        ? ApiConstants.MEDICINE_SUPPORT_EMAILID
-        : ApiConstants.MEDICINE_SUPPORT_EMAILID_PRODUCTION;
+      const toEmailId =
+        process.env.NODE_ENV == 'dev' ||
+        process.env.NODE_ENV == 'development' ||
+        process.env.NODE_ENV == 'local'
+          ? ApiConstants.MEDICINE_SUPPORT_EMAILID
+          : ApiConstants.MEDICINE_SUPPORT_EMAILID_PRODUCTION;
 
-    let ccEmailIds =
-      process.env.NODE_ENV == 'dev' ||
-      process.env.NODE_ENV == 'development' ||
-      process.env.NODE_ENV == 'local'
-        ? <string>ApiConstants.MEDICINE_SUPPORT_CC_EMAILID
-        : <string>ApiConstants.MEDICINE_SUPPORT_CC_EMAILID_PRODUCTION;
+      let ccEmailIds =
+        process.env.NODE_ENV == 'dev' ||
+        process.env.NODE_ENV == 'development' ||
+        process.env.NODE_ENV == 'local'
+          ? <string>ApiConstants.MEDICINE_SUPPORT_CC_EMAILID
+          : <string>ApiConstants.MEDICINE_SUPPORT_CC_EMAILID_PRODUCTION;
 
-    if (medicinePaymentMqInput.email && medicinePaymentMqInput.email.length > 0) {
-      ccEmailIds = ccEmailIds.concat(medicinePaymentMqInput.email);
+      if (medicinePaymentMqInput.email && medicinePaymentMqInput.email.length > 0) {
+        ccEmailIds = ccEmailIds.concat(medicinePaymentMqInput.email);
+      }
+
+      const emailContent: EmailMessage = {
+        subject: subject,
+        fromEmail: <string>ApiConstants.PATIENT_HELP_FROM_EMAILID,
+        fromName: <string>ApiConstants.PATIENT_HELP_FROM_NAME,
+        messageContent: <string>mailContent,
+        toEmail: <string>toEmailId,
+        ccEmail: <string>ccEmailIds,
+      };
+
+      sendMail(emailContent);
     }
-
-    const emailContent: EmailMessage = {
-      subject: subject,
-      fromEmail: <string>ApiConstants.PATIENT_HELP_FROM_EMAILID,
-      fromName: <string>ApiConstants.PATIENT_HELP_FROM_NAME,
-      messageContent: <string>mailContent,
-      toEmail: <string>toEmailId,
-      ccEmail: <string>ccEmailIds,
-    };
-
-    sendMail(emailContent);
   }
 
   return {

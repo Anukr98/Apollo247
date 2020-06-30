@@ -561,6 +561,12 @@ export class AppointmentCallDetails extends BaseEntity {
   callType: string;
 
   @Column({ nullable: true })
+  deviceType: DEVICETYPE;
+
+  @Column({ nullable: true })
+  callSource: BOOKINGSOURCE;
+
+  @Column({ nullable: true })
   doctorId: string;
 
   @Column({ nullable: true })

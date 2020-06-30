@@ -23,6 +23,8 @@ import {
   DOCTOR_CALL_TYPE,
   APPT_CALL_TYPE,
   STATUS,
+  DEVICETYPE,
+  BOOKINGSOURCE,
 } from 'graphql/types/globalTypes';
 import {
   GetJuniorDoctorCaseSheet,
@@ -837,7 +839,7 @@ export const ConsultTabs: React.FC = () => {
           }
           // -------------------------------------------------------------- //
           navigator.mediaDevices
-            .getUserMedia({ audio: true, video: true })
+            .getUserMedia({ audio: true, video: false })
             .then((stream) => {
               console.log('Got stream', stream);
               setCameraMicPermission(true);
@@ -1177,6 +1179,8 @@ export const ConsultTabs: React.FC = () => {
           appointmentId: appointmentId,
           callType: callType,
           doctorType: DOCTOR_CALL_TYPE.SENIOR,
+          deviceType: DEVICETYPE.DESKTOP,
+          callSource: BOOKINGSOURCE.WEB,
         },
       })
       .then((_data) => {
@@ -1206,6 +1210,8 @@ export const ConsultTabs: React.FC = () => {
             appointmentId: appointmentId,
             callType: callType,
             doctorType: DOCTOR_CALL_TYPE.SENIOR,
+            deviceType: DEVICETYPE.DESKTOP,
+            callSource: BOOKINGSOURCE.WEB,
           }),
           appointmentId: appointmentId,
           doctorId: currentPatient!.id,
@@ -1477,6 +1483,9 @@ export const ConsultTabs: React.FC = () => {
           endAppointmentSessionInput: {
             appointmentId: appointmentId,
             status: STATUS.COMPLETED,
+            deviceType: DEVICETYPE.DESKTOP,
+            callSource: BOOKINGSOURCE.WEB,
+            callType: APPT_CALL_TYPE.CHAT,
           },
         },
         fetchPolicy: 'no-cache',

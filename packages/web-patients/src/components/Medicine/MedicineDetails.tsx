@@ -22,7 +22,7 @@ import { MedicineAutoSearch } from 'components/Medicine/MedicineAutoSearch';
 import { AphButton, AphDialog, AphDialogTitle, AphDialogClose } from '@aph/web-ui-components';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { useCurrentPatient } from 'hooks/authHooks';
-import { uploadPrescriptionTracking } from '../../webEngageTracking';
+import { uploadPrescriptionTracking, pharmacyPdpOverviewTracking } from 'webEngageTracking';
 import { UploadPrescription } from 'components/Prescriptions/UploadPrescription';
 import { UploadEPrescriptionCard } from 'components/Prescriptions/UploadEPrescriptionCard';
 import { MetaTagsComp } from 'MetaTagsComp';
@@ -580,8 +580,12 @@ export const MedicineDetails: React.FC = (props) => {
               setMetaTagProps({
                 title: `Buy / Order ${data.productdp[0].name} Online At Best Price - Pharmacy Store - Apollo 247`,
                 description: `Buy ${data.productdp[0].name} online in just a few clicks on Apollo 247 - one of India's leading online pharmacy store. Get ${data.productdp[0].name} and a lot more at best prices. Head straight to Apollo 247 to know more.`,
-                canonicalLink: window && window.location && window.location.origin && `${window.location.origin}/medicines/${params.sku}`,
-              })
+                canonicalLink:
+                  window &&
+                  window.location &&
+                  window.location.origin &&
+                  `${window.location.origin}/medicine/${params.sku}`,
+              });
           })
           .catch((e) => {
             console.log(e);
@@ -891,6 +895,11 @@ export const MedicineDetails: React.FC = (props) => {
                                   }}
                                   onChange={(e, newValue) => {
                                     setTabValue(newValue);
+                                    const overviewData = getData(
+                                      medicinePharmacyDetails[0].Overview
+                                    );
+                                    const tabName = overviewData[newValue].key;
+                                    pharmacyPdpOverviewTracking(tabName);
                                   }}
                                 >
                                   {renderOverviewTabs(medicinePharmacyDetails[0].Overview)}

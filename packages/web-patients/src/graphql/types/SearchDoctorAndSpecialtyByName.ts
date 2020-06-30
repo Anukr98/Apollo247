@@ -3,7 +3,7 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-import { DoctorType, ConsultMode, ConsultType, WeekDay } from "./globalTypes";
+import { Geolocation, DoctorType, ConsultMode, ConsultType, WeekDay } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: SearchDoctorAndSpecialtyByName
@@ -43,6 +43,7 @@ export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_d
   lastName: string;
   fullName: string | null;
   specialty: SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctors_specialty | null;
+  salutation: string | null;
   experience: string | null;
   photoUrl: string | null;
   thumbnailUrl: string | null;
@@ -190,4 +191,6 @@ export interface SearchDoctorAndSpecialtyByNameVariables {
   searchText: string;
   patientId: string;
   pincode?: string | null;
+  city: string;
+  geoLocation?: Geolocation | null;
 }

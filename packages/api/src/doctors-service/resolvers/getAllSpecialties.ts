@@ -3,6 +3,7 @@ import { Resolver } from 'api-gateway';
 import { DoctorSpecialty } from 'doctors-service/entities/';
 import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext';
 import { DoctorSpecialtyRepository } from 'doctors-service/repositories/doctorSpecialtyRepository';
+import { FacilityRepository } from 'doctors-service/repositories/facilityRepository';
 
 export const getAllSpecialtiesTypeDefs = gql`
   type DoctorSpecialty {
@@ -18,14 +19,24 @@ export const getAllSpecialtiesTypeDefs = gql`
     symptoms: String
     commonSearchWords: String
   }
+
+  type CitiesResult {
+    city: [String]
+  }
+
   extend type Query {
     getAllSpecialties: [DoctorSpecialty!]!
+    getAllCities: CitiesResult
   }
 
   extend type Mutation {
     updateSpecialtySlug: Boolean!
   }
 `;
+
+type CitiesResult = {
+  city: string[];
+};
 
 const getAllSpecialties: Resolver<null, {}, DoctorsServiceContext, DoctorSpecialty[]> = async (
   parent,
@@ -56,9 +67,26 @@ const updateSpecialtySlug: Resolver<null, {}, DoctorsServiceContext, Boolean> = 
   return true;
 };
 
+const getAllCities: Resolver<null, {}, DoctorsServiceContext, CitiesResult> = async (
+  parent,
+  args,
+  { doctorsDb }
+) => {
+  const facilityRepo = doctorsDb.getCustomRepository(FacilityRepository);
+  const allCities = await facilityRepo.findAll();
+  const uniqueCitys: string[] = [];
+  allCities.forEach((city) => {
+    if (!uniqueCitys.includes(city.city)) {
+      uniqueCitys.push(city.city);
+    }
+  });
+  return { city: uniqueCitys };
+};
+
 export const getAllSpecialtiesResolvers = {
   Query: {
     getAllSpecialties,
+    getAllCities,
   },
 
   Mutation: {

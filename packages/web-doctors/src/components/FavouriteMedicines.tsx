@@ -1423,7 +1423,9 @@ export const FavouriteMedicines: React.FC = () => {
             : ''
         }`}
         onClick={() => {
-          daySlotsToggleAction(daySlotitem.id);
+          if (!isCustomform) {
+            daySlotsToggleAction(daySlotitem.id);
+          }
         }}
       >
         {daySlotitem.value}

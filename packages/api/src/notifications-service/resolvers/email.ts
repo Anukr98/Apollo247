@@ -24,7 +24,7 @@ export async function sendMail(emailContent: EmailMessage) {
       text: emailContent.messageContent,
       html: emailContent.messageContent,
       attachments: emailContent.attachments,
-    },
+    }, // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (err: any, json: any) => {
       if (err) {
         return console.error(err);

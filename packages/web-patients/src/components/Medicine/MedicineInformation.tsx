@@ -5,7 +5,7 @@ import { AphButton, AphTextField, AphCustomDropdown } from '@aph/web-ui-componen
 import Scrollbars from 'react-custom-scrollbars';
 
 import { NotifyMeNotification } from './NotifyMeNotification';
-import { notifyMeTracking } from '../../webEngageTracking';
+import { notifyMeTracking, pharmacyPdpPincodeTracking } from 'webEngageTracking';
 import { SubstituteDrugsList } from 'components/Medicine/SubstituteDrugsList';
 import { MedicineProductDetails, MedicineProduct } from '../../helpers/MedicineApiCalls';
 import { useParams } from 'hooks/routerHooks';
@@ -27,6 +27,7 @@ import { Alerts } from 'components/Alerts/Alerts';
 import { findAddrComponents } from 'helpers/commonHelpers';
 import { CartTypes } from 'components/MedicinesCartProvider';
 import _lowerCase from 'lodash/lowerCase';
+import { useAllCurrentPatients } from 'hooks/authHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -311,6 +312,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
     setPharmaAddressDetails,
     setHeaderPincodeError,
   } = useShoppingCart();
+  const { currentPatient } = useAllCurrentPatients();
   const [medicineQty, setMedicineQty] = React.useState(1);
   const notifyPopRef = useRef(null);
   const addToCartRef = useRef(null);
@@ -329,6 +331,8 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
   const [errorMessage, setErrorMessage] = useState('');
   const [alertMessage, setAlertMessage] = React.useState<string>('');
   const [isAlertOpen, setIsAlertOpen] = React.useState<boolean>(false);
+  const [clickAddCart, setClickAddCart] = React.useState<boolean>(false);
+  const [isUpdateQuantity, setIsUpdateQuantity] = React.useState<boolean>(false);
 
   const apiDetails = {
     skuUrl: process.env.PHARMACY_MED_PROD_SKU_URL,
@@ -594,6 +598,14 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                       }}
                       onClick={() => {
                         checkDeliveryTime(pinCode);
+                        const { sku, name } = data;
+                        const eventData = {
+                          pinCode,
+                          productId: sku,
+                          productName: name,
+                          customerId: currentPatient && currentPatient.id,
+                        };
+                        pharmacyPdpPincodeTracking(eventData);
                       }}
                     >
                       {tatLoading ? <CircularProgress size={20} /> : ' Check'}
@@ -626,9 +638,47 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                         <AphCustomDropdown
                           classes={{ selectMenu: classes.selectMenuItem }}
                           value={medicineQty}
-                          onChange={(e: React.ChangeEvent<{ value: any }>) =>
-                            setMedicineQty(parseInt(e.target.value))
-                          }
+                          onChange={(e: React.ChangeEvent<{ value: any }>) => {
+                            itemIndexInCart(data) !== -1 && setIsUpdateQuantity(true);
+                            const quantity = parseInt(e.target.value);
+                            /* Gtm code start  */
+                            itemIndexInCart(data) !== -1 &&
+                              clickAddCart &&
+                              gtmTracking({
+                                category: 'Pharmacy',
+                                action: quantity > medicineQty ? 'Add to Cart' : 'Remove From Cart',
+                                label: data.name,
+                                value: data.special_price || data.price,
+                                ecommObj: {
+                                  event:
+                                    quantity > medicineQty ? 'add_to_cart' : 'remove_from_cart',
+                                  ecommerce: {
+                                    items: [
+                                      {
+                                        item_name: data.name,
+                                        item_id: data.sku,
+                                        price: data.price,
+                                        item_category: 'Pharmacy',
+                                        item_category_2: data.type_id
+                                          ? data.type_id.toLowerCase() === 'pharma'
+                                            ? 'Drugs'
+                                            : 'FMCG'
+                                          : null,
+                                        // 'item_category_4': '', // future reference
+                                        item_variant: 'Default',
+                                        index: 1,
+                                        quantity:
+                                          quantity > medicineQty
+                                            ? quantity - medicineQty
+                                            : medicineQty - quantity,
+                                      },
+                                    ],
+                                  },
+                                },
+                              });
+                            /* Gtm code end  */
+                            setMedicineQty(quantity);
+                          }}
                         >
                           {options.map((option, index) => (
                             <MenuItem
@@ -683,6 +733,8 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                   <AphButton
                     disabled={addMutationLoading || updateMutationLoading}
                     onClick={() => {
+                      setIsUpdateQuantity(false);
+                      setClickAddCart(true);
                       setAddMutationLoading(true);
                       const cartItem: MedicineCartItem = {
                         url_key: data.url_key,
@@ -704,35 +756,34 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                         isShippable: true,
                       };
                       /**Gtm code start  */
-                      itemIndexInCart(data) == -1 &&
-                        gtmTracking({
-                          category: 'Pharmacy',
-                          action: 'Add to Cart',
-                          label: data.name,
-                          value: data.special_price || data.price,
-                          ecommObj: {
-                            event: 'add_to_cart',
-                            ecommerce: {
-                              items: [
-                                {
-                                  item_name: data.name,
-                                  item_id: data.sku,
-                                  price: data.price,
-                                  item_category: 'Pharmacy',
-                                  item_category_2: data.type_id
-                                    ? data.type_id.toLowerCase() === 'pharma'
-                                      ? 'Drugs'
-                                      : 'FMCG'
-                                    : null,
-                                  // 'item_category_4': '', // future reference
-                                  item_variant: 'Default',
-                                  index: 1,
-                                  quantity: medicineQty,
-                                },
-                              ],
-                            },
+                      gtmTracking({
+                        category: 'Pharmacy',
+                        action: 'Add to Cart',
+                        label: data.name,
+                        value: data.special_price || data.price,
+                        ecommObj: {
+                          event: 'add_to_cart',
+                          ecommerce: {
+                            items: [
+                              {
+                                item_name: data.name,
+                                item_id: data.sku,
+                                price: data.price,
+                                item_category: 'Pharmacy',
+                                item_category_2: data.type_id
+                                  ? data.type_id.toLowerCase() === 'pharma'
+                                    ? 'Drugs'
+                                    : 'FMCG'
+                                  : null,
+                                // 'item_category_4': '', // future reference
+                                item_variant: 'Default',
+                                index: 1,
+                                quantity: medicineQty,
+                              },
+                            ],
                           },
-                        });
+                        },
+                      });
                       /**Gtm code End  */
                       applyCartOperations(cartItem);
                       setAddMutationLoading(false);
@@ -742,6 +793,8 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                     {' '}
                     {addMutationLoading ? (
                       <CircularProgress size={22} color="secondary" />
+                    ) : itemIndexInCart(data) !== -1 && isUpdateQuantity ? (
+                      'Update Cart'
                     ) : itemIndexInCart(data) !== -1 ? (
                       'Added To Cart'
                     ) : (
@@ -875,7 +928,11 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
             <div className={classes.mascotIcon}>
               <img src={require('images/ic-mascot.png')} alt="" />
             </div>
-            <AddToCartPopover setShowPopup={setShowPopup} showPopup={showPopup} />
+            <AddToCartPopover
+              setShowPopup={setShowPopup}
+              showPopup={showPopup}
+              setClickAddCart={setClickAddCart}
+            />
           </div>
         </div>
       </Popover>

@@ -113,6 +113,7 @@ type MedicalCardProps = {
 export const MedicalCard: React.FC<MedicalCardProps> = (props) => {
   const classes = useStyles({});
   const [showPopup, setShowPopup] = useState<boolean>(false);
+
   return (
     <div className={`${classes.root} ${props.isActiveCard ? classes.activeCard : ''}`}>
       <div className={classes.doctorInfoGroup}>

@@ -21,6 +21,7 @@ import {
   REQUEST_ROLES,
   PATIENT_TYPE,
   ES_DOCTOR_SLOT_STATUS,
+  AppointmentUpdateHistory,
 } from 'consults-service/entities';
 import { AppointmentDateTime } from 'doctors-service/resolvers/getDoctorsBySpecialtyAndFilters';
 import { AphError } from 'AphError';
@@ -66,6 +67,12 @@ export class AppointmentRepository extends Repository<Appointment> {
       .andWhere('appointment.patientId = :patientId', { patientId })
       .andWhere('appointment.doctorId = :doctorId', { doctorId })
       .andWhere('appointment.status = :status', { status: STATUS.COMPLETED })
+      .getCount();
+  }
+
+  getPatientAppointmentCountByPatientIds(patientId: string) {
+    return this.createQueryBuilder('appointment')
+      .andWhere('appointment.patientId = :patientId', { patientId })
       .getCount();
   }
 
@@ -1561,6 +1568,23 @@ export class AppointmentRepository extends Repository<Appointment> {
       })
       .getMany();
   }
+
+  getSpecificMinuteBothAppointments(nextMin: number) {
+    const apptDateTime = addMinutes(new Date(), nextMin);
+    const formatDateTime =
+      format(apptDateTime, 'yyyy-MM-dd') + 'T' + format(apptDateTime, 'HH:mm') + ':00.000Z';
+    return this.createQueryBuilder('appointment')
+      .where('(appointment.appointmentDateTime = :fromDate)', {
+        fromDate: formatDateTime,
+      })
+      .andWhere('appointment.status in(:status1)', {
+        status1: STATUS.PENDING,
+      })
+      .andWhere('appointment.appointmentState != :state', {
+        state: APPOINTMENT_STATE.AWAITING_RESCHEDULE,
+      })
+      .getMany();
+  }
   /*return this.find({
       where: { appointmentDateTime: formatDateTime, status: Not(STATUS.CANCELLED) },
       order: { bookingDate: 'ASC' },
@@ -1889,5 +1913,10 @@ export class AppointmentRepository extends Repository<Appointment> {
         order: { bookingDate: 'DESC' },
       });
     }
+  }
+
+  saveAppointmentHistory(historyAttrs: Partial<AppointmentUpdateHistory>) {
+    historyAttrs.updatedAt = new Date();
+    return AppointmentUpdateHistory.create(historyAttrs).save();
   }
 }

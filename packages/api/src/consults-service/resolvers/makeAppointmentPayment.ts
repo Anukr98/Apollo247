@@ -9,6 +9,9 @@ import {
   APPOINTMENT_PAYMENT_TYPE,
   ES_DOCTOR_SLOT_STATUS,
   CASESHEET_STATUS,
+  AppointmentUpdateHistory,
+  VALUE_TYPE,
+  APPOINTMENT_UPDATED_BY,
 } from 'consults-service/entities';
 import { initiateRefund, PaytmResponse } from 'consults-service/helpers/refundHelper';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
@@ -23,13 +26,19 @@ import { sendMail } from 'notifications-service/resolvers/email';
 import { EmailMessage } from 'types/notificationMessageTypes';
 import { ApiConstants } from 'ApiConstants';
 import { addMilliseconds, format, addDays, differenceInSeconds } from 'date-fns';
-import { sendNotification, NotificationType } from 'notifications-service/resolvers/notifications';
+import {
+  sendNotification,
+  NotificationType,
+  sendDoctorAppointmentNotification,
+} from 'notifications-service/resolvers/notifications';
 
 import { DoctorType } from 'doctors-service/entities';
 import { appointmentPaymentEmailTemplate } from 'helpers/emailTemplates/appointmentPaymentEmailTemplate';
 import { log } from 'customWinstonLogger';
 import { CaseSheetRepository } from 'consults-service/repositories/caseSheetRepository';
 import { ConsultQueueRepository } from 'consults-service/repositories/consultQueueRepository';
+import { acceptCoupon } from 'helpers/couponServices';
+import { AcceptCouponRequest } from 'types/coupons';
 
 export const makeAppointmentPaymentTypeDefs = gql`
   enum APPOINTMENT_PAYMENT_TYPE {
@@ -198,6 +207,18 @@ const makeAppointmentPayment: Resolver<
 
   //update appointment status to PENDING
   if (paymentInput.paymentStatus == 'TXN_SUCCESS') {
+    if (processingAppointment.couponCode) {
+      const patient = patientsDb.getCustomRepository(PatientRepository);
+      const patientDetails = await patient.findByIdWithoutRelations(
+        processingAppointment.patientId
+      );
+      if (!patientDetails) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
+      const payload: AcceptCouponRequest = {
+        mobile: patientDetails.mobileNumber.replace('+91', ''),
+        coupon: processingAppointment.couponCode,
+      };
+      await acceptCoupon(payload);
+    }
     //check if any appointment already exists in this slot before confirming payment
     const apptCount = await apptsRepo.checkIfAppointmentExistWithId(
       processingAppointment.doctorId,
@@ -340,8 +361,27 @@ const makeAppointmentPayment: Resolver<
       };
       caseSheetRepo.savecaseSheet(casesheetAttrs);
       apptsRepo.updateJdQuestionStatusbyIds([processingAppointment.id]);
+      const historyAttrs: Partial<AppointmentUpdateHistory> = {
+        appointment: processingAppointment,
+        userType: APPOINTMENT_UPDATED_BY.PATIENT,
+        fromValue: STATUS.PENDING,
+        toValue: STATUS.PENDING,
+        valueType: VALUE_TYPE.STATUS,
+        userName: processingAppointment.patientId,
+        reason: ApiConstants.APPOINTMENT_AUTO_SUBMIT_HISTORY.toString(),
+      };
+      apptsRepo.saveAppointmentHistory(historyAttrs);
     }
   } else if (paymentInput.paymentStatus == 'TXN_FAILURE') {
+    const historyAttrs: Partial<AppointmentUpdateHistory> = {
+      appointment: processingAppointment,
+      userType: APPOINTMENT_UPDATED_BY.PATIENT,
+      fromValue: STATUS.PAYMENT_PENDING,
+      toValue: STATUS.PAYMENT_FAILED,
+      valueType: VALUE_TYPE.STATUS,
+      userName: processingAppointment.patientId,
+    };
+    apptsRepo.saveAppointmentHistory(historyAttrs);
     if (paymentInput.responseCode == '141' || paymentInput.responseCode == '810') {
       await apptsRepo.updateAppointment(processingAppointment.id, {
         status: STATUS.PAYMENT_ABORTED,
@@ -364,6 +404,15 @@ const makeAppointmentPayment: Resolver<
           consultsDb,
           doctorsDb
         );
+        const historyAttrs: Partial<AppointmentUpdateHistory> = {
+          appointment: processingAppointment,
+          userType: APPOINTMENT_UPDATED_BY.PATIENT,
+          fromValue: STATUS.PAYMENT_PENDING,
+          toValue: STATUS.PAYMENT_PENDING_PG,
+          valueType: VALUE_TYPE.STATUS,
+          userName: processingAppointment.patientId,
+        };
+        apptsRepo.saveAppointmentHistory(historyAttrs);
       }
     }
   } else if (paymentInput.paymentStatus == 'PENDING') {
@@ -395,20 +444,7 @@ const sendPatientAcknowledgements = async (
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
 
-  //SMS logic starts here
-  //let smsMessage = ApiConstants.BOOK_APPOINTMENT_SMS_MESSAGE.replace(
-  //'{0}',
-  //patientDetails.firstName
-  //);
-  //smsMessage = smsMessage.replace('{1}', appointmentData.displayId.toString());
-  //smsMessage = smsMessage.replace('{2}', docDetails.firstName + ' ' + docDetails.lastName);
   const istDateTime = addMilliseconds(appointmentData.appointmentDateTime, 19800000);
-  //const smsDate = format(istDateTime, 'dd-MM-yyyy HH:mm');
-  //smsMessage = smsMessage.replace('{3}', smsDate.toString());
-  //smsMessage = smsMessage.replace('at {4}', '');
-  //console.log(smsMessage, 'sms message');
-  //sendSMS(smsMessage);
-  //SMS logic ends here
 
   //NOTIFICATION logic starts here
   const pushNotificationInput = {
@@ -422,6 +458,13 @@ const sendPatientAcknowledgements = async (
     doctorsDb
   );
   console.log(notificationResult, 'book appt notification');
+  sendDoctorAppointmentNotification(
+    appointmentData.appointmentDateTime,
+    appointmentData.patientName,
+    appointmentData.id,
+    appointmentData.doctorId,
+    doctorsDb
+  );
   // NOTIFICATION logic ends here
 
   const hospitalCity = docDetails.doctorHospital[0].facility.city;
