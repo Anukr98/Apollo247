@@ -559,7 +559,10 @@ const updateMedicineDataRedis: Resolver<
   });
 
   const excelToJson = require('convert-excel-to-json');
-  const fileDirectory = path.resolve('/apollo-hospitals/packages/api/src/assets');
+  let fileDirectory = path.resolve('/apollo-hospitals/packages/api/src/assets');
+  if (process.env.NODE_ENV != 'local') {
+    fileDirectory = path.resolve(<string>process.env.ASSETS_DIRECTORY);
+  }
   console.log(fileDirectory + '/Online_Master.xlsx');
 
   const rowData = excelToJson({
