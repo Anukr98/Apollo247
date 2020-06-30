@@ -158,9 +158,9 @@ export class DoctorRepository extends Repository<Doctor> {
           .getUTCHours()
           .toString()
           .padStart(2, '0')}:${appt.appointmentDateTime
-          .getUTCMinutes()
-          .toString()
-          .padStart(2, '0')}:00.000Z`;
+            .getUTCMinutes()
+            .toString()
+            .padStart(2, '0')}:00.000Z`;
         if (availableSlots.indexOf(sl) >= 0) {
           doctorSlots[availableSlots.indexOf(sl)].status = ES_DOCTOR_SLOT_STATUS.BOOKED;
           //availableSlots.splice(availableSlots.indexOf(sl), 1);
@@ -269,6 +269,9 @@ export class DoctorRepository extends Repository<Doctor> {
   findDoctorByIdWithoutRelations(id: string) {
     return this.findOne({
       where: [{ id, isActive: true }],
+      relations: [
+        'specialty'
+      ]
     });
   }
 
@@ -680,8 +683,8 @@ export class DoctorRepository extends Repository<Doctor> {
                 fee.maximum === -1
                   ? qb.where('doctor.onlineConsultationFees >= ' + fee.minimum)
                   : qb
-                      .where('doctor.onlineConsultationFees >= ' + fee.minimum)
-                      .andWhere('doctor.onlineConsultationFees <= ' + fee.maximum);
+                    .where('doctor.onlineConsultationFees >= ' + fee.minimum)
+                    .andWhere('doctor.onlineConsultationFees <= ' + fee.maximum);
               })
             );
           });
@@ -698,8 +701,8 @@ export class DoctorRepository extends Repository<Doctor> {
                 exp.maximum === -1
                   ? qb.where('doctor.experience >= ' + exp.minimum)
                   : qb
-                      .where('doctor.experience >= ' + exp.minimum)
-                      .andWhere('doctor.experience <= ' + exp.maximum);
+                    .where('doctor.experience >= ' + exp.minimum)
+                    .andWhere('doctor.experience <= ' + exp.maximum);
               })
             );
           });
