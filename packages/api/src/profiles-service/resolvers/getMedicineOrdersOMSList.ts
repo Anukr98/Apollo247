@@ -15,7 +15,6 @@ import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { getUnixTime, format } from 'date-fns';
 import { Tedis } from 'redis-typescript';
 import { ApiConstants } from 'ApiConstants';
-import _ from 'lodash';
 
 const path = require('path');
 
@@ -217,9 +216,8 @@ const getMedicineOrdersOMSList: Resolver<
   }
   const primaryPatientIds = await patientRepo.getLinkedPatientIds(args.patientId);
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
-  const medicineOrdersList: any = _.filter(
-    await medicineOrdersRepo.getMedicineOrdersList(primaryPatientIds),
-    (o) => o.currentStatus !== 'PAYMENT_ABORTED'
+  const medicineOrdersList: any = await medicineOrdersRepo.getMedicineOrdersListWithoutAbortedStatus(
+    primaryPatientIds
   );
   let uhid = patientDetails.uhid;
   if (process.env.NODE_ENV == 'local') uhid = ApiConstants.CURRENT_UHID.toString();
