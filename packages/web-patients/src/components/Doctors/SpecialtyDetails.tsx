@@ -50,6 +50,7 @@ import _lowerCase from 'lodash/lowerCase';
 import { useAuth } from 'hooks/authHooks';
 import { Cities } from '../Cities';
 import axios from 'axios';
+import { gtmTracking } from 'gtmTracking';
 const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
@@ -485,12 +486,16 @@ const convertAvailabilityToDate = (availability: String[], dateSelectedFromFilte
     availableNow = {};
   }
   const availabilityArray: String[] = [];
-  const today = moment(new Date()).utc().format('YYYY-MM-DD');
+  const today = moment(new Date())
+    .utc()
+    .format('YYYY-MM-DD');
   if (availability.length > 0) {
     availability.forEach((value: String) => {
       if (value === 'Now') {
         availableNow = {
-          availableNow: moment(new Date()).utc().format('YYYY-MM-DD hh:mm'),
+          availableNow: moment(new Date())
+            .utc()
+            .format('YYYY-MM-DD hh:mm'),
         };
       } else if (value === 'Today') {
         availabilityArray.push(today);
@@ -564,6 +569,45 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
   const [slugName, setSlugName] = useState<string>('');
   const [faqData, setFaqData] = useState<any>();
   const { isSignedIn } = useAuth();
+
+  /* Gtm code start */
+  useEffect(() => {
+    if (doctorData && doctorData.length > 0) {
+      let ecommItems: any[] = [];
+      doctorData.map((doctorDetails: any, ind: number) => {
+        doctorDetails &&
+          doctorDetails.fullName &&
+          ecommItems.push({
+            item_name: doctorDetails.fullName,
+            item_id: doctorDetails.id,
+            item_category: 'Consultations',
+            item_category_2: doctorDetails.specialty && doctorDetails.specialty.name,
+            item_category_3:
+              doctorDetails.doctorHospital &&
+              doctorDetails.doctorHospital.length &&
+              doctorDetails.doctorHospital[0].facility &&
+              doctorDetails.doctorHospital[0].facility.city,
+            // 'item_category_4': '', // Future USe
+            item_variant: 'Virtual / Physcial',
+            index: ind + 1,
+            quantity: '1',
+          });
+      });
+      gtmTracking({
+        category: 'Consultations',
+        action: 'Specialty Page',
+        label: 'Specialty Details Page Viewed',
+        value: null,
+        ecommObj: {
+          event: 'view_item_list',
+          ecommerce: {
+            items: ecommItems,
+          },
+        },
+      });
+    }
+  }, [doctorData]);
+  /* Gtm code end */
 
   useEffect(() => {
     if (searchKeyword.length > 2) {
