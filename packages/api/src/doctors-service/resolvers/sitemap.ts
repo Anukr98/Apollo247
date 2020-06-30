@@ -100,7 +100,40 @@ const generateSitemap: Resolver<null, {}, DoctorsServiceContext, string> = async
     'T' +
     format(new Date(), 'hh:mm:ss') +
     '+00:00</lastmod>\n</url>\n';
-  sitemapStr += doctorsStr + cmsUrls + brandsPage + '</urlset>';
+
+  const healthAreaListResp = await fetch(
+    process.env.PHARMACY_MED_PROD_SEARCH_BY_BRAND
+      ? process.env.PHARMACY_MED_PROD_SEARCH_BY_BRAND
+      : '',
+    {
+      method: 'GET',
+      headers: {
+        Authorization: process.env.PHARMACY_MED_AUTH_TOKEN
+          ? process.env.PHARMACY_MED_AUTH_TOKEN
+          : '',
+      },
+    }
+  );
+  const healthAreaTextRes = await healthAreaListResp.text();
+  const healthAreasUrlsList = JSON.parse(healthAreaTextRes);
+  console.log(healthAreasUrlsList.healthareas, 'health areas');
+  let healthAreaUrls = '\n<!--Health Area links-->\n';
+  if (healthAreasUrlsList.healthareas && healthAreasUrlsList.healthareas.length > 0) {
+    healthAreasUrlsList.healthareas.forEach((link: any) => {
+      const url = process.env.SITEMAP_BASE_URL + 'medicine/healthareas/' + link.url_key;
+      healthAreaUrls +=
+        '<url>\n<loc>' + url + '</loc>\n<lastmod>' + modifiedDate + '</lastmod>\n</url>\n';
+    });
+  }
+  let ShopByCategory = '\n<!--Shop By Category links-->\n';
+  if (healthAreasUrlsList.shop_by_category && healthAreasUrlsList.shop_by_category.length > 0) {
+    healthAreasUrlsList.shop_by_category.forEach((link: any) => {
+      const url = process.env.SITEMAP_BASE_URL + 'medicine/shop-by-category/' + link.url_key;
+      ShopByCategory +=
+        '<url>\n<loc>' + url + '</loc>\n<lastmod>' + modifiedDate + '</lastmod>\n</url>\n';
+    });
+  }
+  sitemapStr += doctorsStr + cmsUrls + brandsPage + healthAreaUrls + ShopByCategory + '</urlset>';
   const fileName = 'sitemap.xml';
   const uploadPath = assetsDir + '/' + fileName;
   fs.writeFile(uploadPath, sitemapStr, {}, (err) => {
