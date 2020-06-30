@@ -328,7 +328,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
               <AvailabilityCapsule availableTime={availableTime} styles={styles.availableView} />
             ) : null}
             <View style={{ position: 'absolute', top: -6, right: -6 }}>
-              {rowData.doctorType === 'APOLLO' ? (
+              {rowData.doctorType !== 'DOCTOR_CONNECT' ? (
                 <ApolloDoctorIcon style={{ width: 80, height: 32 }} />
               ) : (
                 <ApolloPartnerIcon style={{ width: 80, height: 32 }} />

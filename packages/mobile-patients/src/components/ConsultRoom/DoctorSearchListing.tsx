@@ -447,7 +447,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         : data;
     if (type == 'APOLLO') {
       const apolloDoctors = doctorsApollo.filter((item) => {
-        return item && item.doctorType == 'APOLLO';
+        return item && item.doctorType !== 'DOCTOR_CONNECT';
       });
       setFilteredDoctorsList(apolloDoctors);
       console.log(apolloDoctors.length);
@@ -456,7 +456,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     } else {
       const otherDoctors = doctorsApollo.filter((item) => {
         console.log(item && item.doctorType);
-        return item && item.doctorType != 'APOLLO';
+        return item && item.doctorType === 'DOCTOR_CONNECT';
       });
       setFilteredDoctorsList(otherDoctors);
       setApolloDocsNumber(doctorsApollo.length - otherDoctors.length);
