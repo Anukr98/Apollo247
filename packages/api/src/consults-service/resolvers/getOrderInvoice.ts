@@ -303,7 +303,7 @@ const getOrderInvoice: Resolver<
       .fontSize(12)
       .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
       .fillColor('#01475b')
-      .text('Apollo 24X7 Online Teleconsultation Fees', margin + 160, doc.y, {
+      .text('Apollo 24X7 Online Teleconsultation Fees', margin + 165, doc.y, {
         lineBreak: false,
         align: 'right',
       })
