@@ -67,7 +67,7 @@ export const convertCaseSheetToRxPdfData = async (
       const customDosage = csRx.medicineCustomDosage
         ? csRx.medicineCustomDosage
             .split('-')
-            .filter((value) => value)
+            .filter((value) => parseInt(value, 10))
             .join(
               ' ' +
                 csRx.medicineUnit
