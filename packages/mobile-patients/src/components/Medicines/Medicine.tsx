@@ -99,11 +99,6 @@ import {
 } from '../../graphql/types/getRecommendedProductsList';
 
 const styles = StyleSheet.create({
-  imagePlaceholderStyle: {
-    backgroundColor: '#f7f8f5',
-    opacity: 0.5,
-    borderRadius: 5,
-  },
   hiTextStyle: {
     marginLeft: 20,
     color: '#02475b',
@@ -132,6 +127,7 @@ const styles = StyleSheet.create({
     marginTop: 9,
   },
   sliderPlaceHolderStyle: {
+    ...theme.viewStyles.imagePlaceholderStyle,
     width: '100%',
     alignContent: 'center',
     justifyContent: 'center',
@@ -795,7 +791,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       return (
         <View style={[styles.sliderPlaceHolderStyle, { height: imgHeight }]}>
           <Spinner
-            spinnerProps={{ size: 'small' }}
+            // spinnerProps={{ size: 'small' }}
             style={{ backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR }}
           />
         </View>
@@ -907,7 +903,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           ]}
         >
           <Image
-            // placeholderStyle={styles.imagePlaceholderStyle}
+            placeholderStyle={theme.viewStyles.imagePlaceholderStyle}
             source={{ uri: imgUrl }}
             style={{
               height: 45,
@@ -941,7 +937,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           ]}
         >
           <Image
-            // placeholderStyle={styles.imagePlaceholderStyle}
+            placeholderStyle={theme.viewStyles.imagePlaceholderStyle}
             source={{ uri: imgUrl }}
             style={{
               height: 40,
@@ -1032,7 +1028,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                 }}
               >
                 <Image
-                  // placeholderStyle={styles.imagePlaceholderStyle}
+                  placeholderStyle={theme.viewStyles.imagePlaceholderStyle}
                   source={{ uri: productsThumbnailUrl(item.image_url) }}
                   containerStyle={{
                     ...theme.viewStyles.card(0, 0),
@@ -1133,7 +1129,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         )}
         <View style={localStyles.hotSellerCardView}>
           <Image
-            placeholderStyle={styles.imagePlaceholderStyle}
+            placeholderStyle={theme.viewStyles.imagePlaceholderStyle}
             source={{ uri: imgUrl }}
             style={{ height: 68, width: 68, marginBottom: 8 }}
           />
