@@ -653,7 +653,7 @@ export const PayMedicine: React.FC = (props) => {
             // 'item_category_4': '', // for future
             item_variant: 'Default',
             index: key + 1,
-            quantity: items.mou,
+            quantity: items.quantity,
           });
         });
         _obTracking({
