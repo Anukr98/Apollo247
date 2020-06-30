@@ -162,56 +162,60 @@ export const PastSearches: React.FC = (props) => {
           <div className={classes.searchList}>
             <Grid container spacing={2}>
               {data.getPatientPastSearches.map((searchDetails, index) => {
-                return index < 4 && searchDetails ? (
-                  <Grid
-                    item
-                    xs={6}
-                    sm={6}
-                    md={4}
-                    lg={3}
-                    key={`${_uniqueId('psearch_doctor_')}- ${searchDetails.typeId}`}
-                  >
-                    <Link
-                      to={`/doctors/${readableParam(searchDetails.name)}-${searchDetails.typeId}`}
-                      title={searchDetails && `${_startCase(_toLower(searchDetails.name || ''))}`}
+                return searchDetails ? (
+                  index < 4 && (
+                    <Grid
+                      item
+                      xs={6}
+                      sm={6}
+                      md={4}
+                      lg={3}
+                      key={`${_uniqueId('psearch_doctor_')}- ${searchDetails.typeId}`}
                     >
-                      <div className={classes.contentBox}>
-                        <Avatar
-                          alt={(searchDetails && searchDetails.name) || ''}
-                          src={(searchDetails && searchDetails.image) || ''}
-                          className={`${classes.bigAvatar} ${classes.doctorAvatar}`}
-                        />
-                        {searchDetails && `${_startCase(_toLower(searchDetails.name || ''))}`}
-                      </div>
-                    </Link>
-                  </Grid>
-                ) : (
-                  <Route
-                    render={({ history }) => (
-                      <Grid
-                        item
-                        xs={6}
-                        sm={6}
-                        md={4}
-                        lg={3}
-                        title={(searchDetails && searchDetails.name) || ''}
-                        onClick={(e) => {
-                          const specialityUpdated = readableParam(`${e.currentTarget.title}`);
-                          const encoded = encodeURIComponent(specialityUpdated);
-                          history.push(clientRoutes.specialties(`${specialityUpdated}`));
-                        }}
-                        key={`${_uniqueId('psearch_spl_')}- ${searchDetails.typeId}`}
+                      <Link
+                        to={`/doctors/${readableParam(searchDetails.name)}-${searchDetails.typeId}`}
+                        title={searchDetails && `${_startCase(_toLower(searchDetails.name || ''))}`}
                       >
                         <div className={classes.contentBox}>
                           <Avatar
                             alt={(searchDetails && searchDetails.name) || ''}
                             src={(searchDetails && searchDetails.image) || ''}
-                            className={classes.bigAvatar}
+                            className={`${classes.bigAvatar} ${classes.doctorAvatar}`}
                           />
-                          {(searchDetails && searchDetails.name) || ''}
+                          {searchDetails && `${_startCase(_toLower(searchDetails.name || ''))}`}
                         </div>
-                      </Grid>
-                    )}
+                      </Link>
+                    </Grid>
+                  )
+                ) : (
+                  <Route
+                    render={({ history }) =>
+                      index < 4 && (
+                        <Grid
+                          item
+                          xs={6}
+                          sm={6}
+                          md={4}
+                          lg={3}
+                          title={(searchDetails && searchDetails.name) || ''}
+                          onClick={(e) => {
+                            const specialityUpdated = readableParam(`${e.currentTarget.title}`);
+                            const encoded = encodeURIComponent(specialityUpdated);
+                            history.push(clientRoutes.specialties(`${specialityUpdated}`));
+                          }}
+                          key={`${_uniqueId('psearch_spl_')}- ${searchDetails.typeId}`}
+                        >
+                          <div className={classes.contentBox}>
+                            <Avatar
+                              alt={(searchDetails && searchDetails.name) || ''}
+                              src={(searchDetails && searchDetails.image) || ''}
+                              className={classes.bigAvatar}
+                            />
+                            {(searchDetails && searchDetails.name) || ''}
+                          </div>
+                        </Grid>
+                      )
+                    }
                   />
                 );
               })}
