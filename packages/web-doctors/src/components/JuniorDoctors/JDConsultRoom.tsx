@@ -43,6 +43,8 @@ import {
   APPT_CALL_TYPE,
   Relation,
   STATUS,
+  DEVICETYPE,
+  BOOKINGSOURCE,
 } from 'graphql/types/globalTypes';
 import { CaseSheet } from 'components/JuniorDoctors/JDCaseSheet/CaseSheet';
 import { useAuth } from 'hooks/authHooks';
@@ -84,6 +86,7 @@ import {
   SendCallNotificationVariables,
 } from 'graphql/types/SendCallNotification';
 import moment from 'moment';
+import Alert from '../Alert';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -501,6 +504,11 @@ export const JDConsultRoom: React.FC = () => {
   const [referralError, setReferralError] = useState<boolean>(false);
   const [vitalError, setVitalError] = useState<VitalErrorProps>({ height: '', weight: '' });
 
+  //OT Error state
+  const [sessionError, setSessionError] = React.useState<boolean>(null);
+  const [publisherError, setPublisherError] = React.useState<boolean>(null);
+  const [subscriberError, setSubscriberError] = React.useState<boolean>(null);
+
   /* case sheet data*/
   let customNotes = '',
     appointmentDateIST = '';
@@ -578,11 +586,11 @@ export const JDConsultRoom: React.FC = () => {
     casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails
       ? casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails.uhid
       : '';
-  const patientRelation =
+  const patientMobileNumber =
     casesheetInfo &&
     casesheetInfo.getJuniorDoctorCaseSheet &&
     casesheetInfo.getJuniorDoctorCaseSheet.patientDetails
-      ? casesheetInfo.getJuniorDoctorCaseSheet.patientDetails.relation
+      ? casesheetInfo.getJuniorDoctorCaseSheet.patientDetails.mobileNumber
       : '';
   const patientAppointmentId =
     (casesheetInfo &&
@@ -612,9 +620,6 @@ export const JDConsultRoom: React.FC = () => {
       'dd/MM/yyyy, hh:mm a'
     );
   }
-
-  const patientRelationHeader =
-    patientRelation === Relation.ME ? ' Self' : _startCase(_toLower(patientRelation));
 
   const scrollbars = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -981,6 +986,8 @@ export const JDConsultRoom: React.FC = () => {
           appointmentId: appointmentId,
           callType: callType,
           doctorType: DOCTOR_CALL_TYPE.JUNIOR,
+          deviceType: DEVICETYPE.DESKTOP,
+          callSource: BOOKINGSOURCE.WEB,
         },
       })
       .then((_data) => {
@@ -1002,6 +1009,8 @@ export const JDConsultRoom: React.FC = () => {
             appointmentId: appointmentId,
             callType: callType,
             doctorType: DOCTOR_CALL_TYPE.JUNIOR,
+            deviceType: DEVICETYPE.DESKTOP,
+            callSource: BOOKINGSOURCE.WEB,
           }),
           appointmentId: appointmentId,
           doctorId: currentDoctor!.id,
@@ -1467,8 +1476,8 @@ export const JDConsultRoom: React.FC = () => {
                         <span>({userCardStrip})</span>
                       </div>
                       <div className={classes.patientTextInfo}>
-                        <label>UHID:</label> {patientUhid} | <label>Relation:</label>
-                        {patientRelationHeader}
+                        <label>UHID:</label> {patientUhid} | <label>Phone No.:</label>
+                        {patientMobileNumber}
                       </div>
                       <div className={classes.patientTextInfo}>
                         <label>Appt ID:</label> {patientAppointmentId}
@@ -1542,6 +1551,9 @@ export const JDConsultRoom: React.FC = () => {
                       endCallNotificationAction(callId)
                     }
                     hasCameraMicPermission={hasCameraMicPermission}
+                    setSessionError={setSessionError}
+                    setPublisherError={setPublisherError}
+                    setSubscriberError={setSubscriberError}
                   />
                 )}
                 <div className={classes.contentGroup}>
@@ -1571,6 +1583,9 @@ export const JDConsultRoom: React.FC = () => {
                           disableChat={disableChat()}
                           isNewMessage={(isNewMessage: boolean) => setIsNewMessage(isNewMessage)}
                           autoCloseCaseSheet={autoCloseCaseSheet}
+                          setSessionError={setSessionError}
+                          setPublisherError={setPublisherError}
+                          setSubscriberError={setSubscriberError}
                         />
                       </div>
                     </div>
@@ -1642,6 +1657,26 @@ export const JDConsultRoom: React.FC = () => {
           </Button>
         </DialogActions>
       </Dialog>
+      {/* Ot Errors Start */}
+      <Alert
+        error={sessionError}
+        onClose={() => {
+          setSessionError(null);
+        }}
+      />
+      <Alert
+        error={publisherError}
+        onClose={() => {
+          setPublisherError(null);
+        }}
+      />
+      <Alert
+        error={subscriberError}
+        onClose={() => {
+          setSubscriberError(null);
+        }}
+      />
+      {/* Ot Errors Ends */}
     </div>
   );
 };

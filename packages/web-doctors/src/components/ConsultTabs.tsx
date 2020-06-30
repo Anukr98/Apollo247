@@ -23,6 +23,8 @@ import {
   DOCTOR_CALL_TYPE,
   APPT_CALL_TYPE,
   STATUS,
+  DEVICETYPE,
+  BOOKINGSOURCE,
 } from 'graphql/types/globalTypes';
 import {
   GetJuniorDoctorCaseSheet,
@@ -408,6 +410,7 @@ export const ConsultTabs: React.FC = () => {
   const [hasCameraMicPermission, setCameraMicPermission] = useState<boolean>(true);
   const [isNewprescriptionEditable, setIsNewprescriptionEditable] = useState<boolean>(false);
   const [isNewPrescription, setIsNewPrescription] = useState<boolean>(false);
+  const [showConfirmPrescription, setShowConfirmPrescription] = React.useState<boolean>(false);
 
   const subscribekey: string = process.env.SUBSCRIBE_KEY ? process.env.SUBSCRIBE_KEY : '';
   const publishkey: string = process.env.PUBLISH_KEY ? process.env.PUBLISH_KEY : '';
@@ -640,7 +643,7 @@ export const ConsultTabs: React.FC = () => {
           //       _data!.data!.getCaseSheet!.caseSheetDetails!.appointment!.sdConsultationDate
           //     )
           //   : setSdConsultationDate('');
-            _data!.data!.getCaseSheet!.caseSheetDetails!.prescriptionGeneratedDate
+          _data!.data!.getCaseSheet!.caseSheetDetails!.prescriptionGeneratedDate
             ? setSdConsultationDate(
                 _data!.data!.getCaseSheet!.caseSheetDetails!.prescriptionGeneratedDate
               )
@@ -1176,6 +1179,8 @@ export const ConsultTabs: React.FC = () => {
           appointmentId: appointmentId,
           callType: callType,
           doctorType: DOCTOR_CALL_TYPE.SENIOR,
+          deviceType: DEVICETYPE.DESKTOP,
+          callSource: BOOKINGSOURCE.WEB,
         },
       })
       .then((_data) => {
@@ -1205,6 +1210,8 @@ export const ConsultTabs: React.FC = () => {
             appointmentId: appointmentId,
             callType: callType,
             doctorType: DOCTOR_CALL_TYPE.SENIOR,
+            deviceType: DEVICETYPE.DESKTOP,
+            callSource: BOOKINGSOURCE.WEB,
           }),
           appointmentId: appointmentId,
           doctorId: currentPatient!.id,
@@ -1230,6 +1237,12 @@ export const ConsultTabs: React.FC = () => {
         variables: {
           caseSheetId: caseSheetId,
           sentToPatient: true,
+          vitals: {
+            height: height,
+            temperature: temperature,
+            weight: weight,
+            bp: bp,
+          },
         },
       })
       .then((_data) => {
@@ -1242,13 +1255,16 @@ export const ConsultTabs: React.FC = () => {
             _data!.data!.updatePatientPrescriptionSentStatus.blobName
           );
           setPrescriptionPdf(url);
+          setShowConfirmPrescription(false);
         }
         if (
           _data &&
           _data!.data!.updatePatientPrescriptionSentStatus &&
           _data!.data!.updatePatientPrescriptionSentStatus.prescriptionGeneratedDate
         ) {
-          setSdConsultationDate(_data!.data!.updatePatientPrescriptionSentStatus.prescriptionGeneratedDate);
+          setSdConsultationDate(
+            _data!.data!.updatePatientPrescriptionSentStatus.prescriptionGeneratedDate
+          );
         }
         setAppointmentStatus('COMPLETED');
         setSentToPatient(true);
@@ -1312,6 +1328,7 @@ export const ConsultTabs: React.FC = () => {
         diagnosticPrescriptionFinal = diagnosticPrescription.map((prescription) => {
           return {
             itemname: prescription.itemName ? prescription.itemName : prescription.itemname,
+            testInstruction: prescription.testInstruction,
           };
         });
       }
@@ -1367,10 +1384,10 @@ export const ConsultTabs: React.FC = () => {
         familyHistory: familyHistory,
         dietAllergies: dietAllergies,
         drugAllergies: drugAllergies,
-        height: height,
         menstrualHistory: menstrualHistory,
         pastMedicalHistory: pastMedicalHistory,
         pastSurgicalHistory: pastSurgicalHistory,
+        height: height,
         temperature: temperature,
         weight: weight,
         bp: bp,
@@ -1400,6 +1417,7 @@ export const ConsultTabs: React.FC = () => {
           }
           if (sendToPatientFlag) {
             sendToPatientAction();
+            setIsNewprescriptionEditable(false);
           }
         })
         .catch((e) => {
@@ -1465,6 +1483,9 @@ export const ConsultTabs: React.FC = () => {
           endAppointmentSessionInput: {
             appointmentId: appointmentId,
             status: STATUS.COMPLETED,
+            deviceType: DEVICETYPE.DESKTOP,
+            callSource: BOOKINGSOURCE.WEB,
+            callType: APPT_CALL_TYPE.CHAT,
           },
         },
         fetchPolicy: 'no-cache',
@@ -1781,6 +1802,8 @@ export const ConsultTabs: React.FC = () => {
                 isClickedOnPriview={isClickedOnPriview}
                 setIsClickedOnPriview={setIsClickedOnPriview}
                 tabValue={tabValue}
+                showConfirmPrescription={showConfirmPrescription}
+                setShowConfirmPrescription={(flag: boolean) => setShowConfirmPrescription(flag)}
               />
               <div>
                 <div

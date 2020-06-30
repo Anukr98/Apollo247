@@ -26,6 +26,7 @@ export interface MedicineProduct {
   category_id: string;
 }
 export interface Brand {
+  url_key: string;
   category_id: string;
   image_url: number;
   title: string;
@@ -173,24 +174,29 @@ export interface PlacesApiResponse {
 
 // MedicineLandingPageAPi
 export interface MedicinePageSection {
+  url_key: string;
   category_id: string;
   title: string;
   image_url: string;
 }
 export interface DealsOfTheDaySection {
+  url_key: string;
   category_id: string;
   image_url: string;
   position: number;
 }
 interface OfferBannerSection {
+  category_url_key: string;
   name: string;
   status: '0' | '1';
   image: string; // full url
+  sku_url_key: string;
   start_time: string; // '2019-02-10 01:21:00';
   end_time: string;
 }
 
 export interface MedicinePageAPiResponse {
+  monsoon_essentials: { products: MedicineProduct[] };
   mainbanners: OfferBannerSection[];
   mainbanners_desktop: OfferBannerSection[];
   healthareas: MedicinePageSection[];

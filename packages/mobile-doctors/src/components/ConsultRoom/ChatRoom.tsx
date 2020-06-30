@@ -75,7 +75,6 @@ export interface ChatRoomProps extends NavigationScreenProps {
   setChatReceived: Dispatch<SetStateAction<boolean>>;
   messages: never[];
   send: (messageText: any) => void;
-  setAudioCallStyles: Dispatch<React.SetStateAction<object>>;
   flatListRef: React.MutableRefObject<FlatList<never> | null | undefined>;
   setShowPDF: Dispatch<SetStateAction<boolean>>;
   setPatientImageshow: Dispatch<SetStateAction<boolean>>;
@@ -83,6 +82,7 @@ export interface ChatRoomProps extends NavigationScreenProps {
   setDropdownVisible: Dispatch<SetStateAction<boolean>>;
   setUrl: Dispatch<SetStateAction<string>>;
   patientDetails: GetCaseSheet_getCaseSheet_caseSheetDetails_patientDetails | null | undefined;
+  extendedHeader?: boolean;
 }
 export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   // const [isDropdownVisible, setDropdownVisible] = useState(false);
@@ -90,13 +90,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const { setLoading } = useUIElements();
   const { patientDetails } = props;
   const Appintmentdatetime = props.navigation.getParam('Appintmentdatetime');
-
+  const changedHeight = props.extendedHeader ? 230 : 185;
+  const keyBoardHeight = props.extendedHeader ? 90 : 130;
   const doctorId = props.navigation.getParam('DoctorId');
   const patientId = props.navigation.getParam('PatientId');
 
   const flatListRef = useRef<FlatList<never> | undefined | null>();
   const [messageText, setMessageText] = useState<string>('');
-  const [heightList, setHeightList] = useState<number>(height - 185);
+  const [heightList, setHeightList] = useState<number>(height - changedHeight);
 
   const patientImage = patientDetails && (
     <Image style={styles.imageStyle} source={{ uri: patientDetails.photoUrl || '' }} />
@@ -104,13 +105,17 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const { messages } = props;
 
   const keyboardDidShow = (e: KeyboardEvent) => {
-    setHeightList(height - e.endCoordinates.height - 185);
+    if (Platform.OS === 'ios') {
+      setHeightList(height - e.endCoordinates.height - changedHeight);
+    } else {
+      setHeightList(height - e.endCoordinates.height + keyBoardHeight);
+    }
     setTimeout(() => {
       flatListRef.current && flatListRef.current.scrollToEnd();
     }, 200);
   };
   const keyboardDidHide = () => {
-    setHeightList(height - 185);
+    setHeightList(height - changedHeight);
   };
   useEffect(() => {
     // callAbandonmentCall();
@@ -199,20 +204,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const convertChatTime = (timeStamp: any) => {
     let utcString;
     if (timeStamp.messageDate) {
-      const dateValidate = moment(moment().format('YYYY-MM-DD')).diff(
-        moment(timeStamp.messageDate).format('YYYY-MM-DD')
-      );
-      if (dateValidate == 0) {
-        utcString = moment
-          .utc(timeStamp.messageDate)
-          .local()
-          .format('h:mm A');
-      } else {
-        utcString = moment
-          .utc(timeStamp.messageDate)
-          .local()
-          .format('DD MMM, YYYY h:mm A');
-      }
+      utcString = moment(timeStamp.messageDate).calendar('', {
+        sameDay: 'hh:mm A',
+        nextDay: '[Tomorrow], hh:mm A',
+        nextWeek: 'DD MMM YYYY, hh:mm A',
+        lastDay: '[Yesterday], hh:mm A',
+        lastWeek: 'DD MMM YYYY, hh:mm A',
+        sameElse: 'DD MMM YYYY,  hh:mm A',
+      });
     }
     return utcString ? utcString : '--';
   };
@@ -834,15 +833,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             props.setReturnToCall(false);
             props.setChatReceived(false);
             Keyboard.dismiss();
-            props.setAudioCallStyles({
-              flex: 1,
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              elevation: 2000,
-            });
           }}
         >
           <View

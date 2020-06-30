@@ -352,7 +352,7 @@ const HeaderComponent: React.FC<any> = (props) => {
       icon: 'https://bit.ly/2DYqRrh',
     });
   };
-  const pageRefreshTimeInSeconds = 30;
+  const pageRefreshTimeInSeconds = 600;
   const isCalendarPage = props.location.pathname === '/Calendar';
   const { data, loading } =
     isSignedIn &&
@@ -369,7 +369,7 @@ const HeaderComponent: React.FC<any> = (props) => {
             // endDate: "2020-05-07"
           },
           fetchPolicy: 'no-cache',
-          pollInterval: isCalendarPage && pageRefreshTimeInSeconds * 1000 * 2 * 10, //Changed to 10 min see ticket 2715
+          pollInterval: isCalendarPage && pageRefreshTimeInSeconds * 1000,
           notifyOnNetworkStatusChange: true,
         })
       : { data: {}, loading: false };

@@ -2,8 +2,6 @@ import { RxPdfData } from 'consults-service/entities/index';
 import _capitalize from 'lodash/capitalize';
 import _random from 'lodash/random';
 import faker from 'faker';
-import { randomEnum } from 'helpers/factoryHelpers';
-import { Salutation } from 'doctors-service/entities';
 
 export const buildRxPdfData = (): RxPdfData => {
   //const caseSheet = buildCaseSheet();
@@ -14,7 +12,7 @@ export const buildRxPdfData = (): RxPdfData => {
   const diagnoses = [{ name: '' }];
 
   const doctorInfo = {
-    salutation: _capitalize(randomEnum(Salutation)),
+    salutation: _capitalize('Dr.'),
     firstName: faker.name.firstName(),
     lastName: faker.name.lastName(),
     qualifications: _capitalize(faker.lorem.words(_random(2, 10))),
@@ -48,6 +46,7 @@ export const buildRxPdfData = (): RxPdfData => {
   const diagnosesTests = [
     {
       itemname: '',
+      testInstruction: '',
     },
   ];
   const caseSheetSymptoms = [{ symptom: '', since: '', howOften: '', severity: '', details: '' }];

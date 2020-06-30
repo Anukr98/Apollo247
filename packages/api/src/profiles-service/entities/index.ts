@@ -17,6 +17,7 @@ import { Validate, IsOptional } from 'class-validator';
 import { NameValidator, MobileNumberValidator } from 'validators/entityValidators';
 import { ConsultMode } from 'doctors-service/entities';
 import { pool } from 'profiles-service/database/connectRedis';
+
 export type ONE_APOLLO_USER_REG = {
   FirstName: string;
   LastName: string;
@@ -154,6 +155,8 @@ export enum MEDICINE_ORDER_STATUS {
   CANCEL_REQUEST = 'CANCEL_REQUEST',
   READY_AT_STORE = 'READY_AT_STORE',
   ORDER_BILLED = 'ORDER_BILLED',
+  PURCHASED_IN_STORE = 'PURCHASED_IN_STORE',
+  PAYMENT_ABORTED = 'PAYMENT_ABORTED',
 }
 
 export enum UPLOAD_FILE_TYPES {
@@ -393,6 +396,9 @@ export class MedicineOrders extends BaseEntity {
   })
   shopAddress: string;
 
+  @Column({ default: false, nullable: true })
+  alertStore: boolean;
+
   @Column({
     nullable: true,
     type: 'jsonb',
@@ -401,6 +407,9 @@ export class MedicineOrders extends BaseEntity {
     default: () => "'{}'",
   })
   paymentInfo: Partial<MedicineOrderPayments>;
+
+  @Column({ nullable: true })
+  customerComment: string;
 
   @Column({ nullable: true })
   isOmsOrder: boolean;
@@ -742,6 +751,9 @@ export class Patient extends BaseEntity {
 
   @Column({ nullable: true })
   dateOfBirth: Date;
+
+  @Column({ nullable: true })
+  employeeId: string;
 
   @Column({ nullable: true })
   @IsOptional()

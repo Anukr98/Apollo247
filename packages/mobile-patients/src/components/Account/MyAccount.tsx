@@ -7,6 +7,7 @@ import {
   Location,
   ManageProfileIcon,
   NeedHelpIcon,
+  OneApollo,
   PrimaryIcon,
   LinkedUhidIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
@@ -163,6 +164,8 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
         return 'DEV';
       case 'https://aph.staging.api.popcornapps.com//graphql':
         return 'QA';
+      case 'https://stagingapi.apollo247.com//graphql':
+        return 'STAGING';
       case 'https://aph.uat.api.popcornapps.com//graphql':
         return 'UAT';
       case 'https://aph.vapt.api.popcornapps.com//graphql':
@@ -489,8 +492,16 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
               // refetch: ordersRefetch,
               // error: ordersError,
               // loading: ordersLoading,
-              patientId: currentPatient,
+              patientId: currentPatient.id,
+              fromNotification: false,
             });
+          }}
+        />
+        <ListCard
+          title={'OneApollo Membership'}
+          leftIcon={<OneApollo style={{ height: 20, width: 26 }} />}
+          onPress={() => {
+            props.navigation.navigate(AppRoutes.OneApolloMembership);
           }}
         />
         <ListCard

@@ -148,6 +148,8 @@ export interface AppsFlyerEvents {
     'Brand ID'?: string;
     'category name'?: string;
     'category ID'?: string;
+    af_revenue: number;
+    af_currency: string;
     // 'Patient Name': string;
     // 'Patient UHID': string;
     // Relation: string;
@@ -274,6 +276,8 @@ export interface AppsFlyerEvents {
     'Payment Type'?: 'COD' | 'Prepaid'; // Optional
     'Cart ID'?: string | number; // Optional
     'Service Area': 'Pharmacy' | 'Diagnostic';
+    af_revenue: number;
+    af_currency: string;
   };
   [AppsFlyerEventName.DIAGNOSTIC_CHECKOUT_COMPLETED]: {
     'Order ID': string | number;
@@ -408,6 +412,8 @@ export interface AppsFlyerEvents {
     'Patient Gender': string;
     'Mobile Number': number;
     'Customer ID': string;
+    af_revenue: number;
+    af_currency: string;
   };
 
   [AppsFlyerEventName.FEATURED_TEST_CLICKED]: {

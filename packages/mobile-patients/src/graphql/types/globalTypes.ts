@@ -491,6 +491,7 @@ export interface BookAppointmentInput {
   bookingSource?: BOOKINGSOURCE | null;
   deviceType?: DEVICETYPE | null;
   couponCode?: string | null;
+  externalConnect?: boolean | null;
 }
 
 export interface BookFollowUpAppointmentInput {
@@ -656,7 +657,7 @@ export interface MedicineCartOMSInput {
   medicineDeliveryType: MEDICINE_DELIVERY_TYPE;
   bookingSource?: BOOKINGSOURCE | null;
   deviceType?: DEVICETYPE | null;
-  patientAddressId: string;
+  patientAddressId?: string | null;
   devliveryCharges?: number | null;
   prescriptionImageUrl?: string | null;
   prismPrescriptionFileId?: string | null;
@@ -665,6 +666,9 @@ export interface MedicineCartOMSInput {
   coupon?: string | null;
   couponDiscount?: number | null;
   productDiscount?: number | null;
+  packagingCharges?: number | null;
+  showPrescriptionAtStore?: boolean | null;
+  shopAddress?: ShopAddress | null;
 }
 
 export interface MedicineCartOMSItem {
@@ -805,6 +809,7 @@ export interface PrescriptionMedicineOrderOMSInput {
   email?: string | null;
   NonCartOrderCity?: NonCartOrderOMSCity | null;
   orderAutoId?: number | null;
+  shopAddress?: ShopAddress | null;
 }
 
 export interface PrescriptionMedicinePaymentOMSDetails {
@@ -842,6 +847,17 @@ export interface SaveSearchInput {
   typeId: string;
   typeName?: string | null;
   patient: string;
+}
+
+export interface ShopAddress {
+  storename?: string | null;
+  address?: string | null;
+  workinghrs?: string | null;
+  phone?: string | null;
+  city?: string | null;
+  state?: string | null;
+  zipcode?: string | null;
+  stateCode?: string | null;
 }
 
 export interface UpdateAppointmentSessionInput {

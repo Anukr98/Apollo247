@@ -16,12 +16,16 @@ import firebase from 'react-native-firebase';
 import SplashScreenView from 'react-native-splash-screen';
 import { Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useAuth } from '../hooks/authHooks';
-import { AppConfig, updateAppConfig } from '../strings/AppConfig';
+import { AppConfig, updateAppConfig, AppEnv } from '../strings/AppConfig';
 import { PrefetchAPIReuqest } from '@praktice/navigator-react-native-sdk';
 import { Button } from './ui/Button';
 import { useUIElements } from './UIElementsProvider';
 import { apiRoutes } from '../helpers/apiRoutes';
-import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import {
+  CommonBugFender,
+  setBugFenderLog,
+  setBugfenderPhoneNumber,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import {
   doRequestAndAccessLocation,
@@ -29,7 +33,6 @@ import {
   APPStateInActive,
   APPStateActive,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
-
 // The moment we import from sdk @praktice/navigator-react-native-sdk,
 // finally not working on all promises.
 
@@ -89,6 +92,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   useEffect(() => {
     getData('ConsultRoom', undefined, true);
     InitiateAppsFlyer();
+    setBugfenderPhoneNumber();
     AppState.addEventListener('change', _handleAppStateChange);
     checkForVersionUpdate();
 
@@ -107,9 +111,14 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   }, []);
 
   useEffect(() => {
+    handleDeepLink();
+  }, []);
+
+  const handleDeepLink = () => {
     try {
       Linking.getInitialURL()
         .then((url) => {
+          setBugFenderLog('DEEP_LINK_URL', url);
           if (url) {
             handleOpenURL(url);
             console.log('linking', url);
@@ -121,14 +130,14 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
       Linking.addEventListener('url', (event) => {
         console.log('event', event);
+        setBugFenderLog('DEEP_LINK_EVENT', JSON.stringify(event));
         handleOpenURL(event.url);
       });
       AsyncStorage.removeItem('location');
     } catch (error) {
       CommonBugFender('SplashScreen_Linking_URL_try', error);
     }
-  }, []);
-
+  };
   const handleOpenURL = (event: any) => {
     try {
       console.log('event', event);
@@ -137,6 +146,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       route = event.replace('apollopatients://', '');
 
       const data = route.split('?');
+      setBugFenderLog('DEEP_LINK_DATA', data);
       route = data[0];
 
       // console.log(data, 'data');
@@ -148,6 +158,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           linkId = data[1].split('&');
           if (linkId.length > 0) {
             linkId = linkId[0];
+            setBugFenderLog('DEEP_LINK_SPECIALITY_ID', linkId);
           }
         }
       } catch (error) {}
@@ -195,6 +206,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           break;
 
         default:
+          getData('ConsultRoom');
           break;
       }
       console.log('route', route);
@@ -318,7 +330,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
   const pushTheView = (routeName: String, id?: String) => {
     console.log('pushTheView', routeName);
-
+    setBugFenderLog('DEEP_LINK_PUSHVIEW', { routeName, id });
     switch (routeName) {
       case 'Consult':
         console.log('Consult');
@@ -352,6 +364,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
       case 'Speciality':
         console.log('Speciality id', id);
+        setBugFenderLog('APPS_FLYER_DEEP_LINK_COMPLETE', id);
         props.navigation.navigate(AppRoutes.DoctorSearchListing, {
           specialityId: id ? id : '',
         });
@@ -418,6 +431,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         return 'DEV';
       case 'https://aph.staging.api.popcornapps.com//graphql':
         return 'QA';
+      case 'https://stagingapi.apollo247.com//graphql':
+        return 'STAGING';
       case 'https://aph.uat.api.popcornapps.com//graphql':
         return 'UAT';
       case 'https://aph.vapt.api.popcornapps.com//graphql':
@@ -498,6 +513,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
               'Pharmacy_Delivery_Charges',
               'home_screen_emergency_banner',
               'home_screen_emergency_number',
+              'QA_hotsellers_max_quantity',
+              'hotsellers_max_quantity',
             ]);
         })
         .then((snapshot) => {
@@ -522,6 +539,16 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           const homeScreenEmergencyBannerNumber = snapshot['home_screen_emergency_number'].val();
           homeScreenEmergencyBannerNumber &&
             updateAppConfig('HOME_SCREEN_EMERGENCY_BANNER_NUMBER', homeScreenEmergencyBannerNumber);
+
+          const qaHotsellersMaxQuantity = snapshot['QA_hotsellers_max_quantity'].val();
+          qaHotsellersMaxQuantity &&
+            AppConfig.APP_ENV != AppEnv.PROD &&
+            updateAppConfig('HOTSELLERS_MAX_QUANTITY', qaHotsellersMaxQuantity);
+
+          const hotsellersMaxQuantity = snapshot['hotsellers_max_quantity'].val();
+          hotsellersMaxQuantity &&
+            AppConfig.APP_ENV == AppEnv.PROD &&
+            updateAppConfig('HOTSELLERS_MAX_QUANTITY', hotsellersMaxQuantity);
 
           const myValye = snapshot;
           let index: number = 0;

@@ -30,9 +30,8 @@ import {
   MEDICINE_ORDER_PAYMENT_TYPE,
   UPLOAD_FILE_TYPES,
   BOOKINGSOURCE,
-  NonCartOrderCity,
-  BOOKING_SOURCE,
   NonCartOrderOMSCity,
+  BOOKING_SOURCE,
   CODCity,
   PRISM_DOCUMENT_CATEGORY,
 } from 'graphql/types/globalTypes';
@@ -62,8 +61,8 @@ import {
 import { Route } from 'react-router-dom';
 import { VALIDATE_PHARMA_COUPONS } from 'graphql/medicines';
 import { getItemSpecialPrice } from '../PayMedicine';
-import _lowerCase from 'lodash/lowerCase';
 import { getTypeOfProduct } from 'helpers/commonHelpers';
+import _lowerCase from 'lodash/lowerCase';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -772,7 +771,7 @@ export const MedicineCart: React.FC = (props) => {
             itemDiscount: Number(
               (
                 cartItemDetails.quantity *
-                (couponCode.length > 0 && validateCouponResult // validateCouponResult check is needed because there are some cases we will have code but coupon discount=0  when coupon discount <= product discount
+                (couponCode && couponCode.length > 0 && validateCouponResult // validateCouponResult check is needed because there are some cases we will have code but coupon discount=0  when coupon discount <= product discount
                   ? cartItemDetails.price - Number(getDiscountedLineItemPrice(cartItemDetails.id))
                   : cartItemDetails.price - Number(getItemSpecialPrice(cartItemDetails)))
               ).toFixed(2)
@@ -872,7 +871,7 @@ export const MedicineCart: React.FC = (props) => {
           prismPrescriptionFileId: [
             ...ePrescriptionData!.map((item) => item.prismPrescriptionFileId),
           ].join(','),
-          orderTat: deliveryAddressId && moment(deliveryTime).isValid() ? deliveryTime : '',
+          orderTat: deliveryTime,
           items: cartItemsForApi,
           coupon: couponCode,
           deviceType: getDeviceType(),
@@ -996,7 +995,7 @@ export const MedicineCart: React.FC = (props) => {
     let chennaiOrderVariables = {};
     if (userEmail && userEmail.length) {
       chennaiOrderVariables = {
-        NonCartOrderCity: NonCartOrderCity.CHENNAI,
+        NonCartOrderCity: NonCartOrderOMSCity.CHENNAI,
         email: userEmail,
       };
     }
@@ -1211,7 +1210,7 @@ export const MedicineCart: React.FC = (props) => {
                         <div className={classes.consultDoctor}>
                           <span>Don’t have a prescription? Don’t worry!</span>
                           <Link
-                            to={clientRoutes.doctorsLanding()}
+                            to={clientRoutes.specialityListing()}
                             className={classes.consultDoctoLink}
                           >
                             Consult A Doctor
@@ -1360,9 +1359,9 @@ export const MedicineCart: React.FC = (props) => {
                       validateCouponResult.discountedTotals &&
                       validateCouponResult.discountedTotals.couponDiscount > 0 && (
                         <div className={classes.discountTotal}>
-                          Savings of Rs.
-                          {validateCouponResult.discountedTotals.couponDiscount.toFixed(2)}
-                          on the bill
+                          {`Savings of Rs.
+                          ${validateCouponResult.discountedTotals.couponDiscount.toFixed(2)}
+                           on the bill`}
                         </div>
                       )}
                     {errorMessage.length > 0 && (
@@ -1489,7 +1488,7 @@ export const MedicineCart: React.FC = (props) => {
                   fullWidth
                   disabled={
                     (!nonCartFlow
-                      ? !cartTat
+                      ? !cartTat && deliveryTime === ''
                       : !deliveryAddressId ||
                         (deliveryAddressId && deliveryAddressId.length === 0)) ||
                     !isPaymentButtonEnable ||
@@ -1497,7 +1496,7 @@ export const MedicineCart: React.FC = (props) => {
                   }
                   className={
                     (!nonCartFlow
-                      ? !cartTat
+                      ? !cartTat && deliveryTime === ''
                       : !deliveryAddressId ||
                         (deliveryAddressId && deliveryAddressId.length === 0)) ||
                     !isPaymentButtonEnable ||

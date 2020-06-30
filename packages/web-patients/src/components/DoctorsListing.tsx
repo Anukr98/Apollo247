@@ -23,6 +23,8 @@ import moment from 'moment';
 import { useApolloClient } from 'react-apollo-hooks';
 import { useParams } from 'hooks/routerHooks';
 import { SchemaMarkup } from 'SchemaMarkup';
+import { MetaTagsComp } from 'MetaTagsComp';
+import { gtmTracking } from 'gtmTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -149,11 +151,35 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 600,
       margin: 0,
       lineHeight: 1,
+      paddingBottom: '10px',
     },
     circlularProgress: {
       display: 'flex',
       padding: 20,
       justifyContent: 'center',
+    },
+    whiteArrow: {
+      verticalAlign: 'middle',
+      [theme.breakpoints.down(1220)]: {
+        display: 'none',
+      },
+    },
+    scrollArrow: {
+      cursor: 'pointer',
+      [theme.breakpoints.up(1220)]: {
+        left: 0,
+        right: 0,
+        margin: '10px auto 0 auto',
+        width: 48,
+        height: 48,
+        lineHeight: '36px',
+        borderRadius: '50%',
+        textAlign: 'center',
+        backgroundColor: '#02475b',
+      },
+      '& img': {
+        verticalAlign: 'bottom',
+      },
     },
   };
 });
@@ -173,12 +199,16 @@ const convertAvailabilityToDate = (availability: String[], dateSelectedFromFilte
     availableNow = {};
   }
   const availabilityArray: String[] = [];
-  const today = moment(new Date()).utc().format('YYYY-MM-DD');
+  const today = moment(new Date())
+    .utc()
+    .format('YYYY-MM-DD');
   if (availability.length > 0) {
     availability.forEach((value: String) => {
       if (value === 'now') {
         availableNow = {
-          availableNow: moment(new Date()).utc().format('YYYY-MM-DD hh:mm'),
+          availableNow: moment(new Date())
+            .utc()
+            .format('YYYY-MM-DD hh:mm'),
         };
       } else if (value === 'today') {
         availabilityArray.push(today);
@@ -219,6 +249,7 @@ const convertAvailabilityToDate = (availability: String[], dateSelectedFromFilte
 
 export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
   const classes = useStyles({});
+  const scrollbar = useRef(null);
   const isMediumScreen = useMediaQuery('(min-width:768px) and (max-width:900px)');
   const isLargeScreen = useMediaQuery('(min-width:901px)');
   const mascotRef = useRef(null);
@@ -238,6 +269,7 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
   const [data, setData] = useState<any>();
   const [structuredJSON, setStructuredJSON] = useState(null);
   const [loading, setLoading] = useState<boolean>(false);
+  const [scrollArrowUp, setScrollArrowUp] = useState<boolean>(false);
 
   const consultOptions = {
     all: 'All Consults',
@@ -328,21 +360,21 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
           response.data.getDoctorsBySpecialtyAndFilters.doctors.length
         ) {
           const doctors = response.data.getDoctorsBySpecialtyAndFilters.doctors;
-          doctors.map((doc: docDetails) => {
-            doc &&
-              doc.fullName &&
+          doctors.map((doctorDetails: docDetails) => {
+            doctorDetails &&
+              doctorDetails.fullName &&
               potentialActionSchema.push({
                 '@type': 'EntryPoint',
-                name: doc.fullName,
+                name: doctorDetails.fullName,
                 url: params.specialty
                   ? `${window.location.origin}${clientRoutes.specialtyDoctorDetails(
                       params.specialty,
-                      readableParam(doc.fullName),
-                      doc.id
+                      readableParam(doctorDetails.fullName),
+                      doctorDetails.id
                     )}`
                   : `${window.location.origin}${clientRoutes.doctorDetails(
-                      readableParam(doc.fullName),
-                      doc.id
+                      readableParam(doctorDetails.fullName),
+                      doctorDetails.id
                     )}`,
               });
           });
@@ -365,6 +397,47 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
   useEffect(() => {
     disableFilter && disableFilter(loading);
   }, [loading]);
+
+  useEffect(() => {
+    if (
+      data &&
+      data.getDoctorsBySpecialtyAndFilters &&
+      data.getDoctorsBySpecialtyAndFilters.doctors
+    ) {
+      /**Gtm code start start */
+      let ecommItems: any[] = [];
+      data.getDoctorsBySpecialtyAndFilters.doctors.map((doc: docDetails, ind: number) => {
+        ecommItems.push({
+          item_name: doc.fullName,
+          item_id: doc.id,
+          item_category: 'Consultations',
+          item_category_2: doc.specialty && doc.specialty.name,
+          item_category_3:
+            doc.doctorHospital &&
+            doc.doctorHospital.length &&
+            doc.doctorHospital[0].facility &&
+            doc.doctorHospital[0].facility.city,
+          // 'item_category_4': '', // Future USe
+          item_variant: 'Virtual / Physcial',
+          index: ind + 1,
+          quantity: '1',
+        });
+      });
+      gtmTracking({
+        category: 'Consultations',
+        action: 'Landing Page',
+        label: 'Listing Page Viewed',
+        value: null,
+        ecommObj: {
+          event: 'view_item_list',
+          ecommerce: {
+            items: ecommItems,
+          },
+        },
+      });
+      /**Gtm code start end */
+    }
+  }, [data]);
 
   if (loading)
     <div className={classes.circlularProgress}>
@@ -465,15 +538,34 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
           });
   }
 
-  // console.log(doctorsNextAvailability, doctorsAvailability, 'next availability api....');
+  const scrollToBottom = () => {
+    const { clientHeight, scrollTop, scrollHeight } = scrollbar.current.getValues();
+    const scrollBottom = clientHeight + scrollTop;
+    if (scrollHeight - scrollBottom < clientHeight && scrollHeight !== scrollBottom) {
+      setScrollArrowUp(true);
+    } else {
+      setScrollArrowUp(false);
+    }
+    scrollBottom < scrollHeight
+      ? scrollbar.current.scrollTop(scrollBottom)
+      : scrollbar.current.scrollToTop();
+  };
+
+  const metaTagProps = {
+    title: `${specialityName} - Book Online Appointments And Consultations - Apollo 247`,
+    description: `Book online appointments with ${specialityName} in just a few clicks. Consult the best ${specialityName} in India at the best prices. Apollo 247 is the one-stop solution to all your medical needs.`,
+    canonicalLink: window && window.location && window.location.href,
+  };
+
   return (
     <div className={classes.root}>
+      <MetaTagsComp {...metaTagProps} />
       {structuredJSON && <SchemaMarkup structuredJSON={structuredJSON} />}
       <div className={classes.sectionHead} ref={mascotRef}>
         <div className={classes.pageHeader}>
           <div className={classes.headerTitle}>
-            <h2 className={classes.title}>Okay!</h2>
-            {specialistPlural ? `Here are our best ${specialistPlural}` : ''}
+            <h2 className={classes.title}>{`Found ${doctorsList.length} Results for`}</h2>
+            <div style={{ paddingBottom: '10px' }}>{`${specialityName}`}</div>
           </div>
           <div className={classes.filterSection}>
             {_map(consultOptions, (consultName, consultType) => {
@@ -501,71 +593,85 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
       </div>
 
       {doctorsList.length > 0 ? (
-        <Scrollbars
-          autoHide={true}
-          autoHeight
-          autoHeightMax={
-            isMediumScreen
-              ? 'calc(100vh - 345px)'
-              : isLargeScreen
-              ? 'calc(100vh - 280px)'
-              : 'calc(100vh - 170px)'
-          }
-        >
-          <div className={classes.searchList}>
-            <Grid container spacing={2}>
-              {_map(doctorsList, (doctorDetails) => {
-                let availableMode = '';
-                let nextAvailabilityString = '';
-                const nextAvailability = _find(doctorsNextAvailability, (availability) => {
-                  const availabilityDoctorId =
-                    availability && availability.doctorId ? availability.doctorId : '';
-                  const currentDoctorId = doctorDetails && doctorDetails.id ? doctorDetails.id : '';
-                  return availabilityDoctorId === currentDoctorId;
-                });
-                const availableModes = _find(doctorsAvailability, (availability) => {
-                  const availabilityDoctorId =
-                    availability && availability.doctorId ? availability.doctorId : '';
-                  const currentDoctorId = doctorDetails && doctorDetails.id ? doctorDetails.id : '';
-                  return availabilityDoctorId === currentDoctorId;
-                });
-                if (
-                  availableModes &&
-                  availableModes.availableModes &&
-                  availableModes.availableModes.length > 0
-                ) {
-                  availableMode = availableModes.availableModes[0];
-                } else {
-                  availableMode = 'ONLINE';
-                }
-                if (availableMode === 'ONLINE' || availableMode === 'BOTH') {
-                  nextAvailabilityString = nextAvailability && nextAvailability.onlineSlot;
-                } else if (availableMode === 'PHYSICAL') {
-                  nextAvailabilityString = nextAvailability && nextAvailability.physicalSlot;
-                }
+        <>
+          <Scrollbars
+            ref={scrollbar}
+            autoHide={true}
+            autoHeight
+            autoHeightMax={
+              isMediumScreen
+                ? 'calc(100vh - 345px)'
+                : isLargeScreen
+                ? 'calc(100vh - 280px)'
+                : 'calc(100vh - 170px)'
+            }
+          >
+            <div className={classes.searchList}>
+              <Grid container spacing={2}>
+                {_map(doctorsList, (doctorDetails) => {
+                  let availableMode = '';
+                  let nextAvailabilityString = '';
+                  const nextAvailability = _find(doctorsNextAvailability, (availability) => {
+                    const availabilityDoctorId =
+                      availability && availability.doctorId ? availability.doctorId : '';
+                    const currentDoctorId =
+                      doctorDetails && doctorDetails.id ? doctorDetails.id : '';
+                    return availabilityDoctorId === currentDoctorId;
+                  });
+                  const availableModes = _find(doctorsAvailability, (availability) => {
+                    const availabilityDoctorId =
+                      availability && availability.doctorId ? availability.doctorId : '';
+                    const currentDoctorId =
+                      doctorDetails && doctorDetails.id ? doctorDetails.id : '';
+                    return availabilityDoctorId === currentDoctorId;
+                  });
+                  if (
+                    availableModes &&
+                    availableModes.availableModes &&
+                    availableModes.availableModes.length > 0
+                  ) {
+                    availableMode = availableModes.availableModes[0];
+                  } else {
+                    availableMode = 'ONLINE';
+                  }
+                  if (availableMode === 'ONLINE' || availableMode === 'BOTH') {
+                    nextAvailabilityString = nextAvailability && nextAvailability.onlineSlot;
+                  } else if (availableMode === 'PHYSICAL') {
+                    nextAvailabilityString = nextAvailability && nextAvailability.physicalSlot;
+                  }
 
-                // nextAvailabilityString =
-                //   availableMode === 'ONLINE'
-                //     ? nextAvailability && nextAvailability.onlineSlot
-                //       ? nextAvailability.onlineSlot
-                //       : ''
-                //     : '';
-                // const availableMode =
-                // console.log(nextAvailability, 'next availability....');
-                return (
-                  <Grid item xs={12} sm={12} md={12} lg={6} key={_uniqueId('consultGrid_')}>
-                    <DoctorCard
-                      history={props.history}
-                      doctorDetails={doctorDetails}
-                      key={_uniqueId('dcListing_')}
-                      nextAvailability={nextAvailabilityString}
-                    />
-                  </Grid>
-                );
-              })}
-            </Grid>
-          </div>
-        </Scrollbars>
+                  // nextAvailabilityString =
+                  //   availableMode === 'ONLINE'
+                  //     ? nextAvailability && nextAvailability.onlineSlot
+                  //       ? nextAvailability.onlineSlot
+                  //       : ''
+                  //     : '';
+                  // const availableMode =
+                  // console.log(nextAvailability, 'next availability....');
+                  return (
+                    <Grid item xs={12} sm={12} md={12} lg={6} key={_uniqueId('consultGrid_')}>
+                      <DoctorCard
+                        history={props.history}
+                        doctorDetails={doctorDetails}
+                        key={_uniqueId('dcListing_')}
+                        nextAvailability={nextAvailabilityString}
+                      />
+                    </Grid>
+                  );
+                })}
+              </Grid>
+            </div>
+          </Scrollbars>
+          {doctorsList.length > 4 && (
+            <div className={classes.scrollArrow} onClick={scrollToBottom}>
+              {scrollArrowUp ? (
+                <img className={classes.whiteArrow} src={require('images/ic-arrow-up.svg')} />
+              ) : (
+                <img className={classes.whiteArrow} src={require('images/ic-arrow-down.svg')} />
+              )}
+            </div>
+          )}
+        </>
       ) : (
         <>
           {!loading && data ? (

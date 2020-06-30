@@ -1,4 +1,4 @@
-import { format, getTime, addMilliseconds } from 'date-fns';
+import { format, getTime, addMilliseconds, getUnixTime } from 'date-fns';
 import path from 'path';
 import util from 'util';
 
@@ -14,6 +14,7 @@ import {
   MEDICINE_FORM_TYPES,
   MEDICINE_TIMINGS,
   MEDICINE_UNIT,
+  MEDICINE_CONSUMPTION_DURATION,
 } from 'consults-service/entities';
 import _capitalize from 'lodash/capitalize';
 import _isEmpty from 'lodash/isEmpty';
@@ -25,9 +26,14 @@ import { FacilityRepository } from 'doctors-service/repositories/facilityReposit
 import { Patient } from 'profiles-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
-import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { UploadDocumentInput } from 'profiles-service/resolvers/uploadDocumentToPrism';
 import { ApiConstants } from 'ApiConstants';
+import {
+  uploadPrescriptions,
+  prescriptionSource,
+  PrescriptionInputArgs,
+} from 'profiles-service/resolvers/prescriptionUpload';
+import { Doctor, ROUTE_OF_ADMINISTRATION } from 'doctors-service/entities';
 
 export const convertCaseSheetToRxPdfData = async (
   caseSheet: Partial<CaseSheet>,
@@ -45,6 +51,7 @@ export const convertCaseSheetToRxPdfData = async (
     frequency: string;
     instructions: string;
     routeOfAdministration?: string;
+    medicineFormTypes?: MEDICINE_FORM_TYPES;
   };
 
   let prescriptions: PrescriptionData[] | [];
@@ -60,7 +67,7 @@ export const convertCaseSheetToRxPdfData = async (
       const customDosage = csRx.medicineCustomDosage
         ? csRx.medicineCustomDosage
             .split('-')
-            .filter((value) => value)
+            .filter((value) => parseInt(value, 10))
             .join(
               ' ' +
                 csRx.medicineUnit
@@ -125,7 +132,10 @@ export const convertCaseSheetToRxPdfData = async (
       if (csRx.medicineFrequency && !csRx.medicineCustomDosage)
         frequency = frequency + ' ' + csRx.medicineFrequency.split('_').join(' ');
 
-      if (csRx.medicineConsumptionDurationInDays) {
+      if (
+        csRx.medicineConsumptionDurationInDays &&
+        csRx.medicineConsumptionDurationUnit != MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW
+      ) {
         frequency = frequency + ' for';
         frequency = frequency + ' ' + csRx.medicineConsumptionDurationInDays;
         if (csRx.medicineConsumptionDurationUnit) {
@@ -135,6 +145,10 @@ export const convertCaseSheetToRxPdfData = async (
               : csRx.medicineConsumptionDurationUnit.replace('S', '');
           frequency = frequency + ' ' + unit;
         }
+      }
+
+      if (csRx.medicineConsumptionDurationUnit == MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW) {
+        frequency += csRx.medicineConsumptionDurationUnit.split('_').join(' ');
       }
 
       if (csRx.medicineToBeTaken)
@@ -152,7 +166,10 @@ export const convertCaseSheetToRxPdfData = async (
           csRx.medicineTimings[0] == MEDICINE_TIMINGS.AS_NEEDED
         ) {
           frequency = frequency + ' ' + csRx.medicineTimings[0].split('_').join(' ');
-        } else {
+        } else if (
+          csRx.medicineTimings.length == 1 &&
+          csRx.medicineTimings[0] != MEDICINE_TIMINGS.NOT_SPECIFIC
+        ) {
           frequency = frequency + ' in the';
           frequency =
             frequency +
@@ -179,6 +196,7 @@ export const convertCaseSheetToRxPdfData = async (
         frequency,
         instructions,
         routeOfAdministration,
+        medicineFormTypes: csRx.medicineFormTypes,
       } as PrescriptionData;
     });
   }
@@ -509,14 +527,14 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
       .fillColor('#02475b')
       .text(nameLine, 370, margin);
 
-    /*if (doctorInfo.qualifications) {
+    if (doctorInfo.qualifications) {
       doc
         .moveDown(0.3)
         .fontSize(9)
         .font(assetsDir + '/fonts/IBMPlexSans-Regular.ttf')
         .fillColor('#02475b')
         .text(`${doctorInfo.qualifications}`);
-    }*/
+    }
 
     doc
       .fontSize(9)
@@ -662,7 +680,13 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
           .font(assetsDir + '/fonts/IBMPlexSans-Regular.ttf')
           .fillColor('#666666')
           .text(
-            `To be taken: ${prescription.routeOfAdministration.split('_').join(' ')} `,
+            `To be ${
+              prescription.medicineFormTypes != MEDICINE_FORM_TYPES.OTHERS ? 'Applied' : 'taken'
+            }: ${
+              prescription.routeOfAdministration != ROUTE_OF_ADMINISTRATION.INTRA_ARTICULAR
+                ? prescription.routeOfAdministration.split('_').join(' ')
+                : 'Intra-articular'
+            } `,
             margin + 30
           )
           .moveDown(0.8);
@@ -825,6 +849,14 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
           .fillColor('#333333')
           .text(`${index + 1}. ${diagTest.itemname}`, margin + 15)
           .moveDown(0.5);
+
+        if (diagTest.testInstruction)
+          doc
+            .fontSize(11)
+            .font(assetsDir + '/fonts/IBMPlexSans-Regular.ttf')
+            .fillColor('#666666')
+            .text(`${diagTest.testInstruction}`, margin + 30)
+            .moveDown(0.8);
       });
     }
   };
@@ -922,14 +954,14 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
         .fillColor('#02475b')
         .text(nameLine, margin + 15);
 
-      /*if (doctorInfo.qualifications) {
+      if (doctorInfo.qualifications) {
         doc
           .fontSize(9)
           .font(assetsDir + '/fonts/IBMPlexSans-Regular.ttf')
           .fillColor('#02475b')
           .text(`${doctorInfo.qualifications}`, margin + 15)
           .moveDown(0.5);
-      } */
+      }
 
       doc
         .fontSize(9)
@@ -1043,35 +1075,87 @@ const convertPdfUrlToBase64 = async (pdfUrl: string) => {
 export const uploadPdfBase64ToPrism = async (
   uploadDocInput: UploadDocumentInput,
   patientDetails: Patient,
-  patientsDb: Connection
+  patientsDb: Connection,
+  doctorData: Doctor,
+  caseSheet: CaseSheet
 ) => {
-  const patientsRepo = patientsDb.getCustomRepository(PatientRepository);
-  const mobileNumber = patientDetails.mobileNumber;
+  const currentTimeStamp = getUnixTime(new Date()) * 1000;
+  const randomNumber = Math.floor(Math.random() * 10000);
+  const fileFormat = uploadDocInput.fileType.toLowerCase();
+  const documentName = `${currentTimeStamp}${randomNumber}.${fileFormat}`;
 
-  //get authtoken for the logged in user mobile number
-  const prismAuthToken = await patientsRepo.getPrismAuthToken(mobileNumber);
+  const doctorFacilities = doctorData.doctorHospital;
+  const appointmentFacilityId = caseSheet.appointment.hospitalId;
+  const doctorHospital = doctorFacilities.filter(
+    (item) => item.facility.id == appointmentFacilityId
+  );
+  const hospitalDetails = doctorHospital[0].facility;
 
-  if (!prismAuthToken) return { status: false, fileId: '' };
+  const prescriptionFiles = [];
+  prescriptionFiles.push({
+    id: '',
+    fileName: documentName,
+    mimeType: 'application/pdf',
+    content: uploadDocInput.base64FileInput,
+    dateCreated: getUnixTime(new Date()) * 1000,
+  });
 
-  //get users list for the mobile number
-  const prismUserList = await patientsRepo.getPrismUsersList(mobileNumber, prismAuthToken);
+  const instructions: string[] = [];
+  const generalAdvice = JSON.parse(
+    JSON.stringify(caseSheet.otherInstructions)
+  ) as CaseSheetOtherInstruction[];
+  if (generalAdvice)
+    generalAdvice.forEach((advice) => {
+      instructions.push(advice.instruction);
+    });
 
-  //check if current user uhid matches with response uhids
-  const uhid = await patientsRepo.validateAndGetUHID(patientDetails.id, prismUserList);
+  const diagnosticPrescription: string[] = [];
+  const diagnosesTests = JSON.parse(
+    JSON.stringify(caseSheet.diagnosticPrescription)
+  ) as CaseSheetDiagnosisPrescription[];
 
-  if (!uhid) {
-    return { status: false, fileId: '' };
-  }
+  if (diagnosesTests)
+    diagnosesTests.forEach((tests) => {
+      diagnosticPrescription.push(tests.itemname);
+    });
 
-  //get authtoken for the logged in user mobile number
-  const prismUHIDAuthToken = await patientsRepo.getPrismAuthTokenByUHID(uhid);
+  let caseSheetMedicinePrescription: CaseSheetMedicinePrescription[] = [];
+  caseSheetMedicinePrescription = JSON.parse(
+    JSON.stringify(caseSheet.medicinePrescription)
+  ) as CaseSheetMedicinePrescription[];
 
-  if (!prismUHIDAuthToken) return { status: false, fileId: '' };
+  if (caseSheetMedicinePrescription)
+    caseSheetMedicinePrescription.forEach((element) => {
+      element.externalId = '';
+    });
 
-  //just call get prism user details with the corresponding uhid
-  await patientsRepo.getPrismUsersDetails(uhid, prismUHIDAuthToken);
+  const prescriptionInputArgs: PrescriptionInputArgs = {
+    prescriptionInput: {
+      prescribedBy: doctorData.fullName,
+      prescriptionName: caseSheet.id,
+      dateOfPrescription: getUnixTime(new Date()) * 1000,
+      startDate: 0,
+      endDate: 0,
+      notes: '',
+      prescriptionSource: prescriptionSource.EPRESCRIPTION,
+      prescriptionDetail: [],
+      prescriptionFiles: prescriptionFiles,
+      speciality: doctorData.specialty.name,
+      hospital_name: hospitalDetails.name,
+      address: hospitalDetails.streetLine1,
+      city: hospitalDetails.city,
+      pincode: hospitalDetails.zipcode,
+      instructions: instructions,
+      diagnosis: [],
+      diagnosticPrescription: diagnosticPrescription,
+      medicinePrescriptions: caseSheetMedicinePrescription,
+    },
+    uhid: patientDetails.uhid,
+  };
 
-  const fileId = await patientsRepo.uploadDocumentToPrism(uhid, prismUHIDAuthToken, uploadDocInput);
-
+  const uploadedResult = (await uploadPrescriptions(null, prescriptionInputArgs, null)) as {
+    recordId: string;
+  };
+  const fileId = uploadedResult.recordId;
   return fileId ? { status: true, fileId } : { status: false, fileId: '' };
 };

@@ -196,6 +196,21 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
     });
   }
 
+  getMedicineOrderLineItemByOrderId(id: MedicineOrders['id']) {
+    return MedicineOrderLineItems.find({
+      where: { medicineOrders: id },
+      select: ['medicineSKU', 'quantity'],
+    });
+  }
+
+  getMedicineOrderDetailsByOrderId(orderAutoId: number) {
+    return this.findOne({
+      select: ['id', 'currentStatus', 'orderAutoId', 'patientAddressId', 'isOmsOrder', 'patient'],
+      where: { orderAutoId },
+      relations: ['patient'],
+    });
+  }
+
   getMedicineOrderDetailsByAp(apOrderNo: string) {
     return this.findOne({
       where: { apOrderNo },
@@ -285,6 +300,31 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
         'medicineOrderInvoice',
         'patient',
       ],
+    });
+  }
+
+  getMedicineOrdersListWithoutAbortedStatus(patientIds: String[]) {
+    return this.find({
+      where: { patient: In(patientIds), currentStatus: Not(MEDICINE_ORDER_STATUS.PAYMENT_ABORTED) },
+      order: { createdDate: 'DESC' },
+      relations: [
+        'medicineOrderLineItems',
+        'medicineOrderPayments',
+        'medicineOrdersStatus',
+        'medicineOrderShipments',
+        'medicineOrderShipments.medicineOrdersStatus',
+        'medicineOrderShipments.medicineOrderInvoice',
+        'medicineOrderInvoice',
+        'patient',
+      ],
+    });
+  }
+
+  getMedicineOrdersListWithPayments(patientIds: String[]) {
+    return this.find({
+      where: { patient: In(patientIds) },
+      order: { createdDate: 'DESC' },
+      relations: ['medicineOrderPayments'],
     });
   }
 

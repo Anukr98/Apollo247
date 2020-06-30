@@ -239,7 +239,7 @@ export const Calendar: React.FC = () => {
   if (currentUserId) {
     localStorage.setItem('currentUserId', currentUserId ? currentUserId : '');
   }
-  const pageRefreshTimeInSeconds = 30;
+  const pageRefreshTimeInSeconds = 300;
   const [range, setRange] = useState<{
     start: string | Date;
     end: string | Date;
@@ -276,7 +276,7 @@ export const Calendar: React.FC = () => {
           endDate: format(range.end as number | Date, 'yyyy-MM-dd'),
         },
         fetchPolicy: 'no-cache',
-        pollInterval: !isDialogOpen && pageRefreshTimeInSeconds * 1000 * 10, //Changed to 5 min suggested by ajay bansal
+        pollInterval: !isDialogOpen && pageRefreshTimeInSeconds * 1000,
         notifyOnNetworkStatusChange: true,
       })
     : { data: [], loading: false };

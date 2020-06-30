@@ -32,6 +32,7 @@ export const updatePatientTypeDefs = gql`
     relation: Relation
     photoUrl: String
     deviceCode: String
+    employeeId: String
   }
 
   input UpdatePatientAllergiesInput {
@@ -93,6 +94,13 @@ const updatePatient: Resolver<
   UpdatePatientResult
 > = async (parent, { patientInput }, { profilesDb }) => {
   const { id, ...updateAttrs } = patientInput;
+  const patientRepo = await profilesDb.getCustomRepository(PatientRepository);
+  if (patientInput.employeeId) {
+    const checkEmployeeId = await patientRepo.findEmpId(patientInput.employeeId, patientInput.id);
+    if (checkEmployeeId) {
+      throw new AphError(AphErrorMessages.INVALID_EMPLOYEE_ID, undefined, {});
+    }
+  }
 
   if (updateAttrs.referralCode && trim(updateAttrs.referralCode).length > 0) {
     const referralCode = updateAttrs.referralCode.toUpperCase();
@@ -100,8 +108,9 @@ const updatePatient: Resolver<
       throw new AphError(AphErrorMessages.INVALID_REFERRAL_CODE);
     updateAttrs.referralCode = referralCode;
   }
-  const patientRepo = await profilesDb.getCustomRepository(PatientRepository);
-  let patient = await patientRepo.getPatientDetails(patientInput.id);
+
+  //const patientRepo = await profilesDb.getCustomRepository(PatientRepository);
+  const patient = await patientRepo.getPatientDetails(patientInput.id);
   if (!patient || patient == null) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
