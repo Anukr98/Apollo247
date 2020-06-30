@@ -14,6 +14,7 @@ import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { getUnixTime, format } from 'date-fns';
 import { Tedis } from 'redis-typescript';
 import { ApiConstants } from 'ApiConstants';
+import _ from 'lodash';
 
 export const getMedicineOrdersOMSListTypeDefs = gql`
   type MedicineOrdersOMSListResult {
@@ -193,7 +194,10 @@ const getMedicineOrdersOMSList: Resolver<
   }
   const primaryPatientIds = await patientRepo.getLinkedPatientIds(args.patientId);
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
-  const medicineOrdersList: any = await medicineOrdersRepo.getMedicineOrdersList(primaryPatientIds);
+  const medicineOrdersList: any = _.filter(
+    await medicineOrdersRepo.getMedicineOrdersList(primaryPatientIds),
+    (o) => o.currentStatus !== 'PAYMENT_ABORTED'
+  );
   const ordersResp = await fetch(
     process.env.PRISM_GET_OFFLINE_ORDERS
       ? process.env.PRISM_GET_OFFLINE_ORDERS + ApiConstants.CURRENT_UHID
