@@ -674,8 +674,11 @@ export const reOrderMedicines = async (
     ? billedLineItems.filter((item) => item.itemId).map((item) => item.itemId)
     : lineItems.filter((item) => item.medicineSKU).map((item) => item.medicineSKU!);
 
-  const lineItemsDetails = await medCartItemsDetailsApi(lineItemsSkus);
-  const cartItemsToAdd = lineItemsDetails.data.productdp.map(
+  const lineItemsDetails = (await medCartItemsDetailsApi(lineItemsSkus)).data.productdp.filter(
+    (m) => m.sku && m.name
+  );
+  const availableLineItemsSkus = lineItemsDetails.map((v) => v.sku);
+  const cartItemsToAdd = lineItemsDetails.map(
     (item, index) =>
       ({
         id: item.sku,
@@ -700,10 +703,10 @@ export const reOrderMedicines = async (
   );
   const unavailableItems = billedLineItems
     ? billedLineItems
-        .filter((item) => !lineItemsSkus.includes(item.itemId))
+        .filter((item) => !availableLineItemsSkus.includes(item.itemId))
         .map((item) => item.itemName)
     : lineItems
-        .filter((item) => !lineItemsSkus.includes(item.medicineSKU!))
+        .filter((item) => !availableLineItemsSkus.includes(item.medicineSKU!))
         .map((item) => item.medicineName!);
 
   // Prescriptions
