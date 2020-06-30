@@ -23,6 +23,8 @@ import {
   SearchSendIcon,
   HomeIcon,
   OrangeCallIcon,
+  ArrowRight,
+  ShoppingBasketIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
@@ -89,7 +91,7 @@ import {
   Platform,
   Alert,
 } from 'react-native';
-import { Image, Input } from 'react-native-elements';
+import { Image, Input, ListItem } from 'react-native-elements';
 import { FlatList, NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
 import { MedicineSearchSuggestionItem } from '@aph/mobile-patients/src/components/Medicines/MedicineSearchSuggestionItem';
 import Carousel from 'react-native-snap-carousel';
@@ -871,17 +873,52 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     );
   };
 
+  const renderLatestOrderInfo = () => {
+    return (
+      <ListItem
+        title={'Huggies 4 packets + 2 items'}
+        subtitle={'Ordered at Apollo Pharmacy Madhupur on June 20, 2020'}
+        leftAvatar={<ShoppingBasketIcon />}
+        rightTitle={'REORDER'}
+        pad={12}
+        topDivider
+        rightContentContainerStyle={{ flexGrow: 0.35 }}
+        containerStyle={{ paddingHorizontal: 0, alignItems: 'flex-start' }}
+        titleStyle={theme.viewStyles.text('M', 16, '#02475b', 1, 24)}
+        subtitleStyle={theme.viewStyles.text('M', 11, '#02475b', 0.7, 15)}
+        rightTitleStyle={{
+          padding: 8,
+          paddingRight: 0,
+          ...theme.viewStyles.text('M', 12, '#fcb716'),
+        }}
+        titleProps={{ numberOfLines: 1, ellipsizeMode: 'middle' }}
+        rightTitleProps={{
+          onPress: () => {
+            Alert.alert('REORDER');
+          },
+        }}
+      />
+    );
+  };
+
   const renderYourOrders = () => {
     return (
-      <ListCard
-        onPress={() => {
-          postMyOrdersClicked('Pharmacy Home', currentPatient);
-          props.navigation.navigate(AppRoutes.YourOrdersScene);
-        }}
-        container={{ marginBottom: 24, marginTop: 20 }}
-        title={'My Orders'}
-        leftIcon={<MedicineIcon />}
-      />
+      <View style={{ ...theme.viewStyles.card(), paddingVertical: 0 }}>
+        <ListItem
+          title={'My Orders'}
+          leftAvatar={<MedicineIcon />}
+          rightAvatar={<ArrowRight />}
+          pad={16}
+          Component={TouchableOpacity}
+          onPress={() => {
+            postMyOrdersClicked('Pharmacy Home', currentPatient);
+            props.navigation.navigate(AppRoutes.YourOrdersScene);
+          }}
+          containerStyle={{ paddingHorizontal: 0 }}
+          titleStyle={theme.viewStyles.text('M', 16, '#01475b', 1, 24)}
+        />
+        {false && renderLatestOrderInfo()}
+      </View>
     );
   };
 
