@@ -63,7 +63,11 @@ export const convertCaseSheetToRxPdfData = async (
       const ingredients = [] as string[];
       let frequency;
       const plural =
-        csRx.medicineUnit == MEDICINE_UNIT.ML || csRx.medicineUnit == MEDICINE_UNIT.MG ? '' : '(s)';
+        csRx.medicineUnit == MEDICINE_UNIT.ML ||
+        csRx.medicineUnit == MEDICINE_UNIT.MG ||
+        csRx.medicineUnit == MEDICINE_UNIT.AS_PRESCRIBED
+          ? ''
+          : '(s)';
       const customDosage = csRx.medicineCustomDosage
         ? csRx.medicineCustomDosage
             .split('-')
@@ -103,6 +107,7 @@ export const convertCaseSheetToRxPdfData = async (
             csRx.medicineUnit == MEDICINE_UNIT.AS_PRESCRIBED
               ? csRx.medicineUnit.split('_').join(' ')
               : csRx.medicineUnit + plural;
+          if (csRx.medicineDosage) frequency = frequency + ' ' + csRx.medicineDosage;
           frequency = frequency + ' ' + medicineUnit;
         }
       } else {
