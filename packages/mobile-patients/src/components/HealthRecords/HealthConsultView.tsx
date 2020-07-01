@@ -178,6 +178,7 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
         '_' +
         moment(g(props.PastData, 'appointmentDateTime')).format('DD MM YYYY') +
         '_' +
+        g(props.PastData, 'doctorInfo', 'salutation') +
         g(props.PastData, 'doctorInfo', 'displayName') +
         '_Apollo 247' +
         '.pdf'
