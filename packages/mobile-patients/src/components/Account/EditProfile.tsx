@@ -664,8 +664,9 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
   };
 
   const renderUploadSelection = () => {
-    return uploadVisible ? (
+    return (
       <UploadPrescriprionPopup
+        isVisible={uploadVisible}
         isProfileImage={true}
         heading="Upload Profile Picture"
         hideTAndCs
@@ -700,7 +701,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
           setUploadVisible(false);
         }}
       />
-    ) : null;
+    );
   };
 
   const renderHeader = () => {

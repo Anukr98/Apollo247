@@ -1,6 +1,6 @@
 import { OverlayRescheduleView } from '@aph/mobile-patients/src/components/Consult/OverlayRescheduleView';
 import { SelectEPrescriptionModal } from '@aph/mobile-patients/src/components/Medicines/SelectEPrescriptionModal';
-import { UploadPrescriprionPopup } from '@aph/mobile-patients/src/components/Medicines/UploadPrescriprionPopup';
+import { UploadPrescriprionChatPopup } from '@aph/mobile-patients/src/components/Medicines/UploadPrescriprionChatPopup';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
@@ -5873,7 +5873,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   const uploadPrescriptionPopup = () => {
     return isDropdownVisible ? (
-      <UploadPrescriprionPopup
+      <UploadPrescriprionChatPopup
         heading="Attach File(s)"
         instructionHeading="Instructions For Uploading Files"
         instructions={[
