@@ -484,12 +484,9 @@ export async function sendNotification(
       doctorDetails.firstName + ' ' + doctorDetails.lastName
     );
     notificationBody = notificationBody.replace('{3}', apptDate);
-    let cancelApptSMS = process.env.SMS_LINK_BOOK_APOINTMENT
-      ? ' Click here ' +
-        process.env.SMS_LINK_BOOK_APOINTMENT +
-        ' ' +
-        ApiConstants.PATIENT_CANCEL_APPT_BODY_END
-      : '';
+
+    const finalString = ` Click here ${process.env.SMS_LINK_BOOK_APOINTMENT} ${ApiConstants.PATIENT_CANCEL_APPT_BODY_END}`;
+    let cancelApptSMS = process.env.SMS_LINK_BOOK_APOINTMENT ? finalString : '';
     cancelApptSMS = notificationBody + cancelApptSMS;
 
     console.log('cancelApptSMS======================', cancelApptSMS);
@@ -625,26 +622,9 @@ export async function sendNotification(
         const facilityRepo = doctorsDb.getCustomRepository(FacilityRepository);
         const facilityDets = await facilityRepo.getfacilityDetails(appointment.hospitalId);
         if (facilityDets) {
-          content = content.replace(
-            '{4}',
-            facilityDets.name +
-              ' ' +
-              facilityDets.streetLine1 +
-              ' ' +
-              facilityDets.city +
-              ' ' +
-              facilityDets.state
-          );
-          smsLink = smsLink.replace(
-            '{4}',
-            facilityDets.name +
-              ' ' +
-              facilityDets.streetLine1 +
-              ' ' +
-              facilityDets.city +
-              ' ' +
-              facilityDets.state
-          );
+          const facilityDetsString = `${facilityDets.name} ${facilityDets.streetLine1} ${facilityDets.city} ${facilityDets.state}`;
+          content = content.replace('{4}', facilityDetsString);
+          smsLink = smsLink.replace('{4}', facilityDetsString);
         }
       }
     }
@@ -1175,18 +1155,14 @@ export async function sendReminderNotification(
       if (appointment.hospitalId != '' && appointment.hospitalId != null) {
         const facilityRepo = doctorsDb.getCustomRepository(FacilityRepository);
         const facilityDets = await facilityRepo.getfacilityDetails(appointment.hospitalId);
-        if (facilityDets) {
-          notificationBody = notificationBody.replace(
-            '{2}',
-            facilityDets.name +
-              ' ' +
-              facilityDets.streetLine1 +
-              ' ' +
-              facilityDets.city +
-              ' ' +
-              facilityDets.state
-          );
+
+        if (!facilityDets) {
+          throw new AphError(AphErrorMessages.FACILITY_DETS_NOT_FOUND);
         }
+
+        const facilityDetsString = `${facilityDets.name} ${facilityDets.streetLine1} ${facilityDets.city} ${facilityDets.state}`;
+
+        notificationBody = notificationBody.replace('{2}', facilityDetsString);
       }
     }
     notificationBody = notificationBody.replace('{1}', doctorDetails.firstName);
@@ -1213,18 +1189,13 @@ export async function sendReminderNotification(
     if (appointment.hospitalId != '' && appointment.hospitalId != null) {
       const facilityRepo = doctorsDb.getCustomRepository(FacilityRepository);
       const facilityDets = await facilityRepo.getfacilityDetails(appointment.hospitalId);
-      if (facilityDets) {
-        notificationBody = notificationBody.replace(
-          '{1}',
-          facilityDets.name +
-            ' ' +
-            facilityDets.streetLine1 +
-            ' ' +
-            facilityDets.city +
-            ' ' +
-            facilityDets.state
-        );
+      if (!facilityDets) {
+        throw new AphError(AphErrorMessages.FACILITY_DETS_NOT_FOUND);
       }
+
+      const facilityDetsString = `${facilityDets.name} ${facilityDets.streetLine1} ${facilityDets.city} ${facilityDets.state}`;
+
+      notificationBody = notificationBody.replace('{1}', facilityDetsString);
     }
     notificationBody = notificationBody.replace('{0}', doctorDetails.firstName);
     payload = {
@@ -1262,18 +1233,13 @@ export async function sendReminderNotification(
       if (appointment.hospitalId != '' && appointment.hospitalId != null) {
         const facilityRepo = doctorsDb.getCustomRepository(FacilityRepository);
         const facilityDets = await facilityRepo.getfacilityDetails(appointment.hospitalId);
-        if (facilityDets) {
-          notificationBody = notificationBody.replace(
-            '{1}',
-            facilityDets.name +
-              ' ' +
-              facilityDets.streetLine1 +
-              ' ' +
-              facilityDets.city +
-              ' ' +
-              facilityDets.state
-          );
+
+        if (!facilityDets) {
+          throw new AphError(AphErrorMessages.FACILITY_DETS_NOT_FOUND);
         }
+
+        const facilityDetsString = `${facilityDets.name} ${facilityDets.streetLine1} ${facilityDets.city} ${facilityDets.state}`;
+        notificationBody = notificationBody.replace('{1}', facilityDetsString);
       }
     } else {
       if (diffMins <= 1) {
@@ -1480,8 +1446,14 @@ export async function sendReminderNotification(
     pushNotificationInput.notificationType ==
       NotificationType.APPOINTMENT_CASESHEET_REMINDER_15_VIRTUAL
   ) {
-    const smsLink = process.env.SMS_LINK ? process.env.SMS_LINK : '';
-    notificationBody = notificationBody + ApiConstants.CLICK_HERE + smsLink;
+    if (!(appointment && appointment.id)) {
+      throw new AphError(AphErrorMessages.APPOINTMENT_ID_NOT_FOUND);
+    }
+    const chatroom_sms_link =
+      process.env.SMS_DEEPLINK_APPOINTMENT_CHATROOM || ''.replace('{0}', appointment.id.toString()); //Replacing the placeholder with appointmentid
+
+    //Final deeplink URL
+    notificationBody = notificationBody + ApiConstants.CLICK_HERE + chatroom_sms_link;
   }
   //send SMS notification
   if (pushNotificationInput.notificationType != NotificationType.APPOINTMENT_REMINDER_15) {

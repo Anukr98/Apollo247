@@ -158,6 +158,7 @@ export const getMedicineOrdersOMSListTypeDefs = gql`
     getRecommendedProductsList(patientUhid: String!): RecommendedProductsListResult!
     checkIfProductsOnline(productSkus: [String]): ProductAvailabilityResult!
     updateMedicineDataRedis(limit: Int, offset: Int): getMedicineOrdersListResult
+    getLatestMedicineOrder(patientUhid: String!): MedicineOrderOMSDetailsResult!
   }
 `;
 
@@ -601,8 +602,8 @@ const updateMedicineDataRedis: Resolver<
   });
   const updatedSkus: string[] = [];
   for (let k = args.offset; k <= args.offset + args.limit - 1; k++) {
-    console.log('rowData.Sheet1[k]', rowData.Sheet1[k].sku);
-    await tedis.hmset(rowData.Sheet1[k].sku, {
+    const skuKey = 'medicine:sku:' + rowData.Sheet1[k].sku;
+    await tedis.hmset(skuKey, {
       sku: encodeURIComponent(rowData.Sheet1[k].sku),
       name: encodeURIComponent(rowData.Sheet1[k].name),
       status: encodeURIComponent(rowData.Sheet1[k].status),
@@ -642,6 +643,103 @@ const updateMedicineDataRedis: Resolver<
   return { updatedSkus: updatedSkus };
 };
 
+const getLatestMedicineOrder: Resolver<
+  null,
+  { patientUhid: string },
+  ProfilesServiceContext,
+  MedicineOrderOMSDetailsResult
+> = async (parent, args, { profilesDb, mobileNumber }) => {
+  const patientRepo = profilesDb.getCustomRepository(PatientRepository);
+  const patientDetails = await patientRepo.findByUhid(args.patientUhid);
+  if (!patientDetails) {
+    throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
+  }
+  if (mobileNumber != patientDetails.mobileNumber) {
+    throw new AphError(AphErrorMessages.INVALID_PATIENT_DETAILS, undefined, {});
+  }
+  let uhid = args.patientUhid;
+  if (process.env.NODE_ENV == 'local') uhid = ApiConstants.CURRENT_UHID.toString();
+  else if (process.env.NODE_ENV == 'dev') uhid = ApiConstants.CURRENT_UHID.toString();
+  const listResp = await fetch(
+    process.env.PRISM_GET_RECOMMENDED_PRODUCTS
+      ? process.env.PRISM_GET_RECOMMENDED_PRODUCTS + uhid
+      : '',
+    {
+      method: 'GET',
+      headers: {},
+    }
+  );
+  const textRes = await listResp.text();
+  const latestBillResp = JSON.parse(textRes);
+  //console.log('productsList===>', response, response.response.latestBill);
+  let offlineList: any = '';
+  if (latestBillResp.errorCode == 0 && latestBillResp.response.latestBill) {
+    const orderDets = latestBillResp.response.latestBill;
+    const lineItems: any[] = [];
+    if (orderDets.lineItems) {
+      orderDets.lineItems.forEach((item: any) => {
+        const itemDets = {
+          isMedicine: 1,
+          medicineSKU: item.itemId,
+          medicineName: item.itemName,
+          mrp: item.mrp,
+          mou: 1,
+          price: item.totalMrp,
+          quantity: item.saleQty,
+          isPrescriptionNeeded: 0,
+        };
+        lineItems.push(itemDets);
+      });
+    }
+    const offlineShopAddress = {
+      storename: orderDets.siteName,
+      address: orderDets.address,
+      workinghrs: '24 Hrs',
+      phone: orderDets.mobileNo,
+      city: orderDets.city,
+      state: orderDets.state,
+      zipcode: '500033',
+      stateCode: 'TS',
+    };
+    offlineList = {
+      id: ApiConstants.OFFLINE_ORDERID,
+      orderAutoId: orderDets.id,
+      shopAddress: JSON.stringify(offlineShopAddress),
+      createdDate:
+        format(getUnixTime(orderDets.billDateTime) * 1000, 'yyyy-MM-dd') +
+        'T' +
+        format(getUnixTime(orderDets.billDateTime) * 1000, 'hh:mm:ss') +
+        '.000Z',
+      billNumber: orderDets.billNo,
+      medicineOrderLineItems: lineItems,
+      currentStatus: MEDICINE_ORDER_STATUS.PURCHASED_IN_STORE,
+      orderType: MEDICINE_ORDER_TYPE.CART_ORDER,
+      patientId: patientDetails.id,
+      deliveryType: MEDICINE_DELIVERY_TYPE.STORE_PICKUP,
+      estimatedAmount: orderDets.mrpTotal,
+      productDiscount: orderDets.discountTotal,
+      redeemedAmount: orderDets.giftTotal,
+      medicineOrdersStatus: [
+        {
+          id: ApiConstants.OFFLINE_ORDERID,
+          statusDate:
+            format(getUnixTime(orderDets.billDateTime) * 1000, 'yyyy-MM-dd') +
+            'T' +
+            format(getUnixTime(orderDets.billDateTime) * 1000, 'hh:mm:ss') +
+            '.000Z',
+          orderStatus: MEDICINE_ORDER_STATUS.PURCHASED_IN_STORE,
+          hideStatus: true,
+        },
+      ],
+      medicineOrderShipments: [],
+    };
+  }
+  //console.log(offlineList, 'offline list');
+  if (offlineList == '')
+    throw new AphError(AphErrorMessages.INVALID_MEDICINE_ORDER_ID, undefined, {});
+  return { medicineOrderDetails: offlineList };
+};
+
 export const getMedicineOrdersOMSListResolvers = {
   Query: {
     getMedicineOrdersOMSList,
@@ -650,5 +748,6 @@ export const getMedicineOrdersOMSListResolvers = {
     getRecommendedProductsList,
     checkIfProductsOnline,
     updateMedicineDataRedis,
+    getLatestMedicineOrder,
   },
 };

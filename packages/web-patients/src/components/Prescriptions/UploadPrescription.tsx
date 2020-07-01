@@ -233,9 +233,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
                                     });
                                 });
                                 if (props.isNonCartFlow) {
-                                  setTimeout(() => {
-                                    window.location.href = `${clientRoutes.medicinesCart()}?prescription=true`;
-                                  }, 3000);
+                                  window.location.href = clientRoutes.medicinePrescription();
                                 } else {
                                   props.closeDialog();
                                   setIsUploading(false);

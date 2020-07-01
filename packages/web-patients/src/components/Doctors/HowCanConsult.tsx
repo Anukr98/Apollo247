@@ -237,8 +237,8 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const [popupLoading, setPopupLoading] = useState<boolean>(false);
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
-  const [physicalDirection, setPhysicalDirection] = useState<boolean>(true);
-  const [onlineDirection, setOnlineDirection] = useState<boolean>(false);
+  const [physicalDirection, setPhysicalDirection] = useState<boolean>(false);
+  const [onlineDirection, setOnlineDirection] = useState<boolean>(true);
   const { doctorDetails, doctorAvailablePhysicalSlots, doctorAvailableOnlineSlot } = props;
   const doctorDetailsId = doctorDetails && doctorDetails.getDoctorDetailsById;
   const doctorName = doctorDetailsId && doctorDetailsId.fullName;
@@ -325,6 +325,19 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
         <div className={classes.tabButtons}>
           <AphButton
             className={
+              onlineDirection ? `${classes.button} ${classes.btnActive}` : `${classes.button}`
+            }
+            onClick={() => {
+              setOnlineDirection(true);
+              setPhysicalDirection(false);
+            }}
+          >
+            <span>Chat/Audio/Video</span>
+            <span className={classes.price}>Rs. {onlineFee}</span>
+            <span>{availabilityOnlineMarkup()}</span>
+          </AphButton>
+          <AphButton
+            className={
               physicalDirection ? `${classes.button} ${classes.btnActive}` : `${classes.button}`
             }
             id="btnActive"
@@ -336,19 +349,6 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
             <span>Meet in Person</span>
             <span className={classes.price}>Rs. {physcalFee}</span>
             <span>{availabilityMarkup()}</span>
-          </AphButton>
-          <AphButton
-            className={
-              onlineDirection ? `${classes.button} ${classes.btnActive}` : `${classes.button}`
-            }
-            onClick={() => {
-              setOnlineDirection(true);
-              setPhysicalDirection(false);
-            }}
-          >
-            <span>Chat/Audio/Video</span>
-            <span className={classes.price}>Rs. {onlineFee}</span>
-            <span>{availabilityOnlineMarkup()}</span>
           </AphButton>
         </div>
       </div>
