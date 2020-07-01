@@ -66,11 +66,11 @@ import {
   notificationStatus,
   notificationType,
   REQUEST_ROLES,
-  PrescriptionUploadRequest,
+  MediaPrescriptionUploadRequest,
   STATUS,
   TRANSFER_INITIATED_TYPE,
-  prescriptionSource,
-  prescriptionFileProperties,
+  mediaPrescriptionSource,
+  MediaPrescriptionFileProperties,
   Gender,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
@@ -5686,28 +5686,29 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       ) {
         // console.log('item', item.base64, item.fileType);
         const formattedDate = moment(new Date()).format('YYYY-MM-DD');
-        const prescriptionFile: prescriptionFileProperties = {
+        const prescriptionFile: MediaPrescriptionFileProperties = {
           fileName: resource[0].title + '.' + type,
           mimeType: mimeType(resource[0].title + '.' + type),
           content: base66,
         };
-        const inputData: PrescriptionUploadRequest = {
+        const inputData: MediaPrescriptionUploadRequest = {
           prescribedBy: appointmentData.doctorInfo.displayName,
           dateOfPrescription: formattedDate,
           startDate: null,
           endDate: null,
-          prescriptionSource: prescriptionSource.SELF,
+          prescriptionSource: mediaPrescriptionSource.SELF,
           prescriptionFiles: [prescriptionFile],
         };
-        console.log('PrescriptionUploadRequest', inputData);
+        console.log('MediaPrescriptionUploadRequest', inputData);
         setLoading(true);
         client
           .mutate({
             mutation: UPLOAD_MEDIA_DOCUMENT_PRISM,
             fetchPolicy: 'no-cache',
             variables: {
-              PrescriptionUploadRequest: inputData,
+              MediaPrescriptionUploadRequest: inputData,
               uhid: g(currentPatient, 'uhid'),
+              appointmentId: appointmentData.id,
             },
           })
           .then((data) => {
