@@ -23,8 +23,8 @@ export class LoginOtpRepository extends Repository<LoginOtp> {
     let id = uuidv1();
     const redis = await pool.getTedis();
     try {
-      redis.set(this.cacheKey(REDIS_OTP_MOBILE_PREFIX, id), JSON.stringify({ ...otpAttrs, id }));
-      redis.expire(this.cacheKey(REDIS_OTP_MOBILE_PREFIX, id), ApiConstants.CACHE_EXPIRATION_120);
+      await redis.set(this.cacheKey(REDIS_OTP_MOBILE_PREFIX, id), JSON.stringify({ ...otpAttrs, id }));
+      await redis.expire(this.cacheKey(REDIS_OTP_MOBILE_PREFIX, id), ApiConstants.CACHE_EXPIRATION_300);
     } catch (e) {
     } finally {
       pool.putTedis(redis);
@@ -72,7 +72,7 @@ export class LoginOtpRepository extends Repository<LoginOtp> {
       await redis.set(this.cacheKey(REDIS_OTP_MOBILE_PREFIX, id), JSON.stringify(updateAttrs));
       await redis.expire(
         this.cacheKey(REDIS_OTP_MOBILE_PREFIX, id),
-        ApiConstants.CACHE_EXPIRATION_120
+        ApiConstants.CACHE_EXPIRATION_300
       );
     } catch (e) {
     } finally {
