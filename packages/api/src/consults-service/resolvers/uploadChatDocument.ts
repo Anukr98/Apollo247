@@ -60,7 +60,7 @@ export const uploadChatDocumentTypeDefs = gql`
     EPRESCRIPTION
   }
 
-  input mediaPrescriptionFileProperties {
+  input MediaPrescriptionFileProperties {
     fileName: String!
     mimeType: String!
     content: String!
@@ -73,7 +73,7 @@ export const uploadChatDocumentTypeDefs = gql`
     endDate: Date
     notes: String
     prescriptionSource: mediaPrescriptionSource!
-    prescriptionFiles: [mediaPrescriptionFileProperties]
+    prescriptionFiles: [MediaPrescriptionFileProperties]
   }
 
   extend type Mutation {

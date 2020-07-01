@@ -40225,7 +40225,7 @@
               "name": null,
               "ofType": {
                 "kind": "INPUT_OBJECT",
-                "name": "mediaPrescriptionFileProperties",
+                "name": "MediaPrescriptionFileProperties",
                 "ofType": null
               }
             },
@@ -40261,7 +40261,7 @@
       },
       {
         "kind": "INPUT_OBJECT",
-        "name": "mediaPrescriptionFileProperties",
+        "name": "MediaPrescriptionFileProperties",
         "description": null,
         "fields": null,
         "inputFields": [
