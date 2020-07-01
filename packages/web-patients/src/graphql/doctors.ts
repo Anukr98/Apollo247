@@ -315,6 +315,14 @@ export const PATIENT_APPOINTMENT_HISTORY = gql`
         appointmentType
         hospitalId
         status
+        caseSheet {
+          symptoms {
+            symptom
+            since
+            howOften
+            severity
+          }
+        }
         bookingDate
         isSeniorConsultStarted
       }

@@ -163,7 +163,7 @@ export const AppointmentHistory: React.FC<AppointmentHistoryProps> = (props) => 
 
   if (data && data.getAppointmentHistory && data.getAppointmentHistory.appointmentsHistory) {
     const previousAppointments = data.getAppointmentHistory.appointmentsHistory;
-    const symptoms = ['FEVER', 'COUGH & COLD'];
+
     return (
       <>
         {previousAppointments.length > 0 ? (
@@ -180,6 +180,8 @@ export const AppointmentHistory: React.FC<AppointmentHistoryProps> = (props) => 
                   'dd MMM, yyyy'
                 );
                 const appointmentTime = format(new Date(appointment.appointmentDateTime), 'h:mm a');
+                const symtomName =
+                  appointment && appointment.caseSheet[0] && appointment.caseSheet[0].symptoms;
                 return (
                   <Grid item sm={6} xs={6} md={3} key={_uniqueId('avagr_')}>
                     <div className={classes.root} key={_uniqueId('aphistory_')}>
@@ -193,13 +195,15 @@ export const AppointmentHistory: React.FC<AppointmentHistoryProps> = (props) => 
                           <div className={classes.appointDate}>{appointmentDate}</div>
                           <div className={classes.appointTime}>{appointmentTime}</div>
                         </div>
-                        <div className={classes.appointBooked}>
-                          <ul>
-                            {symptoms.map((symptom: string) => (
-                              <li key={_uniqueId('symptom_')}>{symptom}</li>
-                            ))}
-                          </ul>
-                        </div>
+                        {symtomName && (
+                          <div className={classes.appointBooked}>
+                            <ul>
+                              {symtomName.map((sym) => (
+                                <li key={_uniqueId('sym_')}>{sym.symptom}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </Grid>

@@ -103,10 +103,7 @@ export const convertCaseSheetToRxPdfData = async (
               .join(' ') +
             ')';
         } else if (csRx.medicineUnit) {
-          const medicineUnit =
-            csRx.medicineUnit == MEDICINE_UNIT.AS_PRESCRIBED
-              ? csRx.medicineUnit.split('_').join(' ')
-              : csRx.medicineUnit + plural;
+          const medicineUnit = csRx.medicineUnit.split('_').join(' ') + plural;
           if (csRx.medicineDosage) frequency = frequency + ' ' + csRx.medicineDosage;
           frequency = frequency + ' ' + medicineUnit;
         }
@@ -125,10 +122,7 @@ export const convertCaseSheetToRxPdfData = async (
               .join(' ') +
             ')';
         } else {
-          const medicineUnit =
-            csRx.medicineUnit == MEDICINE_UNIT.AS_PRESCRIBED
-              ? csRx.medicineUnit.split('_').join(' ')
-              : csRx.medicineUnit + plural;
+          const medicineUnit = csRx.medicineUnit.split('_').join(' ') + plural;
           if (csRx.medicineDosage) frequency = frequency + ' ' + csRx.medicineDosage;
           if (csRx.medicineUnit) frequency = frequency + ' ' + medicineUnit;
         }
