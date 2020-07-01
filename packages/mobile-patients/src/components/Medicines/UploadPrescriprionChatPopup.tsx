@@ -1,38 +1,36 @@
 import {
-  EPrescriptionDisableOption,
-  PhysicalPrescription,
-} from '@aph/mobile-patients/src/components/ShoppingCartProvider';
-import {
   CameraIcon,
   CrossPopup,
   GalleryIcon,
   Path,
   PrescriptionIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
-import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import {
-  CommonLogEvent,
   CommonBugFender,
+  CommonLogEvent,
+  DeviceHelper,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { aphConsole, postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React, { useState } from 'react';
-import {
-  SafeAreaView,
-  StyleProp,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-  ViewStyle,
-} from 'react-native';
-import { Overlay } from 'react-native-elements';
-import ImagePicker, { Image as ImageCropPickerResponse } from 'react-native-image-crop-picker';
-import { ScrollView } from 'react-navigation';
+import { postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEventName,
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import strings from '@aph/mobile-patients/src/strings/strings.json';
+import { theme } from '@aph/mobile-patients/src/theme/theme';
+import React from 'react';
+import {
+  Platform,
+  SafeAreaView,
+  ScrollView,
+  StyleProp,
+  Text,
+  TouchableOpacity,
+  View,
+  ViewStyle,
+  StyleSheet,
+} from 'react-native';
+import ImagePicker, { Image as ImageCropPickerResponse } from 'react-native-image-crop-picker';
 
 const styles = StyleSheet.create({
   cardContainer: {
@@ -71,7 +69,6 @@ const styles = StyleSheet.create({
     letterSpacing: 0.35,
   },
   cardViewStyle: {
-    // width: 136,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: 'rgba(2, 71, 91, 0.2)',
@@ -83,28 +80,78 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansSemiBold(9),
     textAlign: 'center',
   },
+  orderstpes: {
+    height: 101,
+    paddingHorizontal: 16,
+    paddingBottom: 16,
+    backgroundColor: theme.colors.SKY_BLUE,
+  },
+  steps: {
+    paddingTop: 13,
+    paddingBottom: 12,
+    color: theme.colors.WHITE,
+    ...theme.fonts.IBMPlexSansMedium(14),
+  },
+  rowview: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+  },
+  close: {
+    alignSelf: 'flex-end',
+    backgroundColor: 'transparent',
+    marginBottom: 16,
+  },
+  header: {
+    ...theme.viewStyles.cardContainer,
+    borderTopRightRadius: 10,
+    borderTopLeftRadius: 10,
+    backgroundColor: theme.colors.WHITE,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 23,
+    width: '100%',
+  },
+  head: {
+    ...theme.fonts.IBMPlexSansMedium(16),
+    color: theme.colors.LIGHT_BLUE,
+  },
+  options: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    margin: 20,
+    marginHorizontal: 13,
+  },
+  terms: {
+    ...theme.fonts.IBMPlexSansMedium(12),
+    color: theme.colors.TEXT_LIGHT_BLUE,
+    paddingTop: 8,
+    paddingBottom: 16,
+  },
 });
 
-export interface UploadPrescriprionPopupProps {
+export interface UploadPrescriprionChatPopupProps {
   type?: 'cartOrMedicineFlow' | 'nonCartFlow';
-  isVisible: boolean;
-  disabledOption?: EPrescriptionDisableOption;
+  disabledOption?: any;
   heading: string;
   optionTexts: {
     camera?: string;
     gallery?: string;
     prescription?: string;
   };
+  blockCamera?: boolean;
+  blockCameraMessage?: string;
   instructionHeading?: string;
   instructions?: string[];
   hideTAndCs?: boolean;
   onClickClose: () => void;
-  onResponse: (selectedType: EPrescriptionDisableOption, response: PhysicalPrescription[]) => void;
+  onResponse: (selectedType: any, response: any[]) => void;
   isProfileImage?: boolean;
 }
 
-export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (props) => {
-  const [showSpinner, setshowSpinner] = useState<boolean>(false);
+export const UploadPrescriprionChatPopup: React.FC<UploadPrescriprionChatPopupProps> = (props) => {
+  const { showAphAlert, setLoading } = useUIElements();
+  const { isIphoneX } = DeviceHelper();
 
   const postUPrescriptionWEGEvent = (
     source: WebEngageEvents[WebEngageEventName.UPLOAD_PRESCRIPTION_IMAGE_UPLOADED]['Source']
@@ -128,14 +175,13 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
           base64: res.data,
           fileType: fileType,
           title: `${isPdf ? 'PDF' : 'IMG'}_${random8DigitNumber}`,
-        } as PhysicalPrescription,
+        } as any,
       ];
-      return returnValue as PhysicalPrescription[];
+      return returnValue as any[];
     }
     if (response.length == 0) return [];
 
     return response.map((item) => {
-      //console.log('item', item);
       const isPdf = item.mime == 'application/pdf';
       const fileUri = item!.path || `folder/file.jpg`;
       const random8DigitNumber = Math.floor(Math.random() * 90000) + 20000000;
@@ -145,51 +191,55 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
         base64: item.data,
         fileType: fileType,
         title: `${isPdf ? 'PDF' : 'IMG'}_${random8DigitNumber}`,
-      } as PhysicalPrescription;
+      } as any;
     });
   };
 
   const onClickTakePhoto = () => {
-    postUPrescriptionWEGEvent('Take a Photo');
-    CommonLogEvent('UPLAOD_PRESCRIPTION_POPUP', 'Take photo on click');
+    if (!props.blockCamera) {
+      postUPrescriptionWEGEvent('Take a Photo');
+      CommonLogEvent('UPLAOD_PRESCRIPTION_POPUP', 'Take photo on click');
 
-    const eventAttributes: WebEngageEvents['Upload Photo'] = {
-      Source: 'Take Photo',
-    };
-    postWebEngageEvent('Upload Photo', eventAttributes);
+      const eventAttributes: WebEngageEvents['Upload Photo'] = {
+        Source: 'Take Photo',
+      };
+      postWebEngageEvent('Upload Photo', eventAttributes);
 
-    setshowSpinner(true);
-    ImagePicker.openCamera({
-      // width: 400,
-      // height: 400,
-      cropping: props.isProfileImage ? true : false,
-      hideBottomControls: true,
-      width: props.isProfileImage ? 2096 : undefined,
-      height: props.isProfileImage ? 2096 : undefined,
-      includeBase64: true,
-      multiple: props.isProfileImage ? false : true,
-      compressImageQuality: 0.5,
-      compressImageMaxHeight: 2096,
-      compressImageMaxWidth: 2096,
-      writeTempFile: false,
-    })
-      .then((response) => {
-        setshowSpinner(false);
-        props.onResponse(
-          'CAMERA_AND_GALLERY',
-          formatResponse([response] as ImageCropPickerResponse[])
-        );
+      setLoading && setLoading(true);
+      ImagePicker.openCamera({
+        cropping: props.isProfileImage ? true : false,
+        hideBottomControls: true,
+        width: props.isProfileImage ? 2096 : undefined,
+        height: props.isProfileImage ? 2096 : undefined,
+        includeBase64: true,
+        multiple: props.isProfileImage ? false : true,
+        compressImageQuality: 0.5,
+        compressImageMaxHeight: 2096,
+        compressImageMaxWidth: 2096,
+        writeTempFile: false,
       })
-      .catch((e: Error) => {
-        CommonBugFender('UploadPrescriprionPopup_onClickTakePhoto', e);
-        // aphConsole.log({ e });
-        setshowSpinner(false);
-      });
+        .then((response: any) => {
+          setLoading && setLoading(false);
+          props.onResponse(
+            'CAMERA_AND_GALLERY',
+            formatResponse([response] as ImageCropPickerResponse[])
+          );
+        })
+        .catch((e: any) => {
+          CommonBugFender('Image_Picker_UploadPrescription', e);
+          setLoading && setLoading(false);
+        });
+    } else {
+      showAphAlert &&
+        showAphAlert({
+          title: 'Alert',
+          description: props.blockCameraMessage || strings.alerts.Open_camera_in_video_call,
+        });
+    }
   };
 
   const onClickGallery = async () => {
     postUPrescriptionWEGEvent('Choose Gallery');
-    setshowSpinner(true);
     CommonLogEvent('UPLAOD_PRESCRIPTION_POPUP', 'Gallery opened');
 
     const eventAttributes: WebEngageEvents['Upload Photo'] = {
@@ -197,37 +247,7 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
     };
     postWebEngageEvent('Upload Photo', eventAttributes);
 
-    //   try {
-    //     const docs = await DocumentPicker.pickMultiple({
-    //       type: [DocumentPicker.types.images, DocumentPicker.types.pdf],
-    //     });
-    //     console.log({ docs });
-    //     const base64Array = await Promise.all(
-    //       docs.map((item) =>
-    //         RNFetchBlob.fs.readFile(
-    //           Platform.OS === 'ios' ? item.uri.replace('file:', '') : item.uri,
-    //           'base64'
-    //         )
-    //       )
-    //     );
-    //     console.log({ base64Array });
-    //     props.onResponse(
-    //       'CAMERA_AND_GALLERY',
-    //       formatResponse(
-    //         docs.map(
-    //           (item, i) =>
-    //             ({
-    //               mime: item.type,
-    //               data: base64Array[i],
-    //             } as ImageCropPickerResponse)
-    //         )
-    //       )
-    //     );
-    //     setshowSpinner(false);
-    //   } catch (error) {
-    //     setshowSpinner(false);
-    //   }
-
+    setLoading && setLoading(true);
     ImagePicker.openPicker({
       cropping: true,
       hideBottomControls: true,
@@ -240,24 +260,23 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
       compressImageMaxWidth: 2096,
       writeTempFile: false,
     })
-      .then((response) => {
-        //console.log('res', response);
-
-        setshowSpinner(false);
+      .then((response: any) => {
+        console.log('res', response);
+        setLoading && setLoading(false);
         props.onResponse(
           'CAMERA_AND_GALLERY',
           formatResponse(response as ImageCropPickerResponse[])
         );
       })
-      .catch((e: Error) => {
-        CommonBugFender('UploadPrescriprionPopup_onClickGallery', e);
-        //aphConsole.log({ e });
-        setshowSpinner(false);
+      .catch((e: any) => {
+        CommonBugFender('Image_Picker_Open_UploadPrescriptionPopup', e);
+        console.log('fail', e);
+        setLoading && setLoading(false);
       });
   };
 
-  const isOptionDisabled = (type: EPrescriptionDisableOption) => props.disabledOption == type;
-  const getOptionStyle = (type: EPrescriptionDisableOption): StyleProp<ViewStyle> => {
+  const isOptionDisabled = (type: any) => props.disabledOption == type;
+  const getOptionStyle = (type: any): StyleProp<ViewStyle> => {
     return props.disabledOption == type
       ? {
           backgroundColor: '#f0f1ec',
@@ -267,44 +286,23 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
 
   const renderOrderSteps = () => {
     return (
-      <View
-        style={{
-          height: 101,
-          paddingHorizontal: 16,
-          paddingBottom: 16,
-          backgroundColor: theme.colors.SKY_BLUE,
-        }}
-      >
-        <Text
-          style={{
-            paddingTop: 13,
-            paddingBottom: 12,
-            color: theme.colors.WHITE,
-            ...theme.fonts.IBMPlexSansMedium(14),
-          }}
-        >
-          Order medicines in 2 simple steps —
-        </Text>
-        <View
-          style={{
-            flexDirection: 'row',
-            // justifyContent: 'space-between',
-            justifyContent: 'center',
-          }}
-        >
+      <View style={styles.orderstpes}>
+        <Text style={styles.steps}>{strings.appointments.order_medicine_steps}</Text>
+        <View style={styles.rowview}>
           <View style={styles.cardViewStyle}>
-            <Text style={styles.cardTextStyle}>{`UPLOAD\nYOUR PRESCRIPTION`}</Text>
+            <Text style={styles.cardTextStyle}>{strings.appointments.upload_prescr}</Text>
           </View>
           <View
             style={{
-              // alignItems: 'center',
               justifyContent: 'center',
             }}
           >
             <Path />
           </View>
           <View style={styles.cardViewStyle}>
-            <Text style={styles.cardTextStyle}>{'ORDER THROUGH OUR\nCUSTOMER CARE'}</Text>
+            <Text style={styles.cardTextStyle}>
+              {strings.appointments.order_through_customercare}
+            </Text>
           </View>
         </View>
       </View>
@@ -313,15 +311,9 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
 
   const renderCloseIcon = () => {
     return (
-      <View
-        style={{
-          alignSelf: 'flex-end',
-          backgroundColor: 'transparent',
-          marginBottom: 16,
-        }}
-      >
+      <View style={styles.close}>
         <TouchableOpacity onPress={() => props.onClickClose()}>
-          <CrossPopup style={{ marginRight: 1, width: 28, height: 28 }} />
+          <CrossPopup style={{ marginRight: 1, width: 30, height: 30 }} />
         </TouchableOpacity>
       </View>
     );
@@ -329,41 +321,15 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
 
   const renderHeader = () => {
     return (
-      <View
-        style={{
-          ...theme.viewStyles.cardContainer,
-          borderTopRightRadius: 10,
-          borderTopLeftRadius: 10,
-          backgroundColor: theme.colors.WHITE,
-          alignItems: 'center',
-          justifyContent: 'center',
-          paddingVertical: 23,
-          width: '100%',
-        }}
-      >
-        <Text
-          style={{
-            ...theme.fonts.IBMPlexSansMedium(16),
-            color: theme.colors.LIGHT_BLUE,
-          }}
-        >
-          {props.heading}
-        </Text>
+      <View style={styles.header}>
+        <Text style={styles.head}>{props.heading}</Text>
       </View>
     );
   };
 
   const renderOptions = () => {
     return (
-      <View
-        style={{
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          margin: 20,
-          marginHorizontal: 13,
-        }}
-      >
+      <View style={styles.options}>
         {!!props.optionTexts.camera && (
           <TouchableOpacity
             disabled={isOptionDisabled('CAMERA_AND_GALLERY')}
@@ -392,7 +358,6 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
             activeOpacity={1}
             style={[styles.cardContainer, getOptionStyle('E-PRESCRIPTION')]}
             onPress={() => {
-              postUPrescriptionWEGEvent('E-Rx');
               props.onResponse('E-PRESCRIPTION', []);
             }}
           >
@@ -445,48 +410,30 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
         }}
       >
         <View style={styles.separatorStyle} />
-        <Text
-          style={{
-            ...theme.fonts.IBMPlexSansMedium(12),
-            color: theme.colors.TEXT_LIGHT_BLUE,
-            paddingTop: 8,
-            paddingBottom: 16,
-            // paddingHorizontal: 20,
-          }}
-        >
-          * Our pharmacist will dispense medicines only if the prescription is valid & it meets all
-          government regulations.
-        </Text>
+        <Text style={styles.terms}>{strings.appointments.upload_prescr_descr}</Text>
       </View>
     );
   };
 
   return (
-    <Overlay
-      onRequestClose={() => props.onClickClose()}
-      isVisible={props.isVisible}
-      windowBackgroundColor={'rgba(0, 0, 0, 0.8)'}
-      containerStyle={{
-        marginBottom: 20,
-      }}
-      fullScreen
-      transparent
-      overlayStyle={{
-        padding: 0,
-        margin: 0,
-        width: '88.88%',
-        height: '88.88%',
-        borderRadius: 10,
-        borderBottomLeftRadius: 10,
-        borderBottomRightRadius: 10,
-        backgroundColor: 'transparent',
-        overflow: 'hidden',
-        elevation: 0,
+    <View
+      style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.6)',
+        zIndex: 15,
+        elevation: 500,
       }}
     >
       <View
         style={{
           flexGrow: 1,
+          marginHorizontal: 20,
+          marginTop: Platform.OS === 'ios' ? (isIphoneX() ? 58 : 34) : 50,
           backgroundColor: 'transparent',
         }}
       >
@@ -513,8 +460,7 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
             {!props.hideTAndCs && renderTermsAndCondns()}
           </ScrollView>
         </SafeAreaView>
-        {showSpinner && <Spinner />}
       </View>
-    </Overlay>
+    </View>
   );
 };

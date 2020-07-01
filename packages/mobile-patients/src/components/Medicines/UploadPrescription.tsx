@@ -752,39 +752,38 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
         />
       </StickyBottomComponent>
       {renderPrescriptionModal()}
-      {ShowPopop && (
-        <UploadPrescriprionPopup
-          // disabledOption={
-          //   EPrescriptions.length == 0 && PhysicalPrescriptions.length == 0
-          //     ? 'NONE'
-          //     : EPrescriptions.length > 0
-          //     ? 'CAMERA_AND_GALLERY'
-          //     : 'E-PRESCRIPTION'
-          // }
-          type="nonCartFlow"
-          heading={'Upload Prescription(s)'}
-          instructionHeading={'Instructions For Uploading Prescriptions'}
-          instructions={[
-            'Take clear picture of your entire prescription.',
-            'Doctor details & date of the prescription should be clearly visible.',
-            'Medicines will be dispensed as per prescription.',
-          ]}
-          optionTexts={{
-            camera: 'TAKE A PHOTO',
-            gallery: 'CHOOSE\nFROM GALLERY',
-            prescription: 'SELECT FROM\nE-PRESCRIPTION',
-          }}
-          onClickClose={() => setShowPopop(false)}
-          onResponse={(selectedType, response) => {
-            setShowPopop(false);
-            if (selectedType == 'CAMERA_AND_GALLERY') {
-              setPhysicalPrescriptions([...PhysicalPrescriptions, ...response]);
-            } else {
-              setSelectPrescriptionVisible(true);
-            }
-          }}
-        />
-      )}
+      <UploadPrescriprionPopup
+        isVisible={ShowPopop}
+        // disabledOption={
+        //   EPrescriptions.length == 0 && PhysicalPrescriptions.length == 0
+        //     ? 'NONE'
+        //     : EPrescriptions.length > 0
+        //     ? 'CAMERA_AND_GALLERY'
+        //     : 'E-PRESCRIPTION'
+        // }
+        type="nonCartFlow"
+        heading={'Upload Prescription(s)'}
+        instructionHeading={'Instructions For Uploading Prescriptions'}
+        instructions={[
+          'Take clear picture of your entire prescription.',
+          'Doctor details & date of the prescription should be clearly visible.',
+          'Medicines will be dispensed as per prescription.',
+        ]}
+        optionTexts={{
+          camera: 'TAKE A PHOTO',
+          gallery: 'CHOOSE\nFROM GALLERY',
+          prescription: 'SELECT FROM\nE-PRESCRIPTION',
+        }}
+        onClickClose={() => setShowPopop(false)}
+        onResponse={(selectedType, response) => {
+          setShowPopop(false);
+          if (selectedType == 'CAMERA_AND_GALLERY') {
+            setPhysicalPrescriptions([...PhysicalPrescriptions, ...response]);
+          } else {
+            setSelectPrescriptionVisible(true);
+          }
+        }}
+      />
     </View>
   );
 };
