@@ -102,6 +102,7 @@ export type Resolver<Parent, Args, Context, Result> = (
     'https://uatpatients.apollo247.com',
     'https://consult-tool.apollo247.com',
     'https://corporate.apollo247.com',
+    'https://corporate-uat.apollo247.com',
   ];
 
   const logger = winstonLogger.loggers.get('apiGatewayLogger');
