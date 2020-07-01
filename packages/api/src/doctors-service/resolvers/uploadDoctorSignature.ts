@@ -1,10 +1,6 @@
 import gql from 'graphql-tag';
 import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext';
 import { Resolver } from 'api-gateway';
-import fs from 'fs';
-import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
-import path from 'path';
-import { ApiConstants } from 'ApiConstants';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
