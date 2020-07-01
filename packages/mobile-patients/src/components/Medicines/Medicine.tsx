@@ -158,6 +158,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     setPharmacyLocation,
     isPharmacyLocationServiceable,
     setPharmacyLocationServiceable,
+    medicinePageAPiResponse,
+    setMedicinePageAPiResponse,
   } = useAppCommonData();
   const [ShowPopop, setShowPopop] = useState<boolean>(false);
   const [pincodePopupVisible, setPincodePopupVisible] = useState<boolean>(false);
@@ -179,12 +181,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const [serviceabilityMsg, setServiceabilityMsg] = useState('');
 
   const { showAphAlert, hideAphAlert, setLoading: globalLoading } = useUIElements();
-  const MEDICINE_LANDING_PAGE_DATA = 'MEDICINE_LANDING_PAGE_DATA';
-  const max_time_to_use_local_medicine_data = 60; // in minutes
-  type LocalMedicineData = {
-    lastSavedTimestamp: number;
-    data: MedicinePageAPiResponse;
-  } | null;
   const {
     data: latestMedicineOrderData,
     loading: latestMedicineOrderLoading,
@@ -192,7 +188,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     // refetch: latestMedicineOrderRefetch,
   } = useQuery<getLatestMedicineOrder, getLatestMedicineOrderVariables>(GET_LATEST_MEDICINE_ORDER, {
     variables: { patientUhid: g(currentPatient, 'uhid') || '' },
-    fetchPolicy: 'no-cache',
+    fetchPolicy: 'cache-first', // as per jira ticket - Get this data from backend only once in session - when we go to medicine home page the first time.
   });
   const latestMedicineOrder =
     latestMedicineOrderLoading || latestMedicineOrderError
@@ -379,56 +375,13 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   }, [pharmacyPincode]);
 
   useEffect(() => {
+    fetchMedicinePageProducts();
     fetchRecommendedProducts();
-    // getting from local storage first for immediate rendering
-    AsyncStorage.getItem(MEDICINE_LANDING_PAGE_DATA)
-      .then((response) => {
-        const dataToSave: LocalMedicineData = JSON.parse(response || 'null');
-        if (dataToSave) {
-          // setData(dataToSave.data);
-          // setLoading(false);
-          const savedTime = moment(dataToSave.lastSavedTimestamp);
-          const currTime = moment(dataToSave.lastSavedTimestamp);
-          const diff = currTime.diff(savedTime, 'minutes');
-          console.log({ savedTime, currTime, diff, is: diff < 60 });
-          if (diff <= max_time_to_use_local_medicine_data) {
-            setData(dataToSave.data);
-            setLoading(false);
-          }
-        }
-      })
-      .catch((e) => {
-        CommonBugFender('Medicine_MEDICINE_LANDING_PAGE_DATA', e);
-      });
-
-    getMedicinePageProducts()
-      .then((d) => {
-        const localData: LocalMedicineData = {
-          lastSavedTimestamp: new Date().getTime(),
-          data: d.data,
-        };
-        d.data &&
-          AsyncStorage.setItem(
-            MEDICINE_LANDING_PAGE_DATA,
-            JSON.stringify(localData)
-          ).catch(() => {});
-        setData(d.data);
-        setLoading(false);
-      })
-      .catch((e) => {
-        CommonBugFender('Medicine_getMedicinePageProducts', e);
-        setError(e);
-        setLoading(false);
-        showAphAlert!({
-          title: string.common.uhOh,
-          description: "We're unable to fetch products, try later.",
-        });
-      });
   }, []);
 
   const [recommendedProducts, setRecommendedProducts] = useState<MedicineProduct[]>([]);
-  const [data, setData] = useState<MedicinePageAPiResponse>();
-  const [loading, setLoading] = useState<boolean>(true);
+  const [data, setData] = useState<MedicinePageAPiResponse | null>(medicinePageAPiResponse);
+  const [loading, setLoading] = useState<boolean>(!medicinePageAPiResponse);
   const [error, setError] = useState<boolean>(false);
   const banners = (g(data, 'mainbanners') || [])
     .filter((banner) => Number(banner.status))
@@ -469,6 +422,27 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       .map((v) => `/catalog/product${v}`)[0];
   };
 
+  const fetchMedicinePageProducts = async () => {
+    if (medicinePageAPiResponse) {
+      return;
+    }
+    try {
+      setLoading(true);
+      const resonse = (await getMedicinePageProducts()).data;
+      setData(resonse);
+      setMedicinePageAPiResponse!(resonse);
+      setLoading(false);
+    } catch (e) {
+      setError(e);
+      setLoading(false);
+      showAphAlert!({
+        title: string.common.uhOh,
+        description: "We're sorry! Unable to fetch products right now, please try later.",
+      });
+      CommonBugFender(`${AppRoutes.Medicine}_fetchMedicinePageProducts`, e);
+    }
+  };
+
   const fetchRecommendedProducts = async () => {
     try {
       const recommendedProductsListApi = await client.query<
@@ -477,7 +451,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       >({
         query: GET_RECOMMENDED_PRODUCTS_LIST,
         variables: { patientUhid: g(currentPatient, 'uhid') || '' },
-        fetchPolicy: 'no-cache',
+        fetchPolicy: 'cache-first', // as these products will not chnage frequently.
       });
       const _recommendedProducts =
         g(

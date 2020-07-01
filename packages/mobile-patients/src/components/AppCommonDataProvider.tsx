@@ -5,6 +5,7 @@ import AsyncStorage from '@react-native-community/async-storage';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { getDoctorsBySpecialtyAndFilters } from '@aph/mobile-patients/src/graphql/types/getDoctorsBySpecialtyAndFilters';
 import { getPatientPersonalizedAppointments_getPatientPersonalizedAppointments_appointmentDetails } from '../graphql/types/getPatientPersonalizedAppointments';
+import { MedicinePageAPiResponse } from '@aph/mobile-patients/src/helpers/apiCalls';
 
 export interface LocationData {
   displayName: string;
@@ -26,6 +27,8 @@ export interface AppCommonDataContextProps {
   setPharmacyLocation: ((items: LocationData) => void) | null;
   isPharmacyLocationServiceable: boolean;
   setPharmacyLocationServiceable: ((value: boolean) => void) | null;
+  medicinePageAPiResponse: MedicinePageAPiResponse | null;
+  setMedicinePageAPiResponse: ((value: MedicinePageAPiResponse | null) => void) | null;
   diagnosticsCities: getDiagnosticsCites_getDiagnosticsCites_diagnosticsCities[];
   setDiagnosticsCities:
     | ((items: getDiagnosticsCites_getDiagnosticsCites_diagnosticsCities[]) => void)
@@ -72,6 +75,8 @@ export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
   setPharmacyLocation: null,
   isPharmacyLocationServiceable: false,
   setPharmacyLocationServiceable: null,
+  medicinePageAPiResponse: null,
+  setMedicinePageAPiResponse: null,
   diagnosticsCities: [],
   setDiagnosticsCities: null,
   appointmentsPersonalized: [],
@@ -119,6 +124,10 @@ export const AppCommonDataProvider: React.FC = (props) => {
   const [isPharmacyLocationServiceable, setPharmacyLocationServiceable] = useState<
     AppCommonDataContextProps['isPharmacyLocationServiceable']
   >(false);
+
+  const [medicinePageAPiResponse, setMedicinePageAPiResponse] = useState<
+    AppCommonDataContextProps['medicinePageAPiResponse']
+  >(null);
 
   const [diagnosticsCities, setDiagnosticsCities] = useState<
     AppCommonDataContextProps['diagnosticsCities']
@@ -229,6 +238,8 @@ export const AppCommonDataProvider: React.FC = (props) => {
         setPharmacyLocation,
         isPharmacyLocationServiceable,
         setPharmacyLocationServiceable,
+        medicinePageAPiResponse,
+        setMedicinePageAPiResponse,
         diagnosticsCities,
         setDiagnosticsCities,
         locationForDiagnostics,
