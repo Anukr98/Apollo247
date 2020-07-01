@@ -248,7 +248,10 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
     afternoonSlots: number[] = [],
     eveningSlots: number[] = [],
     lateNightSlots: number[] = [];
-  const doctorAvailableTime = moment().add(props.doctorAvailableIn, 'm').toDate() || new Date();
+  const doctorAvailableTime =
+    moment()
+      .add(props.doctorAvailableIn, 'm')
+      .toDate() || new Date();
   const apiDateFormat =
     dateSelected === ''
       ? moment(doctorAvailableTime).format('YYYY-MM-DD')
@@ -708,6 +711,7 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
                 JSON.stringify({
                   patientId: currentPatient ? currentPatient.id : '',
                   doctorId: doctorId,
+                  doctorName,
                   appointmentDateTime: appointmentDateTime,
                   appointmentType: AppointmentType.PHYSICAL,
                   hospitalId: defaultClinicId,

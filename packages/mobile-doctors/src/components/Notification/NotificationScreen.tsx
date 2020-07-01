@@ -150,8 +150,8 @@ export const NotificationScreen: React.FC<NotificationScreenProps> = (props) => 
                     setDataRefetched(true);
                     setTimeout(() => {
                       setDataRefetched(false);
-                    }, 5000);
-                  }, 1000);
+                    }, 300000);
+                  }, 10000);
                 }
               });
             }}

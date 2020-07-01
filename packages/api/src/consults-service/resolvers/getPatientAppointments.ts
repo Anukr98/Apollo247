@@ -293,6 +293,7 @@ const getPatientPersonalizedAppointments: Resolver<
       });
     });
   }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let apptDetails: any;
   if (offlineApptsList.errorCode == 0) {
     //console.log(offlineApptsList.response, offlineApptsList.response.length);

@@ -303,6 +303,23 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
     });
   }
 
+  getMedicineOrdersListWithoutAbortedStatus(patientIds: String[]) {
+    return this.find({
+      where: { patient: In(patientIds), currentStatus: Not(MEDICINE_ORDER_STATUS.PAYMENT_ABORTED) },
+      order: { createdDate: 'DESC' },
+      relations: [
+        'medicineOrderLineItems',
+        'medicineOrderPayments',
+        'medicineOrdersStatus',
+        'medicineOrderShipments',
+        'medicineOrderShipments.medicineOrdersStatus',
+        'medicineOrderShipments.medicineOrderInvoice',
+        'medicineOrderInvoice',
+        'patient',
+      ],
+    });
+  }
+
   getMedicineOrdersListWithPayments(patientIds: String[]) {
     return this.find({
       where: { patient: In(patientIds) },

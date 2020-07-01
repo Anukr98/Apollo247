@@ -101,10 +101,7 @@ export const ShareWidget: React.FC<ShareWidgetProps> = (props) => {
       </WhatsappShareButton>
       <FacebookShareButton
         className={classes.shareButton}
-        url={
-          'https://www.apollo247.com/covid19/article/what-safety-precautions-should-employees-returning-work-after-lockdown-take'
-        }
-        title={props.title}
+        url={props.url} title={props.title}
       >
         <span>
           <FacebookIcon size={32} round />
@@ -113,10 +110,7 @@ export const ShareWidget: React.FC<ShareWidgetProps> = (props) => {
       </FacebookShareButton>
       <TelegramShareButton
         className={classes.shareButton}
-        url={
-          'https://www.apollo247.com/covid19/article/what-safety-precautions-should-employees-returning-work-after-lockdown-take'
-        }
-        title={props.title}
+        url={props.url} title={props.title}
       >
         <span>
           <TelegramIcon size={32} round />
@@ -125,10 +119,7 @@ export const ShareWidget: React.FC<ShareWidgetProps> = (props) => {
       </TelegramShareButton>
       <LinkedinShareButton
         className={classes.shareButton}
-        url={
-          'https://www.apollo247.com/covid19/article/what-safety-precautions-should-employees-returning-work-after-lockdown-take'
-        }
-        title={props.title}
+        url={props.url} title={props.title}
       >
         <span>
           <LinkedinIcon size={32} round />

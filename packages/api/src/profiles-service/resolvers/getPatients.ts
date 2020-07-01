@@ -138,28 +138,30 @@ const getPatientByMobileNumber: Resolver<
     throw new AphError(AphErrorMessages.INVALID_MOBILE_NUMBER, undefined, {});
   }
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
-  var patients = await patientRepo.findByMobileNumber(args.mobileNumber);
+  const patients = await patientRepo.findByMobileNumber(args.mobileNumber);
   if (!patients) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_DETAILS, undefined, {});
   }
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
-  var appointmentList = [];
+  let appointmentList = [];
 
-  for (var i = 0; i < patients.length; i++) {
-    const appointmentCount = await appointmentRepo.getPatientAppointmentCountByPatientIds(patients[i].id);
-    var patientObj = {
+  for (let i = 0; i < patients.length; i++) {
+    const appointmentCount = await appointmentRepo.getPatientAppointmentCountByPatientIds(
+      patients[i].id
+    );
+    const patientObj = {
       appointmentCount: appointmentCount,
-      patientId: patients[i].id
-    }
+      patientId: patients[i].id,
+    };
     appointmentList.push(patientObj);
   }
 
   appointmentList = _.sortBy(appointmentList, 'appointmentCount').reverse();
-  var patientResult = [];
+  const patientResult = [];
 
-  for (var i = 0; i < appointmentList.length; i++) {
-    var id = appointmentList[i].patientId;
-    var objResult = patients.find(x => x.id == id);
+  for (let i = 0; i < appointmentList.length; i++) {
+    const id = appointmentList[i].patientId;
+    const objResult = patients.find((x) => x.id == id);
     if (!objResult) {
       continue;
     }
@@ -180,7 +182,7 @@ const addNewProfile: Resolver<
   if (pateintDetails == null || pateintDetails.length == 0)
     throw new AphError(AphErrorMessages.INVALID_PATIENT_DETAILS, undefined, {});
   const savePatient = await patientRepo.saveNewProfile(patientProfileInput);
-  patientRepo.createNewUhid(savePatient.id);
+  await patientRepo.createNewUhid(savePatient.id);
   patientRepo.createAthsToken(savePatient.id);
   const patient = await patientRepo.getPatientDetails(savePatient.id);
   if (!patient || patient == null) {
