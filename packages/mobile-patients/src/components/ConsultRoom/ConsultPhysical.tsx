@@ -442,7 +442,9 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
                         }}
                       >
                         {`${
-                          props.doctor ? props.doctor!.fullName : ''
+                          props.doctor
+                            ? `${props.doctor!.salutation}` + `${props.doctor!.fullName}`
+                            : ''
                         } is not available in the ${selectedtiming.toLowerCase()} slot :(`}
                       </Text>
                     );

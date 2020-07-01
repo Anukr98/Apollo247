@@ -224,7 +224,10 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
       : null;
 
     props.navigation.navigate(AppRoutes.ConsultTypeScreen, {
-      DoctorName: nameFormater((rowData && rowData.displayName) || '', 'title'),
+      DoctorName: nameFormater(
+        (rowData && `${rowData.salutation}` + `${rowData.fullName}`) || '',
+        'title'
+      ),
       DoctorId: id,
       nextAppointemntOnlineTime: availability ? availability.onlineSlot : null,
       nextAppointemntInPresonTime: availability ? availability.physicalSlot : null,
@@ -414,7 +417,9 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
             </View>
 
             <View style={{ flex: 1, paddingRight: 16, marginBottom: 16 }}>
-              <Text style={styles.doctorNameStyles}>{rowData.fullName}</Text>
+              <Text style={styles.doctorNameStyles}>
+                {rowData.salutation} {rowData.fullName}
+              </Text>
               <Text style={styles.doctorSpecializationStyles}>
                 {rowData.specialty && rowData.specialty.name ? rowData.specialty.name : ''}
                 {'   '}|{'  '} {rowData.experience} YR
