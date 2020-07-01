@@ -598,6 +598,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
           }
         })
         .catch((e) => {
+          setisSearching(false);
           CommonBugFender('DoctorSearch_fetchSearchData', e);
           console.log('Error occured while searching Doctor', e);
         });
@@ -879,14 +880,16 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
                   setisSearching(true);
                 } else {
                   setdisplaySpeialist(false);
+                  setisSearching(false);
                 }
               }
             }}
             onFocus={() => {
-              if (searchText.length < 3) {
+              if (searchText === '' || searchText.length < 3) {
                 setPastSearch(false);
                 setNeedHelp(false);
                 setdisplaySpeialist(false);
+                setisSearching(false);
               }
             }}
             onBlur={() => {
