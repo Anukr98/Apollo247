@@ -141,28 +141,21 @@ const generateSitemap: Resolver<null, {}, DoctorsServiceContext, string> = async
   });
   const redisMedKeys = await tedis.keys('medicine:sku:*');
   let medicineUrls = '\n<!--Medicines list-->\n';
-  let keyCount = 0;
   if (redisMedKeys && redisMedKeys.length > 0) {
     for (let k = 0; k < redisMedKeys.length; k++) {
-      console.log(redisMedKeys[k], 'key');
-      if (redisMedKeys[k].indexOf('patient') < 0 && redisMedKeys[k].indexOf('otp') < 0) {
-        const skuDets = await tedis.hgetall(redisMedKeys[k]);
-        //console.log(skuDets, 'indise key');
-        if (skuDets && skuDets.url_key && skuDets.status == 'Enabled') {
-          medicineUrls +=
-            '<url>\n<loc>' +
-            process.env.SITEMAP_BASE_URL +
-            'medicine/' +
-            skuDets.url_key.toString() +
-            '</loc>\n<lastmod>' +
-            modifiedDate +
-            '</lastmod>\n</url>\n';
-          console.log(medicineUrls, 'medurl');
-        }
-        keyCount++;
-      }
-      if (keyCount == 200000) {
-        break;
+      //console.log(redisMedKeys[k], 'key');
+      const skuDets = await tedis.hgetall(redisMedKeys[k]);
+      //console.log(skuDets, 'indise key');
+      if (skuDets && skuDets.url_key && skuDets.status == 'Enabled') {
+        medicineUrls +=
+          '<url>\n<loc>' +
+          process.env.SITEMAP_BASE_URL +
+          'medicine/' +
+          skuDets.url_key.toString() +
+          '</loc>\n<lastmod>' +
+          modifiedDate +
+          '</lastmod>\n</url>\n';
+        //console.log(medicineUrls, 'medurl');
       }
     }
   }
