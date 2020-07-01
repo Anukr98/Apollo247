@@ -69,7 +69,15 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
     const getStore = () => {
       const shopAddress = g(order, 'shopAddress');
       const parsedShopAddress = JSON.parse(shopAddress || '{}');
-      return (parsedShopAddress && parsedShopAddress.address) || 'Store Pickup';
+      return (
+        (parsedShopAddress &&
+          parsedShopAddress.storename &&
+          parsedShopAddress.address &&
+          [g(parsedShopAddress, 'storename'), g(parsedShopAddress, 'address')]
+            .filter((a) => a)
+            .join(', ')) ||
+        'Store Pickup'
+      );
     };
 
     const type = g(order, 'deliveryType');

@@ -316,6 +316,15 @@ export const MedicineRxIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_tablets_rx.png')} />
 );
 
+export const ShoppingBasketIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    height={20}
+    width={20}
+    {...props}
+    source={require('./icons/shopping_basket_24_px.png')}
+  />
+);
+
 export const AddIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_plus_onorange.png')} />
 );

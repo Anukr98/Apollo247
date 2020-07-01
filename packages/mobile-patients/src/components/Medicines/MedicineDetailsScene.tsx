@@ -166,10 +166,6 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
   },
-  imagePlaceholderStyle: {
-    backgroundColor: '#f0f1ec',
-    borderRadius: 5,
-  },
   iconOrImageContainerStyle: {
     alignItems: 'center',
     justifyContent: 'center',
@@ -423,7 +419,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     const eventAttributes: WebEngageEvents[WebEngageEventName.PRODUCT_DETAIL_PINCODE_CHECK] = {
       'product id': sku,
       'product name': medicineDetails.name,
-       pincode: Number(pincode),
+      pincode: Number(pincode),
       'customer id': currentPatient && currentPatient.id ? currentPatient.id : '',
     };
     postWebEngageEvent(WebEngageEventName.PRODUCT_DETAIL_PINCODE_CHECK, eventAttributes);
@@ -718,6 +714,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
             >
               {!!medicineDetails.image ? (
                 <Image
+                  placeholderStyle={theme.viewStyles.imagePlaceholderStyle}
                   source={{
                     uri: AppConfig.Configuration.IMAGES_BASE_URL[0] + medicineDetails.image,
                   }}
@@ -882,7 +879,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       <View style={styles.iconOrImageContainerStyle}>
         {data.image ? (
           <Image
-            placeholderStyle={styles.imagePlaceholderStyle}
+            placeholderStyle={theme.viewStyles.imagePlaceholderStyle}
             source={{ uri: AppConfig.Configuration.IMAGES_BASE_URL[0] + data.image }}
             style={{ height: 40, width: 40 }}
             resizeMode="contain"

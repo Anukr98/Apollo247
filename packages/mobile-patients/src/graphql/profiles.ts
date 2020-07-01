@@ -1204,6 +1204,35 @@ export const GET_MEDICINE_ORDERS_OMS__LIST = gql`
   }
 `;
 
+export const GET_LATEST_MEDICINE_ORDER = gql`
+  query getLatestMedicineOrder($patientUhid: String!) {
+    getLatestMedicineOrder(patientUhid: $patientUhid) {
+      medicineOrderDetails {
+        id
+        orderAutoId
+        billNumber
+        shopAddress
+        prescriptionImageUrl
+        medicineOrderLineItems {
+          medicineSKU
+          medicineName
+          price
+          mrp
+          quantity
+        }
+        medicineOrdersStatus {
+          statusDate
+        }
+        medicineOrderShipments {
+          medicineOrderInvoice {
+            itemDetails
+          }
+        }
+      }
+    }
+  }
+`;
+
 export const GET_DIAGNOSTIC_SLOTS = gql`
   query getDiagnosticSlots(
     $patientId: String
