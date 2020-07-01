@@ -1,10 +1,6 @@
 import gql from 'graphql-tag';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { Resolver } from 'api-gateway';
-import fs from 'fs';
-import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
-import { format } from 'date-fns';
-import path from 'path';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
@@ -14,6 +10,7 @@ import { DoctorRepository } from 'doctors-service/repositories/doctorRepository'
 import { AppointmentDocumentRepository } from 'consults-service/repositories/appointmentDocumentRepository';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { Connection } from 'typeorm';
+import { uploadFileToBlobStorage } from 'helpers/uploadFileToBlob';
 
 export const uploadChatDocumentTypeDefs = gql`
   enum PRISM_DOCUMENT_CATEGORY {
@@ -90,64 +87,15 @@ const uploadChatDocument: Resolver<
   if (appointmentDetails == null)
     throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
 
-  let assetsDir = path.resolve('/apollo-hospitals/packages/api/src/assets');
-  if (process.env.NODE_ENV != 'local') {
-    assetsDir = path.resolve(<string>process.env.ASSETS_DIRECTORY);
-  }
-  const randomNumber = Math.floor(Math.random() * 10000);
-  const fileName =
-    format(new Date(), 'ddmmyyyy-HHmmss') + '_' + randomNumber + '.' + args.fileType.toLowerCase();
-  const uploadPath = assetsDir + '/' + fileName;
-  fs.writeFile(uploadPath, args.base64FileInput, { encoding: 'base64' }, (err) => {
-    console.log(err);
-  });
-  const client = new AphStorageClient(
-    process.env.AZURE_STORAGE_CONNECTION_STRING_API,
-    process.env.AZURE_STORAGE_CONTAINER_NAME
-  );
+  const documentPath = await uploadFileToBlobStorage(args.fileType, args.base64FileInput);
 
-  if (process.env.NODE_ENV === 'local' || process.env.NODE_ENV === 'dev') {
-    console.log('deleting container...');
-    await client
-      .deleteContainer()
-      .then((res) => console.log(res))
-      .catch((error) => console.log('error deleting', error));
-
-    console.log('setting service properties...');
-    await client
-      .setServiceProperties()
-      .then((res) => console.log(res))
-      .catch((error) => console.log('error setting service properties', error));
-
-    console.log('creating container...');
-    await client
-      .createContainer()
-      .then((res) => console.log(res))
-      .catch((error) => console.log('error creating', error));
-  }
-
-  console.log('testing storage connection...');
-  await client
-    .testStorageConnection()
-    .then((res) => console.log(res))
-    .catch((error) => console.log('error testing', error));
-
-  const localFilePath = assetsDir + '/' + fileName;
-  console.log(`uploading ${localFilePath}`);
-  const readmeBlob = await client
-    .uploadFile({ name: fileName, filePath: localFilePath })
-    .catch((error) => {
-      console.log('error final', error);
-      throw error;
-    });
-  fs.unlinkSync(localFilePath);
   const documentAttrs: Partial<AppointmentDocuments> = {
-    documentPath: client.getBlobUrl(readmeBlob.name),
+    documentPath: documentPath,
     appointment: appointmentDetails,
   };
   const appointmentDocumentRepo = consultsDb.getCustomRepository(AppointmentDocumentRepository);
   await appointmentDocumentRepo.saveDocument(documentAttrs);
-  return { filePath: client.getBlobUrl(readmeBlob.name) };
+  return { filePath: documentPath };
 };
 
 const uploadChatDocumentToPrism: Resolver<
@@ -180,79 +128,33 @@ const uploadChatDocumentToPrism: Resolver<
   const fileId = await patientsRepo.uploadDocumentToPrism(patientDetails.uhid, '', uploadDocInput);
 
   //upload file to blob storage & save to appointment documents
-  uploadFileToBlobStorage(
+  uploadFileToBlobStorageAndSave(
     args.fileType,
     args.base64FileInput,
     appointmentDetails,
-    fileId,
+    fileId!,
     consultsDb
   );
 
   return fileId ? { status: true, fileId } : { status: false, fileId: '' };
 };
 
-const uploadFileToBlobStorage = async (
-  fileType: UPLOAD_FILE_TYPES,
+export const uploadFileToBlobStorageAndSave = async (
+  fileType: string,
   base64FileInput: string,
   appointmentDetails: Appointment,
-  fileId: string | null,
+  fileId: string,
   consultsDb: Connection
 ) => {
-  let assetsDir = path.resolve('/apollo-hospitals/packages/api/src/assets');
-  if (process.env.NODE_ENV != 'local') {
-    assetsDir = path.resolve(<string>process.env.ASSETS_DIRECTORY);
-  }
-  const randomNumber = Math.floor(Math.random() * 10000);
-  const fileName =
-    format(new Date(), 'ddmmyyyy-HHmmss') + '_' + randomNumber + '.' + fileType.toLowerCase();
-  const uploadPath = assetsDir + '/' + fileName;
-  fs.writeFile(uploadPath, base64FileInput, { encoding: 'base64' }, (err) => {
-    console.log(err);
-  });
-  const client = new AphStorageClient(
-    process.env.AZURE_STORAGE_CONNECTION_STRING_API,
-    process.env.AZURE_STORAGE_CONTAINER_NAME
-  );
-
-  if (process.env.NODE_ENV === 'local' || process.env.NODE_ENV === 'dev') {
-    await client
-      .deleteContainer()
-      .then((res) => console.log(res))
-      .catch((error) => console.log('error deleting', error));
-
-    await client
-      .setServiceProperties()
-      .then((res) => console.log(res))
-      .catch((error) => console.log('error setting service properties', error));
-
-    await client
-      .createContainer()
-      .then((res) => console.log(res))
-      .catch((error) => console.log('error creating', error));
-  }
-
-  await client
-    .testStorageConnection()
-    .then((res) => console.log(res))
-    .catch((error) => console.log('error testing', error));
-
-  const localFilePath = assetsDir + '/' + fileName;
-  const readmeBlob = await client
-    .uploadFile({ name: fileName, filePath: localFilePath })
-    .catch((error) => {
-      throw error;
-    });
-  fs.unlinkSync(localFilePath);
+  const documentPath = await uploadFileToBlobStorage(fileType, base64FileInput);
 
   const documentAttrs: Partial<AppointmentDocuments> = {
-    documentPath: client.getBlobUrl(readmeBlob.name),
+    documentPath: documentPath,
     prismFileId: fileId || '',
     appointment: appointmentDetails,
   };
   const appointmentDocumentRepo = consultsDb.getCustomRepository(AppointmentDocumentRepository);
   appointmentDocumentRepo.saveDocument(documentAttrs);
-
-  //return client.getBlobUrl(readmeBlob.name);
 };
 
 type UploadedDocumentDetails = {

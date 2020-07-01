@@ -8,6 +8,11 @@ import { savePrescription } from 'helpers/phrV1Services';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { lowerCase } from 'lodash';
+import { uploadFileToBlobStorage } from 'helpers/uploadFileToBlob';
+import { uploadFileToBlobStorageAndSave } from 'consults-service/resolvers/uploadChatDocument';
+import { UPLOAD_FILE_TYPES } from 'profiles-service/entities';
+import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
+import { getFileTypeFromMime } from 'helpers/generalFunctions';
 
 export const prescriptionUploadTypeDefs = gql`
   enum prescriptionSource {
@@ -49,6 +54,11 @@ export const prescriptionUploadTypeDefs = gql`
 `;
 
 export type PrescriptionInputArgs = { prescriptionInput: PrescriptionUploadRequest; uhid: string };
+export type MediaDocumentInputArgs = {
+  prescriptionInput: PrescriptionUploadRequest;
+  uhid: string;
+  appointmentId: string;
+};
 export enum prescriptionSource {
   SELF = 'SELF',
   EPRESCRIPTION = 'EPRESCRIPTION',
@@ -103,13 +113,18 @@ export const uploadPrescriptions: Resolver<
 
 export const uploadMediaDocument: Resolver<
   null,
-  PrescriptionInputArgs,
+  MediaDocumentInputArgs,
   ProfilesServiceContext,
   { recordId: string }
-> = async (parent, { prescriptionInput, uhid }, {}) => {
+> = async (parent, { prescriptionInput, uhid, appointmentId }, { consultsDb }) => {
   if (!uhid) throw new AphError(AphErrorMessages.INVALID_UHID);
   if (!process.env.PHR_V1_DONLOAD_PRESCRIPTION_DOCUMENT || !process.env.PHR_V1_ACCESS_TOKEN)
     throw new AphError(AphErrorMessages.INVALID_PRISM_URL);
+
+  const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
+  const appointmentDetails = await appointmentRepo.findById(appointmentId);
+  if (appointmentDetails == null)
+    throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
 
   prescriptionInput.prescriptionName = 'MediaDocument';
   prescriptionInput.dateOfPrescription =
@@ -144,6 +159,19 @@ export const uploadMediaDocument: Resolver<
     '{RECORDID}',
     uploadedFileDetails.response
   );
+
+  if (prescriptionInput.prescriptionFiles)
+    prescriptionInput.prescriptionFiles.forEach((item) => {
+      const uploadFileType = getFileTypeFromMime(item.mimeType);
+      uploadFileToBlobStorageAndSave(
+        uploadFileType,
+        item.content,
+        appointmentDetails,
+        uploadedFileDetails.response,
+        consultsDb
+      );
+    });
+
   return { recordId: uploadedFileDetails.response, fileUrl: prescriptionDocumentUrl };
 };
 
