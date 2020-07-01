@@ -139,12 +139,12 @@ const generateSitemap: Resolver<null, {}, DoctorsServiceContext, string> = async
     host: ApiConstants.REDIS_URL.toString(),
     password: ApiConstants.REDIS_PWD.toString(),
   });
-  const redisMedKeys = await tedis.keys('*');
+  const redisMedKeys = await tedis.keys('medicine:sku:*');
   let medicineUrls = '\n<!--Medicines list-->\n';
   let keyCount = 0;
   if (redisMedKeys && redisMedKeys.length > 0) {
     for (let k = 0; k < redisMedKeys.length; k++) {
-      //console.log(redisMedKeys[k], redisMedKeys[k].indexOf('patient'), 'key');
+      console.log(redisMedKeys[k], 'key');
       if (redisMedKeys[k].indexOf('patient') < 0 && redisMedKeys[k].indexOf('otp') < 0) {
         const skuDets = await tedis.hgetall(redisMedKeys[k]);
         //console.log(skuDets, 'indise key');
