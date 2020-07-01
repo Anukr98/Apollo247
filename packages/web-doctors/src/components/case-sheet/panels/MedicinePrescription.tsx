@@ -1810,7 +1810,9 @@ export const MedicinePrescription: React.FC = () => {
       });
     } else if (
       forUnit !== MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW &&
-      (consumptionDuration === '' || isNaN(Number(consumptionDuration)) || consumptionDuration === '0')
+      (consumptionDuration === '' ||
+        isNaN(Number(consumptionDuration)) ||
+        consumptionDuration === '0')
     ) {
       setErrorState({
         ...errorState,
