@@ -2365,10 +2365,15 @@ export const UPLOAD_CHAT_FILE_PRISM = gql`
 
 export const UPLOAD_MEDIA_DOCUMENT_PRISM = gql`
   mutation uploadMediaDocument(
-    $PrescriptionUploadRequest: PrescriptionUploadRequest
-    $uhid: String
+    $MediaPrescriptionUploadRequest: MediaPrescriptionUploadRequest
+    $uhid: String!
+    $appointmentId: ID!
   ) {
-    uploadMediaDocument(prescriptionInput: $PrescriptionUploadRequest, uhid: $uhid) {
+    uploadMediaDocument(
+      prescriptionInput: $MediaPrescriptionUploadRequest
+      uhid: $uhid
+      appointmentId: $appointmentId
+    ) {
       recordId
       fileUrl
     }

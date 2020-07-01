@@ -439,6 +439,11 @@ export enum WeekDay {
   WEDNESDAY = "WEDNESDAY",
 }
 
+export enum mediaPrescriptionSource {
+  EPRESCRIPTION = "EPRESCRIPTION",
+  SELF = "SELF",
+}
+
 export enum notificationEventName {
   APPOINTMENT = "APPOINTMENT",
 }
@@ -697,6 +702,22 @@ export interface LabResultsUploadRequest {
   additionalNotes?: string | null;
   labTestResults?: (TestResultsParameter | null)[] | null;
   testResultFiles?: (LabResultFileProperties | null)[] | null;
+}
+
+export interface MediaPrescriptionFileProperties {
+  fileName: string;
+  mimeType: string;
+  content: string;
+}
+
+export interface MediaPrescriptionUploadRequest {
+  prescribedBy: string;
+  dateOfPrescription: any;
+  startDate?: any | null;
+  endDate?: any | null;
+  notes?: string | null;
+  prescriptionSource: mediaPrescriptionSource;
+  prescriptionFiles?: (MediaPrescriptionFileProperties | null)[] | null;
 }
 
 export interface MedicineCartOMSInput {
