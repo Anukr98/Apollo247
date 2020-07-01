@@ -1278,10 +1278,20 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     postWebEngageEvent(WebEngageEventName.ORDER_SUMMARY_CLICKED, eventAttributes);
     return (
       <View>
-        <OrderSummary orderDetails={orderDetails as any} addressData={addressData} />
+        <OrderSummary
+          orderDetails={orderDetails as any}
+          addressData={addressData}
+          onBillChangesClick={onBillChangesClick}
+        />
         <View style={{ marginTop: 30 }} />
       </View>
     );
+  };
+
+  const onBillChangesClick = () => {
+    props.navigation.navigate(AppRoutes.OrderModifiedScreen, {
+      orderDetails: orderDetails,
+    });
   };
 
   const onPressConfirmCancelOrder = () => {
