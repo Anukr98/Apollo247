@@ -159,7 +159,6 @@ const SearchDoctorAndSpecialtyByName: Resolver<
                   ],
                   type: 'phrase_prefix',
                   query: searchTextLowerCase,
-                  operator: 'and',
                 },
               },
             ],

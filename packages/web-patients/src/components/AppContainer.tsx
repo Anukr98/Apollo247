@@ -63,6 +63,7 @@ import { PrescriptionReview } from 'components/PrescriptionReview';
 import { SpecialityListing } from 'components/SpecialityListing';
 import { SpecialtyDetails } from 'components/Doctors/SpecialtyDetails';
 import { MedicinePrescriptions } from './Prescriptions/MedicinePrescriptions';
+import { MedicineSearch } from './Medicine/MedicineSearch';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -141,6 +142,7 @@ const App: React.FC = () => {
             component={SpecialtyDetails}
           />
           <Route exact path={clientRoutes.medicines()} component={MedicineLanding} />
+          <Route exact path={clientRoutes.medicineSearch()} component={MedicineSearch} />
           <Route exact path={clientRoutes.medicinesLandingViewCart()} component={MedicineLanding} />
           <Route exact path={clientRoutes.payMedicine(':payType')} component={PayMedicine} />
           <AuthRouted
