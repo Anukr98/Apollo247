@@ -1273,7 +1273,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   const startInterval = (timer: number) => {
     setConsultStarted(true);
-    intervalId = setInterval(() => {
+    intervalId = BackgroundTimer.setInterval(() => {
       timer = timer - 1;
       stoppedTimer = timer;
       setRemainingTime(timer);
@@ -1282,7 +1282,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       if (timer == 0) {
         // console.log('descriptionTextStyles remainingTime', timer);
         setRemainingTime(0);
-        clearInterval(intervalId);
+        BackgroundTimer.clearInterval(intervalId);
       }
     }, 1000);
   };
@@ -1908,7 +1908,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             checkForRescheduleMessage(newmessage);
             // }, 100);
 
-            BackgroundTimer.setTimeout(() => {
+            setTimeout(() => {
               flatListRef.current! && flatListRef.current!.scrollToEnd({ animated: true });
             }, 1000);
           } else {
@@ -2252,13 +2252,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       } else if (message.message.message === cancelConsultInitiated) {
         console.log('cancelConsultInitiated');
         setShowPopup(true);
-        BackgroundTimer.setTimeout(() => {
+        setTimeout(() => {
           stopCallAbondmentTimer();
         }, 1000);
       } else if (message.message.message === rescheduleConsultMsg) {
         console.log('rescheduleConsultMsg', message.message);
         checkForRescheduleMessage(message.message);
-        BackgroundTimer.setTimeout(() => {
+        setTimeout(() => {
           stopCallAbondmentTimer();
         }, 1000);
         addMessages(message);
