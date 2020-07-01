@@ -403,6 +403,7 @@ export const AudioVideoProvider: React.FC = (props) => {
   };
 
   const callEnd = (withCallBack: boolean) => {
+    AsyncStorage.setItem('callDisconnected', 'true');
     stopTimer();
     setIsVideo(false);
     setIsAudio(false);
@@ -543,7 +544,7 @@ export const AudioVideoProvider: React.FC = (props) => {
           <CloseWhite style={{ width: 16, height: 16 }} />
         </View>
       ),
-      timer: 50,
+      timer: 8,
     });
   };
 
@@ -565,8 +566,8 @@ export const AudioVideoProvider: React.FC = (props) => {
     streamDestroyed: (event: OpentokStreamObject) => {
       console.log('Publisher stream destroyed!', event);
     },
-    error: (event: OpentokError) => {
-      errorPopup(strings.toastMessages.error, theme.colors.APP_RED);
+    error: (error: OpentokError) => {
+      errorPopup(error.message, theme.colors.APP_RED);
     },
     otrnError: (event: string) => {
       errorPopup(strings.toastMessages.error, theme.colors.APP_RED);
@@ -575,7 +576,7 @@ export const AudioVideoProvider: React.FC = (props) => {
 
   const subscriberEventHandlers = {
     error: (error: OpentokError) => {
-      errorPopup(strings.toastMessages.error, theme.colors.APP_RED);
+      errorPopup(error.message, theme.colors.APP_RED);
     },
     otrnError: (event: string) => {
       errorPopup(strings.toastMessages.error, theme.colors.APP_RED);
@@ -589,7 +590,7 @@ export const AudioVideoProvider: React.FC = (props) => {
       hidePopup();
     },
     disconnected: () => {
-      errorPopup(strings.toastMessages.error, theme.colors.APP_RED);
+      // errorPopup(strings.toastMessages.error, theme.colors.APP_RED);
     },
     videoDisabled: (event: OpentokVideoWarn) => {
       if (event.reason === 'quality') {
@@ -625,19 +626,31 @@ export const AudioVideoProvider: React.FC = (props) => {
 
   const sessionEventHandlers = {
     error: (error: OpentokError) => {
-      errorPopup(strings.toastMessages.error, theme.colors.APP_RED);
+      errorPopup(error.message, theme.colors.APP_RED);
     },
     otrnError: (event: string) => {
       errorPopup(strings.toastMessages.error, theme.colors.APP_RED);
     },
     connectionCreated: (event: string) => {
       connectionCount++;
+      setCallConnected(true);
+      if (audioTrack) {
+        setPrevVolume();
+        audioTrack.stop(() => {});
+      }
       hidePopup();
       // console.log('otSessionRef', otSessionRef);
       // console.log('Another client connected. ' + connectionCount + ' total.');
       console.log('session stream connectionCreated!', event);
     },
     connectionDestroyed: (event: string) => {
+      AsyncStorage.getItem('callDisconnected').then((data) => {
+        console.log(data, 'buijkn');
+
+        if (!JSON.parse(data || 'false')) {
+          errorPopup(strings.toastMessages.callDisconnected, theme.colors.APP_RED);
+        }
+      });
       connectionCount--;
       setIsVideo(false);
       setIsAudio(false);
@@ -659,15 +672,22 @@ export const AudioVideoProvider: React.FC = (props) => {
     sessionReconnected: (event: string) => {
       console.log('session stream sessionReconnected!', event);
       hidePopup();
+      errorPopup(strings.toastMessages.reconnected, theme.colors.APP_YELLOW);
     },
     sessionReconnecting: (event: string) => {
       console.log('session stream sessionReconnecting!', event);
+      errorPopup(strings.toastMessages.reconnecting, theme.colors.APP_YELLOW);
     },
     signal: (event: string) => {
       console.log('session stream signal!', event);
     },
     streamCreated: (event: OpentokStreamObject) => {
       console.log('session streamCreated!', event);
+      setCallConnected(true);
+      if (audioTrack) {
+        setPrevVolume();
+        audioTrack.stop(() => {});
+      }
     },
     streamDestroyed: (event: string) => {
       console.log('session streamDestroyed!', event);

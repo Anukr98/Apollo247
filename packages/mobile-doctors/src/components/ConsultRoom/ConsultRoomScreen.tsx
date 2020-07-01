@@ -1491,6 +1491,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     setShowPopUp(false);
     sendCallNotificationAPI(callType === 'V' ? APPT_CALL_TYPE.VIDEO : APPT_CALL_TYPE.AUDIO, true);
     Keyboard.dismiss();
+    AsyncStorage.setItem('callDisconnected', 'false');
     pubnub.publish(
       {
         message: {
