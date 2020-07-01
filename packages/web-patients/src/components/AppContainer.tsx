@@ -1,7 +1,7 @@
 import { setConfig, Config } from 'react-hot-loader';
 import { hot } from 'react-hot-loader/root';
 import React, { useEffect } from 'react';
-import { BrowserRouter, Route, Switch } from 'react-router-dom';
+import { BrowserRouter, Route, Switch, Redirect } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { Welcome } from 'components/Welcome';
 import { AuthProvider } from 'components/AuthProvider';
@@ -12,7 +12,6 @@ import { AphThemeProvider, aphTheme } from '@aph/web-ui-components';
 import { DoctorDetails } from 'components/DoctorDetails';
 import { MuiPickersUtilsProvider } from '@material-ui/pickers';
 import DateFnsUtils from '@date-io/date-fns';
-import { DoctorsLanding } from 'components/DoctorsLanding';
 import { AuthRouted } from 'components/AuthRouted';
 import { PatientsList } from 'components/PatientsList';
 import { CartPoc } from 'components/CartPoc';
@@ -132,8 +131,9 @@ const App: React.FC = () => {
             path={clientRoutes.specialtyDoctorDetails(':specialty', ':name', ':id')}
             component={DoctorDetails}
           />
-          <Route exact path={clientRoutes.doctorsLanding()} component={DoctorsLanding} />
-          {/* <Route exact path={clientRoutes.specialties(':specialty')} component={DoctorsLanding} /> */}
+          {currentPath === clientRoutes.doctorsLanding() && (
+            <Redirect to={clientRoutes.specialityListing()} />
+          )}
           <Route exact path={clientRoutes.specialties(':specialty')} component={SpecialtyDetails} />
           <Route
             exact
