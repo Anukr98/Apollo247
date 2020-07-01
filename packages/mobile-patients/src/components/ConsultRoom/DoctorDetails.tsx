@@ -1212,7 +1212,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                 source={{ uri: doctorDetails.photoUrl }}
                 style={{ top: 0, height: 140, width: 140, opacity: imgOp }}
               />
-              <TouchableOpacity
+              {/* <TouchableOpacity
                 activeOpacity={1}
                 onPress={() => {
                   setShowVideo(true);
@@ -1236,7 +1236,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                 >
                   <VideoPlayIcon style={{ height: 33, width: 33 }} />
                 </View>
-              </TouchableOpacity>
+              </TouchableOpacity> */}
             </>
           ) : (
             !showVideo &&
@@ -1251,7 +1251,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
               >
                 <DoctorPlaceholderImage style={{ top: 0, height: 140, width: 140 }} />
 
-                <TouchableOpacity
+                {/* <TouchableOpacity
                   activeOpacity={1}
                   onPress={() => {
                     setShowVideo(true);
@@ -1275,7 +1275,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                   >
                     <VideoPlayIcon style={{ height: 33, width: 33 }} />
                   </View>
-                </TouchableOpacity>
+                </TouchableOpacity> */}
               </View>
             )
           )}
