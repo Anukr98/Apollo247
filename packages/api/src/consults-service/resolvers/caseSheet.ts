@@ -836,7 +836,6 @@ const modifyCaseSheet: Resolver<
     };
     const familyHistoryRepo = patientsDb.getCustomRepository(PatientFamilyHistoryRepository);
     const familyHistoryRecord = patientData.familyHistory[0];
-
     if (familyHistoryRecord == null) {
       //create
       familyHistoryRepo.savePatientFamilyHistory(familyHistoryInputs);
@@ -859,7 +858,9 @@ const modifyCaseSheet: Resolver<
       lifeStyleInputs.occupationHistory = inputArguments.occupationHistory;
     }
     const lifeStyleRepo = patientsDb.getCustomRepository(PatientLifeStyleRepository);
-    const lifeStyleRecord = patientData.lifeStyle[0];
+    const lifeStyleRecord = patientData.lifeStyle
+      ? patientData.lifeStyle[0]
+      : patientData.lifeStyle;
 
     if (lifeStyleRecord == null) {
       //create
@@ -921,7 +922,6 @@ const modifyCaseSheet: Resolver<
 
   const medicalHistoryRepo = patientsDb.getCustomRepository(PatientMedicalHistoryRepository);
   const medicalHistoryRecord = patientData.patientMedicalHistory;
-
   if (medicalHistoryRecord == null) {
     //create
     medicalHistoryRepo.savePatientMedicalHistory(medicalHistoryInputs);

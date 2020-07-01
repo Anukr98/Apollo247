@@ -39,8 +39,12 @@ const REDIS_PATIENT_DEVICE_COUNT_KEY_PREFIX: string = 'patient:deviceCodeCount:'
 export class PatientRepository extends Repository<Patient> {
   async dropPatientCache(id: string) {
     const redis = await pool.getTedis();
-    await redis.del(id);
-    await pool.putTedis(redis);
+    try {
+      await redis.del(id);
+    } catch (e) {
+    } finally {
+      await pool.putTedis(redis);
+    }
   }
   async findById(id: string) {
     return this.getByIdCache(id);
@@ -72,21 +76,31 @@ export class PatientRepository extends Repository<Patient> {
 
   async getDeviceCodeCount(deviceCode: string) {
     const redis = await pool.getTedis();
-    const cacheCount = await redis.get(`${REDIS_PATIENT_DEVICE_COUNT_KEY_PREFIX}${deviceCode}`);
-    pool.putTedis(redis);
-    if (typeof cacheCount === 'string') {
-      return parseInt(cacheCount);
+    try {
+      const cacheCount = await redis.get(`${REDIS_PATIENT_DEVICE_COUNT_KEY_PREFIX}${deviceCode}`);
+      if (typeof cacheCount === 'string') {
+        return parseInt(cacheCount);
+      }
+      const deviceCodeCount = (await this.createQueryBuilder('patient')
+        .select(['"mobileNumber" as mobilenumber'])
+        .where('patient."deviceCode" = :deviceCode', { deviceCode })
+        .groupBy('patient."mobileNumber"')
+        .getRawMany()).length;
+
+      this.setCache(
+        `${REDIS_PATIENT_DEVICE_COUNT_KEY_PREFIX}${deviceCode}`,
+        deviceCodeCount.toString()
+      );
+      return deviceCodeCount;
+    } catch (e) {
+      return (await this.createQueryBuilder('patient')
+        .select(['"mobileNumber" as mobilenumber'])
+        .where('patient."deviceCode" = :deviceCode', { deviceCode })
+        .groupBy('patient."mobileNumber"')
+        .getRawMany()).length;
+    } finally {
+      pool.putTedis(redis);
     }
-    const deviceCodeCount: number = (await this.createQueryBuilder('patient')
-      .select(['"mobileNumber" as mobilenumber'])
-      .where('patient."deviceCode" = :deviceCode', { deviceCode })
-      .groupBy('patient."mobileNumber"')
-      .getRawMany()).length;
-    this.setCache(
-      `${REDIS_PATIENT_DEVICE_COUNT_KEY_PREFIX}${deviceCode}`,
-      deviceCodeCount.toString()
-    );
-    return deviceCodeCount;
   }
 
   async getPatientDetails(id: string) {
@@ -99,18 +113,25 @@ export class PatientRepository extends Repository<Patient> {
 
   async getByIdCache(id: string | number) {
     const redis = await pool.getTedis();
-    const cache = await redis.get(`${REDIS_PATIENT_ID_KEY_PREFIX}${id}`).catch();
-    pool.putTedis(redis);
-    dLogger(
-      new Date(),
-      'Redis Cache Read of Patient',
-      `Cache hit ${REDIS_PATIENT_ID_KEY_PREFIX}${id}`
-    );
-    if (cache && typeof cache === 'string') {
-      const patient: Patient = JSON.parse(cache);
-      patient.dateOfBirth = new Date(patient.dateOfBirth);
-      return patient;
-    } else return await this.setByIdCache(id);
+    try {
+      const cache = await redis.get(`${REDIS_PATIENT_ID_KEY_PREFIX}${id}`);
+
+      dLogger(
+        new Date(),
+        'Redis Cache Read of Patient',
+        `Cache hit ${REDIS_PATIENT_ID_KEY_PREFIX}${id}`
+      );
+      if (cache && typeof cache === 'string') {
+        let patient: Patient = JSON.parse(cache);
+        patient.dateOfBirth = new Date(patient.dateOfBirth);
+        return patient;
+      } else {
+        return await this.setByIdCache(id);
+      }
+    } catch (e) {
+    } finally {
+      pool.putTedis(redis);
+    }
   }
 
   async getPatientData(id: string | number) {
@@ -130,14 +151,22 @@ export class PatientRepository extends Repository<Patient> {
   }
   async setCache(key: string, value: string) {
     const redis = await pool.getTedis();
-    await redis.set(key, value);
-    await redis.expire(key, 3600);
-    pool.putTedis(redis);
+    try {
+      await redis.set(key, value);
+      await redis.expire(key, 14400);
+    } catch (e) {
+    } finally {
+      pool.putTedis(redis);
+    }
   }
   async dropCache(key: string) {
     const redis = await pool.getTedis();
-    await redis.del(key);
-    pool.putTedis(redis);
+    try {
+      await redis.del(key);
+    } catch (e) {
+    } finally {
+      pool.putTedis(redis);
+    }
   }
   async setByIdCache(id: string | number) {
     const patientDetails = await this.getPatientData(id);
@@ -155,8 +184,14 @@ export class PatientRepository extends Repository<Patient> {
   }
   async getByMobileCache(mobile: string) {
     const redis = await pool.getTedis();
-    const ids = await redis.get(`${REDIS_PATIENT_MOBILE_KEY_PREFIX}${mobile}`);
-    pool.putTedis(redis);
+    let ids;
+    try {
+      ids = await redis.get(`${REDIS_PATIENT_MOBILE_KEY_PREFIX}${mobile}`);
+    } catch (e) {
+    } finally {
+      pool.putTedis(redis);
+    }
+
     if (ids && typeof ids === 'string') {
       dLogger(
         new Date(),

@@ -57,8 +57,12 @@ type UpdatePatientResult = {
 
 async function dropPatientCache(id: string) {
   const redis = await pool.getTedis();
-  await redis.del(id);
-  await pool.putTedis(redis);
+  try {
+    await redis.del(id);
+  } catch (e) {
+  } finally {
+    await pool.putTedis(redis);
+  }
 }
 
 async function updateEntity<E extends BaseEntity>(
