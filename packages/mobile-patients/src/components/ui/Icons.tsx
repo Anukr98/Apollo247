@@ -1064,3 +1064,7 @@ export const KavachIcon: React.FC<IconProps> = (props) => (
     resizeMode="contain"
   />
 );
+
+export const RetryButtonIcon: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/retryButton.png')} resizeMode="contain" />
+);
