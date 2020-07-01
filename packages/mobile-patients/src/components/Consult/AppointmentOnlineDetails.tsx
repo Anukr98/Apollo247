@@ -563,7 +563,9 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
               <View style={{ flex: 1 }}>
                 <Text style={styles.displayId}>#{data.displayId}</Text>
                 <View style={styles.separatorStyle} />
-                <Text style={styles.doctorNameStyle}>{data.doctorInfo.displayName}</Text>
+                <Text style={styles.doctorNameStyle}>
+                  {data.doctorInfo.salutation} {data.doctorInfo.displayName}
+                </Text>
                 <Text style={styles.timeStyle}>{appointmentTime}</Text>
 
                 <View style={styles.labelViewStyle}>

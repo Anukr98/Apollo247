@@ -399,7 +399,9 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
                         }}
                       >
                         {`${
-                          props.doctor ? `${props.doctor.fullName}` : ''
+                          props.doctor
+                            ? `${props.doctor.salutation}` + `${props.doctor.fullName}`
+                            : ''
                         } is not available in the ${selectedtiming.toLowerCase()} slot :(`}
                       </Text>
                     );
@@ -448,7 +450,9 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
               ...theme.fonts.IBMPlexSansMedium(14),
             }}
           >
-            {`${props.doctor ? `${props.doctor.fullName}` : 'Doctor'} is ${
+            {`${
+              props.doctor ? `${props.doctor.salutation}` + `${props.doctor.fullName}` : 'Doctor'
+            } is ${
               availableInMin <= 60 && availableInMin > 0
                 ? `${nextAvailability(NextAvailableSlot)}`
                 : `available on ${Moment(new Date(NextAvailableSlot), 'HH:mm:ss.SSSz').format(
