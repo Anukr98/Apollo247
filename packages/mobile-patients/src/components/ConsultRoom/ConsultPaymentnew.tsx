@@ -32,6 +32,7 @@ export const ConsultPaymentnew: React.FC<ConsultPaymentnewProps> = (props) => {
     ? props.navigation.getParam('bankCode')
     : null;
   const webEngageEventAttributes = props.navigation.getParam('webEngageEventAttributes');
+  const appsflyerEventAttributes = props.navigation.getParam('appsflyerEventAttributes');
   const fireBaseEventAttributes = props.navigation.getParam('fireBaseEventAttributes');
   const { currentPatient } = useAllCurrentPatients();
   const currentPatiendId = currentPatient && currentPatient.id;
@@ -61,6 +62,7 @@ export const ConsultPaymentnew: React.FC<ConsultPaymentnewProps> = (props) => {
       status: status,
       webEngageEventAttributes: webEngageEventAttributes,
       fireBaseEventAttributes: fireBaseEventAttributes,
+      appsflyerEventAttributes: appsflyerEventAttributes,
     });
   };
 

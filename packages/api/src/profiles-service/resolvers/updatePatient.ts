@@ -10,6 +10,7 @@ import { PatientRepository } from 'profiles-service/repositories/patientReposito
 import { sendNotificationSMS } from 'notifications-service/resolvers/notifications';
 import { trim } from 'lodash';
 import { isValidReferralCode } from '@aph/universal/dist/aphValidators';
+import { pool } from 'profiles-service/database/connectRedis';
 
 import {
   ReferralCodesMasterRepository,
@@ -49,9 +50,21 @@ export const updatePatientTypeDefs = gql`
   }
 `;
 
+const REDIS_PATIENT_ID_KEY_PREFIX: string = 'patient:';
+
 type UpdatePatientResult = {
   patient: Patient | null;
 };
+
+async function dropPatientCache(id: string) {
+  const redis = await pool.getTedis();
+  try {
+    await redis.del(id);
+  } catch (e) {
+  } finally {
+    await pool.putTedis(redis);
+  }
+}
 
 async function updateEntity<E extends BaseEntity>(
   Entity: typeof BaseEntity,
@@ -61,8 +74,8 @@ async function updateEntity<E extends BaseEntity>(
   let entity: E;
   try {
     entity = await Entity.findOneOrFail<E>(id);
-    await Entity.update(id, attrs);
-    await entity.reload();
+    Object.assign(entity, attrs);
+    await Entity.save(entity);
   } catch (updateProfileError) {
     throw new AphError(AphErrorMessages.UPDATE_PROFILE_ERROR, undefined, { updateProfileError });
   }
@@ -96,7 +109,8 @@ const updatePatient: Resolver<
     updateAttrs.referralCode = referralCode;
   }
 
-  const patient = await patientRepo.findById(patientInput.id);
+  //const patientRepo = await profilesDb.getCustomRepository(PatientRepository);
+  const patient = await patientRepo.getPatientDetails(patientInput.id);
   if (!patient || patient == null) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
@@ -104,18 +118,11 @@ const updatePatient: Resolver<
   if (updatePatient) {
     if (patient.uhid == '' || patient.uhid == null) {
       await patientRepo.createNewUhid(updatePatient.id);
+      await dropPatientCache(`${REDIS_PATIENT_ID_KEY_PREFIX}${updatePatient.id}`);
     }
   }
 
-  // let regCode = '';
-  // const regCodeRepo = profilesDb.getCustomRepository(RegistrationCodesRepository);
-  // const getCode = await regCodeRepo.updateCodeStatus('', patient);
-  // if (getCode) {
-  //   regCode = getCode[0].registrationCode;
-  // }
-
   const getPatientList = await patientRepo.findByMobileNumber(updatePatient.mobileNumber);
-  console.log(getPatientList, 'getPatientList for count');
   if (updatePatient.relation == Relation.ME || getPatientList.length == 1) {
     //send registration success notification here
     // sendPatientRegistrationNotification(updatePatient, profilesDb, regCode);
@@ -145,6 +152,7 @@ const updatePatient: Resolver<
       }
     }
   }
+  Object.assign(patient, await patientRepo.getPatientDetails(patientInput.id));
   return { patient };
 };
 
@@ -155,8 +163,7 @@ const updatePatientAllergies: Resolver<
   UpdatePatientResult
 > = async (parent, args, { profilesDb }) => {
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
-  const updateAllergies = await patientRepo.updatePatientAllergies(args.patientId, args.allergies);
-  console.log(updateAllergies, 'updateAllergies');
+  await patientRepo.updatePatientAllergies(args.patientId, args.allergies);
   const patient = await patientRepo.findById(args.patientId);
   if (patient == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   return { patient };

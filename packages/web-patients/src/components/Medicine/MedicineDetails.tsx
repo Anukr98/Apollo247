@@ -556,7 +556,7 @@ export const MedicineDetails: React.FC = (props) => {
                       {
                         item_name: name, // Name or ID is required.
                         item_id: sku,
-                        price,
+                        price: special_price || price,
                         item_brand: manufacturer,
                         item_category: 'Pharmacy',
                         item_category_2: type_id

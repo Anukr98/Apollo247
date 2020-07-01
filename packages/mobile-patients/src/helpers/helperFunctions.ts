@@ -674,8 +674,11 @@ export const reOrderMedicines = async (
     ? billedLineItems.filter((item) => item.itemId).map((item) => item.itemId)
     : lineItems.filter((item) => item.medicineSKU).map((item) => item.medicineSKU!);
 
-  const lineItemsDetails = await medCartItemsDetailsApi(lineItemsSkus);
-  const cartItemsToAdd = lineItemsDetails.data.productdp.map(
+  const lineItemsDetails = (await medCartItemsDetailsApi(lineItemsSkus)).data.productdp.filter(
+    (m) => m.sku && m.name
+  );
+  const availableLineItemsSkus = lineItemsDetails.map((v) => v.sku);
+  const cartItemsToAdd = lineItemsDetails.map(
     (item, index) =>
       ({
         id: item.sku,
@@ -700,10 +703,10 @@ export const reOrderMedicines = async (
   );
   const unavailableItems = billedLineItems
     ? billedLineItems
-        .filter((item) => !lineItemsSkus.includes(item.itemId))
+        .filter((item) => !availableLineItemsSkus.includes(item.itemId))
         .map((item) => item.itemName)
     : lineItems
-        .filter((item) => !lineItemsSkus.includes(item.medicineSKU!))
+        .filter((item) => !availableLineItemsSkus.includes(item.medicineSKU!))
         .map((item) => item.medicineName!);
 
   // Prescriptions
@@ -1140,26 +1143,20 @@ export const SetAppsFlyerCustID = (patientId: string) => {
 };
 
 export const postAppsFlyerAddToCartEvent = (
-  { sku, name, category_id, price, special_price }: MedicineProduct,
-  source: AppsFlyerEvents[AppsFlyerEventName.PHARMACY_ADD_TO_CART]['Source']
+  { sku, type_id, price, special_price, manufacturer }: MedicineProduct,
+  id: string
 ) => {
   const eventAttributes: AppsFlyerEvents[AppsFlyerEventName.PHARMACY_ADD_TO_CART] = {
-    'product name': name,
-    'product id': sku,
-    Brand: '',
-    'Brand ID': '',
-    'category name': '',
-    'category ID': category_id || '',
-    Price: price,
-    'Discounted Price': typeof special_price == 'string' ? Number(special_price) : special_price,
-    Quantity: 1,
-    Source: source,
+    'customer id': id,
     af_revenue: special_price
       ? typeof special_price == 'string'
         ? Number(special_price)
         : special_price
       : price,
     af_currency: 'INR',
+    item_type: type_id == 'Pharma' ? 'Drugs' : 'FMCG',
+    sku: sku,
+    brand: manufacturer,
   };
   postAppsFlyerEvent(AppsFlyerEventName.PHARMACY_ADD_TO_CART, eventAttributes);
 };

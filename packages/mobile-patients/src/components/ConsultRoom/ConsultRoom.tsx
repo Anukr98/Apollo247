@@ -1657,6 +1657,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             postWebEngageEvent(WebEngageEventName.HOMEPAGE_WIDGET_FOLLOWUP_CLICK, eventAttributes);
             props.navigation.navigate(AppRoutes.DoctorDetails, {
               doctorId: personalizedData ? personalizedData.doctorDetails.id : '',
+              showBookAppointment: true,
             });
           }}
         />
