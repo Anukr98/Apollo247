@@ -11,6 +11,12 @@ import { AppointmentDocumentRepository } from 'consults-service/repositories/app
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { Connection } from 'typeorm';
 import { uploadFileToBlobStorage } from 'helpers/uploadFileToBlob';
+import { PrescriptionUploadRequest, PrescriptionUploadResponse } from 'types/phrv1';
+import { getUnixTime } from 'date-fns';
+import { ApiConstants } from 'ApiConstants';
+import { lowerCase } from 'lodash';
+import { savePrescription } from 'helpers/phrV1Services';
+import { getFileTypeFromMime } from 'helpers/generalFunctions';
 
 export const uploadChatDocumentTypeDefs = gql`
   enum PRISM_DOCUMENT_CATEGORY {
@@ -45,6 +51,31 @@ export const uploadChatDocumentTypeDefs = gql`
     status: Boolean
   }
 
+  type MediaPrescriptionResponse {
+    recordId: String
+    fileUrl: String
+  }
+  enum mediaPrescriptionSource {
+    SELF
+    EPRESCRIPTION
+  }
+
+  input mediaPrescriptionFileProperties {
+    fileName: String!
+    mimeType: String!
+    content: String!
+  }
+
+  input MediaPrescriptionUploadRequest {
+    prescribedBy: String!
+    dateOfPrescription: Date!
+    startDate: Date
+    endDate: Date
+    notes: String
+    prescriptionSource: mediaPrescriptionSource!
+    prescriptionFiles: [mediaPrescriptionFileProperties]
+  }
+
   extend type Mutation {
     uploadChatDocument(
       appointmentId: String
@@ -65,6 +96,12 @@ export const uploadChatDocumentTypeDefs = gql`
       prismFileId: String
     ): UploadedDocumentDetails
     removeChatDocument(documentPathId: ID!): ChatDocumentDeleteResult
+
+    uploadMediaDocument(
+      prescriptionInput: MediaPrescriptionUploadRequest
+      uhid: String!
+      appointmentId: ID!
+    ): MediaPrescriptionResponse
   }
 `;
 type UploadChatDocumentResult = {
@@ -220,11 +257,82 @@ const removeChatDocument: Resolver<
   return { status: true };
 };
 
+export type MediaDocumentInputArgs = {
+  prescriptionInput: PrescriptionUploadRequest;
+  uhid: string;
+  appointmentId: string;
+};
+
+export const uploadMediaDocument: Resolver<
+  null,
+  MediaDocumentInputArgs,
+  ConsultServiceContext,
+  { recordId: string }
+> = async (parent, { prescriptionInput, uhid, appointmentId }, { consultsDb }) => {
+  if (!uhid) throw new AphError(AphErrorMessages.INVALID_UHID);
+  if (!process.env.PHR_V1_DONLOAD_PRESCRIPTION_DOCUMENT || !process.env.PHR_V1_ACCESS_TOKEN)
+    throw new AphError(AphErrorMessages.INVALID_PRISM_URL);
+
+  const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
+  const appointmentDetails = await appointmentRepo.findById(appointmentId);
+  if (appointmentDetails == null)
+    throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
+
+  prescriptionInput.prescriptionName = 'MediaDocument';
+  prescriptionInput.dateOfPrescription =
+    getUnixTime(new Date(prescriptionInput.dateOfPrescription)) * 1000;
+  prescriptionInput.startDate = prescriptionInput.startDate
+    ? getUnixTime(new Date(prescriptionInput.startDate)) * 1000
+    : 0;
+  prescriptionInput.endDate = prescriptionInput.endDate
+    ? getUnixTime(new Date(prescriptionInput.endDate)) * 1000
+    : 0;
+  prescriptionInput.prescriptionSource =
+    ApiConstants.PRESCRIPTION_SOURCE_PREFIX + lowerCase(prescriptionInput.prescriptionSource);
+  prescriptionInput.prescriptionDetail = [];
+
+  prescriptionInput.prescriptionFiles.map((item) => {
+    item.id = '';
+    item.dateCreated = getUnixTime(new Date()) * 1000;
+  });
+
+  const uploadedFileDetails: PrescriptionUploadResponse = await savePrescription(
+    uhid,
+    prescriptionInput
+  );
+
+  let prescriptionDocumentUrl = process.env.PHR_V1_DONLOAD_PRESCRIPTION_DOCUMENT.toString();
+  prescriptionDocumentUrl = prescriptionDocumentUrl.replace(
+    '{ACCESS_KEY}',
+    process.env.PHR_V1_ACCESS_TOKEN
+  );
+  prescriptionDocumentUrl = prescriptionDocumentUrl.replace('{UHID}', uhid);
+  prescriptionDocumentUrl = prescriptionDocumentUrl.replace(
+    '{RECORDID}',
+    uploadedFileDetails.response
+  );
+
+  if (prescriptionInput.prescriptionFiles)
+    prescriptionInput.prescriptionFiles.forEach((item) => {
+      const uploadFileType = getFileTypeFromMime(item.mimeType);
+      uploadFileToBlobStorageAndSave(
+        uploadFileType,
+        item.content,
+        appointmentDetails,
+        uploadedFileDetails.response,
+        consultsDb
+      );
+    });
+
+  return { recordId: uploadedFileDetails.response, fileUrl: prescriptionDocumentUrl };
+};
+
 export const uploadChatDocumentResolvers = {
   Mutation: {
     uploadChatDocument,
     uploadChatDocumentToPrism,
     addChatDocument,
     removeChatDocument,
+    uploadMediaDocument,
   },
 };

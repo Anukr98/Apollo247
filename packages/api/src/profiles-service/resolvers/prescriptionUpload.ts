@@ -1,6 +1,6 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
-import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
+
 import { PrescriptionUploadRequest, PrescriptionUploadResponse } from 'types/phrv1';
 import { ApiConstants } from 'ApiConstants';
 import { getUnixTime } from 'date-fns';
@@ -8,11 +8,6 @@ import { savePrescription } from 'helpers/phrV1Services';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { lowerCase } from 'lodash';
-import { uploadFileToBlobStorage } from 'helpers/uploadFileToBlob';
-import { uploadFileToBlobStorageAndSave } from 'consults-service/resolvers/uploadChatDocument';
-import { UPLOAD_FILE_TYPES } from 'profiles-service/entities';
-import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
-import { getFileTypeFromMime } from 'helpers/generalFunctions';
 
 export const prescriptionUploadTypeDefs = gql`
   enum prescriptionSource {
@@ -46,19 +41,11 @@ export const prescriptionUploadTypeDefs = gql`
       prescriptionInput: PrescriptionUploadRequest
       uhid: String
     ): PrescriptionResponse
-    uploadMediaDocument(
-      prescriptionInput: PrescriptionUploadRequest
-      uhid: String
-    ): PrescriptionResponse
   }
 `;
 
 export type PrescriptionInputArgs = { prescriptionInput: PrescriptionUploadRequest; uhid: string };
-export type MediaDocumentInputArgs = {
-  prescriptionInput: PrescriptionUploadRequest;
-  uhid: string;
-  appointmentId: string;
-};
+
 export enum prescriptionSource {
   SELF = 'SELF',
   EPRESCRIPTION = 'EPRESCRIPTION',
@@ -111,73 +98,8 @@ export const uploadPrescriptions: Resolver<
   return { recordId: uploadedFileDetails.response, fileUrl: prescriptionDocumentUrl };
 };
 
-export const uploadMediaDocument: Resolver<
-  null,
-  MediaDocumentInputArgs,
-  ProfilesServiceContext,
-  { recordId: string }
-> = async (parent, { prescriptionInput, uhid, appointmentId }, { consultsDb }) => {
-  if (!uhid) throw new AphError(AphErrorMessages.INVALID_UHID);
-  if (!process.env.PHR_V1_DONLOAD_PRESCRIPTION_DOCUMENT || !process.env.PHR_V1_ACCESS_TOKEN)
-    throw new AphError(AphErrorMessages.INVALID_PRISM_URL);
-
-  const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
-  const appointmentDetails = await appointmentRepo.findById(appointmentId);
-  if (appointmentDetails == null)
-    throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
-
-  prescriptionInput.prescriptionName = 'MediaDocument';
-  prescriptionInput.dateOfPrescription =
-    getUnixTime(new Date(prescriptionInput.dateOfPrescription)) * 1000;
-  prescriptionInput.startDate = prescriptionInput.startDate
-    ? getUnixTime(new Date(prescriptionInput.startDate)) * 1000
-    : 0;
-  prescriptionInput.endDate = prescriptionInput.endDate
-    ? getUnixTime(new Date(prescriptionInput.endDate)) * 1000
-    : 0;
-  prescriptionInput.prescriptionSource =
-    ApiConstants.PRESCRIPTION_SOURCE_PREFIX + lowerCase(prescriptionInput.prescriptionSource);
-  prescriptionInput.prescriptionDetail = [];
-
-  prescriptionInput.prescriptionFiles.map((item) => {
-    item.id = '';
-    item.dateCreated = getUnixTime(new Date()) * 1000;
-  });
-
-  const uploadedFileDetails: PrescriptionUploadResponse = await savePrescription(
-    uhid,
-    prescriptionInput
-  );
-
-  let prescriptionDocumentUrl = process.env.PHR_V1_DONLOAD_PRESCRIPTION_DOCUMENT.toString();
-  prescriptionDocumentUrl = prescriptionDocumentUrl.replace(
-    '{ACCESS_KEY}',
-    process.env.PHR_V1_ACCESS_TOKEN
-  );
-  prescriptionDocumentUrl = prescriptionDocumentUrl.replace('{UHID}', uhid);
-  prescriptionDocumentUrl = prescriptionDocumentUrl.replace(
-    '{RECORDID}',
-    uploadedFileDetails.response
-  );
-
-  if (prescriptionInput.prescriptionFiles)
-    prescriptionInput.prescriptionFiles.forEach((item) => {
-      const uploadFileType = getFileTypeFromMime(item.mimeType);
-      uploadFileToBlobStorageAndSave(
-        uploadFileType,
-        item.content,
-        appointmentDetails,
-        uploadedFileDetails.response,
-        consultsDb
-      );
-    });
-
-  return { recordId: uploadedFileDetails.response, fileUrl: prescriptionDocumentUrl };
-};
-
 export const prescriptionUploadResolvers = {
   Mutation: {
     uploadPrescriptions,
-    uploadMediaDocument,
   },
 };
