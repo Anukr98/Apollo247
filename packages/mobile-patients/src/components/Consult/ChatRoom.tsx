@@ -949,7 +949,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           }
           break;
         case 'bp':
-          data.bp = item.v[0] || item.v[1] || 'No Idea';
+          data.bp = item.v[1] || item.v[0] || 'No Idea';
           try {
             const text = {
               id: patientId,
@@ -1023,7 +1023,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     setUserAnswers(data);
     if (isSendAnswers.find((item) => item === false) === undefined) {
       requestToJrDoctor();
-      getPatientApiCall();
     }
   };
 
@@ -1044,6 +1043,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     if (userAnswers) {
       addToConsultQueueWithAutomatedQuestions(client, userAnswers)
         .then(({ data }: any) => {
+          getPatientApiCall();
+
           postAppointmentWEGEvent(WebEngageEventName.COMPLETED_AUTOMATED_QUESTIONS);
           console.log(data, 'data res, adding');
           jdCount = parseInt(
