@@ -150,6 +150,7 @@ import { ChatQuestions } from './ChatQuestions';
 import strings from '@aph/mobile-patients/src/strings/strings.json';
 import { CustomAlert } from '../ui/CustomAlert';
 import { Snackbar } from 'react-native-paper';
+import BackgroundTimer from 'react-native-background-timer';
 
 interface OpentokStreamObject {
   connection: {
@@ -1276,7 +1277,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   const startInterval = (timer: number) => {
     setConsultStarted(true);
-    intervalId = setInterval(() => {
+    intervalId = BackgroundTimer.setInterval(() => {
       timer = timer - 1;
       stoppedTimer = timer;
       setRemainingTime(timer);
@@ -1285,13 +1286,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       if (timer == 0) {
         // console.log('descriptionTextStyles remainingTime', timer);
         setRemainingTime(0);
-        clearInterval(intervalId);
+        BackgroundTimer.clearInterval(intervalId);
       }
     }, 1000);
   };
 
   const startTimer = (timer: number) => {
-    timerId = setInterval(() => {
+    timerId = BackgroundTimer.setInterval(() => {
       timer = timer + 1;
       stoppedTimer = timer;
       setCallTimer(timer);
@@ -1300,7 +1301,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       if (timer == 0) {
         console.log('uptimer', timer);
         setCallTimer(0);
-        clearInterval(timerId);
+        BackgroundTimer.clearInterval(timerId);
       }
     }, 1000);
   };
@@ -1308,11 +1309,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const stopTimer = () => {
     console.log('stopTimer', timerId);
     setCallTimer(0);
-    timerId && clearInterval(timerId);
+    timerId && BackgroundTimer.clearInterval(timerId);
   };
 
   const startJoinTimer = (timer: number) => {
-    joinTimerId = setInterval(() => {
+    joinTimerId = BackgroundTimer.setInterval(() => {
       timer = timer + 1;
       stoppedTimer = timer;
       setJoinCounter(timer);
@@ -1327,7 +1328,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       if (timer == 0) {
         // console.log('uptimer join', timer);
         setJoinCounter(0);
-        clearInterval(joinTimerId);
+        BackgroundTimer.clearInterval(joinTimerId);
       }
     }, 1000);
   };
@@ -1335,7 +1336,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const stopJoinTimer = () => {
     console.log('stopTimer join', joinTimerId);
     setJoinCounter(0);
-    joinTimerId && clearInterval(joinTimerId);
+    joinTimerId && BackgroundTimer.clearInterval(joinTimerId);
   };
 
   const stopInterval = () => {
@@ -1344,7 +1345,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
       const stopTimer = 900 - stoppedTimer;
       setRemainingTime(stopTimer);
-      intervalId && clearInterval(intervalId);
+      intervalId && BackgroundTimer.clearInterval(intervalId);
     }
   };
   const setSnackBar = () => {
@@ -1642,8 +1643,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       Platform.OS === 'android' && SoftInputMode.set(SoftInputMode.ADJUST_PAN);
       minuteTimer && clearTimeout(minuteTimer);
       thirtySecondTimer && clearTimeout(thirtySecondTimer);
-      timerId && clearInterval(timerId);
-      intervalId && clearInterval(intervalId);
+      timerId && BackgroundTimer.clearInterval(timerId);
+      intervalId && BackgroundTimer.clearInterval(intervalId);
       abondmentStarted = false;
       stopJoinTimer();
       stopCallAbondmentTimer();
@@ -1738,7 +1739,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const startNoShow = (timer: number, callback?: () => void) => {
     stopCallAbondmentTimer();
     setTransferData(appointmentData);
-    callAbandonmentTimer = setInterval(() => {
+    callAbandonmentTimer = BackgroundTimer.setInterval(() => {
       try {
         timer = timer - 1;
         callAbandonmentStoppedTimer = timer;
@@ -1757,7 +1758,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   const stopCallAbondmentTimer = () => {
     console.log('stopCallAbondmentTimer', callAbandonmentTimer);
-    callAbandonmentTimer && clearInterval(callAbandonmentTimer);
+    callAbandonmentTimer && BackgroundTimer.clearInterval(callAbandonmentTimer);
     callAbandonmentStoppedTimer = 620;
     abondmentStarted = false;
   };
