@@ -116,6 +116,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
     stores,
     setAddresses,
     setPhysicalPrescriptions: setPhysicalPrescription,
+    setEPrescriptions: setEPrescription
   } = useShoppingCart();
   const { setAddresses: setTestAddresses } = useDiagnosticsCart();
   const [prescriptionOption, setPrescriptionOption] = useState<string>('specified');
@@ -255,7 +256,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
     setLoading!(true);
 
     try {
-      if (EPrescriptions.length !== 0) {
+      if (EPrescriptions.length > 0) {
         setEPrescriptions && setEPrescriptions([...EPrescriptions]);
       }
 
@@ -427,7 +428,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
         doctorName={item.doctorName}
         forPatient={item.forPatient}
         onRemove={() => {
-          setEPrescriptions(EPrescriptions.filter((_item) => _item.id != item.id));
+          setEPrescription && setEPrescription(EPrescriptions.filter((_item) => _item.id != item.id));
         }}
       />
     );
@@ -456,7 +457,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
           if (selectedEPres.length == 0) {
             return;
           }
-          setEPrescriptions([...selectedEPres]);
+          setEPrescription && setEPrescription([...selectedEPres]);
         }}
         isVisible={isSelectPrescriptionVisible}
         selectedEprescriptionIds={EPrescriptions.map((item) => item.id)}
@@ -465,7 +466,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
   };
 
   const renderMedicineDetailOptions = () => {
-    if (PhysicalPrescriptions.length > 0) {
+    if (PhysicalPrescriptions.length > 0 || EPrescriptions.length > 0) {
       return (
         <View style={styles.prescriptionCardStyle}>
           <View>{renderLabel('Specify Your Medicine Details')}</View>
