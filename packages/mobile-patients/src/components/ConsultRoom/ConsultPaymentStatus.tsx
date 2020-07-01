@@ -243,7 +243,6 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
           marginHorizontal: needStyle ? 0.1 * windowWidth : undefined,
         }}
         numberOfLines={numOfLines}
-        selectable={true}
       >
         {message}
       </Text>
@@ -395,7 +394,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
             {renderViewInvoice()}
           </View>
           <Snackbar
-            style={{ position: 'absolute' }}
+            style={{ position: 'absolute', zIndex: 1001 }}
             visible={snackbarState}
             onDismiss={() => {
               setSnackbarState(false);
