@@ -1424,7 +1424,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         });
       } else {
         props.navigation.navigate(AppRoutes.CovidScan, {
-          covidUrl: AppConfig.Configuration.COVID_RISK_LEVEL_URL,
+          covidUrl: urlToOpen,
         });
       }
     } catch (e) {
