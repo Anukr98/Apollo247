@@ -257,7 +257,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
 
     try {
       if (EPrescriptions.length > 0) {
-        setEPrescription && setEPrescription([...EPrescriptions]);
+        setEPrescriptions && setEPrescriptions([...EPrescriptions]);
       }
 
       if (selectedMedicineOption === 'search') {
