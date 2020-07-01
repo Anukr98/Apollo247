@@ -30,9 +30,8 @@ import {
   MEDICINE_ORDER_PAYMENT_TYPE,
   UPLOAD_FILE_TYPES,
   BOOKINGSOURCE,
-  NonCartOrderCity,
-  BOOKING_SOURCE,
   NonCartOrderOMSCity,
+  BOOKING_SOURCE,
   CODCity,
   PRISM_DOCUMENT_CATEGORY,
 } from 'graphql/types/globalTypes';
@@ -872,7 +871,7 @@ export const MedicineCart: React.FC = (props) => {
           prismPrescriptionFileId: [
             ...ePrescriptionData!.map((item) => item.prismPrescriptionFileId),
           ].join(','),
-          orderTat: deliveryAddressId && moment(deliveryTime).isValid() ? deliveryTime : '',
+          orderTat: deliveryTime,
           items: cartItemsForApi,
           coupon: couponCode,
           deviceType: getDeviceType(),
@@ -996,7 +995,7 @@ export const MedicineCart: React.FC = (props) => {
     let chennaiOrderVariables = {};
     if (userEmail && userEmail.length) {
       chennaiOrderVariables = {
-        NonCartOrderCity: NonCartOrderCity.CHENNAI,
+        NonCartOrderCity: NonCartOrderOMSCity.CHENNAI,
         email: userEmail,
       };
     }
@@ -1012,7 +1011,7 @@ export const MedicineCart: React.FC = (props) => {
           const uploadUrlscheck = data.map(({ data }: any) =>
             data && data.uploadDocument && data.uploadDocument.status ? data.uploadDocument : null
           );
-          const filtered = uploadUrlscheck.filter(function(el) {
+          const filtered = uploadUrlscheck.filter(function (el) {
             return el != null;
           });
           const phyPresUrls = filtered.map((item) => item.filePath).filter((i) => i);
@@ -1489,7 +1488,7 @@ export const MedicineCart: React.FC = (props) => {
                   fullWidth
                   disabled={
                     (!nonCartFlow
-                      ? !cartTat
+                      ? !cartTat && deliveryTime === ''
                       : !deliveryAddressId ||
                         (deliveryAddressId && deliveryAddressId.length === 0)) ||
                     !isPaymentButtonEnable ||
@@ -1497,7 +1496,7 @@ export const MedicineCart: React.FC = (props) => {
                   }
                   className={
                     (!nonCartFlow
-                      ? !cartTat
+                      ? !cartTat && deliveryTime === ''
                       : !deliveryAddressId ||
                         (deliveryAddressId && deliveryAddressId.length === 0)) ||
                     !isPaymentButtonEnable ||

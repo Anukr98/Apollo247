@@ -43,6 +43,7 @@ import {
   CANCEL_APPOINTMENT,
   UPDATE_APPOINTMENT_SESSION,
   UPLOAD_CHAT_FILE_PRISM,
+  UPLOAD_MEDIA_DOCUMENT_PRISM,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   bookRescheduleAppointment,
@@ -65,8 +66,11 @@ import {
   notificationStatus,
   notificationType,
   REQUEST_ROLES,
+  PrescriptionUploadRequest,
   STATUS,
   TRANSFER_INITIATED_TYPE,
+  prescriptionSource,
+  prescriptionFileProperties,
   Gender,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
@@ -1374,8 +1378,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       console.log('Subscribe stream connected!', event);
     },
     disconnected: (event: string) => {
-      setSnackbarState(true);
-      setHandlerMessage('Falling back to audio due to bad network!!');
+      // setSnackbarState(true);
+      // setHandlerMessage('Falling back to audio due to bad network!!');
       console.log('Subscribe stream disconnected!', event);
     },
     otrnError: (error: string) => {
@@ -3927,6 +3931,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       id: string;
       message: string;
       duration: string;
+      fileType: string;
       transferInfo: any;
       prismId: any;
       url: any;
@@ -4053,7 +4058,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             <View>
               {rowData.message === imageconsult ? (
                 <View>
-                  {rowData.url.match(/\.(jpeg|jpg|gif|png|jfif)$/) ? (
+                  {rowData.url.match(/\.(jpeg|jpg|gif|png|jfif)$/) ||
+                  rowData.fileType === 'image' ? (
                     <TouchableOpacity
                       activeOpacity={1}
                       onPress={() => {
@@ -5664,6 +5670,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     console.log('upload fileType', type);
     console.log('chanel', channel);
     console.log('resource', resource);
+    // console.log('mimeType', mimeType(resource[0].title + '.' + type));
     CommonLogEvent(AppRoutes.ChatRoom, 'Upload document');
     resource.map((item: any) => {
       if (
@@ -5672,25 +5679,59 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         item.fileType == 'pdf' ||
         item.fileType == 'png'
       ) {
-        console.log('item', item.base64);
+        // console.log('item', item.base64, item.fileType);
+        const formattedDate = moment(new Date()).format('YYYY-MM-DD');
+        const prescriptionFile: prescriptionFileProperties = {
+          fileName: resource[0].title + '.' + type,
+          mimeType: mimeType(resource[0].title + '.' + type),
+          content: base66,
+        };
+        const inputData: PrescriptionUploadRequest = {
+          prescribedBy: appointmentData.doctorInfo.displayName,
+          dateOfPrescription: formattedDate,
+          startDate: null,
+          endDate: null,
+          prescriptionSource: prescriptionSource.SELF,
+          prescriptionFiles: [prescriptionFile],
+        };
+        console.log('PrescriptionUploadRequest', inputData);
         setLoading(true);
         client
-          .mutate<uploadChatDocumentToPrism>({
-            mutation: UPLOAD_CHAT_FILE_PRISM,
+          .mutate({
+            mutation: UPLOAD_MEDIA_DOCUMENT_PRISM,
             fetchPolicy: 'no-cache',
             variables: {
-              fileType: item.fileType == 'jpg' ? 'JPEG' : type.toUpperCase(), //type.toUpperCase(),
-              base64FileInput: item.base64, //resource.data,
-              appointmentId: channel,
-              patientId: patientId,
+              PrescriptionUploadRequest: inputData,
+              uhid: g(currentPatient, 'uhid'),
             },
           })
           .then((data) => {
             console.log('upload data', data);
             setLoading(false);
-            if (data && data.data! && data.data!.uploadChatDocumentToPrism.status) {
-              const prismFeildId = data.data!.uploadChatDocumentToPrism.fileId || '';
-              getPrismUrls(client, patientId, [prismFeildId])
+            const recordId = g(data.data!, 'uploadMediaDocument', 'recordId');
+            // if (fileUrl) {
+            //   console.log('api call data', fileUrl);
+            //   const text = {
+            //     id: patientId,
+            //     message: imageconsult,
+            //     fileType: (item.fileType || '').match(/\.(pdf)$/) ? 'pdf' : 'image',
+            //     url: fileUrl || '',
+            //     messageDate: new Date(),
+            //   };
+            //   pubnub.publish(
+            //     {
+            //       channel: channel,
+            //       message: text,
+            //       storeInHistory: true,
+            //       sendByPost: true,
+            //     },
+            //     (status, response) => {}
+            //   );
+            //   InsertMessageToDoctor('ImageUploaded');
+            //   KeepAwake.activate();
+            if (recordId) {
+              // const prismFeildId = data.data!.uploadChatDocumentToPrism.fileId || '';
+              getPrismUrls(client, patientId, [recordId])
                 .then((data: any) => {
                   console.log('api call data', data);
                   const text = {
@@ -5699,7 +5740,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     fileType: ((data.urls && data.urls[0]) || '').match(/\.(pdf)$/)
                       ? 'pdf'
                       : 'image',
-                    prismId: prismFeildId,
+                    prismId: recordId,
                     url: (data.urls && data.urls[0]) || '',
                     messageDate: new Date(),
                   };
@@ -5831,7 +5872,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const uploadPrescriptionPopup = () => {
-    return (
+    return isDropdownVisible ? (
       <UploadPrescriprionPopup
         heading="Attach File(s)"
         instructionHeading="Instructions For Uploading Files"
@@ -5840,7 +5881,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           'Doctor details & date of the test should be clearly visible.',
           'Only JPG / PNG type files up to 2 mb are allowed',
         ]}
-        isVisible={isDropdownVisible}
         disabledOption={'NONE'}
         blockCamera={isCall}
         blockCameraMessage={strings.alerts.Open_camera_in_video_call}
@@ -5864,7 +5904,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           }
         }}
       />
-    );
+    ) : null;
   };
   const renderPrescriptionModal = () => {
     return (

@@ -66,7 +66,10 @@ import {
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { fetchPaymentOptions } from '@aph/mobile-patients/src/helpers/apiCalls';
-import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
+import {
+  AppsFlyerEventName,
+  AppsFlyerEvents,
+} from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -248,12 +251,28 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     }
   };
 
-  const postwebEngageCheckoutCompletedEvent = (orderAutoId: string) => {
+  const getPrepaidCheckoutCompletedAppsFlyerEventAttributes = (orderId: string) => {
+    const appsflyerEventAttributes: AppsFlyerEvents[AppsFlyerEventName.PHARMACY_CHECKOUT_COMPLETED] = {
+      'customer id': currentPatient ? currentPatient.id : '',
+      'cart size': cartItems.length,
+      af_revenue: getFormattedAmount(grandTotal),
+      af_currency: 'INR',
+      'order id': orderId,
+      'coupon applied': coupon ? true : false,
+    };
+    return appsflyerEventAttributes;
+  };
+
+  const postwebEngageCheckoutCompletedEvent = (orderAutoId: string, orderId: string) => {
     const eventAttributes = {
       ...getPrepaidCheckoutCompletedEventAttributes(`${orderAutoId}`),
     };
     postWebEngageEvent(WebEngageEventName.PHARMACY_CHECKOUT_COMPLETED, eventAttributes);
-    postAppsFlyerEvent(AppsFlyerEventName.PHARMACY_CHECKOUT_COMPLETED, eventAttributes);
+
+    const appsflyerEventAttributes = {
+      ...getPrepaidCheckoutCompletedAppsFlyerEventAttributes(`${orderId}`),
+    };
+    postAppsFlyerEvent(AppsFlyerEventName.PHARMACY_CHECKOUT_COMPLETED, appsflyerEventAttributes);
   };
 
   const placeOrder = (orderId: string, orderAutoId: number) => {
@@ -289,7 +308,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         } else {
           // Order-Success, Show popup here & clear cart info
           try {
-            postwebEngageCheckoutCompletedEvent(`${orderAutoId}`);
+            postwebEngageCheckoutCompletedEvent(`${orderAutoId}`, orderId);
             firePurchaseEvent(orderId);
           } catch (error) {
             console.log(error);
@@ -329,6 +348,9 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     const checkoutEventAttributes = {
       ...getPrepaidCheckoutCompletedEventAttributes(`${orderAutoId}`),
     };
+    const appsflyerEventAttributes = {
+      ...getPrepaidCheckoutCompletedAppsFlyerEventAttributes(`${orderId}`),
+    };
     props.navigation.navigate(AppRoutes.PaymentScene, {
       orderId,
       orderAutoId,
@@ -336,6 +358,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       amount: getFormattedAmount(grandTotal),
       deliveryTime,
       checkoutEventAttributes,
+      appsflyerEventAttributes,
       paymentTypeID: paymentMode,
       bankCode: bankCode,
       coupon: coupon ? coupon.code : null,
@@ -492,11 +515,11 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     });
     let code: any = coupon ? coupon.code : null;
     const eventAttributes: FirebaseEvents[FirebaseEventName.PURCHASE] = {
-      COUPON: code,
-      CURRENCY: 'INR',
-      ITEMS: items,
-      TRANSACTION_ID: orderId,
-      VALUE: getFormattedAmount(grandTotal),
+      coupon: code,
+      currency: 'INR',
+      items: items,
+      transaction_id: orderId,
+      value: getFormattedAmount(grandTotal),
     };
     postFirebaseEvent(FirebaseEventName.PURCHASE, eventAttributes);
   };

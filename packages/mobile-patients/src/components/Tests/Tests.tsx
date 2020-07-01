@@ -2008,7 +2008,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
               </View>
             }
             selectedProfile={profile}
-            setDisplayAddProfile={() => {}}
             unsetloaderDisplay={true}
           ></ProfileList>
 

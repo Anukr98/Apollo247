@@ -90,9 +90,8 @@ export const MedicineUploadPrescriptionView: React.FC<MedicineUploadPrescription
   };
 
   const uploadPrescriptionPopup = () => {
-    return (
+    return showPopup ? (
       <UploadPrescriprionPopup
-        isVisible={showPopup}
         hideTAndCs={isTest}
         disabledOption={'NONE'}
         heading={'Upload Prescription(s)'}
@@ -117,7 +116,7 @@ export const MedicineUploadPrescriptionView: React.FC<MedicineUploadPrescription
           }
         }}
       />
-    );
+    ) : null;
   };
 
   const renderPhysicalPrescriptionRow = (

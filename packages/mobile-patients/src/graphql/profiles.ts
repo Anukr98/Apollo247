@@ -929,6 +929,10 @@ export const GET_PATIENT_ADDRESS_BY_ID = gql`
   query getPatientAddressById($id: String) {
     getPatientAddressById(id: $id) {
       patientAddress {
+        addressLine1
+        addressLine2
+        city
+        state
         zipcode
       }
     }
@@ -1720,6 +1724,27 @@ export const ADD_MEDICAL_RECORD = gql`
   }
 `;
 
+export const UPLOAD_LAB_RESULTS = gql`
+  mutation uploadLabResults($LabResultsUploadRequest: LabResultsUploadRequest, $uhid: String) {
+    uploadLabResults(labResultsInput: $LabResultsUploadRequest, uhid: $uhid) {
+      recordId
+      fileUrl
+    }
+  }
+`;
+
+export const UPLOAD_HEALTH_RECORD_PRESCRIPTION = gql`
+  mutation uploadPrescriptions(
+    $PrescriptionUploadRequest: PrescriptionUploadRequest
+    $uhid: String
+  ) {
+    uploadPrescriptions(prescriptionInput: $PrescriptionUploadRequest, uhid: $uhid) {
+      recordId
+      fileUrl
+    }
+  }
+`;
+
 export const GET_MEDICAL_RECORD = gql`
   query getPatientMedicalRecords($patientId: ID!) {
     getPatientMedicalRecords(patientId: $patientId) {
@@ -1794,6 +1819,48 @@ export const GET_MEDICAL_PRISM_RECORD = gql`
         dateOfNextVisit
         hospitalizationPrismFileIds
         source
+      }
+      labResults {
+        response {
+          id
+          labTestName
+          labTestSource
+          # labTestDate
+          date
+          labTestRefferedBy
+          additionalNotes
+          observation
+          labTestResults {
+            parameterName
+            unit
+            result
+            range
+            outOfRange
+            # resultDate
+          }
+          fileUrl
+        }
+        errorCode
+        errorMsg
+        errorType
+      }
+      prescriptions {
+        response {
+          id
+          prescriptionName
+          date
+          # dateOfPrescription
+          # startDate
+          # endDate
+          prescribedBy
+          notes
+          prescriptionSource
+          source
+          fileUrl
+        }
+        errorCode
+        errorMsg
+        errorType
       }
     }
   }
@@ -2107,14 +2174,6 @@ export const UPLOAD_CHAT_FILE = gql`
   }
 `;
 
-export const CANCEL_MEDICINE_ORDER = gql`
-  mutation cancelMedicineOrder($medicineOrderCancelInput: MedicineOrderCancelInput) {
-    cancelMedicineOrder(medicineOrderCancelInput: $medicineOrderCancelInput) {
-      orderStatus
-    }
-  }
-`;
-
 export const CANCEL_MEDICINE_ORDER_OMS = gql`
   mutation CancelMedicineOrderOMS($medicineOrderCancelOMSInput: MedicineOrderCancelOMSInput) {
     cancelMedicineOrderOMS(medicineOrderCancelOMSInput: $medicineOrderCancelOMSInput) {
@@ -2271,6 +2330,18 @@ export const UPLOAD_CHAT_FILE_PRISM = gql`
     ) {
       status
       fileId
+    }
+  }
+`;
+
+export const UPLOAD_MEDIA_DOCUMENT_PRISM = gql`
+  mutation uploadMediaDocument(
+    $PrescriptionUploadRequest: PrescriptionUploadRequest
+    $uhid: String
+  ) {
+    uploadMediaDocument(prescriptionInput: $PrescriptionUploadRequest, uhid: $uhid) {
+      recordId
+      fileUrl
     }
   }
 `;
@@ -2593,6 +2664,7 @@ export const GET_PERSONALIZED_APPOITNMENTS = gql`
           specialty {
             id
             name
+            userFriendlyNomenclature
           }
         }
       }

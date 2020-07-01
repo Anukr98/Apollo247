@@ -126,7 +126,7 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
   const client = useApolloClient();
   const { loading, setLoading } = useUIElements();
   const pixelRatio = PixelRatio.get();
-  const { height } = Dimensions.get("window");
+  const { height } = Dimensions.get('window');
   const heightPercent = Math.round((5 * height) / 100);
 
   const [profiles, setProfiles] = useState<
@@ -189,6 +189,7 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
       }
     });
     setShowLinkUHIDButton(count !== profiles.length);
+    setShowLinkUhid(profiles.length !== 1);
 
     if (areUhidsLinked) {
       // shuffle array as [primary, [...secondary], [...unlined]]
@@ -242,17 +243,17 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
         key={index}
         style={[
           { marginHorizontal: 20 },
-          profiles && index < profiles.length - 1 ?
-            { marginBottom: isSecondaryUHID && !showSecondaryUhids ? 0 : 8 } :
-            { marginBottom: 80 },
-          index == 0 ? { marginTop: 20 } : {margin: 0},
+          profiles && index < profiles.length - 1
+            ? { marginBottom: isSecondaryUHID && !showSecondaryUhids ? 0 : 8 }
+            : { marginBottom: 80 },
+          index == 0 ? { marginTop: 20 } : { margin: 0 },
         ]}
       >
         {showSecondaryUhids && isSecondaryUHID && (
           <View>
             <View
               style={[
-                  {
+                {
                   position: 'absolute',
                   top: isFirstSecondaryId ? -10 : -80,
                   left: 30,
@@ -263,7 +264,7 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
                   borderBottomWidth: 1,
                   zIndex: 0,
                 },
-                heightPercent <= 30 ? { width: 30 } : { width: 40 }
+                heightPercent <= 30 ? { width: 30 } : { width: 40 },
               ]}
             />
             <View
@@ -283,7 +284,7 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
                   backgroundColor: theme.colors.WHITE,
                   zIndex: 2,
                 },
-                heightPercent <= 30 ? { left: 48 } : { left: 58 }
+                heightPercent <= 30 ? { left: 48 } : { left: 58 },
               ]}
             />
           </View>
@@ -324,9 +325,11 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
                 justifyContent: 'flex-start',
               }}
             >
-              <View style={isSecondaryUHID ? styles.imageViewSecondary :styles.imageView}>
+              <View style={isSecondaryUHID ? styles.imageViewSecondary : styles.imageView}>
                 {profile!.photoUrl &&
-                profile!.photoUrl.match(/(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG)/) ? (
+                profile!.photoUrl.match(
+                  /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jpeg|JPEG)/
+                ) ? (
                   <Image
                     style={styles.profileImageStyle}
                     source={{
@@ -335,7 +338,11 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
                     // resizeMode={'contain'}
                   />
                 ) : (
-                  <PatientDefaultImage style={isSecondaryUHID ? styles.profileImageStyleSecondary :styles.profileImageStyle} />
+                  <PatientDefaultImage
+                    style={
+                      isSecondaryUHID ? styles.profileImageStyleSecondary : styles.profileImageStyle
+                    }
+                  />
                 )}
                 {/* {profile.photoUrl &&
         profile.photoUrl.match(/(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png)/) && ( */}
@@ -382,7 +389,9 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
                     top: 8,
                     marginBottom: 8,
                   },
-                  isSecondaryUHID ? {...fonts.IBMPlexSansSemiBold(16)} : {...fonts.IBMPlexSansSemiBold(18)}
+                  isSecondaryUHID
+                    ? { ...fonts.IBMPlexSansSemiBold(16) }
+                    : { ...fonts.IBMPlexSansSemiBold(18) },
                 ]}
               >
                 {profile!.firstName + ' ' + profile!.lastName}
@@ -394,7 +403,9 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
                     color: isPrimaryUHID ? colors.WHITE : '#0087ba',
                     textAlign: 'left',
                   },
-                  isSecondaryUHID ? {...fonts.IBMPlexSansSemiBold(10)} : {...fonts.IBMPlexSansSemiBold(12)}
+                  isSecondaryUHID
+                    ? { ...fonts.IBMPlexSansSemiBold(10) }
+                    : { ...fonts.IBMPlexSansSemiBold(12) },
                 ]}
               >
                 {profile!.relation === Relation.ME ? 'SELF' : profile!.relation}
@@ -411,19 +422,23 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
                     textAlign: 'left',
                     ...fonts.IBMPlexSansMedium(12),
                   },
-                  isSecondaryUHID ? {...fonts.IBMPlexSansSemiBold(10)} : {...fonts.IBMPlexSansSemiBold(12)}
+                  isSecondaryUHID
+                    ? { ...fonts.IBMPlexSansSemiBold(10) }
+                    : { ...fonts.IBMPlexSansSemiBold(12) },
                 ]}
               >
                 UHID : {profile!.uhid}
               </Text>
               <Text
                 style={[
-                    {
+                  {
                     color: isPrimaryUHID ? colors.WHITE : '#02475b',
                     textAlign: 'left',
                     ...fonts.IBMPlexSansMedium(12),
                   },
-                  isSecondaryUHID ? {...fonts.IBMPlexSansSemiBold(10)} : {...fonts.IBMPlexSansSemiBold(12)}
+                  isSecondaryUHID
+                    ? { ...fonts.IBMPlexSansSemiBold(10) }
+                    : { ...fonts.IBMPlexSansSemiBold(12) },
                 ]}
               >
                 DOB : {profile!.dateOfBirth && moment(profile!.dateOfBirth).format('DD MMM, YYYY')}
@@ -488,7 +503,14 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
           </Text>
         ) : (
           <>
-            <Text style={[styles.bannerText, heightPercent <= 31 ? {...fonts.IBMPlexSansMedium(13)} : {...fonts.IBMPlexSansMedium(15)}]}>
+            <Text
+              style={[
+                styles.bannerText,
+                heightPercent <= 31
+                  ? { ...fonts.IBMPlexSansMedium(13) }
+                  : { ...fonts.IBMPlexSansMedium(15) },
+              ]}
+            >
               Create your primary UHID by selecting any one of your own profile from below.
             </Text>
             <TouchableOpacity
@@ -498,13 +520,16 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
                 props.navigation.navigate(AppRoutes.ReadMoreLinkUHID);
               }}
             >
-              <Text 
+              <Text
                 style={[
                   styles.readMoreText,
-                  heightPercent <= 31 ? {...fonts.IBMPlexSansMedium(9)} : {...fonts.IBMPlexSansMedium(10)}
-                ]}>
-                  Read More
-                </Text>
+                  heightPercent <= 31
+                    ? { ...fonts.IBMPlexSansMedium(9) }
+                    : { ...fonts.IBMPlexSansMedium(10) },
+                ]}
+              >
+                Read More
+              </Text>
             </TouchableOpacity>
           </>
         )}
@@ -548,8 +573,7 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
               justifyContent: !showLinkUHIDButton ? 'center' : 'space-between',
             }}
           >
-            {
-              showLinkUHIDButton &&
+            {showLinkUHIDButton && (
               <Button
                 title="LINK"
                 style={{ flex: 1, marginHorizontal: 20, backgroundColor: colors.WHITE }}
@@ -564,23 +588,23 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
                   });
                 }}
               />
-            }
+            )}
             <Button
               title="DELINK"
               style={
-                showLinkUHIDButton ?
-                  { 
-                    flex: 1, 
-                    marginHorizontal: 20, 
-                    backgroundColor: colors.WHITE 
-                  } :
-                  {
-                    backgroundColor: colors.WHITE,
-                    marginHorizontal: 20,
-                    width: '45%',
-                    alignSelf: 'center',
-                    marginBottom: 15,
-                  }
+                showLinkUHIDButton
+                  ? {
+                      flex: 1,
+                      marginHorizontal: 20,
+                      backgroundColor: colors.WHITE,
+                    }
+                  : {
+                      backgroundColor: colors.WHITE,
+                      marginHorizontal: 20,
+                      width: '45%',
+                      alignSelf: 'center',
+                      marginBottom: 15,
+                    }
               }
               titleTextStyle={{
                 color: theme.colors.BUTTON_BG,
@@ -601,34 +625,36 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
 
   const renderBottomStickyComponent = () => {
     return (
-      <StickyBottomComponent defaultBG style={{ minHeight: 120 }}>
-        {showLinkUhid && (
-          <View
-            style={{
-              position: 'absolute',
-              bottom: 10,
-              left: 0,
-              right: 0,
-              display: 'flex',
-              flexDirection: 'column',
-            }}
-          >
-          <Button
-            title="LINK UHID"
-            style={{
-              flex: 1,
-              marginHorizontal: 20,
-              width: '35%',
-              alignSelf: 'center',
-              marginBottom: 15,
-            }}
-            onPress={() => {
-              props.navigation.navigate(AppRoutes.LinkUHID, {
-                action: 'firstlink',
-                profiles: profiles,
-              });
-            }}
-          />
+      <StickyBottomComponent defaultBG style={{ minHeight: showLinkUhid ? 120 : 60 }}>
+        <View
+          style={{
+            position: 'absolute',
+            bottom: 10,
+            left: 0,
+            right: 0,
+            display: 'flex',
+            flexDirection: 'column',
+          }}
+        >
+          {
+            showLinkUhid &&
+            <Button
+              title="LINK UHID"
+              style={{
+                flex: 1,
+                marginHorizontal: 20,
+                width: '35%',
+                alignSelf: 'center',
+                marginBottom: 15,
+              }}
+              onPress={() => {
+                props.navigation.navigate(AppRoutes.LinkUHID, {
+                  action: 'firstlink',
+                  profiles: profiles,
+                });
+              }}
+            />
+          }
           <Button
             title="ADD NEW PROFILE"
             style={{
@@ -645,8 +671,7 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
               });
             }}
           />
-          </View>
-        )}
+        </View>
       </StickyBottomComponent>
     );
   };
@@ -659,10 +684,13 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
     >
       {renderHeader()}
       {renderDisclaimerBanner()}
-      <ScrollView bounces={false} style={showLinkButtons ? { marginBottom: 120 } : { marginBottom: 90 }}>
+      <ScrollView
+        bounces={false}
+        style={showLinkButtons ? { marginBottom: 120 } : { marginBottom: 90 }}
+      >
         {renderProfilesDetails()}
       </ScrollView>
-      {!loading ? (showLinkButtons ? renderLinkingButtons() : renderBottomStickyComponent()) : <></>}
+      {!loading ? showLinkButtons ? renderLinkingButtons() : renderBottomStickyComponent() : <></>}
       {bottomPopUP && (
         <BottomPopUp title="Network Error!" description={'Please try again later.'}>
           <View style={{ height: 60, alignItems: 'flex-end' }}>

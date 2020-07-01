@@ -269,10 +269,10 @@ export interface WebEngageEvents {
     'product id': string; // (SKUID)
     'product name': string;
     'customer id': string;
-    'pincode': number;
+    pincode: number;
   };
   [WebEngageEventName.PRODUCT_DETAIL_TAB_CLICKED]: {
-    'tabName': string;
+    tabName: string;
   };
   [WebEngageEventName.PHARMACY_PRODUCT_DETAIL_SUBSTITUTE_CLICKED]: {
     'product id': string; // (SKUID)
@@ -297,13 +297,13 @@ export interface WebEngageEvents {
   [WebEngageEventName.CATEGORY_FILTER_CLICKED]: {
     'category name': string;
     'category ID': string;
-  }
+  };
   [WebEngageEventName.CATEGORY_FILTER_APPLIED]: {
     'category name': string;
     'category ID': string;
-    'discount': string;
+    discount: string;
     'sort by': string;
-    'price': string;
+    price: string;
   };
   [WebEngageEventName.SHOW_PRESCRIPTION_AT_STORE_SELECTED]: {
     value: boolean;
@@ -454,7 +454,7 @@ export interface WebEngageEvents {
     Source: 'Home' | 'Cart';
   };
   [WebEngageEventName.UPLOAD_PRESCRIPTION_OPTION_SELECTED]: {
-    OptionSelected: 'Search and add' | 'All Medicine' | 'call'
+    OptionSelected: 'Search and add' | 'All Medicine' | 'call';
   };
   [WebEngageEventName.UPLOAD_PRESCRIPTION_IMAGE_UPLOADED]: {
     Source: 'Take a Photo' | 'Choose Gallery' | 'E-Rx';
@@ -535,7 +535,7 @@ export interface WebEngageEvents {
 
   [WebEngageEventName.CONSULT_PAYMENT_MODE_SELECTED]: {
     'Payment Mode': string;
-  }
+  };
   [WebEngageEventName.DOCTOR_SEARCH]: {
     'Search Text': string;
     'Patient Name': string;
@@ -572,11 +572,11 @@ export interface WebEngageEvents {
     'Doctor ID': string;
     'Speciality ID': string;
     'Doctor Speciality': string;
-    'Relation': string;
+    Relation: string;
     'Patient Age': number;
     'Patient Gender': string;
     'Customer ID': string;
-  }
+  };
   [WebEngageEventName.DOCTOR_CLICKED]: {
     'Doctor Name': string;
     Source: 'List' | 'Search';
@@ -597,9 +597,9 @@ export interface WebEngageEvents {
     'Hospital Name': string;
     'Hospital City': string | null;
     'Availability Minutes': number;
-    'Source': 'List' | 'Profile';
+    Source: 'List' | 'Profile';
     'Patient UHID': string;
-    'Relation': string;
+    Relation: string;
     'Patient Age': number;
     'Patient Gender': string;
     'Customer ID': string;
@@ -609,7 +609,7 @@ export interface WebEngageEvents {
     'Physical Price': number;
     'Doctor Speciality': string;
     'Doctor Name': string;
-    'Source': 'List' | 'Profile';
+    Source: 'List' | 'Profile';
     'Language known': string;
   };
   [WebEngageEventName.CONSULTED_WITH_DOCTOR_BEFORE]: ConsultedBefore;
@@ -617,7 +617,7 @@ export interface WebEngageEvents {
     'Text Searched': string;
     'Patient name': string;
     'Patient UHID': string;
-    'Relation': string;
+    Relation: string;
     'Patient Age': number;
     'Patient Gender': string;
   };
@@ -725,6 +725,7 @@ export interface WebEngageEvents {
   };
   [WebEngageEventName.CONSULTATION_BOOKED]: {
     'Consult ID': string;
+    'Display ID'?: string;
     name: string;
     specialisation: string;
     category: string;
@@ -785,7 +786,7 @@ export interface WebEngageEvents {
     deliveryDate: string;
     mobileNumber: string;
     orderStatus: MEDICINE_ORDER_STATUS;
-  }
+  };
   [WebEngageEventName.PHARMACY_MY_ORDER_TRACKING_CLICKED]: {
     'Customer ID': string;
     'Mobile Number': string;
@@ -1193,5 +1194,5 @@ export interface WebEngageEvents {
     'Appointment ID': string;
     'Call Type': string;
     'Patient Id': string;
-  }
+  };
 }

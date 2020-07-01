@@ -129,7 +129,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
   const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
   const { getPatientApiCall } = useAuth();
   const { showAphAlert, setLoading: globalLoading } = useUIElements();
-  const { locationDetails, pharmacyLocation } = useAppCommonData();
+  const { locationDetails, pharmacyLocation, isPharmacyLocationServiceable } = useAppCommonData();
   const pharmacyPincode = g(pharmacyLocation, 'pincode') || g(locationDetails, 'pincode');
 
   useEffect(() => {
@@ -210,10 +210,12 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
       suggestionItem ? null : globalLoading,
       props.navigation,
       currentPatient,
+      isPharmacyLocationServiceable,
       suggestionItem ? () => setItemsLoading({ ...itemsLoading, [sku]: false }) : undefined
     );
     postwebEngageAddToCartEvent(item, 'Pharmacy List');
-    postAppsFlyerAddToCartEvent(item, 'Pharmacy List');
+    let id = currentPatient && currentPatient.id ? currentPatient.id : '';
+    postAppsFlyerAddToCartEvent(item, id);
   };
 
   const onRemoveCartItem = ({ sku }: MedicineProduct) => {
@@ -604,13 +606,14 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
           setSortBy(sortBy);
           medicineListRef.current && medicineListRef.current.scrollToOffset({ offset: 0 });
           setIsLoading(false);
-          
+
           const dicountRangeEvent = discountRange.from + '-' + discountRange.to;
           const eventAttributes: WebEngageEvents[WebEngageEventName.CATEGORY_FILTER_APPLIED] = {
             'category ID': category_id,
             'category name': pageTitle,
-            'discount': dicountRangeEvent === '0-100' ? '' : dicountRangeEvent,
-            'price': typeof priceRange.from === 'undefined' ? '' : priceRange.from + '-' + priceRange.to,
+            discount: dicountRangeEvent === '0-100' ? '' : dicountRangeEvent,
+            price:
+              typeof priceRange.from === 'undefined' ? '' : priceRange.from + '-' + priceRange.to,
             'sort by': typeof sortBy === 'undefined' ? '' : JSON.stringify(sortBy),
           };
           postWebEngageEvent(WebEngageEventName.CATEGORY_FILTER_APPLIED, eventAttributes);
