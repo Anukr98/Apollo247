@@ -61,6 +61,8 @@ export interface AppCommonDataContextProps {
         items: getPatientPersonalizedAppointments_getPatientPersonalizedAppointments_appointmentDetails[]
       ) => void)
     | null;
+  savePatientDetails: any;
+  setSavePatientDetails: ((items: any) => void) | null;
 }
 
 export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
@@ -97,6 +99,8 @@ export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
   setisSelected: null,
   isUHID: [],
   setisUHID: null,
+  savePatientDetails: [],
+  setSavePatientDetails: null,
 });
 
 export const AppCommonDataProvider: React.FC = (props) => {
@@ -122,6 +126,10 @@ export const AppCommonDataProvider: React.FC = (props) => {
 
   const [appointmentsPersonalized, setAppointmentsPersonalized] = useState<
     AppCommonDataContextProps['appointmentsPersonalized']
+  >([]);
+
+  const [savePatientDetails, setSavePatientDetails] = useState<
+    AppCommonDataContextProps['savePatientDetails']
   >([]);
 
   const [VirtualConsultationFee, setVirtualConsultationFee] = useState<string>('');
@@ -246,6 +254,8 @@ export const AppCommonDataProvider: React.FC = (props) => {
         setisUHID,
         appointmentsPersonalized,
         setAppointmentsPersonalized,
+        savePatientDetails,
+        setSavePatientDetails,
       }}
     >
       {props.children}
