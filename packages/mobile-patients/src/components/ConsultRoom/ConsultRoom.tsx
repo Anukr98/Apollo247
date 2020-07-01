@@ -1412,9 +1412,24 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   const onPressRiskLevel = () => {
     postHomeWEGEvent(WebEngageEventName.CHECK_YOUR_RISK_LEVEL);
-    props.navigation.navigate(AppRoutes.CovidScan, {
-      covidUrl: AppConfig.Configuration.COVID_RISK_LEVEL_URL,
-    });
+    const urlToOpen = AppConfig.Configuration.COVID_RISK_LEVEL_URL;
+    try {
+      if (Platform.OS === 'ios') {
+        Linking.canOpenURL(urlToOpen).then((supported) => {
+          if (supported) {
+            Linking.openURL(urlToOpen);
+          } else {
+            setBugFenderLog('CONSULT_ROOM_FAILED_OPEN_URL', urlToOpen);
+          }
+        });
+      } else {
+        props.navigation.navigate(AppRoutes.CovidScan, {
+          covidUrl: urlToOpen,
+        });
+      }
+    } catch (e) {
+      setBugFenderLog('CONSULT_ROOM_FAILED_OPEN_URL', urlToOpen);
+    }
   };
 
   const onPressKavach = () => {
