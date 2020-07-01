@@ -156,11 +156,19 @@ export const GET_DOCTORS_BY_SPECIALITY_AND_FILTERS = gql`
 `;
 
 export const SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME = gql`
-  query SearchDoctorAndSpecialtyByName($searchText: String!, $patientId: ID!, $pincode: String) {
+  query SearchDoctorAndSpecialtyByName(
+    $searchText: String!
+    $patientId: ID!
+    $pincode: String
+    $city: String!
+    $geoLocation: Geolocation
+  ) {
     SearchDoctorAndSpecialtyByName(
       searchText: $searchText
       patientId: $patientId
       pincode: $pincode
+      city: $city
+      geolocation: $geoLocation
     ) {
       doctors {
         id

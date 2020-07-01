@@ -12,6 +12,8 @@ import { GET_ALL_CITIES } from 'graphql/specialities';
 import { getAllCities } from 'graphql/types/getAllCities';
 import { useQuery } from 'react-apollo-hooks';
 import _lowerCase from 'lodash/lowerCase';
+import { clientRoutes } from 'helpers/clientRoutes';
+import { useParams } from 'hooks/routerHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -120,15 +122,20 @@ interface CitiesProps {
   locationPopup: boolean;
   setLocationPopup: (locationPopup: boolean) => void;
   setSelectedCity: (selectedCity: string) => void;
+  selectedCity: string;
 }
 
 export const Cities: React.FC<CitiesProps> = (props) => {
   const classes = useStyles({});
-  const { locationPopup, setLocationPopup, setSelectedCity } = props;
+  const params = useParams<{
+    city: string;
+    specialty: string;
+  }>();
+  const { locationPopup, setLocationPopup, setSelectedCity, selectedCity } = props;
 
   const { error, loading, data } = useQuery<getAllCities>(GET_ALL_CITIES);
-  const [searchText, setSearchText] = useState<string>('');
-  const [cityName, setCityName] = useState<string>('');
+  const [searchText, setSearchText] = useState<string>(selectedCity);
+  const [cityName, setCityName] = useState<string>(selectedCity);
   const [showDropdown, setShowDropdown] = useState<boolean>(false);
 
   if (error) {
@@ -195,6 +202,7 @@ export const Cities: React.FC<CitiesProps> = (props) => {
             <Typography component="h6">Popular Cities</Typography>
             {populatCities.map((city: string) => (
               <AphButton
+                key={city}
                 className={cityName === city ? classes.buttonActive : ''}
                 onClick={(e) => {
                   if (city === cityName) {
@@ -217,8 +225,15 @@ export const Cities: React.FC<CitiesProps> = (props) => {
               disabled={cityName === ''}
               color="primary"
               onClick={() => {
-                setSelectedCity(cityName);
-                setLocationPopup(false);
+                if (params.city && params.specialty) {
+                  window.location.href = clientRoutes.citySpecialties(
+                    cityName.toLowerCase(),
+                    params.specialty
+                  );
+                } else {
+                  setSelectedCity(cityName);
+                  setLocationPopup(false);
+                }
               }}
             >
               Okay

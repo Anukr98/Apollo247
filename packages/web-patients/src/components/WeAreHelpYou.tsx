@@ -240,7 +240,7 @@ export const WeAreHelpYou: React.FC = (props) => {
                       alt=""
                     />
                   </span>
-                  <span>Apollo Kavach Program</span>
+                  <span>Explore the Apollo Kavach Program</span>
                 </Link>
               </Grid>
             </Grid>
