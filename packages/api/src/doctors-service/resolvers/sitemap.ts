@@ -154,7 +154,9 @@ const generateSitemap: Resolver<null, {}, DoctorsServiceContext, string> = async
             process.env.SITEMAP_BASE_URL +
             'medicine/' +
             skuDets.url_key.toString() +
-            '</loc>\n<lastmod></lastmod>\n</url>\n';
+            '</loc>\n<lastmod>' +
+            modifiedDate +
+            '</lastmod>\n</url>\n';
           console.log(medicineUrls, 'medurl');
         }
         keyCount++;
