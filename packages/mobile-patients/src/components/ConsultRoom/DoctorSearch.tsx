@@ -1123,24 +1123,11 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
           />
           <View style={{ flexDirection: 'row' }}>
             <FlatList
-              contentContainerStyle={
-                {
-                  // flexWrap: 'wrap',
-                  // marginHorizontal: 12,
-                }
-              }
               bounces={false}
               data={SpecialitiesList}
               onEndReachedThreshold={0.5}
               renderItem={({ item, index }) =>
-                index == 6
-                  ? renderBookConsultVideo(
-                      item,
-                      index,
-                      SpecialitiesList.length,
-                      searchText.length > 2
-                    )
-                  : renderSpecialistRow(item, index, SpecialitiesList.length, searchText.length > 2)
+                renderSpecialistRow(item, index, SpecialitiesList.length, searchText.length > 2)
               }
               keyExtractor={(_, index) => index.toString()}
               numColumns={1}
