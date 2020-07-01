@@ -227,9 +227,7 @@ export const CouponCodeConsult: React.FC<ApplyCouponProps> = (props) => {
                 label: `Coupon Applied - ${selectCouponCode}`,
                 value:
                   couponValidateResult && couponValidateResult.valid
-                    ? Number(
-                        (props.cartValue - parseFloat(couponValidateResult.discount)).toFixed(2)
-                      )
+                    ? Number(parseFloat(couponValidateResult.discount).toFixed(2))
                     : null,
               });
               /*GTM TRACKING END */
