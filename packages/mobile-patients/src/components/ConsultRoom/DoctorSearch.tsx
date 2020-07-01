@@ -683,12 +683,12 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     setSpecialities(data);
   };
 
-  const fetchPastSearches = async () => {
+  const fetchPastSearches = async (selectedUser?: any) => {
     setshowPastSearchSpinner(true);
     const userId = await dataSavedUserID('selectedProfileId');
 
     const Input = {
-      patientId: userId ? userId : g(currentPatient, 'id'),
+      patientId: selectedUser ? selectedUser : userId ? userId : g(currentPatient, 'id'),
     };
 
     client
@@ -1631,14 +1631,12 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   const renderCTAs = () => (
     <View style={styles.aphAlertCtaViewStyle}>
       {moveSelectedToTop()
-        .slice(0, 5)
+        .slice(0, 3)
         .map((item: any, index: any, array: any) =>
           item.firstName !== '+ADD MEMBER' ? (
             <TouchableOpacity
               onPress={() => {
-                setShowProfilePopUp(false);
-                selectUser(item);
-                fetchPastSearches();
+                onSelectedProfile(item);
               }}
               style={[styles.ctaWhiteButtonViewStyle]}
             >
@@ -1649,7 +1647,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       <View style={[styles.textViewStyle]}>
         <Text
           onPress={() => {
-            if (allCurrentPatients.length > 6) {
+            if (allCurrentPatients.length > 4) {
               setShowList(true);
             } else {
               setShowProfilePopUp(false);
@@ -1662,12 +1660,18 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
           }}
           style={[styles.ctaOrangeTextStyle]}
         >
-          {allCurrentPatients.length > 6 ? 'OTHERS' : '+ADD MEMBER'}
+          {allCurrentPatients.length > 4 ? 'OTHERS' : '+ADD MEMBER'}
         </Text>
       </View>
     </View>
   );
-
+  const onSelectedProfile = (item: any) => {
+    selectUser(item);
+    setShowProfilePopUp(false);
+    setTimeout(() => {
+      fetchPastSearches(item.id);
+    }, 1000);
+  };
   const onProfileChange = () => {
     setShowList(false);
 
