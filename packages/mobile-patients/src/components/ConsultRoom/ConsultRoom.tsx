@@ -1412,9 +1412,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   const onPressRiskLevel = () => {
     postHomeWEGEvent(WebEngageEventName.CHECK_YOUR_RISK_LEVEL);
-    props.navigation.navigate(AppRoutes.CovidScan, {
-      covidUrl: AppConfig.Configuration.COVID_RISK_LEVEL_URL,
-    });
+    if (Platform.OS === 'ios') {
+      Linking.openURL(AppConfig.Configuration.COVID_RISK_LEVEL_URL);
+    } else {
+      props.navigation.navigate(AppRoutes.CovidScan, {
+        covidUrl: AppConfig.Configuration.COVID_RISK_LEVEL_URL,
+      });
+    }
   };
 
   const onPressKavach = () => {
