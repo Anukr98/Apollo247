@@ -602,8 +602,8 @@ const updateMedicineDataRedis: Resolver<
   });
   const updatedSkus: string[] = [];
   for (let k = args.offset; k <= args.offset + args.limit - 1; k++) {
-    console.log('rowData.Sheet1[k]', rowData.Sheet1[k].sku);
-    await tedis.hmset(rowData.Sheet1[k].sku, {
+    const skuKey = 'medicine:sku:' + rowData.Sheet1[k].sku;
+    await tedis.hmset(skuKey, {
       sku: encodeURIComponent(rowData.Sheet1[k].sku),
       name: encodeURIComponent(rowData.Sheet1[k].name),
       status: encodeURIComponent(rowData.Sheet1[k].status),

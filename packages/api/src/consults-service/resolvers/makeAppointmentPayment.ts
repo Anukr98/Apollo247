@@ -325,9 +325,18 @@ const makeAppointmentPayment: Resolver<
       currentTime
     );
 
+    //submit casesheet if skipAutoQuestions:false, isJdrequired = false
+    const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
+    const doctorDets = await doctorRepo.findById(processingAppointment.doctorId);
+    let submitFlag = 0;
+    if (doctorDets && doctorDets.skipAutoQuestions == false && doctorDets.isJdAllowed == false) {
+      submitFlag = 1;
+    }
+
     if (
       timeDifference / 60 <=
-      parseInt(ApiConstants.AUTO_SUBMIT_CASESHEET_TIME_APPOINMENT.toString(), 10)
+        parseInt(ApiConstants.AUTO_SUBMIT_CASESHEET_TIME_APPOINMENT.toString(), 10) ||
+      submitFlag == 1
     ) {
       const consultQueueRepo = consultsDb.getCustomRepository(ConsultQueueRepository);
       const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
