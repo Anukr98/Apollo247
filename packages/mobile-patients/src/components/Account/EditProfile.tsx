@@ -594,7 +594,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
           }
           getPatientApiCall();
           props.navigation.goBack();
-          setLoading && setLoading(true);
+          // setLoading && setLoading(true);
           // props.navigation.pop(2);
           // props.navigation.push(AppRoutes.ManageProfile, {
           //   mobileNumber: props.navigation.getParam('mobileNumber'),
