@@ -46,6 +46,8 @@ import {
 import {
   NavigationScreenProps,
   ScrollView,
+  StackActions,
+  NavigationActions,
 } from 'react-navigation';
 import { PRISM_DOCUMENT_CATEGORY, UPLOAD_FILE_TYPES, MEDICINE_DELIVERY_TYPE, BOOKING_SOURCE, DEVICE_TYPE, NonCartOrderOMSCity } from '../../graphql/types/globalTypes';
 import { WhatsAppStatus } from '../ui/WhatsAppStatus';
@@ -143,7 +145,7 @@ export const YourCartUploadPrescriptions: React.FC<YourCartUploadPrescriptionPro
   const [selectedTab, setselectedTab] = useState<string>(storeId ? tabs[1].title : tabs[0].title);
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
-  const { showAphAlert, setLoading } = useUIElements();
+  const { showAphAlert, hideAphAlert, setLoading } = useUIElements();
   const [showDriveWayPopup, setShowDriveWayPopup] = useState<boolean>(false);
   const scrollViewRef = useRef<ScrollView | null>();
   const [whatsAppUpdate, setWhatsAppUpdate] = useState<boolean>(true);
@@ -337,7 +339,6 @@ export const YourCartUploadPrescriptions: React.FC<YourCartUploadPrescriptionPro
           renderErrorAlert(`Something went wrong, unable to place order.`);
           return;
         }
-        props.navigation.navigate(AppRoutes.Medicine);
         renderSuccessPopup();
       })
       .catch((e) => {
@@ -357,13 +358,29 @@ export const YourCartUploadPrescriptions: React.FC<YourCartUploadPrescriptionPro
       unDismissable: true,
   });
 
-  const renderSuccessPopup = () =>
+  const renderSuccessPopup = () => {
     showAphAlert!({
-      title: 'Hi:)',
-      description:
-        'Your prescriptions have been submitted successfully. Our Pharmacists will validate the prescriptions and place your order.\n\nIf we require any clarifications, we will call you within one hour (Calling hours: 8AM to 8PM).',
+      title: 'Hi :)',
+      description: 'Your prescriptions have been submitted successfully. Our Pharmacists will validate the prescriptions and place your order.\n\nIf we require any clarifications, we will call you within one hour (Calling hours: 8AM to 8PM).',
       unDismissable: true,
-  });
+      CTAs: [
+        {
+          text: 'OK, GOT IT',
+          type: 'orange-link',
+          onPress: () => {
+            hideAphAlert!();
+            props.navigation.dispatch(
+              StackActions.reset({
+                index: 0,
+                key: null,
+                actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
+              })
+            );
+          },
+        },
+      ],
+    });
+  };
 
   const uploadMultipleFiles = (physicalPrescriptions: PhysicalPrescription[]) => {
     return Promise.all(
