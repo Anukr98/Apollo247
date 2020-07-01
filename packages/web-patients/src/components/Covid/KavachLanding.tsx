@@ -74,7 +74,7 @@ const useStyles = makeStyles((theme: Theme) => {
         '& span': {
           color: '#68919d',
           display: 'block',
-          fontSize: 46,
+          fontSize: 30,
         },
       },
       [theme.breakpoints.down('sm')]: {
@@ -85,7 +85,7 @@ const useStyles = makeStyles((theme: Theme) => {
           width: '100%',
           fontSize: 30,
           '& span': {
-            fontSize: 30,
+            fontSize: 22,
           },
         },
       },

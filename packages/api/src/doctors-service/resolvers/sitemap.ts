@@ -5,7 +5,9 @@ import { DoctorSpecialtyRepository } from 'doctors-service/repositories/doctorSp
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import path from 'path';
 import fs from 'fs';
+import { ApiConstants } from 'ApiConstants';
 import { format } from 'date-fns';
+import { Tedis } from 'redis-typescript';
 
 export const sitemapTypeDefs = gql`
   extend type Mutation {
@@ -132,7 +134,45 @@ const generateSitemap: Resolver<null, {}, DoctorsServiceContext, string> = async
         '<url>\n<loc>' + url + '</loc>\n<lastmod>' + modifiedDate + '</lastmod>\n</url>\n';
     });
   }
-  sitemapStr += doctorsStr + cmsUrls + brandsPage + healthAreaUrls + ShopByCategory + '</urlset>';
+  const tedis = new Tedis({
+    port: <number>ApiConstants.REDIS_PORT,
+    host: ApiConstants.REDIS_URL.toString(),
+    password: ApiConstants.REDIS_PWD.toString(),
+  });
+  const redisMedKeys = await tedis.keys('*');
+  let medicineUrls = '\n<!--Medicines list-->\n';
+  let keyCount = 0;
+  if (redisMedKeys && redisMedKeys.length > 0) {
+    for (let k = 0; k < redisMedKeys.length; k++) {
+      //console.log(redisMedKeys[k], redisMedKeys[k].indexOf('patient'), 'key');
+      if (redisMedKeys[k].indexOf('patient') < 0 && redisMedKeys[k].indexOf('otp') < 0) {
+        const skuDets = await tedis.hgetall(redisMedKeys[k]);
+        //console.log(skuDets, 'indise key');
+        if (skuDets && skuDets.url_key && skuDets.status == 'Enabled') {
+          medicineUrls +=
+            '<url>\n<loc>' +
+            process.env.SITEMAP_BASE_URL +
+            'medicine/' +
+            skuDets.url_key.toString() +
+            '</loc>\n<lastmod></lastmod>\n</url>\n';
+          console.log(medicineUrls, 'medurl');
+        }
+        keyCount++;
+      }
+      if (keyCount == 200000) {
+        break;
+      }
+    }
+  }
+
+  sitemapStr +=
+    doctorsStr +
+    cmsUrls +
+    brandsPage +
+    healthAreaUrls +
+    ShopByCategory +
+    medicineUrls +
+    '</urlset>';
   const fileName = 'sitemap.xml';
   const uploadPath = assetsDir + '/' + fileName;
   fs.writeFile(uploadPath, sitemapStr, {}, (err) => {
