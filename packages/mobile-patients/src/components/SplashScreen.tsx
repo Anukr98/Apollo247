@@ -255,6 +255,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
             : null;
         setMobileAPICalled && setMobileAPICalled(true);
       }
+      setSavePatientDetails && setSavePatientDetails(allPatients);
 
       const mePatient = allPatients
         ? allPatients.find((patient: any) => patient.relation === Relation.ME) || allPatients[0]
@@ -498,7 +499,11 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         return '';
     }
   };
-  const { setLocationDetails, setNeedHelpToContactInMessage } = useAppCommonData();
+  const {
+    setLocationDetails,
+    setNeedHelpToContactInMessage,
+    setSavePatientDetails,
+  } = useAppCommonData();
   const _handleAppStateChange = async (nextAppState: AppStateStatus) => {
     if (nextAppState === 'active') {
       try {
