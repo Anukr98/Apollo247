@@ -691,7 +691,7 @@ export const MedicineLanding: React.FC = (props: any) => {
               <Typography variant="h2">yay!</Typography>
               <p>
                 Your prescriptions have been submitted successfully. We will notify you when the
-                items are in your cart. If we need any clarificaitons, we will call you within 1
+                items are in your cart. If we need any clarifications, we will call you within 1
                 hour.
               </p>
               <div className={classes.bottomActions}>

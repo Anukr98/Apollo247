@@ -16,6 +16,7 @@ export const clientRoutes = {
   appointmentSuccess: () => `/appointments/${status}`,
   testsAndMedicine: () => '/tests-medicines',
   medicines: () => `/medicines`,
+  medicineSearch: () => `/medicine-search`,
   medicinesLandingViewCart: () => `/medicines/added-to-cart`,
   medicinesCartInfo: (orderAutoId: string, orderStatus: string) =>
     `/medicines/${orderAutoId}/${orderStatus}`,
