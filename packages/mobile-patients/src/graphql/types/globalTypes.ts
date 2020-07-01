@@ -207,6 +207,7 @@ export enum MEDICINE_ORDER_STATUS {
   ORDER_PLACED = "ORDER_PLACED",
   ORDER_VERIFIED = "ORDER_VERIFIED",
   OUT_FOR_DELIVERY = "OUT_FOR_DELIVERY",
+  PAYMENT_ABORTED = "PAYMENT_ABORTED",
   PAYMENT_FAILED = "PAYMENT_FAILED",
   PAYMENT_PENDING = "PAYMENT_PENDING",
   PAYMENT_SUCCESS = "PAYMENT_SUCCESS",
@@ -398,6 +399,7 @@ export enum STATUS {
   JUNIOR_DOCTOR_ENDED = "JUNIOR_DOCTOR_ENDED",
   JUNIOR_DOCTOR_STARTED = "JUNIOR_DOCTOR_STARTED",
   NO_SHOW = "NO_SHOW",
+  PAYMENT_ABORTED = "PAYMENT_ABORTED",
   PAYMENT_FAILED = "PAYMENT_FAILED",
   PAYMENT_PENDING = "PAYMENT_PENDING",
   PAYMENT_PENDING_PG = "PAYMENT_PENDING_PG",
@@ -663,7 +665,7 @@ export interface FilterDoctorInput {
   geolocation?: Geolocation | null;
   consultMode?: ConsultMode | null;
   pincode?: string | null;
-  doctorType?: string | null;
+  doctorType?: (string | null)[] | null;
   sort?: string | null;
 }
 

@@ -26,7 +26,6 @@ import {
   ArrowRight,
   ShoppingBasketIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
-import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
@@ -37,6 +36,7 @@ import {
 import {
   SAVE_SEARCH,
   GET_RECOMMENDED_PRODUCTS_LIST,
+  GET_LATEST_MEDICINE_ORDER,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { SEARCH_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
@@ -60,6 +60,7 @@ import {
   postWebEngageEvent,
   addPharmaItemToCart,
   productsThumbnailUrl,
+  reOrderMedicines,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { postMyOrdersClicked } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import {
@@ -89,7 +90,6 @@ import {
   View,
   ViewStyle,
   Platform,
-  Alert,
 } from 'react-native';
 import { Image, Input, ListItem } from 'react-native-elements';
 import { FlatList, NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
@@ -98,7 +98,16 @@ import Carousel from 'react-native-snap-carousel';
 import {
   getRecommendedProductsList,
   getRecommendedProductsListVariables,
-} from '../../graphql/types/getRecommendedProductsList';
+} from '@aph/mobile-patients/src/graphql/types/getRecommendedProductsList';
+import {
+  getLatestMedicineOrder,
+  getLatestMedicineOrderVariables,
+  getLatestMedicineOrder_getLatestMedicineOrder_medicineOrderDetails,
+} from '@aph/mobile-patients/src/graphql/types/getLatestMedicineOrder';
+import {
+  MedicineReOrderOverlayProps,
+  MedicineReOrderOverlay,
+} from '@aph/mobile-patients/src/components/Medicines/MedicineReOrderOverlay';
 
 const styles = StyleSheet.create({
   hiTextStyle: {
@@ -160,6 +169,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     removeCartItem,
     updateCartItem,
     setItemsWithQtyRestriction,
+    addMultipleCartItems,
+    addMultipleEPrescriptions,
   } = useShoppingCart();
   const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
   const cartItemsCount = cartItems.length + diagnosticCartItems.length;
@@ -174,6 +185,19 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     lastSavedTimestamp: number;
     data: MedicinePageAPiResponse;
   } | null;
+  const {
+    data: latestMedicineOrderData,
+    loading: latestMedicineOrderLoading,
+    error: latestMedicineOrderError,
+    // refetch: latestMedicineOrderRefetch,
+  } = useQuery<getLatestMedicineOrder, getLatestMedicineOrderVariables>(GET_LATEST_MEDICINE_ORDER, {
+    variables: { patientUhid: g(currentPatient, 'uhid') || '' },
+    fetchPolicy: 'no-cache',
+  });
+  const latestMedicineOrder =
+    latestMedicineOrderLoading || latestMedicineOrderError
+      ? null
+      : g(latestMedicineOrderData, 'getLatestMedicineOrder', 'medicineOrderDetails');
 
   const postwebEngageProductClickedEvent = (
     { name, sku, category_id }: MedicineProduct,
@@ -873,31 +897,129 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     );
   };
 
+  const getOrderTitle = (
+    order: getLatestMedicineOrder_getLatestMedicineOrder_medicineOrderDetails
+  ) => {
+    // use billedItems for delivered orders
+    const billedItems = g(
+      order,
+      'medicineOrderShipments',
+      '0' as any,
+      'medicineOrderInvoice',
+      '0' as any,
+      'itemDetails'
+    );
+    const billedLineItems = billedItems
+      ? (JSON.parse(billedItems) as { itemName: string }[])
+      : null;
+    const lineItems = (billedLineItems || g(order, 'medicineOrderLineItems') || []) as {
+      itemName?: string;
+      medicineName?: string;
+    }[];
+    let title = 'Medicines';
+
+    if (lineItems.length) {
+      const firstItem = g(lineItems, '0' as any, billedLineItems ? 'itemName' : 'medicineName')!;
+      const lineItemsLength = lineItems.length;
+      title =
+        lineItemsLength > 1
+          ? `${firstItem} + ${lineItemsLength - 1} item${lineItemsLength > 2 ? 's ' : ' '}`
+          : firstItem;
+    }
+
+    return title;
+  };
+
+  const getOrderSubtitle = (
+    order: getLatestMedicineOrder_getLatestMedicineOrder_medicineOrderDetails
+  ) => {
+    const isOfflineOrder = !!g(order, 'billNumber');
+    const shopAddress = isOfflineOrder && g(order, 'shopAddress');
+    const parsedShopAddress = isOfflineOrder && JSON.parse(shopAddress || '{}');
+    const address = [g(parsedShopAddress, 'storename'), g(parsedShopAddress, 'address')]
+      .filter((a) => a)
+      .join(', ');
+    const date = moment(g(order, 'medicineOrdersStatus', '0' as any, 'statusDate')).format(
+      'MMMM DD, YYYY'
+    );
+    return isOfflineOrder ? `Ordered at ${address} on ${date}` : `Ordered online on ${1}`;
+  };
+
+  const [reOrderDetails, setReOrderDetails] = useState<MedicineReOrderOverlayProps['itemDetails']>({
+    total: 0,
+    unavailable: [],
+  });
+
+  const reOrder = async (
+    order: getLatestMedicineOrder_getLatestMedicineOrder_medicineOrderDetails
+  ) => {
+    try {
+      globalLoading!(true);
+      const { items, prescriptions, totalItemsCount, unavailableItems } = await reOrderMedicines(
+        order,
+        currentPatient
+      );
+      items.length && addMultipleCartItems!(items);
+      items.length && prescriptions.length && addMultipleEPrescriptions!(prescriptions);
+      globalLoading!(false);
+      if (unavailableItems.length) {
+        setReOrderDetails({ total: totalItemsCount, unavailable: unavailableItems });
+      } else {
+        props.navigation.navigate(AppRoutes.YourCart);
+      }
+    } catch (error) {
+      CommonBugFender(`${AppRoutes.OrderDetailsScene}_reOrder`, error);
+      globalLoading!(false);
+      showAphAlert!({
+        title: string.common.uhOh,
+        description: "We're sorry! Unable to re-order right now.",
+      });
+    }
+  };
+
+  const renderMedicineReOrderOverlay = () => {
+    const { total, unavailable } = reOrderDetails;
+    return (
+      !!total && (
+        <MedicineReOrderOverlay
+          itemDetails={{ total, unavailable }}
+          onContinue={() => {
+            setReOrderDetails({ total: 0, unavailable: [] });
+            props.navigation.navigate(AppRoutes.YourCart);
+          }}
+          onClose={() => {
+            setReOrderDetails({ total: 0, unavailable: [] });
+          }}
+        />
+      )
+    );
+  };
+
   const renderLatestOrderInfo = () => {
     return (
-      <ListItem
-        title={'Huggies 4 packets + 2 items'}
-        subtitle={'Ordered at Apollo Pharmacy Madhupur on June 20, 2020'}
-        leftAvatar={<ShoppingBasketIcon />}
-        rightTitle={'REORDER'}
-        pad={12}
-        topDivider
-        rightContentContainerStyle={{ flexGrow: 0.35 }}
-        containerStyle={{ paddingHorizontal: 0, alignItems: 'flex-start' }}
-        titleStyle={theme.viewStyles.text('M', 16, '#02475b', 1, 24)}
-        subtitleStyle={theme.viewStyles.text('M', 11, '#02475b', 0.7, 15)}
-        rightTitleStyle={{
-          padding: 8,
-          paddingRight: 0,
-          ...theme.viewStyles.text('M', 12, '#fcb716'),
-        }}
-        titleProps={{ numberOfLines: 1, ellipsizeMode: 'middle' }}
-        rightTitleProps={{
-          onPress: () => {
-            Alert.alert('REORDER');
-          },
-        }}
-      />
+      !!latestMedicineOrder && (
+        <ListItem
+          title={getOrderTitle(latestMedicineOrder)}
+          subtitle={getOrderSubtitle(latestMedicineOrder)}
+          leftAvatar={<ShoppingBasketIcon />}
+          rightTitle={'REORDER'}
+          pad={12}
+          topDivider
+          rightContentContainerStyle={{ flexGrow: 0.35 }}
+          containerStyle={{ paddingHorizontal: 0, alignItems: 'flex-start' }}
+          titleStyle={theme.viewStyles.text('M', 16, '#02475b', 1, 24)}
+          subtitleStyle={theme.viewStyles.text('M', 11, '#02475b', 0.7, 15)}
+          rightTitleStyle={{
+            padding: 8,
+            paddingRight: 0,
+            ...theme.viewStyles.text('M', 12, '#fcb716'),
+          }}
+          titleProps={{ numberOfLines: 1, ellipsizeMode: 'middle' }}
+          rightTitleProps={{
+            onPress: () => reOrder(latestMedicineOrder),
+          }}
+        />
+      )
     );
   };
 
@@ -917,7 +1039,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           containerStyle={{ paddingHorizontal: 0 }}
           titleStyle={theme.viewStyles.text('M', 16, '#01475b', 1, 24)}
         />
-        {false && renderLatestOrderInfo()}
+        {renderLatestOrderInfo()}
       </View>
     );
   };
@@ -1817,6 +1939,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       {isSelectPrescriptionVisible && renderEPrescriptionModal()}
       {ShowPopop && renderUploadPrescriprionPopup()}
       {renderPincodePopup()}
+      {renderMedicineReOrderOverlay()}
     </View>
   );
 };
