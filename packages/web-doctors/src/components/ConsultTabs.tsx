@@ -1646,13 +1646,6 @@ export const ConsultTabs: React.FC = () => {
     isSecretary ||
     (params && params.tabValue && parseInt(params.tabValue, 10) >= 0);
 
-  // const scrollbarRef = useRef();
-
-  // useEffect(() => {
-  //     const { scrollbar } = scrollbarRef;
-  //     scrollbar!.current.scrollTop(100);
-  // },[]);
-
   return (
     <div className={classes.consultRoom}>
       <div className={classes.headerSticky}>
