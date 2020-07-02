@@ -225,8 +225,7 @@ export const ReschedulePopUp: React.FC<ReschedulePopUpProps> = (props) => {
                       paddingHorizontal: 16,
                     }}
                   >
-                    {`Next slot for ${props.doctor &&
-                      `${props.doctor.salutation}` + `${props.doctor.fullName}`} is available on —`}
+                    {`Next slot for ${props.doctor && props.doctor.fullName} is available on —`}
                   </Text>
                   {props.reschduleDateTime ? (
                     <Text

@@ -4483,10 +4483,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           }}
         >
           <View style={{ flex: 1 }}>
-            <Text style={styles.doctorNameStyle}>
-              {appointmentData.doctorInfo.salutation}
-              {appointmentData.doctorInfo.displayName}
-            </Text>
+            <Text style={styles.doctorNameStyle}>{appointmentData.doctorInfo.displayName}</Text>
             <Text style={styles.doctorSpecialityStyle}>{`${g(
               appointmentData,
               'doctorInfo',
