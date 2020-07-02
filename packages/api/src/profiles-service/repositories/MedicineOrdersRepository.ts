@@ -127,6 +127,7 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
         'mo."orderAutoId"',
         'mo."orderDateTime"',
         'mp."paymentMode"',
+        'mo."currentStatus"',
       ])
       .where('mo.orderAutoId = :orderAutoId', { orderAutoId })
       .getRawOne();

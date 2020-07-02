@@ -206,17 +206,10 @@ const addChatDocument: Resolver<
   ConsultServiceContext,
   UploadedDocumentDetails
 > = async (parent, args, { consultsDb, doctorsDb, mobileNumber }) => {
-  //access check
-  const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
-  const doctordata = await doctorRepository.findByMobileNumber(mobileNumber, true);
-  if (doctordata == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
-
   //check appointment id
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const appointmentData = await appointmentRepo.findById(args.appointmentId);
   if (appointmentData == null) throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
-
-  //if (args.prismFileId.length == 0) throw new AphError(AphErrorMessages.INVALID_DOCUMENT_PATH);
 
   const documentAttrs: Partial<AppointmentDocuments> = {
     documentPath: args.documentPath,

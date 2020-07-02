@@ -278,7 +278,6 @@ export const OrderStatusContent: React.FC<OrderStatusDetail> = (props) => {
     ctaText,
     fetchConsultInvoice,
   } = props;
-
   interface statusMap {
     [name: string]: string;
   }
@@ -286,6 +285,7 @@ export const OrderStatusContent: React.FC<OrderStatusDetail> = (props) => {
     success: 'PAYMENT SUCCESSFUL',
     failed: 'PAYMENT FAILED',
     pending: 'PAYMENT PENDING',
+    aborted: 'PAYMENT ABORTED'
   };
 
   const doctorAddressDetail =
@@ -307,12 +307,12 @@ export const OrderStatusContent: React.FC<OrderStatusDetail> = (props) => {
           className={`${classes.statusCard} ${
             paymentStatus == 'pending'
               ? classes.pending
-              : paymentStatus == 'failed'
-              ? classes.failed
-              : paymentStatus == 'success'
-              ? classes.success
-              : ''
-          }`}
+              : paymentStatus == 'failed' || paymentStatus === 'aborted'
+                ? classes.failed
+                : paymentStatus == 'success'
+                  ? classes.success
+                  : ''
+            }`}
         >
           {paymentStatus && paymentStatus.length > 0 && (
             <img src={require(`images/${paymentStatus}.svg`)} />
@@ -368,28 +368,28 @@ export const OrderStatusContent: React.FC<OrderStatusDetail> = (props) => {
                         <Typography component="h6">Clinic Address</Typography>
                         <Typography component="p">{`${doctorAddressDetail.name}, ${
                           doctorAddressDetail.streetLine1
-                        },${
+                          },${
                           doctorAddressDetail.streetLine2
                             ? doctorAddressDetail.streetLine2 + ','
                             : ''
-                        } ${doctorAddressDetail.city} `}</Typography>
+                          } ${doctorAddressDetail.city} `}</Typography>
                       </div>
                     </Grid>
                   )}
               </Grid>
             </Paper>
           ) : (
-            <Paper className={classes.orderDetails}>
-              <div className={classes.details}>
-                <Typography component="h6">Order Date &amp; Time</Typography>
-                <Typography component="p">{paymentDateTime}</Typography>
-              </div>
-              <div className={classes.details}>
-                <Typography component="h6">Mode of Payment</Typography>
-                <Typography component="p">{paymentType}</Typography>
-              </div>
-            </Paper>
-          )}
+              <Paper className={classes.orderDetails}>
+                <div className={classes.details}>
+                  <Typography component="h6">Order Date &amp; Time</Typography>
+                  <Typography component="p">{paymentDateTime}</Typography>
+                </div>
+                <div className={classes.details}>
+                  <Typography component="h6">Mode of Payment</Typography>
+                  <Typography component="p">{paymentType}</Typography>
+                </div>
+              </Paper>
+            )}
         </>
         <div className={classes.note}>
           {paymentInfo && paymentInfo.length > 1 && (

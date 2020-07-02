@@ -1646,8 +1646,6 @@ export const ConsultTabs: React.FC = () => {
     isSecretary ||
     (params && params.tabValue && parseInt(params.tabValue, 10) >= 0);
 
-  //console.log({ inEditMode, isClickedOnPriview, isClickedOnEdit });
-
   return (
     <div className={classes.consultRoom}>
       <div className={classes.headerSticky}>
@@ -1764,7 +1762,13 @@ export const ConsultTabs: React.FC = () => {
             setOccupationHistory,
           }}
         >
-          <Scrollbars autoHide={true} style={{ height: 'calc(100vh - 65px)' }}>
+          <Scrollbars
+            ref={(s: any) => {
+              !isClickedOnEdit && isClickedOnPriview && s !== null && s.scrollToTop();
+            }}
+            autoHide={true}
+            style={{ height: 'calc(100vh - 65px)' }}
+          >
             <div className={classes.container}>
               <CallPopover
                 setStartConsultAction={(flag: boolean) => setStartConsultAction(flag)}
