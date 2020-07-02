@@ -529,38 +529,46 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
               <span title={'Experience'}>{experience} Yrs</span>
             </div>
             <div className={classes.doctorInfoGroup}>
-              <div className={classes.infoRow}>
-                <div className={classes.iconType} title={'Education Details'}>
-                  <img src={require('images/ic-edu.svg')} alt="" />
+              {education && (
+                <div className={classes.infoRow}>
+                  <div className={classes.iconType} title={'Education Details'}>
+                    <img src={require('images/ic-edu.svg')} alt="" />
+                  </div>
+                  <div className={classes.details}>
+                    {education && education.includes(';') ? (
+                      education.split(';').map((edu, idx) => <div key={idx}>{edu}</div>)
+                    ) : (
+                      <div>{education}</div>
+                    )}
+                  </div>
                 </div>
-                <div className={classes.details}>
-                  {education && education.includes(';') ? (
-                    education.split(';').map((edu, idx) => <div key={idx}>{edu}</div>)
-                  ) : (
-                    <div>{education}</div>
-                  )}
+              )}
+              {awards && (
+                <div className={classes.infoRow}>
+                  <div className={classes.iconType} title={'Awards'}>
+                    <img src={require('images/ic-awards.svg')} alt="" />
+                  </div>
+                  <div className={classes.details}>
+                    {awards && awards.replace(/<\/?[^>]+(>|$)/g, '')}
+                  </div>
                 </div>
-              </div>
-              <div className={classes.infoRow}>
-                <div className={classes.iconType} title={'Awards'}>
-                  <img src={require('images/ic-awards.svg')} alt="" />
+              )}
+              {hospitalLocation && (
+                <div className={classes.infoRow}>
+                  <div className={classes.iconType} title={'Location'}>
+                    <img src={require('images/ic-location.svg')} alt="" />
+                  </div>
+                  <div className={classes.details}>{hospitalLocation}</div>
                 </div>
-                <div className={classes.details}>
-                  {awards && awards.replace(/<\/?[^>]+(>|$)/g, '')}
+              )}
+              {languages && (
+                <div className={`${classes.infoRow} ${classes.textCenter}`}>
+                  <div className={classes.iconType} title={'Languages'}>
+                    <img src={require('images/ic-language.svg')} alt="" />
+                  </div>
+                  <div className={classes.details}>{languages}</div>
                 </div>
-              </div>
-              <div className={classes.infoRow}>
-                <div className={classes.iconType} title={'Location'}>
-                  <img src={require('images/ic-location.svg')} alt="" />
-                </div>
-                <div className={classes.details}>{hospitalLocation}</div>
-              </div>
-              <div className={`${classes.infoRow} ${classes.textCenter}`}>
-                <div className={classes.iconType} title={'Languages'}>
-                  <img src={require('images/ic-language.svg')} alt="" />
-                </div>
-                <div className={classes.details}>{languages}</div>
-              </div>
+              )}
             </div>
           </div>
         </div>
