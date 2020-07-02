@@ -1007,7 +1007,7 @@ app.get('/processOmsOrders', (req, res) => {
                     deliveryZipcode = patientAddressDetails.zipcode || deliveryZipcode;
                   }
                 }
-                if (!!parseInt(orderDetails.shopId, 10)) {
+                if (parseInt(orderDetails.shopId, 10)) {
                   if (!orderDetails.shopAddress) {
                     logger.error(
                       `store address details not present for store pick ${orderDetails.orderAutoId}`
