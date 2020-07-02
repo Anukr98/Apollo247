@@ -911,7 +911,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     const isOfflineOrder = !!g(order, 'billNumber');
     const shopAddress = isOfflineOrder && g(order, 'shopAddress');
     const parsedShopAddress = isOfflineOrder && JSON.parse(shopAddress || '{}');
-    const address = [g(parsedShopAddress, 'storename'), g(parsedShopAddress, 'address')]
+    const address = [
+      g(parsedShopAddress, 'storename'),
+      g(parsedShopAddress, 'city'),
+      g(parsedShopAddress, 'zipcode'),
+    ]
       .filter((a) => a)
       .join(', ');
     const date = moment(g(order, 'medicineOrdersStatus', '0' as any, 'statusDate')).format(
@@ -971,6 +975,12 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   };
 
   const renderLatestOrderInfo = () => {
+    const goToOrderDetails = () => {
+      props.navigation.navigate(AppRoutes.OrderDetailsScene, {
+        orderAutoId: latestMedicineOrder!.orderAutoId,
+        billNumber: latestMedicineOrder!.billNumber,
+      });
+    };
     return (
       !!latestMedicineOrder && (
         <ListItem
@@ -989,7 +999,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             paddingRight: 0,
             ...theme.viewStyles.text('M', 12, '#fcb716'),
           }}
-          titleProps={{ numberOfLines: 1, ellipsizeMode: 'middle' }}
+          titleProps={{ numberOfLines: 1, ellipsizeMode: 'middle', onPress: goToOrderDetails }}
           rightTitleProps={{
             onPress: () => reOrder(latestMedicineOrder),
           }}
