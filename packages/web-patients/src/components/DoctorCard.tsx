@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { makeStyles, createStyles } from '@material-ui/styles';
 import { Theme, Avatar, Modal } from '@material-ui/core';
 import { AphButton } from '@aph/web-ui-components';
