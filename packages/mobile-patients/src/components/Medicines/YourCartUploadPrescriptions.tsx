@@ -335,7 +335,7 @@ export const YourCartUploadPrescriptions: React.FC<YourCartUploadPrescriptionPro
     const proceed = () => {
       if (isChennaiAddress) {
         setLoading!(false);
-        props.navigation.navigate(AppRoutes.ChennaiNonCartOrderForm, { placeOrder });
+        props.navigation.navigate(AppRoutes.ChennaiNonCartOrderForm, { onSubmitOrder: placeOrder });
       } else {
         placeOrder();
       }
@@ -512,6 +512,10 @@ export const YourCartUploadPrescriptions: React.FC<YourCartUploadPrescriptionPro
           bounces={false}
         >
           <View style={{ marginVertical: 24 }}>
+            {
+              (physicalPrescriptions.length === 0 && ePrescriptions.length == 0) && 
+              <View style={{ marginBottom: 20 }}>{renderLabel('UPLOAD PRESCRIPTION')}</View>
+            }
             <MedicineUploadPrescriptionView
               selectedTab={selectedTab}
               setSelectedTab={setselectedTab}
