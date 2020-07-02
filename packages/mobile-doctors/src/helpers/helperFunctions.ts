@@ -410,7 +410,7 @@ export const permissionHandler = (
       } else if (message === 'denied' || message === 'blocked') {
         Alert.alert((permission.split('.').pop() || 'permission').toUpperCase(), deniedMessage, [
           {
-            text: 'Cancle',
+            text: 'Cancel',
             onPress: () => {},
           },
           {
