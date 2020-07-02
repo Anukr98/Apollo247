@@ -29,6 +29,8 @@ import {
 import { SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME } from 'graphql/doctors';
 import { useApolloClient } from 'react-apollo-hooks';
 import { SpecialtySearch } from './SpecialtySearch';
+import { AphDialog, AphDialogClose, AphDialogTitle } from '@aph/web-ui-components';
+import useMediaQuery from '@material-ui/core/useMediaQuery';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -56,7 +58,7 @@ const useStyles = makeStyles((theme: Theme) => {
 
       [theme.breakpoints.down(650)]: {
         '&:after': {
-          height: 320,
+          height: 280,
         },
       },
     },
@@ -604,6 +606,14 @@ const useStyles = makeStyles((theme: Theme) => {
         padding: 0,
       },
     },
+    consultContainer: {
+      padding: 20,
+    },
+    appDetailsMobile: {
+      padding: '10px 0 ',
+      margin: '10px 0 0',
+      borderTop: '1px solid #eeeeee',
+    },
   };
 });
 
@@ -650,6 +660,9 @@ export const SpecialityListing: React.FC = (props) => {
   const [searchLoading, setSearchLoading] = useState<boolean>(false);
   const [faqs, setFaqs] = useState<any | null>(null);
   const [selectedCity, setSelectedCity] = useState<string>('');
+  const [chatConsult, setChatConsult] = useState<boolean>(false);
+  const [meetInPerson, setMeetInPerson] = useState<boolean>(false);
+  const isDesktopOnly = useMediaQuery('(min-width:768px)');
 
   const handleChange = (panel: string) => (event: React.ChangeEvent<{}>, isExpanded: boolean) => {
     setExpanded(isExpanded ? panel : false);
@@ -718,7 +731,6 @@ export const SpecialityListing: React.FC = (props) => {
       <Header />
       <div className={classes.container}>
         <div className={classes.slContent}>
-          {' '}
           {/* Please add a class slnoDoctor here when showing up noDoctor Content */}
           <div className={classes.pageHeader}>
             <Link to={clientRoutes.welcome()}>
@@ -826,6 +838,7 @@ export const SpecialityListing: React.FC = (props) => {
                             root: classes.tabRoot,
                             selected: classes.tabSelected,
                           }}
+                          onDoubleClick={() => setChatConsult(true)}
                         />
                         <Tab
                           label="Meet in Person"
@@ -834,6 +847,7 @@ export const SpecialityListing: React.FC = (props) => {
                             root: classes.tabRoot,
                             selected: classes.tabSelected,
                           }}
+                          onDoubleClick={() => setMeetInPerson(true)}
                         />
                       </Tabs>
                       <div className={classes.tabContent}>
@@ -962,6 +976,76 @@ export const SpecialityListing: React.FC = (props) => {
       <div className={classes.footerLinks}>
         <BottomLinks />
       </div>
+      <AphDialog open={chatConsult} maxWidth="sm">
+        <AphDialogClose onClick={() => setChatConsult(false)} title={'Close'} />
+        <AphDialogTitle> How to consult via chat/audio/video?</AphDialogTitle>
+        <div className={classes.consultContainer}>
+          <ul className={classes.tabList}>
+            <li>
+              <img src={require('images/consult-doc.svg')} />
+              <Typography>Choose the doctor</Typography>
+            </li>
+            <li>
+              <img src={require('images/slot.svg')} />
+              <Typography>Book a slot</Typography>
+            </li>
+            <li>
+              <img src={require('images/ic-payment.svg')} />
+              <Typography>Make payment</Typography>
+            </li>
+            <li className={classes.highlight}>
+              <img src={require('images/ic-video.svg')} />
+              <Typography>Speak to the doctor via video/audio/chat</Typography>
+            </li>
+            <li>
+              <img src={require('images/prescription.svg')} />
+              <Typography>Receive prescriptions instantly </Typography>
+            </li>
+            <li className={classes.highlight}>
+              <img src={require('images/chat.svg')} />
+              <Typography>Chat with the doctor for 6 days after your consult</Typography>
+            </li>
+          </ul>
+          <div className={`${classes.appDetails} ${classes.appDetailsMobile}`}>
+            <Typography component="h6">Consultancy works only on our mobile app</Typography>
+            <Typography>
+              To enjoy enhanced consultation experience download our mobile app
+            </Typography>
+            <div className={classes.appDownload}>
+              <img src={require('images/apollo247.png')} />
+              <AphButton>Download the App</AphButton>
+            </div>
+          </div>
+        </div>
+      </AphDialog>
+      <AphDialog open={meetInPerson} maxWidth="sm">
+        <AphDialogClose onClick={() => setMeetInPerson(false)} title={'Close'} />
+        <AphDialogTitle> How to consult in Person?</AphDialogTitle>
+        <div className={classes.consultContainer}>
+          <ul className={classes.tabList}>
+            <li>
+              <img src={require('images/consult-doc.svg')} />
+              <Typography>Choose the doctor</Typography>
+            </li>
+            <li>
+              <img src={require('images/slot.svg')} />
+              <Typography>Book a slot</Typography>
+            </li>
+            <li>
+              <img src={require('images/ic-payment.svg')} />
+              <Typography>Make payment</Typography>
+            </li>
+            <li className={classes.highlight}>
+              <img src={require('images/hospital.svg')} />
+              <Typography>Visit the doctor at Hospital/Clinic</Typography>
+            </li>
+            <li>
+              <img src={require('images/prescription.svg')} />
+              <Typography>Receive prescriptions instantly </Typography>
+            </li>
+          </ul>
+        </div>
+      </AphDialog>
     </div>
   );
 };
