@@ -2,6 +2,7 @@ import {
   formatAddress,
   g,
   postWebEngageEvent,
+  findAddrComponents,
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import { MedicineUploadPrescriptionView } from '@aph/mobile-patients/src/components/Medicines/MedicineUploadPrescriptionView';
 import { RadioSelectionItem } from '@aph/mobile-patients/src/components/Medicines/RadioSelectionItem';
@@ -22,10 +23,11 @@ import {
 import {
   UPLOAD_DOCUMENT,
   SAVE_PRESCRIPTION_MEDICINE_ORDER_OMS,
+  UPDATE_PATIENT_ADDRESS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { uploadDocument, uploadDocumentVariables } from '@aph/mobile-patients/src/graphql/types/uploadDocument';
 import { savePrescriptionMedicineOrderOMSVariables } from '@aph/mobile-patients/src/graphql/types/savePrescriptionMedicineOrderOMS';
-import { Store } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { Store, getPlaceInfoByPincode } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   WebEngageEventName,
   WebEngageEvents,
@@ -53,6 +55,9 @@ import { PRISM_DOCUMENT_CATEGORY, UPLOAD_FILE_TYPES, MEDICINE_DELIVERY_TYPE, BOO
 import { WhatsAppStatus } from '../ui/WhatsAppStatus';
 import { StoreDriveWayPickupPopup } from './StoreDriveWayPickupPopup';
 import { StorePickupOrAddressSelectionView } from './StorePickupOrAddressSelectionView';
+import { savePatientAddress_savePatientAddress_patientAddress } from '../../graphql/types/savePatientAddress';
+import { updatePatientAddress, updatePatientAddressVariables } from '../../graphql/types/updatePatientAddress';
+import { useDiagnosticsCart } from '../DiagnosticsCartProvider';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -138,7 +143,9 @@ export const YourCartUploadPrescriptions: React.FC<YourCartUploadPrescriptionPro
     pinCode,
     ePrescriptions,
     stores,
+    setAddresses,
   } = useShoppingCart();
+  const { setAddresses: setTestAddresses } = useDiagnosticsCart();
   const [activeStores, setActiveStores] = useState<Store[]>([]);
 
   const tabs = [{ title: 'Home Delivery' }, { title: 'Store Pick Up' }];
@@ -259,6 +266,90 @@ export const YourCartUploadPrescriptions: React.FC<YourCartUploadPrescriptionPro
       Pincode: pinCode,
     };
     postWebEngageEvent(WebEngageEventName.PHARMACY_SUBMIT_PRESCRIPTION, eventAttributes);
+  };
+
+  const updateAddressLatLong = async (
+    address: savePatientAddress_savePatientAddress_patientAddress,
+    onComplete: () => void
+  ) => {
+    try {
+      const pincodeAndAddress = [address.zipcode, address.addressLine1]
+        .filter((v) => (v || '').trim())
+        .join(',');
+      const data = await getPlaceInfoByPincode(pincodeAndAddress);
+      const { lat, lng } = data.data.results[0].geometry.location;
+      const state = findAddrComponents(
+        'administrative_area_level_1',
+        data.data.results[0].address_components
+      );
+      const stateCode = findAddrComponents(
+        'administrative_area_level_1',
+        data.data.results[0].address_components,
+        'short_name'
+      );
+      const finalStateCode =
+        AppConfig.Configuration.PHARMA_STATE_CODE_MAPPING[
+          state as keyof typeof AppConfig.Configuration.PHARMA_STATE_CODE_MAPPING
+        ] || stateCode;
+
+      await client.mutate<updatePatientAddress, updatePatientAddressVariables>({
+        mutation: UPDATE_PATIENT_ADDRESS,
+        variables: {
+          UpdatePatientAddressInput: {
+            id: address.id,
+            addressLine1: address.addressLine1!,
+            addressLine2: address.addressLine2,
+            city: address.city,
+            state: address.state,
+            zipcode: address.zipcode!,
+            landmark: address.landmark,
+            mobileNumber: address.mobileNumber,
+            addressType: address.addressType,
+            otherAddressType: address.otherAddressType,
+            latitude: lat,
+            longitude: lng,
+            stateCode: finalStateCode,
+          },
+        },
+      });
+      const newAddrList = [
+        { ...address, latitude: lat, longitude: lng, stateCode: finalStateCode },
+        ...addresses.filter((item) => item.id != address.id),
+      ];
+      setAddresses!(newAddrList);
+      setTestAddresses!(newAddrList);
+      onComplete();
+    } catch (error) {
+      // Let the user order journey continue, even if no lat-lang.
+      onComplete();
+    }
+  };
+
+  const onPressSubmit = () => {
+    setLoading!(true);
+    const selectedAddress = addresses.find((addr) => addr.id == deliveryAddressId);
+    const zipcode = g(selectedAddress, 'zipcode');
+    const isChennaiAddress = AppConfig.Configuration.CHENNAI_PHARMA_DELIVERY_PINCODES.find(
+      (addr) => addr == Number(zipcode)
+    );
+    const proceed = () => {
+      if (isChennaiAddress) {
+        setLoading!(false);
+        props.navigation.navigate(AppRoutes.ChennaiNonCartOrderForm, { placeOrder });
+      } else {
+        placeOrder();
+      }
+    };
+
+    if (
+      g(selectedAddress, 'latitude') &&
+      g(selectedAddress, 'longitude') &&
+      g(selectedAddress, 'stateCode')
+    ) {
+      proceed();
+    } else {
+      updateAddressLatLong(selectedAddress!, proceed);
+    }
   };
 
   const placeOrder = async (email?: string) => {
@@ -447,7 +538,7 @@ export const YourCartUploadPrescriptions: React.FC<YourCartUploadPrescriptionPro
             disabled={disablePlaceOrder}
             title={'PLACE ORDER'}
             onPress={() => {
-              placeOrder();
+              onPressSubmit();
             }}
             style={{ flex: 1, marginHorizontal: 40 }}
           />
