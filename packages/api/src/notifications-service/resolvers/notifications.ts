@@ -471,6 +471,8 @@ export async function sendNotification(
   const notificationSound: string = ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString();
   const istDateTime = addMilliseconds(appointment.appointmentDateTime, 19800000);
   const apptDate = format(istDateTime, 'dd-MM-yyyy HH:mm');
+
+  //Your appointment has been cancelled
   if (pushNotificationInput.notificationType == NotificationType.PATIENT_CANCEL_APPOINTMENT) {
     notificationTitle = ApiConstants.PATIENT_CANCEL_APPT_TITLE;
     notificationBody = ApiConstants.PATIENT_CANCEL_APPT_BODY.replace(
@@ -498,7 +500,10 @@ export async function sendNotification(
     doctorSMS = doctorSMS.replace('{3}', apptDate.toString());
     sendNotificationSMS(doctorDetails.mobileNumber, doctorSMS);
     sendBrowserNotitication(doctorDetails.id, doctorSMS);
-  } else if (pushNotificationInput.notificationType == NotificationType.DOCTOR_CANCEL_APPOINTMENT) {
+  }
+
+  //doctor cancel appointment 
+  else if (pushNotificationInput.notificationType == NotificationType.DOCTOR_CANCEL_APPOINTMENT) {
     notificationTitle = ApiConstants.CANCEL_APPT_TITLE;
     notificationBody = ApiConstants.CANCEL_APPT_BODY.replace('{0}', patientDetails.firstName);
     notificationBody = notificationBody.replace(
@@ -511,7 +516,10 @@ export async function sendNotification(
     smsLink = notificationBody + smsLink;
 
     sendNotificationSMS(patientDetails.mobileNumber, smsLink ? smsLink : '');
-  } else if (pushNotificationInput.notificationType == NotificationType.INITIATE_RESCHEDULE) {
+  }
+
+  //INITIATE_RESCHEDULE 
+  else if (pushNotificationInput.notificationType == NotificationType.INITIATE_RESCHEDULE) {
     notificationTitle = ApiConstants.RESCHEDULE_INITIATION_TITLE;
     notificationBody = ApiConstants.RESCHEDULE_INITIATION_BODY.replace(
       '{0}',
@@ -526,7 +534,10 @@ export async function sendNotification(
       : '';
     smsLink = notificationBody + smsLink;
     sendNotificationSMS(patientDetails.mobileNumber, smsLink ? smsLink : '');
-  } else if (
+  }
+
+  //doctor no show
+  else if (
     pushNotificationInput.notificationType == NotificationType.DOCTOR_NO_SHOW_INITIATE_RESCHEDULE
   ) {
     notificationTitle = ApiConstants.RESCHEDULE_INITIATION_TITLE;
@@ -544,7 +555,10 @@ export async function sendNotification(
     smsLink = notificationBody + smsLink;
 
     sendNotificationSMS(patientDetails.mobileNumber, smsLink ? smsLink : '');
-  } else if (pushNotificationInput.notificationType == NotificationType.PATIENT_NO_SHOW) {
+  }
+
+  //patient no show
+  else if (pushNotificationInput.notificationType == NotificationType.PATIENT_NO_SHOW) {
     notificationTitle = ApiConstants.PATIENT_NO_SHOW_RESCHEDULE_TITLE;
     notificationBody = ApiConstants.PATIENT_NO_SHOW_RESCHEDULE_BODY.replace(
       '{0}',
@@ -559,7 +573,10 @@ export async function sendNotification(
       : '';
     smsLink = notificationBody + smsLink;
     sendNotificationSMS(patientDetails.mobileNumber, smsLink ? smsLink : '');
-  } else if (pushNotificationInput.notificationType == NotificationType.INITIATE_TRANSFER) {
+  }
+
+  //initiate transfer
+  else if (pushNotificationInput.notificationType == NotificationType.INITIATE_TRANSFER) {
     const transferRepo = consultsDb.getCustomRepository(TransferAppointmentRepository);
     const transferApptDetails = await transferRepo.getTransferDetails(
       pushNotificationInput.appointmentId
@@ -578,7 +595,10 @@ export async function sendNotification(
       '{0}',
       transferDoctorDetails.firstName + ' ' + transferDoctorDetails.lastName
     );
-  } else if (
+  }
+
+  //junior doctor schedule
+  else if (
     pushNotificationInput.notificationType == NotificationType.INITIATE_JUNIOR_APPT_SESSION
   ) {
     notificationTitle = ApiConstants.JUNIOR_APPT_SESSION_TITLE;
@@ -590,7 +610,10 @@ export async function sendNotification(
       '{2}',
       doctorDetails.firstName + ' ' + doctorDetails.lastName
     );
-  } else if (
+  }
+
+  //senior doctor schedule
+  else if (
     pushNotificationInput.notificationType == NotificationType.INITIATE_SENIOR_APPT_SESSION
   ) {
     notificationTitle = ApiConstants.SENIOR_APPT_SESSION_TITLE;
@@ -602,8 +625,11 @@ export async function sendNotification(
       '{1}',
       doctorDetails.firstName + ' ' + doctorDetails.lastName
     );
-  } else if (pushNotificationInput.notificationType == NotificationType.BOOK_APPOINTMENT) {
-    let content = ApiConstants.BOOK_APPOINTMENT_BODY.replace('{0}', patientDetails.firstName);
+  }
+
+  //book appointment
+  else if (pushNotificationInput.notificationType == NotificationType.BOOK_APPOINTMENT) {
+    let content = ApiConstants.BOOK_APPOINTMENT_BODY_WITH_CLICK.replace('{0}', patientDetails.firstName);
     let smsLink = ApiConstants.BOOK_APPOINTMENT_BODY_WITH_CLICK.replace(
       '{0}',
       patientDetails.firstName
@@ -635,10 +661,10 @@ export async function sendNotification(
     smsLink = smsLink.replace('{1}', appointment.displayId.toString());
     smsLink = smsLink.replace('{2}', doctorDetails.firstName + ' ' + doctorDetails.lastName);
     smsLink = smsLink.replace('{3}', apptDate.toString());
-    smsLink = smsLink.replace(
-      '{5}',
-      process.env.SMS_LINK_BOOK_APOINTMENT ? process.env.SMS_LINK_BOOK_APOINTMENT : ''
-    );
+
+    //Create chatroom link and send for new booked appointment
+    const chatroom_sms_link = process.env.SMS_DEEPLINK_APPOINTMENT_CHATROOM.replace('{0}', appointment.id.toString());
+    smsLink = smsLink.replace('{5}', chatroom_sms_link);
 
     notificationTitle = ApiConstants.BOOK_APPOINTMENT_TITLE;
     notificationBody = content;
@@ -667,7 +693,10 @@ export async function sendNotification(
     doctorSMS = doctorSMS.replace('{2}', patientDetails.firstName);
     doctorSMS = doctorSMS.replace('{3}', apptDate.toString());
     sendNotificationSMS(doctorDetails.mobileNumber, doctorSMS);
-  } else if (pushNotificationInput.notificationType == NotificationType.PAYMENT_PENDING_SUCCESS) {
+  }
+
+  //payment pending success
+  else if (pushNotificationInput.notificationType == NotificationType.PAYMENT_PENDING_SUCCESS) {
     let content = ApiConstants.BOOK_APPOINTMENT_PAYMENT_SUCCESS_BODY.replace(
       '{0}',
       appointment.discountedAmount.toString()
@@ -693,7 +722,10 @@ export async function sendNotification(
     console.log('message==========================', notificationBody);
     //send sms
     sendNotificationSMS(patientDetails.mobileNumber, smsLink ? smsLink : '');
-  } else if (pushNotificationInput.notificationType == NotificationType.PAYMENT_PENDING_FAILURE) {
+  }
+
+  //payment pending failure
+  else if (pushNotificationInput.notificationType == NotificationType.PAYMENT_PENDING_FAILURE) {
     let content = ApiConstants.BOOK_APPOINTMENT_PAYMENT_FAILURE_BODY.replace(
       '{0}',
       appointment.discountedAmount.toString()
@@ -719,14 +751,18 @@ export async function sendNotification(
     console.log('message==========================', notificationBody);
     //send sms
     sendNotificationSMS(patientDetails.mobileNumber, smsLink ? smsLink : '');
-  } else if (pushNotificationInput.notificationType == NotificationType.CALL_APPOINTMENT) {
+  }
+
+  else if (pushNotificationInput.notificationType == NotificationType.CALL_APPOINTMENT) {
     notificationTitle = ApiConstants.CALL_APPOINTMENT_TITLE;
     notificationBody = ApiConstants.CALL_APPOINTMENT_BODY.replace('{0}', patientDetails.firstName);
     notificationBody = notificationBody.replace(
       '{1}',
       doctorDetails.firstName + ' ' + doctorDetails.lastName
     );
-  } else if (
+  }
+
+  else if (
     pushNotificationInput.notificationType == NotificationType.ACCEPT_RESCHEDULED_APPOINTMENT
   ) {
     notificationTitle = ApiConstants.PATIENT_APPOINTMENT_RESCHEDULE_TITLE;
@@ -1156,7 +1192,7 @@ export async function sendReminderNotification(
         const facilityRepo = doctorsDb.getCustomRepository(FacilityRepository);
         const facilityDets = await facilityRepo.getfacilityDetails(appointment.hospitalId);
 
-        if (!facilityDets) {
+  if (!facilityDets) {
           throw new AphError(AphErrorMessages.FACILITY_DETS_NOT_FOUND);
         }
 
@@ -1189,13 +1225,14 @@ export async function sendReminderNotification(
     if (appointment.hospitalId != '' && appointment.hospitalId != null) {
       const facilityRepo = doctorsDb.getCustomRepository(FacilityRepository);
       const facilityDets = await facilityRepo.getfacilityDetails(appointment.hospitalId);
-      if (!facilityDets) {
+if (!facilityDets) {
         throw new AphError(AphErrorMessages.FACILITY_DETS_NOT_FOUND);
       }
 
       const facilityDetsString = `${facilityDets.name} ${facilityDets.streetLine1} ${facilityDets.city} ${facilityDets.state}`;
 
       notificationBody = notificationBody.replace('{1}', facilityDetsString);
+
     }
     notificationBody = notificationBody.replace('{0}', doctorDetails.firstName);
     payload = {
@@ -1233,8 +1270,7 @@ export async function sendReminderNotification(
       if (appointment.hospitalId != '' && appointment.hospitalId != null) {
         const facilityRepo = doctorsDb.getCustomRepository(FacilityRepository);
         const facilityDets = await facilityRepo.getfacilityDetails(appointment.hospitalId);
-
-        if (!facilityDets) {
+if (!facilityDets) {
           throw new AphError(AphErrorMessages.FACILITY_DETS_NOT_FOUND);
         }
 
@@ -1446,11 +1482,9 @@ export async function sendReminderNotification(
     pushNotificationInput.notificationType ==
       NotificationType.APPOINTMENT_CASESHEET_REMINDER_15_VIRTUAL
   ) {
-    if (!(appointment && appointment.id)) {
-      throw new AphError(AphErrorMessages.APPOINTMENT_ID_NOT_FOUND);
-    }
-    const chatroom_sms_link =
-      process.env.SMS_DEEPLINK_APPOINTMENT_CHATROOM || ''.replace('{0}', appointment.id.toString()); //Replacing the placeholder with appointmentid
+ 
+    if (!(appointment && appointment.id)) { throw new AphError(AphErrorMessages.APPOINTMENT_ID_NOT_FOUND) };
+    const chatroom_sms_link = process.env.SMS_DEEPLINK_APPOINTMENT_CHATROOM.replace('{0}', appointment.id.toString()); //Replacing the placeholder with appointmentid
 
     //Final deeplink URL
     notificationBody = notificationBody + ApiConstants.CLICK_HERE + chatroom_sms_link;
