@@ -244,6 +244,14 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       setPincodePopupVisible(true);
     };
 
+    const CalltheNearestPharmacyEvent = () => {
+      let eventAttributes: WebEngageEvents[WebEngageEventName.CALL_THE_NEAREST_PHARMACY] = {
+        pincode: pincode,
+        'Mobile Number': currentPatient.mobileNumber,
+      };
+      postWebEngageEvent(WebEngageEventName.CALL_THE_NEAREST_PHARMACY, eventAttributes);
+    };
+
     const onPressCallNearestPharmacy = (pharmacyPhoneNumber: string) => {
       let from = currentPatient.mobileNumber;
       let to = pharmacyPhoneNumber;
@@ -254,6 +262,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         toPhone: to,
         callerId: caller_id,
       };
+      CalltheNearestPharmacyEvent();
       globalLoading!(true);
       callToExotelApi(param)
         .then((response) => {
