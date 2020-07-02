@@ -129,6 +129,16 @@ const useStyles = makeStyles((theme: Theme) => {
         textAlign: 'right',
       },
     },
+    conformOrderBtn: {
+      minWidth: 204,
+      '&:disabled': {
+        pointerEvents: 'none',
+        opacity: 0.4,
+      },
+    },
+    conformOrderBtnDisabled: {
+      opacity: 0.4,
+    },
     priscriptionBox: {
       [theme.breakpoints.up('sm')]: {
         borderRadius: 10,
@@ -170,6 +180,7 @@ const useStyles = makeStyles((theme: Theme) => {
     medicineDetails: {
       borderRadius: 5,
       backgroundColor: '#fff',
+      overflow: 'hidden',
       [theme.breakpoints.up('sm')]: {
         boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
         backgroundColor: '#f7f8f5',
@@ -181,7 +192,7 @@ const useStyles = makeStyles((theme: Theme) => {
         fontSize: 16,
         fontWeight: 500,
         padding: '16px 20px',
-        borderBottom: '0.5px solid rgba(2,71,91,0.3)',
+        // borderBottom: '0.5px solid rgba(2,71,91,0.3)',
         [theme.breakpoints.up('sm')]: {
           boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.2)',
         },
@@ -221,6 +232,22 @@ const useStyles = makeStyles((theme: Theme) => {
         padding: 0,
       },
     },
+    callinfoText: {
+      boxShadow: '0 4px 13px 0 rgba(128, 128, 128, 0.3)',
+      backgroundColor: '#ffffff',
+      color: '#02475b',
+      padding: 20,
+      textAlign: 'center',
+      fontWeight: 500,
+      fontSize: 13,
+      '& button': {
+        backgroundColor: 'transparent',
+        boxShadow: 'none',
+        marginLeft: 'auto',
+        minWidth: 'auto',
+        padding: 0,
+      },
+    },
     duration: {
       color: '#02475b',
       padding: '12px 20px 12px 58px',
@@ -246,6 +273,9 @@ const useStyles = makeStyles((theme: Theme) => {
         padding: 20,
         marginTop: 20,
       },
+    },
+    disabledLink: {
+      pointerEvents: 'none',
     },
   };
 });
@@ -422,7 +452,7 @@ export const MedicinePrescriptions: React.FC = (props) => {
                         label="Call me"
                       />
                       {value === 'duration' && (
-                        <div className={classes.infoText}>
+                        <div className={classes.callinfoText}>
                           <span>
                             Our pharmacist will call you within 2 hours to confirm medicines (8 AM
                             to 8 PM).
@@ -435,10 +465,30 @@ export const MedicinePrescriptions: React.FC = (props) => {
               </div>
             </div>
             <div className={classes.rightSideBar}>
-              <Link to={`${clientRoutes.medicinesCart()}?prescription=true`}>
+              <Link
+                className={
+                  value == '' ||
+                  (value === 'specified' && selectedDays.length === 0) ||
+                  (prescriptions &&
+                    prescriptions.length === 0 &&
+                    ePrescriptionData &&
+                    ePrescriptionData.length === 0)
+                    ? classes.disabledLink
+                    : ''
+                }
+                to={`${clientRoutes.medicinesCart()}?prescription=true`}
+              >
                 <AphButton
                   color="primary"
-                  disabled={value == '' || (value === 'specified' && selectedDays.length === 0)}
+                  className={classes.conformOrderBtn}
+                  disabled={
+                    value == '' ||
+                    (value === 'specified' && selectedDays.length === 0) ||
+                    (prescriptions &&
+                      prescriptions.length === 0 &&
+                      ePrescriptionData &&
+                      ePrescriptionData.length === 0)
+                  }
                 >
                   {isLoading ? (
                     <CircularProgress size={22} color="secondary" />
