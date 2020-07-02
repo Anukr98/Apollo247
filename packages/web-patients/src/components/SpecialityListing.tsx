@@ -838,7 +838,7 @@ export const SpecialityListing: React.FC = (props) => {
                             root: classes.tabRoot,
                             selected: classes.tabSelected,
                           }}
-                          onDoubleClick={() => setChatConsult(true)}
+                          onDoubleClick={() => !isDesktopOnly && setChatConsult(true)}
                         />
                         <Tab
                           label="Meet in Person"
@@ -847,9 +847,10 @@ export const SpecialityListing: React.FC = (props) => {
                             root: classes.tabRoot,
                             selected: classes.tabSelected,
                           }}
-                          onDoubleClick={() => setMeetInPerson(true)}
+                          onDoubleClick={() => !isDesktopOnly && setMeetInPerson(true)}
                         />
                       </Tabs>
+
                       <div className={classes.tabContent}>
                         <TabPanel value={value} index={0}>
                           <div className={classes.chatContainer}>
