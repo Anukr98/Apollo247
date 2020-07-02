@@ -92,8 +92,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const { setLoading } = useUIElements();
   const { patientDetails } = props;
   const Appintmentdatetime = props.navigation.getParam('Appintmentdatetime');
-  const changedHeight = props.extendedHeader ? 230 : 185;
-  const keyBoardHeight = props.extendedHeader ? 90 : 130;
+  const [changedHeight, setChangedHeight] = useState<number>(props.extendedHeader ? 230 : 185);
+  const [keyBoardHeight, setkeyBoardHeight] = useState<number>(props.extendedHeader ? 90 : 130);
   const doctorId = props.navigation.getParam('DoctorId');
   const patientId = props.patientId || props.navigation.getParam('PatientId');
 
@@ -117,6 +117,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const keyboardDidHide = () => {
     setHeightList(height - changedHeight);
   };
+  useEffect(() => {
+    setChangedHeight(props.extendedHeader ? 230 : 185);
+    setkeyBoardHeight(props.extendedHeader ? 90 : 130);
+    setHeightList(height - (props.extendedHeader ? 230 : 185));
+    console.log('sdhiujkn', props.extendedHeader);
+  }, [props.extendedHeader]);
+
   useEffect(() => {
     // callAbandonmentCall();
     setTimeout(() => {
