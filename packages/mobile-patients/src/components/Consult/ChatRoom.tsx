@@ -1,6 +1,6 @@
 import { OverlayRescheduleView } from '@aph/mobile-patients/src/components/Consult/OverlayRescheduleView';
 import { SelectEPrescriptionModal } from '@aph/mobile-patients/src/components/Medicines/SelectEPrescriptionModal';
-import { UploadPrescriprionPopup } from '@aph/mobile-patients/src/components/Medicines/UploadPrescriprionPopup';
+import { UploadPrescriprionChatPopup } from '@aph/mobile-patients/src/components/Medicines/UploadPrescriprionChatPopup';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
@@ -43,6 +43,7 @@ import {
   CANCEL_APPOINTMENT,
   UPDATE_APPOINTMENT_SESSION,
   UPLOAD_CHAT_FILE_PRISM,
+  UPLOAD_MEDIA_DOCUMENT_PRISM,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   bookRescheduleAppointment,
@@ -65,8 +66,11 @@ import {
   notificationStatus,
   notificationType,
   REQUEST_ROLES,
+  MediaPrescriptionUploadRequest,
   STATUS,
   TRANSFER_INITIATED_TYPE,
+  mediaPrescriptionSource,
+  MediaPrescriptionFileProperties,
   Gender,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
@@ -146,6 +150,7 @@ import { ChatQuestions } from './ChatQuestions';
 import strings from '@aph/mobile-patients/src/strings/strings.json';
 import { CustomAlert } from '../ui/CustomAlert';
 import { Snackbar } from 'react-native-paper';
+import BackgroundTimer from 'react-native-background-timer';
 
 interface OpentokStreamObject {
   connection: {
@@ -328,7 +333,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [sessionId, setsessionId] = useState<string>('');
   const [token, settoken] = useState<string>('');
   const [cameraPosition, setCameraPosition] = useState<string>('front');
-  const [mute, setMute] = useState<boolean>(true);
+  const [isPublishAudio, setIsPublishAudio] = useState<boolean>(true);
   const [showVideo, setShowVideo] = useState<boolean>(true);
   const [PipView, setPipView] = useState<boolean>(false);
   const [isCall, setIsCall] = useState<boolean>(false);
@@ -372,7 +377,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     right: 0,
     bottom: 0,
     zIndex: 100,
-    backgroundColor: 'white',
+    backgroundColor: 'black',
   });
   const [audioCallImageStyles, setAudioCallImageStyles] = useState<object>({
     width,
@@ -438,6 +443,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [sendMessageToDoctor, setSendMessageToDoctor] = useState<boolean>(false);
   const [callerAudio, setCallerAudio] = useState<boolean>(true);
   const [callerVideo, setCallerVideo] = useState<boolean>(true);
+  const [downgradeToAudio, setDowngradeToAudio] = React.useState<boolean>(false);
 
   const videoCallMsg = '^^callme`video^^';
   const audioCallMsg = '^^callme`audio^^';
@@ -655,6 +661,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const getUpdateExternalConnect = (connected: boolean) => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.CONSULTED_WITH_DOCTOR_BEFORE] = {
+      ...currentPatient,
+      ConsultedBefore: connected ? 'Yes' : 'No',
+    };
+    postWebEngageEvent(WebEngageEventName.CONSULTED_WITH_DOCTOR_BEFORE, eventAttributes);
     setLoading(true);
 
     updateExternalConnect(client, doctorId, patientId, connected)
@@ -938,7 +949,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           }
           break;
         case 'bp':
-          data.bp = item.v[0] || item.v[1] || 'No Idea';
+          data.bp = item.v[1] || item.v[0] || 'No Idea';
           try {
             const text = {
               id: patientId,
@@ -1012,7 +1023,18 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     setUserAnswers(data);
     if (isSendAnswers.find((item) => item === false) === undefined) {
       requestToJrDoctor();
-      getPatientApiCall();
+    }
+  };
+
+  const checkNudgeScreenVisibility = async () => {
+    const hideNudgeScreenappointmentID = (await AsyncStorage.getItem(appointmentData.id)) || '';
+    // console.log('hideNudgeScreenappointmentID', hideNudgeScreenappointmentID);
+    if (hideNudgeScreenappointmentID != appointmentData.id) {
+      setDisplayUploadHealthRecords(true);
+      console.log('if hideNudgeScreenappointmentID', hideNudgeScreenappointmentID);
+    } else {
+      setDisplayUploadHealthRecords(false);
+      console.log('else hideNudgeScreenappointmentID', hideNudgeScreenappointmentID);
     }
   };
 
@@ -1021,6 +1043,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     if (userAnswers) {
       addToConsultQueueWithAutomatedQuestions(client, userAnswers)
         .then(({ data }: any) => {
+          getPatientApiCall();
+
           postAppointmentWEGEvent(WebEngageEventName.COMPLETED_AUTOMATED_QUESTIONS);
           console.log(data, 'data res, adding');
           jdCount = parseInt(
@@ -1081,6 +1105,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               stopSound();
               changeAudioStyles();
               setConvertVideo(false);
+              setDowngradeToAudio(false);
+              setCallerAudio(true);
+              setCallerVideo(true);
               changeVideoStyles();
               setDropdownVisible(false);
               if (token) {
@@ -1251,7 +1278,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   const startInterval = (timer: number) => {
     setConsultStarted(true);
-    intervalId = setInterval(() => {
+    intervalId = BackgroundTimer.setInterval(() => {
       timer = timer - 1;
       stoppedTimer = timer;
       setRemainingTime(timer);
@@ -1260,13 +1287,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       if (timer == 0) {
         // console.log('descriptionTextStyles remainingTime', timer);
         setRemainingTime(0);
-        clearInterval(intervalId);
+        BackgroundTimer.clearInterval(intervalId);
       }
     }, 1000);
   };
 
   const startTimer = (timer: number) => {
-    timerId = setInterval(() => {
+    timerId = BackgroundTimer.setInterval(() => {
       timer = timer + 1;
       stoppedTimer = timer;
       setCallTimer(timer);
@@ -1275,7 +1302,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       if (timer == 0) {
         console.log('uptimer', timer);
         setCallTimer(0);
-        clearInterval(timerId);
+        BackgroundTimer.clearInterval(timerId);
       }
     }, 1000);
   };
@@ -1283,11 +1310,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const stopTimer = () => {
     console.log('stopTimer', timerId);
     setCallTimer(0);
-    timerId && clearInterval(timerId);
+    timerId && BackgroundTimer.clearInterval(timerId);
   };
 
   const startJoinTimer = (timer: number) => {
-    joinTimerId = setInterval(() => {
+    joinTimerId = BackgroundTimer.setInterval(() => {
       timer = timer + 1;
       stoppedTimer = timer;
       setJoinCounter(timer);
@@ -1302,7 +1329,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       if (timer == 0) {
         // console.log('uptimer join', timer);
         setJoinCounter(0);
-        clearInterval(joinTimerId);
+        BackgroundTimer.clearInterval(joinTimerId);
       }
     }, 1000);
   };
@@ -1310,7 +1337,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const stopJoinTimer = () => {
     console.log('stopTimer join', joinTimerId);
     setJoinCounter(0);
-    joinTimerId && clearInterval(joinTimerId);
+    joinTimerId && BackgroundTimer.clearInterval(joinTimerId);
   };
 
   const stopInterval = () => {
@@ -1319,12 +1346,16 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
       const stopTimer = 900 - stoppedTimer;
       setRemainingTime(stopTimer);
-      intervalId && clearInterval(intervalId);
+      intervalId && BackgroundTimer.clearInterval(intervalId);
     }
   };
   const setSnackBar = () => {
     setSnackbarState(true);
     setHandlerMessage('      Something went wrong!!  Trying to connect');
+  };
+  const setSessionReconnectMsg = () => {
+    setSnackbarState(true);
+    setHandlerMessage('There is a problem with network connection. Reconnecting, Please wait...');
   };
   const publisherEventHandlers = {
     streamCreated: (event: string) => {
@@ -1353,7 +1384,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       console.log('Subscribe stream connected!', event);
     },
     disconnected: (event: string) => {
-      setSnackBar();
+      // setSnackbarState(true);
+      // setHandlerMessage('Falling back to audio due to bad network!!');
       console.log('Subscribe stream disconnected!', event);
     },
     otrnError: (error: string) => {
@@ -1361,16 +1393,19 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       console.log(`There was an error with the subscriberEventHandlers: ${JSON.stringify(error)}`);
     },
     videoDisabled: (error: any) => {
-      // console.log(`videoDisabled subscriberEventHandlers: ${JSON.stringify(error)}`);
+      console.log(`videoDisabled subscriberEventHandlers: ${JSON.stringify(error)}`, error.reason);
+      console.log('error.reason', error.reason, error.reason === 'quality');
       if (error.reason === 'quality') {
         setSnackbarState(true);
-        setHandlerMessage('Poor network connection detected!!');
+        setHandlerMessage('Falling back to audio due to bad network!!');
+        setDowngradeToAudio(true);
       }
     },
     videoEnabled: (error: any) => {
-      console.log(`videoDisabled: ${JSON.stringify(error)}`);
+      console.log(`videoEnabled: ${JSON.stringify(error)}`);
       if (error.reason === 'quality') {
         setSnackbarState(false);
+        setDowngradeToAudio(false);
       }
     },
     videoDisableWarning: (error: string) => {
@@ -1411,6 +1446,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     },
     sessionReconnecting: (event: string) => {
       console.log('session stream sessionReconnecting!', event);
+      setSessionReconnectMsg();
       KeepAwake.activate();
     },
     signal: (event: string) => {
@@ -1446,8 +1482,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     setCallAccepted(false);
     setHideStatusBar(false);
     setConvertVideo(false);
+    setDowngradeToAudio(false);
     KeepAwake.activate();
-    setMute(true);
+    setIsPublishAudio(true);
     setShowVideo(true);
     setCameraPosition('front');
     setChatReceived(false);
@@ -1612,8 +1649,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       Platform.OS === 'android' && SoftInputMode.set(SoftInputMode.ADJUST_PAN);
       minuteTimer && clearTimeout(minuteTimer);
       thirtySecondTimer && clearTimeout(thirtySecondTimer);
-      timerId && clearInterval(timerId);
-      intervalId && clearInterval(intervalId);
+      timerId && BackgroundTimer.clearInterval(timerId);
+      intervalId && BackgroundTimer.clearInterval(intervalId);
       abondmentStarted = false;
       stopJoinTimer();
       stopCallAbondmentTimer();
@@ -1708,7 +1745,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const startNoShow = (timer: number, callback?: () => void) => {
     stopCallAbondmentTimer();
     setTransferData(appointmentData);
-    callAbandonmentTimer = setInterval(() => {
+    callAbandonmentTimer = BackgroundTimer.setInterval(() => {
       try {
         timer = timer - 1;
         callAbandonmentStoppedTimer = timer;
@@ -1727,7 +1764,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   const stopCallAbondmentTimer = () => {
     console.log('stopCallAbondmentTimer', callAbandonmentTimer);
-    callAbandonmentTimer && clearInterval(callAbandonmentTimer);
+    callAbandonmentTimer && BackgroundTimer.clearInterval(callAbandonmentTimer);
     callAbandonmentStoppedTimer = 620;
     abondmentStarted = false;
   };
@@ -1938,6 +1975,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     if (appointmentData.isJdQuestionsComplete) {
       console.log({});
       requestToJrDoctor();
+      checkNudgeScreenVisibility();
       // startJoinTimer(0);
       // thirtySecondCall();
       // minuteCaller();
@@ -2151,6 +2189,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         thirtySecondTimer && clearTimeout(thirtySecondTimer);
         minuteTimer && clearTimeout(minuteTimer);
         setConvertVideo(false);
+        setDowngradeToAudio(false);
         addMessages(message);
         //setShowFeedback(true);
         // ************* SHOW FEEDBACK POUP ************* \\
@@ -2158,6 +2197,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         console.log('listener remainingTime', remainingTime);
         stopInterval();
         setConvertVideo(false);
+        setDowngradeToAudio(false);
         setShowFeedback(true);
         abondmentStarted = false;
         APIForUpdateAppointmentData(true);
@@ -2180,9 +2220,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       } else if (message.message.message === covertVideoMsg) {
         console.log('covertVideoMsg', covertVideoMsg);
         setConvertVideo(true);
+        // setDowngradeToAudio(false);
       } else if (message.message.message === covertAudioMsg) {
         console.log('covertVideoMsg', covertAudioMsg);
         setConvertVideo(false);
+        // setDowngradeToAudio(false);
       } else if (message.message.message === consultPatientStartedMsg) {
         console.log('consultPatientStartedMsg');
         addMessages(message);
@@ -3896,6 +3938,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       id: string;
       message: string;
       duration: string;
+      fileType: string;
       transferInfo: any;
       prismId: any;
       url: any;
@@ -4022,7 +4065,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             <View>
               {rowData.message === imageconsult ? (
                 <View>
-                  {rowData.url.match(/\.(jpeg|jpg|gif|png|jfif)$/) ? (
+                  {rowData.url.match(/\.(jpeg|jpg|gif|png|jfif)$/) ||
+                  rowData.fileType === 'image' ? (
                     <TouchableOpacity
                       activeOpacity={1}
                       onPress={() => {
@@ -4439,7 +4483,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           }}
         >
           <View style={{ flex: 1 }}>
-            <Text style={styles.doctorNameStyle}>{appointmentData.doctorInfo.displayName}</Text>
+            <Text style={styles.doctorNameStyle}>
+              {appointmentData.doctorInfo.salutation}
+              {appointmentData.doctorInfo.displayName}
+            </Text>
             <Text style={styles.doctorSpecialityStyle}>{`${g(
               appointmentData,
               'doctorInfo',
@@ -4576,7 +4623,34 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   const VideoCall = () => {
     return (
-      <View style={talkStyles}>
+      <View style={[talkStyles, { zIndex: 1001 }]}>
+        {downgradeToAudio && (
+          <View>
+            {appointmentData.doctorInfo.photoUrl ? (
+              <View style={[audioCallImageStyles, { backgroundColor: 'white' }]}>
+                <Image
+                  source={{ uri: appointmentData.doctorInfo.photoUrl }}
+                  style={audioCallImageStyles}
+                  resizeMode={'contain'}
+                />
+              </View>
+            ) : (
+              <View
+                style={[
+                  audioCallImageStyles,
+                  {
+                    backgroundColor: 'black',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    opacity: 0.6,
+                  },
+                ]}
+              >
+                <DoctorPlaceholderImage />
+              </View>
+            )}
+          </View>
+        )}
         {isCall && (
           <View style={{ flex: 1, flexDirection: 'row' }}>
             <OTSession
@@ -4595,26 +4669,44 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               }}
             >
               <OTPublisher
-                style={publisherStyles}
+                style={
+                  !downgradeToAudio
+                    ? publisherStyles
+                    : {
+                        position: 'absolute',
+                        top: 44,
+                        right: 20,
+                        width: 1,
+                        height: 1,
+                        zIndex: 1000,
+                      }
+                }
                 properties={{
                   cameraPosition: cameraPosition,
-                  publishVideo: showVideo,
-                  publishAudio: mute,
-                  videoTrack: showVideo,
-                  audioTrack: mute,
+                  publishVideo: !downgradeToAudio ? showVideo : false,
+                  publishAudio: isPublishAudio,
+                  videoTrack: !downgradeToAudio ? showVideo : false,
+                  audioTrack: isPublishAudio,
                   audioVolume: 100,
                   name: g(currentPatient, 'firstName') || 'patient',
+                  resolution: '352x288',
                 }}
-                resolution={'352x288'}
                 eventHandlers={publisherEventHandlers}
               />
               <OTSubscriber
-                style={subscriberStyles}
+                style={
+                  !downgradeToAudio
+                    ? subscriberStyles
+                    : {
+                        width: 1,
+                        height: 1,
+                      }
+                }
                 // subscribeToSelf={true}
                 eventHandlers={subscriberEventHandlers}
                 properties={{
                   subscribeToAudio: true,
-                  subscribeToVideo: true,
+                  subscribeToVideo: !downgradeToAudio ? true : false,
                   audioVolume: 100,
                 }}
               />
@@ -4662,6 +4754,16 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             )}
 
             <Text style={timerStyles}>{callAccepted ? callTimerStarted : 'INCOMING'}</Text>
+            <Snackbar
+              style={{ marginBottom: 100, zIndex: 1001 }}
+              visible={snackbarState}
+              onDismiss={() => {
+                setSnackbarState(false);
+              }}
+              duration={5000}
+            >
+              {handlerMessage}
+            </Snackbar>
             {renderBusyMessages(!PipView, isIphoneX() ? 171 : 161)}
 
             {PipView && renderOnCallPipButtons('video')}
@@ -4751,13 +4853,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             properties={{
               cameraPosition: cameraPosition,
               publishVideo: convertVideo ? true : false,
-              publishAudio: mute,
+              publishAudio: isPublishAudio,
               audioVolume: 100,
               videoTrack: convertVideo ? true : false,
-              audioTrack: mute,
+              audioTrack: isPublishAudio,
               name: g(currentPatient, 'firstName') || 'patient',
+              resolution: '352x288',
             }}
-            resolution={'352x288'}
             eventHandlers={publisherEventHandlers}
           />
           <OTSubscriber
@@ -4801,7 +4903,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         )}
         <Text style={timerStyles}>{callAccepted ? callTimerStarted : 'INCOMING'}</Text>
         <Snackbar
-          style={{ marginBottom: 80 }}
+          style={{ marginBottom: 80, zIndex: 1001 }}
           visible={snackbarState}
           onDismiss={() => {
             setSnackbarState(false);
@@ -4817,7 +4919,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       </View>
     );
   };
-
+  const showMessage = (isPaused: any) => {
+    if (downgradeToAudio) {
+      return `Falling back to audio due to bad network!!`;
+    }
+    return `Doctor’s ${isPaused} ${isPaused.indexOf('/') > -1 ? 'are' : 'is'} Paused`;
+  };
   const renderBusyMessages = (showPip: boolean, insetTop: any) => {
     return (
       <>
@@ -4853,7 +4960,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   padding: 0,
                   flexWrap: 'wrap',
                 }}
-              >{`Doctor’s ${isPaused} ${isPaused.indexOf('/') > -1 ? 'are' : 'is'} Paused`}</Text>
+              >
+                {showMessage(isPaused)}
+              </Text>
             </View>
           </View>
         ) : null}
@@ -4901,7 +5010,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       right: 0,
       bottom: 0,
       zIndex: 100,
-      backgroundColor: 'white',
+      backgroundColor: 'black',
     });
     setAudioCallImageStyles({
       width,
@@ -4992,7 +5101,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 right: 8,
                 height: 205,
                 width: 155,
-                backgroundColor: 'white',
+                backgroundColor: 'black',
               });
               setAudioCallImageStyles({
                 height: 205,
@@ -5037,10 +5146,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           <TouchableOpacity
             activeOpacity={1}
             onPress={() => {
-              mute === true ? setMute(false) : setMute(true);
+              isPublishAudio === true ? setIsPublishAudio(false) : setIsPublishAudio(true);
             }}
           >
-            {mute === true ? (
+            {isPublishAudio === true ? (
               <UnMuteIcon style={{ height: 60, width: 60 }} />
             ) : (
               <MuteIcon style={{ height: 60, width: 60 }} />
@@ -5052,7 +5161,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               setIsAudioCall(false);
               stopTimer();
               setHideStatusBar(false);
-              setMute(true);
+              setIsPublishAudio(true);
               setShowVideo(true);
               setCameraPosition('front');
 
@@ -5120,7 +5229,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           onPress={() => {
             pipType === 'audio' && setIsAudioCall(false);
             pipType === 'video' && setIsCall(false);
-            setMute(true);
+            setIsPublishAudio(true);
             setShowVideo(true);
             setCameraPosition('front');
             stopTimer();
@@ -5313,10 +5422,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           <TouchableOpacity
             activeOpacity={1}
             onPress={() => {
-              mute === true ? setMute(false) : setMute(true);
+              isPublishAudio === true ? setIsPublishAudio(false) : setIsPublishAudio(true);
             }}
           >
-            {mute === true ? (
+            {isPublishAudio === true ? (
               <UnMuteIcon style={{ height: 60, width: 60 }} />
             ) : (
               <MuteIcon style={{ height: 60, width: 60 }} />
@@ -5326,7 +5435,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             activeOpacity={1}
             onPress={() => {
               setIsCall(false);
-              setMute(true);
+              setIsPublishAudio(true);
               setShowVideo(true);
               setCameraPosition('front');
               stopTimer();
@@ -5450,6 +5559,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               stopSound();
               changeAudioStyles();
               setConvertVideo(false);
+              setDowngradeToAudio(false);
               changeVideoStyles();
               setDropdownVisible(false);
               setCallerAudio(true);
@@ -5570,6 +5680,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     console.log('upload fileType', type);
     console.log('chanel', channel);
     console.log('resource', resource);
+    // console.log('mimeType', mimeType(resource[0].title + '.' + type));
     CommonLogEvent(AppRoutes.ChatRoom, 'Upload document');
     resource.map((item: any) => {
       if (
@@ -5578,25 +5689,60 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         item.fileType == 'pdf' ||
         item.fileType == 'png'
       ) {
-        console.log('item', item.base64);
+        // console.log('item', item.base64, item.fileType);
+        const formattedDate = moment(new Date()).format('YYYY-MM-DD');
+        const prescriptionFile: MediaPrescriptionFileProperties = {
+          fileName: resource[0].title + '.' + type,
+          mimeType: mimeType(resource[0].title + '.' + type),
+          content: base66,
+        };
+        const inputData: MediaPrescriptionUploadRequest = {
+          prescribedBy: appointmentData.doctorInfo.displayName,
+          dateOfPrescription: formattedDate,
+          startDate: null,
+          endDate: null,
+          prescriptionSource: mediaPrescriptionSource.SELF,
+          prescriptionFiles: [prescriptionFile],
+        };
+        console.log('MediaPrescriptionUploadRequest', inputData);
         setLoading(true);
         client
-          .mutate<uploadChatDocumentToPrism>({
-            mutation: UPLOAD_CHAT_FILE_PRISM,
+          .mutate({
+            mutation: UPLOAD_MEDIA_DOCUMENT_PRISM,
             fetchPolicy: 'no-cache',
             variables: {
-              fileType: item.fileType == 'jpg' ? 'JPEG' : type.toUpperCase(), //type.toUpperCase(),
-              base64FileInput: item.base64, //resource.data,
-              appointmentId: channel,
-              patientId: patientId,
+              MediaPrescriptionUploadRequest: inputData,
+              uhid: g(currentPatient, 'uhid'),
+              appointmentId: appointmentData.id,
             },
           })
           .then((data) => {
             console.log('upload data', data);
             setLoading(false);
-            if (data && data.data! && data.data!.uploadChatDocumentToPrism.status) {
-              const prismFeildId = data.data!.uploadChatDocumentToPrism.fileId || '';
-              getPrismUrls(client, patientId, [prismFeildId])
+            const recordId = g(data.data!, 'uploadMediaDocument', 'recordId');
+            // if (fileUrl) {
+            //   console.log('api call data', fileUrl);
+            //   const text = {
+            //     id: patientId,
+            //     message: imageconsult,
+            //     fileType: (item.fileType || '').match(/\.(pdf)$/) ? 'pdf' : 'image',
+            //     url: fileUrl || '',
+            //     messageDate: new Date(),
+            //   };
+            //   pubnub.publish(
+            //     {
+            //       channel: channel,
+            //       message: text,
+            //       storeInHistory: true,
+            //       sendByPost: true,
+            //     },
+            //     (status, response) => {}
+            //   );
+            //   InsertMessageToDoctor('ImageUploaded');
+            //   KeepAwake.activate();
+            if (recordId) {
+              // const prismFeildId = data.data!.uploadChatDocumentToPrism.fileId || '';
+              getPrismUrls(client, patientId, [recordId])
                 .then((data: any) => {
                   console.log('api call data', data);
                   const text = {
@@ -5605,7 +5751,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     fileType: ((data.urls && data.urls[0]) || '').match(/\.(pdf)$/)
                       ? 'pdf'
                       : 'image',
-                    prismId: prismFeildId,
+                    prismId: recordId,
                     url: (data.urls && data.urls[0]) || '',
                     messageDate: new Date(),
                   };
@@ -5737,8 +5883,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const uploadPrescriptionPopup = () => {
-    return (
-      <UploadPrescriprionPopup
+    return isDropdownVisible ? (
+      <UploadPrescriprionChatPopup
         heading="Attach File(s)"
         instructionHeading="Instructions For Uploading Files"
         instructions={[
@@ -5746,7 +5892,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           'Doctor details & date of the test should be clearly visible.',
           'Only JPG / PNG type files up to 2 mb are allowed',
         ]}
-        isVisible={isDropdownVisible}
         disabledOption={'NONE'}
         blockCamera={isCall}
         blockCameraMessage={strings.alerts.Open_camera_in_video_call}
@@ -5770,7 +5915,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           }
         }}
       />
-    );
+    ) : null;
   };
   const renderPrescriptionModal = () => {
     return (
@@ -5981,7 +6126,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         />
       ) : null}
       {displayUploadHealthRecords ? (
-        <View
+        <TouchableOpacity
           style={{
             position: 'absolute',
             top: 0,
@@ -5995,6 +6140,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             opacity: 0.85,
             justifyContent: 'flex-end',
           }}
+          activeOpacity={1}
+          onPress={() => {
+            setDisplayUploadHealthRecords(false);
+            AsyncStorage.setItem(appointmentData.id, appointmentData.id);
+          }}
         >
           <View
             style={{
@@ -6004,9 +6154,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             <Text
               style={{
                 ...theme.viewStyles.text('M', 15, '#fff', 1, undefined, -0.07),
+                paddingRight: 61,
               }}
             >
-              {'You can upload your Health Records here'}
+              {'Upload and share your health records with doctor here.'}
             </Text>
             <FreeArrowIcon style={{ width: 33, height: 33, marginTop: 4, marginBottom: -6 }} />
           </View>
@@ -6036,6 +6187,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   CommonLogEvent(AppRoutes.ChatRoom, 'Upload document clicked.');
                   setDropdownVisible(!isDropdownVisible);
                   setDisplayUploadHealthRecords(false);
+                  AsyncStorage.setItem(appointmentData.id, appointmentData.id);
                 }}
               >
                 <UploadHealthRecords
@@ -6053,7 +6205,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               </TouchableOpacity>
             </View>
           </View>
-        </View>
+        </TouchableOpacity>
       ) : null}
       <SafeAreaView
         style={{
