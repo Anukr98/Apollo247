@@ -9,6 +9,7 @@ import {
   SafeAreaView,
   Share,
   Linking,
+  Dimensions,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
@@ -46,7 +47,7 @@ import {
 } from '@aph/mobile-doctors/src/components/ui/Icons';
 
 const styles = SharingScreenStyles;
-
+const { width } = Dimensions.get('screen');
 export interface SharingScreenProps extends NavigationScreenProps {}
 
 export const SharingScreen: React.FC<SharingScreenProps> = (props) => {
@@ -160,6 +161,19 @@ export const SharingScreen: React.FC<SharingScreenProps> = (props) => {
         <Text style={styles.shareHeadingText}>{title}</Text>
         <View style={styles.textInputView}>
           {prefix ? <Text style={styles.textInputPrefixStyle}>{prefix}</Text> : null}
+          {inputValue === '' ? (
+            <Text
+              style={{
+                position: 'absolute',
+                left: prefix ? 20 + prefix.length * 10.2 : 20,
+                width: width - 124 - (prefix ? 20 + prefix.length * 10.2 : 20),
+                ...theme.viewStyles.text('M', 14, theme.colors.darkBlueColor(0.4)),
+              }}
+              numberOfLines={1}
+            >
+              {placeHolder}
+            </Text>
+          ) : null}
           {disableEdit ? (
             <Text style={styles.disabledtext} numberOfLines={1}>
               {inputValue}
@@ -167,9 +181,7 @@ export const SharingScreen: React.FC<SharingScreenProps> = (props) => {
           ) : (
             <TextInput
               value={inputValue}
-              placeholder={placeHolder}
               style={styles.textInputStyle}
-              placeholderTextColor={theme.colors.darkBlueColor(0.4)}
               onChange={(value) => {
                 onChange(value.nativeEvent.text);
               }}
