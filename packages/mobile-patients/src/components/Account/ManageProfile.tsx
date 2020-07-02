@@ -105,6 +105,9 @@ const styles = StyleSheet.create({
 });
 
 let count = 0;
+let primary;
+let secondary = [];
+let areUhidsLinked = false;
 
 type profile = {
   id?: number;
@@ -169,12 +172,23 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
     }
   }, [allCurrentPatients]);
 
+  // useEffect(() => {
+  //   const didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
+  //     // if (!currentPatient || !currentPatient.uhid) {
+  //       getPatientApiCall();
+  //     // }
+  //   });
+  //   return () => {
+  //     didFocusSubscription && didFocusSubscription.remove();
+  //   };
+  // }, [props.navigation]);
+
   const checkForLinkedProfiles = (
     profiles: getPatientByMobileNumber_getPatientByMobileNumber_patients[]
   ) => {
-    let primary;
-    let secondary = [];
-    let areUhidsLinked = false;
+    // let primary;
+    // let secondary = [];
+    // let areUhidsLinked = false;
 
     profiles!.forEach((profile) => {
       if (profile!.isUhidPrimary) {
@@ -185,7 +199,7 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
       } else if (profile!.isLinked) {
         count++;
         secondary.push(profile!.uhid);
-        areUhidsLinked = true;
+        // areUhidsLinked = true;
       }
     });
     setShowLinkUHIDButton(count !== profiles.length);
