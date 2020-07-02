@@ -663,8 +663,13 @@ export async function sendNotification(
     smsLink = smsLink.replace('{3}', apptDate.toString());
 
     //Create chatroom link and send for new booked appointment
-    const chatroom_sms_link = process.env.SMS_DEEPLINK_APPOINTMENT_CHATROOM.replace('{0}', appointment.id.toString());
-    smsLink = smsLink.replace('{5}', chatroom_sms_link);
+    if (process.env.SMS_DEEPLINK_APPOINTMENT_CHATROOM) {
+      const chatroom_sms_link = process.env.SMS_DEEPLINK_APPOINTMENT_CHATROOM.replace('{0}', appointment.id.toString());
+      smsLink = smsLink.replace('{5}', chatroom_sms_link);
+    }
+    else {
+      throw new AphError('Could not load the env variable SMS_DEEPLINK_APPOINTMENT_CHATROOM!');
+    }
 
     notificationTitle = ApiConstants.BOOK_APPOINTMENT_TITLE;
     notificationBody = content;
@@ -1192,7 +1197,7 @@ export async function sendReminderNotification(
         const facilityRepo = doctorsDb.getCustomRepository(FacilityRepository);
         const facilityDets = await facilityRepo.getfacilityDetails(appointment.hospitalId);
 
-  if (!facilityDets) {
+        if (!facilityDets) {
           throw new AphError(AphErrorMessages.FACILITY_DETS_NOT_FOUND);
         }
 
@@ -1225,7 +1230,7 @@ export async function sendReminderNotification(
     if (appointment.hospitalId != '' && appointment.hospitalId != null) {
       const facilityRepo = doctorsDb.getCustomRepository(FacilityRepository);
       const facilityDets = await facilityRepo.getfacilityDetails(appointment.hospitalId);
-if (!facilityDets) {
+      if (!facilityDets) {
         throw new AphError(AphErrorMessages.FACILITY_DETS_NOT_FOUND);
       }
 
@@ -1270,7 +1275,7 @@ if (!facilityDets) {
       if (appointment.hospitalId != '' && appointment.hospitalId != null) {
         const facilityRepo = doctorsDb.getCustomRepository(FacilityRepository);
         const facilityDets = await facilityRepo.getfacilityDetails(appointment.hospitalId);
-if (!facilityDets) {
+        if (!facilityDets) {
           throw new AphError(AphErrorMessages.FACILITY_DETS_NOT_FOUND);
         }
 
@@ -1480,14 +1485,21 @@ if (!facilityDets) {
   if (
     pushNotificationInput.notificationType == NotificationType.APPOINTMENT_CASESHEET_REMINDER_15 ||
     pushNotificationInput.notificationType ==
-      NotificationType.APPOINTMENT_CASESHEET_REMINDER_15_VIRTUAL
+    NotificationType.APPOINTMENT_CASESHEET_REMINDER_15_VIRTUAL
   ) {
- 
-    if (!(appointment && appointment.id)) { throw new AphError(AphErrorMessages.APPOINTMENT_ID_NOT_FOUND) };
-    const chatroom_sms_link = process.env.SMS_DEEPLINK_APPOINTMENT_CHATROOM.replace('{0}', appointment.id.toString()); //Replacing the placeholder with appointmentid
 
-    //Final deeplink URL
-    notificationBody = notificationBody + ApiConstants.CLICK_HERE + chatroom_sms_link;
+    if (!(appointment && appointment.id)) { throw new AphError(AphErrorMessages.APPOINTMENT_ID_NOT_FOUND) };
+
+    if (process.env.SMS_DEEPLINK_APPOINTMENT_CHATROOM) {
+      const chatroom_sms_link = process.env.SMS_DEEPLINK_APPOINTMENT_CHATROOM.replace('{0}', appointment.id.toString()); //Replacing the placeholder with appointmentid
+
+      //Final deeplink URL
+      notificationBody = notificationBody + ApiConstants.CLICK_HERE + chatroom_sms_link;
+    }
+    else {
+      throw new AphError('Could not load the env variable SMS_DEEPLINK_APPOINTMENT_CHATROOM!');
+    }
+
   }
   //send SMS notification
   if (pushNotificationInput.notificationType != NotificationType.APPOINTMENT_REMINDER_15) {
@@ -2072,7 +2084,7 @@ const testPushNotification: Resolver<
   { deviceToken: String },
   NotificationsServiceContext,
   PushNotificationSuccessMessage | undefined
-> = async (parent, args, {}) => {
+> = async (parent, args, { }) => {
   //initialize firebaseadmin
   const config = {
     credential: firebaseAdmin.credential.applicationDefault(),
