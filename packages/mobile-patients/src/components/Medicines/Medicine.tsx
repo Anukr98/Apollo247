@@ -811,7 +811,15 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             autoplayDelay={3000}
             autoplayInterval={3000}
           />
-          <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'center',
+              position: 'absolute',
+              bottom: 10,
+              alignSelf: 'center',
+            }}
+          >
             {banners.map((_, index) => (index == slideIndex ? renderDot(true) : renderDot(false)))}
           </View>
         </View>
@@ -1010,7 +1018,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
   const renderYourOrders = () => {
     return (
-      <View style={{ ...theme.viewStyles.card(), paddingVertical: 0 }}>
+      <View style={{ ...theme.viewStyles.card(), paddingVertical: 0, marginTop: 5 }}>
         <ListItem
           title={'My Orders'}
           leftAvatar={<MedicineIcon />}
