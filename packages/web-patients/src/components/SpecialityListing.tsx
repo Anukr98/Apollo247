@@ -58,6 +58,13 @@ const useStyles = makeStyles((theme: Theme) => {
 
       [theme.breakpoints.down(650)]: {
         '&:after': {
+          height: 170,
+        },
+      },
+    },
+    slCotent1: {
+      [theme.breakpoints.down(650)]: {
+        '&:after': {
           height: 280,
         },
       },
@@ -730,7 +737,7 @@ export const SpecialityListing: React.FC = (props) => {
     <div className={classes.slContainer}>
       <Header />
       <div className={classes.container}>
-        <div className={classes.slContent}>
+        <div className={`${classes.slContent} ${currentPatient ? classes.slCotent1 : ''}`}>
           {/* Please add a class slnoDoctor here when showing up noDoctor Content */}
           <div className={classes.pageHeader}>
             <Link to={clientRoutes.welcome()}>
