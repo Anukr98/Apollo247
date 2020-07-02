@@ -140,7 +140,7 @@ export enum WebEngageEventName {
   PHARMACY_PINCODE_NONSERVICABLE = 'Pharmacy location nonservicable',
   PHARMACY_CATEGORY_SECTION_PRODUCT_CLICK = 'Pharmacy Category Section Product Click',
   PHARMACY_BANNER_CLICK = 'Pharmacy Homepage Banner click',
-
+  CALL_THE_NEAREST_PHARMACY = 'Call the Nearest Pharmacy',
   // Payments Events
   PAYMENT_INSTRUMENT = 'Payment Instrument',
   PAYMENT_STATUS = 'Payment Status',
@@ -529,6 +529,10 @@ export interface WebEngageEvents {
   };
   [WebEngageEventName.PHARMACY_BANNER_CLICK]: {
     BannerPosition: number;
+  };
+  [WebEngageEventName.CALL_THE_NEAREST_PHARMACY]: {
+    pincode: string;
+    'Mobile Number': string;
   };
 
   // ********** ConsultEvents ********** \\
