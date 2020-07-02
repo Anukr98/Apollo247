@@ -911,7 +911,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     const isOfflineOrder = !!g(order, 'billNumber');
     const shopAddress = isOfflineOrder && g(order, 'shopAddress');
     const parsedShopAddress = isOfflineOrder && JSON.parse(shopAddress || '{}');
-    const address = [g(parsedShopAddress, 'storename'), g(parsedShopAddress, 'address')]
+    const address = [
+      g(parsedShopAddress, 'storename'),
+      g(parsedShopAddress, 'city'),
+      g(parsedShopAddress, 'zipcode'),
+    ]
       .filter((a) => a)
       .join(', ');
     const date = moment(g(order, 'medicineOrdersStatus', '0' as any, 'statusDate')).format(

@@ -77,7 +77,11 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
         (parsedShopAddress &&
           parsedShopAddress.storename &&
           parsedShopAddress.address &&
-          [g(parsedShopAddress, 'storename'), g(parsedShopAddress, 'address')]
+          [
+            g(parsedShopAddress, 'storename'),
+            g(parsedShopAddress, 'city'),
+            g(parsedShopAddress, 'zipcode'),
+          ]
             .filter((a) => a)
             .join(', ')) ||
         'Store Pickup'
