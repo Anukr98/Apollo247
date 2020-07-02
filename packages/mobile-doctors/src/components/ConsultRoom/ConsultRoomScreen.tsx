@@ -266,6 +266,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       AsyncStorage.removeItem('editedInputData');
       AsyncStorage.removeItem('prevSavedData');
       AsyncStorage.removeItem('chatFileData');
+      AsyncStorage.removeItem('scrollToEnd');
       KeepAwake.deactivate();
     };
   }, []);
@@ -1663,7 +1664,12 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       } else {
         SrollRef.current.scrollToEnd({ animated: false });
         setTimeout(() => {
-          flatListRef.current && flatListRef.current.scrollToEnd();
+          AsyncStorage.getItem('scrollToEnd').then((data) => {
+            if (JSON.parse(data || 'true')) {
+              flatListRef.current && flatListRef.current.scrollToEnd();
+            }
+            AsyncStorage.setItem('scrollToEnd', 'false');
+          });
         }, 1000);
       }
     }
