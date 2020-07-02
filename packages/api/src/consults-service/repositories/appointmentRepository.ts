@@ -1856,6 +1856,21 @@ export class AppointmentRepository extends Repository<Appointment> {
       .getCount();
   }
 
+  checkIfAppointmentBooked(doctorId: string, patientId: string, appointmentDateTime: Date) {
+    return this.createQueryBuilder('appointment')
+      .andWhere('appointment.patientId = :patientId', { patientId })
+      .andWhere('appointment.doctorId = :doctorId', { doctorId })
+      .andWhere('appointment.appointmentDateTime >= :appointmentDateTime', { appointmentDateTime })
+      .andWhere('appointment.status not in(:status1,:status2,:status3,:status4,:status5)', {
+        status1: STATUS.PAYMENT_PENDING,
+        status2: STATUS.CANCELLED,
+        status3: STATUS.PAYMENT_FAILED,
+        status4: STATUS.PAYMENT_ABORTED,
+        status5: STATUS.PAYMENT_PENDING_PG,
+      })
+      .getCount();
+  }
+
   getAppointmentCountByCouponCode(couponCode: string) {
     return this.createQueryBuilder('appointment')
       .andWhere('appointment.couponCode = :couponCode', { couponCode })
