@@ -37,12 +37,13 @@ export const getDoctorDetailsTypeDefs = gql`
     CRADLE
     DOCTOR_CONNECT
     FERTILITY
-    HOMECARE
     JUNIOR
     PAYROLL
     SPECTRA
     STAR_APOLLO
     SUGAR
+    APOLLO_HOMECARE
+    WHITE_DENTAL
   }
 
   enum LoggedInUserType {
@@ -51,13 +52,6 @@ export const getDoctorDetailsTypeDefs = gql`
     SECRETARY
     ADMIN
     JDADMIN
-  }
-
-  enum Salutation {
-    MR
-    MRS
-    DR
-    MS
   }
 
   enum DOCTOR_ONLINE_STATUS {
@@ -128,7 +122,7 @@ export const getDoctorDetailsTypeDefs = gql`
     physicalConsultationFees: String!
     qualification: String
     registrationNumber: String!
-    salutation: Salutation
+    salutation: String
     signature: String
     specialization: String
     state: String
@@ -172,7 +166,7 @@ export const getDoctorDetailsTypeDefs = gql`
     physicalConsultationFees: String!
     qualification: String
     registrationNumber: String!
-    salutation: Salutation
+    salutation: String
     signature: String
     specialization: String
     state: String
@@ -274,7 +268,7 @@ export const getDoctorDetailsTypeDefs = gql`
     onlineStatus: DOCTOR_ONLINE_STATUS!
     photoUrl: String
     qualification: String
-    salutation: Salutation
+    salutation: String
     signature: String
     state: String
     streetLine1: String

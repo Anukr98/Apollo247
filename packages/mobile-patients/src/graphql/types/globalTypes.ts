@@ -21,6 +21,12 @@ export enum APPOINTMENT_TYPE {
   PHYSICAL = "PHYSICAL",
 }
 
+export enum APPT_CALL_TYPE {
+  AUDIO = "AUDIO",
+  CHAT = "CHAT",
+  VIDEO = "VIDEO",
+}
+
 export enum AccountType {
   CURRENT = "CURRENT",
   SAVINGS = "SAVINGS",
@@ -117,16 +123,17 @@ export enum DiscountType {
 
 export enum DoctorType {
   APOLLO = "APOLLO",
+  APOLLO_HOMECARE = "APOLLO_HOMECARE",
   CLINIC = "CLINIC",
   CRADLE = "CRADLE",
   DOCTOR_CONNECT = "DOCTOR_CONNECT",
   FERTILITY = "FERTILITY",
-  HOMECARE = "HOMECARE",
   JUNIOR = "JUNIOR",
   PAYROLL = "PAYROLL",
   SPECTRA = "SPECTRA",
   STAR_APOLLO = "STAR_APOLLO",
   SUGAR = "SUGAR",
+  WHITE_DENTAL = "WHITE_DENTAL",
 }
 
 export enum FEEDBACKTYPE {
@@ -200,6 +207,7 @@ export enum MEDICINE_ORDER_STATUS {
   ORDER_PLACED = "ORDER_PLACED",
   ORDER_VERIFIED = "ORDER_VERIFIED",
   OUT_FOR_DELIVERY = "OUT_FOR_DELIVERY",
+  PAYMENT_ABORTED = "PAYMENT_ABORTED",
   PAYMENT_FAILED = "PAYMENT_FAILED",
   PAYMENT_PENDING = "PAYMENT_PENDING",
   PAYMENT_SUCCESS = "PAYMENT_SUCCESS",
@@ -211,7 +219,6 @@ export enum MEDICINE_ORDER_STATUS {
   READY_AT_STORE = "READY_AT_STORE",
   RETURN_ACCEPTED = "RETURN_ACCEPTED",
   RETURN_INITIATED = "RETURN_INITIATED",
-  PURCHASED_IN_STORE = "PURCHASED_IN_STORE",
 }
 
 export enum MEDICINE_ORDER_TYPE {
@@ -392,18 +399,12 @@ export enum STATUS {
   JUNIOR_DOCTOR_ENDED = "JUNIOR_DOCTOR_ENDED",
   JUNIOR_DOCTOR_STARTED = "JUNIOR_DOCTOR_STARTED",
   NO_SHOW = "NO_SHOW",
+  PAYMENT_ABORTED = "PAYMENT_ABORTED",
   PAYMENT_FAILED = "PAYMENT_FAILED",
   PAYMENT_PENDING = "PAYMENT_PENDING",
   PAYMENT_PENDING_PG = "PAYMENT_PENDING_PG",
   PENDING = "PENDING",
   UNAVAILABLE_MEDMANTRA = "UNAVAILABLE_MEDMANTRA",
-}
-
-export enum Salutation {
-  DR = "DR",
-  MR = "MR",
-  MRS = "MRS",
-  MS = "MS",
 }
 
 export enum SpecialtySearchType {
@@ -438,6 +439,11 @@ export enum WeekDay {
   WEDNESDAY = "WEDNESDAY",
 }
 
+export enum mediaPrescriptionSource {
+  EPRESCRIPTION = "EPRESCRIPTION",
+  SELF = "SELF",
+}
+
 export enum notificationEventName {
   APPOINTMENT = "APPOINTMENT",
 }
@@ -449,6 +455,11 @@ export enum notificationStatus {
 
 export enum notificationType {
   CHAT = "CHAT",
+}
+
+export enum prescriptionSource {
+  EPRESCRIPTION = "EPRESCRIPTION",
+  SELF = "SELF",
 }
 
 export interface AddMedicalRecordInput {
@@ -465,6 +476,7 @@ export interface AddMedicalRecordInput {
   sourceName?: string | null;
   testDate?: any | null;
   testName: string;
+  testResultFiles?: LabResultFileProperties | null;
 }
 
 export interface AddMedicalRecordParametersInput {
@@ -473,6 +485,12 @@ export interface AddMedicalRecordParametersInput {
   parameterName?: string | null;
   result?: number | null;
   unit?: MedicalTestUnit | null;
+}
+
+export interface AlertMedicineOrderPickupInput {
+  orderId: number;
+  patientId: string;
+  remarks?: string | null;
 }
 
 export interface AppointmentHistoryInput {
@@ -505,6 +523,9 @@ export interface BookAppointmentInput {
   deviceType?: DEVICETYPE | null;
   couponCode?: string | null;
   externalConnect?: boolean | null;
+  pinCode?: string | null;
+  actualAmount?: number | null;
+  discountedAmount?: number | null;
 }
 
 export interface BookFollowUpAppointmentInput {
@@ -629,6 +650,9 @@ export interface EndAppointmentSessionInput {
   appointmentId: string;
   status: STATUS;
   noShowBy?: REQUEST_ROLES | null;
+  deviceType?: DEVICETYPE | null;
+  callSource?: BOOKINGSOURCE | null;
+  callType?: APPT_CALL_TYPE | null;
 }
 
 export interface FilterDoctorInput {
@@ -646,6 +670,7 @@ export interface FilterDoctorInput {
   geolocation?: Geolocation | null;
   consultMode?: ConsultMode | null;
   pincode?: string | null;
+  doctorType?: (string | null)[] | null;
   sort?: string | null;
 }
 
@@ -660,6 +685,39 @@ export interface HelpEmailInput {
   comments?: string | null;
   patientId?: string | null;
   email?: string | null;
+}
+
+export interface LabResultFileProperties {
+  fileName: string;
+  mimeType: string;
+  content: string;
+}
+
+export interface LabResultsUploadRequest {
+  labTestName: string;
+  labTestDate: any;
+  labTestRefferedBy?: string | null;
+  observation?: string | null;
+  identifier?: string | null;
+  additionalNotes?: string | null;
+  labTestResults?: (TestResultsParameter | null)[] | null;
+  testResultFiles?: (LabResultFileProperties | null)[] | null;
+}
+
+export interface MediaPrescriptionFileProperties {
+  fileName: string;
+  mimeType: string;
+  content: string;
+}
+
+export interface MediaPrescriptionUploadRequest {
+  prescribedBy: string;
+  dateOfPrescription: any;
+  startDate?: any | null;
+  endDate?: any | null;
+  notes?: string | null;
+  prescriptionSource: mediaPrescriptionSource;
+  prescriptionFiles?: (MediaPrescriptionFileProperties | null)[] | null;
 }
 
 export interface MedicineCartOMSInput {
@@ -682,6 +740,7 @@ export interface MedicineCartOMSInput {
   packagingCharges?: number | null;
   showPrescriptionAtStore?: boolean | null;
   shopAddress?: ShopAddress | null;
+  customerComment?: string | null;
 }
 
 export interface MedicineCartOMSItem {
@@ -696,11 +755,6 @@ export interface MedicineCartOMSItem {
   mou?: number | null;
   isMedicine: string;
   specialPrice: number;
-}
-
-export interface MedicineOrderCancelInput {
-  orderNo?: number | null;
-  remarksCode?: string | null;
 }
 
 export interface MedicineOrderCancelOMSInput {
@@ -825,6 +879,7 @@ export interface PrescriptionMedicineOrderOMSInput {
   shopAddress?: ShopAddress | null;
   prescriptionOptionSelected?: string | null;
   durationDays?: number | null;
+  customerComment?: string | null;
 }
 
 export interface PrescriptionMedicinePaymentOMSDetails {
@@ -833,6 +888,16 @@ export interface PrescriptionMedicinePaymentOMSDetails {
   paymentRefId?: string | null;
   paymentStatus?: string | null;
   paymentDateTime?: any | null;
+}
+
+export interface PrescriptionUploadRequest {
+  prescribedBy: string;
+  dateOfPrescription: any;
+  startDate?: any | null;
+  endDate?: any | null;
+  notes?: string | null;
+  prescriptionSource: prescriptionSource;
+  prescriptionFiles?: (prescriptionFileProperties | null)[] | null;
 }
 
 export interface Range {
@@ -873,6 +938,13 @@ export interface ShopAddress {
   state?: string | null;
   zipcode?: string | null;
   stateCode?: string | null;
+}
+
+export interface TestResultsParameter {
+  parameterName: string;
+  result: string;
+  unit: string;
+  range?: string | null;
 }
 
 export interface UpdateAppointmentSessionInput {
@@ -932,6 +1004,12 @@ export interface UploadDocumentInput {
   base64FileInput: string;
   patientId: string;
   category: PRISM_DOCUMENT_CATEGORY;
+}
+
+export interface prescriptionFileProperties {
+  fileName: string;
+  mimeType: string;
+  content: string;
 }
 
 //==============================================================

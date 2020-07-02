@@ -320,7 +320,9 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
             borderRightColor: 'rgba(2, 71, 91, 0.3)',
           }}
         >
-          <Text style={styles.medicineText1}>{item.quantity}</Text>
+          <Text style={styles.medicineText1}>
+            {offlineOrderNumber ? item.price! / item.mrp! / item.quantity! : item.quantity}
+          </Text>
         </View>
         <View
           style={{
@@ -404,13 +406,17 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
   const shopAddress = g(orderDetails, 'shopAddress');
   const shopName = (JSON.parse(shopAddress || '{}') || {}).storename;
   const offlineOrderNumber = g(orderDetails, 'billNumber');
+  const offlineOrdeDiscount = (offlineOrderNumber && g(orderDetails, 'productDiscount')) || 0;
+  const offlineOrdeRedeemedAmount = (offlineOrderNumber && g(orderDetails, 'redeemedAmount')) || 0;
 
   return (
     <View>
       <View style={{ marginHorizontal: 20, marginVertical: 16 }}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
           <View>
-            <Text style={styles.orderStyles}>{string.OrderSummery.order} # </Text>
+            <Text style={styles.orderStyles}>
+              {offlineOrderNumber ? string.OrderSummery.bill : string.OrderSummery.order} #{' '}
+            </Text>
             <Text style={styles.orderStyles}>{offlineOrderNumber || orderDetails.orderAutoId}</Text>
           </View>
           <View style={{ flexDirection: 'row' }}>
@@ -602,7 +608,7 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
                 </Text>
               </View>
             ) : null}
-            {!newOrders ? (
+            {!newOrders && !offlineOrderNumber ? (
               <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                 <Text style={styles.paymentLeftText}>{string.OrderSummery.delivery_charges}</Text>
                 <Text style={[styles.paymentLeftText, { textAlign: 'right' }]}>
@@ -618,12 +624,30 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
                 </Text>
               </View>
             ) : null}
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-              <Text style={styles.paymentLeftText}>{string.OrderSummery.packaging_charges}</Text>
-              <Text style={[styles.paymentLeftText, { textAlign: 'right' }]}>
-                + Rs. {(packaging_charges || 0).toFixed(2)}
-              </Text>
-            </View>
+            {!offlineOrderNumber && (
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                <Text style={styles.paymentLeftText}>{string.OrderSummery.packaging_charges}</Text>
+                <Text style={[styles.paymentLeftText, { textAlign: 'right' }]}>
+                  + Rs. {(packaging_charges || 0).toFixed(2)}
+                </Text>
+              </View>
+            )}
+            {!!offlineOrderNumber && (
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                <Text style={styles.paymentLeftText}>{string.OrderSummaryText.discount_total}</Text>
+                <Text style={[styles.paymentLeftText, { textAlign: 'right' }]}>
+                  - Rs. {(offlineOrdeDiscount || 0).toFixed(2)}
+                </Text>
+              </View>
+            )}
+            {!!offlineOrderNumber && (
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                <Text style={styles.paymentLeftText}>{string.OrderSummery.redeemed_amount}</Text>
+                <Text style={[styles.paymentLeftText, { textAlign: 'right' }]}>
+                  - Rs. {(offlineOrdeRedeemedAmount || 0).toFixed(2)}
+                </Text>
+              </View>
+            )}
             <View style={[styles.horizontalline, { marginTop: 4, marginBottom: 7 }]} />
             <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
               <Text style={[styles.boldTotal]}>{string.OrderSummery.total.toUpperCase()}</Text>
@@ -634,12 +658,14 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
                   : (orderDetails.estimatedAmount || 0).toFixed(2)}
               </Text>
             </View>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-              <Text style={styles.paymentMethodText}>{string.OrderSummery.paymentMethod}</Text>
-              <Text style={[styles.paymentMethodText, { textAlign: 'right' }]}>
-                {paymentMethodToDisplay}
-              </Text>
-            </View>
+            {!offlineOrderNumber && (
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                <Text style={styles.paymentMethodText}>{string.OrderSummery.paymentMethod}</Text>
+                <Text style={[styles.paymentMethodText, { textAlign: 'right' }]}>
+                  {paymentMethodToDisplay}
+                </Text>
+              </View>
+            )}
             {orderBilledAndPacked &&
             newOrders &&
             !prescriptionUpload &&

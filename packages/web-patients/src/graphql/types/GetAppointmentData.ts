@@ -3,7 +3,7 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-import { APPOINTMENT_TYPE, STATUS, APPOINTMENT_STATE, Salutation, DoctorType } from "./globalTypes";
+import { APPOINTMENT_TYPE, STATUS, APPOINTMENT_STATE, DoctorType } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: GetAppointmentData
@@ -32,7 +32,7 @@ export interface GetAppointmentData_getAppointmentData_appointmentsHistory_docto
 export interface GetAppointmentData_getAppointmentData_appointmentsHistory_doctorInfo {
   __typename: "DoctorDetailsWithStatusExclude";
   id: string;
-  salutation: Salutation | null;
+  salutation: string | null;
   firstName: string;
   lastName: string;
   displayName: string | null;

@@ -565,7 +565,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                       {item.doctorInfo &&
                       item.doctorInfo.thumbnailUrl &&
                       item.doctorInfo.thumbnailUrl.match(
-                        /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG)/
+                        /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jpeg|JPEG)/
                       ) ? (
                         <Image
                           style={{
@@ -593,7 +593,9 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                     </View>
                     <View style={{ flex: 1, marginRight: 16 }}>
                       <Text style={styles.doctorNameStyles} numberOfLines={1}>
-                        {item.doctorInfo ? `${item.doctorInfo.displayName}` : ''}
+                        {item.doctorInfo
+                          ? `${item.doctorInfo.salutation}` + `${item.doctorInfo.displayName}`
+                          : ''}
                       </Text>
                       {item.isFollowUp == 'true' ? (
                         <Text

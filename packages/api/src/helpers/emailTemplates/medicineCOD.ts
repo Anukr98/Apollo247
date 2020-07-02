@@ -7,7 +7,7 @@ export const medicineCOD = _.template(
   <ul>
   <li>Medicine Details
     <ul>
-    <% _.each(orderDetails.medicineOrderLineItems, function(item,index) { %>
+    <% _.each(medicineOrderLineItems, function(item,index) { %>
         <li>SKUcode<%- index+1 %> : <%-item.medicineSKU%> , Quantity: <%- item.quantity %></li>
     <% }); %>
     </ul>

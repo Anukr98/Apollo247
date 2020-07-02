@@ -23,7 +23,10 @@ import {
 import { DEVICE_TYPE, Relation } from '../graphql/types/globalTypes';
 import { GetCurrentPatientsVariables } from '../graphql/types/GetCurrentPatients';
 import { AppConfig } from '../strings/AppConfig';
-import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import {
+  CommonBugFender,
+  setBugFenderLog,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
   getPatientByMobileNumber,
   getPatientByMobileNumberVariables,
@@ -34,6 +37,7 @@ import {
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import WebEngage from 'react-native-webengage';
 import AsyncStorage from '@react-native-community/async-storage';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 
 function wait<R, E>(promise: Promise<R>): [R, E] {
   return (promise.then(
@@ -162,6 +166,8 @@ export const AuthProvider: React.FC = (props) => {
 
   const [allPatients, setAllPatients] = useState<AuthContextProps['allPatients']>(null);
 
+  const { setSavePatientDetails } = useAppCommonData();
+
   const sendOtp = (customToken: string) => {
     return new Promise(async (resolve, reject) => {
       setIsSendingOtp(true);
@@ -289,6 +295,11 @@ export const AuthProvider: React.FC = (props) => {
                 console.log('SplashScreen Webengage----', { error });
               }
 
+              setBugFenderLog('GET_PATIENT_API_CALL_SUCCESS');
+
+              const allPatients = g(data, 'data', 'getPatientByMobileNumber', 'patients');
+              setSavePatientDetails && setSavePatientDetails(allPatients);
+
               setSignInError(false);
               console.log('getPatientApiCall', data);
               AsyncStorage.setItem('currentPatient', JSON.stringify(data));
@@ -298,6 +309,8 @@ export const AuthProvider: React.FC = (props) => {
               setMobileAPICalled(false);
             })
             .catch(async (error) => {
+              setBugFenderLog('GET_PATIENT_API_CALL_FAIL');
+
               CommonBugFender('AuthProvider_getPatientApiCall', error);
               const retrievedItem: any = await AsyncStorage.getItem('currentPatient');
               const item = JSON.parse(retrievedItem);
@@ -333,6 +346,9 @@ export const AuthProvider: React.FC = (props) => {
               count: g(data, 'data', 'getCurrentPatients', 'patients', 'length') || 0,
             };
             postWebEngageEvent(WebEngageEventName.NUMBER_OF_PROFILES_FETCHED, eventAttributes);
+
+            const allPatients = g(data, 'data', 'getCurrentPatients', 'patients');
+            setSavePatientDetails && setSavePatientDetails(allPatients);
 
             AsyncStorage.setItem('callByPrism', 'true');
             AsyncStorage.setItem('currentPatient', JSON.stringify(data));

@@ -1,7 +1,18 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { makeStyles, createStyles } from '@material-ui/styles';
-import { Theme } from '@material-ui/core';
+import { Theme, CircularProgress, Modal } from '@material-ui/core';
 import { AphButton } from '@aph/web-ui-components';
+import { GetDoctorDetailsById as DoctorDetails } from 'graphql/types/GetDoctorDetailsById';
+import moment from 'moment';
+import { getDiffInDays, getDiffInMinutes, getDiffInHours } from 'helpers/commonHelpers';
+import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
+import { useAuth } from 'hooks/authHooks';
+import { BookConsult } from 'components/BookConsult';
+import { SEARCH_TYPE } from 'graphql/types/globalTypes';
+import { SaveSearch, SaveSearchVariables } from 'graphql/types/SaveSearch';
+import { useMutation } from 'react-apollo-hooks';
+import { SAVE_PATIENT_SEARCH } from 'graphql/pastsearches';
+import { useAllCurrentPatients } from 'hooks/authHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -84,7 +95,7 @@ const useStyles = makeStyles((theme: Theme) => {
         borderTopColor: '#f7f8f5',
         borderWidth: 10,
         marginLeft: -10,
-      },    
+      },
     },
     consultGroup: {
       [theme.breakpoints.down('xs')]: {
@@ -113,7 +124,7 @@ const useStyles = makeStyles((theme: Theme) => {
         color: '#0589bb',
         fontWeight: 500,
         textTransform: 'uppercase',
-      }
+      },
     },
     groupContent: {
       paddingTop: 20,
@@ -215,100 +226,267 @@ const useStyles = makeStyles((theme: Theme) => {
     },
   });
 });
-
-export const HowCanConsult: React.FC = (props) => {
+interface HowCanConsultProps {
+  doctorDetails: DoctorDetails;
+  doctorAvailablePhysicalSlots: string;
+  doctorAvailableOnlineSlot: string;
+}
+export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
   const classes = useStyles({});
+  const { isSignedIn } = useAuth();
+  const { currentPatient } = useAllCurrentPatients();
+  const [popupLoading, setPopupLoading] = useState<boolean>(false);
+  const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
+  const [physicalDirection, setPhysicalDirection] = useState<boolean>(false);
+  const [onlineDirection, setOnlineDirection] = useState<boolean>(true);
+  const { doctorDetails, doctorAvailablePhysicalSlots, doctorAvailableOnlineSlot } = props;
+  const doctorDetailsId = doctorDetails && doctorDetails.getDoctorDetailsById;
+  const doctorName = doctorDetailsId && doctorDetailsId.fullName;
+  const physcalFee = doctorDetailsId && doctorDetailsId.physicalConsultationFees;
+  const onlineFee = doctorDetailsId && doctorDetailsId.onlineConsultationFees;
+  const doctorId =
+    doctorDetails && doctorDetails.getDoctorDetailsById && doctorDetails.getDoctorDetailsById.id;
+
+  const differenceInMinutes = getDiffInMinutes(doctorAvailablePhysicalSlots);
+  const differenceInOnlineMinutes = getDiffInMinutes(doctorAvailableOnlineSlot);
+  const availabilityMarkup = () => {
+    if (doctorAvailablePhysicalSlots && doctorAvailablePhysicalSlots.length > 0) {
+      if (differenceInMinutes === 0) {
+        return <div className={classes.availablity}>AVAILABLE NOW</div>;
+      } else if (differenceInMinutes > 0 && differenceInMinutes <= 15) {
+        return (
+          <div className={classes.availablity}>
+            AVAILABLE IN {differenceInMinutes} {differenceInMinutes === 1 ? 'MIN' : 'MINS'}
+          </div>
+        );
+      } else if (differenceInMinutes > 15 && differenceInMinutes <= 60) {
+        return (
+          <div className={`${classes.availablity}`}>AVAILABLE IN {differenceInMinutes} MINS</div>
+        );
+      } else if (differenceInMinutes >= 60 && differenceInMinutes < 1380) {
+        return (
+          <div className={`${classes.availablity}`}>
+            AVAILABLE IN {getDiffInHours(doctorAvailablePhysicalSlots)} HOURS
+          </div>
+        );
+      } else if (differenceInMinutes >= 1380) {
+        return (
+          <div className={`${classes.availablity}`}>
+            AVAILABLE IN {getDiffInDays(doctorAvailablePhysicalSlots)} Days
+          </div>
+        );
+      }
+    } else {
+      return null;
+    }
+  };
+  const availabilityOnlineMarkup = () => {
+    if (doctorAvailableOnlineSlot && doctorAvailableOnlineSlot.length > 0) {
+      if (differenceInMinutes === 0) {
+        return (
+          <div className={`${classes.availablity} ${classes.availableNow}`}>AVAILABLE NOW</div>
+        );
+      } else if (differenceInOnlineMinutes > 0 && differenceInOnlineMinutes <= 15) {
+        return (
+          <div className={`${classes.availablity} ${classes.availableNow}`}>
+            AVAILABLE IN {differenceInOnlineMinutes}{' '}
+            {differenceInOnlineMinutes === 1 ? 'MIN' : 'MINS'}
+          </div>
+        );
+      } else if (differenceInOnlineMinutes > 15 && differenceInOnlineMinutes <= 60) {
+        return (
+          <div className={`${classes.availablity} ${classes.availableNow}`}>
+            AVAILABLE IN {differenceInOnlineMinutes} MINS
+          </div>
+        );
+      } else if (differenceInOnlineMinutes >= 60 && differenceInOnlineMinutes < 1380) {
+        return (
+          <div className={`${classes.availablity} ${classes.availableNow}`}>
+            AVAILABLE IN {getDiffInHours(doctorAvailableOnlineSlot)} HOURS
+          </div>
+        );
+      } else if (differenceInMinutes >= 1380) {
+        return (
+          <div className={`${classes.availablity} ${classes.availableNow}`}>
+            AVAILABLE IN {getDiffInDays(doctorAvailableOnlineSlot)} Days
+          </div>
+        );
+      }
+    } else {
+      return null;
+    }
+  };
+  const saveSearchMutation = useMutation<SaveSearch, SaveSearchVariables>(SAVE_PATIENT_SEARCH);
 
   return (
     <div className={classes.root}>
       <div className={classes.headerGroup}>
-        <h3>How can I consult with Dr. Simran:</h3>
+        <h3>How can I consult with Dr.{doctorName}:</h3>
         <div className={classes.tabButtons}>
-          <AphButton className={`${classes.button} ${classes.btnActive}`}>
-            <span>Meet in Person</span>
-            <span className={classes.price}>Rs. 999</span>
-            <span className={classes.availablity}>Available in 50 mins</span>
-          </AphButton>
-          <AphButton className={`${classes.button}`}>
+          <AphButton
+            className={
+              onlineDirection ? `${classes.button} ${classes.btnActive}` : `${classes.button}`
+            }
+            onClick={() => {
+              setOnlineDirection(true);
+              setPhysicalDirection(false);
+            }}
+          >
             <span>Chat/Audio/Video</span>
-            <span className={classes.price}>Rs. 599</span>
-            <span className={`${classes.availablity} ${classes.availableNow}`}>Available in 15 mins</span>
+            <span className={classes.price}>Rs. {onlineFee}</span>
+            <span>{availabilityOnlineMarkup()}</span>
+          </AphButton>
+          <AphButton
+            className={
+              physicalDirection ? `${classes.button} ${classes.btnActive}` : `${classes.button}`
+            }
+            id="btnActive"
+            onClick={() => {
+              setPhysicalDirection(true);
+              setOnlineDirection(false);
+            }}
+          >
+            <span>Meet in Person</span>
+            <span className={classes.price}>Rs. {physcalFee}</span>
+            <span>{availabilityMarkup()}</span>
           </AphButton>
         </div>
       </div>
       <div className={classes.consultGroup}>
         <div className={classes.groupHead}>
           <span>
-            <img src={require('images/ic-specialist.svg')} alt="" />
+            <img
+              src={require(physicalDirection
+                ? 'images/ic-specialist.svg'
+                : 'images/video-calling.svg')}
+              alt=""
+            />
           </span>
-          <h4>How to consult in person</h4>
+          <h4>
+            {physicalDirection
+              ? 'How to consult in person'
+              : 'How to consult via chat/audio/video?'}
+          </h4>
         </div>
         <div className={classes.groupContent}>
           <ul>
             <li>
-              <span><img src={require('images/ic_doctor_small.svg')} alt="" /></span>
+              <span>
+                <img src={require('images/ic_doctor_small.svg')} alt="" />
+              </span>
               <span>Choose the doctor</span>
             </li>
             <li>
-              <span><img src={require('images/ic_book-slot.svg')} alt="" /></span>
+              <span>
+                <img src={require('images/ic_book-slot.svg')} alt="" />
+              </span>
               <span>Book a slot</span>
             </li>
             <li>
-              <span><img src={require('images/ic-payment.svg')} alt="" /></span>
+              <span>
+                <img src={require('images/ic-payment.svg')} alt="" />
+              </span>
               <span>Make payment</span>
             </li>
             <li className={classes.blueText}>
-              <span><img src={require('images/ic_hospital.svg')} alt="" /></span>
-              <span>Visit the doctor at Hospital/Clinic</span>
+              <span>
+                <img
+                  src={require(onlineDirection
+                    ? 'images/ic_video-blue.svg'
+                    : 'images/ic_hospital.svg')}
+                  alt=""
+                />
+              </span>
+              <span>
+                {onlineDirection
+                  ? 'Speak to the doctor via video/audio/chat'
+                  : 'Visit the doctor at Hospital/Clinic'}
+              </span>
             </li>
             <li>
-              <span><img src={require('images/ic_prescription-sm.svg')} alt="" /></span>
+              <span>
+                <img src={require('images/ic_prescription-sm.svg')} alt="" />
+              </span>
               <span>Receive prescriptions instantly </span>
             </li>
+            {!physicalDirection && (
+              <li className={classes.blueText}>
+                <span>
+                  <img src={require('images/ic_chat.svg')} alt="" />
+                </span>
+                <span>Chat with the doctor for 6 days after your consult</span>
+              </li>
+            )}
           </ul>
         </div>
       </div>
-      <div className={classes.consultGroup}>
-        <div className={classes.groupHead}>
-          <span>
-            <img src={require('images/video-calling.svg')} alt="" />
-          </span>
-          <h4>How to consult via chat/audio/video?</h4>
-        </div>
-        <div className={classes.groupContent}>
-          <ul>
-            <li>
-              <span><img src={require('images/ic_doctor_small.svg')} alt="" /></span>
-              <span>Choose the doctor</span>
-            </li>
-            <li>
-              <span><img src={require('images/ic_book-slot.svg')} alt="" /></span>
-              <span>Book a slot</span>
-            </li>
-            <li>
-              <span><img src={require('images/ic-payment.svg')} alt="" /></span>
-              <span>Make payment</span>
-            </li>
-            <li className={classes.blueText}>
-              <span><img src={require('images/ic_video-blue.svg')} alt="" /></span>
-              <span>Speak to the doctor via video/audio/chat</span>
-            </li>
-            <li>
-              <span><img src={require('images/ic_prescription-sm.svg')} alt="" /></span>
-              <span>Receive prescriptions instantly</span>
-            </li>
-            <li className={classes.blueText}>
-              <span><img src={require('images/ic_chat.svg')} alt="" /></span>
-              <span>Chat with the doctor for 6 days after your consult</span>
-            </li>
-          </ul>
-        </div>
-      </div>
-      <div className={classes.bottomActions}>
-        <AphButton color="primary">Book Appointment</AphButton>
-        <p>Please note that after booking, you will need to download the Apollo 247 app to continue with your consultation.</p>
-      </div>
+      {/* <div className={classes.bottomActions}> */}
+      <ProtectedWithLoginPopup>
+        {({ protectWithLoginPopup }) => (
+          <div className={classes.bottomActions}>
+            <AphButton
+              onClick={() => {
+                if (!isSignedIn) {
+                  protectWithLoginPopup();
+                } else {
+                  setPopupLoading(true);
+                  saveSearchMutation({
+                    variables: {
+                      saveSearchInput: {
+                        type: SEARCH_TYPE.DOCTOR,
+                        typeId:
+                          doctorDetails &&
+                          doctorDetails.getDoctorDetailsById &&
+                          doctorDetails.getDoctorDetailsById.id,
+                        patient: currentPatient ? currentPatient.id : '',
+                      },
+                    },
+                    fetchPolicy: 'no-cache',
+                  })
+                    .then(() => {
+                      setPopupLoading(false);
+                    })
+                    .catch((e) => {
+                      console.log(e);
+                    })
+                    .finally(() => {
+                      setIsPopoverOpen(true);
+                    });
+                }
+              }}
+              // fullWidth
+              color="primary"
+              // className={classes.bottomActions}
+            >
+              {popupLoading ? (
+                <CircularProgress size={22} color="secondary" />
+              ) : getDiffInMinutes(doctorAvailablePhysicalSlots) > 0 &&
+                getDiffInMinutes(doctorAvailablePhysicalSlots) <= 60 ? (
+                'CONSULT NOW'
+              ) : (
+                'BOOK APPOINTMENT'
+              )}
+            </AphButton>
+            <p>
+              Please note that after booking, you will need to download the Apollo 247 app to
+              continue with your consultation.
+            </p>
+          </div>
+        )}
+      </ProtectedWithLoginPopup>
+      <Modal
+        open={isPopoverOpen}
+        onClose={() => setIsPopoverOpen(false)}
+        disableBackdropClick
+        disableEscapeKeyDown
+      >
+        <BookConsult
+          doctorId={doctorId}
+          doctorAvailableIn={differenceInMinutes}
+          setIsPopoverOpen={setIsPopoverOpen}
+        />
+      </Modal>
     </div>
+    // </div>
   );
 };
-

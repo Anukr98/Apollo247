@@ -93,6 +93,10 @@ target 'ApolloPatient' do
 
   # ServiceExtension Target
 
+  pod 'react-native-video', :path => '../node_modules/react-native-video'
+
+  pod 'react-native-background-timer', :path => '../node_modules/react-native-background-timer'
+
   target 'NotificationService' do
       platform :ios, '10.0'
       pod 'WebEngageBannerPush'

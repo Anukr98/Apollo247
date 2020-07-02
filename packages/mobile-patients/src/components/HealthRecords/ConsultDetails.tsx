@@ -308,6 +308,8 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
               <View style={theme.viewStyles.lightSeparatorStyle} />
               <Text style={styles.doctorNameStyle}>
                 {props.navigation.state.params!.DoctorInfo &&
+                  props.navigation.state.params!.DoctorInfo.salutation}
+                {props.navigation.state.params!.DoctorInfo &&
                   props.navigation.state.params!.DoctorInfo.displayName}
               </Text>
               <View style={{ flexDirection: 'row' }}>
@@ -668,7 +670,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
   ) => {
     const type = item.medicineFormTypes === MEDICINE_FORM_TYPES.OTHERS ? 'Take' : 'Apply';
     const customDosage = item.medicineCustomDosage
-      ? item.medicineCustomDosage.split('-').filter((i) => i !== '')
+      ? item.medicineCustomDosage.split('-').filter((i) => i !== '' && i != '0')
       : [];
     const medTimingsArray = [
       MEDICINE_TIMINGS.MORNING,
@@ -979,6 +981,11 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                     <>
                       <Text style={styles.labelStyle}>{item!.itemname}</Text>
                       <Spearator style={{ marginBottom: index == array.length - 1 ? 2.5 : 11.5 }} />
+                      {item!.testInstruction ? (
+                        <Text style={styles.dataTextStyle}>
+                          Instuctions: {item!.testInstruction}
+                        </Text>
+                      ) : null}
                     </>
                   );
                 })}
@@ -1053,6 +1060,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
         '_' +
         moment(caseSheetDetails!.appointment!.appointmentDateTime).format('DD MM YYYY') +
         '_' +
+        props.navigation.state.params!.DoctorInfo.salutation +
         props.navigation.state.params!.DoctorInfo.displayName +
         '_Apollo 247' +
         '.pdf'

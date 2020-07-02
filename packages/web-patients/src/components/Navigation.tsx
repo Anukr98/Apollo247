@@ -207,13 +207,13 @@ export const Navigation: React.FC<NavigationProps> = (props) => {
     payType: string;
   }>();
   const doctorRoutes = [
-    clientRoutes.doctorsLanding(),
+    clientRoutes.specialityListing(),
     clientRoutes.specialties(params.specialty),
     clientRoutes.specialtyDoctorDetails(params.specialty, params.doctorName, params.doctorId),
     clientRoutes.doctorDetails(params.doctorName, params.doctorId),
     clientRoutes.payOnlineConsult(),
     clientRoutes.payOnlineClinicConsult(),
-    clientRoutes.payMedicine(params.payType),
+    // clientRoutes.payMedicine(params.payType),
   ];
 
   return (
@@ -229,7 +229,7 @@ export const Navigation: React.FC<NavigationProps> = (props) => {
     >
       {isSignedIn ? (
         <>
-          <Link
+          {/* <Link
             className={
               doctorRoutes.find((route) => route === currentPath) ||
               currentPath.includes('specialties') ||
@@ -237,24 +237,19 @@ export const Navigation: React.FC<NavigationProps> = (props) => {
                 ? classes.menuItemActive
                 : ''
             }
-            to={clientRoutes.doctorsLanding()}
+            to={clientRoutes.specialityListing()}
             title={'Doctors'}
           >
             Doctors
-          </Link>
+          </Link> */}
           <Link
-            className={currentPath === clientRoutes.covidLanding() ? classes.menuItemActive : ''}
-            to={clientRoutes.covidLanding()}
-            title={'Covid 19'}
+            to={clientRoutes.specialityListing()}
+            className={
+              currentPath === clientRoutes.specialityListing() ? classes.menuItemActive : ''
+            }
+            title={'Medicines'}
           >
-            Covid 19
-          </Link>
-          <Link
-            className={currentPath === clientRoutes.appointments() ? classes.menuItemActive : ''}
-            to={clientRoutes.appointments()}
-            title={'Appointments'}
-          >
-            Appointments
+            Book Appointment
           </Link>
           <Link
             to={clientRoutes.medicines()}
@@ -265,8 +260,23 @@ export const Navigation: React.FC<NavigationProps> = (props) => {
             }
             title={'Medicines'}
           >
-            Medicines
+            Buy Medicines
           </Link>
+          <Link
+            className={currentPath === clientRoutes.appointments() ? classes.menuItemActive : ''}
+            to={clientRoutes.appointments()}
+            title={'Appointments'}
+          >
+            My Appointments
+          </Link>
+          <Link
+            className={currentPath === clientRoutes.covidLanding() ? classes.menuItemActive : ''}
+            to={clientRoutes.covidLanding()}
+            title={'Covid 19'}
+          >
+            Covid 19
+          </Link>
+
           {/* <Link
           to={clientRoutes.tests()}
           className={currentPath === clientRoutes.tests() ? classes.menuItemActive : ''}
@@ -274,13 +284,13 @@ export const Navigation: React.FC<NavigationProps> = (props) => {
         >
           Tests
         </Link> */}
-          <Link
+          {/* <Link
             to={clientRoutes.healthRecords()}
             className={currentPath === clientRoutes.healthRecords() ? classes.menuItemActive : ''}
             title={'Health Records'}
           >
             Health Records
-          </Link>
+          </Link> */}
         </>
       ) : (
         <>
@@ -291,7 +301,7 @@ export const Navigation: React.FC<NavigationProps> = (props) => {
                 ? classes.menuItemActive
                 : ''
             }
-            to={clientRoutes.doctorsLanding()}
+            to={clientRoutes.specialityListing()}
             title={'Doctors'}
           >
             <span className={classes.menuTitle}>Doctors</span>

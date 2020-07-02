@@ -43,7 +43,7 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: '15px 20px 0 20px',
       [theme.breakpoints.up('sm')]: {
         width: 'calc(100% - 190px)',
-      }
+      },
     },
     doctorName: {
       display: 'flex',
@@ -162,13 +162,14 @@ interface DoctorProfileProps {
   doctorDetails: DoctorDetails;
   avaPhy: boolean;
   avaOnline: boolean;
+  getDoctorAvailableSlots: (GetDoctorNextAvailableSlot: any) => void;
 }
 
 export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
   const classes = useStyles({});
-  const { doctorDetails } = props;
+  const { doctorDetails, getDoctorAvailableSlots } = props;
   const apolloClient = useApolloClient();
-  const [data, setData] = useState<any>();
+  const [data, setData] = useState<GetDoctorNextAvailableSlot>();
   const [loading, setLoading] = useState<boolean>(false);
 
   const doctorId =
@@ -269,10 +270,10 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
       })
       .then((response) => {
         setData(response.data);
+        getDoctorAvailableSlots(response.data);
         setLoading(false);
       });
   }, []);
-
   if (loading) {
     return <LinearProgress />;
   }
@@ -518,7 +519,9 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
           <div className={classes.doctorInfo}>
             <div className={classes.doctorName} title={'Doctor Name'}>
               <h1>{fullName}</h1>
-              <span><img src={require('images/ic_apollo.svg')} alt="" /></span>
+              <span>
+                <img src={require('images/ic_apollo.svg')} alt="" />
+              </span>
             </div>
             <div className={classes.specialits}>
               <span title={'Speciality'}>{speciality}</span>{' '}
@@ -562,11 +565,12 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
           </div>
         </div>
         <div className={classes.aboutDoctor}>
-          <div className={classes.sectionHeader}>
-            About Dr. {fullName}
-          </div>
+          <div className={classes.sectionHeader}>About Dr. {fullName}</div>
           <div className={classes.sectionBody}>
-            Insert Bio of the doctor here. Include a summary of work experience, education, and any other outstanding achievement as a doctor. Insert Bio of the doctor here. Include a summary of work experience, education, and any other outstanding achievement as a doctor.
+            Insert Bio of the doctor here. Include a summary of work experience, education, and any
+            other outstanding achievement as a doctor. Insert Bio of the doctor here. Include a
+            summary of work experience, education, and any other outstanding achievement as a
+            doctor.
           </div>
         </div>
       </div>

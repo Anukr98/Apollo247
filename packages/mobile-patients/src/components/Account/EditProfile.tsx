@@ -594,7 +594,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
           }
           getPatientApiCall();
           props.navigation.goBack();
-          setLoading && setLoading(true);
+          // setLoading && setLoading(true);
           // props.navigation.pop(2);
           // props.navigation.push(AppRoutes.ManageProfile, {
           //   mobileNumber: props.navigation.getParam('mobileNumber'),
@@ -616,7 +616,9 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
       props.navigation.goBack();
     }
   };
-
+  const selectUser = (selectedUser: any) => {
+    AsyncStorage.setItem('selectUserId', selectedUser!.id);
+  };
   const newProfile = () => {
     setLoading && setLoading(true);
     client
@@ -639,6 +641,8 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
         setLoading && setLoading(false);
         getPatientApiCall();
         props.navigation.goBack();
+        selectUser(data.data!.addNewProfile.patient);
+        // console.log('addprofiledata==>', data.data!.addNewProfile.patient);
         // if (relation!.key === Relation.ME) {
         //   setCurrentPatientId(data!.data!.addNewProfile!.patient!.id);
         //   AsyncStorage.setItem('selectUserId', profileData!.id);
@@ -666,9 +670,9 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
   const renderUploadSelection = () => {
     return (
       <UploadPrescriprionPopup
+        isVisible={uploadVisible}
         isProfileImage={true}
         heading="Upload Profile Picture"
-        isVisible={uploadVisible}
         hideTAndCs
         optionTexts={{
           camera: 'TAKE A PHOTO',
@@ -723,7 +727,8 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
     return (
       <View style={styles.profilePicContainer}>
         <View style={styles.profileImageContainer}>
-          {photoUrl && photoUrl.match(/(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG)/) ? (
+          {photoUrl &&
+          photoUrl.match(/(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jpeg|JPEG)/) ? (
             <Image
               style={styles.profileImage}
               source={{
@@ -937,7 +942,11 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
       <StickyBottomComponent style={styles.stickyBottomStyle} defaultBG>
         <View style={styles.bottonButtonContainer}>
           <Button
-            onPress={() => props.navigation.goBack()}
+            onPress={() => {
+              isEdit
+                ? props.navigation.goBack()
+                : props.navigation.navigate(AppRoutes.ConsultRoom, {});
+            }}
             title={'CANCEL'}
             style={styles.bottomWhiteButtonStyle}
             titleTextStyle={styles.bottomWhiteButtonTextStyle}

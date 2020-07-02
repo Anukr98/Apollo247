@@ -497,10 +497,15 @@ export const MyAccount: React.FC = (props) => {
     } else {
       setShowErrorMessage(false);
       setLoading(true);
-      const doctorName = doctorProfile!.salutation &&
-        doctorProfile!.salutation!.charAt(0).toUpperCase() + ' '+ doctorProfile
-        .salutation!.slice(1)
-        .toLowerCase() + '. '+ doctorProfile.firstName+' '+doctorProfile.lastName;  
+      const doctorName =
+        doctorProfile!.salutation &&
+        doctorProfile!.salutation!.charAt(0).toUpperCase() +
+          '' +
+          doctorProfile.salutation!.slice(1).toLowerCase() +
+          '. ' +
+          doctorProfile.firstName +
+          ' ' +
+          doctorProfile.lastName;
       client
         .query<SendMessageToMobileNumber, SendMessageToMobileNumberVariables>({
           query: SEND_MESSAGE_TO_MOBILE_NUMBER,
@@ -519,7 +524,6 @@ export const MyAccount: React.FC = (props) => {
             data.data.sendMessageToMobileNumber.status === 'OK'
           ) {
             alert(`We have sent the app invite to ${mobileNumberWithPrefix}`);
-            setDeepLink('');
             setMobileNumber('');
           } else {
             alert('An error occuered in sending message to mobile number');

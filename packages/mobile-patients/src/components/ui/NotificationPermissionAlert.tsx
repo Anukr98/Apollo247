@@ -34,7 +34,9 @@ export const NotificationPermissionAlert: React.FC<NotificationPermissionAlertPr
           }}
         >
           <View style={styles.alertCard}>
-            <Text style={styles.headerText}>Allow Notifications</Text>
+            <View style={styles.headerCont}>
+              <Text style={styles.headerText}>Allow Notifications</Text>
+            </View>
             <View style={styles.childCont}>
               <Text style={styles.MsgText} numberOfLines={3}>
                 Please allow Apollo 247 to send notifications. Without this permission, doctor will
@@ -98,12 +100,22 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansMedium(14),
     color: theme.colors.LIGHT_BLUE,
     marginVertical: 20,
-    marginHorizontal: 40,
+    marginHorizontal: 32,
     textAlign: 'center',
   },
   button: {
     backgroundColor: theme.colors.APP_YELLOW_COLOR,
     marginBottom: 20,
     width: 150,
+  },
+  headerCont: {
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
+    shadowColor: '#808080',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
+    elevation: 5,
+    backgroundColor: '#fff',
   },
 });

@@ -10,6 +10,7 @@ import {
   More,
   NotifySymbol,
   MedicalIcon,
+  NotificationIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import { OrderProgressCard } from '@aph/mobile-patients/src/components/ui/OrderProgressCard';
@@ -20,9 +21,9 @@ import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsPro
 import {
   GET_MEDICINE_ORDER_CANCEL_REASONS,
   GET_MEDICINE_ORDER_OMS_DETAILS,
-  GET_MEDICINE_ORDERS_OMS__LIST,
   CANCEL_MEDICINE_ORDER_OMS,
-  GET_PATIENT_ADDRESS_LIST,
+  GET_PATIENT_ADDRESS_BY_ID,
+  ALERT_MEDICINE_ORDER_PICKUP,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getMedicineOrderOMSDetails,
@@ -36,20 +37,19 @@ import {
   FEEDBACKTYPE,
   MEDICINE_DELIVERY_TYPE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { getPatientAddressList } from '@aph/mobile-patients/src/graphql/types/getPatientAddressList';
 import {
   aphConsole,
   g,
-  getNewOrderStatusText,
+  getOrderStatusText,
   handleGraphQlError,
   postWebEngageEvent,
   reOrderMedicines,
+  formatOrderAddress,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { FeedbackPopup } from './FeedbackPopup';
-import { ApolloQueryResult } from 'apollo-client';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient, useQuery } from 'react-apollo-hooks';
@@ -70,11 +70,6 @@ import {
   ScrollView,
   StackActions,
 } from 'react-navigation';
-import {
-  getMedicineOrdersOMSList,
-  getMedicineOrdersOMSListVariables,
-  getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrdersList,
-} from '../graphql/types/getMedicineOrdersOMSList';
 import { CommonBugFender, isIphone5s } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { postPharmacyMyOrderTrackingClicked } from '../helpers/webEngageEventHelpers';
 import {
@@ -86,6 +81,10 @@ import {
   CancelMedicineOrderOMSVariables,
 } from '../graphql/types/CancelMedicineOrderOMS';
 import {
+  alertMedicineOrderPickup,
+  alertMedicineOrderPickupVariables,
+} from '../graphql/types/alertMedicineOrderPickup';
+import {
   GetMedicineOrderCancelReasons,
   GetMedicineOrderCancelReasons_getMedicineOrderCancelReasons_cancellationReasons,
 } from '../graphql/types/GetMedicineOrderCancelReasons';
@@ -94,6 +93,10 @@ import {
   MedicineReOrderOverlay,
   MedicineReOrderOverlayProps,
 } from '@aph/mobile-patients/src/components/Medicines/MedicineReOrderOverlay';
+import {
+  getPatientAddressById,
+  getPatientAddressByIdVariables,
+} from '@aph/mobile-patients/src/graphql/types/getPatientAddressById';
 
 const styles = StyleSheet.create({
   headerShadowContainer: {
@@ -118,6 +121,10 @@ const styles = StyleSheet.create({
     height: 'auto',
     borderRadius: 10,
   },
+  flexRow: {
+    display: 'flex',
+    flexDirection: 'row',
+  },
   reOrderButtonTransparentTopView: {
     position: 'absolute',
     top: 0,
@@ -128,72 +135,54 @@ const styles = StyleSheet.create({
   },
 });
 
-type OrderRefetch = (
-  variables?: getMedicineOrdersOMSListVariables
-) => Promise<ApolloQueryResult<getMedicineOrdersOMSList>>;
-
 export interface OrderDetailsSceneProps
   extends NavigationScreenProps<{
+    /** One of @orderAutoId or @billNumber is mandatory */
     orderAutoId?: string;
+    billNumber?: string;
     showOrderSummaryTab?: boolean;
     goToHomeOnBack?: boolean;
-    refetchOrders: OrderRefetch;
-    setOrders: (
-      orders: getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrdersList[]
-    ) => void;
-    refetch: (
-      variables?: getMedicineOrdersOMSListVariables | undefined
-    ) => Promise<ApolloQueryResult<getMedicineOrdersOMSList>>;
+    refetchOrders?: () => void;
   }> {}
 
 export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   const orderAutoId = props.navigation.getParam('orderAutoId');
+  const billNumber = props.navigation.getParam('billNumber');
+  const refetchOrders = props.navigation.getParam('refetchOrders');
   const goToHomeOnBack = props.navigation.getParam('goToHomeOnBack');
   const showOrderSummaryTab = props.navigation.getParam('showOrderSummaryTab');
-  const setOrders = props.navigation.getParam('setOrders');
   const [cancellationReasons, setCancellationReasons] = useState<
     GetMedicineOrderCancelReasons_getMedicineOrderCancelReasons_cancellationReasons[]
   >([]);
   const client = useApolloClient();
 
+  const [showAlertStore, setShowAlertStore] = useState<boolean>(true);
   const [selectedTab, setSelectedTab] = useState<string>(
     showOrderSummaryTab ? string.orders.viewBill : string.orders.trackOrder
   );
   const [isCancelVisible, setCancelVisible] = useState(false);
   const [omsAPIError, setOMSAPIError] = useState(false);
   const [addressData, setAddressData] = useState('');
+  const [storePhoneNumber, setStorePhoneNumber] = useState('');
   const [scrollYValue, setScrollYValue] = useState(0);
   const [reOrderDetails, setReOrderDetails] = useState<MedicineReOrderOverlayProps['itemDetails']>({
     total: 0,
     unavailable: [],
   });
-  const scrollViewRef = React.useRef<any>(null);
+  const scrollViewRef = React.useRef<ScrollView | null>(null);
   const scrollToSlots = () => {
     scrollViewRef.current &&
       scrollViewRef.current.scrollTo({ x: 0, y: scrollYValue, animated: true });
   };
 
   const { currentPatient } = useAllCurrentPatients();
-  const {
-    addMultipleCartItems,
-    addMultipleEPrescriptions,
-    addresses,
-    setAddresses,
-  } = useShoppingCart();
+  const { addMultipleCartItems, addMultipleEPrescriptions, addresses } = useShoppingCart();
   const { showAphAlert, hideAphAlert, setLoading } = useUIElements();
   const vars: getMedicineOrderOMSDetailsVariables = {
     patientId: currentPatient && currentPatient.id,
-    orderAutoId: Number(orderAutoId),
+    orderAutoId: billNumber ? 0 : Number(orderAutoId),
+    billNumber: billNumber || '',
   };
-  const refetchOrders: OrderRefetch =
-    props.navigation.getParam('refetch') ||
-    useQuery<getMedicineOrdersOMSList, getMedicineOrdersOMSListVariables>(
-      GET_MEDICINE_ORDERS_OMS__LIST,
-      {
-        variables: { patientId: currentPatient && currentPatient.id },
-        fetchPolicy: 'cache-first',
-      }
-    ).refetch;
   const { data, loading, refetch } = useQuery<
     getMedicineOrderOMSDetails,
     getMedicineOrderOMSDetailsVariables
@@ -218,101 +207,28 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     ? 0
     : g(data, 'getMedicineOrderOMSDetails', 'medicineOrderDetails', 'billNumber');
 
-  const getAddressDatails = () => {
-    let selectedAddressIndex = addresses.find((address) => address.id == order!.patientAddressId);
-    if (!selectedAddressIndex) {
-      console.log('!selectedAddressIndex', selectedAddressIndex);
-      setShowSpinner(true);
-      client
-        .query<getPatientAddressList>({
-          query: GET_PATIENT_ADDRESS_LIST,
-          fetchPolicy: 'no-cache',
-          variables: {
-            patientId: currentPatient && currentPatient.id ? currentPatient.id : '',
-          },
-        })
-        .then((data) => {
-          if (
-            data.data &&
-            data.data.getPatientAddressList &&
-            data.data.getPatientAddressList.addressList &&
-            addresses !== data.data.getPatientAddressList.addressList
-          ) {
-            setAddresses &&
-              setAddresses(
-                data.data.getPatientAddressList
-                  .addressList as savePatientAddress_savePatientAddress_patientAddress[]
-              );
-            selectedAddressIndex = data.data.getPatientAddressList.addressList.find(
-              (address) => address.id == order!.patientAddressId
-            ) as savePatientAddress_savePatientAddress_patientAddress;
-            if (selectedAddressIndex) {
-              console.log('if selectedAddressIndex', selectedAddressIndex);
-              if (!selectedAddressIndex.addressLine1) {
-                setAddressData(
-                  `${selectedAddressIndex.addressLine2}, ${selectedAddressIndex.city}, ${selectedAddressIndex.state}, ${selectedAddressIndex.zipcode}`
-                );
-              } else if (!selectedAddressIndex.addressLine2) {
-                setAddressData(
-                  `${selectedAddressIndex.addressLine1}, ${selectedAddressIndex.city}, ${selectedAddressIndex.state}, ${selectedAddressIndex.zipcode}`
-                );
-              } else if (!selectedAddressIndex.city) {
-                setAddressData(
-                  `${selectedAddressIndex.addressLine1}, ${selectedAddressIndex.addressLine2}, ${selectedAddressIndex.state}, ${selectedAddressIndex.zipcode}`
-                );
-              } else if (!selectedAddressIndex.state) {
-                setAddressData(
-                  `${selectedAddressIndex.addressLine1} ${selectedAddressIndex.addressLine2}, ${selectedAddressIndex.city}, ${selectedAddressIndex.zipcode}`
-                );
-              } else if (!selectedAddressIndex.zipcode) {
-                setAddressData(
-                  `${selectedAddressIndex.addressLine1} ${selectedAddressIndex.addressLine2}, ${selectedAddressIndex.city}, ${selectedAddressIndex.state}`
-                );
-              } else {
-                setAddressData(
-                  `${selectedAddressIndex.addressLine1}, ${selectedAddressIndex.addressLine2}, ${selectedAddressIndex.city}, ${selectedAddressIndex.state}, ${selectedAddressIndex.zipcode}`
-                );
-              }
-            } else {
-              setAddressData('');
-            }
-          }
-        })
-        .catch((error) => {
-          handleGraphQlError(error);
-        })
-        .finally(() => {
-          setShowSpinner(false);
-        });
-    } else {
-      console.log('else selectedAddressIndex', selectedAddressIndex);
-      if (!selectedAddressIndex.addressLine1) {
-        setAddressData(
-          `${selectedAddressIndex.addressLine2}, ${selectedAddressIndex.city}, ${selectedAddressIndex.state}, ${selectedAddressIndex.zipcode}`
-        );
-      } else if (!selectedAddressIndex.addressLine2) {
-        setAddressData(
-          `${selectedAddressIndex.addressLine1}, ${selectedAddressIndex.city}, ${selectedAddressIndex.state}, ${selectedAddressIndex.zipcode}`
-        );
-      } else if (!selectedAddressIndex.city) {
-        setAddressData(
-          `${selectedAddressIndex.addressLine1}, ${selectedAddressIndex.addressLine2}, ${selectedAddressIndex.state}, ${selectedAddressIndex.zipcode}`
-        );
-      } else if (!selectedAddressIndex.state) {
-        setAddressData(
-          `${selectedAddressIndex.addressLine1} ${selectedAddressIndex.addressLine2}, ${selectedAddressIndex.city}, ${selectedAddressIndex.zipcode}`
-        );
-      } else if (!selectedAddressIndex.zipcode) {
-        setAddressData(
-          `${selectedAddressIndex.addressLine1} ${selectedAddressIndex.addressLine2}, ${selectedAddressIndex.city}, ${selectedAddressIndex.state}`
-        );
+  const getAddressDatails = async () => {
+    try {
+      const address = addresses.find((a) => a.id == order!.patientAddressId);
+      let formattedAddress = '';
+      if (address) {
+        formattedAddress = formatOrderAddress(address);
       } else {
-        setAddressData(
-          selectedAddressIndex
-            ? `${selectedAddressIndex.addressLine1}, ${selectedAddressIndex.addressLine2}, ${selectedAddressIndex.city}, ${selectedAddressIndex.state}, ${selectedAddressIndex.zipcode}`
-            : ''
+        const getPatientAddressByIdResponse = await client.query<
+          getPatientAddressById,
+          getPatientAddressByIdVariables
+        >({
+          query: GET_PATIENT_ADDRESS_BY_ID,
+          variables: { id: order!.patientAddressId },
+        });
+        formattedAddress = formatOrderAddress(
+          getPatientAddressByIdResponse.data.getPatientAddressById
+            .patientAddress as savePatientAddress_savePatientAddress_patientAddress
         );
       }
+      setAddressData(formattedAddress);
+    } catch (error) {
+      CommonBugFender(`${AppRoutes.OrderDetailsScene}_getAddressDatails`, error);
     }
   };
 
@@ -325,6 +241,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     const statusList = g(order, 'medicineOrdersStatus') || [];
     const orderDate = g(statusList.slice(-1)[0], 'statusDate');
     if (order) {
+      setShowAlertStore(!order.alertStore);
       postPharmacyMyOrderTrackingClicked(
         g(order, 'id')!,
         g(order, 'currentStatus')!,
@@ -339,6 +256,11 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           ? JSON.parse(order.shopAddress)
           : null;
       shopAddress && setAddressData(shopAddress.address);
+      let storePhone =
+        order.deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP && order.shopAddress
+          ? JSON.parse(order.shopAddress)
+          : null;
+      storePhone && setStorePhoneNumber(shopAddress.phone);
       setEventFired(true);
     } else {
       setOMSAPIError(true);
@@ -439,7 +361,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   };
 
   const renderFeedbackPopup = () => {
-    const orderAutoId: string = orderDetails.orderAutoId!?.toString();
+    const orderAutoId: string = `${orderDetails.orderAutoId}`;
     const orderId: string = orderDetails.id;
     const title: string = `Medicines — #${orderAutoId}`;
     const subtitle: string = `Delivered On: ${orderDetails.orderTat &&
@@ -649,6 +571,11 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
             isDelivered.statusDate &&
             getFormattedDateTime(isDelivered.statusDate)}.`;
 
+    const showNotifyStoreAlert =
+      orderDetails.deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP &&
+      (orderDetails.currentStatus == MEDICINE_ORDER_STATUS.ORDER_VERIFIED ||
+        orderDetails.currentStatus == MEDICINE_ORDER_STATUS.READY_AT_STORE);
+
     const getOrderDescription = (
       status: MEDICINE_ORDER_STATUS,
       isOrderRequirePrescription?: boolean, // if any of the order item requires prescription
@@ -678,8 +605,8 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           `Your order is ready for pickup at your selected ${addressData}`,
         ],
         [MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY]: [
-          'Out for delivery: ',
-          `Your order #${orderAutoId} would be reaching your doorstep soon.`,
+          '',
+          `Your order has been picked up from our store!`,
         ],
         [MEDICINE_ORDER_STATUS.PAYMENT_FAILED]: [
           '',
@@ -946,7 +873,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
                   prescriptionRequired,
                   (orderCancel && orderCancel.statusMessage) || ''
                 )}
-                status={getNewOrderStatusText(order!.orderStatus!)}
+                status={getOrderStatusText(order!.orderStatus!)}
                 date={getFormattedDate(order!.statusDate)}
                 time={getFormattedTime(order!.statusDate)}
                 isStatusDone={order!.id != 'idToBeDelivered'}
@@ -1007,16 +934,160 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
             )}
           </View>
         ) : null}
-        {/* <NeedHelpAssistant
-          onNeedHelpPress={() => {
-            postWEGNeedHelpEvent(currentPatient, 'Medicines');
-          }}
-          containerStyle={{ marginTop: 20, marginBottom: 30 }}
-          navigation={props.navigation}
-        /> */}
+        {showNotifyStoreAlert && renderNotifyStoreAlert()}
       </View>
     );
   };
+
+  const renderNotifyStoreAlert = () => {
+    return (
+      <View
+        style={{
+          borderTopWidth: 0.5,
+          borderTopColor: theme.colors.SEPARATOR_LINE,
+          marginBottom: 30,
+        }}
+      >
+        <View
+          style={{
+            display: 'flex',
+            flexDirection: 'row',
+            margin: 10,
+            marginLeft: 20,
+          }}
+        >
+          <NotificationIcon />
+          <Text
+            style={{
+              ...theme.fonts.IBMPlexSansSemiBold(13),
+              color: theme.colors.LIGHT_BLUE,
+              marginLeft: 10,
+            }}
+          >
+            NOTIFY STORE
+          </Text>
+        </View>
+        <View
+          style={{
+            ...theme.viewStyles.cardViewStyle,
+            marginLeft: 20,
+            marginRight: 20,
+            padding: 20,
+          }}
+        >
+          <Text
+            style={{
+              ...theme.fonts.IBMPlexSansMedium(13),
+              color: theme.colors.LIGHT_BLUE,
+            }}
+          >
+            Kindly alert the store 10 minutes before you are about to reach, so that we can keep the
+            items ready!
+          </Text>
+          <View style={styles.flexRow}>
+            <Text
+              style={{
+                ...theme.fonts.IBMPlexSansMedium(13),
+                color: theme.colors.LIGHT_BLUE,
+                marginTop: 10,
+              }}
+            >
+              Stores Contact No. :{' '}
+            </Text>
+            <Text
+              style={{
+                ...theme.fonts.IBMPlexSansMedium(13),
+                color: theme.colors.LIGHT_BLUE,
+                marginTop: 10,
+                opacity: 0.7,
+              }}
+            >
+              {storePhoneNumber}
+            </Text>
+          </View>
+          <View
+            style={[
+              styles.flexRow,
+              { justifyContent: showAlertStore ? 'space-between' : 'flex-end', marginTop: 15 },
+            ]}
+          >
+            {showAlertStore && (
+              <TouchableOpacity onPress={() => alertTheStore()}>
+                <Text
+                  style={{
+                    color: theme.colors.APP_YELLOW,
+                    ...theme.fonts.IBMPlexSansBold(13),
+                  }}
+                >
+                  ALERT THE STORE
+                </Text>
+              </TouchableOpacity>
+            )}
+            <TouchableOpacity onPress={() => Linking.openURL(`tel:${storePhoneNumber}`)}>
+              <Text
+                style={{
+                  color: theme.colors.APP_YELLOW,
+                  ...theme.fonts.IBMPlexSansBold(13),
+                }}
+              >
+                CALL THE STORE
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    );
+  };
+
+  const alertTheStore = () => {
+    setShowSpinner(true);
+    const variables: alertMedicineOrderPickupVariables = {
+      alertMedicineOrderPickupInput: {
+        orderId: typeof orderAutoId == 'string' ? parseInt(orderAutoId, 10) : orderAutoId,
+        patientId: currentPatient && currentPatient.id ? currentPatient.id : '',
+        remarks: '',
+      },
+    };
+
+    client
+      .mutate<alertMedicineOrderPickup, alertMedicineOrderPickupVariables>({
+        mutation: ALERT_MEDICINE_ORDER_PICKUP,
+        variables,
+      })
+      .then(({ data }) => {
+        setShowSpinner(false);
+        aphConsole.log({
+          s: data,
+        });
+        props.navigation.dispatch(
+          StackActions.reset({
+            index: 0,
+            key: null,
+            actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
+          })
+        );
+        renderSuccessPopup();
+      })
+      .catch((e) => {
+        CommonBugFender('OrderDetailsScene_onPressSendAlertToStore_ALERT_MEDICINE_ORDER_PICKUP', e);
+        setShowSpinner(false);
+        handleGraphQlError(e);
+      });
+  };
+
+  const renderSuccessPopup = () =>
+    showAphAlert!({
+      title: `Hi ${currentPatient.firstName} :)`,
+      description: 'Your store has been alerted.',
+      ctaContainerStyle: { justifyContent: 'flex-end' },
+      CTAs: [
+        {
+          text: 'OK, GOT IT',
+          type: 'orange-link',
+          onPress: () => hideAphAlert!(),
+        },
+      ],
+    });
 
   const [selectedReason, setSelectedReason] = useState('');
   const [comment, setComment] = useState('');
@@ -1036,7 +1107,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
             (cancellationReasons, i) =>
               ({
                 onPress: () => {
-                  setSelectedReason(cancellationReasons.description);
+                  setSelectedReason(cancellationReasons.description!);
                   setOverlayDropdown(false);
                 },
                 optionText: cancellationReasons.description,
@@ -1182,8 +1253,29 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     );
   };
 
+  const getFormattedOrderPlacedDateTime = (
+    orderDetails: getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails
+  ) => {
+    const medicineOrdersStatus = g(orderDetails, 'medicineOrdersStatus') || [];
+    const statusDate = g(medicineOrdersStatus[0], 'statusDate');
+    return moment(statusDate).format('ddd, D MMMM, hh:mm A');
+  };
+
   const renderOrderSummary = () => {
     scrollToSlots();
+    const eventAttributes: WebEngageEvents[WebEngageEventName.ORDER_SUMMARY_CLICKED] = {
+      orderId: orderDetails.id,
+      orderDate: getFormattedOrderPlacedDateTime(orderDetails),
+      orderType:
+        orderDetails.orderType == MEDICINE_ORDER_TYPE.UPLOAD_PRESCRIPTION ? 'Non Cart' : 'Cart',
+      customerId: currentPatient && currentPatient.id,
+      deliveryDate: orderDetails.orderTat
+        ? moment(orderDetails.orderTat).format('ddd, D MMMM, hh:mm A')
+        : '',
+      mobileNumber: currentPatient && currentPatient.mobileNumber,
+      orderStatus: orderDetails.currentStatus!,
+    };
+    postWebEngageEvent(WebEngageEventName.ORDER_SUMMARY_CLICKED, eventAttributes);
     return (
       <View>
         <OrderSummary orderDetails={orderDetails as any} addressData={addressData} />
@@ -1237,26 +1329,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
               CommonBugFender('OrderDetailsScene_refetch', e);
               setInitialSate();
             });
-          refetchOrders &&
-            refetchOrders()
-              .then((data) => {
-                const _orders = (
-                  g(data, 'data', 'getMedicineOrdersOMSList', 'medicineOrdersList') || []
-                ).filter(
-                  (item) =>
-                    !(
-                      (item!.medicineOrdersStatus || []).length == 1 &&
-                      (item!.medicineOrdersStatus || []).find((item) => !item!.hideStatus)
-                    )
-                );
-                console.log(_orders, 'hdub');
-                setOrders(
-                  _orders as getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrdersList[]
-                );
-              })
-              .catch((e) => {
-                CommonBugFender('OrderDetailsScene_onPressConfirmCancelOrder', e);
-              });
+          refetchOrders && refetchOrders();
         } else {
           Alert.alert('Error', g(data, 'cancelMedicineOrderOMS', 'orderStatus')!);
         }
@@ -1311,7 +1384,8 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         item!.orderStatus == MEDICINE_ORDER_STATUS.DELIVERED ||
         item!.orderStatus == MEDICINE_ORDER_STATUS.CANCELLED ||
         item!.orderStatus == MEDICINE_ORDER_STATUS.PAYMENT_FAILED ||
-        item!.orderStatus == MEDICINE_ORDER_STATUS.ORDER_FAILED
+        item!.orderStatus == MEDICINE_ORDER_STATUS.ORDER_FAILED ||
+        item!.orderStatus == MEDICINE_ORDER_STATUS.PURCHASED_IN_STORE
     );
     const cannotCancelOrder = orderStatusList.find(
       (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.ORDER_BILLED
@@ -1367,13 +1441,12 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     const isDelivered = orderStatusList.find(
       (item) =>
         item!.orderStatus == MEDICINE_ORDER_STATUS.DELIVERED ||
+        item!.orderStatus == MEDICINE_ORDER_STATUS.PURCHASED_IN_STORE ||
         item!.orderStatus == MEDICINE_ORDER_STATUS.PICKEDUP
     );
-    const isHomeDelivery = orderDetails.deliveryType == MEDICINE_DELIVERY_TYPE.HOME_DELIVERY;
 
     return (
-      !!isDelivered &&
-      !!isHomeDelivery && (
+      !!isDelivered && (
         <View>
           {Array.from({ length: 10 })
             .reverse()

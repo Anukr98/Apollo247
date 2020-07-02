@@ -168,6 +168,9 @@ interface ConsultProps {
   isNewMsg: boolean;
   convertCall: () => void;
   JDPhotoUrl: string;
+  setSessionError: (error: any) => void;
+  setPublisherError: (error: any) => void;
+  setSubscriberError: (error: any) => void;
 }
 function getCookieValue() {
   const name = 'action=';
@@ -186,13 +189,23 @@ function getCookieValue() {
 export const JDConsult: React.FC<ConsultProps> = (props) => {
   const classes = useStyles({});
   const [isCall, setIscall] = React.useState(true);
-  const [mute, setMute] = React.useState(true);
+  const [isPublishAudio, setIsPublishAudio] = React.useState(true);
   const [subscribeToVideo, setSubscribeToVideo] = React.useState(props.isVideoCall ? true : false);
   const [callerAudio, setCallerAudio] = React.useState<boolean>(true);
   const [callerVideo, setCallerVideo] = React.useState<boolean>(true);
+
+  const [reconnecting, setReconnecting] = React.useState<boolean>(false);
+
   const [downgradeToAudio, setDowngradeToAudio] = React.useState<boolean>(false);
   const { patientDetails } = useContext(CaseSheetContextJrd);
+  const isRetry = true;
   const apikey = process.env.OPENTOK_KEY;
+
+  const checkReconnecting = () => {
+    if (reconnecting)
+      return 'There is a problem with network connection. Reconnecting, Please wait...';
+    else return null;
+  };
 
   const checkDowngradeToAudio = () => {
     if (downgradeToAudio) return 'Falling back to audio due to bad network';
@@ -201,9 +214,9 @@ export const JDConsult: React.FC<ConsultProps> = (props) => {
 
   const isPaused = () => {
     if (!callerAudio && !callerVideo && getCookieValue() === 'videocall')
-      return `Audio & Video are paused`;
-    else if (!callerAudio) return `Audio is paused`;
-    else if (!callerVideo && getCookieValue() === 'videocall') return `Video is paused`;
+      return `Patient’s audio & video are paused`;
+    else if (!callerAudio) return `Patient’s audio is paused`;
+    else if (!callerVideo && getCookieValue() === 'videocall') return `Patient’s video is paused`;
     else return null;
   };
 
@@ -231,6 +244,7 @@ export const JDConsult: React.FC<ConsultProps> = (props) => {
                     ? '0' + props.timerSeconds
                     : props.timerSeconds
                 }`}
+              <p className={classes.audioVideoState}>{checkReconnecting()}</p>
               <p className={classes.audioVideoState}>{checkDowngradeToAudio()}</p>
               <p className={classes.audioVideoState}>{isPaused()}</p>
             </div>
@@ -254,16 +268,37 @@ export const JDConsult: React.FC<ConsultProps> = (props) => {
                     setCallerVideo(event.stream.hasVideo);
                   }
                 },
+                sessionReconnected: (event: string) => {
+                  console.log('session stream sessionReconnected!', event);
+                  setReconnecting(false);
+                },
+                sessionReconnecting: (event: string) => {
+                  console.log('session stream sessionReconnecting!', event);
+                  setReconnecting(true);
+                },
+                error: (error: any) => {
+                  console.log(
+                    `There was an error with the sessionEventHandlers: ${JSON.stringify(error)}`
+                  );
+                  props.setSessionError(error);
+                },
               }}
             >
               <OTPublisher
                 className={
                   props.showVideoChat || !subscribeToVideo ? classes.hidePublisherVideo : ''
                 }
-                resolution={'352x288'}
                 properties={{
-                  publishAudio: mute,
+                  publishAudio: isPublishAudio,
                   publishVideo: subscribeToVideo,
+                }}
+                eventHandlers={{
+                  error: (error: any) => {
+                    console.log(
+                      `There was an error with the publisherEventHandlers: ${JSON.stringify(error)}`
+                    );
+                    props.setPublisherError(error);
+                  },
                 }}
               />
 
@@ -296,6 +331,7 @@ export const JDConsult: React.FC<ConsultProps> = (props) => {
                 <OTStreams>
                   <OTSubscriber
                     className={!props.showVideoChat ? classes.subscriber : classes.minSubscriber}
+                    retry={isRetry}
                     eventHandlers={{
                       videoDisabled: (error: any) => {
                         console.log(`videoDisabled: ${JSON.stringify(error)}`);
@@ -308,6 +344,14 @@ export const JDConsult: React.FC<ConsultProps> = (props) => {
                         if (error.reason === 'quality') {
                           setDowngradeToAudio(false);
                         }
+                      },
+                      error: (error: any) => {
+                        console.log(
+                          `There was an error with the subscriberEventHandlers: ${JSON.stringify(
+                            error
+                          )}`
+                        );
+                        props.setSubscriberError(error);
                       },
                     }}
                   />
@@ -341,6 +385,7 @@ export const JDConsult: React.FC<ConsultProps> = (props) => {
                       />
                     </div>
                     <div className={classes.errorMessage}>
+                      <p className={classes.audioVideoState}>{checkReconnecting()}</p>
                       <p className={classes.audioVideoState}>{checkDowngradeToAudio()}</p>
                       <p className={classes.audioVideoState}>{isPaused()}</p>
                     </div>
@@ -368,8 +413,11 @@ export const JDConsult: React.FC<ConsultProps> = (props) => {
                         )}
                       </Grid>
                       <Grid item lg={10} sm={8} xs={8} className={classes.VideoAlignment}>
-                        {isCall && mute && (
-                          <button className={classes.muteBtn} onClick={() => setMute(!mute)}>
+                        {isCall && isPublishAudio && (
+                          <button
+                            className={classes.muteBtn}
+                            onClick={() => setIsPublishAudio(!isPublishAudio)}
+                          >
                             <img
                               className={classes.whiteArrow}
                               src={require('images/ic_mute.svg')}
@@ -377,8 +425,11 @@ export const JDConsult: React.FC<ConsultProps> = (props) => {
                             />
                           </button>
                         )}
-                        {isCall && !mute && (
-                          <button className={classes.muteBtn} onClick={() => setMute(!mute)}>
+                        {isCall && !isPublishAudio && (
+                          <button
+                            className={classes.muteBtn}
+                            onClick={() => setIsPublishAudio(!isPublishAudio)}
+                          >
                             <img
                               className={classes.whiteArrow}
                               src={require('images/ic_unmute.svg')}

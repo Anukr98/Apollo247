@@ -178,6 +178,7 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
         '_' +
         moment(g(props.PastData, 'appointmentDateTime')).format('DD MM YYYY') +
         '_' +
+        g(props.PastData, 'doctorInfo', 'salutation') +
         g(props.PastData, 'doctorInfo', 'displayName') +
         '_Apollo 247' +
         '.pdf'
@@ -630,7 +631,9 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
           </View>
         ) : (
           <View style={{ flex: 1 }}>
-            {props.PastData! && props.PastData!.medicineOrderLineItems.length == 0 ? (
+            {props.PastData! &&
+            props.PastData!.medicineOrderLineItems! &&
+            props.PastData!.medicineOrderLineItems.length == 0 ? (
               <View>
                 {moment(new Date()).format('DD/MM/YYYY') ===
                 moment(props.PastData!.quoteDateTime!).format('DD/MM/YYYY') ? (
@@ -692,7 +695,7 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                   </TouchableOpacity>
                 </View>
               </View>
-            ) : (
+            ) : props.PastData && !props.PastData!.prescriptionName ? (
               <View>
                 {moment(new Date()).format('DD/MM/YYYY') ===
                 moment(props.PastData!.quoteDateTime!).format('DD/MM/YYYY') ? (
@@ -761,6 +764,35 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                       </TouchableOpacity>
                     );
                   })}
+              </View>
+            ) : (
+              <View style={styles.rightViewStyle}>
+                <Text style={styles.labelTextStyle}>
+                  {moment(props.PastData && props.PastData.date).format('DD MMM YYYY')}
+                </Text>
+                <TouchableOpacity
+                  activeOpacity={1}
+                  style={[styles.cardContainerStyle]}
+                  onPress={() => {
+                    CommonLogEvent('HEALTH_MEDICINE_CARD', 'On follow up click'),
+                      props.onClickCard ? props.onClickCard() : null;
+                  }}
+                >
+                  <View style={{ overflow: 'hidden', borderRadius: 10, flex: 1 }}>
+                    <View style={{ flex: 1 }}>
+                      <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                        <Text style={styles.doctorNameStyles}>
+                          {props.PastData && props.PastData.prescriptionName}
+                        </Text>
+                      </View>
+                      {props.PastData && !!props.PastData.source && (
+                        <Text style={styles.descriptionTextStyles}>
+                          {props.PastData && props.PastData.source}
+                        </Text>
+                      )}
+                    </View>
+                  </View>
+                </TouchableOpacity>
               </View>
             )}
           </View>

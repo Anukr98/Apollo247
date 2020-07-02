@@ -22,6 +22,7 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingLeft: 16,
       paddingRight: 8,
       borderRight: '0.5px solid rgba(2,71,91,0.3)',
+      width: '20%',
       '& h4': {
         fontSize: 12,
         fontWeight: 500,
@@ -49,6 +50,7 @@ const useStyles = makeStyles((theme: Theme) => {
         color: '#fff',
         textTransform: 'none',
         fontSize: 12,
+        lineHeight: '14px',
         fontWeight: 500,
         padding: '8px 8px',
         margin: '4px 0',

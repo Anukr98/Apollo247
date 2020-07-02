@@ -5,7 +5,9 @@ import { DoctorSpecialtyRepository } from 'doctors-service/repositories/doctorSp
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import path from 'path';
 import fs from 'fs';
+import { ApiConstants } from 'ApiConstants';
 import { format } from 'date-fns';
+import { Tedis } from 'redis-typescript';
 
 export const sitemapTypeDefs = gql`
   extend type Mutation {
@@ -100,7 +102,72 @@ const generateSitemap: Resolver<null, {}, DoctorsServiceContext, string> = async
     'T' +
     format(new Date(), 'hh:mm:ss') +
     '+00:00</lastmod>\n</url>\n';
-  sitemapStr += doctorsStr + cmsUrls + brandsPage + '</urlset>';
+
+  const healthAreaListResp = await fetch(
+    process.env.PHARMACY_MED_PROD_SEARCH_BY_BRAND
+      ? process.env.PHARMACY_MED_PROD_SEARCH_BY_BRAND
+      : '',
+    {
+      method: 'GET',
+      headers: {
+        Authorization: process.env.PHARMACY_MED_AUTH_TOKEN
+          ? process.env.PHARMACY_MED_AUTH_TOKEN
+          : '',
+      },
+    }
+  );
+  const healthAreaTextRes = await healthAreaListResp.text();
+  const healthAreasUrlsList = JSON.parse(healthAreaTextRes);
+  let healthAreaUrls = '\n<!--Health Area links-->\n';
+  if (healthAreasUrlsList.healthareas && healthAreasUrlsList.healthareas.length > 0) {
+    healthAreasUrlsList.healthareas.forEach((link: any) => {
+      const url = process.env.SITEMAP_BASE_URL + 'medicine/healthareas/' + link.url_key;
+      healthAreaUrls +=
+        '<url>\n<loc>' + url + '</loc>\n<lastmod>' + modifiedDate + '</lastmod>\n</url>\n';
+    });
+  }
+  let ShopByCategory = '\n<!--Shop By Category links-->\n';
+  if (healthAreasUrlsList.shop_by_category && healthAreasUrlsList.shop_by_category.length > 0) {
+    healthAreasUrlsList.shop_by_category.forEach((link: any) => {
+      const url = process.env.SITEMAP_BASE_URL + 'medicine/shop-by-category/' + link.url_key;
+      ShopByCategory +=
+        '<url>\n<loc>' + url + '</loc>\n<lastmod>' + modifiedDate + '</lastmod>\n</url>\n';
+    });
+  }
+  const tedis = new Tedis({
+    port: <number>ApiConstants.REDIS_PORT,
+    host: ApiConstants.REDIS_URL.toString(),
+    password: ApiConstants.REDIS_PWD.toString(),
+  });
+  const redisMedKeys = await tedis.keys('medicine:sku:*');
+  let medicineUrls = '\n<!--Medicines list-->\n';
+  if (redisMedKeys && redisMedKeys.length > 0) {
+    for (let k = 0; k < redisMedKeys.length; k++) {
+      //console.log(redisMedKeys[k], 'key');
+      const skuDets = await tedis.hgetall(redisMedKeys[k]);
+      //console.log(skuDets, 'indise key');
+      if (skuDets && skuDets.url_key && skuDets.status == 'Enabled') {
+        medicineUrls +=
+          '<url>\n<loc>' +
+          process.env.SITEMAP_BASE_URL +
+          'medicine/' +
+          skuDets.url_key.toString() +
+          '</loc>\n<lastmod>' +
+          modifiedDate +
+          '</lastmod>\n</url>\n';
+        //console.log(medicineUrls, 'medurl');
+      }
+    }
+  }
+
+  sitemapStr +=
+    doctorsStr +
+    cmsUrls +
+    brandsPage +
+    healthAreaUrls +
+    ShopByCategory +
+    medicineUrls +
+    '</urlset>';
   const fileName = 'sitemap.xml';
   const uploadPath = assetsDir + '/' + fileName;
   fs.writeFile(uploadPath, sitemapStr, {}, (err) => {

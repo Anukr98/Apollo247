@@ -1,7 +1,22 @@
-import React, { useState, useEffect } from 'react';
-import { Theme, Typography, Grid, CircularProgress, Popover } from '@material-ui/core';
+import React, { useState, useEffect, useRef } from 'react';
+import {
+  Theme,
+  Typography,
+  Grid,
+  CircularProgress,
+  Popover,
+  useMediaQuery,
+} from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
-import { AphSelect, AphButton, AphInput, AphTextField } from '@aph/web-ui-components';
+import {
+  AphSelect,
+  AphButton,
+  AphInput,
+  AphTextField,
+  AphDialogTitle,
+  AphDialog,
+  AphDialogClose,
+} from '@aph/web-ui-components';
 import { Header } from 'components/Header';
 import { BottomLinks } from 'components/BottomLinks';
 import { isEmailValid, isNameValid, isMobileNumberValid } from '@aph/universal/dist/aphValidators';
@@ -16,10 +31,15 @@ import FormControl from '@material-ui/core/FormControl';
 import Select from '@material-ui/core/Select';
 import { MascotWithMessage } from '../MascotWithMessage';
 import fetchUtil from 'helpers/fetch';
+import { Route } from 'react-router-dom';
+import { clientRoutes } from 'helpers/clientRoutes';
+import { customerCareNumber } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
-    kavachLanding: {},
+    kavachLanding: {
+      width: '100%',
+    },
     kavachContent: {
       padding: 30,
       background: '#f7f8f5',
@@ -51,6 +71,11 @@ const useStyles = makeStyles((theme: Theme) => {
         fontWeight: 'bold',
         width: '70%',
         textAlign: 'center',
+        '& span': {
+          color: '#68919d',
+          display: 'block',
+          fontSize: 30,
+        },
       },
       [theme.breakpoints.down('sm')]: {
         flexDirection: 'column',
@@ -59,6 +84,9 @@ const useStyles = makeStyles((theme: Theme) => {
           order: 2,
           width: '100%',
           fontSize: 30,
+          '& span': {
+            fontSize: 22,
+          },
         },
       },
     },
@@ -77,6 +105,7 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: '24px 0',
     },
     kavachBanner: {
+      // height: '100%',
       '& img': {
         width: '100%',
         height: '100%',
@@ -102,6 +131,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     formControl: {
       width: '100%',
+      margin: '0 0 15px',
       '& svg': {
         color: '#00b38e',
       },
@@ -132,6 +162,13 @@ const useStyles = makeStyles((theme: Theme) => {
         fontSize: 18,
         fontWeight: 500,
         margin: '0 0 15px',
+      },
+      '& a': {
+        fontSize: 18,
+        fontWeight: 700,
+        color: '#fc9916',
+        textTransform: 'uppercase',
+        margin: '10px 0 0',
       },
     },
     covidCare: {
@@ -168,27 +205,45 @@ const useStyles = makeStyles((theme: Theme) => {
           fontWeight: 500,
         },
       },
+      '& button': {
+        margin: '20px auto 0',
+        width: '100%',
+        display: 'block',
+        maxWidth: 300,
+      },
     },
     mb20: {
       marginBottom: '20px !important',
     },
     packages: {},
     videoContainer: {
-      height: 360,
+      height: 335,
       borderRadius: 5,
       overflow: 'hidden',
+      margin: '20px 0 0',
     },
     embedContainer: {},
     heading: {
-      padding: 10,
+      padding: 20,
       background: '#fff',
       borderRadius: 5,
-      margin: '44px 0 20px',
-      textAlign: 'center',
+      margin: '20px 0',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      '& button': {
+        width: 300,
+      },
       '& h3': {
         fontSize: 23,
         fontWeight: 700,
         textTransform: 'uppercase',
+      },
+      [theme.breakpoints.down('sm')]: {
+        flexDirection: 'column',
+        '& h3': {
+          margin: '0 0 20px',
+        },
       },
     },
     uppercase: {
@@ -199,6 +254,25 @@ const useStyles = makeStyles((theme: Theme) => {
       border: '1px solid #eee',
       borderRadius: 5,
       overflow: 'hidden',
+    },
+    homeCare: {
+      '& h4': {
+        fontSize: '23px !important',
+        fontWeight: 600,
+      },
+      '& .careList': {
+        padding: '0 0 0 20px',
+      },
+    },
+    gridContainer: {
+      [theme.breakpoints.down('sm')]: {
+        margin: '20px 0 0',
+      },
+    },
+    gridItem: {
+      [theme.breakpoints.down('sm')]: {
+        padding: '0 10px !important',
+      },
     },
     faq: {
       padding: 20,
@@ -300,13 +374,37 @@ const useStyles = makeStyles((theme: Theme) => {
         display: 'none',
       },
     },
+    expertBox: {
+      padding: 20,
+      textAlign: 'center',
+      '& h2': {
+        fontSize: 16,
+        margin: 0,
+      },
+      '& a': {
+        fontSize: 14,
+        paddingTop: 5,
+        display: 'inline-block',
+        color: '#0087ba',
+        fontWeight: 500,
+      },
+      '& button': {
+        marginTop: 20,
+      },
+    },
   };
 });
 
 export const KavachLanding: React.FC = (props) => {
   const classes = useStyles({});
+
+  interface ServicesLocationsInterface {
+    [key: string]: any;
+  }
+
   const [expanded, setExpanded] = React.useState<string | false>(false);
   const [location, setLocation] = React.useState('');
+  const [service, setService] = React.useState('');
   const [showmore, setShowmore] = React.useState<boolean>(false);
   const [userEmail, setUserEmail] = useState<string>('');
   const [userName, setUserName] = useState<string>('');
@@ -317,6 +415,35 @@ export const KavachLanding: React.FC = (props) => {
   const [mobileNumberValid, setMobileNumberValid] = useState<boolean>(true);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
+  const [serviceOptions, setServiceOptions] = useState<any>([]);
+  const [locationOptions, setLocationOptions] = useState<any>([]);
+  const [servicesLocations, setServicesLocations] = useState<ServicesLocationsInterface>({});
+  const scrollToRef = useRef<HTMLDivElement>(null);
+  const [iscoronaDialogOpen, setIscoronaDialogOpen] = useState<boolean>(false);
+  const isDesktopOnly = useMediaQuery('(min-width:768px)');
+
+  useEffect(() => {
+    fetchUtil(process.env.KAVACH_SERVICES_LOCATIONS_URL, 'GET', {}, '', true)
+      .then((res: any) => {
+        if (res && res.data) {
+          setServicesLocations(res.data);
+          const services = Object.keys(res.data);
+          setServiceOptions(services);
+          const locations = [].concat(...Object.values(res.data));
+          const removeDuplicates = (data: {
+            filter: (arg0: (value: any, index: any) => boolean) => void;
+            indexOf: (arg0: any) => void;
+          }) => data.filter((value: any, index: any) => data.indexOf(value) === index);
+          setLocationOptions(removeDuplicates(locations));
+        }
+      })
+      .catch((err) => console.log(err));
+  }, []);
+  useEffect(() => {
+    scrollToRef &&
+      scrollToRef.current &&
+      scrollToRef.current.scrollIntoView({ behavior: 'auto', block: 'end' });
+  }, []);
 
   useEffect(() => {
     if (
@@ -324,13 +451,15 @@ export const KavachLanding: React.FC = (props) => {
       isNameValid(userName) &&
       isMobileNumberValid(userMobileNumber) &&
       location &&
-      location.length
+      location.length &&
+      service &&
+      service.length
     ) {
       setIsPostSubmitDisable(false);
     } else {
       setIsPostSubmitDisable(true);
     }
-  }, [userEmail, userName, location, userMobileNumber]);
+  }, [userEmail, userName, location, userMobileNumber, service]);
 
   const handleEmailValidityCheck = () => {
     if (userEmail.length && !isEmailValid(userEmail)) {
@@ -364,6 +493,17 @@ export const KavachLanding: React.FC = (props) => {
 
   const handleSelectChange = (event: React.ChangeEvent<{ value: unknown }>) => {
     setLocation(event.target.value as string);
+    const services = Object.keys(servicesLocations).map((service) => {
+      if (servicesLocations[service].includes(event.target.value)) {
+        return service;
+      }
+    });
+    setServiceOptions(services);
+  };
+
+  const handleServiceChange = (event: React.ChangeEvent<{ value: unknown }>) => {
+    setService(event.target.value as string);
+    setLocationOptions(servicesLocations[event.target.value as string]);
   };
 
   const submitKavachForm = () => {
@@ -373,6 +513,7 @@ export const KavachLanding: React.FC = (props) => {
       mobileNumber: userMobileNumber,
       email: userEmail,
       location,
+      stayAt: service,
     };
     fetchUtil(process.env.KAVACH_FORM_SUBMIT_URL, 'POST', userData, '', true).then((res: any) => {
       if (res && res.success) {
@@ -381,6 +522,7 @@ export const KavachLanding: React.FC = (props) => {
         setUserName('');
         setLocation('');
         setIsPopoverOpen(true);
+        setService('');
       } else {
         alert('something went wrong');
       }
@@ -392,8 +534,11 @@ export const KavachLanding: React.FC = (props) => {
       <Header />
       <div className={classes.container}>
         <div className={classes.kavachContent}>
-          <div className={classes.kavachIntro}>
-            <Typography component="h1">Keeping you safe from Covid. Always</Typography>
+          <div className={classes.kavachIntro} ref={scrollToRef}>
+            <Typography component="h1">
+              Keeping you safe from Covid. Always
+              <span> Helpline No.: 1860-500-0202</span>
+            </Typography>
             <div className={classes.imgContainer}>
               <img src={require('images/apollo-kavach.png')} />
             </div>
@@ -410,7 +555,7 @@ export const KavachLanding: React.FC = (props) => {
                   <Typography component="h2">Share your details</Typography>
                   <form>
                     <AphTextField
-                      onChange={(event) => handleNameChange(event)}
+                      onChange={(event: any) => handleNameChange(event)}
                       value={userName}
                       placeholder="Name"
                       className={classes.formInput}
@@ -418,7 +563,7 @@ export const KavachLanding: React.FC = (props) => {
                     {!userNameValid && <div className={classes.error}>Invalid name</div>}
 
                     <AphTextField
-                      onChange={(event) => handleMobileNumberChange(event)}
+                      onChange={(event: any) => handleMobileNumberChange(event)}
                       value={userMobileNumber}
                       inputProps={{
                         maxLength: 10,
@@ -432,7 +577,9 @@ export const KavachLanding: React.FC = (props) => {
 
                     <AphTextField
                       placeholder="Email"
-                      onChange={(event) => setUserEmail(event.target.value)}
+                      onChange={(event: { target: { value: React.SetStateAction<string> } }) =>
+                        setUserEmail(event.target.value)
+                      }
                       value={userEmail}
                       onBlur={handleEmailValidityCheck}
                       className={classes.formInput}
@@ -452,11 +599,27 @@ export const KavachLanding: React.FC = (props) => {
                         <MenuItem value="" disabled>
                           Select location
                         </MenuItem>
-                        <MenuItem value={'Hyderabad'}>Hyderabad</MenuItem>
-                        <MenuItem value={'Chennai'}>Chennai</MenuItem>
-                        <MenuItem value={'Delhi'}>New Delhi</MenuItem>
-                        <MenuItem value={'Bengaluru'}>Bengaluru</MenuItem>
-                        <MenuItem value={'Kolkata'}>Kolkata</MenuItem>
+                        {locationOptions.map((location: string) => (
+                          <MenuItem value={location}>{location}</MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                    <FormControl className={classes.formControl}>
+                      <Select
+                        labelId="demo-simple-select-label"
+                        id="demo-simple-select"
+                        value={service}
+                        onChange={(e) => handleServiceChange(e)}
+                        displayEmpty
+                        className={classes.selectEmpty}
+                        inputProps={{ 'aria-label': 'Without label' }}
+                      >
+                        <MenuItem value="" disabled>
+                          Service Type
+                        </MenuItem>
+                        {serviceOptions.map((service: string) => (
+                          <MenuItem value={service}>{service}</MenuItem>
+                        ))}
                       </Select>
                     </FormControl>
                     {!isLoading ? (
@@ -512,6 +675,12 @@ export const KavachLanding: React.FC = (props) => {
               Using our strong digital backbone, our prowess in telemedicine, and robust COVID-19
               protocols, the Apollo Kavach initiative offers you 360-degree protection.
             </Typography>
+            <a
+              href="https://cms.apollo247.com/sites/default/files/ApolloHomeKavachBrochure.pdf"
+              target="_blank"
+            >
+              Download Apollo Kavach Brochure Here
+            </a>
           </div>
           <div className={classes.covidCare}>
             <Grid container spacing={2}>
@@ -535,21 +704,28 @@ export const KavachLanding: React.FC = (props) => {
                 </div>
                 <div className={classes.card}>
                   <Typography component="h4" className={classes.uppercase}>
-                    The Covid Care Home Kit
+                    Doctor Connect
                   </Typography>
                   <ul className="careList">
-                    <li>Digital thermometer for temperature checks</li>
-                    <li>Pulse Oximeter to monitor blood oxygen levels &amp; heart rate</li>
-                    <li>Incentive Spirometer for breathing exercises</li>
-                    <li>3 ply face mask for infection prevention</li>
-                    <li>Examination gloves for infection prevention</li>
-                    <li>Paper gloves for infection prevention</li>
-                    <li>Sanitizer - 500 ML for hand hygiene</li>
-                    <li>Surface disinfectant for surface sanitisation</li>
-                    <li>Anti-bacterial wipes for smaller surfaces like mobile phones</li>
-                    <li>Waste disposal bags for laundry &amp; waste collection</li>
-                    <li>Spiral note pad &amp; pen for record-keeping</li>
+                    <li>Medical advisory service by our doctors</li>
+                    <li>Available round the clock</li>
+                    <li>
+                      Immediate telephone access to Apollo’s physicians for seeking advice on
+                      COVID-19
+                    </li>
+                    <li>Get prescriptions over SMS</li>
                   </ul>
+                  <a href={isDesktopOnly ? '#' : `tel:${customerCareNumber}`}>
+                    <AphButton
+                      variant="contained"
+                      color="primary"
+                      onClick={() => {
+                        isDesktopOnly ? setIscoronaDialogOpen(true) : '';
+                      }}
+                    >
+                      Call Now
+                    </AphButton>
+                  </a>
                 </div>
               </Grid>
               <Grid item xs={12} md={8}>
@@ -585,11 +761,6 @@ export const KavachLanding: React.FC = (props) => {
                 </Grid>
                 <div className={classes.packages}></div>
                 <div className={classes.embedContainer}>
-                  <div className={classes.heading}>
-                    <Typography component="h3">
-                      Basic &amp; Advanced Packages To Suit All Needs
-                    </Typography>
-                  </div>
                   <div className={classes.videoContainer}>
                     <iframe
                       width="100%"
@@ -603,6 +774,63 @@ export const KavachLanding: React.FC = (props) => {
                 </div>
               </Grid>
             </Grid>
+          </div>
+          <div className={classes.heading}>
+            <Typography component="h3">Basic &amp; Advanced Packages To Suit All Needs</Typography>
+            <a href={isDesktopOnly ? '#' : `tel:${customerCareNumber}`}>
+              <AphButton
+                color="primary"
+                variant="contained"
+                onClick={() => {
+                  isDesktopOnly ? setIscoronaDialogOpen(true) : '';
+                }}
+              >
+                Call Now
+              </AphButton>
+            </a>
+          </div>
+          <div className={classes.homeCare}>
+            <div className={classes.card}>
+              <Typography component="h4">The Covid Care Home Kit</Typography>
+              <Grid container spacing={2} className={classes.gridContainer}>
+                <Grid item xs={12} md={4} className={classes.gridItem}>
+                  <ul className="careList">
+                    <li>Digital thermometer for temperature checks</li>
+                    <li>Pulse Oximeter to monitor blood oxygen levels &amp; heart rate</li>
+                    <li>Incentive Spirometer for breathing exercises</li>
+                    <li>Spiral note pad &amp; pen for record-keeping</li>
+                  </ul>
+                </Grid>
+                <Grid item xs={12} md={4} className={classes.gridItem}>
+                  <ul className="careList">
+                    <li>3 ply face mask for infection prevention</li>
+                    <li>Examination gloves for infection prevention</li>
+                    <li>Paper gloves for infection prevention</li>
+                    <li>Sanitizer - 500 ML for hand hygiene</li>
+                  </ul>
+                </Grid>
+                <Grid item xs={12} md={4} className={classes.gridItem}>
+                  <ul className="careList">
+                    <li>Surface disinfectant for surface sanitisation</li>
+                    <li>Anti-bacterial wipes for smaller surfaces like mobile phones</li>
+                    <li>Waste disposal bags for laundry &amp; waste collection</li>
+                  </ul>
+                </Grid>
+              </Grid>
+              <Route
+                render={({ history }) => (
+                  <AphButton
+                    onClick={() =>
+                      history.push(clientRoutes.searchByMedicine('corona-virus-care', '1891'))
+                    }
+                    variant="contained"
+                    color="primary"
+                  >
+                    Buy Now
+                  </AphButton>
+                )}
+              />
+            </div>
           </div>
           {/* <div className={classes.image}></div> */}
           <div className={classes.faq}>
@@ -1464,6 +1692,17 @@ export const KavachLanding: React.FC = (props) => {
         </div>
       </div>
       <BottomLinks />
+      <AphDialog open={iscoronaDialogOpen} maxWidth="sm">
+        <AphDialogClose onClick={() => setIscoronaDialogOpen(false)} title={'Close'} />
+        <AphDialogTitle></AphDialogTitle>
+        <div className={classes.expertBox}>
+          <h2>CORONAVIRUS? Talk to our expert.</h2>
+          <a href={`tel:${customerCareNumber}`}>Call {customerCareNumber} in emergency</a>
+          <AphButton onClick={() => setIscoronaDialogOpen(false)} color="primary">
+            Ok, Got It
+          </AphButton>
+        </div>
+      </AphDialog>
     </div>
   );
 };

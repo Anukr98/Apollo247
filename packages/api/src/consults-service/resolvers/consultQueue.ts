@@ -14,6 +14,10 @@ import {
   Appointment,
   ConsultQueueItem,
   APPOINTMENT_STATE,
+  AppointmentUpdateHistory,
+  APPOINTMENT_UPDATED_BY,
+  VALUE_TYPE,
+  STATUS,
 } from 'consults-service/entities';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { AphError } from 'AphError';
@@ -393,6 +397,19 @@ const addToConsultQueueWithAutomatedQuestions: Resolver<
     };
     caseSheetRepo.savecaseSheet(casesheetAttrs);
     apptRepo.updateJdQuestionStatusbyIds([appointmentData.id]);
+    const historyAttrs: Partial<AppointmentUpdateHistory> = {
+      appointment: appointmentData,
+      userType: APPOINTMENT_UPDATED_BY.PATIENT,
+      fromValue: STATUS.PENDING,
+      toValue: STATUS.PENDING,
+      valueType: VALUE_TYPE.STATUS,
+      userName: appointmentData.patientId,
+      reason:
+        ApiConstants.CONSULT_QUEUE_HISTORY2.toString() +
+        ', virtual JD ID:' +
+        process.env.VIRTUAL_JD_ID,
+    };
+    apptRepo.saveAppointmentHistory(historyAttrs);
   } else if (onlineJuniorDoctors.length) {
     const onlineJuniorDoctorIds = onlineJuniorDoctors.map((doctor) => doctor.id);
     //Get queue items of online JDs
@@ -423,6 +440,16 @@ const addToConsultQueueWithAutomatedQuestions: Resolver<
 
     const { id } = await cqRepo.save(cqRepo.create({ appointmentId, doctorId, isActive: true }));
     queueId = id;
+    const historyAttrs: Partial<AppointmentUpdateHistory> = {
+      appointment: appointmentData,
+      userType: APPOINTMENT_UPDATED_BY.PATIENT,
+      fromValue: STATUS.PENDING,
+      toValue: STATUS.PENDING,
+      valueType: VALUE_TYPE.STATUS,
+      userName: appointmentData.patientId,
+      reason: ApiConstants.CONSULT_QUEUE_HISTORY.toString() + ', assigned JD: ' + doctorId,
+    };
+    apptRepo.saveAppointmentHistory(historyAttrs);
   } else {
     const consultQueueAttrs = {
       appointmentId: appointmentData.id,
@@ -446,6 +473,19 @@ const addToConsultQueueWithAutomatedQuestions: Resolver<
       isJdConsultStarted: true,
     };
     caseSheetRepo.savecaseSheet(casesheetAttrs);
+    const historyAttrs: Partial<AppointmentUpdateHistory> = {
+      appointment: appointmentData,
+      userType: APPOINTMENT_UPDATED_BY.PATIENT,
+      fromValue: STATUS.PENDING,
+      toValue: STATUS.PENDING,
+      valueType: VALUE_TYPE.STATUS,
+      userName: appointmentData.patientId,
+      reason:
+        ApiConstants.CONSULT_QUEUE_HISTORY1.toString() +
+        ', virtual JD ID:' +
+        process.env.VIRTUAL_JD_ID,
+    };
+    apptRepo.saveAppointmentHistory(historyAttrs);
   }
 
   apptRepo.updateJdQuestionStatusbyIds([appointmentId]);
@@ -497,9 +537,7 @@ const addToConsultQueueWithAutomatedQuestions: Resolver<
     const familyHistoryRepo = context.patientsDb.getCustomRepository(
       PatientFamilyHistoryRepository
     );
-    const familyHistoryRecord = await familyHistoryRepo.getPatientFamilyHistory(
-      appointmentData.patientId
-    );
+    const familyHistoryRecord = patientData.familyHistory[0];
 
     if (familyHistoryRecord == null) {
       //create
@@ -518,7 +556,9 @@ const addToConsultQueueWithAutomatedQuestions: Resolver<
       description: lifeStyle.length > 0 ? lifeStyle : undefined,
     };
     const lifeStyleRepo = context.patientsDb.getCustomRepository(PatientLifeStyleRepository);
-    const lifeStyleRecord = await lifeStyleRepo.getPatientLifeStyle(appointmentData.patientId);
+    const lifeStyleRecord = patientData.lifeStyle
+      ? patientData.lifeStyle[0]
+      : patientData.lifeStyle;
 
     if (lifeStyleRecord == null) {
       //create
@@ -552,9 +592,7 @@ const addToConsultQueueWithAutomatedQuestions: Resolver<
   const medicalHistoryRepo = context.patientsDb.getCustomRepository(
     PatientMedicalHistoryRepository
   );
-  const medicalHistoryRecord = await medicalHistoryRepo.getPatientMedicalHistory(
-    appointmentData.patientId
-  );
+  const medicalHistoryRecord = patientData.patientMedicalHistory;
   if (medicalHistoryRecord == null) {
     //create
     medicalHistoryRepo.savePatientMedicalHistory(medicalHistoryInputs);

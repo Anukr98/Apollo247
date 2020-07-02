@@ -13,6 +13,7 @@ import { Alert, BackAndroid, Platform, Text, TextInput } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import { setJSExceptionHandler, setNativeExceptionHandler } from 'react-native-exception-handler';
 import AsyncStorage from '@react-native-community/async-storage';
+import Axios from 'axios';
 
 const postToFirebase = (
   currentPatients: string | null,
@@ -102,6 +103,28 @@ setNativeExceptionHandler((exceptionString) => {
   //WILL NOT WORK in case of NATIVE ERRORS.
 });
 
+if (__DEV__) {
+  Axios.interceptors.request.use((request) => {
+    // console.log(
+    //   '\n\nStarting Axios Request',
+    //   '\n\nURL\n',
+    //   JSON.stringify(request.url),
+    //   '\n\nInput\n',
+    //   JSON.stringify(request.data),
+    //   '\n\nHeaders\n',
+    //   JSON.stringify(request.headers),
+    //   '\n\n'
+    // );
+    return request;
+  });
+}
+
+if (__DEV__) {
+  Axios.interceptors.response.use((response) => {
+    // console.log(`Axios Response :\n`, response.data, '\n\n');
+    return response;
+  });
+}
 interface AppContainerTypes {}
 
 export class AppContainer extends React.Component<AppContainerTypes> {
@@ -115,17 +138,17 @@ export class AppContainer extends React.Component<AppContainerTypes> {
 
   render() {
     return (
-      <AuthProvider>
-        <UIElementsProvider>
-          <AppCommonDataProvider>
+      <UIElementsProvider>
+        <AppCommonDataProvider>
+          <AuthProvider>
             <ShoppingCartProvider>
               <DiagnosticsCartProvider>
                 <NavigatorContainer />
               </DiagnosticsCartProvider>
             </ShoppingCartProvider>
-          </AppCommonDataProvider>
-        </UIElementsProvider>
-      </AuthProvider>
+          </AuthProvider>
+        </AppCommonDataProvider>
+      </UIElementsProvider>
     );
   }
 }

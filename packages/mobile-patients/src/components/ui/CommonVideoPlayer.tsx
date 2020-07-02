@@ -1,6 +1,5 @@
-import loadingVideo from '@aph/mobile-patients/src/Video/9seconds.mp4';
 import React, { useEffect, useState } from 'react';
-import { Platform, StyleProp, StyleSheet, ViewStyle } from 'react-native';
+import { StyleProp, StyleSheet, ViewStyle } from 'react-native';
 import VideoPlayer from 'react-native-video-controls';
 
 const styles = StyleSheet.create({
@@ -33,12 +32,15 @@ export const CommonVideoPlayer: React.FC<CommonVideoPlayerProps> = (props) => {
   return (
     <VideoPlayer
       style={[styles.headerView, style]}
-      // source={{ uri: 'https://vjs.zencdn.net/v/oceans.mp4' }}
-      source={Platform.OS === 'ios' ? { uri: '9seconds', type: 'mp4' } : loadingVideo}
+      source={{
+        uri:
+          'https://player.vimeo.com/external/432445688.hd.mp4?s=abfa637fd2a47a4548c71ce2ac4cc48819a2d1a5&profile_id=174',
+      }}
+      // source={Platform.OS === 'ios' ? { uri: '9seconds', type: 'mp4' } : loadingVideo}
       repeat
       showOnStart={false}
       controlTimeout={10}
-      resizeMode={'cover'}
+      resizeMode={'contain'}
       paused={playVideo}
       muted={false}
       playInBackground={false}

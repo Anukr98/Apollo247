@@ -1,8 +1,5 @@
 import { MedicineIcon, OrderPlacedIcon } from '@aph/mobile-patients/src/components/ui/Icons';
-import {
-  MEDICINE_ORDER_STATUS,
-  DIAGNOSTIC_ORDER_STATUS,
-} from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { MEDICINE_ORDER_STATUS } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
 import { StyleProp, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
@@ -48,7 +45,7 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     letterSpacing: 0.04,
     color: theme.colors.LIGHT_BLUE,
-    textTransform: 'capitalize',
+    // textTransform: 'capitalize',
     flex: 1,
   },
   dateTimeStyle: {
@@ -173,7 +170,7 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
               : {},
           ]}
         >
-          {props.statusDesc.replace('_', ' ')}
+          {props.statusDesc}
         </Text>
         <Text numberOfLines={1} style={styles.dateTimeStyle}>
           {props.dateTime}

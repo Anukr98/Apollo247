@@ -507,8 +507,8 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
       case MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY:
         return (
           <>
-            <span className={classes.labelStatus}>Out for delivery: </span> Your order #
-            {orderDetailsData.orderAutoId} would be reaching your doorstep soon.
+            <span className={classes.labelStatus}>Out for delivery: </span> Your Order has been
+            picked up from our store!
           </>
         );
       case MEDICINE_ORDER_STATUS.PAYMENT_FAILED:

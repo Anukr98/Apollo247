@@ -6,6 +6,9 @@ import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 @EntityRepository(PatientFamilyHistory)
 export class PatientFamilyHistoryRepository extends Repository<PatientFamilyHistory> {
   savePatientFamilyHistory(patientFamilyHistoryAttrs: Partial<PatientFamilyHistory>) {
+    if (patientFamilyHistoryAttrs.patient) {
+      patientFamilyHistoryAttrs.patientId = patientFamilyHistoryAttrs.patient.id;
+    }
     return this.save(this.create(patientFamilyHistoryAttrs)).catch((patientFamilyHistoryError) => {
       throw new AphError(AphErrorMessages.SAVE_PATIENT_FAMILY_HISTORY_ERROR, undefined, {
         patientFamilyHistoryError,
@@ -22,7 +25,19 @@ export class PatientFamilyHistoryRepository extends Repository<PatientFamilyHist
   }
 
   updatePatientFamilyHistory(id: string, patientFamilyHistoryAttrs: Partial<PatientFamilyHistory>) {
-    return this.update(id, patientFamilyHistoryAttrs);
+    console.log(
+      'updatePatientFamilyHistory id',
+      id,
+      'patientFamilyHistory attr',
+      patientFamilyHistoryAttrs
+    );
+    if (patientFamilyHistoryAttrs.patient) {
+      patientFamilyHistoryAttrs.patientId = patientFamilyHistoryAttrs.patient.id;
+      patientFamilyHistoryAttrs.id = id;
+    }
+    const patientFamilyHistory = this.create(patientFamilyHistoryAttrs);
+    console.log('patientFamilyHistory object', patientFamilyHistory);
+    return this.save(patientFamilyHistory);
   }
 
   findById(id: string) {

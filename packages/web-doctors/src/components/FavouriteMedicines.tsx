@@ -160,7 +160,7 @@ const useStyles = makeStyles((theme: Theme) =>
       },
     },
     medicinePopup: {
-      width: 480,
+      width: 500,
       margin: '60px auto 0 auto',
       boxShadow: 'none',
       outline: '0 !important',
@@ -276,6 +276,7 @@ const useStyles = makeStyles((theme: Theme) =>
         width: '30%',
         color: 'rgba(2, 71, 91, 0.8)',
         fontSize: 14,
+        marginLeft: 0,
         '& span': {
           fontWeight: 500,
           fontSize: 14,
@@ -304,27 +305,31 @@ const useStyles = makeStyles((theme: Theme) =>
       color: '#02475b',
       fontWeight: 500,
       marginBottom: 0,
-      '& button': {
-        border: '1px solid #00b38e',
-        padding: '5px 10px',
-        fontSize: 12,
-        fontWeight: 'normal',
-        borderRadius: 14,
-        marginRight: 15,
-        color: '#00b38e',
-        backgroundColor: '#fff',
-        cursor: 'pointer',
-        '&:focus': {
-          outline: 'none',
-        },
+    },
+    dayButton: {
+      border: '1px solid #00b38e',
+      padding: '5px 10px',
+      fontSize: 12,
+      fontWeight: 'normal',
+      borderRadius: 14,
+      marginRight: 6,
+      color: '#00b38e',
+      backgroundColor: '#fff',
+      cursor: 'pointer',
+      '&:focus': {
+        outline: 'none',
+      },
+      '&:nth-child(5)': {
+        border: '1px solid #e50000',
+        color: '#e50000',
+      },
+      '&:nth-child(6)': {
+        border: '1px solid #e50000',
+        color: '#e50000',
       },
     },
     daysOfWeek: {
       margin: '10px 0 0 0 !important',
-      '& button:last-child': {
-        border: '1px solid #e50000',
-        color: '#e50000',
-      },
     },
     instructionText: {
       margin: '0 0 10px 0 !important',
@@ -334,19 +339,19 @@ const useStyles = makeStyles((theme: Theme) =>
       position: 'relative',
       top: -5,
     },
-    activeBtn: {
-      backgroundColor: '#00b38e !important',
-      color: '#fff !important',
+    dayBtnActive: {
+      backgroundColor: '#00b38e',
+      color: '#fff',
       fontWeight: 600,
-    },
-    activeBtnRed: {
-      backgroundColor: '#00b38e !important',
-      color: '#fff !important',
-      fontWeight: 600,
-      '&:last-child': {
-        backgroundColor: '#e50000 !important',
+      '&:nth-child(5)': {
+        border: '1px solid #e50000',
+        backgroundColor: '#e50000',
         color: '#fff',
-        border: '1px solid #e50000 !important',
+      },
+      '&:nth-child(6)': {
+        border: '1px solid #e50000',
+        backgroundColor: '#e50000',
+        color: '#fff',
       },
     },
     helpText: {
@@ -1412,13 +1417,15 @@ export const FavouriteMedicines: React.FC = () => {
     return (
       <button
         key={daySlotitem.id}
-        className={`${daySlotitem.selected ? classes.activeBtnRed : ''} ${
+        className={`${classes.dayButton} ${daySlotitem.selected ? classes.dayBtnActive : ''} ${
           isCustomform && (daySlotitem.id === 'AS_NEEDED' || daySlotitem.id === 'NOT_SPECIFIC')
             ? classes.none
             : ''
         }`}
         onClick={() => {
-          daySlotsToggleAction(daySlotitem.id);
+          if (!isCustomform) {
+            daySlotsToggleAction(daySlotitem.id);
+          }
         }}
       >
         {daySlotitem.value}
@@ -1460,7 +1467,7 @@ export const FavouriteMedicines: React.FC = () => {
       customDosageArray.push(customDosageNight.trim());
     if (
       !isCustomform &&
-      tabletsCount.trim() === '' &&
+      (tabletsCount.trim() === '' || tabletsCount.trim() === '0') &&
       medicineForm !== MEDICINE_FORM_TYPES.GEL_LOTION_OINTMENT
     ) {
       setErrorState({
@@ -1579,7 +1586,9 @@ export const FavouriteMedicines: React.FC = () => {
       });
     } else if (
       forUnit !== MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW &&
-      (consumptionDuration === '' || isNaN(Number(consumptionDuration)))
+      (consumptionDuration === '' ||
+        isNaN(Number(consumptionDuration)) ||
+        consumptionDuration === '0')
     ) {
       setErrorState({
         ...errorState,
@@ -1719,7 +1728,7 @@ export const FavouriteMedicines: React.FC = () => {
       customDosageArray.push(customDosageNight.trim());
     if (
       !isCustomform &&
-      tabletsCount.trim() === '' &&
+      (tabletsCount.trim() === '' || tabletsCount.trim() === '0') &&
       medicineForm !== MEDICINE_FORM_TYPES.GEL_LOTION_OINTMENT
     ) {
       setErrorState({
@@ -1838,7 +1847,9 @@ export const FavouriteMedicines: React.FC = () => {
       });
     } else if (
       forUnit !== MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW &&
-      (consumptionDuration === '' || isNaN(Number(consumptionDuration)))
+      (consumptionDuration === '' ||
+        isNaN(Number(consumptionDuration)) ||
+        consumptionDuration === '0')
     ) {
       setErrorState({
         ...errorState,
@@ -1951,7 +1962,7 @@ export const FavouriteMedicines: React.FC = () => {
     return (
       <button
         key={tobeTakenitem.id}
-        className={tobeTakenitem.selected ? classes.activeBtn : ''}
+        className={`${classes.dayButton} ${tobeTakenitem.selected ? classes.dayBtnActive : ''}`}
         onClick={() => {
           toBeTakenSlotsToggleAction(tobeTakenitem.id);
         }}
@@ -2515,7 +2526,7 @@ export const FavouriteMedicines: React.FC = () => {
                                       component="div"
                                       error={errorState.dosageErr}
                                     >
-                                      Please enter dosage.
+                                      Please enter valid dosage.
                                     </FormHelperText>
                                   )}
                                 </Grid>
@@ -2606,7 +2617,7 @@ export const FavouriteMedicines: React.FC = () => {
                                       component="div"
                                       error={errorState.dosageErr}
                                     >
-                                      Please enter dosage.
+                                      Please enter valid dosage.
                                     </FormHelperText>
                                   )}
                                 </Grid>
@@ -2745,7 +2756,7 @@ export const FavouriteMedicines: React.FC = () => {
                                   component="div"
                                   error={errorState.durationErr}
                                 >
-                                  Please enter number of {term(forUnit.toLowerCase(), '(s)')}
+                                  Please enter valid number of {term(forUnit.toLowerCase(), '(s)')}
                                 </FormHelperText>
                               )}
                           </div>

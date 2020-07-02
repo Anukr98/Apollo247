@@ -4,29 +4,31 @@ import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
 import { NavigationBottom } from 'components/NavigationBottom';
 import { AphInput, AphButton } from '@aph/web-ui-components';
-import { Specialities } from 'components/Specialities';
 import ExpansionPanel from '@material-ui/core/ExpansionPanel';
 import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
 import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
-import { GET_ALL_SPECIALITIES } from 'graphql/specialities';
-import { useApolloClient } from 'react-apollo-hooks';
 import { useAllCurrentPatients } from 'hooks/authHooks';
-import { useLocationDetails } from 'components/LocationProvider';
 import { gtmTracking } from '../gtmTracking';
-import { SearchObject } from 'components/DoctorsFilter';
+// import { SearchObject } from 'components/DoctorsFilter';
 import { BottomLinks } from 'components/BottomLinks';
+import { PastSearches } from 'components/PastSearches';
+import { useAuth } from 'hooks/authHooks';
+import { clientRoutes } from 'helpers/clientRoutes';
+import { Link } from 'react-router-dom';
+import fetchUtil from 'helpers/fetch';
+import { SpecialtyDivision } from './SpecialtyDivision';
 import {
   SearchDoctorAndSpecialtyByNameVariables,
   SearchDoctorAndSpecialtyByName,
+  SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctors as DoctorsType,
+  SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_specialties as SpecialtyType,
 } from 'graphql/types/SearchDoctorAndSpecialtyByName';
-import { readableParam } from 'helpers/commonHelpers';
 import { SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME } from 'graphql/doctors';
-import { MedicineLocationSearch } from 'components/MedicineLocationSearch';
-import { useParams } from 'hooks/routerHooks';
-import { Link } from 'react-router-dom';
+import { useApolloClient } from 'react-apollo-hooks';
+import { SpecialtySearch } from './SpecialtySearch';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -51,9 +53,23 @@ const useStyles = makeStyles((theme: Theme) => {
           boxShadow: ' 0 5px 20px 0 rgba(128, 128, 128, 0.3)',
         },
       },
+
       [theme.breakpoints.down(650)]: {
         '&:after': {
           height: 320,
+        },
+      },
+    },
+    slnoDoctor: {
+      [theme.breakpoints.down(650)]: {
+        '&:after': {
+          height: 400,
+        },
+      },
+
+      [theme.breakpoints.down(340)]: {
+        '&:after': {
+          height: 440,
         },
       },
     },
@@ -112,7 +128,7 @@ const useStyles = makeStyles((theme: Theme) => {
           fontWeight: 'bold',
           color: '#fca317',
           textTransform: 'uppercase',
-          padding: '0 15px',
+          padding: '0 4px 0 7px',
           position: 'relative',
           '&:after': {
             content: "''",
@@ -141,7 +157,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     specialityContent: {
-      '& h2': {
+      '& >h2': {
         fontSize: 16,
         margin: '10px 0',
         color: '#00a7b9',
@@ -155,99 +171,6 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: '20px 0',
       [theme.breakpoints.down('sm')]: {
         padding: '20px',
-      },
-    },
-    location: {
-      display: 'flex',
-      alignItems: 'center',
-      borderBottom: '2px solid #00b38e',
-      padding: '5px 0',
-      margin: '0 10px 0 0',
-      width: 120,
-      '& >img': {
-        margin: '0 10px 0 0',
-      },
-      '& >div': {
-        margin: '0  !important',
-        border: 'none',
-        padding: '0 !important',
-        '& span': {
-          '&:first-child': {
-            width: 70,
-            height: 20,
-            border: 'none',
-            display: 'block',
-            fontSize: 0,
-            position: 'relative',
-            '&:before': {
-              content: "'Select City'",
-              fontSize: 14,
-              color: '#02475b',
-              fontWeight: 'bold',
-              position: 'absolute',
-              left: 0,
-              top: 0,
-            },
-          },
-        },
-      },
-      [theme.breakpoints.down(600)]: {
-        width: 150,
-        margin: '0 0 10px',
-        '& >div': {
-          width: '100%',
-          '& span': {
-            '&:first-child': {
-              width: 100,
-            },
-          },
-          '& >div': {
-            maxWidth: '100%',
-            '& >div': {
-              '&:last-child': {
-                display: 'flex',
-              },
-            },
-          },
-        },
-      },
-    },
-
-    pastSearch: {
-      padding: '20px 0 0',
-      '& h6': {
-        fontSize: 14,
-        fontWeight: 'bold',
-      },
-    },
-    pastSearchList: {
-      margin: 0,
-      padding: '20px ',
-      listStyle: 'none',
-      display: 'flex',
-      alignItems: 'center',
-      '& li': {
-        margin: '0 16px 0 0',
-        minWidth: 150,
-        textAlign: 'center',
-        '& a': {
-          padding: 12,
-          background: '#ffffff',
-          borderRadius: 10,
-          boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
-          color: '#fc9916',
-          fontsize: 13,
-          textTransform: 'uppercase',
-          display: 'block',
-          fontWeight: 'bold',
-        },
-        '& :last-child': {
-          margin: 0,
-        },
-      },
-      [theme.breakpoints.down('sm')]: {
-        width: '100%',
-        overflowX: 'auto',
       },
     },
     topSpeciality: {},
@@ -266,7 +189,7 @@ const useStyles = makeStyles((theme: Theme) => {
       '& >div': {
         '& >div': {
           '&:first-child': {
-            display: 'none',
+            display: 'block',
           },
         },
       },
@@ -319,7 +242,7 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 500,
     },
     detailsContent: {
-      width: '80%',
+      width: '95%',
       '& p': {
         margin: '0 0 10px',
         '&:last-child': {
@@ -333,23 +256,23 @@ const useStyles = makeStyles((theme: Theme) => {
       listStyle: 'decimal',
     },
     tsContent: {
-      // display: 'flex',
-      // alignItems: 'center',
-      // justifyContent: 'space-between',
       padding: '20px 0',
-      // flexWrap: 'wrap',
     },
     osContainer: {
       padding: '20px 0',
     },
     specialityCard: {
-      height: 160,
+      height: 180,
       background: '#fff',
       borderRadius: 10,
       boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
       padding: 10,
       textAlign: 'center',
       position: 'relative',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      flexDirection: 'column',
       '& h3': {
         fontSize: 14,
         fontWeight: 500,
@@ -376,15 +299,10 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     symptoms: {
-      position: 'absolute',
-      bottom: 10,
       fontSize: '10px !important',
-      margin: '20px 0 0',
       fontWeight: 500,
       color: '#02475b !important',
       padding: '0 !important',
-      left: 0,
-      right: 0,
       textAlign: 'center',
       [theme.breakpoints.down(700)]: {
         padding: '0 10px !important',
@@ -607,18 +525,83 @@ const useStyles = makeStyles((theme: Theme) => {
         alignItems: 'flex-start',
       },
     },
-    specialitySearch: {
-      padding: '10px 0 0',
-      display: 'flex',
-      alignItems: 'center',
-      [theme.breakpoints.down(700)]: {
-        flexDirection: 'column',
-        alignItems: 'flex-start',
-      },
-    },
     footerLinks: {
       [theme.breakpoints.down(900)]: {
         display: 'none',
+      },
+    },
+    locationContainer: {
+      padding: 30,
+      [theme.breakpoints.down(600)]: {
+        padding: 20,
+      },
+    },
+    dialogTitle: {
+      textAlign: 'left',
+      [theme.breakpoints.down(600)]: {
+        '& h2': {
+          fontSize: 14,
+        },
+      },
+    },
+    popularCities: {
+      padding: '20px 0',
+      '& h6': {
+        fontSize: 14,
+        fontWeight: 700,
+        margin: '0 0 10px',
+        color: '#02475b',
+      },
+      '& button': {
+        margin: '0 15px 0 0',
+        color: '#00b38e',
+        borderRadius: 10,
+        fontSize: 12,
+        textTransform: 'none',
+        [theme.breakpoints.down(500)]: {
+          margin: '0 15px 15px 0',
+        },
+      },
+    },
+    btnContainer: {
+      display: 'flex',
+      justifyContent: 'flex-end',
+      '& button': {
+        width: 180,
+        fontSize: 13,
+        fontWeight: 700,
+      },
+    },
+    sContent: {
+      margin: '10px 0 0',
+      padding: '15px 0 0',
+      borderTop: '1px solid rgba(1,71,91,0.5)',
+    },
+    sList: {
+      padding: 0,
+      margin: 0,
+      listStyle: 'none',
+      '& li': {
+        fontSize: 16,
+        color: '#02475b',
+        padding: '5px 0',
+        fontWeight: 500,
+      },
+    },
+    noDoctorContent: {
+      padding: '10px 0',
+      '& h2': {
+        fontSize: 16,
+        margin: '10px 0',
+        color: '#00a7b9',
+        fontWeight: 'bold',
+      },
+      '& p': {
+        fontSize: 14,
+        fontWeight: 700,
+      },
+      [theme.breakpoints.down(769)]: {
+        padding: 0,
       },
     },
   };
@@ -651,39 +634,22 @@ function a11yProps(index: any) {
     'aria-controls': `simple-tabpanel-${index}`,
   };
 }
-const searchObject: SearchObject = {
-  searchKeyword: '',
-  cityName: [],
-  experience: [],
-  availability: [],
-  fees: [],
-  gender: [],
-  language: [],
-  dateSelected: '',
-  specialtyName: '',
-  prakticeSpecialties: '',
-};
-interface DoctorsLandingProps {
-  history: History;
-}
 
 export const SpecialityListing: React.FC = (props) => {
   const classes = useStyles({});
+  const { currentPatient } = useAllCurrentPatients();
+  const apolloClient = useApolloClient();
+  const { isSignedIn } = useAuth();
   const [expanded, setExpanded] = React.useState<string | false>(false);
   const [value, setValue] = React.useState(0);
-  const urlParams = new URLSearchParams(window.location.search);
-  const failedStatus = urlParams.get('status') ? String(urlParams.get('status')) : null;
   const prakticeSDKSpecialties = localStorage.getItem('symptomTracker');
-  const [matchingSpecialities, setMatchingSpecialities] = useState<number>(0);
-  const [specialitySelected, setSpecialitySelected] = useState<string>('');
-  const apolloClient = useApolloClient();
-  const [specialtyId, setSpecialtyId] = useState<string>('');
-  const [filterOptions, setFilterOptions] = useState<SearchObject>(searchObject);
-  const { currentPatient } = useAllCurrentPatients();
-  const [data, setData] = useState<any>();
-  const [loading, setLoading] = useState<boolean>(false);
-  const [showSearchAndPastSearch, setShowSearchAndPastSearch] = useState<boolean>(true);
-  const [disableFilters, setDisableFilters] = useState<boolean>(true);
+  const [searchKeyword, setSearchKeyword] = useState<string>('');
+  const [locationPopup, setLocationPopup] = useState<boolean>(false);
+  const [searchSpecialty, setSearchSpecialty] = useState<SpecialtyType[] | null>(null);
+  const [searchDoctors, setSearchDoctors] = useState<DoctorsType[] | null>(null);
+  const [searchLoading, setSearchLoading] = useState<boolean>(false);
+  const [faqs, setFaqs] = useState<any | null>(null);
+  const [selectedCity, setSelectedCity] = useState<string>('');
 
   const handleChange = (panel: string) => (event: React.ChangeEvent<{}>, isExpanded: boolean) => {
     setExpanded(isExpanded ? panel : false);
@@ -692,16 +658,6 @@ export const SpecialityListing: React.FC = (props) => {
   const handleTabChange = (event: React.ChangeEvent<{}>, newValue: number) => {
     setValue(newValue);
   };
-
-  const {
-    currentPincode,
-    currentLong,
-    currentLat,
-    getCurrentLocationPincode,
-  } = useLocationDetails();
-  const params = useParams<{
-    specialty: string;
-  }>();
 
   useEffect(() => {
     /**Gtm code start start */
@@ -714,88 +670,66 @@ export const SpecialityListing: React.FC = (props) => {
   }, []);
 
   useEffect(() => {
-    if (params && params.specialty) {
-      const decoded = decodeURIComponent(params.specialty);
-      const specialityName = readableParam(decoded);
-      apolloClient
-        .query({
-          query: GET_ALL_SPECIALITIES,
-          variables: {},
-          fetchPolicy: 'no-cache',
-        })
-        .then((response) => {
-          response.data &&
-            response.data.getAllSpecialties &&
-            response.data.getAllSpecialties.map((specialty: any) => {
-              if (specialty && specialty.name && specialty.name.toLowerCase() === specialityName) {
-                setSpecialtyId(specialty.id);
-                setSpecialitySelected(specialty.name);
-              }
-            });
-        });
+    if (!faqs) {
+      fetchUtil(process.env.SPECIALTY_LISTING_FAQS, 'GET', {}, '', true).then((res: any) => {
+        if (res && res.success === 'true' && res.data && res.data.length > 0) {
+          setFaqs(res.data[0]);
+        }
+      });
     }
-  }, []);
+  }, [faqs]);
 
   useEffect(() => {
-    if (filterOptions.searchKeyword.length > 2 && specialitySelected.length === 0) {
-      setLoading(true);
+    if (searchKeyword.length > 2 || selectedCity.length) {
+      setSearchLoading(true);
       apolloClient
         .query<SearchDoctorAndSpecialtyByName, SearchDoctorAndSpecialtyByNameVariables>({
           query: SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME,
           variables: {
-            searchText: filterOptions.searchKeyword,
+            searchText: searchKeyword,
             patientId: currentPatient ? currentPatient.id : '',
-            pincode: currentPincode ? currentPincode : localStorage.getItem('currentPincode') || '',
+            city: selectedCity,
           },
           fetchPolicy: 'no-cache',
         })
         .then((response) => {
-          setData(response.data);
-          setLoading(false);
+          const specialtiesAndDoctorsList =
+            response && response.data && response.data.SearchDoctorAndSpecialtyByName;
+          if (specialtiesAndDoctorsList) {
+            const doctorsArray = specialtiesAndDoctorsList.doctors || [];
+            const specialtiesArray = specialtiesAndDoctorsList.specialties || [];
+            setSearchSpecialty(specialtiesArray);
+            setSearchDoctors(doctorsArray);
+          }
+        })
+        .catch((e) => {
+          console.log(e);
+          setSearchSpecialty([]);
+          setSearchDoctors([]);
+        })
+        .finally(() => {
+          setSearchLoading(false);
         });
     }
-  }, [filterOptions.searchKeyword, specialitySelected, currentPincode]);
-
-  useEffect(() => {
-    if (specialitySelected.length > 0) {
-      const specialityName = specialitySelected.split('_');
-      setFilterOptions({
-        searchKeyword: specialityName[0],
-        specialtyName: specialityName[0], // this is used to disable filter if specialty selected and changed.
-        cityName: [],
-        experience: [],
-        availability: [],
-        fees: [],
-        gender: [],
-        language: [],
-        dateSelected: '',
-        prakticeSpecialties: '',
-      });
-      setShowSearchAndPastSearch(false);
-
-      /**Gtm code start start */
-      gtmTracking({
-        category: 'Consultations',
-        action: specialitySelected,
-        label: 'Listing Page Viewed',
-      });
-      /**Gtm code start end */
-    }
-  }, [specialitySelected]);
+  }, [searchKeyword, selectedCity]);
 
   return (
     <div className={classes.slContainer}>
       <Header />
       <div className={classes.container}>
         <div className={classes.slContent}>
+          {' '}
+          {/* Please add a class slnoDoctor here when showing up noDoctor Content */}
           <div className={classes.pageHeader}>
-            <div className={classes.backArrow} title={'Back to home page'}>
-              <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
-              <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
-            </div>
+            <Link to={clientRoutes.welcome()}>
+              <div className={classes.backArrow} title={'Back to home page'}>
+                <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
+                <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
+              </div>
+            </Link>
             <ol className={classes.breadcrumbs}>
               <li>
-                <a href="javascript:void(0);">Home</a>
+                <Link to={clientRoutes.welcome()}>Home</Link>
               </li>
               <li className="active">
                 <a href="javascript:void(0);">Specialities</a>
@@ -808,116 +742,38 @@ export const SpecialityListing: React.FC = (props) => {
                 <div className={classes.specialityContent}>
                   <div className={classes.sHeader}>
                     <Typography component="h1">Book Doctor Appointments Online</Typography>
-                    {/* <a href="javascript:void(0);">
-                      <img src={require('images/ic_round-share.svg')} />
-                    </a> */}
                   </div>
-                  <div className={classes.specialitySearch}>
-                    <div className={classes.location}>
-                      <img src={require('images/location.svg')} />
-                      <MedicineLocationSearch />
+                  <SpecialtySearch
+                    setSearchKeyword={setSearchKeyword}
+                    searchKeyword={searchKeyword}
+                    selectedCity={selectedCity}
+                    searchSpecialty={searchSpecialty}
+                    searchDoctors={searchDoctors}
+                    searchLoading={searchLoading}
+                    setLocationPopup={setLocationPopup}
+                    locationPopup={locationPopup}
+                    setSelectedCity={setSelectedCity}
+                  />
+                  {currentPatient && currentPatient.id && searchKeyword.length <= 0 && (
+                    <PastSearches />
+                  )}
+                  {selectedCity !== '' && searchDoctors && searchDoctors.length === 0 && (
+                    <div className={classes.noDoctorContent}>
+                      <Typography component="h2">
+                        No Specialties/Doctors found near {selectedCity}. Don’t worry, now you can
+                        consult doctors from any city using Chat/Audio/Video.
+                      </Typography>
+                      <Typography>
+                        How ? Choose a doctor &gt; Book a slot &gt; Make a payment &gt; Consult via
+                        video/audio/chat &gt; Receive prescription instantly &gt; Chat with the
+                        doctor for 6 days after your consult
+                      </Typography>
                     </div>
-                    <AphInput placeholder="Search doctors or specialities" />
-                  </div>
-                  <div className={classes.pastSearch}>
-                    <Typography component="h6">Past Searches</Typography>
-                    <ul className={classes.pastSearchList}>
-                      <li>
-                        <a href="javascript:void(0)">Dr. Alok Mehta</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0)">Cardiology</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0)">Paediatrician</a>
-                      </li>
-                    </ul>
-                  </div>
-                  <Typography component="h2">
-                    Start your care now by choosing from 500 doctors and 65 specialities
-                  </Typography>
-                  <div className={classes.topSpeciality}>
-                    <div className={classes.sectionHeader}>
-                      <Typography component="h2">Top Specialites</Typography>
-                    </div>
-                    <div className={classes.tsContent}>
-                      <Grid container spacing={2}>
-                        <Grid item xs={6} md={3}>
-                          <div className={classes.specialityCard}>
-                            <Link to="">
-                              <Typography component="h3">Paediatrics</Typography>
-                              <img src={require('images/ic-baby.svg')} />
-                              <Typography>For your child’s health problems</Typography>
-                              <Typography className={classes.symptoms}>
-                                Fever, cough, diarrhoea
-                              </Typography>
-                            </Link>
-                          </div>
-                        </Grid>
-                        <Grid item xs={6} md={3}>
-                          <div className={classes.specialityCard}>
-                            <Link to="">
-                              <Typography component="h3">General Physician</Typography>
-                              <img src={require('images/ic_doctor_consult.svg')} />
-                              <Typography>For any common health issue</Typography>
-                              <Typography className={classes.symptoms}>
-                                Fever, headache, asthma
-                              </Typography>
-                            </Link>
-                          </div>
-                        </Grid>
-                        <Grid item xs={6} md={3}>
-                          <div className={classes.specialityCard}>
-                            <Link to="">
-                              <Typography component="h3">Dermatology</Typography>
-                              <img src={require('images/ic-hair.svg')} />
-                              <Typography>For skin &amp; hair problems</Typography>
-                              <Typography className={classes.symptoms}>
-                                Skin rash, acne, skin patch
-                              </Typography>
-                            </Link>
-                          </div>
-                        </Grid>
-                        <Grid item xs={6} md={3}>
-                          <div className={classes.specialityCard}>
-                            <Link to="">
-                              <Typography component="h3">Gynaecology</Typography>
-                              <img src={require('images/ic-gynaec.svg')} />
-                              <Typography>For women’s health </Typography>
-                              <Typography className={classes.symptoms}>
-                                Irregular periods, pregnancy
-                              </Typography>
-                            </Link>
-                          </div>
-                        </Grid>
-                      </Grid>
-                    </div>
-                  </div>
-                  <div className={classes.otherSpeciality}>
-                    <div className={classes.sectionHeader}>
-                      <Typography component="h2">Other Specialites</Typography>
-                    </div>
-                    <div className={classes.osContainer}>
-                      <Specialities
-                        keyword={filterOptions.searchKeyword}
-                        matched={(matchingSpecialities) =>
-                          setMatchingSpecialities(matchingSpecialities)
-                        }
-                        speciality={(specialitySelected) =>
-                          setSpecialitySelected(specialitySelected)
-                        }
-                        specialityId={(specialityId: string) => setSpecialtyId(specialityId)}
-                        disableFilter={(disableFilters) => {
-                          setDisableFilters(disableFilters);
-                        }}
-                        subHeading={
-                          filterOptions.searchKeyword !== '' && showSearchAndPastSearch
-                            ? 'Matching Specialities'
-                            : 'Specialities'
-                        }
-                      />
-                    </div>
-                  </div>
+                  )}
+                  <SpecialtyDivision
+                    selectedCity={selectedCity}
+                    doctorsCount={searchDoctors ? searchDoctors.length : 0}
+                  />
                 </div>
               </Grid>
               <Grid item xs={12} md={4}>
@@ -930,7 +786,15 @@ export const SpecialityListing: React.FC = (props) => {
                         <Typography component="h6">
                           Not sure about which speciality to choose?
                         </Typography>
-                        <a href="javascript:void(0)">Track your Symptoms</a>
+                        <Link
+                          to={
+                            isSignedIn
+                              ? clientRoutes.symptomsTrackerFor()
+                              : clientRoutes.symptomsTracker()
+                          }
+                        >
+                          Track your Symptoms
+                        </Link>
                       </div>
                     </div>
                   </div>
@@ -1062,109 +926,36 @@ export const SpecialityListing: React.FC = (props) => {
               </Grid>
             </Grid>
           </div>
-          <div className={classes.faq}>
-            <Typography component="h2">Frequently asked questions</Typography>
-            <ExpansionPanel
-              className={classes.panelRoot}
-              expanded={expanded === 'panel1'}
-              onChange={handleChange('panel1')}
-            >
-              <ExpansionPanelSummary
-                expandIcon={<ExpandMoreIcon />}
-                classes={{
-                  root: classes.panelHeader,
-                  content: classes.summaryContent,
-                  expandIcon: classes.expandIcon,
-                  expanded: classes.panelExpanded,
-                }}
-              >
-                <Typography className={classes.panelHeading} component="h3">
-                  How do I book an online consultation?
-                </Typography>
-              </ExpansionPanelSummary>
-              <ExpansionPanelDetails className={classes.panelDetails}>
-                <div className={classes.detailsContent}>
-                  <Typography>
-                    You can book an online consultation either on the website or mobile app of
-                    Apollo 24/7 in two ways.
-                  </Typography>
-                  <ul className={classes.faqList}>
-                    <li>
-                      Click on the ‘Find a Doctor’ button on the homepage of the website/app, select
-                      a specialty or type the name of the doctor directly. Once you select a doctor,
-                      you can click on the “Consult Now’ button to start the online consultation.
-                    </li>
-                    <li>
-                      If you're looking for a doctor based on your symptoms, you may start by going
-                      to the homepage of the website/app. Then click on the ‘Track Symptoms’ tab,
-                      search for your symptoms or select a few of them based on your health
-                      condition. Click ‘Show Doctors’, select a doctor and click on the ‘Consult
-                      Now’ button to start the online consultation.
-                    </li>
-                  </ul>
-                </div>
-              </ExpansionPanelDetails>
-            </ExpansionPanel>
-            <ExpansionPanel
-              className={classes.panelRoot}
-              expanded={expanded === 'panel2'}
-              onChange={handleChange('panel2')}
-            >
-              <ExpansionPanelSummary
-                expandIcon={<ExpandMoreIcon />}
-                classes={{
-                  root: classes.panelHeader,
-                  content: classes.summaryContent,
-                  expandIcon: classes.expandIcon,
-                  expanded: classes.panelExpanded,
-                }}
-              >
-                <Typography className={classes.panelHeading} component="h3">
-                  For how long can I speak to the doctor??
-                </Typography>
-              </ExpansionPanelSummary>
-              <ExpansionPanelDetails className={classes.panelDetails}>
-                <div className={classes.detailsContent}>
-                  <Typography>
-                    Once you book an online consultation on our app, you will get 15 minutes to
-                    speak to the doctor. This window can, however, change according to your health
-                    condition and the number of queries you have.
-                  </Typography>
-                </div>
-              </ExpansionPanelDetails>
-            </ExpansionPanel>
-            <ExpansionPanel
-              className={classes.panelRoot}
-              expanded={expanded === 'panel3'}
-              onChange={handleChange('panel3')}
-            >
-              <ExpansionPanelSummary
-                expandIcon={<ExpandMoreIcon />}
-                classes={{
-                  root: classes.panelHeader,
-                  content: classes.summaryContent,
-                  expandIcon: classes.expandIcon,
-                  expanded: classes.panelExpanded,
-                }}
-              >
-                <Typography className={classes.panelHeading} component="h3">
-                  How do I book a follow-up session with the same doctor on the app?
-                </Typography>
-              </ExpansionPanelSummary>
-              <ExpansionPanelDetails className={classes.panelDetails}>
-                <div className={classes.detailsContent}>
-                  <Typography>
-                    To book a follow-up session with the same doctor, select the ‘Active
-                    Appointments’ tab on the home page or ‘Appointments’ tab on the bottom menu bar
-                    of the app. After that, you can click on the ‘Schedule A Follow-Up’ button to
-                    book a follow-up consultation. Alternatively, you can also go to ‘Health
-                    Records’ section on the app, select ‘Consults &amp; Rx’, select the appointment
-                    card and click on the ‘Schedule A Follow-Up’ button.
-                  </Typography>
-                </div>
-              </ExpansionPanelDetails>
-            </ExpansionPanel>
-          </div>
+          {faqs && faqs.onlineConsultation && faqs.onlineConsultation.length > 0 && (
+            <div className={classes.faq}>
+              <Typography component="h2">Frequently asked questions</Typography>
+              {faqs.onlineConsultation.map((que: any) => (
+                <ExpansionPanel
+                  key={que.id}
+                  className={classes.panelRoot}
+                  expanded={expanded === que.id}
+                  onChange={handleChange(que.id)}
+                >
+                  <ExpansionPanelSummary
+                    expandIcon={<ExpandMoreIcon />}
+                    classes={{
+                      root: classes.panelHeader,
+                      content: classes.summaryContent,
+                      expandIcon: classes.expandIcon,
+                      expanded: classes.panelExpanded,
+                    }}
+                  >
+                    <Typography className={classes.panelHeading} component="h3">
+                      {que.faqQuestion}
+                    </Typography>
+                  </ExpansionPanelSummary>
+                  <ExpansionPanelDetails className={classes.panelDetails}>
+                    <div className={classes.detailsContent}>{que.faqAnswer}</div>
+                  </ExpansionPanelDetails>
+                </ExpansionPanel>
+              ))}
+            </div>
+          )}
         </div>
       </div>
       <NavigationBottom />
