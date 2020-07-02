@@ -1764,7 +1764,7 @@ export const ConsultTabs: React.FC = () => {
         >
           <Scrollbars
             ref={(s: any) => {
-              s !== null && s.scrollToTop();
+              !isClickedOnEdit && isClickedOnPriview && s !== null && s.scrollToTop();
             }}
             autoHide={true}
             style={{ height: 'calc(100vh - 65px)' }}
