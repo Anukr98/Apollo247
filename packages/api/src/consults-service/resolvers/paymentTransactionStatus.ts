@@ -5,7 +5,7 @@ import { AppointmentRepository } from 'consults-service/repositories/appointment
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { log } from 'customWinstonLogger';
-import { REFUND_STATUS } from 'consults-service/entities';
+import { REFUND_STATUS, STATUS } from 'consults-service/entities';
 
 export const paymentTransactionStatusTypeDefs = gql`
   enum REFUND_STATUS {
@@ -128,6 +128,9 @@ const paymentTransactionStatus: Resolver<
         break;
       case 'TXN_FAILURE':
         returnResponse.paymentStatus = 'PAYMENT_FAILED';
+        if (response.status === STATUS.PAYMENT_ABORTED) {
+          returnResponse.paymentStatus = STATUS.PAYMENT_ABORTED;
+        }
         break;
     }
   }
