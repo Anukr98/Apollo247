@@ -4,13 +4,13 @@ import {
   postWebEngageEvent,
   findAddrComponents,
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
-import { MedicineUploadPrescriptionView } from '@aph/mobile-patients/src/components/Medicines/MedicineUploadPrescriptionView';
 import { RadioSelectionItem } from '@aph/mobile-patients/src/components/Medicines/RadioSelectionItem';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import {
   PhysicalPrescription,
   ShoppingCartItem,
   useShoppingCart,
+  EPrescription,
 } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
@@ -44,6 +44,7 @@ import {
   Text,
   View,
   Platform,
+  Image,
 } from 'react-native';
 import {
   NavigationScreenProps,
@@ -58,6 +59,9 @@ import { StorePickupOrAddressSelectionView } from './StorePickupOrAddressSelecti
 import { savePatientAddress_savePatientAddress_patientAddress } from '../../graphql/types/savePatientAddress';
 import { updatePatientAddress, updatePatientAddressVariables } from '../../graphql/types/updatePatientAddress';
 import { useDiagnosticsCart } from '../DiagnosticsCartProvider';
+import { FileBig, GreenTickIcon } from '../ui/Icons';
+import { TextInputComponent } from '../ui/TextInputComponent';
+import { EPrescriptionCard } from '../ui/EPrescriptionCard';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -119,6 +123,13 @@ const styles = StyleSheet.create({
     marginTop: 10,
     alignItems: 'center',
   },
+  prescriptionCardStyle: {
+    marginTop: 16,
+    ...theme.viewStyles.cardViewStyle,
+    borderRadius: 10,
+    backgroundColor: theme.colors.CARD_BG,
+    marginHorizontal: 20,
+  },
 });
 
 export interface YourCartUploadPrescriptionProps extends NavigationScreenProps {}
@@ -139,9 +150,7 @@ export const YourCartUploadPrescriptions: React.FC<YourCartUploadPrescriptionPro
     coupon,
     setCoupon,
     uploadPrescriptionRequired,
-    physicalPrescriptions,
     pinCode,
-    ePrescriptions,
     stores,
     setAddresses,
   } = useShoppingCart();
@@ -159,6 +168,8 @@ export const YourCartUploadPrescriptions: React.FC<YourCartUploadPrescriptionPro
 
   const prescriptionOption = props.navigation.getParam('prescriptionOptionSelected');
   const durationDay = props.navigation.getParam('durationDays');
+  const physicalPrescription = props.navigation.getParam('physicalPrescription');
+  const ePrescription = props.navigation.getParam('ePrescription');
 
   // To remove applied coupon and selected storeId from cart when user goes back.
   useEffect(() => {
@@ -226,8 +237,8 @@ export const YourCartUploadPrescriptions: React.FC<YourCartUploadPrescriptionPro
   const disablePlaceOrder = !(
     !!(deliveryAddressId || storeId) &&
     ((storeId && showPrescriptionAtStore) ||
-    physicalPrescriptions.length > 0 ||
-    ePrescriptions.length > 0)
+    physicalPrescription.length > 0 ||
+    ePrescription.length > 0)
   );
 
   const renderPaymentMethod = () => {
@@ -366,7 +377,7 @@ export const YourCartUploadPrescriptions: React.FC<YourCartUploadPrescriptionPro
     );
     try {
       // Physical Prescription Upload
-      const uploadedPhyPrescriptionsData = await uploadMultipleFiles(physicalPrescriptions);
+      const uploadedPhyPrescriptionsData = await uploadMultipleFiles(physicalPrescription);
       console.log('upload of prescriptions done');
 
       const uploadedPhyPrescriptions = uploadedPhyPrescriptionsData.length
@@ -374,12 +385,12 @@ export const YourCartUploadPrescriptions: React.FC<YourCartUploadPrescriptionPro
         : [];
 
       const phyPresUrls = uploadedPhyPrescriptions.map((item) => item!.filePath).filter((i) => i);
-      const phyPresPrismIds = physicalPrescriptions.map(
+      const phyPresPrismIds = physicalPrescription.map(
         (item) => item.prismPrescriptionFileId
       ).filter((i) => i);
 
-      const ePresUrls = ePrescriptions.map((item) => item.uploadedUrl).filter((i) => i);
-      const ePresPrismIds = ePrescriptions.map((item) => item.prismPrescriptionFileId).filter(
+      const ePresUrls = ePrescription.map((item) => item.uploadedUrl).filter((i) => i);
+      const ePresPrismIds = ePrescription.map((item) => item.prismPrescriptionFileId).filter(
         (i) => i
       );
 
@@ -394,7 +405,7 @@ export const YourCartUploadPrescriptions: React.FC<YourCartUploadPrescriptionPro
           patinetAddressId: deliveryAddressId || '',
           prescriptionImageUrl: [...phyPresUrls, ...ePresUrls].join(','),
           prismPrescriptionFileId: [...phyPresPrismIds, ...ePresPrismIds].join(','),
-          isEprescription: ePrescriptions.length ? 1 : 0, // if atleat one prescription is E-Prescription then pass it as one.
+          isEprescription: ePrescription.length ? 1 : 0, // if atleat one prescription is E-Prescription then pass it as one.
           // Values for chennai order
           email: isChennaiAddress && email ? email.trim() : null,
           NonCartOrderCity: isChennaiAddress ? NonCartOrderOMSCity.CHENNAI : null,
@@ -473,9 +484,9 @@ export const YourCartUploadPrescriptions: React.FC<YourCartUploadPrescriptionPro
     });
   };
 
-  const uploadMultipleFiles = (physicalPrescriptions: PhysicalPrescription[]) => {
+  const uploadMultipleFiles = (physicalPrescription: PhysicalPrescription[]) => {
     return Promise.all(
-      physicalPrescriptions.map((item) => {
+      physicalPrescription.map((item) => {
         const variables = {
           UploadDocumentInput: {
             base64FileInput: item.base64,
@@ -501,6 +512,112 @@ export const YourCartUploadPrescriptions: React.FC<YourCartUploadPrescriptionPro
     );
   };
 
+  const renderPhysicalPrescriptionRow = (
+    item: PhysicalPrescription,
+    i: number,
+    arrayLength: number
+  ) => {
+    return (
+      <View
+        style={{
+          ...theme.viewStyles.cardViewStyle,
+          shadowRadius: 4,
+          height: 56,
+          marginHorizontal: 20,
+          backgroundColor: theme.colors.WHITE,
+          flexDirection: 'row',
+          alignItems: 'center',
+          marginTop: i === 0 ? 16 : 4,
+          marginBottom: arrayLength === i + 1 ? 16 : 4,
+        }}
+        key={i}
+      >
+        <View
+          style={{
+            paddingLeft: 8,
+            paddingRight: 16,
+            width: 54,
+          }}
+        >
+          {item.fileType == 'pdf' ? (
+            <FileBig
+              style={{
+                height: 45,
+                width: 30,
+                borderRadius: 5,
+              }}
+            />
+          ) : (
+            <Image
+              style={{
+                height: 40,
+                width: 30,
+                borderRadius: 5,
+              }}
+              source={{ uri: `data:image/jpeg;base64,${item.base64}` }}
+            />
+          )}
+        </View>
+        <View style={{ flex: 1 }}>
+          <TextInputComponent
+            textInputprops={{ editable: false }}
+            inputStyle={{
+              marginTop: 3,
+            }}
+            value={item.title}
+          />
+        </View>
+        <GreenTickIcon style={{
+          width: 20,
+          marginRight: 10,
+          marginLeft: 10,
+          paddingHorizontal: 8,
+        }} />
+      </View>
+    );
+  };
+
+  const renderPhysicalPrescriptions = () => {
+    if (physicalPrescription.length > 0) {
+      return (
+        <View style={styles.prescriptionCardStyle}>
+          {physicalPrescription.map((item, index, array) => {
+            return renderPhysicalPrescriptionRow(item, index, array.length);
+          })}
+        </View>
+      );
+    }
+  };
+
+  const renderEPrescriptionRow = (item: EPrescription, i: number, arrayLength: number) => {
+    return (
+      <EPrescriptionCard
+        style={{
+          marginTop: i === 0 ? 20 : 4,
+          marginBottom: arrayLength === i + 1 ? 16 : 4,
+        }}
+        medicines={item.medicines}
+        actionType="removal"
+        date={item.date}
+        doctorName={item.doctorName}
+        forPatient={item.forPatient}
+        showTick={true}
+      />
+    );
+  };
+
+  const renderEPrescriptions = () => {
+    if (ePrescription.length > 0) {
+      return (
+        <View style={[styles.prescriptionCardStyle]}>
+          {ePrescription.map((item, index, array) => {
+            return renderEPrescriptionRow(item, index, array.length);
+          })}
+        </View>
+      );
+    }
+  };
+
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={{ ...theme.viewStyles.container }}>
@@ -512,15 +629,9 @@ export const YourCartUploadPrescriptions: React.FC<YourCartUploadPrescriptionPro
           bounces={false}
         >
           <View style={{ marginVertical: 24 }}>
-            {
-              (physicalPrescriptions.length === 0 && ePrescriptions.length == 0) && 
-              <View style={{ marginBottom: 20 }}>{renderLabel('UPLOAD PRESCRIPTION')}</View>
-            }
-            <MedicineUploadPrescriptionView
-              selectedTab={selectedTab}
-              setSelectedTab={setselectedTab}
-              navigation={props.navigation}
-            />
+            {renderLabel('UPLOAD PRESCRIPTION')}
+            {renderPhysicalPrescriptions()}
+            {renderEPrescriptions()}
             <View style={{ marginTop: 20 }}>{renderLabel('WHERE SHOULD WE DELIVER?')}</View>
             <StorePickupOrAddressSelectionView navigation={props.navigation} />
             {renderPaymentMethod()}

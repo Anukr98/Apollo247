@@ -18,13 +18,6 @@ import {
   CommonBugFender,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
-  UPLOAD_DOCUMENT,
-} from '@aph/mobile-patients/src/graphql/profiles';
-import {
-  PRISM_DOCUMENT_CATEGORY,
-  UPLOAD_FILE_TYPES,
-} from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import {
   g,
   postWebEngageEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
@@ -42,7 +35,6 @@ import {
   View,
 } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import { uploadDocument, uploadDocumentVariables } from '../../graphql/types/uploadDocument';
 import {
   WebEngageEvents,
   WebEngageEventName,
@@ -118,16 +110,17 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
     setLoading!(true);
 
     try {
-      if (EPrescriptions.length > 0) setEPrescription && setEPrescription([...EPrescriptions]);
-      if (PhysicalPrescriptions.length > 0) setPhysicalPrescription && setPhysicalPrescription([...PhysicalPrescriptions]);
-
       if (selectedMedicineOption === 'search') {
+        if (EPrescriptions.length > 0) setEPrescription && setEPrescription([...EPrescriptions]);
+        if (PhysicalPrescriptions.length > 0) setPhysicalPrescription && setPhysicalPrescription([...PhysicalPrescriptions]);
         props.navigation.navigate(AppRoutes.SearchMedicineScene, { showButton: true });
       } else {
         const days = durationDays ? parseInt(durationDays) : null;
         props.navigation.push(AppRoutes.YourCartUploadPrescriptions, {
           prescriptionOptionSelected: selectedMedicineOption,
           durationDays: prescriptionOption === 'duration' ? days : null,
+          physicalPrescription: PhysicalPrescriptions,
+          ePrescription: EPrescriptions
         });
       }
 
