@@ -329,10 +329,15 @@ const makeAppointmentPayment: Resolver<
     const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
     const doctorDets = await doctorRepo.findById(processingAppointment.doctorId);
     let submitFlag = 0;
-    if (doctorDets && doctorDets.skipAutoQuestions == false && doctorDets.isJdAllowed == false) {
-      submitFlag = 1;
-    }
 
+    let notes = ApiConstants.APPOINTMENT_BOOKED_WITHIN_10_MIN.toString().replace(
+      '{0}',
+      ApiConstants.AUTO_SUBMIT_CASESHEET_TIME_APPOINMENT.toString()
+    );
+    if (doctorDets && doctorDets.skipAutoQuestions == true && doctorDets.isJdAllowed == false) {
+      submitFlag = 1;
+      notes = ApiConstants.APPOINTMENT_BOOKED_SKIP_QUESTIONS.toString();
+    }
     if (
       timeDifference / 60 <=
         parseInt(ApiConstants.AUTO_SUBMIT_CASESHEET_TIME_APPOINMENT.toString(), 10) ||
@@ -362,10 +367,7 @@ const makeAppointmentPayment: Resolver<
         patientId: processingAppointment.patientId,
         appointment: processingAppointment,
         status: CASESHEET_STATUS.COMPLETED,
-        notes: ApiConstants.APPOINTMENT_BOOKED_WITHIN_10_MIN.toString().replace(
-          '{0}',
-          ApiConstants.AUTO_SUBMIT_CASESHEET_TIME_APPOINMENT.toString()
-        ),
+        notes,
         isJdConsultStarted: true,
       };
       caseSheetRepo.savecaseSheet(casesheetAttrs);
