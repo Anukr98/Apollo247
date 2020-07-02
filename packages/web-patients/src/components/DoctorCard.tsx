@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { makeStyles, createStyles } from '@material-ui/styles';
 import { Theme, Avatar, Modal } from '@material-ui/core';
 import { AphButton } from '@aph/web-ui-components';
@@ -152,6 +152,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
   const [popupLoading, setPopupLoading] = React.useState<boolean>(false);
+  const [physicalDirection] = useState<boolean>(false);
   const doctorId = doctorDetails.id;
   const doctorName = doctorDetails && doctorDetails.fullName;
 
@@ -369,6 +370,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
         disableEscapeKeyDown
       >
         <BookConsult
+          physicalDirection={physicalDirection}
           doctorId={doctorDetails.id}
           doctorAvailableIn={differenceInMinutes}
           setIsPopoverOpen={setIsPopoverOpen}
