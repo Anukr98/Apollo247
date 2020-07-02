@@ -753,8 +753,11 @@ export const PayMedicine: React.FC = (props) => {
           specialty: speciality,
           bookingType: appointmentType,
           scheduledDate: `${appointmentDateTime}`,
-          couponCode: couponCode ? couponCode : null,
-          couponValue: couponValue ? couponValue : null,
+          couponCode: consultCouponCode ? consultCouponCode : null,
+          couponValue:
+            validateConsultCouponResult && validateConsultCouponResult.valid
+              ? validateConsultCouponResult.discount
+              : consultCouponValue || null,
           finalBookingValue: revisedAmount,
           ecommObj: {
             ecommerce: {
