@@ -158,7 +158,7 @@ export enum ApiConstants {
   PRESCRIPTION_READY_TITLE = 'Prescription ready',
   PRESCRIPTION_READY_BODY = 'Hi {0}! Your prescription from consultation with Doctor {1} for appointment {2} on {3} is ready :) ',
 
-  REFERRAL_CODE_TEXT = 'Hi {0}, Use code "WELCOME" to avail discount up to Rs. 999  on the 1st Apollo Doctor consult on your Apollo 24|7 app. Click to learn https://youtu.be/gwIRbcO3hpk',
+  REFERRAL_CODE_TEXT = 'Hi {0}, Use code "CARE247" to avail discount up to Rs. 999  on the 1st Apollo Doctor consult on your Apollo 24|7 app. Click to learn https://youtu.be/gwIRbcO3hpk',
   REFERRAL_CODE_TEXT_WITH_COUPON = 'Hi {0}, Use code "{1}" to avail discount up to Rs. 299  on the 1st Apollo Doctor consult on your Apollo 24|7 app. Click to learn https://youtu.be/XF7MWPebtkw',
 
   BOOK_APPOINTMENT_HISTORY_REASON = 'Booking new appointment',
@@ -254,6 +254,10 @@ export enum ApiConstants {
   DEV_DOC_ID = '74c93b2e-8aab-4b6c-8391-5407f4afb833',
   QA_DOC_ID = '',
 
+  CACHE_EXPIRATION_120 = 120, // 2 mins mostly for otp
+  CACHE_EXPIRATION_600 = 600, // 10 mins
+  CACHE_EXPIRATION_900 = 900, //30 mins
+  CACHE_EXPIRATION_3600 = 3600, // 1hour
   //doctor no-photo url
   DOCTOR_DEFAULT_PHOTO_URL = 'https://prodaphstorage.blob.core.windows.net/doctors/no_photo.png',
 
@@ -338,6 +342,7 @@ export enum ApiConstants {
   ALLOWED_DOSAGES = 'ML,MG,GM,TABLET,PUFF,UNIT,SPRAY,PATCH,AS_PRESCRIBED,CAPSULE,DROP,SACHET,TEASPOON,INTERNATIONAL_UNIT',
   NO_JD_AVAILABLE_TEXT = 'Patient Medical details could not be collected by the JD',
   APPOINTMENT_BOOKED_WITHIN_10_MIN = 'As patient booked within {0} minutes of the appointment time, case sheet has been submitted without any details.',
+  APPOINTMENT_BOOKED_SKIP_QUESTIONS = 'As patient booked the doctor with no jd and skip auto questions, case sheet has been submitted without any details.',
   NOT_APPLICABLE = 'Not Applicable',
   MEDICINE_TIMINGS = '(morning, noon, evening & night)',
   FREE_CHAT_DAYS = 7,

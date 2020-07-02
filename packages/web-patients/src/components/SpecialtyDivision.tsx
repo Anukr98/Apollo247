@@ -1,7 +1,7 @@
 import React from 'react';
 import { Theme, Grid, CircularProgress, Popover, Typography } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
-import { Specialities } from 'components/Specialities';
+import { Specialties } from 'components/Specialties';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { Link } from 'react-router-dom';
 import {
@@ -44,13 +44,20 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: '20px 0',
     },
     specialityCard: {
-      height: 160,
+      height: 180,
       background: '#fff',
       borderRadius: 10,
       boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
       padding: 10,
       textAlign: 'center',
       position: 'relative',
+      '& a': {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        flexDirection: 'column',
+        height: '100%',
+      },
       '& h3': {
         fontSize: 14,
         fontWeight: 500,
@@ -77,15 +84,10 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     symptoms: {
-      position: 'absolute',
-      bottom: 10,
       fontSize: '10px !important',
-      margin: '20px 0 0',
       fontWeight: 500,
       color: '#02475b !important',
       padding: '0 !important',
-      left: 0,
-      right: 0,
       textAlign: 'center',
       [theme.breakpoints.down(700)]: {
         padding: '0 10px !important',
@@ -379,11 +381,12 @@ const useStyles = makeStyles((theme: Theme) => {
 
 interface SpecialtyDivisionProps {
   selectedCity: string;
+  doctorsCount: number;
 }
 
 export const SpecialtyDivision: React.FC<SpecialtyDivisionProps> = (props) => {
   const classes = useStyles({});
-  const { selectedCity } = props;
+  const { selectedCity, doctorsCount } = props;
   const { loading, error, data } = useQuery<GetAllSpecialties>(GET_ALL_SPECIALITIES);
 
   const showSpecialty = (specialtyName: string) => {
@@ -400,12 +403,12 @@ export const SpecialtyDivision: React.FC<SpecialtyDivisionProps> = (props) => {
   return (
     <>
       <Typography component="h2">
-        Start your care now by choosing from {/*  500 doctors and{' '}  */}
+        Start your care now by choosing from {doctorsCount ? `${doctorsCount} doctors and ` : ''}
         {allSpecialties && allSpecialties.length} specialities
       </Typography>
       <div className={classes.topSpeciality}>
         <div className={classes.sectionHeader}>
-          <Typography component="h2">Top Specialites</Typography>
+          <Typography component="h2">Top Specialties</Typography>
         </div>
         <div className={classes.tsContent}>
           <Grid container spacing={2}>
@@ -446,7 +449,7 @@ export const SpecialtyDivision: React.FC<SpecialtyDivisionProps> = (props) => {
       </div>
       <div className={classes.otherSpeciality}>
         <div className={classes.sectionHeader}>
-          <Typography component="h2">Other Specialites</Typography>
+          <Typography component="h2">Other Specialties</Typography>
         </div>
         <div className={classes.osContainer}>
           {loading ? (
@@ -456,7 +459,7 @@ export const SpecialtyDivision: React.FC<SpecialtyDivisionProps> = (props) => {
           ) : error ? (
             <div>Error! </div>
           ) : (
-            allSpecialties && <Specialities selectedCity={selectedCity} data={allSpecialties} />
+            allSpecialties && <Specialties selectedCity={selectedCity} data={allSpecialties} />
           )}
         </div>
       </div>

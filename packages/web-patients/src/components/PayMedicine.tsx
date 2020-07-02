@@ -449,6 +449,7 @@ export const PayMedicine: React.FC = (props) => {
     consultCouponCodeInitial,
     consultCouponValue = 0,
     doctorId,
+    doctorName,
     hospitalId,
     patientId,
     speciality,
@@ -652,7 +653,7 @@ export const PayMedicine: React.FC = (props) => {
             // 'item_category_4': '', // for future
             item_variant: 'Default',
             index: key + 1,
-            quantity: items.mou,
+            quantity: items.quantity,
           });
         });
         _obTracking({
@@ -682,7 +683,11 @@ export const PayMedicine: React.FC = (props) => {
           });
           /* Webengage Code End */
           if (orderAutoId && orderAutoId > 0 && value !== 'COD') {
-            const pgUrl = `${process.env.PHARMACY_PG_URL}/paymed?amount=${totalWithCouponDiscount}&oid=${orderAutoId}&token=${authToken}&pid=${currentPatiendId}&source=web&paymentTypeID=${value}&paymentModeOnly=YES`;
+            const pgUrl = `${
+              process.env.PHARMACY_PG_URL
+            }/paymed?amount=${totalWithCouponDiscount.toFixed(
+              2
+            )}&oid=${orderAutoId}&token=${authToken}&pid=${currentPatiendId}&source=web&paymentTypeID=${value}&paymentModeOnly=YES`;
             window.location.href = pgUrl;
           } else if (orderAutoId && orderAutoId > 0 && value === 'COD') {
             placeOrder(orderId, orderAutoId, false, '');
@@ -748,9 +753,31 @@ export const PayMedicine: React.FC = (props) => {
           specialty: speciality,
           bookingType: appointmentType,
           scheduledDate: `${appointmentDateTime}`,
-          couponCode: couponCode ? couponCode : null,
-          couponValue: couponValue ? couponValue : null,
+          couponCode: consultCouponCode ? consultCouponCode : null,
+          couponValue:
+            validateConsultCouponResult && validateConsultCouponResult.valid
+              ? validateConsultCouponResult.discount
+              : consultCouponValue || null,
           finalBookingValue: revisedAmount,
+          ecommObj: {
+            ecommerce: {
+              items: [
+                {
+                  item_name: doctorName,
+                  item_id: doctorId,
+                  price: revisedAmount,
+                  item_brand: 'Apollo',
+                  item_category: 'Consultations',
+                  item_category_2: speciality,
+                  item_category_3: city || '',
+                  // 'item_category_4': '', // for future
+                  item_variant: appointmentType.toLowerCase() === 'online' ? 'Virtual' : 'Physical',
+                  index: 1,
+                  quantity: 1,
+                },
+              ],
+            },
+          },
         });
         /* Gtm code END */
         if (res && res.data && res.data.bookAppointment && res.data.bookAppointment.appointment) {
@@ -898,9 +925,8 @@ export const PayMedicine: React.FC = (props) => {
                       {mutationLoading ? (
                         <CircularProgress size={22} color="secondary" />
                       ) : (
-                        `Pay Rs.${
-                          totalWithCouponDiscount && totalWithCouponDiscount.toFixed(2)
-                        } on delivery`
+                        `Pay Rs.${totalWithCouponDiscount &&
+                          totalWithCouponDiscount.toFixed(2)} on delivery`
                       )}
                     </AphButton>
                   )}

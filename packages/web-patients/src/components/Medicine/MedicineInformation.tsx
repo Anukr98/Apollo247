@@ -657,7 +657,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                                       {
                                         item_name: data.name,
                                         item_id: data.sku,
-                                        price: data.price,
+                                        price: data.special_price || data.price,
                                         item_category: 'Pharmacy',
                                         item_category_2: data.type_id
                                           ? data.type_id.toLowerCase() === 'pharma'
@@ -768,7 +768,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                               {
                                 item_name: data.name,
                                 item_id: data.sku,
-                                price: data.price,
+                                price: data.special_price || data.price,
                                 item_category: 'Pharmacy',
                                 item_category_2: data.type_id
                                   ? data.type_id.toLowerCase() === 'pharma'
@@ -793,10 +793,6 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                     {' '}
                     {addMutationLoading ? (
                       <CircularProgress size={22} color="secondary" />
-                    ) : itemIndexInCart(data) !== -1 && isUpdateQuantity ? (
-                      'Update Cart'
-                    ) : itemIndexInCart(data) !== -1 ? (
-                      'Added To Cart'
                     ) : (
                       'Add To Cart'
                     )}

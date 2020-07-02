@@ -201,7 +201,7 @@ type PushNotificationInputArgs = { pushNotificationInput: PushNotificationInput 
   console.log(smsResp, 'sms resp');
 }*/
 
-export const sendNotificationWhatsapp = async (
+export const sendNotificationWhatsapp = (
   mobileNumber: string,
   message: string,
   loginType: number
@@ -215,33 +215,24 @@ export const sendNotificationWhatsapp = async (
     '&password=' +
     process.env.WHATSAPP_PASSWORD +
     '&auth_scheme=plain&format=text&v=1.1&channel=WHATSAPP';
-  const optInResponse = await fetch(apiUrl)
-    .then(async (res) => {
-      console.log(res, 'res of opt id');
-      if (loginType == 1) {
-        const sendApiUrl =
-          process.env.WHATSAPP_URL +
-          '?method=SendMessage&send_to=' +
-          mobileNumber +
-          '&userid=' +
-          process.env.WHATSAPP_USERNAME +
-          '&password=' +
-          process.env.WHATSAPP_PASSWORD +
-          '&auth_scheme=plain&msg_type=TEXT&format=text&v=1.1&msg=' +
-          message;
-        await fetch(sendApiUrl)
-          .then((res) => {
-            console.log(res, 'res of actual msg send');
-          })
-          .catch((error) => {
-            console.log(error, 'send message api error');
-          });
-      }
-    })
-    .catch((error) => {
-      console.log(error, 'optInResponse error');
-    });
-  console.log(optInResponse);
+  return new Promise((resolve, reject) => {
+    fetch(apiUrl)
+      .then(async (res) => {
+        if (loginType == 1) {
+          const sendApiUrl = `${process.env.WHATSAPP_URL}?method=SendMessage&send_to=${mobileNumber}&userid=${process.env.WHATSAPP_USERNAME}&password=${process.env.WHATSAPP_PASSWORD}&auth_scheme=plain&msg_type=TEXT&format=text&v=1.1&msg=${message}`;
+          fetch(sendApiUrl)
+            .then((res) => {
+              resolve(res);
+            })
+            .catch((error) => {
+              throw new AphError(AphErrorMessages.MESSAGE_SEND_WHATSAPP_ERROR);
+            });
+        }
+      })
+      .catch((error) => {
+        throw new AphError(AphErrorMessages.GET_OTP_ERROR);
+      });
+  });
 };
 
 export const sendNotificationSMS = async (mobileNumber: string, message: string) => {
@@ -1201,7 +1192,9 @@ export async function sendReminderNotification(
         const facilityRepo = doctorsDb.getCustomRepository(FacilityRepository);
         const facilityDets = await facilityRepo.getfacilityDetails(appointment.hospitalId);
 
-        if (!facilityDets) { throw new AphError(AphErrorMessages.FACILITY_DETS_NOT_FOUND) };
+  if (!facilityDets) {
+          throw new AphError(AphErrorMessages.FACILITY_DETS_NOT_FOUND);
+        }
 
         const facilityDetsString = `${facilityDets.name} ${facilityDets.streetLine1} ${facilityDets.city} ${facilityDets.state}`;
 
@@ -1232,7 +1225,9 @@ export async function sendReminderNotification(
     if (appointment.hospitalId != '' && appointment.hospitalId != null) {
       const facilityRepo = doctorsDb.getCustomRepository(FacilityRepository);
       const facilityDets = await facilityRepo.getfacilityDetails(appointment.hospitalId);
-      if (!facilityDets) { throw new AphError(AphErrorMessages.FACILITY_DETS_NOT_FOUND) };
+if (!facilityDets) {
+        throw new AphError(AphErrorMessages.FACILITY_DETS_NOT_FOUND);
+      }
 
       const facilityDetsString = `${facilityDets.name} ${facilityDets.streetLine1} ${facilityDets.city} ${facilityDets.state}`;
 
@@ -1275,8 +1270,9 @@ export async function sendReminderNotification(
       if (appointment.hospitalId != '' && appointment.hospitalId != null) {
         const facilityRepo = doctorsDb.getCustomRepository(FacilityRepository);
         const facilityDets = await facilityRepo.getfacilityDetails(appointment.hospitalId);
-
-        if (!facilityDets) { throw new AphError(AphErrorMessages.FACILITY_DETS_NOT_FOUND) };
+if (!facilityDets) {
+          throw new AphError(AphErrorMessages.FACILITY_DETS_NOT_FOUND);
+        }
 
         const facilityDetsString = `${facilityDets.name} ${facilityDets.streetLine1} ${facilityDets.city} ${facilityDets.state}`;
         notificationBody = notificationBody.replace('{1}', facilityDetsString);
@@ -1484,9 +1480,9 @@ export async function sendReminderNotification(
   if (
     pushNotificationInput.notificationType == NotificationType.APPOINTMENT_CASESHEET_REMINDER_15 ||
     pushNotificationInput.notificationType ==
-    NotificationType.APPOINTMENT_CASESHEET_REMINDER_15_VIRTUAL
+      NotificationType.APPOINTMENT_CASESHEET_REMINDER_15_VIRTUAL
   ) {
-
+ 
     if (!(appointment && appointment.id)) { throw new AphError(AphErrorMessages.APPOINTMENT_ID_NOT_FOUND) };
     const chatroom_sms_link = process.env.SMS_DEEPLINK_APPOINTMENT_CHATROOM.replace('{0}', appointment.id.toString()); //Replacing the placeholder with appointmentid
 
@@ -2076,7 +2072,7 @@ const testPushNotification: Resolver<
   { deviceToken: String },
   NotificationsServiceContext,
   PushNotificationSuccessMessage | undefined
-> = async (parent, args, { }) => {
+> = async (parent, args, {}) => {
   //initialize firebaseadmin
   const config = {
     credential: firebaseAdmin.credential.applicationDefault(),

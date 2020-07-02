@@ -127,6 +127,7 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
         'mo."orderAutoId"',
         'mo."orderDateTime"',
         'mp."paymentMode"',
+        'mo."currentStatus"',
       ])
       .where('mo.orderAutoId = :orderAutoId', { orderAutoId })
       .getRawOne();
@@ -289,6 +290,23 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
   getMedicineOrdersList(patientIds: String[]) {
     return this.find({
       where: { patient: In(patientIds) },
+      order: { createdDate: 'DESC' },
+      relations: [
+        'medicineOrderLineItems',
+        'medicineOrderPayments',
+        'medicineOrdersStatus',
+        'medicineOrderShipments',
+        'medicineOrderShipments.medicineOrdersStatus',
+        'medicineOrderShipments.medicineOrderInvoice',
+        'medicineOrderInvoice',
+        'patient',
+      ],
+    });
+  }
+
+  getMedicineOrdersListWithoutAbortedStatus(patientIds: String[]) {
+    return this.find({
+      where: { patient: In(patientIds), currentStatus: Not(MEDICINE_ORDER_STATUS.PAYMENT_ABORTED) },
       order: { createdDate: 'DESC' },
       relations: [
         'medicineOrderLineItems',

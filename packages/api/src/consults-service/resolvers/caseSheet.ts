@@ -648,7 +648,6 @@ const getCaseSheet: Resolver<
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
   const patientDetails = await patientRepo.getPatientDetails(appointmentData.patientId);
   if (patientDetails == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
-
   //check if logged in mobile number is associated with doctor
   const secretaryRepo = doctorsDb.getCustomRepository(SecretaryRepository);
   const secretaryDetails = await secretaryRepo.getSecretary(mobileNumber, true);
@@ -668,9 +667,7 @@ const getCaseSheet: Resolver<
   let juniorDoctorNotes = '';
 
   //check whether there is a senior doctor case-sheet
-  const caseSheetDetails = await caseSheetRepo.getSeniorDoctorCompletedCaseSheet(
-    appointmentData.id
-  );
+  const caseSheetDetails = await caseSheetRepo.getSeniorDoctorLatestCaseSheet(appointmentData.id);
   if (caseSheetDetails == null) throw new AphError(AphErrorMessages.NO_CASESHEET_EXIST);
 
   const juniorDoctorCaseSheet = await caseSheetRepo.getJuniorDoctorCaseSheet(appointmentData.id);
@@ -861,7 +858,6 @@ const modifyCaseSheet: Resolver<
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
   const patientData = await patientRepo.getPatientDetails(getCaseSheetData.patientId);
   if (patientData == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
-
   //familyHistory upsert starts
   if (!(inputArguments.familyHistory === undefined)) {
     const familyHistoryInputs: Partial<PatientFamilyHistory> = {
@@ -870,10 +866,7 @@ const modifyCaseSheet: Resolver<
         inputArguments.familyHistory.length > 0 ? inputArguments.familyHistory : undefined,
     };
     const familyHistoryRepo = patientsDb.getCustomRepository(PatientFamilyHistoryRepository);
-    const familyHistoryRecord = await familyHistoryRepo.getPatientFamilyHistory(
-      getCaseSheetData.patientId
-    );
-
+    const familyHistoryRecord = patientData.familyHistory[0];
     if (familyHistoryRecord == null) {
       //create
       familyHistoryRepo.savePatientFamilyHistory(familyHistoryInputs);
@@ -896,7 +889,9 @@ const modifyCaseSheet: Resolver<
       lifeStyleInputs.occupationHistory = inputArguments.occupationHistory;
     }
     const lifeStyleRepo = patientsDb.getCustomRepository(PatientLifeStyleRepository);
-    const lifeStyleRecord = await lifeStyleRepo.getPatientLifeStyle(getCaseSheetData.patientId);
+    const lifeStyleRecord = patientData.lifeStyle
+      ? patientData.lifeStyle[0]
+      : patientData.lifeStyle;
 
     if (lifeStyleRecord == null) {
       //create
@@ -912,6 +907,9 @@ const modifyCaseSheet: Resolver<
   const medicalHistoryInputs: Partial<PatientMedicalHistory> = {
     patient: patientData,
   };
+  if (patientData.patientMedicalHistory) {
+    medicalHistoryInputs.id = patientData.patientMedicalHistory.id;
+  }
 
   if (inputArguments.medicationHistory) {
     medicalHistoryInputs.medicationHistory = inputArguments.medicationHistory;
@@ -954,9 +952,7 @@ const modifyCaseSheet: Resolver<
       inputArguments.dietAllergies.length > 0 ? inputArguments.dietAllergies : undefined;
 
   const medicalHistoryRepo = patientsDb.getCustomRepository(PatientMedicalHistoryRepository);
-  const medicalHistoryRecord = await medicalHistoryRepo.getPatientMedicalHistory(
-    getCaseSheetData.patientId
-  );
+  const medicalHistoryRecord = patientData.patientMedicalHistory;
   if (medicalHistoryRecord == null) {
     //create
     medicalHistoryRepo.savePatientMedicalHistory(medicalHistoryInputs);
