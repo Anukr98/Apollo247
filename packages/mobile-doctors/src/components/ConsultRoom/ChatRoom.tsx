@@ -36,6 +36,7 @@ import {
 import { Image, Image as ImageNative } from 'react-native-elements';
 import { isIphoneX } from 'react-native-iphone-x-helper';
 import { NavigationScreenProps } from 'react-navigation';
+import AsyncStorage from '@react-native-community/async-storage';
 
 const { height, width } = Dimensions.get('window');
 
@@ -92,36 +93,40 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const { setLoading } = useUIElements();
   const { patientDetails } = props;
   const Appintmentdatetime = props.navigation.getParam('Appintmentdatetime');
-  const [changedHeight, setChangedHeight] = useState<number>(props.extendedHeader ? 230 : 185);
-  const [keyBoardHeight, setkeyBoardHeight] = useState<number>(props.extendedHeader ? 90 : 130);
   const doctorId = props.navigation.getParam('DoctorId');
   const patientId = props.patientId || props.navigation.getParam('PatientId');
 
-  const [heightList, setHeightList] = useState<number>(height - changedHeight);
+  const [heightList, setHeightList] = useState<number>(
+    height - (props.extendedHeader ? 230 : 190) - (Platform.OS === 'android' ? 10 : 0)
+  );
   const [hideSend, setHideSend] = useState<boolean>(true);
   const patientImage = patientDetails && (
     <Image style={styles.imageStyle} source={{ uri: patientDetails.photoUrl || '' }} />
   );
   const { messages, messageText, setMessageText, flatListRef } = props;
 
-  const keyboardDidShow = (e: KeyboardEvent) => {
+  const keyboardDidShow = async (e: KeyboardEvent) => {
+    const changeHeight = Number(await AsyncStorage.getItem('changeHeight'));
     if (Platform.OS === 'ios') {
-      setHeightList(height - e.endCoordinates.height - changedHeight);
-    } else {
-      setHeightList(height - e.endCoordinates.height + keyBoardHeight);
+      setHeightList(e.endCoordinates.screenY - changeHeight);
     }
     setTimeout(() => {
       flatListRef.current && flatListRef.current.scrollToEnd();
     }, 200);
   };
-  const keyboardDidHide = () => {
-    setHeightList(height - changedHeight);
+  const keyboardDidHide = async () => {
+    const changeHeight = Number(await AsyncStorage.getItem('changeHeight'));
+    setHeightList(height - changeHeight);
   };
+
   useEffect(() => {
-    setChangedHeight(props.extendedHeader ? 230 : 185);
-    setkeyBoardHeight(props.extendedHeader ? 90 : 130);
-    setHeightList(height - (props.extendedHeader ? 230 : 185));
-    console.log('sdhiujkn', props.extendedHeader);
+    setHeightList(
+      height - (props.extendedHeader ? 230 : 190) - (Platform.OS === 'android' ? 10 : 0)
+    );
+    AsyncStorage.setItem(
+      'changeHeight',
+      ((props.extendedHeader ? 230 : 190) + (Platform.OS === 'android' ? 10 : 0)).toString()
+    );
   }, [props.extendedHeader]);
 
   useEffect(() => {
