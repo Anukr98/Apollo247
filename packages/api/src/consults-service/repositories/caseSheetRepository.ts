@@ -125,7 +125,7 @@ export class CaseSheetRepository extends Repository<CaseSheet> {
       .getMany();
   }
 
-  getSeniorDoctorCompletedCaseSheet(appointmentId: string) {
+  getSeniorDoctorLatestCaseSheet(appointmentId: string) {
     const juniorDoctorType = DoctorType.JUNIOR;
     return this.createQueryBuilder('case_sheet')
       .leftJoinAndSelect('case_sheet.appointment', 'appointment')
@@ -134,5 +134,17 @@ export class CaseSheetRepository extends Repository<CaseSheet> {
       .andWhere('case_sheet.doctorType != :juniorDoctorType', { juniorDoctorType })
       .orderBy('case_sheet.version', 'DESC')
       .getOne();
+  }
+
+  getSDLatestCompletedCaseSheetByAppointments(appointmentId: string[]) {
+    const juniorDoctorType = DoctorType.JUNIOR;
+    return this.createQueryBuilder('case_sheet')
+      .leftJoinAndSelect('case_sheet.appointment', 'appointment')
+      .leftJoinAndSelect('appointment.appointmentDocuments', 'appointmentDocuments')
+      .where('case_sheet.appointment in (:...appointmentId)', { appointmentId })
+      .andWhere('case_sheet.doctorType != :juniorDoctorType', { juniorDoctorType })
+      .andWhere('case_sheet.sentToPatient = :sentToPatient', { sentToPatient: true })
+      .orderBy('case_sheet.version', 'DESC')
+      .getMany();
   }
 }

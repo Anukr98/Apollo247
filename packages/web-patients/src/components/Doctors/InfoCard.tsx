@@ -21,6 +21,7 @@ import { useAllCurrentPatients } from 'hooks/authHooks';
 import { BookConsult } from 'components/BookConsult';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
+import { readableParam } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -232,8 +233,8 @@ export const InfoCard: React.FC<InfoCardProps> = (props) => {
     <div className={classes.root}>
       <Link
         to={clientRoutes.specialtyDoctorDetails(
-          specialityName.replace(/[/ / /]/g, '-'),
-          doctorValue.replace(/ /g, '-'),
+          readableParam(specialityName),
+          readableParam(doctorValue),
           doctorInfo.id
         )}
       >

@@ -13,6 +13,7 @@ import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import {
   NotificationType,
   sendMedicineOrderStatusNotification,
+  sendCartNotification,
 } from 'notifications-service/resolvers/notifications';
 import { format, addMinutes, parseISO } from 'date-fns';
 import { log } from 'customWinstonLogger';
@@ -217,13 +218,19 @@ const saveOrderShipments: Resolver<
     MEDICINE_ORDER_STATUS.ORDER_VERIFIED
   );
 
-  sendMedicineOrderStatusNotification(
-    orderDetails.deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP
-      ? NotificationType.MEDICINE_ORDER_READY_AT_STORE
-      : NotificationType.MEDICINE_ORDER_CONFIRMED,
-    orderDetails,
-    profilesDb
-  );
+  if (orderDetails.deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP) {
+    sendMedicineOrderStatusNotification(
+      NotificationType.MEDICINE_ORDER_READY_AT_STORE,
+      orderDetails,
+      profilesDb
+    );
+  } else {
+    const pushNotificationInput = {
+      orderAutoId: orderDetails.orderAutoId,
+      notificationType: NotificationType.MEDICINE_ORDER_CONFIRMED,
+    };
+    sendCartNotification(pushNotificationInput, profilesDb);
+  }
 
   return {
     status: MEDICINE_ORDER_STATUS.ORDER_VERIFIED,

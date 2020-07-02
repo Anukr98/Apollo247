@@ -839,7 +839,7 @@ export const ConsultTabs: React.FC = () => {
           }
           // -------------------------------------------------------------- //
           navigator.mediaDevices
-            .getUserMedia({ audio: true, video: true })
+            .getUserMedia({ audio: true, video: false })
             .then((stream) => {
               console.log('Got stream', stream);
               setCameraMicPermission(true);

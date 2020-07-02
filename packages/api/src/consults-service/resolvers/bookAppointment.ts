@@ -40,6 +40,7 @@ export const bookAppointmentTypeDefs = gql`
     JUNIOR_DOCTOR_ENDED
     CALL_ABANDON
     UNAVAILABLE_MEDMANTRA
+    PAYMENT_ABORTED
   }
 
   enum APPOINTMENT_TYPE {
@@ -313,10 +314,14 @@ const bookAppointment: Resolver<
 
   //calculate coupon discount value
   if (appointmentInput.couponCode) {
-    //chnage the code
+    const amount = appointmentInput.actualAmount
+      ? appointmentInput.actualAmount
+      : appointmentInput.appointmentType == APPOINTMENT_TYPE.PHYSICAL
+      ? docDetails.physicalConsultationFees
+      : docDetails.onlineConsultationFees;
     const payload: ValidateCouponRequest = {
       mobile: patientDetails.mobileNumber.replace('+91', ''),
-      billAmount: appointmentInput.discountedAmount ? appointmentInput.discountedAmount : 0,
+      billAmount: parseInt(amount.toString(), 10),
       coupon: appointmentInput.couponCode,
       paymentType: '',
       pinCode: appointmentInput.pinCode ? appointmentInput.pinCode : '',
@@ -332,7 +337,7 @@ const bookAppointment: Resolver<
               : appointmentInput.appointmentType == APPOINTMENT_TYPE.PHYSICAL
               ? 0
               : -1,
-          cost: appointmentInput.discountedAmount ? appointmentInput.discountedAmount : 0,
+          cost: parseInt(amount.toString(), 10),
           rescheduling: false,
         },
       ],

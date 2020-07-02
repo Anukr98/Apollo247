@@ -30,13 +30,12 @@ import {
   MEDICINE_ORDER_PAYMENT_TYPE,
   UPLOAD_FILE_TYPES,
   BOOKINGSOURCE,
-  NonCartOrderCity,
-  BOOKING_SOURCE,
   NonCartOrderOMSCity,
+  BOOKING_SOURCE,
   CODCity,
   PRISM_DOCUMENT_CATEGORY,
 } from 'graphql/types/globalTypes';
-import { useAllCurrentPatients, useAuth, useCurrentPatient } from 'hooks/authHooks';
+import { useAllCurrentPatients, useCurrentPatient } from 'hooks/authHooks';
 import { PrescriptionCard } from 'components/Prescriptions/PrescriptionCard';
 import { useMutation } from 'react-apollo-hooks';
 import { MedicineListingCard } from 'components/Medicine/MedicineListingCard';
@@ -573,6 +572,8 @@ export const MedicineCart: React.FC = (props) => {
     couponCode,
     setCouponCode,
     updateCartItemPrice,
+    prescriptionOptionSelected,
+    durationDays,
   } = useShoppingCart();
 
   const addToCartRef = useRef(null);
@@ -950,7 +951,11 @@ export const MedicineCart: React.FC = (props) => {
           data.savePrescriptionMedicineOrderOMS &&
           data.savePrescriptionMedicineOrderOMS.orderAutoId
         ) {
-          window.location.href = clientRoutes.medicinesCartInfo('prescription', 'success');
+          if (prescriptionOptionSelected === 'duration') {
+            window.location.href = clientRoutes.medicines();
+          } else {
+            window.location.href = clientRoutes.medicinesCartInfo('prescription', 'success');
+          }
         } else {
           setIsAlertOpen(true);
           setAlertMessage('Something went wrong, please try later.');
@@ -996,7 +1001,7 @@ export const MedicineCart: React.FC = (props) => {
     let chennaiOrderVariables = {};
     if (userEmail && userEmail.length) {
       chennaiOrderVariables = {
-        NonCartOrderCity: NonCartOrderCity.CHENNAI,
+        NonCartOrderCity: NonCartOrderOMSCity.CHENNAI,
         email: userEmail,
       };
     }
@@ -1030,6 +1035,8 @@ export const MedicineCart: React.FC = (props) => {
               prismPrescriptionFileId: [...phyPresPrismIds, ...ePresPrismIds].join(','),
               appointmentId: '',
               isEprescription: ePrescriptionData && ePrescriptionData.length ? 1 : 0, // if atleat one prescription is E-Prescription then pass it as one.
+              durationDays: durationDays,
+              prescriptionOptionSelected: prescriptionOptionSelected,
               ...(chennaiOrderVariables && chennaiOrderVariables),
             },
           };
@@ -1056,6 +1063,8 @@ export const MedicineCart: React.FC = (props) => {
           appointmentId: '',
           isEprescription: ePrescriptionData && ePrescriptionData.length ? 1 : 0, // if atleat one prescription is E-Prescription then pass it as one.
           ...(chennaiOrderVariables && chennaiOrderVariables),
+          prescriptionOptionSelected: prescriptionOptionSelected,
+          durationDays: prescriptionOptionSelected === 'specified' ? durationDays : null,
         },
       };
       submitPrescriptionMedicineOrder(prescriptionMedicineOMSInput);

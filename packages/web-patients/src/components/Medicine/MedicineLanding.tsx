@@ -633,11 +633,22 @@ export const MedicineLanding: React.FC = (props: any) => {
                 list.map((item, index) => (
                   <div key={index} className={classes.sliderSection}>
                     <div className={classes.sectionTitle}>
-                      {item.key === 'Shop by Brand' ? (
+                      {item.key === 'Shop by Brand' || item.key === 'Monsoon Essentials' ? (
                         <>
                           <span>{item.key}</span>
                           <div className={classes.viewAllLink}>
-                            <Link to={clientRoutes.medicineAllBrands()}>View All</Link>
+                            <Link
+                              to={
+                                item.key === 'Shop by Brand'
+                                  ? clientRoutes.medicineAllBrands()
+                                  : clientRoutes.searchByMedicine(
+                                      'shop-by-category',
+                                      'monsoon-essentials'
+                                    )
+                              }
+                            >
+                              View All
+                            </Link>
                           </div>
                         </>
                       ) : (
@@ -680,7 +691,7 @@ export const MedicineLanding: React.FC = (props: any) => {
               <Typography variant="h2">yay!</Typography>
               <p>
                 Your prescriptions have been submitted successfully. We will notify you when the
-                items are in your cart. If we need any clarificaitons, we will call you within 1
+                items are in your cart. If we need any clarifications, we will call you within 1
                 hour.
               </p>
               <div className={classes.bottomActions}>

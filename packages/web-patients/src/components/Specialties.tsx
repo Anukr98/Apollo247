@@ -15,6 +15,7 @@ import { readableParam } from 'helpers/commonHelpers';
 import { useMutation } from 'react-apollo-hooks';
 import { GetAllSpecialties_getAllSpecialties as SpecialtyType } from 'graphql/types/GetAllSpecialties';
 import { getSymptoms } from 'helpers/commonHelpers';
+import _lowerCase from 'lodash/lowerCase';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -98,14 +99,15 @@ const useStyles = makeStyles((theme: Theme) => {
   });
 });
 
-interface SpecialitiesProps {
+interface SpecialtiesProps {
   data: SpecialtyType[];
+  selectedCity: string;
 }
 
-export const Specialities: React.FC<SpecialitiesProps> = (props) => {
+export const Specialties: React.FC<SpecialtiesProps> = (props) => {
   const classes = useStyles({});
   const { currentPatient } = useAllCurrentPatients();
-  const { data } = props;
+  const { data, selectedCity } = props;
 
   const saveSearchMutation = useMutation(SAVE_PATIENT_SEARCH);
 
@@ -127,17 +129,26 @@ export const Specialities: React.FC<SpecialitiesProps> = (props) => {
                         key={specialityDetails.id}
                         title={specialityDetails.name}
                         onClick={(e) => {
-                          saveSearchMutation({
-                            variables: {
-                              saveSearchInput: {
-                                type: SEARCH_TYPE.SPECIALTY,
-                                typeId: specialityDetails.id,
-                                patient: currentPatient ? currentPatient.id : '',
+                          currentPatient &&
+                            currentPatient.id &&
+                            saveSearchMutation({
+                              variables: {
+                                saveSearchInput: {
+                                  type: SEARCH_TYPE.SPECIALTY,
+                                  typeId: specialityDetails.id,
+                                  patient: currentPatient ? currentPatient.id : '',
+                                },
                               },
-                            },
-                          });
+                            });
                           const specialityUpdated = readableParam(`${e.currentTarget.title}`);
-                          history.push(clientRoutes.specialties(`${specialityUpdated}`));
+                          history.push(
+                            selectedCity === ''
+                              ? clientRoutes.specialties(specialityUpdated)
+                              : clientRoutes.citySpecialties(
+                                  _lowerCase(selectedCity),
+                                  specialityUpdated
+                                )
+                          );
                         }}
                       >
                         <div className={classes.contentBox}>
@@ -148,12 +159,16 @@ export const Specialities: React.FC<SpecialitiesProps> = (props) => {
                           />
                           <div className={classes.spContent}>
                             <div>{specialityDetails.name}</div>
-                            <div className={classes.specialityDetails}>
-                              {specialityDetails.shortDescription}
-                            </div>
-                            <div className={classes.symptoms}>
-                              {getSymptoms(specialityDetails.symptoms)}
-                            </div>
+                            {specialityDetails.shortDescription && (
+                              <div className={classes.specialityDetails}>
+                                {specialityDetails.shortDescription}
+                              </div>
+                            )}
+                            {specialityDetails.symptoms && (
+                              <div className={classes.symptoms}>
+                                {getSymptoms(specialityDetails.symptoms)}
+                              </div>
+                            )}
                             <span className={classes.rightArrow}>
                               <img src={require('images/ic_arrow_right.svg')} />
                             </span>
