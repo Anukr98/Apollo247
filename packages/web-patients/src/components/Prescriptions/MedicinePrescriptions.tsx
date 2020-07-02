@@ -465,17 +465,36 @@ export const MedicinePrescriptions: React.FC = (props) => {
               </div>
             </div>
             <div className={classes.rightSideBar}>
-              <Link className={value == '' || (value === 'specified' && selectedDays.length === 0) ? classes.disabledLink : ''} to={`${clientRoutes.medicinesCart()}?prescription=true`}>
+              <Link
+                className={
+                  value == '' ||
+                  (value === 'specified' && selectedDays.length === 0) ||
+                  (prescriptions &&
+                    prescriptions.length === 0 &&
+                    ePrescriptionData &&
+                    ePrescriptionData.length === 0)
+                    ? classes.disabledLink
+                    : ''
+                }
+                to={`${clientRoutes.medicinesCart()}?prescription=true`}
+              >
                 <AphButton
                   color="primary"
                   className={classes.conformOrderBtn}
-                  disabled={value == '' || (value === 'specified' && selectedDays.length === 0)}
+                  disabled={
+                    value == '' ||
+                    (value === 'specified' && selectedDays.length === 0) ||
+                    (prescriptions &&
+                      prescriptions.length === 0 &&
+                      ePrescriptionData &&
+                      ePrescriptionData.length === 0)
+                  }
                 >
                   {isLoading ? (
                     <CircularProgress size={22} color="secondary" />
                   ) : (
-                      'Submit to confirm order'
-                    )}
+                    'Submit to confirm order'
+                  )}
                 </AphButton>
               </Link>
             </div>
