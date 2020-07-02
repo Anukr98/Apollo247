@@ -187,13 +187,13 @@ const makeAppointmentPayment: Resolver<
       return { appointment: paymentInfo, isRefunded: false };
     }
     const paymentInputUpdates: Partial<AppointmentPaymentInput> = {};
-    paymentInputUpdates.responseCode = paymentInfo.responseCode;
-    paymentInputUpdates.responseMessage = paymentInfo.responseMessage;
-    paymentInputUpdates.bankName = paymentInfo.bankName;
-    paymentInputUpdates.paymentStatus = paymentInfo.paymentStatus;
-    paymentInputUpdates.bankTxnId = paymentInfo.bankTxnId;
-    paymentInputUpdates.paymentDateTime = paymentInfo.paymentDateTime;
-    paymentInputUpdates.orderId = paymentInfo.orderId;
+    paymentInputUpdates.responseCode = paymentInput.responseCode;
+    paymentInputUpdates.responseMessage = paymentInput.responseMessage;
+    paymentInputUpdates.bankName = paymentInput.bankName;
+    paymentInputUpdates.paymentStatus = paymentInput.paymentStatus;
+    paymentInputUpdates.bankTxnId = paymentInput.bankTxnId;
+    paymentInputUpdates.paymentDateTime = paymentInput.paymentDateTime;
+    paymentInputUpdates.orderId = paymentInput.orderId;
     if (paymentMode) paymentInputUpdates.paymentMode = paymentMode as PAYMENT_METHODS_REVERSE;
     await apptsRepo.updateAppointmentPayment(paymentInfo.id, paymentInputUpdates);
   } else {
@@ -204,6 +204,7 @@ const makeAppointmentPayment: Resolver<
     paymentInfo = await apptsRepo.saveAppointmentPayment(apptPaymentAttrs);
   }
   delete paymentInfo.appointment;
+  let appointmentStatus = STATUS.PENDING;
 
   //update appointment status to PENDING
   if (paymentInput.paymentStatus == 'TXN_SUCCESS') {
@@ -313,10 +314,6 @@ const makeAppointmentPayment: Resolver<
 
     //update appointment status
     //apptsRepo.updateAppointmentStatusUsingOrderId(paymentInput.orderId, STATUS.PENDING, false);
-    await apptsRepo.updateAppointment(processingAppointment.id, {
-      status: STATUS.PENDING,
-      paymentInfo,
-    });
 
     //autosubmit case sheet code starts
     const currentTime = new Date();
@@ -392,15 +389,9 @@ const makeAppointmentPayment: Resolver<
     };
     apptsRepo.saveAppointmentHistory(historyAttrs);
     if (paymentInput.responseCode == '141' || paymentInput.responseCode == '810') {
-      await apptsRepo.updateAppointment(processingAppointment.id, {
-        status: STATUS.PAYMENT_ABORTED,
-        paymentInfo,
-      });
+      appointmentStatus = STATUS.PAYMENT_ABORTED;
     } else {
-      await apptsRepo.updateAppointment(processingAppointment.id, {
-        status: STATUS.PAYMENT_FAILED,
-        paymentInfo,
-      });
+      appointmentStatus = STATUS.PAYMENT_FAILED;
 
       if (paymentInfo.paymentStatus === 'PENDING') {
         //NOTIFICATION logic starts here
@@ -425,11 +416,17 @@ const makeAppointmentPayment: Resolver<
       }
     }
   } else if (paymentInput.paymentStatus == 'PENDING') {
-    await apptsRepo.updateAppointment(processingAppointment.id, {
-      status: STATUS.PAYMENT_PENDING_PG,
-      paymentInfo,
-    });
+    appointmentStatus = STATUS.PAYMENT_PENDING_PG;
   }
+
+  paymentInfo.paymentStatus = paymentInput.paymentStatus;
+  paymentInfo.responseCode = paymentInput.responseCode;
+  paymentInfo.responseMessage = paymentInput.responseMessage;
+  await apptsRepo.updateAppointment(processingAppointment.id, {
+    status: appointmentStatus,
+    paymentInfo,
+  });
+  processingAppointment.status = appointmentStatus;
   paymentInfo.appointment = processingAppointment;
   return { appointment: paymentInfo, isRefunded: false };
 };
