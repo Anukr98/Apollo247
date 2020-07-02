@@ -1634,7 +1634,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   const renderCTAs = () => (
     <View style={styles.aphAlertCtaViewStyle}>
       {moveSelectedToTop()
-        .slice(0, 3)
+        .slice(0, 5)
         .map((item: any, index: any, array: any) =>
           item.firstName !== '+ADD MEMBER' ? (
             <TouchableOpacity
@@ -1650,7 +1650,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       <View style={[styles.textViewStyle]}>
         <Text
           onPress={() => {
-            if (allCurrentPatients.length > 4) {
+            if (allCurrentPatients.length > 6) {
               setShowList(true);
             } else {
               setShowProfilePopUp(false);
@@ -1663,7 +1663,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
           }}
           style={[styles.ctaOrangeTextStyle]}
         >
-          {allCurrentPatients.length > 4 ? 'OTHERS' : '+ADD MEMBER'}
+          {allCurrentPatients.length > 6 ? 'OTHERS' : '+ADD MEMBER'}
         </Text>
       </View>
     </View>
