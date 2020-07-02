@@ -308,8 +308,6 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
               <View style={theme.viewStyles.lightSeparatorStyle} />
               <Text style={styles.doctorNameStyle}>
                 {props.navigation.state.params!.DoctorInfo &&
-                  props.navigation.state.params!.DoctorInfo.salutation}
-                {props.navigation.state.params!.DoctorInfo &&
                   props.navigation.state.params!.DoctorInfo.displayName}
               </Text>
               <View style={{ flexDirection: 'row' }}>
@@ -1060,7 +1058,6 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
         '_' +
         moment(caseSheetDetails!.appointment!.appointmentDateTime).format('DD MM YYYY') +
         '_' +
-        props.navigation.state.params!.DoctorInfo.salutation +
         props.navigation.state.params!.DoctorInfo.displayName +
         '_Apollo 247' +
         '.pdf'
