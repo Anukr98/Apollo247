@@ -458,7 +458,8 @@
     "fallback": "Falling back to audio due to bad network",
     "reconnecting": "There is a problem with network connection. Reconnecting, Please wait...",
     "videoBack": "Network improved switching back to video",
-    "reconnected": "Reconnected"
+    "reconnected": "Reconnected",
+    "callDisconnected": "Call has been disconnected due to network issue"
   },
   "patientsSearch": {
     "searchBody": "Search results will be displayed here ...",
