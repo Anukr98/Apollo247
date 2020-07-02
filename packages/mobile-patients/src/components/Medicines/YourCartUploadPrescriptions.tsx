@@ -348,7 +348,7 @@ export const YourCartUploadPrescriptions: React.FC<YourCartUploadPrescriptionPro
         setLoading!(false);
         props.navigation.navigate(AppRoutes.ChennaiNonCartOrderForm, { onSubmitOrder: placeOrder });
       } else {
-        placeOrder();
+        placeOrder(false);
       }
     };
 
@@ -363,7 +363,7 @@ export const YourCartUploadPrescriptions: React.FC<YourCartUploadPrescriptionPro
     }
   };
 
-  const placeOrder = async (email?: string) => {
+  const placeOrder = async (isChennaiOrder: boolean, email?: string) => {
     setLoading!(true);
     const selectedAddress = addresses.find((addr) => addr.id == deliveryAddressId);
     const zipcode = g(selectedAddress, 'zipcode');

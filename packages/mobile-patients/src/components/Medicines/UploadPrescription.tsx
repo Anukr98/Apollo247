@@ -78,8 +78,6 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
   const [ShowPopop, setShowPopop] = useState<boolean>(false);
   const [isSelectPrescriptionVisible, setSelectPrescriptionVisible] = useState(false);
   const { setLoading, loading, showAphAlert } = useUIElements();
-  const { currentPatient } = useAllCurrentPatients();
-  const client = useApolloClient();
   const {
     setPhysicalPrescriptions: setPhysicalPrescription,
     setEPrescriptions: setEPrescription
