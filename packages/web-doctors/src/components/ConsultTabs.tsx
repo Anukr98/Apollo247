@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useRef } from 'react';
 import { Theme, Button, Modal } from '@material-ui/core';
 import { useParams } from 'hooks/routerHooks';
 import { makeStyles } from '@material-ui/styles';
@@ -1485,7 +1485,7 @@ export const ConsultTabs: React.FC = () => {
             status: STATUS.COMPLETED,
             deviceType: DEVICETYPE.DESKTOP,
             callSource: BOOKINGSOURCE.WEB,
-            callType: APPT_CALL_TYPE.CHAT
+            callType: APPT_CALL_TYPE.CHAT,
           },
         },
         fetchPolicy: 'no-cache',
@@ -1646,7 +1646,12 @@ export const ConsultTabs: React.FC = () => {
     isSecretary ||
     (params && params.tabValue && parseInt(params.tabValue, 10) >= 0);
 
-  //console.log({ inEditMode, isClickedOnPriview, isClickedOnEdit });
+  // const scrollbarRef = useRef();
+
+  // useEffect(() => {
+  //     const { scrollbar } = scrollbarRef;
+  //     scrollbar!.current.scrollTop(100);
+  // },[]);
 
   return (
     <div className={classes.consultRoom}>
@@ -1764,7 +1769,13 @@ export const ConsultTabs: React.FC = () => {
             setOccupationHistory,
           }}
         >
-          <Scrollbars autoHide={true} style={{ height: 'calc(100vh - 65px)' }}>
+          <Scrollbars
+            ref={(s: any) => {
+              s !== null && s.scrollToTop();
+            }}
+            autoHide={true}
+            style={{ height: 'calc(100vh - 65px)' }}
+          >
             <div className={classes.container}>
               <CallPopover
                 setStartConsultAction={(flag: boolean) => setStartConsultAction(flag)}
