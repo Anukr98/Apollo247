@@ -152,7 +152,6 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
   const [popupLoading, setPopupLoading] = React.useState<boolean>(false);
-  const [physicalDirection] = useState<boolean>(false);
   const doctorId = doctorDetails.id;
   const doctorName = doctorDetails && doctorDetails.fullName;
 
@@ -370,7 +369,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
         disableEscapeKeyDown
       >
         <BookConsult
-          physicalDirection={physicalDirection}
+          physicalDirection={false}
           doctorId={doctorDetails.id}
           doctorAvailableIn={differenceInMinutes}
           setIsPopoverOpen={setIsPopoverOpen}

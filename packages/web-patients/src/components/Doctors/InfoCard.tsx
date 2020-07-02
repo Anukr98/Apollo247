@@ -165,7 +165,6 @@ export const InfoCard: React.FC<InfoCardProps> = (props) => {
   const classes = useStyles({});
   const [popupLoading, setPopupLoading] = useState<boolean>(false);
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
-  const [physicalDirection] = useState<boolean>(false);
   const doctorValue = doctorInfo.fullName.toLowerCase();
   const specialityName =
     doctorInfo &&
@@ -349,7 +348,7 @@ export const InfoCard: React.FC<InfoCardProps> = (props) => {
         disableEscapeKeyDown
       >
         <BookConsult
-          physicalDirection={physicalDirection}
+          physicalDirection={false}
           doctorId={doctorInfo.id}
           doctorAvailableIn={differenceInMinutes}
           setIsPopoverOpen={setIsPopoverOpen}
