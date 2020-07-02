@@ -616,7 +616,9 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
       props.navigation.goBack();
     }
   };
-
+  const selectUser = (selectedUser: any) => {
+    AsyncStorage.setItem('selectUserId', selectedUser!.id);
+  };
   const newProfile = () => {
     setLoading && setLoading(true);
     client
@@ -639,6 +641,8 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
         setLoading && setLoading(false);
         getPatientApiCall();
         props.navigation.goBack();
+        selectUser(data.data!.addNewProfile.patient);
+        // console.log('addprofiledata==>', data.data!.addNewProfile.patient);
         // if (relation!.key === Relation.ME) {
         //   setCurrentPatientId(data!.data!.addNewProfile!.patient!.id);
         //   AsyncStorage.setItem('selectUserId', profileData!.id);
@@ -938,7 +942,11 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
       <StickyBottomComponent style={styles.stickyBottomStyle} defaultBG>
         <View style={styles.bottonButtonContainer}>
           <Button
-            onPress={() => props.navigation.goBack()}
+            onPress={() => {
+              isEdit
+                ? props.navigation.goBack()
+                : props.navigation.navigate(AppRoutes.ConsultRoom, {});
+            }}
             title={'CANCEL'}
             style={styles.bottomWhiteButtonStyle}
             titleTextStyle={styles.bottomWhiteButtonTextStyle}
