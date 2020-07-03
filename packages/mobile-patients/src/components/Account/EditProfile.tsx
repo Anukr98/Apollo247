@@ -56,6 +56,7 @@ import {
   TouchableOpacity,
   View,
   KeyboardAvoidingView,
+  BackHandler,
 } from 'react-native';
 import { Text } from 'react-native-elements';
 import { NavigationScreenProps } from 'react-navigation';
@@ -323,6 +324,26 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
     relation.key === profileData.relation &&
     email === profileData.emailAddress &&
     photoUrl === profileData.photoUrl;
+
+  useEffect(() => {
+    const _didFocus = props.navigation.addListener('didFocus', (payload) => {
+      BackHandler.addEventListener('hardwareBackPress', handleBack);
+    });
+
+    const _willBlur = props.navigation.addListener('willBlur', (payload) => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBack);
+      return () => {
+        _didFocus && _didFocus.remove();
+        _willBlur && _willBlur.remove();
+      };
+    });
+  }, []);
+
+  const handleBack = async () => {
+    BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    isEdit ? props.navigation.goBack() : props.navigation.navigate(AppRoutes.ConsultRoom, {});
+    return false;
+  };
 
   useEffect(() => {
     if (profileData) {
@@ -718,7 +739,9 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
         leftIcon={'backArrow'}
         title={isEdit ? 'EDIT PROFILE' : 'ADD NEW FAMILY MEMBER'}
         rightComponent={null}
-        onPressLeftIcon={() => props.navigation.goBack()}
+        onPressLeftIcon={() =>
+          isEdit ? props.navigation.goBack() : props.navigation.navigate(AppRoutes.ConsultRoom, {})
+        }
       />
     );
   };
