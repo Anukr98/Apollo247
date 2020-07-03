@@ -13,36 +13,36 @@ const useStyles = makeStyles((theme: Theme) => {
       overflow: 'hidden',
       position: 'relative',
       marginTop: 12,
-      '& ul': {
-        bottom: 12,
-        right: 20,
-        textAlign: 'right',
-        width: 'auto',
-        '& li': {
-          width: 'auto',
-          height: 'auto',
-          margin: 0,
-          '& button': {
-            fontSize: 0,
-            width: 40,
-            height: 1,
-            backgroundColor: '#fff',
-            padding: 0,
-            marginLeft: 2,
-            '&:before': {
-              display: 'none',
-            },
-          },
-          '& .slick-active': {
-            display: 'none',
-          },
-        },
-        '& .slick-active': {
-          '& button': {
-            backgroundColor: '#fcb716',
-          },
-        },
-      },
+      // '& ul': {
+      //   bottom: 12,
+      //   right: 20,
+      //   textAlign: 'right',
+      //   width: 'auto',
+      //   '& li': {
+      //     width: 'auto',
+      //     height: 'auto',
+      //     margin: 0,
+      //     '& button': {
+      //       fontSize: 0,
+      //       width: 40,
+      //       height: 1,
+      //       backgroundColor: '#fff',
+      //       padding: 0,
+      //       marginLeft: 2,
+      //       '&:before': {
+      //         display: 'none',
+      //       },
+      //     },
+      //     '& .slick-active': {
+      //       display: 'none',
+      //     },
+      //   },
+      //   '& .slick-active': {
+      //     '& button': {
+      //       backgroundColor: '#fcb716',
+      //     },
+      //   },
+      // },
     },
     card: {
       color: '#fff',
@@ -105,10 +105,38 @@ export const CarouselBanner: React.FC<BanneDataArray> = (props) => {
     autoplay: true,
   };
 
+  const dummyData = [{
+    end_time: "2021-06-11 03:59:00",
+    image: 'http://uat.apollopharmacy.in/pub/media/magestore/bannerslider/images/2/4/247_web_2.jpg',
+    name: "247 web",
+    sku: "APA0040",
+    sku_url_key: "apollo-life-aloe-vera-juice-1ltr",
+    start_time: "2020-06-09 09:00:00",
+    status: "1"
+  },
+  {
+    category_id: "1459",
+    category_url_key: "cold-immunity-and-pain-relief",
+    end_time: "2021-06-10 10:44:00",
+    image: 'http://uat.apollopharmacy.in/pub/media/magestore/bannerslider/images/h/o/hold_on_tight_web_28apr_1.jpg',
+    name: "247 web 1",
+    start_time: "2020-06-09 10:44:00",
+    status: "1"
+  },
+  {
+    end_time: "2021-06-20 10:59:00",
+    image: 'http://uat.apollopharmacy.in/pub/media/magestore/bannerslider/images/2/4/247_web_1.jpg',
+    name: "247 web 2",
+    sku: "NAN0004",
+    sku_url_key: "nestle-nan-pro-stage-1-tin-upto-6-months-400g",
+    start_time: "2020-06-18 10:59:00",
+    status: "1"
+  }]
+
   return (
     <div className={classes.root}>
       <Slider {...sliderSettings}>
-        {props.bannerData.map((sidebaner, index) => (
+        {dummyData.map((sidebaner, index) => (
           <div
             className={classes.card}
             onClick={() => {
@@ -122,7 +150,7 @@ export const CarouselBanner: React.FC<BanneDataArray> = (props) => {
               }
             }}
           >
-            <img src={`${apiDetails.imageUrl}${sidebaner.image}`} />
+            <img src={`${sidebaner.image}`} />
           </div>
         ))}
       </Slider>
