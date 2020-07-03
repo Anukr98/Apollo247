@@ -32,6 +32,8 @@ import { SpecialtySearch } from './SpecialtySearch';
 import { AphDialog, AphDialogClose, AphDialogTitle } from '@aph/web-ui-components';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import { WhyApollo } from 'components/Doctors/WhyApollo';
+import { ManageProfile } from 'components/ManageProfile';
+import { Relation } from 'graphql/types/globalTypes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -671,6 +673,9 @@ export const SpecialityListing: React.FC = (props) => {
   const [chatConsult, setChatConsult] = useState<boolean>(false);
   const [meetInPerson, setMeetInPerson] = useState<boolean>(false);
   const isDesktopOnly = useMediaQuery('(min-width:768px)');
+  const { allCurrentPatients } = useAllCurrentPatients();
+  const onePrimaryUser =
+    allCurrentPatients && allCurrentPatients.filter((x) => x.relation === Relation.ME).length === 1;
 
   const handleChange = (panel: string) => (event: React.ChangeEvent<{}>, isExpanded: boolean) => {
     setExpanded(isExpanded ? panel : false);
@@ -973,10 +978,12 @@ export const SpecialityListing: React.FC = (props) => {
           )}
         </div>
       </div>
+      {!onePrimaryUser && <ManageProfile />}
       <NavigationBottom />
       <div className={classes.footerLinks}>
         <BottomLinks />
       </div>
+
       <AphDialog open={chatConsult} maxWidth="sm">
         <AphDialogClose onClick={() => setChatConsult(false)} title={'Close'} />
         <AphDialogTitle> How to consult via chat/audio/video?</AphDialogTitle>
