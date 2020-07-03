@@ -17,12 +17,19 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     filterGroup: {
       display: 'flex',
+      [theme.breakpoints.down('xs')]: {
+        display: 'block',
+      },
     },
     filterType: {
       paddingLeft: 16,
       paddingRight: 8,
       borderRight: '0.5px solid rgba(2,71,91,0.3)',
       width: '20%',
+      [theme.breakpoints.down('xs')]: {
+        display: 'inline-block',
+        width: '100%',
+      },
       '& h4': {
         fontSize: 12,
         fontWeight: 500,
