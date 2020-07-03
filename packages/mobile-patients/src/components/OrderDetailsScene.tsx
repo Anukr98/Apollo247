@@ -40,7 +40,7 @@ import {
 import {
   aphConsole,
   g,
-  getNewOrderStatusText,
+  getOrderStatusText,
   handleGraphQlError,
   postWebEngageEvent,
   reOrderMedicines,
@@ -873,7 +873,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
                   prescriptionRequired,
                   (orderCancel && orderCancel.statusMessage) || ''
                 )}
-                status={getNewOrderStatusText(order!.orderStatus!)}
+                status={getOrderStatusText(order!.orderStatus!)}
                 date={getFormattedDate(order!.statusDate)}
                 time={getFormattedTime(order!.statusDate)}
                 isStatusDone={order!.id != 'idToBeDelivered'}

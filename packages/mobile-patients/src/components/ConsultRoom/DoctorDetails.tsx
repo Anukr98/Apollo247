@@ -335,10 +335,15 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   };
 
   const fetchDoctorDetails = () => {
+    const input = {
+      id: doctorId,
+    };
+    console.log('input ', input);
+
     client
       .query<getDoctorDetailsById>({
         query: GET_DOCTOR_DETAILS_BY_ID,
-        variables: { id: doctorId },
+        variables: input,
         fetchPolicy: 'no-cache',
       })
       .then(({ data }) => {
@@ -483,9 +488,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           openConsultPopup(ConsultMode.ONLINE);
         }}
         DoctorId={doctorId}
-        DoctorName={
-          doctorDetails ? `${doctorDetails.salutation}` + `${doctorDetails.fullName}` : ''
-        }
+        DoctorName={doctorDetails ? doctorDetails.fullName : ''}
         nextAppointemntOnlineTime={availableTime}
         nextAppointemntInPresonTime={physicalAvailableTime}
       />
@@ -526,9 +529,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         <View style={styles.topView}>
           {doctorDetails && (
             <View style={styles.detailsViewStyle}>
-              <Text style={styles.doctorNameStyles}>
-                {doctorDetails.salutation} {doctorDetails.fullName}
-              </Text>
+              <Text style={styles.doctorNameStyles}>{doctorDetails.fullName}</Text>
               <View style={styles.separatorStyle} />
               <Text style={styles.doctorSpecializationStyles}>
                 {doctorDetails.specialty && doctorDetails.specialty.name
@@ -553,7 +554,9 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
               >
                 <View>
                   {!!clinicAddress && (
-                    <Text style={[styles.doctorLocation, { paddingTop: 11 }]}>{clinicAddress}</Text>
+                    <Text style={[styles.doctorLocation, { paddingTop: 11, width: width - 120 }]}>
+                      {clinicAddress}
+                    </Text>
                   )}
                   {doctorDetails.languages ? (
                     <Text style={[styles.doctorLocation, { paddingBottom: 11, paddingTop: 4 }]}>
@@ -733,7 +736,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           <View style={styles.cardView}>
             <View style={styles.labelView}>
               <Text style={styles.labelStyle}>
-                {doctorDetails.salutation} {doctorDetails.fullName}’s location for physical visits
+                {doctorDetails.fullName}’s location for physical visits
               </Text>
             </View>
             <FlatList
@@ -869,9 +872,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       return (
         <View style={styles.cardView}>
           <View style={styles.labelView}>
-            <Text style={styles.labelStyle}>
-              {doctorDetails.salutation} {doctorDetails.fullName}’s Team
-            </Text>
+            <Text style={styles.labelStyle}>{doctorDetails.fullName}’s Team</Text>
             <Text style={styles.labelStyle}>
               {doctorDetails.starTeam.length}
               {doctorDetails.starTeam.length == 1 ? ' Doctor' : ' Doctors'}

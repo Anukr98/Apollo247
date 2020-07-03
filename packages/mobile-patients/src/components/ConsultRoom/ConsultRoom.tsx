@@ -29,7 +29,7 @@ import {
   Scan,
   Symptomtracker,
   TestsCartIcon,
-  TestsCartMedicineIcon,
+  MedicineCartIcon,
   TestsIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
@@ -544,8 +544,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     },
     {
       id: 2,
-      title: 'Buy Medicines',
-      image: <TestsCartMedicineIcon style={styles.menuOptionIconStyle} />,
+      title: 'Medicines & Essentials',
+      image: <MedicineCartIcon style={styles.menuOptionIconStyle} />,
       onPress: () => {
         postHomeFireBaseEvent(FirebaseEventName.BUY_MEDICINES, 'Home Screen');
         postHomeWEGEvent(WebEngageEventName.BUY_MEDICINES, 'Home Screen');
@@ -953,6 +953,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           setPersonalizedData(appointmentsPersonalized as any);
           setisPersonalizedCard(true);
         }
+      } else {
+        setPersonalizedData([]);
+        setisPersonalizedCard(false);
       }
     }
 
@@ -1670,6 +1673,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               'Patient UHID': currentPatient.uhid,
             };
             postWebEngageEvent(WebEngageEventName.HOMEPAGE_WIDGET_FOLLOWUP_CLICK, eventAttributes);
+            console.log('personalizedData.doctorDetails.id ', personalizedData.doctorDetails.id);
             props.navigation.navigate(AppRoutes.DoctorDetails, {
               doctorId: personalizedData ? personalizedData.doctorDetails.id : '',
               showBookAppointment: true,

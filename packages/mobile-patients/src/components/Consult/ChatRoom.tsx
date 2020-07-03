@@ -1353,6 +1353,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     setSnackbarState(true);
     setHandlerMessage('      Something went wrong!!  Trying to connect');
   };
+  const setSessionReconnectMsg = () => {
+    setSnackbarState(true);
+    setHandlerMessage('There is a problem with network connection. Reconnecting, Please wait...');
+  };
   const publisherEventHandlers = {
     streamCreated: (event: string) => {
       console.log('Publisher stream created!', event);
@@ -1442,6 +1446,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     },
     sessionReconnecting: (event: string) => {
       console.log('session stream sessionReconnecting!', event);
+      setSessionReconnectMsg();
       KeepAwake.activate();
     },
     signal: (event: string) => {
@@ -4478,10 +4483,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           }}
         >
           <View style={{ flex: 1 }}>
-            <Text style={styles.doctorNameStyle}>
-              {appointmentData.doctorInfo.salutation}
-              {appointmentData.doctorInfo.displayName}
-            </Text>
+            <Text style={styles.doctorNameStyle}>{appointmentData.doctorInfo.displayName}</Text>
             <Text style={styles.doctorSpecialityStyle}>{`${g(
               appointmentData,
               'doctorInfo',

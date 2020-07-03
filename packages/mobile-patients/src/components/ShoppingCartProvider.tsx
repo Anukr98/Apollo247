@@ -338,7 +338,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
   );
 
   const uploadPrescriptionRequired =
-    cartItems.findIndex((item) => item.prescriptionRequired) != -1 || physicalPrescriptions.length;
+    cartItems.findIndex((item) => item.prescriptionRequired) != -1 || physicalPrescriptions.length || ePrescriptions.length;
 
   const addAddress = (address: savePatientAddress_savePatientAddress_patientAddress) => {
     setAddresses([address, ...addresses]);

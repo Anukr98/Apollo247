@@ -244,6 +244,14 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       setPincodePopupVisible(true);
     };
 
+    const CalltheNearestPharmacyEvent = () => {
+      let eventAttributes: WebEngageEvents[WebEngageEventName.CALL_THE_NEAREST_PHARMACY] = {
+        pincode: pincode,
+        'Mobile Number': currentPatient.mobileNumber,
+      };
+      postWebEngageEvent(WebEngageEventName.CALL_THE_NEAREST_PHARMACY, eventAttributes);
+    };
+
     const onPressCallNearestPharmacy = (pharmacyPhoneNumber: string) => {
       let from = currentPatient.mobileNumber;
       let to = pharmacyPhoneNumber;
@@ -254,6 +262,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         toPhone: to,
         callerId: caller_id,
       };
+      CalltheNearestPharmacyEvent();
       globalLoading!(true);
       callToExotelApi(param)
         .then((response) => {
@@ -811,7 +820,15 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             autoplayDelay={3000}
             autoplayInterval={3000}
           />
-          <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'center',
+              position: 'absolute',
+              bottom: 10,
+              alignSelf: 'center',
+            }}
+          >
             {banners.map((_, index) => (index == slideIndex ? renderDot(true) : renderDot(false)))}
           </View>
         </View>
@@ -911,7 +928,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     const isOfflineOrder = !!g(order, 'billNumber');
     const shopAddress = isOfflineOrder && g(order, 'shopAddress');
     const parsedShopAddress = isOfflineOrder && JSON.parse(shopAddress || '{}');
-    const address = [g(parsedShopAddress, 'storename'), g(parsedShopAddress, 'address')]
+    const address = [
+      g(parsedShopAddress, 'storename'),
+      g(parsedShopAddress, 'city'),
+      g(parsedShopAddress, 'zipcode'),
+    ]
       .filter((a) => a)
       .join(', ');
     const date = moment(g(order, 'medicineOrdersStatus', '0' as any, 'statusDate')).format(
@@ -971,6 +992,12 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   };
 
   const renderLatestOrderInfo = () => {
+    const goToOrderDetails = () => {
+      props.navigation.navigate(AppRoutes.OrderDetailsScene, {
+        orderAutoId: latestMedicineOrder!.orderAutoId,
+        billNumber: latestMedicineOrder!.billNumber,
+      });
+    };
     return (
       !!latestMedicineOrder && (
         <ListItem
@@ -989,7 +1016,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             paddingRight: 0,
             ...theme.viewStyles.text('M', 12, '#fcb716'),
           }}
-          titleProps={{ numberOfLines: 1, ellipsizeMode: 'middle' }}
+          titleProps={{ numberOfLines: 1, ellipsizeMode: 'middle', onPress: goToOrderDetails }}
           rightTitleProps={{
             onPress: () => reOrder(latestMedicineOrder),
           }}
@@ -1000,7 +1027,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
   const renderYourOrders = () => {
     return (
-      <View style={{ ...theme.viewStyles.card(), paddingVertical: 0 }}>
+      <View style={{ ...theme.viewStyles.card(), paddingVertical: 0, marginTop: 5 }}>
         <ListItem
           title={'My Orders'}
           leftAvatar={<MedicineIcon />}
