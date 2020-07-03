@@ -820,10 +820,11 @@ export const SpecialityListing: React.FC = (props) => {
                   <div className={classes.card}>
                     <Typography component="h5">Why Apollo247</Typography>
                     <ul className={classes.cardList}>
-                      <li>Verified doctor listing</li>
-                      <li>99% +ve feedback</li>
-                      <li>Free follow-up session</li>
-                      <li>In hac habitasse platea dictumst. Vivamus adipiscing fermentum </li>
+                      <li>Round-the-clock doctor availability</li>
+                      <li>Over 70 specialties</li>
+                      <li>Detailed digital prescriptions</li>
+                      <li>Order medicines {'&'} tests online</li>
+                      <li>Digitised health records</li>
                     </ul>
                   </div>
                   <div className={classes.card}>
