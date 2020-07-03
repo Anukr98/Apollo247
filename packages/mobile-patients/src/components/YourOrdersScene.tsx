@@ -88,16 +88,18 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
       );
     };
 
+    const offlineOrderNumber = g(order, 'billNumber');
+    if (offlineOrderNumber) {
+      return getStore();
+    }
+
     const type = g(order, 'deliveryType');
     switch (type) {
       case MEDICINE_DELIVERY_TYPE.HOME_DELIVERY:
         return 'Home Delivery';
         break;
       case MEDICINE_DELIVERY_TYPE.STORE_PICKUP:
-        {
-          const offlineOrderNumber = g(order, 'billNumber');
-          return offlineOrderNumber ? getStore() : 'Store Pickup';
-        }
+        return 'Store Pickup';
         break;
       default:
         return 'Unknown';
