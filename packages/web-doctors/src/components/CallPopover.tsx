@@ -1044,7 +1044,7 @@ interface CallPopoverProps {
   pubnub: any;
   sessionClient: any;
   lastMsg: any;
-  presenceEventObject: any;
+  //presenceEventObject: any;
   hasCameraMicPermission: boolean;
   isNewprescriptionEditable: boolean;
   isNewPrescription: boolean;
@@ -1775,33 +1775,33 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     }
   }, [props.lastMsg]);
 
-  useEffect(() => {
-    const presenceEventObject = props.presenceEventObject;
-    if (
-      presenceEventObject &&
-      isConsultStarted &&
-      props.appointmentStatus !== STATUS.COMPLETED &&
-      appointmentInfo &&
-      appointmentInfo.appointmentType !== APPOINTMENT_TYPE.PHYSICAL
-    ) {
-      const data: any = presenceEventObject.channels[props.appointmentId].occupants;
-      const occupancyPatient = data.filter((obj: any) => {
-        return obj.uuid === 'PATIENT' || obj.uuid.indexOf('PATIENT_') > -1;
-      });
-      if (presenceEventObject.totalOccupancy >= 2) {
-        didPatientJoined = true;
-        clearInterval(intervalCallAbundant);
-        abondmentStarted = false;
-      } else {
-        if (presenceEventObject.totalOccupancy === 1 && occupancyPatient.length === 0) {
-          if (!abondmentStarted && didPatientJoined) {
-            //abondmentStarted = true;
-            //callAbundantIntervalTimer(620);
-          }
-        }
-      }
-    }
-  }, [props.presenceEventObject]);
+  // useEffect(() => {
+  //   const presenceEventObject = props.presenceEventObject;
+  //   if (
+  //     presenceEventObject &&
+  //     isConsultStarted &&
+  //     props.appointmentStatus !== STATUS.COMPLETED &&
+  //     appointmentInfo &&
+  //     appointmentInfo.appointmentType !== APPOINTMENT_TYPE.PHYSICAL
+  //   ) {
+  //     const data: any = presenceEventObject.channels[props.appointmentId].occupants;
+  //     const occupancyPatient = data.filter((obj: any) => {
+  //       return obj.uuid === 'PATIENT' || obj.uuid.indexOf('PATIENT_') > -1;
+  //     });
+  //     if (presenceEventObject.totalOccupancy >= 2) {
+  //       didPatientJoined = true;
+  //       clearInterval(intervalCallAbundant);
+  //       abondmentStarted = false;
+  //     } else {
+  //       if (presenceEventObject.totalOccupancy === 1 && occupancyPatient.length === 0) {
+  //         if (!abondmentStarted && didPatientJoined) {
+  //           //abondmentStarted = true;
+  //           //callAbundantIntervalTimer(620);
+  //         }
+  //       }
+  //     }
+  //   }
+  // }, [props.presenceEventObject]);
   const onStartConsult = () => {
     const text = {
       id: props.doctorId,
