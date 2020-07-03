@@ -406,7 +406,7 @@ export const ConsultTabs: React.FC = () => {
   const isSecretary = currentUserType === LoggedInUserType.SECRETARY;
   const [lastMsg, setLastMsg] = useState<any>(null);
   const [messages, setMessages] = useState<MessagesObjectProps[]>([]);
-  const [presenceEventObject, setPresenceEventObject] = useState<any>(null);
+  //const [presenceEventObject, setPresenceEventObject] = useState<any>(null);
   const [hasCameraMicPermission, setCameraMicPermission] = useState<boolean>(true);
   const [isNewprescriptionEditable, setIsNewprescriptionEditable] = useState<boolean>(false);
   const [isNewPrescription, setIsNewPrescription] = useState<boolean>(false);
@@ -421,7 +421,7 @@ export const ConsultTabs: React.FC = () => {
     ssl: true,
     restore: true,
     keepAlive: true,
-    presenceTimeout: 20,
+    //presenceTimeout: 20,
     heartbeatInterval: 20,
     uuid: REQUEST_ROLES.DOCTOR,
   };
@@ -436,7 +436,7 @@ export const ConsultTabs: React.FC = () => {
   useEffect(() => {
     pubnub.subscribe({
       channels: [appointmentId],
-      withPresence: true,
+      //withPresence: true,
     });
     getHistory(0);
     pubnub.addListener({
@@ -464,19 +464,19 @@ export const ConsultTabs: React.FC = () => {
 
         setLastMsg(message);
       },
-      presence(presenceEvent: any) {
-        pubnub
-          .hereNow({
-            channels: [appointmentId],
-            includeUUIDs: true,
-          })
-          .then((response: any) => {
-            setPresenceEventObject(response);
-          })
-          .catch((error) => {
-            console.log(error);
-          });
-      },
+      // presence(presenceEvent: any) {
+      //   pubnub
+      //     .hereNow({
+      //       channels: [appointmentId],
+      //       includeUUIDs: true,
+      //     })
+      //     .then((response: any) => {
+      //       setPresenceEventObject(response);
+      //     })
+      //     .catch((error) => {
+      //       console.log(error);
+      //     });
+      // },
     });
     return () => {
       pubnub.unsubscribe({ channels: [appointmentId] });
@@ -1795,7 +1795,7 @@ export const ConsultTabs: React.FC = () => {
                 pubnub={pubnub}
                 sessionClient={sessionClient}
                 lastMsg={lastMsg}
-                presenceEventObject={presenceEventObject}
+                //presenceEventObject={presenceEventObject}
                 endCallNotificationAction={(callId: boolean) => endCallNotificationAction(callId)}
                 hasCameraMicPermission={hasCameraMicPermission}
                 createSDCasesheetCall={(flag: boolean) => createSDCasesheetCall(flag)}
