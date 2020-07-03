@@ -776,7 +776,7 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
             </View>
           </View>
         ) : null}
-        {!orderBilledAndPacked ? (
+        {!orderBilledAndPacked && !offlineOrderNumber ? (
           <View style={{ flexDirection: 'row', paddingHorizontal: 16, marginTop: 16 }}>
             <Text style={[styles.DisclaimerTitle]}>Disclaimer: </Text>
             <Text style={styles.DisclaimerDescr}>
