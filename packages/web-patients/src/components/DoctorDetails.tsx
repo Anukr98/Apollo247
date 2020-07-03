@@ -40,7 +40,6 @@ import { HowCanConsult } from 'components/Doctors/HowCanConsult';
 import { AppDownload } from 'components/Doctors/AppDownload';
 import { NavigationBottom } from 'components/NavigationBottom';
 import { GetDoctorNextAvailableSlot } from 'graphql/types/GetDoctorNextAvailableSlot';
-import { getPastUrl } from 'helpers/commonHelpers';
 export interface DoctorDetailsProps {
   id: string;
 }
