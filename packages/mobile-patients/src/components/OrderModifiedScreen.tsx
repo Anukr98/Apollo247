@@ -161,14 +161,16 @@ export const OrderModifiedScreen: React.FC<OrderModifiedScreenProps> = (props) =
     billedItems.forEach((item: any) => {
       orderedItems.forEach((product: any) => {
         if (item.itemId == product.medicineSKU) {
-          if (item.mrp != product.mrp) {
-            console.log('hi');
-            item['updated'] = 'price';
-            item['originalPrice'] = product.mrp;
-            updatedItems.push(item);
-          } else if (Math.ceil(item.issuedQty) != product.quantity) {
-            item['updated'] = 'quantity';
-            item['originalQuantity'] = product.quantity;
+          if (item.mrp != product.mrp || Math.ceil(item.issuedQty) != product.quantity) {
+            if (item.mrp != product.mrp) {
+              console.log('hi');
+              item['updatedprice'] = true;
+              item['originalPrice'] = product.mrp;
+            }
+            if (Math.ceil(item.issuedQty) != product.quantity) {
+              item['updatedquantity'] = true;
+              item['originalQuantity'] = product.quantity;
+            }
             updatedItems.push(item);
           }
         }
@@ -182,7 +184,7 @@ export const OrderModifiedScreen: React.FC<OrderModifiedScreenProps> = (props) =
     return (
       <View style={{ flexDirection: 'row' }}>
         <View style={styles.itemBlueCircleViewStyle} />
-        <Text style={styles.itemNameTextStyle}>{item.medicineName}</Text>
+        <Text style={styles.itemNameTextStyle}>{item.medicineName} is out of stock</Text>
       </View>
     );
   };
@@ -191,9 +193,33 @@ export const OrderModifiedScreen: React.FC<OrderModifiedScreenProps> = (props) =
     return (
       <View style={{ flexDirection: 'row' }}>
         <View style={styles.itemBlueCircleViewStyle} />
-        <Text style={styles.itemNameTextStyle}>{item.itemName}</Text>
+        <Text style={styles.itemNameTextStyle}>{item.itemName} is added</Text>
       </View>
     );
+  };
+
+  const renderremovedItems = () => {
+    if (removedItems && removedItems.length) {
+      return (
+        <View>
+          <Text style={styles.itemsRemovedTextStyle}>{'Items Removed from your Cart'}</Text>
+          {removedItems.map((item) => renderItemsRemoved(item!))}
+        </View>
+      );
+    }
+  };
+
+  const renderaddedItems = () => {
+    if (addedItems && addedItems.length) {
+      return (
+        <View>
+          <Text style={[styles.itemsRemovedTextStyle, { marginTop: 6 }]}>
+            {'Items Added to your Cart.'}
+          </Text>
+          {addedItems.map((item) => renderItemsAdded(item!))}
+        </View>
+      );
+    }
   };
 
   const renderItemsAddedRemovedCard = () => {
@@ -207,12 +233,8 @@ export const OrderModifiedScreen: React.FC<OrderModifiedScreenProps> = (props) =
             <Text style={styles.importantMsgTextStyle}>
               {'Important messages for items in your cart.'}
             </Text>
-            <Text style={styles.itemsRemovedTextStyle}>{'Items Removed from your Cart'}</Text>
-            {removedItems.map((item) => renderItemsRemoved(item!))}
-            <Text style={[styles.itemsRemovedTextStyle, { marginTop: 6 }]}>
-              {'Items Added to your Cart.'}
-            </Text>
-            {addedItems.map((item) => renderItemsAdded(item!))}
+            {renderremovedItems()}
+            {renderaddedItems()}
           </View>
         </View>
       </View>
@@ -232,11 +254,12 @@ export const OrderModifiedScreen: React.FC<OrderModifiedScreenProps> = (props) =
             style={{
               flex: 0.33,
               alignItems: 'flex-start',
-              paddingLeft: 13,
+              marginHorizontal: 5,
+
               borderRightColor: 'rgba(2, 71, 91, 0.3)',
             }}
           >
-            <Text numberOfLines={1} style={styles.mrpQtyItemNameTextStyle}>
+            <Text numberOfLines={2} style={styles.mrpQtyItemNameTextStyle}>
               {itemName}
             </Text>
           </View>
@@ -244,27 +267,36 @@ export const OrderModifiedScreen: React.FC<OrderModifiedScreenProps> = (props) =
             style={{
               flex: 0.33,
               alignItems: 'center',
-              // justifyContent: 'center',
               borderRightColor: 'rgba(2, 71, 91, 0.3)',
             }}
           >
-            <Text style={styles.mrpQtyOrgValueTextStyle}>
-              {/* {offlineOrderNumber ? item.price! / item.mrp! / item.quantity! : item.quantity} */}
-              {item.updated == 'price'
-                ? 'Rs. ' + (item.originalPrice! || 0).toFixed(2)
-                : item.originalQuantity}
-            </Text>
+            {item.updatedprice && (
+              <Text style={styles.mrpQtyOrgValueTextStyle}>
+                {'Rs. ' + (item.originalPrice! || 0).toFixed(2)}
+              </Text>
+            )}
+            {item.updatedquantity && (
+              <Text style={{ ...styles.mrpQtyOrgValueTextStyle, color: 'rgba(2,71,91,0.7)' }}>
+                {'QTY-' + item.originalQuantity}
+              </Text>
+            )}
           </View>
           <View
             style={{
               flex: 0.33,
               alignItems: 'center',
-              paddingRight: 29,
             }}
           >
-            <Text style={styles.mrpQtyRevValueTextStyle}>
-              {item.updated == 'price' ? 'Rs.' + (item.mrp! || 0).toFixed(2) : item.quantity}
-            </Text>
+            {item.updatedprice && (
+              <Text style={styles.mrpQtyRevValueTextStyle}>
+                {'Rs.' + (item.mrp! || 0).toFixed(2)}
+              </Text>
+            )}
+            {item.updatedquantity && (
+              <Text style={styles.mrpQtyRevValueTextStyle}>
+                {'QTY-' + Math.ceil(item.issuedQty)}
+              </Text>
+            )}
           </View>
         </View>
         {/* <View style={[styles.blueLineViewStyle, { marginHorizontal: 3.5, marginBottom: 15 }]} /> */}
@@ -273,81 +305,82 @@ export const OrderModifiedScreen: React.FC<OrderModifiedScreenProps> = (props) =
   };
 
   const renderMrpAndQuantityModification = () => {
-    return (
-      <View style={styles.mprAndQtyMainViewStyle}>
-        <Text style={styles.mrpQtyTextStyle}>{'MRP | QUANTITY MODIFICATIONS'}</Text>
-        <View style={styles.blueLineViewStyle} />
-        <View style={styles.mrpQtyCardStyle}>
-          <View
-            style={{
-              flexDirection: 'row',
-              paddingLeft: 26,
-              paddingRight: 27,
-              paddingTop: 13,
-              paddingBottom: 10,
-            }}
-          >
+    if (updatedItems && updatedItems.length) {
+      return (
+        <View style={styles.mprAndQtyMainViewStyle}>
+          <Text style={styles.mrpQtyTextStyle}>{'MRP | QUANTITY MODIFICATIONS'}</Text>
+          <View style={styles.blueLineViewStyle} />
+          <View style={styles.mrpQtyCardStyle}>
             <View
               style={{
-                flex: 0.33,
-                borderWidth: 0,
-                borderRightWidth: 0.5,
-                justifyContent: 'center',
-                borderRightColor: 'rgba(2, 71, 91, 0.2)',
+                flexDirection: 'row',
+                paddingTop: 13,
+                paddingBottom: 10,
               }}
             >
-              <Text style={[styles.headingTextStyle, { textAlign: 'left' }]}>{'ITEM'}</Text>
+              <View
+                style={{
+                  flex: 0.33,
+                  borderWidth: 0,
+                  borderRightWidth: 0.5,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  borderRightColor: 'rgba(2, 71, 91, 0.2)',
+                }}
+              >
+                <Text style={[styles.headingTextStyle, { textAlign: 'left' }]}>{'ITEM'}</Text>
+              </View>
+              <View
+                style={{
+                  flex: 0.33,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderWidth: 0,
+                  borderRightColor: 'rgba(2, 71, 91, 0.2)',
+                  borderRightWidth: 0.5,
+                }}
+              >
+                <Text style={styles.headingTextStyle}>{'ORIGINAL VALUE'}</Text>
+              </View>
+              <View
+                style={{
+                  flex: 0.33,
+                  paddingVertical: 3,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Text style={styles.headingTextStyle}>{'REVISED VALUE'}</Text>
+              </View>
             </View>
+            {updatedItems.map((item) => renderMrpAndQtyItems(item))}
             <View
               style={{
-                flex: 0.33,
-                alignItems: 'center',
+                backgroundColor: '#ffffff',
                 justifyContent: 'center',
-                borderWidth: 0,
-                borderRightColor: 'rgba(2, 71, 91, 0.2)',
-                borderRightWidth: 0.5,
+                shadowColor: 'rgba(128, 128, 128, 0.3)',
+                shadowOffset: { width: 0, height: 5 },
+                shadowOpacity: 0.4,
+                shadowRadius: 5,
+                borderRadius: 10,
               }}
             >
-              <Text style={styles.headingTextStyle}>{'ORIGINAL VALUE'}</Text>
+              <Text
+                style={{
+                  ...theme.viewStyles.text('M', 13, '#02475b', 1, 18, 0),
+                  paddingLeft: 12,
+                  paddingVertical: 23,
+                  flex: 1,
+                }}
+              >
+                In case of any queries or concerns regarding your Bill Invoice, please reach us out
+                on WhatsApp by clicking here
+              </Text>
             </View>
-            <View
-              style={{
-                flex: 0.33,
-                paddingVertical: 3,
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <Text style={styles.headingTextStyle}>{'REVISED VALUE'}</Text>
-            </View>
-          </View>
-          {updatedItems.map((item) => renderMrpAndQtyItems(item))}
-          <View
-            style={{
-              backgroundColor: '#ffffff',
-              justifyContent: 'center',
-              shadowColor: 'rgba(128, 128, 128, 0.3)',
-              shadowOffset: { width: 0, height: 5 },
-              shadowOpacity: 0.4,
-              shadowRadius: 5,
-              borderRadius: 10,
-            }}
-          >
-            <Text
-              style={{
-                ...theme.viewStyles.text('M', 13, '#02475b', 1, 18, 0),
-                paddingLeft: 12,
-                paddingVertical: 23,
-                flex: 1,
-              }}
-            >
-              In case of any queries or concerns regarding your Bill Invoice, please reach us out on
-              WhatsApp by clicking here
-            </Text>
           </View>
         </View>
-      </View>
-    );
+      );
+    }
   };
 
   return (
