@@ -853,6 +853,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         ? `${cartItems.length}`
         : `0${cartItems.length}`;
     const FreeShipping =
+      selectedTab == tabs[0].title &&
       AppConfig.Configuration.MIN_VALUE_TO_NUDGE_USERS_TO_AVAIL_FREE_DELIVERY > 0 &&
       cartTotal - couponDiscount - productDiscount >=
         AppConfig.Configuration.MIN_VALUE_TO_NUDGE_USERS_TO_AVAIL_FREE_DELIVERY &&
@@ -935,19 +936,12 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         {cartItems.length > 0 && FreeShipping ? (
           <View
             style={{
-              shadowColor: 'rgba(128, 128, 128, 0.3)',
-              shadowOffset: { width: 0, height: 5 },
-              shadowOpacity: 0.4,
-              shadowRadius: 5,
-              elevation: 5,
-              flexDirection: 'row',
-              marginHorizontal: 20,
-              marginBottom: 20,
-              backgroundColor: '#f7f8f5',
-              borderRadius: 10,
-              paddingHorizontal: 17,
-              paddingVertical: 11,
+              ...theme.viewStyles.card(),
+              marginTop: 0,
+              paddingTop: 9,
               paddingBottom: 9,
+              flexDirection: 'row',
+              backgroundColor: '#f7f8f5',
             }}
           >
             <FreeShippingIcon style={{ width: 15, height: 15, marginTop: 3, marginRight: 3 }} />
