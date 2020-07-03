@@ -62,6 +62,7 @@ import { useDiagnosticsCart } from '../DiagnosticsCartProvider';
 import { FileBig, GreenTickIcon } from '../ui/Icons';
 import { TextInputComponent } from '../ui/TextInputComponent';
 import { EPrescriptionCard } from '../ui/EPrescriptionCard';
+import { Spinner } from '../ui/Spinner';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -161,7 +162,7 @@ export const YourCartUploadPrescriptions: React.FC<YourCartUploadPrescriptionPro
   const [selectedTab, setselectedTab] = useState<string>(storeId ? tabs[1].title : tabs[0].title);
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
-  const { showAphAlert, hideAphAlert, setLoading } = useUIElements();
+  const { showAphAlert, hideAphAlert, setLoading, loading } = useUIElements();
   const [showDriveWayPopup, setShowDriveWayPopup] = useState<boolean>(false);
   const scrollViewRef = useRef<ScrollView | null>();
   const [whatsAppUpdate, setWhatsAppUpdate] = useState<boolean>(true);
@@ -658,6 +659,7 @@ export const YourCartUploadPrescriptions: React.FC<YourCartUploadPrescriptionPro
             style={{ flex: 1, marginHorizontal: 40 }}
           />
         </StickyBottomComponent>
+        {loading && <Spinner />}
       </SafeAreaView>
       {showDriveWayPopup && (
         <StoreDriveWayPickupPopup
