@@ -135,7 +135,7 @@ export enum ApiConstants {
   PHYSICAL_BOOK_APPOINTMENT_BODY = 'Thanks for choosing Apollo24|7, {0} :) Your appointment {1} with Dr. {2} is confirmed for {3} at {4}. Click here to fill your details before your consultation starts. This will take hardly 10 minutes and will help our doctor to assist you better.',
   DOCTOR_BOOK_APPOINTMENT_SMS = 'Hi Dr. {0}! You have a new appointment {1} with {2} scheduled for {3}.',
   SEND_DOCTOR_BOOK_APPOINTMENT_SMS = 24, //send sms to doctor if appointment datetime is less than 24hrs
-  DOCTOR_BOOK_APPOINTMENT_WHATSAPP = 'Hi Dr. {0}! You have a new appointment for today. \npatient Name :{1} \nAppointment Time :{2} \nTeam Apollo247.',
+  DOCTOR_BOOK_APPOINTMENT_WHATSAPP = 'Hi%20Dr.%20{0}%2C%20you%20have%20a%20new%20appointment%20for%20today.%0A%0APatient%20Name%20%3A%20{1}%0AAppointment%20Time%20%3A%20{2}%0A%0ATeam%20Apollo%2024%7C7',
   DIAGNOSTIC_ORDER_SUCCESS_TITLE = 'Diagnostic test is booked',
   DIAGNOSTIC_ORDER_SUCCESS_BODY = "Congratulations {0}! We've booked your test successfully.",
 

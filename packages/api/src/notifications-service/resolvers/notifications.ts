@@ -690,12 +690,18 @@ export async function sendNotification(
       appointment.appointmentDateTime <= todaysDate &&
       appointment.appointmentDateTime >= yesterdaysDate
     ) {
+      const timeIst = new Date(apptDate);
+      let hours = timeIst.getHours();
+      const minutes = timeIst.getMinutes();
+      const AmOrPm = hours >= 12 ? 'PM' : 'AM';
+      hours = hours % 12 || 12;
+      const finalTime = hours + ':' + minutes + ' ' + AmOrPm;
       const doctorWhatsAppMessage = ApiConstants.DOCTOR_BOOK_APPOINTMENT_WHATSAPP.replace(
         '{0}',
         doctorDetails.fullName
       )
         .replace('{1}', patientDetails.firstName)
-        .replace('{2}', apptDate.toString());
+        .replace('{2}', finalTime);
       sendNotificationWhatsapp(doctorDetails.mobileNumber, doctorWhatsAppMessage, 1);
     }
     let doctorSMS = ApiConstants.DOCTOR_BOOK_APPOINTMENT_SMS.replace('{0}', doctorDetails.fullName);
