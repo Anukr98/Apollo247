@@ -29,6 +29,8 @@ import { useApolloClient } from 'react-apollo-hooks';
 import { SpecialtySearch } from './SpecialtySearch';
 import { WhyApollo } from 'components/Doctors/WhyApollo';
 import { HowItWorks } from './Doctors/HowItWorks';
+import { ManageProfile } from 'components/ManageProfile';
+import { Relation } from 'graphql/types/globalTypes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -616,7 +618,7 @@ const useStyles = makeStyles((theme: Theme) => {
 
 export const SpecialityListing: React.FC = (props) => {
   const classes = useStyles({});
-  const { currentPatient } = useAllCurrentPatients();
+  const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const apolloClient = useApolloClient();
   const { isSignedIn } = useAuth();
   const [expanded, setExpanded] = React.useState<string | false>(false);
@@ -628,8 +630,8 @@ export const SpecialityListing: React.FC = (props) => {
   const [searchLoading, setSearchLoading] = useState<boolean>(false);
   const [faqs, setFaqs] = useState<any | null>(null);
   const [selectedCity, setSelectedCity] = useState<string>('');
-  const [chatConsult, setChatConsult] = useState<boolean>(false);
-  const [meetInPerson, setMeetInPerson] = useState<boolean>(false);
+  const onePrimaryUser =
+    allCurrentPatients && allCurrentPatients.filter((x) => x.relation === Relation.ME).length === 1;
 
   const handleChange = (panel: string) => (event: React.ChangeEvent<{}>, isExpanded: boolean) => {
     setExpanded(isExpanded ? panel : false);
@@ -811,6 +813,7 @@ export const SpecialityListing: React.FC = (props) => {
           )}
         </div>
       </div>
+      {!onePrimaryUser && <ManageProfile />}
       <NavigationBottom />
       <div className={classes.footerLinks}>
         <BottomLinks />
