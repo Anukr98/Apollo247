@@ -184,9 +184,9 @@ const timer: number = 900;
 let timerId: any;
 let joinTimerId: any;
 let diffInHours: number;
-let callAbandonmentTimer: any;
-let callAbandonmentStoppedTimer: number = 620;
-let messageSent: string;
+// let callAbandonmentTimer: any;
+// let callAbandonmentStoppedTimer: number = 620;
+// let messageSent: string;
 let rescheduleInitiatedBy: string;
 let callhandelBack: boolean = true;
 let jdCount: any = 1;
@@ -2269,15 +2269,15 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       } else if (message.message.message === cancelConsultInitiated) {
         console.log('cancelConsultInitiated');
         setShowPopup(true);
-        setTimeout(() => {
-          // stopCallAbondmentTimer();
-        }, 1000);
+        // setTimeout(() => {
+        // stopCallAbondmentTimer();
+        // }, 1000);
       } else if (message.message.message === rescheduleConsultMsg) {
         console.log('rescheduleConsultMsg', message.message);
         checkForRescheduleMessage(message.message);
-        setTimeout(() => {
-          // stopCallAbondmentTimer();
-        }, 1000);
+        // setTimeout(() => {
+        // stopCallAbondmentTimer();
+        // }, 1000);
         addMessages(message);
       } else if (message.message.message === callAbandonment) {
         console.log('callAbandonment');
@@ -2380,7 +2380,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       };
 
       setMessageText('');
-      InsertMessageToDoctor(textMessage);
 
       pubnub.publish(
         {
@@ -2391,6 +2390,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         },
         (status, response) => {}
       );
+
+      InsertMessageToDoctor(textMessage);
     } catch (error) {
       CommonBugFender('ChatRoom_send_try', error);
     }
