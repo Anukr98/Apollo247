@@ -953,6 +953,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           setPersonalizedData(appointmentsPersonalized as any);
           setisPersonalizedCard(true);
         }
+      } else {
+        setPersonalizedData([]);
+        setisPersonalizedCard(false);
       }
     }
 
@@ -1670,6 +1673,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               'Patient UHID': currentPatient.uhid,
             };
             postWebEngageEvent(WebEngageEventName.HOMEPAGE_WIDGET_FOLLOWUP_CLICK, eventAttributes);
+            console.log('personalizedData.doctorDetails.id ', personalizedData.doctorDetails.id);
             props.navigation.navigate(AppRoutes.DoctorDetails, {
               doctorId: personalizedData ? personalizedData.doctorDetails.id : '',
               showBookAppointment: true,

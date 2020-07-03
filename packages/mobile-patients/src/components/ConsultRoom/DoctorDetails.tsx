@@ -335,10 +335,15 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   };
 
   const fetchDoctorDetails = () => {
+    const input = {
+      id: doctorId,
+    };
+    console.log('input ', input);
+
     client
       .query<getDoctorDetailsById>({
         query: GET_DOCTOR_DETAILS_BY_ID,
-        variables: { id: doctorId },
+        variables: input,
         fetchPolicy: 'no-cache',
       })
       .then(({ data }) => {
@@ -549,7 +554,9 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
               >
                 <View>
                   {!!clinicAddress && (
-                    <Text style={[styles.doctorLocation, { paddingTop: 11 }]}>{clinicAddress}</Text>
+                    <Text style={[styles.doctorLocation, { paddingTop: 11, width: width - 120 }]}>
+                      {clinicAddress}
+                    </Text>
                   )}
                   {doctorDetails.languages ? (
                     <Text style={[styles.doctorLocation, { paddingBottom: 11, paddingTop: 4 }]}>
