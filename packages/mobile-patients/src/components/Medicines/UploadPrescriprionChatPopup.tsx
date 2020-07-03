@@ -24,11 +24,11 @@ import {
   SafeAreaView,
   ScrollView,
   StyleProp,
+  StyleSheet,
   Text,
   TouchableOpacity,
   View,
   ViewStyle,
-  StyleSheet,
 } from 'react-native';
 import ImagePicker, { Image as ImageCropPickerResponse } from 'react-native-image-crop-picker';
 
@@ -128,6 +128,15 @@ const styles = StyleSheet.create({
     paddingTop: 8,
     paddingBottom: 16,
   },
+  gotItStyles: {
+    height: 60,
+    paddingRight: 25,
+    backgroundColor: 'transparent',
+  },
+  gotItTextStyles: {
+    paddingTop: 16,
+    ...theme.viewStyles.yellowTextStyle,
+  },
 });
 
 export interface UploadPrescriprionChatPopupProps {
@@ -150,7 +159,7 @@ export interface UploadPrescriprionChatPopupProps {
 }
 
 export const UploadPrescriprionChatPopup: React.FC<UploadPrescriprionChatPopupProps> = (props) => {
-  const { showAphAlert, setLoading } = useUIElements();
+  const { showAphAlert, setLoading, hideAphAlert } = useUIElements();
   const { isIphoneX } = DeviceHelper();
 
   const postUPrescriptionWEGEvent = (
@@ -234,6 +243,20 @@ export const UploadPrescriprionChatPopup: React.FC<UploadPrescriprionChatPopupPr
         showAphAlert({
           title: 'Alert',
           description: props.blockCameraMessage || strings.alerts.Open_camera_in_video_call,
+          children: (
+            <View style={{ height: 60, alignItems: 'flex-end' }}>
+              <TouchableOpacity
+                activeOpacity={1}
+                style={styles.gotItStyles}
+                onPress={() => {
+                  props.onClickClose();
+                  hideAphAlert && hideAphAlert();
+                }}
+              >
+                <Text style={styles.gotItTextStyles}>{strings.home.welcome_popup.cta_label}</Text>
+              </TouchableOpacity>
+            </View>
+          ),
         });
     }
   };
