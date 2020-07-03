@@ -2382,7 +2382,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           sendByPost: true,
         },
         (status, response) => {
-          InsertMessageToDoctor(textMessage);
+          if (status.statusCode == 200) {
+            InsertMessageToDoctor(textMessage);
+          }
         }
       );
     } catch (error) {
@@ -5761,7 +5763,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                       sendByPost: true,
                     },
                     (status, response) => {
-                      InsertMessageToDoctor('ImageUploaded');
+                      if (status.statusCode == 200) {
+                        InsertMessageToDoctor('ImageUploaded');
+                      }
                     }
                   );
                   KeepAwake.activate();
@@ -5967,7 +5971,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     sendByPost: true,
                   },
                   (status, response) => {
-                    InsertMessageToDoctor('EprescriptionUploaded');
+                    if (status.statusCode == 200) {
+                      InsertMessageToDoctor('EprescriptionUploaded');
+                    }
                   }
                 );
             });
