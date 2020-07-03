@@ -8,7 +8,7 @@ export const clientRoutes = {
   welcome: () => '/',
   doctorDetails: (doctorName: string, doctorId: string) => `/doctors/${doctorName}-${doctorId}`,
   specialtyDoctorDetails: (specialty: string, doctorName: string, doctorId: string) =>
-    `/specialties/${specialty}/${doctorName}/${doctorId}`,
+    `/specialties/${specialty}/${doctorName}-${doctorId}`,
   doctorsLanding: () => '/doctors',
   specialties: (specialty: string) => `/specialties/${specialty}`,
   citySpecialties: (city: string, specialty: string) => `/${city}/specialties/${specialty}`,
