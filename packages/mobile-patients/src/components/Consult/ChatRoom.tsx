@@ -2373,7 +2373,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       };
 
       setMessageText('');
-      InsertMessageToDoctor(textMessage);
 
       pubnub.publish(
         {
@@ -2384,6 +2383,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         },
         (status, response) => {}
       );
+
+      InsertMessageToDoctor(textMessage);
     } catch (error) {
       CommonBugFender('ChatRoom_send_try', error);
     }
