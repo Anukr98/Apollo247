@@ -2203,6 +2203,20 @@ export const UPLOAD_CHAT_FILE = gql`
   }
 `;
 
+export const ADD_CHAT_DOCUMENTS = gql`
+  mutation addChatDocument($appointmentId: ID!, $documentPath: String, $prismFileId: String) {
+    addChatDocument(
+      appointmentId: $appointmentId
+      documentPath: $documentPath
+      prismFileId: $prismFileId
+    ) {
+      id
+      documentPath
+      prismFileId
+    }
+  }
+`;
+
 export const CANCEL_MEDICINE_ORDER_OMS = gql`
   mutation CancelMedicineOrderOMS($medicineOrderCancelOMSInput: MedicineOrderCancelOMSInput) {
     cancelMedicineOrderOMS(medicineOrderCancelOMSInput: $medicineOrderCancelOMSInput) {
