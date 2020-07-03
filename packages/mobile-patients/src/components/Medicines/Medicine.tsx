@@ -229,13 +229,15 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     postWebEngageEvent(WebEngageEventName.CATEGORY_CLICKED, eventAttributes);
   };
 
-  const WebEngageEventForNonServicablePinCode = (pincode: string, serviceable: boolean) => {
-    const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_PINCODE_NONSERVICABLE] = {
+  const WebEngageEventAutoDetectLocation = (pincode: string, serviceable: boolean) => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_AUTO_SELECT_LOCATION_CLICKED] = {
+      'Patient UHID': currentPatient.uhid,
       'Mobile Number': currentPatient.mobileNumber,
-      Pincode: pincode,
-      Servicable: serviceable,
+      'Customer ID': currentPatient.id,
+      'pincode': pincode,
+      'Serviceability': serviceable,
     };
-    postWebEngageEvent(WebEngageEventName.PHARMACY_PINCODE_NONSERVICABLE, eventAttributes);
+    postWebEngageEvent(WebEngageEventName.PHARMACY_AUTO_SELECT_LOCATION_CLICKED, eventAttributes);
   };
 
   const updateServiceability = (pincode: string) => {
@@ -286,7 +288,23 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         setServiceabilityMsg(Availability ? '' : 'Services unavailable. Change delivery location.');
         setPharmacyLocationServiceable!(Availability ? true : false);
         if (!Availability) {
-          WebEngageEventForNonServicablePinCode(pincode, false);
+          WebEngageEventAutoDetectLocation(pincode, false);
+          showAphAlert!({
+            title: 'We’re sorry!',
+            description:
+              'We are not serviceable in your area. Please change your location or call 1860 500 0101 for Pharmacy stores nearby.',
+            titleStyle: theme.viewStyles.text('SB', 18, '#890000'),
+            ctaContainerStyle: { justifyContent: 'flex-end' },
+            CTAs: [
+              {
+                text: 'CHANGE THE ADDRESS',
+                type: 'orange-link',
+                onPress: onPresChangeAddress,
+              },
+            ],
+          });
+        } else {
+          WebEngageEventAutoDetectLocation(pincode, true);
           getNearByStoreDetailsApi(pincode)
             .then((response: any) => {
               showAphAlert!({
@@ -500,19 +518,12 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   };
 
   const autoDetectLocation = () => {
-    const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_AUTO_SELECT_LOCATION_CLICKED] = {
-      'Patient UHID': currentPatient.uhid,
-      'Mobile Number': currentPatient.mobileNumber,
-      'Customer ID': currentPatient.id,
-    };
-    postWebEngageEvent(WebEngageEventName.PHARMACY_AUTO_SELECT_LOCATION_CLICKED, eventAttributes);
-
     globalLoading!(true);
     doRequestAndAccessLocationModified()
       .then((response) => {
         globalLoading!(false);
         response && setPharmacyLocation!(response);
-        response && WebEngageEventForNonServicablePinCode(response.pincode, true);
+        response && WebEngageEventAutoDetectLocation(response.pincode, true);
       })
       .catch((e) => {
         CommonBugFender('Medicine__ALLOW_AUTO_DETECT', e);
@@ -764,7 +775,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const renderSliderItem = ({ item, index }: { item: OfferBannerSection; index: number }) => {
     const handleOnPress = () => {
       const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_BANNER_CLICK] = {
-        BannerPosition: index + 1,
+        BannerPosition: slideIndex + 1,
       };
       postWebEngageEvent(WebEngageEventName.PHARMACY_BANNER_CLICK, eventAttributes);
       if (item.category_id) {
