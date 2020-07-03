@@ -225,6 +225,7 @@ export const sendNotificationWhatsapp = (
               resolve(res);
             })
             .catch((error) => {
+              console.log('whatsapp error', error);
               throw new AphError(AphErrorMessages.MESSAGE_SEND_WHATSAPP_ERROR);
             });
         }
@@ -684,18 +685,21 @@ export async function sendNotification(
     //sendNotificationWhatsapp(patientDetails.mobileNumber, smsLink);
 
     //send sms to doctor if Appointment DateTime is less than 24 hours
-    const todaysDate = new Date(format(new Date(), 'yyyy-mm-dd') + ' 18:30:00');
-    const yesterdaysDate = new Date(format(addDays(new Date(), -1), 'yyyy-mm-dd') + ' 18:30:00');
+    const todaysDate = new Date(format(new Date(), 'yyyy-MM-dd') + 'T18:30:00');
+    const yesterdaysDate = new Date(format(addDays(new Date(), -1), 'yyyy-MM-dd') + 'T18:30:00');
+    console.log(
+      todaysDate,
+      yesterdaysDate,
+      'check dates for todays date appt',
+      appointment.appointmentDateTime,
+      appointment.appointmentDateTime <= new Date(todaysDate) &&
+        appointment.appointmentDateTime >= yesterdaysDate
+    );
     if (
       appointment.appointmentDateTime <= todaysDate &&
       appointment.appointmentDateTime >= yesterdaysDate
     ) {
-      const timeIst = new Date(apptDate);
-      let hours = timeIst.getHours();
-      const minutes = timeIst.getMinutes();
-      const AmOrPm = hours >= 12 ? 'PM' : 'AM';
-      hours = hours % 12 || 12;
-      const finalTime = hours + ':' + minutes + ' ' + AmOrPm;
+      const finalTime = format(istDateTime, 'hh:mm a');
       const doctorWhatsAppMessage = ApiConstants.DOCTOR_BOOK_APPOINTMENT_WHATSAPP.replace(
         '{0}',
         doctorDetails.fullName
@@ -734,8 +738,8 @@ export async function sendNotification(
     );
     notificationTitle = ApiConstants.BOOK_APPOINTMENT_PAYMENT_SUCCESS_TITLE;
     notificationBody = content;
-    console.log('mobileNumber===============', patientDetails.mobileNumber);
-    console.log('message==========================', notificationBody);
+    //console.log('mobileNumber===============', patientDetails.mobileNumber);
+    //console.log('message==========================', notificationBody);
     //send sms
     sendNotificationSMS(patientDetails.mobileNumber, smsLink ? smsLink : '');
   }
@@ -763,8 +767,8 @@ export async function sendNotification(
     );
     notificationTitle = ApiConstants.BOOK_APPOINTMENT_PAYMENT_FAILURE_TITLE;
     notificationBody = content;
-    console.log('mobileNumber===============', patientDetails.mobileNumber);
-    console.log('message==========================', notificationBody);
+    //console.log('mobileNumber===============', patientDetails.mobileNumber);
+    //console.log('message==========================', notificationBody);
     //send sms
     sendNotificationSMS(patientDetails.mobileNumber, smsLink ? smsLink : '');
   } else if (pushNotificationInput.notificationType == NotificationType.CALL_APPOINTMENT) {
@@ -1085,7 +1089,7 @@ export async function sendNotification(
   const allpatients = await patientRepo.getIdsByMobileNumber(patientDetails.mobileNumber);
   const listOfIds: string[] = [];
   allpatients.map((value) => listOfIds.push(value.id));
-  console.log(listOfIds, 'listOfIds');
+  //console.log(listOfIds, 'listOfIds');
   const deviceTokenRepo = patientsDb.getCustomRepository(PatientDeviceTokenRepository);
   const devicetokensofFamily = await deviceTokenRepo.deviceTokensOfAllIds(listOfIds);
   if (devicetokensofFamily.length > 0) {
