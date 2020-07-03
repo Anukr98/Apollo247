@@ -1263,6 +1263,7 @@ export const addPharmaItemToCart = (
     });
   };
   if (!isLocationServeiceable) {
+    onComplete && onComplete();
     navigate();
     return;
   }
