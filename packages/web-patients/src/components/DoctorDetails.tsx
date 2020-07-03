@@ -40,6 +40,7 @@ import { HowCanConsult } from 'components/Doctors/HowCanConsult';
 import { AppDownload } from 'components/Doctors/AppDownload';
 import { NavigationBottom } from 'components/NavigationBottom';
 import { GetDoctorNextAvailableSlot } from 'graphql/types/GetDoctorNextAvailableSlot';
+
 export interface DoctorDetailsProps {
   id: string;
 }
@@ -218,8 +219,9 @@ const TabContainer: React.FC = (props) => {
 export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const { isSignedIn } = useAuth();
   const classes = useStyles({});
-  const params = useParams<{ specialty: string; doctorName: string; id: string }>();
-  const doctorId = params.id;
+  const params = useParams<{ id: string; specialty: string }>();
+  const doctorIdLength = params && params.id && params.id.length;
+  const doctorId = doctorIdLength && params.id.slice(doctorIdLength - 36);
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
   const [tabValue, setTabValue] = useState<number>(0);
   const [isShownOnce, setIsShownOnce] = useState<boolean>(false);
@@ -340,9 +342,8 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
             title: `${fullName}: ${
               specialty && specialty.name ? specialty.name : ''
             } - Online Consultation/Appointment - Apollo 247`,
-            description: `Book an appointment with ${fullName} - ${
-              specialty && specialty.name
-            } and consult online at Apollo 247. Know more about ${fullName} and his work here. Get medical help online in just a few clicks at Apollo 247.`,
+            description: `Book an appointment with ${fullName} - ${specialty &&
+              specialty.name} and consult online at Apollo 247. Know more about ${fullName} and his work here. Get medical help online in just a few clicks at Apollo 247.`,
             canonicalLink:
               window &&
               window.location &&
