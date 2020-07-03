@@ -384,6 +384,14 @@ interface SpecialtyDivisionProps {
   doctorsCount: number;
 }
 
+interface TopSpecialtyType {
+  specialtyName: string;
+  image: string;
+  description: string;
+  symptoms: string;
+  slugName: string;
+}
+
 export const SpecialtyDivision: React.FC<SpecialtyDivisionProps> = (props) => {
   const classes = useStyles({});
   const { selectedCity, doctorsCount } = props;
@@ -437,7 +445,7 @@ export const SpecialtyDivision: React.FC<SpecialtyDivisionProps> = (props) => {
           <Grid container spacing={2}>
             {topSpecialtyListing &&
               topSpecialtyListing.length > 0 &&
-              topSpecialtyListing.map((specialityDetails: any) => (
+              topSpecialtyListing.map((specialityDetails: TopSpecialtyType) => (
                 <Grid key={specialityDetails.id} item xs={6} md={3}>
                   <div className={classes.specialityCard}>
                     <Link
