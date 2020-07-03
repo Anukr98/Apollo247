@@ -458,7 +458,7 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
       ) => (
         <li key={`removed-${index}`}>
           <s>{prescription.medicineName}</s>{' '}
-          <span className={classes.removed}>( This medication has been disontinued )</span>
+          <span className={classes.removed}>( This medication has been discontinued )</span>
         </li>
       )
     );
