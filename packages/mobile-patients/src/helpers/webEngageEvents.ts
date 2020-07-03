@@ -108,7 +108,7 @@ export enum WebEngageEventName {
   REORDER_MEDICINES = 'Reorder Medicines',
   PHR_ORDER_MEDS_TESTS = 'PHR Order Meds & Tests',
   PHR_CONSULT_CARD_CLICK = 'PHR Consult Card click',
-
+  RE_ORDER_MEDICINE = 'ReOrder Medicine Track Order',
   // ConsultRoom Events
   CONSULTATION_CANCELLED_BY_CUSTOMER = 'Consultation Cancelled by Customer',
   CONSULTATION_RESCHEDULED_BY_CUSTOMER = 'Consultation Rescheduled by Customer',
@@ -162,6 +162,11 @@ export interface UserInfo {
   'Customer ID': string;
 }
 
+export interface AutoSelectLocation extends UserInfo {
+  'Serviceability': boolean;
+  'pincode': string;
+}
+
 export interface PatientInfoWithSource extends PatientInfo {
   Source: 'Home Screen' | 'Menu';
   Pincode?: String;
@@ -187,6 +192,12 @@ export interface ReorderMedicines extends PatientInfo {
 
 export interface ConsultedBefore extends PatientInfo {
   ConsultedBefore: 'Yes' | 'No';
+}
+
+export interface ReorderMedicine extends PatientInfo {
+  source: 'Order Details' | 'PHR';
+  orderType: 'Cart' | 'Non Cart' | 'Offline';
+  noOfItemsNotAvailable: number;
 }
 
 export interface WebEngageEvents {
@@ -505,7 +516,7 @@ export interface WebEngageEvents {
     'Cart ID'?: string | number; // Optional
     'Service Area': 'Pharmacy' | 'Diagnostic';
   };
-  [WebEngageEventName.PHARMACY_AUTO_SELECT_LOCATION_CLICKED]: UserInfo;
+  [WebEngageEventName.PHARMACY_AUTO_SELECT_LOCATION_CLICKED]: AutoSelectLocation;
   [WebEngageEventName.PHARMACY_ENTER_DELIVERY_PINCODE_CLICKED]: UserInfo;
   [WebEngageEventName.PHARMACY_ENTER_DELIVERY_PINCODE_SUBMITTED]: {
     'Patient UHID': string;
@@ -868,6 +879,8 @@ export interface WebEngageEvents {
   [WebEngageEventName.PHR_ORDER_MEDS_TESTS]: PatientInfoWithConsultId;
 
   [WebEngageEventName.PHR_CONSULT_CARD_CLICK]: PatientInfoWithConsultId;
+
+  [WebEngageEventName.RE_ORDER_MEDICINE]: ReorderMedicine;
 
   // ********** ConsultRoom Events ********** \\
 
