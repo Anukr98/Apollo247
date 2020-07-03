@@ -169,8 +169,8 @@ export const YourCartUploadPrescriptions: React.FC<YourCartUploadPrescriptionPro
 
   const prescriptionOption = props.navigation.getParam('prescriptionOptionSelected');
   const durationDay = props.navigation.getParam('durationDays');
-  const physicalPrescription = props.navigation.getParam('physicalPrescription');
-  const ePrescription = props.navigation.getParam('ePrescription');
+  const physicalPrescription: PhysicalPrescription[] = props.navigation.getParam('physicalPrescription');
+  const ePrescription: EPrescription[] = props.navigation.getParam('ePrescription');
 
   // To remove applied coupon and selected storeId from cart when user goes back.
   useEffect(() => {
