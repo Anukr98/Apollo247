@@ -128,7 +128,7 @@ import KeepAwake from 'react-native-keep-awake';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 
 const { width } = Dimensions.get('window');
-let joinTimerNoShow: NodeJS.Timeout;
+// let joinTimerNoShow: NodeJS.Timeout;  //APP-2812: removed NoShow
 const styles = ConsultRoomScreenStyles;
 
 const timer = 900;
@@ -260,7 +260,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     return () => {
       didFocusSubscription && didFocusSubscription.remove();
       willBlurSubscription && willBlurSubscription.remove();
-      stopNoShow();
+      // stopNoShow();
       callOptions.stopMissedCallTimer();
       stopAutoSaveTimer();
       AsyncStorage.removeItem('editedInputData');
@@ -268,6 +268,8 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       AsyncStorage.removeItem('chatFileData');
       AsyncStorage.removeItem('scrollToEnd');
       KeepAwake.deactivate();
+      pubnub.unsubscribeAll();
+      pubnub.stop();
     };
   }, []);
 
@@ -916,29 +918,26 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     }
   };
 
-  const [remainingTime, setRemainingTime] = useState<number>(900);
-  const [consultStarted, setConsultStarted] = useState<boolean>(false);
+  // const [remainingTime, setRemainingTime] = useState<number>(900);
+  // const [consultStarted, setConsultStarted] = useState<boolean>(false);
+  // let patientJoined = false; //APP-2812: removed NoShow
+  // let abondmentStarted = false;
+  // const timediffInSec = moment(Appintmentdatetime).diff(moment(new Date()), 's');
+  // const startNoShow = (timer: number, callback?: () => void) => {
+  //   stopNoShow();
+  //   joinTimerNoShow = setInterval(() => {
+  //     timer = timer - 1;
+  //     if (timer === 0) {
+  //       stopNoShow();
+  //       callback && callback();
+  //     }
+  //   }, 1000);
+  // };
 
-  let patientJoined = false;
-  let abondmentStarted = false;
-
-  const timediffInSec = moment(Appintmentdatetime).diff(moment(new Date()), 's');
-
-  const startNoShow = (timer: number, callback?: () => void) => {
-    stopNoShow();
-    joinTimerNoShow = setInterval(() => {
-      timer = timer - 1;
-      if (timer === 0) {
-        stopNoShow();
-        callback && callback();
-      }
-    }, 1000);
-  };
-
-  const stopNoShow = () => {
-    console.log('storpvi', joinTimerNoShow);
-    joinTimerNoShow && clearInterval(joinTimerNoShow);
-  };
+  // const stopNoShow = () => {
+  //   console.log('storpvi', joinTimerNoShow);
+  //   joinTimerNoShow && clearInterval(joinTimerNoShow);
+  // };
 
   const startAutoSaveTimer = (timer: number, callback?: () => void) => {
     stopAutoSaveTimer();
@@ -1039,7 +1038,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   };
 
   const endAppointmentApiCall = (status: STATUS) => {
-    stopNoShow();
+    // stopNoShow();
     callOptions.stopMissedCallTimer();
     setShowLoading(true);
     client
@@ -1152,29 +1151,28 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       .catch((error) => {});
   };
 
-  const startInterval = (timer: number) => {
-    setConsultStarted(true);
-    intervalId = setInterval(() => {
-      timer = timer - 1;
-      stoppedTimer = timer;
-      setRemainingTime(timer);
-      // console.log('descriptionTextStyle remainingTime', timer);
+  // const startInterval = (timer: number) => { //Consult remaning time
+  //   setConsultStarted(true);
+  //   intervalId = setInterval(() => {
+  //     timer = timer - 1;
+  //     stoppedTimer = timer;
+  //     setRemainingTime(timer);
+  //     // console.log('descriptionTextStyle remainingTime', timer);
 
-      if (timer == 0) {
-        // console.log('descriptionTextStyles remainingTime', timer);
-        setRemainingTime(0);
-        clearInterval(intervalId);
-      }
-    }, 1000);
-    console.log('intervalId', intervalId);
-  };
+  //     if (timer == 0) {
+  //       // console.log('descriptionTextStyles remainingTime', timer);
+  //       setRemainingTime(0);
+  //       clearInterval(intervalId);
+  //     }
+  //   }, 1000);
+  //   console.log('intervalId', intervalId);
+  // };
 
-  const stopInterval = () => {
-    const stopTimer = 900 - stoppedTimer;
-
-    setRemainingTime(stopTimer);
-    intervalId && clearInterval(intervalId);
-  };
+  // const stopInterval = () => {
+  //   const stopTimer = 900 - stoppedTimer;
+  //   setRemainingTime(stopTimer);
+  //   intervalId && clearInterval(intervalId);
+  // };
 
   const config: Pubnub.PubnubConfig = {
     subscribeKey: AppConfig.Configuration.PRO_PUBNUB_SUBSCRIBER,
@@ -1185,7 +1183,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     keepAlive: true,
     // autoNetworkDetection: true,
     // listenToBrowserNetworkEvents: true,
-    presenceTimeout: 20,
+    // presenceTimeout: 20, //APP-2812: removed NoShow
     heartbeatInterval: 20,
   };
 
@@ -1204,7 +1202,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   useEffect(() => {
     pubnub.subscribe({
       channels: [channel],
-      withPresence: true,
+      // withPresence: true,//APP-2812: removed NoShow
     });
 
     getHistory(0);
@@ -1292,66 +1290,67 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           CommonBugFender('Chatfile_update', error);
         }
       },
-      presence: (presenceEvent) => {
-        pubnub
-          .hereNow({
-            channels: [channel],
-            includeUUIDs: true,
-          })
-          .then(async (response: HereNowResponse) => {
-            console.log('hereNowresponse', response);
-            const data = response.channels[channel].occupants;
-            const isAudio = JSON.parse((await AsyncStorage.getItem('isAudio')) || 'false');
-            const isVideo = JSON.parse((await AsyncStorage.getItem('isVideo')) || 'false');
-            const callAccepted = JSON.parse(
-              (await AsyncStorage.getItem('callAccepted')) || 'false'
-            );
-            const occupancyPatient = data.filter((obj) => {
-              return obj.uuid === REQUEST_ROLES.PATIENT || obj.uuid.indexOf('PATIENT_') > -1;
-            });
-            console.log('occupancyPatient', occupancyPatient);
-            if (occupancyPatient.length > 0) {
-              stopNoShow();
-              joinTimerNoShow && clearInterval(joinTimerNoShow);
-              abondmentStarted = false;
-              patientJoined = true;
-            }
-            // else if (occupancyPatient.length === 0 && (isAudio || isVideo) && callAccepted) {
-            //   stopAllCalls(isAudio ? 'A' : isVideo ? 'V' : undefined);
-            //   showAphAlert &&
-            //     showAphAlert({
-            //       title: strings.common.alert,
-            //       description: 'Call Disconnected',
-            //     });
-            // }
-            // else {
-            //   console.log(
-            //     'Call ab',
-            //     !abondmentStarted && patientJoined,
-            //     patientJoined,
-            //     abondmentStarted
-            //   );
-            //   if (
-            //     !abondmentStarted &&
-            //     patientJoined &&
-            //     ![STATUS.COMPLETED, STATUS.NO_SHOW, STATUS.CALL_ABANDON, STATUS.CANCELLED].includes(
-            //       (appointmentData || g(caseSheet, 'caseSheetDetails', 'appointment')).status
-            //     )
-            //   ) {
-            //     abondmentStarted = true;
-            //     startNoShow(600, () => {
-            //       callAbandonmentCall();
-            //     });
-            //   }
-            // }
-            // const PatientConsultStartedMessage = insertText.filter((obj: any) => {
-            //   return obj.message === messageCodes.consultPatientStartedMsg;
-            // });
-          })
-          .catch((error) => {
-            console.log(error);
-          });
-      },
+      // presence: (presenceEvent) => {//APP-2812: removed NoShow
+      //   pubnub
+      //     .hereNow({
+      //       channels: [channel],
+      //       includeUUIDs: true,
+      //     })
+      //     .then(async (response: HereNowResponse) => {
+      //       console.log('hereNowresponse', response);
+      //       const data = response.channels[channel].occupants;
+      //       const isAudio = JSON.parse((await AsyncStorage.getItem('isAudio')) || 'false');
+      //       const isVideo = JSON.parse((await AsyncStorage.getItem('isVideo')) || 'false');
+      //       const callAccepted = JSON.parse(
+      //         (await AsyncStorage.getItem('callAccepted')) || 'false'
+      //       );
+      //       const occupancyPatient = data.filter((obj) => {
+      //         return obj.uuid === REQUEST_ROLES.PATIENT || obj.uuid.indexOf('PATIENT_') > -1;
+      //       });
+      //       console.log('occupancyPatient', occupancyPatient);
+      //       if (occupancyPatient.length > 0) {
+      //          stopNoShow();
+      //         joinTimerNoShow && clearInterval(joinTimerNoShow);
+      //         abondmentStarted = false;
+      //         patientJoined = true;
+      //       }
+      // else if (occupancyPatient.length === 0 && (isAudio || isVideo) && callAccepted) {
+      //   stopAllCalls(isAudio ? 'A' : isVideo ? 'V' : undefined);
+      //   showAphAlert &&
+      //     showAphAlert({
+      //       title: strings.common.alert,
+      //       description: 'Call Disconnected',
+      //     });
+      // }
+      //APP-1995: removed call abandonment
+      // else {
+      //   console.log(
+      //     'Call ab',
+      //     !abondmentStarted && patientJoined,
+      //     patientJoined,
+      //     abondmentStarted
+      //   );
+      //   if (
+      //     !abondmentStarted &&
+      //     patientJoined &&
+      //     ![STATUS.COMPLETED, STATUS.NO_SHOW, STATUS.CALL_ABANDON, STATUS.CANCELLED].includes(
+      //       (appointmentData || g(caseSheet, 'caseSheetDetails', 'appointment')).status
+      //     )
+      //   ) {
+      //     abondmentStarted = true;
+      //     startNoShow(600, () => {
+      //       callAbandonmentCall();
+      //     });
+      //   }
+      // }
+      // const PatientConsultStartedMessage = insertText.filter((obj: any) => {
+      //   return obj.message === messageCodes.consultPatientStartedMsg;
+      // });
+      //     })
+      //     .catch((error) => {
+      //       console.log(error);
+      //     });
+      // },
     });
 
     const addMessages = (message: Pubnub.MessageEvent) => {
@@ -1808,7 +1807,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                   setDropdownVisible={setDropdownVisible}
                   patientDetails={patientDetails}
                   extendedHeader={
-                    consultStarted ||
+                    startConsult ||
                     g(caseSheet, 'caseSheetDetails', 'appointment', 'status') === STATUS.COMPLETED
                   }
                 />
@@ -1867,23 +1866,23 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           (status, response) => {
             setActiveTabIndex(tabsData[0].title);
             setStartConsult(true);
-            if (timediffInSec > 0) {
-              startNoShow(timediffInSec, () => {
-                console.log('countdown ', joinTimerNoShow);
-                startNoShow(600, () => {
-                  console.log('Trigger no ShowAPi');
-                  console.log(joinTimerNoShow, 'joinTimerNoShow');
+            // if (timediffInSec > 0) { //APP-2812: removed NoShow
+            //   startNoShow(timediffInSec, () => {
+            //     console.log('countdown ', joinTimerNoShow);
+            //     startNoShow(600, () => {
+            //       console.log('Trigger no ShowAPi');
+            //       console.log(joinTimerNoShow, 'joinTimerNoShow');
 
-                  endAppointmentApiCall(STATUS.NO_SHOW);
-                });
-              });
-            } else {
-              startNoShow(600, () => {
-                console.log('Trigger no ShowAPi');
-                endAppointmentApiCall(STATUS.NO_SHOW);
-              });
-            }
-            startInterval(timer);
+            //       endAppointmentApiCall(STATUS.NO_SHOW);
+            //     });
+            //   });
+            // } else {
+            //   startNoShow(600, () => {
+            //     console.log('Trigger no ShowAPi');
+            //     endAppointmentApiCall(STATUS.NO_SHOW);
+            //   });
+            // }
+            // startInterval(timer);
           }
         );
       })
@@ -1908,9 +1907,9 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         },
         (status, response) => {
           setStartConsult(false);
-          stopInterval();
+          // stopInterval();
           callOptions.stopMissedCallTimer();
-          stopNoShow();
+          // stopNoShow();
         }
       );
     }
@@ -2290,7 +2289,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           },
         ]}
         subView={
-          consultStarted ||
+          startConsult ||
           g(caseSheet, 'caseSheetDetails', 'appointment', 'status') === STATUS.COMPLETED
             ? renderexoTEl()
             : null
