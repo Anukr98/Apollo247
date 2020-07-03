@@ -31,6 +31,7 @@ import { useApolloClient } from 'react-apollo-hooks';
 import { SpecialtySearch } from './SpecialtySearch';
 import { AphDialog, AphDialogClose, AphDialogTitle } from '@aph/web-ui-components';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
+import { WhyApollo } from 'components/Doctors/WhyApollo';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -817,15 +818,7 @@ export const SpecialityListing: React.FC = (props) => {
                       </div>
                     </div>
                   </div>
-                  <div className={classes.card}>
-                    <Typography component="h5">Why Apollo247</Typography>
-                    <ul className={classes.cardList}>
-                      <li>Verified doctor listing</li>
-                      <li>99% +ve feedback</li>
-                      <li>Free follow-up session</li>
-                      <li>In hac habitasse platea dictumst. Vivamus adipiscing fermentum </li>
-                    </ul>
-                  </div>
+                  <WhyApollo />
                   <div className={classes.card}>
                     <Typography component="h5">How it works</Typography>
                     <div className={classes.tabsContainer}>
