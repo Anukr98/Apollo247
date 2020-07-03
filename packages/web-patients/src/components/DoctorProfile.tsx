@@ -574,12 +574,12 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
         </div>
         <div className={classes.aboutDoctor}>
           <div className={classes.sectionHeader}>About Dr. {fullName}</div>
-          <div className={classes.sectionBody}>
+          {/* <div className={classes.sectionBody}>
             Insert Bio of the doctor here. Include a summary of work experience, education, and any
             other outstanding achievement as a doctor. Insert Bio of the doctor here. Include a
             summary of work experience, education, and any other outstanding achievement as a
             doctor.
-          </div>
+          </div> */}
         </div>
       </div>
     );
