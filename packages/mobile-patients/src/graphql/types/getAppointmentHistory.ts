@@ -19,6 +19,7 @@ export interface getAppointmentHistory_getAppointmentHistory_appointmentsHistory
   status: STATUS;
   bookingDate: any | null;
   isSeniorConsultStarted: boolean | null;
+  caseSheet:any
 }
 
 export interface getAppointmentHistory_getAppointmentHistory {
