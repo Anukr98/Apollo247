@@ -700,7 +700,6 @@ export async function sendNotification(
         '{0}',
         doctorDetails.fullName
       )
-        .replace('{3}', doctorDetails.mobileNumber)
         .replace('{1}', patientDetails.firstName)
         .replace('{2}', finalTime);
       sendNotificationWhatsapp(doctorDetails.mobileNumber, doctorWhatsAppMessage, 1);
