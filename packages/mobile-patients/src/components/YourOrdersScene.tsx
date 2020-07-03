@@ -84,7 +84,7 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
           ]
             .filter((a) => a)
             .join(', ')) ||
-        'Store Pickup'
+        ''
       );
     };
 
@@ -95,7 +95,8 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
         break;
       case MEDICINE_DELIVERY_TYPE.STORE_PICKUP:
         {
-          return getStore() || 'Store Pickup';
+          const offlineOrderNumber = g(order, 'billNumber');
+          return offlineOrderNumber ? getStore() : 'Store Pickup';
         }
         break;
       default:
