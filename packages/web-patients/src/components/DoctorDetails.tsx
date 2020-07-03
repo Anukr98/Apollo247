@@ -40,6 +40,7 @@ import { HowCanConsult } from 'components/Doctors/HowCanConsult';
 import { AppDownload } from 'components/Doctors/AppDownload';
 import { NavigationBottom } from 'components/NavigationBottom';
 import { GetDoctorNextAvailableSlot } from 'graphql/types/GetDoctorNextAvailableSlot';
+import { getPastUrl } from 'helpers/commonHelpers';
 export interface DoctorDetailsProps {
   id: string;
 }
@@ -234,17 +235,13 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const [doctorAvailableSlots, setDoctorAvailableSlots] = useState<GetDoctorNextAvailableSlot>();
   const currentUserId = currentPatient && currentPatient.id;
 
-  const doctorPhysicalSlot =
+  const doctorSlots =
     doctorAvailableSlots &&
     doctorAvailableSlots.getDoctorNextAvailableSlot &&
-    doctorAvailableSlots.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0] &&
-    doctorAvailableSlots.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0].physicalAvailableSlot;
+    doctorAvailableSlots.getDoctorNextAvailableSlot.doctorAvailalbeSlots &&
+    doctorAvailableSlots.getDoctorNextAvailableSlot.doctorAvailalbeSlots.length > 0 &&
+    doctorAvailableSlots.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0];
 
-  const doctorAvailableOnlineSlot =
-    doctorAvailableSlots &&
-    doctorAvailableSlots.getDoctorNextAvailableSlot &&
-    doctorAvailableSlots.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0] &&
-    doctorAvailableSlots.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0].availableSlot;
   useEffect(() => {
     setLoading(true);
     apolloClient
@@ -254,7 +251,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       })
       .then((response) => {
         setData(response.data);
-        setLoading(false);
+
         if (
           response.data &&
           response.data.getDoctorDetailsById &&
@@ -344,8 +341,9 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
             title: `${fullName}: ${
               specialty && specialty.name ? specialty.name : ''
             } - Online Consultation/Appointment - Apollo 247`,
-            description: `Book an appointment with ${fullName} - ${specialty &&
-              specialty.name} and consult online at Apollo 247. Know more about ${fullName} and his work here. Get medical help online in just a few clicks at Apollo 247.`,
+            description: `Book an appointment with ${fullName} - ${
+              specialty && specialty.name
+            } and consult online at Apollo 247. Know more about ${fullName} and his work here. Get medical help online in just a few clicks at Apollo 247.`,
             canonicalLink:
               window &&
               window.location &&
@@ -353,15 +351,18 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
               `${window.location.origin}/doctors/${readableParam(fullName)}-${id}`,
           });
         }
+      })
+      .catch((e) => {
+        console.log(e);
+      })
+      .finally(() => {
+        setLoading(false);
       });
   }, []);
 
   if (loading) {
     return <LinearProgress className={classes.loader} />;
   }
-
-  const availableForPhysicalConsultation = true,
-    availableForVirtualConsultation = true;
 
   const doctorDetails = data && data.getDoctorDetailsById ? data : null;
   const doctorTimings =
@@ -429,13 +430,15 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         <div className={classes.container}>
           <div className={classes.doctorDetailsPage}>
             <div className={classes.breadcrumbLinks}>
-              <Link className={classes.backArrow} to={clientRoutes.specialityListing()}>
+              <Link className={classes.backArrow} to={clientRoutes.specialties(params.specialty)}>
                 <img src={require('images/ic_back.svg')} alt="" />
               </Link>
-              <Link to={clientRoutes.specialityListing()}>Doctor</Link>
-              <img src={require('images/triangle.svg')} alt="" />
               <Link to={clientRoutes.specialityListing()}>Specialities</Link>
               <img src={require('images/triangle.svg')} alt="" />
+
+              <Link to={clientRoutes.specialties(params.specialty)}>Doctors</Link>
+              <img src={require('images/triangle.svg')} alt="" />
+
               <span>Doctor Details</span>
             </div>
             <div className={classes.doctorProfileSection}>
@@ -443,8 +446,8 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                 <div className={classes.doctorProfile}>
                   <DoctorProfile
                     doctorDetails={doctorDetails}
-                    avaPhy={availableForPhysicalConsultation}
-                    avaOnline={availableForVirtualConsultation}
+                    avaPhy={true}
+                    avaOnline={true}
                     getDoctorAvailableSlots={(value: GetDoctorNextAvailableSlot) => {
                       setDoctorAvailableSlots(value);
                     }}
@@ -462,8 +465,10 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
               <div className={classes.rightSideBar}>
                 <HowCanConsult
                   doctorDetails={doctorDetails}
-                  doctorAvailablePhysicalSlots={doctorPhysicalSlot}
-                  doctorAvailableOnlineSlot={doctorAvailableOnlineSlot}
+                  doctorAvailablePhysicalSlots={
+                    doctorSlots ? doctorSlots.physicalAvailableSlot : ''
+                  }
+                  doctorAvailableOnlineSlot={doctorSlots ? doctorSlots.availableSlot : ''}
                 />
                 <AppDownload />
                 {/* <ProtectedWithLoginPopup>
@@ -511,18 +516,16 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                 setTabValue(newValue);
               }}
             >
-              {availableForVirtualConsultation && (
-                <Tab
-                  classes={{
-                    root: classes.tabRoot,
-                    selected: classes.tabSelected,
-                  }}
-                  label="Consult Online"
-                  title={'Consult Online'}
-                />
-              )}
+              <Tab
+                classes={{
+                  root: classes.tabRoot,
+                  selected: classes.tabSelected,
+                }}
+                label="Consult Online"
+                title={'Consult Online'}
+              />
 
-              {availableForPhysicalConsultation && !isPayrollDoctor && (
+              {!isPayrollDoctor && (
                 <Tab
                   classes={{
                     root: classes.tabRoot,
@@ -533,7 +536,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                 />
               )}
             </Tabs>
-            {tabValue === 0 && availableForVirtualConsultation && (
+            {tabValue === 0 && (
               <TabContainer>
                 <OnlineConsult
                   setIsPopoverOpen={setIsPopoverOpen}
@@ -547,7 +550,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
               </TabContainer>
             )}
 
-            {tabValue === 1 && availableForPhysicalConsultation && !isPayrollDoctor && (
+            {tabValue === 1 && !isPayrollDoctor && (
               <TabContainer>
                 <LocationProvider>
                   <VisitClinic doctorDetails={doctorDetails} />
