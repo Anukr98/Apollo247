@@ -722,10 +722,19 @@ export async function sendNotification(
     smsLink = smsLink.replace('{1}', appointment.displayId.toString());
     smsLink = smsLink.replace('{2}', doctorDetails.firstName + ' ' + doctorDetails.lastName);
     smsLink = smsLink.replace('{3}', apptDate.toString());
-    smsLink = smsLink.replace(
-      '{5}',
-      process.env.SMS_LINK_BOOK_APOINTMENT ? process.env.SMS_LINK_BOOK_APOINTMENT : ''
-    );
+
+    if (process.env.SMS_DEEPLINK_APPOINTMENT_CHATROOM) {
+      const chatroom_sms_link = process.env.SMS_DEEPLINK_APPOINTMENT_CHATROOM.replace(
+        '{0}',
+        appointment.id.toString()
+      ); //Replacing the placeholder with appointmentid
+
+      smsLink = smsLink.replace('{5}', chatroom_sms_link);
+    }
+    else {
+      throw new AphError(AphErrorMessages.SMS_DEEPLINK_APPOINTMENT_CHATROOM_MISSING);
+    }
+
     notificationTitle = ApiConstants.BOOK_APPOINTMENT_PAYMENT_SUCCESS_TITLE;
     notificationBody = content;
     console.log('mobileNumber===============', patientDetails.mobileNumber);
@@ -1485,7 +1494,7 @@ export async function sendReminderNotification(
   if (
     pushNotificationInput.notificationType == NotificationType.APPOINTMENT_CASESHEET_REMINDER_15 ||
     pushNotificationInput.notificationType ==
-      NotificationType.APPOINTMENT_CASESHEET_REMINDER_15_VIRTUAL
+    NotificationType.APPOINTMENT_CASESHEET_REMINDER_15_VIRTUAL
   ) {
     if (!(appointment && appointment.id)) {
       throw new AphError(AphErrorMessages.APPOINTMENT_ID_NOT_FOUND);
@@ -2086,7 +2095,7 @@ const testPushNotification: Resolver<
   { deviceToken: String },
   NotificationsServiceContext,
   PushNotificationSuccessMessage | undefined
-> = async (parent, args, {}) => {
+> = async (parent, args, { }) => {
   //initialize firebaseadmin
   const config = {
     credential: firebaseAdmin.credential.applicationDefault(),
