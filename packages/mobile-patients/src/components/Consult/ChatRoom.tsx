@@ -1514,7 +1514,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     keepAlive: true,
     // autoNetworkDetection: true,
     // listenToBrowserNetworkEvents: true,
-    presenceTimeout: 20,
+    // presenceTimeout: 20,
     heartbeatInterval: 20,
   };
   const pubnub = new Pubnub(config);
