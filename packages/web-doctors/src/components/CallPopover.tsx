@@ -1229,10 +1229,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         missedCallCounter++;
         clearInterval(intervalMissCall);
         stopAudioVideoCall();
-        // if (missedCallCounter >= 3) {
-        //   setIscallAbandonment(true);
-        //   setShowAbandonment(true);
-        // }
       }
     }, 1000);
   };
@@ -1669,15 +1665,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     const aptDTTM = new Date(new Date(props.appointmentDateTime).getTime()).toISOString();
     const presentTime = new Date().toISOString();
 
-    if (
-      aptDTTM.substring(0, 19) === presentTime.substring(0, 19) &&
-      isConsultStarted &&
-      appointmentInfo &&
-      appointmentInfo.appointmentType !== APPOINTMENT_TYPE.PHYSICAL
-    ) {
-      clearInterval(intervalcallId);
-      callIntervalTimer(600);
-    }
     if (
       disablecurrent >= minusTime &&
       disableaddedTime >= disablecurrent &&
@@ -2444,12 +2431,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                     props.setIsClickedOnEdit(true);
                     props.setIsClickedOnPriview(false);
                     isConsultStarted = true;
-                    if (
-                      appointmentInfo &&
-                      appointmentInfo.appointmentType !== APPOINTMENT_TYPE.PHYSICAL
-                    ) {
-                      callIntervalTimer(600);
-                    }
                   }}
                 >
                   <svg
@@ -3344,15 +3325,15 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
             </h3>
 
             <Button className={classes.cancelConsult} onClick={() => setShowAbandonment(false)}>
-              {iscallAbandonment ? 'Continue' : 'Yes, continue consult'}
+              {'Continue'}
             </Button>
             <Button
               className={classes.consultButton}
               onClick={() => {
-                noShowAction(iscallAbandonment ? STATUS.CALL_ABANDON : STATUS.NO_SHOW);
+                noShowAction(STATUS.CALL_ABANDON);
               }}
             >
-              {iscallAbandonment ? 'Reschedule' : 'No, reschedule'}
+              {'Reschedule'}
             </Button>
           </div>
         </Paper>
