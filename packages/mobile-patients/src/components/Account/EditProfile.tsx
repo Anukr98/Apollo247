@@ -718,7 +718,9 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
         leftIcon={'backArrow'}
         title={isEdit ? 'EDIT PROFILE' : 'ADD NEW FAMILY MEMBER'}
         rightComponent={null}
-        onPressLeftIcon={() => props.navigation.goBack()}
+        onPressLeftIcon={() =>
+          isEdit ? props.navigation.goBack() : props.navigation.navigate(AppRoutes.ConsultRoom, {})
+        }
       />
     );
   };

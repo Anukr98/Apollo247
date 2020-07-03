@@ -2,6 +2,7 @@ import { useContext, useEffect } from 'react';
 import { AuthContext } from '@aph/mobile-patients/src/components/AuthProvider';
 import { Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import AsyncStorage from '@react-native-community/async-storage';
 
 const useAuthContext = () => useContext(AuthContext);
 
@@ -57,6 +58,13 @@ export const useAllCurrentPatients = () => {
   // const mobileAPICalled = useAuthContext().mobileAPICalled;
 
   // console.log('patientsArray', patientsArray);
+  const getNewSelectedPatient = async () => {
+    const retrievedItem: any = await AsyncStorage.getItem('selectUserId');
+    console.log('retrievedItem==', retrievedItem);
+    Promise.all([retrievedItem]).then((values) => {
+      setCurrentPatientId(values[0]);
+    });
+  };
 
   const setCurrentPatientId = useAuthContext().setCurrentPatientId!;
   const currentPatientId = useAuthContext().currentPatientId;
@@ -101,6 +109,7 @@ export const useAllCurrentPatients = () => {
   // console.log('allCurrentPatients', allCurrentPatients);
 
   useEffect(() => {
+    getNewSelectedPatient();
     if (!currentPatientId) {
       const defaultCurrentPatient = allCurrentPatients
         ? allCurrentPatients.find((patient: any) => patient.isUhidPrimary === true) ||
