@@ -37,6 +37,7 @@ export enum WebEngageEventName {
   DIAGNOSTIC_ADD_TO_CART = 'Diagnostic Add to cart',
   BUY_NOW = 'Buy Now',
   PHARMACY_CART_VIEWED = 'Pharmacy Cart Viewed',
+  SKU_PRICE_MISMATCH = 'SKU Price Mismatch',
   TAT_API_FAILURE = 'Tat API Failure',
   DIAGNOSTIC_CART_VIEWED = 'Diagnostic Cart Viewed',
   PHARMACY_PROCEED_TO_PAY_CLICKED = 'Pharmacy Proceed To Pay Clicked',
@@ -397,6 +398,14 @@ export interface WebEngageEvents {
     'Cart Items': object[];
     'Service Area': 'Pharmacy' | 'Diagnostic';
   };
+  [WebEngageEventName.SKU_PRICE_MISMATCH]: {
+    'Mobile Number': string;
+    'Sku Id': string;
+    'Magento MRP': number;
+    'Magento Pack Size': number;
+    'Store API MRP': number;
+  };
+
   [WebEngageEventName.TAT_API_FAILURE]: {
     pincode: string | number;
     lookUp: { sku: string; qty: number }[];
