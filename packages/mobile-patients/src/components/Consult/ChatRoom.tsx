@@ -2381,10 +2381,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           storeInHistory: true,
           sendByPost: true,
         },
-        (status, response) => {}
+        (status, response) => {
+          InsertMessageToDoctor(textMessage);
+        }
       );
-
-      InsertMessageToDoctor(textMessage);
     } catch (error) {
       CommonBugFender('ChatRoom_send_try', error);
     }
@@ -5760,9 +5760,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                       storeInHistory: true,
                       sendByPost: true,
                     },
-                    (status, response) => {}
+                    (status, response) => {
+                      InsertMessageToDoctor('ImageUploaded');
+                    }
                   );
-                  InsertMessageToDoctor('ImageUploaded');
                   KeepAwake.activate();
                 })
                 .catch((e) => {
@@ -5965,9 +5966,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     storeInHistory: true,
                     sendByPost: true,
                   },
-                  (status, response) => {}
+                  (status, response) => {
+                    InsertMessageToDoctor('EprescriptionUploaded');
+                  }
                 );
-              InsertMessageToDoctor('EprescriptionUploaded');
             });
           }
           //setEPrescriptions && setEPrescriptions([...selectedEPres]);
