@@ -218,7 +218,7 @@ const TabContainer: React.FC = (props) => {
 export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const { isSignedIn } = useAuth();
   const classes = useStyles({});
-  const params = useParams<{ id: string; specialty: string }>();
+  const params = useParams<{ specialty: string; doctorName: string; id: string }>();
   const doctorId = params.id;
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
   const [tabValue, setTabValue] = useState<number>(0);
