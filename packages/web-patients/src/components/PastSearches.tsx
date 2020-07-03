@@ -73,14 +73,15 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     pastSearchList: {
-      margin: '20px 0 0',
-      padding: '20px ',
+      margin: '0 -10px',
+      padding: 0,
       listStyle: 'none',
       display: 'flex',
       alignItems: 'center',
+      flexWrap: 'wrap',
       '& li': {
-        margin: '0 16px 0 0',
         textAlign: 'center',
+        padding: '50px 10px 10px',
         '& a': {
           padding: 10,
           background: '#ffffff',
@@ -90,7 +91,7 @@ const useStyles = makeStyles((theme: Theme) => {
           fontSize: 12,
           display: 'block',
           fontWeight: 500,
-          width: 160,
+          width: 150,
           height: 100,
         },
       },
@@ -98,7 +99,10 @@ const useStyles = makeStyles((theme: Theme) => {
         width: '100%',
         overflowX: 'auto',
         margin: 0,
+        flexWrap: 'nowrap',
+        padding: '20px 0',
         '& li': {
+          padding: '0 8px',
           '& a': {
             padding: 12,
             color: '#fc9916 !important',
