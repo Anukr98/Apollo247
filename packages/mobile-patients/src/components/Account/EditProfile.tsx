@@ -639,6 +639,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
   };
   const selectUser = (selectedUser: any) => {
     AsyncStorage.setItem('selectUserId', selectedUser!.id);
+    AsyncStorage.setItem('isNewProfile', 'yes');
   };
   const newProfile = () => {
     setLoading && setLoading(true);
