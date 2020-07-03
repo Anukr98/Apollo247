@@ -1044,7 +1044,7 @@ interface CallPopoverProps {
   pubnub: any;
   sessionClient: any;
   lastMsg: any;
-  presenceEventObject: any;
+  //presenceEventObject: any;
   hasCameraMicPermission: boolean;
   isNewprescriptionEditable: boolean;
   isNewPrescription: boolean;
@@ -1229,10 +1229,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         missedCallCounter++;
         clearInterval(intervalMissCall);
         stopAudioVideoCall();
-        // if (missedCallCounter >= 3) {
-        //   setIscallAbandonment(true);
-        //   setShowAbandonment(true);
-        // }
       }
     }, 1000);
   };
@@ -1670,15 +1666,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     const presentTime = new Date().toISOString();
 
     if (
-      aptDTTM.substring(0, 19) === presentTime.substring(0, 19) &&
-      isConsultStarted &&
-      appointmentInfo &&
-      appointmentInfo.appointmentType !== APPOINTMENT_TYPE.PHYSICAL
-    ) {
-      clearInterval(intervalcallId);
-      callIntervalTimer(600);
-    }
-    if (
       disablecurrent >= minusTime &&
       disableaddedTime >= disablecurrent &&
       currentUserType !== LoggedInUserType.SECRETARY
@@ -1788,33 +1775,33 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     }
   }, [props.lastMsg]);
 
-  useEffect(() => {
-    const presenceEventObject = props.presenceEventObject;
-    if (
-      presenceEventObject &&
-      isConsultStarted &&
-      props.appointmentStatus !== STATUS.COMPLETED &&
-      appointmentInfo &&
-      appointmentInfo.appointmentType !== APPOINTMENT_TYPE.PHYSICAL
-    ) {
-      const data: any = presenceEventObject.channels[props.appointmentId].occupants;
-      const occupancyPatient = data.filter((obj: any) => {
-        return obj.uuid === 'PATIENT' || obj.uuid.indexOf('PATIENT_') > -1;
-      });
-      if (presenceEventObject.totalOccupancy >= 2) {
-        didPatientJoined = true;
-        clearInterval(intervalCallAbundant);
-        abondmentStarted = false;
-      } else {
-        if (presenceEventObject.totalOccupancy === 1 && occupancyPatient.length === 0) {
-          if (!abondmentStarted && didPatientJoined) {
-            //abondmentStarted = true;
-            //callAbundantIntervalTimer(620);
-          }
-        }
-      }
-    }
-  }, [props.presenceEventObject]);
+  // useEffect(() => {
+  //   const presenceEventObject = props.presenceEventObject;
+  //   if (
+  //     presenceEventObject &&
+  //     isConsultStarted &&
+  //     props.appointmentStatus !== STATUS.COMPLETED &&
+  //     appointmentInfo &&
+  //     appointmentInfo.appointmentType !== APPOINTMENT_TYPE.PHYSICAL
+  //   ) {
+  //     const data: any = presenceEventObject.channels[props.appointmentId].occupants;
+  //     const occupancyPatient = data.filter((obj: any) => {
+  //       return obj.uuid === 'PATIENT' || obj.uuid.indexOf('PATIENT_') > -1;
+  //     });
+  //     if (presenceEventObject.totalOccupancy >= 2) {
+  //       didPatientJoined = true;
+  //       clearInterval(intervalCallAbundant);
+  //       abondmentStarted = false;
+  //     } else {
+  //       if (presenceEventObject.totalOccupancy === 1 && occupancyPatient.length === 0) {
+  //         if (!abondmentStarted && didPatientJoined) {
+  //           //abondmentStarted = true;
+  //           //callAbundantIntervalTimer(620);
+  //         }
+  //       }
+  //     }
+  //   }
+  // }, [props.presenceEventObject]);
   const onStartConsult = () => {
     const text = {
       id: props.doctorId,
@@ -2444,12 +2431,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                     props.setIsClickedOnEdit(true);
                     props.setIsClickedOnPriview(false);
                     isConsultStarted = true;
-                    if (
-                      appointmentInfo &&
-                      appointmentInfo.appointmentType !== APPOINTMENT_TYPE.PHYSICAL
-                    ) {
-                      callIntervalTimer(600);
-                    }
                   }}
                 >
                   <svg
@@ -3344,15 +3325,15 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
             </h3>
 
             <Button className={classes.cancelConsult} onClick={() => setShowAbandonment(false)}>
-              {iscallAbandonment ? 'Continue' : 'Yes, continue consult'}
+              {'Continue'}
             </Button>
             <Button
               className={classes.consultButton}
               onClick={() => {
-                noShowAction(iscallAbandonment ? STATUS.CALL_ABANDON : STATUS.NO_SHOW);
+                noShowAction(STATUS.CALL_ABANDON);
               }}
             >
-              {iscallAbandonment ? 'Reschedule' : 'No, reschedule'}
+              {'Reschedule'}
             </Button>
           </div>
         </Paper>

@@ -76,7 +76,7 @@ const alertMedicineOrderPickup: Resolver<
   const authToken = process.env.PHARMACY_MED_DELIVERY_AUTH_TOKEN || '';
 
   const reqBody = JSON.stringify({
-    shopId: orderDetails.shopId,
+    shopId: orderDetails.medicineOrderShipments[0].siteId || orderDetails.shopId,
     customerName: patientDetails.firstName,
     remarks: alertMedicineOrderPickupInput.remarks || '',
     mobile: patientDetails.mobileNumber.substr(3),

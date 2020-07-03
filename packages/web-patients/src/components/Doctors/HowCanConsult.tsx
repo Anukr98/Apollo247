@@ -481,6 +481,7 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
         disableEscapeKeyDown
       >
         <BookConsult
+          physicalDirection={physicalDirection}
           doctorId={doctorId}
           doctorAvailableIn={differenceInMinutes}
           setIsPopoverOpen={setIsPopoverOpen}

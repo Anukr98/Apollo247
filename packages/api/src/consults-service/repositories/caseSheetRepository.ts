@@ -143,7 +143,7 @@ export class CaseSheetRepository extends Repository<CaseSheet> {
       .leftJoinAndSelect('appointment.appointmentDocuments', 'appointmentDocuments')
       .where('case_sheet.appointment in (:...appointmentId)', { appointmentId })
       .andWhere('case_sheet.doctorType != :juniorDoctorType', { juniorDoctorType })
-      .andWhere('case_sheet.sentToPatient != :sentToPatient', { sentToPatient: true })
+      .andWhere('case_sheet.sentToPatient = :sentToPatient', { sentToPatient: true })
       .orderBy('case_sheet.version', 'DESC')
       .getMany();
   }

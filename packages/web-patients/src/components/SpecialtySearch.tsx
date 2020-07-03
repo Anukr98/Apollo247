@@ -130,11 +130,12 @@ const useStyles = makeStyles((theme: Theme) => {
         color: 'rgba(2,71,91,0.7)',
         fontWeight: 500,
       },
+      margin: '10px 0 0',
+      padding: '7px 0 0',
     },
     sContent: {
-      margin: '10px 0 0',
-      padding: '15px 0 0',
-      borderTop: '1px solid rgba(1,71,91,0.5)',
+      borderBottom: '1px solid rgba(1,71,91,0.5)',
+      paddingBottom: '7px',
     },
     sList: {
       padding: 0,
@@ -208,6 +209,7 @@ export const SpecialtySearch: React.FC<SpecialtySearchProps> = (props) => {
           <AphInput
             className={classes.searchInput}
             placeholder="Search doctors or specialities"
+            value={searchKeyword}
             onChange={(e) => {
               const searchValue = e.target.value;
               setSearchKeyword(searchValue);
@@ -219,6 +221,30 @@ export const SpecialtySearch: React.FC<SpecialtySearchProps> = (props) => {
                 <CircularProgress />
               ) : (
                 <>
+                  {searchSpecialty && searchSpecialty.length > 0 && (
+                    <div className={classes.sContent}>
+                      <Typography component="h6">Specialities</Typography>
+                      <ul className={classes.sList}>
+                        {searchSpecialty.map((specialty: SpecialtyType) => (
+                          <Link
+                            key={specialty.id}
+                            to={
+                              selectedCity === ''
+                                ? clientRoutes.specialties(readableParam(specialty.name))
+                                : clientRoutes.citySpecialties(
+                                    _lowerCase(selectedCity),
+                                    readableParam(specialty.name)
+                                  )
+                            }
+                          >
+                            <li key={specialty.id} onClick={() => setSearchKeyword('')}>
+                              {specialty.name}
+                            </li>
+                          </Link>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                   {searchDoctors && searchDoctors.length > 0 && (
                     <div className={classes.docContent}>
                       <Typography component="h6">Doctors</Typography>
@@ -260,28 +286,6 @@ export const SpecialtySearch: React.FC<SpecialtySearchProps> = (props) => {
                               </div>
                             </Link>
                           </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                  {searchSpecialty && searchSpecialty.length > 0 && (
-                    <div className={classes.sContent}>
-                      <Typography component="h6">Specialities</Typography>
-                      <ul className={classes.sList}>
-                        {searchSpecialty.map((specialty: SpecialtyType) => (
-                          <Link
-                            key={specialty.id}
-                            to={
-                              selectedCity === ''
-                                ? clientRoutes.specialties(readableParam(specialty.name))
-                                : clientRoutes.citySpecialties(
-                                    _lowerCase(selectedCity),
-                                    readableParam(specialty.name)
-                                  )
-                            }
-                          >
-                            <li key={specialty.id}>{specialty.name}</li>
-                          </Link>
                         ))}
                       </ul>
                     </div>

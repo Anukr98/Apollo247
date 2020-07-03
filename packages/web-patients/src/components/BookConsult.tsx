@@ -75,13 +75,14 @@ interface DoctorCardProps {
   doctorId: string;
   setIsPopoverOpen: (popover: boolean) => void;
   doctorAvailableIn: number;
+  physicalDirection: boolean;
 }
 
 export const BookConsult: React.FC<DoctorCardProps> = (props) => {
   const classes = useStyles({});
 
-  const { doctorId, setIsPopoverOpen } = props;
-  const [tabValue, setTabValue] = useState<number>(0);
+  const { doctorId, setIsPopoverOpen, physicalDirection } = props;
+  const [tabValue, setTabValue] = useState<number>(physicalDirection ? 1 : 0);
 
   const { data, loading, error } = useQueryWithSkip<
     GetDoctorDetailsById,
