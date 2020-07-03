@@ -19,7 +19,12 @@ import {
   getCallDetailsVariables,
 } from '@aph/mobile-patients/src/graphql/types/getCallDetails';
 import { getMedicineDetailsApi } from '@aph/mobile-patients/src/helpers/apiCalls';
-import { dataSavedUserID, aphConsole, g, postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  dataSavedUserID,
+  aphConsole,
+  g,
+  postWebEngageEvent,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
@@ -163,7 +168,8 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
     aphConsole.log(`CustomNotificationType:: ${type}`);
     showAphAlert!({
       title: `Hi, ${data.firstName}`,
-      description: 'Order status updated. Kindly alert the store 10 minutes before you are about to reach, so that we can keep the items ready!',
+      description:
+        'Order status updated. Kindly alert the store 10 minutes before you are about to reach, so that we can keep the items ready!',
       children: (
         <View
           style={{
@@ -188,9 +194,11 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
                 marginTop: 4,
                 textAlign: 'center',
                 color: theme.colors.WHITE,
-                ...theme.fonts.IBMPlexSansBold(14)
+                ...theme.fonts.IBMPlexSansBold(14),
               }}
-            >ALERT THE STORE</Text>
+            >
+              ALERT THE STORE
+            </Text>
           </TouchableOpacity>
         </View>
       ),
@@ -377,6 +385,18 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
               {
                 text: 'CLAIM REFUND',
                 onPress: () => {
+                  try {
+                    const eventAttributes: WebEngageEvents[WebEngageEventName.DOCTOR_RESCHEDULE_CLAIM_REFUND] = {
+                      'Patient Id': currentPatient.id,
+                      'Appointment ID': data.appointmentId,
+                      Type: data.type,
+                    };
+                    postWebEngageEvent(
+                      WebEngageEventName.DOCTOR_RESCHEDULE_CLAIM_REFUND,
+                      eventAttributes
+                    );
+                  } catch (error) {}
+
                   hideAphAlert && hideAphAlert();
                 },
                 type: 'white-button',
@@ -421,10 +441,9 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
           showMedOrderStatusAlert(data, 'Order_Confirmed');
         }
         break;
-      case 'Order_ready_at_store':
-        {
-          showOrderReadyAtStoreAlert(data, 'Order_ready_at_store');
-        }
+      case 'Order_ready_at_store': {
+        showOrderReadyAtStoreAlert(data, 'Order_ready_at_store');
+      }
       case 'Diagnostic_Order_Success':
         {
           return; // Not showing in app because PN overriding in-app notification
@@ -487,12 +506,18 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
               {
                 text: 'CLAIM REFUND',
                 onPress: () => {
-                  const eventAttributes: WebEngageEvents[WebEngageEventName.DOCTOR_RESCHEDULE_CLAIM_REFUND] = {
-                    'Patient Id': currentPatient.id,
-                    'Appointment ID': data.appointmentId,
-                    'Call Type': data.callType,
-                  };
-                  postWebEngageEvent(WebEngageEventName.DOCTOR_RESCHEDULE_CLAIM_REFUND, eventAttributes);
+                  try {
+                    const eventAttributes: WebEngageEvents[WebEngageEventName.DOCTOR_RESCHEDULE_CLAIM_REFUND] = {
+                      'Patient Id': currentPatient.id,
+                      'Appointment ID': data.appointmentId,
+                      Type: data.type,
+                    };
+                    postWebEngageEvent(
+                      WebEngageEventName.DOCTOR_RESCHEDULE_CLAIM_REFUND,
+                      eventAttributes
+                    );
+                  } catch (error) {}
+
                   hideAphAlert && hideAphAlert();
                 },
                 type: 'white-button',
@@ -810,8 +835,8 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
         .setBody(notification.body)
         .setData(notification.data)
         .android.setChannelId('fcm_FirebaseNotifiction_default_channel') // e.g. the id you chose above
-        .android.setSmallIcon('@mipmap/ic_launcher') // create this icon in Android Studio
-        .android.setColor('#000000') // you can set a color here
+        .android.setSmallIcon('@drawable/ic_notification_white') // create this icon in Android Studio
+        .android.setColor('#fcb716') // you can set a color here
         .android.setPriority(firebase.notifications.Android.Priority.Max);
       firebase
         .notifications()

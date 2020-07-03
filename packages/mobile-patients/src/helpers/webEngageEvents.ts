@@ -1205,7 +1205,7 @@ export interface WebEngageEvents {
   };
   [WebEngageEventName.DOCTOR_RESCHEDULE_CLAIM_REFUND]: {
     'Appointment ID': string;
-    'Call Type': string;
+    Type: string;
     'Patient Id': string;
   };
 }
