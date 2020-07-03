@@ -24,7 +24,7 @@ import {
   medicineOrderCancelled,
   sendMedicineOrderStatusNotification,
 } from 'notifications-service/resolvers/notifications';
-import { format, addMinutes, parseISO, differenceInMinutes } from 'date-fns';
+import { format, addMinutes, parseISO } from 'date-fns';
 import { log } from 'customWinstonLogger';
 import { PharmaItemsResponse } from 'types/medicineOrderTypes';
 
@@ -231,13 +231,6 @@ const updateOrderStatus: Resolver<
           status == MEDICINE_ORDER_STATUS.DELIVERED
             ? NotificationType.MEDICINE_ORDER_DELIVERED
             : NotificationType.MEDICINE_ORDER_PICKEDUP;
-        if (
-          orderDetails.deliveryType == MEDICINE_DELIVERY_TYPE.HOME_DELIVERY &&
-          orderDetails.orderTat &&
-          differenceInMinutes(new Date(statusDate), new Date(orderDetails.orderTat)) > 0
-        ) {
-          notificationType = NotificationType.MEDICINE_ORDER_DELIVERED_LATE;
-        }
         sendMedicineOrderStatusNotification(notificationType, orderDetails, profilesDb);
       }
       if (status == MEDICINE_ORDER_STATUS.CANCELLED) {
