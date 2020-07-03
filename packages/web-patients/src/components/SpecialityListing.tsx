@@ -8,8 +8,6 @@ import ExpansionPanel from '@material-ui/core/ExpansionPanel';
 import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
 import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import Tabs from '@material-ui/core/Tabs';
-import Tab from '@material-ui/core/Tab';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { gtmTracking } from '../gtmTracking';
 // import { SearchObject } from 'components/DoctorsFilter';
@@ -29,9 +27,8 @@ import {
 import { SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME } from 'graphql/doctors';
 import { useApolloClient } from 'react-apollo-hooks';
 import { SpecialtySearch } from './SpecialtySearch';
-import { AphDialog, AphDialogClose, AphDialogTitle } from '@aph/web-ui-components';
-import useMediaQuery from '@material-ui/core/useMediaQuery';
 import { WhyApollo } from 'components/Doctors/WhyApollo';
+import { HowItWorks } from './Doctors/HowItWorks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -614,44 +611,8 @@ const useStyles = makeStyles((theme: Theme) => {
         padding: 0,
       },
     },
-    consultContainer: {
-      padding: 20,
-    },
-    appDetailsMobile: {
-      padding: '10px 0 ',
-      margin: '10px 0 0',
-      borderTop: '1px solid #eeeeee',
-    },
   };
 });
-
-interface TabPanelProps {
-  children?: React.ReactNode;
-  index: any;
-  value: any;
-}
-
-function TabPanel(props: TabPanelProps) {
-  const { children, value, index, ...other } = props;
-
-  return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`simple-tabpanel-${index}`}
-      aria-labelledby={`simple-tab-${index}`}
-      {...other}
-    >
-      {value === index && <div>{children}</div>}
-    </div>
-  );
-}
-function a11yProps(index: any) {
-  return {
-    id: `simple-tab-${index}`,
-    'aria-controls': `simple-tabpanel-${index}`,
-  };
-}
 
 export const SpecialityListing: React.FC = (props) => {
   const classes = useStyles({});
@@ -659,7 +620,6 @@ export const SpecialityListing: React.FC = (props) => {
   const apolloClient = useApolloClient();
   const { isSignedIn } = useAuth();
   const [expanded, setExpanded] = React.useState<string | false>(false);
-  const [value, setValue] = React.useState(0);
   const prakticeSDKSpecialties = localStorage.getItem('symptomTracker');
   const [searchKeyword, setSearchKeyword] = useState<string>('');
   const [locationPopup, setLocationPopup] = useState<boolean>(false);
@@ -670,14 +630,9 @@ export const SpecialityListing: React.FC = (props) => {
   const [selectedCity, setSelectedCity] = useState<string>('');
   const [chatConsult, setChatConsult] = useState<boolean>(false);
   const [meetInPerson, setMeetInPerson] = useState<boolean>(false);
-  const isDesktopOnly = useMediaQuery('(min-width:768px)');
 
   const handleChange = (panel: string) => (event: React.ChangeEvent<{}>, isExpanded: boolean) => {
     setExpanded(isExpanded ? panel : false);
-  };
-
-  const handleTabChange = (event: React.ChangeEvent<{}>, newValue: number) => {
-    setValue(newValue);
   };
 
   useEffect(() => {
@@ -819,124 +774,7 @@ export const SpecialityListing: React.FC = (props) => {
                     </div>
                   </div>
                   <WhyApollo />
-                  <div className={classes.card}>
-                    <Typography component="h5">How it works</Typography>
-                    <div className={classes.tabsContainer}>
-                      <Tabs
-                        value={value}
-                        onChange={handleTabChange}
-                        aria-label="simple tabs example"
-                        classes={{
-                          root: classes.tabsRoot,
-                          indicator: classes.tabsIndicator,
-                        }}
-                      >
-                        <Tab
-                          label="Chat/Audio/Video"
-                          {...a11yProps(0)}
-                          classes={{
-                            root: classes.tabRoot,
-                            selected: classes.tabSelected,
-                          }}
-                          onDoubleClick={() => !isDesktopOnly && setChatConsult(true)}
-                        />
-                        <Tab
-                          label="Meet in Person"
-                          {...a11yProps(1)}
-                          classes={{
-                            root: classes.tabRoot,
-                            selected: classes.tabSelected,
-                          }}
-                          onDoubleClick={() => !isDesktopOnly && setMeetInPerson(true)}
-                        />
-                      </Tabs>
-
-                      <div className={classes.tabContent}>
-                        <TabPanel value={value} index={0}>
-                          <div className={classes.chatContainer}>
-                            <div className={classes.tabHead}>
-                              <img src={require('images/video-calling.svg')} />
-                              <Typography component="h6">
-                                How to consult via chat/audio/video?
-                              </Typography>
-                            </div>
-                            <div className={classes.tabBody}>
-                              <ul className={classes.tabList}>
-                                <li>
-                                  <img src={require('images/consult-doc.svg')} />
-                                  <Typography>Choose the doctor</Typography>
-                                </li>
-                                <li>
-                                  <img src={require('images/slot.svg')} />
-                                  <Typography>Book a slot</Typography>
-                                </li>
-                                <li>
-                                  <img src={require('images/ic-payment.svg')} />
-                                  <Typography>Make payment</Typography>
-                                </li>
-                                <li className={classes.highlight}>
-                                  <img src={require('images/ic-video.svg')} />
-                                  <Typography>Speak to the doctor via video/audio/chat</Typography>
-                                </li>
-                                <li>
-                                  <img src={require('images/prescription.svg')} />
-                                  <Typography>Receive prescriptions instantly </Typography>
-                                </li>
-                                <li className={classes.highlight}>
-                                  <img src={require('images/chat.svg')} />
-                                  <Typography>
-                                    Chat with the doctor for 6 days after your consult
-                                  </Typography>
-                                </li>
-                              </ul>
-                            </div>
-                          </div>
-                        </TabPanel>
-                        <TabPanel value={value} index={1}>
-                          <div className={classes.tabHead}>
-                            <img src={require('images/ic-specialist.svg')} />
-                            <Typography component="h6">How to consult in Person?</Typography>
-                          </div>
-                          <div className={classes.tabBody}>
-                            <ul className={classes.tabList}>
-                              <li>
-                                <img src={require('images/consult-doc.svg')} />
-                                <Typography>Choose the doctor</Typography>
-                              </li>
-                              <li>
-                                <img src={require('images/slot.svg')} />
-                                <Typography>Book a slot</Typography>
-                              </li>
-                              <li>
-                                <img src={require('images/ic-payment.svg')} />
-                                <Typography>Make payment</Typography>
-                              </li>
-                              <li className={classes.highlight}>
-                                <img src={require('images/hospital.svg')} />
-                                <Typography>Visit the doctor at Hospital/Clinic</Typography>
-                              </li>
-                              <li>
-                                <img src={require('images/prescription.svg')} />
-                                <Typography>Receive prescriptions instantly </Typography>
-                              </li>
-                            </ul>
-                          </div>
-                        </TabPanel>
-                      </div>
-                    </div>
-                    <div className={classes.appDetails}>
-                      <Typography component="h6">
-                        Consultancy works only on our mobile app
-                      </Typography>
-                      <Typography>
-                        To enjoy enhanced consultation experience download our mobile app
-                      </Typography>
-                      <div className={classes.appDownload}>
-                        <img src={require('images/apollo247.png')} />
-                        <AphButton>Download the App</AphButton>
-                      </div>
-                    </div>
-                  </div>
+                  <HowItWorks />
                 </div>
               </Grid>
             </Grid>
@@ -977,76 +815,6 @@ export const SpecialityListing: React.FC = (props) => {
       <div className={classes.footerLinks}>
         <BottomLinks />
       </div>
-      <AphDialog open={chatConsult} maxWidth="sm">
-        <AphDialogClose onClick={() => setChatConsult(false)} title={'Close'} />
-        <AphDialogTitle> How to consult via chat/audio/video?</AphDialogTitle>
-        <div className={classes.consultContainer}>
-          <ul className={classes.tabList}>
-            <li>
-              <img src={require('images/consult-doc.svg')} />
-              <Typography>Choose the doctor</Typography>
-            </li>
-            <li>
-              <img src={require('images/slot.svg')} />
-              <Typography>Book a slot</Typography>
-            </li>
-            <li>
-              <img src={require('images/ic-payment.svg')} />
-              <Typography>Make payment</Typography>
-            </li>
-            <li className={classes.highlight}>
-              <img src={require('images/ic-video.svg')} />
-              <Typography>Speak to the doctor via video/audio/chat</Typography>
-            </li>
-            <li>
-              <img src={require('images/prescription.svg')} />
-              <Typography>Receive prescriptions instantly </Typography>
-            </li>
-            <li className={classes.highlight}>
-              <img src={require('images/chat.svg')} />
-              <Typography>Chat with the doctor for 6 days after your consult</Typography>
-            </li>
-          </ul>
-          <div className={`${classes.appDetails} ${classes.appDetailsMobile}`}>
-            <Typography component="h6">Consultancy works only on our mobile app</Typography>
-            <Typography>
-              To enjoy enhanced consultation experience download our mobile app
-            </Typography>
-            <div className={classes.appDownload}>
-              <img src={require('images/apollo247.png')} />
-              <AphButton>Download the App</AphButton>
-            </div>
-          </div>
-        </div>
-      </AphDialog>
-      <AphDialog open={meetInPerson} maxWidth="sm">
-        <AphDialogClose onClick={() => setMeetInPerson(false)} title={'Close'} />
-        <AphDialogTitle> How to consult in Person?</AphDialogTitle>
-        <div className={classes.consultContainer}>
-          <ul className={classes.tabList}>
-            <li>
-              <img src={require('images/consult-doc.svg')} />
-              <Typography>Choose the doctor</Typography>
-            </li>
-            <li>
-              <img src={require('images/slot.svg')} />
-              <Typography>Book a slot</Typography>
-            </li>
-            <li>
-              <img src={require('images/ic-payment.svg')} />
-              <Typography>Make payment</Typography>
-            </li>
-            <li className={classes.highlight}>
-              <img src={require('images/hospital.svg')} />
-              <Typography>Visit the doctor at Hospital/Clinic</Typography>
-            </li>
-            <li>
-              <img src={require('images/prescription.svg')} />
-              <Typography>Receive prescriptions instantly </Typography>
-            </li>
-          </ul>
-        </div>
-      </AphDialog>
     </div>
   );
 };
