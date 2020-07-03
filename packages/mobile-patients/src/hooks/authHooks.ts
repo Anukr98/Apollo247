@@ -60,7 +60,6 @@ export const useAllCurrentPatients = () => {
   // console.log('patientsArray', patientsArray);
   const getNewSelectedPatient = async () => {
     const retrievedItem: any = await AsyncStorage.getItem('selectUserId');
-    console.log('retrievedItem==', retrievedItem);
     Promise.all([retrievedItem]).then((values) => {
       setCurrentPatientId(values[0]);
     });
