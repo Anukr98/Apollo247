@@ -943,12 +943,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     const uhid = g(details, 'uhid');
 
     const uhidSelected = await AsyncStorage.getItem('UHIDused');
-    console.log('uhidSelected', uhidSelected);
+    // console.log('uhidSelected', uhidSelected);
 
     if (uhidSelected !== null) {
       if (uhidSelected === uhid) {
         if (Object.keys(appointmentsPersonalized).length != 0) {
-          console.log('appointmentsPersonalized', appointmentsPersonalized);
+          // console.log('appointmentsPersonalized', appointmentsPersonalized);
 
           setPersonalizedData(appointmentsPersonalized as any);
           setisPersonalizedCard(true);
@@ -963,7 +963,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       .then((data: any) => {
         const appointmentsdata =
           g(data, 'data', 'data', 'getPatientPersonalizedAppointments', 'appointmentDetails') || [];
-        console.log('appointmentsdata', appointmentsdata);
+        // console.log('appointmentsdata', appointmentsdata);
         AsyncStorage.setItem('UHIDused', uhid);
 
         setPersonalizedData(appointmentsdata as any);
