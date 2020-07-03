@@ -281,6 +281,12 @@ export const GET_APPOINTMENT_HISTORY = gql`
         status
         bookingDate
         isSeniorConsultStarted
+        caseSheet {
+          symptoms {
+            symptom
+            details
+          }
+        }
       }
     }
   }

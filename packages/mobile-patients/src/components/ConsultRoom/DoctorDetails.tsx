@@ -259,6 +259,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         fetchPolicy: 'no-cache',
       })
       .then(({ data }) => {
+        console.log('appointmentHistory--------', data.getAppointmentHistory.appointmentsHistory);
         try {
           if (
             data &&
@@ -971,22 +972,33 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                       .local()
                       .format('DD MMMM, hh:mm A')}
                   </Text>
-                  {/* <View style={styles.separatorStyle} />
-                  <View style={{ flexDirection: 'row' }}>
-                    {Appointments[0].symptoms.map((name, index) => (
-                      <CapsuleView
-                        key={index}
-                        title={name}
-                        isActive={false}
-                        style={{ width: 'auto', marginRight: 4, marginTop: 11 }}
-                        titleTextStyle={{ color: theme.colors.SKY_BLUE }}
-                      />
-                    ))}
-                  </View> */}
+                  <View style={styles.separatorStyle} />
+                  {item.caseSheet && renderAppointmentSymptoms(item)}
                 </View>
               </TouchableOpacity>
             )}
           />
+        </View>
+      );
+    }
+  };
+
+  const renderAppointmentSymptoms = (
+    item: getAppointmentHistory_getAppointmentHistory_appointmentsHistory
+  ) => {
+    if (item.caseSheet.length != 0) {
+      console.log('symptoms-----', JSON.stringify(item.caseSheet));
+      return (
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+          {item.caseSheet[0].symptoms.map((item, index) => (
+            <CapsuleView
+              key={index}
+              title={item.symptom}
+              isActive={false}
+              style={{ width: 'auto', marginRight: 4, marginTop: 11 }}
+              titleTextStyle={{ color: theme.colors.SKY_BLUE }}
+            />
+          ))}
         </View>
       );
     }
