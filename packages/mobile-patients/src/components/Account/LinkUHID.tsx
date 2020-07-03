@@ -172,10 +172,18 @@ export const LinkUHID: React.FC<LinkUHIDProps> = (props) => {
     checkForLinkedProfiles();
   }, [allProfiles]);
 
+  useEffect(() => {
+    const didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
+      primary = {};
+      secondary = [];
+      areUhidsLinked = false;
+    });
+    return () => {
+      didFocusSubscription && didFocusSubscription.remove();
+    };
+  }, [props.navigation]);
+
   const checkForLinkedProfiles = () => {
-    // let primary;
-    // let secondary = [];
-    // let areUhidsLinked = false;
     allProfiles!.forEach((profile) => {
       if (profile!.isUhidPrimary) {
         setPrimaryUHIDs(profile!.uhid);

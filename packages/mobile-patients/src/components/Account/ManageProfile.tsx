@@ -172,16 +172,17 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
     }
   }, [allCurrentPatients]);
 
-  // useEffect(() => {
-  //   const didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
-  //     // if (!currentPatient || !currentPatient.uhid) {
-  //       getPatientApiCall();
-  //     // }
-  //   });
-  //   return () => {
-  //     didFocusSubscription && didFocusSubscription.remove();
-  //   };
-  // }, [props.navigation]);
+  useEffect(() => {
+    const didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
+      count = 0;
+      primary = {};
+      secondary = [];
+      areUhidsLinked = false;
+    });
+    return () => {
+      didFocusSubscription && didFocusSubscription.remove();
+    };
+  }, [props.navigation]);
 
   const checkForLinkedProfiles = (
     profiles: getPatientByMobileNumber_getPatientByMobileNumber_patients[]
