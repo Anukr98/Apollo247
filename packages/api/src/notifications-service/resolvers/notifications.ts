@@ -727,7 +727,7 @@ export async function sendNotification(
       const chatroom_sms_link = process.env.SMS_DEEPLINK_APPOINTMENT_CHATROOM.replace(
         '{0}',
         appointment.id.toString()
-      ); //Replacing the placeholder with appointmentid 
+      ); // Replacing the placeholder with appointmentid
 
       smsLink = smsLink.replace('{5}', chatroom_sms_link);
     }
