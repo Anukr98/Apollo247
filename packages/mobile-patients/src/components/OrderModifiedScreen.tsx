@@ -1,6 +1,6 @@
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails } from '@aph/mobile-patients/src/graphql/types/getMedicineOrderOMSDetails';
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { SafeAreaView, ScrollView, StyleSheet, View, Text } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -119,9 +119,64 @@ export interface OrderModifiedScreenProps
 export const OrderModifiedScreen: React.FC<OrderModifiedScreenProps> = (props) => {
   const orderDetails = props.navigation.getParam('orderDetails');
   const offlineOrderNumber = g(orderDetails, 'billNumber');
-  const medicineOrderLineItems = orderDetails.medicineOrderLineItems || [];
+  const orderedItems = orderDetails.medicineOrderLineItems || [];
   const orderAutoId = `Your order #${orderDetails.orderAutoId} has been modified.`;
-  console.log('orderDetails', orderDetails);
+  const [removedItems, setRemovedItems] = useState([]);
+  const [addedItems, setAddedItems] = useState([]);
+  const [updatedItems, setUpdatedItems] = useState([]);
+  console.log('orderedItems', orderedItems);
+  const itemDetails = g(
+    orderDetails,
+    'medicineOrderShipments',
+    '0' as any,
+    'medicineOrderInvoice',
+    '0' as any,
+    'itemDetails'
+  );
+
+  const billedItems = itemDetails ? JSON.parse(itemDetails) : null;
+  console.log('billedItems', billedItems, JSON.stringify(billedItems));
+
+  useEffect(() => {
+    sortItems();
+  }, []);
+
+  const sortItems = () => {
+    let orderedItemIds = orderedItems.map((item: any) => item.medicineSKU);
+    let billedItemIds = billedItems.map((item: any) => item.itemId);
+
+    let addedItems = billedItems.filter((item: any) => {
+      return orderedItemIds.indexOf(item.itemId) < 0;
+    });
+    console.log('addedItems--', addedItems);
+    setAddedItems(addedItems);
+
+    let removedItems = orderedItems.filter((item: any) => {
+      return billedItemIds.indexOf(item.medicineSKU) < 0;
+    });
+    console.log('removedItems--', removedItems);
+    setRemovedItems(removedItems);
+
+    let updatedItems: any = [];
+    billedItems.forEach((item: any) => {
+      orderedItems.forEach((product: any) => {
+        if (item.itemId == product.medicineSKU) {
+          if (item.mrp != product.mrp) {
+            console.log('hi');
+            item['updated'] = 'price';
+            item['originalPrice'] = product.mrp;
+            updatedItems.push(item);
+          } else if (Math.ceil(item.issuedQty) != product.quantity) {
+            item['updated'] = 'quantity';
+            item['originalQuantity'] = product.quantity;
+            updatedItems.push(item);
+          }
+        }
+      });
+    });
+    console.log('updatedItems--', updatedItems);
+    setUpdatedItems(updatedItems);
+  };
 
   const renderItemsRemoved = (item: any) => {
     return (
@@ -136,7 +191,7 @@ export const OrderModifiedScreen: React.FC<OrderModifiedScreenProps> = (props) =
     return (
       <View style={{ flexDirection: 'row' }}>
         <View style={styles.itemBlueCircleViewStyle} />
-        <Text style={styles.itemNameTextStyle}>{item.medicineName}</Text>
+        <Text style={styles.itemNameTextStyle}>{item.itemName}</Text>
       </View>
     );
   };
@@ -153,11 +208,11 @@ export const OrderModifiedScreen: React.FC<OrderModifiedScreenProps> = (props) =
               {'Important messages for items in your cart.'}
             </Text>
             <Text style={styles.itemsRemovedTextStyle}>{'Items Removed from your Cart'}</Text>
-            {medicineOrderLineItems.map((item) => renderItemsRemoved(item!))}
+            {removedItems.map((item) => renderItemsRemoved(item!))}
             <Text style={[styles.itemsRemovedTextStyle, { marginTop: 6 }]}>
               {'Items Added to your Cart.'}
             </Text>
-            {medicineOrderLineItems.map((item) => renderItemsAdded(item!))}
+            {addedItems.map((item) => renderItemsAdded(item!))}
           </View>
         </View>
       </View>
@@ -165,8 +220,8 @@ export const OrderModifiedScreen: React.FC<OrderModifiedScreenProps> = (props) =
   };
 
   const renderMrpAndQtyItems = (item: any) => {
-    const isTablet = (item.medicineName || '').includes('TABLET');
-    const medicineName = `${item.medicineName}${
+    const isTablet = (item.itemName || '').includes('TABLET');
+    const itemName = `${item.itemName}${
       item.mou! > 1 ? ` (${item.mou}${isTablet ? ' tabs' : ''})` : ''
     }`;
     return (
@@ -182,7 +237,7 @@ export const OrderModifiedScreen: React.FC<OrderModifiedScreenProps> = (props) =
             }}
           >
             <Text numberOfLines={1} style={styles.mrpQtyItemNameTextStyle}>
-              {medicineName}
+              {itemName}
             </Text>
           </View>
           <View
@@ -194,7 +249,10 @@ export const OrderModifiedScreen: React.FC<OrderModifiedScreenProps> = (props) =
             }}
           >
             <Text style={styles.mrpQtyOrgValueTextStyle}>
-              {offlineOrderNumber ? item.price! / item.mrp! / item.quantity! : item.quantity}
+              {/* {offlineOrderNumber ? item.price! / item.mrp! / item.quantity! : item.quantity} */}
+              {item.updated == 'price'
+                ? 'Rs. ' + (item.originalPrice! || 0).toFixed(2)
+                : item.originalQuantity}
             </Text>
           </View>
           <View
@@ -205,7 +263,7 @@ export const OrderModifiedScreen: React.FC<OrderModifiedScreenProps> = (props) =
             }}
           >
             <Text style={styles.mrpQtyRevValueTextStyle}>
-              Rs. {(item.mrp! * item.quantity! || 0).toFixed(2)}
+              {item.updated == 'price' ? 'Rs.' + (item.mrp! || 0).toFixed(2) : item.quantity}
             </Text>
           </View>
         </View>
@@ -263,7 +321,7 @@ export const OrderModifiedScreen: React.FC<OrderModifiedScreenProps> = (props) =
               <Text style={styles.headingTextStyle}>{'REVISED VALUE'}</Text>
             </View>
           </View>
-          {medicineOrderLineItems.map((item) => renderMrpAndQtyItems(item))}
+          {updatedItems.map((item) => renderMrpAndQtyItems(item))}
           <View
             style={{
               backgroundColor: '#ffffff',
