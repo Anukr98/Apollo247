@@ -187,10 +187,6 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
   const checkForLinkedProfiles = (
     profiles: getPatientByMobileNumber_getPatientByMobileNumber_patients[]
   ) => {
-    // let primary;
-    // let secondary = [];
-    // let areUhidsLinked = false;
-
     profiles!.forEach((profile) => {
       if (profile!.isUhidPrimary) {
         count++;
@@ -200,7 +196,6 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
       } else if (profile!.isLinked) {
         count++;
         secondary.push(profile!.uhid);
-        // areUhidsLinked = true;
       }
     });
     setShowLinkUHIDButton(count !== profiles.length);

@@ -194,7 +194,6 @@ export const LinkUHID: React.FC<LinkUHIDProps> = (props) => {
         areUhidsLinked = true;
       } else if (profile!.isLinked) {
         secondary.push(profile!.uhid);
-        // areUhidsLinked = true;
       }
     });
 
