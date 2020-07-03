@@ -90,11 +90,11 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
       title: 'Search and add medicine',
     },
     {
-      id: 'prescribed',
+      id: 'Need all medicine and for duration as per prescription',
       title: 'All medicine from prescription',
     },
     {
-      id: 'call',
+      id: 'Call me for details',
       title: 'Call me for details',
     },
   ];
@@ -115,8 +115,8 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
       } else {
         const days = durationDays ? parseInt(durationDays) : null;
         props.navigation.push(AppRoutes.YourCartUploadPrescriptions, {
-          prescriptionOptionSelected: selectedMedicineOption,
-          durationDays: prescriptionOption === 'duration' ? days : null,
+          prescriptionOptionSelected: prescriptionOption === 'duration' ? 'All medicine from prescription' : selectedMedicineOption,
+          durationDays: prescriptionOption === 'duration' ? `Need all medicine as per prescription for ${durationDays} days` : null,
           physicalPrescription: PhysicalPrescriptions,
           ePrescription: EPrescriptions
         });
@@ -312,9 +312,9 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
                   const optionSelected =
                     item.id === 'search'
                       ? 'Search and add'
-                      : item.id === 'prescribed'
+                      : item.id === 'Need all medicine and for duration as per prescription'
                       ? 'All Medicine'
-                      : 'call';
+                      : 'Call me for details';
                   const eventAttribute: WebEngageEvents[WebEngageEventName.UPLOAD_PRESCRIPTION_OPTION_SELECTED] = {
                     OptionSelected: optionSelected,
                   };
@@ -331,7 +331,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
                 }}
                 hideSeparator={
                   index + 1 === array.length ||
-                  (selectedMedicineOption == item.id && selectedMedicineOption == 'prescribed')
+                  (selectedMedicineOption == item.id && selectedMedicineOption == 'Need all medicine and for duration as per prescription')
                 }
                 textStyle={{
                   ...theme.fonts.IBMPlexSansMedium(16),
@@ -346,7 +346,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
   };
 
   const getRadioButtonAction = () => {
-    if (selectedMedicineOption === 'call') {
+    if (selectedMedicineOption === 'Call me for details') {
       return (
         <View
           style={{
@@ -368,7 +368,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
           </Text>
         </View>
       );
-    } else if (selectedMedicineOption === 'prescribed') {
+    } else if (selectedMedicineOption === 'Need all medicine and for duration as per prescription') {
       const isDurationDaysSelected = prescriptionOption === 'duration';
       return (
         <View
@@ -398,7 +398,6 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
             ]}
             onPress={() => {
               setPrescriptionOption('specified');
-              setDurationDays('');
             }}
           >
             <Text
@@ -409,7 +408,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
                 marginRight: 25,
               }}
             >
-              As specified in prescription
+              Duration as specified in prescription
             </Text>
             {!isDurationDaysSelected && (
               <GreenTickIcon
@@ -505,7 +504,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
 
   const disableSubmitButton = () => {
     const isPrescriptions = !(PhysicalPrescriptions.length || EPrescriptions.length);
-    const durationDaysInput = (selectedMedicineOption && selectedMedicineOption === 'prescribed' &&
+    const durationDaysInput = (selectedMedicineOption && selectedMedicineOption === 'Need all medicine and for duration as per prescription' &&
       prescriptionOption === 'duration' && durationDays === '') ? true : false;
     return isPrescriptions || !selectedMedicineOption || durationDaysInput || loading;
   };
