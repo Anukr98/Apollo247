@@ -40,10 +40,14 @@ const parseStatus = (status: any, res: any) => {
 };
 
 const requestHeaders = (ctype: string, useToken: boolean) => {
-  return {
-    'Content-Type': ctype || 'application/json',
-    Authorization: useToken ? process.env.COVID_ARTICLE_API_AUTH_TOKEN : '',
-  };
+  return useToken
+    ? {
+        'Content-Type': ctype || 'application/json',
+        Authorization: process.env.COVID_ARTICLE_API_AUTH_TOKEN,
+      }
+    : {
+        'Content-Type': ctype || 'application/json',
+      };
 };
 
 export default fetchUtil;

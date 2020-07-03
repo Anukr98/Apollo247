@@ -55,9 +55,10 @@ import {
   Text,
   TouchableOpacity,
   View,
+  Platform,
 } from 'react-native';
 import { FlatList, NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
-import { AppsFlyerEventName } from '../../helpers/AppsFlyerEvents';
+import { AppsFlyerEventName, AppsFlyerEvents } from '../../helpers/AppsFlyerEvents';
 import { useAppCommonData } from '../AppCommonDataProvider';
 import { CommonVideoPlayer } from '../ui/CommonVideoPlayer';
 import { ConsultTypeCard } from '../ui/ConsultTypeCard';
@@ -149,7 +150,7 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     padding: 12,
     ...theme.viewStyles.shadowStyle,
-    height: 110,
+    height: Platform.OS == 'android' ? 115 : 110,
   },
 });
 type Appointments = {
@@ -376,10 +377,13 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     try {
       if (modeOfConsult.includes(ConsultMode.BOTH)) {
         setConsultType(ConsultMode.BOTH);
+        setOnlineSelected(true);
       } else if (modeOfConsult.includes(ConsultMode.ONLINE)) {
         setConsultType(ConsultMode.ONLINE);
+        setOnlineSelected(true);
       } else if (modeOfConsult.includes(ConsultMode.PHYSICAL)) {
         setConsultType(ConsultMode.PHYSICAL);
+        setOnlineSelected(false);
       } else {
         setConsultType(ConsultMode.BOTH);
       }
@@ -488,7 +492,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
 
   const openConsultPopup = (consultType: ConsultMode) => {
     postBookAppointmentWEGEvent();
-    callPermissions();
+    // callPermissions();
     getNetStatus()
       .then((status) => {
         if (status) {
@@ -553,7 +557,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                     </Text>
                   ) : null}
                 </View>
-                {doctorDetails.doctorType === 'APOLLO' ? (
+                {doctorDetails.doctorType !== 'DOCTOR_CONNECT' ? (
                   <ApolloDoctorIcon style={{ marginVertical: 12, width: 80, height: 32 }} />
                 ) : (
                   <ApolloPartnerIcon style={{ marginVertical: 12, width: 80, height: 32 }} />
@@ -575,7 +579,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                       style={{
                         position: 'absolute',
                         width: (width - 42) / 2,
-                        height: 129,
+                        height: Platform.OS == 'android' ? 134 : 129,
                         flex: 2,
                         left: -3,
                         top: -2,
@@ -586,19 +590,27 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                     activeOpacity={1}
                     onPress={() => {
                       setOnlineSelected(true);
-                      const eventAttributes:WebEngageEvents[WebEngageEventName.TYPE_OF_CONSULT_SELECTED] = {
+                      const eventAttributes: WebEngageEvents[WebEngageEventName.TYPE_OF_CONSULT_SELECTED] = {
                         'Doctor Speciality': g(doctorDetails, 'specialty', 'name')!,
-                        'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+                        'Patient Name': `${g(currentPatient, 'firstName')} ${g(
+                          currentPatient,
+                          'lastName'
+                        )}`,
                         'Patient UHID': g(currentPatient, 'uhid'),
-                        'Relation': g(currentPatient, 'relation'),
-                        'Patient Age': Math.round(Moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)),
+                        Relation: g(currentPatient, 'relation'),
+                        'Patient Age': Math.round(
+                          Moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+                        ),
                         'Patient Gender': g(currentPatient, 'gender'),
                         'Customer ID': g(currentPatient, 'id'),
                         'Doctor ID': g(doctorDetails, 'id')!,
                         'Speciality ID': g(doctorDetails, 'specialty', 'id')!,
                         'Consultation Type': 'online',
                       };
-                      postWebEngageEvent(WebEngageEventName.TYPE_OF_CONSULT_SELECTED, eventAttributes);
+                      postWebEngageEvent(
+                        WebEngageEventName.TYPE_OF_CONSULT_SELECTED,
+                        eventAttributes
+                      );
                     }}
                   >
                     <View>
@@ -643,7 +655,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                       style={{
                         position: 'absolute',
                         width: (width - 42) / 2,
-                        height: 129,
+                        height: Platform.OS == 'android' ? 134 : 129,
                         flex: 2,
                         left: -3,
                         top: -2,
@@ -654,19 +666,27 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                     activeOpacity={1}
                     onPress={() => {
                       {
-                        const eventAttributes:WebEngageEvents[WebEngageEventName.TYPE_OF_CONSULT_SELECTED] = {
+                        const eventAttributes: WebEngageEvents[WebEngageEventName.TYPE_OF_CONSULT_SELECTED] = {
                           'Doctor Speciality': g(doctorDetails, 'specialty', 'name')!,
-                          'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+                          'Patient Name': `${g(currentPatient, 'firstName')} ${g(
+                            currentPatient,
+                            'lastName'
+                          )}`,
                           'Patient UHID': g(currentPatient, 'uhid'),
-                          'Relation': g(currentPatient, 'relation'),
-                          'Patient Age': Math.round(Moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)),
+                          Relation: g(currentPatient, 'relation'),
+                          'Patient Age': Math.round(
+                            Moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+                          ),
                           'Patient Gender': g(currentPatient, 'gender'),
                           'Customer ID': g(currentPatient, 'id'),
                           'Doctor ID': g(doctorDetails, 'id')!,
                           'Speciality ID': g(doctorDetails, 'specialty', 'id')!,
                           'Consultation Type': 'physical',
                         };
-                        postWebEngageEvent(WebEngageEventName.TYPE_OF_CONSULT_SELECTED, eventAttributes);
+                        postWebEngageEvent(
+                          WebEngageEventName.TYPE_OF_CONSULT_SELECTED,
+                          eventAttributes
+                        );
                         doctorDetails.doctorType !== DoctorType.PAYROLL && setOnlineSelected(false);
                       }
                     }}
@@ -951,7 +971,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                       .local()
                       .format('DD MMMM, hh:mm A')}
                   </Text>
-                  <View style={styles.separatorStyle} />
+                  {/* <View style={styles.separatorStyle} />
                   <View style={{ flexDirection: 'row' }}>
                     {Appointments[0].symptoms.map((name, index) => (
                       <CapsuleView
@@ -962,7 +982,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                         titleTextStyle={{ color: theme.colors.SKY_BLUE }}
                       />
                     ))}
-                  </View>
+                  </View> */}
                 </View>
               </TouchableOpacity>
             )}
@@ -1031,7 +1051,10 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           : '',
     };
     postWebEngageEvent(WebEngageEventName.BOOK_APPOINTMENT, eventAttributes);
-    postAppsFlyerEvent(AppsFlyerEventName.BOOK_APPOINTMENT, eventAttributes);
+    const appsflyereventAttributes: AppsFlyerEvents[AppsFlyerEventName.BOOK_APPOINTMENT] = {
+      'customer id': currentPatient ? currentPatient.id : '',
+    };
+    postAppsFlyerEvent(AppsFlyerEventName.BOOK_APPOINTMENT, appsflyereventAttributes);
     postFirebaseEvent(FirebaseEventName.BOOK_APPOINTMENT, eventAttributes);
   };
 
@@ -1128,7 +1151,8 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           appointmentId={props.navigation.state.params!.appointmentId}
           consultModeSelected={consultMode}
           externalConnect={null}
-          availableMode={consultType}
+          availableMode={ConsultMode.BOTH}
+          // availableMode={consultType}
         />
       )}
       <Animated.View
@@ -1179,14 +1203,16 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           doctorDetails &&
           doctorDetails &&
           doctorDetails.photoUrl &&
-          doctorDetails.photoUrl.match(/(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG)/) ? (
+          doctorDetails.photoUrl.match(
+            /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jpeg|JPEG)/
+          ) ? (
             <>
               <View style={{ height: 20, width: '100%' }} />
               <Animated.Image
                 source={{ uri: doctorDetails.photoUrl }}
                 style={{ top: 0, height: 140, width: 140, opacity: imgOp }}
               />
-              <TouchableOpacity
+              {/* <TouchableOpacity
                 activeOpacity={1}
                 onPress={() => {
                   setShowVideo(true);
@@ -1210,7 +1236,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                 >
                   <VideoPlayIcon style={{ height: 33, width: 33 }} />
                 </View>
-              </TouchableOpacity>
+              </TouchableOpacity> */}
             </>
           ) : (
             !showVideo &&
@@ -1225,7 +1251,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
               >
                 <DoctorPlaceholderImage style={{ top: 0, height: 140, width: 140 }} />
 
-                <TouchableOpacity
+                {/* <TouchableOpacity
                   activeOpacity={1}
                   onPress={() => {
                     setShowVideo(true);
@@ -1249,7 +1275,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                   >
                     <VideoPlayIcon style={{ height: 33, width: 33 }} />
                   </View>
-                </TouchableOpacity>
+                </TouchableOpacity> */}
               </View>
             )
           )}

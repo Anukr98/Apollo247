@@ -1,22 +1,23 @@
 import React from 'react';
 import { makeStyles, createStyles } from '@material-ui/styles';
-import { Theme, Grid, Avatar } from '@material-ui/core';
+import { Theme, Grid, Avatar, Typography } from '@material-ui/core';
 import { Link } from 'react-router-dom';
 import { useQueryWithSkip } from 'hooks/apolloHooks';
-import { SEARCH_TYPE } from 'graphql/types/globalTypes';
+// import { SEARCH_TYPE } from 'graphql/types/globalTypes';
 import { PATIENT_PAST_SEARCHES } from 'graphql/pastsearches';
 import {
   GetPatientPastSearches,
   GetPatientPastSearchesVariables,
 } from 'graphql/types/GetPatientPastSearches';
 import _uniqueId from 'lodash/uniqueId';
-import CircularProgress from '@material-ui/core/CircularProgress';
+// import CircularProgress from '@material-ui/core/CircularProgress';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import _startCase from 'lodash/startCase';
 import _toLower from 'lodash/toLower';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { Route } from 'react-router-dom';
 import { readableParam } from 'helpers/commonHelpers';
+import { useAuth } from 'hooks/authHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -98,19 +99,50 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: 20,
       justifyContent: 'center',
     },
+    pastSearch: {
+      padding: '20px 0 0',
+      '& h6': {
+        fontSize: 14,
+        fontWeight: 'bold',
+      },
+    },
+    pastSearchList: {
+      margin: 0,
+      padding: '20px ',
+      listStyle: 'none',
+      display: 'flex',
+      alignItems: 'center',
+      '& li': {
+        margin: '0 16px 0 0',
+        minWidth: 150,
+        textAlign: 'center',
+        '& a': {
+          padding: 12,
+          background: '#ffffff',
+          borderRadius: 10,
+          boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
+          color: '#fc9916',
+          fontsize: 13,
+          textTransform: 'uppercase',
+          display: 'block',
+          fontWeight: 'bold',
+        },
+        '& :last-child': {
+          margin: 0,
+        },
+      },
+      [theme.breakpoints.down('sm')]: {
+        width: '100%',
+        overflowX: 'auto',
+      },
+    },
   });
 });
 
-interface PastSearchProps {
-  speciality: (specialitySelected: string) => void;
-  disableFilter: (disableFilters: boolean) => void;
-  specialityId?: (specialityId: string) => void;
-}
-
-export const PastSearches: React.FC<PastSearchProps> = (props) => {
+export const PastSearches: React.FC = (props) => {
   const classes = useStyles({});
   const { currentPatient } = useAllCurrentPatients();
-  const { speciality, disableFilter, specialityId } = props;
+  const { isSignedIn } = useAuth();
 
   const { data } = useQueryWithSkip<GetPatientPastSearches, GetPatientPastSearchesVariables>(
     PATIENT_PAST_SEARCHES,
@@ -124,60 +156,72 @@ export const PastSearches: React.FC<PastSearchProps> = (props) => {
 
   return data && data.getPatientPastSearches && data.getPatientPastSearches.length > 0 ? (
     <div className={classes.root}>
-      <div className={classes.searchList}>
-        {/* <div className={classes.sectionHeader}>Your Past Searches</div> */}
-        <Grid container spacing={2}>
-          {data.getPatientPastSearches.map((searchDetails) => {
-            return searchDetails && searchDetails.searchType === SEARCH_TYPE.DOCTOR ? (
-              <Grid item xs={6} sm={6} md={4} lg={3} key={_uniqueId('psearch_doctor_')}>
-                <Link
-                  to={`/doctors/${readableParam(searchDetails.name)}-${searchDetails.typeId}`}
-                  title={searchDetails && `${_startCase(_toLower(searchDetails.name || ''))}`}
-                >
-                  <div className={classes.contentBox}>
-                    <Avatar
-                      alt={(searchDetails && searchDetails.name) || ''}
-                      src={(searchDetails && searchDetails.image) || ''}
-                      className={`${classes.bigAvatar} ${classes.doctorAvatar}`}
-                    />
-                    {searchDetails && `${_startCase(_toLower(searchDetails.name || ''))}`}
-                  </div>
-                </Link>
-              </Grid>
-            ) : (
-              <Route
-                render={({ history }) => (
-                  <Grid
-                    item
-                    xs={6}
-                    sm={6}
-                    md={4}
-                    lg={3}
-                    title={(searchDetails && searchDetails.name) || ''}
-                    onClick={(e) => {
-                      specialityId && specialityId((searchDetails && searchDetails.typeId) || '');
-                      speciality(e.currentTarget.title);
-                      disableFilter(false);
-                      const specialityUpdated = readableParam(`${e.currentTarget.title}`);
-                      const encoded = encodeURIComponent(specialityUpdated);
-                      history.push(clientRoutes.specialties(`${specialityUpdated}`));
-                    }}
-                    key={_uniqueId('psearch_spl_')}
-                  >
-                    <div className={classes.contentBox}>
-                      <Avatar
-                        alt={(searchDetails && searchDetails.name) || ''}
-                        src={(searchDetails && searchDetails.image) || ''}
-                        className={classes.bigAvatar}
-                      />
-                      {(searchDetails && searchDetails.name) || ''}
-                    </div>
-                  </Grid>
-                )}
-              />
-            );
-          })}
-        </Grid>
+      <div className={classes.pastSearch}>
+        <Typography component="h6">{isSignedIn ? 'Past Searches' : ''}</Typography>
+        <div className={classes.pastSearchList}>
+          <div className={classes.searchList}>
+            <Grid container spacing={2}>
+              {data.getPatientPastSearches.map((searchDetails, index) => {
+                return searchDetails ? (
+                  index < 4 && (
+                    <Grid
+                      item
+                      xs={6}
+                      sm={6}
+                      md={4}
+                      lg={3}
+                      key={`${_uniqueId('psearch_doctor_')}- ${searchDetails.typeId}`}
+                    >
+                      <Link
+                        to={`/doctors/${readableParam(searchDetails.name)}-${searchDetails.typeId}`}
+                        title={searchDetails && `${_startCase(_toLower(searchDetails.name || ''))}`}
+                      >
+                        <div className={classes.contentBox}>
+                          <Avatar
+                            alt={(searchDetails && searchDetails.name) || ''}
+                            src={(searchDetails && searchDetails.image) || ''}
+                            className={`${classes.bigAvatar} ${classes.doctorAvatar}`}
+                          />
+                          {searchDetails && `${_startCase(_toLower(searchDetails.name || ''))}`}
+                        </div>
+                      </Link>
+                    </Grid>
+                  )
+                ) : (
+                  <Route
+                    render={({ history }) =>
+                      index < 4 && (
+                        <Grid
+                          item
+                          xs={6}
+                          sm={6}
+                          md={4}
+                          lg={3}
+                          title={(searchDetails && searchDetails.name) || ''}
+                          onClick={(e) => {
+                            const specialityUpdated = readableParam(`${e.currentTarget.title}`);
+                            const encoded = encodeURIComponent(specialityUpdated);
+                            history.push(clientRoutes.specialties(`${specialityUpdated}`));
+                          }}
+                          key={`${_uniqueId('psearch_spl_')}- ${searchDetails.typeId}`}
+                        >
+                          <div className={classes.contentBox}>
+                            <Avatar
+                              alt={(searchDetails && searchDetails.name) || ''}
+                              src={(searchDetails && searchDetails.image) || ''}
+                              className={classes.bigAvatar}
+                            />
+                            {(searchDetails && searchDetails.name) || ''}
+                          </div>
+                        </Grid>
+                      )
+                    }
+                  />
+                );
+              })}
+            </Grid>
+          </div>
+        </div>
       </div>
     </div>
   ) : null;

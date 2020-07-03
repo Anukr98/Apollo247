@@ -48,7 +48,10 @@ import {
   SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_possibleMatches_doctors,
   SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_specialties,
 } from '@aph/mobile-patients/src/graphql/types/SearchDoctorAndSpecialtyByName';
-import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
+import {
+  AppsFlyerEventName,
+  AppsFlyerEvents,
+} from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
 import {
   dataSavedUserID,
   g,
@@ -85,6 +88,7 @@ import {
   TouchableOpacity,
   View,
   Platform,
+  Modal,
   Alert,
 } from 'react-native';
 import {
@@ -138,11 +142,11 @@ const styles = StyleSheet.create({
   topSpecialityName: {
     ...theme.fonts.IBMPlexSansMedium(14),
     marginVertical: 7,
-    marginHorizontal: 10,
+    marginHorizontal: 8,
     textAlign: 'center',
     alignItems: 'center',
     color: theme.colors.SHERPA_BLUE,
-    lineHeight: 24,
+    lineHeight: 18,
   },
   topSpecialityDescription: {
     ...theme.fonts.IBMPlexSansMedium(12),
@@ -247,12 +251,17 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     flex: 1,
   },
+  mainView: {
+    backgroundColor: 'rgba(100,100,100, 0.5)',
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   subViewPopup: {
-    marginTop: 150,
     backgroundColor: 'white',
-    width: '100%',
-    borderTopLeftRadius: 10,
-    borderTopRightRadius: 10,
+    width: '88%',
+    alignSelf: 'center',
+    borderRadius: 10,
     shadowColor: '#808080',
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.5,
@@ -266,18 +275,34 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansMedium(17),
     lineHeight: 24,
   },
+  popDescriptionStyle: {
+    marginHorizontal: 24,
+    marginTop: 8,
+    color: theme.colors.SHERPA_BLUE,
+    ...theme.fonts.IBMPlexSansMedium(17),
+    lineHeight: 24,
+  },
   aphAlertCtaViewStyle: {
     flexDirection: 'row',
-    marginHorizontal: 20,
-    justifyContent: 'space-between',
-    alignItems: 'flex-end',
-    marginVertical: 18,
+    flexWrap: 'wrap',
+    padding: 20,
   },
   ctaWhiteButtonViewStyle: {
-    flex: 1,
-    minHeight: 40,
-    height: 'auto',
+    padding: 8,
+    borderRadius: 10,
     backgroundColor: theme.colors.WHITE,
+    marginRight: 15,
+    marginVertical: 5,
+    shadowColor: '#4c808080',
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.4,
+    shadowRadius: 10,
+    elevation: 3,
+  },
+  textViewStyle: {
+    padding: 8,
+    marginRight: 15,
+    marginVertical: 5,
   },
   ctaOrangeButtonViewStyle: { flex: 1, minHeight: 40, height: 'auto' },
   ctaOrangeTextStyle: {
@@ -354,7 +379,12 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   const [isSearching, setisSearching] = useState<boolean>(false);
   const [showPastSearchSpinner, setshowPastSearchSpinner] = useState<boolean>(false);
 
-  const { currentPatient } = useAllCurrentPatients();
+  const {
+    currentPatient,
+    allCurrentPatients,
+    setCurrentPatientId,
+    profileAllPatients,
+  } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
   const {
     setGeneralPhysicians,
@@ -375,7 +405,27 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     }
   }, [currentPatient]);
 
+  useEffect(() => {
+    const _didFocus = props.navigation.addListener('didFocus', (payload) => {
+      BackHandler.addEventListener('hardwareBackPress', handleBack);
+    });
+
+    const _willBlur = props.navigation.addListener('willBlur', (payload) => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBack);
+      return () => {
+        _didFocus && _didFocus.remove();
+        _willBlur && _willBlur.remove();
+      };
+    });
+  }, []);
+
   const client = useApolloClient();
+
+  const handleBack = async () => {
+    BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    props.navigation.goBack();
+    return false;
+  };
 
   const fetchDoctorData = (id: string, speciality: string) => {
     let geolocation = {} as any;
@@ -454,7 +504,16 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
         console.log('Error 11111111', e);
       });
   };
-
+  const moveSelectedToTop = () => {
+    if (currentPatient !== undefined) {
+      const patientLinkedProfiles = [
+        allCurrentPatients.find((item: any) => item.uhid === currentPatient.uhid),
+        ...allCurrentPatients.filter((item: any) => item.uhid !== currentPatient.uhid),
+      ];
+      return patientLinkedProfiles;
+    }
+    return [];
+  };
   const postSearchEvent = (searchInput: string) => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.DOCTOR_SEARCH] = {
       'Search Text': searchInput,
@@ -939,7 +998,9 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       return (
         <View style={{ alignItems: 'center', marginVertical: 15 }}>
           <Text style={styles.specialityText}>Start your care now by choosing from</Text>
-          <Text style={styles.specialityText}>500 doctors and 65 specialities</Text>
+          <Text style={styles.specialityText}>
+            over 2000 doctors and {SpecialitiesList.length + 6} specialities
+          </Text>
         </View>
       );
     }
@@ -999,6 +1060,8 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
                           alignItems: 'center',
                           borderBottomWidth: 0.2,
                           borderBottomColor: theme.colors.BORDER_BOTTOM_COLOR,
+                          height: 50,
+                          justifyContent: 'center',
                         }}
                       >
                         <Text numberOfLines={2} style={styles.topSpecialityName}>
@@ -1060,21 +1123,11 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
           />
           <View style={{ flexDirection: 'row' }}>
             <FlatList
-              contentContainerStyle={
-                {
-                  // flexWrap: 'wrap',
-                  // marginHorizontal: 12,
-                }
-              }
               bounces={false}
               data={SpecialitiesList}
               onEndReachedThreshold={0.5}
               renderItem={({ item, index }) =>
-                index == 6
-                  ? renderBookConsultVideo()
-                  : index == 12
-                  ? renderTrackSymptoms()
-                  : renderSpecialistRow(item, index, SpecialitiesList.length, searchText.length > 2)
+                renderSpecialistRow(item, index, SpecialitiesList.length, searchText.length > 2)
               }
               keyExtractor={(_, index) => index.toString()}
               numColumns={1}
@@ -1085,9 +1138,15 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     }
   };
 
-  const renderBookConsultVideo = () => {
+  const renderBookConsultVideo = (
+    item: getAllSpecialties_getAllSpecialties | null,
+    index: number,
+    length: number,
+    isSearchResult?: boolean
+  ) => {
     return (
       <View>
+        {renderSpecialistRow(item, index, length, isSearchResult)}
         <Text style={styles.bookConsultTxt}>How to Book Consult?</Text>
         <TouchableOpacity
           activeOpacity={1}
@@ -1101,7 +1160,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
             <Video
               source={{
                 uri:
-                  'https://prodaphstorage.blob.core.windows.net/videos/Consult%20An%20Apollo%20Doctor%20(Horizontal).mp4',
+                  'https://player.vimeo.com/external/432445688.hd.mp4?s=abfa637fd2a47a4548c71ce2ac4cc48819a2d1a5&profile_id=174',
               }}
               onLoad={(data) => {
                 console.log(JSON.stringify(data));
@@ -1209,15 +1268,28 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
 
     if (type == 'consult-now') {
       postWebEngageEvent(WebEngageEventName.CONSULT_NOW_CLICKED, eventAttributes);
-      postAppsFlyerEvent(AppsFlyerEventName.CONSULT_NOW_CLICKED, eventAttributes);
+      const appsflyereventAttributes: AppsFlyerEvents[AppsFlyerEventName.CONSULT_NOW_CLICKED] = {
+        'customer id': currentPatient ? currentPatient.id : '',
+        'doctor id': doctorDetails.id,
+        'specialty id': g(doctorDetails, 'specialty', 'id')!,
+      };
+      postAppsFlyerEvent(AppsFlyerEventName.CONSULT_NOW_CLICKED, appsflyereventAttributes);
       postFirebaseEvent(FirebaseEventName.CONSULT_NOW_CLICKED, eventAttributesFirebase);
     } else if (type == 'book-appointment') {
       postWebEngageEvent(WebEngageEventName.BOOK_APPOINTMENT, eventAttributes);
-      postAppsFlyerEvent(AppsFlyerEventName.BOOK_APPOINTMENT, eventAttributes);
+      const appsflyereventAttributes: AppsFlyerEvents[AppsFlyerEventName.BOOK_APPOINTMENT] = {
+        'customer id': currentPatient ? currentPatient.id : '',
+      };
+      postAppsFlyerEvent(AppsFlyerEventName.BOOK_APPOINTMENT, appsflyereventAttributes);
       postFirebaseEvent(FirebaseEventName.BOOK_APPOINTMENT, eventAttributesFirebase);
     } else {
       postWebEngageEvent(WebEngageEventName.DOCTOR_CLICKED, eventAttributes);
-      postAppsFlyerEvent(AppsFlyerEventName.DOCTOR_CLICKED, eventAttributes);
+      const appsflyereventAttributes: AppsFlyerEvents[AppsFlyerEventName.DOCTOR_CLICKED] = {
+        'customer id': currentPatient ? currentPatient.id : '',
+        'doctor id': doctorDetails.id,
+        'specialty id': g(doctorDetails, 'specialty', 'id')!,
+      };
+      postAppsFlyerEvent(AppsFlyerEventName.DOCTOR_CLICKED, appsflyereventAttributes);
       postFirebaseEvent(FirebaseEventName.DOCTOR_CLICKED, eventAttributesFirebase);
     }
   };
@@ -1552,52 +1624,47 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       );
     return null;
   };
-
-  const alertParams = [
-    {
-      text: 'MYSELF',
-      index: 0,
-      type: 'white-button',
-    },
-    {
-      text: 'SOMEONE ELSE',
-      index: 1,
-      type: 'orange-button',
-    },
-  ];
-
+  const selectUser = (selectedUser: any) => {
+    AsyncStorage.setItem('selectUserId', selectedUser!.id);
+    AsyncStorage.setItem('selectUserUHId', selectedUser!.uhid);
+  };
   const renderCTAs = () => (
     <View style={styles.aphAlertCtaViewStyle}>
-      {alertParams.map((item, index, array) =>
-        item.type == 'orange-link' ? (
-          <Text
-            onPress={() => {
-              console.log('myself');
-            }}
-            style={[styles.ctaOrangeTextStyle, { marginRight: index == array.length - 1 ? 0 : 16 }]}
-          >
-            {item.text}
-          </Text>
-        ) : (
-          <Button
-            style={[
-              item.type == 'white-button'
-                ? styles.ctaWhiteButtonViewStyle
-                : styles.ctaOrangeButtonViewStyle,
-              { marginRight: index == array.length - 1 ? 0 : 16 },
-            ]}
-            titleTextStyle={[item.type == 'white-button' && styles.ctaOrangeTextStyle]}
-            title={item.text}
-            onPress={() => {
-              if (index == 0) {
+      {moveSelectedToTop()
+        .slice(0, 5)
+        .map((item: any, index: any, array: any) =>
+          item.firstName !== '+ADD MEMBER' ? (
+            <TouchableOpacity
+              onPress={() => {
                 setShowProfilePopUp(false);
-              } else {
-                setShowList(true);
-              }
-            }}
-          />
-        )
-      )}
+                selectUser(item);
+                fetchPastSearches();
+              }}
+              style={[styles.ctaWhiteButtonViewStyle]}
+            >
+              <Text style={[styles.ctaOrangeTextStyle]}>{item.firstName}</Text>
+            </TouchableOpacity>
+          ) : null
+        )}
+      <View style={[styles.textViewStyle]}>
+        <Text
+          onPress={() => {
+            if (allCurrentPatients.length > 6) {
+              setShowList(true);
+            } else {
+              setShowProfilePopUp(false);
+              props.navigation.navigate(AppRoutes.EditProfile, {
+                isEdit: false,
+                isPoptype: true,
+                mobileNumber: currentPatient && currentPatient!.mobileNumber,
+              });
+            }
+          }}
+          style={[styles.ctaOrangeTextStyle]}
+        >
+          {allCurrentPatients.length > 6 ? 'OTHERS' : '+ADD MEMBER'}
+        </Text>
+      </View>
     </View>
   );
 
@@ -1618,7 +1685,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
         onProfileChange={onProfileChange}
         navigation={props.navigation}
         saveUserChange={true}
-        listContainerStyle={{ marginTop: Platform.OS === 'ios' ? 10 : -10 }}
+        listContainerStyle={{ marginTop: Platform.OS === 'ios' ? 10 : 60 }}
         childView={
           <View
             style={{
@@ -1635,7 +1702,8 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
             <View style={styles.nameTextContainerStyle}>
               <View style={{ flexDirection: 'row' }}>
                 <Text style={styles.nameTextStyle} numberOfLines={1}>
-                  {(currentPatient && currentPatient!.firstName) || ''}
+                  {(currentPatient && currentPatient!.firstName + ' ' + currentPatient!.lastName) ||
+                    ''}
                 </Text>
                 {currentPatient && g(currentPatient, 'isUhidPrimary') ? (
                   <LinkedUhidIcon
@@ -1664,18 +1732,35 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
 
   const renderProfileListView = () => {
     return (
-      <View style={styles.showPopUp}>
-        <TouchableOpacity activeOpacity={1} style={styles.container} onPress={() => {}}>
-          <TouchableOpacity activeOpacity={1} style={styles.subViewPopup} onPress={() => {}}>
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={showProfilePopUp}
+        onRequestClose={() => {
+          setShowProfilePopUp(false);
+          handleBack();
+        }}
+        onDismiss={() => {
+          setShowProfilePopUp(false);
+        }}
+      >
+        <View
+          style={styles.mainView}
+          // onPress={() => {
+          //   //TODO:comment this if any issues with modal closing
+          //   setShowProfilePopUp(false);
+          // }}
+        >
+          <View style={styles.subViewPopup}>
             {renderProfileDrop()}
-            <Text style={styles.congratulationsDescriptionStyle}>
-              Who is the patient today? If not you, select from the list above.
+            <Text style={styles.congratulationsDescriptionStyle}>Who is the patient?</Text>
+            <Text style={styles.popDescriptionStyle}>
+              Prescription to be generated in the name of?
             </Text>
             {renderCTAs()}
-            <Mascot style={{ position: 'absolute', top: -32, right: 20 }} />
-          </TouchableOpacity>
-        </TouchableOpacity>
-      </View>
+          </View>
+        </View>
+      </Modal>
     );
   };
 

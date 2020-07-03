@@ -22,7 +22,7 @@ import { MedicineAutoSearch } from 'components/Medicine/MedicineAutoSearch';
 import { AphButton, AphDialog, AphDialogTitle, AphDialogClose } from '@aph/web-ui-components';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { useCurrentPatient } from 'hooks/authHooks';
-import { uploadPrescriptionTracking } from '../../webEngageTracking';
+import { uploadPrescriptionTracking, pharmacyPdpOverviewTracking } from 'webEngageTracking';
 import { UploadPrescription } from 'components/Prescriptions/UploadPrescription';
 import { UploadEPrescriptionCard } from 'components/Prescriptions/UploadEPrescriptionCard';
 import { MetaTagsComp } from 'MetaTagsComp';
@@ -556,7 +556,7 @@ export const MedicineDetails: React.FC = (props) => {
                       {
                         item_name: name, // Name or ID is required.
                         item_id: sku,
-                        price,
+                        price: special_price || price,
                         item_brand: manufacturer,
                         item_category: 'Pharmacy',
                         item_category_2: type_id
@@ -895,6 +895,11 @@ export const MedicineDetails: React.FC = (props) => {
                                   }}
                                   onChange={(e, newValue) => {
                                     setTabValue(newValue);
+                                    const overviewData = getData(
+                                      medicinePharmacyDetails[0].Overview
+                                    );
+                                    const tabName = overviewData[newValue].key;
+                                    pharmacyPdpOverviewTracking(tabName);
                                   }}
                                 >
                                   {renderOverviewTabs(medicinePharmacyDetails[0].Overview)}

@@ -21,9 +21,8 @@ import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsPro
 import {
   GET_MEDICINE_ORDER_CANCEL_REASONS,
   GET_MEDICINE_ORDER_OMS_DETAILS,
-  GET_MEDICINE_ORDERS_OMS__LIST,
   CANCEL_MEDICINE_ORDER_OMS,
-  GET_PATIENT_ADDRESS_LIST,
+  GET_PATIENT_ADDRESS_BY_ID,
   ALERT_MEDICINE_ORDER_PICKUP,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
@@ -38,7 +37,6 @@ import {
   FEEDBACKTYPE,
   MEDICINE_DELIVERY_TYPE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { getPatientAddressList } from '@aph/mobile-patients/src/graphql/types/getPatientAddressList';
 import {
   aphConsole,
   g,
@@ -46,12 +44,12 @@ import {
   handleGraphQlError,
   postWebEngageEvent,
   reOrderMedicines,
+  formatOrderAddress,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { FeedbackPopup } from './FeedbackPopup';
-import { ApolloQueryResult } from 'apollo-client';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient, useQuery } from 'react-apollo-hooks';
@@ -72,11 +70,6 @@ import {
   ScrollView,
   StackActions,
 } from 'react-navigation';
-import {
-  getMedicineOrdersOMSList,
-  getMedicineOrdersOMSListVariables,
-  getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrdersList,
-} from '../graphql/types/getMedicineOrdersOMSList';
 import { CommonBugFender, isIphone5s } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { postPharmacyMyOrderTrackingClicked } from '../helpers/webEngageEventHelpers';
 import {
@@ -100,6 +93,10 @@ import {
   MedicineReOrderOverlay,
   MedicineReOrderOverlayProps,
 } from '@aph/mobile-patients/src/components/Medicines/MedicineReOrderOverlay';
+import {
+  getPatientAddressById,
+  getPatientAddressByIdVariables,
+} from '@aph/mobile-patients/src/graphql/types/getPatientAddressById';
 
 const styles = StyleSheet.create({
   headerShadowContainer: {
@@ -138,31 +135,22 @@ const styles = StyleSheet.create({
   },
 });
 
-type OrderRefetch = (
-  variables?: getMedicineOrdersOMSListVariables
-) => Promise<ApolloQueryResult<getMedicineOrdersOMSList>>;
-
 export interface OrderDetailsSceneProps
   extends NavigationScreenProps<{
+    /** One of @orderAutoId or @billNumber is mandatory */
     orderAutoId?: string;
     billNumber?: string;
     showOrderSummaryTab?: boolean;
     goToHomeOnBack?: boolean;
-    refetchOrders: OrderRefetch;
-    setOrders: (
-      orders: getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrdersList[]
-    ) => void;
-    refetch: (
-      variables?: getMedicineOrdersOMSListVariables | undefined
-    ) => Promise<ApolloQueryResult<getMedicineOrdersOMSList>>;
+    refetchOrders?: () => void;
   }> {}
 
 export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   const orderAutoId = props.navigation.getParam('orderAutoId');
   const billNumber = props.navigation.getParam('billNumber');
+  const refetchOrders = props.navigation.getParam('refetchOrders');
   const goToHomeOnBack = props.navigation.getParam('goToHomeOnBack');
   const showOrderSummaryTab = props.navigation.getParam('showOrderSummaryTab');
-  const setOrders = props.navigation.getParam('setOrders');
   const [cancellationReasons, setCancellationReasons] = useState<
     GetMedicineOrderCancelReasons_getMedicineOrderCancelReasons_cancellationReasons[]
   >([]);
@@ -181,34 +169,20 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     total: 0,
     unavailable: [],
   });
-  const scrollViewRef = React.useRef<any>(null);
+  const scrollViewRef = React.useRef<ScrollView | null>(null);
   const scrollToSlots = () => {
     scrollViewRef.current &&
       scrollViewRef.current.scrollTo({ x: 0, y: scrollYValue, animated: true });
   };
 
   const { currentPatient } = useAllCurrentPatients();
-  const {
-    addMultipleCartItems,
-    addMultipleEPrescriptions,
-    addresses,
-    setAddresses,
-  } = useShoppingCart();
+  const { addMultipleCartItems, addMultipleEPrescriptions, addresses } = useShoppingCart();
   const { showAphAlert, hideAphAlert, setLoading } = useUIElements();
   const vars: getMedicineOrderOMSDetailsVariables = {
     patientId: currentPatient && currentPatient.id,
     orderAutoId: billNumber ? 0 : Number(orderAutoId),
     billNumber: billNumber || '',
   };
-  const refetchOrders: OrderRefetch =
-    props.navigation.getParam('refetch') ||
-    useQuery<getMedicineOrdersOMSList, getMedicineOrdersOMSListVariables>(
-      GET_MEDICINE_ORDERS_OMS__LIST,
-      {
-        variables: { patientId: currentPatient && currentPatient.id },
-        fetchPolicy: 'cache-first',
-      }
-    ).refetch;
   const { data, loading, refetch } = useQuery<
     getMedicineOrderOMSDetails,
     getMedicineOrderOMSDetailsVariables
@@ -233,101 +207,28 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     ? 0
     : g(data, 'getMedicineOrderOMSDetails', 'medicineOrderDetails', 'billNumber');
 
-  const getAddressDatails = () => {
-    let selectedAddressIndex = addresses.find((address) => address.id == order!.patientAddressId);
-    if (!selectedAddressIndex) {
-      console.log('!selectedAddressIndex', selectedAddressIndex);
-      setShowSpinner(true);
-      client
-        .query<getPatientAddressList>({
-          query: GET_PATIENT_ADDRESS_LIST,
-          fetchPolicy: 'no-cache',
-          variables: {
-            patientId: currentPatient && currentPatient.id ? currentPatient.id : '',
-          },
-        })
-        .then((data) => {
-          if (
-            data.data &&
-            data.data.getPatientAddressList &&
-            data.data.getPatientAddressList.addressList &&
-            addresses !== data.data.getPatientAddressList.addressList
-          ) {
-            setAddresses &&
-              setAddresses(
-                data.data.getPatientAddressList
-                  .addressList as savePatientAddress_savePatientAddress_patientAddress[]
-              );
-            selectedAddressIndex = data.data.getPatientAddressList.addressList.find(
-              (address) => address.id == order!.patientAddressId
-            ) as savePatientAddress_savePatientAddress_patientAddress;
-            if (selectedAddressIndex) {
-              console.log('if selectedAddressIndex', selectedAddressIndex);
-              if (!selectedAddressIndex.addressLine1) {
-                setAddressData(
-                  `${selectedAddressIndex.addressLine2}, ${selectedAddressIndex.city}, ${selectedAddressIndex.state}, ${selectedAddressIndex.zipcode}`
-                );
-              } else if (!selectedAddressIndex.addressLine2) {
-                setAddressData(
-                  `${selectedAddressIndex.addressLine1}, ${selectedAddressIndex.city}, ${selectedAddressIndex.state}, ${selectedAddressIndex.zipcode}`
-                );
-              } else if (!selectedAddressIndex.city) {
-                setAddressData(
-                  `${selectedAddressIndex.addressLine1}, ${selectedAddressIndex.addressLine2}, ${selectedAddressIndex.state}, ${selectedAddressIndex.zipcode}`
-                );
-              } else if (!selectedAddressIndex.state) {
-                setAddressData(
-                  `${selectedAddressIndex.addressLine1} ${selectedAddressIndex.addressLine2}, ${selectedAddressIndex.city}, ${selectedAddressIndex.zipcode}`
-                );
-              } else if (!selectedAddressIndex.zipcode) {
-                setAddressData(
-                  `${selectedAddressIndex.addressLine1} ${selectedAddressIndex.addressLine2}, ${selectedAddressIndex.city}, ${selectedAddressIndex.state}`
-                );
-              } else {
-                setAddressData(
-                  `${selectedAddressIndex.addressLine1}, ${selectedAddressIndex.addressLine2}, ${selectedAddressIndex.city}, ${selectedAddressIndex.state}, ${selectedAddressIndex.zipcode}`
-                );
-              }
-            } else {
-              setAddressData('');
-            }
-          }
-        })
-        .catch((error) => {
-          handleGraphQlError(error);
-        })
-        .finally(() => {
-          setShowSpinner(false);
-        });
-    } else {
-      console.log('else selectedAddressIndex', selectedAddressIndex);
-      if (!selectedAddressIndex.addressLine1) {
-        setAddressData(
-          `${selectedAddressIndex.addressLine2}, ${selectedAddressIndex.city}, ${selectedAddressIndex.state}, ${selectedAddressIndex.zipcode}`
-        );
-      } else if (!selectedAddressIndex.addressLine2) {
-        setAddressData(
-          `${selectedAddressIndex.addressLine1}, ${selectedAddressIndex.city}, ${selectedAddressIndex.state}, ${selectedAddressIndex.zipcode}`
-        );
-      } else if (!selectedAddressIndex.city) {
-        setAddressData(
-          `${selectedAddressIndex.addressLine1}, ${selectedAddressIndex.addressLine2}, ${selectedAddressIndex.state}, ${selectedAddressIndex.zipcode}`
-        );
-      } else if (!selectedAddressIndex.state) {
-        setAddressData(
-          `${selectedAddressIndex.addressLine1} ${selectedAddressIndex.addressLine2}, ${selectedAddressIndex.city}, ${selectedAddressIndex.zipcode}`
-        );
-      } else if (!selectedAddressIndex.zipcode) {
-        setAddressData(
-          `${selectedAddressIndex.addressLine1} ${selectedAddressIndex.addressLine2}, ${selectedAddressIndex.city}, ${selectedAddressIndex.state}`
-        );
+  const getAddressDatails = async () => {
+    try {
+      const address = addresses.find((a) => a.id == order!.patientAddressId);
+      let formattedAddress = '';
+      if (address) {
+        formattedAddress = formatOrderAddress(address);
       } else {
-        setAddressData(
-          selectedAddressIndex
-            ? `${selectedAddressIndex.addressLine1}, ${selectedAddressIndex.addressLine2}, ${selectedAddressIndex.city}, ${selectedAddressIndex.state}, ${selectedAddressIndex.zipcode}`
-            : ''
+        const getPatientAddressByIdResponse = await client.query<
+          getPatientAddressById,
+          getPatientAddressByIdVariables
+        >({
+          query: GET_PATIENT_ADDRESS_BY_ID,
+          variables: { id: order!.patientAddressId },
+        });
+        formattedAddress = formatOrderAddress(
+          getPatientAddressByIdResponse.data.getPatientAddressById
+            .patientAddress as savePatientAddress_savePatientAddress_patientAddress
         );
       }
+      setAddressData(formattedAddress);
+    } catch (error) {
+      CommonBugFender(`${AppRoutes.OrderDetailsScene}_getAddressDatails`, error);
     }
   };
 
@@ -719,8 +620,8 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           `Your order is ready for pickup at your selected ${addressData}`,
         ],
         [MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY]: [
-          'Out for delivery: ',
-          `Your order #${orderAutoId} would be reaching your doorstep soon.`,
+          '',
+          `Your order has been picked up from our store!`,
         ],
         [MEDICINE_ORDER_STATUS.PAYMENT_FAILED]: [
           '',
@@ -1048,13 +949,6 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
             )}
           </View>
         ) : null}
-        {/* <NeedHelpAssistant
-          onNeedHelpPress={() => {
-            postWEGNeedHelpEvent(currentPatient, 'Medicines');
-          }}
-          containerStyle={{ marginTop: 20, marginBottom: 30 }}
-          navigation={props.navigation}
-        /> */}
         {showNotifyStoreAlert && renderNotifyStoreAlert()}
       </View>
     );
@@ -1228,7 +1122,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
             (cancellationReasons, i) =>
               ({
                 onPress: () => {
-                  setSelectedReason(cancellationReasons.description);
+                  setSelectedReason(cancellationReasons.description!);
                   setOverlayDropdown(false);
                 },
                 optionText: cancellationReasons.description,
@@ -1389,9 +1283,11 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       orderDate: getFormattedOrderPlacedDateTime(orderDetails),
       orderType: !!g(order, 'billNumber') ? 'Offline' : orderDetails.orderType == MEDICINE_ORDER_TYPE.UPLOAD_PRESCRIPTION ? 'Non Cart' : 'Cart',
       customerId: currentPatient && currentPatient.id,
-      deliveryDate: orderDetails.orderTat ? moment(orderDetails.orderTat).format('ddd, D MMMM, hh:mm A') : '',
+      deliveryDate: orderDetails.orderTat
+        ? moment(orderDetails.orderTat).format('ddd, D MMMM, hh:mm A')
+        : '',
       mobileNumber: currentPatient && currentPatient.mobileNumber,
-      orderStatus: orderDetails!.currentStatus,
+      orderStatus: orderDetails.currentStatus!,
     };
     postWebEngageEvent(WebEngageEventName.ORDER_SUMMARY_CLICKED, eventAttributes);
     return (
@@ -1447,26 +1343,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
               CommonBugFender('OrderDetailsScene_refetch', e);
               setInitialSate();
             });
-          refetchOrders &&
-            refetchOrders()
-              .then((data) => {
-                const _orders = (
-                  g(data, 'data', 'getMedicineOrdersOMSList', 'medicineOrdersList') || []
-                ).filter(
-                  (item) =>
-                    !(
-                      (item!.medicineOrdersStatus || []).length == 1 &&
-                      (item!.medicineOrdersStatus || []).find((item) => !item!.hideStatus)
-                    )
-                );
-                console.log(_orders, 'hdub');
-                setOrders(
-                  _orders as getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrdersList[]
-                );
-              })
-              .catch((e) => {
-                CommonBugFender('OrderDetailsScene_onPressConfirmCancelOrder', e);
-              });
+          refetchOrders && refetchOrders();
         } else {
           Alert.alert('Error', g(data, 'cancelMedicineOrderOMS', 'orderStatus')!);
         }

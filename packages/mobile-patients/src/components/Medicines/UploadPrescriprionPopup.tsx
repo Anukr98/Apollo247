@@ -10,17 +10,11 @@ import {
   PrescriptionIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import {
-  CommonBugFender,
   CommonLogEvent,
+  CommonBugFender,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import {
-  WebEngageEventName,
-  WebEngageEvents,
-} from '@aph/mobile-patients/src/helpers/webEngageEvents';
-import strings from '@aph/mobile-patients/src/strings/strings.json';
+import { aphConsole, postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState } from 'react';
 import {
@@ -35,6 +29,10 @@ import {
 import { Overlay } from 'react-native-elements';
 import ImagePicker, { Image as ImageCropPickerResponse } from 'react-native-image-crop-picker';
 import { ScrollView } from 'react-navigation';
+import {
+  WebEngageEventName,
+  WebEngageEvents,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
 
 const styles = StyleSheet.create({
   cardContainer: {
@@ -103,13 +101,10 @@ export interface UploadPrescriprionPopupProps {
   onClickClose: () => void;
   onResponse: (selectedType: EPrescriptionDisableOption, response: PhysicalPrescription[]) => void;
   isProfileImage?: boolean;
-  blockCamera?: boolean;
-  blockCameraMessage?: string;
 }
 
 export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (props) => {
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
-  const { showAphAlert } = useUIElements();
 
   const postUPrescriptionWEGEvent = (
     source: WebEngageEvents[WebEngageEventName.UPLOAD_PRESCRIPTION_IMAGE_UPLOADED]['Source']
@@ -155,49 +150,41 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
   };
 
   const onClickTakePhoto = () => {
-    if (!props.blockCamera) {
-      postUPrescriptionWEGEvent('Take a Photo');
-      CommonLogEvent('UPLAOD_PRESCRIPTION_POPUP', 'Take photo on click');
+    postUPrescriptionWEGEvent('Take a Photo');
+    CommonLogEvent('UPLAOD_PRESCRIPTION_POPUP', 'Take photo on click');
 
-      const eventAttributes: WebEngageEvents['Upload Photo'] = {
-        Source: 'Take Photo',
-      };
-      postWebEngageEvent('Upload Photo', eventAttributes);
+    const eventAttributes: WebEngageEvents['Upload Photo'] = {
+      Source: 'Take Photo',
+    };
+    postWebEngageEvent('Upload Photo', eventAttributes);
 
-      setshowSpinner(true);
-      ImagePicker.openCamera({
-        // width: 400,
-        // height: 400,
-        cropping: props.isProfileImage ? true : false,
-        hideBottomControls: true,
-        width: props.isProfileImage ? 2096 : undefined,
-        height: props.isProfileImage ? 2096 : undefined,
-        includeBase64: true,
-        multiple: props.isProfileImage ? false : true,
-        compressImageQuality: 0.5,
-        compressImageMaxHeight: 2096,
-        compressImageMaxWidth: 2096,
-        writeTempFile: false,
+    setshowSpinner(true);
+    ImagePicker.openCamera({
+      // width: 400,
+      // height: 400,
+      cropping: props.isProfileImage ? true : false,
+      hideBottomControls: true,
+      width: props.isProfileImage ? 2096 : undefined,
+      height: props.isProfileImage ? 2096 : undefined,
+      includeBase64: true,
+      multiple: props.isProfileImage ? false : true,
+      compressImageQuality: 0.5,
+      compressImageMaxHeight: 2096,
+      compressImageMaxWidth: 2096,
+      writeTempFile: false,
+    })
+      .then((response) => {
+        setshowSpinner(false);
+        props.onResponse(
+          'CAMERA_AND_GALLERY',
+          formatResponse([response] as ImageCropPickerResponse[])
+        );
       })
-        .then((response) => {
-          setshowSpinner(false);
-          props.onResponse(
-            'CAMERA_AND_GALLERY',
-            formatResponse([response] as ImageCropPickerResponse[])
-          );
-        })
-        .catch((e: Error) => {
-          CommonBugFender('UploadPrescriprionPopup_onClickTakePhoto', e);
-          // aphConsole.log({ e });
-          setshowSpinner(false);
-        });
-    } else {
-      showAphAlert &&
-        showAphAlert({
-          title: 'Alert',
-          description: props.blockCameraMessage || strings.alerts.Open_camera_in_video_call,
-        });
-    }
+      .catch((e: Error) => {
+        CommonBugFender('UploadPrescriprionPopup_onClickTakePhoto', e);
+        // aphConsole.log({ e });
+        setshowSpinner(false);
+      });
   };
 
   const onClickGallery = async () => {

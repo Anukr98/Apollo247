@@ -21,6 +21,7 @@ import { useAllCurrentPatients } from 'hooks/authHooks';
 import { BookConsult } from 'components/BookConsult';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
+import { readableParam } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -165,6 +166,11 @@ export const InfoCard: React.FC<InfoCardProps> = (props) => {
   const [popupLoading, setPopupLoading] = useState<boolean>(false);
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
   const doctorValue = doctorInfo.fullName.toLowerCase();
+  const specialityName =
+    doctorInfo &&
+    doctorInfo.specialty &&
+    doctorInfo.specialty.name &&
+    doctorInfo.specialty.name.toLowerCase();
   const consultMode =
     doctorInfo &&
     doctorInfo.consultHours &&
@@ -225,7 +231,13 @@ export const InfoCard: React.FC<InfoCardProps> = (props) => {
   const saveSearchMutation = useMutation<SaveSearch, SaveSearchVariables>(SAVE_PATIENT_SEARCH);
   return (
     <div className={classes.root}>
-      <Link to={clientRoutes.doctorDetails(doctorValue.replace(/ /g, '-'), doctorInfo.id)}>
+      <Link
+        to={clientRoutes.specialtyDoctorDetails(
+          readableParam(specialityName),
+          readableParam(doctorValue),
+          doctorInfo.id
+        )}
+      >
         <div className={classes.topContent}>
           <div className={classes.iconGroup}>
             <Avatar

@@ -24,7 +24,12 @@ import {
   SEARCH_TYPE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { saveSearch } from '@aph/mobile-patients/src/graphql/types/saveSearch';
-import { g, mhdMY, nameFormater, postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  g,
+  mhdMY,
+  nameFormater,
+  postWebEngageEvent,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 // import { Star } from '@aph/mobile-patients/src/components/ui/Icons';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -50,14 +55,8 @@ const styles = StyleSheet.create({
     flex: 1,
     marginHorizontal: 20,
     ...theme.viewStyles.cardViewStyle,
-    marginBottom: 16,
+    marginBottom: 20,
     borderRadius: 10,
-  },
-  buttonView: {
-    height: 44,
-    backgroundColor: theme.colors.BUTTON_BG,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   buttonText: {
     ...theme.fonts.IBMPlexSansBold(14),
@@ -298,19 +297,40 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
       <TouchableOpacity
         key={rowData.id}
         activeOpacity={1}
-        style={[styles.doctorView, props.style]}
+        style={[
+          styles.doctorView,
+          props.style,
+          {
+            backgroundColor:
+              rowData.doctorType !== 'DOCTOR_CONNECT' ? theme.colors.WHITE : 'transparent',
+            shadowColor:
+              rowData.doctorType !== 'DOCTOR_CONNECT'
+                ? theme.colors.SHADOW_GRAY
+                : theme.colors.WHITE,
+            shadowOffset:
+              rowData.doctorType !== 'DOCTOR_CONNECT'
+                ? { width: 0, height: 2 }
+                : { width: 0, height: 0 },
+            shadowOpacity: rowData.doctorType !== 'DOCTOR_CONNECT' ? 0.4 : 0,
+            shadowRadius: rowData.doctorType !== 'DOCTOR_CONNECT' ? 8 : 0,
+            elevation: rowData.doctorType !== 'DOCTOR_CONNECT' ? 4 : 0,
+          },
+        ]}
         onPress={() => {
-          if (rowData.doctorType === DoctorType.PAYROLL) {
-            const eventAttributes: WebEngageEvents[WebEngageEventName.DOCTOR_CONNECT_CARD_CLICK] = {
-              'Online Price': Number(g(rowData, 'onlineConsultationFees')),
-              'Physical Price': Number(g(rowData, 'physicalConsultationFees')),
-              'Doctor Speciality': g(rowData, 'specialty', 'name')!,
-              'Doctor Name': g(rowData, 'fullName')!,
-              'Source': 'List',
-              'Language known': rowData.languages,
-            };
-            postWebEngageEvent(WebEngageEventName.DOCTOR_CONNECT_CARD_CLICK, eventAttributes);
-          }
+          try {
+            if (rowData.doctorType === DoctorType.PAYROLL) {
+              const eventAttributes: WebEngageEvents[WebEngageEventName.DOCTOR_CONNECT_CARD_CLICK] = {
+                'Online Price': Number(g(rowData, 'onlineConsultationFees')),
+                'Physical Price': Number(g(rowData, 'physicalConsultationFees')),
+                'Doctor Speciality': g(rowData, 'specialty', 'name')!,
+                'Doctor Name': g(rowData, 'fullName')!,
+                Source: 'List',
+                'Language known': rowData.languages,
+              };
+              postWebEngageEvent(WebEngageEventName.DOCTOR_CONNECT_CARD_CLICK, eventAttributes);
+            }
+          } catch (error) {}
+
           props.onPress ? props.onPress(rowData.id!) : navigateToDetails(rowData.id!);
         }}
       >
@@ -320,14 +340,14 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
               <AvailabilityCapsule availableTime={availableTime} styles={styles.availableView} />
             ) : null}
             <View style={{ position: 'absolute', top: -6, right: -6 }}>
-              {rowData.doctorType === 'APOLLO' ? (
+              {rowData.doctorType !== 'DOCTOR_CONNECT' ? (
                 <ApolloDoctorIcon style={{ width: 80, height: 32 }} />
               ) : (
                 <ApolloPartnerIcon style={{ width: 80, height: 32 }} />
               )}
             </View>
             <View>
-              <TouchableOpacity
+              {/* <TouchableOpacity
                 key={rowData.id}
                 activeOpacity={1}
                 onPress={() => {
@@ -336,30 +356,32 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                     onVideoPressed: true,
                   });
                 }}
-              >
-                <View style={styles.imageView}>
-                  {rowData.thumbnailUrl &&
-                  rowData.thumbnailUrl.match(/(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG)/) ? (
-                    <Image
-                      style={{
-                        height: 80,
-                        borderRadius: 40,
-                        width: 80,
-                      }}
-                      source={{
-                        uri: rowData.thumbnailUrl,
-                      }}
-                      resizeMode={'contain'}
-                    />
-                  ) : (
-                    <DoctorPlaceholderImage />
-                  )}
-                  <VideoPlayIcon
-                    style={{ height: 19, width: 19, position: 'absolute', top: 58, left: 31 }}
+              > */}
+              <View style={styles.imageView}>
+                {rowData.thumbnailUrl &&
+                rowData.thumbnailUrl.match(
+                  /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jpeg|JPEG)/
+                ) ? (
+                  <Image
+                    style={{
+                      height: 80,
+                      borderRadius: 40,
+                      width: 80,
+                    }}
+                    source={{
+                      uri: rowData.thumbnailUrl,
+                    }}
                     resizeMode={'contain'}
                   />
-                </View>
-              </TouchableOpacity>
+                ) : (
+                  <DoctorPlaceholderImage />
+                )}
+                {/* <VideoPlayIcon
+                    style={{ height: 19, width: 19, position: 'absolute', top: 58, left: 31 }}
+                    resizeMode={'contain'}
+                  /> */}
+              </View>
+              {/* </TouchableOpacity> */}
               <View
                 style={{
                   flexDirection: 'row',
@@ -425,33 +447,61 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
             {props.displayButton && (
               <View
                 style={{
-                  overflow: 'hidden',
+                  overflow: rowData.doctorType !== 'DOCTOR_CONNECT' ? 'hidden' : 'visible',
                   borderBottomLeftRadius: 10,
                   borderBottomRightRadius: 10,
                 }}
               >
                 <TouchableOpacity
                   activeOpacity={1}
-                  style={styles.buttonView}
+                  style={{
+                    backgroundColor:
+                      rowData.doctorType !== 'DOCTOR_CONNECT'
+                        ? theme.colors.BUTTON_BG
+                        : theme.colors.WHITE,
+                    shadowColor:
+                      rowData.doctorType === 'DOCTOR_CONNECT'
+                        ? theme.colors.SHADOW_GRAY
+                        : theme.colors.WHITE,
+                    shadowOffset:
+                      rowData.doctorType === 'DOCTOR_CONNECT'
+                        ? { width: 0, height: 2 }
+                        : { width: 0, height: 0 },
+                    shadowOpacity: rowData.doctorType === 'DOCTOR_CONNECT' ? 0.4 : 0,
+                    shadowRadius: rowData.doctorType === 'DOCTOR_CONNECT' ? 8 : 0,
+                    elevation: rowData.doctorType === 'DOCTOR_CONNECT' ? 4 : 0,
+                    height: 44,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    borderRadius: rowData.doctorType === 'DOCTOR_CONNECT' ? 10 : 0,
+                  }}
                   onPress={() => {
-                    const eventAttributes: WebEngageEvents[WebEngageEventName.DOCTOR_CARD_CONSULT_CLICK]= {
-                      'Patient Name': currentPatient.firstName,
-                      'Doctor ID': rowData.id,
-                      'Speciality ID': g(rowData, 'specialty', 'id')!,
-                      'Doctor Speciality': g(rowData, 'specialty', 'name')!,
-                      'Doctor Experience': Number(g(rowData, 'experience')!),
-                      'Language Known': rowData.languages,
-                      'Hospital Name': rowData.doctorHospital[0].facility.name,
-                      'Hospital City': rowData.doctorHospital[0].facility.city,
-                      'Availability Minutes': parseInt(availableTime),
-                      'Source': 'List',
-                      'Patient UHID': currentPatient.uhid,
-                      'Relation': g(currentPatient, 'relation'),
-                      'Patient Age': Math.round(moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)),
-                      'Patient Gender': currentPatient.gender,
-                      'Customer ID': currentPatient.id,
-                    };
-                    postWebEngageEvent(WebEngageEventName.DOCTOR_CARD_CONSULT_CLICK, eventAttributes);
+                    try {
+                      const eventAttributes: WebEngageEvents[WebEngageEventName.DOCTOR_CARD_CONSULT_CLICK] = {
+                        'Patient Name': currentPatient.firstName,
+                        'Doctor ID': rowData.id,
+                        'Speciality ID': g(rowData, 'specialty', 'id')!,
+                        'Doctor Speciality': g(rowData, 'specialty', 'name')!,
+                        'Doctor Experience': Number(g(rowData, 'experience')!),
+                        'Language Known': rowData.languages,
+                        'Hospital Name': rowData.doctorHospital[0].facility.name,
+                        'Hospital City': rowData.doctorHospital[0].facility.city,
+                        'Availability Minutes': parseInt(availableTime),
+                        Source: 'List',
+                        'Patient UHID': currentPatient.uhid,
+                        Relation: g(currentPatient, 'relation'),
+                        'Patient Age': Math.round(
+                          moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+                        ),
+                        'Patient Gender': currentPatient.gender,
+                        'Customer ID': currentPatient.id,
+                      };
+                      postWebEngageEvent(
+                        WebEngageEventName.DOCTOR_CARD_CONSULT_CLICK,
+                        eventAttributes
+                      );
+                    } catch (error) {}
+
                     props.onPressConsultNowOrBookAppointment &&
                       props.onPressConsultNowOrBookAppointment(
                         availableTime && moment(availableTime).isValid()
@@ -464,7 +514,17 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                     });
                   }}
                 >
-                  <Text style={styles.buttonText}>
+                  <Text
+                    style={[
+                      styles.buttonText,
+                      {
+                        color:
+                          rowData.doctorType !== 'DOCTOR_CONNECT'
+                            ? theme.colors.BUTTON_TEXT
+                            : theme.colors.BUTTON_BG,
+                      },
+                    ]}
+                  >
                     {availableTime && moment(availableTime).isValid()
                       ? `Consult in ${mhdMY(availableTime, 'min')}`
                       : string.common.book_apointment}

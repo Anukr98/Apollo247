@@ -116,6 +116,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
     stores,
     setAddresses,
     setPhysicalPrescriptions: setPhysicalPrescription,
+    setEPrescriptions: setEPrescription
   } = useShoppingCart();
   const { setAddresses: setTestAddresses } = useDiagnosticsCart();
   const [prescriptionOption, setPrescriptionOption] = useState<string>('specified');
@@ -123,15 +124,15 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
   const medicineDetailOptions = [
     {
       id: 'search',
-      title: 'Search and add medicine'
+      title: 'Search and add medicine',
     },
     {
       id: 'prescribed',
-      title: 'All medicine from prescription'
+      title: 'All medicine from prescription',
     },
     {
       id: 'call',
-      title: 'Call me for details'
+      title: 'Call me for details',
     },
   ];
   const [selectedMedicineOption, setSelectedMedicineOption] = useState<string>('');
@@ -168,7 +169,10 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
     onComplete: () => void
   ) => {
     try {
-      const data = await getPlaceInfoByPincode(address.zipcode!);
+      const pincodeAndAddress = [address.zipcode, address.addressLine1]
+        .filter((v) => (v || '').trim())
+        .join(',');
+      const data = await getPlaceInfoByPincode(pincodeAndAddress);
       const { lat, lng } = data.data.results[0].geometry.location;
       const state = findAddrComponents(
         'administrative_area_level_1',
@@ -252,7 +256,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
     setLoading!(true);
 
     try {
-      if (EPrescriptions.length !== 0) {
+      if (EPrescriptions.length > 0) {
         setEPrescriptions && setEPrescriptions([...EPrescriptions]);
       }
 
@@ -290,12 +294,10 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
         setPhysicalPrescription && setPhysicalPrescription([...newuploadedPrescriptions]);
 
         const days = durationDays ? parseInt(durationDays) : null;
-        props.navigation.push(AppRoutes.YourCartUploadPrescriptions,
-          {
-            prescriptionOptionSelected: selectedMedicineOption,
-            durationDays: prescriptionOption === 'duration' ? days : null,
-          }
-        );
+        props.navigation.push(AppRoutes.YourCartUploadPrescriptions, {
+          prescriptionOptionSelected: selectedMedicineOption,
+          durationDays: prescriptionOption === 'duration' ? days : null,
+        });
       }
 
       setLoading!(false);
@@ -426,7 +428,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
         doctorName={item.doctorName}
         forPatient={item.forPatient}
         onRemove={() => {
-          setEPrescriptions(EPrescriptions.filter((_item) => _item.id != item.id));
+          setEPrescription && setEPrescription(EPrescriptions.filter((_item) => _item.id != item.id));
         }}
       />
     );
@@ -455,7 +457,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
           if (selectedEPres.length == 0) {
             return;
           }
-          setEPrescriptions([...selectedEPres]);
+          setEPrescription && setEPrescription([...selectedEPres]);
         }}
         isVisible={isSelectPrescriptionVisible}
         selectedEprescriptionIds={EPrescriptions.map((item) => item.id)}
@@ -464,7 +466,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
   };
 
   const renderMedicineDetailOptions = () => {
-    if (PhysicalPrescriptions.length > 0) {
+    if (PhysicalPrescriptions.length > 0 || EPrescriptions.length > 0) {
       return (
         <View style={styles.prescriptionCardStyle}>
           <View>{renderLabel('Specify Your Medicine Details')}</View>
@@ -486,20 +488,30 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
                   isSelected={selectedMedicineOption == item.id}
                   onPress={() => {
                     setSelectedMedicineOption(item.id);
-                    const optionSelected = item.id === 'search' ? 'Search and add' :
-                      item.id === 'prescribed' ? 'All Medicine' : 'call'
+                    const optionSelected =
+                      item.id === 'search'
+                        ? 'Search and add'
+                        : item.id === 'prescribed'
+                        ? 'All Medicine'
+                        : 'call';
                     const eventAttribute: WebEngageEvents[WebEngageEventName.UPLOAD_PRESCRIPTION_OPTION_SELECTED] = {
                       OptionSelected: optionSelected,
                     };
-                    postWebEngageEvent(WebEngageEventName.UPLOAD_PRESCRIPTION_OPTION_SELECTED, eventAttribute);
+                    postWebEngageEvent(
+                      WebEngageEventName.UPLOAD_PRESCRIPTION_OPTION_SELECTED,
+                      eventAttribute
+                    );
                   }}
-                  containerStyle={{ 
+                  containerStyle={{
                     ...theme.fonts.IBMPlexSansMedium(16),
                     paddingTop: index + 1 === 1 ? 16 : 10,
                     paddingBottom: index + 1 === array.length ? 16 : 10,
                     padding: 10,
                   }}
-                  hideSeparator={index + 1 === array.length || (selectedMedicineOption == item.id && selectedMedicineOption == 'prescribed')}
+                  hideSeparator={
+                    index + 1 === array.length ||
+                    (selectedMedicineOption == item.id && selectedMedicineOption == 'prescribed')
+                  }
                   textStyle={{
                     ...theme.fonts.IBMPlexSansMedium(16),
                   }}
@@ -516,18 +528,22 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
   const getRadioButtonAction = () => {
     if (selectedMedicineOption === 'call') {
       return (
-        <View style={{
-          backgroundColor: theme.colors.CARD_BG,
-          padding: 16,
-          margin: 0,
-          borderBottomRightRadius: 10,
-          borderBottomLeftRadius: 10,
-        }}>
-          <Text style={{
-            color: theme.colors.LIGHT_BLUE,
-            ...theme.fonts.IBMPlexSansMedium(13),
-            textAlign: 'center',
-          }}>
+        <View
+          style={{
+            backgroundColor: theme.colors.CARD_BG,
+            padding: 16,
+            margin: 0,
+            borderBottomRightRadius: 10,
+            borderBottomLeftRadius: 10,
+          }}
+        >
+          <Text
+            style={{
+              color: theme.colors.LIGHT_BLUE,
+              ...theme.fonts.IBMPlexSansMedium(13),
+              textAlign: 'center',
+            }}
+          >
             Our pharmacist will call you within 2 hours to confirm medicines (8 AM to 8 PM).
           </Text>
         </View>
@@ -535,11 +551,13 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
     } else if (selectedMedicineOption === 'prescribed') {
       const isDurationDaysSelected = prescriptionOption === 'duration';
       return (
-        <View style={{
-          backgroundColor: theme.colors.WHITE,
-          margin: 0,
-          width: '100%',
-        }}>
+        <View
+          style={{
+            backgroundColor: theme.colors.WHITE,
+            margin: 0,
+            width: '100%',
+          }}
+        >
           <TouchableOpacity
             style={[
               {
@@ -547,65 +565,71 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
                 flexDirection: 'row',
                 padding: 10,
               },
-              !isDurationDaysSelected ?
-              {
-                backgroundColor: theme.colors.CARD_BG,
-                shadowColor: theme.colors.SHADOW_GRAY,
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.4,
-                shadowRadius: 8,
-                elevation: 4,
-              } : {}
+              !isDurationDaysSelected
+                ? {
+                    backgroundColor: theme.colors.CARD_BG,
+                    shadowColor: theme.colors.SHADOW_GRAY,
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.4,
+                    shadowRadius: 8,
+                    elevation: 4,
+                  }
+                : {},
             ]}
             onPress={() => {
               setPrescriptionOption('specified');
               setDurationDays('');
             }}
           >
-            <Text style={{
-              color: isDurationDaysSelected ? theme.colors.LIGHT_BLUE : theme.colors.APP_GREEN,
-              ...theme.fonts.IBMPlexSansMedium(13),
-              marginLeft: 35,
-              marginRight: 25,
-            }}>
-              As specified in prescription
-            </Text>
-            {
-              !isDurationDaysSelected && (
-                <GreenTickIcon style={{
-                  resizeMode: 'contain',
-                }} />
-              )
-            }
-          </TouchableOpacity>
-          <TouchableOpacity
-              style={[
-                {
-                  padding: 10,
-                  paddingLeft: 45,
-                },
-                isDurationDaysSelected ?
-                {
-                  backgroundColor: theme.colors.CARD_BG,
-                  shadowColor: theme.colors.SHADOW_GRAY,
-                  shadowOffset: { width: 0, height: 2 },
-                  shadowOpacity: 0.4,
-                  shadowRadius: 8,
-                  elevation: 4,
-                } : {}
-              ]}
-            onPress={() => setPrescriptionOption('duration')}
-          >
-            <View 
+            <Text
               style={{
-                display: 'flex',
-                flexDirection: 'row'
+                color: isDurationDaysSelected ? theme.colors.LIGHT_BLUE : theme.colors.APP_GREEN,
+                ...theme.fonts.IBMPlexSansMedium(13),
+                marginLeft: 35,
+                marginRight: 25,
               }}
             >
-              <Text style={{
-                color: isDurationDaysSelected ? theme.colors.APP_GREEN : theme.colors.LIGHT_BLUE,
-                ...theme.fonts.IBMPlexSansMedium(13),
-              }}>
+              As specified in prescription
+            </Text>
+            {!isDurationDaysSelected && (
+              <GreenTickIcon
+                style={{
+                  resizeMode: 'contain',
+                }}
+              />
+            )}
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              {
+                padding: 10,
+                paddingLeft: 45,
+              },
+              isDurationDaysSelected
+                ? {
+                    backgroundColor: theme.colors.CARD_BG,
+                    shadowColor: theme.colors.SHADOW_GRAY,
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.4,
+                    shadowRadius: 8,
+                    elevation: 4,
+                  }
+                : {},
+            ]}
+            onPress={() => setPrescriptionOption('duration')}
+          >
+            <View
+              style={{
+                display: 'flex',
+                flexDirection: 'row',
+              }}
+            >
+              <Text
+                style={{
+                  color: isDurationDaysSelected ? theme.colors.APP_GREEN : theme.colors.LIGHT_BLUE,
+                  ...theme.fonts.IBMPlexSansMedium(13),
+                }}
+              >
                 Duration -
               </Text>
               <TextInputComponent
@@ -629,37 +653,40 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
                 onChangeText={(value) => setDurationDays(value)}
                 onFocus={() => setPrescriptionOption('duration')}
               />
-              <Text style={{
-                color: isDurationDaysSelected ? theme.colors.APP_GREEN : theme.colors.LIGHT_BLUE,
-                ...theme.fonts.IBMPlexSansMedium(13),
-              }}>
+              <Text
+                style={{
+                  color: isDurationDaysSelected ? theme.colors.APP_GREEN : theme.colors.LIGHT_BLUE,
+                  ...theme.fonts.IBMPlexSansMedium(13),
+                }}
+              >
                 Days
               </Text>
-              {
-                isDurationDaysSelected && (
-                  <GreenTickIcon style={{
+              {isDurationDaysSelected && (
+                <GreenTickIcon
+                  style={{
                     resizeMode: 'contain',
                     marginLeft: 50,
-                  }} />
-                )
-              }
-            </View>
-            {
-              isDurationDaysSelected && (
-                <Text
-                  style={{
-                    ...theme.fonts.IBMPlexSansMedium(11),
                   }}
-                >* Order for minimum 7 days</Text>
-              )
-            }
+                />
+              )}
+            </View>
+            {isDurationDaysSelected && (
+              <Text
+                style={{
+                  ...theme.fonts.IBMPlexSansMedium(11),
+                }}
+              >
+                * Order for minimum 7 days
+              </Text>
+            )}
           </TouchableOpacity>
-          <View 
+          <View
             style={{
               height: 1,
               opacity: 0.1,
               backgroundColor: theme.colors.LIGHT_BLUE,
-            }} />
+            }}
+          />
         </View>
       );
     }
@@ -668,7 +695,11 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
   const disableSubmitButton = () => {
     const isPrescriptions = !(PhysicalPrescriptions.length || EPrescriptions.length);
     let durationDaysInput = false;
-    if (selectedMedicineOption && selectedMedicineOption === 'prescribed' && prescriptionOption === 'duration') {
+    if (
+      selectedMedicineOption &&
+      selectedMedicineOption === 'prescribed' &&
+      prescriptionOption === 'duration'
+    ) {
       if (durationDays === '' || parseInt(durationDays) < 7) durationDaysInput = true;
     }
     return isPrescriptions || !selectedMedicineOption || durationDaysInput || loading;
@@ -712,7 +743,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
           {renderMedicineDetailOptions()}
         </ScrollView>
       </SafeAreaView>
-      
+
       <StickyBottomComponent style={{ position: 'relative' }} defaultBG>
         <Button
           disabled={disableSubmitButton()}

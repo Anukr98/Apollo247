@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { Theme, Grid, CircularProgress, MenuItem, InputAdornment } from '@material-ui/core';
+import { Theme, Grid, CircularProgress, Typography } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { Header } from 'components/Header';
 import { BottomLinks } from 'components/BottomLinks';
-import { AphButton, AphSelect, AphTextField } from '@aph/web-ui-components';
+import { AphButton, AphInput } from '@aph/web-ui-components';
 import { Filters } from 'components/Doctors/Filters';
 import { InfoCard } from 'components/Doctors/InfoCard';
 import { BookBest } from 'components/Doctors/BookBest';
@@ -36,7 +36,15 @@ import { SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME } from 'graphql/doctors';
 import {
   SearchDoctorAndSpecialtyByNameVariables,
   SearchDoctorAndSpecialtyByName,
+  SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctors as DoctorsType,
+  SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_specialties as SpecialtyType,
 } from 'graphql/types/SearchDoctorAndSpecialtyByName';
+import _lowerCase from 'lodash/lowerCase';
+import { useAuth } from 'hooks/authHooks';
+import axios from 'axios';
+import { gtmTracking } from 'gtmTracking';
+import { SpecialtySearch } from 'components/SpecialtySearch';
+
 const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
@@ -46,6 +54,14 @@ const useStyles = makeStyles((theme: Theme) => {
       maxWidth: 1064,
       margin: 'auto',
     },
+    pastSearch: {
+      padding: '20px 0 0',
+      '& h6': {
+        fontSize: 14,
+        fontWeight: 'bold',
+      },
+    },
+    doctorDetails: {},
     doctorListingPage: {
       backgroundColor: '#f7f8f5',
       [theme.breakpoints.down('xs')]: {
@@ -305,16 +321,12 @@ const convertAvailabilityToDate = (availability: String[], dateSelectedFromFilte
     availableNow = {};
   }
   const availabilityArray: String[] = [];
-  const today = moment(new Date())
-    .utc()
-    .format('YYYY-MM-DD');
+  const today = moment(new Date()).utc().format('YYYY-MM-DD');
   if (availability.length > 0) {
     availability.forEach((value: String) => {
       if (value === 'Now') {
         availableNow = {
-          availableNow: moment(new Date())
-            .utc()
-            .format('YYYY-MM-DD hh:mm'),
+          availableNow: moment(new Date()).utc().format('YYYY-MM-DD hh:mm'),
         };
       } else if (value === 'Today') {
         availabilityArray.push(today);
@@ -362,6 +374,7 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
   const { currentPincode, currentLong, currentLat } = useLocationDetails();
   const { currentPatient } = useAllCurrentPatients();
   const params = useParams<{
+    city: string;
     specialty: string;
   }>();
   const prakticeSDKSpecialties = localStorage.getItem('symptomTracker');
@@ -378,32 +391,84 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
   const [onlyFilteredCount, setOnlyFilteredCount] = useState<number>(0);
   const [specialtyId, setSpecialtyId] = useState<string>('');
   const [specialtyName, setSpecialtyName] = useState<string>('');
-  const [searchKey, setSearchKey] = useState<string>('');
+  const [locationPopup, setLocationPopup] = useState<boolean>(false);
+  const [selectedCity, setSelectedCity] = useState<string>(
+    params && params.city ? params.city : ''
+  );
+  const [searchSpecialty, setSearchSpecialty] = useState<SpecialtyType[] | null>(null);
+  const [searchKeyword, setSearchKeyword] = useState<string>('');
+  const [searchDoctors, setSearchDoctors] = useState<DoctorsType[] | null>(null);
+  const [searchLoading, setSearchLoading] = useState<boolean>(false);
+  const [slugName, setSlugName] = useState<string>('');
+  const [faqData, setFaqData] = useState<any>();
+
+  /* Gtm code start */
+  useEffect(() => {
+    if (doctorData && doctorData.length > 0) {
+      let ecommItems: any[] = [];
+      doctorData.map((doctorDetails: any, ind: number) => {
+        doctorDetails &&
+          doctorDetails.fullName &&
+          ecommItems.push({
+            item_name: doctorDetails.fullName,
+            item_id: doctorDetails.id,
+            item_category: 'Consultations',
+            item_category_2: doctorDetails.specialty && doctorDetails.specialty.name,
+            item_category_3:
+              doctorDetails.doctorHospital &&
+              doctorDetails.doctorHospital.length &&
+              doctorDetails.doctorHospital[0].facility &&
+              doctorDetails.doctorHospital[0].facility.city,
+            // 'item_category_4': '', // Future USe
+            item_variant: 'Virtual / Physcial',
+            index: ind + 1,
+            quantity: '1',
+          });
+      });
+      gtmTracking({
+        category: 'Consultations',
+        action: 'Specialty Page',
+        label: 'Specialty Details Page Viewed',
+        value: null,
+        ecommObj: {
+          event: 'view_item_list',
+          ecommerce: {
+            items: ecommItems,
+          },
+        },
+      });
+    }
+  }, [doctorData]);
+  /* Gtm code end */
 
   useEffect(() => {
-    if (searchKey.length > 3) {
-      setLoading(true);
+    if (searchKeyword.length > 2) {
+      setSearchLoading(true);
       apolloClient
         .query<SearchDoctorAndSpecialtyByName, SearchDoctorAndSpecialtyByNameVariables>({
           query: SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME,
           variables: {
-            searchText: searchKey,
+            searchText: searchKeyword,
             patientId: currentPatient ? currentPatient.id : '',
             pincode: currentPincode ? currentPincode : localStorage.getItem('currentPincode') || '',
+            city: selectedCity,
           },
           fetchPolicy: 'no-cache',
         })
         .then((response) => {
-          const searchData =
-            response &&
-            response.data &&
-            response.data.SearchDoctorAndSpecialtyByName &&
-            response.data.SearchDoctorAndSpecialtyByName.doctors;
-          setFilteredDoctorData(searchData);
-          setLoading(false);
-        });
+          const specialtiesAndDoctorsList =
+            response && response.data && response.data.SearchDoctorAndSpecialtyByName;
+          if (specialtiesAndDoctorsList) {
+            const doctorsArray = specialtiesAndDoctorsList.doctors || [];
+            const specialtiesArray = specialtiesAndDoctorsList.specialties || [];
+            setSearchSpecialty(specialtiesArray);
+            setSearchDoctors(doctorsArray);
+          }
+          setSearchLoading(false);
+        })
+        .catch((e) => console.log(e));
     }
-  }, [searchKey]);
+  }, [searchKeyword]);
   useEffect(() => {
     if (params && params.specialty) {
       apolloClient
@@ -423,12 +488,26 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
               ) {
                 setSpecialtyId(specialty.id);
                 setSpecialtyName(specialty.name);
+                setSlugName(specialty.slugName);
               }
             });
         });
     }
   }, []);
 
+  useEffect(() => {
+    if (slugName !== '') {
+      axios
+        .get(`${process.env.CMS_BASE_URL}/api/specialty-details/${readableParam(specialtyName)}`, {
+          headers: { 'Content-Type': 'application/json', Authorization: process.env.CMS_TOKEN },
+        })
+        .then((res: any) => {
+          if (res && res.data && res.data.success) {
+            setFaqData(res && res.data && res.data.data);
+          }
+        });
+    }
+  }, [slugName]);
   let expRange: Range = [],
     feeRange: Range = [];
 
@@ -554,9 +633,9 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
       if (isOnlineSelected && isPhysicalSelected) {
         return consultMode === ConsultMode.BOTH;
       } else if (isOnlineSelected) {
-        return consultMode === ConsultMode.ONLINE;
+        return consultMode !== ConsultMode.PHYSICAL;
       } else if (isPhysicalSelected) {
-        return consultMode === ConsultMode.PHYSICAL;
+        return consultMode !== ConsultMode.ONLINE;
       }
       return false;
     });
@@ -635,44 +714,17 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
                   <img src={require('images/ic-share-green.svg')} alt="" />
                 </AphButton>
               </div>
-              <div className={classes.topSearch}>
-                <div className={classes.selectCity}>
-                  <div className={classes.inputIcon}>
-                    <img src={require('images/location.svg')} alt="" />
-                  </div>
-                  <AphSelect value={1}>
-                    <MenuItem
-                      classes={{
-                        root: classes.menuRoot,
-                        selected: classes.menuSelected,
-                      }}
-                      value={1}
-                    >
-                      Hyderabad
-                    </MenuItem>
-                    <MenuItem
-                      classes={{
-                        root: classes.menuRoot,
-                        selected: classes.menuSelected,
-                      }}
-                      value={2}
-                    >
-                      Chennai
-                    </MenuItem>
-                  </AphSelect>
-                </div>
-                <div className={classes.inputSearch}>
-                  <div className={classes.inputIcon}>
-                    <img src={require('images/ic-search.svg')} alt="" />
-                  </div>
-                  <AphTextField
-                    placeholder="Search for Doctors, Specialities or Hospitals"
-                    onChange={(event) => {
-                      setSearchKey(event.target.value);
-                    }}
-                  />
-                </div>
-              </div>
+              <SpecialtySearch
+                setSearchKeyword={setSearchKeyword}
+                searchKeyword={searchKeyword}
+                selectedCity={selectedCity}
+                searchSpecialty={searchSpecialty}
+                searchDoctors={searchDoctors}
+                searchLoading={searchLoading}
+                setLocationPopup={setLocationPopup}
+                locationPopup={locationPopup}
+                setSelectedCity={setSelectedCity}
+              />
               <div className={classes.tabsFilter}>
                 <h2>{filteredDoctorData ? filteredDoctorData.length : 0} Doctors found</h2>
                 <div className={classes.filterButtons}>
@@ -761,8 +813,12 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
                   'no results found'
                 )}
               </div>
-              <BookBest />
-              <FrequentlyQuestions />
+              {faqData && faqData.length > 0 && (
+                <>
+                  <BookBest faqData={faqData[0]} />
+                  <FrequentlyQuestions faqData={faqData[0].specialityFaq} />
+                </>
+              )}
             </div>
             <div className={classes.rightBar}>
               <div className={classes.stickyBlock}>

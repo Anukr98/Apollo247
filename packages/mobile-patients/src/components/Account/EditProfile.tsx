@@ -594,7 +594,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
           }
           getPatientApiCall();
           props.navigation.goBack();
-          setLoading && setLoading(true);
+          // setLoading && setLoading(true);
           // props.navigation.pop(2);
           // props.navigation.push(AppRoutes.ManageProfile, {
           //   mobileNumber: props.navigation.getParam('mobileNumber'),
@@ -666,9 +666,9 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
   const renderUploadSelection = () => {
     return (
       <UploadPrescriprionPopup
+        isVisible={uploadVisible}
         isProfileImage={true}
         heading="Upload Profile Picture"
-        isVisible={uploadVisible}
         hideTAndCs
         optionTexts={{
           camera: 'TAKE A PHOTO',
@@ -723,7 +723,8 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
     return (
       <View style={styles.profilePicContainer}>
         <View style={styles.profileImageContainer}>
-          {photoUrl && photoUrl.match(/(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG)/) ? (
+          {photoUrl &&
+          photoUrl.match(/(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jpeg|JPEG)/) ? (
             <Image
               style={styles.profileImage}
               source={{

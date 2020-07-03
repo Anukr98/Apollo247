@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { makeStyles, createStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
 import { AphButton } from '@aph/web-ui-components';
+import { getAppStoreLink } from 'helpers/dateHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -50,32 +51,36 @@ const useStyles = makeStyles((theme: Theme) => {
     btnActive: {
       border: '1px solid #00b38e',
       '&:before': {
-        top: '100%',
-        left: '50%',
-        border: 'solid transparent',
-        content: '""',
-        height: 0,
-        width: 0,
+        content: "''",
         position: 'absolute',
-        pointerEvents: 'none',
-        borderColor: 'rgba(0, 179, 142, 0)',
-        borderTopColor: '#00b38e',
-        borderWidth: 11,
-        marginLeft: -11,
+        bottom: -38,
+        left: 0,
+        right: 0,
+        zIndex: 2,
+        width: 20,
+        height: '100%',
+        margin: '0 auto',
+        borderRadius: 4,
+        borderTop: '10px solid #f7f8f5',
+        borderBottom: '10px solid transparent',
+        borderLeft: ' 40px solid transparent',
+        borderRight: '40px solid transparent',
       },
       '&:after': {
-        top: '100%',
-        left: '50%',
-        border: 'solid transparent',
-        content: '""',
-        height: 0,
-        width: 0,
+        content: "''",
         position: 'absolute',
-        pointerEvents: 'none',
-        borderColor: 'rgba(247, 248, 142, 0)',
-        borderTopColor: '#f7f8f5',
-        borderWidth: 10,
-        marginLeft: -10,
+        bottom: -39,
+        left: 0,
+        right: 0,
+        zIndex: 1,
+        width: 20,
+        height: '100%',
+        margin: '0 auto',
+        borderRadius: 4,
+        borderTop: '10px solid #00b38e',
+        borderBottom: '10px solid transparent',
+        borderLeft: ' 40px solid transparent',
+        borderRight: '40px solid transparent',
       },
     },
     consultGroup: {},
@@ -261,7 +266,7 @@ export const HowItWorks: React.FC = (props) => {
           <span>
             <img src={require('images/apollo-logo.jpg')} alt="" />
           </span>
-          <AphButton>Download the App</AphButton>
+          <AphButton onClick={() => window.open(getAppStoreLink())}>Download the App</AphButton>
         </div>
       </div>
     </div>

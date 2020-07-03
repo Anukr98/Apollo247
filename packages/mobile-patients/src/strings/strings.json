@@ -14,7 +14,7 @@
     "prepareForConsult": "GET STARTED",
     "continueConsult": "CONTINUE CONSULT",
     "DisclaimerText": "By proceeding, I agree that I have read and understood the Terms & Conditions of usage of 247 and consent to the same. I am voluntarily availing of the services provided on this platform. I am fully aware that I will not be undergoing a physical examination by a physician prior to a physician recommending  medical tests and/or treatment and/or the prescribing of OTC drugs. I am also aware that  the consultation on 247 Application does not preclude my rights to visit a physician and opt for a physical examination at any point in time and I am free at any time during the consultation to request for the same.",
-    "emergencyBannerText": "Coronavirus? Talk to expert",
+    "emergencyBannerText": "Call our experts",
     "covidContactText": "Contact our Coronavirus Helpline",
     "covidScanBannerText": "Take the Coronavirus Risk Scan",
     "covidHeading": "Worried about Coronavirus?",
@@ -22,7 +22,8 @@
     "covidHelpText": "We are here to help you.",
     "covidMessageText": "Apollo 247 has curated fact-based information from reputed sources on Coronavirus. Now you can get reliable answers to common questions at one place.",
     "covidYouCanText": "You can also",
-    "Rs": "₹"
+    "Rs": "₹",
+    "KavachText": "Explore the Apollo Kavach Program"
   },
   "consultType": {
     "mainHeading": "How would you like to consult with",
@@ -210,51 +211,27 @@
     "filter_data": [
       {
         "label": "City",
-        "options": [
-          "Hyderabad",
-          "Chennai"
-        ]
+        "options": ["Hyderabad", "Chennai"]
       },
       {
         "label": "Experience In Years",
-        "options": [
-          "0 - 5",
-          "6 - 10",
-          "11 - 15",
-          "15+"
-        ]
+        "options": ["0 - 5", "6 - 10", "11 - 15", "15+"]
       },
       {
         "label": "Availability",
-        "options": [
-          "Now",
-          "Today",
-          "Tomorrow",
-          "Next 3 Days"
-        ]
+        "options": ["Now", "Today", "Tomorrow", "Next 3 Days"]
       },
       {
         "label": "Fees In Rupees",
-        "options": [
-          "100 - 500",
-          "501 - 1000",
-          "1000+"
-        ]
+        "options": ["100 - 500", "501 - 1000", "1000+"]
       },
       {
         "label": "Gender",
-        "options": [
-          "Male",
-          "Female"
-        ]
+        "options": ["Male", "Female"]
       },
       {
         "label": "Language",
-        "options": [
-          "Hindi",
-          "English",
-          "Telugu"
-        ]
+        "options": ["Hindi", "English", "Telugu"]
       }
     ]
   },
@@ -363,5 +340,25 @@
       "single": "spray",
       "multiple": "spray(s)"
     }
-  ]
+  ],
+  "appointments": {
+    "notifications_title": "NOTIFICATIONS",
+    "no_consults_scheduled": "No consults scheduled ",
+    "up_next": "UP NEXT: ",
+    "new": "NEW",
+    "appointment_will_reschedule": "This appointment will be rescheduled for",
+    "date": "Date",
+    "time": "Time",
+    "pick_another_slot": "PICK ANOTHER SLOT",
+    "why_do_you_want_reschedule": "Why do you want to reschedule?",
+    "appointment_is_not_available": "Appointment is not available in the ",
+    "slot": "slot :(",
+    "order_medicine_steps": " Order medicines in 2 simple steps —",
+    "upload_prescr": "UPLOAD\nYOUR PRESCRIPTION",
+    "order_through_customercare": "ORDER THROUGH OUR\nCUSTOMER CARE",
+    "upload_prescr_descr": " * Our pharmacist will dispense medicines only if the prescription is valid & it meets all government regulations.",
+    "here_your_schedule": "here’s your schedule for",
+    "block_Calendar": "Block Calendar",
+    "manage_calendar": "Manage Calendar"
+  }
 }

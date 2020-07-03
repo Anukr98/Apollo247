@@ -12,6 +12,7 @@ export const clientRoutes = {
   doctorsLanding: () => '/doctors',
   // specialties: (specialty: string) => `/specialties/${specialty}`,
   specialties: (specialty: string) => `/specialties/${specialty}`,
+  citySpecialties: (city: string, specialty: string) => `/${city}/specialties/${specialty}`,
   appointments: () => '/appointments',
   appointmentSuccess: () => `/appointments/${status}`,
   testsAndMedicine: () => '/tests-medicines',
@@ -63,7 +64,7 @@ export const clientRoutes = {
   payOnlineConsult: () => '/pay-online-consult',
   payOnlineClinicConsult: () => '/pay-clinic-visit',
   prescriptionReview: () => '/prescription-review',
-  specialityListing: () => '/specialities',
+  specialityListing: () => '/specialties',
   medicinePrescription: () => '/medicine-prescription',
 };
 

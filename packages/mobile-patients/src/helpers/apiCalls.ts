@@ -608,6 +608,19 @@ export const getNearByStoreDetailsApi = (pincode: any): Promise<AxiosResponse<an
   });
 };
 
+export const callToExotelApi = (params: any): Promise<AxiosResponse<any>> => {
+  const url = `https://notifications.apollo247.com/webhooks/exotel/call`;
+  return Axios.post(
+    url,
+    { ...params },
+    {
+      headers: {
+        'x-api-key': 'gNXyYhY2VDxwzv8f6TwJqvfYmPmj',
+      },
+    }
+  );
+};
+
 export const fetchPaymentOptions = (): Promise<AxiosResponse<any>> => {
   const baseUrl = AppConfig.Configuration.CONSULT_PG_BASE_URL;
   const url = `${baseUrl}/list-of-payment-methods`;
@@ -623,4 +636,16 @@ export const getTxnStatus = (orderID: string): Promise<AxiosResponse<any>> => {
   const baseUrl = AppConfig.Configuration.CONSULT_PG_BASE_URL;
   const url = `${baseUrl}/transaction-status`;
   return Axios.post(url, { orderID: orderID });
+};
+
+export const fetchConsultCoupons = (): Promise<AxiosResponse<any>> => {
+  const baseUrl = AppConfig.Configuration.CONSULT_COUPON_BASE_URL;
+  const url = `${baseUrl}/frontend`;
+  return Axios.get(url);
+};
+
+export const validateConsultCoupon = (data: any): Promise<AxiosResponse<any>> => {
+  const baseUrl = AppConfig.Configuration.CONSULT_COUPON_BASE_URL;
+  const url = `${baseUrl}/validate`;
+  return Axios.post(url, data);
 };

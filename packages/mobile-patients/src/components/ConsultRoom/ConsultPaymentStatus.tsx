@@ -49,6 +49,7 @@ import { FirebaseEvents, FirebaseEventName } from '../../helpers/firebaseEvents'
 import firebase from 'react-native-firebase';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { NotificationPermissionAlert } from '@aph/mobile-patients/src/components/ui/NotificationPermissionAlert';
+import { Snackbar } from 'react-native-paper';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -70,6 +71,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
   const appointmentDateTime = props.navigation.getParam('appointmentDateTime');
   const appointmentType = props.navigation.getParam('appointmentType');
   const webEngageEventAttributes = props.navigation.getParam('webEngageEventAttributes');
+  const appsflyerEventAttributes = props.navigation.getParam('appsflyerEventAttributes');
   const fireBaseEventAttributes = props.navigation.getParam('fireBaseEventAttributes');
   const coupon = props.navigation.getParam('coupon');
   const client = useApolloClient();
@@ -78,9 +80,10 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
   const { currentPatient } = useAllCurrentPatients();
   const [notificationAlert, setNotificationAlert] = useState(false);
   const [copiedText, setCopiedText] = useState('');
-
+  const [snackbarState, setSnackbarState] = useState<boolean>(false);
   const copyToClipboard = (refId: string) => {
     Clipboard.setString(refId);
+    setSnackbarState(true);
   };
   const renderErrorPopup = (desc: string) =>
     showAphAlert!({
@@ -112,8 +115,10 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
         console.log(res.data);
         if (res.data.paymentTransactionStatus.appointment.paymentStatus == success) {
           try {
-            postWebEngageEvent(WebEngageEventName.CONSULTATION_BOOKED, webEngageEventAttributes);
-            postAppsFlyerEvent(AppsFlyerEventName.CONSULTATION_BOOKED, webEngageEventAttributes);
+            let eventAttributes = webEngageEventAttributes;
+            eventAttributes['Display ID'] = res.data.paymentTransactionStatus.appointment.displayId;
+            postWebEngageEvent(WebEngageEventName.CONSULTATION_BOOKED, eventAttributes);
+            postAppsFlyerEvent(AppsFlyerEventName.CONSULTATION_BOOKED, appsflyerEventAttributes);
             postFirebaseEvent(FirebaseEventName.CONSULTATION_BOOKED, fireBaseEventAttributes);
             firePurchaseEvent();
           } catch (error) {}
@@ -161,13 +166,13 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
 
   const firePurchaseEvent = () => {
     const eventAttributes: FirebaseEvents[FirebaseEventName.PURCHASE] = {
-      COUPON: coupon,
-      CURRENCY: 'INR',
-      ITEMS: [
+      coupon: coupon,
+      currency: 'INR',
+      items: [
         {
           item_name: doctorName, // Product Name or Doctor Name
           item_id: doctorID, // Product SKU or Doctor ID
-          price: price, // Product Price After discount or Doctor VC price (create another item in array for PC price)
+          price: Number(price), // Product Price After discount or Doctor VC price (create another item in array for PC price)
           item_brand: doctor.doctorType, // Product brand or Apollo (for Apollo doctors) or Partner Doctors (for 3P doctors)
           item_category: 'Consultations', // 'Pharmacy' or 'Consultations'
           item_category2: doctor.specialty.name, // FMCG or Drugs (for Pharmacy) or Specialty Name (for Consultations)
@@ -177,9 +182,10 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
           quantity: 1, // "1" or actual quantity
         },
       ],
-      TRANSACTION_ID: orderId,
-      VALUE: Number(price),
+      transaction_id: orderId,
+      value: Number(price),
     };
+    console.log(eventAttributes);
     postFirebaseEvent(FirebaseEventName.PURCHASE, eventAttributes);
   };
 
@@ -237,7 +243,6 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
           marginHorizontal: needStyle ? 0.1 * windowWidth : undefined,
         }}
         numberOfLines={numOfLines}
-        selectable={true}
       >
         {message}
       </Text>
@@ -388,6 +393,16 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
           <View style={{ flex: 0.4, justifyContent: 'flex-start', alignItems: 'center' }}>
             {renderViewInvoice()}
           </View>
+          <Snackbar
+            style={{ position: 'absolute', zIndex: 1001 }}
+            visible={snackbarState}
+            onDismiss={() => {
+              setSnackbarState(false);
+            }}
+            duration={1000}
+          >
+            Copied
+          </Snackbar>
         </View>
       </View>
     );

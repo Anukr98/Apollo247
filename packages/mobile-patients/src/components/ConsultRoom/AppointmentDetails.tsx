@@ -592,7 +592,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
               <View style={styles.imageView}>
                 {data.doctorInfo.thumbnailUrl &&
                 data.doctorInfo.thumbnailUrl.match(
-                  /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG)/
+                  /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jpeg|JPEG)/
                 ) ? (
                   <Image
                     source={{ uri: data.doctorInfo.thumbnailUrl }}

@@ -34,7 +34,10 @@ import {
   WebEngageEvents,
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
-import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
+import {
+  AppsFlyerEventName,
+  AppsFlyerEvents,
+} from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
 import { FirebaseEvents, FirebaseEventName } from '../helpers/firebaseEvents';
 import { ShoppingCartItem } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 
@@ -64,6 +67,7 @@ export interface PaymentSceneProps
     paymentTypeID: string;
     bankCode: any;
     checkoutEventAttributes?: WebEngageEvents[WebEngageEventName.PHARMACY_CHECKOUT_COMPLETED];
+    appsflyerEventAttributes: AppsFlyerEvents[AppsFlyerEventName.PHARMACY_CHECKOUT_COMPLETED];
     coupon: any;
     cartItems: ShoppingCartItem[];
   }> {}
@@ -78,6 +82,7 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
   const paymentTypeID = props.navigation.getParam('paymentTypeID');
   const bankCode = props.navigation.getParam('bankCode');
   const checkoutEventAttributes = props.navigation.getParam('checkoutEventAttributes');
+  const appsflyerEventAttributes = props.navigation.getParam('appsflyerEventAttributes');
   const coupon = props.navigation.getParam('coupon');
   const cartItems = props.navigation.getParam('cartItems');
   const { currentPatient } = useAllCurrentPatients();
@@ -149,11 +154,11 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
       items.push(itemObj);
     });
     const eventAttributes: FirebaseEvents[FirebaseEventName.PURCHASE] = {
-      COUPON: coupon,
-      CURRENCY: 'INR',
-      ITEMS: items,
-      TRANSACTION_ID: orderId,
-      VALUE: totalAmount,
+      coupon: coupon,
+      currency: 'INR',
+      items: items,
+      transaction_id: orderId,
+      value: totalAmount,
     };
     postFirebaseEvent(FirebaseEventName.PURCHASE, eventAttributes);
   };
@@ -170,7 +175,10 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
         };
         postWebEngageEvent(WebEngageEventName.PAYMENT_STATUS, paymentEventAttributes);
         postWebEngageEvent(WebEngageEventName.PHARMACY_CHECKOUT_COMPLETED, checkoutEventAttributes);
-        postAppsFlyerEvent(AppsFlyerEventName.PHARMACY_CHECKOUT_COMPLETED, checkoutEventAttributes);
+        postAppsFlyerEvent(
+          AppsFlyerEventName.PHARMACY_CHECKOUT_COMPLETED,
+          appsflyerEventAttributes
+        );
         firePurchaseEvent();
       }
     } catch (error) {}

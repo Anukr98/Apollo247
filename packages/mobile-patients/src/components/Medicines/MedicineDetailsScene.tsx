@@ -219,7 +219,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   const [medicineDetails, setmedicineDetails] = useState<MedicineProductDetails>(
     {} as MedicineProductDetails
   );
-  const { locationDetails, pharmacyLocation } = useAppCommonData();
+  const { locationDetails, pharmacyLocation, isPharmacyLocationServiceable } = useAppCommonData();
   const { currentPatient } = useAllCurrentPatients();
   const pharmacyPincode = g(pharmacyLocation, 'pincode') || g(locationDetails, 'pincode');
 
@@ -408,7 +408,8 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       isInStock: true,
     });
     postwebEngageAddToCartEvent(item, 'Pharmacy PDP');
-    postAppsFlyerAddToCartEvent(item, 'Pharmacy PDP');
+    let id = currentPatient && currentPatient.id ? currentPatient.id : '';
+    postAppsFlyerAddToCartEvent(item, id);
   };
 
   const updateQuantityCartItem = ({ sku }: MedicineProduct) => {
@@ -422,7 +423,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     const eventAttributes: WebEngageEvents[WebEngageEventName.PRODUCT_DETAIL_PINCODE_CHECK] = {
       'product id': sku,
       'product name': medicineDetails.name,
-      'pincode': parseInt(pincode),
+       pincode: Number(pincode),
       'customer id': currentPatient && currentPatient.id ? currentPatient.id : '',
     };
     postWebEngageEvent(WebEngageEventName.PRODUCT_DETAIL_PINCODE_CHECK, eventAttributes);
@@ -434,10 +435,15 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       .format('DD-MMM-YYYY hh:mm');
 
     Keyboard.dismiss();
+    if (pharmacyPincode == pincode && !isPharmacyLocationServiceable) {
+      setdeliveryError(unServiceableMsg);
+      setdeliveryTime('');
+      return;
+    }
     setshowDeliverySpinner(true);
     getDeliveryTime({
       postalcode: pincode,
-      ordertype: medicineDetails.type_id == 'Fmcg' ? 'fmcg' : 'pharma',
+      ordertype: (medicineDetails.type_id || '').toLowerCase() == 'pharma' ? 'pharma' : 'fmcg',
       lookup: [
         {
           sku: sku,
@@ -1125,7 +1131,10 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
                         'product id': item.sku,
                         'product name': item.name,
                       };
-                      postWebEngageEvent(WebEngageEventName.PHARMACY_PRODUCT_DETAIL_SUBSTITUTE_CLICKED, eventAttributes);
+                      postWebEngageEvent(
+                        WebEngageEventName.PHARMACY_PRODUCT_DETAIL_SUBSTITUTE_CLICKED,
+                        eventAttributes
+                      );
                       CommonLogEvent(
                         AppRoutes.MedicineDetailsScene,
                         'Navigate to Medicine Details scene with sku'

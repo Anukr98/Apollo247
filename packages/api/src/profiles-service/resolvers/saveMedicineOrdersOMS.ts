@@ -52,6 +52,49 @@ export const saveMedicineOrderOMSTypeDefs = gql`
     customerComment: String
   }
 
+  enum MEDICINE_DELIVERY_TYPE {
+    HOME_DELIVERY
+    STORE_PICKUP
+  }
+
+  enum MEDICINE_ORDER_TYPE {
+    UPLOAD_PRESCRIPTION
+    CART_ORDER
+  }
+
+  enum MEDICINE_ORDER_STATUS {
+    QUOTE
+    ORDER_BILLED
+    PAYMENT_SUCCESS
+    PAYMENT_PENDING
+    PAYMENT_FAILED
+    ORDER_INITIATED
+    ORDER_PLACED
+    ORDER_VERIFIED
+    DELIVERED
+    CANCELLED
+    OUT_FOR_DELIVERY
+    PICKEDUP
+    RETURN_INITIATED
+    ITEMS_RETURNED
+    RETURN_ACCEPTED
+    PRESCRIPTION_UPLOADED
+    ORDER_FAILED
+    PRESCRIPTION_CART_READY
+    ORDER_CONFIRMED
+    CANCEL_REQUEST
+    READY_AT_STORE
+    PURCHASED_IN_STORE
+    PAYMENT_ABORTED
+  }
+
+  type SaveMedicineOrderResult {
+    errorCode: Int
+    errorMessage: String
+    orderId: ID!
+    orderAutoId: Int!
+  }
+
   input ShopAddress {
     storename: String
     address: String

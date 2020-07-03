@@ -520,7 +520,7 @@ export const UploadHealthRecords: React.FC<IconProps> = (props) => (
 
 export const FreeArrowIcon: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/ic_free_arrow.png')} />
-)
+);
 
 export const OrangeCallIcon: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/ic_orange_phone.png')} />
@@ -1054,4 +1054,17 @@ export const ApolloPartnerIcon: React.FC<IconProps> = (props) => (
 
 export const VideoPlayIcon: React.FC<IconProps> = (props) => (
   <IconBase {...props} source={require('./icons/Play.png')} />
+);
+
+export const KavachIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ width: 24, height: 24 }}
+    {...props}
+    source={require('./icons/bitmap.png')}
+    resizeMode="contain"
+  />
+);
+
+export const RetryButtonIcon: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/retryButton.png')} resizeMode="contain" />
 );

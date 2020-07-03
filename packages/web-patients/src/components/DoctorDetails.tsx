@@ -32,7 +32,7 @@ import { useAuth } from 'hooks/authHooks';
 import { ManageProfile } from 'components/ManageProfile';
 import { BottomLinks } from 'components/BottomLinks';
 import { gtmTracking } from 'gtmTracking';
-import { getOpeningHrs } from '../helpers/commonHelpers';
+import { getOpeningHrs, readableParam } from '../helpers/commonHelpers';
 import { SchemaMarkup } from 'SchemaMarkup';
 import { MetaTagsComp } from 'MetaTagsComp';
 import { DoctorTimings } from 'components/DoctorTimings';
@@ -350,9 +350,8 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
               window &&
               window.location &&
               window.location.origin &&
-              `${window.location.origin}/doctors/${id}`,
+              `${window.location.origin}/doctors/${readableParam(fullName)}-${id}`,
           });
-          console.log('id', id);
         }
       });
   }, []);
@@ -365,7 +364,10 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     availableForVirtualConsultation = true;
 
   const doctorDetails = data && data.getDoctorDetailsById ? data : null;
-
+  const doctorTimings =
+    data && data.getDoctorDetailsById && data.getDoctorDetailsById.consultHours
+      ? data && data.getDoctorDetailsById.consultHours
+      : null;
   const gtmTrackingFunc = () => {
     /* Gtm code start */
     const speciality =
@@ -453,7 +455,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                       {hasStarTeam && <StarDoctorTeam doctorDetails={doctorDetails} />}
                     </>
                   )}
-                  <DoctorTimings />
+                  <DoctorTimings doctorTimings={doctorTimings} />
                 </div>
                 <AppointmentHistory doctorId={doctorId} patientId={currentUserId || ' '} />
               </div>

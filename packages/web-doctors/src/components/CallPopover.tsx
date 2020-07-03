@@ -43,6 +43,7 @@ import {
   APPOINTMENT_TYPE,
   DEVICETYPE,
   BOOKINGSOURCE,
+  APPT_CALL_TYPE,
 } from 'graphql/types/globalTypes';
 import * as _ from 'lodash';
 import { CaseSheetContext } from 'context/CaseSheetContext';
@@ -56,6 +57,7 @@ import {
 } from 'graphql/types/GetDoctorNextAvailableSlot';
 import { format } from 'date-fns';
 import { AvailableSlots } from '../components/AvailableSlots';
+import { INITIATE_CONFERENCE_TELEPHONE_CALL } from 'graphql/consults';
 import { getLocalStorageItem, updateLocalStorageItem } from './case-sheet/panels/LocalStorageUtils';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -789,6 +791,88 @@ const useStyles = makeStyles((theme: Theme) => {
         opacity: 0.7,
       },
     },
+    phoneCallConnect: {
+      textTransform: 'none',
+      fontSize: '12px',
+      fontWeight: 500,
+      fontStretch: 'normal',
+      fontStyle: 'normal',
+      lineHeight: 2,
+      letterSpacing: 'normal',
+      color: '#fc9916',
+      cursor: 'pointer',
+      '& img': {
+        right: '7px',
+        top: '5px',
+        position: 'relative',
+      },
+    },
+    connectCallModal: {
+      width: '482px',
+      height: '320px',
+      borderRadius: '10px',
+      boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
+      backgroundColor: '#ffffff',
+      margin: 'auto',
+      marginTop: 88,
+      position: 'relative',
+    },
+    callHeader: {
+      fontSize: '24px',
+      fontWeight: 600,
+      fontStretch: 'normal',
+      fontStyle: 'normal',
+      lineHeight: 'normal',
+      letterSpacing: 'normal',
+      color: '#02475b',
+    },
+    callSubheader: {
+      fontSize: '14px',
+      fontWeight: 'normal',
+      fontStretch: 'normal',
+      fontStyle: 'normal',
+      lineHeight: 'normal',
+      letterSpacing: 'normal',
+      color: '#979797',
+      display: 'block',
+      marginTop: 8,
+    },
+    callOption: {
+      width: 30,
+      height: 30,
+      backgroundColor: '#00b38e',
+      color: '#FFFFFF',
+      display: 'inline-block',
+      paddingLeft: 6,
+      paddingTop: 2,
+      marginRight: 10,
+      fontWeight: 600,
+      fontSize: 20,
+    },
+    callOptionFirst: {
+      fontSize: '16px',
+      fontWeight: 500,
+      fontStretch: 'normal',
+      fontStyle: 'normal',
+      lineHeight: 'normal',
+      letterSpacing: 'normal',
+      color: '#00b38e',
+    },
+    callNote: {
+      fontSize: '14px',
+      fontWeight: 'normal',
+      fontStretch: 'normal',
+      fontStyle: 'normal',
+      lineHeight: 'normal',
+      letterSpacing: 'normal',
+      color: '#01475b',
+    },
+    callButtonWrapper: {
+      display: 'flex',
+      justifyContent: 'flex-end',
+      marginRight: 20,
+      marginTop: 40,
+    },
     content: {
       position: 'relative',
       borderRadius: '5px',
@@ -925,7 +1009,6 @@ const useStyles = makeStyles((theme: Theme) => {
     },
   };
 });
-
 const ringtoneUrl = require('../images/phone_ringing.mp3');
 
 interface errorObject {
@@ -1192,6 +1275,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               noShowBy: REQUEST_ROLES.PATIENT,
               deviceType: DEVICETYPE.DESKTOP,
               callSource: BOOKINGSOURCE.WEB,
+              callType: APPT_CALL_TYPE.CHAT,
             },
           },
           fetchPolicy: 'no-cache',
@@ -2120,6 +2204,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   };
 
   const [vitalIgnored, setVitalIgnored] = useState<boolean>(false);
+  const [connectCall, setConnectCall] = useState<boolean>(false);
 
   return (
     <div className={classes.stickyHeader}>
@@ -2154,6 +2239,19 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         </div>
         <div className={classes.consultButtonContainer}>
           <span>
+            {(props.appointmentStatus === STATUS.COMPLETED ||
+              props.isClickedOnEdit ||
+              props.startAppointment) && (
+              <span
+                className={classes.phoneCallConnect}
+                onClick={() => {
+                  setConnectCall(true);
+                }}
+              >
+                <img src={require('images/call_connect.svg')} />
+                Connect via phone call
+              </span>
+            )}
             {props.appointmentStatus === STATUS.COMPLETED &&
               currentUserType !== LoggedInUserType.SECRETARY &&
               props.sentToPatient === true && (
@@ -2638,6 +2736,92 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
             </Popover>
           </span>
         </div>
+        <Modal
+          className={classes.modalPopup}
+          open={connectCall}
+          onClose={() => {
+            setConnectCall(false);
+          }}
+          disableBackdropClick
+          disableEscapeKeyDown
+        >
+          <div>
+            <Paper className={classes.connectCallModal}>
+              <div
+                style={{
+                  display: 'inline-block',
+                  marginTop: 30,
+                  marginLeft: 20,
+                }}
+              >
+                <span className={classes.callHeader}>Connect to your patient via phone call !</span>
+                <span className={classes.callSubheader}>
+                  {'Please follow the steps to connect to your patient :'}
+                </span>
+                <span style={{ display: 'flex', marginTop: 30, marginBottom: 20 }}>
+                  <span className={classes.callOption}>1</span>
+                  <span className={classes.callOptionFirst}>
+                    Answer the call from {process.env.EXOTEL_CALLER_ID} <br />
+                    to connect.
+                  </span>
+                  <span className={classes.callOption}>2</span>
+                  <span className={classes.callOptionFirst}>Wait for the patient to connect.</span>
+                </span>
+
+                <span className={classes.callNote}>
+                  {'*Note : Your personal phone number will not be shared.'}
+                </span>
+                <div className={classes.callButtonWrapper}>
+                  <AphButton
+                    color="primary"
+                    onClick={() => {
+                      setConnectCall(false);
+                    }}
+                    style={{
+                      backgroundColor: '#FFFFFF',
+                      color: '#fc9916',
+                      boxShadow: 'none',
+                      marginRight: 20,
+                    }}
+                  >
+                    {'Cancel'}
+                  </AphButton>
+                  <AphButton
+                    color="primary"
+                    style={{
+                      borderRadius: 5,
+                      boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
+                      backgroundColor: '#fc9916',
+                    }}
+                    onClick={() => {
+                      const fromMobileNumber = currentPatient.mobileNumber;
+                      const toMobileNumber = patientDetails.mobileNumber;
+                      const appointmentId = params.id;
+                      console.log(fromMobileNumber, toMobileNumber, appointmentId);
+
+                      const exotelInput = {
+                        from: fromMobileNumber,
+                        to: toMobileNumber,
+                        appointmentId: appointmentId,
+                      };
+                      setConnectCall(false);
+                      client.query({
+                        query: INITIATE_CONFERENCE_TELEPHONE_CALL,
+                        variables: {
+                          exotelInput: exotelInput,
+                        },
+                        fetchPolicy: 'no-cache',
+                      });
+                    }}
+                  >
+                    {'PROCEED TO CONNECT'}
+                  </AphButton>
+                </div>
+              </div>
+            </Paper>
+          </div>
+        </Modal>
+
         <Modal
           className={classes.modalPopup}
           open={isPopoverOpen}

@@ -24,6 +24,8 @@ export interface AppCommonDataContextProps {
   pharmacyLocation: LocationData | null;
   setLocationDetails: ((items: LocationData) => void) | null;
   setPharmacyLocation: ((items: LocationData) => void) | null;
+  isPharmacyLocationServiceable: boolean;
+  setPharmacyLocationServiceable: ((value: boolean) => void) | null;
   diagnosticsCities: getDiagnosticsCites_getDiagnosticsCites_diagnosticsCities[];
   setDiagnosticsCities:
     | ((items: getDiagnosticsCites_getDiagnosticsCites_diagnosticsCities[]) => void)
@@ -59,6 +61,8 @@ export interface AppCommonDataContextProps {
         items: getPatientPersonalizedAppointments_getPatientPersonalizedAppointments_appointmentDetails[]
       ) => void)
     | null;
+  savePatientDetails: any;
+  setSavePatientDetails: ((items: any) => void) | null;
 }
 
 export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
@@ -66,6 +70,8 @@ export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
   pharmacyLocation: null,
   setLocationDetails: null,
   setPharmacyLocation: null,
+  isPharmacyLocationServiceable: false,
+  setPharmacyLocationServiceable: null,
   diagnosticsCities: [],
   setDiagnosticsCities: null,
   appointmentsPersonalized: [],
@@ -93,6 +99,8 @@ export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
   setisSelected: null,
   isUHID: [],
   setisUHID: null,
+  savePatientDetails: [],
+  setSavePatientDetails: null,
 });
 
 export const AppCommonDataProvider: React.FC = (props) => {
@@ -108,12 +116,20 @@ export const AppCommonDataProvider: React.FC = (props) => {
     AppCommonDataContextProps['pharmacyLocation']
   >(null);
 
+  const [isPharmacyLocationServiceable, setPharmacyLocationServiceable] = useState<
+    AppCommonDataContextProps['isPharmacyLocationServiceable']
+  >(false);
+
   const [diagnosticsCities, setDiagnosticsCities] = useState<
     AppCommonDataContextProps['diagnosticsCities']
   >([]);
 
   const [appointmentsPersonalized, setAppointmentsPersonalized] = useState<
     AppCommonDataContextProps['appointmentsPersonalized']
+  >([]);
+
+  const [savePatientDetails, setSavePatientDetails] = useState<
+    AppCommonDataContextProps['savePatientDetails']
   >([]);
 
   const [VirtualConsultationFee, setVirtualConsultationFee] = useState<string>('');
@@ -211,6 +227,8 @@ export const AppCommonDataProvider: React.FC = (props) => {
         setLocationDetails,
         pharmacyLocation,
         setPharmacyLocation,
+        isPharmacyLocationServiceable,
+        setPharmacyLocationServiceable,
         diagnosticsCities,
         setDiagnosticsCities,
         locationForDiagnostics,
@@ -236,6 +254,8 @@ export const AppCommonDataProvider: React.FC = (props) => {
         setisUHID,
         appointmentsPersonalized,
         setAppointmentsPersonalized,
+        savePatientDetails,
+        setSavePatientDetails,
       }}
     >
       {props.children}

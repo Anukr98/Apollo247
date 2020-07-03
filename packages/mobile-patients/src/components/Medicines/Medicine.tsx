@@ -34,10 +34,8 @@ import {
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
   SAVE_SEARCH,
-  GET_MEDICINE_ORDERS_OMS__LIST,
   GET_RECOMMENDED_PRODUCTS_LIST,
 } from '@aph/mobile-patients/src/graphql/profiles';
-import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import { SEARCH_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   Brand,
@@ -48,7 +46,7 @@ import {
   pinCodeServiceabilityApi,
   MedicinePageSection,
   getNearByStoreDetailsApi,
-  exotelCallAPI,
+  callToExotelApi,
   OfferBannerSection,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
@@ -93,11 +91,6 @@ import {
 } from 'react-native';
 import { Image, Input } from 'react-native-elements';
 import { FlatList, NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
-import {
-  getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrdersList,
-  getMedicineOrdersOMSList,
-  getMedicineOrdersOMSListVariables,
-} from '../../graphql/types/getMedicineOrdersOMSList';
 import { MedicineSearchSuggestionItem } from '@aph/mobile-patients/src/components/Medicines/MedicineSearchSuggestionItem';
 import Carousel from 'react-native-snap-carousel';
 import {
@@ -152,7 +145,13 @@ export interface MedicineProps
 
 export const Medicine: React.FC<MedicineProps> = (props) => {
   const focusSearch = props.navigation.getParam('focusSearch');
-  const { locationDetails, pharmacyLocation, setPharmacyLocation } = useAppCommonData();
+  const {
+    locationDetails,
+    pharmacyLocation,
+    setPharmacyLocation,
+    isPharmacyLocationServiceable,
+    setPharmacyLocationServiceable,
+  } = useAppCommonData();
   const [ShowPopop, setShowPopop] = useState<boolean>(false);
   const [pincodePopupVisible, setPincodePopupVisible] = useState<boolean>(false);
   const [isSelectPrescriptionVisible, setSelectPrescriptionVisible] = useState(false);
@@ -167,13 +166,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
   const cartItemsCount = cartItems.length + diagnosticCartItems.length;
   const { currentPatient } = useAllCurrentPatients();
-  const [profile, setProfile] = useState<GetCurrentPatients_getCurrentPatients_patients>(
-    currentPatient!
-  );
   const [allBrandData, setAllBrandData] = useState<Brand[]>([]);
-  const [ordersFetched, setOrdersFetched] = useState<
-    (getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrdersList | null)[]
-  >([]);
   const [serviceabilityMsg, setServiceabilityMsg] = useState('');
 
   const { showAphAlert, hideAphAlert, setLoading: globalLoading } = useUIElements();
@@ -239,13 +232,26 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       let from = currentPatient.mobileNumber;
       let to = pharmacyPhoneNumber;
       let caller_id = AppConfig.Configuration.EXOTEL_CALLER_ID;
-      const param = `From=${from}&To=${to}&CallerId=${caller_id}`;
-      exotelCallAPI(param)
+      // const param = `fromPhone=${from}&toPhone=${to}&callerId=${caller_id}`;
+      const param = {
+        fromPhone: from,
+        toPhone: to,
+        callerId: caller_id,
+      };
+      globalLoading!(true);
+      callToExotelApi(param)
         .then((response) => {
           hideAphAlert!();
+          globalLoading!(false);
           console.log('exotelCallAPI response', response, 'params', param);
         })
         .catch((error) => {
+          hideAphAlert!();
+          globalLoading!(false);
+          showAphAlert!({
+            title: string.common.uhOh,
+            description: 'We could not connect to the pharmacy now. Please try later.',
+          });
           console.log('exotelCallAPI error', error, 'params', param);
         });
     };
@@ -253,6 +259,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     pinCodeServiceabilityApi(pincode)
       .then(({ data: { Availability } }) => {
         setServiceabilityMsg(Availability ? '' : 'Services unavailable. Change delivery location.');
+        setPharmacyLocationServiceable!(Availability ? true : false);
         if (!Availability) {
           WebEngageEventAutoDetectLocation(pincode, false);
           showAphAlert!({
@@ -368,30 +375,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   }, [pharmacyPincode]);
 
   useEffect(() => {
-    if (currentPatient && profile && profile.id !== currentPatient.id) {
-      globalLoading!(true);
-      setProfile(currentPatient);
-      ordersRefetch()
-        .then(({ data }) => {
-          const ordersData = (
-            g(data, 'getMedicineOrdersOMSList', 'medicineOrdersList') || []
-          ).filter(
-            (item) =>
-              !(
-                (item!.medicineOrdersStatus || []).length == 1 &&
-                (item!.medicineOrdersStatus || []).find((item) => !item!.hideStatus)
-              )
-          );
-          globalLoading!(false);
-          setOrdersFetched(ordersData);
-        })
-        .catch((e) => {
-          CommonBugFender('Medicine_ordersRefetch_useEffect', e);
-        });
-    }
-  }, [currentPatient]);
-
-  useEffect(() => {
     fetchRecommendedProducts();
     // getting from local storage first for immediate rendering
     AsyncStorage.getItem(MEDICINE_LANDING_PAGE_DATA)
@@ -437,24 +420,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           description: "We're unable to fetch products, try later.",
         });
       });
-    if (ordersFetched.length === 0) {
-      ordersRefetch()
-        .then(({ data }) => {
-          const ordersData = (
-            g(data, 'getMedicineOrdersOMSList', 'medicineOrdersList') || []
-          ).filter(
-            (item) =>
-              !(
-                (item!.medicineOrdersStatus || []).length == 1 &&
-                (item!.medicineOrdersStatus || []).find((item) => !item!.hideStatus)
-              )
-          );
-          ordersData.length > 0 && setOrdersFetched(ordersData);
-        })
-        .catch((e) => {
-          CommonBugFender('Medicine_ordersRefetch', e);
-        });
-    }
   }, []);
 
   const [recommendedProducts, setRecommendedProducts] = useState<MedicineProduct[]>([]);
@@ -481,19 +446,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const widget3 = g(data, 'widget_3', 'products') || [];
   const widget3CategoryId = g(data, 'widget_3', 'category_id') || 0;
 
-  const {
-    data: orders,
-    error: ordersError,
-    loading: ordersLoading,
-    refetch: ordersRefetch,
-  } = useQuery<getMedicineOrdersOMSList, getMedicineOrdersOMSListVariables>(
-    GET_MEDICINE_ORDERS_OMS__LIST,
-    {
-      variables: { patientId: currentPatient && currentPatient.id },
-      fetchPolicy: 'cache-first',
-    }
-  );
-
   useEffect(() => {
     if (hotSellers.length) {
       setItemsWithQtyRestriction!(hotSellers.map((v) => v.sku));
@@ -505,20 +457,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       setBannerLoading(false);
     }
   }, [loading]);
-
-  useEffect(() => {
-    if (!ordersLoading) {
-      const data = (g(orders, 'getMedicineOrdersOMSList', 'medicineOrdersList') || []).filter(
-        (item) =>
-          !(
-            (item!.medicineOrdersStatus || []).length == 1 &&
-            (item!.medicineOrdersStatus || []).find((item) => !item!.hideStatus)
-          )
-      );
-
-      data.length > 0 && setOrdersFetched(data);
-    }
-  }, [ordersLoading]);
 
   const getImageUrl = (fileIds: string) => {
     return fileIds
@@ -829,7 +767,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     );
   };
 
-  const renderSliderItem = ({ item, index }: { item: OfferBannerSection, index: number }) => {
+  const renderSliderItem = ({ item, index }: { item: OfferBannerSection; index: number }) => {
     const handleOnPress = () => {
       const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_BANNER_CLICK] = {
         BannerPosition: slideIndex + 1,
@@ -858,7 +796,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     );
   };
 
-  const [slideIndex, setSlideIndex] = useState(1);
+  const [slideIndex, setSlideIndex] = useState(0);
 
   const renderDot = (active: boolean) => (
     <View style={[styles.sliderDotStyle, { backgroundColor: active ? '#aaa' : '#d8d8d8' }]} />
@@ -885,7 +823,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             itemWidth={winWidth}
             loop={true}
             autoplay={true}
-            autoplayDelay={500}
+            autoplayDelay={3000}
             autoplayInterval={3000}
           />
           <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
@@ -934,8 +872,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         style={[
           {
             ...theme.viewStyles.card(),
-            marginTop: 20,
-            marginBottom: 12,
+            marginTop: 10,
+            marginBottom: 16,
           },
           medicineList.length > 0 && searchText
             ? {
@@ -951,24 +889,15 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
   const renderYourOrders = () => {
     return (
-      // (ordersFetched.length > 0 && (
       <ListCard
         onPress={() => {
           postMyOrdersClicked('Pharmacy Home', currentPatient);
-          globalLoading!(true);
-          props.navigation.navigate(AppRoutes.YourOrdersScene, {
-            orders: ordersFetched,
-            refetch: ordersRefetch,
-            error: ordersError,
-            loading: ordersLoading,
-          });
+          props.navigation.navigate(AppRoutes.YourOrdersScene);
         }}
-        container={{ marginBottom: 24 }}
+        container={{ marginBottom: 24, marginTop: 20 }}
         title={'My Orders'}
         leftIcon={<MedicineIcon />}
       />
-      // )) ||
-      // null
     );
   };
 
@@ -1282,11 +1211,13 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         addCartItem,
         globalLoading,
         props.navigation,
-        currentPatient
+        currentPatient,
+        isPharmacyLocationServiceable
       );
 
       postwebEngageAddToCartEvent(data.item, 'Pharmacy Home', title);
-      postAppsFlyerAddToCartEvent(data.item, 'Pharmacy Home');
+      let id = currentPatient && currentPatient.id ? currentPatient.id : '';
+      postAppsFlyerAddToCartEvent(data.item, id);
     };
 
     const removeFromCart = () => removeCartItem!(sku);
@@ -1309,7 +1240,10 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           ProductId: sku,
           ProductName: name,
         };
-        postWebEngageEvent(WebEngageEventName.PHARMACY_CATEGORY_SECTION_PRODUCT_CLICK, eventAttributes);
+        postWebEngageEvent(
+          WebEngageEventName.PHARMACY_CATEGORY_SECTION_PRODUCT_CLICK,
+          eventAttributes
+        );
         postwebEngageProductClickedEvent(data.item, title, 'Home');
         props.navigation.navigate(AppRoutes.MedicineDetailsScene, { sku });
       },
@@ -1629,9 +1563,13 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       null,
       props.navigation,
       currentPatient,
+      isPharmacyLocationServiceable,
       () => setItemsLoading({ ...itemsLoading, [sku]: false })
     );
     postwebEngageAddToCartEvent(item, 'Pharmacy Partial Search');
+    let id = currentPatient && currentPatient.id ? currentPatient.id : '';
+    console.log(item);
+    postAppsFlyerAddToCartEvent(item, id);
   };
 
   const getItemQuantity = (id: string) => {
@@ -1810,10 +1748,10 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       >
         {renderBannerImageToGetAspectRatio()}
         {renderBanners()}
-        {renderUploadPrescriptionSection()}
         {renderYourOrders()}
         {renderRecommendedProducts()}
         {loading ? renderSectionLoader() : !error && renderSectionsWithOrdering()}
+        {renderUploadPrescriptionSection()}
         {!error && <View style={{ height: 20 }} />}
       </TouchableOpacity>
     );
@@ -1822,7 +1760,10 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const renderPincodePopup = () => {
     const onClose = (serviceable?: boolean, response?: LocationData) => {
       setPincodePopupVisible(false);
-      if (serviceable) setServiceabilityMsg('');
+      if (serviceable) {
+        setServiceabilityMsg('');
+        setPharmacyLocationServiceable!(true);
+      }
     };
     return pincodePopupVisible && <PincodePopup onClickClose={onClose} onComplete={onClose} />;
   };
