@@ -392,6 +392,8 @@ interface TopSpecialtyType {
   slugName: string;
 }
 
+const image_url = process.env.SPECIALTY_IMAGE_SOURCE;
+
 export const SpecialtyDivision: React.FC<SpecialtyDivisionProps> = (props) => {
   const classes = useStyles({});
   const { selectedCity, doctorsCount } = props;
@@ -400,29 +402,28 @@ export const SpecialtyDivision: React.FC<SpecialtyDivisionProps> = (props) => {
   const topSpecialtyListing = [
     {
       specialtyName: 'Paediatrics',
-      image: 'https://apolloaphstorage.blob.core.windows.net/specialties/ic_paediatrics.png',
+      image: `${image_url}/ic_paediatrics.png`,
       description: "For your child's health problems",
       symptoms: 'Fever, cough, diarrhoea',
       slugName: 'Paediatrics',
     },
     {
       specialtyName: 'General Physician',
-      image: 'https://apolloaphstorage.blob.core.windows.net/specialties/ic_general_medicine.png',
+      image: `${image_url}/ic_general_medicine.png`,
       description: 'For any common health issues',
       symptoms: 'Fever, headache, asthma',
       slugName: 'General Physician/ Internal Medicine',
     },
     {
       specialtyName: 'Dermatology',
-      image: 'https://apolloaphstorage.blob.core.windows.net/specialties/ic_dermatology.png',
+      image: `${image_url}/ic_dermatology.png`,
       description: 'For skin & hair problems',
       symptoms: 'Skin rash, acne, skin patch',
       slugName: 'Dermatology',
     },
     {
       specialtyName: 'Gynaecology',
-      image:
-        'https://apolloaphstorage.blob.core.windows.net/specialties/ic_obstetrics_and_gynaecology.png',
+      image: `${image_url}/ic_obstetrics_and_gynaecology.png`,
       description: "For women's health",
       symptoms: 'Irregular periods, Pregnancy',
       slugName: 'Obstetrics & Gynaecology',
@@ -446,7 +447,7 @@ export const SpecialtyDivision: React.FC<SpecialtyDivisionProps> = (props) => {
             {topSpecialtyListing &&
               topSpecialtyListing.length > 0 &&
               topSpecialtyListing.map((specialityDetails: TopSpecialtyType) => (
-                <Grid key={specialityDetails.id} item xs={6} md={3}>
+                <Grid key={specialityDetails.specialtyName} item xs={6} md={3}>
                   <div className={classes.specialityCard}>
                     <Link
                       to={
