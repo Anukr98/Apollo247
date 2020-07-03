@@ -464,6 +464,12 @@ export const YourCartUploadPrescriptions: React.FC<YourCartUploadPrescriptionPro
   const renderSuccessPopup = () => {
     showAphAlert!({
       title: 'Hi :)',
+      ctaContainerStyle: {
+        flexDirection: 'row',
+        marginHorizontal: 20,
+        justifyContent: 'flex-end',
+        marginVertical: 18,
+      },
       description: 'Your prescriptions have been submitted successfully. Our Pharmacists will validate the prescriptions and place your order.\n\nIf we require any clarifications, we will call you within one hour (Calling hours: 8AM to 8PM).',
       unDismissable: true,
       CTAs: [
