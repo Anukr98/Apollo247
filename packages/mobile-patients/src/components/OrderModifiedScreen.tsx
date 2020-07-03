@@ -223,22 +223,24 @@ export const OrderModifiedScreen: React.FC<OrderModifiedScreenProps> = (props) =
   };
 
   const renderItemsAddedRemovedCard = () => {
-    return (
-      <View style={styles.itemAddedRemovedViewStyle}>
-        <View style={{ flexDirection: 'row' }}>
-          <View style={styles.importantOrangeCircleViewStyle}>
-            <Text style={styles.impTextStyle}>{'!'}</Text>
-          </View>
-          <View style={{ marginLeft: 18 }}>
-            <Text style={styles.importantMsgTextStyle}>
-              {'Important messages for items in your cart.'}
-            </Text>
-            {renderremovedItems()}
-            {renderaddedItems()}
+    if ((addedItems && addedItems.length) || (removedItems && removedItems.length)) {
+      return (
+        <View style={styles.itemAddedRemovedViewStyle}>
+          <View style={{ flexDirection: 'row' }}>
+            <View style={styles.importantOrangeCircleViewStyle}>
+              <Text style={styles.impTextStyle}>{'!'}</Text>
+            </View>
+            <View style={{ marginLeft: 18 }}>
+              <Text style={styles.importantMsgTextStyle}>
+                {'Important messages for items in your cart.'}
+              </Text>
+              {renderremovedItems()}
+              {renderaddedItems()}
+            </View>
           </View>
         </View>
-      </View>
-    );
+      );
+    }
   };
 
   const renderMrpAndQtyItems = (item: any) => {
