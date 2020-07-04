@@ -474,7 +474,7 @@ const getRecommendedProductsList: Resolver<
   if (process.env.NODE_ENV == 'local') uhid = ApiConstants.CURRENT_UHID.toString();
   else if (process.env.NODE_ENV == 'dev') uhid = ApiConstants.CURRENT_UHID.toString();
   //const redisKeys = await tedis.keys('*');
-  uhid = 'APJ1.0002558515';
+  //uhid = 'APJ1.0002558515';
   const recommendedProductsList: RecommendedProducts[] = [];
   const listResp = await fetch(
     process.env.PRISM_GET_RECOMMENDED_PRODUCTS
@@ -488,20 +488,19 @@ const getRecommendedProductsList: Resolver<
   const textRes = await listResp.text();
   const productsList = JSON.parse(textRes);
   if (productsList.errorCode == 0) {
-    //console.log(productsList.response[0], productsList.response.length, 'prism recommend list');
-    for (let k = 0; k < productsList.response.length; k++) {
+    for (let k = 0; k < productsList.response.recommendations.length; k++) {
       //console.log(productsList.response[k], 'redis keys length');
-      const key = 'medicine:sku:' + productsList.response[k];
+      const key = 'medicine:sku:' + productsList.response.recommendations[k];
       const skuDets = await tedis.hgetall(key);
       if (skuDets && skuDets.status == 'Enabled') {
         const recommendedProducts: RecommendedProducts = {
-          productImage: skuDets.gallery_images,
+          productImage: decodeURIComponent(skuDets.gallery_images),
           productPrice: skuDets.price,
-          productName: skuDets.name,
+          productName: decodeURIComponent(skuDets.name),
           productSku: skuDets.sku,
           productSpecialPrice: skuDets.special_price,
           isPrescriptionNeeded: skuDets.is_prescription_required,
-          categoryName: skuDets.category_name,
+          categoryName: decodeURIComponent(skuDets.category_name),
           status: skuDets.status,
           mou: skuDets.mou,
           imageBaseUrl: ApiConstants.REDIS_IMAGE_URL.toString(),
@@ -528,7 +527,8 @@ const checkIfProductsOnline: Resolver<
   //const redisKeys = await tedis.keys('*');
   async function checkProduct(sku: string) {
     return new Promise<ProductAvailability>(async (resolve) => {
-      const skuDets = await tedis.hgetall(sku);
+      const key = 'medicine:sku:' + sku;
+      const skuDets = await tedis.hgetall(key);
       const product: ProductAvailability = {
         productSku: sku,
         status: false,
