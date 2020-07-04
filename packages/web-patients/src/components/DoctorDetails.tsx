@@ -14,7 +14,6 @@ import { useApolloClient } from 'react-apollo-hooks';
 import Typography from '@material-ui/core/Typography';
 import { OnlineConsult } from 'components/OnlineConsult';
 import { VisitClinic } from 'components/VisitClinic';
-import { useAllCurrentPatients } from 'hooks/authHooks';
 import { GET_DOCTOR_DETAILS_BY_ID } from 'graphql/doctors';
 import {
   GetDoctorDetailsById,
@@ -40,6 +39,7 @@ import { HowCanConsult } from 'components/Doctors/HowCanConsult';
 import { AppDownload } from 'components/Doctors/AppDownload';
 import { NavigationBottom } from 'components/NavigationBottom';
 import { GetDoctorNextAvailableSlot } from 'graphql/types/GetDoctorNextAvailableSlot';
+import { GetDoctorDetailsById_getDoctorDetailsById as DoctorDetailsType } from 'graphql/types/GetDoctorDetailsById';
 
 export interface DoctorDetailsProps {
   id: string;
@@ -225,16 +225,15 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
   const [tabValue, setTabValue] = useState<number>(0);
   const [isShownOnce, setIsShownOnce] = useState<boolean>(false);
-  const { currentPatient } = useAllCurrentPatients();
-  const isMediumScreen = useMediaQuery('(min-width:768px) and (max-width:900px)');
-  const isSmallScreen = useMediaQuery('(max-width:767px)');
   const apolloClient = useApolloClient();
-  const [data, setData] = useState<any>();
+  const [doctorData, setDoctorData] = useState<DoctorDetailsType | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [structuredJSON, setStructuredJSON] = useState(null);
   const [metaTagProps, setMetaTagProps] = useState(null);
   const [doctorAvailableSlots, setDoctorAvailableSlots] = useState<GetDoctorNextAvailableSlot>();
-  const currentUserId = currentPatient && currentPatient.id;
+  const [error, setError] = useState<boolean>(false);
+  const isMediumScreen = useMediaQuery('(min-width:768px) and (max-width:900px)');
+  const isSmallScreen = useMediaQuery('(max-width:767px)');
 
   const doctorSlots =
     doctorAvailableSlots &&
@@ -250,29 +249,22 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         query: GET_DOCTOR_DETAILS_BY_ID,
         variables: { id: doctorId },
       })
-      .then((response) => {
-        setData(response.data);
-
-        if (
-          response.data &&
-          response.data.getDoctorDetailsById &&
-          Object.keys(response.data.getDoctorDetailsById).length
-        ) {
+      .then(({ data }: any) => {
+        if (data && data.getDoctorDetailsById) {
+          setDoctorData(data.getDoctorDetailsById);
           const {
-            getDoctorDetailsById: {
-              id,
-              fullName,
-              photoUrl,
-              firstName,
-              lastName,
-              doctorHospital,
-              specialty,
-              onlineConsultationFees,
-              physicalConsultationFees,
-              consultHours,
-              salutation,
-            },
-          } = response.data;
+            id,
+            fullName,
+            photoUrl,
+            firstName,
+            lastName,
+            doctorHospital,
+            specialty,
+            onlineConsultationFees,
+            physicalConsultationFees,
+            consultHours,
+            salutation,
+          } = data.getDoctorDetailsById;
           const openingHours = consultHours ? getOpeningHrs(consultHours) : '';
           let streetLine1 = '',
             city = '',
@@ -342,8 +334,9 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
             title: `${fullName}: ${
               specialty && specialty.name ? specialty.name : ''
             } - Online Consultation/Appointment - Apollo 247`,
-            description: `Book an appointment with ${fullName} - ${specialty &&
-              specialty.name} and consult online at Apollo 247. Know more about ${fullName} and his work here. Get medical help online in just a few clicks at Apollo 247.`,
+            description: `Book an appointment with ${fullName} - ${
+              specialty && specialty.name
+            } and consult online at Apollo 247. Know more about ${fullName} and his work here. Get medical help online in just a few clicks at Apollo 247.`,
             canonicalLink:
               window &&
               window.location &&
@@ -351,9 +344,11 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
               `${window.location.origin}/doctors/${readableParam(fullName)}-${id}`,
           });
         }
+        setError(false);
       })
       .catch((e) => {
         console.log(e);
+        setError(true);
       })
       .finally(() => {
         setLoading(false);
@@ -364,61 +359,34 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     return <LinearProgress className={classes.loader} />;
   }
 
-  const doctorDetails = data && data.getDoctorDetailsById ? data : null;
-  const doctorTimings =
-    data && data.getDoctorDetailsById && data.getDoctorDetailsById.consultHours
-      ? data && data.getDoctorDetailsById.consultHours
-      : null;
-  const gtmTrackingFunc = () => {
-    /* Gtm code start */
-    const speciality =
-      doctorDetails &&
-      doctorDetails.getDoctorDetailsById &&
-      doctorDetails.getDoctorDetailsById.specialty &&
-      doctorDetails.getDoctorDetailsById.specialty.name
-        ? doctorDetails.getDoctorDetailsById.specialty.name
-        : null;
-    const onlineConsultationFees =
-      doctorDetails &&
-      doctorDetails.getDoctorDetailsById &&
-      doctorDetails.getDoctorDetailsById.onlineConsultationFees
-        ? doctorDetails.getDoctorDetailsById.onlineConsultationFees
-        : null;
-    gtmTracking({
-      category: 'Consultations',
-      action: speciality,
-      label: 'Order Initiated',
-      value: onlineConsultationFees,
-    });
-    /* Gtm code end */
-  };
+  if (error) {
+    return <>Error Loading the data</>;
+  }
 
-  if (doctorDetails) {
-    const isStarDoctor =
-      doctorDetails &&
-      doctorDetails.getDoctorDetailsById &&
-      doctorDetails.getDoctorDetailsById.doctorType === DoctorType.STAR_APOLLO
-        ? true
-        : false;
+  if (doctorData) {
+    const doctorTimings = doctorData.consultHours || null;
+    const gtmTrackingFunc = () => {
+      /* Gtm code start */
+      const speciality =
+        doctorData && doctorData.specialty && doctorData.specialty.name
+          ? doctorData.specialty.name
+          : null;
+      const onlineConsultationFees =
+        doctorData && doctorData.onlineConsultationFees ? doctorData.onlineConsultationFees : null;
+      gtmTracking({
+        category: 'Consultations',
+        action: speciality,
+        label: 'Order Initiated',
+        value: onlineConsultationFees,
+      });
+      /* Gtm code end */
+    };
+    const doctorId = doctorData.id || '';
 
     const isPayrollDoctor =
-      doctorDetails &&
-      doctorDetails.getDoctorDetailsById &&
-      doctorDetails.getDoctorDetailsById.doctorType === DoctorType.PAYROLL
-        ? true
-        : false;
+      doctorData.doctorType && doctorData.doctorType === DoctorType.PAYROLL ? true : false;
 
-    const doctorId =
-      doctorDetails && doctorDetails.getDoctorDetailsById
-        ? doctorDetails.getDoctorDetailsById.id
-        : '';
-
-    const hasStarTeam =
-      doctorDetails &&
-      doctorDetails.getDoctorDetailsById &&
-      doctorDetails.getDoctorDetailsById.starTeam
-        ? true
-        : false;
+    const hasStarTeam = doctorData.starTeam ? true : false;
 
     return (
       <div className={classes.root}>
@@ -445,7 +413,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
               <div className={classes.leftSection}>
                 <div className={classes.doctorProfile}>
                   <DoctorProfile
-                    doctorDetails={doctorDetails}
+                    doctorDetails={doctorData}
                     avaPhy={true}
                     avaOnline={true}
                     getDoctorAvailableSlots={(value: GetDoctorNextAvailableSlot) => {
@@ -454,17 +422,17 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                   />
                   {!isPayrollDoctor && (
                     <>
-                      <DoctorClinics doctorDetails={doctorDetails} />
-                      {hasStarTeam && <StarDoctorTeam doctorDetails={doctorDetails} />}
+                      <DoctorClinics doctorDetails={doctorData} />
+                      {hasStarTeam && <StarDoctorTeam doctorDetails={doctorData} />}
                     </>
                   )}
                   <DoctorTimings doctorTimings={doctorTimings} />
                 </div>
-                <AppointmentHistory doctorId={doctorId} patientId={currentUserId || ' '} />
+                <AppointmentHistory doctorId={doctorData.id || ''} />
               </div>
               <div className={classes.rightSideBar}>
                 <HowCanConsult
-                  doctorDetails={doctorDetails}
+                  doctorDetails={doctorData}
                   doctorAvailablePhysicalSlots={
                     doctorSlots ? doctorSlots.physicalAvailableSlot : ''
                   }
@@ -540,7 +508,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
               <TabContainer>
                 <OnlineConsult
                   setIsPopoverOpen={setIsPopoverOpen}
-                  doctorDetails={doctorDetails}
+                  doctorDetails={doctorData}
                   onBookConsult={(popover: boolean) => setIsPopoverOpen(popover)}
                   isRescheduleConsult={false}
                   tabValue={(tabValue: number) => setTabValue(tabValue)}
@@ -553,7 +521,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
             {tabValue === 1 && !isPayrollDoctor && (
               <TabContainer>
                 <LocationProvider>
-                  <VisitClinic doctorDetails={doctorDetails} />
+                  <VisitClinic doctorDetails={doctorData} />
                 </LocationProvider>
               </TabContainer>
             )}
