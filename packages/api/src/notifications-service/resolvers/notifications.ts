@@ -28,6 +28,7 @@ import { log } from 'customWinstonLogger';
 import { APPOINTMENT_TYPE, Appointment, STATUS } from 'consults-service/entities';
 import Pubnub from 'pubnub';
 import fetch from 'node-fetch';
+import { Doctor } from 'doctors-service/entities';
 
 export const getNotificationsTypeDefs = gql`
   type PushNotificationMessage {
@@ -2257,6 +2258,110 @@ const sendFollowUpSmsToPatients = async (
     });
   });
 };
+
+export async function sendChatMessageNotification(
+  doctorDetails: Doctor,
+  patientDetails: Patient,
+  appointment: Appointment,
+  doctorsDb: Connection,
+  chatMessage: string
+) {
+  const whatsAppLink = process.env.WHATSAPP_LINK_BOOK_APOINTMENT;
+  let whatsAppMessageBody = ApiConstants.WHATSAPP_SD_CHAT_NOTIFICATION.replace(
+    '{0}',
+    doctorDetails.firstName
+  ).replace('{1}', patientDetails.firstName);
+  whatsAppMessageBody = whatsAppMessageBody + whatsAppLink;
+  await sendNotificationWhatsapp(doctorDetails.mobileNumber, whatsAppMessageBody, 1);
+  const messageBody = ApiConstants.CHAT_MESSGAE_TEXT.replace(
+    '{0}',
+    doctorDetails.firstName
+  ).replace('{1}', patientDetails.firstName);
+  await sendNotificationSMS(doctorDetails.mobileNumber, messageBody);
+  //sendNotificationWhatsapp(doctorDetails.mobileNumber, messageBody);
+  const doctorTokenRepo = doctorsDb.getCustomRepository(DoctorDeviceTokenRepository);
+  const deviceTokensList = await doctorTokenRepo.getDeviceTokens(doctorDetails.id);
+  //if (deviceTokensList.length == 0) return { status: true };
+
+  const registrationToken: string[] = [];
+  if (deviceTokensList.length > 0) {
+    //initialize firebaseadmin
+    const config = {
+      credential: firebaseAdmin.credential.applicationDefault(),
+      databaseURL: `https://${process.env.FIREBASE_PROJECT_ID}.firebaseio.com`,
+    };
+    let admin = require('firebase-admin');
+    let notificationResponse: PushNotificationSuccessMessage;
+    admin = !firebaseAdmin.apps.length ? firebaseAdmin.initializeApp(config) : firebaseAdmin.app();
+    const options = {
+      priority: NotificationPriority.high,
+      timeToLive: 60 * 60 * 24, //wait for one day.. if device is offline
+    };
+    let chatMsg = '';
+    if (chatMessage) {
+      chatMsg = chatMessage;
+    }
+    const payload = {
+      notification: {
+        title:
+          patientDetails.firstName +
+          ' sent 1 message | ' +
+          format(addMilliseconds(new Date(), 19800000), 'yyyy-MM-dd HH:mm:ss'),
+        body: chatMsg,
+        sound: ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString(),
+      },
+      data: {
+        type: 'doctor_chat_message',
+        appointmentId: appointment.id,
+        patientName: appointment.patientName,
+        content: chatMsg,
+      },
+    };
+
+    deviceTokensList.forEach((values: { deviceToken: string }) => {
+      registrationToken.push(values.deviceToken);
+    });
+
+    console.log(registrationToken, 'registrationToken doctor');
+    admin
+      .messaging()
+      .sendToDevice(registrationToken, payload, options)
+      .then((response: PushNotificationSuccessMessage) => {
+        notificationResponse = response;
+        //if (pushNotificationInput.notificationType == NotificationType.CALL_APPOINTMENT) {
+        const fileName =
+          process.env.NODE_ENV +
+          '_doctorapptnotification_' +
+          format(new Date(), 'yyyyMMdd') +
+          '.txt';
+        let assetsDir = path.resolve('/apollo-hospitals/packages/api/src/assets');
+        if (process.env.NODE_ENV != 'local') {
+          assetsDir = path.resolve(<string>process.env.ASSETS_DIRECTORY);
+        }
+        let content =
+          format(new Date(), 'yyyy-MM-dd hh:mm') +
+          '\n apptid: ' +
+          appointment.id.toString() +
+          '\n multicastId: ';
+        content +=
+          response.multicastId.toString() +
+          '\n------------------------------------------------------------------------------------\n';
+        fs.appendFile(assetsDir + '/' + fileName, content, (err) => {
+          if (err) {
+            console.log('file saving error', err);
+          }
+          console.log('notification results saved');
+        });
+        //}
+        console.log(notificationResponse, 'notificationResponse');
+      })
+      .catch((error: JSON) => {
+        console.log('PushNotification Failed::' + error);
+        throw new AphError(AphErrorMessages.PUSH_NOTIFICATION_FAILED);
+      });
+  }
+  return { status: true };
+}
 
 const sendChatMessageToDoctor: Resolver<
   null,
