@@ -1320,7 +1320,7 @@ export async function sendReminderNotification(
       doctorDetails.firstName + ' ' + doctorDetails.lastName
     );
     whatsappMsg = whatsappMsg.replace('{3}', diffMins.toString());
-    sendNotificationWhatsapp(patientDetails.mobileNumber, whatsappMsg, 1);
+    sendNotificationWhatsapp(doctorDetails.mobileNumber, whatsappMsg, 1);
     if (appointment.appointmentType != APPOINTMENT_TYPE.PHYSICAL) {
       payload = {
         notification: {
@@ -1431,6 +1431,15 @@ export async function sendReminderNotification(
       );
       sendNotificationSMS(doctorDetails.mobileNumber, doctorSMS);
       sendBrowserNotitication(doctorDetails.id, doctorSMS);
+      let whatsappMsg = ApiConstants.WHATSAPP_SD_CONSULT_REMINDER_15_MIN.replace(
+        '{0}',
+        patientDetails.firstName
+      );
+      whatsappMsg = whatsappMsg.replace(
+        '{1}',
+        doctorDetails.firstName + ' ' + doctorDetails.lastName
+      );
+      sendNotificationWhatsapp(doctorDetails.mobileNumber, whatsappMsg, 1);
     }
     //sendNotificationWhatsapp(patientDetails.mobileNumber, notificationBody);
   } else if (
@@ -2277,12 +2286,12 @@ const sendChatMessageToDoctor: Resolver<
   const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
   const doctorDetails = await doctorRepo.findById(appointment.doctorId);
   if (!doctorDetails) throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID, undefined, {});
-  const whatsAppLink = process.env.WHATSAPP_LINK_BOOK_APOINTMENT;
+  //const whatsAppLink= process.env.WHATSAPP_LINK_BOOK_APOINTMENT;
   let whatsAppMessageBody = ApiConstants.WHATSAPP_SD_CHAT_NOTIFICATION.replace(
     '{0}',
     doctorDetails.firstName
   ).replace('{1}', patientDetails.firstName);
-  whatsAppMessageBody = whatsAppMessageBody + whatsAppLink;
+  whatsAppMessageBody = whatsAppMessageBody;
   await sendNotificationWhatsapp(doctorDetails.mobileNumber, whatsAppMessageBody, 1);
   const messageBody = ApiConstants.CHAT_MESSGAE_TEXT.replace(
     '{0}',
