@@ -172,7 +172,7 @@ const useStyles = makeStyles((theme: Theme) => {
         color: '#00a7b9',
         fontWeight: 'bold',
         [theme.breakpoints.down('sm')]: {
-          margin: '30px 0 10px',
+          margin: '20px 0 10px',
         },
       },
     },
