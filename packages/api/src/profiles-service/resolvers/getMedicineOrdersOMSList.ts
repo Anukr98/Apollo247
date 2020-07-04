@@ -473,6 +473,7 @@ const getRecommendedProductsList: Resolver<
   if (process.env.NODE_ENV == 'local') uhid = ApiConstants.CURRENT_UHID.toString();
   else if (process.env.NODE_ENV == 'dev') uhid = ApiConstants.CURRENT_UHID.toString();
   //const redisKeys = await tedis.keys('*');
+  uhid = 'APJ1.0002558515';
   const recommendedProductsList: RecommendedProducts[] = [];
   const listResp = await fetch(
     process.env.PRISM_GET_RECOMMENDED_PRODUCTS
@@ -489,7 +490,8 @@ const getRecommendedProductsList: Resolver<
     //console.log(productsList.response[0], productsList.response.length, 'prism recommend list');
     for (let k = 0; k < productsList.response.length; k++) {
       //console.log(productsList.response[k], 'redis keys length');
-      const skuDets = await tedis.hgetall(productsList.response[k]);
+      const key = 'medicine:sku:' + productsList.response[k];
+      const skuDets = await tedis.hgetall(key);
       if (skuDets && skuDets.status == 'Enabled') {
         const recommendedProducts: RecommendedProducts = {
           productImage: skuDets.gallery_images,
