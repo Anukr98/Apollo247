@@ -7,7 +7,7 @@ import { AphCalendar } from 'components/AphCalendar';
 import { DayTimeSlots } from 'components/DayTimeSlots';
 import Scrollbars from 'react-custom-scrollbars';
 import { useQueryWithSkip } from 'hooks/apolloHooks';
-import { GetDoctorDetailsById as DoctorDetails } from 'graphql/types/GetDoctorDetailsById';
+import { GetDoctorDetailsById_getDoctorDetailsById as DoctorDetails } from 'graphql/types/GetDoctorDetailsById';
 import {
   GetDoctorAvailableSlots,
   GetDoctorAvailableSlotsVariables,
@@ -250,10 +250,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   // const currentTime = new Date().getTime();
   // const autoSlot = getAutoSlot();
-  const doctorAvailableTime =
-    moment()
-      .add(props.doctorAvailableIn, 'm')
-      .toDate() || new Date();
+  const doctorAvailableTime = moment().add(props.doctorAvailableIn, 'm').toDate() || new Date();
 
   const { doctorDetails, setIsPopoverOpen, tabValue, isShownOnce, setIsShownOnce } = props;
 
@@ -263,24 +260,16 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
 
   // console.log('-------', autoSlot);
 
-  const doctorName =
-    doctorDetails &&
-    doctorDetails.getDoctorDetailsById &&
-    doctorDetails.getDoctorDetailsById.firstName
-      ? doctorDetails.getDoctorDetailsById.firstName
-      : '';
+  const doctorName = doctorDetails && doctorDetails.firstName ? doctorDetails.firstName : '';
 
   const onlineConsultationFees =
-    doctorDetails && doctorDetails.getDoctorDetailsById
-      ? doctorDetails.getDoctorDetailsById.onlineConsultationFees
+    doctorDetails && doctorDetails.onlineConsultationFees
+      ? doctorDetails.onlineConsultationFees
       : '';
   const [revisedAmount, setRevisedAmount] = useState(onlineConsultationFees);
   const hospitalId =
-    doctorDetails &&
-    doctorDetails.getDoctorDetailsById &&
-    doctorDetails.getDoctorDetailsById.doctorHospital[0] &&
-    doctorDetails.getDoctorDetailsById.doctorHospital[0].facility
-      ? doctorDetails.getDoctorDetailsById.doctorHospital[0].facility.id
+    doctorDetails && doctorDetails.doctorHospital[0] && doctorDetails.doctorHospital[0].facility
+      ? doctorDetails.doctorHospital[0].facility.id
       : '';
 
   const morningSlots: number[] = [],
@@ -288,10 +277,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
     eveningSlots: number[] = [],
     lateNightSlots: number[] = [];
 
-  const doctorId =
-    doctorDetails && doctorDetails.getDoctorDetailsById && doctorDetails.getDoctorDetailsById.id
-      ? doctorDetails.getDoctorDetailsById.id
-      : '';
+  const doctorId = doctorDetails && doctorDetails.id ? doctorDetails.id : '';
 
   const apiDateFormat =
     dateSelected === ''
@@ -325,13 +311,8 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
 
   const getSpeciality = () => {
     let speciality = '';
-    if (
-      doctorDetails &&
-      doctorDetails.getDoctorDetailsById &&
-      doctorDetails.getDoctorDetailsById.specialty &&
-      doctorDetails.getDoctorDetailsById.specialty.name
-    ) {
-      speciality = doctorDetails.getDoctorDetailsById.specialty.name;
+    if (doctorDetails && doctorDetails.specialty && doctorDetails.specialty.name) {
+      speciality = doctorDetails.specialty.name;
     }
     return speciality;
   };
@@ -558,7 +539,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
           doctorType,
           doctorHospital,
           physicalConsultationFees,
-        } = doctorDetails.getDoctorDetailsById;
+        } = doctorDetails;
         let items = [],
           count = 0;
         onlineConsultationFees &&

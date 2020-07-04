@@ -172,7 +172,7 @@ export const BookConsult: React.FC<DoctorCardProps> = (props) => {
           <TabContainer>
             <OnlineConsult
               setIsPopoverOpen={setIsPopoverOpen}
-              doctorDetails={doctorDetails}
+              doctorDetails={doctorDetails.getDoctorDetailsById}
               onBookConsult={(popover: boolean) => setIsPopoverOpen(popover)}
               isRescheduleConsult={false}
               doctorAvailableIn={props.doctorAvailableIn}
@@ -184,7 +184,7 @@ export const BookConsult: React.FC<DoctorCardProps> = (props) => {
           <TabContainer>
             <LocationProvider>
               <VisitClinic
-                doctorDetails={doctorDetails}
+                doctorDetails={doctorDetails.getDoctorDetailsById}
                 doctorAvailableIn={props.doctorAvailableIn}
               />
             </LocationProvider>

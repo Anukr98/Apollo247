@@ -1,7 +1,7 @@
 import { Theme, Grid } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import React from 'react';
-import { GetDoctorDetailsById as DoctorDetails } from 'graphql/types/GetDoctorDetailsById';
+import { GetDoctorDetailsById_getDoctorDetailsById as DoctorDetails } from 'graphql/types/GetDoctorDetailsById';
 import {
   GetDoctorDetailsById_getDoctorDetailsById_doctorHospital as Facility,
   GetDoctorDetailsById_getDoctorDetailsById_consultHours as ConsultHours,
@@ -107,10 +107,10 @@ export const DoctorClinics: React.FC<DoctorClinicsProps> = (props) => {
   const classes = useStyles({});
   const { doctorDetails } = props;
 
-  if (doctorDetails && doctorDetails.getDoctorDetailsById) {
+  if (doctorDetails) {
     const clinics: Facility[] = [];
 
-    _forEach(doctorDetails.getDoctorDetailsById.doctorHospital, (hospitalDetails) => {
+    _forEach(doctorDetails.doctorHospital, (hospitalDetails) => {
       if (
         hospitalDetails.facility.facilityType === 'CLINIC' ||
         hospitalDetails.facility.facilityType === 'HOSPITAL'
@@ -119,7 +119,7 @@ export const DoctorClinics: React.FC<DoctorClinicsProps> = (props) => {
       }
     });
 
-    const { firstName } = doctorDetails.getDoctorDetailsById;
+    const { firstName } = doctorDetails;
 
     return clinics.length > 0 ? (
       <>

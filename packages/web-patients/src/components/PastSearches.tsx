@@ -73,42 +73,43 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     pastSearchList: {
-      margin: '20px 0 0',
-      padding: '20px ',
+      margin: '0 -10px',
+      padding: '20px 0 10px',
       listStyle: 'none',
       display: 'flex',
       alignItems: 'center',
+      width: '100%',
+      overflowX: 'auto',
       '& li': {
-        margin: '0 16px 0 0',
         textAlign: 'center',
+        padding: '0 8px',
         '& a': {
           padding: 10,
           background: '#ffffff',
           borderRadius: 10,
           boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
-          color: '#02475b',
+          color: '#fc9916',
+          whiteSpace: 'nowrap',
           fontSize: 12,
           display: 'block',
-          fontWeight: 500,
-          width: 160,
-          height: 100,
+          fontWeight: 600,
+          textTransform: 'uppercase',
+          minWidth: 150,
         },
       },
+      '&::-webkit-scrollbar': {
+        height: 4,
+        borderRadius: 4,
+      },
+      '&::-webkit-scrollbar-track': {
+        background: '#ccc',
+      },
+      '&::-webkit-scrollbar-thumb': {
+        background: '#888',
+      },
       [theme.breakpoints.down('sm')]: {
-        width: '100%',
-        overflowX: 'auto',
         margin: 0,
-        '& li': {
-          '& a': {
-            padding: 12,
-            color: '#fc9916 !important',
-            textTransform: 'uppercase',
-            whiteSpace: 'nowrap',
-            minWidth: 150,
-            width: 'auto !important',
-            height: 'auto  !important',
-          },
-        },
+        padding: 20,
       },
     },
   });
@@ -142,11 +143,11 @@ export const PastSearches: React.FC = (props) => {
                     to={`/doctors/${readableParam(searchDetails.name)}-${searchDetails.typeId}`}
                     title={searchDetails && `${_startCase(_toLower(searchDetails.name || ''))}`}
                   >
-                    <Avatar
+                    {/* <Avatar
                       alt={(searchDetails && searchDetails.name) || ''}
                       src={(searchDetails && searchDetails.image) || ''}
                       className={`${classes.bigAvatar} ${classes.doctorAvatar}`}
-                    />
+                    /> */}
                     {searchDetails && `${_startCase(_toLower(searchDetails.name || ''))}`}
                   </Link>
                 </li>
@@ -164,11 +165,11 @@ export const PastSearches: React.FC = (props) => {
                       }}
                       key={`${_uniqueId('psearch_spl_')}- ${searchDetails.typeId}`}
                     >
-                      <Avatar
+                      {/* <Avatar
                         alt={(searchDetails && searchDetails.name) || ''}
                         src={(searchDetails && searchDetails.image) || ''}
                         className={classes.bigAvatar}
-                      />
+                      /> */}
                       {(searchDetails && searchDetails.name) || ''}
                     </li>
                   )
