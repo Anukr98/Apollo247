@@ -258,6 +258,7 @@ const useStyles = makeStyles((theme: Theme) => {
     tabHead: {
       display: 'flex',
       alignItems: 'center',
+      textAlign: 'left',
       '& img': {
         margin: '0 20px 0 0',
       },
@@ -315,6 +316,9 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: '10px 0 ',
       margin: '10px 0 0',
       borderTop: '1px solid #eeeeee',
+      '& p': {
+        margin: '0 0 15px',
+      },
     },
   });
 });
@@ -471,7 +475,12 @@ export const HowItWorks: React.FC = (props) => {
       </div>
       <AphDialog open={chatConsult} maxWidth="sm">
         <AphDialogClose onClick={() => setChatConsult(false)} title={'Close'} />
-        <AphDialogTitle> How to consult via chat/audio/video?</AphDialogTitle>
+        <AphDialogTitle>
+          <div className={classes.tabHead}>
+            <img src={require('images/video-calling.svg')} />
+            <span>How to consult via chat/audio/video?</span>
+          </div>
+        </AphDialogTitle>
         <div className={classes.consultContainer}>
           <ul className={classes.tabList}>
             <li>
@@ -513,7 +522,12 @@ export const HowItWorks: React.FC = (props) => {
       </AphDialog>
       <AphDialog open={meetInPerson} maxWidth="sm">
         <AphDialogClose onClick={() => setMeetInPerson(false)} title={'Close'} />
-        <AphDialogTitle> How to consult in Person?</AphDialogTitle>
+        <AphDialogTitle>
+          <div className={classes.tabHead}>
+            <img src={require('images/ic-specialist.svg')} />
+            <span>How to consult in Person?</span>
+          </div>
+        </AphDialogTitle>
         <div className={classes.consultContainer}>
           <ul className={classes.tabList}>
             <li>
