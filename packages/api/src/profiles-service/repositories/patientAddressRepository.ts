@@ -37,6 +37,9 @@ export class PatientAddressRepository extends Repository<PatientAddress> {
 
   async getPatientAdresslistFromCache(id: string) {
     const redis = await pool.getTedis();
+    if (!redis) {
+      return await this.savePatientAdresslistToCache(id);
+    }
     try {
       const response = await redis.get(this.cacheKey(REDIS_ADDRESS_PATIENT_ID_KEY_PREFIX, id));
       dLogger(
@@ -64,6 +67,9 @@ export class PatientAddressRepository extends Repository<PatientAddress> {
   }
   async savePatientAdresslistToCache(id: string) {
     const redis = await pool.getTedis();
+    if (!redis) {
+      return await this.getPatientAddressesFromDb(id);
+    }
     try {
       const queryResult = await this.getPatientAddressesFromDb(id);
       await redis.set(
