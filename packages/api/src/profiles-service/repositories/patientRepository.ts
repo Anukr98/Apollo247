@@ -75,37 +75,37 @@ export class PatientRepository extends Repository<Patient> {
   }
 
   async getDeviceCodeCount(deviceCode: string) {
-    const redis = await pool.getTedis();
-    try {
-      const cacheCount = await redis.get(`${REDIS_PATIENT_DEVICE_COUNT_KEY_PREFIX}${deviceCode}`);
-      if (typeof cacheCount === 'string') {
-        return parseInt(cacheCount);
-      }
-      const deviceCodeCount = (await this.createQueryBuilder('patient')
-        .select(['"mobileNumber" as mobilenumber'])
-        .where('patient."deviceCode" = :deviceCode', { deviceCode })
-        .groupBy('patient."mobileNumber"')
-        .getRawMany()).length;
+    // const redis = await pool.getTedis();
+    // try {
+    //   const cacheCount = await redis.get(`${REDIS_PATIENT_DEVICE_COUNT_KEY_PREFIX}${deviceCode}`);
+    //   if (typeof cacheCount === 'string') {
+    //     return parseInt(cacheCount);
+    //   }
+    //   const deviceCodeCount = (await this.createQueryBuilder('patient')
+    //     .select(['"mobileNumber" as mobilenumber'])
+    //     .where('patient."deviceCode" = :deviceCode', { deviceCode })
+    //     .groupBy('patient."mobileNumber"')
+    //     .getRawMany()).length;
 
-      this.setCache(
-        `${REDIS_PATIENT_DEVICE_COUNT_KEY_PREFIX}${deviceCode}`,
-        deviceCodeCount.toString()
-      );
-      return deviceCodeCount;
-    } catch (e) {
-      dLogger(
-        new Date(),
-        'Redis Cache get device list error',
-        `Cache hit ${REDIS_PATIENT_DEVICE_COUNT_KEY_PREFIX}${deviceCode} ${JSON.stringify(e)}`
-      );
-      return (await this.createQueryBuilder('patient')
-        .select(['"mobileNumber" as mobilenumber'])
-        .where('patient."deviceCode" = :deviceCode', { deviceCode })
-        .groupBy('patient."mobileNumber"')
-        .getRawMany()).length;
-    } finally {
-      pool.putTedis(redis);
-    }
+    //   this.setCache(
+    //     `${REDIS_PATIENT_DEVICE_COUNT_KEY_PREFIX}${deviceCode}`,
+    //     deviceCodeCount.toString()
+    //   );
+    //   return deviceCodeCount;
+    // } catch (e) {
+    //   dLogger(
+    //     new Date(),
+    //     'Redis Cache get device list error',
+    //     `Cache hit ${REDIS_PATIENT_DEVICE_COUNT_KEY_PREFIX}${deviceCode} ${JSON.stringify(e)}`
+    //   );
+    return (await this.createQueryBuilder('patient')
+      .select(['"mobileNumber" as mobilenumber'])
+      .where('patient."deviceCode" = :deviceCode', { deviceCode })
+      .groupBy('patient."mobileNumber"')
+      .getRawMany()).length;
+    // } finally {
+    //   pool.putTedis(redis);
+    // }
   }
 
   async getPatientDetails(id: string) {
