@@ -302,14 +302,16 @@ const bookAppointment: Resolver<
   const appointmentDetails = await apptsrepo.getAppointmentsByDocId(appointmentInput.doctorId);
   let prevPatientId = '0';
   if (appointmentDetails.length) {
-    appointmentDetails.forEach(async (appointmentData) => {
+    //forEach loops do not support await
+    for (let k = 0, totalItems = appointmentDetails.length; k < totalItems; k++) {
+      const appointmentData = appointmentDetails[k];
       if (appointmentData.patientId != prevPatientId) {
         prevPatientId = appointmentData.patientId;
         await apptsrepo.updatePatientType(appointmentData, PATIENT_TYPE.NEW);
       } else {
         await apptsrepo.updatePatientType(appointmentData, PATIENT_TYPE.REPEAT);
       }
-    });
+    }
   }
 
   //calculate coupon discount value
@@ -317,8 +319,8 @@ const bookAppointment: Resolver<
     const amount = appointmentInput.actualAmount
       ? appointmentInput.actualAmount
       : appointmentInput.appointmentType == APPOINTMENT_TYPE.PHYSICAL
-      ? docDetails.physicalConsultationFees
-      : docDetails.onlineConsultationFees;
+        ? docDetails.physicalConsultationFees
+        : docDetails.onlineConsultationFees;
     const payload: ValidateCouponRequest = {
       mobile: patientDetails.mobileNumber.replace('+91', ''),
       billAmount: parseInt(amount.toString(), 10),
@@ -335,8 +337,8 @@ const bookAppointment: Resolver<
             appointmentInput.appointmentType == APPOINTMENT_TYPE.ONLINE
               ? 1
               : appointmentInput.appointmentType == APPOINTMENT_TYPE.PHYSICAL
-              ? 0
-              : -1,
+                ? 0
+                : -1,
           cost: parseInt(amount.toString(), 10),
           rescheduling: false,
         },

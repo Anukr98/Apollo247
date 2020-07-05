@@ -304,6 +304,38 @@ export class Appointment extends BaseEntity {
     this.updatedDate = new Date();
   }
 
+  @BeforeUpdate()
+  async appointMentStatusConstraintCheck() {
+    try {
+      //fetch latest state
+      const currentAppointmentInDb = await Appointment.findOne(this.id);
+
+      if (currentAppointmentInDb) {
+        const isFinalStatus: boolean = currentAppointmentInDb.status == STATUS.COMPLETED || currentAppointmentInDb.status == STATUS.CANCELLED;
+
+        if (isFinalStatus) {
+          const haveSameStatus: boolean = currentAppointmentInDb.status == this.status;
+
+          if (!haveSameStatus) {
+            console.log(` In db: ${currentAppointmentInDb.status} => ${this.status} from current request`);
+            throw new Error(`*** Attempting to update ${currentAppointmentInDb.status} to ${this.status} `);
+          }
+
+          const haveSameAppointmentState: boolean = currentAppointmentInDb.appointmentState == this.appointmentState;
+          if (!haveSameAppointmentState) {
+            console.log(` In db: ${currentAppointmentInDb.appointmentState} => ${this.appointmentState} from current request`);
+            throw new Error(`*** Attempting to update ${this.appointmentState} to ${currentAppointmentInDb.appointmentState} `);
+          }
+        }
+      }
+    }
+    catch (ex) {
+      console.log(`Appointment constraint check exception`, ex);
+      throw ex;
+    }
+  }
+
+
   @OneToMany(
     (type) => TransferAppointmentDetails,
     (transferAppointmentDetails) => transferAppointmentDetails.appointment
