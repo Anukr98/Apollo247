@@ -36,7 +36,12 @@ export class PatientAddressRepository extends Repository<PatientAddress> {
   }
 
   async getPatientAdresslistFromCache(id: string) {
-    const redis = await pool.getTedis();
+    const redis = await pool.getTedis().catch((e) => {
+      dLogger(new Date(), 'Error getting redis connection from pool', `${JSON.stringify(e)}`);
+    });
+    if (!redis) {
+      return await this.savePatientAdresslistToCache(id);
+    }
     try {
       const response = await redis.get(this.cacheKey(REDIS_ADDRESS_PATIENT_ID_KEY_PREFIX, id));
       dLogger(
@@ -53,12 +58,22 @@ export class PatientAddressRepository extends Repository<PatientAddress> {
         return address_list;
       } else return await this.savePatientAdresslistToCache(id);
     } catch (e) {
+      dLogger(
+        new Date(),
+        'Redis Cache get address list error',
+        `Cache hit ${this.cacheKey(REDIS_ADDRESS_PATIENT_ID_KEY_PREFIX, id)} ${JSON.stringify(e)}`
+      );
     } finally {
       pool.putTedis(redis);
     }
   }
   async savePatientAdresslistToCache(id: string) {
-    const redis = await pool.getTedis();
+    const redis = await pool.getTedis().catch((e) => {
+      dLogger(new Date(), 'Error getting redis connection from pool', `${JSON.stringify(e)}`);
+    });
+    if (!redis) {
+      return await this.getPatientAddressesFromDb(id);
+    }
     try {
       const queryResult = await this.getPatientAddressesFromDb(id);
       await redis.set(
@@ -73,6 +88,11 @@ export class PatientAddressRepository extends Repository<PatientAddress> {
       );
       return queryResult;
     } catch (e) {
+      dLogger(
+        new Date(),
+        'Redis Cache set address list error',
+        `Cache hit ${this.cacheKey(REDIS_ADDRESS_PATIENT_ID_KEY_PREFIX, id)} ${JSON.stringify(e)}`
+      );
     } finally {
       pool.putTedis(redis);
     }
