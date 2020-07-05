@@ -38,7 +38,9 @@ const REDIS_PATIENT_MOBILE_KEY_PREFIX: string = 'patient:mobile:';
 @EntityRepository(Patient)
 export class PatientRepository extends Repository<Patient> {
   async dropPatientCache(id: string) {
-    const redis = await pool.getTedis();
+    const redis = await pool.getTedis().catch((e) => {
+      dLogger(new Date(), 'Error getting redis connection from pool', `${JSON.stringify(e)}`);
+    });
     if (!redis) {
       return;
     }
@@ -96,7 +98,9 @@ export class PatientRepository extends Repository<Patient> {
   }
 
   async getByIdCache(id: string | number) {
-    const redis = await pool.getTedis();
+    const redis = await pool.getTedis().catch((e) => {
+      dLogger(new Date(), 'Error getting redis connection from pool', `${JSON.stringify(e)}`);
+    });
     if (!redis) {
       return await this.setByIdCache(id);
     }
@@ -142,7 +146,9 @@ export class PatientRepository extends Repository<Patient> {
     });
   }
   async setCache(key: string, value: string) {
-    const redis = await pool.getTedis();
+    const redis = await pool.getTedis().catch((e) => {
+      dLogger(new Date(), 'Error getting redis connection from pool', `${JSON.stringify(e)}`);
+    });
     if (!redis) {
       return;
     }
@@ -156,7 +162,9 @@ export class PatientRepository extends Repository<Patient> {
     }
   }
   async dropCache(key: string) {
-    const redis = await pool.getTedis();
+    const redis = await pool.getTedis().catch((e) => {
+      dLogger(new Date(), 'Error getting redis connection from pool', `${JSON.stringify(e)}`);
+    });
     if (!redis) {
       return;
     }
@@ -187,7 +195,9 @@ export class PatientRepository extends Repository<Patient> {
     return patientDetails;
   }
   async getByMobileCache(mobile: string) {
-    const redis = await pool.getTedis();
+    const redis = await pool.getTedis().catch((e) => {
+      dLogger(new Date(), 'Error getting redis connection from pool', `${JSON.stringify(e)}`);
+    });
     if (!redis) {
       return await this.setByMobileCache(mobile);
     }

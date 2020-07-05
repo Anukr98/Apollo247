@@ -36,7 +36,9 @@ export class PatientAddressRepository extends Repository<PatientAddress> {
   }
 
   async getPatientAdresslistFromCache(id: string) {
-    const redis = await pool.getTedis();
+    const redis = await pool.getTedis().catch((e) => {
+      dLogger(new Date(), 'Error getting redis connection from pool', `${JSON.stringify(e)}`);
+    });
     if (!redis) {
       return await this.savePatientAdresslistToCache(id);
     }
@@ -66,7 +68,9 @@ export class PatientAddressRepository extends Repository<PatientAddress> {
     }
   }
   async savePatientAdresslistToCache(id: string) {
-    const redis = await pool.getTedis();
+    const redis = await pool.getTedis().catch((e) => {
+      dLogger(new Date(), 'Error getting redis connection from pool', `${JSON.stringify(e)}`);
+    });
     if (!redis) {
       return await this.getPatientAddressesFromDb(id);
     }
