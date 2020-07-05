@@ -93,6 +93,11 @@ export class PatientRepository extends Repository<Patient> {
       );
       return deviceCodeCount;
     } catch (e) {
+      dLogger(
+        new Date(),
+        'Redis Cache get device list error',
+        `Cache hit ${REDIS_PATIENT_DEVICE_COUNT_KEY_PREFIX}${deviceCode} ${JSON.stringify(e)}`
+      );
       return (await this.createQueryBuilder('patient')
         .select(['"mobileNumber" as mobilenumber'])
         .where('patient."deviceCode" = :deviceCode', { deviceCode })
@@ -129,6 +134,11 @@ export class PatientRepository extends Repository<Patient> {
         return await this.setByIdCache(id);
       }
     } catch (e) {
+      dLogger(
+        new Date(),
+        'Redis get id Cache patient error',
+        `Cache hit ${REDIS_PATIENT_ID_KEY_PREFIX}${id} ${JSON.stringify(e)}`
+      );
     } finally {
       pool.putTedis(redis);
     }
@@ -155,6 +165,7 @@ export class PatientRepository extends Repository<Patient> {
       await redis.set(key, value);
       await redis.expire(key, 14400);
     } catch (e) {
+      dLogger(new Date(), 'Redis set Cache patient error', `Cache hit ${key} ${JSON.stringify(e)}`);
     } finally {
       pool.putTedis(redis);
     }
@@ -164,6 +175,11 @@ export class PatientRepository extends Repository<Patient> {
     try {
       await redis.del(key);
     } catch (e) {
+      dLogger(
+        new Date(),
+        'Redis drop Cache patient error',
+        `Cache hit ${key} ${JSON.stringify(e)}`
+      );
     } finally {
       pool.putTedis(redis);
     }
@@ -188,6 +204,11 @@ export class PatientRepository extends Repository<Patient> {
     try {
       ids = await redis.get(`${REDIS_PATIENT_MOBILE_KEY_PREFIX}${mobile}`);
     } catch (e) {
+      dLogger(
+        new Date(),
+        'Redis get patient mobile Cache error',
+        `Cache hit ${REDIS_PATIENT_MOBILE_KEY_PREFIX}${mobile} ${JSON.stringify(e)}`
+      );
     } finally {
       pool.putTedis(redis);
     }

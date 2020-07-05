@@ -53,6 +53,11 @@ export class PatientAddressRepository extends Repository<PatientAddress> {
         return address_list;
       } else return await this.savePatientAdresslistToCache(id);
     } catch (e) {
+      dLogger(
+        new Date(),
+        'Redis Cache get address list error',
+        `Cache hit ${this.cacheKey(REDIS_ADDRESS_PATIENT_ID_KEY_PREFIX, id)} ${JSON.stringify(e)}`
+      );
     } finally {
       pool.putTedis(redis);
     }
@@ -73,6 +78,11 @@ export class PatientAddressRepository extends Repository<PatientAddress> {
       );
       return queryResult;
     } catch (e) {
+      dLogger(
+        new Date(),
+        'Redis Cache set address list error',
+        `Cache hit ${this.cacheKey(REDIS_ADDRESS_PATIENT_ID_KEY_PREFIX, id)} ${JSON.stringify(e)}`
+      );
     } finally {
       pool.putTedis(redis);
     }
