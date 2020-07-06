@@ -221,17 +221,17 @@ const updateOrderStatus: Resolver<
         );
       }
       if (status == MEDICINE_ORDER_STATUS.DELIVERED || status == MEDICINE_ORDER_STATUS.PICKEDUP) {
+        let notificationType =
+          status == MEDICINE_ORDER_STATUS.DELIVERED
+            ? NotificationType.MEDICINE_ORDER_DELIVERED
+            : NotificationType.MEDICINE_ORDER_PICKEDUP;
+        sendMedicineOrderStatusNotification(notificationType, orderDetails, profilesDb);
         await createOneApolloTransaction(
           medicineOrdersRepo,
           orderDetails,
           orderDetails.patient,
           mobileNumberIn
         );
-        let notificationType =
-          status == MEDICINE_ORDER_STATUS.DELIVERED
-            ? NotificationType.MEDICINE_ORDER_DELIVERED
-            : NotificationType.MEDICINE_ORDER_PICKEDUP;
-        sendMedicineOrderStatusNotification(notificationType, orderDetails, profilesDb);
       }
       if (status == MEDICINE_ORDER_STATUS.CANCELLED) {
         medicineOrderCancelled(orderDetails, updateOrderStatusInput.reasonCode, profilesDb);

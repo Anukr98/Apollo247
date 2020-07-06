@@ -180,6 +180,33 @@ export class BlockedCalendarItem extends BaseEntity {
 }
 ///////////////////////////////////////////////////////////
 
+//AdminAuditLogs starts
+@Entity()
+export class AdminAuditLogs extends BaseEntity {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column({ nullable: true, type: 'text' })
+  updatedBy: string;
+
+  @Column({ nullable: true, type: 'timestamp' })
+  updatedAt: Date;
+
+  @Column({ nullable: true, type: 'text' })
+  updatedField: string;
+
+  @Column({ nullable: true, type: 'text' })
+  previousDetails: string;
+
+  @Column({ nullable: true })
+  doctorId: string;
+
+  @Column({ nullable: true, type: 'text' })
+  currentDetails: string;
+}
+
+//AdminAuditLogs ends
+
 //consult Hours starts
 @Entity()
 export class ConsultHours extends BaseEntity {

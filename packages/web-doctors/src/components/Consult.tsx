@@ -219,7 +219,9 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       console.log(`There was an error with the sessionEventHandlers: ${JSON.stringify(error)}`);
       props.setSessionError(error);
     },
-    connectionCreated: (event: string) => {},
+    connectionCreated: (event: string) => {
+      console.log('session stream connectionCreated!', event);
+    },
     sessionConnected: (event: string) => {
       console.log('session stream sessionConnected!', event);
     },
@@ -272,15 +274,24 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     disconnected: (event: string) => {
       console.log('Subscribe stream disconnected!', event);
     },
-    videoDisabled: (error: any) => {
-      console.log(`videoDisabled: ${JSON.stringify(error)}`);
-      if (error.reason === 'quality') {
+    destroyed: (event: string) => {
+      console.log('Subscribe stream destroyed!', event);
+    },
+    videoDisableWarning: (event: any) => {
+      console.log(`videoDisableWarning: ${JSON.stringify(event)}`);
+    },
+    videoDisableWarningLifted: (event: any) => {
+      console.log(`videoDisableWarningLifted: ${JSON.stringify(event)}`);
+    },
+    videoDisabled: (event: any) => {
+      console.log(`videoDisabled: ${JSON.stringify(event)}`);
+      if (event.reason === 'quality') {
         setDowngradeToAudio(true);
       }
     },
-    videoEnabled: (error: any) => {
-      console.log(`videoDisabled: ${JSON.stringify(error)}`);
-      if (error.reason === 'quality') {
+    videoEnabled: (event: any) => {
+      console.log(`videoDisabled: ${JSON.stringify(event)}`);
+      if (event.reason === 'quality') {
         setDowngradeToAudio(false);
       }
     },
@@ -342,6 +353,10 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                 sessionId={props.sessionId}
                 token={props.token}
                 eventHandlers={sessionHandler}
+                onError={(error: any) => {
+                  console.log('Session Error', error);
+                  props.setSessionError(error);
+                }}
               >
                 <OTPublisher
                   className={
@@ -352,6 +367,10 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                     publishVideo: subscribeToVideo,
                   }}
                   eventHandlers={publisherHandler}
+                  onError={(error: any) => {
+                    console.log('Publisher Error', error);
+                    props.setPublisherError(error);
+                  }}
                 />
 
                 <div
@@ -388,6 +407,10 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                       eventHandlers={subscriberHandler}
                       retry={isRetry}
                       className={!props.showVideoChat ? classes.subscriber : classes.minSubscriber}
+                      onError={(error: any) => {
+                        console.log('Subscriber Error', error);
+                        props.setSubscriberError(error);
+                      }}
                     />
                   </OTStreams>
 
