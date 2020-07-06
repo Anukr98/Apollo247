@@ -157,6 +157,7 @@ export const BOOK_APPOINTMENT = gql`
         status
         appointmentType
         patientId
+        displayId
       }
     }
   }
