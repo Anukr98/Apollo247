@@ -73,7 +73,7 @@ exports.FollowUpNotification = (req, res) => {
         '\n---------------------------\n' +
         response.data.data.sendFollowUpNotification +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function (err) {
+      fs.appendFile(fileName, content, function(err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -102,7 +102,36 @@ exports.ApptReminder = (req, res) => {
         '\n---------------------------\n' +
         response.data.data.sendApptReminderNotification.apptsListCount +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function (err) {
+      fs.appendFile(fileName, content, function(err) {
+        if (err) throw err;
+        console.log('Updated!');
+      });
+      res.send({
+        status: 'success',
+        message: response.data,
+      });
+    })
+    .catch((error) => {
+      console.log('error', error);
+    });
+};
+
+exports.DoctorApptReminder = (req, res) => {
+  const requestJSON = {
+    query: Constants.DOCTOR_APPT_REMINDER.replace(`{0}`, req.query.inNextMin),
+  };
+  axios.defaults.headers.common['authorization'] = Constants.AUTH_TOKEN;
+  axios
+    .post(process.env.API_URL, requestJSON)
+    .then((response) => {
+      const fileName =
+        process.env.PHARMA_LOGS_PATH + new Date().toDateString() + '-doctorApptNotifications.txt';
+      let content =
+        new Date().toString() +
+        '\n---------------------------\n' +
+        response.data.data.sendDoctorReminderNotifications.apptsListCount +
+        '\n-------------------\n';
+      fs.appendFile(fileName, content, function(err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -131,7 +160,7 @@ exports.DailyAppointmentSummary = (req, res) => {
         '\n---------------------------\n' +
         response.data.data.sendDailyAppointmentSummary +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function (err) {
+      fs.appendFile(fileName, content, function(err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -161,7 +190,7 @@ exports.PhysicalApptReminder = (req, res) => {
         '\n---------------------------\n' +
         response.data.data.sendPhysicalApptReminderNotification.apptsListCount +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function (err) {
+      fs.appendFile(fileName, content, function(err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -219,7 +248,7 @@ exports.updateSdSummary = (req, res) => {
                   JSON.stringify(response.data.data.updateSdSummary) +
                   '\n-------------------\n';
                 console.log(response.data.data);
-                fs.appendFile(fileName, content, function (err) {
+                fs.appendFile(fileName, content, function(err) {
                   if (err) throw err;
                   console.log('Updated!');
                 });
@@ -285,7 +314,7 @@ exports.updateJdSummary = (req, res) => {
                   JSON.stringify(response.data.data.updateJdSummary) +
                   '\n-------------------\n';
                 console.log(response.data.data);
-                fs.appendFile(fileName, content, function (err) {
+                fs.appendFile(fileName, content, function(err) {
                   if (err) throw err;
                   console.log('Updated!');
                 });
@@ -357,7 +386,7 @@ exports.updateDoctorFeeSummary = (req, res) => {
                   JSON.stringify(response.data.data.updateDoctorFeeSummary) +
                   '\n-------------------\n';
                 console.log(response.data.data);
-                fs.appendFile(fileName, content, function (err) {
+                fs.appendFile(fileName, content, function(err) {
                   if (err) throw err;
                   console.log('Updated!');
                 });
@@ -435,7 +464,7 @@ exports.updateDoctorSlotsEs = (req, res) => {
                       .reason;
                 }
                 console.log(response.data.data.addAllDoctorSlotsElastic);
-                fs.appendFile(fileName, content, function (err) {
+                fs.appendFile(fileName, content, function(err) {
                   if (err) throw err;
                   console.log('Updated!');
                 });

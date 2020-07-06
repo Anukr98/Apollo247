@@ -24,7 +24,7 @@ const generateSitemap: Resolver<null, {}, DoctorsServiceContext, string> = async
   const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
   const specialitiesList = await specialtyRepo.findAll();
   let sitemapStr =
-    '<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">\n<!-- Doctor Specilaities -->\n';
+    '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">\n<!-- Doctor Specilaities -->\n';
   let doctorsStr = '';
   if (specialitiesList.length > 0) {
     specialitiesList.forEach(async (specialty) => {
