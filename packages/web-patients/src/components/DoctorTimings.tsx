@@ -82,8 +82,9 @@ export const DoctorTimings: React.FC<DoctorTimingsProps> = (props) => {
     if (item.consultMode === 'PHYSICAL' || item.consultMode === 'BOTH') {
       consultModePhysical.push(item.consultMode);
     }
-    if (item.consultMode === 'ONLINE' || item.consultMode === 'BOTH')
+    if (item.consultMode === 'ONLINE' || item.consultMode === 'BOTH') {
       consultModeOnline.push(item.consultMode);
+    }
   });
 
   return (
