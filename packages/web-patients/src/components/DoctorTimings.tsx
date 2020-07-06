@@ -76,13 +76,22 @@ export const DoctorTimings: React.FC<DoctorTimingsProps> = (props) => {
     2,
     '0'
   )}-${new Date().getDate()}`;
+  const consultModeOnline: any = [];
+  const consultModePhysical: any = [];
+  doctorTimings.map((item: any) => {
+    if (item.consultMode === 'PHYSICAL' || item.consultMode === 'BOTH') {
+      consultModePhysical.push(item.consultMode);
+    }
+    if (item.consultMode === 'ONLINE' || item.consultMode === 'BOTH')
+      consultModeOnline.push(item.consultMode);
+  });
 
   return (
     <div className={classes.root}>
       <div className={classes.sectionHeader}>Timings</div>
       <div className={classes.content}>
         <div className={classes.timingsRow}>
-          <div className={classes.label}>Online:</div>
+          {consultModeOnline.length > 0 && <div className={classes.label}>Online:</div>}
           <div className={classes.rightGroup}>
             {doctorTimings.map((item: any) => {
               const actualDay = item.actualDay;
@@ -106,7 +115,7 @@ export const DoctorTimings: React.FC<DoctorTimingsProps> = (props) => {
           </div>
         </div>
         <div className={classes.timingsRow}>
-          <div className={classes.label}>Clinic:</div>
+          {consultModePhysical.length > 0 && <div className={classes.label}>Clinic:</div>}
           <div className={classes.rightGroup}>
             {doctorTimings.map((item: any) => {
               const actualDay = item.actualDay;
