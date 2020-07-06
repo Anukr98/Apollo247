@@ -147,7 +147,7 @@ export const convertCaseSheetToRxPdfData = async (
       }
 
       if (csRx.medicineConsumptionDurationUnit == MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW) {
-        frequency += csRx.medicineConsumptionDurationUnit.split('_').join(' ');
+        frequency += ' ' + csRx.medicineConsumptionDurationUnit.split('_').join(' ');
       }
 
       if (csRx.medicineToBeTaken)
