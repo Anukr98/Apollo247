@@ -198,6 +198,9 @@ export class AdminAuditLogs extends BaseEntity {
   @Column({ nullable: true, type: 'text' })
   previousDetails: string;
 
+  @Column({ nullable: true })
+  doctorId: string;
+
   @Column({ nullable: true, type: 'text' })
   currentDetails: string;
 }

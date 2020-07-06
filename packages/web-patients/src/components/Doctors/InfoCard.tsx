@@ -50,6 +50,9 @@ const useStyles = makeStyles((theme: Theme) => {
       width: 80,
       height: 80,
     },
+    otherDoctorType: {
+      width: 80,
+    },
     doctorInfo: {
       paddingLeft: 15,
       paddingTop: 10,
@@ -156,10 +159,11 @@ const useStyles = makeStyles((theme: Theme) => {
 interface InfoCardProps {
   doctorInfo: DoctorDetails;
   nextAvailability: string;
+  doctorType: string;
 }
 
 export const InfoCard: React.FC<InfoCardProps> = (props) => {
-  const { doctorInfo, nextAvailability } = props;
+  const { doctorInfo, nextAvailability, doctorType } = props;
   const { isSignedIn } = useAuth();
   const { currentPatient } = useAllCurrentPatients();
   const classes = useStyles({});
@@ -179,7 +183,18 @@ export const InfoCard: React.FC<InfoCardProps> = (props) => {
     doctorInfo.consultHours[0].consultMode
       ? doctorInfo.consultHours[0].consultMode
       : '';
-
+  const consultModeOnline: any = [];
+  const consultModePhysical: any = [];
+  doctorInfo &&
+    doctorInfo.consultHours &&
+    doctorInfo.consultHours.map((item: any) => {
+      if (item.consultMode === 'PHYSICAL' || item.consultMode === 'BOTH') {
+        consultModePhysical.push(item.consultMode);
+      }
+      if (item.consultMode === 'ONLINE' || item.consultMode === 'BOTH') {
+        consultModeOnline.push(item.consultMode);
+      }
+    });
   const differenceInMinutes = getDiffInMinutes(nextAvailability);
   const availabilityMarkup = () => {
     if (nextAvailability && nextAvailability.length > 0) {
@@ -246,14 +261,14 @@ export const InfoCard: React.FC<InfoCardProps> = (props) => {
               className={classes.doctorAvatar}
             />
             <div className={classes.consultType}>
-              {(consultMode === ConsultMode.BOTH || consultMode === ConsultMode.ONLINE) && (
+              {consultModeOnline.length > 0 && (
                 <span>
                   <img src={require('images/ic-video.svg')} alt="" />
                   <br />
                   Online
                 </span>
               )}
-              {(consultMode === ConsultMode.BOTH || consultMode === ConsultMode.PHYSICAL) && (
+              {consultModePhysical.length > 0 && (
                 <span>
                   <img src={require('images/fa-solid-hospital.svg')} alt="" />
                   <br />
@@ -265,7 +280,15 @@ export const InfoCard: React.FC<InfoCardProps> = (props) => {
           <div className={classes.doctorInfo}>
             <>{availabilityMarkup()}</>
             <div className={`${classes.apolloLogo}`}>
-              <img src={require('images/ic_apollo.svg')} alt="" />
+              <img
+                className={doctorType.toLowerCase() !== 'apollo' ? classes.otherDoctorType : ''}
+                src={
+                  doctorType.toLowerCase() === 'apollo'
+                    ? require('images/ic_apollo.svg')
+                    : require('images/partner_doc.png')
+                }
+                alt=""
+              />
             </div>
             <div className={classes.doctorName}>{`Dr. ${doctorInfo.fullName}`}</div>
             <div className={classes.doctorType}>

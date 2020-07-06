@@ -222,9 +222,12 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
       elasticMatch.push({ match: { languages: language } });
     });
   }
+  
   if (args.filterInput.doctorType && args.filterInput.doctorType.length > 0) {
     elasticMatch.push({ match: { doctorType: args.filterInput.doctorType.join(',') } });
   }
+
+  elasticMatch.push({ match: { 'isSearchable': 'true' } });
 
   const searchParams: RequestParams.Search = {
     index: 'doctors',
