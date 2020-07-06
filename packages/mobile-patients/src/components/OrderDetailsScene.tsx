@@ -338,7 +338,11 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       );
 
       const eventAttributes: WebEngageEvents[WebEngageEventName.RE_ORDER_MEDICINE] = {
-        orderType: !!g(order, 'billNumber') ? 'Offline' : orderDetails.orderType == MEDICINE_ORDER_TYPE.UPLOAD_PRESCRIPTION ? 'Non Cart' : 'Cart',
+        orderType: !!g(order, 'billNumber')
+          ? 'Offline'
+          : orderDetails.orderType == MEDICINE_ORDER_TYPE.UPLOAD_PRESCRIPTION
+          ? 'Non Cart'
+          : 'Cart',
         noOfItemsNotAvailable: unavailableItems.length,
         source: 'Order Details',
         'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
@@ -448,11 +452,12 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         <View
           style={{
             alignSelf: 'flex-end',
+            justifyContent: 'center',
+            alignItems: 'center',
             backgroundColor: backgroundColor ? backgroundColor : 'rgba(0, 179, 142, 0.2)',
             borderRadius: 16,
             paddingHorizontal: 15,
-            paddingTop: 4,
-            paddingBottom: 3,
+            paddingVertical: 5,
           }}
         >
           <Text style={{ ...theme.viewStyles.text('M', 11, textColor) }}>{capsuleText}</Text>
@@ -464,12 +469,10 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       <View>
         <View
           style={{
-            borderBottomColor: 'rgba(2,71,91,0.3)',
-            borderBottomWidth: 0.5,
             paddingTop: 16,
             paddingBottom: 6,
             paddingHorizontal: 20,
-            marginBottom: 13,
+            marginBottom: 8,
           }}
         >
           <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
@@ -1281,7 +1284,11 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.ORDER_SUMMARY_CLICKED] = {
       orderId: orderDetails.id,
       orderDate: getFormattedOrderPlacedDateTime(orderDetails),
-      orderType: !!g(order, 'billNumber') ? 'Offline' : orderDetails.orderType == MEDICINE_ORDER_TYPE.UPLOAD_PRESCRIPTION ? 'Non Cart' : 'Cart',
+      orderType: !!g(order, 'billNumber')
+        ? 'Offline'
+        : orderDetails.orderType == MEDICINE_ORDER_TYPE.UPLOAD_PRESCRIPTION
+        ? 'Non Cart'
+        : 'Cart',
       customerId: currentPatient && currentPatient.id,
       deliveryDate: orderDetails.orderTat
         ? moment(orderDetails.orderTat).format('ddd, D MMMM, hh:mm A')
