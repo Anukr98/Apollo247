@@ -183,7 +183,18 @@ export const InfoCard: React.FC<InfoCardProps> = (props) => {
     doctorInfo.consultHours[0].consultMode
       ? doctorInfo.consultHours[0].consultMode
       : '';
-
+  const consultModeOnline: any = [];
+  const consultModePhysical: any = [];
+  doctorInfo &&
+    doctorInfo.consultHours &&
+    doctorInfo.consultHours.map((item: any) => {
+      if (item.consultMode === 'PHYSICAL' || item.consultMode === 'BOTH') {
+        consultModePhysical.push(item.consultMode);
+      }
+      if (item.consultMode === 'ONLINE' || item.consultMode === 'BOTH') {
+        consultModeOnline.push(item.consultMode);
+      }
+    });
   const differenceInMinutes = getDiffInMinutes(nextAvailability);
   const availabilityMarkup = () => {
     if (nextAvailability && nextAvailability.length > 0) {
@@ -250,14 +261,14 @@ export const InfoCard: React.FC<InfoCardProps> = (props) => {
               className={classes.doctorAvatar}
             />
             <div className={classes.consultType}>
-              {(consultMode === ConsultMode.BOTH || consultMode === ConsultMode.ONLINE) && (
+              {consultModeOnline.length > 0 && (
                 <span>
                   <img src={require('images/ic-video.svg')} alt="" />
                   <br />
                   Online
                 </span>
               )}
-              {(consultMode === ConsultMode.BOTH || consultMode === ConsultMode.PHYSICAL) && (
+              {consultModePhysical.length > 0 && (
                 <span>
                   <img src={require('images/fa-solid-hospital.svg')} alt="" />
                   <br />
