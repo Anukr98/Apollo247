@@ -1115,6 +1115,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     setReferralError,
     medicationHistory,
     vitalError,
+    updatedDate,
+    setUpdatedDate,
   } = useContext(CaseSheetContext);
 
   const covertVideoMsg = '^^convert`video^^';
