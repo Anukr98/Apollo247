@@ -234,8 +234,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       'Patient UHID': currentPatient.uhid,
       'Mobile Number': currentPatient.mobileNumber,
       'Customer ID': currentPatient.id,
-      'pincode': pincode,
-      'Serviceability': serviceable,
+      pincode: pincode,
+      Serviceability: serviceable,
     };
     postWebEngageEvent(WebEngageEventName.PHARMACY_AUTO_SELECT_LOCATION_CLICKED, eventAttributes);
   };
@@ -781,7 +781,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       if (item.category_id) {
         props.navigation.navigate(AppRoutes.SearchByBrand, {
           category_id: item.category_id,
-          title: 'PRODUCTS',
+          title: item.name || '',
         });
       } else if (item.sku) {
         props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
