@@ -454,9 +454,9 @@ export const SpecialtyDivision: React.FC<SpecialtyDivisionProps> = (props) => {
                         selectedCity === ''
                           ? clientRoutes.specialties(readableParam(specialityDetails.slugName))
                           : clientRoutes.citySpecialties(
-                            _lowerCase(selectedCity),
-                            readableParam(specialityDetails.slugName)
-                          )
+                              _lowerCase(selectedCity),
+                              readableParam(specialityDetails.slugName)
+                            )
                       }
                     >
                       <Typography component="h3">{specialityDetails.specialtyName}</Typography>
@@ -484,8 +484,8 @@ export const SpecialtyDivision: React.FC<SpecialtyDivisionProps> = (props) => {
           ) : error ? (
             <div>Error! </div>
           ) : (
-                allSpecialties && <Specialties selectedCity={selectedCity} data={allSpecialties} />
-              )}
+            allSpecialties && <Specialties selectedCity={selectedCity} data={allSpecialties} />
+          )}
         </div>
       </div>
     </>

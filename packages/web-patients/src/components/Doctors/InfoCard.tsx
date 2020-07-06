@@ -51,7 +51,7 @@ const useStyles = makeStyles((theme: Theme) => {
       height: 80,
     },
     otherDoctorType: {
-      width: 80
+      width: 80,
     },
     doctorInfo: {
       paddingLeft: 15,
@@ -177,10 +177,10 @@ export const InfoCard: React.FC<InfoCardProps> = (props) => {
     doctorInfo.specialty.name.toLowerCase();
   const consultMode =
     doctorInfo &&
-      doctorInfo.consultHours &&
-      doctorInfo.consultHours.length > 0 &&
-      doctorInfo.consultHours[0] &&
-      doctorInfo.consultHours[0].consultMode
+    doctorInfo.consultHours &&
+    doctorInfo.consultHours.length > 0 &&
+    doctorInfo.consultHours[0] &&
+    doctorInfo.consultHours[0].consultMode
       ? doctorInfo.consultHours[0].consultMode
       : '';
 
@@ -271,7 +271,13 @@ export const InfoCard: React.FC<InfoCardProps> = (props) => {
             <div className={`${classes.apolloLogo}`}>
               <img
                 className={doctorType.toLowerCase() !== 'apollo' ? classes.otherDoctorType : ''}
-                src={doctorType.toLowerCase() === 'apollo' ? require('images/ic_apollo.svg') : require('images/partner_doc.png')} alt="" />
+                src={
+                  doctorType.toLowerCase() === 'apollo'
+                    ? require('images/ic_apollo.svg')
+                    : require('images/partner_doc.png')
+                }
+                alt=""
+              />
             </div>
             <div className={classes.doctorName}>{`Dr. ${doctorInfo.fullName}`}</div>
             <div className={classes.doctorType}>
@@ -339,10 +345,10 @@ export const InfoCard: React.FC<InfoCardProps> = (props) => {
                 <CircularProgress size={22} color="secondary" />
               ) : getDiffInMinutes(nextAvailability) > 0 &&
                 getDiffInMinutes(nextAvailability) <= 60 ? (
-                    'CONSULT NOW'
-                  ) : (
-                    'BOOK APPOINTMENT'
-                  )}
+                'CONSULT NOW'
+              ) : (
+                'BOOK APPOINTMENT'
+              )}
             </AphButton>
           </div>
         )}
