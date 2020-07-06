@@ -574,7 +574,9 @@ export const MedicineCart: React.FC = (props) => {
     updateCartItemPrice,
     prescriptionOptionSelected,
     durationDays,
+    prescriptionDuration,
   } = useShoppingCart();
+  console.log('>>>>>>>', prescriptionOptionSelected, durationDays, prescriptionDuration);
 
   const addToCartRef = useRef(null);
   const params = useParams<{
@@ -1011,13 +1013,19 @@ export const MedicineCart: React.FC = (props) => {
     const ePresPrismIds =
       ePrescriptionData &&
       ePrescriptionData.map((item) => item.prismPrescriptionFileId).filter((i) => i);
+    const updatedPrescriptionOptionSelected =
+      prescriptionOptionSelected === 'specified'
+        ? prescriptionDuration === 'prescription'
+          ? 'Need all medicine and for duration as per prescription'
+          : `Need all medicine as per prescription for ${durationDays} days`
+        : 'Call me for details';
     if (prescriptions && prescriptions.length > 0) {
       uploadMultipleFiles(prescriptions)
         .then((data) => {
           const uploadUrlscheck = data.map(({ data }: any) =>
             data && data.uploadDocument && data.uploadDocument.status ? data.uploadDocument : null
           );
-          const filtered = uploadUrlscheck.filter(function (el) {
+          const filtered = uploadUrlscheck.filter(function(el) {
             return el != null;
           });
           const phyPresUrls = filtered.map((item) => item.filePath).filter((i) => i);
@@ -1036,10 +1044,11 @@ export const MedicineCart: React.FC = (props) => {
               appointmentId: '',
               isEprescription: ePrescriptionData && ePrescriptionData.length ? 1 : 0, // if atleat one prescription is E-Prescription then pass it as one.
               durationDays: durationDays,
-              prescriptionOptionSelected: prescriptionOptionSelected,
+              prescriptionOptionSelected: updatedPrescriptionOptionSelected,
               ...(chennaiOrderVariables && chennaiOrderVariables),
             },
           };
+          console.log('prescriptionMedicineOMSInput', prescriptionMedicineOMSInput);
           submitPrescriptionMedicineOrder(prescriptionMedicineOMSInput);
         })
         .catch((e) => {
@@ -1063,10 +1072,14 @@ export const MedicineCart: React.FC = (props) => {
           appointmentId: '',
           isEprescription: ePrescriptionData && ePrescriptionData.length ? 1 : 0, // if atleat one prescription is E-Prescription then pass it as one.
           ...(chennaiOrderVariables && chennaiOrderVariables),
-          prescriptionOptionSelected: prescriptionOptionSelected,
-          durationDays: prescriptionOptionSelected === 'specified' ? durationDays : null,
+          prescriptionOptionSelected: updatedPrescriptionOptionSelected,
+          durationDays:
+            prescriptionOptionSelected === 'specified' && prescriptionDuration === 'user'
+              ? durationDays
+              : null,
         },
       };
+      console.log('prescriptionMedicineOMSInput', prescriptionMedicineOMSInput);
       submitPrescriptionMedicineOrder(prescriptionMedicineOMSInput);
     }
   };
