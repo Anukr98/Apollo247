@@ -384,4 +384,7 @@ export enum ApiConstants {
   REDIS_PORT = 6379,
   REDIS_PWD = 'FgFyZpibcBewC6U7AZYDq1DppMW02mi+koiEa63gDF4=',
   REDIS_IMAGE_URL = '/catalog/product/',
+
+  //prescriptions uploaded through medicine, diagnostic orders or from OLD APPS
+  PRESCRIPTION_UPLOADED_BY_PATIENT = 'Prescription uploaded by Patient',
 }
