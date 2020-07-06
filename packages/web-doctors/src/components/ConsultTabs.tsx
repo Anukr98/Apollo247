@@ -397,6 +397,7 @@ export const ConsultTabs: React.FC = () => {
   const [medicationHistory, setMedicationHistory] = useState<string>('');
   const [occupationHistory, setOccupationHistory] = useState<string>('');
   const [referralError, setReferralError] = useState<boolean>(false);
+  const [updatedDate, setUpdatedDate] = useState<string>('');
 
   const [appointmentStatus, setAppointmentStatus] = useState<string>('');
   const [sentToPatient, setSentToPatient] = useState<boolean>(false);
@@ -638,11 +639,7 @@ export const ConsultTabs: React.FC = () => {
           _data!.data!.getCaseSheet!.caseSheetDetails!.appointment!.status
             ? setAppointmentStatus(_data!.data!.getCaseSheet!.caseSheetDetails!.appointment!.status)
             : setAppointmentStatus('');
-          // _data!.data!.getCaseSheet!.caseSheetDetails!.appointment!.sdConsultationDate
-          //   ? setSdConsultationDate(
-          //       _data!.data!.getCaseSheet!.caseSheetDetails!.appointment!.sdConsultationDate
-          //     )
-          //   : setSdConsultationDate('');
+
           _data!.data!.getCaseSheet!.caseSheetDetails!.prescriptionGeneratedDate
             ? setSdConsultationDate(
                 _data!.data!.getCaseSheet!.caseSheetDetails!.prescriptionGeneratedDate
@@ -704,6 +701,15 @@ export const ConsultTabs: React.FC = () => {
             setappointmentDateTime(
               _data.data.getCaseSheet.caseSheetDetails.appointment.appointmentDateTime
             );
+          }
+
+          if (
+            _data.data &&
+            _data.data.getCaseSheet &&
+            _data.data.getCaseSheet.caseSheetDetails &&
+            _data.data.getCaseSheet.caseSheetDetails.updatedDate
+          ) {
+            setUpdatedDate(_data.data.getCaseSheet.caseSheetDetails.updatedDate);
           }
 
           // Refferal
@@ -1405,13 +1411,8 @@ export const ConsultTabs: React.FC = () => {
           fetchPolicy: 'no-cache',
         })
         .then((_data) => {
+          setUpdatedDate(_data.data.modifyCaseSheet.updatedDate);
           setSaving(false);
-          // setSdConsultationDate(
-          //   _data!.data!.modifyCaseSheet!.appointment!.sdConsultationDate
-          //     ? _data!.data!.modifyCaseSheet!.appointment!.sdConsultationDate
-          //     : ''
-          // );
-          //setSdConsultationDate('');
           if (!flag) {
             setIsConfirmDialogOpen(true);
           }
@@ -1760,6 +1761,8 @@ export const ConsultTabs: React.FC = () => {
             setMedicationHistory,
             occupationHistory,
             setOccupationHistory,
+            updatedDate,
+            setUpdatedDate,
           }}
         >
           <Scrollbars

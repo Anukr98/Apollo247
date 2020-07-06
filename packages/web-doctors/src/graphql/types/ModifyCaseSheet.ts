@@ -2,7 +2,7 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
-import { ModifyCaseSheetInput, APPOINTMENT_TYPE, STATUS, DoctorType, Gender, Salutation, MEDICINE_TIMINGS, MEDICINE_UNIT, MEDICINE_FORM_TYPES, MEDICINE_FREQUENCY, MEDICINE_CONSUMPTION_DURATION, ROUTE_OF_ADMINISTRATION } from "./globalTypes";
+import { ModifyCaseSheetInput, APPOINTMENT_TYPE, STATUS, DoctorType, Gender, MEDICINE_TIMINGS, MEDICINE_UNIT, MEDICINE_FORM_TYPES, MEDICINE_FREQUENCY, MEDICINE_CONSUMPTION_DURATION, ROUTE_OF_ADMINISTRATION } from "./globalTypes";
 
 // ====================================================
 // GraphQL mutation operation: ModifyCaseSheet
@@ -49,7 +49,7 @@ export interface ModifyCaseSheet_modifyCaseSheet_createdDoctorProfile {
   mobileNumber: string;
   photoUrl: string | null;
   qualification: string | null;
-  salutation: Salutation | null;
+  salutation: string | null;
   state: string | null;
   streetLine1: string | null;
   streetLine2: string | null;
@@ -139,6 +139,7 @@ export interface ModifyCaseSheet_modifyCaseSheet {
   symptoms: (ModifyCaseSheet_modifyCaseSheet_symptoms | null)[] | null;
   status: string | null;
   sentToPatient: boolean | null;
+  updatedDate: any | null;
 }
 
 export interface ModifyCaseSheet {
