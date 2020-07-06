@@ -299,8 +299,8 @@ const sendMessage = async (args: any) => {
     const promiseSendNotification = sendNotificationWhatsapp(mobileNumber, message, 1);
     const promiseSendSMS = sendSMS(mobileNumber, otp, hashCode);
     const messageSentResponse = await Promise.all([
-      promiseSendNotification.catch((err) => { logger(err.message); return err; }),
-      promiseSendSMS.catch((err) => { logger(err.message); return err; }),
+      promiseSendNotification.catch((err) => { log('smsOtpAPILogger', `API_CALL_ERROR`, 'sendNotificationWhatsapp()->CATCH_BLOCK', '', JSON.stringify(err)); return err; }),
+      promiseSendSMS.catch((err) => { log('smsOtpAPILogger', `API_CALL_ERROR`, 'sendSMS()->CATCH_BLOCK', '', JSON.stringify(err)); return err; }),
     ]);
     messageSentResponse[1];
   } else {
