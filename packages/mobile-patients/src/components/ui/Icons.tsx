@@ -801,7 +801,7 @@ export const TestsCartIcon: React.FC<IconProps> = (props) => (
   />
 );
 
-export const TestsCartMedicineIcon: React.FC<IconProps> = (props) => (
+export const MedicineCartIcon: React.FC<IconProps> = (props) => (
   <IconBase
     style={{ height: 56, width: 56, resizeMode: 'contain' }}
     {...props}

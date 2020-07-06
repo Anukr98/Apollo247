@@ -369,6 +369,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
         disableEscapeKeyDown
       >
         <BookConsult
+          physicalDirection={false}
           doctorId={doctorDetails.id}
           doctorAvailableIn={differenceInMinutes}
           setIsPopoverOpen={setIsPopoverOpen}

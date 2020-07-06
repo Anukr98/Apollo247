@@ -152,9 +152,15 @@ export class PatientRepository extends Repository<Patient> {
         patient.dateOfBirth = new Date(patient.dateOfBirth);
         return patient;
       } else {
-        return await this.setByIdCache(id);
+        return this.setByIdCache(id);
       }
     } catch (e) {
+      dLogger(
+        new Date(),
+        'Redis Cache getByIdCache error',
+        `Redis Cache getByIdCache - ${REDIS_PATIENT_ID_KEY_PREFIX}${id} - ${e.stack}`
+      );
+      return this.getPatientData(id);
     } finally {
       pool.putTedis(redis);
     }
@@ -181,6 +187,14 @@ export class PatientRepository extends Repository<Patient> {
       await redis.set(key, value);
       await redis.expire(key, 14400);
     } catch (e) {
+      dLogger(
+        new Date(),
+        'Redis Cache setCache error',
+        `Redis Cache setCache - ${REDIS_PATIENT_ID_KEY_PREFIX}${key}-${value} - ${e.stack}`
+      );
+      throw new AphError(AphErrorMessages.REDIS_SET_CACHE_FAILED, undefined, {
+        e,
+      });
     } finally {
       pool.putTedis(redis);
     }
@@ -190,23 +204,36 @@ export class PatientRepository extends Repository<Patient> {
     try {
       await redis.del(key);
     } catch (e) {
+      dLogger(
+        new Date(),
+        'Redis Cache dropCache error',
+        `Redis Cache dropCache - ${REDIS_PATIENT_ID_KEY_PREFIX}${key} - ${e.stack}`
+      );
+      throw new AphError(AphErrorMessages.REDIS_DROP_CACHE_FAILED, undefined, {
+        e,
+      });
     } finally {
       pool.putTedis(redis);
     }
   }
   async setByIdCache(id: string | number) {
-    const patientDetails = await this.getPatientData(id);
-    if (patientDetails) {
-      const patientString = JSON.stringify(patientDetails);
-      await this.setCache(`${REDIS_PATIENT_ID_KEY_PREFIX}${id}`, patientString);
+    try {
+      const patientDetails = await this.getPatientData(id);
+      if (patientDetails) {
+        const patientString = JSON.stringify(patientDetails);
+        this.setCache(`${REDIS_PATIENT_ID_KEY_PREFIX}${id}`, patientString);
+      }
+      dLogger(
+        new Date(),
+        'Redis Cache Write of Patient',
+        `Cache miss/write ${REDIS_PATIENT_ID_KEY_PREFIX}${id}`
+      );
+      return patientDetails;
+    } catch (e) {
+      throw new AphError(AphErrorMessages.REDIS_SET_CACHE_BY_ID_FAILED, undefined, {
+        e,
+      });
     }
-
-    dLogger(
-      new Date(),
-      'Redis Cache Write of Patient',
-      `Cache miss/write ${REDIS_PATIENT_ID_KEY_PREFIX}${id}`
-    );
-    return patientDetails;
   }
   async getByMobileCache(mobile: string) {
     const redis = await pool.getTedis();

@@ -37,6 +37,7 @@ export enum WebEngageEventName {
   DIAGNOSTIC_ADD_TO_CART = 'Diagnostic Add to cart',
   BUY_NOW = 'Buy Now',
   PHARMACY_CART_VIEWED = 'Pharmacy Cart Viewed',
+  SKU_PRICE_MISMATCH = 'SKU Price Mismatch',
   TAT_API_FAILURE = 'Tat API Failure',
   DIAGNOSTIC_CART_VIEWED = 'Diagnostic Cart Viewed',
   PHARMACY_PROCEED_TO_PAY_CLICKED = 'Pharmacy Proceed To Pay Clicked',
@@ -109,7 +110,7 @@ export enum WebEngageEventName {
   REORDER_MEDICINES = 'Reorder Medicines',
   PHR_ORDER_MEDS_TESTS = 'PHR Order Meds & Tests',
   PHR_CONSULT_CARD_CLICK = 'PHR Consult Card click',
-
+  RE_ORDER_MEDICINE = 'ReOrder Medicine Track Order',
   // ConsultRoom Events
   CONSULTATION_CANCELLED_BY_CUSTOMER = 'Consultation Cancelled by Customer',
   CONSULTATION_RESCHEDULED_BY_CUSTOMER = 'Consultation Rescheduled by Customer',
@@ -140,7 +141,7 @@ export enum WebEngageEventName {
   PHARMACY_PINCODE_NONSERVICABLE = 'Pharmacy location nonservicable',
   PHARMACY_CATEGORY_SECTION_PRODUCT_CLICK = 'Pharmacy Category Section Product Click',
   PHARMACY_BANNER_CLICK = 'Pharmacy Homepage Banner click',
-
+  CALL_THE_NEAREST_PHARMACY = 'Call the Nearest Pharmacy',
   // Payments Events
   PAYMENT_INSTRUMENT = 'Payment Instrument',
   PAYMENT_STATUS = 'Payment Status',
@@ -161,6 +162,11 @@ export interface UserInfo {
   'Patient UHID': string;
   'Mobile Number': string;
   'Customer ID': string;
+}
+
+export interface AutoSelectLocation extends UserInfo {
+  'Serviceability': boolean;
+  'pincode': string;
 }
 
 export interface PatientInfoWithSource extends PatientInfo {
@@ -188,6 +194,12 @@ export interface ReorderMedicines extends PatientInfo {
 
 export interface ConsultedBefore extends PatientInfo {
   ConsultedBefore: 'Yes' | 'No';
+}
+
+export interface ReorderMedicine extends PatientInfo {
+  source: 'Order Details' | 'PHR';
+  orderType: 'Cart' | 'Non Cart' | 'Offline';
+  noOfItemsNotAvailable: number;
 }
 
 export interface WebEngageEvents {
@@ -397,6 +409,14 @@ export interface WebEngageEvents {
     'Cart Items': object[];
     'Service Area': 'Pharmacy' | 'Diagnostic';
   };
+  [WebEngageEventName.SKU_PRICE_MISMATCH]: {
+    'Mobile Number': string;
+    'Sku Id': string;
+    'Magento MRP': number;
+    'Magento Pack Size': number;
+    'Store API MRP': number;
+  };
+
   [WebEngageEventName.TAT_API_FAILURE]: {
     pincode: string | number;
     lookUp: { sku: string; qty: number }[];
@@ -507,7 +527,7 @@ export interface WebEngageEvents {
     'Cart ID'?: string | number; // Optional
     'Service Area': 'Pharmacy' | 'Diagnostic';
   };
-  [WebEngageEventName.PHARMACY_AUTO_SELECT_LOCATION_CLICKED]: UserInfo;
+  [WebEngageEventName.PHARMACY_AUTO_SELECT_LOCATION_CLICKED]: AutoSelectLocation;
   [WebEngageEventName.PHARMACY_ENTER_DELIVERY_PINCODE_CLICKED]: UserInfo;
   [WebEngageEventName.PHARMACY_ENTER_DELIVERY_PINCODE_SUBMITTED]: {
     'Patient UHID': string;
@@ -529,6 +549,10 @@ export interface WebEngageEvents {
   };
   [WebEngageEventName.PHARMACY_BANNER_CLICK]: {
     BannerPosition: number;
+  };
+  [WebEngageEventName.CALL_THE_NEAREST_PHARMACY]: {
+    pincode: string;
+    'Mobile Number': string;
   };
 
   // ********** ConsultEvents ********** \\
@@ -872,6 +896,8 @@ export interface WebEngageEvents {
 
   [WebEngageEventName.PHR_CONSULT_CARD_CLICK]: PatientInfoWithConsultId;
 
+  [WebEngageEventName.RE_ORDER_MEDICINE]: ReorderMedicine;
+
   // ********** ConsultRoom Events ********** \\
 
   [WebEngageEventName.CONSULTATION_CANCELLED_BY_CUSTOMER]: {
@@ -1192,7 +1218,7 @@ export interface WebEngageEvents {
   };
   [WebEngageEventName.DOCTOR_RESCHEDULE_CLAIM_REFUND]: {
     'Appointment ID': string;
-    'Call Type': string;
+    Type: string;
     'Patient Id': string;
   };
 }

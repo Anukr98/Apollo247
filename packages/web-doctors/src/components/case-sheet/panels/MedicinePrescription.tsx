@@ -2255,7 +2255,9 @@ export const MedicinePrescription: React.FC = () => {
                   <s>{medicine.medicineName}</s>
                 </h5>
               )}
-              {!isPresent && <p className={classes.removed}>This medicine has been discontinued</p>}
+              {!isPresent && (
+                <p className={classes.removed}>This medicine has been discontinued </p>
+              )}
               <h6>
                 {`${
                   medicine.medicineFormTypes === 'OTHERS' ? 'Take' : 'Apply'

@@ -160,42 +160,6 @@ export const getOrderStatusText = (status: MEDICINE_ORDER_STATUS): string => {
       statusString = 'Order Delivered';
       break;
     case MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY:
-      statusString = 'Order Shipped';
-      break;
-    case MEDICINE_ORDER_STATUS.PICKEDUP:
-      statusString = 'Order Picked Up';
-      break;
-    case MEDICINE_ORDER_STATUS.RETURN_INITIATED:
-      statusString = 'Return Requested';
-      break;
-    case MEDICINE_ORDER_STATUS.PURCHASED_IN_STORE:
-      statusString = 'Purchased In-store';
-      break;
-    case 'TO_BE_DELIVERED' as any:
-      statusString = 'Expected Order Delivery';
-      break;
-    default:
-      statusString = (status || '')
-        .split('_')
-        .map((item) => `${item.slice(0, 1).toUpperCase()}${item.slice(1).toLowerCase()}`)
-        .join(' ');
-  }
-  return statusString;
-};
-
-export const getNewOrderStatusText = (status: MEDICINE_ORDER_STATUS): string => {
-  let statusString = '';
-  switch (status) {
-    case MEDICINE_ORDER_STATUS.CANCELLED:
-      statusString = 'Order Cancelled';
-      break;
-    case MEDICINE_ORDER_STATUS.CANCEL_REQUEST:
-      statusString = 'Cancel Requested';
-      break;
-    case MEDICINE_ORDER_STATUS.DELIVERED:
-      statusString = 'Order Delivered';
-      break;
-    case MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY:
       statusString = 'Order Dispatched';
       break;
     case MEDICINE_ORDER_STATUS.ORDER_BILLED:
@@ -1299,6 +1263,7 @@ export const addPharmaItemToCart = (
     });
   };
   if (!isLocationServeiceable) {
+    onComplete && onComplete();
     navigate();
     return;
   }

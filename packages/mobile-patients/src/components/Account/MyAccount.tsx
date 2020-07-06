@@ -149,7 +149,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
     GetCurrentPatients_getCurrentPatients_patients | null | undefined
   >(currentPatient);
   const { signOut, getPatientApiCall } = useAuth();
-  const { setSavePatientDetails } = useAppCommonData();
+  const { setSavePatientDetails, setAppointmentsPersonalized } = useAppCommonData();
 
   const buildName = () => {
     switch (apiRoutes.graphql()) {
@@ -276,8 +276,9 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
       AsyncStorage.setItem('logginHappened', 'false');
       AsyncStorage.removeItem('deeplink');
       AsyncStorage.removeItem('deeplinkReferalCode');
-      signOut();
       setSavePatientDetails && setSavePatientDetails('');
+      setAppointmentsPersonalized && setAppointmentsPersonalized([]);
+      signOut();
 
       props.navigation.dispatch(
         StackActions.reset({

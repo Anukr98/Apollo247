@@ -281,6 +281,12 @@ export const GET_APPOINTMENT_HISTORY = gql`
         status
         bookingDate
         isSeniorConsultStarted
+        caseSheet {
+          symptoms {
+            symptom
+            details
+          }
+        }
       }
     }
   }
@@ -1435,7 +1441,7 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS = gql`
         deliveryType
         currentStatus
         patientAddressId
-        # alertStore
+        alertStore
         medicineOrdersStatus {
           id
           orderStatus
@@ -2199,6 +2205,20 @@ export const UPLOAD_CHAT_FILE = gql`
       appointmentId: $appointmentId
     ) {
       filePath
+    }
+  }
+`;
+
+export const ADD_CHAT_DOCUMENTS = gql`
+  mutation addChatDocument($appointmentId: ID!, $documentPath: String, $prismFileId: String) {
+    addChatDocument(
+      appointmentId: $appointmentId
+      documentPath: $documentPath
+      prismFileId: $prismFileId
+    ) {
+      id
+      documentPath
+      prismFileId
     }
   }
 `;

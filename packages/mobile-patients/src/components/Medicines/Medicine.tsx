@@ -229,19 +229,29 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     postWebEngageEvent(WebEngageEventName.CATEGORY_CLICKED, eventAttributes);
   };
 
-  const WebEngageEventForNonServicablePinCode = (pincode: string, serviceable: boolean) => {
-    const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_PINCODE_NONSERVICABLE] = {
+  const WebEngageEventAutoDetectLocation = (pincode: string, serviceable: boolean) => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_AUTO_SELECT_LOCATION_CLICKED] = {
+      'Patient UHID': currentPatient.uhid,
       'Mobile Number': currentPatient.mobileNumber,
-      Pincode: pincode,
-      Servicable: serviceable,
+      'Customer ID': currentPatient.id,
+      pincode: pincode,
+      Serviceability: serviceable,
     };
-    postWebEngageEvent(WebEngageEventName.PHARMACY_PINCODE_NONSERVICABLE, eventAttributes);
+    postWebEngageEvent(WebEngageEventName.PHARMACY_AUTO_SELECT_LOCATION_CLICKED, eventAttributes);
   };
 
   const updateServiceability = (pincode: string) => {
     const onPresChangeAddress = () => {
       hideAphAlert!();
       setPincodePopupVisible(true);
+    };
+
+    const CalltheNearestPharmacyEvent = () => {
+      let eventAttributes: WebEngageEvents[WebEngageEventName.CALL_THE_NEAREST_PHARMACY] = {
+        pincode: pincode,
+        'Mobile Number': currentPatient.mobileNumber,
+      };
+      postWebEngageEvent(WebEngageEventName.CALL_THE_NEAREST_PHARMACY, eventAttributes);
     };
 
     const onPressCallNearestPharmacy = (pharmacyPhoneNumber: string) => {
@@ -254,6 +264,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         toPhone: to,
         callerId: caller_id,
       };
+      CalltheNearestPharmacyEvent();
       globalLoading!(true);
       callToExotelApi(param)
         .then((response) => {
@@ -276,8 +287,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       .then(({ data: { Availability } }) => {
         setServiceabilityMsg(Availability ? '' : 'Services unavailable. Change delivery location.');
         setPharmacyLocationServiceable!(Availability ? true : false);
+        WebEngageEventAutoDetectLocation(pincode, Availability ? true : false);
         if (!Availability) {
-          WebEngageEventForNonServicablePinCode(pincode, false);
           getNearByStoreDetailsApi(pincode)
             .then((response: any) => {
               showAphAlert!({
@@ -491,19 +502,12 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   };
 
   const autoDetectLocation = () => {
-    const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_AUTO_SELECT_LOCATION_CLICKED] = {
-      'Patient UHID': currentPatient.uhid,
-      'Mobile Number': currentPatient.mobileNumber,
-      'Customer ID': currentPatient.id,
-    };
-    postWebEngageEvent(WebEngageEventName.PHARMACY_AUTO_SELECT_LOCATION_CLICKED, eventAttributes);
-
     globalLoading!(true);
     doRequestAndAccessLocationModified()
       .then((response) => {
         globalLoading!(false);
         response && setPharmacyLocation!(response);
-        response && WebEngageEventForNonServicablePinCode(response.pincode, true);
+        response && WebEngageEventAutoDetectLocation(response.pincode, true);
       })
       .catch((e) => {
         CommonBugFender('Medicine__ALLOW_AUTO_DETECT', e);
@@ -755,13 +759,13 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const renderSliderItem = ({ item, index }: { item: OfferBannerSection; index: number }) => {
     const handleOnPress = () => {
       const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_BANNER_CLICK] = {
-        BannerPosition: index + 1,
+        BannerPosition: slideIndex + 1,
       };
       postWebEngageEvent(WebEngageEventName.PHARMACY_BANNER_CLICK, eventAttributes);
       if (item.category_id) {
         props.navigation.navigate(AppRoutes.SearchByBrand, {
           category_id: item.category_id,
-          title: 'PRODUCTS',
+          title: item.name || '',
         });
       } else if (item.sku) {
         props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
@@ -811,7 +815,15 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             autoplayDelay={3000}
             autoplayInterval={3000}
           />
-          <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'center',
+              position: 'absolute',
+              bottom: 10,
+              alignSelf: 'center',
+            }}
+          >
             {banners.map((_, index) => (index == slideIndex ? renderDot(true) : renderDot(false)))}
           </View>
         </View>
@@ -911,7 +923,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     const isOfflineOrder = !!g(order, 'billNumber');
     const shopAddress = isOfflineOrder && g(order, 'shopAddress');
     const parsedShopAddress = isOfflineOrder && JSON.parse(shopAddress || '{}');
-    const address = [g(parsedShopAddress, 'storename'), g(parsedShopAddress, 'address')]
+    const address = [
+      g(parsedShopAddress, 'storename'),
+      g(parsedShopAddress, 'city'),
+      g(parsedShopAddress, 'zipcode'),
+    ]
       .filter((a) => a)
       .join(', ');
     const date = moment(g(order, 'medicineOrdersStatus', '0' as any, 'statusDate')).format(
@@ -971,6 +987,12 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   };
 
   const renderLatestOrderInfo = () => {
+    const goToOrderDetails = () => {
+      props.navigation.navigate(AppRoutes.OrderDetailsScene, {
+        orderAutoId: latestMedicineOrder!.orderAutoId,
+        billNumber: latestMedicineOrder!.billNumber,
+      });
+    };
     return (
       !!latestMedicineOrder && (
         <ListItem
@@ -989,7 +1011,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             paddingRight: 0,
             ...theme.viewStyles.text('M', 12, '#fcb716'),
           }}
-          titleProps={{ numberOfLines: 1, ellipsizeMode: 'middle' }}
+          titleProps={{ numberOfLines: 1, ellipsizeMode: 'middle', onPress: goToOrderDetails }}
           rightTitleProps={{
             onPress: () => reOrder(latestMedicineOrder),
           }}
@@ -1000,7 +1022,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
   const renderYourOrders = () => {
     return (
-      <View style={{ ...theme.viewStyles.card(), paddingVertical: 0 }}>
+      <View style={{ ...theme.viewStyles.card(), paddingVertical: 0, marginTop: 5 }}>
         <ListItem
           title={'My Orders'}
           leftAvatar={<MedicineIcon />}

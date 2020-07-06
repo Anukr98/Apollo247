@@ -43,6 +43,7 @@ import {
   CANCEL_APPOINTMENT,
   UPDATE_APPOINTMENT_SESSION,
   UPLOAD_CHAT_FILE_PRISM,
+  ADD_CHAT_DOCUMENTS,
   UPLOAD_MEDIA_DOCUMENT_PRISM,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
@@ -184,9 +185,9 @@ const timer: number = 900;
 let timerId: any;
 let joinTimerId: any;
 let diffInHours: number;
-let callAbandonmentTimer: any;
-let callAbandonmentStoppedTimer: number = 620;
-let messageSent: string;
+// let callAbandonmentTimer: any;
+// let callAbandonmentStoppedTimer: number = 620;
+// let messageSent: string;
 let rescheduleInitiatedBy: string;
 let callhandelBack: boolean = true;
 let jdCount: any = 1;
@@ -560,7 +561,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     try {
       console.log(callhandelBack, 'is back called');
       if (callhandelBack) {
-        handleCallTheEdSessionAPI();
+        // handleCallTheEdSessionAPI();
         props.navigation.dispatch(
           StackActions.reset({
             index: 0,
@@ -680,8 +681,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const InsertMessageToDoctor = (message: string) => {
-    if (status !== STATUS.COMPLETED) return;
-    if (!sendMessageToDoctor) return;
+    // if (status !== STATUS.COMPLETED) return;
+    // if (!sendMessageToDoctor) return;
 
     SendAutoMatedMessageToDoctorAPI();
 
@@ -1123,49 +1124,51 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     }
   };
 
-  const handleCallTheEdSessionAPI = () => {
-    console.log('API not Called');
+  // APP-2803: removed No show logic
 
-    if (abondmentStarted == true) {
-      if (appointmentData.status === STATUS.COMPLETED) return;
-      if (appointmentData.status === STATUS.NO_SHOW) return;
-      if (appointmentData.status === STATUS.CALL_ABANDON) return;
-      if (appointmentData.status === STATUS.CANCELLED) return;
-      if (appointmentData.appointmentState === APPOINTMENT_STATE.AWAITING_RESCHEDULE) return;
-      if (appointmentData.appointmentType === APPOINTMENT_TYPE.PHYSICAL) return;
-      if (status === STATUS.COMPLETED) return;
+  // const handleCallTheEdSessionAPI = () => {
+  //   console.log('API not Called');
 
-      console.log('API Called');
-      endCallAppointmentSessionAPI(STATUS.NO_SHOW);
-    }
-  };
+  //   if (abondmentStarted == true) {
+  //     if (appointmentData.status === STATUS.COMPLETED) return;
+  //     if (appointmentData.status === STATUS.NO_SHOW) return;
+  //     if (appointmentData.status === STATUS.CALL_ABANDON) return;
+  //     if (appointmentData.status === STATUS.CANCELLED) return;
+  //     if (appointmentData.appointmentState === APPOINTMENT_STATE.AWAITING_RESCHEDULE) return;
+  //     if (appointmentData.appointmentType === APPOINTMENT_TYPE.PHYSICAL) return;
+  //     if (status === STATUS.COMPLETED) return;
 
-  const endCallAppointmentSessionAPI = async (status: STATUS) => {
-    console.log('endCallAppointmentSessionAPI called');
+  //     console.log('API Called');
+  //     endCallAppointmentSessionAPI(STATUS.NO_SHOW);
+  //   }
+  // };
 
-    const APICalled = await AsyncStorage.getItem('endAPICalled');
-    console.log(APICalled, 'APICalled endCallAppointmentSessionAPI');
+  // const endCallAppointmentSessionAPI = async (status: STATUS) => {
+  //   console.log('endCallAppointmentSessionAPI called');
 
-    if (APICalled === 'true') {
-      setBugFenderLog('Chat_Room_APICalled', APICalled);
-      stopCallAbondmentTimer();
-      return;
-    }
+  //   const APICalled = await AsyncStorage.getItem('endAPICalled');
+  //   console.log(APICalled, 'APICalled endCallAppointmentSessionAPI');
 
-    console.log(APICalled, 'afterAPICalled endCallAppointmentSessionAPI');
+  //   if (APICalled === 'true') {
+  //     setBugFenderLog('Chat_Room_APICalled', APICalled);
+  //     // stopCallAbondmentTimer();
+  //     return;
+  //   }
 
-    endCallSessionAppointment(client, appointmentData.id, status, REQUEST_ROLES.DOCTOR)
-      .then(({ data }: any) => {
-        console.log(data, 'data endCallAppointmentSessionAPI');
-        setStatus(STATUS.COMPLETED);
-        AsyncStorage.setItem('endAPICalled', 'true');
-        stopCallAbondmentTimer();
-      })
-      .catch((e) => {
-        CommonBugFender('ChatRoom_endCallSessionAppointment', e);
-        console.log('Error endCallAppointmentSessionAPI ', e);
-      });
-  };
+  //   console.log(APICalled, 'afterAPICalled endCallAppointmentSessionAPI');
+
+  //   endCallSessionAppointment(client, appointmentData.id, status, REQUEST_ROLES.DOCTOR)
+  //     .then(({ data }: any) => {
+  //       console.log(data, 'data endCallAppointmentSessionAPI');
+  //       setStatus(STATUS.COMPLETED);
+  //       AsyncStorage.setItem('endAPICalled', 'true');
+  //       // stopCallAbondmentTimer();
+  //     })
+  //     .catch((e) => {
+  //       CommonBugFender('ChatRoom_endCallSessionAppointment', e);
+  //       console.log('Error endCallAppointmentSessionAPI ', e);
+  //     });
+  // };
 
   const cancelAppointmentApi = () => {
     setLoading(true);
@@ -1353,6 +1356,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     setSnackbarState(true);
     setHandlerMessage('      Something went wrong!!  Trying to connect');
   };
+  const setSessionReconnectMsg = () => {
+    setSnackbarState(true);
+    setHandlerMessage('There is a problem with network connection. Reconnecting, Please wait...');
+  };
   const publisherEventHandlers = {
     streamCreated: (event: string) => {
       console.log('Publisher stream created!', event);
@@ -1442,6 +1449,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     },
     sessionReconnecting: (event: string) => {
       console.log('session stream sessionReconnecting!', event);
+      setSessionReconnectMsg();
       KeepAwake.activate();
     },
     signal: (event: string) => {
@@ -1507,7 +1515,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     keepAlive: true,
     // autoNetworkDetection: true,
     // listenToBrowserNetworkEvents: true,
-    presenceTimeout: 20,
+    // presenceTimeout: 20,
     heartbeatInterval: 20,
   };
   const pubnub = new Pubnub(config);
@@ -1516,11 +1524,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     console.ignoredYellowBox = ['Warning: Each', 'Warning: Failed'];
     console.disableYellowBox = true;
 
-    AsyncStorage.removeItem('endAPICalled');
+    // AsyncStorage.removeItem('endAPICalled');  // APP-2803: removed No show logic
 
     pubnub.subscribe({
       channels: [channel],
-      withPresence: true,
+      // withPresence: true,  // APP-2803: removed No show logic
     });
 
     getHistory(0);
@@ -1568,68 +1576,69 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           setname('JUNIOR');
         pubNubMessages(message);
       },
-      presence: (presenceEvent) => {
-        // if (appointmentData.appointmentType === APPOINTMENT_TYPE.PHYSICAL) return;
-        // console.log('presenceEvent', presenceEvent);
+      // presence: (presenceEvent) => {    // APP-2803: removed No show logic
 
-        dateIsAfter = moment(new Date()).isAfter(moment(appointmentData.appointmentDateTime));
+      //   // if (appointmentData.appointmentType === APPOINTMENT_TYPE.PHYSICAL) return;
+      //   // console.log('presenceEvent', presenceEvent);
 
-        const diff = moment.duration(moment(appointmentData.appointmentDateTime).diff(new Date()));
-        const diffInMins = diff.asMinutes();
-        // console.log('diffInMins', diffInMins);
+      //   dateIsAfter = moment(new Date()).isAfter(moment(appointmentData.appointmentDateTime));
 
-        pubnub
-          .hereNow({
-            channels: [channel],
-            includeUUIDs: true,
-          })
-          .then((response: HereNowResponse) => {
-            // console.log('hereNowresponse', response);
+      //   const diff = moment.duration(moment(appointmentData.appointmentDateTime).diff(new Date()));
+      //   const diffInMins = diff.asMinutes();
+      //   // console.log('diffInMins', diffInMins);
 
-            const data: any = response.channels[appointmentData.id].occupants;
+      //   pubnub
+      //     .hereNow({
+      //       channels: [channel],
+      //       includeUUIDs: true,
+      //     })
+      //     .then((response: HereNowResponse) => {
+      //       // console.log('hereNowresponse', response);
 
-            const occupancyDoctor = data.filter((obj: any) => {
-              return obj.uuid === 'DOCTOR' || obj.uuid.indexOf('DOCTOR_') > -1;
-            });
+      //       const data: any = response.channels[appointmentData.id].occupants;
 
-            const startConsultResult = insertText.filter((obj: any) => {
-              return obj.message === startConsultMsg;
-            });
-            // console.log('callAbondmentMethodoccupancyDoctor -------> ', occupancyDoctor);
-            if (response.totalOccupancy >= 2) {
-              setSendMessageToDoctor(false);
+      //       const occupancyDoctor = data.filter((obj: any) => {
+      //         return obj.uuid === 'DOCTOR' || obj.uuid.indexOf('DOCTOR_') > -1;
+      //       });
 
-              if (callAbandonmentStoppedTimer == 620) return;
-              if (callAbandonmentStoppedTimer < 620) {
-                // console.log('calljoined');
-                APIForUpdateAppointmentData(true);
-              }
-            } else {
-              if (response.totalOccupancy == 1 && occupancyDoctor.length == 0) {
-                // console.log('abondmentStarted -------> ', abondmentStarted);
-                setSendMessageToDoctor(true);
+      //       // const startConsultResult = insertText.filter((obj: any) => {
+      //       //   return obj.message === startConsultMsg;
+      //       // });
+      //       // console.log('callAbondmentMethodoccupancyDoctor -------> ', occupancyDoctor);
+      //       if (response.totalOccupancy >= 2) {
+      //         setSendMessageToDoctor(false);
 
-                if (abondmentStarted == false) {
-                  if (startConsultResult.length > 0) {
-                    console.log('callAbondmentMethod', abondmentStarted);
-                  } else {
-                    if (diffInMins < 15) {
-                      // console.log('doctorNoshow', abondmentStarted);
-                      if (appointmentData.appointmentType !== APPOINTMENT_TYPE.PHYSICAL) {
-                        callAbondmentMethod(false);
-                      }
-                    }
-                  }
-                  eventsAfterConnectionDestroyed();
-                }
-              }
-            }
-          })
-          .catch((error) => {
-            CommonBugFender('ChatRoom_PUBNUB_PRESENCE', error);
-            console.log(error);
-          });
-      },
+      //         // if (callAbandonmentStoppedTimer == 620) return;  // APP-2803: removed No show logic
+      //         // if (callAbandonmentStoppedTimer < 620) {
+      //         //   // console.log('calljoined');
+      //         //   APIForUpdateAppointmentData(true);
+      //         // }
+      //       } else {
+      //         if (response.totalOccupancy == 1 && occupancyDoctor.length == 0) {
+      //           // console.log('abondmentStarted -------> ', abondmentStarted);
+      //           setSendMessageToDoctor(true);
+
+      //           // if (abondmentStarted == false) {         // APP-2803: removed No show logic
+      //           //   if (startConsultResult.length > 0) {
+      //           //     console.log('callAbondmentMethod', abondmentStarted);
+      //           //   } else {
+      //           //     if (diffInMins < 15) {
+      //           //       // console.log('doctorNoshow', abondmentStarted);
+      //           //       if (appointmentData.appointmentType !== APPOINTMENT_TYPE.PHYSICAL) {
+      //           //         callAbondmentMethod(false);
+      //           //       }
+      //           //     }
+      //           //   }
+      //           //   eventsAfterConnectionDestroyed();
+      //           // }
+      //         }
+      //       }
+      //     })
+      //     .catch((error) => {
+      //       CommonBugFender('ChatRoom_PUBNUB_PRESENCE', error);
+      //       console.log(error);
+      //     });
+      // },
     });
 
     const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', keyboardDidShow);
@@ -1638,6 +1647,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     return function cleanup() {
       console.log('didmount clean up chatroom');
       pubnub.unsubscribe({ channels: [channel] });
+      pubnub.stop();
       keyboardDidShowListener.remove();
       keyboardDidHideListener.remove();
       KeepAwake.deactivate();
@@ -1648,7 +1658,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       intervalId && BackgroundTimer.clearInterval(intervalId);
       abondmentStarted = false;
       stopJoinTimer();
-      stopCallAbondmentTimer();
+      // stopCallAbondmentTimer();
       try {
         AppState.removeEventListener('change', _handleAppStateChange);
         BackHandler.removeEventListener('hardwareBackPress', backDataFunctionality);
@@ -1658,111 +1668,146 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     };
   }, []);
 
+  const HereNowPubnub = (message: string) => {
+    if (status !== STATUS.COMPLETED) return;
+
+    pubnub
+      .hereNow({
+        channels: [channel],
+        includeUUIDs: true,
+      })
+      .then((response: HereNowResponse) => {
+        console.log('hereNowresponse', response);
+
+        const data: any = response.channels[appointmentData.id].occupants;
+
+        const occupancyDoctor = data.filter((obj: any) => {
+          return obj.uuid === 'DOCTOR' || obj.uuid.indexOf('DOCTOR_') > -1;
+        });
+
+        console.log('callAbondmentMethodoccupancyDoctor -------> ', occupancyDoctor);
+        if (response.totalOccupancy >= 2) {
+          setSendMessageToDoctor(false);
+        } else {
+          if (response.totalOccupancy == 1 && occupancyDoctor.length == 0) {
+            setSendMessageToDoctor(true);
+            InsertMessageToDoctor(message);
+          }
+        }
+      })
+      .catch((error) => {
+        CommonBugFender('ChatRoom_PUBNUB_PRESENCE', error);
+        console.log(error);
+      });
+  };
+
   const [showDoctorNoShowAlert, setShowDoctorNoShowAlert] = useState<boolean>(false);
 
-  const callAbondmentMethod = async (isSeniorConsultStarted: boolean) => {
-    if (appointmentData.appointmentType === APPOINTMENT_TYPE.PHYSICAL) return;
+  // APP-2803: removed No show logic
 
-    const startConsultJRResult = insertText.filter((obj: any) => {
-      return obj.message === startConsultjr;
-    });
+  // const callAbondmentMethod = async (isSeniorConsultStarted: boolean) => {
+  //   if (appointmentData.appointmentType === APPOINTMENT_TYPE.PHYSICAL) return;
 
-    const stopConsultJRResult = insertText.filter((obj: any) => {
-      return obj.message === stopConsultJr;
-    });
+  //   const startConsultJRResult = insertText.filter((obj: any) => {
+  //     return obj.message === startConsultjr;
+  //   });
 
-    if (isSeniorConsultStarted) {
-      console.log('callAbondmentMethod scenario');
-      if (appointmentData.status === STATUS.COMPLETED) return;
-      if (appointmentData.status === STATUS.NO_SHOW) return;
-      if (appointmentData.status === STATUS.CALL_ABANDON) return;
-      if (appointmentData.status === STATUS.CANCELLED) return;
-      if (appointmentData.appointmentState === APPOINTMENT_STATE.AWAITING_RESCHEDULE) return;
-      if (status === STATUS.COMPLETED) return;
-    } else {
-      console.log(
-        'doctor no show scenario',
-        startConsultJRResult.length,
-        stopConsultJRResult.length,
-        dateIsAfter,
-        isSeniorConsultStarted
-      );
+  //   const stopConsultJRResult = insertText.filter((obj: any) => {
+  //     return obj.message === stopConsultJr;
+  //   });
 
-      if (
-        startConsultJRResult.length >= 0 &&
-        stopConsultJRResult.length >= 0 &&
-        dateIsAfter &&
-        !isSeniorConsultStarted
-      ) {
-        if (appointmentData.status === STATUS.COMPLETED) return;
-        if (appointmentData.status === STATUS.NO_SHOW) return;
-        if (appointmentData.status === STATUS.CALL_ABANDON) return;
-        if (appointmentData.status === STATUS.CANCELLED) return;
-        if (appointmentData.appointmentState === APPOINTMENT_STATE.AWAITING_RESCHEDULE) return;
-        if (status === STATUS.COMPLETED) return;
-        if (callAbandonmentStoppedTimer < 620) return;
+  //   if (isSeniorConsultStarted) {
+  //     console.log('callAbondmentMethod scenario');
+  //     if (appointmentData.status === STATUS.COMPLETED) return;
+  //     if (appointmentData.status === STATUS.NO_SHOW) return;
+  //     if (appointmentData.status === STATUS.CALL_ABANDON) return;
+  //     if (appointmentData.status === STATUS.CANCELLED) return;
+  //     if (appointmentData.appointmentState === APPOINTMENT_STATE.AWAITING_RESCHEDULE) return;
+  //     if (status === STATUS.COMPLETED) return;
+  //   } else {
+  //     console.log(
+  //       'doctor no show scenario',
+  //       startConsultJRResult.length,
+  //       stopConsultJRResult.length,
+  //       dateIsAfter,
+  //       isSeniorConsultStarted
+  //     );
 
-        const APICalled = await AsyncStorage.getItem('endAPICalled');
+  //     if (
+  //       startConsultJRResult.length >= 0 &&
+  //       stopConsultJRResult.length >= 0 &&
+  //       dateIsAfter &&
+  //       !isSeniorConsultStarted
+  //     ) {
+  //       if (appointmentData.status === STATUS.COMPLETED) return;
+  //       if (appointmentData.status === STATUS.NO_SHOW) return;
+  //       if (appointmentData.status === STATUS.CALL_ABANDON) return;
+  //       if (appointmentData.status === STATUS.CANCELLED) return;
+  //       if (appointmentData.appointmentState === APPOINTMENT_STATE.AWAITING_RESCHEDULE) return;
+  //       if (status === STATUS.COMPLETED) return;
+  //       if (callAbandonmentStoppedTimer < 620) return;
 
-        if (APICalled === 'true') {
-          setBugFenderLog('Chat_Room_NO_SHOW_DOCTOR', APICalled);
-          setStatus(STATUS.COMPLETED);
-          stopCallAbondmentTimer();
-          return;
-        }
+  //       const APICalled = await AsyncStorage.getItem('endAPICalled');
 
-        abondmentStarted = true;
-        startCallAbondmentTimer(620, false);
-      } else {
-        abondmentStarted = false;
-      }
-    }
-  };
+  //       if (APICalled === 'true') {
+  //         setBugFenderLog('Chat_Room_NO_SHOW_DOCTOR', APICalled);
+  //         setStatus(STATUS.COMPLETED);
+  //         stopCallAbondmentTimer();
+  //         return;
+  //       }
 
-  const startCallAbondmentTimer = (timer: number, isCallAbandment: boolean) => {
-    try {
-      startNoShow(timer, () => {
-        console.log('Trigger no ShowAPi');
-        setTransferData(appointmentData);
+  //       abondmentStarted = true;
+  //       startCallAbondmentTimer(620, false);
+  //     } else {
+  //       abondmentStarted = false;
+  //     }
+  //   }
+  // };
 
-        if (isCallAbandment) {
-        } else {
-          setShowDoctorNoShowAlert(true);
-          endCallAppointmentSessionAPI(STATUS.NO_SHOW);
-        }
-      });
-    } catch (error) {
-      CommonBugFender('ChatRoom_startCallAbondmentTimer_try', error);
-      console.log('error in call abandoment', error);
-    }
-  };
+  // const startCallAbondmentTimer = (timer: number, isCallAbandment: boolean) => {
+  //   try {
+  //     startNoShow(timer, () => {
+  //       console.log('Trigger no ShowAPi');
+  //       setTransferData(appointmentData);
 
-  const startNoShow = (timer: number, callback?: () => void) => {
-    stopCallAbondmentTimer();
-    setTransferData(appointmentData);
-    callAbandonmentTimer = BackgroundTimer.setInterval(() => {
-      try {
-        timer = timer - 1;
-        callAbandonmentStoppedTimer = timer;
+  //       if (isCallAbandment) {
+  //       } else {
+  //         setShowDoctorNoShowAlert(true);
+  //         endCallAppointmentSessionAPI(STATUS.NO_SHOW);
+  //       }
+  //     });
+  //   } catch (error) {
+  //     CommonBugFender('ChatRoom_startCallAbondmentTimer_try', error);
+  //     console.log('error in call abandoment', error);
+  //   }
+  // };
 
-        console.log('callAbandonmentStoppedTimer', callAbandonmentStoppedTimer);
-        if (timer < 1) {
-          stopCallAbondmentTimer();
-          callback && callback();
-        }
-      } catch (error) {
-        CommonBugFender('ChatRoom_startCallAbondmentTimer_crash', error);
-        stopCallAbondmentTimer();
-      }
-    }, 1000);
-  };
+  // const startNoShow = (timer: number, callback?: () => void) => {
+  //   stopCallAbondmentTimer();
+  //   setTransferData(appointmentData);
+  //   callAbandonmentTimer = BackgroundTimer.setInterval(() => {
+  //     try {
+  //       timer = timer - 1;
+  //       callAbandonmentStoppedTimer = timer;
 
-  const stopCallAbondmentTimer = () => {
-    console.log('stopCallAbondmentTimer', callAbandonmentTimer);
-    callAbandonmentTimer && BackgroundTimer.clearInterval(callAbandonmentTimer);
-    callAbandonmentStoppedTimer = 620;
-    abondmentStarted = false;
-  };
+  //       console.log('callAbandonmentStoppedTimer', callAbandonmentStoppedTimer);
+  //       if (timer < 1) {
+  //         stopCallAbondmentTimer();
+  //         callback && callback();
+  //       }
+  //     } catch (error) {
+  //       CommonBugFender('ChatRoom_startCallAbondmentTimer_crash', error);
+  //       stopCallAbondmentTimer();
+  //     }
+  //   }, 1000);
+  // };
+
+  // const stopCallAbondmentTimer = () => {
+  //   console.log('stopCallAbondmentTimer', callAbandonmentTimer);
+  //   callAbandonmentTimer && BackgroundTimer.clearInterval(callAbandonmentTimer);
+  //   callAbandonmentStoppedTimer = 620;
+  //   abondmentStarted = false;
+  // };
 
   const APIForUpdateAppointmentData = (toStopTimer: boolean) => {
     getAppointmentDataDetails(client, appointmentData.id)
@@ -1780,16 +1825,19 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           appointmentData = data.data.getAppointmentData.appointmentsHistory[0];
           console.log(appointmentData, 'appointmentData APIForUpdateAppointmentData');
           setStatus(data.data.getAppointmentData.appointmentsHistory[0].status);
-          if (toStopTimer) {
-            if (appointmentSeniorDoctorStarted) {
-              stopCallAbondmentTimer();
-              abondmentStarted = false;
-            }
-          } else {
-            if (appointmentData.appointmentType !== APPOINTMENT_TYPE.PHYSICAL) {
-              callAbondmentMethod(appointmentSeniorDoctorStarted);
-            }
-          }
+
+          // APP-2803: removed No show logic
+
+          // if (toStopTimer) {
+          //   if (appointmentSeniorDoctorStarted) {
+          //     stopCallAbondmentTimer();
+          //     abondmentStarted = false;
+          //   }
+          // } else {
+          //   if (appointmentData.appointmentType !== APPOINTMENT_TYPE.PHYSICAL) {
+          //     callAbondmentMethod(appointmentSeniorDoctorStarted);
+          //   }
+          // }
         } catch (error) {
           CommonBugFender('ChatRoom_APIForUpdateAppointmentData_try', error);
         }
@@ -2162,13 +2210,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         setIsAudio(true);
         setOnSubscribe(true);
         callhandelBack = false;
-        stopCallAbondmentTimer();
+        // stopCallAbondmentTimer();
         playSound();
       } else if (message.message.message === videoCallMsg) {
         setOnSubscribe(true);
         callhandelBack = false;
         setIsAudio(false);
-        stopCallAbondmentTimer();
+        // stopCallAbondmentTimer();
         playSound();
       } else if (message.message.message === startConsultMsg) {
         setjrDoctorJoined(false);
@@ -2257,15 +2305,15 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       } else if (message.message.message === cancelConsultInitiated) {
         console.log('cancelConsultInitiated');
         setShowPopup(true);
-        setTimeout(() => {
-          stopCallAbondmentTimer();
-        }, 1000);
+        // setTimeout(() => {
+        // stopCallAbondmentTimer();
+        // }, 1000);
       } else if (message.message.message === rescheduleConsultMsg) {
         console.log('rescheduleConsultMsg', message.message);
         checkForRescheduleMessage(message.message);
-        setTimeout(() => {
-          stopCallAbondmentTimer();
-        }, 1000);
+        // setTimeout(() => {
+        // stopCallAbondmentTimer();
+        // }, 1000);
         addMessages(message);
       } else if (message.message.message === callAbandonment) {
         console.log('callAbandonment');
@@ -2285,9 +2333,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     console.log('addMessages', message);
     // console.log('startConsultjr', message.message.message);
 
-    if (message.message.id !== patientId) {
-      stopCallAbondmentTimer();
-    }
+    // if (message.message.id !== patientId) {
+    //   stopCallAbondmentTimer();
+    // }
 
     // const timeStamp = parseInt(message.timetoken) / parseInt('10000000');
     // console.log('timeStamp', timeStamp);
@@ -2368,7 +2416,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       };
 
       setMessageText('');
-      InsertMessageToDoctor(textMessage);
 
       pubnub.publish(
         {
@@ -2377,7 +2424,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           storeInHistory: true,
           sendByPost: true,
         },
-        (status, response) => {}
+        (status, response) => {
+          if (status.statusCode == 200) {
+            HereNowPubnub(textMessage);
+            // InsertMessageToDoctor(textMessage);
+          }
+        }
       );
     } catch (error) {
       CommonBugFender('ChatRoom_send_try', error);
@@ -4478,10 +4530,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           }}
         >
           <View style={{ flex: 1 }}>
-            <Text style={styles.doctorNameStyle}>
-              {appointmentData.doctorInfo.salutation}
-              {appointmentData.doctorInfo.displayName}
-            </Text>
+            <Text style={styles.doctorNameStyle}>{appointmentData.doctorInfo.displayName}</Text>
             <Text style={styles.doctorSpecialityStyle}>{`${g(
               appointmentData,
               'doctorInfo',
@@ -5685,11 +5734,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         item.fileType == 'png'
       ) {
         // console.log('item', item.base64, item.fileType);
+        // console.log('resource item', item);
         const formattedDate = moment(new Date()).format('YYYY-MM-DD');
         const prescriptionFile: MediaPrescriptionFileProperties = {
-          fileName: resource[0].title + '.' + type,
-          mimeType: mimeType(resource[0].title + '.' + type),
-          content: base66,
+          fileName: item.title + '.' + item.fileType,
+          mimeType: mimeType(item.title + '.' + item.fileType),
+          content: item.base64,
         };
         const inputData: MediaPrescriptionUploadRequest = {
           prescribedBy: appointmentData.doctorInfo.displayName,
@@ -5757,9 +5807,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                       storeInHistory: true,
                       sendByPost: true,
                     },
-                    (status, response) => {}
+                    (status, response) => {
+                      if (status.statusCode == 200) {
+                        HereNowPubnub('ImageUploaded');
+                        // InsertMessageToDoctor('ImageUploaded');
+                      }
+                    }
                   );
-                  InsertMessageToDoctor('ImageUploaded');
                   KeepAwake.activate();
                 })
                 .catch((e) => {
@@ -5926,29 +5980,58 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             selectedEPres.forEach((item) => {
               console.log(item, 'from selected');
 
-              const url = item.uploadedUrl && item.uploadedUrl.split(',');
-              const prism = item.prismPrescriptionFileId && item.prismPrescriptionFileId.split(',');
-              url &&
-                url.map((item, index) => {
-                  const text = {
-                    id: patientId,
-                    message: imageconsult,
-                    fileType: item.match(/\.(pdf)$/) ? 'pdf' : 'image',
-                    prismId: (prism && prism[index]) || '',
-                    url: item,
-                    messageDate: new Date(),
-                  };
-                  pubnub.publish(
-                    {
-                      channel: channel,
-                      message: text,
-                      storeInHistory: true,
-                      sendByPost: true,
+              const url = item.uploadedUrl ? item.uploadedUrl : '';
+              const prism = item.prismPrescriptionFileId ? item.prismPrescriptionFileId : '';
+              // url &&
+              //   url.map((item, index) => {
+              if (url) {
+                setLoading(true);
+                client
+                  .mutate({
+                    mutation: ADD_CHAT_DOCUMENTS,
+                    fetchPolicy: 'no-cache',
+                    variables: {
+                      prismFileId: prism,
+                      documentPath: url,
+                      appointmentId: appointmentData.id,
                     },
-                    (status, response) => {}
-                  );
-                  KeepAwake.activate();
-                });
+                  })
+                  .then((data) => {
+                    console.log('ADD_CHAT_DOCUMENTS data', data);
+                    const prismFieldId = g(data.data!, 'addChatDocument', 'prismFileId');
+                    const documentPath = g(data.data!, 'addChatDocument', 'documentPath');
+
+                    const text = {
+                      id: patientId,
+                      message: imageconsult,
+                      fileType: (documentPath ? documentPath : url).match(/\.(pdf)$/)
+                        ? 'pdf'
+                        : 'image',
+                      prismId: (prismFieldId ? prismFieldId : prism) || '',
+                      url: documentPath ? documentPath : url,
+                      messageDate: new Date(),
+                    };
+                    pubnub.publish(
+                      {
+                        channel: channel,
+                        message: text,
+                        storeInHistory: true,
+                        sendByPost: true,
+                      },
+                      (status, response) => {}
+                    );
+                    KeepAwake.activate();
+                    setLoading(false);
+                  })
+                  .catch((e) => {
+                    CommonBugFender('ChatRoom_getPrismUrls_uploadDocument', e);
+                    console.log('Error occured', e);
+                  })
+                  .finally(() => {
+                    setLoading(false);
+                  });
+              }
+              // });
               item.message &&
                 pubnub.publish(
                   {
@@ -5962,9 +6045,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     storeInHistory: true,
                     sendByPost: true,
                   },
-                  (status, response) => {}
+                  (status, response) => {
+                    if (status.statusCode == 200) {
+                      HereNowPubnub('EprescriptionUploaded');
+                      // InsertMessageToDoctor('EprescriptionUploaded');
+                    }
+                  }
                 );
-              InsertMessageToDoctor('EprescriptionUploaded');
             });
           }
           //setEPrescriptions && setEPrescriptions([...selectedEPres]);
@@ -6213,7 +6300,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           container={{ borderBottomWidth: 0, zIndex: 100 }}
           onPressLeftIcon={() => {
             if (callhandelBack) {
-              handleCallTheEdSessionAPI();
+              // handleCallTheEdSessionAPI();
               props.navigation.dispatch(
                 StackActions.reset({
                   index: 0,

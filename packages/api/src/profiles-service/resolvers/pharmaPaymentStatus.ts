@@ -1,6 +1,10 @@
 import gql from 'graphql-tag';
 import { log } from 'customWinstonLogger';
-import { STATUS_PAYMENT_MAP, PAYMENT_STATUS_MAP } from 'profiles-service/entities/index';
+import {
+  STATUS_PAYMENT_MAP,
+  PAYMENT_STATUS_MAP,
+  MEDICINE_ORDER_STATUS,
+} from 'profiles-service/entities/index';
 import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
 import { MedicineOrdersRepository } from 'profiles-service/repositories/MedicineOrdersRepository';
 import { Resolver } from 'api-gateway';
@@ -31,6 +35,7 @@ type PharmaPaymentResponse = {
   paymentDateTime: Date;
   paymentMode: string;
   orderDateTime: Date;
+  currentStatus: MEDICINE_ORDER_STATUS;
 };
 
 const pharmaPaymentStatus: Resolver<
@@ -61,6 +66,9 @@ const pharmaPaymentStatus: Resolver<
       break;
     case STATUS_PAYMENT_MAP.PAYMENT_FAILED:
       response.paymentStatus = PAYMENT_STATUS_MAP.TXN_FAILURE;
+      if (response.currentStatus === MEDICINE_ORDER_STATUS.PAYMENT_ABORTED) {
+        response.paymentStatus = PAYMENT_STATUS_MAP.PAYMENT_ABORTED;
+      }
       break;
     default:
       response.paymentStatus = PAYMENT_STATUS_MAP.UNKNOWN;
