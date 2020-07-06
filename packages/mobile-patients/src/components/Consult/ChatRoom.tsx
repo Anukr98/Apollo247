@@ -5734,11 +5734,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         item.fileType == 'png'
       ) {
         // console.log('item', item.base64, item.fileType);
+        // console.log('resource item', item);
         const formattedDate = moment(new Date()).format('YYYY-MM-DD');
         const prescriptionFile: MediaPrescriptionFileProperties = {
-          fileName: resource[0].title + '.' + type,
-          mimeType: mimeType(resource[0].title + '.' + type),
-          content: base66,
+          fileName: item.title + '.' + item.fileType,
+          mimeType: mimeType(item.title + '.' + item.fileType),
+          content: item.base64,
         };
         const inputData: MediaPrescriptionUploadRequest = {
           prescribedBy: appointmentData.doctorInfo.displayName,
