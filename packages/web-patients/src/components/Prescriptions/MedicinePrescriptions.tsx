@@ -22,7 +22,7 @@ import { PrescriptionCard } from 'components/Prescriptions/PrescriptionCard';
 import { EPrescriptionCard } from 'components/Prescriptions/EPrescriptionCard';
 import { UploadPrescription } from 'components/Prescriptions/UploadPrescription';
 import { UploadEPrescriptionCard } from 'components/Prescriptions/UploadEPrescriptionCard';
-import { uploadPrescriptionTracking } from '../../webEngageTracking';
+import { uploadPrescriptionTracking, pharmacyPrescriptionTracking } from '../../webEngageTracking';
 import { useCurrentPatient } from 'hooks/authHooks';
 import moment from 'moment';
 
@@ -308,7 +308,11 @@ export const MedicinePrescriptions: React.FC = (props) => {
     const selectedValue = (event.target as HTMLInputElement).value;
     if (selectedValue === 'addmedicine') {
       window.location.href = clientRoutes.medicineSearch();
+      pharmacyPrescriptionTracking('Search and add');
     } else {
+      selectedValue === 'specified'
+        ? pharmacyPrescriptionTracking('All medicine')
+        : pharmacyPrescriptionTracking('call');
       setValue(selectedValue);
       setPrescriptionOptionSelected(selectedValue);
     }

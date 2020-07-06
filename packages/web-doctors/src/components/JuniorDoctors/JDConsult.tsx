@@ -255,6 +255,10 @@ export const JDConsult: React.FC<ConsultProps> = (props) => {
               apiKey={apikey}
               sessionId={props.sessionId}
               token={props.token}
+              onError={(error: any) => {
+                console.log('Session Error', error);
+                props.setSessionError(error);
+              }}
               eventHandlers={{
                 connectionDestroyed: (event: any) => {
                   props.toggelChatVideo();
@@ -291,6 +295,10 @@ export const JDConsult: React.FC<ConsultProps> = (props) => {
                 properties={{
                   publishAudio: isPublishAudio,
                   publishVideo: subscribeToVideo,
+                }}
+                onError={(error: any) => {
+                  console.log('Publisher Error', error);
+                  props.setPublisherError(error);
                 }}
                 eventHandlers={{
                   error: (error: any) => {
@@ -332,16 +340,20 @@ export const JDConsult: React.FC<ConsultProps> = (props) => {
                   <OTSubscriber
                     className={!props.showVideoChat ? classes.subscriber : classes.minSubscriber}
                     retry={isRetry}
+                    onError={(error: any) => {
+                      console.log('Subscriber Error', error);
+                      props.setSubscriberError(error);
+                    }}
                     eventHandlers={{
-                      videoDisabled: (error: any) => {
-                        console.log(`videoDisabled: ${JSON.stringify(error)}`);
-                        if (error.reason === 'quality') {
+                      videoDisabled: (event: any) => {
+                        console.log(`videoDisabled: ${JSON.stringify(event)}`);
+                        if (event.reason === 'quality') {
                           setDowngradeToAudio(true);
                         }
                       },
-                      videoEnabled: (error: any) => {
-                        console.log(`videoDisabled: ${JSON.stringify(error)}`);
-                        if (error.reason === 'quality') {
+                      videoEnabled: (event: any) => {
+                        console.log(`videoDisabled: ${JSON.stringify(event)}`);
+                        if (event.reason === 'quality') {
                           setDowngradeToAudio(false);
                         }
                       },

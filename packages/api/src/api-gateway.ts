@@ -112,11 +112,11 @@ export type Resolver<Parent, Args, Context, Result> = (
     cors: { origin: corsOrigins },
     schema,
     executor,
-    engine: {
+    /* engine: {
       apiKey: process.env.ENGINE_API_KEY,
       schemaTag: process.env.NODE_ENV,
       debugPrintReports: true,
-    },
+    }, */
     context: async ({ req }) => {
       // console.log(req);
       //log('apiGatewayLogger', '', req.body, '', '');
@@ -204,14 +204,14 @@ export type Resolver<Parent, Args, Context, Result> = (
           return {
             parsingDidStart(requestContext) {
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              const internalContext = (requestContext.context as any) as GatewayContext;
+              /*const internalContext = (requestContext.context as any) as GatewayContext;
 
-              logger.log({
+             logger.log({
                 message: 'API Gateway Request Started for :' + internalContext.mobileNumber,
                 time: reqStartTimeFormatted,
                 operation: requestContext.request.query,
                 level: 'info',
-              });
+              }); */
             },
             didEncounterErrors(requestContext) {
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -236,7 +236,7 @@ export type Resolver<Parent, Args, Context, Result> = (
               };
               //remove response if there is no error
               if (errorCount === 0) delete responseLog.response;
-              logger.log(responseLog);
+              //logger.log(responseLog);
             },
           };
         },
