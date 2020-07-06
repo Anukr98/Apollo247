@@ -2,7 +2,7 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
-import { Gender, Relation, APPOINTMENT_TYPE, STATUS, DoctorType, Salutation, MEDICINE_TO_BE_TAKEN, MEDICINE_TIMINGS, MEDICINE_UNIT, MEDICINE_FORM_TYPES, MEDICINE_FREQUENCY, MEDICINE_CONSUMPTION_DURATION, ROUTE_OF_ADMINISTRATION } from "./globalTypes";
+import { Gender, Relation, APPOINTMENT_TYPE, STATUS, DoctorType, MEDICINE_TO_BE_TAKEN, MEDICINE_TIMINGS, MEDICINE_UNIT, MEDICINE_FORM_TYPES, MEDICINE_FREQUENCY, MEDICINE_CONSUMPTION_DURATION, ROUTE_OF_ADMINISTRATION } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: GetCaseSheet
@@ -119,7 +119,7 @@ export interface GetCaseSheet_getCaseSheet_caseSheetDetails_createdDoctorProfile
   emailAddress: string | null;
   firstName: string | null;
   lastName: string | null;
-  salutation: Salutation | null;
+  salutation: string | null;
   registrationNumber: string | null;
   signature: string | null;
   photoUrl: string | null;
@@ -212,6 +212,7 @@ export interface GetCaseSheet_getCaseSheet_caseSheetDetails {
   notes: string | null;
   version: number | null;
   prescriptionGeneratedDate: any | null;
+  updatedDate: any | null;
 }
 
 export interface GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_diagnosis {
@@ -285,7 +286,7 @@ export interface GetCaseSheet_getCaseSheet_juniorDoctorCaseSheet_createdDoctorPr
   __typename: "Profile";
   firstName: string | null;
   lastName: string | null;
-  salutation: Salutation | null;
+  salutation: string | null;
 }
 
 export interface GetCaseSheet_getCaseSheet_juniorDoctorCaseSheet {
