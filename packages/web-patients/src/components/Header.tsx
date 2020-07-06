@@ -256,6 +256,7 @@ export const Header: React.FC = (props) => {
     clientRoutes.medicineAllBrands(),
     clientRoutes.prescriptionsLanding(),
     clientRoutes.prescriptionReview(),
+    clientRoutes.medicinePrescription(),
   ];
 
   return (
