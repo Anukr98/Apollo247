@@ -952,7 +952,9 @@ const modifyCaseSheet: Resolver<
       inputArguments.dietAllergies.length > 0 ? inputArguments.dietAllergies : undefined;
 
   const medicalHistoryRepo = patientsDb.getCustomRepository(PatientMedicalHistoryRepository);
-  const medicalHistoryRecord = patientData.patientMedicalHistory;
+  const medicalHistoryRecord = await medicalHistoryRepo.getPatientMedicalHistory(
+    getCaseSheetData.patientId
+  );
   if (medicalHistoryRecord == null) {
     //create
     medicalHistoryRepo.savePatientMedicalHistory(medicalHistoryInputs);
