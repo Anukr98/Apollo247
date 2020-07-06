@@ -13,7 +13,7 @@ import { AppointmentRepository } from 'consults-service/repositories/appointment
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 
 import _ from 'lodash';
-import { MedicineOrdersRepository } from 'profiles-service/repositories/MedicineOrdersRepository';
+//import { MedicineOrdersRepository } from 'profiles-service/repositories/MedicineOrdersRepository';
 //import { PatientLabResults, LabTestResults, TestResultFiles } from 'types/labResults';
 
 export const getPatientConsultsAndPrescriptionsTypeDefs = gql`
