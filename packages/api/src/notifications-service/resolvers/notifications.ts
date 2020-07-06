@@ -1641,6 +1641,15 @@ export async function sendCartNotification(
     notificationTitle = ApiConstants.ORDER_CONFIRMED_TITLE;
     notificationBody = ApiConstants.ORDER_CONFIRMED_BODY;
     type = 'Order_Confirmed';
+    let orderTat = medicineOrderDetails.orderTat ? medicineOrderDetails.orderTat.toString() : 'few';
+    let tatDate;
+    if (medicineOrderDetails.orderTat) {
+      if (Date.parse(orderTat)) {
+        tatDate = new Date(orderTat);
+      }
+    }
+    const atOrederDateTime = tatDate ? 'by ' + format(tatDate, 'EEE MMM dd yyyy hh:mm bb') : 'soon';
+    notificationBody = notificationBody.replace('{2}', atOrederDateTime);
   }
   notificationBody = notificationBody.replace('{0}', patientDetails.firstName);
   notificationBody = notificationBody.replace('{1}', pushNotificationInput.orderAutoId.toString());
@@ -1896,11 +1905,6 @@ export async function sendMedicineOrderStatusNotification(
       notificationTitle = ApiConstants.ORDER_PLACED_TITLE;
       notificationBody = ApiConstants.ORDER_PLACED_BODY;
       break;
-    case NotificationType.MEDICINE_ORDER_CONFIRMED:
-      payloadDataType = 'Order_Confirmed';
-      notificationTitle = ApiConstants.ORDER_CONFIRMED_TITLE;
-      notificationBody = ApiConstants.ORDER_CONFIRMED_BODY;
-      break;
     case NotificationType.MEDICINE_ORDER_OUT_FOR_DELIVERY:
       payloadDataType = 'Order_Out_For_Delivery';
       notificationTitle = ApiConstants.ORDER_OUT_FOR_DELIVERY_TITLE;
@@ -1937,31 +1941,16 @@ export async function sendMedicineOrderStatusNotification(
       notificationBody = ApiConstants.ORDER_PLACED_BODY;
   }
   //notification payload
-  const userName = patientDetails.firstName ? patientDetails.firstName : 'User';
+  const userName = patientDetails.firstName ? patientDetails.firstName.trim() : 'User';
   const orderNumber = orderDetails.orderAutoId ? orderDetails.orderAutoId.toString() : '';
-  let orderTat = orderDetails.orderTat ? orderDetails.orderTat.toString() : 'few';
-  let tatDate;
-  if (orderDetails.orderTat) {
-    if (Date.parse(orderDetails.orderTat.toString())) {
-      tatDate = new Date(orderDetails.orderTat.toString());
-      orderTat = Math.floor(Math.abs(differenceInHours(tatDate, new Date()))).toString();
-    }
-  }
 
   notificationTitle = notificationTitle.toString();
   notificationBody = notificationBody.replace('{0}', userName);
   notificationBody = notificationBody.replace('{1}', orderNumber);
-  const atOrederDateTime = tatDate ? 'by ' + format(tatDate, 'EEE MMM dd yyyy hh:mm bb') : 'soon';
-  const inTatHours = 'in ' + orderTat + 'hours';
   if (notificationType == NotificationType.MEDICINE_ORDER_READY_AT_STORE) {
     const shopAddress = JSON.parse(orderDetails.shopAddress);
     notificationBody = notificationBody.replace('{2}', shopAddress.storename);
     notificationBody = notificationBody.replace('{3}', shopAddress.phone);
-  } else {
-    if (notificationType === NotificationType.MEDICINE_ORDER_CONFIRMED) {
-      notificationBody = notificationBody.replace('{2}', atOrederDateTime);
-    }
-    notificationBody = notificationBody.replace('{2}', inTatHours);
   }
 
   console.log(notificationBody, notificationType, 'med orders');

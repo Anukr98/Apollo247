@@ -720,9 +720,9 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
             <div className={classes.leftGroup}>
               <div className={classes.sectionHeader}>
                 <h1>Book Best Doctors - {specialtyName}</h1>
-                <AphButton>
+                {/* <AphButton>
                   <img src={require('images/ic-share-green.svg')} alt="" />
-                </AphButton>
+                </AphButton> */}
               </div>
               <SpecialtySearch
                 setSearchKeyword={setSearchKeyword}
@@ -812,6 +812,7 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
                           <Grid key={doctor.id} item xs={12} sm={12} md={12} lg={6}>
                             <InfoCard
                               doctorInfo={doctor}
+                              doctorType={doctorType}
                               nextAvailability={nextAvailabilityString}
                             />
                           </Grid>
@@ -825,7 +826,7 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
               </div>
               {faqData && faqData.length > 0 && (
                 <>
-                  <BookBest faqData={faqData[0]} />
+                  <BookBest faqData={faqData[0]} specialityName={specialtyName} />
                   <FrequentlyQuestions faqData={faqData[0].specialityFaq} />
                 </>
               )}
