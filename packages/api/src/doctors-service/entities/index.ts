@@ -189,7 +189,7 @@ export class AdminAuditLogs extends BaseEntity {
   @Column({ nullable: true })
   updatedBy: string;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, type: 'timestamp' })
   updatedAt: Date;
 
   @Column({ nullable: true })
