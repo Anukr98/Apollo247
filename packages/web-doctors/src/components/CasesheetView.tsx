@@ -458,7 +458,7 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
       ) => (
         <li key={`removed-${index}`}>
           <s>{prescription.medicineName}</s>{' '}
-          <span className={classes.removed}>( This medication has been disontinued )</span>
+          <span className={classes.removed}>( This medication has been discontinued )</span>
         </li>
       )
     );
@@ -778,7 +778,7 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
               </div>
             </div>
           ) : null}
-          {!loader && medicinePrescription && medicinePrescription.length > 0 ? (
+          {!loader && removedMedicinePrescription && removedMedicinePrescription.length > 0 ? (
             <div className={classes.prescriptionSection}>
               <div className={classes.sectionHeader}>
                 <img src={require('images/ic-medicines.svg')} /> Medication Prescribed

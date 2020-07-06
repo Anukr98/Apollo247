@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { makeStyles, createStyles } from '@material-ui/styles';
 import { Theme, CircularProgress, Modal } from '@material-ui/core';
 import { AphButton } from '@aph/web-ui-components';
-import { GetDoctorDetailsById as DoctorDetails } from 'graphql/types/GetDoctorDetailsById';
+import { GetDoctorDetailsById_getDoctorDetailsById as DoctorDetails } from 'graphql/types/GetDoctorDetailsById';
 import moment from 'moment';
 import { getDiffInDays, getDiffInMinutes, getDiffInHours } from 'helpers/commonHelpers';
 import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
@@ -240,12 +240,10 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
   const [physicalDirection, setPhysicalDirection] = useState<boolean>(false);
   const [onlineDirection, setOnlineDirection] = useState<boolean>(true);
   const { doctorDetails, doctorAvailablePhysicalSlots, doctorAvailableOnlineSlot } = props;
-  const doctorDetailsId = doctorDetails && doctorDetails.getDoctorDetailsById;
-  const doctorName = doctorDetailsId && doctorDetailsId.fullName;
-  const physcalFee = doctorDetailsId && doctorDetailsId.physicalConsultationFees;
-  const onlineFee = doctorDetailsId && doctorDetailsId.onlineConsultationFees;
-  const doctorId =
-    doctorDetails && doctorDetails.getDoctorDetailsById && doctorDetails.getDoctorDetailsById.id;
+  const doctorName = doctorDetails && doctorDetails.fullName;
+  const physcalFee = doctorDetails && doctorDetails.physicalConsultationFees;
+  const onlineFee = doctorDetails && doctorDetails.onlineConsultationFees;
+  const doctorId = doctorDetails && doctorDetails.id;
 
   const differenceInMinutes = getDiffInMinutes(doctorAvailablePhysicalSlots);
   const differenceInOnlineMinutes = getDiffInMinutes(doctorAvailableOnlineSlot);
@@ -434,10 +432,7 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
                     variables: {
                       saveSearchInput: {
                         type: SEARCH_TYPE.DOCTOR,
-                        typeId:
-                          doctorDetails &&
-                          doctorDetails.getDoctorDetailsById &&
-                          doctorDetails.getDoctorDetailsById.id,
+                        typeId: doctorDetails && doctorDetails.id,
                         patient: currentPatient ? currentPatient.id : '',
                       },
                     },
@@ -481,6 +476,7 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
         disableEscapeKeyDown
       >
         <BookConsult
+          physicalDirection={physicalDirection}
           doctorId={doctorId}
           doctorAvailableIn={differenceInMinutes}
           setIsPopoverOpen={setIsPopoverOpen}

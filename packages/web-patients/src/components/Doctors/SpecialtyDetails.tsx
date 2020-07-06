@@ -321,12 +321,16 @@ const convertAvailabilityToDate = (availability: String[], dateSelectedFromFilte
     availableNow = {};
   }
   const availabilityArray: String[] = [];
-  const today = moment(new Date()).utc().format('YYYY-MM-DD');
+  const today = moment(new Date())
+    .utc()
+    .format('YYYY-MM-DD');
   if (availability.length > 0) {
     availability.forEach((value: String) => {
       if (value === 'Now') {
         availableNow = {
-          availableNow: moment(new Date()).utc().format('YYYY-MM-DD hh:mm'),
+          availableNow: moment(new Date())
+            .utc()
+            .format('YYYY-MM-DD hh:mm'),
         };
       } else if (value === 'Today') {
         availabilityArray.push(today);
@@ -464,11 +468,14 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
             setSearchSpecialty(specialtiesArray);
             setSearchDoctors(doctorsArray);
           }
-          setSearchLoading(false);
         })
-        .catch((e) => console.log(e));
+        .catch((e) => console.log(e))
+        .finally(() => {
+          setSearchLoading(false);
+        });
     }
   }, [searchKeyword]);
+
   useEffect(() => {
     if (params && params.specialty) {
       apolloClient
@@ -493,7 +500,7 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
             });
         });
     }
-  }, []);
+  }, [params.specialty]);
 
   useEffect(() => {
     if (slugName !== '') {
@@ -565,6 +572,16 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
         })
         .then((response) => {
           let potentialActionSchema: any[] = [];
+          setStructuredJSON({
+            '@context': 'https://schema.org/',
+            '@type': 'MedicalSpecialty',
+            name: specialtyName,
+            description: `Find the best ${specialtyName} doctors & specialists and consult with them instantly on Apollo24|7`,
+            potentialAction: {
+              '@type': 'ViewAction',
+              target: potentialActionSchema,
+            },
+          });
           if (
             response &&
             response.data &&
@@ -572,10 +589,7 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
             response.data.getDoctorsBySpecialtyAndFilters.doctors
           ) {
             const doctors = response.data.getDoctorsBySpecialtyAndFilters.doctors;
-            setDoctorData(doctors || []);
-            setOnlyFilteredCount(doctors.length || 0);
             const finalList = getFilteredDoctorList(doctors || []);
-            setFilteredDoctorData(finalList);
             doctors.map((doctorDetails: docDetails) => {
               doctorDetails &&
                 doctorDetails.fullName &&
@@ -594,18 +608,14 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
                       )}`,
                 });
             });
+            setDoctorData(doctors || []);
+            setOnlyFilteredCount(doctors.length || 0);
+            setFilteredDoctorData(finalList);
           }
-          setStructuredJSON({
-            '@context': 'https://schema.org/',
-            '@type': 'MedicalSpecialty',
-            name: specialtyName,
-            description: `Find the best ${specialtyName} doctors & specialists and consult with them instantly on Apollo24|7`,
-            potentialAction: {
-              '@type': 'ViewAction',
-              target: potentialActionSchema,
-            },
-          });
           setData(response.data);
+        })
+        .catch((e) => console.log(e))
+        .finally(() => {
           setLoading(false);
         });
     }

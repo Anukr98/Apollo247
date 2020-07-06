@@ -985,7 +985,7 @@ export const MedicinePrescription: React.FC = () => {
     },
     {
       id: MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW,
-      value: 'Till next review',
+      value: ' Till next review',
       selected: false,
     },
   ];
@@ -2255,7 +2255,9 @@ export const MedicinePrescription: React.FC = () => {
                   <s>{medicine.medicineName}</s>
                 </h5>
               )}
-              {!isPresent && <p className={classes.removed}>This medicine has been discontinued</p>}
+              {!isPresent && (
+                <p className={classes.removed}>This medicine has been discontinued </p>
+              )}
               <h6>
                 {`${
                   medicine.medicineFormTypes === 'OTHERS' ? 'Take' : 'Apply'

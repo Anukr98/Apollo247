@@ -336,7 +336,7 @@ const getDoctorDetailsById: Resolver<null, { id: string }, DoctorsServiceContext
         bool: {
           must: [
             {
-              match: {
+              match_phrase: {
                 doctorId: args.id,
               },
             },

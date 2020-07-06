@@ -25,7 +25,7 @@ export enum ApiConstants {
   APPOINTMENT_REMINDER_15_TITLE = 'Appointment reminder',
   CLICK_HERE = ' Click here to fill your details now ',
   APPOINTMENT_REMINDER_15_BODY = 'Your appointment with Dr {0} will start in {1} mins. :)',
-  WHATSAPP_SD_CONSULT_REMINDER_15_MIN = 'Appointment Reminder: {0} Your appointment with {1} will start in {3} mins.',
+  WHATSAPP_SD_CONSULT_REMINDER_15_MIN = 'Appointment%20Reminder:%20Dr.%20{1}%20Your%20appointment%20with%20{0}%20will%20start%20in%2015%20mins.%20:)',
   VIRTUAL_REMINDER_15_BODY = 'Appointment Reminder: Your appointment with Dr {0} will start in 15 mins. :) ',
   APPOINTMENT_REMINDER_1_BODY = "Hi {0}! It's time to see Dr. {1}. Hope you're online and ready for your appointment.",
   PHYSICAL_APPOINTMENT_REMINDER_15_BODY = 'Your appointment with Dr {0} will start in 3 hours at {1}. We hope to see you soon :)',
@@ -74,30 +74,27 @@ export enum ApiConstants {
 
   //medicine order items changed
   MEDICINE_ORDER_CHANGED_TITLE = 'Medicine order is changed',
-  MEDICINE_ORDER_CHANGED_BODY = 'Hi {0}, Items have been modified and your order is billed {1}. Please feel free to reach out to us on WhatsApp in case you have any questions: https://bit.ly/apollo247Medicine',
+  MEDICINE_ORDER_CHANGED_BODY = 'Hi {0}, your order {1}  is billed with some modifications, updated details are visible in your 247 App in the respective order summary. Please feel free to reach out to us on WhatsApp in case you have any questions: https://bit.ly/apollo247Medicine',
 
   //medicine order ready at store
   ORDER_READY_AT_STORE_TITLE = 'Medicine order is ready',
-  ORDER_READY_AT_STORE_BODY = 'Hi {0}! items for your order {1} are ready for pickup at your selected store {2}. Store Contact Number: {3}. Kindly contact the store 20 minutes before reaching the store.',
+  ORDER_READY_AT_STORE_BODY = 'Hi {0}! items for your order {1} are ready for pickup at your selected store {2}. Store Contact Number: {3}. Kindly alert the store 10 minutes before reaching the store.',
 
   //medicine order picked up
   ORDER_PICKEDUP_TITLE = 'Medicine order is pickedup',
-  ORDER_PICKEDUP_BODY = 'Greetings from Apollo 24|7 Your order {1} has been picked up successfully. Our team is working round the clock to fulfill your health needs. Please take a moment & review your experience here - https://onelink.to/nfbwva',
+  ORDER_PICKEDUP_BODY = 'Greetings from Apollo 24|7 Your order {1} has been picked up successfully!',
 
   //medicine order out for delivery
   ORDER_OUT_FOR_DELIVERY_TITLE = 'Medicine order is out for delivery',
-  ORDER_OUT_FOR_DELIVERY_BODY = 'Hi {0}! Your order {1} has been dispatched and will be delivered to you very soon.',
+  ORDER_OUT_FOR_DELIVERY_BODY = 'Hi {0}! Your order {1} has been picked by the delivery person and is on its way.',
 
   //medicine order delivered
   ORDER_DELIVERY_TITLE = 'Medicine order is delivered',
-  ORDER_DELIVERY_BODY = 'Greetings from Apollo 24|7 Your order {1} is delivered successfully. Our team is working round the clock to fulfill your health needs. Please take a moment & review your experience here - https://onelink.to/nfbwva',
-
-  //medicine order delivered late
-  ORDER_LATE_DELIVERY_BODY = 'Greetings from Apollo 24|7 Your order {1} is delivered successfully. Our team is working round the clock to fulfill your health needs in the current situation.',
+  ORDER_DELIVERY_BODY = 'Greetings from Apollo 24|7 Your order {1} is delivered successfully!',
 
   //medicine order cancelled
-  ORDER_CANCEL_COD = 'Dear Customer, In referrence to your Apollo 247 Order {0}, {1}. Refund related communication (if any) will be sent separately',
-  ORDER_CANCEL_PREPAID = 'For Order {0} the refund amount of Rs {1} will be transferred to the source a/c within 10-14 working days. We apologise for the inconvenience caused.',
+  ORDER_CANCEL_BODY = 'Hi {name}, referring to your Apollo 247 Order {orderId}, {reason}',
+  ORDER_CANCEL_PREPAID_BODY = 'For Order {orderId} the refund amount of Rs {refund} will be transferred to the source a/c within 7-10 working days.',
 
   //appointment cancellation
   CANCEL_APPT_TITLE = 'Your appointment has been cancelled',
@@ -135,7 +132,7 @@ export enum ApiConstants {
   PHYSICAL_BOOK_APPOINTMENT_BODY = 'Thanks for choosing Apollo24|7, {0} :) Your appointment {1} with Dr. {2} is confirmed for {3} at {4}. Click here to fill your details before your consultation starts. This will take hardly 10 minutes and will help our doctor to assist you better.',
   DOCTOR_BOOK_APPOINTMENT_SMS = 'Hi Dr. {0}! You have a new appointment {1} with {2} scheduled for {3}.',
   SEND_DOCTOR_BOOK_APPOINTMENT_SMS = 24, //send sms to doctor if appointment datetime is less than 24hrs
-  DOCTOR_BOOK_APPOINTMENT_WHATSAPP = 'Hi Dr. {0}! You have a new appointment for today. \npatient Name :{1} \nAppointment Time :{2} \nTeam Apollo247.',
+  DOCTOR_BOOK_APPOINTMENT_WHATSAPP = 'Hi%20Dr.%20{0}%2C%20you%20have%20a%20new%20appointment%20for%20today.%0A%0APatient%20Name%20%3A%20{1}%0AAppointment%20Time%20%3A%20{2}%0A%0ATeam%20Apollo%2024%7C7',
   DIAGNOSTIC_ORDER_SUCCESS_TITLE = 'Diagnostic test is booked',
   DIAGNOSTIC_ORDER_SUCCESS_BODY = "Congratulations {0}! We've booked your test successfully.",
 
@@ -145,20 +142,20 @@ export enum ApiConstants {
   MEDICINE_ORDER_PAYMENT_FAILED_BODY = "Hi {0}! We're sorry. :(  There's been a problem with your order. If money was debited from your account, it will be refunded automatically in 5-7 working days.",
   SENT_BY_API = 'SENT_BY_API',
   DAILY_APPOINTMENT_SUMMARY = 'Hi Dr. {0}! Good morning. You have {1} appointment(s) booked for today on Apollo24|7. Summary of appointments',
-  ONLINE_APPOINTMENTS = ' \nOnline Appointments : {0}',
-  PHYSICAL_APPOINTMENTS = ' \nPhysical Appointments : {0}',
+  ONLINE_APPOINTMENTS = '\nOnline Appointments : {0}',
+  PHYSICAL_APPOINTMENTS = '\nPhysical Appointments : {0}',
   DAILY_WHATSAPP_NOTIFICATION = 'Hi Dr.{0}! Good morning. You have {1} appointment(s) booked for today on Apollo24|7. \nSummary:',
   WHATSAPP_LINK = '\nClick here to check your today’s calendar on Mobile Application ',
   FOLLOWUP_NOTIFITICATION_TEXT = 'Hi {0}! Hope you are feeling better after your consultation with Dr. {1} :) You can book a free follow up with us till {2}.',
   CHAT_MESSGAE_TEXT = 'Hi Dr. {0}! Your patient {1} has sent you a chat message. ',
   SEND_PATIENT_NOTIFICATION = 'Hi {0}! {1} is waiting for you to start the consultation.Please go to your dashboard in Apollo 24|7 and start consultation. ',
-  WHATSAPP_SD_CHAT_NOTIFICATION = 'Hi Dr. {0}! {1} has sent you a chat message. Click here to reply to the patient from a mobile Application.',
+  WHATSAPP_SD_CHAT_NOTIFICATION = 'Hi%20Dr.%20{0}%21%20{1}%20has%20sent%20you%20a%20chat%20message.%20Click%20here%20to%20respond.%20https%3A%2F%2Fpmt.apollo247.com%2Fdeeplink%3Furl%3Dapollopatients%3A%2F%2Fconsults',
   DAILY_APPOINTMENT_SUMMARY_RESPONSE = 'Daily Appointment summaries have been sent to {0} Doctor(s) successfully',
   FOLLOW_UP_NOTIFICATION_RESPONSE = 'Follow up notifications sent to {0} patients successfully',
   PRESCRIPTION_READY_TITLE = 'Prescription ready',
   PRESCRIPTION_READY_BODY = 'Hi {0}! Your prescription from consultation with Doctor {1} for appointment {2} on {3} is ready :) ',
 
-  REFERRAL_CODE_TEXT = 'Hi {0}, Use code "WELCOME" to avail discount up to Rs. 999  on the 1st Apollo Doctor consult on your Apollo 24|7 app. Click to learn https://youtu.be/gwIRbcO3hpk',
+  REFERRAL_CODE_TEXT = 'Hi {0}, Use code "CARE247" to avail discount up to Rs. 999  on the 1st Apollo Doctor consult on your Apollo 24|7 app. Click to learn https://youtu.be/gwIRbcO3hpk',
   REFERRAL_CODE_TEXT_WITH_COUPON = 'Hi {0}, Use code "{1}" to avail discount up to Rs. 299  on the 1st Apollo Doctor consult on your Apollo 24|7 app. Click to learn https://youtu.be/XF7MWPebtkw',
 
   BOOK_APPOINTMENT_HISTORY_REASON = 'Booking new appointment',
@@ -342,6 +339,7 @@ export enum ApiConstants {
   ALLOWED_DOSAGES = 'ML,MG,GM,TABLET,PUFF,UNIT,SPRAY,PATCH,AS_PRESCRIBED,CAPSULE,DROP,SACHET,TEASPOON,INTERNATIONAL_UNIT',
   NO_JD_AVAILABLE_TEXT = 'Patient Medical details could not be collected by the JD',
   APPOINTMENT_BOOKED_WITHIN_10_MIN = 'As patient booked within {0} minutes of the appointment time, case sheet has been submitted without any details.',
+  APPOINTMENT_BOOKED_SKIP_QUESTIONS = 'As patient booked the doctor with no jd and skip auto questions, case sheet has been submitted without any details.',
   NOT_APPLICABLE = 'Not Applicable',
   MEDICINE_TIMINGS = '(morning, noon, evening & night)',
   FREE_CHAT_DAYS = 7,
