@@ -15,7 +15,6 @@ import { useAllCurrentPatients } from 'hooks/authHooks';
 import _startCase from 'lodash/startCase';
 import _toLower from 'lodash/toLower';
 import { clientRoutes } from 'helpers/clientRoutes';
-import { Route } from 'react-router-dom';
 import { readableParam } from 'helpers/commonHelpers';
 import { useAuth } from 'hooks/authHooks';
 
@@ -136,46 +135,37 @@ export const PastSearches: React.FC = (props) => {
         <Typography component="h6">{isSignedIn ? 'Past Searches' : ''}</Typography>
         <ul className={classes.pastSearchList}>
           {data.getPatientPastSearches.map((searchDetails, index) => {
-            return searchDetails ? (
-              index < 4 && (
-                <li key={`${_uniqueId('psearch_doctor_')}- ${searchDetails.typeId}`}>
-                  <Link
-                    to={`/doctors/${readableParam(searchDetails.name)}-${searchDetails.typeId}`}
-                    title={searchDetails && `${_startCase(_toLower(searchDetails.name || ''))}`}
-                  >
-                    {/* <Avatar
+            return searchDetails && searchDetails.searchType === 'DOCTOR'
+              ? index < 4 && (
+                  <li key={`${_uniqueId('psearch_doctor_')}- ${searchDetails.typeId}`}>
+                    <Link
+                      to={`/doctors/${readableParam(searchDetails.name)}-${searchDetails.typeId}`}
+                      title={searchDetails && `${_startCase(_toLower(searchDetails.name || ''))}`}
+                    >
+                      {/* <Avatar
                       alt={(searchDetails && searchDetails.name) || ''}
                       src={(searchDetails && searchDetails.image) || ''}
                       className={`${classes.bigAvatar} ${classes.doctorAvatar}`}
                     /> */}
-                    {searchDetails && `${_startCase(_toLower(searchDetails.name || ''))}`}
-                  </Link>
-                </li>
-              )
-            ) : (
-              <Route
-                render={({ history }) =>
-                  index < 4 && (
-                    <li
-                      title={(searchDetails && searchDetails.name) || ''}
-                      onClick={(e) => {
-                        const specialityUpdated = readableParam(`${e.currentTarget.title}`);
-                        const encoded = encodeURIComponent(specialityUpdated);
-                        history.push(clientRoutes.specialties(`${specialityUpdated}`));
-                      }}
-                      key={`${_uniqueId('psearch_spl_')}- ${searchDetails.typeId}`}
+                      {searchDetails && `${_startCase(_toLower(searchDetails.name || ''))}`}
+                    </Link>
+                  </li>
+                )
+              : index < 4 && (
+                  <li key={`${_uniqueId('psearch_spl_')}- ${searchDetails.typeId}`}>
+                    <Link
+                      to={clientRoutes.specialties(readableParam(searchDetails.name))}
+                      title={searchDetails && `${_startCase(_toLower(searchDetails.name || ''))}`}
                     >
                       {/* <Avatar
-                        alt={(searchDetails && searchDetails.name) || ''}
-                        src={(searchDetails && searchDetails.image) || ''}
-                        className={classes.bigAvatar}
-                      /> */}
-                      {(searchDetails && searchDetails.name) || ''}
-                    </li>
-                  )
-                }
-              />
-            );
+                      alt={(searchDetails && searchDetails.name) || ''}
+                      src={(searchDetails && searchDetails.image) || ''}
+                      className={`${classes.bigAvatar} ${classes.doctorAvatar}`}
+                    /> */}
+                      {searchDetails && `${_startCase(_toLower(searchDetails.name || ''))}`}
+                    </Link>
+                  </li>
+                );
           })}
         </ul>
       </div>
