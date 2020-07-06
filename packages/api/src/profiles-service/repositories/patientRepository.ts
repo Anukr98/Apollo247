@@ -3,7 +3,7 @@ import { Patient, PRISM_DOCUMENT_CATEGORY, Gender } from 'profiles-service/entit
 import { ApiConstants } from 'ApiConstants';
 import requestPromise from 'request-promise';
 import { UhidCreateResult } from 'types/uhidCreateTypes';
-import { pool } from 'profiles-service/database/connectRedis';
+import { getCache, setCache, delCache } from 'profiles-service/database/connectRedis';
 
 import {
   PrismGetAuthTokenResponse,
@@ -38,19 +38,7 @@ const REDIS_PATIENT_MOBILE_KEY_PREFIX: string = 'patient:mobile:';
 @EntityRepository(Patient)
 export class PatientRepository extends Repository<Patient> {
   async dropPatientCache(id: string) {
-    const redis = await pool.getTedis().catch((e) => {
-      dLogger(new Date(), 'Error getting redis connection from pool', `${JSON.stringify(e)}`);
-    });
-    if (!redis) {
-      return;
-    }
-    try {
-      await redis.del(id);
-    } catch (e) {
-      dLogger(new Date(), 'Redis drop id Cache patient error', `Cache hit ${id}`);
-    } finally {
-      await pool.putTedis(redis);
-    }
+    delCache(id);
   }
   async findById(id: string) {
     return this.getByIdCache(id);
@@ -98,35 +86,13 @@ export class PatientRepository extends Repository<Patient> {
   }
 
   async getByIdCache(id: string | number) {
-    const redis = await pool.getTedis().catch((e) => {
-      dLogger(new Date(), 'Error getting redis connection from pool', `${JSON.stringify(e)}`);
-    });
-    if (!redis) {
+    const cache = await getCache(`${REDIS_PATIENT_ID_KEY_PREFIX}${id}`);
+    if (cache && typeof cache === 'string') {
+      let patient: Patient = JSON.parse(cache);
+      patient.dateOfBirth = new Date(patient.dateOfBirth);
+      return patient;
+    } else {
       return await this.setByIdCache(id);
-    }
-    try {
-      const cache = await redis.get(`${REDIS_PATIENT_ID_KEY_PREFIX}${id}`);
-
-      dLogger(
-        new Date(),
-        'Redis Cache Read of Patient',
-        `Cache hit ${REDIS_PATIENT_ID_KEY_PREFIX}${id}`
-      );
-      if (cache && typeof cache === 'string') {
-        let patient: Patient = JSON.parse(cache);
-        patient.dateOfBirth = new Date(patient.dateOfBirth);
-        return patient;
-      } else {
-        return await this.setByIdCache(id);
-      }
-    } catch (e) {
-      dLogger(
-        new Date(),
-        'Redis get id Cache patient error',
-        `Cache hit ${REDIS_PATIENT_ID_KEY_PREFIX}${id} ${JSON.stringify(e)}`
-      );
-    } finally {
-      pool.putTedis(redis);
     }
   }
 
@@ -145,81 +111,19 @@ export class PatientRepository extends Repository<Patient> {
       relations: relations,
     });
   }
-  async setCache(key: string, value: string) {
-    const redis = await pool.getTedis().catch((e) => {
-      dLogger(new Date(), 'Error getting redis connection from pool', `${JSON.stringify(e)}`);
-    });
-    if (!redis) {
-      return;
-    }
-    try {
-      await redis.set(key, value);
-      await redis.expire(key, 14400);
-    } catch (e) {
-      dLogger(new Date(), 'Redis set Cache patient error', `Cache hit ${key} ${JSON.stringify(e)}`);
-    } finally {
-      pool.putTedis(redis);
-    }
-  }
-  async dropCache(key: string) {
-    const redis = await pool.getTedis().catch((e) => {
-      dLogger(new Date(), 'Error getting redis connection from pool', `${JSON.stringify(e)}`);
-    });
-    if (!redis) {
-      return;
-    }
-    try {
-      await redis.del(key);
-    } catch (e) {
-      dLogger(
-        new Date(),
-        'Redis drop Cache patient error',
-        `Cache hit ${key} ${JSON.stringify(e)}`
-      );
-    } finally {
-      pool.putTedis(redis);
-    }
-  }
+
   async setByIdCache(id: string | number) {
     const patientDetails = await this.getPatientData(id);
     if (patientDetails) {
       const patientString = JSON.stringify(patientDetails);
-      await this.setCache(`${REDIS_PATIENT_ID_KEY_PREFIX}${id}`, patientString);
+      setCache(`${REDIS_PATIENT_ID_KEY_PREFIX}${id}`, patientString, 14400);
     }
-
-    dLogger(
-      new Date(),
-      'Redis Cache Write of Patient',
-      `Cache miss/write ${REDIS_PATIENT_ID_KEY_PREFIX}${id}`
-    );
     return patientDetails;
   }
   async getByMobileCache(mobile: string) {
-    const redis = await pool.getTedis().catch((e) => {
-      dLogger(new Date(), 'Error getting redis connection from pool', `${JSON.stringify(e)}`);
-    });
-    if (!redis) {
-      return await this.setByMobileCache(mobile);
-    }
     let ids;
-    try {
-      ids = await redis.get(`${REDIS_PATIENT_MOBILE_KEY_PREFIX}${mobile}`);
-    } catch (e) {
-      dLogger(
-        new Date(),
-        'Redis get patient mobile Cache error',
-        `Cache hit ${REDIS_PATIENT_MOBILE_KEY_PREFIX}${mobile} ${JSON.stringify(e)}`
-      );
-    } finally {
-      pool.putTedis(redis);
-    }
-
+    ids = await getCache(`${REDIS_PATIENT_MOBILE_KEY_PREFIX}${mobile}`);
     if (ids && typeof ids === 'string') {
-      dLogger(
-        new Date(),
-        'Redis Cache Read of Patient',
-        `Cache hit ${REDIS_PATIENT_MOBILE_KEY_PREFIX}${mobile}`
-      );
       const patientIds: string[] = ids.split(',');
       const patients: Patient[] = [];
       for (let index = 0; index < patientIds.length; index++) {
@@ -227,11 +131,6 @@ export class PatientRepository extends Repository<Patient> {
         if (patient) {
           patients.push(patient);
         }
-        dLogger(
-          new Date(),
-          'Redis Cache Read of Patient',
-          `Cache hit ${REDIS_PATIENT_ID_KEY_PREFIX}${patientIds[index]}`
-        );
       }
       return patients;
     } else {
@@ -253,15 +152,10 @@ export class PatientRepository extends Repository<Patient> {
     });
 
     const patientIds: string[] = await patients.map((patient) => {
-      this.setCache(`${REDIS_PATIENT_ID_KEY_PREFIX}${patient.id}`, JSON.stringify(patient));
+      setCache(`${REDIS_PATIENT_ID_KEY_PREFIX}${patient.id}`, JSON.stringify(patient), 14400);
       return patient.id;
     });
-    this.setCache(`${REDIS_PATIENT_MOBILE_KEY_PREFIX}${mobile}`, patientIds.join(','));
-    dLogger(
-      new Date(),
-      'Redis Cache Write of Patient',
-      `Cache miss/write ${REDIS_PATIENT_MOBILE_KEY_PREFIX}${mobile}`
-    );
+    setCache(`${REDIS_PATIENT_MOBILE_KEY_PREFIX}${mobile}`, patientIds.join(','), 14400);
     return patients;
   }
 
@@ -275,9 +169,10 @@ export class PatientRepository extends Repository<Patient> {
           patient.isActive = false;
           this.save(patient);
           finalList = patientList.filter((p) => p.id !== patient.id);
-          await this.setCache(
+          await setCache(
             `${REDIS_PATIENT_MOBILE_KEY_PREFIX}${mobileNumber}`,
-            finalList.map((p) => p.id).join(',')
+            finalList.map((p) => p.id).join(','),
+            14400
           );
         } else if (patient.primaryPatientId == null) {
           patient.primaryPatientId = patient.id;

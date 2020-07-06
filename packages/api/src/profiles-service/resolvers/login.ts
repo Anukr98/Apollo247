@@ -3,12 +3,10 @@ import { Resolver } from 'api-gateway';
 import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
 import { LoginOtp, LOGIN_TYPE, OTP_STATUS } from 'profiles-service/entities';
 import { LoginOtpRepository } from 'profiles-service/repositories/loginOtpRepository';
-import { LoginOtpArchiveRepository } from 'profiles-service/repositories/loginOtpArchiveRepository';
 import { ApiConstants } from 'ApiConstants';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { log } from 'customWinstonLogger';
-import { Connection } from 'typeorm';
 import { debugLog } from 'customWinstonLogger';
 import { sendNotificationWhatsapp } from 'notifications-service/resolvers/notifications';
 
@@ -67,13 +65,12 @@ const login: Resolver<
   const { mobileNumber, loginType, hashCode } = args;
   const otpRepo = profilesDb.getCustomRepository(LoginOtpRepository);
 
-
   loginLogger('OTP_GENERATION_START');
   let otp = generateOTP();
   loginLogger('OTP_GENERATION_END');
   // get static otp env specific
   let staticOTP = getStaticOTP({ mobileNumber });
-  otp = (staticOTP) ? staticOTP : otp;
+  otp = staticOTP ? staticOTP : otp;
 
   loginLogger('OTP_INSERT_START');
   const optAttrs: Partial<LoginOtp> = {
@@ -88,7 +85,6 @@ const login: Resolver<
   // bypass otp env specific
   let bypassRes = OTPBypass({ otpSaveResponse, logger: loginLogger });
   if (bypassRes) return bypassRes;
-
 
   //call sms gateway service to send the OTP here
   return sendMessage({ mobileNumber, otp, hashCode, logger: loginLogger, otpSaveResponse });
@@ -165,7 +161,6 @@ const resendOtp: Resolver<
 
   //call sms gateway service to send the OTP here
   return sendMessage({ mobileNumber, otp, hashCode, logger: resendLogger, otpSaveResponse });
-
 };
 type testSMSResult = {
   send: Boolean;
@@ -194,7 +189,6 @@ const testSendSMS: Resolver<
     send: true,
   };
 };
-
 
 //returns random 6 digit number string
 export const generateOTP = () => {
@@ -295,9 +289,7 @@ export const loginResolvers = {
   },
 };
 
-
 const sendMessage = async (args: any) => {
-
   const { loginType, mobileNumber, otp, hashCode, logger, otpSaveResponse } = args;
   logger('SEND_SMS___START');
   let smsResult;
@@ -305,13 +297,15 @@ const sendMessage = async (args: any) => {
     const message = ApiConstants.DOCTOR_WHATSAPP_OTP.replace('{0}', otp);
     let promiseSendNotification = sendNotificationWhatsapp(mobileNumber, message, 1);
     let promiseSendSMS = sendSMS(mobileNumber, otp, hashCode);
-    let messageSentResponse = await Promise.all([promiseSendNotification.catch(err => err), promiseSendSMS.catch(err => err)]);
+    let messageSentResponse = await Promise.all([
+      promiseSendNotification.catch((err) => err),
+      promiseSendSMS.catch((err) => err),
+    ]);
     smsResult = messageSentResponse[1];
   } else {
     smsResult = await sendSMS(mobileNumber, otp, hashCode);
   }
   logger('SEND_SMS___END');
-
 
   logger('API_CALL___END');
   return {
@@ -319,10 +313,7 @@ const sendMessage = async (args: any) => {
     loginId: otpSaveResponse.id,
     message: ApiConstants.OTP_SUCCESS_MESSAGE.toString(),
   };
-}
-
-
-
+};
 
 const OTPBypass = (args: any) => {
   const { mobileNumber, otpSaveResponse, logger } = args;
@@ -350,8 +341,7 @@ const OTPBypass = (args: any) => {
     };
   }
   return null;
-}
-
+};
 
 const getStaticOTP = (args: any) => {
   const { mobileNumber } = args;
@@ -374,4 +364,4 @@ const getStaticOTP = (args: any) => {
   }
 
   return null;
-}
+};
