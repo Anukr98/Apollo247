@@ -287,24 +287,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       .then(({ data: { Availability } }) => {
         setServiceabilityMsg(Availability ? '' : 'Services unavailable. Change delivery location.');
         setPharmacyLocationServiceable!(Availability ? true : false);
+        WebEngageEventAutoDetectLocation(pincode, Availability ? true : false);
         if (!Availability) {
-          WebEngageEventAutoDetectLocation(pincode, false);
-          showAphAlert!({
-            title: 'We’re sorry!',
-            description:
-              'We are not serviceable in your area. Please change your location or call 1860 500 0101 for Pharmacy stores nearby.',
-            titleStyle: theme.viewStyles.text('SB', 18, '#890000'),
-            ctaContainerStyle: { justifyContent: 'flex-end' },
-            CTAs: [
-              {
-                text: 'CHANGE THE ADDRESS',
-                type: 'orange-link',
-                onPress: onPresChangeAddress,
-              },
-            ],
-          });
-        } else {
-          WebEngageEventAutoDetectLocation(pincode, true);
           getNearByStoreDetailsApi(pincode)
             .then((response: any) => {
               showAphAlert!({
