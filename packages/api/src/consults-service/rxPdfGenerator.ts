@@ -590,38 +590,39 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
   ) => {
     renderSectionHeader('Chief Complaints', '', headerEndY + 150);
 
-    prescriptions.forEach((prescription, index) => {
-      const textArray = [];
-      if (prescription.since.length > 0) textArray.push('Since: ' + prescription.since);
-      if (prescription.howOften) textArray.push('How Often: ' + prescription.howOften);
-      if (prescription.severity) textArray.push('Severity: ' + prescription.severity);
+    if (prescriptions)
+      prescriptions.forEach((prescription, index) => {
+        const textArray = [];
+        if (prescription.since.length > 0) textArray.push('Since: ' + prescription.since);
+        if (prescription.howOften) textArray.push('How Often: ' + prescription.howOften);
+        if (prescription.severity) textArray.push('Severity: ' + prescription.severity);
 
-      doc
-        .fontSize(12)
-        .font(assetsDir + '/fonts/IBMPlexSans-Regular.ttf')
-        .fillColor('#333333')
-        .text(`${_capitalize(prescription.symptom)}`, margin + 15)
-        .moveDown(0.5);
-      doc
-        .fontSize(11)
-        .font(assetsDir + '/fonts/IBMPlexSans-Regular.ttf')
-        .fillColor('#666666')
-        .text(`${textArray.join('  |  ')}`, margin + 15)
-        .moveDown(0.8);
-
-      if (prescription.details) {
         doc
           .fontSize(12)
           .font(assetsDir + '/fonts/IBMPlexSans-Regular.ttf')
+          .fillColor('#333333')
+          .text(`${_capitalize(prescription.symptom)}`, margin + 15)
+          .moveDown(0.5);
+        doc
+          .fontSize(11)
+          .font(assetsDir + '/fonts/IBMPlexSans-Regular.ttf')
           .fillColor('#666666')
-          .text(`${prescription.details}`, margin + 15)
+          .text(`${textArray.join('  |  ')}`, margin + 15)
           .moveDown(0.8);
-      }
 
-      if (doc.y > doc.page.height - 150) {
-        pageBreak();
-      }
-    });
+        if (prescription.details) {
+          doc
+            .fontSize(12)
+            .font(assetsDir + '/fonts/IBMPlexSans-Regular.ttf')
+            .fillColor('#666666')
+            .text(`${prescription.details}`, margin + 15)
+            .moveDown(0.8);
+        }
+
+        if (doc.y > doc.page.height - 150) {
+          pageBreak();
+        }
+      });
 
     const vitalsArray = [];
     if (vitals.weight) vitalsArray.push(`Weight : ${vitals.weight}`);
