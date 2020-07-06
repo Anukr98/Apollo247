@@ -4733,7 +4733,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   audioTrack: isPublishAudio,
                   audioVolume: 100,
                   name: g(currentPatient, 'firstName') || 'patient',
-                  resolution: '352x288',
+                  // resolution: '352x288',
                 }}
                 eventHandlers={publisherEventHandlers}
               />
@@ -4902,7 +4902,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               videoTrack: convertVideo ? true : false,
               audioTrack: isPublishAudio,
               name: g(currentPatient, 'firstName') || 'patient',
-              resolution: '352x288',
+              // resolution: '352x288',
             }}
             eventHandlers={publisherEventHandlers}
           />
