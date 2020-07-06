@@ -423,6 +423,7 @@
     "audio_call_ended": "Audio call ended",
     "video_call_ended": "Video call ended",
     "calling": "CALLING",
+    "initialize": "INITIALIZING",
     "how_do_you_talk": "How do you want to talk to the patient?",
     "please_start_consultation": "Please start the consultation",
     "tap_to_return_call": "Tap to return to call",
