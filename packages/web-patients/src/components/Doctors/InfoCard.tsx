@@ -50,6 +50,9 @@ const useStyles = makeStyles((theme: Theme) => {
       width: 80,
       height: 80,
     },
+    otherDoctorType: {
+      width: 80
+    },
     doctorInfo: {
       paddingLeft: 15,
       paddingTop: 10,
@@ -156,10 +159,11 @@ const useStyles = makeStyles((theme: Theme) => {
 interface InfoCardProps {
   doctorInfo: DoctorDetails;
   nextAvailability: string;
+  doctorType: string;
 }
 
 export const InfoCard: React.FC<InfoCardProps> = (props) => {
-  const { doctorInfo, nextAvailability } = props;
+  const { doctorInfo, nextAvailability, doctorType } = props;
   const { isSignedIn } = useAuth();
   const { currentPatient } = useAllCurrentPatients();
   const classes = useStyles({});
@@ -173,10 +177,10 @@ export const InfoCard: React.FC<InfoCardProps> = (props) => {
     doctorInfo.specialty.name.toLowerCase();
   const consultMode =
     doctorInfo &&
-    doctorInfo.consultHours &&
-    doctorInfo.consultHours.length > 0 &&
-    doctorInfo.consultHours[0] &&
-    doctorInfo.consultHours[0].consultMode
+      doctorInfo.consultHours &&
+      doctorInfo.consultHours.length > 0 &&
+      doctorInfo.consultHours[0] &&
+      doctorInfo.consultHours[0].consultMode
       ? doctorInfo.consultHours[0].consultMode
       : '';
 
@@ -265,7 +269,9 @@ export const InfoCard: React.FC<InfoCardProps> = (props) => {
           <div className={classes.doctorInfo}>
             <>{availabilityMarkup()}</>
             <div className={`${classes.apolloLogo}`}>
-              <img src={require('images/ic_apollo.svg')} alt="" />
+              <img
+                className={doctorType.toLowerCase() !== 'apollo' ? classes.otherDoctorType : ''}
+                src={doctorType.toLowerCase() === 'apollo' ? require('images/ic_apollo.svg') : require('images/partner_doc.png')} alt="" />
             </div>
             <div className={classes.doctorName}>{`Dr. ${doctorInfo.fullName}`}</div>
             <div className={classes.doctorType}>
@@ -333,10 +339,10 @@ export const InfoCard: React.FC<InfoCardProps> = (props) => {
                 <CircularProgress size={22} color="secondary" />
               ) : getDiffInMinutes(nextAvailability) > 0 &&
                 getDiffInMinutes(nextAvailability) <= 60 ? (
-                'CONSULT NOW'
-              ) : (
-                'BOOK APPOINTMENT'
-              )}
+                    'CONSULT NOW'
+                  ) : (
+                    'BOOK APPOINTMENT'
+                  )}
             </AphButton>
           </div>
         )}

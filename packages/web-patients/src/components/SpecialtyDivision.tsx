@@ -404,21 +404,21 @@ export const SpecialtyDivision: React.FC<SpecialtyDivisionProps> = (props) => {
       specialtyName: 'Paediatrics',
       image: `${image_url}/ic_paediatrics.png`,
       description: "For your child's health problems",
-      symptoms: 'Fever, cough, diarrhoea',
+      symptoms: 'Fever, Cough, Diarrhoea',
       slugName: 'Paediatrics',
     },
     {
       specialtyName: 'General Physician',
       image: `${image_url}/ic_general_medicine.png`,
       description: 'For any common health issues',
-      symptoms: 'Fever, headache, asthma',
+      symptoms: 'Fever, Headache, Asthma',
       slugName: 'General Physician/ Internal Medicine',
     },
     {
       specialtyName: 'Dermatology',
       image: `${image_url}/ic_dermatology.png`,
       description: 'For skin & hair problems',
-      symptoms: 'Skin rash, acne, skin patch',
+      symptoms: 'Skin rash, Acne, Skin patch',
       slugName: 'Dermatology',
     },
     {
@@ -454,9 +454,9 @@ export const SpecialtyDivision: React.FC<SpecialtyDivisionProps> = (props) => {
                         selectedCity === ''
                           ? clientRoutes.specialties(readableParam(specialityDetails.slugName))
                           : clientRoutes.citySpecialties(
-                              _lowerCase(selectedCity),
-                              readableParam(specialityDetails.slugName)
-                            )
+                            _lowerCase(selectedCity),
+                            readableParam(specialityDetails.slugName)
+                          )
                       }
                     >
                       <Typography component="h3">{specialityDetails.specialtyName}</Typography>
@@ -484,8 +484,8 @@ export const SpecialtyDivision: React.FC<SpecialtyDivisionProps> = (props) => {
           ) : error ? (
             <div>Error! </div>
           ) : (
-            allSpecialties && <Specialties selectedCity={selectedCity} data={allSpecialties} />
-          )}
+                allSpecialties && <Specialties selectedCity={selectedCity} data={allSpecialties} />
+              )}
         </div>
       </div>
     </>
