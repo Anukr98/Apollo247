@@ -156,7 +156,7 @@ const StatusCard: FC<StatusCardProps> = (props) => {
         patientId={props.patientId}
       />
       <Snackbar
-        style={{ position: 'absolute' }}
+        style={{ position: 'absolute', zIndex: 1001, bottom: -10 }}
         visible={snackbarState}
         onDismiss={() => {
           setSnackbarState(false);

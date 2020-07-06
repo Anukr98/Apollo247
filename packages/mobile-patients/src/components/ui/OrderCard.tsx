@@ -45,7 +45,7 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     letterSpacing: 0.04,
     color: theme.colors.LIGHT_BLUE,
-    textTransform: 'capitalize',
+    // textTransform: 'capitalize',
     flex: 1,
   },
   dateTimeStyle: {
@@ -170,7 +170,7 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
               : {},
           ]}
         >
-          {props.statusDesc.replace('_', ' ')}
+          {props.statusDesc}
         </Text>
         <Text numberOfLines={1} style={styles.dateTimeStyle}>
           {props.dateTime}

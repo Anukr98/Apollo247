@@ -285,7 +285,7 @@ export const MedicineListscard: React.FC<MedicineListscardProps> = (props) => {
                                         {
                                           item_name: medicine.name,
                                           item_id: medicine.sku,
-                                          price: medicine.price,
+                                          price: medicine.special_price || medicine.price,
                                           item_category: 'Pharmacy',
                                           item_variant: 'Default',
                                           index: 1,
@@ -340,7 +340,7 @@ export const MedicineListscard: React.FC<MedicineListscardProps> = (props) => {
                                       {
                                         item_name: medicine.name,
                                         item_id: medicine.sku,
-                                        price: medicine.price,
+                                        price: medicine.special_price || medicine.price,
                                         item_category: 'Pharmacy',
                                         item_category_2: medicine.type_id
                                           ? medicine.type_id.toLowerCase() === 'pharma'

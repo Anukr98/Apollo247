@@ -598,6 +598,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
           }
         })
         .catch((e) => {
+          setisSearching(false);
           CommonBugFender('DoctorSearch_fetchSearchData', e);
           console.log('Error occured while searching Doctor', e);
         });
@@ -683,12 +684,12 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     setSpecialities(data);
   };
 
-  const fetchPastSearches = async () => {
+  const fetchPastSearches = async (selectedUser?: any) => {
     setshowPastSearchSpinner(true);
     const userId = await dataSavedUserID('selectedProfileId');
 
     const Input = {
-      patientId: userId ? userId : g(currentPatient, 'id'),
+      patientId: selectedUser ? selectedUser : userId ? userId : g(currentPatient, 'id'),
     };
 
     client
@@ -879,14 +880,16 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
                   setisSearching(true);
                 } else {
                   setdisplaySpeialist(false);
+                  setisSearching(false);
                 }
               }
             }}
             onFocus={() => {
-              if (searchText.length < 3) {
+              if (searchText === '' || searchText.length < 3) {
                 setPastSearch(false);
                 setNeedHelp(false);
                 setdisplaySpeialist(false);
+                setisSearching(false);
               }
             }}
             onBlur={() => {
@@ -1030,6 +1033,11 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
             style={{ flexDirection: 'row', marginLeft: 20, flexWrap: 'wrap', marginBottom: 20 }}
           >
             {TopSpecialities.map((item, index) => {
+              let itemSymptom = item!.symptoms || '';
+              itemSymptom = itemSymptom.charAt(0).toUpperCase() + itemSymptom.slice(1); // capitalize first character
+              const symptom = itemSymptom.replace(/,\s*([a-z])/g, 
+                (d, e) => ", " + e.toUpperCase()
+              ); // capitalize first character after comma (,)
               return (
                 <Mutation<saveSearch> mutation={SAVE_SEARCH}>
                   {(mutate, { loading, data, error }) => (
@@ -1081,7 +1089,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
                         </Text>
                       </View>
                       <View style={{ alignItems: 'center', marginVertical: 12 }}>
-                        <Text style={styles.topSpecialityFriendlyname}>{item.symptoms}</Text>
+                        <Text style={styles.topSpecialityFriendlyname}>{symptom}</Text>
                       </View>
                     </TouchableOpacity>
                   )}
@@ -1123,24 +1131,11 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
           />
           <View style={{ flexDirection: 'row' }}>
             <FlatList
-              contentContainerStyle={
-                {
-                  // flexWrap: 'wrap',
-                  // marginHorizontal: 12,
-                }
-              }
               bounces={false}
               data={SpecialitiesList}
               onEndReachedThreshold={0.5}
               renderItem={({ item, index }) =>
-                index == 6
-                  ? renderBookConsultVideo(
-                      item,
-                      index,
-                      SpecialitiesList.length,
-                      searchText.length > 2
-                    )
-                  : renderSpecialistRow(item, index, SpecialitiesList.length, searchText.length > 2)
+                renderSpecialistRow(item, index, SpecialitiesList.length, searchText.length > 2)
               }
               keyExtractor={(_, index) => index.toString()}
               numColumns={1}
@@ -1649,9 +1644,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
           item.firstName !== '+ADD MEMBER' ? (
             <TouchableOpacity
               onPress={() => {
-                setShowProfilePopUp(false);
-                selectUser(item);
-                fetchPastSearches();
+                onSelectedProfile(item);
               }}
               style={[styles.ctaWhiteButtonViewStyle]}
             >
@@ -1680,7 +1673,13 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       </View>
     </View>
   );
-
+  const onSelectedProfile = (item: any) => {
+    selectUser(item);
+    setShowProfilePopUp(false);
+    setTimeout(() => {
+      fetchPastSearches(item.id);
+    }, 1000);
+  };
   const onProfileChange = () => {
     setShowList(false);
 

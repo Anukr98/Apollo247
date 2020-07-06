@@ -105,23 +105,23 @@ setNativeExceptionHandler((exceptionString) => {
 
 if (__DEV__) {
   Axios.interceptors.request.use((request) => {
-    console.log(
-      '\n\nStarting Axios Request',
-      '\n\nURL\n',
-      JSON.stringify(request.url),
-      '\n\nInput\n',
-      JSON.stringify(request.data),
-      '\n\nHeaders\n',
-      JSON.stringify(request.headers),
-      '\n\n'
-    );
+    // console.log(
+    //   '\n\nStarting Axios Request',
+    //   '\n\nURL\n',
+    //   JSON.stringify(request.url),
+    //   '\n\nInput\n',
+    //   JSON.stringify(request.data),
+    //   '\n\nHeaders\n',
+    //   JSON.stringify(request.headers),
+    //   '\n\n'
+    // );
     return request;
   });
 }
 
 if (__DEV__) {
   Axios.interceptors.response.use((response) => {
-    console.log(`Axios Response :\n`, response.data, '\n\n');
+    // console.log(`Axios Response :\n`, response.data, '\n\n');
     return response;
   });
 }
@@ -138,17 +138,17 @@ export class AppContainer extends React.Component<AppContainerTypes> {
 
   render() {
     return (
-      <AuthProvider>
-        <UIElementsProvider>
-          <AppCommonDataProvider>
+      <UIElementsProvider>
+        <AppCommonDataProvider>
+          <AuthProvider>
             <ShoppingCartProvider>
               <DiagnosticsCartProvider>
                 <NavigatorContainer />
               </DiagnosticsCartProvider>
             </ShoppingCartProvider>
-          </AppCommonDataProvider>
-        </UIElementsProvider>
-      </AuthProvider>
+          </AuthProvider>
+        </AppCommonDataProvider>
+      </UIElementsProvider>
     );
   }
 }

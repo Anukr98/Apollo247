@@ -658,12 +658,14 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
                   : (orderDetails.estimatedAmount || 0).toFixed(2)}
               </Text>
             </View>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-              <Text style={styles.paymentMethodText}>{string.OrderSummery.paymentMethod}</Text>
-              <Text style={[styles.paymentMethodText, { textAlign: 'right' }]}>
-                {paymentMethodToDisplay}
-              </Text>
-            </View>
+            {!offlineOrderNumber && (
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                <Text style={styles.paymentMethodText}>{string.OrderSummery.paymentMethod}</Text>
+                <Text style={[styles.paymentMethodText, { textAlign: 'right' }]}>
+                  {paymentMethodToDisplay}
+                </Text>
+              </View>
+            )}
             {orderBilledAndPacked &&
             newOrders &&
             !prescriptionUpload &&
@@ -774,7 +776,7 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
             </View>
           </View>
         ) : null}
-        {!orderBilledAndPacked ? (
+        {!orderBilledAndPacked && !offlineOrderNumber ? (
           <View style={{ flexDirection: 'row', paddingHorizontal: 16, marginTop: 16 }}>
             <Text style={[styles.DisclaimerTitle]}>Disclaimer: </Text>
             <Text style={styles.DisclaimerDescr}>

@@ -18,6 +18,7 @@ import {
   RadioButtonIcon,
   RadioButtonUnselectedIcon,
   SearchIcon,
+  RetryButtonIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
@@ -1045,6 +1046,26 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             descriptionTextStyle={{ fontSize: 14 }}
             headingTextStyle={{ fontSize: 14 }}
           />
+          <TouchableOpacity
+            activeOpacity={1}
+            onPress={() => {
+              setshowSpinner(true);
+              getNetStatus()
+                .then((status) => {
+                  if (status) {
+                    fetchSpecialityFilterData(filterMode, FilterData, latlng);
+                  } else {
+                    setshowSpinner(false);
+                    setshowOfflinePopup(true);
+                  }
+                })
+                .catch((e) => {
+                  CommonBugFender('DoctorSearchListing_getNetStatus', e);
+                });
+            }}
+          >
+            <RetryButtonIcon style={{ width: 185, height: 48, marginTop: 30 }} />
+          </TouchableOpacity>
         </View>
       );
     }

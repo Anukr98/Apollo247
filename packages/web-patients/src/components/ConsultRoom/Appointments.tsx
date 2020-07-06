@@ -550,6 +550,16 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
           props.history.push(clientRoutes.doctorDetails(readableDoctorname, doctorId));
       },
     },
+    PAYMENT_ABORTED: {
+      ctaText: 'TRY AGAIN',
+      info:
+        'In case your account has been debited, you should get the refund in 10-14 working days.',
+      callbackFunction: () => {
+        props &&
+          props.history &&
+          props.history.push(clientRoutes.doctorDetails(readableDoctorname, doctorId));
+      },
+    }
   };
 
   const handlePaymentModalClose = () => {
@@ -615,8 +625,8 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
             : '';
         const specialty =
           isAppointmentAvailable.doctorInfo &&
-          isAppointmentAvailable.doctorInfo.specialty &&
-          isAppointmentAvailable.doctorInfo.specialty.specialistSingularTerm
+            isAppointmentAvailable.doctorInfo.specialty &&
+            isAppointmentAvailable.doctorInfo.specialty.specialistSingularTerm
             ? isAppointmentAvailable.doctorInfo.specialty.specialistSingularTerm
             : '';
         setAppointmentDoctorName(doctorName);
@@ -654,21 +664,21 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
       moment(new Date(item.appointmentDateTime), 'DD-MM-YYYY').add(6, 'days')
     ).length > -1 && tabValue === 0
       ? 'You have ' +
-          (appointments.filter((item) =>
-            moment(new Date(item.appointmentDateTime))
-              .add(6, 'days')
-              .startOf('day')
-              .isSameOrAfter(moment(new Date()).startOf('day'))
-          ).length || 'no') +
-          ' active appointment(s)!'
+      (appointments.filter((item) =>
+        moment(new Date(item.appointmentDateTime))
+          .add(6, 'days')
+          .startOf('day')
+          .isSameOrAfter(moment(new Date()).startOf('day'))
+      ).length || 'no') +
+      ' active appointment(s)!'
       : 'You have ' +
-          (appointments.filter((item) =>
-            moment(new Date(item.appointmentDateTime))
-              .add(6, 'days')
-              .startOf('day')
-              .isBefore(moment(new Date()).startOf('day'))
-          ).length || 'no') +
-          ' past appointment(s)!';
+      (appointments.filter((item) =>
+        moment(new Date(item.appointmentDateTime))
+          .add(6, 'days')
+          .startOf('day')
+          .isBefore(moment(new Date()).startOf('day'))
+      ).length || 'no') +
+      ' past appointment(s)!';
   };
 
   const TabContainer: React.FC = (props) => {
@@ -722,8 +732,8 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
                 </AphSelect>
               </Typography>
             ) : (
-              <Typography variant="h1">hello there!</Typography>
-            )}
+                <Typography variant="h1">hello there!</Typography>
+              )}
             <p>{data && !loading && appointmentText()}</p>
             <AphDialog open={isAddNewProfileDialogOpen} maxWidth="sm">
               <AphDialogClose onClick={() => setIsAddNewProfileDialogOpen(false)} title={'Close'} />
@@ -778,30 +788,30 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
                     <CircularProgress />
                   </div>
                 ) : (
-                  <div className={classes.consultSection}>
-                    <div className={classes.noAppointments}>
-                      <div className={classes.leftGroup}>
-                        <h3>Want to book an appointment?</h3>
-                        <Route
-                          render={({ history }) => (
-                            <AphButton
-                              color="primary"
-                              onClick={() => {
-                                history.push(clientRoutes.specialityListing());
-                              }}
-                              title={'Book an Appointment'}
-                            >
-                              Book an Appointment
-                            </AphButton>
-                          )}
-                        />
+                      <div className={classes.consultSection}>
+                        <div className={classes.noAppointments}>
+                          <div className={classes.leftGroup}>
+                            <h3>Want to book an appointment?</h3>
+                            <Route
+                              render={({ history }) => (
+                                <AphButton
+                                  color="primary"
+                                  onClick={() => {
+                                    history.push(clientRoutes.specialityListing());
+                                  }}
+                                  title={'Book an Appointment'}
+                                >
+                                  Book an Appointment
+                                </AphButton>
+                              )}
+                            />
+                          </div>
+                          <div className={classes.rightGroup}>
+                            <img src={require('images/ic_doctor_consult.svg')} alt="" />
+                          </div>
+                        </div>
                       </div>
-                      <div className={classes.rightGroup}>
-                        <img src={require('images/ic_doctor_consult.svg')} alt="" />
-                      </div>
-                    </div>
-                  </div>
-                )}
+                    )}
               </TabContainer>
             )}
             {tabValue === 1 && (
@@ -813,30 +823,30 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
                     <CircularProgress />
                   </div>
                 ) : (
-                  <div className={classes.consultSection}>
-                    <div className={classes.noAppointments}>
-                      <div className={classes.leftGroup}>
-                        <h3>Want to book an appointment?</h3>
-                        <Route
-                          render={({ history }) => (
-                            <AphButton
-                              color="primary"
-                              onClick={() => {
-                                history.push(clientRoutes.specialityListing());
-                              }}
-                              title={'Book an Appointment'}
-                            >
-                              Book an Appointment
-                            </AphButton>
-                          )}
-                        />
+                      <div className={classes.consultSection}>
+                        <div className={classes.noAppointments}>
+                          <div className={classes.leftGroup}>
+                            <h3>Want to book an appointment?</h3>
+                            <Route
+                              render={({ history }) => (
+                                <AphButton
+                                  color="primary"
+                                  onClick={() => {
+                                    history.push(clientRoutes.specialityListing());
+                                  }}
+                                  title={'Book an Appointment'}
+                                >
+                                  Book an Appointment
+                                </AphButton>
+                              )}
+                            />
+                          </div>
+                          <div className={classes.rightGroup}>
+                            <img src={require('images/ic_doctor_consult.svg')} alt="" />
+                          </div>
+                        </div>
                       </div>
-                      <div className={classes.rightGroup}>
-                        <img src={require('images/ic_doctor_consult.svg')} alt="" />
-                      </div>
-                    </div>
-                  </div>
-                )}
+                    )}
               </TabContainer>
             )}
           </div>
@@ -902,33 +912,33 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
               <CircularProgress />
             </div>
           ) : (
-            <>
-              <OrderStatusContent
-                paymentStatus={
-                  paymentStatus === 'PAYMENT_FAILED'
-                    ? 'failed'
-                    : paymentStatus === 'PAYMENT_PENDING'
-                    ? 'pending'
-                    : 'success'
-                }
-                paymentInfo={statusActions[paymentStatus].info}
-                orderId={displayId}
-                amountPaid={amountPaid}
-                doctorDetail={doctorDetail}
-                paymentRefId={paymentRefId}
-                bookingDateTime={moment(appointmentDateTime)
-                  .format('DD MMMM YYYY[,] LT')
-                  .replace(/(A|P)(M)/, '$1.$2.')
-                  .toString()}
-                type={'consult'}
-                consultMode={_capitalize(appointmentType)}
-                onClose={() => handlePaymentModalClose()}
-                ctaText={statusActions[paymentStatus].ctaText}
-                orderStatusCallback={statusActions[paymentStatus].callbackFunction}
-                fetchConsultInvoice={setTriggerInvoice}
-              />
-            </>
-          )}
+              <>
+                <OrderStatusContent
+                  paymentStatus={
+                    paymentStatus === 'PAYMENT_FAILED'
+                      ? 'failed'
+                      : paymentStatus === 'PAYMENT_PENDING'
+                        ? 'pending' : paymentStatus === 'PAYMENT_ABORTED'
+                          ? 'aborted' : 'success'
+                  }
+                  paymentInfo={statusActions[paymentStatus].info}
+                  orderId={displayId}
+                  amountPaid={amountPaid}
+                  doctorDetail={doctorDetail}
+                  paymentRefId={paymentRefId}
+                  bookingDateTime={moment(appointmentDateTime)
+                    .format('DD MMMM YYYY[,] LT')
+                    .replace(/(A|P)(M)/, '$1.$2.')
+                    .toString()}
+                  type={'consult'}
+                  consultMode={_capitalize(appointmentType)}
+                  onClose={() => handlePaymentModalClose()}
+                  ctaText={statusActions[paymentStatus].ctaText}
+                  orderStatusCallback={statusActions[paymentStatus].callbackFunction}
+                  fetchConsultInvoice={setTriggerInvoice}
+                />
+              </>
+            )}
         </Modal>
       )}
       {/* 

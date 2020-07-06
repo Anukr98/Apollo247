@@ -555,25 +555,54 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     postTatResponseFailureEvent(err || {}, g(selectedAddress, 'zipcode')!, lookUp);
   };
 
+  const postSkuPriceMismatchEvent = (
+    cartItemMrp: number,
+    cartItemPackSize: number,
+    storeMrp: number,
+    skuId: string
+  ) => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.SKU_PRICE_MISMATCH] = {
+      'Mobile Number': g(currentPatient, 'mobileNumber') || '',
+      'Sku Id': skuId,
+      'Magento MRP': cartItemMrp,
+      'Magento Pack Size': cartItemPackSize,
+      'Store API MRP': storeMrp,
+    };
+    postWebEngageEvent(WebEngageEventName.SKU_PRICE_MISMATCH, eventAttributes);
+  };
+
+  const isDiffLessOrGreaterThan25Percent = (num1: number, num2: number) => {
+    const diffP = ((num1 - num2) / num1) * 100;
+    const result = diffP > 25 || diffP < -25;
+    return result;
+  };
+
   const getFromattedStoreInventory = (
     storeItem: GetStoreInventoryResponse['itemDetails'][0],
     cartItem: ShoppingCartItem
   ) => {
-    const storeItemPrice = Number((storeItem.mrp * Number(cartItem.mou)).toFixed(2));
+    const storeItemPrice =
+      storeItem.mrp && Number((storeItem.mrp * Number(cartItem.mou || 1)).toFixed(2));
+    const isDiff = storeItemPrice
+      ? isDiffLessOrGreaterThan25Percent(cartItem.price, storeItemPrice)
+      : true;
+    if (isDiff) {
+      postSkuPriceMismatchEvent(cartItem.price, Number(cartItem.mou), storeItemPrice, cartItem.id);
+    }
     const storeItemSP =
-      cartItem.specialPrice && cartItem.price != storeItemPrice
+      !isDiff && cartItem.specialPrice
         ? getSpecialPriceFromRelativePrices(
             cartItem.price,
             cartItem.specialPrice,
-            storeItem.mrp * Number(cartItem.mou)
+            storeItem.mrp * Number(cartItem.mou || 1)
           )
         : cartItem.specialPrice;
     return {
       sku: cartItem.id,
       name: cartItem.name,
       is_in_stock: 1,
-      price: storeItemPrice,
-      special_price: storeItemSP,
+      price: isDiff ? cartItem.price : storeItemPrice,
+      special_price: isDiff ? cartItem.specialPrice : storeItemSP,
     } as MedicineProduct;
   };
 
@@ -824,6 +853,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         ? `${cartItems.length}`
         : `0${cartItems.length}`;
     const FreeShipping =
+      selectedTab == tabs[0].title &&
       AppConfig.Configuration.MIN_VALUE_TO_NUDGE_USERS_TO_AVAIL_FREE_DELIVERY > 0 &&
       cartTotal - couponDiscount - productDiscount >=
         AppConfig.Configuration.MIN_VALUE_TO_NUDGE_USERS_TO_AVAIL_FREE_DELIVERY &&
@@ -906,19 +936,12 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         {cartItems.length > 0 && FreeShipping ? (
           <View
             style={{
-              shadowColor: 'rgba(128, 128, 128, 0.3)',
-              shadowOffset: { width: 0, height: 5 },
-              shadowOpacity: 0.4,
-              shadowRadius: 5,
-              elevation: 5,
-              flexDirection: 'row',
-              marginHorizontal: 20,
-              marginBottom: 20,
-              backgroundColor: '#f7f8f5',
-              borderRadius: 10,
-              paddingHorizontal: 17,
-              paddingVertical: 11,
+              ...theme.viewStyles.card(),
+              marginTop: 0,
+              paddingTop: 9,
               paddingBottom: 9,
+              flexDirection: 'row',
+              backgroundColor: '#f7f8f5',
             }}
           >
             <FreeShippingIcon style={{ width: 15, height: 15, marginTop: 3, marginRight: 3 }} />

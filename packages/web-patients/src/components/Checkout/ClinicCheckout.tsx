@@ -646,6 +646,7 @@ export const ClinicCheckout: React.FC = () => {
               setValidityStatus={setValidityStatus}
               specialityId={specialityId}
               hospitalId={hospitalId}
+              speciality={speciality}
             />
           </AphDialog>
         </div>

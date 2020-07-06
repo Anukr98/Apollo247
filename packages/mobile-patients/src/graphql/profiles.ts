@@ -281,6 +281,12 @@ export const GET_APPOINTMENT_HISTORY = gql`
         status
         bookingDate
         isSeniorConsultStarted
+        caseSheet {
+          symptoms {
+            symptom
+            details
+          }
+        }
       }
     }
   }
@@ -1204,6 +1210,35 @@ export const GET_MEDICINE_ORDERS_OMS__LIST = gql`
   }
 `;
 
+export const GET_LATEST_MEDICINE_ORDER = gql`
+  query getLatestMedicineOrder($patientUhid: String!) {
+    getLatestMedicineOrder(patientUhid: $patientUhid) {
+      medicineOrderDetails {
+        id
+        orderAutoId
+        billNumber
+        shopAddress
+        prescriptionImageUrl
+        medicineOrderLineItems {
+          medicineSKU
+          medicineName
+          price
+          mrp
+          quantity
+        }
+        medicineOrdersStatus {
+          statusDate
+        }
+        medicineOrderShipments {
+          medicineOrderInvoice {
+            itemDetails
+          }
+        }
+      }
+    }
+  }
+`;
+
 export const GET_DIAGNOSTIC_SLOTS = gql`
   query getDiagnosticSlots(
     $patientId: String
@@ -1406,7 +1441,7 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS = gql`
         deliveryType
         currentStatus
         patientAddressId
-        # alertStore
+        alertStore
         medicineOrdersStatus {
           id
           orderStatus
@@ -2174,6 +2209,20 @@ export const UPLOAD_CHAT_FILE = gql`
   }
 `;
 
+export const ADD_CHAT_DOCUMENTS = gql`
+  mutation addChatDocument($appointmentId: ID!, $documentPath: String, $prismFileId: String) {
+    addChatDocument(
+      appointmentId: $appointmentId
+      documentPath: $documentPath
+      prismFileId: $prismFileId
+    ) {
+      id
+      documentPath
+      prismFileId
+    }
+  }
+`;
+
 export const CANCEL_MEDICINE_ORDER_OMS = gql`
   mutation CancelMedicineOrderOMS($medicineOrderCancelOMSInput: MedicineOrderCancelOMSInput) {
     cancelMedicineOrderOMS(medicineOrderCancelOMSInput: $medicineOrderCancelOMSInput) {
@@ -2336,10 +2385,15 @@ export const UPLOAD_CHAT_FILE_PRISM = gql`
 
 export const UPLOAD_MEDIA_DOCUMENT_PRISM = gql`
   mutation uploadMediaDocument(
-    $PrescriptionUploadRequest: PrescriptionUploadRequest
-    $uhid: String
+    $MediaPrescriptionUploadRequest: MediaPrescriptionUploadRequest
+    $uhid: String!
+    $appointmentId: ID!
   ) {
-    uploadMediaDocument(prescriptionInput: $PrescriptionUploadRequest, uhid: $uhid) {
+    uploadMediaDocument(
+      prescriptionInput: $MediaPrescriptionUploadRequest
+      uhid: $uhid
+      appointmentId: $appointmentId
+    ) {
       recordId
       fileUrl
     }

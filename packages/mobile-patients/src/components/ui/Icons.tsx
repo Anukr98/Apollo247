@@ -316,6 +316,15 @@ export const MedicineRxIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_tablets_rx.png')} />
 );
 
+export const ShoppingBasketIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    height={20}
+    width={20}
+    {...props}
+    source={require('./icons/shopping_basket_24_px.png')}
+  />
+);
+
 export const AddIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_plus_onorange.png')} />
 );
@@ -792,7 +801,7 @@ export const TestsCartIcon: React.FC<IconProps> = (props) => (
   />
 );
 
-export const TestsCartMedicineIcon: React.FC<IconProps> = (props) => (
+export const MedicineCartIcon: React.FC<IconProps> = (props) => (
   <IconBase
     style={{ height: 56, width: 56, resizeMode: 'contain' }}
     {...props}
@@ -1063,4 +1072,8 @@ export const KavachIcon: React.FC<IconProps> = (props) => (
     source={require('./icons/bitmap.png')}
     resizeMode="contain"
   />
+);
+
+export const RetryButtonIcon: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/retryButton.png')} resizeMode="contain" />
 );

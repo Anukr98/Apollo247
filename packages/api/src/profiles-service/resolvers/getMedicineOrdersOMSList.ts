@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import gql from 'graphql-tag';
 import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
 import { MedicineOrdersRepository } from 'profiles-service/repositories/MedicineOrdersRepository';
@@ -15,9 +16,15 @@ import { getUnixTime, format } from 'date-fns';
 import { Tedis } from 'redis-typescript';
 import { ApiConstants } from 'ApiConstants';
 
+const path = require('path');
+
 export const getMedicineOrdersOMSListTypeDefs = gql`
   type MedicineOrdersOMSListResult {
     medicineOrdersList: [MedicineOrdersOMS]
+  }
+
+  type getMedicineOrdersListResult {
+    updatedSkus: [String]
   }
 
   type MedicineOrderOMSDetailsResult {
@@ -57,6 +64,7 @@ export const getMedicineOrdersOMSListTypeDefs = gql`
     medicineOrderShipments: [MedicineOrderOMSShipment]
     patient: Patient
     customerComment: String
+    alertStore: Boolean
   }
 
   type MedicineOrderOMSLineItems {
@@ -150,8 +158,14 @@ export const getMedicineOrdersOMSListTypeDefs = gql`
     getMedicineOMSPaymentOrder: MedicineOrdersOMSListResult!
     getRecommendedProductsList(patientUhid: String!): RecommendedProductsListResult!
     checkIfProductsOnline(productSkus: [String]): ProductAvailabilityResult!
+    updateMedicineDataRedis(limit: Int, offset: Int): getMedicineOrdersListResult
+    getLatestMedicineOrder(patientUhid: String!): MedicineOrderOMSDetailsResult!
   }
 `;
+
+type getMedicineOrdersListResult = {
+  updatedSkus: string[];
+};
 
 type MedicineOrdersOMSListResult = {
   medicineOrdersList: MedicineOrders[];
@@ -204,7 +218,9 @@ const getMedicineOrdersOMSList: Resolver<
   }
   const primaryPatientIds = await patientRepo.getLinkedPatientIds(args.patientId);
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
-  const medicineOrdersList: any = await medicineOrdersRepo.getMedicineOrdersList(primaryPatientIds);
+  const medicineOrdersList: any = await medicineOrdersRepo.getMedicineOrdersListWithoutAbortedStatus(
+    primaryPatientIds
+  );
   let uhid = patientDetails.uhid;
   if (process.env.NODE_ENV == 'local') uhid = ApiConstants.CURRENT_UHID.toString();
   else if (process.env.NODE_ENV == 'dev') uhid = ApiConstants.CURRENT_UHID.toString();
@@ -217,7 +233,7 @@ const getMedicineOrdersOMSList: Resolver<
   );
   const textRes = await ordersResp.text();
   const offlineOrdersList = JSON.parse(textRes);
-  console.log(offlineOrdersList.response, offlineOrdersList.response.length, 'offlineOrdersList');
+  //console.log(offlineOrdersList.response, offlineOrdersList.response.length, 'offlineOrdersList');
   if (offlineOrdersList.errorCode == 0) {
     //const orderDate = fromUnixTime(offlineOrdersList.response[0].billDateTime)
     offlineOrdersList.response.forEach((order: any) => {
@@ -417,6 +433,8 @@ const getMedicineOrderOMSDetails: Resolver<
           );
           if (cancellationReasons) {
             reasonCode.statusMessage = cancellationReasons.displayMessage;
+          } else {
+            reasonCode.statusMessage = '';
           }
         } catch (e) {
           console.log(e);
@@ -532,6 +550,196 @@ const checkIfProductsOnline: Resolver<
   await Promise.all(promises);
   return { productAvailabilityList: productAvailability };
 };
+const updateMedicineDataRedis: Resolver<
+  null,
+  { limit: number; offset: number },
+  ProfilesServiceContext,
+  getMedicineOrdersListResult
+> = async (parent, args, context) => {
+  const tedis = new Tedis({
+    port: <number>ApiConstants.REDIS_PORT,
+    host: ApiConstants.REDIS_URL.toString(),
+    password: ApiConstants.REDIS_PWD.toString(),
+  });
+
+  const excelToJson = require('convert-excel-to-json');
+  let fileDirectory = path.resolve('/apollo-hospitals/packages/api/src/assets');
+  if (process.env.NODE_ENV != 'local') {
+    fileDirectory = path.resolve(<string>process.env.ASSETS_DIRECTORY);
+  }
+  console.log(fileDirectory + '/Online_Master.xlsx');
+
+  const rowData = excelToJson({
+    sourceFile: fileDirectory + '/Online_Master.xlsx',
+    sheets: [
+      {
+        name: 'Sheet1',
+        header: {
+          rows: 1,
+        },
+        columnToKey: {
+          A: 'sku',
+          B: 'name',
+          C: 'status',
+          D: 'price',
+          E: 'special_price',
+          F: 'special_price_from',
+          G: 'special_price_to',
+          H: 'qty',
+          I: 'description',
+          J: 'url_key',
+          K: 'base_image',
+          L: 'is_prescription_required',
+          M: 'category_name',
+          N: 'product_discount_category',
+          O: 'sell_online',
+          P: 'molecules',
+          Q: 'manufacturer',
+          R: 'mou',
+          S: 'gallery_images',
+        },
+      },
+    ],
+  });
+  const updatedSkus: string[] = [];
+  for (let k = args.offset; k <= args.offset + args.limit - 1; k++) {
+    const skuKey = 'medicine:sku:' + rowData.Sheet1[k].sku;
+    await tedis.hmset(skuKey, {
+      sku: encodeURIComponent(rowData.Sheet1[k].sku),
+      name: encodeURIComponent(rowData.Sheet1[k].name),
+      status: encodeURIComponent(rowData.Sheet1[k].status),
+      price: encodeURIComponent(rowData.Sheet1[k].price),
+      special_price:
+        rowData.Sheet1[k].special_price != undefined
+          ? encodeURIComponent(rowData.Sheet1[k].special_price)
+          : '',
+      special_price_from:
+        rowData.Sheet1[k].special_price_from != undefined
+          ? encodeURIComponent(rowData.Sheet1[k].special_price_from)
+          : '',
+      special_price_to:
+        rowData.Sheet1[k].special_price_to != undefined
+          ? encodeURIComponent(rowData.Sheet1[k].special_price_to)
+          : '',
+      qty: encodeURIComponent(rowData.Sheet1[k].qty),
+      description: encodeURIComponent(rowData.Sheet1[k].description),
+      url_key: encodeURIComponent(rowData.Sheet1[k].url_key),
+      base_image: encodeURIComponent(rowData.Sheet1[k].base_image),
+      is_prescription_required: encodeURIComponent(rowData.Sheet1[k].is_prescription_required),
+      category_name: encodeURIComponent(rowData.Sheet1[k].category_name),
+      product_discount_category: encodeURIComponent(rowData.Sheet1[k].product_discount_category),
+      sell_online: encodeURIComponent(rowData.Sheet1[k].sell_online),
+      molecules:
+        rowData.Sheet1[k].molecules != undefined
+          ? encodeURIComponent(rowData.Sheet1[k].molecules)
+          : '',
+      mou: encodeURIComponent(rowData.Sheet1[k].mou),
+      gallery_images: encodeURIComponent(rowData.Sheet1[k].gallery_images),
+      manufacturer: encodeURIComponent(rowData.Sheet1[k].manufacturer),
+    });
+    if (!updatedSkus.includes(rowData.Sheet1[k].sku)) {
+      updatedSkus.push(rowData.Sheet1[k].sku);
+    }
+  }
+  return { updatedSkus: updatedSkus };
+};
+
+const getLatestMedicineOrder: Resolver<
+  null,
+  { patientUhid: string },
+  ProfilesServiceContext,
+  MedicineOrderOMSDetailsResult
+> = async (parent, args, { profilesDb, mobileNumber }) => {
+  const patientRepo = profilesDb.getCustomRepository(PatientRepository);
+  const patientDetails = await patientRepo.findByUhid(args.patientUhid);
+  if (!patientDetails) {
+    throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
+  }
+  if (mobileNumber != patientDetails.mobileNumber) {
+    throw new AphError(AphErrorMessages.INVALID_PATIENT_DETAILS, undefined, {});
+  }
+  let uhid = args.patientUhid;
+  if (process.env.NODE_ENV == 'local') uhid = ApiConstants.CURRENT_UHID.toString();
+  else if (process.env.NODE_ENV == 'dev') uhid = ApiConstants.CURRENT_UHID.toString();
+  const listResp = await fetch(
+    process.env.PRISM_GET_RECOMMENDED_PRODUCTS
+      ? process.env.PRISM_GET_RECOMMENDED_PRODUCTS + uhid
+      : '',
+    {
+      method: 'GET',
+      headers: {},
+    }
+  );
+  const textRes = await listResp.text();
+  const latestBillResp = JSON.parse(textRes);
+  //console.log('productsList===>', response, response.response.latestBill);
+  let offlineList: any = '';
+  if (latestBillResp.errorCode == 0 && latestBillResp.response.latestBill) {
+    const orderDets = latestBillResp.response.latestBill;
+    const lineItems: any[] = [];
+    if (orderDets.lineItems) {
+      orderDets.lineItems.forEach((item: any) => {
+        const itemDets = {
+          isMedicine: 1,
+          medicineSKU: item.itemId,
+          medicineName: item.itemName,
+          mrp: item.mrp,
+          mou: 1,
+          price: item.totalMrp,
+          quantity: item.saleQty,
+          isPrescriptionNeeded: 0,
+        };
+        lineItems.push(itemDets);
+      });
+    }
+    const offlineShopAddress = {
+      storename: orderDets.siteName,
+      address: orderDets.address,
+      workinghrs: '24 Hrs',
+      phone: orderDets.mobileNo,
+      city: orderDets.city,
+      state: orderDets.state,
+      zipcode: '500033',
+      stateCode: 'TS',
+    };
+    offlineList = {
+      id: ApiConstants.OFFLINE_ORDERID,
+      orderAutoId: orderDets.id,
+      shopAddress: JSON.stringify(offlineShopAddress),
+      createdDate:
+        format(getUnixTime(orderDets.billDateTime) * 1000, 'yyyy-MM-dd') +
+        'T' +
+        format(getUnixTime(orderDets.billDateTime) * 1000, 'hh:mm:ss') +
+        '.000Z',
+      billNumber: orderDets.billNo,
+      medicineOrderLineItems: lineItems,
+      currentStatus: MEDICINE_ORDER_STATUS.PURCHASED_IN_STORE,
+      orderType: MEDICINE_ORDER_TYPE.CART_ORDER,
+      patientId: patientDetails.id,
+      deliveryType: MEDICINE_DELIVERY_TYPE.STORE_PICKUP,
+      estimatedAmount: orderDets.mrpTotal,
+      productDiscount: orderDets.discountTotal,
+      redeemedAmount: orderDets.giftTotal,
+      medicineOrdersStatus: [
+        {
+          id: ApiConstants.OFFLINE_ORDERID,
+          statusDate:
+            format(getUnixTime(orderDets.billDateTime) * 1000, 'yyyy-MM-dd') +
+            'T' +
+            format(getUnixTime(orderDets.billDateTime) * 1000, 'hh:mm:ss') +
+            '.000Z',
+          orderStatus: MEDICINE_ORDER_STATUS.PURCHASED_IN_STORE,
+          hideStatus: true,
+        },
+      ],
+      medicineOrderShipments: [],
+    };
+  }
+  //console.log(offlineList, 'offline list');
+  if (offlineList == '')
+    throw new AphError(AphErrorMessages.INVALID_MEDICINE_ORDER_ID, undefined, {});
+  return { medicineOrderDetails: offlineList };
+};
 
 export const getMedicineOrdersOMSListResolvers = {
   Query: {
@@ -540,5 +748,7 @@ export const getMedicineOrdersOMSListResolvers = {
     getMedicineOMSPaymentOrder,
     getRecommendedProductsList,
     checkIfProductsOnline,
+    updateMedicineDataRedis,
+    getLatestMedicineOrder,
   },
 };

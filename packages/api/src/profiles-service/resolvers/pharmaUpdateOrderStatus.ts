@@ -20,8 +20,8 @@ import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import {
-  sendCartNotification,
   NotificationType,
+  medicineOrderCancelled,
   sendMedicineOrderStatusNotification,
 } from 'notifications-service/resolvers/notifications';
 import { format, addMinutes, parseISO } from 'date-fns';
@@ -227,16 +227,14 @@ const updateOrderStatus: Resolver<
           orderDetails.patient,
           mobileNumberIn
         );
-        const pushNotificationInput = {
-          orderAutoId: orderDetails.orderAutoId,
-          notificationType:
-            status == MEDICINE_ORDER_STATUS.DELIVERED
-              ? NotificationType.MEDICINE_ORDER_DELIVERED
-              : NotificationType.MEDICINE_ORDER_PICKEDUP,
-        };
-        console.log(pushNotificationInput, 'pushNotificationInput');
-        const notificationResult = sendCartNotification(pushNotificationInput, profilesDb);
-        console.log(notificationResult, 'medicine order delivered notification');
+        let notificationType =
+          status == MEDICINE_ORDER_STATUS.DELIVERED
+            ? NotificationType.MEDICINE_ORDER_DELIVERED
+            : NotificationType.MEDICINE_ORDER_PICKEDUP;
+        sendMedicineOrderStatusNotification(notificationType, orderDetails, profilesDb);
+      }
+      if (status == MEDICINE_ORDER_STATUS.CANCELLED) {
+        medicineOrderCancelled(orderDetails, updateOrderStatusInput.reasonCode, profilesDb);
       }
     }
   }

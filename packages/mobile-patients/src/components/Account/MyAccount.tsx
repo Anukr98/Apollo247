@@ -51,6 +51,7 @@ import {
 } from 'react-navigation';
 import { AppConfig } from '../../strings/AppConfig';
 import { TabHeader } from '../ui/TabHeader';
+import { useAppCommonData } from '../AppCommonDataProvider';
 
 const { width } = Dimensions.get('window');
 
@@ -148,6 +149,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
     GetCurrentPatients_getCurrentPatients_patients | null | undefined
   >(currentPatient);
   const { signOut, getPatientApiCall } = useAuth();
+  const { setSavePatientDetails, setAppointmentsPersonalized } = useAppCommonData();
 
   const buildName = () => {
     switch (apiRoutes.graphql()) {
@@ -266,7 +268,6 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
     try {
       const webengage = new WebEngage();
       webengage.user.logout();
-      signOut();
       AsyncStorage.setItem('userLoggedIn', 'false');
       AsyncStorage.setItem('multiSignUp', 'false');
       AsyncStorage.setItem('signUp', 'false');
@@ -275,6 +276,9 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
       AsyncStorage.setItem('logginHappened', 'false');
       AsyncStorage.removeItem('deeplink');
       AsyncStorage.removeItem('deeplinkReferalCode');
+      setSavePatientDetails && setSavePatientDetails('');
+      setAppointmentsPersonalized && setAppointmentsPersonalized([]);
+      signOut();
 
       props.navigation.dispatch(
         StackActions.reset({

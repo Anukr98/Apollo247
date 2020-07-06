@@ -158,7 +158,6 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
           marginHorizontal: needStyle ? 0.1 * windowWidth : undefined,
         }}
         numberOfLines={numOfLines}
-        selectable={true}
       >
         {message}
       </Text>
@@ -230,7 +229,7 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
           </TouchableOpacity>
         </View>
         <Snackbar
-          style={{ position: 'absolute' }}
+          style={{ position: 'absolute', zIndex: 1001 }}
           visible={snackbarState}
           onDismiss={() => {
             setSnackbarState(false);
