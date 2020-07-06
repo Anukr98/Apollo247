@@ -984,7 +984,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
     doc.moveDown(1.5);
   }
 
-  if (!_isEmpty(rxPdfData.caseSheetSymptoms)) {
+  if (!_isEmpty(rxPdfData.caseSheetSymptoms) || !_isEmpty(rxPdfData.vitals)) {
     renderSymptoms(rxPdfData.caseSheetSymptoms, rxPdfData.vitals);
     doc.moveDown(1.5);
   }
