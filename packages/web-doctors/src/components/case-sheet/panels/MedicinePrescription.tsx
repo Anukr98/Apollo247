@@ -985,7 +985,7 @@ export const MedicinePrescription: React.FC = () => {
     },
     {
       id: MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW,
-      value: 'Till next review',
+      value: ' Till next review',
       selected: false,
     },
   ];

@@ -147,7 +147,7 @@ export const convertCaseSheetToRxPdfData = async (
       }
 
       if (csRx.medicineConsumptionDurationUnit == MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW) {
-        frequency += csRx.medicineConsumptionDurationUnit.split('_').join(' ');
+        frequency += ' ' + csRx.medicineConsumptionDurationUnit.split('_').join(' ');
       }
 
       if (csRx.medicineToBeTaken)
@@ -984,7 +984,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
     doc.moveDown(1.5);
   }
 
-  if (!_isEmpty(rxPdfData.caseSheetSymptoms)) {
+  if (!_isEmpty(rxPdfData.caseSheetSymptoms) || !_isEmpty(rxPdfData.vitals)) {
     renderSymptoms(rxPdfData.caseSheetSymptoms, rxPdfData.vitals);
     doc.moveDown(1.5);
   }

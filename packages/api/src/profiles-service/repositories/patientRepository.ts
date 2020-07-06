@@ -515,7 +515,7 @@ export class PatientRepository extends Repository<Patient> {
 
       const prescriptionInputArgs: PrescriptionInputArgs = {
         prescriptionInput: {
-          prescribedBy: 'RECORD_FROM_OLD_APP',
+          prescribedBy: 'Prescription uploaded by Patient',
           prescriptionName: documentName,
           dateOfPrescription: getUnixTime(new Date()) * 1000,
           startDate: 0,

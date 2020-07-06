@@ -186,19 +186,22 @@ export class AdminAuditLogs extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, type: 'text' })
   updatedBy: string;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, type: 'timestamp' })
   updatedAt: Date;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, type: 'text' })
   updatedField: string;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, type: 'text' })
   previousDetails: string;
 
   @Column({ nullable: true })
+  doctorId: string;
+
+  @Column({ nullable: true, type: 'text' })
   currentDetails: string;
 }
 
