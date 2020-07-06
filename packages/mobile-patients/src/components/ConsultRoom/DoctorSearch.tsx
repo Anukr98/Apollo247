@@ -1035,9 +1035,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
             {TopSpecialities.map((item, index) => {
               let itemSymptom = item!.symptoms || '';
               itemSymptom = itemSymptom.charAt(0).toUpperCase() + itemSymptom.slice(1); // capitalize first character
-              const symptom = itemSymptom.replace(/,\s*([a-z])/g, 
-                (d, e) => ", " + e.toUpperCase()
-              ); // capitalize first character after comma (,)
+              const symptom = itemSymptom.replace(/,\s*([a-z])/g, (d, e) => ', ' + e.toUpperCase()); // capitalize first character after comma (,)
               return (
                 <Mutation<saveSearch> mutation={SAVE_SEARCH}>
                   {(mutate, { loading, data, error }) => (
@@ -1425,6 +1423,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
             contentContainerStyle={{
               marginTop: 20,
               marginBottom: 8,
+              paddingTop: Platform.OS == 'android' ? 10 : 1,
             }}
             bounces={false}
             data={doctorsList}
