@@ -16,6 +16,7 @@ export interface bookAppointment_bookAppointment_appointment {
   status: STATUS;
   appointmentType: APPOINTMENT_TYPE;
   patientId: string;
+  displayId:string;
 }
 
 export interface bookAppointment_bookAppointment {
