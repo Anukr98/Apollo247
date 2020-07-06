@@ -515,7 +515,7 @@ export class PatientRepository extends Repository<Patient> {
 
       const prescriptionInputArgs: PrescriptionInputArgs = {
         prescriptionInput: {
-          prescribedBy: 'Prescription uploaded by Patient',
+          prescribedBy: ApiConstants.PRESCRIPTION_UPLOADED_BY_PATIENT.toString(),
           prescriptionName: documentName,
           dateOfPrescription: getUnixTime(new Date()) * 1000,
           startDate: 0,
