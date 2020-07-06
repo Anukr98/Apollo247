@@ -78,6 +78,11 @@ export const getNotificationsTypeDefs = gql`
     status: Boolean
   }
 
+  type SendDoctorApptReminderResult {
+    status: Boolean
+    apptsListCount: Int
+  }
+
   type SendSMS {
     status: String
     message: String
@@ -96,7 +101,7 @@ export const getNotificationsTypeDefs = gql`
       chatMessage: String
     ): SendChatMessageToDoctorResult
     sendMessageToMobileNumber(mobileNumber: String, textToSend: String): SendSMS
-    sendDoctorReminderNotifications(nextMin: Int): SendChatMessageToDoctorResult
+    sendDoctorReminderNotifications(nextMin: Int): SendDoctorApptReminderResult
   }
 `;
 
@@ -106,6 +111,11 @@ type PushNotificationMessage = {
 
 type SendChatMessageToDoctorResult = {
   status: boolean;
+};
+
+type SendDoctorApptReminderResult = {
+  status: boolean;
+  apptsListCount: number;
 };
 
 export type PushNotificationSuccessMessage = {
@@ -2493,8 +2503,9 @@ const sendDoctorReminderNotifications: Resolver<
   null,
   { nextMin: number },
   NotificationsServiceContext,
-  SendChatMessageToDoctorResult
+  SendDoctorApptReminderResult
 > = async (parent, args, { doctorsDb, consultsDb, patientsDb }) => {
+  let apptsListCount = 0;
   const apptRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const doctorTokenRepo = doctorsDb.getCustomRepository(DoctorDeviceTokenRepository);
   //initialize firebaseadmin
@@ -2512,6 +2523,7 @@ const sendDoctorReminderNotifications: Resolver<
   //get all appointments
   const apptsList = await apptRepo.getSpecificMinuteBothAppointments(args.nextMin);
   if (apptsList.length > 0) {
+    apptsListCount = apptsList.length;
     apptsList.forEach(async (apptId) => {
       //building payload
       const payload = {
@@ -2587,7 +2599,7 @@ const sendDoctorReminderNotifications: Resolver<
       }
     });
   }
-  return { status: true };
+  return { status: true, apptsListCount };
 };
 
 export async function sendDoctorAppointmentNotification(
