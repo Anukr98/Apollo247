@@ -225,8 +225,9 @@ export const AudioVideoStyles = StyleSheet.create({
   exoToastContainer: {
     backgroundColor: theme.colors.APP_RED,
     paddingVertical: 5,
+    marginRight: 16,
     position: 'absolute',
-    bottom: 30,
+    bottom: 90,
   },
   exoCloseContainer: {
     borderWidth: 1,
