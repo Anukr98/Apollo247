@@ -14,6 +14,8 @@ import {
 import { IsDate } from 'class-validator';
 import { DoctorType, ROUTE_OF_ADMINISTRATION } from 'doctors-service/entities';
 
+import { log } from 'customWinstonLogger'
+
 export enum APPOINTMENT_UPDATED_BY {
   DOCTOR = 'DOCTOR',
   PATIENT = 'PATIENT',
@@ -317,20 +319,36 @@ export class Appointment extends BaseEntity {
           const haveSameStatus: boolean = currentAppointmentInDb.status == this.status;
 
           if (!haveSameStatus) {
-            console.log(` In db: ${currentAppointmentInDb.status} => ${this.status} from current request`);
-            throw new Error(`*** Attempting to update ${currentAppointmentInDb.status} to ${this.status} `);
+            log('consultServiceLogger',
+              `In db: ${currentAppointmentInDb.status} => ${this.status} from current request`,
+              'index.ts',
+              '',
+              `Attempting to update ${currentAppointmentInDb.status} to ${this.status}`
+            );
+            throw new Error(`Attempting to update ${currentAppointmentInDb.status} to ${this.status} `);
           }
 
           const haveSameAppointmentState: boolean = currentAppointmentInDb.appointmentState == this.appointmentState;
           if (!haveSameAppointmentState) {
-            console.log(` In db: ${currentAppointmentInDb.appointmentState} => ${this.appointmentState} from current request`);
-            throw new Error(`*** Attempting to update ${this.appointmentState} to ${currentAppointmentInDb.appointmentState} `);
+            log('consultServiceLogger',
+              `In db: ${currentAppointmentInDb.appointmentState} => ${this.appointmentState} from current request`,
+              'index.ts',
+              '',
+              `Attempting to update ${currentAppointmentInDb.appointmentState} to ${this.appointmentState} with status ${this.status}`
+            );
+            throw new Error(`Attempting to update ${currentAppointmentInDb.appointmentState} to ${this.appointmentState} with status ${this.status}`);
           }
         }
       }
     }
     catch (ex) {
-      console.log(`Appointment constraint check exception`, ex);
+      log(
+        'consultServiceLogger',
+        'Unhandled exception occured',
+        'index.ts',
+        '',
+        `${JSON.stringify(ex)}`
+      );
       throw ex;
     }
   }
