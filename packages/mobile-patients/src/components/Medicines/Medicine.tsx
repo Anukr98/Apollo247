@@ -948,7 +948,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       globalLoading!(true);
       const { items, prescriptions, totalItemsCount, unavailableItems } = await reOrderMedicines(
         order,
-        currentPatient
+        currentPatient,
+        'Medicine Home'
       );
       items.length && addMultipleCartItems!(items);
       items.length && prescriptions.length && addMultipleEPrescriptions!(prescriptions);

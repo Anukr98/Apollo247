@@ -165,8 +165,8 @@ export interface UserInfo {
 }
 
 export interface AutoSelectLocation extends UserInfo {
-  'Serviceability': boolean;
-  'pincode': string;
+  Serviceability: boolean;
+  pincode: string;
 }
 
 export interface PatientInfoWithSource extends PatientInfo {
@@ -189,7 +189,7 @@ export interface SpecialityClickedEvent extends PatientInfo {
 }
 
 export interface ReorderMedicines extends PatientInfo {
-  source: 'Order Details' | 'PHR';
+  source: 'Order Details' | 'PHR' | 'Medicine Home';
 }
 
 export interface ConsultedBefore extends PatientInfo {

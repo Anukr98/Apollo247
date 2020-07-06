@@ -334,7 +334,8 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       setLoading!(true);
       const { items, prescriptions, totalItemsCount, unavailableItems } = await reOrderMedicines(
         orderDetails,
-        currentPatient
+        currentPatient,
+        'Order Details'
       );
 
       const eventAttributes: WebEngageEvents[WebEngageEventName.RE_ORDER_MEDICINE] = {
