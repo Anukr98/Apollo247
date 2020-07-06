@@ -189,6 +189,7 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
       relations: [
         'patient',
         'medicineOrderLineItems',
+        'medicineOrderPayments',
         'patient.patientAddress',
         'medicineOrdersStatus',
         'medicineOrderShipments',
