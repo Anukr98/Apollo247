@@ -97,9 +97,16 @@ export const Patients: React.FC<PatientsProps> = (props) => {
       const searchValue = await AsyncStorage.getItem('patientSearchValue');
       ShowAllTypeData(patientLogType.All, sortingList[0].key, 0, searchValue || '');
     });
-
+    const _willFocusSubscription = props.navigation.addListener('willFocus', async () => {
+      const searchValue = (await AsyncStorage.getItem('patientSearchValue')) || '';
+      if (searchValue === '') {
+        setShowSearch(false);
+        setshowSpinner(true);
+      }
+    });
     return () => {
       _didFocusSubscription && _didFocusSubscription.remove();
+      _willFocusSubscription && _willFocusSubscription.remove();
     };
   }, []);
 

@@ -1,6 +1,6 @@
-import { StyleSheet, Platform } from 'react-native';
+import { StyleSheet, Platform, Dimensions } from 'react-native';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
-
+const { width } = Dimensions.get('window');
 export const styles = StyleSheet.create({
   shadowview: {
     height: 44,
@@ -51,7 +51,7 @@ export const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansSemiBold(28),
     color: '#02475b',
     marginBottom: 2,
-    maxWidth: '75%',
+    maxWidth: width - 190,
   },
   replyChatCta: {
     backgroundColor: theme.colors.APP_YELLOW,
