@@ -273,6 +273,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
   const renderPrescriptionModal = () => {
     return (
       <SelectEPrescriptionModal
+        displayPrismRecords={true}
         navigation={props.navigation}
         // showConsultPrescriptionsOnly={true} // not showing e-prescriptions for non-cart flow
         onSubmit={(selectedEPres) => {
