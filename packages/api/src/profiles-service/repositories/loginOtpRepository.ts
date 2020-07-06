@@ -68,7 +68,6 @@ export class LoginOtpRepository extends Repository<LoginOtp> {
   async updateOtpStatus(id: string, updateAttrs: Partial<LoginOtp>) {
     const redis = await pool.getTedis();
     try {
-      console.log("HELLO", JSON.stringify(updateAttrs));
       await redis.set(this.cacheKey(REDIS_OTP_MOBILE_PREFIX, id), JSON.stringify(updateAttrs));
       await redis.expire(
         this.cacheKey(REDIS_OTP_MOBILE_PREFIX, id),
