@@ -1,7 +1,15 @@
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails } from '@aph/mobile-patients/src/graphql/types/getMedicineOrderOMSDetails';
 import React, { useState, useEffect } from 'react';
-import { SafeAreaView, ScrollView, StyleSheet, View, Text } from 'react-native';
+import {
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  View,
+  Text,
+  Linking,
+  TouchableOpacity,
+} from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
@@ -327,6 +335,7 @@ export const OrderModifiedScreen: React.FC<OrderModifiedScreenProps> = (props) =
                   borderRightWidth: 0.5,
                   justifyContent: 'center',
                   alignItems: 'center',
+                  paddingVertical: 3,
                   borderRightColor: 'rgba(2, 71, 91, 0.2)',
                 }}
               >
@@ -340,9 +349,10 @@ export const OrderModifiedScreen: React.FC<OrderModifiedScreenProps> = (props) =
                   borderWidth: 0,
                   borderRightColor: 'rgba(2, 71, 91, 0.2)',
                   borderRightWidth: 0.5,
+                  paddingVertical: 3,
                 }}
               >
-                <Text style={styles.headingTextStyle}>{'ORIGINAL VALUE'}</Text>
+                <Text style={styles.headingTextStyle}>{'ORIGINAL\nVALUE'}</Text>
               </View>
               <View
                 style={{
@@ -352,37 +362,51 @@ export const OrderModifiedScreen: React.FC<OrderModifiedScreenProps> = (props) =
                   justifyContent: 'center',
                 }}
               >
-                <Text style={styles.headingTextStyle}>{'REVISED VALUE'}</Text>
+                <Text style={styles.headingTextStyle}>{'REVISED\nVALUE'}</Text>
               </View>
             </View>
             {updatedItems.map((item) => renderMrpAndQtyItems(item))}
-            <View
-              style={{
-                backgroundColor: '#ffffff',
-                justifyContent: 'center',
-                shadowColor: 'rgba(128, 128, 128, 0.3)',
-                shadowOffset: { width: 0, height: 5 },
-                shadowOpacity: 0.4,
-                shadowRadius: 5,
-                borderRadius: 10,
-              }}
-            >
-              <Text
-                style={{
-                  ...theme.viewStyles.text('M', 13, '#02475b', 1, 18, 0),
-                  paddingLeft: 12,
-                  paddingVertical: 23,
-                  flex: 1,
-                }}
-              >
-                In case of any queries or concerns regarding your Bill Invoice, please reach us out
-                on WhatsApp by clicking here
-              </Text>
-            </View>
+            {renderBillingQueries()}
           </View>
         </View>
       );
     }
+  };
+
+  const renderBillingQueries = (viewMarginHorizontal = false) => {
+    return (
+      <TouchableOpacity
+        style={{
+          backgroundColor: '#ffffff',
+          justifyContent: 'center',
+          shadowColor: 'rgba(128, 128, 128, 0.3)',
+          shadowOffset: { width: 0, height: 5 },
+          shadowOpacity: 0.4,
+          shadowRadius: 5,
+          borderRadius: 10,
+          marginHorizontal: viewMarginHorizontal ? 20 : 0,
+          marginVertical: viewMarginHorizontal ? 20 : 0,
+        }}
+        activeOpacity={1}
+        onPress={() => {
+          Linking.openURL('https://bit.ly/apollo247Medicines').catch((err) =>
+            console.error('An error occurred', err)
+          );
+        }}
+      >
+        <Text
+          style={{
+            ...theme.viewStyles.text('M', 13, '#02475b', 1, 18, 0),
+            paddingLeft: 12,
+            paddingVertical: 23,
+            flex: 1,
+          }}
+        >
+          In case of any queries or concerns regarding your Bill Invoice, please reach us out on
+          WhatsApp by clicking here
+        </Text>
+      </TouchableOpacity>
+    );
   };
 
   return (
@@ -403,6 +427,7 @@ export const OrderModifiedScreen: React.FC<OrderModifiedScreenProps> = (props) =
           </View>
           {renderItemsAddedRemovedCard()}
           {renderMrpAndQuantityModification()}
+          {!(updatedItems && updatedItems.length) ? renderBillingQueries(true) : null}
         </ScrollView>
       </SafeAreaView>
     </View>
