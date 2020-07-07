@@ -123,9 +123,9 @@ const useStyles = makeStyles((theme: Theme) => {
         paddingRight: 5,
       },
     },
-    // textCenter: {
-    //   alignItems: 'center',
-    // },
+    textCenter: {
+      alignItems: 'center',
+    },
     availability: {
       fontSize: 9,
       fontWeight: 'bold',
