@@ -162,9 +162,6 @@ export class Appointment extends BaseEntity {
   @Column({ type: 'float8', nullable: true })
   actualAmount: number;
 
-  @Column({ default: null })
-  appVersion: string;
-
   @Column({ nullable: true, default: 0 })
   apolloAppointmentId: number;
 
@@ -560,6 +557,9 @@ export class AppointmentSessions extends BaseEntity {
 export class AppointmentCallDetails extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
+
+  @Column({ default: null })
+  appVersion: string;
 
   @Column()
   callType: string;
