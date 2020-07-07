@@ -604,6 +604,7 @@ export const MedicineCart: React.FC = (props) => {
     prescriptionOptionSelected,
     durationDays,
     prescriptionDuration,
+    clearCartInfo,
   } = useShoppingCart();
 
   const addToCartRef = useRef(null);
@@ -616,7 +617,7 @@ export const MedicineCart: React.FC = (props) => {
   );
 
   const urlParams = new URLSearchParams(window.location.search);
-  const nonCartFlow = urlParams.get('prescription') ? urlParams.get('prescription') : false;
+  const nonCartFlow = urlParams.get('prescription') === 'true';
 
   const [tabValue, setTabValue] = useState<number>(0);
   const [isUploadPreDialogOpen, setIsUploadPreDialogOpen] = React.useState<boolean>(false);
@@ -982,7 +983,10 @@ export const MedicineCart: React.FC = (props) => {
           data.savePrescriptionMedicineOrderOMS.orderAutoId
         ) {
           if (prescriptionOptionSelected === 'duration') {
-            window.location.href = clientRoutes.medicines();
+            clearCartInfo();
+            setTimeout(() => {
+              window.location.href = clientRoutes.medicines();
+            }, 3000);
           } else {
             window.location.href = clientRoutes.medicinesCartInfo('prescription', 'success');
           }
@@ -1053,7 +1057,7 @@ export const MedicineCart: React.FC = (props) => {
           const uploadUrlscheck = data.map(({ data }: any) =>
             data && data.uploadDocument && data.uploadDocument.status ? data.uploadDocument : null
           );
-          const filtered = uploadUrlscheck.filter(function(el) {
+          const filtered = uploadUrlscheck.filter(function (el) {
             return el != null;
           });
           const phyPresUrls = filtered.map((item) => item.filePath).filter((i) => i);
@@ -1153,7 +1157,8 @@ export const MedicineCart: React.FC = (props) => {
       zipCodeInt === 603211
     );
   };
-  const { city } = useLocationDetails();
+
+  console.log(currentPatient);
 
   useEffect(() => {
     /**Gtm code start  */
@@ -1212,7 +1217,7 @@ export const MedicineCart: React.FC = (props) => {
                       <div className={classes.uploadedPreList}>
                         {prescriptions &&
                           prescriptions.length > 0 &&
-                          prescriptions.map((prescriptionDetails, index) => {
+                          prescriptions.map((prescriptionDetails) => {
                             const fileName = prescriptionDetails.name;
                             const imageUrl = prescriptionDetails.imageUrl;
                             return (
@@ -1222,7 +1227,8 @@ export const MedicineCart: React.FC = (props) => {
                                 removePrescription={(fileName: string) =>
                                   removeImagePrescription(fileName)
                                 }
-                                key={index}
+                                key={prescriptionDetails.name}
+                                readOnly={nonCartFlow}
                               />
                             );
                           })}
@@ -1230,18 +1236,22 @@ export const MedicineCart: React.FC = (props) => {
                           ePrescriptionData.length > 0 &&
                           ePrescriptionData.map((prescription: EPrescription) => (
                             <EPrescriptionCard
+                              key={prescription.id}
                               prescription={prescription}
                               removePrescription={removePrescription}
+                              readOnly={nonCartFlow}
                             />
                           ))}
-                        <div className={classes.uploadMore}>
-                          <AphButton
-                            disabled={uploadingFiles || mutationLoading}
-                            onClick={() => handleUploadPrescription()}
-                          >
-                            Upload More
-                          </AphButton>
-                        </div>
+                        {!nonCartFlow && (
+                          <div className={classes.uploadMore}>
+                            <AphButton
+                              disabled={uploadingFiles || mutationLoading}
+                              onClick={() => handleUploadPrescription()}
+                            >
+                              Upload More
+                            </AphButton>
+                          </div>
+                        )}
                       </div>
                     ) : uploadPrescriptionRequired >= 0 ? (
                       <div className={classes.uploadPrescription}>
