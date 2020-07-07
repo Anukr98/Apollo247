@@ -89,6 +89,7 @@ export const createAppointmentSessionTypeDefs = gql`
     deviceType: DEVICETYPE
     callSource: BOOKINGSOURCE
     callType: APPT_CALL_TYPE
+    appVersion: String
   }
 
   extend type Mutation {
@@ -152,6 +153,7 @@ type EndAppointmentSessionInput = {
   deviceType: DEVICETYPE;
   callSource: BOOKINGSOURCE;
   callType: APPT_CALL_TYPE;
+  appVersion: string;
 };
 
 const createJuniorAppointmentSession: Resolver<
@@ -492,6 +494,7 @@ const endAppointmentSession: Resolver<
       endTime: new Date(),
       deviceType: endAppointmentSessionInput.deviceType,
       callSource: endAppointmentSessionInput.callSource,
+      appVersion: endAppointmentSessionInput.appVersion,
     };
     await callDetailsRepo.saveAppointmentCallDetails(appointmentCallDetailsAttrs);
   }
