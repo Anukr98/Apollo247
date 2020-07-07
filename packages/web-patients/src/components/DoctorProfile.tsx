@@ -29,7 +29,8 @@ const useStyles = makeStyles((theme: Theme) => {
     doctorImage: {
       borderRadius: '5px 5px 0 0',
       overflow: 'hidden',
-      textAlign: 'center',
+      display: 'flex',
+      alignItems: 'flex-start',
       [theme.breakpoints.up('sm')]: {
         width: 190,
       },
@@ -87,6 +88,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     infoRow: {
       display: 'flex',
+      alignItems: 'flex-start',
       paddingTop: 10,
       [theme.breakpoints.up('sm')]: {
         width: '50%',
@@ -103,11 +105,11 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     details: {
-      fontSize: 10,
+      fontSize: 12,
       fontWeight: 500,
       color: '#02475b',
       paddingLeft: 14,
-      paddingRiht: 10,
+      paddingRight: 10,
       lineHeight: 1.5,
       [theme.breakpoints.down('xs')]: {
         fontSize: 12,

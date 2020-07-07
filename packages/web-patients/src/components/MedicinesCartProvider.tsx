@@ -117,6 +117,8 @@ export interface MedicineCartContextProps {
   setPrescriptionOptionSelected: ((prescriptionOptionSelected: string) => void) | null;
   durationDays: number | null;
   setDurationDays: (durationDays: number | null) => void | null;
+  prescriptionDuration: string | null;
+  setPrescriptionDuration: ((prescriptionDuration: string) => void) | null;
 }
 
 export const MedicinesCartContext = createContext<MedicineCartContextProps>({
@@ -166,6 +168,8 @@ export const MedicinesCartContext = createContext<MedicineCartContextProps>({
   setPrescriptionOptionSelected: null,
   durationDays: null,
   setDurationDays: null,
+  prescriptionDuration: null,
+  setPrescriptionDuration: null,
 });
 
 export enum CartTypes {
@@ -245,8 +249,9 @@ export const MedicinesCartProvider: React.FC = (props) => {
     pharmaDefObject
   );
   const [headerPincodeError, setHeaderPincodeError] = useState<string | null>(null);
-  const [durationDays, setDurationDays] = useState<number | null>(null);
+  const [durationDays, setDurationDays] = useState<number | null>(30);
   const [prescriptionOptionSelected, setPrescriptionOptionSelected] = useState<string | null>(null);
+  const [prescriptionDuration, setPrescriptionDuration] = useState<string | null>('prescription');
 
   useEffect(() => {
     if (medicineAddress) {
@@ -502,6 +507,8 @@ export const MedicinesCartProvider: React.FC = (props) => {
         durationDays,
         setPrescriptionOptionSelected,
         prescriptionOptionSelected,
+        prescriptionDuration,
+        setPrescriptionDuration,
       }}
     >
       {props.children}
@@ -558,4 +565,6 @@ export const useShoppingCart = () => ({
   durationDays: useShoppingCartContext().durationDays,
   setPrescriptionOptionSelected: useShoppingCartContext().setPrescriptionOptionSelected,
   prescriptionOptionSelected: useShoppingCartContext().prescriptionOptionSelected,
+  prescriptionDuration: useShoppingCartContext().prescriptionDuration,
+  setPrescriptionDuration: useShoppingCartContext().setPrescriptionDuration,
 });

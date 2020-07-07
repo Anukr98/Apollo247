@@ -700,7 +700,7 @@ export async function sendNotification(
       'check dates for todays date appt',
       appointment.appointmentDateTime,
       appointment.appointmentDateTime <= new Date(todaysDate) &&
-      appointment.appointmentDateTime >= yesterdaysDate
+        appointment.appointmentDateTime >= yesterdaysDate
     );
     if (
       appointment.appointmentDateTime <= todaysDate &&
@@ -1519,7 +1519,7 @@ export async function sendReminderNotification(
   if (
     pushNotificationInput.notificationType == NotificationType.APPOINTMENT_CASESHEET_REMINDER_15 ||
     pushNotificationInput.notificationType ==
-    NotificationType.APPOINTMENT_CASESHEET_REMINDER_15_VIRTUAL
+      NotificationType.APPOINTMENT_CASESHEET_REMINDER_15_VIRTUAL
   ) {
     if (!(appointment && appointment.id)) {
       throw new AphError(AphErrorMessages.APPOINTMENT_ID_NOT_FOUND);
@@ -1962,6 +1962,7 @@ export async function sendMedicineOrderStatusNotification(
       orderAutoId: orderDetails.orderAutoId.toString(),
       orderId: orderDetails.id,
       statusDate: format(new Date(), 'yyyy-MM-dd HH:mm'),
+      deliveredDate: format(new Date(), 'yyyy-MM-dd HH:mm'),
       firstName: patientDetails.firstName,
       content: notificationBody,
     },
@@ -2104,7 +2105,7 @@ const testPushNotification: Resolver<
   { deviceToken: String },
   NotificationsServiceContext,
   PushNotificationSuccessMessage | undefined
-> = async (parent, args, { }) => {
+> = async (parent, args, {}) => {
   //initialize firebaseadmin
   const config = {
     credential: firebaseAdmin.credential.applicationDefault(),
@@ -2273,12 +2274,12 @@ export async function sendChatMessageNotification(
   doctorsDb: Connection,
   chatMessage: string
 ) {
-  const whatsAppLink = process.env.WHATSAPP_LINK_BOOK_APOINTMENT;
-  let whatsAppMessageBody = ApiConstants.WHATSAPP_SD_CHAT_NOTIFICATION.replace(
+  //const whatsAppLink = process.env.WHATSAPP_LINK_BOOK_APOINTMENT;
+  const whatsAppMessageBody = ApiConstants.WHATSAPP_SD_CHAT_NOTIFICATION.replace(
     '{0}',
     doctorDetails.firstName
   ).replace('{1}', patientDetails.firstName);
-  whatsAppMessageBody = whatsAppMessageBody + whatsAppLink;
+  //whatsAppMessageBody = whatsAppMessageBody;
   await sendNotificationWhatsapp(doctorDetails.mobileNumber, whatsAppMessageBody, 1);
   const messageBody = ApiConstants.CHAT_MESSGAE_TEXT.replace(
     '{0}',
@@ -2318,6 +2319,10 @@ export async function sendChatMessageNotification(
         sound: ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString(),
       },
       data: {
+        title:
+          patientDetails.firstName +
+          ' sent 1 message | ' +
+          format(addMilliseconds(new Date(), 19800000), 'yyyy-MM-dd HH:mm:ss'),
         type: 'doctor_chat_message',
         appointmentId: appointment.id,
         patientName: appointment.patientName,
@@ -2534,6 +2539,10 @@ const sendDoctorReminderNotifications: Resolver<
           sound: ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString(),
         },
         data: {
+          title:
+            apptId.appointmentType == APPOINTMENT_TYPE.PHYSICAL
+              ? 'In-person appointment'
+              : 'OnlineAppointment',
           type: 'doctor_appointment_reminder',
           appointmentId: apptId.id,
           patientName: apptId.patientName,
@@ -2625,12 +2634,101 @@ export async function sendDoctorAppointmentNotification(
       sound: ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString(),
     },
     data: {
+      title: 'A New Appointment is scheduled with ' + patientName,
       type: 'doctor_new_appointment_booked',
       appointmentId: apptId,
       patientName: patientName,
       content: format(addMilliseconds(appointmentDateTime, 19800000), 'yyyy-MM-dd HH:mm:ss'),
     },
   };
+  const doctorTokenRepo = doctorsDb.getCustomRepository(DoctorDeviceTokenRepository);
+  const deviceTokensList = await doctorTokenRepo.getDeviceTokens(doctorId);
+  //if (deviceTokensList.length == 0) return { status: true };
+
+  const registrationToken: string[] = [];
+  if (deviceTokensList.length > 0) {
+    deviceTokensList.forEach((values) => {
+      registrationToken.push(values.deviceToken);
+    });
+
+    console.log(registrationToken, 'registrationToken doctor');
+    admin
+      .messaging()
+      .sendToDevice(registrationToken, payload, options)
+      .then((response: PushNotificationSuccessMessage) => {
+        notificationResponse = response;
+        //if (pushNotificationInput.notificationType == NotificationType.CALL_APPOINTMENT) {
+        const fileName =
+          process.env.NODE_ENV +
+          '_doctorapptnotification_' +
+          format(new Date(), 'yyyyMMdd') +
+          '.txt';
+        let assetsDir = path.resolve('/apollo-hospitals/packages/api/src/assets');
+        if (process.env.NODE_ENV != 'local') {
+          assetsDir = path.resolve(<string>process.env.ASSETS_DIRECTORY);
+        }
+        let content =
+          format(new Date(), 'yyyy-MM-dd hh:mm') +
+          '\n apptid: ' +
+          apptId.toString() +
+          '\n multicastId: ';
+        content +=
+          response.multicastId.toString() +
+          '\n------------------------------------------------------------------------------------\n';
+        fs.appendFile(assetsDir + '/' + fileName, content, (err) => {
+          if (err) {
+            console.log('file saving error', err);
+          }
+          console.log('notification results saved');
+        });
+        //}
+        console.log(notificationResponse, 'notificationResponse');
+      })
+      .catch((error: JSON) => {
+        console.log('PushNotification Failed::' + error);
+        throw new AphError(AphErrorMessages.PUSH_NOTIFICATION_FAILED);
+      });
+  }
+  console.log('doctor appt notification end');
+  return { status: true };
+}
+
+export async function sendDoctorRescheduleAppointmentNotification(
+  appointmentDateTime: Date,
+  patientName: string,
+  apptId: string,
+  doctorId: string,
+  doctorsDb: Connection
+) {
+  console.log('doctor appt notification begin');
+  //initialize firebaseadmin
+  const config = {
+    credential: firebaseAdmin.credential.applicationDefault(),
+    databaseURL: `https://${process.env.FIREBASE_PROJECT_ID}.firebaseio.com`,
+  };
+  let admin = require('firebase-admin');
+  let notificationResponse: PushNotificationSuccessMessage;
+  admin = !firebaseAdmin.apps.length ? firebaseAdmin.initializeApp(config) : firebaseAdmin.app();
+  const options = {
+    priority: NotificationPriority.high,
+    timeToLive: 60 * 60 * 24, //wait for one day.. if device is offline
+  };
+  //building payload
+  const payload = {
+    notification: {
+      title: `Your Appointment with ${patientName} has been Rescheduled `,
+      body: format(addMilliseconds(appointmentDateTime, 19800000), 'yyyy-MM-dd HH:mm:ss'),
+      sound: ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString(),
+    },
+    data: {
+      title: `Your Appointment with ${patientName} has been Rescheduled `,
+      type: 'doctor_booked_appointment_reschedule',
+      appointmentId: apptId,
+      patientName: patientName,
+      content: format(addMilliseconds(appointmentDateTime, 19800000), 'yyyy-MM-dd HH:mm:ss'),
+    },
+  };
+
   const doctorTokenRepo = doctorsDb.getCustomRepository(DoctorDeviceTokenRepository);
   const deviceTokensList = await doctorTokenRepo.getDeviceTokens(doctorId);
   //if (deviceTokensList.length == 0) return { status: true };

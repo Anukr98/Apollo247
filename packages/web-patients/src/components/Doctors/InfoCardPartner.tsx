@@ -26,14 +26,14 @@ import { readableParam } from 'helpers/commonHelpers';
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
     root: {
-      backgroundColor: 'transparent',
+      backgroundColor: theme.palette.common.white,
       borderRadius: 10,
-      boxShadow: 'none',
+      boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
       height: '100%',
       position: 'relative',
       paddingBottom: 40,
       [theme.breakpoints.down('sm')]: {
-        boxShadow: 'none',
+        boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
       },
     },
     iconGroup: {
@@ -125,28 +125,15 @@ const useStyles = makeStyles((theme: Theme) => {
       position: 'absolute',
       right: -5,
       top: -8,
-      [theme.breakpoints.down('sm')]: {
-        right: 0,
-        top: 0,
-      },
-      '& img': {
-        width: 80,
-      },
     },
     bottomAction: {
       position: 'absolute',
       width: '100%',
       bottom: 0,
-      '& button': {
-        backgroundColor: '#fff',
-        boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
-        color: '#fc9916',
-        fontWeight: 'bold',
-      },
     },
     button: {
       width: '100%',
-      borderRadius: 10,
+      borderRadius: '0 0 10px 10px',
       boxShadow: 'none',
     },
     cardLoader: {
@@ -175,7 +162,7 @@ interface InfoCardProps {
   doctorType: string;
 }
 
-export const InfoCard: React.FC<InfoCardProps> = (props) => {
+export const InfoCardPartner: React.FC<InfoCardProps> = (props) => {
   const { doctorInfo, nextAvailability, doctorType } = props;
   const { isSignedIn } = useAuth();
   const { currentPatient } = useAllCurrentPatients();
@@ -297,7 +284,7 @@ export const InfoCard: React.FC<InfoCardProps> = (props) => {
                 className={doctorType.toLowerCase() !== 'apollo' ? classes.otherDoctorType : ''}
                 src={
                   doctorType.toLowerCase() === 'apollo'
-                    ? require('images/ic_apollo.png')
+                    ? require('images/ic_apollo.svg')
                     : require('images/partner_doc.png')
                 }
                 alt=""

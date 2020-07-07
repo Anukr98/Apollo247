@@ -25,7 +25,7 @@ import {
   sendReminderNotification,
   NotificationType,
   sendNotification,
-  sendDoctorAppointmentNotification,
+  sendDoctorRescheduleAppointmentNotification,
 } from 'notifications-service/resolvers/notifications';
 import { addMilliseconds, differenceInDays } from 'date-fns';
 import { BlockedCalendarItemRepository } from 'doctors-service/repositories/blockedCalendarItemRepository';
@@ -593,8 +593,14 @@ const bookRescheduleAppointment: Resolver<
     messageContent: mailContent,
   };
   sendMail(emailContent);
-
-  sendDoctorAppointmentNotification(
+  // sendDoctorAppointmentNotification(
+  //   rescheduledapptDetails.appointmentDateTime,
+  //   rescheduledapptDetails.patientName,
+  //   rescheduledapptDetails.id,
+  //   rescheduledapptDetails.doctorId,
+  //   doctorsDb
+  // );
+  sendDoctorRescheduleAppointmentNotification(
     rescheduledapptDetails.appointmentDateTime,
     rescheduledapptDetails.patientName,
     rescheduledapptDetails.id,
