@@ -211,7 +211,7 @@ type PushNotificationInputArgs = { pushNotificationInput: PushNotificationInput 
   console.log(smsResp, 'sms resp');
 }*/
 
-export const sendNotificationWhatsapp = (
+export const sendNotificationWhatsapp = async (
   mobileNumber: string,
   message: string,
   loginType: number
@@ -225,25 +225,22 @@ export const sendNotificationWhatsapp = (
     '&password=' +
     process.env.WHATSAPP_PASSWORD +
     '&auth_scheme=plain&format=text&v=1.1&channel=WHATSAPP';
-  return new Promise((resolve, reject) => {
-    fetch(apiUrl)
-      .then(async (res) => {
-        if (loginType == 1) {
-          const sendApiUrl = `${process.env.WHATSAPP_URL}?method=SendMessage&send_to=${mobileNumber}&userid=${process.env.WHATSAPP_USERNAME}&password=${process.env.WHATSAPP_PASSWORD}&auth_scheme=plain&msg_type=TEXT&format=text&v=1.1&msg=${message}`;
-          fetch(sendApiUrl)
-            .then((res) => {
-              resolve(res);
-            })
-            .catch((error) => {
-              console.log('whatsapp error', error);
-              throw new AphError(AphErrorMessages.MESSAGE_SEND_WHATSAPP_ERROR);
-            });
-        }
-      })
-      .catch((error) => {
-        throw new AphError(AphErrorMessages.GET_OTP_ERROR);
-      });
-  });
+  const whatsAppResponse = await fetch(apiUrl)
+    .then(async (res) => {
+      if (loginType == 1) {
+        const sendApiUrl = `${process.env.WHATSAPP_URL}?method=SendMessage&send_to=${mobileNumber}&userid=${process.env.WHATSAPP_USERNAME}&password=${process.env.WHATSAPP_PASSWORD}&auth_scheme=plain&msg_type=TEXT&format=text&v=1.1&msg=${message}`;
+        fetch(sendApiUrl)
+          .then((res) => res)
+          .catch((error) => {
+            console.log('whatsapp error', error);
+            throw new AphError(AphErrorMessages.MESSAGE_SEND_WHATSAPP_ERROR);
+          });
+      }
+    })
+    .catch((error) => {
+      throw new AphError(AphErrorMessages.GET_OTP_ERROR);
+    });
+  return whatsAppResponse;
 };
 
 export const sendNotificationSMS = async (mobileNumber: string, message: string) => {
@@ -703,7 +700,7 @@ export async function sendNotification(
       'check dates for todays date appt',
       appointment.appointmentDateTime,
       appointment.appointmentDateTime <= new Date(todaysDate) &&
-        appointment.appointmentDateTime >= yesterdaysDate
+      appointment.appointmentDateTime >= yesterdaysDate
     );
     if (
       appointment.appointmentDateTime <= todaysDate &&
@@ -1522,7 +1519,7 @@ export async function sendReminderNotification(
   if (
     pushNotificationInput.notificationType == NotificationType.APPOINTMENT_CASESHEET_REMINDER_15 ||
     pushNotificationInput.notificationType ==
-      NotificationType.APPOINTMENT_CASESHEET_REMINDER_15_VIRTUAL
+    NotificationType.APPOINTMENT_CASESHEET_REMINDER_15_VIRTUAL
   ) {
     if (!(appointment && appointment.id)) {
       throw new AphError(AphErrorMessages.APPOINTMENT_ID_NOT_FOUND);
@@ -2107,7 +2104,7 @@ const testPushNotification: Resolver<
   { deviceToken: String },
   NotificationsServiceContext,
   PushNotificationSuccessMessage | undefined
-> = async (parent, args, {}) => {
+> = async (parent, args, { }) => {
   //initialize firebaseadmin
   const config = {
     credential: firebaseAdmin.credential.applicationDefault(),

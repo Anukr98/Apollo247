@@ -779,7 +779,9 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
               </div>
             </div>
           ) : null}
-          {!loader && removedMedicinePrescription && removedMedicinePrescription.length > 0 ? (
+          {!loader &&
+          ((removedMedicinePrescription && removedMedicinePrescription.length > 0) ||
+            (medicinePrescription && medicinePrescription.length > 0)) ? (
             <div className={classes.prescriptionSection}>
               <div className={classes.sectionHeader}>
                 <img src={require('images/ic-medicines.svg')} /> Medication Prescribed
