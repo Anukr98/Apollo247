@@ -738,8 +738,14 @@ const getLatestMedicineOrder: Resolver<
     };
   }
   //console.log(offlineList, 'offline list');
-  if (offlineList == '')
-    throw new AphError(AphErrorMessages.INVALID_MEDICINE_ORDER_ID, undefined, {});
+  if (offlineList == '') {
+    const medRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
+    offlineList = await medRepo.getLatestMedicineOrderDetails(patientDetails.id);
+    //console.log(offlineList, 'offlineList inside');
+    if (!offlineList || offlineList == null || offlineList == '')
+      throw new AphError(AphErrorMessages.INVALID_MEDICINE_ORDER_ID, undefined, {});
+  }
+
   return { medicineOrderDetails: offlineList };
 };
 
