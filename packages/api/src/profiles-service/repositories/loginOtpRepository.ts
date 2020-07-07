@@ -20,10 +20,10 @@ export class LoginOtpRepository extends Repository<LoginOtp> {
 
   async insertOtp(otpAttrs: Partial<LoginOtp>) {
     let id = uuidv1();
-    setCache(
+    await setCache(
       this.cacheKey(REDIS_OTP_MOBILE_PREFIX, id),
-      JSON.stringify({ ...otpAttrs, id }),
-      ApiConstants.CACHE_EXPIRATION_600
+      JSON.stringify({ ...otpAttrs, id, incorrectAttempts: 0 }),
+      ApiConstants.CACHE_EXPIRATION_900
     );
     return { id };
   }
@@ -52,7 +52,7 @@ export class LoginOtpRepository extends Repository<LoginOtp> {
     await setCache(
       this.cacheKey(REDIS_OTP_MOBILE_PREFIX, id),
       JSON.stringify(updateAttrs),
-      ApiConstants.CACHE_EXPIRATION_600
+      ApiConstants.CACHE_EXPIRATION_900
     );
   }
 
