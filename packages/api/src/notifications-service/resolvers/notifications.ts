@@ -700,7 +700,7 @@ export async function sendNotification(
       'check dates for todays date appt',
       appointment.appointmentDateTime,
       appointment.appointmentDateTime <= new Date(todaysDate) &&
-      appointment.appointmentDateTime >= yesterdaysDate
+        appointment.appointmentDateTime >= yesterdaysDate
     );
     if (
       appointment.appointmentDateTime <= todaysDate &&
@@ -1519,7 +1519,7 @@ export async function sendReminderNotification(
   if (
     pushNotificationInput.notificationType == NotificationType.APPOINTMENT_CASESHEET_REMINDER_15 ||
     pushNotificationInput.notificationType ==
-    NotificationType.APPOINTMENT_CASESHEET_REMINDER_15_VIRTUAL
+      NotificationType.APPOINTMENT_CASESHEET_REMINDER_15_VIRTUAL
   ) {
     if (!(appointment && appointment.id)) {
       throw new AphError(AphErrorMessages.APPOINTMENT_ID_NOT_FOUND);
@@ -1962,6 +1962,7 @@ export async function sendMedicineOrderStatusNotification(
       orderAutoId: orderDetails.orderAutoId.toString(),
       orderId: orderDetails.id,
       statusDate: format(new Date(), 'yyyy-MM-dd HH:mm'),
+      deliveredDate: format(new Date(), 'yyyy-MM-dd HH:mm'),
       firstName: patientDetails.firstName,
       content: notificationBody,
     },
@@ -2104,7 +2105,7 @@ const testPushNotification: Resolver<
   { deviceToken: String },
   NotificationsServiceContext,
   PushNotificationSuccessMessage | undefined
-> = async (parent, args, { }) => {
+> = async (parent, args, {}) => {
   //initialize firebaseadmin
   const config = {
     credential: firebaseAdmin.credential.applicationDefault(),
