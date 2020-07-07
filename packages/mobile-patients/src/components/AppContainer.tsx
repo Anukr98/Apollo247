@@ -138,17 +138,17 @@ export class AppContainer extends React.Component<AppContainerTypes> {
 
   render() {
     return (
-      <UIElementsProvider>
-        <AppCommonDataProvider>
-          <AuthProvider>
+      <AppCommonDataProvider>
+        <AuthProvider>
+          <UIElementsProvider>
             <ShoppingCartProvider>
               <DiagnosticsCartProvider>
                 <NavigatorContainer />
               </DiagnosticsCartProvider>
             </ShoppingCartProvider>
-          </AuthProvider>
-        </AppCommonDataProvider>
-      </UIElementsProvider>
+          </UIElementsProvider>
+        </AuthProvider>
+      </AppCommonDataProvider>
     );
   }
 }
