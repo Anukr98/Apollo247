@@ -603,4 +603,20 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
       });
     });
   }
+
+  getLatestMedicineOrderDetails(patient: string) {
+    return MedicineOrders.findOne({
+      where: {
+        patient,
+        currentStatus: Not([
+          MEDICINE_ORDER_STATUS.CANCELLED,
+          MEDICINE_ORDER_STATUS.QUOTE,
+          MEDICINE_ORDER_STATUS.PAYMENT_FAILED,
+          MEDICINE_ORDER_STATUS.PAYMENT_PENDING,
+          MEDICINE_ORDER_STATUS.PAYMENT_ABORTED,
+        ]),
+      },
+      order: { createdDate: 'DESC' },
+    });
+  }
 }
