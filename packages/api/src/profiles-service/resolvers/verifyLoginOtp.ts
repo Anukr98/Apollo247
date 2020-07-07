@@ -2,7 +2,6 @@ import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
 import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
 import { LOGIN_TYPE, LoginOtp, OTP_STATUS } from 'profiles-service/entities';
-import { archiveOtpRecord } from 'profiles-service/resolvers/login';
 import { LoginOtpRepository } from 'profiles-service/repositories/loginOtpRepository';
 import * as firebaseAdmin from 'firebase-admin';
 import { debugLog } from 'customWinstonLogger';
@@ -64,10 +63,10 @@ const verifyLoginOtp: Resolver<
 
   // QUERY_START
   let reqStartTime = new Date();
-  const matchedOtpRow: LoginOtp[] = await otpRepo.verifyOtp(otpVerificationInput);
+  const matchedOtpRes: LoginOtp = await otpRepo.verifyOtp(otpVerificationInput);
   verifyLogger(reqStartTime, otpVerificationInput.id, 'QUERY_END');
 
-  if (matchedOtpRow.length === 0) {
+  if (!matchedOtpRes) {
     verifyLogger(callStartTime, otpVerificationInput.id, 'VALIDATION_FAILED_API_CALL___END');
     return {
       status: false,
@@ -80,60 +79,65 @@ const verifyLoginOtp: Resolver<
 
   // VALIDATION_START
   reqStartTime = new Date();
-  if (matchedOtpRow[0].status === OTP_STATUS.BLOCKED) {
-    verifyLogger(callStartTime, matchedOtpRow[0].mobileNumber, 'VALIDATION_FAILED_API_CALL___END');
+  if (matchedOtpRes.status === OTP_STATUS.BLOCKED) {
+    verifyLogger(callStartTime, matchedOtpRes.mobileNumber, 'VALIDATION_FAILED_API_CALL___END');
     return {
       status: false,
-      reason: matchedOtpRow[0].status,
+      reason: matchedOtpRes.status,
       authToken: null,
       isBlocked: true,
-      incorrectAttempts: matchedOtpRow[0].incorrectAttempts,
+      incorrectAttempts: matchedOtpRes.incorrectAttempts,
     };
   }
 
-  if (matchedOtpRow[0].otp != otpVerificationInput.otp) {
-    const incorrectAttempts = matchedOtpRow[0].incorrectAttempts + 1;
+  if (matchedOtpRes.otp != otpVerificationInput.otp) {
+    const incorrectAttempts = matchedOtpRes.incorrectAttempts + 1;
     const updateAttrs = {
-      incorrectAttempts,
-      status: OTP_STATUS.NOT_VERIFIED,
+      ...matchedOtpRes,
+      ...{
+        incorrectAttempts,
+        status: OTP_STATUS.NOT_VERIFIED,
+      },
     };
     if (incorrectAttempts > 2) updateAttrs.status = OTP_STATUS.BLOCKED;
-    await otpRepo.updateOtpStatus(matchedOtpRow[0].id, updateAttrs);
-    verifyLogger(callStartTime, matchedOtpRow[0].mobileNumber, 'VALIDATION_FAILED_API_CALL___END');
+    await otpRepo.updateOtpStatus(matchedOtpRes.id, updateAttrs);
+
+    verifyLogger(callStartTime, matchedOtpRes.mobileNumber, 'VALIDATION_FAILED_API_CALL___END');
     return {
       status: false,
-      reason: matchedOtpRow[0].status,
+      reason: matchedOtpRes.status,
       authToken: null,
       isBlocked: updateAttrs.status === OTP_STATUS.BLOCKED ? true : false,
-      incorrectAttempts: matchedOtpRow[0].incorrectAttempts + 1,
+      incorrectAttempts: matchedOtpRes.incorrectAttempts + 1,
     };
   }
-  verifyLogger(reqStartTime, matchedOtpRow[0].mobileNumber, 'VALIDATION_END');
+  verifyLogger(reqStartTime, matchedOtpRes.mobileNumber, 'VALIDATION_END');
 
   //UPDATION_START
   reqStartTime = new Date();
   //update status of otp
-  await otpRepo.updateOtpStatus(matchedOtpRow[0].id, {
-    status: OTP_STATUS.VERIFIED,
+  await otpRepo.updateOtpStatus(matchedOtpRes.id, {
+    ...matchedOtpRes,
+    ...{
+      status: OTP_STATUS.VERIFIED,
+    },
   });
 
-  //archive the old otp record and then delete it
-  archiveOtpRecord(matchedOtpRow[0].id, profilesDb);
-  verifyLogger(reqStartTime, matchedOtpRow[0].mobileNumber, 'UPDATION_END');
+  verifyLogger(reqStartTime, matchedOtpRes.mobileNumber, 'UPDATION_END');
 
   //CREATE_TOKEN_START
   reqStartTime = new Date();
   //generate customToken
-  const customToken = await firebase.auth().createCustomToken(matchedOtpRow[0].mobileNumber);
-  verifyLogger(reqStartTime, matchedOtpRow[0].mobileNumber, 'CREATE_TOKEN_END');
+  const customToken = await firebase.auth().createCustomToken(matchedOtpRes.mobileNumber);
+  verifyLogger(reqStartTime, matchedOtpRes.mobileNumber, 'CREATE_TOKEN_END');
 
-  verifyLogger(callStartTime, matchedOtpRow[0].mobileNumber, 'API_CALL___END');
+  verifyLogger(callStartTime, matchedOtpRes.mobileNumber, 'API_CALL___END');
   return {
     status: true,
-    reason: matchedOtpRow[0].status,
+    reason: matchedOtpRes.status,
     authToken: customToken,
     isBlocked: false,
-    incorrectAttempts: matchedOtpRow[0].incorrectAttempts,
+    incorrectAttempts: matchedOtpRes.incorrectAttempts,
   };
 };
 

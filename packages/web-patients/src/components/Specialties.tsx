@@ -99,12 +99,12 @@ const useStyles = makeStyles((theme: Theme) => {
   });
 });
 
-interface SpecialitiesProps {
+interface SpecialtiesProps {
   data: SpecialtyType[];
   selectedCity: string;
 }
 
-export const Specialities: React.FC<SpecialitiesProps> = (props) => {
+export const Specialties: React.FC<SpecialtiesProps> = (props) => {
   const classes = useStyles({});
   const { currentPatient } = useAllCurrentPatients();
   const { data, selectedCity } = props;

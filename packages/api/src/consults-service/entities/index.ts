@@ -73,6 +73,7 @@ export enum PAYTM_STATUS {
   TXN_FAILURE = 'TXN_FAILURE',
   PENDING = 'PENDING',
   TXN_SUCCESS = 'TXN_SUCCESS',
+  PAYMENT_ABORTED = 'PAYMENT_ABORTED',
 }
 
 export enum APPOINTMENT_STATE {
@@ -556,6 +557,9 @@ export class AppointmentSessions extends BaseEntity {
 export class AppointmentCallDetails extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
+
+  @Column({ default: null })
+  appVersion: string;
 
   @Column()
   callType: string;

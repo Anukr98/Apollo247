@@ -36,15 +36,16 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 interface BookBestProps {
   faqData: any;
+  specialityName: string;
 }
 
 export const BookBest: React.FC<BookBestProps> = (props) => {
   const classes = useStyles({});
   const [remainInFaqData, setRemainInFaqData] = useState<boolean>(false);
-  const { faqData } = props;
+  const { faqData, specialityName } = props;
   return faqData && faqData.consultReasons ? (
     <div className={classes.root}>
-      <h3>{faqData.title}</h3>
+      <h3>{specialityName}</h3>
       <p>{faqData.about}</p>
       <h3>You can consult a {faqData.title} if</h3>
       <ul>

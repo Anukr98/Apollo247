@@ -22,6 +22,7 @@ import { sendNotificationSMS } from 'notifications-service/resolvers/notificatio
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
+import { sendChatMessageNotification } from 'notifications-service/resolvers/notifications';
 
 export const notificationBinTypeDefs = gql`
   enum notificationStatus {
@@ -156,6 +157,7 @@ const insertMessage: Resolver<
       '{1}',
       patientDetails.firstName
     );
+    sendChatMessageNotification(doctorDetails, patientDetails, appointmentData, doctorsDb, '');
   }
   const notificationBinRepo = consultsDb.getCustomRepository(NotificationBinRepository);
   const notificationInputs: Partial<NotificationBin> = {

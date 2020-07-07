@@ -113,6 +113,12 @@ export interface MedicineCartContextProps {
   pharmaAddressDetails: PharmaAddressDetails;
   headerPincodeError: string | null;
   setHeaderPincodeError: ((headerPincodeError: string | null) => void) | null;
+  prescriptionOptionSelected: string | null;
+  setPrescriptionOptionSelected: ((prescriptionOptionSelected: string) => void) | null;
+  durationDays: number | null;
+  setDurationDays: (durationDays: number | null) => void | null;
+  prescriptionDuration: string | null;
+  setPrescriptionDuration: ((prescriptionDuration: string) => void) | null;
 }
 
 export const MedicinesCartContext = createContext<MedicineCartContextProps>({
@@ -158,6 +164,12 @@ export const MedicinesCartContext = createContext<MedicineCartContextProps>({
   pharmaAddressDetails: null,
   headerPincodeError: null,
   setHeaderPincodeError: null,
+  prescriptionOptionSelected: null,
+  setPrescriptionOptionSelected: null,
+  durationDays: null,
+  setDurationDays: null,
+  prescriptionDuration: null,
+  setPrescriptionDuration: null,
 });
 
 export enum CartTypes {
@@ -237,6 +249,9 @@ export const MedicinesCartProvider: React.FC = (props) => {
     pharmaDefObject
   );
   const [headerPincodeError, setHeaderPincodeError] = useState<string | null>(null);
+  const [durationDays, setDurationDays] = useState<number | null>(30);
+  const [prescriptionOptionSelected, setPrescriptionOptionSelected] = useState<string | null>(null);
+  const [prescriptionDuration, setPrescriptionDuration] = useState<string | null>('prescription');
 
   useEffect(() => {
     if (medicineAddress) {
@@ -488,6 +503,12 @@ export const MedicinesCartProvider: React.FC = (props) => {
         setPharmaAddressDetails,
         setHeaderPincodeError,
         headerPincodeError,
+        setDurationDays,
+        durationDays,
+        setPrescriptionOptionSelected,
+        prescriptionOptionSelected,
+        prescriptionDuration,
+        setPrescriptionDuration,
       }}
     >
       {props.children}
@@ -540,4 +561,10 @@ export const useShoppingCart = () => ({
   setPharmaAddressDetails: useShoppingCartContext().setPharmaAddressDetails,
   setHeaderPincodeError: useShoppingCartContext().setHeaderPincodeError,
   headerPincodeError: useShoppingCartContext().headerPincodeError,
+  setDurationDays: useShoppingCartContext().setDurationDays,
+  durationDays: useShoppingCartContext().durationDays,
+  setPrescriptionOptionSelected: useShoppingCartContext().setPrescriptionOptionSelected,
+  prescriptionOptionSelected: useShoppingCartContext().prescriptionOptionSelected,
+  prescriptionDuration: useShoppingCartContext().prescriptionDuration,
+  setPrescriptionDuration: useShoppingCartContext().setPrescriptionDuration,
 });

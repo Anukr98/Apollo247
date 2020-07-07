@@ -127,6 +127,7 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
         'mo."orderAutoId"',
         'mo."orderDateTime"',
         'mp."paymentMode"',
+        'mo."currentStatus"',
       ])
       .where('mo.orderAutoId = :orderAutoId', { orderAutoId })
       .getRawOne();
@@ -188,6 +189,7 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
       relations: [
         'patient',
         'medicineOrderLineItems',
+        'medicineOrderPayments',
         'patient.patientAddress',
         'medicineOrdersStatus',
         'medicineOrderShipments',
@@ -289,6 +291,23 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
   getMedicineOrdersList(patientIds: String[]) {
     return this.find({
       where: { patient: In(patientIds) },
+      order: { createdDate: 'DESC' },
+      relations: [
+        'medicineOrderLineItems',
+        'medicineOrderPayments',
+        'medicineOrdersStatus',
+        'medicineOrderShipments',
+        'medicineOrderShipments.medicineOrdersStatus',
+        'medicineOrderShipments.medicineOrderInvoice',
+        'medicineOrderInvoice',
+        'patient',
+      ],
+    });
+  }
+
+  getMedicineOrdersListWithoutAbortedStatus(patientIds: String[]) {
+    return this.find({
+      where: { patient: In(patientIds), currentStatus: Not(MEDICINE_ORDER_STATUS.PAYMENT_ABORTED) },
       order: { createdDate: 'DESC' },
       relations: [
         'medicineOrderLineItems',
@@ -583,5 +602,19 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
         medicineOrderError,
       });
     });
+  }
+
+  getLatestMedicineOrderDetails(patientId: string) {
+    return MedicineOrders.createQueryBuilder('medicine_orders')
+      .leftJoinAndSelect('medicine_orders.medicineOrderLineItems', 'medicineOrderLineItems')
+      .leftJoinAndSelect('medicine_orders.medicineOrderPayments', 'medicineOrderPayments')
+      .leftJoinAndSelect('medicine_orders.medicineOrdersStatus', 'medicineOrdersStatus')
+      .leftJoinAndSelect('medicine_orders.medicineOrderShipments', 'medicineOrderShipments')
+      .andWhere('medicine_orders."patientId" = :patientId', { patientId })
+      .andWhere('medicine_orders."currentStatus" in (:status1)', {
+        status1: MEDICINE_ORDER_STATUS.DELIVERED,
+      })
+      .orderBy('medicine_orders."createdDate"', 'DESC')
+      .getOne();
   }
 }

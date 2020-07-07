@@ -396,6 +396,7 @@ async function addDoctorElastic(allDocsInfo: Doctor) {
     streetLine3: allDocsInfo.streetLine3,
     thumbnailUrl: allDocsInfo.thumbnailUrl,
     zip: allDocsInfo.zip,
+    isSearchable: allDocsInfo.isSearchable,
     specialty,
     facility,
     consultHours,

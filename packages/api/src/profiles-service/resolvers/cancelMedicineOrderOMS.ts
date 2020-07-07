@@ -15,10 +15,7 @@ import { PharmaCancelResult } from 'types/medicineOrderTypes';
 import { log } from 'customWinstonLogger';
 import { Connection } from 'typeorm';
 import {} from 'coupons-service/resolvers/validatePharmaCoupon';
-import {
-  NotificationType,
-  medicineOrderCancelled,
-} from 'notifications-service/resolvers/notifications';
+import { medicineOrderCancelled } from 'notifications-service/resolvers/notifications';
 
 export const medicineOrderCancelOMSTypeDefs = gql`
   input MedicineOrderCancelOMSInput {

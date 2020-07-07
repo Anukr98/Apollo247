@@ -24,8 +24,6 @@ import { DoctorPatientExternalConnectRepository } from 'doctors-service/reposito
 import { ApiConstants } from 'ApiConstants';
 import { validateCoupon } from 'helpers/couponServices';
 import { ValidateCouponRequest } from 'types/coupons';
-import { CouponRepository } from 'profiles-service/repositories/couponRepository';
-import { discountCalculation } from 'helpers/couponCommonFunctions';
 
 export const bookAppointmentTypeDefs = gql`
   enum STATUS {
@@ -42,6 +40,7 @@ export const bookAppointmentTypeDefs = gql`
     JUNIOR_DOCTOR_ENDED
     CALL_ABANDON
     UNAVAILABLE_MEDMANTRA
+    PAYMENT_ABORTED
   }
 
   enum APPOINTMENT_TYPE {
@@ -370,6 +369,7 @@ const bookAppointment: Resolver<
       doctorId: appointmentInput.doctorId,
       patientId: appointmentInput.patientId,
       externalConnect: appointmentInput.externalConnect,
+      appointmentId: appointment.id,
     };
     externalConnectRepo.saveExternalConnectData(attrs);
   }
