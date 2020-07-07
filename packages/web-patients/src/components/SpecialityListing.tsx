@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Theme, Grid, CircularProgress, Popover, Typography } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
@@ -618,6 +618,7 @@ const useStyles = makeStyles((theme: Theme) => {
 
 export const SpecialityListing: React.FC = (props) => {
   const classes = useStyles({});
+  const scrollToRef = useRef<HTMLDivElement>(null);
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const apolloClient = useApolloClient();
   const { isSignedIn } = useAuth();
@@ -691,13 +692,19 @@ export const SpecialityListing: React.FC = (props) => {
     }
   }, [searchKeyword, selectedCity]);
 
+  useEffect(() => {
+    scrollToRef &&
+      scrollToRef.current &&
+      scrollToRef.current.scrollIntoView({ behavior: 'auto', block: 'end' });
+  }, []);
+
   return (
     <div className={classes.slContainer}>
       <Header />
       <div className={classes.container}>
         <div className={`${classes.slContent} ${currentPatient ? classes.slCotent1 : ''}`}>
           {/* Please add a class slnoDoctor here when showing up noDoctor Content */}
-          <div className={classes.pageHeader}>
+          <div className={classes.pageHeader} ref={scrollToRef}>
             <Link to={clientRoutes.welcome()}>
               <div className={classes.backArrow} title={'Back to home page'}>
                 <img className={classes.blackArrow} src={require('images/ic_back.svg')} />

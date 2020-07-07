@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Theme, Grid, CircularProgress, Typography } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { Link } from 'react-router-dom';
@@ -375,6 +375,7 @@ interface SpecialityProps {
 
 export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
   const classes = useStyles({});
+  const scrollToRef = useRef<HTMLDivElement>(null);
   const { currentPincode, currentLong, currentLat } = useLocationDetails();
   const { currentPatient } = useAllCurrentPatients();
   const params = useParams<{
@@ -429,6 +430,7 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
             quantity: '1',
           });
       });
+
       gtmTracking({
         category: 'Consultations',
         action: 'Specialty Page',
@@ -693,6 +695,12 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
     canonicalLink: window && window.location && window.location.href,
   };
 
+  useEffect(() => {
+    scrollToRef &&
+      scrollToRef.current &&
+      scrollToRef.current.scrollIntoView({ behavior: 'auto', block: 'end' });
+  }, []);
+
   return (
     <div className={classes.root}>
       <MetaTagsComp {...metaTagProps} />
@@ -701,7 +709,7 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
       </div>
       <div className={classes.container}>
         <div className={classes.doctorListingPage}>
-          <div className={classes.breadcrumbs}>
+          <div className={classes.breadcrumbs} ref={scrollToRef}>
             <Link to={clientRoutes.specialityListing()}>
               <div className={classes.backArrow} title={'Back to home page'}>
                 <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
