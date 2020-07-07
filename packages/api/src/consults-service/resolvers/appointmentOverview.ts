@@ -40,7 +40,11 @@ export const getAppointmentOverviewTypeDefs = gql`
       appointmentOverviewInput: GetAllDoctorAppointmentsInput
     ): GetAppointmentOverviewResult!
     getAppointmentByPaymentOrderId(orderId: String): AppointmentList
-    getPastAppointmentsCount(doctorId: String!, patientId: String!): PastAppointmentsCountResult!
+    getPastAppointmentsCount(
+      doctorId: String!
+      patientId: String!
+      appointmentId: String
+    ): PastAppointmentsCountResult!
   }
   extend type Mutation {
     updatePaymentOrderId(
@@ -183,11 +187,11 @@ const getPastAppointmentsCount: Resolver<
   const externalConnectRepo = context.doctorsDb.getCustomRepository(
     DoctorPatientExternalConnectRepository
   );
-  const yesCount = await externalConnectRepo.findCountDoctorAndPatient(
-    doctorId,
-    patientId,
-    appointmentId
-  );
+  let apptId = '';
+  if (!appointmentId) {
+    apptId = appointmentId;
+  }
+  const yesCount = await externalConnectRepo.findCountDoctorAndPatient(doctorId, patientId, apptId);
   return { count, completedCount, yesCount };
 };
 
