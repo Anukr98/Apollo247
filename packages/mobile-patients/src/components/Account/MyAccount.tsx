@@ -272,6 +272,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
       AsyncStorage.setItem('multiSignUp', 'false');
       AsyncStorage.setItem('signUp', 'false');
       AsyncStorage.setItem('selectUserId', '');
+      AsyncStorage.setItem('selectUserUHId', '');
       AsyncStorage.removeItem('phoneNumber');
       AsyncStorage.setItem('logginHappened', 'false');
       AsyncStorage.removeItem('deeplink');
