@@ -152,6 +152,7 @@ import strings from '@aph/mobile-patients/src/strings/strings.json';
 import { CustomAlert } from '../ui/CustomAlert';
 import { Snackbar } from 'react-native-paper';
 import BackgroundTimer from 'react-native-background-timer';
+import { UploadPrescriprionPopup } from '../Medicines/UploadPrescriprionPopup';
 
 interface OpentokStreamObject {
   connection: {
@@ -5932,8 +5933,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const uploadPrescriptionPopup = () => {
-    return isDropdownVisible ? (
-      <UploadPrescriprionChatPopup
+    return (
+      <UploadPrescriprionPopup
         heading="Attach File(s)"
         instructionHeading="Instructions For Uploading Files"
         instructions={[
@@ -5941,6 +5942,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           'Doctor details & date of the test should be clearly visible.',
           'Only JPG / PNG type files up to 2 mb are allowed',
         ]}
+        isVisible={isDropdownVisible}
         disabledOption={'NONE'}
         blockCamera={isCall}
         blockCameraMessage={strings.alerts.Open_camera_in_video_call}
@@ -5964,7 +5966,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           }
         }}
       />
-    ) : null;
+    );
   };
   const renderPrescriptionModal = () => {
     return (
