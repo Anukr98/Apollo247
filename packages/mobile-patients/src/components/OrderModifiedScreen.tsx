@@ -265,7 +265,7 @@ export const OrderModifiedScreen: React.FC<OrderModifiedScreenProps> = (props) =
               flex: 0.33,
               alignItems: 'flex-start',
               marginHorizontal: 5,
-
+              marginLeft: 10,
               borderRightColor: 'rgba(2, 71, 91, 0.3)',
             }}
           >
@@ -352,7 +352,7 @@ export const OrderModifiedScreen: React.FC<OrderModifiedScreenProps> = (props) =
                   paddingVertical: 3,
                 }}
               >
-                <Text style={styles.headingTextStyle}>{'ORIGINAL\nVALUE'}</Text>
+                <Text style={styles.headingTextStyle}>{'ORIGINAL\nDETAILS'}</Text>
               </View>
               <View
                 style={{
@@ -362,7 +362,7 @@ export const OrderModifiedScreen: React.FC<OrderModifiedScreenProps> = (props) =
                   justifyContent: 'center',
                 }}
               >
-                <Text style={styles.headingTextStyle}>{'REVISED\nVALUE'}</Text>
+                <Text style={styles.headingTextStyle}>{'REVISED\nDETAILS'}</Text>
               </View>
             </View>
             {updatedItems.map((item) => renderMrpAndQtyItems(item))}
@@ -403,7 +403,7 @@ export const OrderModifiedScreen: React.FC<OrderModifiedScreenProps> = (props) =
           }}
         >
           In case of any queries or concerns regarding your Bill Invoice, please reach us out on
-          WhatsApp by clicking here
+          WhatsApp <Text style={{ color: '#fcb716' }}>by clicking here</Text>
         </Text>
       </TouchableOpacity>
     );
