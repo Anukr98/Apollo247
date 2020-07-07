@@ -14,6 +14,12 @@ import DeviceInfo from 'react-native-device-info';
 import { setJSExceptionHandler, setNativeExceptionHandler } from 'react-native-exception-handler';
 import AsyncStorage from '@react-native-community/async-storage';
 import Axios from 'axios';
+import codePush from "react-native-code-push";
+
+const codePushOptions = {
+  checkFrequency: codePush.CheckFrequency.ON_APP_RESUME,
+  installMode: codePush.InstallMode.ON_NEXT_RESUME
+};
 
 const postToFirebase = (
   currentPatients: string | null,
@@ -127,7 +133,7 @@ if (__DEV__) {
 }
 interface AppContainerTypes {}
 
-export class AppContainer extends React.Component<AppContainerTypes> {
+class AppContainer extends React.Component<AppContainerTypes> {
   constructor(props: AppContainerTypes) {
     super(props);
     (Text as any).defaultProps = (Text as any).defaultProps || {};
@@ -152,3 +158,5 @@ export class AppContainer extends React.Component<AppContainerTypes> {
     );
   }
 }
+
+export default codePush(codePushOptions)(AppContainer);
