@@ -2274,12 +2274,12 @@ export async function sendChatMessageNotification(
   doctorsDb: Connection,
   chatMessage: string
 ) {
-  const whatsAppLink = process.env.WHATSAPP_LINK_BOOK_APOINTMENT;
-  let whatsAppMessageBody = ApiConstants.WHATSAPP_SD_CHAT_NOTIFICATION.replace(
+  //const whatsAppLink = process.env.WHATSAPP_LINK_BOOK_APOINTMENT;
+  const whatsAppMessageBody = ApiConstants.WHATSAPP_SD_CHAT_NOTIFICATION.replace(
     '{0}',
     doctorDetails.firstName
   ).replace('{1}', patientDetails.firstName);
-  whatsAppMessageBody = whatsAppMessageBody + whatsAppLink;
+  //whatsAppMessageBody = whatsAppMessageBody;
   await sendNotificationWhatsapp(doctorDetails.mobileNumber, whatsAppMessageBody, 1);
   const messageBody = ApiConstants.CHAT_MESSGAE_TEXT.replace(
     '{0}',
