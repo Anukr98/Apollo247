@@ -420,12 +420,12 @@ export const MedicinePrescriptions: React.FC = (props) => {
                       <FormControlLabel
                         value="addmedicine"
                         control={<AphRadio color="primary" />}
-                        label="Search and add medicine"
+                        label="Search and add medicine(s)"
                       />
                       <FormControlLabel
                         value="specified"
                         control={<AphRadio color="primary" />}
-                        label="All medicine from prescription"
+                        label="All medicines from prescription"
                       />
                       {value === 'specified' && (
                         <div className={classes.specifiedSection}>
