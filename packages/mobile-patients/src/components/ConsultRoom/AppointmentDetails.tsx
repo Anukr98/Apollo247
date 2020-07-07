@@ -477,6 +477,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
     showAphAlert!({
       title: `Hi ${g(currentPatient, 'firstName') || ''}!`,
       description: `As per your request, your appointment #${appointmentNum} with ${doctorName} scheduled for ${appointmentTime} has been cancelled.`,
+      unDismissable: true,
       onPressOk: () => {
         hideAphAlert!();
         props.navigation.dispatch(

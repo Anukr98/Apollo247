@@ -234,7 +234,8 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
 
   const getConsultationBookedEventAttributes = (time: string, id: string) => {
     const localTimeSlot = moment(new Date(time));
-
+    let date = new Date(time);
+    date = new Date(date.getTime() + 5.5 * 60 * 60 * 1000);
     const doctorClinics = (g(props.doctor, 'doctorHospital') || []).filter((item) => {
       if (item && item.facility && item.facility.facilityType)
         return item.facility.facilityType === 'HOSPITAL';
@@ -255,7 +256,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       'Customer ID': g(currentPatient, 'id'),
       'Consult ID': id,
       'Speciality ID': g(props.doctor, 'specialty', 'id')!,
-      'Consult Date Time': localTimeSlot.format('DD MMM YYYY, h:mm A'),
+      'Consult Date Time': date,
       'Consult Mode': tabs[0].title === selectedTab ? 'Online' : 'Physical',
       'Hospital Name':
         doctorClinics.length > 0 && props.doctor!.doctorType !== DoctorType.PAYROLL
@@ -294,7 +295,12 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   //   return eventAttributes;
   // };
 
-  const makePayment = (id: string, amountPaid: number, paymentDateTime: string) => {
+  const makePayment = (
+    id: string,
+    amountPaid: number,
+    paymentDateTime: string,
+    displayID: string
+  ) => {
     client
       .mutate<makeAppointmentPayment, makeAppointmentPaymentVariables>({
         mutation: MAKE_APPOINTMENT_PAYMENT,
@@ -314,13 +320,12 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       })
       .then(({ data }) => {
         console.log('makeAppointmentPayment', '\n', JSON.stringify(data!.makeAppointmentPayment));
-        postWebEngageEvent(
-          WebEngageEventName.CONSULTATION_BOOKED,
-          getConsultationBookedEventAttributes(
-            paymentDateTime,
-            g(data, 'makeAppointmentPayment', 'appointment', 'id')!
-          )
+        let eventAttributes = getConsultationBookedEventAttributes(
+          paymentDateTime,
+          g(data, 'makeAppointmentPayment', 'appointment', 'id')!
         );
+        eventAttributes['Display ID'] = displayID;
+        postWebEngageEvent(WebEngageEventName.CONSULTATION_BOOKED, eventAttributes);
         postAppsFlyerEvent(
           AppsFlyerEventName.CONSULTATION_BOOKED,
           getConsultationBookedAppsFlyerEventAttributes(
@@ -419,9 +424,14 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
         })
         .then((data) => {
           const apptmt = g(data, 'data', 'bookAppointment', 'appointment');
-
+          console.log('apptmt', apptmt);
           // If amount is zero don't redirect to PG
-          makePayment(g(apptmt, 'id')!, Number(price), g(apptmt, 'appointmentDateTime'));
+          makePayment(
+            g(apptmt, 'id')!,
+            Number(price),
+            g(apptmt, 'appointmentDateTime'),
+            g(apptmt, 'displayId')!
+          );
 
           // props.navigation.navigate(AppRoutes.ConsultPayment, {
           //   doctorName: `${g(props.doctor, 'fullName')}`,

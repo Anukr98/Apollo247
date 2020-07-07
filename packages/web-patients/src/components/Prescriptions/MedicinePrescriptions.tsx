@@ -22,7 +22,7 @@ import { PrescriptionCard } from 'components/Prescriptions/PrescriptionCard';
 import { EPrescriptionCard } from 'components/Prescriptions/EPrescriptionCard';
 import { UploadPrescription } from 'components/Prescriptions/UploadPrescription';
 import { UploadEPrescriptionCard } from 'components/Prescriptions/UploadEPrescriptionCard';
-import { uploadPrescriptionTracking } from '../../webEngageTracking';
+import { uploadPrescriptionTracking, pharmacyPrescriptionTracking } from '../../webEngageTracking';
 import { useCurrentPatient } from 'hooks/authHooks';
 import moment from 'moment';
 
@@ -292,6 +292,8 @@ export const MedicinePrescriptions: React.FC = (props) => {
     ePrescriptionData,
     setEPrescriptionData,
     setUploadedEPrescription,
+    setPrescriptionDuration,
+    prescriptionDuration,
   } = useShoppingCart();
   const [value, setValue] = React.useState<string>(prescriptionOptionSelected || '');
   const [isUploadPreDialogOpen, setIsUploadPreDialogOpen] = React.useState<boolean>(false);
@@ -308,7 +310,11 @@ export const MedicinePrescriptions: React.FC = (props) => {
     const selectedValue = (event.target as HTMLInputElement).value;
     if (selectedValue === 'addmedicine') {
       window.location.href = clientRoutes.medicineSearch();
+      pharmacyPrescriptionTracking('Search and add');
     } else {
+      selectedValue === 'specified'
+        ? pharmacyPrescriptionTracking('All medicine')
+        : pharmacyPrescriptionTracking('call');
       setValue(selectedValue);
       setPrescriptionOptionSelected(selectedValue);
     }
@@ -353,8 +359,6 @@ export const MedicinePrescriptions: React.FC = (props) => {
             <div className={classes.leftGroup}>
               <div className={classes.priscriptionBox}>
                 <div className={classes.sectionGroup}>
-                  {/* <PHRCard />
-                    <PHRCard /> */}
                   {prescriptions && prescriptions.length > 0 && (
                     <>
                       <div className={classes.titleHeader}>
@@ -372,6 +376,7 @@ export const MedicinePrescriptions: React.FC = (props) => {
                                 removeImagePrescription(fileName)
                               }
                               key={index}
+                              readOnly={false}
                             />
                           );
                         })}
@@ -390,6 +395,7 @@ export const MedicinePrescriptions: React.FC = (props) => {
                           <EPrescriptionCard
                             prescription={prescription}
                             removePrescription={removePrescription}
+                            readOnly={false}
                           />
                         ))}
                       </div>
@@ -423,13 +429,29 @@ export const MedicinePrescriptions: React.FC = (props) => {
                       />
                       {value === 'specified' && (
                         <div className={classes.specifiedSection}>
-                          <div className={classes.infoText}>
-                            <span>As specified in prescription</span>
-                            <AphButton>
-                              <img src={require('images/ic_tickmark.svg')} alt="" />
-                            </AphButton>
+                          <div
+                            className={
+                              prescriptionDuration === 'prescription'
+                                ? classes.infoText
+                                : classes.duration
+                            }
+                            onClick={() => {
+                              setPrescriptionDuration('prescription');
+                            }}
+                          >
+                            <span>Duration as specified in prescription</span>
+                            {prescriptionDuration === 'prescription' && (
+                              <AphButton>
+                                <img src={require('images/ic_tickmark.svg')} alt="" />
+                              </AphButton>
+                            )}
                           </div>
-                          <div className={classes.duration}>
+                          <div
+                            className={
+                              prescriptionDuration === 'user' ? classes.infoText : classes.duration
+                            }
+                            onClick={() => setPrescriptionDuration('user')}
+                          >
                             <span>Duration -</span>{' '}
                             <div className={classes.textField}>
                               <AphTextField
@@ -443,6 +465,11 @@ export const MedicinePrescriptions: React.FC = (props) => {
                               />
                             </div>{' '}
                             <span>Days</span>
+                            {prescriptionDuration === 'user' && (
+                              <AphButton>
+                                <img src={require('images/ic_tickmark.svg')} alt="" />
+                              </AphButton>
+                            )}
                           </div>
                         </div>
                       )}

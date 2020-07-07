@@ -1115,6 +1115,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     setReferralError,
     medicationHistory,
     vitalError,
+    updatedDate,
+    setUpdatedDate,
   } = useContext(CaseSheetContext);
 
   const covertVideoMsg = '^^convert`video^^';
@@ -1391,6 +1393,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const [consultStart, setConsultStart] = useState<boolean>(false);
   const [sendToPatientButtonDisable, setSendToPatientButtonDisable] = useState<boolean>(false);
   const [playRingtone, setPlayRingtone] = useState<boolean>(false);
+  const [isCall, setIscall] = React.useState(true);
 
   //OT Error state
   const [sessionError, setSessionError] = React.useState<boolean>(null);
@@ -1772,8 +1775,19 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         clearInterval(intervalMissCall);
         missedCallCounter = 0;
       }
+      if (lastMsg.message && lastMsg.message.message === stopcallMsg) {
+        setTimeout(() => {
+          if (isCall) forcelyDisconnect();
+        }, 2000);
+      }
     }
   }, [props.lastMsg]);
+
+  const forcelyDisconnect = () => {
+    toggelChatVideo();
+    stopAudioVideoCallpatient();
+    setIscall(false);
+  };
 
   // useEffect(() => {
   //   const presenceEventObject = props.presenceEventObject;
@@ -2589,6 +2603,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                       setDisableOnCancel(true);
                       setIsVideoCall(false);
                       missedCallIntervalTimer(45);
+                      setIscall(true);
                     }}
                   >
                     <img src={require('images/call_popup.svg')} alt="" />
@@ -2606,6 +2621,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                       setIsVideoCall(true);
                       setDisableOnCancel(true);
                       missedCallIntervalTimer(45);
+                      setIscall(true);
                     }}
                   >
                     <img src={require('images/video_popup.svg')} alt="" />
@@ -3201,6 +3217,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               setSessionError={setSessionError}
               setPublisherError={setPublisherError}
               setSubscriberError={setSubscriberError}
+              isCall={isCall}
+              setIscall={setIscall}
             />
           )}
         </div>

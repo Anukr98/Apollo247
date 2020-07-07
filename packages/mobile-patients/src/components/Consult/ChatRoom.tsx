@@ -152,6 +152,7 @@ import strings from '@aph/mobile-patients/src/strings/strings.json';
 import { CustomAlert } from '../ui/CustomAlert';
 import { Snackbar } from 'react-native-paper';
 import BackgroundTimer from 'react-native-background-timer';
+import { UploadPrescriprionPopup } from '../Medicines/UploadPrescriprionPopup';
 
 interface OpentokStreamObject {
   connection: {
@@ -644,16 +645,23 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const client = useApolloClient();
 
   const getAppointmentCount = () => {
-    getPastAppoinmentCount(client, doctorId, patientId)
+    getPastAppoinmentCount(client, doctorId, patientId, channel)
       .then((data: any) => {
-        const count = g(data, 'data', 'data', 'getPastAppointmentsCount', 'yesCount');
-        console.log('getPastAppoinmentCount', count);
-        console.log('data', data);
+        const yesCount = g(data, 'data', 'data', 'getPastAppointmentsCount', 'yesCount');
+        const noCount = g(data, 'data', 'data', 'getPastAppointmentsCount', 'noCount');
+        // console.log('yesCount', yesCount);
+        // console.log('noCount', noCount);
 
-        if (count && count > 0) {
+        // console.log('data', data);
+
+        if (yesCount && yesCount > 0) {
           setShowConnectAlertPopup(false);
         } else {
-          setShowConnectAlertPopup(true);
+          if (noCount && noCount > 0) {
+            setShowConnectAlertPopup(false);
+          } else {
+            setShowConnectAlertPopup(true);
+          }
         }
       })
       .catch((error) => {
@@ -669,7 +677,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     postWebEngageEvent(WebEngageEventName.CONSULTED_WITH_DOCTOR_BEFORE, eventAttributes);
     setLoading(true);
 
-    updateExternalConnect(client, doctorId, patientId, connected)
+    updateExternalConnect(client, doctorId, patientId, connected, channel)
       .then((data) => {
         setLoading(false);
         console.log('getUpdateExternalConnect', data);
@@ -768,7 +776,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         channel: channel,
         message: {
           message: doctorAutoResponse,
-          automatedText: `We have notified the query you have raised to the Dr. ${appointmentData.doctorInfo.displayName}. Doctor will get back to you within 24 hours. In case of emergency, please contact the nearby hospital`,
+          automatedText: `We have notified the query you have raised to the ${appointmentData.doctorInfo.displayName}. Doctor will get back to you within 24 hours. In case of emergency, please contact the nearby hospital`,
           id: doctorId,
           isTyping: true,
           messageDate: new Date(),
@@ -4733,7 +4741,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   audioTrack: isPublishAudio,
                   audioVolume: 100,
                   name: g(currentPatient, 'firstName') || 'patient',
-                  resolution: '352x288',
+                  // resolution: '352x288',
                 }}
                 eventHandlers={publisherEventHandlers}
               />
@@ -4902,7 +4910,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               videoTrack: convertVideo ? true : false,
               audioTrack: isPublishAudio,
               name: g(currentPatient, 'firstName') || 'patient',
-              resolution: '352x288',
+              // resolution: '352x288',
             }}
             eventHandlers={publisherEventHandlers}
           />
@@ -5932,8 +5940,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const uploadPrescriptionPopup = () => {
-    return isDropdownVisible ? (
-      <UploadPrescriprionChatPopup
+    return (
+      <UploadPrescriprionPopup
         heading="Attach File(s)"
         instructionHeading="Instructions For Uploading Files"
         instructions={[
@@ -5941,6 +5949,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           'Doctor details & date of the test should be clearly visible.',
           'Only JPG / PNG type files up to 2 mb are allowed',
         ]}
+        isVisible={isDropdownVisible}
         disabledOption={'NONE'}
         blockCamera={isCall}
         blockCameraMessage={strings.alerts.Open_camera_in_video_call}
@@ -5964,7 +5973,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           }
         }}
       />
-    ) : null;
+    );
   };
   const renderPrescriptionModal = () => {
     return (
@@ -6888,7 +6897,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       )}
       {showConnectAlertPopup && (
         <CustomAlert
-          description={`Have you consulted with Dr. ${appointmentData.doctorInfo.displayName} before?`}
+          description={`Have you consulted with ${appointmentData.doctorInfo.displayName} before?`}
           onNoPress={() => {
             setShowConnectAlertPopup(false);
             getUpdateExternalConnect(false);

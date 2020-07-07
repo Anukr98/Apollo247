@@ -15,7 +15,6 @@ import { useAllCurrentPatients } from 'hooks/authHooks';
 import _startCase from 'lodash/startCase';
 import _toLower from 'lodash/toLower';
 import { clientRoutes } from 'helpers/clientRoutes';
-import { Route } from 'react-router-dom';
 import { readableParam } from 'helpers/commonHelpers';
 import { useAuth } from 'hooks/authHooks';
 
@@ -73,42 +72,43 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     pastSearchList: {
-      margin: '20px 0 0',
-      padding: '20px ',
+      margin: '0 -10px',
+      padding: '20px 0 10px',
       listStyle: 'none',
       display: 'flex',
       alignItems: 'center',
+      width: '100%',
+      overflowX: 'auto',
       '& li': {
-        margin: '0 16px 0 0',
         textAlign: 'center',
+        padding: '0 8px',
         '& a': {
           padding: 10,
           background: '#ffffff',
           borderRadius: 10,
           boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
-          color: '#02475b',
+          color: '#fc9916',
+          whiteSpace: 'nowrap',
           fontSize: 12,
           display: 'block',
-          fontWeight: 500,
-          width: 160,
-          height: 100,
+          fontWeight: 600,
+          textTransform: 'uppercase',
+          minWidth: 150,
         },
       },
+      '&::-webkit-scrollbar': {
+        height: 4,
+        borderRadius: 4,
+      },
+      '&::-webkit-scrollbar-track': {
+        background: '#ccc',
+      },
+      '&::-webkit-scrollbar-thumb': {
+        background: '#888',
+      },
       [theme.breakpoints.down('sm')]: {
-        width: '100%',
-        overflowX: 'auto',
         margin: 0,
-        '& li': {
-          '& a': {
-            padding: 12,
-            color: '#fc9916 !important',
-            textTransform: 'uppercase',
-            whiteSpace: 'nowrap',
-            minWidth: 150,
-            width: 'auto !important',
-            height: 'auto  !important',
-          },
-        },
+        padding: 20,
       },
     },
   });
@@ -135,46 +135,37 @@ export const PastSearches: React.FC = (props) => {
         <Typography component="h6">{isSignedIn ? 'Past Searches' : ''}</Typography>
         <ul className={classes.pastSearchList}>
           {data.getPatientPastSearches.map((searchDetails, index) => {
-            return searchDetails ? (
-              index < 4 && (
-                <li key={`${_uniqueId('psearch_doctor_')}- ${searchDetails.typeId}`}>
-                  <Link
-                    to={`/doctors/${readableParam(searchDetails.name)}-${searchDetails.typeId}`}
-                    title={searchDetails && `${_startCase(_toLower(searchDetails.name || ''))}`}
-                  >
-                    <Avatar
+            return searchDetails && searchDetails.searchType === 'DOCTOR'
+              ? index < 4 && (
+                  <li key={`${_uniqueId('psearch_doctor_')}- ${searchDetails.typeId}`}>
+                    <Link
+                      to={`/doctors/${readableParam(searchDetails.name)}-${searchDetails.typeId}`}
+                      title={searchDetails && `${_startCase(_toLower(searchDetails.name || ''))}`}
+                    >
+                      {/* <Avatar
                       alt={(searchDetails && searchDetails.name) || ''}
                       src={(searchDetails && searchDetails.image) || ''}
                       className={`${classes.bigAvatar} ${classes.doctorAvatar}`}
-                    />
-                    {searchDetails && `${_startCase(_toLower(searchDetails.name || ''))}`}
-                  </Link>
-                </li>
-              )
-            ) : (
-              <Route
-                render={({ history }) =>
-                  index < 4 && (
-                    <li
-                      title={(searchDetails && searchDetails.name) || ''}
-                      onClick={(e) => {
-                        const specialityUpdated = readableParam(`${e.currentTarget.title}`);
-                        const encoded = encodeURIComponent(specialityUpdated);
-                        history.push(clientRoutes.specialties(`${specialityUpdated}`));
-                      }}
-                      key={`${_uniqueId('psearch_spl_')}- ${searchDetails.typeId}`}
+                    /> */}
+                      {searchDetails && `${_startCase(_toLower(searchDetails.name || ''))}`}
+                    </Link>
+                  </li>
+                )
+              : index < 4 && (
+                  <li key={`${_uniqueId('psearch_spl_')}- ${searchDetails.typeId}`}>
+                    <Link
+                      to={clientRoutes.specialties(readableParam(searchDetails.name))}
+                      title={searchDetails && `${_startCase(_toLower(searchDetails.name || ''))}`}
                     >
-                      <Avatar
-                        alt={(searchDetails && searchDetails.name) || ''}
-                        src={(searchDetails && searchDetails.image) || ''}
-                        className={classes.bigAvatar}
-                      />
-                      {(searchDetails && searchDetails.name) || ''}
-                    </li>
-                  )
-                }
-              />
-            );
+                      {/* <Avatar
+                      alt={(searchDetails && searchDetails.name) || ''}
+                      src={(searchDetails && searchDetails.image) || ''}
+                      className={`${classes.bigAvatar} ${classes.doctorAvatar}`}
+                    /> */}
+                      {searchDetails && `${_startCase(_toLower(searchDetails.name || ''))}`}
+                    </Link>
+                  </li>
+                );
           })}
         </ul>
       </div>

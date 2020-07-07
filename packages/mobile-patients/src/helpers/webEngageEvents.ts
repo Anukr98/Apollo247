@@ -110,7 +110,7 @@ export enum WebEngageEventName {
   REORDER_MEDICINES = 'Reorder Medicines',
   PHR_ORDER_MEDS_TESTS = 'PHR Order Meds & Tests',
   PHR_CONSULT_CARD_CLICK = 'PHR Consult Card click',
-  RE_ORDER_MEDICINE = 'ReOrder Medicine Track Order',
+  RE_ORDER_MEDICINE = 'ReOrder Medicine',
   // ConsultRoom Events
   CONSULTATION_CANCELLED_BY_CUSTOMER = 'Consultation Cancelled by Customer',
   CONSULTATION_RESCHEDULED_BY_CUSTOMER = 'Consultation Rescheduled by Customer',
@@ -165,8 +165,8 @@ export interface UserInfo {
 }
 
 export interface AutoSelectLocation extends UserInfo {
-  'Serviceability': boolean;
-  'pincode': string;
+  Serviceability: boolean;
+  pincode: string;
 }
 
 export interface PatientInfoWithSource extends PatientInfo {
@@ -189,7 +189,7 @@ export interface SpecialityClickedEvent extends PatientInfo {
 }
 
 export interface ReorderMedicines extends PatientInfo {
-  source: 'Order Details' | 'PHR';
+  source: 'Order Details' | 'PHR' | 'Medicine Home';
 }
 
 export interface ConsultedBefore extends PatientInfo {

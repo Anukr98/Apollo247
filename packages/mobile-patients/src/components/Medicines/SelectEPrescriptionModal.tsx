@@ -455,11 +455,12 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
                         width: '49%',
                       }}
                     >
-                      {data.date
-                        ? data.date
-                        : moment(
-                            data.testDate || data.appointmentDate || data.dateOfHospitalization
-                          ).format('DD MMMM YYYY')}
+                      {moment(
+                        data.date ||
+                          data.testDate ||
+                          data.appointmentDate ||
+                          data.dateOfHospitalization
+                      ).format('DD MMMM YYYY')}
                     </Text>
                     {data.sourceName || data.source || data.labTestSource ? (
                       <>
@@ -675,7 +676,7 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
                         uploadedUrl: urls,
                         forPatient: (currentPatient && currentPatient.firstName) || '',
                         doctorName: name,
-                        date: date,
+                        date: moment(date).format(DATE_FORMAT),
                         prismPrescriptionFileId: prismImages,
                         message: message,
                         healthRecord: true,

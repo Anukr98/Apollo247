@@ -2,7 +2,7 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
-import { Salutation, DOCTOR_ONLINE_STATUS } from "./globalTypes";
+import { DOCTOR_ONLINE_STATUS } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: GetJuniorDoctorDashboard
@@ -12,7 +12,7 @@ export interface GetJuniorDoctorDashboard_getJuniorDoctorDashboard_juniorDoctorD
   __typename: "Profile";
   firstName: string | null;
   lastName: string | null;
-  salutation: Salutation | null;
+  salutation: string | null;
   onlineStatus: DOCTOR_ONLINE_STATUS;
   id: string;
 }

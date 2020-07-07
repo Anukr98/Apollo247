@@ -45,6 +45,7 @@ import { SEARCH_DIAGNOSTICS } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   WebEngageEvents,
   WebEngageEventName,
+  ReorderMedicines,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import WebEngage from 'react-native-webengage';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
@@ -617,9 +618,10 @@ export const reOrderMedicines = async (
   order:
     | getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails
     | getLatestMedicineOrder_getLatestMedicineOrder_medicineOrderDetails,
-  currentPatient: any
+  currentPatient: any,
+  source: ReorderMedicines['source']
 ) => {
-  postReorderMedicines('Order Details', currentPatient);
+  postReorderMedicines(source, currentPatient);
   // Medicines
   // use billedItems for delivered orders
   const billedItems = g(

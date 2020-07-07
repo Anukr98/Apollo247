@@ -1035,9 +1035,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
             {TopSpecialities.map((item, index) => {
               let itemSymptom = item!.symptoms || '';
               itemSymptom = itemSymptom.charAt(0).toUpperCase() + itemSymptom.slice(1); // capitalize first character
-              const symptom = itemSymptom.replace(/,\s*([a-z])/g, 
-                (d, e) => ", " + e.toUpperCase()
-              ); // capitalize first character after comma (,)
+              const symptom = itemSymptom.replace(/,\s*([a-z])/g, (d, e) => ', ' + e.toUpperCase()); // capitalize first character after comma (,)
               return (
                 <Mutation<saveSearch> mutation={SAVE_SEARCH}>
                   {(mutate, { loading, data, error }) => (
@@ -1308,7 +1306,10 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     length: number,
     isSearchResult?: boolean
   ) => {
-    if (rowData)
+    if (rowData) {
+      let itemSymptom = rowData!.symptoms || '';
+      itemSymptom = itemSymptom.charAt(0).toUpperCase() + itemSymptom.slice(1); // capitalize first character
+      const symptom = itemSymptom.replace(/,\s*([a-z])/g, (d, e) => ', ' + e.toUpperCase()); // capitalize first character after comma (,)
       return (
         <Mutation<saveSearch> mutation={SAVE_SEARCH}>
           {(mutate, { loading, data, error }) => (
@@ -1364,7 +1365,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
                     {rowData.shortDescription}
                   </Text>
                   <Text numberOfLines={1} style={styles.rowUserFriendlySpecialistStyles}>
-                    {rowData.symptoms}
+                    {symptom}
                   </Text>
                 </View>
                 <ArrowRight
@@ -1382,7 +1383,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
           )}
         </Mutation>
       );
-    else return null;
+    } else return null;
   };
 
   const onClickSearch = (id: string, name: string, specialistPluralTerm: string) => {
@@ -1420,6 +1421,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
             contentContainerStyle={{
               marginTop: 20,
               marginBottom: 8,
+              paddingTop: Platform.OS == 'android' ? 10 : 1,
             }}
             bounces={false}
             data={doctorsList}
@@ -1635,6 +1637,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   const selectUser = (selectedUser: any) => {
     AsyncStorage.setItem('selectUserId', selectedUser!.id);
     AsyncStorage.setItem('selectUserUHId', selectedUser!.uhid);
+    AsyncStorage.setItem('isNewProfile', 'yes');
   };
   const renderCTAs = () => (
     <View style={styles.aphAlertCtaViewStyle}>

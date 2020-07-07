@@ -560,7 +560,12 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                     </Text>
                   )}
                   {doctorDetails.languages ? (
-                    <Text style={[styles.doctorLocation, { paddingBottom: 11, paddingTop: 4 }]}>
+                    <Text
+                      style={[
+                        styles.doctorLocation,
+                        { paddingBottom: 11, paddingTop: 4, width: width - 120 },
+                      ]}
+                    >
                       {doctorDetails.languages.split(',').join(' | ')}
                     </Text>
                   ) : null}
@@ -919,7 +924,12 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   };
 
   const renderAppointmentHistory = () => {
-    const arrayHistory = appointmentHistory ? appointmentHistory : [];
+    let arrayHistory = appointmentHistory ? appointmentHistory : [];
+    arrayHistory = arrayHistory.filter((item) => {
+      return item.status == 'COMPLETED';
+    });
+
+    console.log('arrayHistory-----------', arrayHistory);
     if (arrayHistory.length > 0) {
       return (
         <View style={styles.cardView}>
@@ -937,6 +947,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
             data={arrayHistory}
             renderItem={({ item }) => (
               <TouchableOpacity
+                activeOpacity={1}
                 onPress={() => {
                   console.log('itemdoc', item, doctorDetails);
                   props.navigation.navigate(AppRoutes.ConsultDetails, {
@@ -993,19 +1004,24 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const renderAppointmentSymptoms = (
     item: getAppointmentHistory_getAppointmentHistory_appointmentsHistory
   ) => {
-    if (item.caseSheet.length != 0) {
-      console.log('symptoms-----', JSON.stringify(item.caseSheet));
+    const symptomsJson = g(item, 'caseSheet');
+    console.log('symptomsJson', symptomsJson);
+    if (symptomsJson && symptomsJson.length != 0) {
+      console.log('symptomsJson-----', symptomsJson);
       return (
         <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
-          {item.caseSheet[0].symptoms.map((item, index) => (
-            <CapsuleView
-              key={index}
-              title={item.symptom}
-              isActive={false}
-              style={{ width: 'auto', marginRight: 4, marginTop: 11 }}
-              titleTextStyle={{ color: theme.colors.SKY_BLUE }}
-            />
-          ))}
+          {symptomsJson &&
+            symptomsJson[0] &&
+            symptomsJson[0].symptoms &&
+            symptomsJson[0].symptoms.map((item, index) => (
+              <CapsuleView
+                key={index}
+                title={item && item.symptom}
+                isActive={false}
+                style={{ width: 'auto', marginRight: 4, marginTop: 11 }}
+                titleTextStyle={{ color: theme.colors.SKY_BLUE }}
+              />
+            ))}
         </View>
       );
     }

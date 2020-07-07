@@ -25,7 +25,7 @@ export enum ApiConstants {
   APPOINTMENT_REMINDER_15_TITLE = 'Appointment reminder',
   CLICK_HERE = ' Click here to fill your details now ',
   APPOINTMENT_REMINDER_15_BODY = 'Your appointment with Dr {0} will start in {1} mins. :)',
-  WHATSAPP_SD_CONSULT_REMINDER_15_MIN = 'Appointment Reminder: {0} Your appointment with {1} will start in {3} mins.',
+  WHATSAPP_SD_CONSULT_REMINDER_15_MIN = 'Appointment%20Reminder:%20Dr.%20{1}%20Your%20appointment%20with%20{0}%20will%20start%20in%2015%20mins.%20:)',
   VIRTUAL_REMINDER_15_BODY = 'Appointment Reminder: Your appointment with Dr {0} will start in 15 mins. :) ',
   APPOINTMENT_REMINDER_1_BODY = "Hi {0}! It's time to see Dr. {1}. Hope you're online and ready for your appointment.",
   PHYSICAL_APPOINTMENT_REMINDER_15_BODY = 'Your appointment with Dr {0} will start in 3 hours at {1}. We hope to see you soon :)',
@@ -142,14 +142,14 @@ export enum ApiConstants {
   MEDICINE_ORDER_PAYMENT_FAILED_BODY = "Hi {0}! We're sorry. :(  There's been a problem with your order. If money was debited from your account, it will be refunded automatically in 5-7 working days.",
   SENT_BY_API = 'SENT_BY_API',
   DAILY_APPOINTMENT_SUMMARY = 'Hi Dr. {0}! Good morning. You have {1} appointment(s) booked for today on Apollo24|7. Summary of appointments',
-  ONLINE_APPOINTMENTS = ' \nOnline Appointments : {0}',
-  PHYSICAL_APPOINTMENTS = ' \nPhysical Appointments : {0}',
+  ONLINE_APPOINTMENTS = '\nOnline Appointments : {0}',
+  PHYSICAL_APPOINTMENTS = '\nPhysical Appointments : {0}',
   DAILY_WHATSAPP_NOTIFICATION = 'Hi Dr.{0}! Good morning. You have {1} appointment(s) booked for today on Apollo24|7. \nSummary:',
   WHATSAPP_LINK = '\nClick here to check your today’s calendar on Mobile Application ',
   FOLLOWUP_NOTIFITICATION_TEXT = 'Hi {0}! Hope you are feeling better after your consultation with Dr. {1} :) You can book a free follow up with us till {2}.',
   CHAT_MESSGAE_TEXT = 'Hi Dr. {0}! Your patient {1} has sent you a chat message. ',
-  SEND_PATIENT_NOTIFICATION = 'Hi {0}! {1} is waiting for you to start the consultation.Please go to your dashboard in Apollo 24|7 and start consultation. ',
-  WHATSAPP_SD_CHAT_NOTIFICATION = 'Hi Dr. {0}! {1} has sent you a chat message. Click here to reply to the patient from a mobile Application.',
+  SEND_PATIENT_NOTIFICATION = 'Hi%20{0}%21%20{1}%20is%20waiting%20for%20you%20to%20start%20the%20consultation.%20Please%20go%20to%20your%20dashboard%20in%20Apollo%2024%7C7%20and%20start%20the%20consultation.%20https%3A%2F%2Fpmt.apollo247.com%2Fdeeplink%3Furl%3Dapollopatients%3A%2F%2Fconsult%3F{2}',
+  WHATSAPP_SD_CHAT_NOTIFICATION = 'Hi%20Dr.%20{0}%21%20{1}%20has%20sent%20you%20a%20chat%20message.%20Click%20here%20to%20respond.%20https%3A%2F%2Fpmt.apollo247.com%2Fdeeplink%3Furl%3Dapollopatients%3A%2F%2Fconsults',
   DAILY_APPOINTMENT_SUMMARY_RESPONSE = 'Daily Appointment summaries have been sent to {0} Doctor(s) successfully',
   FOLLOW_UP_NOTIFICATION_RESPONSE = 'Follow up notifications sent to {0} patients successfully',
   PRESCRIPTION_READY_TITLE = 'Prescription ready',
@@ -251,10 +251,12 @@ export enum ApiConstants {
   DEV_DOC_ID = '74c93b2e-8aab-4b6c-8391-5407f4afb833',
   QA_DOC_ID = '',
 
-  CACHE_EXPIRATION_120 = 120, // 2 mins mostly for otp
-  CACHE_EXPIRATION_600 = 600, // 10 mins
+  CACHE_EXPIRATION_120 = 120, // 2 mins
+  CACHE_EXPIRATION_300 = 300, // 5 mins
+  CACHE_EXPIRATION_600 = 600,  // 10 mins
   CACHE_EXPIRATION_900 = 900, //30 mins
   CACHE_EXPIRATION_3600 = 3600, // 1hour
+  CACHE_EXPIRATION_14400 = 14400, // 4hour
   //doctor no-photo url
   DOCTOR_DEFAULT_PHOTO_URL = 'https://prodaphstorage.blob.core.windows.net/doctors/no_photo.png',
 
@@ -384,4 +386,8 @@ export enum ApiConstants {
   REDIS_PORT = 6379,
   REDIS_PWD = 'FgFyZpibcBewC6U7AZYDq1DppMW02mi+koiEa63gDF4=',
   REDIS_IMAGE_URL = '/catalog/product/',
+
+  //prescriptions uploaded through medicine, diagnostic orders or from OLD APPS
+  PRESCRIPTION_UPLOADED_BY_PATIENT = 'Prescription uploaded by Patient',
+  ALERT_STORE_REMARKS = 'Customer Name : {name} , Mobile : {mobile} will be reaching Store in 10 mins to pickup order {orderNo} - Please handover Medicines.',
 }

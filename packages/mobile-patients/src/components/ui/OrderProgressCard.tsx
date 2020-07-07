@@ -162,9 +162,17 @@ export const OrderProgressCard: React.FC<OrderProgressCardProps> = (props) => {
           props.getOrderDescription &&
           props.getOrderDescription.description != '' && (
             <View style={{ paddingHorizontal: 16, flexDirection: 'row' }}>
-              <Text style={{ ...theme.viewStyles.text('SB', 10, '#00b38e', 1, 13, 0.03) }}>
+              <Text style={{ ...theme.viewStyles.text('R', 10, '#00b38e', 1, 13, 0.03) }}>
                 {props.getOrderDescription.heading}
-                <Text style={{ ...theme.viewStyles.text('R', 10, '#02475b', 1, 13, 0.03) }}>
+                <Text
+                  style={{
+                    // ...theme.viewStyles.text('R', 10, '#02475b', 1, 13, 0.03),
+                    ...theme.fonts.IBMPlexSansRegular(10),
+                    lineHeight: 13,
+                    color: theme.colors.LIGHT_BLUE,
+                    letterSpacing: 0.03,
+                  }}
+                >
                   {props.getOrderDescription.description}
                 </Text>
               </Text>

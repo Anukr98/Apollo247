@@ -447,17 +447,22 @@ export const updateExternalConnect = (
   client: ApolloClient<object>,
   doctorId: string,
   patientId: string,
-  externalConnect: boolean
+  externalConnect: boolean,
+  appointmentID: string
 ) => {
   return new Promise((res, rej) => {
+    const inputVariables = {
+      doctorId: doctorId,
+      patientId: patientId,
+      externalConnect: externalConnect,
+      appointmentId: appointmentID,
+    };
+
+    console.log('inputVariables', inputVariables);
     client
       .mutate<updateSaveExternalConnect, updateSaveExternalConnectVariables>({
         mutation: UPDATE_SAVE_EXTERNAL_CONNECT,
-        variables: {
-          doctorId: doctorId,
-          patientId: patientId,
-          externalConnect: externalConnect,
-        },
+        variables: inputVariables,
         fetchPolicy: 'no-cache',
       })
       .then((data: any) => {
@@ -473,7 +478,8 @@ export const updateExternalConnect = (
 export const getPastAppoinmentCount = (
   client: ApolloClient<object>,
   doctorId: string,
-  patientId: string
+  patientId: string,
+  appointmentID: string
 ) => {
   return new Promise((res, rej) => {
     client
@@ -482,6 +488,7 @@ export const getPastAppoinmentCount = (
         variables: {
           doctorId: doctorId,
           patientId: patientId,
+          appointmentId: appointmentID,
         },
         fetchPolicy: 'no-cache',
       })

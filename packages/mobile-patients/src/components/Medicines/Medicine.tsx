@@ -188,7 +188,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     // refetch: latestMedicineOrderRefetch,
   } = useQuery<getLatestMedicineOrder, getLatestMedicineOrderVariables>(GET_LATEST_MEDICINE_ORDER, {
     variables: { patientUhid: g(currentPatient, 'uhid') || '' },
-    fetchPolicy: 'cache-first', // as per jira ticket - Get this data from backend only once in session - when we go to medicine home page the first time.
+    fetchPolicy: 'no-cache',
   });
   const latestMedicineOrder =
     latestMedicineOrderLoading || latestMedicineOrderError
@@ -681,6 +681,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const renderEPrescriptionModal = () => {
     return (
       <SelectEPrescriptionModal
+        displayPrismRecords={true}
         navigation={props.navigation}
         onSubmit={(selectedEPres) => {
           setSelectPrescriptionVisible(false);
@@ -933,7 +934,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     const date = moment(g(order, 'medicineOrdersStatus', '0' as any, 'statusDate')).format(
       'MMMM DD, YYYY'
     );
-    return isOfflineOrder ? `Ordered at ${address} on ${date}` : `Ordered online on ${1}`;
+    return isOfflineOrder ? `Ordered at ${address} on ${date}` : `Ordered online on ${date}`;
   };
 
   const [reOrderDetails, setReOrderDetails] = useState<MedicineReOrderOverlayProps['itemDetails']>({
@@ -948,7 +949,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       globalLoading!(true);
       const { items, prescriptions, totalItemsCount, unavailableItems } = await reOrderMedicines(
         order,
-        currentPatient
+        currentPatient,
+        'Medicine Home'
       );
       items.length && addMultipleCartItems!(items);
       items.length && prescriptions.length && addMultipleEPrescriptions!(prescriptions);
