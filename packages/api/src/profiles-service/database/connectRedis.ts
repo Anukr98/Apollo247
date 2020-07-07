@@ -1,7 +1,11 @@
 import { createClient } from 'redis';
 import { debugLog } from 'customWinstonLogger';
 import { promisify } from 'util';
-
+const dLogger = debugLog(
+  'profileServiceLogger',
+  'RedisConnect',
+  Math.floor(Math.random() * 100000000)
+);
 const client = createClient({
   port: 6379,
   host: process.env.REDIS_HOST,
@@ -28,14 +32,10 @@ const client = createClient({
     return Math.min(options.attempt * 100, 3000);
   },
 });
+
 const getAsync = promisify(client.get).bind(client);
-const dLogger = debugLog(
-  'profileServiceLogger',
-  'patientRepository',
-  Math.floor(Math.random() * 100000000)
-);
+
 export async function getCache(key: string) {
-  dLogger(new Date(), 'Redis Cache Read', `Cache hit ${key}`);
   try {
     return await getAsync(key);
   } catch (e) {
@@ -44,11 +44,11 @@ export async function getCache(key: string) {
   }
 }
 
-export function setCache(key: string, value: string, expiry: number) {
-  dLogger(new Date(), 'Redis Cache write', `Cache hit ${key}`);
+export async function setCache(key: string, value: string, expiry: number) {
   try {
     const set = client.set(key, value);
     client.expire(key, expiry);
+    dLogger(new Date(), 'Redis Cache write', `Cache hit ${key}`);
     return set;
   } catch (e) {
     dLogger(new Date(), 'Redis Cache write error', `Cache hit ${key} ${JSON.stringify(e)}`);
@@ -56,10 +56,11 @@ export function setCache(key: string, value: string, expiry: number) {
   }
 }
 
-export function delCache(key: string) {
-  dLogger(new Date(), 'Redis Cache delete', `Cache hit ${key}`);
+export async function delCache(key: string) {
   try {
-    return client.del(key);
+    const del = client.del(key);
+    dLogger(new Date(), 'Redis Cache delete', `Cache hit ${key}`);
+    return del;
   } catch (e) {
     dLogger(new Date(), 'Redis Cache del error', `Cache hit ${key} ${JSON.stringify(e)}`);
     return false;
