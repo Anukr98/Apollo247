@@ -995,7 +995,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
     doc.moveDown(1.5);
   }
 
-  if (!_isEmpty(rxPdfData.prescriptions)) {
+  if (!_isEmpty(rxPdfData.prescriptions) || !_isEmpty(rxPdfData.removedMedicinesList)) {
     renderPrescriptions(rxPdfData.prescriptions, rxPdfData.removedMedicinesList);
     doc.moveDown(1.5);
   }
