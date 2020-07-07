@@ -545,11 +545,19 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
             showAphAlert!({
               title: ' ',
               description: data.content,
+              unDismissable: true,
               CTAs: [
                 {
                   text: 'DISMISS',
                   onPress: () => {
                     hideAphAlert && hideAphAlert();
+                    props.navigation.dispatch(
+                      StackActions.reset({
+                        index: 0,
+                        key: null,
+                        actions: [NavigationActions.navigate({ routeName: AppRoutes.TabBar })],
+                      })
+                    );
                   },
                   type: 'white-button',
                 },
