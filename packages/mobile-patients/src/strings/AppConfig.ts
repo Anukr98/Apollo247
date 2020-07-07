@@ -771,7 +771,6 @@ export const NeedHelp = [
       'I want to reschedule/cancel my appointment ',
       'I haven’t received the prescription',
       'Coupon code did not work for booking doctor appointment',
-      'Others',
     ],
   },
   {
