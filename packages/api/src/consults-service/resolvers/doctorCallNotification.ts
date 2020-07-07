@@ -72,6 +72,7 @@ export const doctorCallNotificationTypeDefs = gql`
       doctorName: String
       deviceType: DEVICETYPE
       callSource: BOOKINGSOURCE
+      appVersion: String
     ): NotificationResult!
     endCallNotification(appointmentCallId: String): EndCallResult!
     sendApptNotification: ApptNotificationResult!
@@ -135,6 +136,7 @@ const sendCallNotification: Resolver<
     doctorName: string;
     deviceType: DEVICETYPE;
     callSource: BOOKINGSOURCE;
+    appVersion: string;
   },
   ConsultServiceContext,
   NotificationResult
@@ -152,6 +154,7 @@ const sendCallNotification: Resolver<
     doctorName: args.doctorName,
     deviceType: args.deviceType,
     callSource: args.callSource,
+    appVersion: args.appVersion,
   };
   const appointmentCallDetails = await callDetailsRepo.saveAppointmentCallDetails(
     appointmentCallDetailsAttrs
