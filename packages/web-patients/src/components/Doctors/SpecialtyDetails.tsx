@@ -8,6 +8,7 @@ import { BottomLinks } from 'components/BottomLinks';
 import { AphButton, AphInput } from '@aph/web-ui-components';
 import { Filters } from 'components/Doctors/Filters';
 import { InfoCard } from 'components/Doctors/InfoCard';
+import { InfoCardPartner } from 'components/Doctors/InfoCardPartner';
 import { BookBest } from 'components/Doctors/BookBest';
 import { FrequentlyQuestions } from 'components/Doctors/FrequentlyQuestions';
 import { WhyApollo } from 'components/Doctors/WhyApollo';
@@ -603,14 +604,14 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
                   name: doctorDetails.fullName,
                   url: params.specialty
                     ? `${window.location.origin}${clientRoutes.specialtyDoctorDetails(
-                        params.specialty,
-                        readableParam(doctorDetails.fullName),
-                        doctorDetails.id
-                      )}`
+                      params.specialty,
+                      readableParam(doctorDetails.fullName),
+                      doctorDetails.id
+                    )}`
                     : `${window.location.origin}${clientRoutes.doctorDetails(
-                        readableParam(doctorDetails.fullName),
-                        doctorDetails.id
-                      )}`,
+                      readableParam(doctorDetails.fullName),
+                      doctorDetails.id
+                    )}`,
                 });
             });
             setDoctorData(doctors || []);
@@ -640,9 +641,9 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
     return _filter(data, (doctor: DoctorDetails) => {
       const consultMode =
         doctor.consultHours &&
-        doctor.consultHours.length > 0 &&
-        doctor.consultHours[0] &&
-        doctor.consultHours[0].consultMode
+          doctor.consultHours.length > 0 &&
+          doctor.consultHours[0] &&
+          doctor.consultHours[0].consultMode
           ? doctor.consultHours[0].consultMode
           : '';
       if (isOnlineSelected && isPhysicalSelected) {
@@ -680,15 +681,15 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
 
   const doctorsNextAvailability =
     data &&
-    data.getDoctorsBySpecialtyAndFilters &&
-    data.getDoctorsBySpecialtyAndFilters.doctorsNextAvailability
+      data.getDoctorsBySpecialtyAndFilters &&
+      data.getDoctorsBySpecialtyAndFilters.doctorsNextAvailability
       ? data.getDoctorsBySpecialtyAndFilters.doctorsNextAvailability
       : [];
 
   const doctorsAvailability =
     data &&
-    data.getDoctorsBySpecialtyAndFilters &&
-    data.getDoctorsBySpecialtyAndFilters.doctorsAvailability
+      data.getDoctorsBySpecialtyAndFilters &&
+      data.getDoctorsBySpecialtyAndFilters.doctorsAvailability
       ? data.getDoctorsBySpecialtyAndFilters.doctorsAvailability
       : [];
 
@@ -815,19 +816,27 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
                         }
                         return (
                           <Grid key={doctor.id} item xs={12} sm={12} md={12} lg={6}>
-                            <InfoCard
-                              doctorInfo={doctor}
-                              doctorType={doctorType}
-                              nextAvailability={nextAvailabilityString}
-                            />
+                            {doctorType.toLowerCase() == 'apollo' ? (
+                              <InfoCardPartner
+                                doctorInfo={doctor}
+                                doctorType={doctorType}
+                                nextAvailability={nextAvailabilityString}
+                              />
+                            ) : (
+                                <InfoCard
+                                  doctorInfo={doctor}
+                                  doctorType={doctorType}
+                                  nextAvailability={nextAvailabilityString}
+                                />
+                              )}
                           </Grid>
                         );
                       })}
                     </Grid>
                   </>
                 ) : (
-                  'no results found'
-                )}
+                      'no results found'
+                    )}
               </div>
               {faqData && faqData.length > 0 && (
                 <>
