@@ -136,7 +136,7 @@ export interface LinkUHIDProps extends NavigationScreenProps {}
 export const LinkUHID: React.FC<LinkUHIDProps> = (props) => {
   const { allCurrentPatients, currentPatient } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
-  const { loading, setLoading } = useUIElements();
+  const { loading, setLoading, showAphAlert } = useUIElements();
   const client = useApolloClient();
   const [bottomPopUP, setBottomPopUP] = useState<boolean>(false);
 
@@ -214,14 +214,23 @@ export const LinkUHID: React.FC<LinkUHIDProps> = (props) => {
     }
   };
 
+  const renderErrorPopup = (desc: string) =>
+    showAphAlert!({
+      title: 'Uh oh.. :(',
+      description: `${desc || ''}`.trim(),
+    });
+
   const linkUhidsApiCall = () => {
     setisUHID && setisUHID([...selectedSecondary]);
     linkUHIDs(client, selectedPrimary, selectedSecondary)
       .then((data) => {
+        setLoading && setLoading(false);
         getPatientApiCall();
         props.navigation.navigate(AppRoutes.ManageProfile);
       })
       .catch((e) => {
+        setLoading && setLoading(false);
+        renderErrorPopup('Something went wrong, please try again after sometime');
         CommonBugFender('LinkUHIDs', e);
         console.log('Error occured ', e);
       })
@@ -230,10 +239,13 @@ export const LinkUHID: React.FC<LinkUHIDProps> = (props) => {
   const deLinkUhidsApiCall = () => {
     deLinkUHIDs(client, selectedPrimary, delinkSecondaryUHIDs)
       .then((data) => {
+        setLoading && setLoading(false);
         getPatientApiCall();
         props.navigation.navigate(AppRoutes.ManageProfile);
       })
       .catch((e) => {
+        setLoading && setLoading(false);
+        renderErrorPopup('Something went wrong, please try again after sometime');
         CommonBugFender('LinkUHIDs', e);
         console.log('Error occured ', e);
       })
