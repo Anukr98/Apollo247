@@ -10,7 +10,7 @@ const client = createClient({
   port: 6379,
   host: process.env.REDIS_HOST,
   password: process.env.REDIS_PASSWORD,
-  db: 'doctor',
+  db: 1,
   retry_strategy: function(options) {
     if (options.error) {
       dLogger(

@@ -10,7 +10,7 @@ const client = createClient({
   port: 6379,
   host: process.env.REDIS_HOST,
   password: process.env.REDIS_PASSWORD,
-  db: 'profile',
+  db: 0,
   retry_strategy: function(options) {
     if (options.error) {
       dLogger(
@@ -47,6 +47,19 @@ export async function getCache(key: string) {
   }
 }
 
+const hgetallAsync = promisify(client.hgetall).bind(client);
+
+export async function hgetAllCache(key: string) {
+  try {
+    const cache = await hgetallAsync(key);
+    dLogger(new Date(), 'Redis Cache read hash', `Cache hit ${key}`);
+    return cache;
+  } catch (e) {
+    dLogger(new Date(), 'Redis read hash error', `Cache hit ${key} ${JSON.stringify(e)}`);
+    return null;
+  }
+}
+
 export async function setCache(key: string, value: string, expiry: number) {
   try {
     const set = client.set(key, value);
@@ -58,7 +71,16 @@ export async function setCache(key: string, value: string, expiry: number) {
     return false;
   }
 }
-
+export async function hmsetCache(key: string, value: { [index: string]: string }) {
+  try {
+    const set = client.hmset(key, value);
+    dLogger(new Date(), 'Redis Cache write hashmap', `Cache hit ${key}`);
+    return set;
+  } catch (e) {
+    dLogger(new Date(), 'Redis Cache write hashmap error', `Cache hit ${key} ${JSON.stringify(e)}`);
+    return false;
+  }
+}
 export async function delCache(key: string) {
   try {
     const del = client.del(key);
