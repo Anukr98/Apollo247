@@ -566,6 +566,9 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
   useEffect(() => {
     setLoading(true);
     if (specialtyId || specialtyName) {
+      scrollToRef &&
+        scrollToRef.current &&
+        scrollToRef.current.scrollIntoView({ behavior: 'auto', block: 'end' });
       apolloClient
         .query({
           query: GET_DOCTORS_BY_SPECIALITY_AND_FILTERS,
@@ -694,12 +697,6 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
     description: `Book online appointments with ${specialtyName} in just a few clicks. Consult the best ${specialtyName} in India at the best prices. Apollo 247 is the one-stop solution to all your medical needs.`,
     canonicalLink: window && window.location && window.location.href,
   };
-
-  useEffect(() => {
-    scrollToRef &&
-      scrollToRef.current &&
-      scrollToRef.current.scrollIntoView({ behavior: 'auto', block: 'end' });
-  }, []);
 
   return (
     <div className={classes.root}>

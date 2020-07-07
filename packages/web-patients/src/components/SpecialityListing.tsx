@@ -650,6 +650,9 @@ export const SpecialityListing: React.FC = (props) => {
 
   useEffect(() => {
     if (!faqs) {
+      scrollToRef &&
+        scrollToRef.current &&
+        scrollToRef.current.scrollIntoView({ behavior: 'auto', block: 'end' });
       fetchUtil(process.env.SPECIALTY_LISTING_FAQS, 'GET', {}, '', true).then((res: any) => {
         if (res && res.success === 'true' && res.data && res.data.length > 0) {
           setFaqs(res.data[0]);
@@ -691,12 +694,6 @@ export const SpecialityListing: React.FC = (props) => {
         });
     }
   }, [searchKeyword, selectedCity]);
-
-  useEffect(() => {
-    scrollToRef &&
-      scrollToRef.current &&
-      scrollToRef.current.scrollIntoView({ behavior: 'auto', block: 'end' });
-  }, []);
 
   return (
     <div className={classes.slContainer}>
