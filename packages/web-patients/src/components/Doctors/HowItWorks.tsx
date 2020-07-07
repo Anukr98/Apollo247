@@ -538,7 +538,7 @@ export const HowItWorks: React.FC = (props) => {
             <li>How to consult in Person?</li>
             <li>
               <img src={require('images/consult-doc.svg')} />
-              <Typography>Choose the doctor1</Typography>
+              <Typography>Choose the doctor</Typography>
             </li>
             <li>
               <img src={require('images/slot.svg')} />
