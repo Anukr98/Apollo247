@@ -441,11 +441,10 @@ export const HowItWorks: React.FC = (props) => {
           <TabPanel value={value} index={1}>
             <div className={classes.tabHead}>
               <img src={require('images/ic-specialist.svg')} />
-              <Typography component="h6">MEET IN PERSON</Typography>
+              <Typography component="h6">How to consult <br /> in person </Typography>
             </div>
             <div className={classes.tabBody}>
               <ul className={classes.tabList}>
-                <li className={classes.inPerson}>How to consult in Person?</li>
                 <li>
                   <img src={require('images/consult-doc.svg')} />
                   <Typography>Choose the doctor</Typography>
