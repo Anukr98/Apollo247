@@ -605,7 +605,6 @@ export const MedicineCart: React.FC = (props) => {
     durationDays,
     prescriptionDuration,
   } = useShoppingCart();
-  console.log('>>>>>>>', prescriptionOptionSelected, durationDays, prescriptionDuration);
 
   const addToCartRef = useRef(null);
   const params = useParams<{
@@ -1579,7 +1578,7 @@ export const MedicineCart: React.FC = (props) => {
                   ) : uploadingFiles ? (
                     <CircularProgress size={22} color="secondary" />
                   ) : (
-                    'Submit Prescription'
+                    'Place order'
                   )}
                 </AphButton>
               )}
