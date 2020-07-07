@@ -741,8 +741,8 @@ const getLatestMedicineOrder: Resolver<
   if (offlineList == '') {
     const medRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
     offlineList = await medRepo.getLatestMedicineOrderDetails(patientDetails.id);
-    console.log(offlineList, 'offlineList inside');
-    if ((offlineList && offlineList.length == 0) || offlineList == null || offlineList == '')
+    //console.log(offlineList, 'offlineList inside');
+    if (!offlineList || offlineList == null || offlineList == '')
       throw new AphError(AphErrorMessages.INVALID_MEDICINE_ORDER_ID, undefined, {});
   }
 
