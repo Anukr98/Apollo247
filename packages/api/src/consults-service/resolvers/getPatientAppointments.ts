@@ -303,6 +303,7 @@ const getPatientPersonalizedAppointments: Resolver<
             resolve(apptDetails);
           }
         }
+        console.log(apptDetails, 'appt details inside');
         resolve(apptDetails);
       });
     });
@@ -316,7 +317,9 @@ const getPatientPersonalizedAppointments: Resolver<
     console.log(offlineApptsList.errorMsg, offlineApptsList.errorCode, 'offline consults error');
     throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
   }
+
   if (doctorFlag == 0) throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID);
+  console.log(apptDetails, 'apptDetails');
   if (apptDetails == null) throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
   return { appointmentDetails: apptDetails };
 };
