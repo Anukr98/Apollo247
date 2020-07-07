@@ -40,12 +40,16 @@ const useStyles = makeStyles((theme: Theme) => {
         verticalAlign: 'middle',
       },
     },
+    otherDoctorType: {
+      width: 80,
+    },
     doctorInfo: {
       padding: '15px 20px 0 20px',
       [theme.breakpoints.up('sm')]: {
         width: 'calc(100% - 190px)',
       },
     },
+
     doctorName: {
       display: 'flex',
       alignItems: 'center',
@@ -484,19 +488,9 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
     const education = doctorDetails.qualification;
     const profileImage = doctorDetails.photoUrl;
 
-    const {
-      awards,
-      experience,
-      firstName,
-      fullName,
-      languages,
-      lastName,
-      city,
-      onlineConsultationFees,
-      physicalConsultationFees,
-    } = doctorDetails;
+    const { awards, experience, firstName, fullName, languages } = doctorDetails;
 
-    const isStarDoctor = doctorDetails.doctorType === DoctorType.STAR_APOLLO ? true : false;
+    const isConnectDoctor = doctorDetails.doctorType === DoctorType.DOCTOR_CONNECT;
 
     _forEach(doctorDetails.doctorHospital, (hospitalDetails) => {
       if (hospitalDetails.facility.facilityType === 'HOSPITAL') {
@@ -514,7 +508,11 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
             <div className={classes.doctorName} title={'Doctor Name'}>
               <h1>{fullName}</h1>
               <span>
-                <img src={require('images/ic_apollo.svg')} alt="" />
+                <img
+                  className={isConnectDoctor ? classes.otherDoctorType : ''}
+                  src={require(isConnectDoctor ? 'images/partner_doc.png' : 'images/ic_apollo.svg')}
+                  alt=""
+                />
               </span>
             </div>
             <div className={classes.specialits}>
