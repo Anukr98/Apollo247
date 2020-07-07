@@ -138,11 +138,16 @@ export const ADD_NEW_PROFILE = gql`
 // `;
 
 export const PAST_APPOINTMENTS_COUNT = gql`
-  query getPastAppointmentsCount($doctorId: String!, $patientId: String!) {
-    getPastAppointmentsCount(doctorId: $doctorId, patientId: $patientId) {
+  query getPastAppointmentsCount($doctorId: String!, $patientId: String!, $appointmentId: String!) {
+    getPastAppointmentsCount(
+      doctorId: $doctorId
+      patientId: $patientId
+      appointmentId: $appointmentId
+    ) {
       count
       completedCount
       yesCount
+      noCount
     }
   }
 `;
@@ -2690,11 +2695,13 @@ export const UPDATE_SAVE_EXTERNAL_CONNECT = gql`
     $doctorId: String!
     $patientId: String!
     $externalConnect: Boolean
+    $appointmentId: String!
   ) {
     updateSaveExternalConnect(
       doctorId: $doctorId
       patientId: $patientId
       externalConnect: $externalConnect
+      appointmentId: $appointmentId
     ) {
       status
     }
