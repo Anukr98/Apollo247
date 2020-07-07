@@ -318,8 +318,8 @@ export const Prescriptions: React.FC = (props) => {
               <span className={classes.count}>01</span>
             </div>
             <div className={classes.ePrescriptionSec}>
-              <EPrescriptionCard />
-              <EPrescriptionCard />
+              {/* <EPrescriptionCard />
+              <EPrescriptionCard /> */}
               <AphButton
                 onClick={() => setIsDialogOpen(true)}
                 className={classes.addPrescriptionBtn}
@@ -346,12 +346,12 @@ export const Prescriptions: React.FC = (props) => {
           <div className={classes.dialogContent}>
             <Scrollbars autoHide={true} autoHeight autoHeightMax={'43vh'}>
               <div className={classes.customScrollBar}>
+                {/* <EPrescriptionCard />
                 <EPrescriptionCard />
                 <EPrescriptionCard />
                 <EPrescriptionCard />
                 <EPrescriptionCard />
-                <EPrescriptionCard />
-                <EPrescriptionCard />
+                <EPrescriptionCard /> */}
               </div>
             </Scrollbars>
           </div>

@@ -251,10 +251,12 @@ export enum ApiConstants {
   DEV_DOC_ID = '74c93b2e-8aab-4b6c-8391-5407f4afb833',
   QA_DOC_ID = '',
 
-  CACHE_EXPIRATION_120 = 120, // 2 mins mostly for otp
-  CACHE_EXPIRATION_600 = 600, // 10 mins
+  CACHE_EXPIRATION_120 = 120, // 2 mins
+  CACHE_EXPIRATION_300 = 300, // 5 mins
+  CACHE_EXPIRATION_600 = 600,  // 10 mins
   CACHE_EXPIRATION_900 = 900, //30 mins
   CACHE_EXPIRATION_3600 = 3600, // 1hour
+  CACHE_EXPIRATION_14400 = 14400, // 4hour
   //doctor no-photo url
   DOCTOR_DEFAULT_PHOTO_URL = 'https://prodaphstorage.blob.core.windows.net/doctors/no_photo.png',
 
@@ -387,4 +389,5 @@ export enum ApiConstants {
 
   //prescriptions uploaded through medicine, diagnostic orders or from OLD APPS
   PRESCRIPTION_UPLOADED_BY_PATIENT = 'Prescription uploaded by Patient',
+  ALERT_STORE_REMARKS = 'Customer Name : {name} , Mobile : {mobile} will be reaching Store in 10 mins to pickup order {orderNo} - Please handover Medicines.',
 }

@@ -34,13 +34,18 @@ export const getAppointmentOverviewTypeDefs = gql`
     count: Int
     completedCount: Int
     yesCount: Int
+    noCount: Int
   }
   extend type Query {
     getAppointmentOverview(
       appointmentOverviewInput: GetAllDoctorAppointmentsInput
     ): GetAppointmentOverviewResult!
     getAppointmentByPaymentOrderId(orderId: String): AppointmentList
-    getPastAppointmentsCount(doctorId: String!, patientId: String!): PastAppointmentsCountResult!
+    getPastAppointmentsCount(
+      doctorId: String!
+      patientId: String!
+      appointmentId: String
+    ): PastAppointmentsCountResult!
   }
   extend type Mutation {
     updatePaymentOrderId(
@@ -77,6 +82,7 @@ type PastAppointmentsCountResult = {
   count: number;
   completedCount: number;
   yesCount: number;
+  noCount: number;
 };
 
 const getRepos = ({ consultsDb, doctorsDb, patientsDb }: ConsultServiceContext) => ({
@@ -183,12 +189,17 @@ const getPastAppointmentsCount: Resolver<
   const externalConnectRepo = context.doctorsDb.getCustomRepository(
     DoctorPatientExternalConnectRepository
   );
-  const yesCount = await externalConnectRepo.findCountDoctorAndPatient(
+  let apptId = '';
+  if (!appointmentId) {
+    apptId = appointmentId;
+  }
+  const yesCount = await externalConnectRepo.findCountDoctorAndPatient(doctorId, patientId);
+  const noCount = await externalConnectRepo.findNoCountDoctorAndPatient(
     doctorId,
     patientId,
-    appointmentId
+    apptId
   );
-  return { count, completedCount, yesCount };
+  return { count, completedCount, yesCount, noCount };
 };
 
 export const getAppointmentOverviewResolvers = {
