@@ -606,6 +606,10 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
 
   getLatestMedicineOrderDetails(patientId: string) {
     return MedicineOrders.createQueryBuilder('medicine_orders')
+      .leftJoinAndSelect('medicine_orders.medicineOrderLineItems', 'medicineOrderLineItems')
+      .leftJoinAndSelect('medicine_orders.medicineOrderPayments', 'medicineOrderPayments')
+      .leftJoinAndSelect('medicine_orders.medicineOrdersStatus', 'medicineOrdersStatus')
+      .leftJoinAndSelect('medicine_orders.medicineOrderShipments', 'medicineOrderShipments')
       .andWhere('medicine_orders."patientId" = :patientId', { patientId })
       .andWhere(
         'medicine_orders."currentStatus" not in(:status1,:status2,:status3,:status4,:status5)',
