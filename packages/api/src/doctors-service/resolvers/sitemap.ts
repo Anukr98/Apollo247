@@ -69,13 +69,14 @@ const generateSitemap: Resolver<null, {}, DoctorsServiceContext, string> = async
   const doctorList = await doctorRepo.getListBySpecialty();
   if (doctorList.length > 0) {
     doctorList.forEach((doctor) => {
-      const doctorName =
+      let doctorName =
         doctor.displayName
           .trim()
           .toLowerCase()
           .replace(/\s/g, '-') +
         '-' +
         doctor.id;
+      doctorName = doctorName.replace('.', '');
       const modifiedDate =
         format(new Date(), 'yyyy-MM-dd') + 'T' + format(new Date(), 'hh:mm:ss') + '+00:00';
       const docStr =
@@ -108,7 +109,7 @@ const generateSitemap: Resolver<null, {}, DoctorsServiceContext, string> = async
   let cmsUrls = '\n<!--CMS links-->\n';
   if (cmsUrlsList && cmsUrlsList.data.length > 0) {
     cmsUrlsList.data.forEach((link: string) => {
-      const url = process.env.CMS_BASE_URL + link;
+      const url = process.env.SITEMAP_BASE_URL + 'covid19/article/' + link;
       cmsUrls += '<url>\n<loc>' + url + '</loc>\n<lastmod>' + modifiedDate + '</lastmod>\n</url>\n';
     });
   }
