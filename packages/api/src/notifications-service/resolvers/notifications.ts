@@ -2395,7 +2395,7 @@ const sendChatMessageToDoctor: Resolver<
   //const whatsAppLink= process.env.WHATSAPP_LINK_BOOK_APOINTMENT;
   let whatsAppMessageBody = ApiConstants.WHATSAPP_SD_CHAT_NOTIFICATION.replace(
     '{0}',
-    doctorDetails.firstName
+    doctorDetails.fullName
   ).replace('{1}', patientDetails.firstName);
   whatsAppMessageBody = whatsAppMessageBody;
   await sendNotificationWhatsapp(doctorDetails.mobileNumber, whatsAppMessageBody, 1);
