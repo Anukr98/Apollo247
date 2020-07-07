@@ -26,14 +26,14 @@ import { readableParam } from 'helpers/commonHelpers';
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
     root: {
-      backgroundColor: theme.palette.common.white,
+      backgroundColor: 'transparent',
       borderRadius: 10,
-      boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
+      boxShadow: 'none',
       height: '100%',
       position: 'relative',
       paddingBottom: 40,
       [theme.breakpoints.down('sm')]: {
-        boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
+        boxShadow: 'none',
       },
     },
     iconGroup: {
@@ -125,15 +125,28 @@ const useStyles = makeStyles((theme: Theme) => {
       position: 'absolute',
       right: -5,
       top: -8,
+      [theme.breakpoints.down('sm')]: {
+        right: 0,
+        top: 0,
+      },
+      '& img': {
+        width: 80,
+      },
     },
     bottomAction: {
       position: 'absolute',
       width: '100%',
       bottom: 0,
+      '& button': {
+        backgroundColor: '#fff',
+        boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
+        color: '#fc9916',
+        fontWeight: 'bold',
+      },
     },
     button: {
       width: '100%',
-      borderRadius: '0 0 10px 10px',
+      borderRadius: 10,
       boxShadow: 'none',
     },
     cardLoader: {
@@ -177,10 +190,10 @@ export const InfoCard: React.FC<InfoCardProps> = (props) => {
     doctorInfo.specialty.name.toLowerCase();
   const consultMode =
     doctorInfo &&
-    doctorInfo.consultHours &&
-    doctorInfo.consultHours.length > 0 &&
-    doctorInfo.consultHours[0] &&
-    doctorInfo.consultHours[0].consultMode
+      doctorInfo.consultHours &&
+      doctorInfo.consultHours.length > 0 &&
+      doctorInfo.consultHours[0] &&
+      doctorInfo.consultHours[0].consultMode
       ? doctorInfo.consultHours[0].consultMode
       : '';
   const consultModeOnline: any = [];
@@ -284,7 +297,7 @@ export const InfoCard: React.FC<InfoCardProps> = (props) => {
                 className={doctorType.toLowerCase() !== 'apollo' ? classes.otherDoctorType : ''}
                 src={
                   doctorType.toLowerCase() === 'apollo'
-                    ? require('images/ic_apollo.svg')
+                    ? require('images/ic_apollo.png')
                     : require('images/partner_doc.png')
                 }
                 alt=""
@@ -356,10 +369,10 @@ export const InfoCard: React.FC<InfoCardProps> = (props) => {
                 <CircularProgress size={22} color="secondary" />
               ) : getDiffInMinutes(nextAvailability) > 0 &&
                 getDiffInMinutes(nextAvailability) <= 60 ? (
-                'CONSULT NOW'
-              ) : (
-                'BOOK APPOINTMENT'
-              )}
+                    'CONSULT NOW'
+                  ) : (
+                    'BOOK APPOINTMENT'
+                  )}
             </AphButton>
           </div>
         )}
