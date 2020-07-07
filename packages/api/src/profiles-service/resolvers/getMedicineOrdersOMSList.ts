@@ -657,9 +657,9 @@ const getLatestMedicineOrder: Resolver<
   if (!patientDetails) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
-  if (mobileNumber != patientDetails.mobileNumber) {
-    throw new AphError(AphErrorMessages.INVALID_PATIENT_DETAILS, undefined, {});
-  }
+  // if (mobileNumber != patientDetails.mobileNumber) {
+  //   throw new AphError(AphErrorMessages.INVALID_PATIENT_DETAILS, undefined, {});
+  // }
   let uhid = args.patientUhid;
   if (process.env.NODE_ENV == 'local') uhid = ApiConstants.CURRENT_UHID.toString();
   else if (process.env.NODE_ENV == 'dev') uhid = ApiConstants.CURRENT_UHID.toString();
@@ -741,7 +741,8 @@ const getLatestMedicineOrder: Resolver<
   if (offlineList == '') {
     const medRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
     offlineList = await medRepo.getLatestMedicineOrderDetails(patientDetails.id);
-    if (offlineList.length == 0 || offlineList == null || offlineList == '')
+    console.log(offlineList, 'offlineList inside');
+    if ((offlineList && offlineList.length == 0) || offlineList == null || offlineList == '')
       throw new AphError(AphErrorMessages.INVALID_MEDICINE_ORDER_ID, undefined, {});
   }
 
