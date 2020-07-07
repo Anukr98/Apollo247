@@ -609,6 +609,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     AsyncStorage.removeItem('deeplinkReferalCode');
     storePatientDetailsTOBugsnag();
     callAPIForNotificationResult();
+    getPersonalizesAppointments();
   }, []);
 
   const storePatientDetailsTOBugsnag = async () => {
@@ -750,7 +751,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       if (selectedProfile !== currentPatient.id) {
         setAppointmentLoading(true);
         setSelectedProfile(currentPatient.id);
-        getPersonalizesAppointments(currentPatient);
         client
           .query<getPatientFutureAppointmentCount>({
             query: GET_PATIENT_FUTURE_APPOINTMENT_COUNT,
@@ -939,14 +939,19 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       });
   };
 
-  const getPersonalizesAppointments = async (details: any) => {
-    const uhid = g(details, 'uhid');
+  const getPersonalizesAppointments = async () => {
+    // const uhid = g(details, 'uhid');
+
+    const storedUhid: any = await AsyncStorage.getItem('selectUserUHId');
+
+    const selectedUHID = storedUhid ? storedUhid : g(currentPatient, 'uhid');
 
     const uhidSelected = await AsyncStorage.getItem('UHIDused');
-    // console.log('uhidSelected', uhidSelected);
+    // console.log('selectedUHID', selectedUHID);
+    // console.log('selectUserId', selectUserId);
 
     if (uhidSelected !== null) {
-      if (uhidSelected === uhid) {
+      if (uhidSelected === selectedUHID) {
         if (Object.keys(appointmentsPersonalized).length != 0) {
           // console.log('appointmentsPersonalized', appointmentsPersonalized);
 
@@ -959,7 +964,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       }
     }
 
-    getPatientPersonalizedAppointmentList(client, uhid)
+    getPatientPersonalizedAppointmentList(client, selectedUHID)
       .then((data: any) => {
         const appointmentsdata =
           g(data, 'data', 'data', 'getPatientPersonalizedAppointments', 'appointmentDetails') || [];
