@@ -1222,4 +1222,7 @@ export class DoctorPatientExternalConnect extends BaseEntity {
 
   @Column({ nullable: true })
   patientId: string;
+
+  @Column({ nullable: true })
+  appointmentId: string;
 }

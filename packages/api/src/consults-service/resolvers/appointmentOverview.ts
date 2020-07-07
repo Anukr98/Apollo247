@@ -171,10 +171,10 @@ const getAppointmentByPaymentOrderId: Resolver<
 
 const getPastAppointmentsCount: Resolver<
   null,
-  { doctorId: string; patientId: string },
+  { doctorId: string; patientId: string; appointmentId: string },
   ConsultServiceContext,
   PastAppointmentsCountResult
-> = async (parent, { doctorId, patientId }, context) => {
+> = async (parent, { doctorId, patientId, appointmentId }, context) => {
   if (!doctorId) throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID, undefined, {});
   if (!patientId) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   const { apptRepo } = getRepos(context);
@@ -183,7 +183,11 @@ const getPastAppointmentsCount: Resolver<
   const externalConnectRepo = context.doctorsDb.getCustomRepository(
     DoctorPatientExternalConnectRepository
   );
-  const yesCount = await externalConnectRepo.findCountDoctorAndPatient(doctorId, patientId);
+  const yesCount = await externalConnectRepo.findCountDoctorAndPatient(
+    doctorId,
+    patientId,
+    appointmentId
+  );
   return { count, completedCount, yesCount };
 };
 

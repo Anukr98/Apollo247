@@ -369,6 +369,7 @@ const bookAppointment: Resolver<
       doctorId: appointmentInput.doctorId,
       patientId: appointmentInput.patientId,
       externalConnect: appointmentInput.externalConnect,
+      appointmentId: appointment.id,
     };
     externalConnectRepo.saveExternalConnectData(attrs);
   }
