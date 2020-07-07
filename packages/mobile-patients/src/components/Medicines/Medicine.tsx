@@ -188,7 +188,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     // refetch: latestMedicineOrderRefetch,
   } = useQuery<getLatestMedicineOrder, getLatestMedicineOrderVariables>(GET_LATEST_MEDICINE_ORDER, {
     variables: { patientUhid: g(currentPatient, 'uhid') || '' },
-    fetchPolicy: 'cache-first', // as per jira ticket - Get this data from backend only once in session - when we go to medicine home page the first time.
+    fetchPolicy: 'no-cache',
   });
   const latestMedicineOrder =
     latestMedicineOrderLoading || latestMedicineOrderError
