@@ -363,10 +363,7 @@ export const OnlineCheckout: React.FC = () => {
   const [couponCode, setCouponCode] = React.useState<string>('');
   const [revisedAmount, setRevisedAmount] = React.useState<number>(0);
 
-  const [
-    validateCouponResult,
-    setValidateCouponResult,
-  ] = useState<ValidateConsultCoupon_validateConsultCoupon | null>(null);
+  const [validateCouponResult, setValidateCouponResult] = useState<any>({});
   const [validityStatus, setValidityStatus] = useState<boolean>(false);
 
   const apolloClient = useApolloClient();
@@ -412,13 +409,12 @@ export const OnlineCheckout: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (validateCouponResult && validateCouponResult.revisedAmount) {
+    if (validateCouponResult && validateCouponResult.valid) {
       localStorage.setItem(
         'consultBookDetails',
         JSON.stringify({
           ...pageData,
-          consultCouponValue:
-            parseFloat(pageData.amount) - parseFloat(validateCouponResult.revisedAmount),
+          consultCouponValue: parseFloat(validateCouponResult.discount),
           consultCouponCodeInitial: couponCode,
         })
       );
@@ -447,13 +443,26 @@ export const OnlineCheckout: React.FC = () => {
         doctorDetails.getDoctorDetailsById.specialty &&
         doctorDetails.getDoctorDetailsById.specialty.name) ||
       null;
+    const specialityId =
+      (doctorDetails &&
+        doctorDetails.getDoctorDetailsById &&
+        doctorDetails.getDoctorDetailsById.specialty &&
+        doctorDetails.getDoctorDetailsById.specialty.id) ||
+      null;
+    const hospitalId =
+      doctorDetails &&
+      doctorDetails.getDoctorDetailsById &&
+      doctorDetails.getDoctorDetailsById.doctorHospital[0] &&
+      doctorDetails.getDoctorDetailsById.doctorHospital[0].facility
+        ? doctorDetails.getDoctorDetailsById.doctorHospital[0].facility.id
+        : '';
     // const facilityAddress =
     //   (doctorDetails &&
     //     doctorDetails.getDoctorDetailsById &&
     //     doctorDetails.getDoctorDetailsById.doctorHospital &&
     //     doctorDetails.getDoctorDetailsById.doctorHospital[0].facility) ||
     //   null;
-    
+
     return (
       <div>
         <div className={classes.pageTopHeader}>
@@ -462,7 +471,7 @@ export const OnlineCheckout: React.FC = () => {
         <div className={classes.container}>
           <div className={classes.pageContainer}>
             <div className={classes.pageHeader}>
-              <Link to={clientRoutes.doctorsLanding()}>
+              <Link to={clientRoutes.specialityListing()}>
                 <div className={classes.backArrow}>
                   <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
                   <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
@@ -555,11 +564,8 @@ export const OnlineCheckout: React.FC = () => {
                     {couponCode.length > 0 && (
                       <div className={classes.discountTotal}>
                         Savings of Rs.{' '}
-                        {validateCouponResult && validateCouponResult.revisedAmount
-                          ? (
-                              parseFloat(onlineConsultationFees) -
-                              parseFloat(validateCouponResult.revisedAmount)
-                            ).toFixed(2)
+                        {validateCouponResult && validateCouponResult.valid
+                          ? validateCouponResult.discount.toFixed(2)
                           : consultCouponValue && consultCouponValue.toFixed(2)}{' '}
                         on the bill
                       </div>
@@ -574,7 +580,7 @@ export const OnlineCheckout: React.FC = () => {
                       Rs. {Number(onlineConsultationFees).toFixed(2)}
                     </span>
                   </div>
-                  {(validateCouponResult && validateCouponResult.revisedAmount) ||
+                  {(validateCouponResult && validateCouponResult.valid) ||
                   (consultCouponCodeInitial && consultCouponCodeInitial.length) ? (
                     <div className={`${classes.priceRow} ${classes.discountRow}`}>
                       <span>
@@ -582,12 +588,9 @@ export const OnlineCheckout: React.FC = () => {
                       </span>
                       <span className={classes.price}>
                         - Rs.{' '}
-                        {validateCouponResult && validateCouponResult.revisedAmount
-                          ? (
-                              parseFloat(onlineConsultationFees) -
-                              parseFloat(validateCouponResult.revisedAmount)
-                            ).toFixed(2)
-                          : consultCouponValue.toFixed(2)}
+                        {validateCouponResult && validateCouponResult.valid
+                          ? validateCouponResult.discount.toFixed(2)
+                          : consultCouponValue}
                       </span>
                     </div>
                   ) : (
@@ -597,8 +600,10 @@ export const OnlineCheckout: React.FC = () => {
                     <span>To Pay</span>
                     <span className={classes.price}>
                       Rs.{' '}
-                      {validateCouponResult && validateCouponResult.revisedAmount
-                        ? Number(validateCouponResult.revisedAmount).toFixed(2)
+                      {validateCouponResult && validateCouponResult.valid
+                        ? (validateCouponResult.billAmount - validateCouponResult.discount).toFixed(
+                            2
+                          )
                         : revisedAmount.toFixed(2)}
                     </span>
                   </div>
@@ -623,8 +628,10 @@ export const OnlineCheckout: React.FC = () => {
                         }}
                       >
                         Pay Rs.{' '}
-                        {validateCouponResult && validateCouponResult.revisedAmount
-                          ? Number(validateCouponResult.revisedAmount).toFixed(2)
+                        {validateCouponResult && validateCouponResult.valid
+                          ? Number(
+                              validateCouponResult.billAmount - validateCouponResult.discount
+                            ).toFixed(2)
                           : revisedAmount.toFixed(2)}
                       </AphButton>
                     )}
@@ -650,6 +657,8 @@ export const OnlineCheckout: React.FC = () => {
               validityStatus={validityStatus}
               setValidityStatus={setValidityStatus}
               speciality={speciality}
+              specialityId={specialityId}
+              hospitalId={hospitalId}
             />
           </AphDialog>
         </div>

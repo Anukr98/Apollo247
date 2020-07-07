@@ -6,7 +6,7 @@ export interface MedicineProduct {
   id: number;
   category_id: string;
   image: string | null;
-  is_in_stock: boolean;
+  is_in_stock: number;
   is_prescription_required: '0' | '1'; //1 for required
   name: string;
   price: number;
@@ -16,7 +16,7 @@ export interface MedicineProduct {
   status: number;
   thumbnail: string | null;
   type_id: 'Fmcg' | 'Pharma';
-  mou: string;
+  mou: string; // minimum order unit
   manufacturer: string;
   PharmaOverview: PharmaOverview[];
 }
@@ -71,6 +71,7 @@ export interface Store {
   phone: string;
   city: string;
   state: string;
+  state_id: string;
   message: string;
 }
 
@@ -94,6 +95,17 @@ export interface ClinicDetailsResponse {
   data: Clinic[];
 }
 
+export interface GetStoreInventoryResponse {
+  shopId: string;
+  requestStatus: boolean;
+  requestMessage: string;
+  itemDetails: {
+    itemId: string;
+    qty: number;
+    mrp: number;
+  }[];
+}
+
 export interface GetDeliveryTimeResponse {
   tat: {
     artCode: string;
@@ -102,20 +114,8 @@ export interface GetDeliveryTimeResponse {
   }[];
   errorMSG?: string;
 }
-interface InventoryCheckApiResponse {
-  InvChkResult: {
-    Message: string; //"Data Founds" | "Authentication Failure-Invalid Token" | "No Items to Check Inventory"
-    Status: boolean;
-    item:
-      | {
-          artCode: string;
-          batch: string;
-          expDate: string; //'2024-05-30 00:00:00.0'
-          mrp: number;
-          qoh: number;
-        }[]
-      | null;
-  };
+interface MedCartItemsDetailsResponse {
+  productdp: MedicineProduct[];
 }
 
 export type GooglePlacesType =
@@ -262,183 +262,6 @@ export interface GetPackageDataResponse {
 export interface NotificationResponse {
   data: { data: [] };
 }
-/*
-type CityOptions =
-  | 'hyderabad'
-  | 'bengaluru'
-  | 'chennai'
-  | 'delhi'
-  | 'kolkata'
-  | 'mumbai'
-  | 'vijaywada'
-  | 'ahmedabad'
-  | 'all';
-
-export interface CartItem extends Partial<MedicineProduct> {
-  item_id: number;
-  sku: string;
-  qty: number;
-  product_type: string;
-  quote_id: string;
-  extension_attributes: {
-    image_url: string;
-  };
-}
-
-export interface Customer {
-  email?: string;
-  firstname?: string;
-  lastname?: string;
-}
-
-export interface BillingAddress {
-  id: number;
-  region?: unknown;
-  region_id?: unknown;
-  region_code?: unknown;
-  country_id?: unknown;
-  street: string[];
-  telephone?: unknown;
-  postcode?: unknown;
-  city?: string;
-  firstname?: string;
-  lastname?: string;
-  email?: string;
-  same_as_billing: number;
-  save_in_address_book: number;
-}
-
-export interface Currency {
-  global_currency_code: string;
-  base_currency_code: string;
-  store_currency_code: string;
-  quote_currency_code: string;
-  store_to_base_rate: number;
-  store_to_quote_rate: number;
-  base_to_global_rate: number;
-  base_to_quote_rate: number;
-}
-
-export interface ExtensionAttributes {
-  shipping_assignments: unknown[];
-}
-
-export interface CartInfoResponse {
-  id: number;
-  created_at: string;
-  updated_at: string;
-  is_active: boolean;
-  is_virtual: boolean;
-  items: CartItem[];
-  items_count: number;
-  items_qty: number;
-  customer: Customer;
-  billing_address: BillingAddress;
-  orig_order_id: number;
-  currency: Currency;
-  customer_is_guest: boolean;
-  customer_note_notify: boolean;
-  customer_tax_class_id: number;
-  store_id: number;
-  extension_attributes: ExtensionAttributes;
-  grand_total: number;
-}
-*/
-
-// 9f15bdd0fcd5423190c2e877ba0228A24
-// const AUTH_TOKEN = 'Bearer dp50h14gpxtqf8gi1ggnctqcrr0io6ms';
-
-/*
-export const getQuoteId = async () =>
-  (await AsyncStorage.getItem('QUOTE_ID')) || (await generateAndSaveQuoteId()); // in-progress, need to optimize
-
-const getCartId = async () =>
-  (await AsyncStorage.getItem('CART_ID')) || (await generateAndSaveCartId()); // in-progress, need to optimize
-
-let CART_INFO: CartInfoResponse | null = null;
-
-export const setLocalCartInfo = (cartInfo: CartInfoResponse | null) => {
-  CART_INFO = cartInfo;
-};
-
-export const getCartInfo = async () => {
-  if (CART_INFO) {
-    return CART_INFO;
-  } else {
-    const cartInfo = (await getCartInfoApi()).data;
-    await AsyncStorage.setItem('CART_ID', cartInfo.id.toString()); //optimize the flow later
-    CART_INFO = cartInfo;
-    return CART_INFO;
-  }
-};
-
-export const generateAndSaveQuoteId = async (): Promise<string> => {
-  const quoteId = (await generateQuoteIdApi()).data.quote_id;
-  await AsyncStorage.setItem('QUOTE_ID', quoteId);
-  return quoteId;
-};
-
-export const generateAndSaveCartId = async (): Promise<number> => {
-  const cartId = (await getCartInfoApi()).data.id;
-  await AsyncStorage.setItem('CART_ID', cartId.toString());
-  return cartId;
-};
-
-export const generateQuoteIdApi = (): Promise<AxiosResponse<{ quote_id: string }>> => {
-  return Axios.get(`http://api.apollopharmacy.in/apollo_api.php?type=guest_quote`);
-};
-
-export const getCartInfoApi = async (): Promise<AxiosResponse<CartInfoResponse>> => {
-  return Axios.get(
-    `http://api.apollopharmacy.in/apollo_api.php?type=guest_quote_info&quote_id=${await getQuoteId()}`
-  );
-};
-
-export const addProductToCartApi = async (
-  productSku: string,
-  quantity: number = 1
-): Promise<AxiosResponse<CartItem>> => {
-  const cartId = await getCartId();
-  const quoteId = await getQuoteId();
-
-  console.log({ cartId, quoteId });
-
-  return Axios.post(`http://api.apollopharmacy.in/rest/V1/guest-carts/${cartId}/items`, {
-    cartItem: { quote_id: quoteId, sku: productSku, qty: quantity },
-  });
-};
-
-export const incOrDecProductCountToCartApi = async (
-  productSku: string,
-  cartItemId: number,
-  newQuantity: number
-): Promise<AxiosResponse<CartItem>> => {
-  return Axios.put(
-    `http://api.apollopharmacy.in/rest/V1/guest-carts/${await getCartId()}/items/${cartItemId}`,
-    {
-      cartItem: {
-        quote_id: await getQuoteId(),
-        sku: productSku,
-        item_id: cartItemId,
-        qty: newQuantity,
-      },
-    }
-  );
-};
-
-export const removeProductFromCartApi = async (
-  cartItemId: number
-): Promise<AxiosResponse<{ status: number }>> => {
-  return Axios.post(
-    `http://api.apollopharmacy.in/apollo_api.php?type=guest_delete_item&quote_id=${await getQuoteId()}&item_id=${cartItemId}`,
-    {
-      cartItem: {
-        item_id: cartItemId,
-      },
-    }
-  );
-};
-*/
 
 const config = AppConfig.Configuration;
 
@@ -507,6 +330,26 @@ export const searchClinicApi = async (): Promise<AxiosResponse<ClinicDetailsResp
   );
 };
 
+export const getStoreInventoryApi = (
+  shopId: string,
+  items: string[] // SKU list
+): Promise<AxiosResponse<GetStoreInventoryResponse>> => {
+  return Axios.post(
+    `${config.GET_STORE_INVENTORY[0]}`,
+    {
+      shopId: shopId,
+      itemdetails: items.map((itemId) => ({
+        ItemId: itemId,
+      })),
+    },
+    {
+      headers: {
+        Authentication: config.GET_STORE_INVENTORY[1],
+      },
+    }
+  );
+};
+
 export const pinCodeServiceabilityApi = (
   pinCode: string
 ): Promise<AxiosResponse<{ Availability: boolean }>> => {
@@ -529,18 +372,17 @@ export const pinCodeServiceabilityApi = (
   );
 };
 
-export const inventoryCheckApi = (
+export const medCartItemsDetailsApi = (
   itemIds: string[]
-): Promise<AxiosResponse<InventoryCheckApiResponse>> => {
+): Promise<AxiosResponse<MedCartItemsDetailsResponse>> => {
   return Axios.post(
-    `${config.INVENTORY_CHECK[0]}/INV_CHECK`, //Production
+    config.MED_CART_ITEMS_DETAILS[0],
     {
-      siteid: '14057',
-      Itemid: itemIds.map((ItemID) => ({ ItemID })),
+      params: itemIds.toString(),
     },
     {
       headers: {
-        Token: config.INVENTORY_CHECK[1],
+        Authorization: config.MED_CART_ITEMS_DETAILS[1],
       },
     }
   );
@@ -612,7 +454,7 @@ const googlePlacesApiKey = AppConfig.Configuration.GOOGLE_API_KEY;
 export const getPlaceInfoByPincode = (
   pincode: string
 ): Promise<AxiosResponse<PlacesApiResponse>> => {
-  const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${pincode}&key=${googlePlacesApiKey}`;
+  const url = `https://maps.googleapis.com/maps/api/geocode/json?address=pincode:${pincode}&components=country:in&key=${googlePlacesApiKey}`;
   return Axios.get(url);
 };
 
@@ -634,15 +476,12 @@ export const getPlaceInfoByPlaceId = (
 // let cancelAutoCompletePlaceSearchApi: Canceler | undefined;
 
 export const autoCompletePlaceSearch = (
-  searchText: string,
-  filterCountry?: boolean
+  searchText: string
 ): Promise<AxiosResponse<AutoCompleteApiResponse>> => {
   // const CancelToken = Axios.CancelToken;
   // cancelAutoCompletePlaceSearchApi && cancelAutoCompletePlaceSearchApi();
 
-  const url = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${searchText}${
-    filterCountry ? '&components=country:in' : ''
-  }&key=${googlePlacesApiKey}`;
+  const url = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${searchText}&components=country:in&key=${googlePlacesApiKey}`;
   return Axios.get(url, {
     // cancelToken: new CancelToken((c) => {
     //   // An executor function receives a cancel function as a parameter
@@ -748,10 +587,35 @@ export const notifcationsApi = (params: {
   });
 };
 
+export const getNearByStoreDetailsApi = (pincode: any): Promise<AxiosResponse<any>> => {
+  const url = `https://notifications.apollo247.com/webhooks/store/${pincode}`;
+  return Axios.get(url, {
+    headers: { 'x-api-key': 'gNXyYhY2VDxwzv8f6TwJqvfYmPmj' },
+  });
+};
+
+export const callToExotelApi = (params: any): Promise<AxiosResponse<any>> => {
+  const url = `https://notifications.apollo247.com/webhooks/exotel/call`;
+  return Axios.post(
+    url,
+    { ...params },
+    {
+      headers: {
+        'x-api-key': 'gNXyYhY2VDxwzv8f6TwJqvfYmPmj',
+      },
+    }
+  );
+};
+
 export const fetchPaymentOptions = (): Promise<AxiosResponse<any>> => {
   const baseUrl = AppConfig.Configuration.CONSULT_PG_BASE_URL;
   const url = `${baseUrl}/list-of-payment-methods`;
   return Axios.get(url);
+};
+
+export const exotelCallAPI = (params: any): Promise<AxiosResponse<any>> => {
+  const url = AppConfig.Configuration.EXOTEL_CALL_API_URL;
+  return Axios.post(url, params);
 };
 
 export const getTxnStatus = (orderID: string): Promise<AxiosResponse<any>> => {

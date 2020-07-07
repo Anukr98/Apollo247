@@ -69,7 +69,7 @@ const login: Resolver<
   let otp = generateOTP();
   loginLogger('OTP_GENERATION_END');
   // get static otp env specific
-  let staticOTP = getStaticOTP({ mobileNumber });
+  const staticOTP = getStaticOTP({ mobileNumber });
   otp = staticOTP ? staticOTP : otp;
 
   loginLogger('OTP_INSERT_START');
@@ -83,7 +83,7 @@ const login: Resolver<
   loginLogger('OTP_INSERT_END');
 
   // bypass otp env specific
-  let bypassRes = OTPBypass({ otpSaveResponse, logger: loginLogger });
+  const bypassRes = OTPBypass({ otpSaveResponse, logger: loginLogger });
   if (bypassRes) return bypassRes;
 
   //call sms gateway service to send the OTP here
@@ -289,21 +289,22 @@ export const loginResolvers = {
   },
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const sendMessage = async (args: any) => {
   const { loginType, mobileNumber, otp, hashCode, logger, otpSaveResponse } = args;
   logger('SEND_SMS___START');
-  let smsResult;
+  //let smsResult;
   if (loginType == LOGIN_TYPE.DOCTOR) {
     const message = ApiConstants.DOCTOR_WHATSAPP_OTP.replace('{0}', otp);
-    let promiseSendNotification = sendNotificationWhatsapp(mobileNumber, message, 1);
-    let promiseSendSMS = sendSMS(mobileNumber, otp, hashCode);
-    let messageSentResponse = await Promise.all([
-      promiseSendNotification.catch((err) => err),
-      promiseSendSMS.catch((err) => err),
+    const promiseSendNotification = sendNotificationWhatsapp(mobileNumber, message, 1);
+    const promiseSendSMS = sendSMS(mobileNumber, otp, hashCode);
+    const messageSentResponse = await Promise.all([
+      promiseSendNotification.catch((err) => { log('smsOtpAPILogger', `API_CALL_ERROR`, 'sendNotificationWhatsapp()->CATCH_BLOCK', '', JSON.stringify(err)); return err; }),
+      promiseSendSMS.catch((err) => { log('smsOtpAPILogger', `API_CALL_ERROR`, 'sendSMS()->CATCH_BLOCK', '', JSON.stringify(err)); return err; }),
     ]);
-    smsResult = messageSentResponse[1];
+    messageSentResponse[1];
   } else {
-    smsResult = await sendSMS(mobileNumber, otp, hashCode);
+    await sendSMS(mobileNumber, otp, hashCode);
   }
   logger('SEND_SMS___END');
 
@@ -315,6 +316,7 @@ const sendMessage = async (args: any) => {
   };
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const OTPBypass = (args: any) => {
   const { mobileNumber, otpSaveResponse, logger } = args;
   //if production environment, and specific mobileNumber, return the response without sending SMS
@@ -343,6 +345,7 @@ const OTPBypass = (args: any) => {
   return null;
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const getStaticOTP = (args: any) => {
   const { mobileNumber } = args;
   //if performance environment(as), use the static otp

@@ -53,6 +53,7 @@ export enum WebEngageEventName {
   CONSULTATION_BOOKED = 'Consultation booked',
   PHARMACY_FEEDBACK_GIVEN = 'Pharmacy Feedback Given',
   PAST_DOCTOR_SEARCH = 'Past Doctor Search',
+  CONSULT_TYPE_SELECTION = 'Consult Type Selection',
 
   MY_ORDERS_CLICKED = 'My Orders Clicked',
   PHARMACY_MY_ORDER_TRACKING_CLICKED = 'Pharmacy My Order Tracking Clicked',
@@ -76,6 +77,7 @@ export enum WebEngageEventName {
   MY_ACCOUNT = 'My Account',
   FIND_A_DOCTOR = 'Find a Doctor',
   TABBAR_APPOINTMENTS_CLICKED = 'Appointments Clicked on tab bar',
+  APOLLO_KAVACH_PROGRAM = 'Apollo Kavach Program',
 
   // Diagnostics Events
   FEATURED_TEST_CLICKED = 'Featured Test Clicked',
@@ -118,6 +120,7 @@ export enum WebEngageEventName {
   PHARMACY_AUTO_SELECT_LOCATION_CLICKED = 'Pharmacy Auto Select Location Clicked',
   PHARMACY_ENTER_DELIVERY_PINCODE_CLICKED = 'Pharmacy Enter Delivery Pincode Clicked',
   PHARMACY_ENTER_DELIVERY_PINCODE_SUBMITTED = 'Pharmacy Enter Delivery Pincode Submitted ',
+  PHARMACY_PINCODE_NONSERVICABLE = 'Pharmacy location nonservicable',
 
   // Payments Events
   PAYMENT_INSTRUMENT = 'Payment Instrument',
@@ -195,6 +198,7 @@ export interface WebEngageEvents {
   [WebEngageEventName.CORONA_VIRUS_TALK_TO_OUR_EXPERT]: { clicked: true };
   [WebEngageEventName.LEARN_MORE_ABOUT_CORONAVIRUS]: { clicked: true };
   [WebEngageEventName.CHECK_YOUR_RISK_LEVEL]: { clicked: true };
+  [WebEngageEventName.APOLLO_KAVACH_PROGRAM]: { clicked: true };
   [WebEngageEventName.NOTIFICATION_ICON]: { clicked: true };
   [WebEngageEventName.ACTIVE_APPOINTMENTS]: { clicked: true };
   [WebEngageEventName.NEED_HELP]: PatientInfoWithNeedHelp; // source values may change later
@@ -213,6 +217,7 @@ export interface WebEngageEvents {
   [WebEngageEventName.SEARCH]: {
     keyword: string;
     Source: 'Pharmacy Home' | 'Pharmacy List';
+    resultsdisplayed: number;
   };
   [WebEngageEventName.PHARMACY_SEARCH_RESULTS]: {
     keyword: string;
@@ -262,6 +267,8 @@ export interface WebEngageEvents {
     'category name'?: string;
     'category ID'?: string;
     Section?: string;
+    af_revenue: number;
+    af_currency: string;
     // 'Patient Name': string;
     // 'Patient UHID': string;
     // Relation: string;
@@ -400,6 +407,13 @@ export interface WebEngageEvents {
     'Payment Type'?: 'COD' | 'Prepaid'; // Optional
     'Cart ID'?: string | number; // Optional
     'Service Area': 'Pharmacy' | 'Diagnostic';
+    'Mode of Delivery'?: 'Home' | 'Pickup';
+    'Store Id'?: string;
+    'Store Name'?: string;
+    'Store Number'?: string;
+    'Store Address'?: string;
+    af_revenue: number;
+    af_currency: string;
   };
   [WebEngageEventName.DIAGNOSTIC_CHECKOUT_COMPLETED]: {
     'Order ID': string | number;
@@ -427,6 +441,10 @@ export interface WebEngageEvents {
     Serviceable: string;
     Keyword: string;
     Source: string;
+  };
+  [WebEngageEventName.PHARMACY_PINCODE_NONSERVICABLE]: {
+    'Mobile Number': string;
+    Pincode: string;
   };
 
   // ********** ConsultEvents ********** \\
@@ -489,6 +507,15 @@ export interface WebEngageEvents {
     Relation: string;
     'Patient Age': number;
     'Patient Gender': string;
+    'Customer ID': string;
+  };
+  [WebEngageEventName.CONSULT_TYPE_SELECTION]: {
+    'Consult Type': 'Online' | 'In Person';
+    'Doctor ID': string;
+    'Doctor Name': string;
+    'Patient Name': string;
+    'Patient UHID': string;
+    'Mobile Number': string;
     'Customer ID': string;
   };
   // confirm the type of data for the below
@@ -571,6 +598,8 @@ export interface WebEngageEvents {
     'Doctor ID': string;
     'Doctor Name': string;
     'Net Amount': number;
+    af_revenue: number;
+    af_currency: string;
   };
   [WebEngageEventName.CONSULT_FEEDBACK_GIVEN]: {
     'Doctor Name': string;

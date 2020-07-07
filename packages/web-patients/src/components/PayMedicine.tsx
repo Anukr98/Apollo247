@@ -4,7 +4,6 @@ import { Theme, Typography, CircularProgress } from '@material-ui/core';
 import { Header } from 'components/Header';
 import Paper from '@material-ui/core/Paper';
 import { AphButton, AphDialog, AphDialogTitle, AphDialogClose } from '@aph/web-ui-components';
-
 import Grid from '@material-ui/core/Grid';
 import Checkbox from '@material-ui/core/Checkbox';
 import FormGroup from '@material-ui/core/FormGroup';
@@ -387,10 +386,7 @@ export const PayMedicine: React.FC = (props) => {
   const [isApplyCouponDialogOpen, setIsApplyCouponDialogOpen] = React.useState<boolean>(false);
   const [showZeroPaymentButton, setShowZeroPaymentButton] = React.useState<boolean>(true);
 
-  const [
-    validateConsultCouponResult,
-    setValidateConsultCouponResult,
-  ] = useState<ValidateConsultCoupon_validateConsultCoupon | null>(null);
+  const [validateConsultCouponResult, setValidateConsultCouponResult] = useState<any>({});
   const [consultCouponCode, setConsultCouponCode] = React.useState<string>('');
   const [revisedAmount, setRevisedAmount] = React.useState<number>(0);
   const [consult, setConsult] = useState<boolean>(false);
@@ -402,6 +398,7 @@ export const PayMedicine: React.FC = (props) => {
     ePrescriptionData,
     cartItems,
   } = useShoppingCart();
+
   const params = useParams<{
     payType: string;
     prDis: string;
@@ -452,12 +449,12 @@ export const PayMedicine: React.FC = (props) => {
     consultCouponCodeInitial,
     consultCouponValue = 0,
     doctorId,
+    doctorName,
     hospitalId,
-    patientId,
     speciality,
   } = consultBookDetails;
 
-  const { city } = useLocationDetails();
+  const { city, currentPincode } = useLocationDetails();
   const { authToken } = useAuth();
   const onlineConsultationFees = amount;
   useEffect(() => {
@@ -488,14 +485,16 @@ export const PayMedicine: React.FC = (props) => {
   });
 
   useEffect(() => {
-    if (validateConsultCouponResult && validateConsultCouponResult.revisedAmount) {
-      setRevisedAmount(parseFloat(validateConsultCouponResult.revisedAmount));
+    if (validateConsultCouponResult && validateConsultCouponResult.valid) {
+      console.log('validateConsultCouponResult', validateConsultCouponResult);
+      setRevisedAmount(
+        validateConsultCouponResult.billAmount - validateConsultCouponResult.discount
+      );
       localStorage.setItem(
         'consultBookDetails',
         JSON.stringify({
           ...consultBookDetails,
-          consultCouponValue:
-            parseFloat(amount) - parseFloat(validateConsultCouponResult.revisedAmount),
+          consultCouponValue: validateConsultCouponResult.discount,
           consultCouponCodeInitial: consultCouponCode,
         })
       );
@@ -638,6 +637,24 @@ export const PayMedicine: React.FC = (props) => {
     paymentMutation()
       .then((res) => {
         /**Gtm code start  */
+        let ecommItems: any[] = [];
+        cartItems.map((items, key) => {
+          ecommItems.push({
+            item_name: items.name,
+            item_id: items.sku,
+            price: items.price,
+            item_category: 'Pharmacy',
+            item_category_2: items.type_id
+              ? items.type_id.toLowerCase() === 'pharma'
+                ? 'Drugs'
+                : 'FMCG'
+              : null,
+            // 'item_category_4': '', // for future
+            item_variant: 'Default',
+            index: key + 1,
+            quantity: items.quantity,
+          });
+        });
         _obTracking({
           userLocation: city,
           paymentType: value === 'COD' ? 'COD' : 'Prepaid',
@@ -645,6 +662,11 @@ export const PayMedicine: React.FC = (props) => {
           couponCode: couponCode ? couponCode : null,
           couponValue: couponValue ? couponValue : null,
           finalBookingValue: totalWithCouponDiscount,
+          ecommObj: {
+            ecommerce: {
+              items: ecommItems,
+            },
+          },
         });
         /**Gtm code end  */
 
@@ -660,7 +682,11 @@ export const PayMedicine: React.FC = (props) => {
           });
           /* Webengage Code End */
           if (orderAutoId && orderAutoId > 0 && value !== 'COD') {
-            const pgUrl = `${process.env.PHARMACY_PG_URL}/paymed?amount=${totalWithCouponDiscount}&oid=${orderAutoId}&token=${authToken}&pid=${currentPatiendId}&source=web&paymentTypeID=${value}&paymentModeOnly=YES`;
+            const pgUrl = `${
+              process.env.PHARMACY_PG_URL
+            }/paymed?amount=${totalWithCouponDiscount.toFixed(
+              2
+            )}&oid=${orderAutoId}&token=${authToken}&pid=${currentPatiendId}&source=web&paymentTypeID=${value}&paymentModeOnly=YES`;
             window.location.href = pgUrl;
           } else if (orderAutoId && orderAutoId > 0 && value === 'COD') {
             placeOrder(orderId, orderAutoId, false, '');
@@ -702,7 +728,7 @@ export const PayMedicine: React.FC = (props) => {
     paymentMutationConsult({
       variables: {
         bookAppointment: {
-          patientId: patientId,
+          patientId: currentPatient ? currentPatient.id : '',
           doctorId: doctorId,
           appointmentDateTime: moment(appointmentDateTime).utc(),
           bookingSource: BOOKINGSOURCE.WEB,
@@ -710,6 +736,12 @@ export const PayMedicine: React.FC = (props) => {
           hospitalId: hospitalId,
           couponCode: consultCouponCode,
           deviceType: getDeviceType(),
+          actualAmount: Number(amount),
+          discountedAmount:
+            validateConsultCouponResult && validateConsultCouponResult.valid
+              ? Number(validateConsultCouponResult.amount - validateConsultCouponResult.discount)
+              : Number(revisedAmount),
+          pinCode: currentPincode || '',
           // couponDiscount: couponValue,
         },
       },
@@ -720,9 +752,31 @@ export const PayMedicine: React.FC = (props) => {
           specialty: speciality,
           bookingType: appointmentType,
           scheduledDate: `${appointmentDateTime}`,
-          couponCode: couponCode ? couponCode : null,
-          couponValue: couponValue ? couponValue : null,
+          couponCode: consultCouponCode ? consultCouponCode : null,
+          couponValue:
+            validateConsultCouponResult && validateConsultCouponResult.valid
+              ? validateConsultCouponResult.discount
+              : consultCouponValue || null,
           finalBookingValue: revisedAmount,
+          ecommObj: {
+            ecommerce: {
+              items: [
+                {
+                  item_name: doctorName,
+                  item_id: doctorId,
+                  price: revisedAmount,
+                  item_brand: 'Apollo',
+                  item_category: 'Consultations',
+                  item_category_2: speciality,
+                  item_category_3: city || '',
+                  // 'item_category_4': '', // for future
+                  item_variant: appointmentType.toLowerCase() === 'online' ? 'Virtual' : 'Physical',
+                  index: 1,
+                  quantity: 1,
+                },
+              ],
+            },
+          },
         });
         /* Gtm code END */
         if (res && res.data && res.data.bookAppointment && res.data.bookAppointment.appointment) {
@@ -870,9 +924,8 @@ export const PayMedicine: React.FC = (props) => {
                       {mutationLoading ? (
                         <CircularProgress size={22} color="secondary" />
                       ) : (
-                        `Pay Rs.${
-                          totalWithCouponDiscount && totalWithCouponDiscount.toFixed(2)
-                        } on delivery`
+                        `Pay Rs.${totalWithCouponDiscount &&
+                          totalWithCouponDiscount.toFixed(2)} on delivery`
                       )}
                     </AphButton>
                   )}
@@ -928,12 +981,9 @@ export const PayMedicine: React.FC = (props) => {
                     {consultCouponCode.length > 0 && (
                       <div className={classes.discountTotal}>
                         Savings of Rs.{' '}
-                        {validateConsultCouponResult && validateConsultCouponResult.revisedAmount
-                          ? (
-                              parseFloat(onlineConsultationFees) -
-                              parseFloat(validateConsultCouponResult.revisedAmount)
-                            ).toFixed(2)
-                          : parseFloat(consultCouponValue).toFixed(2)}{' '}
+                        {validateConsultCouponResult && validateConsultCouponResult.valid
+                          ? validateConsultCouponResult.discount.toFixed()
+                          : consultCouponValue.toFixed(2)}{' '}
                         on the bill
                       </div>
                     )}
@@ -977,20 +1027,20 @@ export const PayMedicine: React.FC = (props) => {
                       <p>Coupon Applied</p>{' '}
                       <p>
                         - Rs.
-                        {validateConsultCouponResult && validateConsultCouponResult.revisedAmount
-                          ? (
-                              parseFloat(amount) -
-                              parseFloat(validateConsultCouponResult.revisedAmount)
-                            ).toFixed(2)
-                          : parseFloat(consultCouponValue).toFixed(2) || 0}
+                        {validateConsultCouponResult && validateConsultCouponResult.valid
+                          ? validateConsultCouponResult.discount.toFixed(2)
+                          : consultCouponValue.toFixed(2)}
                       </p>
                     </div>
                     <div className={`${classes.charges} ${classes.total}`}>
                       <p>To Pay</p>{' '}
                       <p>
                         Rs.
-                        {validateConsultCouponResult && validateConsultCouponResult.revisedAmount
-                          ? parseFloat(validateConsultCouponResult.revisedAmount).toFixed(2)
+                        {validateConsultCouponResult && validateConsultCouponResult.valid
+                          ? (
+                              validateConsultCouponResult.billAmount -
+                              validateConsultCouponResult.discount
+                            ).toFixed(2)
                           : revisedAmount.toFixed(2)}
                       </p>
                     </div>

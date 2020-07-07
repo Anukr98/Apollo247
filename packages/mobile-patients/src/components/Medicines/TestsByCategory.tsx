@@ -230,7 +230,7 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
               activeOpacity={1}
               // style={{ marginRight: 24 }}
               onPress={() => {
-                props.navigation.navigate(AppRoutes.MedAndTestCart, { isComingFromConsult: true });
+                props.navigation.navigate(AppRoutes.MedAndTestCart);
               }}
             >
               <CartIcon />

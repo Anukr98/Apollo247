@@ -1,7 +1,7 @@
 import { Theme } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import React, { useState, useEffect } from 'react';
-import { GetDoctorDetailsById as DoctorDetails } from 'graphql/types/GetDoctorDetailsById';
+import { GetDoctorDetailsById_getDoctorDetailsById as DoctorDetails } from 'graphql/types/GetDoctorDetailsById';
 import _forEach from 'lodash/forEach';
 import { GET_DOCTOR_NEXT_AVAILABILITY } from 'graphql/doctors';
 import {
@@ -11,7 +11,6 @@ import {
 import { format } from 'date-fns';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import { DoctorType } from 'graphql/types/globalTypes';
-// import { AphButton } from '@aph/web-ui-components';
 import moment from 'moment';
 import { getAppStoreLink } from 'helpers/dateHelpers';
 import { useApolloClient } from 'react-apollo-hooks';
@@ -20,22 +19,20 @@ import { gtmTracking } from '../gtmTracking';
 const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
-      width: 328,
-      [theme.breakpoints.down('xs')]: {
-        width: '100%',
-      },
+      padding: 0,
     },
     doctorProfile: {
-      backgroundColor: theme.palette.common.white,
-      borderRadius: 5,
-      [theme.breakpoints.down('xs')]: {
-        borderRadius: 0,
+      [theme.breakpoints.up('sm')]: {
+        display: 'flex',
       },
     },
     doctorImage: {
       borderRadius: '5px 5px 0 0',
       overflow: 'hidden',
       textAlign: 'center',
+      [theme.breakpoints.up('sm')]: {
+        width: 190,
+      },
       '& img': {
         maxWidth: '100%',
         maxHeight: 138,
@@ -43,31 +40,36 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     doctorInfo: {
-      padding: 20,
+      padding: '15px 20px 0 20px',
+      [theme.breakpoints.up('sm')]: {
+        width: 'calc(100% - 190px)',
+      },
     },
     doctorName: {
-      fontSize: 20,
-      fontWeight: 600,
-      color: '#02475b',
-      paddingBottom: 5,
-      marginBottom: 5,
+      display: 'flex',
+      alignItems: 'center',
+      paddingBottom: 10,
       borderBottom: '0.5px solid rgba(2,71,91,0.2)',
+      '& h1': {
+        margin: 0,
+        fontSize: 23,
+        fontWeight: 600,
+        color: '#02475b',
+      },
+      '& span': {
+        marginLeft: 'auto',
+        '& img': {
+          verticalAlign: 'middle',
+        },
+      },
     },
     specialits: {
-      fontSize: 12,
+      padding: '8px 0',
+      fontSize: 14,
       fontWeight: 600,
       color: '#0087ba',
       textTransform: 'uppercase',
-      position: 'relative',
-      paddingRight: 40,
       borderBottom: '0.5px solid rgba(2,71,91,0.2)',
-      paddingBottom: 10,
-    },
-    shareIcon: {
-      position: 'absolute',
-      right: 0,
-      top: 0,
-      cursor: 'pointer',
     },
     lineDivider: {
       paddingLeft: 5,
@@ -75,48 +77,19 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     doctorInfoGroup: {
       paddingBottom: 10,
-      borderBottom: '0.5px solid rgba(2,71,91,0.2)',
+      [theme.breakpoints.up('sm')]: {
+        display: 'flex',
+        flexWrap: 'wrap',
+      },
       [theme.breakpoints.down('xs')]: {
         marginBottom: 10,
       },
-    },
-    downloadApollo: {
-      backgroundColor: '#fff',
-      padding: '35px 0',
-      textAlign: 'center',
-      marginTop: 8,
-      borderRadius: 5,
-      fontSize: 18,
-      [theme.breakpoints.down('xs')]: {
-        borderRadius: 0,
-      },
-    },
-    downloadInfo: {
-      marginBottom: 17,
-      '& div': {
-        marginBottom: 10,
-      },
-      '& span': {
-        fontWeight: 'bold',
-      },
-    },
-    downloadLink: {
-      fontSize: 18,
-      textTransform: 'capitalize',
-      borderRadius: 5,
-      boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
-      backgroundColor: '#fcb716',
-      color: '#fff',
-      fontWeight: 'bold',
-      padding: '9px 13px',
-      display: 'inline-block',
-      minWidth: 262,
     },
     infoRow: {
       display: 'flex',
       paddingTop: 10,
-      [theme.breakpoints.down('xs')]: {
-        paddingTop: 0,
+      [theme.breakpoints.up('sm')]: {
+        width: '50%',
       },
     },
     iconType: {
@@ -133,7 +106,8 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 10,
       fontWeight: 500,
       color: '#02475b',
-      paddingLeft: 20,
+      paddingLeft: 14,
+      paddingRiht: 10,
       lineHeight: 1.5,
       [theme.breakpoints.down('xs')]: {
         fontSize: 12,
@@ -149,27 +123,6 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     textCenter: {
       alignItems: 'center',
-    },
-    doctorPrice: {
-      marginLeft: 'auto',
-      fontSize: 10,
-      fontWeight: 500,
-      color: '#02475b',
-      lineHeight: 1.5,
-      [theme.breakpoints.down('xs')]: {
-        display: 'none',
-      },
-    },
-    doctorPriceIn: {
-      fontSize: 16,
-      fontWeight: 'bold',
-      color: '#02475b',
-      lineHeight: 1.5,
-      marginTop: 5,
-      marginBottom: 10,
-      [theme.breakpoints.up('sm')]: {
-        display: 'none',
-      },
     },
     availability: {
       fontSize: 9,
@@ -187,28 +140,20 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: '#ff748e',
       color: theme.palette.common.white,
     },
-    consultGroup: {
-      [theme.breakpoints.down('xs')]: {
-        backgroundColor: '#f7f8f5',
-        borderRadius: 5,
-        padding: 12,
-        marginBottom: 10,
-      },
-    },
-    consultDoctorInfoGroup: {
-      paddingBottom: 0,
-      borderBottom: 'none',
-    },
-    opacityMobile: {
-      [theme.breakpoints.down('xs')]: {
-        opacity: 0.5,
-      },
-    },
-    noIcon: {
-      opacity: 0,
-    },
-    bottomActions: {
+    aboutDoctor: {
       padding: 20,
+    },
+    sectionHeader: {
+      fontSize: 14,
+      color: '#02475b',
+      fontWeight: 500,
+      paddingBottom: 8,
+      borderBottom: '0.5px solid rgba(2,71,91,0.2)',
+    },
+    sectionBody: {
+      fontSize: 12,
+      lineHeight: '16px',
+      paddingTop: 10,
     },
   };
 });
@@ -217,40 +162,93 @@ interface DoctorProfileProps {
   doctorDetails: DoctorDetails;
   avaPhy: boolean;
   avaOnline: boolean;
+  getDoctorAvailableSlots: (GetDoctorNextAvailableSlot: any) => void;
 }
 
 export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
   const classes = useStyles({});
-  const { doctorDetails } = props;
+  const { doctorDetails, getDoctorAvailableSlots } = props;
   const apolloClient = useApolloClient();
-  const [data, setData] = useState<any>();
+  const [data, setData] = useState<GetDoctorNextAvailableSlot>();
   const [loading, setLoading] = useState<boolean>(false);
 
-  const doctorId =
-    doctorDetails && doctorDetails.getDoctorDetailsById
-      ? doctorDetails.getDoctorDetailsById.id
-      : '';
+  const doctorId = doctorDetails && doctorDetails.id ? doctorDetails.id : '';
 
   useEffect(() => {
     setLoading(true);
     /**Gtm code start start */
     const speciality =
-      (doctorDetails &&
-        doctorDetails.getDoctorDetailsById &&
-        doctorDetails.getDoctorDetailsById.specialty &&
-        doctorDetails.getDoctorDetailsById.specialty.name) ||
-      null;
-    let city;
-    if (doctorDetails && doctorDetails.getDoctorDetailsById) {
-      city = doctorDetails.getDoctorDetailsById.city;
-    } else {
-      city = null;
+      (doctorDetails && doctorDetails.specialty && doctorDetails.specialty.name) || null;
+
+    if (doctorDetails) {
+      const {
+        city,
+        fullName,
+        id,
+        doctorType,
+        doctorHospital,
+        onlineConsultationFees,
+        physicalConsultationFees,
+      } = doctorDetails;
+      let items = [],
+        count = 0;
+      onlineConsultationFees &&
+        items.push({
+          item_name: fullName,
+          item_id: id,
+          price: Number(onlineConsultationFees),
+          item_brand:
+            doctorType && doctorType.toLocaleLowerCase() === 'apollo'
+              ? 'Apollo'
+              : 'Partner Doctors',
+          item_category: 'Consultations',
+          item_category_2: speciality,
+          item_category_3:
+            city ||
+            (doctorHospital &&
+              doctorHospital.length &&
+              doctorHospital[0].facility &&
+              doctorHospital[0].facility.city),
+          // 'item_category_4': '', // For Future
+          item_variant: 'Virtual',
+          index: ++count,
+          quantity: 1,
+        });
+      physicalConsultationFees &&
+        items.push({
+          item_name: fullName,
+          item_id: id,
+          price: Number(physicalConsultationFees),
+          item_brand:
+            doctorType && doctorType.toLocaleLowerCase() === 'apollo'
+              ? 'Apollo'
+              : 'Partner Doctors',
+          item_category: 'Consultations',
+          item_category_2: speciality,
+          item_category_3:
+            city ||
+            (doctorHospital &&
+              doctorHospital.length &&
+              doctorHospital[0].facility &&
+              doctorHospital[0].facility.city),
+          // 'item_category_4': '', // For Future
+          item_variant: 'Physcial',
+          index: ++count,
+          quantity: 1,
+        });
+      gtmTracking({
+        category: 'Consultations',
+        action: speciality,
+        label: `${city || null} Doctor Profile Viewed`,
+        ecommObj: {
+          event: 'view_item',
+          ecommerce: {
+            items,
+          },
+        },
+      });
     }
-    gtmTracking({
-      category: 'Consultations',
-      action: speciality,
-      label: `${city} Doctor Profile Viewed`,
-    });
+
     /**Gtm code start end */
     apolloClient
       .query<GetDoctorNextAvailableSlot, GetDoctorNextAvailableSlotVariables>({
@@ -265,10 +263,10 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
       })
       .then((response) => {
         setData(response.data);
+        getDoctorAvailableSlots(response.data);
         setLoading(false);
       });
   }, []);
-
   if (loading) {
     return <LinearProgress />;
   }
@@ -474,15 +472,15 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
 
   // ----------------------------------------------------------------------------
 
-  if (doctorDetails && doctorDetails.getDoctorDetailsById) {
+  if (doctorDetails) {
     let hospitalLocation = '';
     let speciality;
 
-    if (doctorDetails.getDoctorDetailsById.specialty) {
-      speciality = doctorDetails.getDoctorDetailsById.specialty.name;
+    if (doctorDetails.specialty) {
+      speciality = doctorDetails.specialty.name;
     }
-    const education = doctorDetails.getDoctorDetailsById.qualification;
-    const profileImage = doctorDetails.getDoctorDetailsById.photoUrl;
+    const education = doctorDetails.qualification;
+    const profileImage = doctorDetails.photoUrl;
 
     const {
       awards,
@@ -494,12 +492,11 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
       city,
       onlineConsultationFees,
       physicalConsultationFees,
-    } = doctorDetails.getDoctorDetailsById;
+    } = doctorDetails;
 
-    const isStarDoctor =
-      doctorDetails.getDoctorDetailsById.doctorType === DoctorType.STAR_APOLLO ? true : false;
+    const isStarDoctor = doctorDetails.doctorType === DoctorType.STAR_APOLLO ? true : false;
 
-    _forEach(doctorDetails.getDoctorDetailsById.doctorHospital, (hospitalDetails) => {
+    _forEach(doctorDetails.doctorHospital, (hospitalDetails) => {
       if (hospitalDetails.facility.facilityType === 'HOSPITAL') {
         hospitalLocation = hospitalDetails.facility.name + ',' + hospitalDetails.facility.city;
       }
@@ -513,153 +510,73 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
           </div>
           <div className={classes.doctorInfo}>
             <div className={classes.doctorName} title={'Doctor Name'}>
-              {fullName}
+              <h1>{fullName}</h1>
+              <span>
+                <img src={require('images/ic_apollo.svg')} alt="" />
+              </span>
             </div>
             <div className={classes.specialits}>
               <span title={'Speciality'}>{speciality}</span>{' '}
               <span className={classes.lineDivider}>|</span>{' '}
               <span title={'Experience'}>{experience} Yrs</span>
-              {/* <div className={classes.shareIcon} title={'Share info'}>
-                <img src={require('images/ic-share-green.svg')} alt="" />
-              </div> */}
             </div>
             <div className={classes.doctorInfoGroup}>
-              <div className={classes.infoRow}>
-                <div className={classes.iconType} title={'Education Details'}>
-                  <img src={require('images/ic-edu.svg')} alt="" />
-                </div>
-                <div className={classes.details}>
-                  {education && education.includes(';') ? (
-                    education.split(';').map((edu, idx) => <div key={idx}>{edu}</div>)
-                  ) : (
-                    <div>{education}</div>
-                  )}
-                </div>
-              </div>
-              <div className={classes.infoRow}>
-                <div className={classes.iconType} title={'Awards'}>
-                  <img src={require('images/ic-awards.svg')} alt="" />
-                </div>
-                <div className={classes.details}>
-                  {awards && awards.replace(/<\/?[^>]+(>|$)/g, '')}
-                </div>
-              </div>
-            </div>
-            <div className={`${classes.doctorInfoGroup} ${classes.opacityMobile}`}>
-              <div className={classes.infoRow}>
-                <div className={classes.iconType} title={'Location'}>
-                  <img src={require('images/ic-location.svg')} alt="" />
-                </div>
-                <div className={classes.details}>{hospitalLocation}</div>
-              </div>
-              <div className={`${classes.infoRow} ${classes.textCenter}`}>
-                <div className={classes.iconType} title={'Languages'}>
-                  <img src={require('images/ic-language.svg')} alt="" />
-                </div>
-                <div className={classes.details}>{languages}</div>
-              </div>
-            </div>
-            <div className={`${classes.doctorInfoGroup} ${classes.consultDoctorInfoGroup}`}>
-              <div className={classes.consultGroup}>
+              {education && (
                 <div className={classes.infoRow}>
-                  <div className={classes.iconType} title={'Consultation Fee'}>
-                    <img src={require('images/ic-rupee.svg')} alt="" />
+                  <div className={classes.iconType} title={'Education Details'}>
+                    <img src={require('images/ic-edu.svg')} alt="" />
                   </div>
                   <div className={classes.details}>
-                    Online Consultation
-                    <div className={classes.doctorPriceIn}>Rs.{onlineConsultationFees}</div>
-                    {availabilityMarkupOnline()}
+                    {education && education.includes(';') ? (
+                      education.split(';').map((edu, idx) => <div key={idx}>{edu}</div>)
+                    ) : (
+                      <div>{education}</div>
+                    )}
                   </div>
-                  <div className={classes.doctorPrice}>Rs.{onlineConsultationFees}</div>
                 </div>
-              </div>
-              <div className={classes.consultGroup}>
+              )}
+              {awards && (
                 <div className={classes.infoRow}>
-                  <div className={`${classes.iconType} ${classes.noIcon}`}>
-                    <img src={require('images/ic-rupee.svg')} alt="" />
+                  <div className={classes.iconType} title={'Awards'}>
+                    <img src={require('images/ic-awards.svg')} alt="" />
                   </div>
                   <div className={classes.details}>
-                    Clinic Visit
-                    <div className={classes.doctorPriceIn}>Rs.{physicalConsultationFees}</div>
-                    {availabilityMarkupPhysical()}
+                    {awards && awards.replace(/<\/?[^>]+(>|$)/g, '')}
                   </div>
-                  <div className={classes.doctorPrice}>Rs.{physicalConsultationFees}</div>
                 </div>
-              </div>
+              )}
+              {hospitalLocation && (
+                <div className={classes.infoRow}>
+                  <div className={classes.iconType} title={'Location'}>
+                    <img src={require('images/ic-location.svg')} alt="" />
+                  </div>
+                  <div className={classes.details}>{hospitalLocation}</div>
+                </div>
+              )}
+              {languages && (
+                <div className={`${classes.infoRow} ${classes.textCenter}`}>
+                  <div className={classes.iconType} title={'Languages'}>
+                    <img src={require('images/ic-language.svg')} alt="" />
+                  </div>
+                  <div className={classes.details}>{languages}</div>
+                </div>
+              )}
             </div>
           </div>
         </div>
-        <div className={classes.downloadApollo}>
-          <div className={classes.downloadInfo}>
-            <div>To enjoy enhanced</div>
-            <span>consultation experience</span>
-          </div>
-          <a
-            href={getAppStoreLink()}
-            target="_blank"
-            color="primary"
-            className={classes.downloadLink}
-            title={'Download Apollo247 App'}
-          >
-            Download Apollo247 App
-          </a>
-        </div>
+        {/*
+        <div className={classes.aboutDoctor}>
+          <div className={classes.sectionHeader}>About Dr. {fullName}</div>
+           <div className={classes.sectionBody}>
+            Insert Bio of the doctor here. Include a summary of work experience, education, and any
+            other outstanding achievement as a doctor. Insert Bio of the doctor here. Include a
+            summary of work experience, education, and any other outstanding achievement as a
+            doctor.
+          </div> 
+        </div>*/}
       </div>
     );
   } else {
     return <div>Invalid doctor id</div>;
   }
 };
-
-// it must be always one record or we return only first record.
-// if (
-//   data &&
-//   data.getDoctorNextAvailableSlot &&
-//   data.getDoctorNextAvailableSlot.doctorAvailalbeSlots
-// ) {
-//   const availableSlots = data.getDoctorNextAvailableSlot.doctorAvailalbeSlots;
-//   const currentTime = new Date(new Date().toISOString()).getTime();
-//   const firstAvailableSLot = availableSlots[0];
-//   if (firstAvailableSLot) {
-//     if (firstAvailableSLot.availableSlot !== '') {
-//       const slotTime = new Date(firstAvailableSLot.availableSlot).getTime();
-//       if (slotTime > currentTime) {
-//         const difference = slotTime - currentTime;
-//         availableIn = Math.round(difference / 60000);
-//       }
-//     } else {
-//       availableIn = -1;
-//     }
-//     const physicalAvailableSlotTime = new Date(
-//       firstAvailableSLot.physicalAvailableSlot
-//     ).getTime();
-//     if (physicalAvailableSlotTime > currentTime) {
-//       const difference = physicalAvailableSlotTime - currentTime;
-//       physicalAvailableIn = Math.round(difference / 60000);
-//     } else {
-//       physicalAvailableIn = -1;
-//     }
-//   }
-// }
-
-// const availabilityMarkup = (availableIn: number) => {
-//   if (availableIn === 0) {
-//     return <div className={`${classes.availability} ${classes.availableNow}`}>AVAILABLE NOW</div>;
-//   } else if (availableIn > 0 && availableIn <= 15) {
-//     return (
-//       <div className={`${classes.availability} ${classes.availableNow}`}>
-//         AVAILABLE IN {availableIn} MINS
-//       </div>
-//     );
-//   } else if (availableIn > 15 && availableIn <= 45) {
-//     return <div className={`${classes.availability}`}>AVAILABLE IN {availableIn} MINS</div>;
-//   } else if (availableIn > 45 && availableIn <= 60) {
-//     return <div className={`${classes.availability}`}>AVAILABLE IN 1 HOUR</div>;
-//   } else if (availableIn > 60) {
-//     return (
-//       <div className={`${classes.availability}`}>
-//         TODAY {format(new Date(availableSlot), 'h:mm a')}
-//       </div>
-//     );
-//   }
-// };

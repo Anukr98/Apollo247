@@ -1,7 +1,7 @@
 import { Theme, Grid } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import React from 'react';
-import { GetDoctorDetailsById as DoctorDetails } from 'graphql/types/GetDoctorDetailsById';
+import { GetDoctorDetailsById_getDoctorDetailsById as DoctorDetails } from 'graphql/types/GetDoctorDetailsById';
 import {
   GetDoctorDetailsById_getDoctorDetailsById_doctorHospital as Facility,
   GetDoctorDetailsById_getDoctorDetailsById_consultHours as ConsultHours,
@@ -15,25 +15,20 @@ import { getTime, format } from 'date-fns';
 const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
-      backgroundColor: theme.palette.common.white,
-      borderRadius: 5,
-      boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
-      marginBottom: 10,
-      [theme.breakpoints.down('xs')]: {
-        marginBottom: 0,
-      },
+      padding: 0,
     },
     clinicImg: {
-      borderRadius: '5px 5px 0 0',
+      borderRadius: 5,
       overflow: 'hidden',
       '& img': {
         verticalAlign: 'middle',
-        maxWidth: '100%',
-        width: '100%',
+        height: 65,
       },
     },
     clinicInfo: {
-      padding: 20,
+      paddingBottom: 10,
+      fontSize: 12,
+      fontWeight: 500,
     },
     address: {
       fontSize: 12,
@@ -42,23 +37,6 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#02475b',
       paddingBottom: 0,
       borderbottom: 'none',
-    },
-    availableTimings: {
-      paddingTop: 10,
-      fontSize: 12,
-      fontWeight: 600,
-      letterSpacing: 0.3,
-      color: '#0087ba',
-    },
-    timingsRow: {
-      display: 'flex',
-      alignItems: 'center',
-      '& span:first-child': {
-        textTransform: 'uppercase',
-      },
-      '& span:last-child': {
-        marginLeft: 'auto',
-      },
     },
     cityText: {
       paddingBottom: 0,
@@ -69,29 +47,18 @@ const useStyles = makeStyles((theme: Theme) => {
       color: theme.palette.secondary.dark,
       fontSize: 14,
       fontWeight: 500,
-      borderBottom: '0.5px solid rgba(2,71,91,0.3)',
-      paddingBottom: 10,
-      paddingTop: 10,
-      marginBottom: 20,
+      borderBottom: '0.5px solid rgba(2,71,91,0.2)',
+      paddingBottom: 8,
+      paddingTop: 5,
+      marginBottom: 10,
       display: 'flex',
       alignItems: 'center',
-      [theme.breakpoints.down('xs')]: {
-        borderBottom: 'none',
-        padding: 0,
-        fontWeight: 600,
-      },
     },
     sectionGroup: {
+      paddingLeft: 20,
+      paddingRight: 20,
       [theme.breakpoints.up('sm')]: {
-        paddingBottom: 15,
-      },
-      [theme.breakpoints.down('xs')]: {
-        backgroundColor: '#f7f8f5',
-        marginTop: 16,
-        marginBottom: 16,
-        padding: 20,
-        paddingTop: 16,
-        boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
+        paddingBottom: 20,
       },
     },
     gridContainer: {
@@ -104,6 +71,15 @@ const useStyles = makeStyles((theme: Theme) => {
           padding: '8px !important',
         },
       },
+    },
+    imageGroup: {
+      display: 'flex',
+      marginLeft: -10,
+      marginRight: -10,
+    },
+    imageCol: {
+      paddingLeft: 10,
+      paddingRight: 10,
     },
   };
 });
@@ -131,10 +107,10 @@ export const DoctorClinics: React.FC<DoctorClinicsProps> = (props) => {
   const classes = useStyles({});
   const { doctorDetails } = props;
 
-  if (doctorDetails && doctorDetails.getDoctorDetailsById) {
+  if (doctorDetails) {
     const clinics: Facility[] = [];
 
-    _forEach(doctorDetails.getDoctorDetailsById.doctorHospital, (hospitalDetails) => {
+    _forEach(doctorDetails.doctorHospital, (hospitalDetails) => {
       if (
         hospitalDetails.facility.facilityType === 'CLINIC' ||
         hospitalDetails.facility.facilityType === 'HOSPITAL'
@@ -143,25 +119,39 @@ export const DoctorClinics: React.FC<DoctorClinicsProps> = (props) => {
       }
     });
 
-    // const consultationHours =
-    //   doctorDetails.getDoctorDetailsById.consultHours &&
-    //   doctorDetails.getDoctorDetailsById.consultHours.length > 0
-    //     ? doctorDetails.getDoctorDetailsById.consultHours
-    //     : [];
-
-    const { firstName } = doctorDetails.getDoctorDetailsById;
+    const { firstName } = doctorDetails;
 
     return clinics.length > 0 ? (
       <>
         <div className={classes.sectionGroup}>
           <div className={classes.sectionHeader}>
-            <span>{`Dr. ${firstName}'s`} location for physical visits</span>
+            <span>Clinic Address</span>
           </div>
-          <Grid className={classes.gridContainer} container spacing={2} title={'Hospital location'}>
-            {_map(clinics, (clinicDetails) => {
-              return (
-                <Grid item xs={12} sm={12} md={12} lg={6} key={_uniqueId('avagr_')}>
-                  <div className={classes.root} key={_uniqueId('clinic_')}>
+          {_map(clinics, (clinicDetails) => {
+            return (
+              <div className={classes.root} key={_uniqueId('clinic_')}>
+                <div className={classes.clinicInfo}>
+                  <div className={classes.address}>
+                    {clinicDetails && clinicDetails.facility.streetLine1
+                      ? clinicDetails.facility.streetLine1
+                      : ''}
+                    &nbsp;
+                    {clinicDetails && clinicDetails.facility.streetLine2
+                      ? clinicDetails.facility.streetLine2
+                      : ''}
+                    &nbsp;
+                    {clinicDetails && clinicDetails.facility.streetLine3
+                      ? clinicDetails.facility.streetLine3
+                      : ''}
+                  </div>
+                  <div className={classes.cityText}>
+                    {clinicDetails && clinicDetails.facility.city
+                      ? clinicDetails.facility.city
+                      : ''}
+                  </div>
+                </div>
+                <div className={classes.imageGroup}>
+                  <div className={classes.imageCol}>
                     <div className={classes.clinicImg}>
                       <img
                         src={
@@ -169,31 +159,11 @@ export const DoctorClinics: React.FC<DoctorClinicsProps> = (props) => {
                         }
                       />
                     </div>
-                    <div className={classes.clinicInfo}>
-                      <div className={classes.address}>
-                        {clinicDetails && clinicDetails.facility.streetLine1
-                          ? clinicDetails.facility.streetLine1
-                          : ''}
-                        &nbsp;
-                        {clinicDetails && clinicDetails.facility.streetLine2
-                          ? clinicDetails.facility.streetLine2
-                          : ''}
-                        &nbsp;
-                        {clinicDetails && clinicDetails.facility.streetLine3
-                          ? clinicDetails.facility.streetLine3
-                          : ''}
-                      </div>
-                      <div className={classes.cityText}>
-                        {clinicDetails && clinicDetails.facility.city
-                          ? clinicDetails.facility.city
-                          : ''}
-                      </div>
-                    </div>
                   </div>
-                </Grid>
-              );
-            })}
-          </Grid>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </>
     ) : null;

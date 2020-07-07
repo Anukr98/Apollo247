@@ -9,6 +9,9 @@ import {
   Paper,
   FormHelperText,
   Typography,
+  Checkbox,
+  FormControlLabel,
+  Grid,
 } from '@material-ui/core';
 import Scrollbars from 'react-custom-scrollbars';
 import { Prompt, Link } from 'react-router-dom';
@@ -25,6 +28,7 @@ import { CancelAppointment, CancelAppointmentVariables } from 'graphql/types/Can
 import { Consult } from 'components/Consult';
 import { CircularProgress } from '@material-ui/core';
 import { TestCall } from './TestCall';
+import Alert from './Alert';
 
 import {
   EndAppointmentSession,
@@ -37,6 +41,9 @@ import {
   STATUS,
   DoctorType,
   APPOINTMENT_TYPE,
+  DEVICETYPE,
+  BOOKINGSOURCE,
+  APPT_CALL_TYPE,
 } from 'graphql/types/globalTypes';
 import * as _ from 'lodash';
 import { CaseSheetContext } from 'context/CaseSheetContext';
@@ -50,8 +57,8 @@ import {
 } from 'graphql/types/GetDoctorNextAvailableSlot';
 import { format } from 'date-fns';
 import { AvailableSlots } from '../components/AvailableSlots';
-import { getLocalStorageItem } from './case-sheet/panels/LocalStorageUtils';
 import { INITIATE_CONFERENCE_TELEPHONE_CALL } from 'graphql/consults';
+import { getLocalStorageItem, updateLocalStorageItem } from './case-sheet/panels/LocalStorageUtils';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -866,8 +873,143 @@ const useStyles = makeStyles((theme: Theme) => {
       marginRight: 20,
       marginTop: 40,
     },
+    content: {
+      position: 'relative',
+      borderRadius: '5px',
+      border: 'solid 1px rgba(2, 71, 91, 0.15)',
+      backgroundColor: 'rgba(0, 0, 0, 0.02)',
+      width: '100%',
+      '& textarea': {
+        border: 'none',
+        padding: 12,
+        fontSize: 15,
+        fontWeight: 500,
+        borderRadius: 0,
+        color: '#01475b',
+      },
+    },
+    vitalLeft: {
+      width: '45%',
+      display: 'inline-block',
+      paddingRight: 10,
+      [theme.breakpoints.down('xs')]: {
+        width: '100%',
+        paddingRight: 0,
+      },
+    },
+    vitalRight: {
+      width: '45%',
+      display: 'inline-block',
+      float: 'right',
+      [theme.breakpoints.down('xs')]: {
+        width: '100%',
+        paddingRight: 0,
+      },
+    },
+    dialogHeader: {
+      padding: 20,
+      paddingBottom: 10,
+      display: 'flex',
+      '& button': {
+        boxShadow: 'none',
+        minWidth: 'auto',
+        border: 'none',
+        padding: 0,
+        marginLeft: 'auto',
+      },
+    },
+    dialogBody: {
+      padding: 20,
+      paddingTop: 0,
+      '& h3': {
+        fontSize: 18,
+        lineHeight: '24px',
+        fontWeight: 500,
+        margin: 0,
+        paddingBottom: 16,
+        maxWidth: '80%',
+      },
+    },
+    noteText: {
+      paddingTop: 20,
+      fontSize: 16,
+      lineHeight: '20px',
+      color: 'rgba(0,0,0,0.6)',
+      fontWeight: 500,
+      '& span': {
+        display: 'block',
+        fontSize: 14,
+        paddingTop: 10,
+        color: '#890000',
+      },
+    },
+    formSection: {
+      width: '100%',
+      '& label': {
+        color: '#02475b',
+        display: 'block',
+        opacity: 0.6,
+        marginBottom: 5,
+      },
+    },
+    checkBox: {
+      paddingTop: 15,
+      '& label': {
+        '& >span:first-child': {
+          color: '#00b38e',
+        },
+      },
+    },
+    bottomActions: {
+      display: 'flex',
+      justifyContent: 'flex-end',
+      paddingTop: 16,
+    },
+    canceledBtn: {
+      fontSize: 13,
+      fontWeight: 'bold',
+      padding: '9px 13px 9px 13px',
+      backgroundColor: '#fff',
+      boxShadow: '0 2px 5px 0 rgba(0, 0, 0, 0.2)',
+      borderRadius: 10,
+      color: '#fc9916',
+      minWidth: 130,
+    },
+    cancelBtnDisabled: {
+      opacity: 0.6,
+    },
+    sendBtn: {
+      fontSize: 13,
+      fontWeight: 'bold',
+      padding: '9px 13px 9px 13px',
+      backgroundColor: '#fc9916',
+      boxShadow: '0 2px 5px 0 rgba(0, 0, 0, 0.2)',
+      borderRadius: 10,
+      color: '#fff',
+      marginLeft: 16,
+      minWidth: 210,
+      '&:hover': {
+        backgroundColor: '#fc9916',
+        color: '#fff',
+      },
+    },
+    sendBtnDisabled: {
+      opacity: 0.6,
+    },
+    ringtone: {
+      position: 'absolute',
+      zIndex: -1,
+      height: 1,
+      width: 1,
+      padding: 0,
+      margin: -1,
+      overflow: 'hidden',
+      clip: 'rect(0,0,0,0)',
+      border: 0,
+    },
   };
 });
+const ringtoneUrl = require('../images/phone_ringing.mp3');
 
 interface errorObject {
   reasonError: boolean;
@@ -902,7 +1044,7 @@ interface CallPopoverProps {
   pubnub: any;
   sessionClient: any;
   lastMsg: any;
-  presenceEventObject: any;
+  //presenceEventObject: any;
   hasCameraMicPermission: boolean;
   isNewprescriptionEditable: boolean;
   isNewPrescription: boolean;
@@ -911,6 +1053,8 @@ interface CallPopoverProps {
   setIsClickedOnEdit: (flag: boolean) => void;
   isClickedOnPriview: boolean;
   setIsClickedOnPriview: (flag: boolean) => void;
+  showConfirmPrescription: boolean;
+  setShowConfirmPrescription: (flag: boolean) => void;
 }
 let countdowntimer: any;
 let intervalId: any;
@@ -948,6 +1092,10 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const useAuthContext = () => useContext<AuthContextProps>(AuthContext);
   const { currentUserType } = useAuthContext();
   const {
+    medicinePrescription,
+    otherInstructions,
+    diagnosis,
+    diagnosticPrescription,
     appointmentInfo,
     followUpDate,
     followUpAfterInDays,
@@ -955,11 +1103,20 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     patientDetails,
     height,
     weight,
+    temperature,
+    bp,
+    setWeight,
+    setHeight,
+    setTemperature,
+    setBp,
     setVitalError,
     referralSpecialtyName,
     referralDescription,
     setReferralError,
     medicationHistory,
+    vitalError,
+    updatedDate,
+    setUpdatedDate,
   } = useContext(CaseSheetContext);
 
   const covertVideoMsg = '^^convert`video^^';
@@ -994,6 +1151,19 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const [showReferral, setShowReferral] = React.useState<boolean>(false);
   const [startingTime, setStartingTime] = useState<number>(0);
   const [doctorNextAvailableSlot, setDoctorNextAvailableSlot] = useState<string>('');
+  const [isConfirmationChecked, setIsConfirmationChecked] = React.useState<boolean>(false);
+  const [emptyFieldsString, setEmptyFieldsString] = useState<string>('');
+
+  const moveCursorToEnd = (element: any) => {
+    if (typeof element.selectionStart == 'number') {
+      element.selectionStart = element.selectionEnd = element.value.length;
+    } else if (typeof element.createTextRange != 'undefined') {
+      element.focus();
+      var range = element.createTextRange();
+      range.collapse(false);
+      range.select();
+    }
+  };
 
   const [dateSelected, setDateSelected] = useState<string>(moment(new Date()).format('YYYY-MM-DD'));
 
@@ -1061,10 +1231,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         missedCallCounter++;
         clearInterval(intervalMissCall);
         stopAudioVideoCall();
-        // if (missedCallCounter >= 3) {
-        //   setIscallAbandonment(true);
-        //   setShowAbandonment(true);
-        // }
       }
     }, 1000);
   };
@@ -1105,6 +1271,9 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               appointmentId: props.appointmentId,
               status: status,
               noShowBy: REQUEST_ROLES.PATIENT,
+              deviceType: DEVICETYPE.DESKTOP,
+              callSource: BOOKINGSOURCE.WEB,
+              callType: APPT_CALL_TYPE.CHAT,
             },
           },
           fetchPolicy: 'no-cache',
@@ -1223,6 +1392,12 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const [cancelError, setCancelError] = useState<string | null>(null);
   const [consultStart, setConsultStart] = useState<boolean>(false);
   const [sendToPatientButtonDisable, setSendToPatientButtonDisable] = useState<boolean>(false);
+  const [playRingtone, setPlayRingtone] = useState<boolean>(false);
+
+  //OT Error state
+  const [sessionError, setSessionError] = React.useState<boolean>(null);
+  const [publisherError, setPublisherError] = React.useState<boolean>(null);
+  const [subscriberError, setSubscriberError] = React.useState<boolean>(null);
 
   const toggelChatVideo = () => {
     setIsNewMsg(false);
@@ -1276,6 +1451,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     setShowVideoChat(false);
     setDisableOnCancel(false);
     clearInterval(intervalMissCall);
+    setPlayRingtone(false);
     const cookieStr = `action=`;
     document.cookie = cookieStr + ';path=/;';
     const text = {
@@ -1335,6 +1511,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       },
       (status: any, response: any) => {}
     );
+    setPlayRingtone(true);
     actionBtn();
   };
   const actionBtn = () => {
@@ -1491,15 +1668,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     const presentTime = new Date().toISOString();
 
     if (
-      aptDTTM.substring(0, 19) === presentTime.substring(0, 19) &&
-      isConsultStarted &&
-      appointmentInfo &&
-      appointmentInfo.appointmentType !== APPOINTMENT_TYPE.PHYSICAL
-    ) {
-      clearInterval(intervalcallId);
-      callIntervalTimer(600);
-    }
-    if (
       disablecurrent >= minusTime &&
       disableaddedTime >= disablecurrent &&
       currentUserType !== LoggedInUserType.SECRETARY
@@ -1602,39 +1770,40 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       }
       if (lastMsg.message && lastMsg.message.message === acceptcallMsg) {
         setIsCallAccepted(true);
+        setPlayRingtone(false);
         clearInterval(intervalMissCall);
         missedCallCounter = 0;
       }
     }
   }, [props.lastMsg]);
 
-  useEffect(() => {
-    const presenceEventObject = props.presenceEventObject;
-    if (
-      presenceEventObject &&
-      isConsultStarted &&
-      props.appointmentStatus !== STATUS.COMPLETED &&
-      appointmentInfo &&
-      appointmentInfo.appointmentType !== APPOINTMENT_TYPE.PHYSICAL
-    ) {
-      const data: any = presenceEventObject.channels[props.appointmentId].occupants;
-      const occupancyPatient = data.filter((obj: any) => {
-        return obj.uuid === 'PATIENT' || obj.uuid.indexOf('PATIENT_') > -1;
-      });
-      if (presenceEventObject.totalOccupancy >= 2) {
-        didPatientJoined = true;
-        clearInterval(intervalCallAbundant);
-        abondmentStarted = false;
-      } else {
-        if (presenceEventObject.totalOccupancy === 1 && occupancyPatient.length === 0) {
-          if (!abondmentStarted && didPatientJoined) {
-            //abondmentStarted = true;
-            //callAbundantIntervalTimer(620);
-          }
-        }
-      }
-    }
-  }, [props.presenceEventObject]);
+  // useEffect(() => {
+  //   const presenceEventObject = props.presenceEventObject;
+  //   if (
+  //     presenceEventObject &&
+  //     isConsultStarted &&
+  //     props.appointmentStatus !== STATUS.COMPLETED &&
+  //     appointmentInfo &&
+  //     appointmentInfo.appointmentType !== APPOINTMENT_TYPE.PHYSICAL
+  //   ) {
+  //     const data: any = presenceEventObject.channels[props.appointmentId].occupants;
+  //     const occupancyPatient = data.filter((obj: any) => {
+  //       return obj.uuid === 'PATIENT' || obj.uuid.indexOf('PATIENT_') > -1;
+  //     });
+  //     if (presenceEventObject.totalOccupancy >= 2) {
+  //       didPatientJoined = true;
+  //       clearInterval(intervalCallAbundant);
+  //       abondmentStarted = false;
+  //     } else {
+  //       if (presenceEventObject.totalOccupancy === 1 && occupancyPatient.length === 0) {
+  //         if (!abondmentStarted && didPatientJoined) {
+  //           //abondmentStarted = true;
+  //           //callAbundantIntervalTimer(620);
+  //         }
+  //       }
+  //     }
+  //   }
+  // }, [props.presenceEventObject]);
   const onStartConsult = () => {
     const text = {
       id: props.doctorId,
@@ -1951,6 +2120,10 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         return localStorageItem ? localStorageItem.height : height;
       case 'weight':
         return localStorageItem ? localStorageItem.weight : weight;
+      case 'bp':
+        return localStorageItem ? localStorageItem.bp : bp;
+      case 'temperature':
+        return localStorageItem ? localStorageItem.temperature : temperature;
       case 'referralSpecialtyName':
         return localStorageItem ? localStorageItem.referralSpecialtyName : referralSpecialtyName;
       case 'referralDescription':
@@ -1961,42 +2134,9 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   };
 
   const checkForEmptyFields = () => {
-    const heightValue = getDefaultValue('height') || '';
-    const weightValue = getDefaultValue('weight') || '';
     const referralSpecialtyName = getDefaultValue('referralSpecialtyName') || '';
     const referralDescription = getDefaultValue('referralDescription') || '';
-    if (!vitalIgnored && (heightValue.trim() === '' || weightValue.trim() === '')) {
-      if (vitalIgnored) {
-        setVitalError({
-          height: '',
-          weight: '',
-        });
-        return false;
-      } else {
-        if (heightValue.trim() === '' && weightValue.trim() === '') {
-          setShowVital(true);
-          setVitalError({
-            height: 'This field is required',
-            weight: 'This field is required',
-          });
-          return true;
-        } else if (heightValue.trim() === '' && weightValue.trim() !== '') {
-          setShowVital(true);
-          setVitalError({
-            height: 'This field is required',
-            weight: '',
-          });
-          return true;
-        } else if (heightValue.trim() !== '' && weightValue.trim() === '') {
-          setShowVital(true);
-          setVitalError({
-            height: '',
-            weight: 'This field is required',
-          });
-          return true;
-        }
-      }
-    } else if (referralSpecialtyName && referralDescription.trim() === '') {
+    if (referralSpecialtyName && referralDescription.trim() === '') {
       setShowVital(false);
       setVitalError({
         height: '',
@@ -2057,6 +2197,13 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
 
   return (
     <div className={classes.stickyHeader}>
+      {playRingtone && (
+        <audio controls autoPlay loop className={classes.ringtone}>
+          <source src={ringtoneUrl} type="audio/mpeg" />
+          Your browser does not support the audio tag.
+        </audio>
+      )}
+
       <div className={classes.breadcrumbs}>
         <div>
           {(props.appointmentStatus !== STATUS.COMPLETED || props.isClickedOnEdit) && (
@@ -2131,6 +2278,9 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                             props.setIsClickedOnPriview(false);
                             setCaseSheetEdit(true);
                             props.setIsPdfPageOpen(false);
+                            if (props.isNewPrescription) {
+                              handleCloseThreeDots();
+                            }
                           }}
                         >
                           Edit Case Sheet
@@ -2139,9 +2289,27 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                           className={classes.endconsultButton}
                           disabled={sendToPatientButtonDisable}
                           onClick={() => {
-                            localStorage.removeItem(`${params.id}`);
-                            setSendToPatientButtonDisable(true);
-                            props.saveCasesheetAction(true, true);
+                            const emptyArr = [];
+                            if (diagnosis.length < 1) {
+                              emptyArr.push('Diagnosis');
+                            }
+                            if (medicinePrescription.length < 1) {
+                              emptyArr.push('Medicine');
+                            }
+                            if (diagnosticPrescription.length < 1) {
+                              emptyArr.push('Tests');
+                            }
+                            if (otherInstructions.length < 1) {
+                              emptyArr.push('Advices');
+                            }
+                            emptyArr.length > 0
+                              ? setEmptyFieldsString(emptyArr.join(', '))
+                              : setEmptyFieldsString('');
+                            props.setShowConfirmPrescription(true);
+                            setIsConfirmationChecked(false);
+                            // localStorage.removeItem(`${params.id}`);
+                            // setSendToPatientButtonDisable(true);
+                            // props.saveCasesheetAction(true, true);
                           }}
                         >
                           {sendToPatientButtonDisable && 'Please wait...'}
@@ -2157,7 +2325,12 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                     <Fragment>
                       <Button
                         className={classes.backButton}
-                        onClick={() => props.saveCasesheetAction(true, false)}
+                        onClick={() => {
+                          const isEmptyFields = checkForEmptyFields();
+                          if (!isEmptyFields) {
+                            props.saveCasesheetAction(true, false);
+                          }
+                        }}
                       >
                         Save
                       </Button>
@@ -2165,10 +2338,13 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                         className={classes.endconsultButton}
                         disabled={props.saving}
                         onClick={() => {
-                          props.saveCasesheetAction(true, false);
-                          props.setIsClickedOnEdit(false);
-                          props.setIsClickedOnPriview(true);
-                          props.setIsPdfPageOpen(true);
+                          const isEmptyFields = checkForEmptyFields();
+                          if (!isEmptyFields) {
+                            props.saveCasesheetAction(true, false);
+                            props.setIsClickedOnEdit(false);
+                            props.setIsClickedOnPriview(true);
+                            props.setIsPdfPageOpen(true);
+                          }
                         }}
                       >
                         Preview Prescription
@@ -2187,7 +2363,10 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                     className={classes.backButton}
                     disabled={props.saving}
                     onClick={() => {
-                      props.saveCasesheetAction(true, false);
+                      const isEmptyFields = checkForEmptyFields();
+                      if (!isEmptyFields) {
+                        props.saveCasesheetAction(true, false);
+                      }
                     }}
                   >
                     Save
@@ -2254,12 +2433,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                     props.setIsClickedOnEdit(true);
                     props.setIsClickedOnPriview(false);
                     isConsultStarted = true;
-                    if (
-                      appointmentInfo &&
-                      appointmentInfo.appointmentType !== APPOINTMENT_TYPE.PHYSICAL
-                    ) {
-                      callIntervalTimer(600);
-                    }
                   }}
                 >
                   <svg
@@ -2450,6 +2623,24 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               <Button
                 className={classes.consultIcon}
                 aria-describedby={idThreeDots}
+                // disabled={
+                //   props.appointmentStatus === STATUS.COMPLETED ||
+                //   props.appointmentStatus === STATUS.CANCELLED ||
+                //   props.isAppointmentEnded ||
+                //   disableOnCancel ||
+                //   (isPastAppointment() && !consultStart) ||
+                //   (appointmentInfo!.appointmentState !== 'NEW' &&
+                //     appointmentInfo!.appointmentState !== 'TRANSFER' &&
+                //     appointmentInfo!.appointmentState !== 'RESCHEDULE') ||
+                //   (appointmentInfo!.status !== STATUS.IN_PROGRESS &&
+                //     appointmentInfo!.status !== STATUS.PENDING)
+                // }
+                disabled={
+                  (props.isNewPrescription && props.isNewprescriptionEditable) ||
+                  (!props.isNewPrescription &&
+                    props.appointmentStatus === STATUS.COMPLETED &&
+                    !props.sentToPatient)
+                }
                 onClick={(e) => handleClickThreeDots(e)}
               >
                 <img src={require('images/ic_more.svg')} />
@@ -2518,7 +2709,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                               }
                             }}
                           >
-                            End or Cancel Consult
+                            Cancel Consult
                           </li>
                         )}
                     </>
@@ -3009,6 +3200,9 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               isCallAccepted={isCallAccepted}
               isNewMsg={isNewMsg}
               convertCall={() => convertCall()}
+              setSessionError={setSessionError}
+              setPublisherError={setPublisherError}
+              setSubscriberError={setSubscriberError}
             />
           )}
         </div>
@@ -3133,15 +3327,15 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
             </h3>
 
             <Button className={classes.cancelConsult} onClick={() => setShowAbandonment(false)}>
-              {iscallAbandonment ? 'Continue' : 'Yes, continue consult'}
+              {'Continue'}
             </Button>
             <Button
               className={classes.consultButton}
               onClick={() => {
-                noShowAction(iscallAbandonment ? STATUS.CALL_ABANDON : STATUS.NO_SHOW);
+                noShowAction(STATUS.CALL_ABANDON);
               }}
             >
-              {iscallAbandonment ? 'Reschedule' : 'No, reschedule'}
+              {'Reschedule'}
             </Button>
           </div>
         </Paper>
@@ -3218,6 +3412,178 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         </Paper>
       </Modal>
       {/* referral field required popup end */}
+
+      {/* send to patient fields popup end */}
+      <Modal
+        open={props.showConfirmPrescription}
+        onClose={() => props.setShowConfirmPrescription(false)}
+        disableBackdropClick
+        disableEscapeKeyDown
+      >
+        <Paper className={`${classes.modalBoxConsult} ${classes.modalBoxVital}`}>
+          <div className={classes.dialogHeader}>
+            <Button onClick={() => props.setShowConfirmPrescription(false)}>
+              <img src={require('images/ic_cross.svg')} alt="" />
+            </Button>
+          </div>
+          <div className={classes.dialogBody}>
+            <h3>Vital details on the case sheet are entered as follows</h3>
+            <div className={classes.formSection}>
+              <Grid container spacing={2}>
+                <Grid item xs={12} sm={6}>
+                  <label>Height</label>
+                  <div className={classes.content}>
+                    <AphTextField
+                      onFocus={(e) => moveCursorToEnd(e.currentTarget)}
+                      fullWidth
+                      multiline
+                      defaultValue={getDefaultValue('height')}
+                      onBlur={(e) => {
+                        const storageItem = getLocalStorageItem(params.id);
+                        if (storageItem) {
+                          storageItem.height = e.target.value;
+                          updateLocalStorageItem(params.id, storageItem);
+                        }
+                        setHeight(e.target.value);
+                      }}
+                    />
+                  </div>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <label>Weight</label>
+                  <div className={classes.content}>
+                    <AphTextField
+                      onFocus={(e) => moveCursorToEnd(e.currentTarget)}
+                      fullWidth
+                      multiline
+                      helperText={vitalError.weight}
+                      defaultValue={getDefaultValue('weight')}
+                      onBlur={(e) => {
+                        const storageItem = getLocalStorageItem(params.id);
+                        if (storageItem) {
+                          storageItem.weight = e.target.value;
+                          updateLocalStorageItem(params.id, storageItem);
+                        }
+                        setWeight(e.target.value);
+                      }}
+                    />
+                  </div>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <label>BP</label>
+                  <div className={classes.content}>
+                    <AphTextField
+                      onFocus={(e) => moveCursorToEnd(e.currentTarget)}
+                      fullWidth
+                      multiline
+                      defaultValue={getDefaultValue('bp')}
+                      onBlur={(e) => {
+                        const storageItem = getLocalStorageItem(params.id);
+                        if (storageItem) {
+                          storageItem.bp = e.target.value;
+                          updateLocalStorageItem(params.id, storageItem);
+                        }
+                        setBp(e.target.value);
+                      }}
+                    />
+                  </div>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <label>Temperature</label>
+                  <div className={classes.content}>
+                    <AphTextField
+                      onFocus={(e) => moveCursorToEnd(e.currentTarget)}
+                      fullWidth
+                      multiline
+                      defaultValue={getDefaultValue('temperature')}
+                      onBlur={(e) => {
+                        const storageItem = getLocalStorageItem(params.id);
+                        if (storageItem) {
+                          storageItem.temperature = e.target.value;
+                          updateLocalStorageItem(params.id, storageItem);
+                        }
+                        setTemperature(e.target.value);
+                      }}
+                    />
+                  </div>
+                </Grid>
+              </Grid>
+            </div>
+            <div>
+              {emptyFieldsString && (
+                <div className={classes.noteText}>
+                  These fields are blank in the Prescription
+                  <span>{emptyFieldsString}</span>
+                </div>
+              )}
+              <div className={classes.checkBox}>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={isConfirmationChecked}
+                      onChange={(event) => {
+                        setIsConfirmationChecked(event.target.checked);
+                        //setReason(e.target.value as string);
+                      }}
+                      name="confirmationcheck"
+                    />
+                  }
+                  label="The prescription is ready to be sent"
+                />
+              </div>
+            </div>
+            <div className={classes.bottomActions}>
+              {!sendToPatientButtonDisable && (
+                <Button
+                  onClick={() => props.setShowConfirmPrescription(false)}
+                  classes={{
+                    root: classes.canceledBtn,
+                    disabled: classes.cancelBtnDisabled,
+                  }}
+                >
+                  Cancel
+                </Button>
+              )}
+              <Button
+                classes={{
+                  root: classes.sendBtn,
+                  disabled: classes.sendBtnDisabled,
+                }}
+                disabled={sendToPatientButtonDisable || !isConfirmationChecked}
+                onClick={() => {
+                  localStorage.removeItem(`${params.id}`);
+                  setSendToPatientButtonDisable(true);
+                  props.saveCasesheetAction(true, true);
+                }}
+              >
+                {sendToPatientButtonDisable && 'Please wait...'}
+                {sendToPatientButtonDisable ? <CircularProgress size={22} /> : 'Send Prescription'}
+              </Button>
+            </div>
+          </div>
+        </Paper>
+      </Modal>
+      {/* referral field required popup end */}
+      {/* Ot Errors Start */}
+      <Alert
+        error={sessionError}
+        onClose={() => {
+          setSessionError(null);
+        }}
+      />
+      <Alert
+        error={publisherError}
+        onClose={() => {
+          setPublisherError(null);
+        }}
+      />
+      <Alert
+        error={subscriberError}
+        onClose={() => {
+          setSubscriberError(null);
+        }}
+      />
+      {/* Ot Errors Ends */}
     </div>
   );
 };

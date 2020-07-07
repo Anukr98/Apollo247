@@ -16,7 +16,7 @@ import {
 import { Validate, IsOptional } from 'class-validator';
 import { NameValidator, MobileNumberValidator } from 'validators/entityValidators';
 import { ConsultMode } from 'doctors-service/entities';
-import { getCache, setCache, delCache } from 'profiles-service/database/connectRedis';
+import { delCache } from 'profiles-service/database/connectRedis';
 export type ONE_APOLLO_USER_REG = {
   FirstName: string;
   LastName: string;
@@ -98,6 +98,7 @@ export enum PAYMENT_STATUS_MAP {
   TXN_SUCCESS = 'PAYMENT_SUCCESS',
   PENDING = 'PAYMENT_PENDING_PG',
   TXN_FAILURE = 'PAYMENT_FAILED',
+  PAYMENT_ABORTED = 'PAYMENT_ABORTED',
   UNKNOWN = 'PAYMENT_STATUS_NOT_KNOWN',
 }
 
@@ -105,6 +106,7 @@ export enum STATUS_PAYMENT_MAP {
   PAYMENT_SUCCESS = 'TXN_SUCCESS',
   PAYMENT_PENDING_PG = 'PENDING',
   PAYMENT_FAILED = 'TXN_FAILURE',
+  PAYMENT_ABORTED = 'PAYMENT_ABORTED',
 }
 
 export enum Relation {
@@ -154,6 +156,8 @@ export enum MEDICINE_ORDER_STATUS {
   CANCEL_REQUEST = 'CANCEL_REQUEST',
   READY_AT_STORE = 'READY_AT_STORE',
   ORDER_BILLED = 'ORDER_BILLED',
+  PURCHASED_IN_STORE = 'PURCHASED_IN_STORE',
+  PAYMENT_ABORTED = 'PAYMENT_ABORTED',
 }
 
 export enum UPLOAD_FILE_TYPES {
@@ -393,6 +397,9 @@ export class MedicineOrders extends BaseEntity {
   })
   shopAddress: string;
 
+  @Column({ default: false, nullable: true })
+  alertStore: boolean;
+
   @Column({
     nullable: true,
     type: 'jsonb',
@@ -401,6 +408,9 @@ export class MedicineOrders extends BaseEntity {
     default: () => "'{}'",
   })
   paymentInfo: Partial<MedicineOrderPayments>;
+
+  @Column({ nullable: true })
+  customerComment: string;
 
   @Column({ nullable: true })
   isOmsOrder: boolean;
@@ -742,6 +752,9 @@ export class Patient extends BaseEntity {
 
   @Column({ nullable: true })
   dateOfBirth: Date;
+
+  @Column({ nullable: true })
+  employeeId: string;
 
   @Column({ nullable: true })
   @IsOptional()

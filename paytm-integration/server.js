@@ -66,11 +66,13 @@ app.get(
 );
 
 app.get('/refreshDoctorDeepLinks', cronTabs.refreshDoctorDeepLinks);
+app.get('/generateDeeplinkForNewDoctors', cronTabs.generateDeeplinkForNewDoctors);
 app.get('/invokeArchiveMessages', cronTabs.archiveMessages);
 app.get('/invokesendUnreadMessagesNotification', cronTabs.sendUnreadMessagesNotification);
 app.get('/invokeAutoSubmitJDCasesheet', cronTabs.autoSubmitJDCasesheet);
 app.get('/invokeFollowUpNotification', cronTabs.FollowUpNotification);
 app.get('/invokeApptReminder', cronTabs.ApptReminder);
+app.get('/invokeDoctorApptReminder', cronTabs.DoctorApptReminder);
 app.get('/invokeDailyAppointmentSummary', cronTabs.DailyAppointmentSummary);
 app.get('/invokePhysicalApptReminder', cronTabs.PhysicalApptReminder);
 app.get('/updateSdSummary', cronTabs.updateSdSummary);
@@ -80,13 +82,6 @@ app.get('/updateDoctorSlotsEs', cronTabs.updateDoctorSlotsEs);
 app.get('/invokeDashboardSummaries', (req, res) => {
   const currentDate = format(new Date(), 'yyyy-MM-dd');
 
-  const updateSpecialtyCountRequestJSON = {
-    query: `mutation{
-      updateSpecialtyCount(specialityId:"0"){
-        updated
-      }
-    }`,
-  };
   const updateUtilizationCapacityRequestJSON = {
     query: `mutation{
       updateUtilizationCapacity(specialityId:"0"){
@@ -136,28 +131,7 @@ app.get('/invokeDashboardSummaries', (req, res) => {
         '\nupdateUtilizationCapacity Response\n' +
         JSON.stringify(response.data.data.updateUtilizationCapacity) +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function (err) {
-        if (err) throw err;
-        console.log('Updated!');
-      });
-    })
-    .catch((error) => {
-      console.log('error', error);
-    });
-  //updateSpecilaityCount api call
-  axios
-    .post(process.env.API_URL, updateSpecialtyCountRequestJSON)
-    .then((response) => {
-      console.log(response.data.data.updateSpecialtyCount, 'Summary response is....');
-      const fileName =
-        process.env.PHARMA_LOGS_PATH + new Date().toDateString() + '-dashboardSummary.txt';
-      let content =
-        new Date().toString() +
-        '\n---------------------------\n' +
-        '\nupdateSpecialtyCount Response\n' +
-        JSON.stringify(response.data.data.updateSpecialtyCount) +
-        '\n-------------------\n';
-      fs.appendFile(fileName, content, function (err) {
+      fs.appendFile(fileName, content, function(err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -178,7 +152,7 @@ app.get('/invokeDashboardSummaries', (req, res) => {
         '\nupdatePhrDocSummary Response\n' +
         JSON.stringify(response.data.data.updatePhrDocSummary) +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function (err) {
+      fs.appendFile(fileName, content, function(err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -200,7 +174,7 @@ app.get('/invokeDashboardSummaries', (req, res) => {
         '\ngetAvailableDoctorsCount Response\n' +
         JSON.stringify(response.data.data.getAvailableDoctorsCount) +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function (err) {
+      fs.appendFile(fileName, content, function(err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -222,7 +196,7 @@ app.get('/invokeDashboardSummaries', (req, res) => {
         '\nupdateConsultRating Response\n' +
         JSON.stringify(response.data.data.updateConsultRating) +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function (err) {
+      fs.appendFile(fileName, content, function(err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -235,6 +209,42 @@ app.get('/invokeDashboardSummaries', (req, res) => {
     message: res.data,
   });
 });
+app.get('/updateSpecialtyCount', (req, res) => {
+  const updateSpecialtyCountRequestJSON = {
+    query: `mutation{
+    updateSpecialtyCount(specialityId:"0"){
+      updated
+    }
+  }`,
+  };
+  //updateSpecilaityCount api call
+  axios.defaults.headers.common['authorization'] = process.env.API_TOKEN;
+  axios
+    .post(process.env.API_URL, updateSpecialtyCountRequestJSON)
+    .then((response) => {
+      console.log(response.data.data.updateSpecialtyCount, 'Summary response is....');
+      const fileName =
+        process.env.PHARMA_LOGS_PATH + new Date().toDateString() + '-dashboardSummary.txt';
+      let content =
+        new Date().toString() +
+        '\n---------------------------\n' +
+        '\nupdateSpecialtyCount Response\n' +
+        JSON.stringify(response.data.data.updateSpecialtyCount) +
+        '\n-------------------\n';
+      fs.appendFile(fileName, content, function(err) {
+        if (err) throw err;
+        console.log('Updated!');
+      });
+    })
+    .catch((error) => {
+      console.log('error', error);
+    });
+  res.send({
+    status: 'success',
+    message: res.data,
+  });
+});
+//updateSpecilaityCount api call end
 app.get('/updateDoctorsAwayAndOnlineCount', (req, res) => {
   const currentDate = format(new Date(), 'yyyy-MM-dd');
   const updateDoctorsAwayAndOnlineCountRequestJSON = {
@@ -260,7 +270,7 @@ app.get('/updateDoctorsAwayAndOnlineCount', (req, res) => {
         '\nupdateDoctorsAwayAndOnlineCount Response\n' +
         JSON.stringify(response.data.data.updateDoctorsAwayAndOnlineCount) +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function (err) {
+      fs.appendFile(fileName, content, function(err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -392,7 +402,10 @@ app.get('/diagnosticpayment', (req, res) => {
             req.query.price
           )}|APOLLO247|${firstName}|${emailAddress}|||||||||||eCwWELxi`;
 
-          const hash = crypto.createHash('sha512').update(code).digest('hex');
+          const hash = crypto
+            .createHash('sha512')
+            .update(code)
+            .digest('hex');
 
           console.log('paymentCode==>', code);
           console.log('paymentHash==>', hash);
@@ -830,7 +843,7 @@ app.get('/processOrders', (req, res) => {
                   '\n---------------------------\n' +
                   JSON.stringify(pharmaInput) +
                   '\n-------------------\n';
-                fs.appendFile(fileName, content, function (err) {
+                fs.appendFile(fileName, content, function(err) {
                   if (err) throw err;
                   console.log('Updated!');
                 });
@@ -850,7 +863,7 @@ app.get('/processOrders', (req, res) => {
                     console.log('pharma resp', resp, resp.data.ordersResult);
                     //const orderData = JSON.parse(resp.data);
                     content = resp.data.ordersResult + '\n==================================\n';
-                    fs.appendFile(fileName, content, function (err) {
+                    fs.appendFile(fileName, content, function(err) {
                       if (err) throw err;
                       console.log('Updated!');
                     });
@@ -998,7 +1011,7 @@ app.get('/processOmsOrders', (req, res) => {
                     deliveryZipcode = patientAddressDetails.zipcode || deliveryZipcode;
                   }
                 }
-                if (orderDetails.shopId) {
+                if (parseInt(orderDetails.shopId, 10)) {
                   if (!orderDetails.shopAddress) {
                     logger.error(
                       `store address details not present for store pick ${orderDetails.orderAutoId}`
@@ -1051,6 +1064,8 @@ app.get('/processOmsOrders', (req, res) => {
                       comment: '',
                     });
                   }
+                } else {
+                  orderType = 'Pharma';
                 }
                 const paymentDetails =
                   (orderDetails.medicineOrderPayments && orderDetails.medicineOrderPayments[0]) ||
@@ -1078,10 +1093,13 @@ app.get('/processOmsOrders', (req, res) => {
                 if (!orderDetails.orderTat) {
                   orderDetails.orderTat = '';
                 }
-                const orderTat =
+                let orderTat =
                   orderDetails.orderTat && Date.parse(orderDetails.orderTat)
                     ? new Date(orderDetails.orderTat)
                     : '';
+                if (orderDetails.orderTat && orderDetails.orderTat.length > 20) {
+                  orderTat = addMinutes(orderTat, 330);
+                }
                 const medicineOrderPharma = {
                   orderid: orderDetails.orderAutoId,
                   orderdate: format(
@@ -1101,7 +1119,7 @@ app.get('/processOmsOrders', (req, res) => {
                   timeslot: orderTat ? format(orderTat, 'HH:mm') : '',
                   shippingcharges: orderDetails.devliveryCharges || 0,
                   categorytype: orderType,
-                  customercomment: '',
+                  customercomment: orderDetails.customerComment || '',
                   landmark: landmark,
                   issubscribe: false,
                   customerdetails: {
@@ -1547,7 +1565,7 @@ app.get('/processOrderById', (req, res) => {
             '\n---------------------------\n' +
             JSON.stringify(pharmaInput) +
             '\n-------------------\n';
-          fs.appendFile(fileName, content, function (err) {
+          fs.appendFile(fileName, content, function(err) {
             if (err) throw err;
             console.log('Updated!');
           });
@@ -1562,7 +1580,7 @@ app.get('/processOrderById', (req, res) => {
               console.log('pharma resp', resp, resp.data.ordersResult);
               //const orderData = JSON.parse(resp.data);
               content = resp.data.ordersResult + '\n==================================\n';
-              fs.appendFile(fileName, content, function (err) {
+              fs.appendFile(fileName, content, function(err) {
                 if (err) throw err;
                 console.log('Updated!');
               });

@@ -84,6 +84,7 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
         startTime
         weekDay
         isActive
+        actualDay
       }
     }
   }
@@ -114,6 +115,9 @@ export const GET_DOCTORS_BY_SPECIALITY_AND_FILTERS = gql`
           weekDay
           endTime
         }
+        onlineConsultationFees
+        physicalConsultationFees
+        doctorType
         doctorHospital {
           facility {
             city
@@ -152,11 +156,19 @@ export const GET_DOCTORS_BY_SPECIALITY_AND_FILTERS = gql`
 `;
 
 export const SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME = gql`
-  query SearchDoctorAndSpecialtyByName($searchText: String!, $patientId: ID!, $pincode: String) {
+  query SearchDoctorAndSpecialtyByName(
+    $searchText: String!
+    $patientId: ID!
+    $pincode: String
+    $city: String!
+    $geoLocation: Geolocation
+  ) {
     SearchDoctorAndSpecialtyByName(
       searchText: $searchText
       patientId: $patientId
       pincode: $pincode
+      city: $city
+      geolocation: $geoLocation
     ) {
       doctors {
         id
@@ -168,6 +180,7 @@ export const SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME = gql`
           name
           userFriendlyNomenclature
         }
+        salutation
         experience
         photoUrl
         thumbnailUrl
@@ -302,6 +315,14 @@ export const PATIENT_APPOINTMENT_HISTORY = gql`
         appointmentType
         hospitalId
         status
+        caseSheet {
+          symptoms {
+            symptom
+            since
+            howOften
+            severity
+          }
+        }
         bookingDate
         isSeniorConsultStarted
       }

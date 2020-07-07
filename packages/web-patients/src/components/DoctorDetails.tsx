@@ -14,7 +14,6 @@ import { useApolloClient } from 'react-apollo-hooks';
 import Typography from '@material-ui/core/Typography';
 import { OnlineConsult } from 'components/OnlineConsult';
 import { VisitClinic } from 'components/VisitClinic';
-import { useAllCurrentPatients } from 'hooks/authHooks';
 import { GET_DOCTOR_DETAILS_BY_ID } from 'graphql/doctors';
 import {
   GetDoctorDetailsById,
@@ -25,7 +24,6 @@ import LinearProgress from '@material-ui/core/LinearProgress';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { LocationProvider } from 'components/LocationProvider';
-import Scrollbars from 'react-custom-scrollbars';
 import { AphButton } from '@aph/web-ui-components';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
@@ -33,8 +31,15 @@ import { useAuth } from 'hooks/authHooks';
 import { ManageProfile } from 'components/ManageProfile';
 import { BottomLinks } from 'components/BottomLinks';
 import { gtmTracking } from 'gtmTracking';
-import { getOpeningHrs } from '../helpers/commonHelpers';
+import { getOpeningHrs, readableParam } from '../helpers/commonHelpers';
 import { SchemaMarkup } from 'SchemaMarkup';
+import { MetaTagsComp } from 'MetaTagsComp';
+import { DoctorTimings } from 'components/DoctorTimings';
+import { HowCanConsult } from 'components/Doctors/HowCanConsult';
+import { AppDownload } from 'components/Doctors/AppDownload';
+import { NavigationBottom } from 'components/NavigationBottom';
+import { GetDoctorNextAvailableSlot } from 'graphql/types/GetDoctorNextAvailableSlot';
+import { GetDoctorDetailsById_getDoctorDetailsById as DoctorDetailsType } from 'graphql/types/GetDoctorDetailsById';
 
 export interface DoctorDetailsProps {
   id: string;
@@ -43,7 +48,7 @@ export interface DoctorDetailsProps {
 const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
-      width: '100%',
+      padding: 0,
     },
     container: {
       maxWidth: 1064,
@@ -52,54 +57,62 @@ const useStyles = makeStyles((theme: Theme) => {
     doctorDetailsPage: {
       backgroundColor: '#f7f8f5',
       [theme.breakpoints.down('xs')]: {
-        backgroundColor: 'transparent',
-        position: 'absolute',
-        top: 0,
-        zIndex: 99,
-        width: '100%',
+        backgroundColor: '#f0f1ec',
+        marginTop: -14,
       },
     },
-    breadcrumbs: {
-      marginLeft: 20,
-      marginRight: 20,
-      fontSize: 13,
-      paddingTop: 17,
-      paddingBottom: 11,
-      fontWeight: 600,
-      color: theme.palette.secondary.dark,
-      textTransform: 'uppercase',
-      borderBottom: '0.5px solid rgba(2,71,91,0.3)',
-      position: 'relative',
-      zIndex: 1,
+    breadcrumbLinks: {
       display: 'flex',
       alignItems: 'center',
+      fontSize: 13,
+      color: '#007c93',
+      fontWeight: 600,
+      textTransform: 'uppercase',
+      padding: 20,
       [theme.breakpoints.down('xs')]: {
-        borderBottom: 'none',
-        backgroundColor: theme.palette.common.white,
-        margin: 0,
-        boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
-        padding: '16px 20px',
+        backgroundColor: '#fff',
         position: 'fixed',
+        padding: '17px 20px',
+        zIndex: 99,
+        top: 0,
         width: '100%',
+        boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
+      },
+      '& a': {
+        paddingLeft: 5,
+        paddingRight: 5,
+        color: '#fca317',
+      },
+      '& span': {
+        paddingLeft: 5,
+        paddingRight: 5,
       },
     },
     doctorProfileSection: {
       [theme.breakpoints.down('xs')]: {
         backgroundColor: '#dcdfce',
-        marginTop: 56,
-        paddingBottom: 80,
+        paddingBottom: 20,
       },
       [theme.breakpoints.up('sm')]: {
         display: 'flex',
-        padding: '20px 3px 20px 20px',
+        padding: 20,
+        paddingTop: 0,
       },
     },
-    searchSection: {
+    leftSection: {
       width: 'calc(100% - 328px)',
+      paddingRight: 20,
       marginLeft: 'auto',
       [theme.breakpoints.down('xs')]: {
         width: '100%',
         paddingLeft: 0,
+        paddingRight: 0,
+      },
+    },
+    rightSideBar: {
+      width: 328,
+      [theme.breakpoints.down('xs')]: {
+        width: '100%',
       },
     },
     modalBox: {
@@ -148,48 +161,7 @@ const useStyles = makeStyles((theme: Theme) => {
         top: -48,
       },
     },
-    backArrow: {
-      cursor: 'pointer',
-      marginRight: 20,
-      [theme.breakpoints.up(1220)]: {
-        position: 'absolute',
-        left: -82,
-        width: 48,
-        height: 48,
-        top: 0,
-        lineHeight: '36px',
-        borderRadius: '50%',
-        textAlign: 'center',
-        backgroundColor: '#02475b',
-      },
-      '& img': {
-        verticalAlign: 'bottom',
-      },
-    },
-    whiteArrow: {
-      verticalAlign: 'middle',
-      [theme.breakpoints.down(1220)]: {
-        display: 'none',
-      },
-    },
-    blackArrow: {
-      verticalAlign: 'middle',
-      [theme.breakpoints.up(1220)]: {
-        display: 'none',
-      },
-    },
-    customScroll: {
-      paddingLeft: 20,
-      paddingRight: 17,
-      [theme.breakpoints.down('xs')]: {
-        padding: 0,
-      },
-    },
     bookAppointment: {
-      position: 'absolute',
-      right: 20,
-      top: 12,
-      minWidth: 200,
       [theme.breakpoints.down(900)]: {
         display: 'none',
       },
@@ -213,9 +185,28 @@ const useStyles = makeStyles((theme: Theme) => {
       top: -88,
       zIndex: 999,
     },
-    footerLinks: {
-      [theme.breakpoints.down(900)]: {
+    doctorProfile: {
+      borderRadius: 5,
+      boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
+      backgroundColor: '#ffffff',
+      [theme.breakpoints.down('xs')]: {
+        borderRadius: 0,
+      },
+    },
+    doctorTimings: {
+      paddingTop: 20,
+    },
+    mHide: {
+      [theme.breakpoints.down('xs')]: {
         display: 'none',
+      },
+    },
+    backArrow: {
+      [theme.breakpoints.up('sm')]: {
+        display: 'none',
+      },
+      '& img': {
+        verticalAlign: 'middle',
       },
     },
   };
@@ -229,19 +220,27 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const { isSignedIn } = useAuth();
   const classes = useStyles({});
   const params = useParams<{ id: string; specialty: string }>();
-  const doctorId = params.id;
+  const doctorIdLength = params && params.id && params.id.length;
+  const doctorId = doctorIdLength && params.id.slice(doctorIdLength - 36);
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
   const [tabValue, setTabValue] = useState<number>(0);
   const [isShownOnce, setIsShownOnce] = useState<boolean>(false);
-  const { currentPatient } = useAllCurrentPatients();
-  const isMediumScreen = useMediaQuery('(min-width:768px) and (max-width:900px)');
-  const isSmallScreen = useMediaQuery('(max-width:767px)');
   const apolloClient = useApolloClient();
-  const [data, setData] = useState<any>();
+  const [doctorData, setDoctorData] = useState<DoctorDetailsType | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [structuredJSON, setStructuredJSON] = useState(null);
+  const [metaTagProps, setMetaTagProps] = useState(null);
+  const [doctorAvailableSlots, setDoctorAvailableSlots] = useState<GetDoctorNextAvailableSlot>();
+  const [error, setError] = useState<boolean>(false);
+  const isMediumScreen = useMediaQuery('(min-width:768px) and (max-width:900px)');
+  const isSmallScreen = useMediaQuery('(max-width:767px)');
 
-  const currentUserId = currentPatient && currentPatient.id;
+  const doctorSlots =
+    doctorAvailableSlots &&
+    doctorAvailableSlots.getDoctorNextAvailableSlot &&
+    doctorAvailableSlots.getDoctorNextAvailableSlot.doctorAvailalbeSlots &&
+    doctorAvailableSlots.getDoctorNextAvailableSlot.doctorAvailalbeSlots.length > 0 &&
+    doctorAvailableSlots.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0];
 
   useEffect(() => {
     setLoading(true);
@@ -250,27 +249,22 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         query: GET_DOCTOR_DETAILS_BY_ID,
         variables: { id: doctorId },
       })
-      .then((response) => {
-        setData(response.data);
-        setLoading(false);
-        if (
-          response.data &&
-          response.data.getDoctorDetailsById &&
-          Object.keys(response.data.getDoctorDetailsById).length
-        ) {
+      .then(({ data }: any) => {
+        if (data && data.getDoctorDetailsById) {
+          setDoctorData(data.getDoctorDetailsById);
           const {
-            getDoctorDetailsById: {
-              fullName,
-              photoUrl,
-              firstName,
-              lastName,
-              doctorHospital,
-              specialty,
-              onlineConsultationFees,
-              physicalConsultationFees,
-              consultHours,
-            },
-          } = response.data;
+            id,
+            fullName,
+            photoUrl,
+            firstName,
+            lastName,
+            doctorHospital,
+            specialty,
+            onlineConsultationFees,
+            physicalConsultationFees,
+            consultHours,
+            salutation,
+          } = data.getDoctorDetailsById;
           const openingHours = consultHours ? getOpeningHrs(consultHours) : '';
           let streetLine1 = '',
             city = '',
@@ -336,7 +330,28 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
             },
             medicalSpecialty: specialty ? specialty.name : '',
           });
+          setMetaTagProps({
+            title: `${fullName}: ${
+              specialty && specialty.name ? specialty.name : ''
+            } - Online Consultation/Appointment - Apollo 247`,
+            description: `Book an appointment with ${fullName} - ${
+              specialty && specialty.name
+            } and consult online at Apollo 247. Know more about ${fullName} and his work here. Get medical help online in just a few clicks at Apollo 247.`,
+            canonicalLink:
+              window &&
+              window.location &&
+              window.location.origin &&
+              `${window.location.origin}/doctors/${readableParam(fullName)}-${id}`,
+          });
         }
+        setError(false);
+      })
+      .catch((e) => {
+        console.log(e);
+        setError(true);
+      })
+      .finally(() => {
+        setLoading(false);
       });
   }, []);
 
@@ -344,158 +359,111 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     return <LinearProgress className={classes.loader} />;
   }
 
-  const availableForPhysicalConsultation = true,
-    availableForVirtualConsultation = true;
+  if (error) {
+    return <>Error Loading the data</>;
+  }
 
-  const doctorDetails = data && data.getDoctorDetailsById ? data : null;
-
-  const gtmTrackingFunc = () => {
-    /* Gtm code start */
-    const speciality =
-      doctorDetails &&
-      doctorDetails.getDoctorDetailsById &&
-      doctorDetails.getDoctorDetailsById.specialty &&
-      doctorDetails.getDoctorDetailsById.specialty.name
-        ? doctorDetails.getDoctorDetailsById.specialty.name
-        : null;
-    const onlineConsultationFees =
-      doctorDetails &&
-      doctorDetails.getDoctorDetailsById &&
-      doctorDetails.getDoctorDetailsById.onlineConsultationFees
-        ? doctorDetails.getDoctorDetailsById.onlineConsultationFees
-        : null;
-    gtmTracking({
-      category: 'Consultations',
-      action: speciality,
-      label: 'Order Initiated',
-      value: onlineConsultationFees,
-    });
-    /* Gtm code end */
-  };
-
-  if (doctorDetails) {
-    const isStarDoctor =
-      doctorDetails &&
-      doctorDetails.getDoctorDetailsById &&
-      doctorDetails.getDoctorDetailsById.doctorType === DoctorType.STAR_APOLLO
-        ? true
-        : false;
+  if (doctorData) {
+    const doctorTimings = doctorData.consultHours || null;
+    const gtmTrackingFunc = () => {
+      /* Gtm code start */
+      const speciality =
+        doctorData && doctorData.specialty && doctorData.specialty.name
+          ? doctorData.specialty.name
+          : null;
+      const onlineConsultationFees =
+        doctorData && doctorData.onlineConsultationFees ? doctorData.onlineConsultationFees : null;
+      gtmTracking({
+        category: 'Consultations',
+        action: speciality,
+        label: 'Order Initiated',
+        value: onlineConsultationFees,
+      });
+      /* Gtm code end */
+    };
+    const doctorId = doctorData.id || '';
 
     const isPayrollDoctor =
-      doctorDetails &&
-      doctorDetails.getDoctorDetailsById &&
-      doctorDetails.getDoctorDetailsById.doctorType === DoctorType.PAYROLL
-        ? true
-        : false;
+      doctorData.doctorType && doctorData.doctorType === DoctorType.PAYROLL ? true : false;
 
-    const doctorId =
-      doctorDetails && doctorDetails.getDoctorDetailsById
-        ? doctorDetails.getDoctorDetailsById.id
-        : '';
-
-    const hasStarTeam =
-      doctorDetails &&
-      doctorDetails.getDoctorDetailsById &&
-      doctorDetails.getDoctorDetailsById.starTeam
-        ? true
-        : false;
+    const hasStarTeam = doctorData.starTeam ? true : false;
 
     return (
       <div className={classes.root}>
-        <Header />
+        <MetaTagsComp {...metaTagProps} />
+        <div className={classes.mHide}>
+          <Header />
+        </div>
         {structuredJSON && <SchemaMarkup structuredJSON={structuredJSON} />}
         <div className={classes.container}>
           <div className={classes.doctorDetailsPage}>
-            <div className={classes.breadcrumbs}>
-              <Link
-                to={
-                  params.specialty
-                    ? clientRoutes.specialties(params.specialty)
-                    : clientRoutes.doctorsLanding()
-                }
-                title={'Back to doctors search'}
-              >
-                <div className={classes.backArrow}>
-                  <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
-                  <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
-                </div>
+            <div className={classes.breadcrumbLinks}>
+              <Link className={classes.backArrow} to={clientRoutes.specialties(params.specialty)}>
+                <img src={require('images/ic_back.svg')} alt="" />
               </Link>
-              Doctor Details
+              <Link to={clientRoutes.specialityListing()}>Specialities</Link>
+              <img src={require('images/triangle.svg')} alt="" />
+
+              <Link to={clientRoutes.specialties(params.specialty)}>Doctors</Link>
+              <img src={require('images/triangle.svg')} alt="" />
+
+              <span>Doctor Details</span>
             </div>
-            <Scrollbars
-              autoHide={true}
-              autoHeight
-              autoHeightMax={
-                isMediumScreen
-                  ? 'calc(100vh - 240px)'
-                  : isSmallScreen
-                  ? 'auto'
-                  : 'calc(100vh - 154px)'
-              }
-            >
-              <div className={classes.doctorProfileSection}>
-                <DoctorProfile
-                  doctorDetails={doctorDetails}
-                  avaPhy={availableForPhysicalConsultation}
-                  avaOnline={availableForVirtualConsultation}
-                />
-                <ProtectedWithLoginPopup>
-                  {({ protectWithLoginPopup }) => (
-                    <div className={classes.searchSection}>
-                      <AphButton
-                        onClick={(e) => {
-                          if (!isSignedIn) {
-                            protectWithLoginPopup();
-                          } else {
-                            setIsPopoverOpen(true);
-                            gtmTrackingFunc();
-                          }
-                        }}
-                        color="primary"
-                        className={classes.bookAppointment}
-                        title={' Book Appointment'}
-                      >
-                        Book Appointment
-                      </AphButton>
-                      <div className={classes.customScroll}>
-                        {!isPayrollDoctor && (
-                          <>
-                            <DoctorClinics doctorDetails={doctorDetails} />
-                            {hasStarTeam && <StarDoctorTeam doctorDetails={doctorDetails} />}
-                          </>
-                        )}
-                        <AppointmentHistory doctorId={doctorId} patientId={currentUserId || ' '} />
-                      </div>
-                    </div>
+            <div className={classes.doctorProfileSection}>
+              <div className={classes.leftSection}>
+                <div className={classes.doctorProfile}>
+                  <DoctorProfile
+                    doctorDetails={doctorData}
+                    avaPhy={true}
+                    avaOnline={true}
+                    getDoctorAvailableSlots={(value: GetDoctorNextAvailableSlot) => {
+                      setDoctorAvailableSlots(value);
+                    }}
+                  />
+                  {!isPayrollDoctor && (
+                    <>
+                      <DoctorClinics doctorDetails={doctorData} />
+                      {hasStarTeam && <StarDoctorTeam doctorDetails={doctorData} />}
+                    </>
                   )}
-                </ProtectedWithLoginPopup>
+                  <DoctorTimings doctorTimings={doctorTimings} />
+                </div>
+                <AppointmentHistory doctorId={doctorData.id || ''} />
               </div>
-            </Scrollbars>
+              <div className={classes.rightSideBar}>
+                <HowCanConsult
+                  doctorDetails={doctorData}
+                  doctorAvailablePhysicalSlots={
+                    doctorSlots ? doctorSlots.physicalAvailableSlot : ''
+                  }
+                  doctorAvailableOnlineSlot={doctorSlots ? doctorSlots.availableSlot : ''}
+                />
+                <AppDownload />
+                {/* <ProtectedWithLoginPopup>
+                    {({ protectWithLoginPopup }) => (
+                      <>
+                        <AphButton
+                          onClick={(e) => {
+                            if (!isSignedIn) {
+                              protectWithLoginPopup();
+                            } else {
+                              setIsPopoverOpen(true);
+                              gtmTrackingFunc();
+                            }
+                          }}
+                          color="primary"
+                          className={classes.bookAppointment}
+                          title={' Book Appointment'}
+                        >
+                          Book Appointment
+                        </AphButton>
+                      </>
+                    )}
+                  </ProtectedWithLoginPopup> */}
+              </div>
+            </div>
           </div>
         </div>
-        <div className={classes.footerLinks}>
-          <BottomLinks />
-        </div>
-        <ProtectedWithLoginPopup>
-          {({ protectWithLoginPopup }) => (
-            <div className={classes.flotingBtn}>
-              <AphButton
-                onClick={(e) => {
-                  if (!isSignedIn) {
-                    protectWithLoginPopup();
-                  } else {
-                    setIsPopoverOpen(true);
-                    gtmTrackingFunc();
-                  }
-                }}
-                color="primary"
-                title={' Book Appointment'}
-              >
-                Book Appointment
-              </AphButton>
-            </div>
-          )}
-        </ProtectedWithLoginPopup>
         <Modal
           open={isPopoverOpen}
           onClose={() => setIsPopoverOpen(false)}
@@ -516,18 +484,16 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                 setTabValue(newValue);
               }}
             >
-              {availableForVirtualConsultation && (
-                <Tab
-                  classes={{
-                    root: classes.tabRoot,
-                    selected: classes.tabSelected,
-                  }}
-                  label="Consult Online"
-                  title={'Consult Online'}
-                />
-              )}
+              <Tab
+                classes={{
+                  root: classes.tabRoot,
+                  selected: classes.tabSelected,
+                }}
+                label="Consult Online"
+                title={'Consult Online'}
+              />
 
-              {availableForPhysicalConsultation && !isPayrollDoctor && (
+              {!isPayrollDoctor && (
                 <Tab
                   classes={{
                     root: classes.tabRoot,
@@ -538,11 +504,11 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                 />
               )}
             </Tabs>
-            {tabValue === 0 && availableForVirtualConsultation && (
+            {tabValue === 0 && (
               <TabContainer>
                 <OnlineConsult
                   setIsPopoverOpen={setIsPopoverOpen}
-                  doctorDetails={doctorDetails}
+                  doctorDetails={doctorData}
                   onBookConsult={(popover: boolean) => setIsPopoverOpen(popover)}
                   isRescheduleConsult={false}
                   tabValue={(tabValue: number) => setTabValue(tabValue)}
@@ -552,16 +518,17 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
               </TabContainer>
             )}
 
-            {tabValue === 1 && availableForPhysicalConsultation && !isPayrollDoctor && (
+            {tabValue === 1 && !isPayrollDoctor && (
               <TabContainer>
                 <LocationProvider>
-                  <VisitClinic doctorDetails={doctorDetails} />
+                  <VisitClinic doctorDetails={doctorData} />
                 </LocationProvider>
               </TabContainer>
             )}
           </Paper>
         </Modal>
-        <ManageProfile />
+        <BottomLinks />
+        <NavigationBottom />
       </div>
     );
   } else {

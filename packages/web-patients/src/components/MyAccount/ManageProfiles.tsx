@@ -237,34 +237,36 @@ export const ManageProfiles: React.FC = (props) => {
                 }}
                 title={'Update Profile'}
               >
-                <div className={classes.profileCard}>
-                  <div className={classes.profileImg}>
-                    <img src={photoUrl ? photoUrl : require('images/no_photo.png')} alt="" />
-                  </div>
-                  <div className={classes.profileGroup}>
-                    <div className={classes.userTopGroup}>
-                      <div className={classes.userName}>{`${firstName} ${lastName}`}</div>
-                      <div className={classes.rightGroup}>
-                        <div className={classes.userInfo}>
-                          {gender && age ? (
-                            <>{`${relation} | ${gender} | ${age}`}</>
-                          ) : (
-                            `${relation}`
-                          )}
+                {firstName && (
+                  <div className={classes.profileCard}>
+                    <div className={classes.profileImg}>
+                      <img src={photoUrl ? photoUrl : require('images/no_photo.png')} alt="" />
+                    </div>
+                    <div className={classes.profileGroup}>
+                      <div className={classes.userTopGroup}>
+                        <div className={classes.userName}>{`${firstName} ${lastName}`}</div>
+                        <div className={classes.rightGroup}>
+                          <div className={classes.userInfo}>
+                            {gender && age ? (
+                              <>{`${relation} | ${gender} | ${age}`}</>
+                            ) : (
+                              `${relation}`
+                            )}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                    <div className={classes.userBottomGroup}>
-                      <div className={classes.userId}>UHID : {uhid}</div>
-                      <div className={classes.rightGroup}>
-                        {dob ? `DOB : ${moment(dob).format('DD MMM, YYYY')}` : ''}
+                      <div className={classes.userBottomGroup}>
+                        <div className={classes.userId}>UHID : {uhid}</div>
+                        <div className={classes.rightGroup}>
+                          {dob ? `DOB : ${moment(dob).format('DD MMM, YYYY')}` : ''}
+                        </div>
+                      </div>
+                      <div className={classes.userBottom}>
+                        <div className={classes.rightGroup}>{mobileNumber}</div>
                       </div>
                     </div>
-                    <div className={classes.userBottom}>
-                      <div className={classes.rightGroup}>{mobileNumber}</div>
-                    </div>
                   </div>
-                </div>
+                )}
               </div>
             );
           })}

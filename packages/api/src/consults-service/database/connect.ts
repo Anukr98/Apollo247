@@ -50,6 +50,7 @@ import {
   CityPincodeMapper,
   DoctorPatientExternalConnect,
   Deeplink,
+  AdminAuditLogs,
 } from 'doctors-service/entities';
 import 'reflect-metadata';
 import { createConnections } from 'typeorm';
@@ -162,6 +163,7 @@ export const connect = async () => {
         AdminAuditorMapper,
         CityPincodeMapper,
         DoctorPatientExternalConnect,
+        AdminAuditLogs,
       ],
       type: 'postgres',
       host: process.env.DOCTORS_DB_HOST,

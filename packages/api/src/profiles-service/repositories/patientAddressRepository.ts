@@ -4,7 +4,7 @@ import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { getCache, setCache } from 'profiles-service/database/connectRedis';
 import { debugLog } from 'customWinstonLogger';
-
+import { ApiConstants } from 'ApiConstants';
 const dLogger = debugLog(
   'profileServiceLogger',
   'patientRepository',
@@ -52,7 +52,7 @@ export class PatientAddressRepository extends Repository<PatientAddress> {
     setCache(
       this.cacheKey(REDIS_ADDRESS_PATIENT_ID_KEY_PREFIX, id),
       JSON.stringify(queryResult),
-      14400
+      ApiConstants.CACHE_EXPIRATION_14400
     );
     return queryResult;
   }

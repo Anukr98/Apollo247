@@ -111,11 +111,11 @@ export type Resolver<Parent, Args, Context, Result> = (
     cors: { origin: corsOrigins },
     schema,
     executor,
-    engine: {
+    /* engine: {
       apiKey: process.env.ENGINE_API_KEY,
       schemaTag: process.env.NODE_ENV,
       debugPrintReports: true,
-    },
+    }, */
     context: async ({ req }) => {
       // console.log(req);
       //log('apiGatewayLogger', '', req.body, '', '');
@@ -133,6 +133,25 @@ export type Resolver<Parent, Args, Context, Result> = (
           mobileNumber: '',
         };
         return gatewayContext;
+      }
+
+      //added beare toek with mobile number encoded with base64
+      if (jwt.startsWith('Bearer QVBPTExPMjQ3')) {
+        const token = jwt.split('QVBPTExPMjQ3');
+        if (token.length == 2) {
+          const buff = new Buffer(token[1], 'base64');
+          const mobileNumber = buff.toString('ascii');
+          console.log(mobileNumber, 'decoded');
+          if (mobileNumber == '' || mobileNumber == null) {
+            throw new AphAuthenticationError(AphErrorMessages.FIREBASE_AUTH_TOKEN_ERROR);
+          }
+          const gatewayContext: GatewayContext = {
+            mobileNumber,
+          };
+          return gatewayContext;
+        } else {
+          throw new AphAuthenticationError(AphErrorMessages.FIREBASE_AUTH_TOKEN_ERROR);
+        }
       }
 
       const isLocal = process.env.NODE_ENV === 'local';
@@ -184,14 +203,14 @@ export type Resolver<Parent, Args, Context, Result> = (
           return {
             parsingDidStart(requestContext) {
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              const internalContext = (requestContext.context as any) as GatewayContext;
+              /*const internalContext = (requestContext.context as any) as GatewayContext;
 
-              logger.log({
+             logger.log({
                 message: 'API Gateway Request Started for :' + internalContext.mobileNumber,
                 time: reqStartTimeFormatted,
                 operation: requestContext.request.query,
                 level: 'info',
-              });
+              }); */
             },
             didEncounterErrors(requestContext) {
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -216,7 +235,7 @@ export type Resolver<Parent, Args, Context, Result> = (
               };
               //remove response if there is no error
               if (errorCount === 0) delete responseLog.response;
-              logger.log(responseLog);
+              //logger.log(responseLog);
             },
           };
         },

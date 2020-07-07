@@ -1,6 +1,6 @@
 import React, { useContext } from 'react';
 import { Theme } from '@material-ui/core';
-import Grid from '@material-ui/core/Grid';
+import { Grid } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { OTSession, OTPublisher, OTStreams, OTSubscriber } from 'opentok-react';
 import { CaseSheetContext } from 'context/CaseSheetContext';
@@ -56,8 +56,8 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     hideVideoContainer: {
       right: 15,
-      width: 170,
-      height: 170,
+      width: 240,
+      height: 197,
       position: 'absolute',
       boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.6)',
       borderRadius: 10,
@@ -76,8 +76,8 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     minimizeBtns: {
       position: 'absolute',
-      width: 170,
-      height: 170,
+      width: 240,
+      height: 197,
       zIndex: 9,
     },
     stopCallIcon: {
@@ -94,8 +94,8 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     minimizeVideoImg: {
       zIndex: 9,
-      width: 170,
-      height: 170,
+      width: 240,
+      height: 197,
       position: 'absolute',
       backgroundColor: '#000',
     },
@@ -136,6 +136,30 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 20,
       fontWeight: 600,
     },
+    subscriber: {
+      '& video': {
+        transform: 'rotate(0deg) translateX(-50%) !important',
+        width: 'auto !important',
+        left: '50%',
+      },
+    },
+    minSubscriber: {
+      '& > div:first-child': {
+        minHeight: 'auto !important',
+      },
+    },
+    audioVideoState: {
+      fontSize: 12,
+      fontWeight: 500,
+      margin: '10px 0 0',
+      color: '#b00020',
+    },
+    errorMessage: {
+      position: 'absolute',
+      top: 0,
+      left: 20,
+      zIndex: 10,
+    },
   };
 });
 interface ConsultProps {
@@ -151,6 +175,9 @@ interface ConsultProps {
   isCallAccepted: boolean;
   isNewMsg: boolean;
   convertCall: () => void;
+  setSessionError: (error: any) => void;
+  setPublisherError: (error: any) => void;
+  setSubscriberError: (error: any) => void;
 }
 function getCookieValue() {
   const name = 'action=';
@@ -166,12 +193,20 @@ function getCookieValue() {
   }
   return '';
 }
+
 export const Consult: React.FC<ConsultProps> = (props) => {
   const classes = useStyles({});
   const [isCall, setIscall] = React.useState(true);
-  const [mute, setMute] = React.useState(true);
+  const [isPublishAudio, setIsPublishAudio] = React.useState(true);
+  const [callerAudio, setCallerAudio] = React.useState<boolean>(true);
+  const [callerVideo, setCallerVideo] = React.useState<boolean>(true);
+  const [downgradeToAudio, setDowngradeToAudio] = React.useState<boolean>(false);
+
+  const [reconnecting, setReconnecting] = React.useState<boolean>(false);
+
   const [subscribeToVideo, setSubscribeToVideo] = React.useState(props.isVideoCall ? true : false);
   const { patientDetails, createdDoctorProfile } = useContext(CaseSheetContext);
+  const isRetry = true;
   const apikey = process.env.OPENTOK_KEY;
   const sessionHandler = {
     connectionDestroyed: (event: any) => {
@@ -180,13 +215,13 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       props.stopAudioVideoCallpatient();
       setIscall(false);
     },
-    error: (error: string) => {
+    error: (error: any) => {
       console.log(`There was an error with the sessionEventHandlers: ${JSON.stringify(error)}`);
+      props.setSessionError(error);
     },
-    otrnError: (error: string) => {
-      console.log(`There was an error with the sessionEventHandlers: ${JSON.stringify(error)}`);
+    connectionCreated: (event: string) => {
+      console.log('session stream connectionCreated!', event);
     },
-    connectionCreated: (event: string) => {},
     sessionConnected: (event: string) => {
       console.log('session stream sessionConnected!', event);
     },
@@ -195,9 +230,11 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     },
     sessionReconnected: (event: string) => {
       console.log('session stream sessionReconnected!', event);
+      setReconnecting(false);
     },
     sessionReconnecting: (event: string) => {
       console.log('session stream sessionReconnecting!', event);
+      setReconnecting(true);
     },
     signal: (event: string) => {
       console.log('session stream signal!', event);
@@ -205,8 +242,13 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     streamDestroyed: (event: string) => {
       console.log('session streamDestroyed destroyed!', event); // is called when the doctor network is disconnected
     },
-    streamPropertyChanged: (event: string) => {
+    streamPropertyChanged: (event: any) => {
       console.log('session streamPropertyChanged destroyed!', event);
+      const subscribers = event.target.getSubscribersForStream(event.stream);
+      if (subscribers.length) {
+        setCallerAudio(event.stream.hasAudio);
+        setCallerVideo(event.stream.hasVideo);
+      }
     },
   };
   const publisherHandler = {
@@ -216,16 +258,15 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     streamDestroyed: (event: string) => {
       console.log('Publisher stream destroyed!', event);
     },
-    error: (error: string) => {
+    error: (error: any) => {
       console.log(`There was an error with the publisherEventHandlers: ${JSON.stringify(error)}`);
-    },
-    otrnError: (error: string) => {
-      console.log(`There was an error with the publisherEventHandlers: ${JSON.stringify(error)}`);
+      props.setPublisherError(error);
     },
   };
   const subscriberHandler = {
-    error: (error: string) => {
+    error: (error: any) => {
       console.log(`There was an error with the subscriberEventHandlers: ${JSON.stringify(error)}`);
+      props.setSubscriberError(error);
     },
     connected: (event: string) => {
       console.log('Subscribe stream connected!', event);
@@ -233,10 +274,48 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     disconnected: (event: string) => {
       console.log('Subscribe stream disconnected!', event);
     },
-    otrnError: (error: string) => {
-      console.log(`There was an error with the subscriberEventHandlers: ${JSON.stringify(error)}`);
+    destroyed: (event: string) => {
+      console.log('Subscribe stream destroyed!', event);
+    },
+    videoDisableWarning: (event: any) => {
+      console.log(`videoDisableWarning: ${JSON.stringify(event)}`);
+    },
+    videoDisableWarningLifted: (event: any) => {
+      console.log(`videoDisableWarningLifted: ${JSON.stringify(event)}`);
+    },
+    videoDisabled: (event: any) => {
+      console.log(`videoDisabled: ${JSON.stringify(event)}`);
+      if (event.reason === 'quality') {
+        setDowngradeToAudio(true);
+      }
+    },
+    videoEnabled: (event: any) => {
+      console.log(`videoDisabled: ${JSON.stringify(event)}`);
+      if (event.reason === 'quality') {
+        setDowngradeToAudio(false);
+      }
     },
   };
+
+  const checkReconnecting = () => {
+    if (reconnecting)
+      return 'There is a problem with network connection. Reconnecting, Please wait...';
+    else return null;
+  };
+
+  const checkDowngradeToAudio = () => {
+    if (downgradeToAudio) return 'Falling back to audio due to bad network';
+    else return null;
+  };
+
+  const isPaused = () => {
+    if (!callerAudio && !callerVideo && getCookieValue() === 'videocall')
+      return `Patient’s audio & video are paused`;
+    else if (!callerAudio) return `Patient’s audio is paused`;
+    else if (!callerVideo && getCookieValue() === 'videocall') return `Patient’s video is paused`;
+    else return null;
+  };
+
   return (
     <div className={classes.consult}>
       <div>
@@ -261,6 +340,9 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                     ? '0' + props.timerSeconds
                     : props.timerSeconds
                 }`}
+              <p className={classes.audioVideoState}>{checkReconnecting()}</p>
+              <p className={classes.audioVideoState}>{checkDowngradeToAudio()}</p>
+              <p className={classes.audioVideoState}>{isPaused()}</p>
             </div>
           )}
 
@@ -271,17 +353,24 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                 sessionId={props.sessionId}
                 token={props.token}
                 eventHandlers={sessionHandler}
+                onError={(error: any) => {
+                  console.log('Session Error', error);
+                  props.setSessionError(error);
+                }}
               >
                 <OTPublisher
                   className={
                     props.showVideoChat || !subscribeToVideo ? classes.hidePublisherVideo : ''
                   }
-                  resolution={'352x288'}
                   properties={{
-                    publishAudio: mute,
+                    publishAudio: isPublishAudio,
                     publishVideo: subscribeToVideo,
                   }}
                   eventHandlers={publisherHandler}
+                  onError={(error: any) => {
+                    console.log('Publisher Error', error);
+                    props.setPublisherError(error);
+                  }}
                 />
 
                 <div
@@ -314,8 +403,17 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                       />
                     )}
                   <OTStreams>
-                    <OTSubscriber eventHandlers={subscriberHandler} />
+                    <OTSubscriber
+                      eventHandlers={subscriberHandler}
+                      retry={isRetry}
+                      className={!props.showVideoChat ? classes.subscriber : classes.minSubscriber}
+                      onError={(error: any) => {
+                        console.log('Subscriber Error', error);
+                        props.setSubscriberError(error);
+                      }}
+                    />
                   </OTStreams>
+
                   {props.showVideoChat && (
                     <div>
                       {!subscribeToVideo && (
@@ -343,6 +441,11 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                           onClick={() => props.toggelChatVideo()}
                         />
                       </div>
+                      <div className={classes.errorMessage}>
+                        <p className={classes.audioVideoState}>{checkReconnecting()}</p>
+                        <p className={classes.audioVideoState}>{checkDowngradeToAudio()}</p>
+                        <p className={classes.audioVideoState}>{isPaused()}</p>
+                      </div>
                     </div>
                   )}
                   {!props.showVideoChat && (
@@ -367,8 +470,11 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                           )}
                         </Grid>
                         <Grid item lg={10} sm={8} xs={8} className={classes.VideoAlignment}>
-                          {isCall && mute && (
-                            <button className={classes.muteBtn} onClick={() => setMute(!mute)}>
+                          {isCall && isPublishAudio && (
+                            <button
+                              className={classes.muteBtn}
+                              onClick={() => setIsPublishAudio(!isPublishAudio)}
+                            >
                               <img
                                 className={classes.whiteArrow}
                                 src={require('images/ic_mute.svg')}
@@ -376,8 +482,11 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                               />
                             </button>
                           )}
-                          {isCall && !mute && (
-                            <button className={classes.muteBtn} onClick={() => setMute(!mute)}>
+                          {isCall && !isPublishAudio && (
+                            <button
+                              className={classes.muteBtn}
+                              onClick={() => setIsPublishAudio(!isPublishAudio)}
+                            >
                               <img
                                 className={classes.whiteArrow}
                                 src={require('images/ic_unmute.svg')}

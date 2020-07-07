@@ -7,7 +7,6 @@ import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
-import { UniqueVariableNamesRule } from 'graphql';
 
 export const exotelTypeDefs = gql`
   input exotelInput {
@@ -60,7 +59,7 @@ type callInputs = {
   exotelRequest: ExotelRequest;
 };
 
-interface exotelCalling {
+interface ExotelCalling {
   isError: boolean;
   from: string;
   to: string;
@@ -68,15 +67,15 @@ interface exotelCalling {
   errorMessage: string;
 }
 
-async function exotelCalling(callInputs: callInputs): Promise<exotelCalling> {
+async function exotelCalling(callInputs: callInputs): Promise<ExotelCalling> {
   if (!callInputs.exotelUrl || !callInputs.exotelRequest.CallerId) {
     throw new AphError(AphErrorMessages.INVALID_EXOTEL_PARAMETERS, undefined, {});
   }
 
-  let reqBody = callInputs.exotelRequest;
+  const reqBody = callInputs.exotelRequest;
 
   callInputs.exotelUrl += '?';
-  for (let [key, value] of Object.entries(reqBody)) {
+  for (const [key, value] of Object.entries(reqBody)) {
     callInputs.exotelUrl += '&' + key + '=' + value;
   }
 
@@ -94,7 +93,7 @@ async function exotelCalling(callInputs: callInputs): Promise<exotelCalling> {
         ''
       );
 
-      let exotelResult = {
+      const exotelResult = {
         isError: false,
         from: callInputs.exotelRequest.From,
         to: callInputs.exotelRequest.To,
@@ -117,7 +116,7 @@ async function exotelCalling(callInputs: callInputs): Promise<exotelCalling> {
 
       throw new AphError(AphErrorMessages.EXOTEL_REQUEST_ERROR);
 
-      let exotelResult = {
+      const exotelResult = {
         isError: true,
         from: callInputs.exotelRequest.From,
         to: callInputs.exotelRequest.To,
@@ -133,10 +132,13 @@ const initateConferenceTelephoneCall: Resolver<
   null,
   exotelInputArgs,
   ConsultServiceContext,
-  exotelCalling
+  ExotelCalling
 > = async (parent, { exotelInput }, { consultsDb, doctorsDb, patientsDb }) => {
   const exotelCallerId: string | undefined = process.env.EXOTEL_CALLER_ID;
-  let exotelUrl: string | undefined = process.env.EXOTEL_API_URL;
+  const exotelUrl: string | undefined = process.env.EXOTEL_API_URL;
+
+  let fromMobileNumber = undefined;
+  let toMobileNumber = undefined;
 
   if (!exotelInput.from && !exotelInput.to) {
     // check if appointmentId exist
@@ -169,15 +171,8 @@ const initateConferenceTelephoneCall: Resolver<
     }
 
     // we have got both phone numbers as doctor.mobileNumber and patient.mobileNumber
-    let exotelRequest = {
-      From: doctor.mobileNumber,
-      To: patient.mobileNumber,
-      CallerId: exotelCallerId,
-      Record: true,
-      RecordingChannels: 'single',
-    };
-
-    return await exotelCalling({ exotelUrl, exotelRequest });
+    fromMobileNumber = doctor.mobileNumber;
+    toMobileNumber = patient.mobileNumber;
   }
 
   if (exotelInput.from && !exotelInput.to) {
@@ -188,20 +183,21 @@ const initateConferenceTelephoneCall: Resolver<
     throw new AphError(AphErrorMessages.INVALID_PARAMETERS, undefined, {});
   }
 
-  // const reg = new RegExp(/^\d{10}$/);
-  // if(!reg.test(exotelInput.from) || !reg.test(exotelInput.to)){
-  //   throw new AphError(AphErrorMessages.INVALID_PARAMETERS, undefined, {});
-  // }
-
+  // TODO: Put back this condition
+  //const reg = new RegExp(/^\d{10}$/);
+  //if (!reg.test(exotelInput.from) || !reg.test(exotelInput.to)) {
+  //  throw new AphError(AphErrorMessages.INVALID_PARAMETERS, undefined, {});
+  //}
   // else we have both mobile numbers in params.
   // check for validity of both numbers.
 
-  let exotelRequest = {
-    From: exotelInput.from,
-    To: exotelInput.to,
+  fromMobileNumber = exotelInput.from;
+  toMobileNumber = exotelInput.to;
+
+  const exotelRequest = {
+    From: fromMobileNumber,
+    To: toMobileNumber,
     CallerId: exotelCallerId,
-    Record: true,
-    RecordingChannels: 'single',
   };
   return await exotelCalling({ exotelUrl, exotelRequest });
 };

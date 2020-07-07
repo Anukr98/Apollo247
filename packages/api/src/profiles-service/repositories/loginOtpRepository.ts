@@ -1,11 +1,10 @@
-import { EntityRepository, Repository, MoreThanOrEqual } from 'typeorm';
+import { EntityRepository, Repository } from 'typeorm';
 import { LoginOtp, OTP_STATUS } from 'profiles-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { v1 as uuidv1 } from 'uuid';
 import { ApiConstants } from 'ApiConstants';
 import { setCache, getCache } from 'profiles-service/database/connectRedis';
-import { relative } from 'path';
 
 const REDIS_OTP_MOBILE_PREFIX: string = 'otp:mobile:';
 

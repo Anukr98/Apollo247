@@ -185,7 +185,6 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
   const data = props.navigation.state.params!.DoctorInfo;
   const appointmentType = props.navigation.getParam('appointmentType');
   const appointmentId = props.navigation.getParam('CaseSheet');
-  console.log('phr', data);
 
   // const [loading, setLoading && setLoading] = useState<boolean>(true);
   const { loading, setLoading } = useUIElements();
@@ -488,13 +487,13 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
             `Out of ${testPrescription.length} diagnostic(s), you are trying to order, following diagnostic(s) are not available.\n\n${unAvailableItems}\n`
           );
         }
+        setLoading!(false);
+        props.navigation.push(AppRoutes.TestsCart);
       })
       .catch((e) => {
-        Alert.alert('Uh oh.. :(', e);
+        setLoading!(false);
+        handleGraphQlError(e);
       });
-    props.navigation.push(AppRoutes.TestsCart, {
-      isComingFromConsult: true,
-    });
   };
 
   const getDaysCount = (type: MEDICINE_CONSUMPTION_DURATION | null) => {
@@ -598,13 +597,13 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
             price: medicineDetails!.price,
             specialPrice: medicineDetails.special_price
               ? typeof medicineDetails.special_price == 'string'
-                ? parseInt(medicineDetails.special_price)
+                ? Number(medicineDetails.special_price)
                 : medicineDetails.special_price
               : undefined,
             // quantity: parseInt(medPrescription[index]!.medicineDosage!),
             quantity: qty,
             prescriptionRequired: medicineDetails.is_prescription_required == '1',
-            isMedicine: medicineDetails.type_id == 'Pharma',
+            isMedicine: (medicineDetails.type_id || '').toLowerCase() == 'pharma',
             thumbnail: medicineDetails.thumbnail || medicineDetails.image,
             isInStock: !!medicineDetails.is_in_stock,
           } as ShoppingCartItem;
@@ -633,7 +632,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
 
         // if (medPrescription.length > medicines.filter((item) => item!.isInStock).length) {
         //   // const outOfStockCount = medPrescription.length - medicines.length;
-        //   // props.navigation.push(AppRoutes.YourCart, { isComingFromConsult: true });
+        //   // props.navigation.push(AppRoutes.YourCart);
         // }
 
         const rxMedicinesCount =
@@ -654,7 +653,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
             presToAdd,
           ]);
         }
-        props.navigation.push(AppRoutes.YourCart, { isComingFromConsult: true });
+        props.navigation.push(AppRoutes.YourCart);
       })
       .catch((e) => {
         CommonBugFender('ConsultDetails_onAddToCart', e);
@@ -964,7 +963,6 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
   };
 
   const renderTestNotes = () => {
-    console.log('caseSheetDetails', caseSheetDetails);
     return (
       <View>
         <CollapseCard

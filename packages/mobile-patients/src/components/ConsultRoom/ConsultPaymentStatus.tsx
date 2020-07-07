@@ -1,50 +1,49 @@
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import { Header } from '@aph/mobile-patients/src/components/ui/Header';
+import { Failure, Pending, Success } from '@aph/mobile-patients/src/components/ui/Icons';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
+import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
+  CONSULT_ORDER_INVOICE,
+  GET_APPOINTMENT_DATA,
+  GET_TRANSACTION_STATUS,
+} from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  postAppsFlyerEvent,
+  postFirebaseEvent,
+  postWebEngageEvent,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { mimeType } from '@aph/mobile-patients/src/helpers/mimeType';
+import { WebEngageEventName } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import string, { Payment } from '@aph/mobile-patients/src/strings/strings.json';
+import { colors } from '@aph/mobile-patients/src/theme/colors';
+import { theme } from '@aph/mobile-patients/src/theme/theme';
+import { getDate } from '@aph/mobile-patients/src/utils/dateUtil';
+import React, { useEffect, useState } from 'react';
+import { useApolloClient } from 'react-apollo-hooks';
+import {
+  Alert,
   BackHandler,
+  Dimensions,
+  PermissionsAndroid,
+  Platform,
+  ScrollView,
+  StatusBar,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
-  ScrollView,
-  StatusBar,
-  Alert,
-  Dimensions,
-  PermissionsAndroid,
-  Platform,
 } from 'react-native';
-import RNFetchBlob from 'rn-fetch-blob';
-import { colors } from '@aph/mobile-patients/src/theme/colors';
-import React, { useEffect, useState } from 'react';
 import { NavigationScreenProps } from 'react-navigation';
-import { Success, Failure, Pending } from '@aph/mobile-patients/src/components/ui/Icons';
-import { theme } from '@aph/mobile-patients/src/theme/theme';
-import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import { Payment } from '@aph/mobile-patients/src/strings/strings.json';
-import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { useApolloClient } from 'react-apollo-hooks';
-import { CONSULT_ORDER_INVOICE } from '@aph/mobile-patients/src/graphql/profiles';
+import RNFetchBlob from 'rn-fetch-blob';
 import {
-  makeAppointmentPayment,
-  makeAppointmentPaymentVariables,
-} from '@aph/mobile-patients/src/graphql/types/makeAppointmentPayment';
-import { GET_TRANSACTION_STATUS } from '@aph/mobile-patients/src/graphql/profiles';
-import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
-import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import {
-  getParameterByName,
-  postWebEngageEvent,
-  postAppsFlyerEvent,
-  postFirebaseEvent,
-} from '@aph/mobile-patients/src/helpers/helperFunctions';
-import {
-  WebEngageEvents,
-  WebEngageEventName,
-} from '@aph/mobile-patients/src/helpers/webEngageEvents';
-import { FirebaseEvents, FirebaseEventName } from '../../helpers/firebaseEvents';
+  getAppointmentData,
+  getAppointmentDataVariables,
+} from '../../graphql/types/getAppointmentData';
 import { AppsFlyerEventName } from '../../helpers/AppsFlyerEvents';
-import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
-import { mimeType } from '@aph/mobile-patients/src/helpers/mimeType';
-import { getDate } from '@aph/mobile-patients/src/utils/dateUtil';
+import { FirebaseEventName } from '../../helpers/firebaseEvents';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -53,6 +52,7 @@ export interface ConsultPaymentStatusProps extends NavigationScreenProps {}
 
 export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props) => {
   const [loading, setLoading] = useState<boolean>(true);
+  const [showSpinner, setShowSpinner] = useState<boolean>(false);
   const [status, setStatus] = useState<string>(props.navigation.getParam('status'));
   const [refNo, setrefNo] = useState<string>('');
   const [displayId, setdisplayId] = useState<String>('');
@@ -95,13 +95,14 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
             Appointment_Id: orderId,
           };
           postWebEngageEvent(WebEngageEventName.PAYMENT_STATUS, paymentEventAttributes);
+          postFirebaseEvent(FirebaseEventName.PAYMENT_STATUS, paymentEventAttributes);
         } catch (error) {}
         console.log(res.data);
         if (res.data.paymentTransactionStatus.appointment.paymentStatus == success) {
           try {
             postWebEngageEvent(WebEngageEventName.CONSULTATION_BOOKED, webEngageEventAttributes);
             postAppsFlyerEvent(AppsFlyerEventName.CONSULTATION_BOOKED, webEngageEventAttributes);
-            // postFirebaseEvent(FirebaseEventName.IN_APP_PURCHASE, fireBaseEventAttributes);
+            postFirebaseEvent(FirebaseEventName.CONSULTATION_BOOKED, fireBaseEventAttributes);
           } catch (error) {}
         }
         setrefNo(res.data.paymentTransactionStatus.appointment.bankTxnId);
@@ -390,7 +391,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
 
   const getButtonText = () => {
     if (status == success) {
-      return 'START CONSULTATION';
+      return 'Fill Medical Details';
     } else if (status == failure) {
       return 'TRY AGAIN';
     } else {
@@ -402,7 +403,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
     const { navigation } = props;
     const { navigate } = navigation;
     if (status == success) {
-      navigate('APPOINTMENTS');
+      getAppointmentInfo();
     } else if (status == failure) {
       // navigate(AppRoutes.DoctorSearch);
       setLoading(true);
@@ -412,6 +413,49 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
     } else {
       navigate(AppRoutes.ConsultRoom);
     }
+  };
+
+  const getAppointmentInfo = () => {
+    setShowSpinner && setShowSpinner(true);
+
+    client
+      .query<getAppointmentData, getAppointmentDataVariables>({
+        query: GET_APPOINTMENT_DATA,
+        variables: {
+          appointmentId: orderId,
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((_data) => {
+        try {
+          setShowSpinner && setShowSpinner(false);
+
+          console.log(
+            'GetDoctorNextAvailableSlot',
+            _data.data.getAppointmentData!.appointmentsHistory
+          );
+          const appointmentData = _data.data.getAppointmentData!.appointmentsHistory;
+          if (appointmentData) {
+            try {
+              if (appointmentData[0]!.doctorInfo !== null) {
+                props.navigation.navigate(AppRoutes.ChatRoom, {
+                  data: appointmentData[0],
+                  callType: '',
+                  prescription: '',
+                });
+              }
+            } catch (error) {}
+          }
+        } catch (error) {
+          setShowSpinner && setShowSpinner(false);
+          props.navigation.navigate('APPOINTMENTS');
+        }
+      })
+      .catch((e) => {
+        console.log('Error occured while GetDoctorNextAvailableSlot', { e });
+        setShowSpinner && setShowSpinner(false);
+        props.navigation.navigate('APPOINTMENTS');
+      });
   };
 
   const renderButton = () => {
@@ -445,6 +489,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
       ) : (
         <Spinner />
       )}
+      {showSpinner && <Spinner />}
     </View>
   );
 };

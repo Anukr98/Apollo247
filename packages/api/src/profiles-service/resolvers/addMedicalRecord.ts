@@ -13,6 +13,16 @@ import { PatientRepository } from 'profiles-service/repositories/patientReposito
 
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
+import { getUnixTime } from 'date-fns';
+import {
+  prescriptionSource,
+  uploadPrescriptions,
+  PrescriptionInputArgs,
+} from 'profiles-service/resolvers/prescriptionUpload';
+import { ApiConstants } from 'ApiConstants';
+import { LabResultsInputArgs, uploadLabResults } from 'profiles-service/resolvers/labResultsUpload';
+import { uploadFileToBlobStorage } from 'helpers/uploadFileToBlob';
+import { getFileTypeFromMime } from 'helpers/generalFunctions';
 
 export const addPatientMedicalRecordTypeDefs = gql`
   enum MedicalTestUnit {
@@ -46,6 +56,7 @@ export const addPatientMedicalRecordTypeDefs = gql`
     sourceName: String
     testDate: Date
     testName: String!
+    testResultFiles: LabResultFileProperties
   }
 
   input AddMedicalRecordParametersInput {
@@ -65,6 +76,12 @@ export const addPatientMedicalRecordTypeDefs = gql`
   }
 `;
 
+type LabResultFileProperties = {
+  fileName: string;
+  mimeType: string;
+  content: string;
+};
+
 type AddMedicalRecordInput = {
   additionalNotes: string;
   documentURLs: string;
@@ -79,6 +96,7 @@ type AddMedicalRecordInput = {
   sourceName: string;
   testDate: Date;
   testName: string;
+  testResultFiles: LabResultFileProperties;
 };
 
 type AddMedicalRecordParametersInput = {
@@ -105,6 +123,124 @@ const addPatientMedicalRecord: Resolver<
   const patient = await patientsRepo.findById(addMedicalRecordInput.patientId);
   if (patient == null) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
+  }
+
+  const recordType = addMedicalRecordInput.recordType;
+  if (recordType == MedicalRecordType.TEST_REPORT) {
+    //upload lab results starts
+    const TestResultsParameter = [];
+    if (
+      addMedicalRecordInput.testResultFiles &&
+      addMedicalRecordInput.testResultFiles.fileName.length > 0
+    )
+      TestResultsParameter.push({
+        id: '',
+        fileName: addMedicalRecordInput.testResultFiles.fileName,
+        mimeType: addMedicalRecordInput.testResultFiles.mimeType,
+        content: addMedicalRecordInput.testResultFiles.content,
+        dateCreated: getUnixTime(new Date()) * 1000,
+      });
+
+    const labTestResults: {
+      parameterName: string;
+      result: string;
+      unit: MedicalTestUnit;
+      range: string;
+      outOfRange: Boolean;
+      resultDate: number;
+    }[] = [];
+
+    addMedicalRecordInput.medicalRecordParameters.map((item) => {
+      labTestResults.push({
+        parameterName: item.parameterName,
+        result: item.result.toString(),
+        unit: item.unit,
+        range: item.minimum && item.maximum ? item.minimum + '-' + item.maximum : '',
+        outOfRange: false,
+        resultDate: getUnixTime(new Date(addMedicalRecordInput.testDate)) * 1000,
+      });
+    });
+
+    const labResultsInputArgs: LabResultsInputArgs = {
+      labResultsInput: {
+        labTestName: addMedicalRecordInput.testName,
+        labTestDate: addMedicalRecordInput.testDate
+          ? getUnixTime(addMedicalRecordInput.testDate) * 1000
+          : getUnixTime(new Date()) * 1000,
+        labTestRefferedBy: addMedicalRecordInput.referringDoctor,
+        observation: addMedicalRecordInput.observations,
+        identifier: '',
+        additionalNotes: addMedicalRecordInput.additionalNotes,
+        labTestResults: labTestResults,
+        labTestSource: ApiConstants.LABTEST_SOURCE_SELF_UPLOADED.toString(),
+        visitId: '',
+        testResultFiles: TestResultsParameter,
+      },
+      uhid: patient.uhid,
+    };
+
+    const uploadedResult = (await uploadLabResults(null, labResultsInputArgs, null)) as {
+      recordId: string;
+    };
+    addMedicalRecordInput.prismFileIds = uploadedResult.recordId;
+    //upload lab results ends
+  } else {
+    //other than test reports
+    const prescriptionFiles = [];
+    if (
+      addMedicalRecordInput.testResultFiles &&
+      addMedicalRecordInput.testResultFiles.fileName.length > 0
+    )
+      prescriptionFiles.push({
+        id: '',
+        fileName: addMedicalRecordInput.testResultFiles.fileName,
+        mimeType: addMedicalRecordInput.testResultFiles.mimeType,
+        content: addMedicalRecordInput.testResultFiles.content,
+        dateCreated: getUnixTime(new Date()) * 1000,
+      });
+
+    const prescriptionInputArgs: PrescriptionInputArgs = {
+      prescriptionInput: {
+        prescribedBy: addMedicalRecordInput.issuingDoctor,
+        prescriptionName: addMedicalRecordInput.testName,
+        dateOfPrescription: addMedicalRecordInput.testDate
+          ? getUnixTime(addMedicalRecordInput.testDate) * 1000
+          : getUnixTime(new Date()) * 1000,
+        startDate: 0,
+        endDate: 0,
+        notes: addMedicalRecordInput.additionalNotes,
+        prescriptionSource: prescriptionSource.SELF,
+        prescriptionDetail: [],
+        prescriptionFiles: prescriptionFiles,
+        speciality: '',
+        hospital_name: '',
+        address: '',
+        city: '',
+        pincode: '',
+        instructions: [],
+        diagnosis: [],
+        diagnosticPrescription: [],
+        medicinePrescriptions: [],
+      },
+      uhid: patient.uhid,
+    };
+    const uploadedResult = (await uploadPrescriptions(null, prescriptionInputArgs, null)) as {
+      recordId: string;
+    };
+    addMedicalRecordInput.prismFileIds = uploadedResult.recordId;
+  }
+
+  if (
+    addMedicalRecordInput.testResultFiles &&
+    addMedicalRecordInput.testResultFiles.fileName.length > 0
+  ) {
+    //upload file to blob storage
+    const uploadFileType = getFileTypeFromMime(addMedicalRecordInput.testResultFiles.mimeType);
+
+    addMedicalRecordInput.documentURLs = await uploadFileToBlobStorage(
+      uploadFileType,
+      addMedicalRecordInput.testResultFiles.content
+    );
   }
 
   const addMedicalRecordAttrs: Partial<MedicalRecords> = {

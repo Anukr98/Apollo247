@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -36,12 +36,19 @@ const styles = StyleSheet.create({
 
 export interface WhatsAppStatusProps {
   style?: StyleProp<ViewStyle>;
-  isSelected?: boolean;
+  isSelected: boolean;
   onPress: () => void;
 }
 
 export const WhatsAppStatus: React.FC<WhatsAppStatusProps> = (props) => {
   const { style, isSelected } = props;
+  const [whatsAppUpdate, setWhatsAppUpdate] = useState<boolean>(false);
+
+  useEffect(() => {
+    console.log('isSelected', isSelected);
+    setWhatsAppUpdate(isSelected);
+  }, [isSelected]);
+
   return (
     <View style={[styles.headerView, style]}>
       <TouchableOpacity
@@ -51,7 +58,7 @@ export const WhatsAppStatus: React.FC<WhatsAppStatusProps> = (props) => {
         }}
         style={{ width: 25, height: 25 }}
       >
-        {isSelected ? (
+        {whatsAppUpdate ? (
           <CheckBoxFilled style={{ width: 18, height: 18 }} resizeMode={'contain'} />
         ) : (
           <CheckBox style={{ width: 18, height: 18 }} resizeMode={'contain'} />

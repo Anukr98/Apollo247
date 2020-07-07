@@ -63,7 +63,7 @@ export const PreviewPrescriptionStyles = StyleSheet.create({
     marginBottom: 8,
   },
   lastItemContainer: {
-    marginBottom: -10,
+    marginBottom: -6,
   },
   singleItemContainer: {
     marginBottom: 4,

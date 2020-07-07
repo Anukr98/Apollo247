@@ -43,6 +43,7 @@ import { MyStats } from '@aph/mobile-doctors/src/components/Account/MyStats';
 import { PaymentHistory } from '@aph/mobile-doctors/src/components/Account/PaymentHistory';
 import { BlockHomePage } from '@aph/mobile-doctors/src/components/BlockCalender/BlockHomePage';
 import { PreviewPrescription } from '@aph/mobile-doctors/src/components/ConsultRoom/PreviewPrescription';
+import { SharingScreen } from '@aph/mobile-doctors/src/components/Account/SharingScreen';
 
 export enum AppRoutes {
   Login = 'Login',
@@ -85,6 +86,7 @@ export enum AppRoutes {
   PaymentHistory = 'PaymentHistory',
   BlockHomePage = 'BlockHomePage',
   PreviewPrescription = 'PreviewPrescription',
+  SharingScreen = 'SharingScreen',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -215,6 +217,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.PreviewPrescription]: {
     screen: PreviewPrescription,
+  },
+  [AppRoutes.SharingScreen]: {
+    screen: SharingScreen,
   },
 };
 

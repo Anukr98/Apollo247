@@ -13,6 +13,9 @@ import {
   CaseSheetOtherInstruction,
   APPOINTMENT_TYPE,
   STATUS,
+  VALUE_TYPE,
+  APPOINTMENT_UPDATED_BY,
+  AppointmentUpdateHistory,
 } from 'consults-service/entities';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { AphError } from 'AphError';
@@ -76,6 +79,13 @@ export type DiagnosticJson = {
   Discounted: string;
 };
 
+export type Vitals = {
+  bp: string;
+  temperature: string;
+  height: string;
+  weight: string;
+};
+
 export const caseSheetTypeDefs = gql`
   enum CASESHEET_STATUS {
     COMPLETED
@@ -84,15 +94,17 @@ export const caseSheetTypeDefs = gql`
 
   enum DoctorType {
     APOLLO
+    CLINIC
+    CRADLE
+    DOCTOR_CONNECT
+    FERTILITY
     JUNIOR
     PAYROLL
-    STAR_APOLLO
-    DOCTOR_CONNECT
-    CRADLE
-    CLINIC
     SPECTRA
-    FERTILITY
+    STAR_APOLLO
     SUGAR
+    WHITE_DENTAL
+    APOLLO_HOMECARE
   }
 
   enum Gender {
@@ -107,6 +119,7 @@ export const caseSheetTypeDefs = gql`
     NIGHT
     NOON
     AS_NEEDED
+    NOT_SPECIFIC
   }
 
   enum MEDICINE_TO_BE_TAKEN {
@@ -120,9 +133,11 @@ export const caseSheetTypeDefs = gql`
     CAPSULE
     CREAM
     DROP
+    DROPS
     GEL
     GM
     INJECTION
+    INTERNATIONAL_UNIT
     LOTION
     ML
     MG
@@ -140,6 +155,7 @@ export const caseSheetTypeDefs = gql`
     SUSPENSION
     SYRUP
     TABLET
+    TEASPOON
     UNIT
   }
 
@@ -220,6 +236,12 @@ export const caseSheetTypeDefs = gql`
   extend type PatientFullDetails @key(fields: "id") {
     id: ID! @external
   }
+  input Vitals {
+    height: String
+    weight: String
+    temperature: String
+    bp: String
+  }
 
   type CaseSheet {
     appointment: Appointment
@@ -291,10 +313,12 @@ export const caseSheetTypeDefs = gql`
 
   type DiagnosticPrescription {
     itemname: String
+    testInstruction: String
   }
 
   input DiagnosticPrescriptionInput {
     itemname: String
+    testInstruction: String
   }
 
   enum MEDICINE_FORM_TYPES {
@@ -305,6 +329,7 @@ export const caseSheetTypeDefs = gql`
     DAYS
     MONTHS
     WEEKS
+    TILL_NEXT_REVIEW
   }
 
   enum MEDICINE_FREQUENCY {
@@ -339,8 +364,13 @@ export const caseSheetTypeDefs = gql`
     ORAL_DROPS
     NASAL_DROPS
     EYE_DROPS
+    EYE_OINTMENT
     EAR_DROPS
     INTRAVAGINAL
+    NASALLY
+    INTRANASAL_SPRAY
+    INTRA_ARTICULAR
+    TRIGGER_POINT_INJECTION
   }
 
   type MedicinePrescription {
@@ -492,6 +522,7 @@ export const caseSheetTypeDefs = gql`
     updatePatientPrescriptionSentStatus(
       caseSheetId: ID!
       sentToPatient: Boolean!
+      vitals: Vitals
     ): PatientPrescriptionSentResponse
     createJuniorDoctorCaseSheet(appointmentId: String): CaseSheet
     createSeniorDoctorCaseSheet(appointmentId: String): CaseSheet
@@ -536,7 +567,8 @@ const getJuniorDoctorCaseSheet: Resolver<
   const doctorData = await doctorRepository.findByMobileNumber(mobileNumber, true);
   if (
     doctorData == null &&
-    (secretaryDetails != null && mobileNumber != secretaryDetails.mobileNumber)
+    secretaryDetails != null &&
+    mobileNumber != secretaryDetails.mobileNumber
   )
     throw new AphError(AphErrorMessages.UNAUTHORIZED);
 
@@ -626,7 +658,8 @@ const getCaseSheet: Resolver<
   if (
     doctorData == null &&
     mobileNumber != patientDetails.mobileNumber &&
-    (secretaryDetails != null && mobileNumber != secretaryDetails.mobileNumber)
+    secretaryDetails != null &&
+    mobileNumber != secretaryDetails.mobileNumber
   )
     throw new AphError(AphErrorMessages.UNAUTHORIZED);
 
@@ -634,9 +667,7 @@ const getCaseSheet: Resolver<
   let juniorDoctorNotes = '';
 
   //check whether there is a senior doctor case-sheet
-  const caseSheetDetails = await caseSheetRepo.getSeniorDoctorCompletedCaseSheet(
-    appointmentData.id
-  );
+  const caseSheetDetails = await caseSheetRepo.getSeniorDoctorLatestCaseSheet(appointmentData.id);
   if (caseSheetDetails == null) throw new AphError(AphErrorMessages.NO_CASESHEET_EXIST);
 
   const juniorDoctorCaseSheet = await caseSheetRepo.getJuniorDoctorCaseSheet(appointmentData.id);
@@ -831,8 +862,7 @@ const modifyCaseSheet: Resolver<
   if (!(inputArguments.familyHistory === undefined)) {
     const familyHistoryInputs: Partial<PatientFamilyHistory> = {
       patient: patientData,
-      description:
-        inputArguments.familyHistory.length > 0 ? inputArguments.familyHistory : undefined,
+      description: inputArguments.familyHistory.length > 0 ? inputArguments.familyHistory : '',
     };
     const familyHistoryRepo = patientsDb.getCustomRepository(PatientFamilyHistoryRepository);
     const familyHistoryRecord = patientData.familyHistory[0];
@@ -885,43 +915,42 @@ const modifyCaseSheet: Resolver<
   }
 
   if (!(inputArguments.bp === undefined))
-    medicalHistoryInputs.bp = inputArguments.bp.length > 0 ? inputArguments.bp : undefined;
+    medicalHistoryInputs.bp = inputArguments.bp.length > 0 ? inputArguments.bp : '';
 
   if (!(inputArguments.weight === undefined))
-    medicalHistoryInputs.weight =
-      inputArguments.weight.length > 0 ? inputArguments.weight : undefined;
+    medicalHistoryInputs.weight = inputArguments.weight.length > 0 ? inputArguments.weight : '';
 
   if (!(inputArguments.temperature === undefined))
     medicalHistoryInputs.temperature =
-      inputArguments.temperature.length > 0 ? inputArguments.temperature : undefined;
+      inputArguments.temperature.length > 0 ? inputArguments.temperature : '';
 
   if (!(inputArguments.pastSurgicalHistory === undefined))
     medicalHistoryInputs.pastSurgicalHistory =
-      inputArguments.pastSurgicalHistory.length > 0
-        ? inputArguments.pastSurgicalHistory
-        : undefined;
+      inputArguments.pastSurgicalHistory.length > 0 ? inputArguments.pastSurgicalHistory : '';
 
   if (!(inputArguments.pastMedicalHistory === undefined))
     medicalHistoryInputs.pastMedicalHistory =
-      inputArguments.pastMedicalHistory.length > 0 ? inputArguments.pastMedicalHistory : undefined;
+      inputArguments.pastMedicalHistory.length > 0 ? inputArguments.pastMedicalHistory : '';
 
   if (!(inputArguments.menstrualHistory === undefined)) {
     if (patientData.gender === Gender.FEMALE)
       medicalHistoryInputs.menstrualHistory =
-        inputArguments.menstrualHistory.length > 0 ? inputArguments.menstrualHistory : undefined;
+        inputArguments.menstrualHistory.length > 0 ? inputArguments.menstrualHistory : '';
   }
 
   if (!(inputArguments.height === undefined)) medicalHistoryInputs.height = inputArguments.height;
   if (!(inputArguments.drugAllergies === undefined))
     medicalHistoryInputs.drugAllergies =
-      inputArguments.drugAllergies.length > 0 ? inputArguments.drugAllergies : undefined;
+      inputArguments.drugAllergies.length > 0 ? inputArguments.drugAllergies : '';
 
   if (!(inputArguments.dietAllergies === undefined))
     medicalHistoryInputs.dietAllergies =
-      inputArguments.dietAllergies.length > 0 ? inputArguments.dietAllergies : undefined;
+      inputArguments.dietAllergies.length > 0 ? inputArguments.dietAllergies : '';
 
   const medicalHistoryRepo = patientsDb.getCustomRepository(PatientMedicalHistoryRepository);
-  const medicalHistoryRecord = patientData.patientMedicalHistory;
+  const medicalHistoryRecord = await medicalHistoryRepo.getPatientMedicalHistory(
+    getCaseSheetData.patientId
+  );
   if (medicalHistoryRecord == null) {
     //create
     medicalHistoryRepo.savePatientMedicalHistory(medicalHistoryInputs);
@@ -1018,6 +1047,16 @@ const createJuniorDoctorCaseSheet: Resolver<
   }
 
   caseSheetDetails = await caseSheetRepo.savecaseSheet(caseSheetAttrs);
+  const historyAttrs: Partial<AppointmentUpdateHistory> = {
+    appointment: appointmentData,
+    userType: APPOINTMENT_UPDATED_BY.DOCTOR,
+    fromValue: appointmentData.status,
+    toValue: appointmentData.status,
+    valueType: VALUE_TYPE.STATUS,
+    userName: doctorData.id,
+    reason: 'JD ' + ApiConstants.CASESHEET_CREATED_HISTORY.toString() + ', ' + doctorData.id,
+  };
+  appointmentRepo.saveAppointmentHistory(historyAttrs);
   return caseSheetDetails;
 };
 
@@ -1062,6 +1101,17 @@ const createSeniorDoctorCaseSheet: Resolver<
       createdDoctorId: appointmentData.doctorId,
       doctorType: doctorData.doctorType,
     };
+    const historyAttrs: Partial<AppointmentUpdateHistory> = {
+      appointment: appointmentData,
+      userType: APPOINTMENT_UPDATED_BY.DOCTOR,
+      fromValue: appointmentData.status,
+      toValue: appointmentData.status,
+      valueType: VALUE_TYPE.STATUS,
+      userName: appointmentData.doctorId,
+      reason:
+        'SD ' + ApiConstants.CASESHEET_CREATED_HISTORY.toString() + ', ' + appointmentData.doctorId,
+    };
+    appointmentRepo.saveAppointmentHistory(historyAttrs);
     return await caseSheetRepo.savecaseSheet(caseSheetAttrs);
   }
 
@@ -1091,6 +1141,16 @@ const createSeniorDoctorCaseSheet: Resolver<
       isJdConsultStarted: sdCaseSheets[0].isJdConsultStarted,
       notes: sdCaseSheets[0].notes,
     };
+    const historyAttrs: Partial<AppointmentUpdateHistory> = {
+      appointment: appointmentData,
+      userType: APPOINTMENT_UPDATED_BY.DOCTOR,
+      fromValue: appointmentData.status,
+      toValue: appointmentData.status,
+      valueType: VALUE_TYPE.STATUS,
+      userName: appointmentData.doctorId,
+      reason: 'SD ' + ApiConstants.CASESHEET_CREATED_HISTORY.toString() + ', ' + doctorData.id,
+    };
+    appointmentRepo.saveAppointmentHistory(historyAttrs);
     return await caseSheetRepo.savecaseSheet(caseSheetAttrs);
   }
 
@@ -1165,13 +1225,22 @@ const submitJDCaseSheet: Resolver<
     };
     await caseSheetRepo.savecaseSheet(casesheetAttrsToAdd);
   }
-
+  const historyAttrs: Partial<AppointmentUpdateHistory> = {
+    appointment: appointmentData,
+    userType: APPOINTMENT_UPDATED_BY.DOCTOR,
+    fromValue: appointmentData.status,
+    toValue: appointmentData.status,
+    valueType: VALUE_TYPE.STATUS,
+    userName: virtualJDId,
+    reason: 'Virtaul JD ' + ApiConstants.CASESHEET_COMPLETED_HISTORY.toString(),
+  };
+  appointmentRepo.saveAppointmentHistory(historyAttrs);
   return true;
 };
 
 const updatePatientPrescriptionSentStatus: Resolver<
   null,
-  { caseSheetId: string; sentToPatient: boolean },
+  { caseSheetId: string; sentToPatient: boolean; vitals: Vitals },
   ConsultServiceContext,
   PatientPrescriptionSentResponse
 > = async (parent, args, { mobileNumber, consultsDb, doctorsDb, patientsDb }) => {
@@ -1219,7 +1288,9 @@ const updatePatientPrescriptionSentStatus: Resolver<
     const prismUploadResponse = await uploadPdfBase64ToPrism(
       uploadPdfInput,
       patientData,
-      patientsDb
+      patientsDb,
+      doctorData,
+      getCaseSheetData
     );
     const pushNotificationInput = {
       appointmentId: getCaseSheetData.appointment.id,
@@ -1235,8 +1306,51 @@ const updatePatientPrescriptionSentStatus: Resolver<
       prescriptionGeneratedDate: new Date(),
     };
   }
+  if (args.vitals) {
+    //medicalHistory upsert starts
+    const medicalHistoryInputs: Partial<PatientMedicalHistory> = {
+      patient: patientData,
+    };
+
+    if (!(args.vitals.bp === undefined))
+      medicalHistoryInputs.bp = args.vitals.bp.length > 0 ? args.vitals.bp : undefined;
+
+    if (!(args.vitals.weight === undefined))
+      medicalHistoryInputs.weight = args.vitals.weight.length > 0 ? args.vitals.weight : undefined;
+
+    if (!(args.vitals.temperature === undefined))
+      medicalHistoryInputs.temperature =
+        args.vitals.temperature.length > 0 ? args.vitals.temperature : undefined;
+
+    if (!(args.vitals.height === undefined)) medicalHistoryInputs.height = args.vitals.height;
+    const medicalHistoryRepo = await patientsDb.getCustomRepository(
+      PatientMedicalHistoryRepository
+    );
+    const medicalHistoryRecord = await medicalHistoryRepo.getPatientMedicalHistory(patientData.id);
+    if (medicalHistoryRecord == null) {
+      //create
+      medicalHistoryRepo.savePatientMedicalHistory(medicalHistoryInputs);
+    } else {
+      //update
+      medicalHistoryRepo.updatePatientMedicalHistory(medicalHistoryRecord.id, medicalHistoryInputs);
+    }
+  }
 
   await caseSheetRepo.updateCaseSheet(args.caseSheetId, caseSheetAttrs);
+  const apptRepo = consultsDb.getCustomRepository(AppointmentRepository);
+  const appointment = await apptRepo.findById(getCaseSheetData.appointment.id);
+  if (appointment) {
+    const historyAttrs: Partial<AppointmentUpdateHistory> = {
+      appointment,
+      userType: APPOINTMENT_UPDATED_BY.PATIENT,
+      fromValue: appointment.status,
+      toValue: appointment.status,
+      valueType: VALUE_TYPE.STATUS,
+      userName: appointment.patientId,
+      reason: ApiConstants.CASESHEET_COMPLETED_HISTORY.toString(),
+    };
+    apptRepo.saveAppointmentHistory(historyAttrs);
+  }
   return {
     success: true,
     blobName: caseSheetAttrs.blobName || '',
@@ -1296,7 +1410,9 @@ const generatePrescriptionTemp: Resolver<
     const prismUploadResponse = await uploadPdfBase64ToPrism(
       uploadPdfInput,
       patientData,
-      patientsDb
+      patientsDb,
+      doctorData,
+      getCaseSheetData
     );
     const pushNotificationInput = {
       appointmentId: getCaseSheetData.appointment.id,

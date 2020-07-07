@@ -64,10 +64,15 @@ export interface getDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDo
   salutation: Salutation | null;
   firstName: string | null;
   lastName: string | null;
+  fullName: string | null;
+  displayName: string | null;
   experience: string | null;
   city: string | null;
   photoUrl: string | null;
   qualification: string | null;
+  thumbnailUrl: string | null;
+  physicalConsultationFees: string;
+  onlineConsultationFees: string;
   specialty: getDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDoctor_specialty;
   doctorType: DoctorType;
   doctorHospital: getDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDoctor_doctorHospital[];

@@ -110,6 +110,7 @@ export interface CaseSheetContextProps {
   referralError: boolean;
   medicationHistory: string;
   occupationHistory: string;
+  updatedDate: string;
 
   setHeight: (height: string) => void;
   setWeight: (weight: string) => void;
@@ -128,6 +129,7 @@ export interface CaseSheetContextProps {
   setReferralError: (referralError: boolean) => void;
   setMedicationHistory: (medicationHistory: string) => void;
   setOccupationHistory: (occupationHistory: string) => void;
+  setUpdatedDate: (updatedDate: string) => void;
 
   gender: string;
   setGender: (gender: string) => void;
@@ -225,4 +227,6 @@ export const CaseSheetContext = createContext<CaseSheetContextProps>({
 
   jrdName: '',
   jrdSubmitDate: '',
+  updatedDate: '',
+  setUpdatedDate: () => {},
 });

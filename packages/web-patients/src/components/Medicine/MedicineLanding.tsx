@@ -29,6 +29,7 @@ import { Relation } from 'graphql/types/globalTypes';
 import { CarouselBanner } from 'components/Medicine/CarouselBanner';
 import { useLocationDetails } from 'components/LocationProvider';
 import { gtmTracking } from '../../gtmTracking';
+import { MetaTagsComp } from 'MetaTagsComp';
 import { BottomLinks } from 'components/BottomLinks';
 import { Route } from 'react-router-dom';
 import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
@@ -518,10 +519,14 @@ export const MedicineLanding: React.FC = (props: any) => {
       key: 'Deals of the day',
       value: <DayDeals data={data.deals_of_the_day} />,
     },
-    { key: 'Hot Sellers', value: <HotSellers data={data.hot_sellers} /> },
+    { key: 'Hot Sellers', value: <HotSellers data={data.hot_sellers} section="Hotsellers" /> },
     {
       key: 'Shop by Category',
       value: <ShopByCategory data={data.shop_by_category} />,
+    },
+    {
+      key: 'Monsoon Essentials',
+      value: <HotSellers data={data.monsoon_essentials} section="Monsoon Essentials" />,
     },
     { key: 'Shop by Brand', value: <ShopByBrand data={data.shop_by_brand} /> },
   ];
@@ -535,9 +540,17 @@ export const MedicineLanding: React.FC = (props: any) => {
     uploadPrescriptionTracking({ ...patient, age });
     setIsUploadPreDialogOpen(true);
   };
+  const metaTagProps = {
+    title: 'Buy/Order Medicines And Health Products - Online Pharmacy Store - Apollo 247',
+    description:
+      'Order medicines and health products online at Apollo 247 - a leading online pharmacy store. Buy all medicines you need from home in just a few clicks. Apollo 247 is a one-stop solution for all your medical needs.',
+    canonicalLink:
+      window && window.location && window.location.origin && `${window.location.origin}/medicines`,
+  };
 
   return (
     <div className={classes.root}>
+      <MetaTagsComp {...metaTagProps} />
       <Header />
       <div className={classes.container}>
         <div className={classes.doctorListingPage}>
@@ -554,7 +567,7 @@ export const MedicineLanding: React.FC = (props: any) => {
                   </div>
                 )}
                 {data && data.mainbanners_desktop && data.mainbanners_desktop.length > 0 && (
-                  <CarouselBanner bannerData={data.mainbanners_desktop} />
+                  <CarouselBanner bannerData={data.mainbanners_desktop} history={props.history} />
                 )}
               </div>
 
@@ -620,11 +633,22 @@ export const MedicineLanding: React.FC = (props: any) => {
                 list.map((item, index) => (
                   <div key={index} className={classes.sliderSection}>
                     <div className={classes.sectionTitle}>
-                      {item.key === 'Shop by Brand' ? (
+                      {item.key === 'Shop by Brand' || item.key === 'Monsoon Essentials' ? (
                         <>
                           <span>{item.key}</span>
                           <div className={classes.viewAllLink}>
-                            <Link to={clientRoutes.medicineAllBrands()}>View All</Link>
+                            <Link
+                              to={
+                                item.key === 'Shop by Brand'
+                                  ? clientRoutes.medicineAllBrands()
+                                  : clientRoutes.searchByMedicine(
+                                      'shop-by-category',
+                                      'monsoon-essentials'
+                                    )
+                              }
+                            >
+                              View All
+                            </Link>
                           </div>
                         </>
                       ) : (
@@ -667,7 +691,7 @@ export const MedicineLanding: React.FC = (props: any) => {
               <Typography variant="h2">yay!</Typography>
               <p>
                 Your prescriptions have been submitted successfully. We will notify you when the
-                items are in your cart. If we need any clarificaitons, we will call you within 1
+                items are in your cart. If we need any clarifications, we will call you within 1
                 hour.
               </p>
               <div className={classes.bottomActions}>

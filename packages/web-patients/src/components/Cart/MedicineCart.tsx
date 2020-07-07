@@ -30,13 +30,12 @@ import {
   MEDICINE_ORDER_PAYMENT_TYPE,
   UPLOAD_FILE_TYPES,
   BOOKINGSOURCE,
-  NonCartOrderCity,
-  BOOKING_SOURCE,
   NonCartOrderOMSCity,
+  BOOKING_SOURCE,
   CODCity,
   PRISM_DOCUMENT_CATEGORY,
 } from 'graphql/types/globalTypes';
-import { useAllCurrentPatients, useAuth, useCurrentPatient } from 'hooks/authHooks';
+import { useAllCurrentPatients, useCurrentPatient } from 'hooks/authHooks';
 import { PrescriptionCard } from 'components/Prescriptions/PrescriptionCard';
 import { useMutation } from 'react-apollo-hooks';
 import { MedicineListingCard } from 'components/Medicine/MedicineListingCard';
@@ -62,8 +61,8 @@ import {
 import { Route } from 'react-router-dom';
 import { VALIDATE_PHARMA_COUPONS } from 'graphql/medicines';
 import { getItemSpecialPrice } from '../PayMedicine';
-import _lowerCase from 'lodash/lowerCase';
 import { getTypeOfProduct } from 'helpers/commonHelpers';
+import _lowerCase from 'lodash/lowerCase';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -573,6 +572,8 @@ export const MedicineCart: React.FC = (props) => {
     couponCode,
     setCouponCode,
     updateCartItemPrice,
+    prescriptionOptionSelected,
+    durationDays,
   } = useShoppingCart();
 
   const addToCartRef = useRef(null);
@@ -772,7 +773,7 @@ export const MedicineCart: React.FC = (props) => {
             itemDiscount: Number(
               (
                 cartItemDetails.quantity *
-                (couponCode.length > 0 && validateCouponResult // validateCouponResult check is needed because there are some cases we will have code but coupon discount=0  when coupon discount <= product discount
+                (couponCode && couponCode.length > 0 && validateCouponResult // validateCouponResult check is needed because there are some cases we will have code but coupon discount=0  when coupon discount <= product discount
                   ? cartItemDetails.price - Number(getDiscountedLineItemPrice(cartItemDetails.id))
                   : cartItemDetails.price - Number(getItemSpecialPrice(cartItemDetails)))
               ).toFixed(2)
@@ -872,7 +873,7 @@ export const MedicineCart: React.FC = (props) => {
           prismPrescriptionFileId: [
             ...ePrescriptionData!.map((item) => item.prismPrescriptionFileId),
           ].join(','),
-          orderTat: deliveryAddressId && moment(deliveryTime).isValid() ? deliveryTime : '',
+          orderTat: deliveryTime,
           items: cartItemsForApi,
           coupon: couponCode,
           deviceType: getDeviceType(),
@@ -950,7 +951,11 @@ export const MedicineCart: React.FC = (props) => {
           data.savePrescriptionMedicineOrderOMS &&
           data.savePrescriptionMedicineOrderOMS.orderAutoId
         ) {
-          window.location.href = clientRoutes.medicinesCartInfo('prescription', 'success');
+          if (prescriptionOptionSelected === 'duration') {
+            window.location.href = clientRoutes.medicines();
+          } else {
+            window.location.href = clientRoutes.medicinesCartInfo('prescription', 'success');
+          }
         } else {
           setIsAlertOpen(true);
           setAlertMessage('Something went wrong, please try later.');
@@ -996,7 +1001,7 @@ export const MedicineCart: React.FC = (props) => {
     let chennaiOrderVariables = {};
     if (userEmail && userEmail.length) {
       chennaiOrderVariables = {
-        NonCartOrderCity: NonCartOrderCity.CHENNAI,
+        NonCartOrderCity: NonCartOrderOMSCity.CHENNAI,
         email: userEmail,
       };
     }
@@ -1030,6 +1035,8 @@ export const MedicineCart: React.FC = (props) => {
               prismPrescriptionFileId: [...phyPresPrismIds, ...ePresPrismIds].join(','),
               appointmentId: '',
               isEprescription: ePrescriptionData && ePrescriptionData.length ? 1 : 0, // if atleat one prescription is E-Prescription then pass it as one.
+              durationDays: durationDays,
+              prescriptionOptionSelected: prescriptionOptionSelected,
               ...(chennaiOrderVariables && chennaiOrderVariables),
             },
           };
@@ -1056,6 +1063,8 @@ export const MedicineCart: React.FC = (props) => {
           appointmentId: '',
           isEprescription: ePrescriptionData && ePrescriptionData.length ? 1 : 0, // if atleat one prescription is E-Prescription then pass it as one.
           ...(chennaiOrderVariables && chennaiOrderVariables),
+          prescriptionOptionSelected: prescriptionOptionSelected,
+          durationDays: prescriptionOptionSelected === 'specified' ? durationDays : null,
         },
       };
       submitPrescriptionMedicineOrder(prescriptionMedicineOMSInput);
@@ -1211,7 +1220,7 @@ export const MedicineCart: React.FC = (props) => {
                         <div className={classes.consultDoctor}>
                           <span>Don’t have a prescription? Don’t worry!</span>
                           <Link
-                            to={clientRoutes.doctorsLanding()}
+                            to={clientRoutes.specialityListing()}
                             className={classes.consultDoctoLink}
                           >
                             Consult A Doctor
@@ -1360,9 +1369,9 @@ export const MedicineCart: React.FC = (props) => {
                       validateCouponResult.discountedTotals &&
                       validateCouponResult.discountedTotals.couponDiscount > 0 && (
                         <div className={classes.discountTotal}>
-                          Savings of Rs.
-                          {validateCouponResult.discountedTotals.couponDiscount.toFixed(2)}
-                          on the bill
+                          {`Savings of Rs.
+                          ${validateCouponResult.discountedTotals.couponDiscount.toFixed(2)}
+                           on the bill`}
                         </div>
                       )}
                     {errorMessage.length > 0 && (
@@ -1489,7 +1498,7 @@ export const MedicineCart: React.FC = (props) => {
                   fullWidth
                   disabled={
                     (!nonCartFlow
-                      ? !cartTat
+                      ? !cartTat && deliveryTime === ''
                       : !deliveryAddressId ||
                         (deliveryAddressId && deliveryAddressId.length === 0)) ||
                     !isPaymentButtonEnable ||
@@ -1497,7 +1506,7 @@ export const MedicineCart: React.FC = (props) => {
                   }
                   className={
                     (!nonCartFlow
-                      ? !cartTat
+                      ? !cartTat && deliveryTime === ''
                       : !deliveryAddressId ||
                         (deliveryAddressId && deliveryAddressId.length === 0)) ||
                     !isPaymentButtonEnable ||
