@@ -72,6 +72,7 @@ export const doctorCallNotificationTypeDefs = gql`
       doctorName: String
       deviceType: DEVICETYPE
       callSource: BOOKINGSOURCE
+      appVersion: String
     ): NotificationResult!
     endCallNotification(appointmentCallId: String): EndCallResult!
     sendApptNotification: ApptNotificationResult!
@@ -135,6 +136,7 @@ const sendCallNotification: Resolver<
     doctorName: string;
     deviceType: DEVICETYPE;
     callSource: BOOKINGSOURCE;
+    appVersion: string;
   },
   ConsultServiceContext,
   NotificationResult
@@ -152,6 +154,7 @@ const sendCallNotification: Resolver<
     doctorName: args.doctorName,
     deviceType: args.deviceType,
     callSource: args.callSource,
+    appVersion: args.appVersion,
   };
   const appointmentCallDetails = await callDetailsRepo.saveAppointmentCallDetails(
     appointmentCallDetailsAttrs
@@ -216,13 +219,15 @@ const sendPatientWaitNotification: Resolver<
   const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
   const doctorDetails = await doctorRepo.findById(appointment.doctorId);
   if (!doctorDetails) throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID, undefined, {});
-  const applicationLink = process.env.WHATSAPP_LINK_BOOK_APOINTMENT + '?' + appointment.id;
+  //const applicationLink = process.env.WHATSAPP_LINK_BOOK_APOINTMENT + '?' + appointment.id;
   if (appointment) {
-    let whatsAppMessageBody = ApiConstants.SEND_PATIENT_NOTIFICATION.replace(
+    const whatsAppMessageBody = ApiConstants.SEND_PATIENT_NOTIFICATION.replace(
       '{0}',
       doctorDetails.firstName
-    ).replace('{1}', appointment.patientName);
-    whatsAppMessageBody += applicationLink;
+    )
+      .replace('{1}', appointment.patientName)
+      .replace('{2}', args.appointmentId);
+    //whatsAppMessageBody += applicationLink;
     await sendNotificationWhatsapp(doctorDetails.mobileNumber, whatsAppMessageBody, 1);
   }
   return { status: true };

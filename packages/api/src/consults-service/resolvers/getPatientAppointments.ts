@@ -248,8 +248,13 @@ const getPatientPersonalizedAppointments: Resolver<
   PersonalizedAppointmentResult
 > = async (parent, args, { consultsDb, doctorsDb, patientsDb, mobileNumber }) => {
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
-  const patientData = await patientRepo.checkMobileIdInfo(mobileNumber, args.patientUhid, '');
-  if (!patientData) throw new AphError(AphErrorMessages.INVALID_PATIENT_DETAILS);
+  const patientDetails = await patientRepo.findByUhid(args.patientUhid);
+  if (!patientDetails) {
+    throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
+  }
+  if (mobileNumber != patientDetails.mobileNumber) {
+    throw new AphError(AphErrorMessages.INVALID_PATIENT_DETAILS, undefined, {});
+  }
   let uhid = args.patientUhid;
   if (process.env.NODE_ENV == 'local') uhid = ApiConstants.CURRENT_UHID.toString();
   else if (process.env.NODE_ENV == 'dev') uhid = ApiConstants.CURRENT_UHID.toString();
@@ -272,27 +277,38 @@ const getPatientPersonalizedAppointments: Resolver<
         if (Math.abs(differenceInDays(new Date(), new Date(appt.consultedtime))) <= 30) {
           const doctorDets = await doctorRepo.getDoctorIdByMedmantraId(appt.doctorid);
           if (doctorDets) {
-            const apptDetailsOffline: PersonalizedAppointment = {
-              id: appt.appointmentid,
-              hospitalLocation: appt.location_name,
-              appointmentDateTime: new Date(appt.consultedtime),
-              appointmentType:
-                appt.appointmenttype == 'WALKIN'
-                  ? APPOINTMENT_TYPE.PHYSICAL
-                  : APPOINTMENT_TYPE.ONLINE,
-              doctorId: doctorDets.doctor.id,
-            };
-            apptDetails = apptDetailsOffline;
-            doctorFlag = 1;
+            const apptRepo = consultsDb.getCustomRepository(AppointmentRepository);
+            const apptDetailsBooked = await apptRepo.checkIfAppointmentBooked(
+              doctorDets.doctor.id,
+              patientDetails ? patientDetails.id : '',
+              new Date(appt.consultedtime)
+            );
+            console.log(apptDetailsBooked, 'apptDetailsBooked');
+            if (apptDetailsBooked == 0) {
+              const apptDetailsOffline: PersonalizedAppointment = {
+                id: appt.appointmentid,
+                hospitalLocation: appt.location_name,
+                appointmentDateTime: new Date(appt.consultedtime),
+                appointmentType:
+                  appt.appointmenttype == 'WALKIN'
+                    ? APPOINTMENT_TYPE.PHYSICAL
+                    : APPOINTMENT_TYPE.ONLINE,
+                doctorId: doctorDets.doctor.id,
+              };
+              apptDetails = apptDetailsOffline;
+              doctorFlag = 1;
+            }
           } else {
             doctorFlag = 0;
             resolve(apptDetails);
           }
         }
+        console.log(apptDetails, 'appt details inside');
         resolve(apptDetails);
       });
     });
   }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let apptDetails: any;
   if (offlineApptsList.errorCode == 0) {
     //console.log(offlineApptsList.response, offlineApptsList.response.length);
@@ -301,7 +317,9 @@ const getPatientPersonalizedAppointments: Resolver<
     console.log(offlineApptsList.errorMsg, offlineApptsList.errorCode, 'offline consults error');
     throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
   }
+
   if (doctorFlag == 0) throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID);
+  console.log(apptDetails, 'apptDetails');
   if (apptDetails == null) throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
   return { appointmentDetails: apptDetails };
 };

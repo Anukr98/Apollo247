@@ -256,12 +256,8 @@ export const UploadEPrescriptionCard: React.FC<EPrescriptionCardProps> = (props)
       .filter((item: any) => item && !!item.uploadedUrl)
       .sort(
         (a: any, b: any) =>
-          moment(b.date, DATE_FORMAT)
-            .toDate()
-            .getTime() -
-          moment(a.date, DATE_FORMAT)
-            .toDate()
-            .getTime()
+          moment(b.date, DATE_FORMAT).toDate().getTime() -
+          moment(a.date, DATE_FORMAT).toDate().getTime()
       );
 
   const PRESCRIPTION_VALIDITY_IN_DAYS = 180;
@@ -406,7 +402,7 @@ export const UploadEPrescriptionCard: React.FC<EPrescriptionCardProps> = (props)
 
               if (props.isNonCartFlow) {
                 setTimeout(() => {
-                  window.location.href = `${clientRoutes.medicinesCart()}?prescription=true`;
+                  window.location.href = clientRoutes.medicinePrescription();
                 }, 3000);
               } else {
                 props.setIsEPrescriptionOpen && props.setIsEPrescriptionOpen(false);

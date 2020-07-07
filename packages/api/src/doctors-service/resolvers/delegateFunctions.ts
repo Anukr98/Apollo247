@@ -32,6 +32,7 @@ export const delegateFunctionsTypeDefs = gql`
       doctorId: String
       patientId: String
       externalConnect: Boolean
+      appointmentId: String
     ): SaveExternalConnectResult
   }
 
@@ -178,7 +179,7 @@ const removeSecretary: Resolver<
 };
 const updateSaveExternalConnect: Resolver<
   null,
-  { doctorId: string; patientId: string; externalConnect: boolean },
+  { doctorId: string; patientId: string; externalConnect: boolean; appointmentId: string },
   DoctorsServiceContext,
   SaveExternalConnectResult
 > = async (parent, args, context) => {
@@ -187,6 +188,7 @@ const updateSaveExternalConnect: Resolver<
     patientId: args.patientId,
     doctorId: args.doctorId,
     externalConnect: args.externalConnect,
+    appointmentId: args.appointmentId,
   };
   await externalConnectRepo.saveExternalConnectData(attrs);
   return { status: true };

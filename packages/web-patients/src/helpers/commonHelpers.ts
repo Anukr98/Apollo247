@@ -62,8 +62,8 @@ const getDeviceType = (): DEVICETYPE => {
     return /Android/i.test(userAgent)
       ? DEVICETYPE.ANDROID
       : /iPhone/i.test(userAgent)
-      ? DEVICETYPE.IOS
-      : null;
+        ? DEVICETYPE.IOS
+        : null;
   } else {
     return DEVICETYPE.DESKTOP;
   }
@@ -116,12 +116,19 @@ const pharmaStateCodeMapping: PharmaStateCodeMappingType = {
 const customerCareNumber = '04048217222';
 
 const readableParam = (param: string) => {
-  const replaceSpace =
-    param && param.includes('-')
-      ? param.replace(/-/g, ' ')
-      : param.replace(/\s+/g, '-').toLowerCase();
-  return (replaceSpace && replaceSpace.replace(/[&\/\\#,+()$~%.'":*?<>{}]/g, '')) || '';
-};
+  const a = 'àáâäæãåāăąçćčđďèéêëēėęěğǵḧîïíīįìłḿñńǹňôöòóœøōõőṕŕřßśšşșťțûüùúūǘůűųẃẍÿýžźż·/_,:;'
+  const b = 'aaaaaaaaaacccddeeeeeeeegghiiiiiilmnnnnoooooooooprrsssssttuuuuuuuuuwxyyzzz------'
+  const p = new RegExp(a.split('').join('|'), 'g')
+
+  return param.toString().toLowerCase()
+    .replace(/\s+/g, '-') // Replace spaces with -
+    .replace(p, c => b.charAt(a.indexOf(c))) // Replace special characters
+    .replace(/&/g, '-and-') // Replace & with 'and'
+    .replace(/[^\w\-]+/g, '') // Remove all non-word characters
+    .replace(/\-\-+/g, '-') // Replace multiple - with single -
+    .replace(/^-+/, '') // Trim - from start of text
+    .replace(/-+$/, '') // Trim - from end of text
+}
 
 const dayMapping = {
   MONDAY: 'Mo',
@@ -205,6 +212,17 @@ const findAddrComponents = (
   return findItem ? findItem.short_name || findItem.long_name : '';
 };
 
+const getTypeOfProduct = (type: string) => {
+  switch (_lowerCase(type)) {
+    case 'pharma':
+      return CouponCategoryApplicable.PHARMA;
+    case 'fmcg':
+      return CouponCategoryApplicable.FMCG;
+    default:
+      return CouponCategoryApplicable.FMCG;
+  }
+};
+
 const ORDER_BILLING_STATUS_STRINGS = {
   TOTAL_ORDER_BILLED: 'Total Ordered Value',
   TOTAL_BILLED_VALUE: 'Total Billed Value',
@@ -249,17 +267,6 @@ const availabilityList = ['Now', 'Today', 'Tomorrow', 'Next 3 days'];
 
 // End of doctors list based on specialty related changes
 
-const getTypeOfProduct = (type: string) => {
-  switch (_lowerCase(type)) {
-    case 'pharma':
-      return CouponCategoryApplicable.PHARMA;
-    case 'fmcg':
-      return CouponCategoryApplicable.FMCG;
-    default:
-      return CouponCategoryApplicable.FMCG;
-  }
-};
-
 const getSymptoms = (symptoms: string) => {
   const symptomsList = symptoms.split(', ');
   const structuredSymptomString = symptomsList.map((symptom: string) => {
@@ -270,7 +277,6 @@ const getSymptoms = (symptoms: string) => {
 
 export {
   getSymptoms,
-  getTypeOfProduct,
   feeInRupees,
   experienceList,
   genderList,
@@ -299,4 +305,5 @@ export {
   TAT_API_TIMEOUT_IN_MILLI_SEC,
   findAddrComponents,
   ORDER_BILLING_STATUS_STRINGS,
+  getTypeOfProduct,
 };

@@ -302,7 +302,7 @@ export const MedicineAutoSearch: React.FC = (props) => {
           className={classes.searchInput}
           value={searchText.replace(/\s+/gi, ' ').trimLeft()}
           onKeyDown={(e) => {
-            if (e.key === 'Enter') {
+            if (searchText.length > 1 && e.key === 'Enter') {
               window.location.href = clientRoutes.searchByMedicine(
                 'search-medicines',
                 searchText.replace(/\s/g, '-')
@@ -423,7 +423,7 @@ export const MedicineAutoSearch: React.FC = (props) => {
                                       {
                                         item_name: medicine.name,
                                         item_id: medicine.sku,
-                                        price: medicine.price,
+                                        price: medicine.special_price || medicine.price,
                                         item_category: 'Pharmacy',
                                         item_category_2: medicine.type_id
                                           ? medicine.type_id.toLowerCase() === 'pharma'
@@ -511,7 +511,7 @@ export const MedicineAutoSearch: React.FC = (props) => {
                                         {
                                           item_name: medicine.name,
                                           item_id: medicine.sku,
-                                          price: medicine.price,
+                                          price: medicine.special_price || medicine.price,
                                           item_category: 'Pharmacy',
                                           item_category_2: medicine.type_id
                                             ? medicine.type_id.toLowerCase() === 'pharma'
@@ -571,7 +571,7 @@ export const MedicineAutoSearch: React.FC = (props) => {
                                         {
                                           item_name: medicine.name,
                                           item_id: medicine.sku,
-                                          price: medicine.price,
+                                          price: medicine.special_price || medicine.price,
                                           item_category: 'Pharmacy',
                                           item_category_2: medicine.type_id
                                             ? medicine.type_id.toLowerCase() === 'pharma'
