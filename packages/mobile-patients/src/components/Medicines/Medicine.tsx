@@ -934,7 +934,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     const date = moment(g(order, 'medicineOrdersStatus', '0' as any, 'statusDate')).format(
       'MMMM DD, YYYY'
     );
-    return isOfflineOrder ? `Ordered at ${address} on ${date}` : `Ordered online on ${1}`;
+    return isOfflineOrder ? `Ordered at ${address} on ${date}` : `Ordered online on ${date}`;
   };
 
   const [reOrderDetails, setReOrderDetails] = useState<MedicineReOrderOverlayProps['itemDetails']>({
