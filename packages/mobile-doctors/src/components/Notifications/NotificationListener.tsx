@@ -12,9 +12,11 @@ import { useNotification } from '@aph/mobile-doctors/src/components/Notification
 type CustomNotificationType =
   | 'doctor_appointment_reminder'
   | 'doctor_new_appointment_booked'
-  | 'doctor_chat_message';
+  | 'doctor_chat_message'
+  | 'doctor_booked_appointment_reschedule';
 
 type NotificationBody = {
+  title?: string;
   type: CustomNotificationType;
   appointmentId?: string;
   patientName?: string;
@@ -154,7 +156,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
       dismissNotification(notification.notificationId);
       showAphAlert &&
         showAphAlert({
-          title: notification.title || 'Appointment Reminder!',
+          title: data.title || 'Appointment Reminder!',
           description: data.content,
           CTAs: [
             {
@@ -211,7 +213,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
       dismissNotification(notification.notificationId);
       showAphAlert &&
         showAphAlert({
-          title: `A New Appointment is scheduled with ${data.patientName}`,
+          title: data.title || `A New Appointment is scheduled with ${data.patientName}`,
           description: `at ${moment(date).format('YYYY-MM-DD hh:mm A')}`,
           CTAs: [
             {
@@ -230,6 +232,41 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
               },
             },
           ],
+        });
+    } else if (data.type === 'doctor_booked_appointment_reschedule') {
+      const date =
+        data.content && moment(data.content, 'YYYY-MM-DD HH:mm:ss').isValid()
+          ? moment(data.content).toDate()
+          : new Date();
+      dismissNotification(notification.notificationId);
+      showAphAlert &&
+        showAphAlert({
+          title: data.title || `Your appointment with ${data.patientName} has been rescheduled`,
+          description: `to ${moment(date).format('YYYY-MM-DD hh:mm A')}`,
+          CTAs: [
+            {
+              text: 'CANCEL',
+              type: 'white-button',
+              onPress: () => {
+                hideAphAlert && hideAphAlert();
+              },
+            },
+            {
+              text: 'OPEN CALENDER',
+              type: 'orange-button',
+              onPress: () => {
+                hideAphAlert && hideAphAlert();
+                props.navigation.replace(AppRoutes.TabBar, { goToDate: date });
+              },
+            },
+          ],
+        });
+    } else {
+      dismissNotification(notification.notificationId);
+      showAphAlert &&
+        showAphAlert({
+          title: notification.title || data.title,
+          description: notification.body || data.content,
         });
     }
   };

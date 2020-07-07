@@ -1,7 +1,7 @@
 import { AppointmentsStyles } from '@aph/mobile-doctors/src/components/Appointments/Appointments.styles';
 import { AppointmentsList } from '@aph/mobile-doctors/src/components/Appointments/AppointmentsList';
 import { useNotification } from '@aph/mobile-doctors/src/components/Notification/NotificationContext';
-import { NotificationListener } from '@aph/mobile-doctors/src/components/NotificationListener';
+import { NotificationListener } from '@aph/mobile-doctors/src/components/Notifications/NotificationListener';
 import { CommonNotificationHeader } from '@aph/mobile-doctors/src/components/ui/CommonNotificationHeader';
 import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
 import {
