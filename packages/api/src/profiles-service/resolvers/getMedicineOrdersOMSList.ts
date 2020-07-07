@@ -13,7 +13,7 @@ import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { getUnixTime, format } from 'date-fns';
-import { Tedis } from 'redis-typescript';
+import { hgetAllCache, hmsetCache } from 'profiles-service/database/connectRedis';
 import { ApiConstants } from 'ApiConstants';
 
 const path = require('path');
@@ -465,11 +465,6 @@ const getRecommendedProductsList: Resolver<
   ProfilesServiceContext,
   RecommendedProductsListResult
 > = async (parent, args, { profilesDb }) => {
-  const tedis = new Tedis({
-    port: <number>ApiConstants.REDIS_PORT,
-    host: ApiConstants.REDIS_URL.toString(),
-    password: ApiConstants.REDIS_PWD.toString(),
-  });
   let uhid = args.patientUhid;
   if (process.env.NODE_ENV == 'local') uhid = ApiConstants.CURRENT_UHID.toString();
   else if (process.env.NODE_ENV == 'dev') uhid = ApiConstants.CURRENT_UHID.toString();
@@ -491,7 +486,7 @@ const getRecommendedProductsList: Resolver<
     for (let k = 0; k < productsList.response.recommendations.length; k++) {
       //console.log(productsList.response[k], 'redis keys length');
       const key = 'medicine:sku:' + productsList.response.recommendations[k];
-      const skuDets = await tedis.hgetall(key);
+      const skuDets = await hgetAllCache(key);
       if (skuDets && skuDets.status == 'Enabled') {
         const recommendedProducts: RecommendedProducts = {
           productImage: decodeURIComponent(skuDets.gallery_images),
@@ -519,16 +514,11 @@ const checkIfProductsOnline: Resolver<
   ProfilesServiceContext,
   ProductAvailabilityResult
 > = async (parent, args, { profilesDb }) => {
-  const tedis = new Tedis({
-    port: <number>ApiConstants.REDIS_PORT,
-    host: ApiConstants.REDIS_URL.toString(),
-    password: ApiConstants.REDIS_PWD.toString(),
-  });
   //const redisKeys = await tedis.keys('*');
   async function checkProduct(sku: string) {
     return new Promise<ProductAvailability>(async (resolve) => {
       const key = 'medicine:sku:' + sku;
-      const skuDets = await tedis.hgetall(key);
+      const skuDets = await hgetAllCache(key);
       const product: ProductAvailability = {
         productSku: sku,
         status: false,
@@ -558,12 +548,6 @@ const updateMedicineDataRedis: Resolver<
   ProfilesServiceContext,
   getMedicineOrdersListResult
 > = async (parent, args, context) => {
-  const tedis = new Tedis({
-    port: <number>ApiConstants.REDIS_PORT,
-    host: ApiConstants.REDIS_URL.toString(),
-    password: ApiConstants.REDIS_PWD.toString(),
-  });
-
   const excelToJson = require('convert-excel-to-json');
   let fileDirectory = path.resolve('/apollo-hospitals/packages/api/src/assets');
   if (process.env.NODE_ENV != 'local') {
@@ -606,7 +590,7 @@ const updateMedicineDataRedis: Resolver<
   const updatedSkus: string[] = [];
   for (let k = args.offset; k <= args.offset + args.limit - 1; k++) {
     const skuKey = 'medicine:sku:' + rowData.Sheet1[k].sku;
-    await tedis.hmset(skuKey, {
+    await hmsetCache(skuKey, {
       sku: encodeURIComponent(rowData.Sheet1[k].sku),
       name: encodeURIComponent(rowData.Sheet1[k].name),
       status: encodeURIComponent(rowData.Sheet1[k].status),
@@ -738,8 +722,14 @@ const getLatestMedicineOrder: Resolver<
     };
   }
   //console.log(offlineList, 'offline list');
-  if (offlineList == '')
-    throw new AphError(AphErrorMessages.INVALID_MEDICINE_ORDER_ID, undefined, {});
+  if (offlineList == '') {
+    const medRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
+    offlineList = await medRepo.getLatestMedicineOrderDetails(patientDetails.id);
+    //console.log(offlineList, 'offlineList inside');
+    if (!offlineList || offlineList == null || offlineList == '')
+      throw new AphError(AphErrorMessages.INVALID_MEDICINE_ORDER_ID, undefined, {});
+  }
+
   return { medicineOrderDetails: offlineList };
 };
 

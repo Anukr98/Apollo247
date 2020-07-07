@@ -677,6 +677,7 @@ export const MedicinePrescription: React.FC = () => {
     setMedicinePrescription: setSelectedMedicinesArr,
     removedMedicinePrescription,
     setRemovedMedicinePrescription,
+    casesheetVersion
   } = useContext(CaseSheetContext);
   const [removedMedicinePrescriptionState, setRemovedMedicinePrescriptionState] = useState<any>([]);
   const [medicinePrescriptionState, setMedicinePrescriptionState] = useState<any>([]);
@@ -1370,7 +1371,8 @@ export const MedicinePrescription: React.FC = () => {
   };
 
   const deletemedicine = (idx: any) => {
-    removedMedicinePrescriptionFn('add', idx);
+    casesheetVersion === 1 ? removedMedicinePrescriptionFn('delete', idx) : removedMedicinePrescriptionFn('add', idx);
+    //removedMedicinePrescriptionFn('add', idx);
     selectedMedicines.splice(idx, 1);
     setSelectedMedicines(selectedMedicines);
     selectedMedicinesArr!.splice(idx, 1);

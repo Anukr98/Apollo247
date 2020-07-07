@@ -603,4 +603,18 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
       });
     });
   }
+
+  getLatestMedicineOrderDetails(patientId: string) {
+    return MedicineOrders.createQueryBuilder('medicine_orders')
+      .leftJoinAndSelect('medicine_orders.medicineOrderLineItems', 'medicineOrderLineItems')
+      .leftJoinAndSelect('medicine_orders.medicineOrderPayments', 'medicineOrderPayments')
+      .leftJoinAndSelect('medicine_orders.medicineOrdersStatus', 'medicineOrdersStatus')
+      .leftJoinAndSelect('medicine_orders.medicineOrderShipments', 'medicineOrderShipments')
+      .andWhere('medicine_orders."patientId" = :patientId', { patientId })
+      .andWhere('medicine_orders."currentStatus" in (:status1)', {
+        status1: MEDICINE_ORDER_STATUS.DELIVERED,
+      })
+      .orderBy('medicine_orders."createdDate"', 'DESC')
+      .getOne();
+  }
 }
