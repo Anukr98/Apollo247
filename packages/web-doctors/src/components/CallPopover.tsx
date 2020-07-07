@@ -1775,9 +1775,9 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         clearInterval(intervalMissCall);
         missedCallCounter = 0;
       }
-      if (lastMsg.message && lastMsg.message.message === stopcallMsg && isCall) {
+      if (lastMsg.message && lastMsg.message.message === stopcallMsg) {
         setTimeout(() => {
-          forcelyDisconnect();
+          if (isCall) forcelyDisconnect();
         }, 2000);
       }
     }
