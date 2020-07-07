@@ -117,7 +117,10 @@ const verifyLoginOtp: Resolver<
   reqStartTime = new Date();
   //update status of otp
   await otpRepo.updateOtpStatus(matchedOtpRes.id, {
-    status: OTP_STATUS.VERIFIED,
+    ...matchedOtpRes,
+    ...{
+      status: OTP_STATUS.VERIFIED,
+    },
   });
 
   verifyLogger(reqStartTime, matchedOtpRes.mobileNumber, 'UPDATION_END');

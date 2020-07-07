@@ -320,6 +320,11 @@ const useStyles = makeStyles((theme: Theme) => {
         margin: '0 0 15px',
       },
     },
+    inPerson: {
+      color: '#01475b',
+      fontSize: 12,
+      fontWeight: 500,
+    }
   });
 });
 
@@ -436,7 +441,7 @@ export const HowItWorks: React.FC = (props) => {
           <TabPanel value={value} index={1}>
             <div className={classes.tabHead}>
               <img src={require('images/ic-specialist.svg')} />
-              <Typography component="h6">How to consult in Person?</Typography>
+              <Typography component="h6">How to consult <br /> in person </Typography>
             </div>
             <div className={classes.tabBody}>
               <ul className={classes.tabList}>
@@ -525,11 +530,12 @@ export const HowItWorks: React.FC = (props) => {
         <AphDialogTitle>
           <div className={classes.tabHead}>
             <img src={require('images/ic-specialist.svg')} />
-            <span>How to consult in Person?</span>
+            <span>Meet in person </span>
           </div>
         </AphDialogTitle>
         <div className={classes.consultContainer}>
           <ul className={classes.tabList}>
+            <li>How to consult in Person?</li>
             <li>
               <img src={require('images/consult-doc.svg')} />
               <Typography>Choose the doctor</Typography>
