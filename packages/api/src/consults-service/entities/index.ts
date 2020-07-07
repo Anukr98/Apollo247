@@ -162,6 +162,9 @@ export class Appointment extends BaseEntity {
   @Column({ type: 'float8', nullable: true })
   actualAmount: number;
 
+  @Column({ default: null })
+  appVersion: string;
+
   @Column({ nullable: true, default: 0 })
   apolloAppointmentId: number;
 
