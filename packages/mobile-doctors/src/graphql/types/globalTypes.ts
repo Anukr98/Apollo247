@@ -248,6 +248,7 @@ export enum STATUS {
   JUNIOR_DOCTOR_ENDED = "JUNIOR_DOCTOR_ENDED",
   JUNIOR_DOCTOR_STARTED = "JUNIOR_DOCTOR_STARTED",
   NO_SHOW = "NO_SHOW",
+  PAYMENT_ABORTED = "PAYMENT_ABORTED",
   PAYMENT_FAILED = "PAYMENT_FAILED",
   PAYMENT_PENDING = "PAYMENT_PENDING",
   PAYMENT_PENDING_PG = "PAYMENT_PENDING_PG",
@@ -364,6 +365,7 @@ export interface EndAppointmentSessionInput {
   deviceType?: DEVICETYPE | null;
   callSource?: BOOKINGSOURCE | null;
   callType?: APPT_CALL_TYPE | null;
+  appVersion?: string | null;
 }
 
 export interface MedicinePrescriptionInput {
