@@ -34,6 +34,7 @@ export const getAppointmentOverviewTypeDefs = gql`
     count: Int
     completedCount: Int
     yesCount: Int
+    noCount: Int
   }
   extend type Query {
     getAppointmentOverview(
@@ -81,6 +82,7 @@ type PastAppointmentsCountResult = {
   count: number;
   completedCount: number;
   yesCount: number;
+  noCount: number;
 };
 
 const getRepos = ({ consultsDb, doctorsDb, patientsDb }: ConsultServiceContext) => ({
@@ -191,8 +193,13 @@ const getPastAppointmentsCount: Resolver<
   if (!appointmentId) {
     apptId = appointmentId;
   }
-  const yesCount = await externalConnectRepo.findCountDoctorAndPatient(doctorId, patientId, apptId);
-  return { count, completedCount, yesCount };
+  const yesCount = await externalConnectRepo.findCountDoctorAndPatient(doctorId, patientId);
+  const noCount = await externalConnectRepo.findNoCountDoctorAndPatient(
+    doctorId,
+    patientId,
+    apptId
+  );
+  return { count, completedCount, yesCount, noCount };
 };
 
 export const getAppointmentOverviewResolvers = {
