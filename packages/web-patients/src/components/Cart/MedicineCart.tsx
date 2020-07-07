@@ -1158,8 +1158,6 @@ export const MedicineCart: React.FC = (props) => {
     );
   };
 
-  console.log(currentPatient);
-
   useEffect(() => {
     /**Gtm code start  */
     if (!nonCartFlow) {
