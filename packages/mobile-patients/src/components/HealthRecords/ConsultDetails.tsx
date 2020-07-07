@@ -715,7 +715,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                 }`
               : ''
           }${
-            !item.medicineConsumptionDurationInDays && item.medicineConsumptionDurationUnit
+            item.medicineConsumptionDurationUnit
               ? `${nameFormater(item.medicineConsumptionDurationUnit || '', 'lower')} `
               : ''
           }${
@@ -740,6 +740,10 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                     ? `${item.medicineConsumptionDurationUnit.slice(0, -1).toLowerCase()}(s) `
                     : ``
                 }`
+              : ''
+          }${
+            item.medicineConsumptionDurationUnit
+              ? `${nameFormater(item.medicineConsumptionDurationUnit || '', 'lower')} `
               : ''
           }${
             item.medicineToBeTaken && item.medicineToBeTaken.length
