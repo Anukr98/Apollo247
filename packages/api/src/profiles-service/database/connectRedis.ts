@@ -7,6 +7,15 @@ const client = createClient({
   host: process.env.REDIS_HOST,
   password: process.env.REDIS_PASSWORD,
   retry_strategy: function(options) {
+    if (options.error) {
+      dLogger(
+        new Date(),
+        'Redis Connection error',
+        `Redis connection error code: ${options.error.code} details: ${JSON.stringify(
+          options.error
+        )}`
+      );
+    }
     if (options.error && options.error.code === 'ECONNREFUSED') {
       return new Error('The server refused the connection');
     }
