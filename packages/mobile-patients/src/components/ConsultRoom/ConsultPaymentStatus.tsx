@@ -38,7 +38,7 @@ import {
   View,
   Clipboard,
 } from 'react-native';
-import { NavigationScreenProps } from 'react-navigation';
+import { NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
 import RNFetchBlob from 'rn-fetch-blob';
 import {
   getAppointmentData,
@@ -216,7 +216,17 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
   };
 
   const handleBack = () => {
-    props.navigation.navigate(AppRoutes.ConsultRoom);
+    props.navigation.dispatch(
+      StackActions.reset({
+        index: 0,
+        key: null,
+        actions: [
+          NavigationActions.navigate({
+            routeName: AppRoutes.ConsultRoom,
+          }),
+        ],
+      })
+    );
     return true;
   };
 
@@ -494,7 +504,17 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
         doctorId: doctorID,
       });
     } else {
-      navigate(AppRoutes.ConsultRoom);
+      props.navigation.dispatch(
+        StackActions.reset({
+          index: 0,
+          key: null,
+          actions: [
+            NavigationActions.navigate({
+              routeName: AppRoutes.ConsultRoom,
+            }),
+          ],
+        })
+      );
     }
   };
 

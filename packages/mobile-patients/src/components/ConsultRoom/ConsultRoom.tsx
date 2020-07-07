@@ -609,7 +609,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     AsyncStorage.removeItem('deeplinkReferalCode');
     storePatientDetailsTOBugsnag();
     callAPIForNotificationResult();
-    getPersonalizesAppointments();
   }, []);
 
   const storePatientDetailsTOBugsnag = async () => {
@@ -749,6 +748,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     } else {
       AsyncStorage.setItem('selectedProfileId', JSON.stringify(currentPatient.id));
       if (selectedProfile !== currentPatient.id) {
+        getPersonalizesAppointments();
         setAppointmentLoading(true);
         setSelectedProfile(currentPatient.id);
         client
@@ -969,7 +969,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         const appointmentsdata =
           g(data, 'data', 'data', 'getPatientPersonalizedAppointments', 'appointmentDetails') || [];
         // console.log('appointmentsdata', appointmentsdata);
-        AsyncStorage.setItem('UHIDused', uhid);
+        AsyncStorage.setItem('UHIDused', selectedUHID);
 
         setPersonalizedData(appointmentsdata as any);
         setisPersonalizedCard(true);
@@ -979,6 +979,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           );
       })
       .catch((e) => {
+        setPersonalizedData([]);
+        setisPersonalizedCard(false);
+        // console.log('ConsultRoom_getPatientPersonalizedAppointmentList', e);
         CommonBugFender('ConsultRoom_getPatientPersonalizedAppointmentList', e);
       });
   };

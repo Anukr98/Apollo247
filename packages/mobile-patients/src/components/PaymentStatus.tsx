@@ -12,7 +12,7 @@ import {
 import { Copy } from '@aph/mobile-patients/src/components/ui/Icons';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import React, { useEffect, useState } from 'react';
-import { NavigationScreenProps } from 'react-navigation';
+import { NavigationScreenProps, NavigationActions, StackActions } from 'react-navigation';
 import { Success, Failure, Pending } from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
@@ -121,7 +121,17 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
       .catch((error) => {
         CommonBugFender('fetchingTxnStutus', error);
         console.log(error);
-        props.navigation.navigate(AppRoutes.ConsultRoom);
+        props.navigation.dispatch(
+          StackActions.reset({
+            index: 0,
+            key: null,
+            actions: [
+              NavigationActions.navigate({
+                routeName: AppRoutes.ConsultRoom,
+              }),
+            ],
+          })
+        );
         renderErrorPopup(`Something went wrong, plaease try again after sometime`);
       });
     BackHandler.addEventListener('hardwareBackPress', handleBack);
@@ -131,7 +141,17 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
   }, []);
 
   const handleBack = () => {
-    props.navigation.navigate(AppRoutes.ConsultRoom);
+    props.navigation.dispatch(
+      StackActions.reset({
+        index: 0,
+        key: null,
+        actions: [
+          NavigationActions.navigate({
+            routeName: AppRoutes.ConsultRoom,
+          }),
+        ],
+      })
+    );
     return true;
   };
 
@@ -321,7 +341,17 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
     } else if (status == failure) {
       navigate(AppRoutes.YourCart);
     } else {
-      navigate(AppRoutes.ConsultRoom);
+      props.navigation.dispatch(
+        StackActions.reset({
+          index: 0,
+          key: null,
+          actions: [
+            NavigationActions.navigate({
+              routeName: AppRoutes.ConsultRoom,
+            }),
+          ],
+        })
+      );
     }
   };
 
