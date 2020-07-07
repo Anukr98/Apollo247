@@ -398,6 +398,7 @@ export const ConsultTabs: React.FC = () => {
   const [occupationHistory, setOccupationHistory] = useState<string>('');
   const [referralError, setReferralError] = useState<boolean>(false);
   const [updatedDate, setUpdatedDate] = useState<string>('');
+  const [casesheetVersion, setCasesheetVersion] = useState<number>(1);
 
   const [appointmentStatus, setAppointmentStatus] = useState<string>('');
   const [sentToPatient, setSentToPatient] = useState<boolean>(false);
@@ -648,6 +649,7 @@ export const ConsultTabs: React.FC = () => {
           _data!.data!.getCaseSheet!.caseSheetDetails!.sentToPatient
             ? setSentToPatient(_data!.data!.getCaseSheet!.caseSheetDetails!.sentToPatient)
             : setSentToPatient(false);
+            _data!.data!.getCaseSheet!.caseSheetDetails!.version ? setCasesheetVersion(_data.data.getCaseSheet.caseSheetDetails.version) : setCasesheetVersion(1);
           if (
             _data.data &&
             _data.data.getCaseSheet &&
@@ -1763,6 +1765,7 @@ export const ConsultTabs: React.FC = () => {
             setOccupationHistory,
             updatedDate,
             setUpdatedDate,
+            casesheetVersion
           }}
         >
           <Scrollbars
