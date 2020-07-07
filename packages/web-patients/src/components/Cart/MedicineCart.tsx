@@ -1075,7 +1075,7 @@ export const MedicineCart: React.FC = (props) => {
               prismPrescriptionFileId: [...phyPresPrismIds, ...ePresPrismIds].join(','),
               appointmentId: '',
               isEprescription: ePrescriptionData && ePrescriptionData.length ? 1 : 0, // if atleat one prescription is E-Prescription then pass it as one.
-              durationDays: durationDays,
+              // durationDays: durationDays,
               prescriptionOptionSelected: updatedPrescriptionOptionSelected,
               ...(chennaiOrderVariables && chennaiOrderVariables),
             },
@@ -1104,10 +1104,10 @@ export const MedicineCart: React.FC = (props) => {
           isEprescription: ePrescriptionData && ePrescriptionData.length ? 1 : 0, // if atleat one prescription is E-Prescription then pass it as one.
           ...(chennaiOrderVariables && chennaiOrderVariables),
           prescriptionOptionSelected: updatedPrescriptionOptionSelected,
-          durationDays:
-            prescriptionOptionSelected === 'specified' && prescriptionDuration === 'user'
-              ? durationDays
-              : null,
+          // durationDays:
+          //   prescriptionOptionSelected === 'specified' && prescriptionDuration === 'user'
+          //     ? durationDays
+          //     : null,
         },
       };
       console.log('prescriptionMedicineOMSInput', prescriptionMedicineOMSInput);

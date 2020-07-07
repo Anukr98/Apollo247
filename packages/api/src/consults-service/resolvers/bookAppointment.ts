@@ -99,6 +99,7 @@ export const bookAppointmentTypeDefs = gql`
     pinCode: String
     actualAmount: Float
     discountedAmount: Float
+    appVersion: String
   }
 
   type BookAppointmentResult {
@@ -128,6 +129,7 @@ type BookAppointmentInput = {
   discountedAmount?: number;
   externalConnect?: boolean;
   pinCode?: string;
+  appVersion: string;
 };
 
 type AppointmentBooking = {
