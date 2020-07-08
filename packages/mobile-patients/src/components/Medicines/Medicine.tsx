@@ -802,7 +802,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           />
         </View>
       );
-    } else if (banners.length) {
+    } else if (banners.length && !isSelectPrescriptionVisible) {
       return (
         <View>
           <Carousel
@@ -812,7 +812,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             sliderWidth={winWidth}
             itemWidth={winWidth}
             loop={true}
-            autoplay={true}
+            autoplay={isSelectPrescriptionVisible ? false : true}
             autoplayDelay={3000}
             autoplayInterval={3000}
           />
