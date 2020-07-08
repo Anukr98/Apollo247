@@ -109,7 +109,7 @@ const generateSitemap: Resolver<null, {}, DoctorsServiceContext, string> = async
   let cmsUrls = '\n<!--CMS links-->\n';
   if (cmsUrlsList && cmsUrlsList.data.length > 0) {
     cmsUrlsList.data.forEach((link: string) => {
-      const url = process.env.SITEMAP_BASE_URL + 'covid19/article/' + link;
+      const url = process.env.SITEMAP_BASE_URL + 'covid19/article' + link;
       cmsUrls += '<url>\n<loc>' + url + '</loc>\n<lastmod>' + modifiedDate + '</lastmod>\n</url>\n';
     });
   }

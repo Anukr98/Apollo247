@@ -298,11 +298,22 @@ const sendMessage = async (args: any) => {
     const message = ApiConstants.DOCTOR_WHATSAPP_OTP.replace('{0}', otp);
     const promiseSendNotification = sendNotificationWhatsapp(mobileNumber, message, 1);
     const promiseSendSMS = sendSMS(mobileNumber, otp, hashCode);
-    const messageSentResponse = await Promise.all([
-      promiseSendNotification.catch((err) => { log('smsOtpAPILogger', `API_CALL_ERROR`, 'sendNotificationWhatsapp()->CATCH_BLOCK', '', JSON.stringify(err)); return err; }),
-      promiseSendSMS.catch((err) => { log('smsOtpAPILogger', `API_CALL_ERROR`, 'sendSMS()->CATCH_BLOCK', '', JSON.stringify(err)); return err; }),
+    await Promise.all([
+      promiseSendNotification.catch((err) => {
+        log(
+          'smsOtpAPILogger',
+          `API_CALL_ERROR`,
+          'sendNotificationWhatsapp()->CATCH_BLOCK',
+          '',
+          JSON.stringify(err)
+        );
+        return err;
+      }),
+      promiseSendSMS.catch((err) => {
+        log('smsOtpAPILogger', `API_CALL_ERROR`, 'sendSMS()->CATCH_BLOCK', '', JSON.stringify(err));
+        return err;
+      }),
     ]);
-    messageSentResponse[1];
   } else {
     await sendSMS(mobileNumber, otp, hashCode);
   }
@@ -355,7 +366,15 @@ const getStaticOTP = (args: any) => {
   ) {
     return process.env.PERFORMANCE_ENV_STATIC_OTP.toString();
   }
-
+  //if staging environment, and specific mobileNumber, use the static otp
+  if (
+    process.env.NODE_ENV === 'staging' &&
+    process.env.STAGING_ENV_STATIC_APP_STORE_MOBILE_NUMBER &&
+    process.env.STAGING_ENV_STATIC_APP_STORE_OTP &&
+    mobileNumber == process.env.STAGING_ENV_STATIC_APP_STORE_MOBILE_NUMBER
+  ) {
+    return process.env.STAGING_ENV_STATIC_APP_STORE_OTP.toString();
+  }
   //if production environment, and specific mobileNumber, use the static otp
   if (
     process.env.NODE_ENV === 'production' &&
