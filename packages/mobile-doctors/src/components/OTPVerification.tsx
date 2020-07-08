@@ -540,6 +540,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
             }}
             onPress={() => {
               props.navigation.goBack();
+              _removeFromStore();
               intervalId && clearInterval(intervalId);
               setContextDoctorDetails && setContextDoctorDetails(null);
             }}
