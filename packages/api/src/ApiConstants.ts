@@ -163,7 +163,7 @@ export enum ApiConstants {
   CONSULT_QUEUE_HISTORY1 = 'Virtual JD is assigned, as no JD is online',
   CONSULT_QUEUE_HISTORY2 = 'JD for this doctor is not required, so virtual JD is assigned',
   CONSULT_QUEUE_HISTORY = 'Added to JD consult queue',
-  CASESHEET_COMPLETED_HISTORY = 'Casesheet completed',
+  CASESHEET_COMPLETED_HISTORY = 'SD Casesheet completed, prescription sent to patient',
   CASESHEET_CREATED_HISTORY = 'casesheet created',
   APPT_SESSION_HISTORY = 'session created',
   APPT_SESSION_COMPLETE_HISTORY = 'session completed',
@@ -246,7 +246,7 @@ export enum ApiConstants {
 
   COUNTRY_CODE = '91',
   OFFLINE_ORDERID = '7582d9fa-c33d-43d9-968f-77c917fff3ae',
-  CURRENT_UHID = 'APJ1.0002579777',
+  CURRENT_UHID = 'APJ1.0003383835',
   LOCAL_DOC_ID = 'd7566de3-c967-4a0e-a53d-f4b0f98eb065',
   DEV_DOC_ID = '74c93b2e-8aab-4b6c-8391-5407f4afb833',
   QA_DOC_ID = '',
