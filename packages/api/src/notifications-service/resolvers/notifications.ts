@@ -2326,7 +2326,7 @@ export async function sendChatMessageNotification(
         type: 'doctor_chat_message',
         appointmentId: appointment.id,
         patientName: appointment.patientName,
-        content: chatMsg,
+        body: chatMsg,
       },
     };
 
@@ -2532,24 +2532,32 @@ const sendDoctorReminderNotifications: Resolver<
             'Reminder ' + apptId.appointmentType == APPOINTMENT_TYPE.PHYSICAL
               ? 'In-person Appointment'
               : 'Online Appointment',
-          body:
-            apptId.patientName +
-            ' ' +
-            format(addMilliseconds(apptId.appointmentDateTime, 19800000), 'yyyy-MM-dd HH:mm:ss'),
+          body: `with ${apptId.patientName}+
+            ' at ' +
+            ${format(
+              addMilliseconds(apptId.appointmentDateTime, 19800000),
+              'yyyy-MM-dd HH:mm:ss'
+            )}`,
           sound: ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString(),
         },
         data: {
           title:
-            apptId.appointmentType == APPOINTMENT_TYPE.PHYSICAL
-              ? 'In-person appointment'
-              : 'OnlineAppointment',
+            'Reminder ' + apptId.appointmentType == APPOINTMENT_TYPE.PHYSICAL
+              ? 'In-person Appointment'
+              : 'Online Appointment',
           type: 'doctor_appointment_reminder',
           appointmentId: apptId.id,
           patientName: apptId.patientName,
-          content:
-            apptId.patientName +
-            ' ' +
-            format(addMilliseconds(apptId.appointmentDateTime, 19800000), 'yyyy-MM-dd HH:mm:ss'),
+          body: `with ${apptId.patientName}+
+            ' at ' +
+            ${format(
+              addMilliseconds(apptId.appointmentDateTime, 19800000),
+              'yyyy-MM-dd HH:mm:ss'
+            )}`,
+          date: format(
+            addMilliseconds(apptId.appointmentDateTime, 19800000),
+            'yyyy-MM-dd HH:mm:ss'
+          ),
         },
       };
 
@@ -2630,7 +2638,7 @@ export async function sendDoctorAppointmentNotification(
   const payload = {
     notification: {
       title: 'A New Appointment is scheduled with ' + patientName,
-      body: format(addMilliseconds(appointmentDateTime, 19800000), 'yyyy-MM-dd HH:mm:ss'),
+      body: `at ${format(addMilliseconds(appointmentDateTime, 19800000), 'yyyy-MM-dd HH:mm:ss')}`,
       sound: ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString(),
     },
     data: {
@@ -2638,7 +2646,8 @@ export async function sendDoctorAppointmentNotification(
       type: 'doctor_new_appointment_booked',
       appointmentId: apptId,
       patientName: patientName,
-      content: format(addMilliseconds(appointmentDateTime, 19800000), 'yyyy-MM-dd HH:mm:ss'),
+      date: format(addMilliseconds(appointmentDateTime, 19800000), 'yyyy-MM-dd HH:mm:ss'),
+      body: `at ${format(addMilliseconds(appointmentDateTime, 19800000), 'yyyy-MM-dd HH:mm:ss')}`,
     },
   };
   const doctorTokenRepo = doctorsDb.getCustomRepository(DoctorDeviceTokenRepository);
@@ -2716,16 +2725,23 @@ export async function sendDoctorRescheduleAppointmentNotification(
   //building payload
   const payload = {
     notification: {
-      title: `Your Appointment with ${patientName} has been Rescheduled `,
-      body: format(addMilliseconds(appointmentDateTime, 19800000), 'yyyy-MM-dd HH:mm:ss'),
+      title: `Appointment has been Rescheduled`,
+      body: `Appointment with ${patientName} has been rescheduled to ${format(
+        addMilliseconds(appointmentDateTime, 19800000),
+        'yyyy-MM-dd HH:mm:ss'
+      )}`,
       sound: ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString(),
     },
     data: {
-      title: `Your Appointment with ${patientName} has been Rescheduled `,
+      title: `Appointment has been Rescheduled`,
       type: 'doctor_booked_appointment_reschedule',
       appointmentId: apptId,
       patientName: patientName,
-      content: format(addMilliseconds(appointmentDateTime, 19800000), 'yyyy-MM-dd HH:mm:ss'),
+      date: format(addMilliseconds(appointmentDateTime, 19800000), 'yyyy-MM-dd HH:mm:ss'),
+      body: `Appointment with ${patientName} has been rescheduled to ${format(
+        addMilliseconds(appointmentDateTime, 19800000),
+        'yyyy-MM-dd HH:mm:ss'
+      )}`,
     },
   };
 
