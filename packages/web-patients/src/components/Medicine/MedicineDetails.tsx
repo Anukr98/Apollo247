@@ -436,6 +436,7 @@ export const MedicineDetails: React.FC = (props) => {
   const [tabValue, setTabValue] = React.useState<number>(0);
   const params = useParams<{ sku: string }>();
   const [medicineDetails, setMedicineDetails] = React.useState<MedicineProductDetails | null>(null);
+
   const [alertMessage, setAlertMessage] = React.useState<string>('');
   const [isAlertOpen, setIsAlertOpen] = React.useState<boolean>(false);
   const [productSchemaJSON, setProductSchemaJSON] = React.useState(null);
@@ -446,7 +447,7 @@ export const MedicineDetails: React.FC = (props) => {
 
   const apiDetails = {
     skuUrl: process.env.PHARMACY_MED_PROD_SKU_URL,
-    url: process.env.PHARMACY_MED_PROD_DETAIL_URL,
+    url: 'https://uat.apollopharmacy.in/popcsrchpdp_api.php',
     authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
   };
 
