@@ -129,9 +129,9 @@ export const PreviewPrescription: React.FC<PreviewPrescriptionProps> = (props) =
       : '',
     uhid: (patientDetails && patientDetails.uhid) || '',
     appId: g(caseSheet, 'caseSheetDetails', 'appointment', 'displayId') || '',
-    date: moment(g(caseSheet, 'caseSheetDetails', 'appointment', 'sdConsultationDate')).format(
-      'DD/MM/YYYY [at] hh:mm A'
-    ),
+    date: moment(
+      g(caseSheet, 'caseSheetDetails', 'appointment', 'sdConsultationDate') || new Date()
+    ).format('DD/MM/YYYY [at] hh:mm A'),
     type: `${
       (g(caseSheet, 'caseSheetDetails', 'appointment', 'appointmentType') ||
         APPOINTMENT_TYPE.ONLINE) === APPOINTMENT_TYPE.PHYSICAL
