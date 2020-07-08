@@ -87,11 +87,11 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
   const medicineDetailOptions = [
     {
       id: 'search',
-      title: 'Search and add medicine',
+      title: 'Search and add medicine(s)',
     },
     {
       id: 'Need all medicine and for duration as per prescription',
-      title: 'All medicine from prescription',
+      title: 'All medicines from prescription',
     },
     {
       id: 'Call me for details',
