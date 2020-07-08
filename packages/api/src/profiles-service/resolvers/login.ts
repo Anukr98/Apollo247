@@ -298,7 +298,7 @@ const sendMessage = async (args: any) => {
     const message = ApiConstants.DOCTOR_WHATSAPP_OTP.replace('{0}', otp);
     const promiseSendNotification = sendNotificationWhatsapp(mobileNumber, message, 1);
     const promiseSendSMS = sendSMS(mobileNumber, otp, hashCode);
-    const messageSentResponse = await Promise.all([
+    await Promise.all([
       promiseSendNotification.catch((err) => {
         log(
           'smsOtpAPILogger',
@@ -314,7 +314,6 @@ const sendMessage = async (args: any) => {
         return err;
       }),
     ]);
-    messageSentResponse[1];
   } else {
     await sendSMS(mobileNumber, otp, hashCode);
   }
