@@ -9,11 +9,51 @@ import { NavigationActions, NavigationScreenProps, StackActions } from 'react-na
 import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
 import { BackArrow } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
+import { useApolloClient } from 'react-apollo-hooks';
+import AsyncStorage from '@react-native-community/async-storage';
+import { DELETE_DOCTOR_DEVICE_TOKEN } from '@aph/mobile-doctors/src/graphql/profiles';
+import {
+  deleteDoctorDeviceToken,
+  deleteDoctorDeviceTokenVariables,
+} from '@aph/mobile-doctors/src/graphql/types/deleteDoctorDeviceToken';
 
 export interface MyAccountProps extends NavigationScreenProps {}
 
 export const MyAccount: React.FC<MyAccountProps> = (props) => {
-  const { clearFirebaseUser } = useAuth();
+  const { clearFirebaseUser, doctorDetails } = useAuth();
+  const client = useApolloClient();
+
+  const deleteDeviceToken = async () => {
+    const deviceToken = JSON.parse((await AsyncStorage.getItem('deviceToken')) || '');
+
+    client
+      .mutate<deleteDoctorDeviceToken, deleteDoctorDeviceTokenVariables>({
+        mutation: DELETE_DOCTOR_DEVICE_TOKEN,
+        variables: {
+          doctorId: doctorDetails && doctorDetails.id,
+          deviceToken: deviceToken,
+        },
+      })
+      .then((data) => {
+        Promise.all([clearFirebaseUser && clearFirebaseUser(), clearUserData()])
+          .then(() => {
+            props.navigation.dispatch(
+              StackActions.reset({
+                index: 0,
+                key: null,
+                actions: [NavigationActions.navigate({ routeName: AppRoutes.Login })],
+              })
+            );
+          })
+          .catch((e) => {
+            console.log(e);
+            Alert.alert(strings.common.error, strings.login.signout_error);
+          });
+      })
+      .catch((error) => {
+        Alert.alert(strings.common.error, strings.login.signout_error);
+      });
+  };
 
   return (
     <View style={theme.viewStyles.container}>
@@ -40,20 +80,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
             style={{ width: '80%' }}
             title={strings.buttons.logout}
             onPress={() => {
-              Promise.all([clearFirebaseUser && clearFirebaseUser(), clearUserData()])
-                .then(() => {
-                  props.navigation.dispatch(
-                    StackActions.reset({
-                      index: 0,
-                      key: null,
-                      actions: [NavigationActions.navigate({ routeName: AppRoutes.Login })],
-                    })
-                  );
-                })
-                .catch((e) => {
-                  console.log(e);
-                  Alert.alert(strings.common.error, strings.login.signout_error);
-                });
+              deleteDeviceToken();
             }}
           />
         </View>

@@ -1000,6 +1000,13 @@ export const SAVE_DOCTOR_DEVICE_TOKEN = gql`
     }
   }
 `;
+export const DELETE_DOCTOR_DEVICE_TOKEN = gql`
+  mutation deleteDoctorDeviceToken($deviceToken: String, $doctorId: String) {
+    deleteDoctorDeviceToken(deviceToken: $deviceToken, doctorId: $doctorId) {
+      status
+    }
+  }
+`;
 
 export const GET_PATIENTS = gql`
   query GetPatients {
