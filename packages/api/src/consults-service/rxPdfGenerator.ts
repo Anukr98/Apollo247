@@ -179,6 +179,17 @@ export const convertCaseSheetToRxPdfData = async (
               .split('_')
               .join(' ');
         }
+        else if (csRx.medicineTimings.length > 1 ) {
+          frequency = frequency + ' in the';
+          frequency =
+            frequency +
+            ' ' +
+            csRx.medicineTimings
+              .join(', ')
+              .replace(/,(?=[^,]*$)/, ' and')
+              .split('_')
+              .join(' ');
+        }
       }
 
       frequency = _capitalize(frequency);
