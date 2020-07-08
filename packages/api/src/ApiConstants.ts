@@ -148,7 +148,7 @@ export enum ApiConstants {
   WHATSAPP_LINK = '\nClick here to check your today’s calendar on Mobile Application ',
   FOLLOWUP_NOTIFITICATION_TEXT = 'Hi {0}! Hope you are feeling better after your consultation with Dr. {1} :) You can book a free follow up with us till {2}.',
   CHAT_MESSGAE_TEXT = 'Hi Dr. {0}! Your patient {1} has sent you a chat message. ',
-  SEND_PATIENT_NOTIFICATION = 'Hi%20{3}%20%21%20{0}%20is%20waiting%20for%20you%20to%20start%20the%20consultation.%20Please%20go%20to%20your%20dashboard%20in%20Apollo%2024%7C7%20and%20start%20the%20consultation.%20https%3A%2F%2Fpmt.apollo247.com%2Fdeeplink%3Furl%3Dapollodoctors%3A%2F%2Fappointments%3Fid%3D{2}%26date%3D{4}',
+  SEND_PATIENT_NOTIFICATION = 'Hi%20{3}%20{0}%21%20{1}%20is%20waiting%20for%20you%20to%20start%20the%20consultation.%20Please%20go%20to%20your%20dashboard%20in%20Apollo%2024%7C7%20and%20start%20the%20consultation.%20https%3A%2F%2Fpmt.apollo247.com%2Fdeeplink%3Furl%3Dapollodoctors%3A%2F%2Fappointments%3Fid%3D{2}%26date%3D{4}',
   WHATSAPP_SD_CHAT_NOTIFICATION = 'Hi%20{2}%20{0}%21%20{1}%20has%20sent%20you%20a%20chat%20message.%20Click%20here%20to%20respond.%20https%3A%2F%2Fpmt.apollo247.com%2Fdeeplink%3Furl%3Dapollodoctors%3A%2F%2Fchat%3F{3}',
   DAILY_APPOINTMENT_SUMMARY_RESPONSE = 'Daily Appointment summaries have been sent to {0} Doctor(s) successfully',
   FOLLOW_UP_NOTIFICATION_RESPONSE = 'Follow up notifications sent to {0} patients successfully',

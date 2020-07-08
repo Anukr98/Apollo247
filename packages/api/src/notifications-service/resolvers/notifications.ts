@@ -1448,7 +1448,9 @@ export async function sendReminderNotification(
         '{0}',
         patientDetails.firstName + ' ' + patientDetails.lastName
       );
-      whatsappMsg = whatsappMsg.replace('{1}', doctorDetails.firstName);
+      whatsappMsg = whatsappMsg
+        .replace('{1}', doctorDetails.firstName)
+        .replace('{2}', doctorDetails.salutation);
       sendNotificationWhatsapp(doctorDetails.mobileNumber, whatsappMsg, 1);
     }
     //sendNotificationWhatsapp(patientDetails.mobileNumber, notificationBody);
@@ -2400,8 +2402,11 @@ const sendChatMessageToDoctor: Resolver<
   //const whatsAppLink= process.env.WHATSAPP_LINK_BOOK_APOINTMENT;
   let whatsAppMessageBody = ApiConstants.WHATSAPP_SD_CHAT_NOTIFICATION.replace(
     '{0}',
-    doctorDetails.fullName
-  ).replace('{1}', patientDetails.firstName);
+    doctorDetails.firstName
+  )
+    .replace('{1}', patientDetails.firstName + '' + patientDetails.lastName)
+    .replace('{2}', doctorDetails.salutation)
+    .replace('{3}', args.appointmentId);
   whatsAppMessageBody = whatsAppMessageBody;
   await sendNotificationWhatsapp(doctorDetails.mobileNumber, whatsAppMessageBody, 1);
   const messageBody = ApiConstants.CHAT_MESSGAE_TEXT.replace(
