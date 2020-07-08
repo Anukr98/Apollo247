@@ -17,10 +17,11 @@ type CustomNotificationType =
 
 type NotificationBody = {
   title?: string;
+  body?: string;
   type: CustomNotificationType;
   appointmentId?: string;
   patientName?: string;
-  content?: string;
+  date?: string;
 };
 
 export interface NotificationListenerProps extends NavigationScreenProps {}
@@ -125,7 +126,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
       showAphAlert &&
         showAphAlert({
           title: `${data.patientName || 'Patient'} sent message`,
-          description: notification.body || data.content,
+          description: notification.body || data.body,
           CTAs: [
             {
               text: 'CANCEL',
@@ -153,11 +154,15 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
           ],
         });
     } else if (data.type === 'doctor_appointment_reminder') {
+      const date =
+        data.date && moment(data.date, 'YYYY-MM-DD HH:mm:ss').isValid()
+          ? moment(data.date).toDate()
+          : new Date();
       dismissNotification(notification.notificationId);
       showAphAlert &&
         showAphAlert({
           title: data.title || 'Appointment Reminder!',
-          description: data.content,
+          description: data.body,
           CTAs: [
             {
               text: 'CANCEL',
@@ -174,7 +179,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
                 if (data.appointmentId) {
                   AsyncStorage.setItem('requestCompleted', 'false');
                   props.navigation.replace(AppRoutes.TabBar, {
-                    goToDate: new Date(),
+                    goToDate: date,
                     openAppointment: data.appointmentId,
                   });
                 } else {
@@ -207,14 +212,14 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
         });
     } else if (data.type === 'doctor_new_appointment_booked') {
       const date =
-        data.content && moment(data.content, 'YYYY-MM-DD HH:mm:ss').isValid()
-          ? moment(data.content).toDate()
+        data.date && moment(data.date, 'YYYY-MM-DD HH:mm:ss').isValid()
+          ? moment(data.date).toDate()
           : new Date();
       dismissNotification(notification.notificationId);
       showAphAlert &&
         showAphAlert({
           title: data.title || `A New Appointment is scheduled with ${data.patientName}`,
-          description: `at ${moment(date).format('YYYY-MM-DD hh:mm A')}`,
+          description: data.body || `at ${moment(date).format('YYYY-MM-DD hh:mm A')}`,
           CTAs: [
             {
               text: 'CANCEL',
@@ -235,14 +240,14 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
         });
     } else if (data.type === 'doctor_booked_appointment_reschedule') {
       const date =
-        data.content && moment(data.content, 'YYYY-MM-DD HH:mm:ss').isValid()
-          ? moment(data.content).toDate()
+        data.date && moment(data.date, 'YYYY-MM-DD HH:mm:ss').isValid()
+          ? moment(data.date).toDate()
           : new Date();
       dismissNotification(notification.notificationId);
       showAphAlert &&
         showAphAlert({
           title: data.title || `Your appointment with ${data.patientName} has been rescheduled`,
-          description: `to ${moment(date).format('YYYY-MM-DD hh:mm A')}`,
+          description: data.body || `to ${moment(date).format('YYYY-MM-DD hh:mm A')}`,
           CTAs: [
             {
               text: 'CANCEL',
@@ -266,7 +271,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
       showAphAlert &&
         showAphAlert({
           title: notification.title || data.title,
-          description: notification.body || data.content,
+          description: notification.body || data.date,
         });
     }
   };
