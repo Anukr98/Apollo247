@@ -711,7 +711,7 @@ export async function sendNotification(
         '{0}',
         doctorDetails.firstName
       )
-        .replace('{1}', patientDetails.firstName)
+        .replace('{1}', patientDetails.firstName + ' ' + patientDetails.lastName)
         .replace('{2}', finalTime)
         .replace('{3}', doctorDetails.salutation);
       sendNotificationWhatsapp(doctorDetails.mobileNumber, doctorWhatsAppMessage, 1);
@@ -1327,13 +1327,12 @@ export async function sendReminderNotification(
 
     let whatsappMsg = ApiConstants.WHATSAPP_SD_CONSULT_REMINDER_15_MIN.replace(
       '{0}',
-      patientDetails.firstName
+      patientDetails.firstName + ' ' + patientDetails.lastName
     );
-    whatsappMsg = whatsappMsg.replace(
-      '{1}',
-      doctorDetails.firstName + ' ' + doctorDetails.lastName
-    );
-    whatsappMsg = whatsappMsg.replace('{3}', diffMins.toString());
+    whatsappMsg = whatsappMsg.replace('{1}', doctorDetails.firstName);
+    whatsappMsg = whatsappMsg
+      .replace('{3}', diffMins.toString())
+      .replace('{2}', doctorDetails.salutation);
     sendNotificationWhatsapp(doctorDetails.mobileNumber, whatsappMsg, 1);
     if (appointment.appointmentType != APPOINTMENT_TYPE.PHYSICAL) {
       payload = {
@@ -1447,12 +1446,9 @@ export async function sendReminderNotification(
       sendBrowserNotitication(doctorDetails.id, doctorSMS);
       let whatsappMsg = ApiConstants.WHATSAPP_SD_CONSULT_REMINDER_15_MIN.replace(
         '{0}',
-        patientDetails.firstName
+        patientDetails.firstName + ' ' + patientDetails.lastName
       );
-      whatsappMsg = whatsappMsg.replace(
-        '{1}',
-        doctorDetails.firstName + ' ' + doctorDetails.lastName
-      );
+      whatsappMsg = whatsappMsg.replace('{1}', doctorDetails.firstName);
       sendNotificationWhatsapp(doctorDetails.mobileNumber, whatsappMsg, 1);
     }
     //sendNotificationWhatsapp(patientDetails.mobileNumber, notificationBody);
@@ -2284,7 +2280,10 @@ export async function sendChatMessageNotification(
   const whatsAppMessageBody = ApiConstants.WHATSAPP_SD_CHAT_NOTIFICATION.replace(
     '{0}',
     doctorDetails.firstName
-  ).replace('{1}', patientDetails.firstName);
+  )
+    .replace('{1}', patientDetails.firstName + ' ' + patientDetails.lastName)
+    .replace('{2}', doctorDetails.salutation)
+    .replace('{3}', appointment.id);
   //whatsAppMessageBody = whatsAppMessageBody;
   await sendNotificationWhatsapp(doctorDetails.mobileNumber, whatsAppMessageBody, 1);
   const messageBody = ApiConstants.CHAT_MESSGAE_TEXT.replace(
@@ -2538,8 +2537,7 @@ const sendDoctorReminderNotifications: Resolver<
             'Reminder ' + apptId.appointmentType == APPOINTMENT_TYPE.PHYSICAL
               ? 'In-person Appointment'
               : 'Online Appointment',
-          body: `with ${apptId.patientName}+
-            ' at ' +
+          body: `with ${apptId.patientName} at 
             ${format(
               addMilliseconds(apptId.appointmentDateTime, 19800000),
               'yyyy-MM-dd HH:mm:ss'
@@ -2554,8 +2552,7 @@ const sendDoctorReminderNotifications: Resolver<
           type: 'doctor_appointment_reminder',
           appointmentId: apptId.id,
           patientName: apptId.patientName,
-          body: `with ${apptId.patientName}+
-            ' at ' +
+          body: `with ${apptId.patientName} at 
             ${format(
               addMilliseconds(apptId.appointmentDateTime, 19800000),
               'yyyy-MM-dd HH:mm:ss'

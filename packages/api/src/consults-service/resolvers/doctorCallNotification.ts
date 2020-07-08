@@ -17,6 +17,7 @@ import { AppointmentRepository } from 'consults-service/repositories/appointment
 import { AppointmentCallDetailsRepository } from 'consults-service/repositories/appointmentCallDetailsRepository';
 import { format } from 'date-fns';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
+import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 
 export const doctorCallNotificationTypeDefs = gql`
   type AppointmentCallDetails {
@@ -219,14 +220,19 @@ const sendPatientWaitNotification: Resolver<
   const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
   const doctorDetails = await doctorRepo.findById(appointment.doctorId);
   if (!doctorDetails) throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID, undefined, {});
+  const patientRepo = patientsDb.getCustomRepository(PatientRepository);
+  const patientDetails = await patientRepo.getPatientDetails(appointment.patientId);
+  if (patientDetails == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
   //const applicationLink = process.env.WHATSAPP_LINK_BOOK_APOINTMENT + '?' + appointment.id;
   if (appointment) {
     const whatsAppMessageBody = ApiConstants.SEND_PATIENT_NOTIFICATION.replace(
       '{0}',
       doctorDetails.firstName
     )
-      .replace('{1}', appointment.patientName)
-      .replace('{2}', args.appointmentId);
+      .replace('{1}', patientDetails.firstName + ' ' + patientDetails.lastName)
+      .replace('{2}', args.appointmentId)
+      .replace('{3}', doctorDetails.salutation)
+      .replace('{4}', appointment.appointmentDateTime.toString());
     //whatsAppMessageBody += applicationLink;
     await sendNotificationWhatsapp(doctorDetails.mobileNumber, whatsAppMessageBody, 1);
   }
