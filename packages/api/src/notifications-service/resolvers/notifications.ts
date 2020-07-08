@@ -2529,9 +2529,9 @@ const sendDoctorReminderNotifications: Resolver<
       const payload = {
         notification: {
           title:
-            apptId.appointmentType == APPOINTMENT_TYPE.PHYSICAL
-              ? 'In-person appointment'
-              : 'OnlineAppointment',
+            'Reminder ' + apptId.appointmentType == APPOINTMENT_TYPE.PHYSICAL
+              ? 'In-person Appointment'
+              : 'Online Appointment',
           body:
             apptId.patientName +
             ' ' +
