@@ -709,16 +709,22 @@ export async function sendNotification(
       const finalTime = format(istDateTime, 'hh:mm a');
       const doctorWhatsAppMessage = ApiConstants.DOCTOR_BOOK_APPOINTMENT_WHATSAPP.replace(
         '{0}',
-        doctorDetails.fullName
+        doctorDetails.firstName
       )
         .replace('{1}', patientDetails.firstName)
-        .replace('{2}', finalTime);
+        .replace('{2}', finalTime)
+        .replace('{3}', doctorDetails.salutation);
       sendNotificationWhatsapp(doctorDetails.mobileNumber, doctorWhatsAppMessage, 1);
     }
-    let doctorSMS = ApiConstants.DOCTOR_BOOK_APPOINTMENT_SMS.replace('{0}', doctorDetails.fullName);
+    let doctorSMS = ApiConstants.DOCTOR_BOOK_APPOINTMENT_SMS.replace(
+      '{0}',
+      doctorDetails.firstName
+    );
     doctorSMS = doctorSMS.replace('{1}', appointment.displayId.toString());
     doctorSMS = doctorSMS.replace('{2}', patientDetails.firstName);
-    doctorSMS = doctorSMS.replace('{3}', apptDate.toString());
+    doctorSMS = doctorSMS
+      .replace('{3}', apptDate.toString())
+      .replace('{4}', doctorDetails.salutation);
     sendNotificationSMS(doctorDetails.mobileNumber, doctorSMS);
   }
 
