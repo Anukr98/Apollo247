@@ -249,15 +249,17 @@ const getPatientPersonalizedAppointments: Resolver<
 > = async (parent, args, { consultsDb, doctorsDb, patientsDb, mobileNumber }) => {
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
   const patientDetails = await patientRepo.findByUhid(args.patientUhid);
-  if (!patientDetails) {
-    throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
-  }
-  if (mobileNumber != patientDetails.mobileNumber) {
-    throw new AphError(AphErrorMessages.INVALID_PATIENT_DETAILS, undefined, {});
-  }
+  // if (!patientDetails) {
+  //   throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
+  // }
+  // if (mobileNumber != patientDetails.mobileNumber) {
+  //   throw new AphError(AphErrorMessages.INVALID_PATIENT_DETAILS, undefined, {});
+  // }
   let uhid = args.patientUhid;
-  if (process.env.NODE_ENV == 'local') uhid = ApiConstants.CURRENT_UHID.toString();
-  else if (process.env.NODE_ENV == 'dev') uhid = ApiConstants.CURRENT_UHID.toString();
+  if (process.env.NODE_ENV == 'local') uhid = 'APJ1.0003383835';
+  //ApiConstants.CURRENT_UHID.toString();
+  else if (process.env.NODE_ENV == 'dev') uhid = 'APJ1.0003383835'; //ApiConstants.CURRENT_UHID.toString();
+  //uhid = 'APJ1.0003383835';
   const apptsResp = await fetch(
     process.env.PRISM_GET_OFFLINE_APPOINTMENTS
       ? process.env.PRISM_GET_OFFLINE_APPOINTMENTS + uhid
@@ -274,8 +276,10 @@ const getPatientPersonalizedAppointments: Resolver<
     return new Promise<PersonalizedAppointment>(async (resolve) => {
       const doctorRepo = doctorsDb.getCustomRepository(DoctorHospitalRepository);
       offlineApptsList.response.forEach(async (appt: offlineAppointment) => {
+        console.log(appt.id, 'appt id number0000');
         if (Math.abs(differenceInDays(new Date(), new Date(appt.consultedtime))) <= 30) {
           const doctorDets = await doctorRepo.getDoctorIdByMedmantraId(appt.doctorid);
+          console.log(appt.doctorid, 'doctor id0.5');
           if (doctorDets) {
             const apptRepo = consultsDb.getCustomRepository(AppointmentRepository);
             const apptDetailsBooked = await apptRepo.checkIfAppointmentBooked(
@@ -303,14 +307,14 @@ const getPatientPersonalizedAppointments: Resolver<
             resolve(apptDetails);
           }
         }
-        console.log(apptDetails, 'appt details inside');
+        console.log(apptDetails, 'appt details inside111');
         resolve(apptDetails);
       });
     });
   }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let apptDetails: any;
-  if (offlineApptsList.errorCode == 0) {
+  if (offlineApptsList.errorCode == 0 && offlineApptsList.response.length > 0) {
     //console.log(offlineApptsList.response, offlineApptsList.response.length);
     await getApptDetails();
   } else {
@@ -319,7 +323,7 @@ const getPatientPersonalizedAppointments: Resolver<
   }
 
   if (doctorFlag == 0) throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID);
-  console.log(apptDetails, 'apptDetails');
+  console.log(apptDetails, 'apptDetails2222');
   if (apptDetails == null) throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
   return { appointmentDetails: apptDetails };
 };
