@@ -163,7 +163,7 @@ export enum ApiConstants {
   CONSULT_QUEUE_HISTORY1 = 'Virtual JD is assigned, as no JD is online',
   CONSULT_QUEUE_HISTORY2 = 'JD for this doctor is not required, so virtual JD is assigned',
   CONSULT_QUEUE_HISTORY = 'Added to JD consult queue',
-  CASESHEET_COMPLETED_HISTORY = 'Casesheet completed',
+  CASESHEET_COMPLETED_HISTORY = 'SD Casesheet completed, prescription sent to patient',
   CASESHEET_CREATED_HISTORY = 'casesheet created',
   APPT_SESSION_HISTORY = 'session created',
   APPT_SESSION_COMPLETE_HISTORY = 'session completed',

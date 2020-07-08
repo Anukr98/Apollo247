@@ -8,7 +8,7 @@ import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { ApiConstants } from 'ApiConstants';
 import { DoctorHospitalRepository } from 'doctors-service/repositories/doctorHospitalRepository';
-import { differenceInDays } from 'date-fns';
+import { differenceInDays, addDays } from 'date-fns';
 
 export const getPatinetAppointmentsTypeDefs = gql`
   type PatinetAppointments {
@@ -272,51 +272,66 @@ const getPatientPersonalizedAppointments: Resolver<
   const textRes = await apptsResp.text();
   const offlineApptsList = JSON.parse(textRes);
   let doctorFlag = 1;
-  function getApptDetails() {
+
+  function getApptDetails(key: number) {
     return new Promise<PersonalizedAppointment>(async (resolve) => {
       const doctorRepo = doctorsDb.getCustomRepository(DoctorHospitalRepository);
-      offlineApptsList.response.forEach(async (appt: offlineAppointment) => {
-        console.log(appt.id, 'appt id number0000');
-        if (Math.abs(differenceInDays(new Date(), new Date(appt.consultedtime))) <= 30) {
-          const doctorDets = await doctorRepo.getDoctorIdByMedmantraId(appt.doctorid);
-          console.log(appt.doctorid, 'doctor id0.5');
-          if (doctorDets) {
-            const apptRepo = consultsDb.getCustomRepository(AppointmentRepository);
-            const apptDetailsBooked = await apptRepo.checkIfAppointmentBooked(
-              doctorDets.doctor.id,
-              patientDetails ? patientDetails.id : '',
-              new Date(appt.consultedtime)
-            );
-            console.log(apptDetailsBooked, 'apptDetailsBooked');
-            if (apptDetailsBooked == 0) {
-              const apptDetailsOffline: PersonalizedAppointment = {
-                id: appt.appointmentid,
-                hospitalLocation: appt.location_name,
-                appointmentDateTime: new Date(appt.consultedtime),
-                appointmentType:
-                  appt.appointmenttype == 'WALKIN'
-                    ? APPOINTMENT_TYPE.PHYSICAL
-                    : APPOINTMENT_TYPE.ONLINE,
-                doctorId: doctorDets.doctor.id,
-              };
-              apptDetails = apptDetailsOffline;
-              doctorFlag = 1;
-            }
-          } else {
-            doctorFlag = 0;
-            resolve(apptDetails);
-          }
+      const appt = offlineApptsList.response[key];
+      const doctorDets = await doctorRepo.getDoctorIdByMedmantraId(appt.doctorid);
+      console.log(appt.doctorid, 'doctor id0.5');
+      if (doctorDets) {
+        const apptRepo = consultsDb.getCustomRepository(AppointmentRepository);
+        const apptDetailsBooked = await apptRepo.checkIfAppointmentBooked(
+          doctorDets.doctor.id,
+          patientDetails ? patientDetails.id : '',
+          new Date(appt.consultedtime)
+        );
+        console.log(apptDetailsBooked, 'apptDetailsBooked');
+        if (apptDetailsBooked == 0) {
+          const apptDetailsOffline: PersonalizedAppointment = {
+            id: appt.appointmentid,
+            hospitalLocation: appt.location_name,
+            appointmentDateTime: new Date(appt.consultedtime),
+            appointmentType:
+              appt.appointmenttype == 'WALKIN'
+                ? APPOINTMENT_TYPE.PHYSICAL
+                : APPOINTMENT_TYPE.ONLINE,
+            doctorId: doctorDets.doctor.id,
+          };
+          apptDetails = apptDetailsOffline;
+          doctorFlag = 1;
         }
-        console.log(apptDetails, 'appt details inside111');
+      } else {
+        doctorFlag = 0;
         resolve(apptDetails);
-      });
+      }
+      console.log(appt.id, 'appt id number0000');
+      console.log(apptDetails, 'appt details inside111');
+      resolve(apptDetails);
     });
   }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let apptDetails: any;
+  let foundKey = -1;
+  let apptCount = 0;
+  let checkDate = addDays(new Date(), -30);
   if (offlineApptsList.errorCode == 0 && offlineApptsList.response.length > 0) {
     //console.log(offlineApptsList.response, offlineApptsList.response.length);
-    await getApptDetails();
+    offlineApptsList.response.forEach((appt: offlineAppointment) => {
+      console.log(new Date(appt.consultedtime), checkDate, 'checking the dates');
+      if (new Date(appt.consultedtime) > checkDate) {
+        checkDate = new Date(appt.consultedtime);
+        foundKey = apptCount;
+        console.log(foundKey, 'found key');
+      }
+      apptCount++;
+    });
+    if (foundKey >= 0) {
+      await getApptDetails(foundKey);
+    } else {
+      console.log(foundKey, 'found key val');
+      throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
+    }
   } else {
     console.log(offlineApptsList.errorMsg, offlineApptsList.errorCode, 'offline consults error');
     throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
