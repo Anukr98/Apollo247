@@ -591,6 +591,20 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
                 text: 'DISMISS',
                 onPress: () => {
                   hideAphAlert && hideAphAlert();
+                  try {
+                    if (
+                      currentScreenName === AppRoutes.AppointmentDetails ||
+                      currentScreenName === AppRoutes.AppointmentOnlineDetails
+                    ) {
+                      props.navigation.dispatch(
+                        StackActions.reset({
+                          index: 0,
+                          key: null,
+                          actions: [NavigationActions.navigate({ routeName: AppRoutes.TabBar })],
+                        })
+                      );
+                    }
+                  } catch (error) {}
                 },
                 type: 'white-button',
               },
