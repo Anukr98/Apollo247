@@ -102,45 +102,6 @@ let apolloClient: ApolloClient<NormalizedCacheObject>;
 
 const knownErrors = ['NO_HUB_SLOTS', 'INVALID_ZIPCODE'];
 
-const buildApolloClient = (authToken: string, handleUnauthenticated: () => void) => {
-  const errorLink = onError((error) => {
-    console.log('-------error-------', error);
-    const { graphQLErrors, operation, forward } = error;
-    if (graphQLErrors) {
-      const unauthenticatedError = graphQLErrors.some(
-        (gqlError) => gqlError.extensions && gqlError.extensions.code === 'UNAUTHENTICATED'
-      );
-      if (unauthenticatedError) {
-        handleUnauthenticated();
-        console.log('-------unauthenticatedError-------', unauthenticatedError);
-      }
-    }
-    //This stops multiple trigger of graphql for known errors
-    if (graphQLErrors && graphQLErrors.findIndex((i) => knownErrors.includes(i.message)) > -1) {
-      return;
-    } else {
-      return;
-      // return forward(operation);
-    }
-  });
-  const authLink = setContext(async (_, { headers }) => ({
-    headers: {
-      ...headers,
-      Authorization: !authToken.length ? 'Bearer 3d1833da7020e0602165529446587434' : authToken,
-    },
-  }));
-  const httpLink = createHttpLink({
-    uri: apiRoutes.graphql(),
-  });
-
-  const link = errorLink.concat(authLink).concat(httpLink);
-  const cache = apolloClient ? apolloClient.cache : new InMemoryCache();
-  return new ApolloClient({
-    link,
-    cache,
-  });
-};
-
 const webengage = new WebEngage();
 
 export const AuthProvider: React.FC = (props) => {
@@ -148,7 +109,72 @@ export const AuthProvider: React.FC = (props) => {
   const hasAuthToken = !_isEmpty(authToken);
 
   const [analytics, setAnalytics] = useState<AuthContextProps['analytics']>(null);
+  const setNewToken = () => {
+    try {
+      firebase.auth().onAuthStateChanged(async (user) => {
+        console.log('authprovider', user);
+        if (user) {
+          console.log('authprovider login');
+          const jwt = await user.getIdToken(true).catch((error) => {
+            setIsSigningIn(false);
+            setSignInError(true);
+            setAuthToken('');
+            throw error;
+          });
+          setAuthToken(jwt);
+        }
+      });
+    } catch (e) {}
+  };
+  const buildApolloClient = (authToken: string, handleUnauthenticated: any) => {
+    if (authToken) {
+      let jwtDecode = require('jwt-decode');
+      let millDate = jwtDecode(authToken).exp;
+      let currentTime = new Date().valueOf() / 1000;
+      console.log('millDate', millDate, currentTime, millDate > currentTime);
+      if (millDate < currentTime) {
+        setNewToken();
+      }
+    } else {
+      setNewToken();
+    }
+    const errorLink = onError((error) => {
+      console.log('-------error-------', error);
+      const { graphQLErrors, operation, forward } = error;
+      if (graphQLErrors) {
+        const unauthenticatedError = graphQLErrors.some(
+          (gqlError) => gqlError.extensions && gqlError.extensions.code === 'UNAUTHENTICATED'
+        );
+        if (unauthenticatedError) {
+          setNewToken();
+          console.log('-------unauthenticatedError-------', unauthenticatedError);
+        }
+      }
+      //This stops multiple trigger of graphql for known errors
+      if (graphQLErrors && graphQLErrors.findIndex((i) => knownErrors.includes(i.message)) > -1) {
+        return;
+      } else {
+        return;
+        // return forward(operation);
+      }
+    });
+    const authLink = setContext(async (_, { headers }) => ({
+      headers: {
+        ...headers,
+        Authorization: !authToken.length ? 'Bearer 3d1833da7020e0602165529446587434' : authToken,
+      },
+    }));
+    const httpLink = createHttpLink({
+      uri: apiRoutes.graphql(),
+    });
 
+    const link = errorLink.concat(authLink).concat(httpLink);
+    const cache = apolloClient ? apolloClient.cache : new InMemoryCache();
+    return new ApolloClient({
+      link,
+      cache,
+    });
+  };
   apolloClient = buildApolloClient(authToken, () => getFirebaseToken());
 
   const [currentPatientId, setCurrentPatientId] = useState<AuthContextProps['currentPatientId']>(
@@ -217,7 +243,7 @@ export const AuthProvider: React.FC = (props) => {
       console.log('jwtToken', jwtToken);
 
       setAuthToken(jwtToken);
-      getFirebaseToken();
+      // getFirebaseToken();
     }
     fetchData();
   }, [auth]);
@@ -251,7 +277,6 @@ export const AuthProvider: React.FC = (props) => {
 
             apolloClient = buildApolloClient(jwt, () => getFirebaseToken());
             authStateRegistered = false;
-            setAuthToken(jwt);
             resolve(jwt);
             getNetStatus()
               .then(async (item) => {
