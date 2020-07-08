@@ -216,7 +216,7 @@ const apiDetails = {
   imageUrl: process.env.PHARMACY_MED_IMAGES_BASE_URL,
 };
 const apiDetailsText = {
-  url: 'https://uat.apollopharmacy.in/popcsrchprd_api.php',
+  url: process.env.PHARMACY_MED_SEARCH_URL,
 };
 type Params = { searchMedicineType: string; searchText: string };
 
