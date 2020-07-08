@@ -45,12 +45,6 @@ const generateSitemap: Resolver<null, {}, DoctorsServiceContext, string> = async
   let doctorsStr = '';
   if (specialitiesList.length > 0) {
     specialitiesList.forEach(async (specialty) => {
-      // const specialtyName = specialty.name
-      //   .trim()
-      //   .toLowerCase()
-      //   .replace(/\s/g, '-')
-      //   .replace('/', '_')
-      //   .replace('&', '%26');
       const modifiedDate =
         format(new Date(), 'yyyy-MM-dd') + 'T' + format(new Date(), 'hh:mm:ss') + '+00:00';
       const specialtyName = readableParam(specialty.name);
@@ -95,7 +89,7 @@ const generateSitemap: Resolver<null, {}, DoctorsServiceContext, string> = async
   if (process.env.NODE_ENV != 'local') {
     assetsDir = path.resolve(<string>process.env.ASSETS_DIRECTORY);
   }
-  const listResp = await fetch(
+  /*const listResp = await fetch(
     process.env.CMS_ARTICLES_SLUG_LIST_URL ? process.env.CMS_ARTICLES_SLUG_LIST_URL : '',
     {
       method: 'GET',
@@ -104,15 +98,15 @@ const generateSitemap: Resolver<null, {}, DoctorsServiceContext, string> = async
   );
   const textRes = await listResp.text();
   const cmsUrlsList = JSON.parse(textRes);
-  const modifiedDate =
-    format(new Date(), 'yyyy-MM-dd') + 'T' + format(new Date(), 'hh:mm:ss') + '+00:00';
-  let cmsUrls = '\n<!--CMS links-->\n';
+  
   if (cmsUrlsList && cmsUrlsList.data.length > 0) {
     cmsUrlsList.data.forEach((link: string) => {
       const url = process.env.SITEMAP_BASE_URL + 'covid19/article' + link;
       cmsUrls += '<url>\n<loc>' + url + '</loc>\n<lastmod>' + modifiedDate + '</lastmod>\n</url>\n';
     });
-  }
+  }*/
+  const modifiedDate =
+    format(new Date(), 'yyyy-MM-dd') + 'T' + format(new Date(), 'hh:mm:ss') + '+00:00';
   const brandsPage =
     '\n<!--Brands url-->\n<url>\n<loc>' +
     process.env.SITEMAP_BASE_URL +
@@ -170,13 +164,7 @@ const generateSitemap: Resolver<null, {}, DoctorsServiceContext, string> = async
   }
 
   sitemapStr +=
-    doctorsStr +
-    cmsUrls +
-    brandsPage +
-    healthAreaUrls +
-    ShopByCategory +
-    medicineUrls +
-    '</urlset>';
+    doctorsStr + brandsPage + healthAreaUrls + ShopByCategory + medicineUrls + '</urlset>';
   const fileName = 'sitemap.xml';
   const uploadPath = assetsDir + '/' + fileName;
   fs.writeFile(uploadPath, sitemapStr, {}, (err) => {
