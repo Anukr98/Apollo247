@@ -424,11 +424,6 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
 
   const newUserPastSearch = async () => {
     const newPatientId = await AsyncStorage.getItem('selectUserId');
-    console.log(
-      'I am here3===>',
-      currentPatient && currentPatient.id ? currentPatient.firstName : '',
-      newPatientId
-    );
     setTimeout(() => {
       newPatientId && fetchPastSearches(newPatientId);
     }, 1500);
