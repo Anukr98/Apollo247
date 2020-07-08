@@ -1051,6 +1051,10 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             noShowBy: REQUEST_ROLES.PATIENT,
             callSource: BOOKINGSOURCE.MOBILE,
             deviceType: Platform.OS === 'ios' ? DEVICETYPE.IOS : DEVICETYPE.ANDROID,
+            appVersion:
+              Platform.OS === 'ios'
+                ? AppConfig.Configuration.iOS_Version
+                : AppConfig.Configuration.Android_Version,
           },
         },
         fetchPolicy: 'no-cache',
@@ -1125,6 +1129,10 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           doctorType: DOCTOR_CALL_TYPE.SENIOR,
           callSource: BOOKINGSOURCE.MOBILE,
           deviceType: Platform.OS === 'ios' ? DEVICETYPE.IOS : DEVICETYPE.ANDROID,
+          appVersion:
+            Platform.OS === 'ios'
+              ? AppConfig.Configuration.iOS_Version
+              : AppConfig.Configuration.Android_Version,
         },
       })
       .then((_data) => {

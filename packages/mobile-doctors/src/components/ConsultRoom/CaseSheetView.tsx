@@ -507,6 +507,10 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
             status: STATUS.COMPLETED,
             callSource: BOOKINGSOURCE.MOBILE,
             deviceType: Platform.OS === 'ios' ? DEVICETYPE.IOS : DEVICETYPE.ANDROID,
+            appVersion:
+              Platform.OS === 'ios'
+                ? AppConfig.Configuration.iOS_Version
+                : AppConfig.Configuration.Android_Version,
           },
         },
         fetchPolicy: 'no-cache',
