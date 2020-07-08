@@ -126,8 +126,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         .then((url) => {
           setBugFenderLog('DEEP_LINK_URL', url);
           if (url) {
-            setTimeout(handleOpenURL(url), 5000);
-            console.log('linking', url);
+            try {
+              handleOpenURL(url);
+              console.log('linking', url);
+            } catch (e) {}
           }
         })
         .catch((e) => {
@@ -135,9 +137,11 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         });
 
       Linking.addEventListener('url', (event) => {
-        console.log('event', event);
-        setBugFenderLog('DEEP_LINK_EVENT', JSON.stringify(event));
-        setTimeout(handleOpenURL(event.url), 5000);
+        try {
+          console.log('event', event);
+          setBugFenderLog('DEEP_LINK_EVENT', JSON.stringify(event));
+          handleOpenURL(event.url);
+        } catch (e) {}
       });
       AsyncStorage.removeItem('location');
     } catch (error) {
