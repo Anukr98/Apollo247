@@ -25,6 +25,7 @@ import { YourCartUploadPrescriptions } from '@aph/mobile-patients/src/components
 import { MultiSignup } from '@aph/mobile-patients/src/components/MultiSignup';
 import { Onboarding } from '@aph/mobile-patients/src/components/Onboarding';
 import { OrderDetailsScene } from '@aph/mobile-patients/src/components/OrderDetailsScene';
+import { OrderModifiedScreen } from '@aph/mobile-patients/src/components/OrderModifiedScreen';
 import { OTPVerification } from '@aph/mobile-patients/src/components/OTPVerification';
 import { SignUp } from '@aph/mobile-patients/src/components/SignUp';
 import { SplashScreen } from '@aph/mobile-patients/src/components/SplashScreen';
@@ -119,6 +120,7 @@ export enum AppRoutes {
   ChatRoom = 'ChatRoom',
   YourOrdersScene = 'YourOrdersScene',
   OrderDetailsScene = 'OrderDetailsScene',
+  OrderModifiedScreen = 'OrderModifiedScreen',
   YourCart = 'YourCart',
   YourCartUploadPrescriptions = 'YourCartUploadPrescriptions',
   CheckoutScene = 'CheckoutScene',
@@ -298,6 +300,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.OrderDetailsScene]: {
     screen: OrderDetailsScene,
+  },
+  [AppRoutes.OrderModifiedScreen]: {
+    screen: OrderModifiedScreen,
   },
   [AppRoutes.UploadPrescription]: {
     screen: UploadPrescription,
