@@ -2539,35 +2539,36 @@ const sendDoctorReminderNotifications: Resolver<
       const payload = {
         notification: {
           title:
-            'Reminder ' + apptId.appointmentType == APPOINTMENT_TYPE.PHYSICAL
+            'Reminder ' +
+            (apptId.appointmentType == APPOINTMENT_TYPE.PHYSICAL
               ? 'In-person Appointment'
-              : 'Online Appointment',
-          body: `with ${apptId.patientName} at 
-            ${format(
-              addMilliseconds(apptId.appointmentDateTime, 19800000),
-              'yyyy-MM-dd HH:mm:ss'
-            )}`,
+              : 'Online Appointment'),
+          body: `with ${apptId.patientName} at ${format(
+            addMilliseconds(apptId.appointmentDateTime, 19800000),
+            'yyyy-MM-dd HH:mm:ss'
+          )}`,
           sound: ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString(),
         },
         data: {
           title:
-            'Reminder ' + apptId.appointmentType == APPOINTMENT_TYPE.PHYSICAL
+            'Reminder ' +
+            (apptId.appointmentType == APPOINTMENT_TYPE.PHYSICAL
               ? 'In-person Appointment'
-              : 'Online Appointment',
+              : 'Online Appointment'),
           type: 'doctor_appointment_reminder',
           appointmentId: apptId.id,
           patientName: apptId.patientName,
-          body: `with ${apptId.patientName} at 
-            ${format(
-              addMilliseconds(apptId.appointmentDateTime, 19800000),
-              'yyyy-MM-dd HH:mm:ss'
-            )}`,
+          body: `with ${apptId.patientName} at ${format(
+            addMilliseconds(apptId.appointmentDateTime, 19800000),
+            'yyyy-MM-dd HH:mm:ss'
+          )}`,
           date: format(
             addMilliseconds(apptId.appointmentDateTime, 19800000),
             'yyyy-MM-dd HH:mm:ss'
           ),
         },
       };
+      console.log('payload==========>', payload);
 
       const deviceTokensList = await doctorTokenRepo.getDeviceTokens(apptId.doctorId);
       //if (deviceTokensList.length == 0) return { status: true };
