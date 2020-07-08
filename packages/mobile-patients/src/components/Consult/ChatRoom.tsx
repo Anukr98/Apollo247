@@ -1559,6 +1559,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         console.log(`pubnub.addListener - ${messageType}`, { message });
 
         if (messageType == followupconsult) {
+          // setStatus(STATUS.COMPLETED);  //Uncomment it if you are not getting the automated message
           postAppointmentWEGEvent(WebEngageEventName.PRESCRIPTION_RECEIVED);
         }
         if (messageType == stopConsultJr) {
