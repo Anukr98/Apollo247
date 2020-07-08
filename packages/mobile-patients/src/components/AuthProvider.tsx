@@ -128,9 +128,9 @@ export const AuthProvider: React.FC = (props) => {
   };
   const buildApolloClient = (authToken: string, handleUnauthenticated: any) => {
     if (authToken) {
-      let jwtDecode = require('jwt-decode');
-      let millDate = jwtDecode(authToken).exp;
-      let currentTime = new Date().valueOf() / 1000;
+      const jwtDecode = require('jwt-decode');
+      const millDate = jwtDecode(authToken).exp;
+      const currentTime = new Date().valueOf() / 1000;
       console.log('millDate', millDate, currentTime, millDate > currentTime);
       if (millDate < currentTime) {
         setNewToken();
