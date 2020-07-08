@@ -243,7 +243,7 @@ export const AuthProvider: React.FC = (props) => {
       console.log('jwtToken', jwtToken);
 
       setAuthToken(jwtToken);
-      // getFirebaseToken();
+      getFirebaseToken();
     }
     fetchData();
   }, [auth]);
