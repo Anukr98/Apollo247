@@ -460,7 +460,7 @@
     "reconnecting": "There is a problem with network connection. Reconnecting, Please wait...",
     "videoBack": "Network improved switching back to video",
     "reconnected": "Reconnected",
-    "callDisconnected": "Call has been disconnected due to network issue"
+    "callDisconnected": "Call disconnected due to Network issues at the Patient side"
   },
   "patientsSearch": {
     "searchBody": "Search results will be displayed here ...",
