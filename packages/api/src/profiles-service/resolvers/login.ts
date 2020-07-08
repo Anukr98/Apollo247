@@ -87,7 +87,14 @@ const login: Resolver<
   if (bypassRes) return bypassRes;
 
   //call sms gateway service to send the OTP here
-  return sendMessage({ mobileNumber, otp, hashCode, logger: loginLogger, otpSaveResponse });
+  return sendMessage({
+    loginType,
+    mobileNumber,
+    otp,
+    hashCode,
+    logger: loginLogger,
+    otpSaveResponse,
+  });
 };
 
 const resendOtp: Resolver<
