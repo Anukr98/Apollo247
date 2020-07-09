@@ -336,6 +336,19 @@ export async function sendCallsNotification(
   if (callType == APPT_CALL_TYPE.CHAT && doctorType == DOCTOR_CALL_TYPE.SENIOR) {
     notificationBody = ApiConstants.CALL_APPOINTMENT_BODY;
   }
+  
+  //send whatsapp message for senior doctor call
+  const devLink = process.env.DOCTOR_DEEP_LINK?process.env.DOCTOR_DEEP_LINK:'';
+  let whatsappMsg = ApiConstants.WHATSAPP_SD_CONSULT_START_REMINDER.replace(
+    '{0}',
+    patientDetails.firstName + ' ' + patientDetails.lastName
+  );
+  whatsappMsg = whatsappMsg
+    .replace('{1}', doctorDetails.firstName)
+    .replace('{2}', doctorDetails.salutation)
+    .replace('{3}', devLink);
+  sendNotificationWhatsapp(patientDetails.mobileNumber, whatsappMsg, 1);
+
   notificationBody = notificationBody.replace('{0}', patientDetails.firstName);
   notificationBody = notificationBody.replace(
     '{1}',
