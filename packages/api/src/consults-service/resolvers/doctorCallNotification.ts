@@ -160,7 +160,7 @@ const sendCallNotification: Resolver<
   const appointmentCallDetails = await callDetailsRepo.saveAppointmentCallDetails(
     appointmentCallDetailsAttrs
   );
-  if (args.callType != APPT_CALL_TYPE.CHAT) {
+  if (args.callType == APPT_CALL_TYPE.CHAT) {
     const pushNotificationInput = {
       appointmentId: args.appointmentId,
       notificationType: NotificationType.CALL_APPOINTMENT,
@@ -224,6 +224,7 @@ const sendPatientWaitNotification: Resolver<
   const patientDetails = await patientRepo.getPatientDetails(appointment.patientId);
   if (patientDetails == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
   //const applicationLink = process.env.WHATSAPP_LINK_BOOK_APOINTMENT + '?' + appointment.id;
+  const devLink: any = process.env.DOCTOR_DEEP_LINK;
   if (appointment) {
     const whatsAppMessageBody = ApiConstants.SEND_PATIENT_NOTIFICATION.replace(
       '{0}',
@@ -232,7 +233,7 @@ const sendPatientWaitNotification: Resolver<
       .replace('{1}', patientDetails.firstName + ' ' + patientDetails.lastName)
       .replace('{2}', args.appointmentId)
       .replace('{3}', doctorDetails.salutation)
-      .replace('{4}', appointment.appointmentDateTime.toISOString());
+      .replace('{4}', appointment.appointmentDateTime.toISOString().replace('{5}', devLink));
     //whatsAppMessageBody += applicationLink;
     await sendNotificationWhatsapp(doctorDetails.mobileNumber, whatsAppMessageBody, 1);
   }
