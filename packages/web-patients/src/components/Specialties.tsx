@@ -16,6 +16,7 @@ import { useMutation } from 'react-apollo-hooks';
 import { GetAllSpecialties_getAllSpecialties as SpecialtyType } from 'graphql/types/GetAllSpecialties';
 import { getSymptoms } from 'helpers/commonHelpers';
 import _lowerCase from 'lodash/lowerCase';
+import { specialtyClickTracking } from 'webEngageTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -129,6 +130,17 @@ export const Specialties: React.FC<SpecialtiesProps> = (props) => {
                         key={specialityDetails.id}
                         title={specialityDetails.name}
                         onClick={(e) => {
+                          const patientAge =
+                            new Date().getFullYear() -
+                            new Date(currentPatient && currentPatient.dateOfBirth).getFullYear();
+                          const eventData = {
+                            patientAge: patientAge,
+                            patientGender: currentPatient && currentPatient.gender,
+                            specialtyId: specialityDetails.id,
+                            specialtyName: e.currentTarget.title,
+                            relation: currentPatient && currentPatient.relation,
+                          };
+                          specialtyClickTracking(eventData);
                           currentPatient &&
                             currentPatient.id &&
                             saveSearchMutation({

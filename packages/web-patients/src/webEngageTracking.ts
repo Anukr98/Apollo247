@@ -54,7 +54,7 @@ export const phrConsultTabClickTracking = (userData: any) => {
   if (window && window.webengage) {
     const { id, mobileNumber, firstName, relation, gender, age, uhid } = userData;
     try {
-      window.webengage.track('PHR Consult & RX', {
+      window.webengage.track('PHR Consult & RX - web', {
         'Patient Name': firstName,
         'Patient UHID': uhid,
         Relation: relation,
@@ -73,7 +73,7 @@ export const phrMedicalRecordsTabClickTracking = (userData: any) => {
   if (window.webengage) {
     const { id, mobileNumber, firstName, relation, gender, uhid, age } = userData;
     try {
-      window.webengage.track('PHR Medical Records', {
+      window.webengage.track('PHR Medical Records - web', {
         'Patient Name': firstName,
         'Patient UHID': uhid,
         Relation: relation,
@@ -91,7 +91,7 @@ export const phrMedicalRecordsTabClickTracking = (userData: any) => {
 export const addRecordClickTracking = (source: string) => {
   // Consult & RX/ Medical Record
   try {
-    window.webengage.track('Add Record', {
+    window.webengage.track('Add Record - web', {
       Source: source,
     });
   } catch (err) {
@@ -102,7 +102,7 @@ export const addRecordClickTracking = (source: string) => {
 export const uploadPrescriptionTracking = (data: any) => {
   const { id, mobileNumber, firstName, relation, age, gender, uhid } = data;
   try {
-    window.webengage.track('Upload Prescription', {
+    window.webengage.track('Upload Prescription - web', {
       'Patient Name': firstName || '',
       'Patient UHID': uhid || '',
       Relation: relation || '',
@@ -118,7 +118,7 @@ export const uploadPrescriptionTracking = (data: any) => {
 //Upload Photo
 export const uploadPhotoTracking = (source: string) => {
   try {
-    window.webengage.track('Upload Photo', {
+    window.webengage.track('Upload Photo - web', {
       Source: source, //Take Photo/Gallery
     });
   } catch (err) {
@@ -129,7 +129,7 @@ export const uploadPhotoTracking = (source: string) => {
 export const itemsClickedTracking = (data: any) => {
   const { source, type } = data;
   try {
-    window.webengage.track('Items Clicked', {
+    window.webengage.track('Items Clicked - web', {
       Source: source, //Consult/Medical
       Type: type, //Prescription/Test Result
     });
@@ -142,7 +142,7 @@ export const phrConsultCardClickTracking = (data: any) => {
   if (window && window.webengage) {
     const { id, mobileNumber, firstName, relation, gender, uhid, age, consultId } = data;
     try {
-      window.webengage.track('PHR Consult Card click', {
+      window.webengage.track('PHR Consult Card click - web', {
         'Patient Name': firstName,
         'Patient UHID': uhid,
         Relation: relation,
@@ -168,7 +168,7 @@ export const paymentInstrumentClickTracking = (data: PaymentDetail) => {
   if (window && window.webengage) {
     const { paymentMode, type, orderAutoId, orderId = null } = data;
     try {
-      window.webengage.track('Payment Instrument', {
+      window.webengage.track('Payment Instrument - web', {
         Payment_Mode: paymentMode,
         Type: type,
         order_AutoId: orderAutoId,
@@ -190,7 +190,7 @@ export const paymentStatusTracking = (data: PaymentStatusData) => {
   if (window && window.webengage) {
     const { paymentStatus, type, orderAutoId, orderId = null } = data;
     try {
-      window.webengage.track('Payment Status', {
+      window.webengage.track('Payment Status - web', {
         Payment_Status: paymentStatus,
         Type: type,
         order_AutoId: orderAutoId,
@@ -212,7 +212,7 @@ export const notifyMeTracking = (data: MedicineDetails) => {
   if (window && window.webengage) {
     const { sku, name, category_id } = data;
     try {
-      window.webengage.track('Notify Me', {
+      window.webengage.track('Notify Me - web', {
         'product name': name,
         'product id': sku,
         'category ID': category_id,
@@ -350,6 +350,210 @@ export const pharmacyPrescriptionTracking = (result: string) => {
     try {
       window.webengage.track('Pharmacy prescription proceed - web', {
         'Option selected': result,
+      });
+    } catch (err) {
+      console.log('WebEngage Err: ', err);
+    }
+  }
+};
+
+export const consultNowClickTracking = (data: any) => {
+  if (window && window.webengage) {
+    const { availableInMins, docCategory, exp, hospital, name, specialty, listingType } = data;
+    try {
+      window.webengage.track('Consult Now clicked - web', {
+        'Available in Minutes': availableInMins,
+        'Doctor Category': docCategory,
+        Experience: exp,
+        Hospital: hospital,
+        Name: name,
+        Specialisation: specialty,
+        listing_type: listingType,
+      });
+    } catch (err) {
+      console.log('WebEngage Err: ', err);
+    }
+  }
+};
+
+export const pharmacyCartViewTracking = (result: any) => {
+  if (window && window.webengage) {
+    try {
+      window.webengage.track('Pharmacy Cart Viewed - web', {
+        'Cart Items': result,
+      });
+    } catch (err) {
+      console.log('WebEngage Err: ', err);
+    }
+  }
+};
+
+export const specialtyClickTracking = (data: any) => {
+  if (window && window.webengage) {
+    const { patientAge, patientGender, specialtyId, specialtyName, relation } = data;
+    try {
+      window.webengage.track('Speciality Clicked - web', {
+        'Patient Age': patientAge,
+        'Patient Gender': patientGender,
+        'Speciality ID': specialtyId,
+        'Speciality Name': specialtyName,
+        Relation: relation,
+      });
+    } catch (err) {
+      console.log('WebEngage Err: ', err);
+    }
+  }
+};
+
+export const consultationBookTracking = (data: any) => {
+  if (window && window.webengage) {
+    const {
+      category,
+      consultDateTime,
+      consultId,
+      consultMode,
+      displayId,
+      doctorName,
+      hospitalName,
+      patientGender,
+      specialisation,
+      relation,
+    } = data;
+    try {
+      window.webengage.track('Consultation booked - web', {
+        af_currency: '',
+        af_revenue: '',
+        category: category,
+        'Consult Date Time': consultDateTime,
+        'Consult ID': consultId,
+        'Consult Mode': consultMode,
+        'Display ID': displayId,
+        'Doctor Name': doctorName,
+        'Hospital Name': hospitalName,
+        'Patient Gender': patientGender,
+        specialisation: specialisation,
+        Relation: relation,
+      });
+    } catch (err) {
+      console.log('WebEngage Err: ', err);
+    }
+  }
+};
+
+export const doctorProfileViewTracking = (data: any) => {
+  if (window && window.webengage) {
+    const { availableInMins, docCategory, exp, name, specialty } = data;
+    try {
+      window.webengage.track('Doctor Profile Viewed - web', {
+        'Available in Minutes': availableInMins,
+        'Doctor Category': docCategory,
+        Experience: exp,
+        Name: name,
+        Specialisation: specialty,
+      });
+    } catch (err) {
+      console.log('WebEngage Err: ', err);
+    }
+  }
+};
+
+export const consultPayButtonClickTracking = (data: any) => {
+  if (window && window.webengage) {
+    const {
+      actualPrice,
+      consultDateTime,
+      consultType,
+      discountAmount,
+      discountCoupon,
+      doctorCity,
+      doctorName,
+      specialty,
+      netAmount,
+      patientGender,
+    } = data;
+    try {
+      window.webengage.track('Consult Pay Button Clicked - web', {
+        'Actual Price': actualPrice,
+        'Consult Date Time': consultDateTime,
+        consultType: consultType,
+        'Discount Amount': discountAmount,
+        'Discount coupon': discountCoupon,
+        'Doctor City': doctorCity,
+        'Doctor Name': doctorName,
+        'Doctor Specialty': specialty,
+        'Net Amount': netAmount,
+        'Patient Gender': patientGender,
+      });
+    } catch (err) {
+      console.log('WebEngage Err: ', err);
+    }
+  }
+};
+
+export const consultPayInitiateTracking = (data: any) => {
+  console.log('data', data);
+  if (window && window.webengage) {
+    const {
+      actualPrice,
+      consultDateTime,
+      consultType,
+      discountAmount,
+      discountCoupon,
+      doctorCity,
+      doctorName,
+      specialty,
+      netAmount,
+      patientGender,
+    } = data;
+    try {
+      window.webengage.track('Consult Payment Initiated - web', {
+        'Actual Price': actualPrice,
+        'Consult Date Time': consultDateTime,
+        consultType: consultType,
+        'Discount Amount': discountAmount,
+        'Discount coupon': discountCoupon,
+        'Doctor City': doctorCity,
+        'Doctor Name': doctorName,
+        'Doctor Specialty': specialty,
+        'Net Amount': netAmount,
+        'Patient Gender': patientGender,
+      });
+    } catch (err) {
+      console.log('WebEngage Err: ', err);
+    }
+  }
+};
+
+export const pharmacyCheckoutTracking = (data: any) => {
+  console.log('data', data);
+  if (window && window.webengage) {
+    const { netAmount, orderId, orderType, payStatus, payType, isPrescription, totalItems } = data;
+    try {
+      window.webengage.track('Pharmacy Checkout completed - web', {
+        af_currency: '',
+        af_revenue: '',
+        'Net after discount': netAmount,
+        'Order ID': orderId,
+        'Order Type': orderType,
+        'Payment status': payStatus,
+        'Payment Type': payType,
+        'Prescription Added': '',
+        'Total items in cart': '',
+      });
+    } catch (err) {
+      console.log('WebEngage Err: ', err);
+    }
+  }
+};
+
+export const pharmacyPaymentInitiateTracking = (data: any) => {
+  if (window && window.webengage) {
+    const { amount, serviceArea, payMode } = data;
+    try {
+      window.webengage.track('Pharmacy Payment Initiated - web', {
+        Amount: amount,
+        'Service Area': serviceArea,
+        'Payment mode': payMode,
       });
     } catch (err) {
       console.log('WebEngage Err: ', err);

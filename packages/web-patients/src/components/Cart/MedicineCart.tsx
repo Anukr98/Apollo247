@@ -63,7 +63,7 @@ import { savePrescriptionMedicineOrderOMSVariables } from '../../graphql/types/s
 import { SAVE_PRESCRIPTION_MEDICINE_ORDER_OMS } from 'graphql/medicines';
 import moment from 'moment';
 import { Alerts } from 'components/Alerts/Alerts';
-import { uploadPrescriptionTracking } from '../../webEngageTracking';
+import { uploadPrescriptionTracking, pharmacyCartViewTracking } from '../../webEngageTracking';
 import { ChennaiCheckout, submitFormType } from 'components/Cart/ChennaiCheckout';
 import { OrderPlaced } from 'components/Cart/OrderPlaced';
 import { useParams } from 'hooks/routerHooks';
@@ -1057,7 +1057,7 @@ export const MedicineCart: React.FC = (props) => {
           const uploadUrlscheck = data.map(({ data }: any) =>
             data && data.uploadDocument && data.uploadDocument.status ? data.uploadDocument : null
           );
-          const filtered = uploadUrlscheck.filter(function (el) {
+          const filtered = uploadUrlscheck.filter(function(el) {
             return el != null;
           });
           const phyPresUrls = filtered.map((item) => item.filePath).filter((i) => i);
@@ -1169,6 +1169,9 @@ export const MedicineCart: React.FC = (props) => {
       });
     }
     /**Gtm code  End */
+    if (cartItems && cartItems.length > 0 && !nonCartFlow) {
+      pharmacyCartViewTracking(cartItems);
+    }
   }, [cartTotal]);
 
   return (
