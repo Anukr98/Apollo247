@@ -319,31 +319,29 @@ export async function sendCallsNotification(
     if (callType == APPT_CALL_TYPE.CHAT) {
       notificationBody = ApiConstants.JUNIOR_CALL_APPOINTMENT_BODY;
       //send whatsapp message for junior doctor call
-      /*let whatsappMsg = ApiConstants.WHATSAPP_JD_CONSULT_START_REMINDER.replace(
+      let whatsappMsg = ApiConstants.WHATSAPP_JD_CONSULT_START_REMINDER.replace(
         '{0}',
-        patientDetails.firstName
+        patientDetails.firstName + ' ' + patientDetails.lastName
       );
-      whatsappMsg = whatsappMsg.replace(
-        '{1}',
-        doctorDetails.firstName + ' ' + doctorDetails.lastName
-      ); */
-      //sendNotificationWhatsapp(patientDetails.mobileNumber, whatsappMsg);
+      whatsappMsg = whatsappMsg
+        .replace('{1}', doctorDetails.firstName)
+        .replace('{2}', doctorDetails.salutation);
+      sendNotificationWhatsapp(patientDetails.mobileNumber, whatsappMsg, 1);
     } else {
       notificationBody = ApiConstants.JUNIOR_AVCALL_APPOINTMENT_BODY;
     }
   }
   if (callType == APPT_CALL_TYPE.CHAT && doctorType == DOCTOR_CALL_TYPE.SENIOR) {
     notificationBody = ApiConstants.CALL_APPOINTMENT_BODY;
-    //send whatsapp message for junior doctor call
-    /*let whatsappMsg = ApiConstants.WHATSAPP_SD_CONSULT_START_REMINDER.replace(
+    //send whatsapp message for senior doctor call
+    let whatsappMsg = ApiConstants.WHATSAPP_SD_CONSULT_START_REMINDER.replace(
       '{0}',
-      patientDetails.firstName
+      patientDetails.firstName + ' ' + patientDetails.lastName
     );
-    whatsappMsg = whatsappMsg.replace(
-      '{1}',
-      doctorDetails.firstName + ' ' + doctorDetails.lastName
-    );*/
-    //sendNotificationWhatsapp(patientDetails.mobileNumber, whatsappMsg);
+    whatsappMsg = whatsappMsg
+      .replace('{1}', doctorDetails.firstName)
+      .replace('{2}', doctorDetails.salutation);
+    sendNotificationWhatsapp(patientDetails.mobileNumber, whatsappMsg, 1);
   }
   notificationBody = notificationBody.replace('{0}', patientDetails.firstName);
   notificationBody = notificationBody.replace(
