@@ -224,7 +224,7 @@ const sendPatientWaitNotification: Resolver<
   const patientDetails = await patientRepo.getPatientDetails(appointment.patientId);
   if (patientDetails == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
   //const applicationLink = process.env.WHATSAPP_LINK_BOOK_APOINTMENT + '?' + appointment.id;
-  const devLink: any = process.env.DOCOTR_DEEP_LINK;
+  const devLink: any = process.env.DOCTOR_DEEP_LINK;
   if (appointment) {
     const whatsAppMessageBody = ApiConstants.SEND_PATIENT_NOTIFICATION.replace(
       '{0}',
