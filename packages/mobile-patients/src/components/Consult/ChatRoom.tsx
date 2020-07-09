@@ -841,7 +841,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           }
           break;
         case 'height':
-          data.height = item.v[0] !== '' ? item.v.join(' ') : 'No Idea';
+          data.height = item.v[0] !== '' ? item.v.join(' ') : 'Not Recorded';
           console.log('data.height:', 'data.height:' + data.height);
           try {
             const text = {
@@ -864,7 +864,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           }
           break;
         case 'weight':
-          data.weight = item.v[0] || 'No Idea';
+          data.weight = item.v[0] || 'Not Recorded';
           try {
             const text = {
               id: patientId,
@@ -943,7 +943,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           }
           break;
         case 'temperature':
-          data.temperature = item.v[0] || 'No Idea';
+          data.temperature = item.v[0] || 'Not Recorded';
           try {
             const text = {
               id: patientId,
@@ -958,7 +958,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           }
           break;
         case 'bp':
-          data.bp = item.v[1] || item.v[0] || 'No Idea';
+          data.bp = item.v[1] || item.v[0] || 'Not Recorded';
           try {
             const text = {
               id: patientId,

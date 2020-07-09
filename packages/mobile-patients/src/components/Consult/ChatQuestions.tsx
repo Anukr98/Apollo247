@@ -260,7 +260,7 @@ const slides: Slide[] = [
     key: 'temperature',
     index: 10,
     title: 'What is your body temperature right now (in °F) ?',
-    buttonText: ['99-100', '100-101', '102+', 'No Idea'],
+    buttonText: ['99-100', '100-101', '102+', 'Not Recorded'],
     inputData: ['value'],
   },
   {
@@ -268,7 +268,7 @@ const slides: Slide[] = [
     index: 11,
     title: 'What is your blood pressure right now?',
     inputPlacerholder: '---/---',
-    buttonText: ['No Idea'],
+    buttonText: ['Not Recorded'],
     inputData: ['value', 'value'],
     keyboardType: 'numbers-and-punctuation',
     validation: /^\d{0,3}(\/|\\){0,1}\d{0,3}$/,
@@ -368,7 +368,7 @@ export const ChatQuestions: React.FC<ChatQuestionsProps> = (props) => {
             (v.find((i) => i.k === 'gender')!.v = [currentPatient.patientMedicalHistory.gender]));
       currentPatient.patientMedicalHistory.bp &&
         (v.find((i) => i.k === 'bp')!.v = [
-          currentPatient.patientMedicalHistory.bp !== 'No Idea'
+          currentPatient.patientMedicalHistory.bp !== 'Not Recorded'
             ? (currentPatient.patientMedicalHistory.bp.match(/^\d{0,3}(\/|\\){0,1}\d{0,3}$/) || [
                 '',
               ])[0] || ''
@@ -393,7 +393,7 @@ export const ChatQuestions: React.FC<ChatQuestionsProps> = (props) => {
       v.find((i) => i.k === 'height')!.v = height;
       currentPatient.patientMedicalHistory.weight &&
         (v.find((i) => i.k === 'weight')!.v = [
-          currentPatient.patientMedicalHistory.weight !== 'No Idea'
+          currentPatient.patientMedicalHistory.weight !== 'Not Recorded'
             ? (currentPatient.patientMedicalHistory.weight.match(/^[0-9]+\.{0,1}[0-9]{0,3}$/) || [
                 '',
               ])[0] || ''
