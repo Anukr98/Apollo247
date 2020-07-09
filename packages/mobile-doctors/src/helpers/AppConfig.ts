@@ -11,7 +11,7 @@ export const updateAppConfig = (key: keyof typeof Configuration, value: object) 
   Configuration[key] = value as never;
 };
 
-const APP_ENV: AppEnv = AppEnv.PROD as AppEnv; //Change to AppEnv.(DEV, QA, PROD) for respective API environments in the app. Also don't forget to change src/helpers/apiRoutes.ts
+const APP_ENV: AppEnv = AppEnv.QA as AppEnv; //Change to AppEnv.(DEV, QA, PROD) for respective API environments in the app. Also don't forget to change src/helpers/apiRoutes.ts
 //Common keys
 const commonConfigs = {
   PRO_PUBNUB_PUBLISH: 'pub-c-75e6dc17-2d81-4969-8410-397064dae70e',
@@ -28,16 +28,16 @@ const commonConfigs = {
 const ConfigurationDev = {
   ...commonConfigs,
   LOG_ENVIRONMENT: 'debug',
-  iOS_Version: '1.0101',
-  Android_Version: '1.0101',
+  iOS_Version: '1.0205',
+  Android_Version: '1.0205',
 };
 
 //QA
 const ConfigurationQA = {
   ...commonConfigs,
   LOG_ENVIRONMENT: 'release',
-  iOS_Version: '1.0106',
-  Android_Version: '1.0106',
+  iOS_Version: '1.0204',
+  Android_Version: '1.0204',
 };
 
 //Prod
