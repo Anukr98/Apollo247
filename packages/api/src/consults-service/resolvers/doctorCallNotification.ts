@@ -233,7 +233,8 @@ const sendPatientWaitNotification: Resolver<
       .replace('{1}', patientDetails.firstName + ' ' + patientDetails.lastName)
       .replace('{2}', args.appointmentId)
       .replace('{3}', doctorDetails.salutation)
-      .replace('{4}', appointment.appointmentDateTime.toISOString().replace('{5}', devLink));
+      .replace('{4}', appointment.appointmentDateTime.toISOString())
+      .replace('{5}', devLink);
     //whatsAppMessageBody += applicationLink;
     await sendNotificationWhatsapp(doctorDetails.mobileNumber, whatsAppMessageBody, 1);
   }
