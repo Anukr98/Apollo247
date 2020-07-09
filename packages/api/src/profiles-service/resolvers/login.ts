@@ -167,7 +167,14 @@ const resendOtp: Resolver<
   }
 
   //call sms gateway service to send the OTP here
-  return sendMessage({ mobileNumber, otp, hashCode, logger: resendLogger, otpSaveResponse });
+  return sendMessage({
+    loginType,
+    mobileNumber,
+    otp,
+    hashCode,
+    logger: resendLogger,
+    otpSaveResponse,
+  });
 };
 type testSMSResult = {
   send: Boolean;
