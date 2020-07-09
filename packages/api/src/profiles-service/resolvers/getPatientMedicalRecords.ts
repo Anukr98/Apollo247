@@ -387,6 +387,12 @@ const getPatientPrismMedicalRecords: Resolver<
     formattedLabResults.push(labResult);
   });
 
+  prescriptions.response = prescriptions.response.filter(
+    (item) =>
+      item.source !==
+      ApiConstants.PRESCRIPTION_SOURCE_PREFIX + prescriptionSource.EPRESCRIPTION.toLocaleLowerCase()
+  );
+
   prescriptions.response.forEach((element) => {
     let prismFileIds: string[] = [];
     const labResultParams: LabTestResultParameter[] = [];
