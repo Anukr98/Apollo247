@@ -243,23 +243,6 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
     }
   }, [props.orderAutoId]);
 
-  let isDisable = false;
-  if (
-    orderDetailsData &&
-    orderDetailsData.medicineOrdersStatus &&
-    orderDetailsData.medicineOrdersStatus.length > 0
-  ) {
-    const orderStatus =
-      orderDetailsData.medicineOrdersStatus[orderDetailsData.medicineOrdersStatus.length - 1];
-    if (
-      orderStatus &&
-      (isRejectedStatus(orderStatus.orderStatus) ||
-        orderStatus.orderStatus == MEDICINE_ORDER_STATUS.DELIVERED)
-    ) {
-      isDisable = true;
-    }
-  }
-
   const orderPayment =
     orderDetailsData &&
     orderDetailsData.medicineOrderPayments &&
@@ -279,14 +262,11 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
     }
   };
 
-  let isDisableCancel = false;
-  if (
-    orderDetailsData &&
-    orderDetailsData.medicineOrderPayments &&
-    orderDetailsData.medicineOrderPayments.length > 0
-  ) {
-    isDisableCancel = orderShipments ? isShipmentListHasBilledState() : false;
-  }
+  let disableCancel =
+    orderDetailsData && orderDetailsData.currentStatus
+      ? orderDetailsData.currentStatus !== MEDICINE_ORDER_STATUS.ORDER_PLACED &&
+        orderDetailsData.currentStatus !== MEDICINE_ORDER_STATUS.ORDER_VERIFIED
+      : false;
 
   return (
     <div className={classes.root}>
@@ -314,7 +294,7 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
             )}
             <div className={classes.headerActions}>
               <AphButton
-                disabled={!props.orderAutoId || isDisable || isDisableCancel}
+                disabled={!props.orderAutoId || disableCancel}
                 onClick={handleClick}
                 className={classes.moreBtn}
               >
