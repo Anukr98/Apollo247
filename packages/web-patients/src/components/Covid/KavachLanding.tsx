@@ -33,7 +33,7 @@ import { MascotWithMessage } from '../MascotWithMessage';
 import fetchUtil from 'helpers/fetch';
 import { Route } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
-import { customerCareNumber } from 'helpers/commonHelpers';
+import { kavachHelpline } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -632,10 +632,10 @@ export const KavachLanding: React.FC = (props) => {
                         Get In Touch
                       </AphButton>
                     ) : (
-                      <div className={classes.loader}>
-                        <CircularProgress />
-                      </div>
-                    )}
+                        <div className={classes.loader}>
+                          <CircularProgress />
+                        </div>
+                      )}
                   </form>
                 </div>
                 <Popover
@@ -658,7 +658,7 @@ export const KavachLanding: React.FC = (props) => {
                     closeMascot={() => {
                       setIsPopoverOpen(false);
                     }}
-                    // refreshPage
+                  // refreshPage
                   />
                 </Popover>
               </Grid>
@@ -715,7 +715,7 @@ export const KavachLanding: React.FC = (props) => {
                     </li>
                     <li>Get prescriptions over SMS</li>
                   </ul>
-                  <a href={isDesktopOnly ? '#' : `tel:${customerCareNumber}`}>
+                  <a href={isDesktopOnly ? '#' : `tel:${kavachHelpline}`}>
                     <AphButton
                       variant="contained"
                       color="primary"
@@ -777,7 +777,7 @@ export const KavachLanding: React.FC = (props) => {
           </div>
           <div className={classes.heading}>
             <Typography component="h3">Basic &amp; Advanced Packages To Suit All Needs</Typography>
-            <a href={isDesktopOnly ? '#' : `tel:${customerCareNumber}`}>
+            <a href={isDesktopOnly ? '#' : `tel:${kavachHelpline}`}>
               <AphButton
                 color="primary"
                 variant="contained"
@@ -1697,7 +1697,7 @@ export const KavachLanding: React.FC = (props) => {
         <AphDialogTitle></AphDialogTitle>
         <div className={classes.expertBox}>
           <h2>CORONAVIRUS? Talk to our expert.</h2>
-          <a href={`tel:${customerCareNumber}`}>Call {customerCareNumber} in emergency</a>
+          <a href={`tel:${kavachHelpline}`}>Call {kavachHelpline} in emergency</a>
           <AphButton onClick={() => setIscoronaDialogOpen(false)} color="primary">
             Ok, Got It
           </AphButton>
