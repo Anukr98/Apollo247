@@ -1697,7 +1697,7 @@ export const KavachLanding: React.FC = (props) => {
         <AphDialogTitle></AphDialogTitle>
         <div className={classes.expertBox}>
           <h2>CORONAVIRUS? Talk to our expert.</h2>
-          <a href={`tel:${kavachHelpline}`}>Call {kavachHelpline} in emergency</a>
+          <a href={`tel:${kavachHelpline}`}>Call 1860-500-0202 in emergency</a>
           <AphButton onClick={() => setIscoronaDialogOpen(false)} color="primary">
             Ok, Got It
           </AphButton>
