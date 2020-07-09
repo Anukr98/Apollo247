@@ -441,9 +441,11 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
           showMedOrderStatusAlert(data, 'Order_Confirmed');
         }
         break;
-      case 'Order_ready_at_store': {
-        showOrderReadyAtStoreAlert(data, 'Order_ready_at_store');
-      }
+      case 'Order_ready_at_store':
+        {
+          showOrderReadyAtStoreAlert(data, 'Order_ready_at_store');
+        }
+        break;
       case 'Diagnostic_Order_Success':
         {
           return; // Not showing in app because PN overriding in-app notification
