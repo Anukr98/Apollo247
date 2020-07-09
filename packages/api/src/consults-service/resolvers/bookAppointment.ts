@@ -346,7 +346,9 @@ const bookAppointment: Resolver<
     if (!couponData || !couponData.response || !couponData.response.valid)
       throw new AphError(AphErrorMessages.INVALID_COUPON_CODE);
 
-    appointmentInput.discountedAmount = couponData.response.discount;
+    const amountToPay = amount - couponData.response.discount;
+
+    appointmentInput.discountedAmount = amountToPay < 0 ? 0 : amountToPay;
     appointmentInput.actualAmount = amount;
   } else {
     let doctorFees = 0;
