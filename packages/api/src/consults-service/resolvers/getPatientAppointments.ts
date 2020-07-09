@@ -249,12 +249,12 @@ const getPatientPersonalizedAppointments: Resolver<
 > = async (parent, args, { consultsDb, doctorsDb, patientsDb, mobileNumber }) => {
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
   const patientDetails = await patientRepo.findByUhid(args.patientUhid);
-  // if (!patientDetails) {
-  //   throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
-  // }
-  // if (mobileNumber != patientDetails.mobileNumber) {
-  //   throw new AphError(AphErrorMessages.INVALID_PATIENT_DETAILS, undefined, {});
-  // }
+  if (!patientDetails) {
+    throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
+  }
+  if (mobileNumber != patientDetails.mobileNumber) {
+    throw new AphError(AphErrorMessages.INVALID_PATIENT_DETAILS, undefined, {});
+  }
   let uhid = args.patientUhid;
   if (process.env.NODE_ENV == 'local') uhid = ApiConstants.CURRENT_UHID.toString();
   else if (process.env.NODE_ENV == 'dev') uhid = ApiConstants.CURRENT_UHID.toString();
