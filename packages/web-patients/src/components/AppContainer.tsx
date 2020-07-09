@@ -64,6 +64,7 @@ import { SpecialityListing } from 'components/SpecialityListing';
 import { SpecialtyDetails } from 'components/Doctors/SpecialtyDetails';
 import { MedicinePrescriptions } from './Prescriptions/MedicinePrescriptions';
 import { MedicineSearch } from './Medicine/MedicineSearch';
+import { CovidDiabetesLanding } from 'components/Covid/CovidDiabetesLanding';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -225,6 +226,7 @@ const App: React.FC = () => {
             path={clientRoutes.medicinePrescription()}
             component={MedicinePrescriptions}
           />
+          <Route exact path={clientRoutes.covidDiabetes()} component={CovidDiabetesLanding} />
         </Switch>
       </div>
     </Scrollbars>
