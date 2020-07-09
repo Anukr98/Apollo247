@@ -8,6 +8,7 @@ import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { ApiConstants } from 'ApiConstants';
 import { DoctorHospitalRepository } from 'doctors-service/repositories/doctorHospitalRepository';
+import { addDays } from 'date-fns';
 
 export const getPatinetAppointmentsTypeDefs = gql`
   type PatinetAppointments {
@@ -310,7 +311,7 @@ const getPatientPersonalizedAppointments: Resolver<
   let apptDetails: any;
   let foundKey = -1;
   let apptCount = 0;
-  let checkDate = addDays(new Date(), -2);
+  let checkDate = addDays(new Date(), -30);
   if (offlineApptsList.errorCode == 0 && offlineApptsList.response.length > 0) {
     //console.log(offlineApptsList.response, offlineApptsList.response.length);
     offlineApptsList.response.forEach((appt: offlineAppointment) => {
