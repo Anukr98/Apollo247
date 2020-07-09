@@ -9,7 +9,7 @@ import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks'
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
-import React, { useEffect } from 'react';
+import React from 'react';
 import { SafeAreaView, StyleSheet, View, ScrollView, FlatList } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { useQuery } from 'react-apollo-hooks';
@@ -42,7 +42,7 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
     getMedicineOrdersOMSListVariables
   >(GET_MEDICINE_ORDERS_OMS__LIST, {
     variables: { patientId: currentPatient && currentPatient.id },
-    fetchPolicy: 'cache-first',
+    fetchPolicy: 'no-cache',
   });
   const orders =
     (loading || error) && !data
@@ -54,10 +54,6 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
               (item.medicineOrdersStatus || []).find((s) => !s!.hideStatus)
             )
         );
-
-  useEffect(() => {
-    refetchOrders();
-  }, []);
 
   const refetchOrders = async () => {
     try {
@@ -266,7 +262,7 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
           {renderError()}
         </ScrollView>
       </SafeAreaView>
-      {loading && !(data && data.getMedicineOrdersOMSList) && <Spinner />}
+      {loading && <Spinner />}
     </View>
   );
 };
