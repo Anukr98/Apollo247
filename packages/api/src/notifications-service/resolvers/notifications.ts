@@ -336,9 +336,9 @@ export async function sendCallsNotification(
   if (callType == APPT_CALL_TYPE.CHAT && doctorType == DOCTOR_CALL_TYPE.SENIOR) {
     notificationBody = ApiConstants.CALL_APPOINTMENT_BODY;
   }
-  
+
   //send whatsapp message for senior doctor call
-  const devLink = process.env.DOCTOR_DEEP_LINK?process.env.DOCTOR_DEEP_LINK:'';
+  const devLink = process.env.DOCTOR_DEEP_LINK ? process.env.DOCTOR_DEEP_LINK : '';
   let whatsappMsg = ApiConstants.WHATSAPP_SD_CONSULT_START_REMINDER.replace(
     '{0}',
     patientDetails.firstName + ' ' + patientDetails.lastName
@@ -2285,17 +2285,17 @@ export async function sendChatMessageNotification(
   chatMessage: string
 ) {
   //const whatsAppLink = process.env.WHATSAPP_LINK_BOOK_APOINTMENT;
-  const devLink: any = process.env.DOCTOR_DEEP_LINK;
-  const whatsAppMessageBody = ApiConstants.WHATSAPP_SD_CHAT_NOTIFICATION.replace(
-    '{0}',
-    doctorDetails.firstName
-  )
-    .replace('{1}', patientDetails.firstName + ' ' + patientDetails.lastName)
-    .replace('{2}', doctorDetails.salutation)
-    .replace('{3}', appointment.id)
-    .replace('{4}', devLink);
+  //const devLink: any = process.env.DOCTOR_DEEP_LINK;
+  // const whatsAppMessageBody = ApiConstants.WHATSAPP_SD_CHAT_NOTIFICATION.replace(
+  //   '{0}',
+  //   doctorDetails.firstName
+  // )
+  //   .replace('{1}', patientDetails.firstName + ' ' + patientDetails.lastName)
+  //   .replace('{2}', doctorDetails.salutation)
+  //   .replace('{3}', appointment.id)
+  //   .replace('{4}', devLink);
   //whatsAppMessageBody = whatsAppMessageBody;
-  await sendNotificationWhatsapp(doctorDetails.mobileNumber, whatsAppMessageBody, 1);
+  //await sendNotificationWhatsapp(doctorDetails.mobileNumber, whatsAppMessageBody, 1);
   const messageBody = ApiConstants.CHAT_MESSGAE_TEXT.replace(
     '{0}',
     doctorDetails.firstName
