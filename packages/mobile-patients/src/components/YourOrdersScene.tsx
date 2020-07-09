@@ -193,7 +193,7 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
         description={getDeliverTypeOrDescription(order)}
         statusDesc={getOrderStatusText(order.currentStatus!)}
         status={order.currentStatus!}
-        dateTime={getFormattedTime(g(order.medicineOrdersStatus![0]!, 'statusDate'))}
+        dateTime={getFormattedTime(g(order, 'createdDate'))}
       />
     );
   };

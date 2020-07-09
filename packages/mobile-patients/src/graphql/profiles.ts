@@ -1192,6 +1192,7 @@ export const GET_MEDICINE_ORDERS_OMS__LIST = gql`
     getMedicineOrdersOMSList(patientId: $patientId) {
       medicineOrdersList {
         id
+        createdDate
         orderAutoId
         billNumber
         shopAddress
@@ -1199,7 +1200,7 @@ export const GET_MEDICINE_ORDERS_OMS__LIST = gql`
         currentStatus
         medicineOrdersStatus {
           id
-          statusDate
+          # statusDate
           orderStatus
           hideStatus
         }
@@ -1221,6 +1222,7 @@ export const GET_LATEST_MEDICINE_ORDER = gql`
     getLatestMedicineOrder(patientUhid: $patientUhid) {
       medicineOrderDetails {
         id
+        createdDate
         orderAutoId
         billNumber
         shopAddress
@@ -1232,9 +1234,9 @@ export const GET_LATEST_MEDICINE_ORDER = gql`
           mrp
           quantity
         }
-        medicineOrdersStatus {
-          statusDate
-        }
+        # medicineOrdersStatus {
+        #   statusDate
+        # }
         medicineOrderShipments {
           medicineOrderInvoice {
             itemDetails
@@ -1432,6 +1434,7 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS = gql`
     ) {
       medicineOrderDetails {
         id
+        createdDate
         orderAutoId
         billNumber
         devliveryCharges

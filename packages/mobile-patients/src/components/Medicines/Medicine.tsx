@@ -931,9 +931,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     ]
       .filter((a) => a)
       .join(', ');
-    const date = moment(g(order, 'medicineOrdersStatus', '0' as any, 'statusDate')).format(
-      'MMMM DD, YYYY'
-    );
+    const date = moment(g(order, 'createdDate')).format('MMMM DD, YYYY');
     return isOfflineOrder ? `Ordered at ${address} on ${date}` : `Ordered online on ${date}`;
   };
 
