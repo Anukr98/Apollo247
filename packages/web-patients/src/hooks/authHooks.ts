@@ -103,9 +103,7 @@ export const useAllCurrentPatients = () => {
         }
         setCurrentPatientId(currentUserId);
       }
-    } else {
-      setCurrentPatientId(localStorage.getItem('currentUser'));
-    }
+    } 
   }, [allCurrentPatients, currentPatientId, setCurrentPatientId]);
 
   return {

@@ -62,14 +62,7 @@ const generateSitemap: Resolver<null, {}, DoctorsServiceContext, string> = async
   const doctorList = await doctorRepo.getListBySpecialty();
   if (doctorList.length > 0) {
     doctorList.forEach((doctor) => {
-      const doctorName =
-        doctor.displayName
-          .trim()
-          .toLowerCase()
-          .replace('.', '')
-          .replace(/\s/g, '-') +
-        '-' +
-        doctor.id;
+      const doctorName = readableParam(doctor.displayName) + '-' + doctor.id;
       const docStr =
         '<url>\n<loc>' +
         process.env.SITEMAP_BASE_URL +
