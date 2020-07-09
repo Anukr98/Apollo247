@@ -5,7 +5,6 @@ import { DoctorSpecialtyRepository } from 'doctors-service/repositories/doctorSp
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import path from 'path';
 import fs from 'fs';
-import { ApiConstants } from 'ApiConstants';
 import { format } from 'date-fns';
 import { keyCache, hgetAllCache } from 'doctors-service/database/connectRedis';
 
@@ -43,10 +42,10 @@ const generateSitemap: Resolver<null, {}, DoctorsServiceContext, string> = async
   let sitemapStr =
     '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">\n<!-- Doctor Specilaities -->\n';
   let doctorsStr = '';
+  const modifiedDate =
+    format(new Date(), 'yyyy-MM-dd') + 'T' + format(new Date(), 'hh:mm:ss') + '+00:00';
   if (specialitiesList.length > 0) {
     specialitiesList.forEach(async (specialty) => {
-      const modifiedDate =
-        format(new Date(), 'yyyy-MM-dd') + 'T' + format(new Date(), 'hh:mm:ss') + '+00:00';
       const specialtyName = readableParam(specialty.name);
       const specialtyStr =
         '<url>\n<loc>' +
@@ -63,16 +62,14 @@ const generateSitemap: Resolver<null, {}, DoctorsServiceContext, string> = async
   const doctorList = await doctorRepo.getListBySpecialty();
   if (doctorList.length > 0) {
     doctorList.forEach((doctor) => {
-      let doctorName =
+      const doctorName =
         doctor.displayName
           .trim()
           .toLowerCase()
+          .replace('.', '')
           .replace(/\s/g, '-') +
         '-' +
         doctor.id;
-      doctorName = doctorName.replace('.', '');
-      const modifiedDate =
-        format(new Date(), 'yyyy-MM-dd') + 'T' + format(new Date(), 'hh:mm:ss') + '+00:00';
       const docStr =
         '<url>\n<loc>' +
         process.env.SITEMAP_BASE_URL +
@@ -105,8 +102,7 @@ const generateSitemap: Resolver<null, {}, DoctorsServiceContext, string> = async
       cmsUrls += '<url>\n<loc>' + url + '</loc>\n<lastmod>' + modifiedDate + '</lastmod>\n</url>\n';
     });
   }*/
-  const modifiedDate =
-    format(new Date(), 'yyyy-MM-dd') + 'T' + format(new Date(), 'hh:mm:ss') + '+00:00';
+
   const brandsPage =
     '\n<!--Brands url-->\n<url>\n<loc>' +
     process.env.SITEMAP_BASE_URL +

@@ -21,7 +21,7 @@ import { TransferAppointmentRepository } from 'consults-service/repositories/tra
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { MedicineOrdersRepository } from 'profiles-service/repositories/MedicineOrdersRepository';
 import { FacilityRepository } from 'doctors-service/repositories/facilityRepository';
-import { addMilliseconds, format, differenceInHours, differenceInMinutes, addDays } from 'date-fns';
+import { addMilliseconds, format, differenceInMinutes, addDays } from 'date-fns';
 import path from 'path';
 import fs from 'fs';
 import { log } from 'customWinstonLogger';
@@ -1642,7 +1642,9 @@ export async function sendCartNotification(
     notificationTitle = ApiConstants.ORDER_CONFIRMED_TITLE;
     notificationBody = ApiConstants.ORDER_CONFIRMED_BODY;
     type = 'Order_Confirmed';
-    let orderTat = medicineOrderDetails.orderTat ? medicineOrderDetails.orderTat.toString() : 'few';
+    const orderTat = medicineOrderDetails.orderTat
+      ? medicineOrderDetails.orderTat.toString()
+      : 'few';
     let tatDate;
     if (medicineOrderDetails.orderTat) {
       if (Date.parse(orderTat)) {
