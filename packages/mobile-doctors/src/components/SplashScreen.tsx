@@ -26,6 +26,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     try {
       firebase.analytics().setAnalyticsCollectionEnabled(true);
       checkForVersionUpdate();
+      AsyncStorage.removeItem('callDataSend');
       AppState.addEventListener('change', _handleAppStateChange);
       Linking.getInitialURL()
         .then((url) => {

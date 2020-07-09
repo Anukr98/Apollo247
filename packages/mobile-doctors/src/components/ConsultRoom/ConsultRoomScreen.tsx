@@ -267,6 +267,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       AsyncStorage.removeItem('prevSavedData');
       AsyncStorage.removeItem('chatFileData');
       AsyncStorage.removeItem('scrollToEnd');
+      AsyncStorage.removeItem('callDataSend');
       KeepAwake.deactivate();
       pubnub.unsubscribeAll();
       pubnub.stop();
@@ -1238,6 +1239,24 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               callOptions.stopMissedCallTimer();
               break;
             case messageCodes.endCallMsg:
+              const callBack = async () => {
+                const callDataSend = JSON.parse(
+                  (await AsyncStorage.getItem('callDataSend')) || 'false'
+                );
+                if (!callDataSend) {
+                  firebase
+                    .analytics()
+                    .logEvent(
+                      callOptions.isAudio ? 'Doctor_audio_call_end' : 'Doctor_video_call_end',
+                      {
+                        caseSheet: caseSheet,
+                        callDuration: callData.callDuration,
+                      }
+                    );
+                  AsyncStorage.setItem('callDataSend', 'true');
+                }
+              };
+              callBack();
               callOptions.stopCalls(false);
               callOptions.setCallAccepted(false);
               break;
@@ -1481,6 +1500,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             caseSheet: caseSheet,
             callDuration: callDuration,
           });
+        AsyncStorage.setItem('callDataSend', 'true');
         pubnub.publish(
           {
             message: {
@@ -1509,6 +1529,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     firebase.analytics().logEvent(callType == 'A' ? 'Doctor_audio_call' : 'Doctor_video_call', {
       caseSheet: caseSheet,
     });
+    AsyncStorage.setItem('callDataSend', 'false');
     pubnub.publish(
       {
         message: {
