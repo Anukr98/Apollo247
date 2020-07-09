@@ -16,16 +16,18 @@ import {
   deleteDoctorDeviceToken,
   deleteDoctorDeviceTokenVariables,
 } from '@aph/mobile-doctors/src/graphql/types/deleteDoctorDeviceToken';
+import { useUIElements } from '@aph/mobile-doctors/src/components/ui/UIElementsProvider';
 
 export interface MyAccountProps extends NavigationScreenProps {}
 
 export const MyAccount: React.FC<MyAccountProps> = (props) => {
   const { clearFirebaseUser, doctorDetails } = useAuth();
   const client = useApolloClient();
+  const { setLoading } = useUIElements();
 
   const deleteDeviceToken = async () => {
     const deviceToken = JSON.parse((await AsyncStorage.getItem('deviceToken')) || '');
-
+    setLoading && setLoading(true);
     client
       .mutate<deleteDoctorDeviceToken, deleteDoctorDeviceTokenVariables>({
         mutation: DELETE_DOCTOR_DEVICE_TOKEN,
@@ -37,6 +39,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
       .then((data) => {
         Promise.all([clearFirebaseUser && clearFirebaseUser(), clearUserData()])
           .then(() => {
+            setLoading && setLoading(false);
             props.navigation.dispatch(
               StackActions.reset({
                 index: 0,
@@ -46,11 +49,13 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
             );
           })
           .catch((e) => {
+            setLoading && setLoading(false);
             console.log(e);
             Alert.alert(strings.common.error, strings.login.signout_error);
           });
       })
       .catch((error) => {
+        setLoading && setLoading(false);
         Alert.alert(strings.common.error, strings.login.signout_error);
       });
   };

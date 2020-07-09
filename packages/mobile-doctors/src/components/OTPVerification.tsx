@@ -339,6 +339,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
                   setisOtpVerified(true);
                   //set isloggedin to true
                   AsyncStorage.setItem('isLoggedIn', 'true');
+                  AsyncStorage.setItem('requestCompleted', 'true');
                 });
             } else {
               try {

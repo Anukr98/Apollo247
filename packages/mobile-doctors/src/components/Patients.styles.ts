@@ -143,4 +143,5 @@ export const styles = StyleSheet.create({
     borderColor: theme.colors.blackColor(0.2),
     marginRight: 24,
   },
+  searchBackgroundContainer: { marginTop: 30 },
 });
