@@ -632,10 +632,10 @@ export const KavachLanding: React.FC = (props) => {
                         Get In Touch
                       </AphButton>
                     ) : (
-                        <div className={classes.loader}>
-                          <CircularProgress />
-                        </div>
-                      )}
+                      <div className={classes.loader}>
+                        <CircularProgress />
+                      </div>
+                    )}
                   </form>
                 </div>
                 <Popover
@@ -658,7 +658,7 @@ export const KavachLanding: React.FC = (props) => {
                     closeMascot={() => {
                       setIsPopoverOpen(false);
                     }}
-                  // refreshPage
+                    // refreshPage
                   />
                 </Popover>
               </Grid>

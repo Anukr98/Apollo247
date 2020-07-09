@@ -220,78 +220,76 @@ export const SpecialtySearch: React.FC<SpecialtySearchProps> = (props) => {
               {searchLoading ? (
                 <CircularProgress />
               ) : (
-                  <>
-                    {searchSpecialty && searchSpecialty.length > 0 && (
-                      <div className={classes.sContent}>
-                        <Typography component="h6">Specialities</Typography>
-                        <ul className={classes.sList}>
-                          {searchSpecialty.map((specialty: SpecialtyType) => (
-                            <Link
-                              key={specialty.id}
-                              to={
-                                selectedCity === ''
-                                  ? clientRoutes.specialties(readableParam(specialty.name))
-                                  : clientRoutes.citySpecialties(
+                <>
+                  {searchSpecialty && searchSpecialty.length > 0 && (
+                    <div className={classes.sContent}>
+                      <Typography component="h6">Specialities</Typography>
+                      <ul className={classes.sList}>
+                        {searchSpecialty.map((specialty: SpecialtyType) => (
+                          <Link
+                            key={specialty.id}
+                            to={
+                              selectedCity === ''
+                                ? clientRoutes.specialties(readableParam(specialty.name))
+                                : clientRoutes.citySpecialties(
                                     _lowerCase(selectedCity),
                                     readableParam(specialty.name)
                                   )
-                              }
-                            >
-                              <li key={specialty.id} onClick={() => setSearchKeyword('')}>
-                                {specialty.name}
-                              </li>
-                            </Link>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                    {searchDoctors && searchDoctors.length > 0 && (
-                      <div className={classes.docContent}>
-                        <Typography component="h6">Doctors</Typography>
-                        <ul className={classes.doctorList}>
-                          {searchDoctors.map((doctor: DoctorsType) => (
-                            <li key={doctor.id}>
-                              <Link
-                                key={doctor.id}
-                                to={clientRoutes.specialtyDoctorDetails(
-                                  doctor.specialty && doctor.specialty.name
-                                    ? readableParam(doctor.specialty.name)
-                                    : '',
-                                  readableParam(doctor.fullName),
-                                  doctor.id
-                                )}
-                              >
-                                <div className={classes.doctorContent}>
-                                  <div className={classes.dImg}>
-                                    <img src={doctor.photoUrl} />
-                                  </div>
-                                  <div className={classes.doctorDetails}>
-                                    <Typography component="h2">
-                                      {doctor.fullName}
-                                    </Typography>
-                                    <Typography>
-                                      {doctor.specialty && doctor.specialty.name
-                                        ? doctor.specialty.name
-                                        : ''}{' '}
-                                    |{' '}
-                                      {doctor.doctorHospital &&
-                                        doctor.doctorHospital[0] &&
-                                        doctor.doctorHospital[0].facility
-                                        ? `${doctor.doctorHospital[0].facility.name || ''} ${doctor
-                                          .doctorHospital[0].facility.streetLine1 || ''} ${doctor
-                                            .doctorHospital[0].facility.city || ''} `
-                                        : ''}
-                                    </Typography>
-                                  </div>
-                                </div>
-                              </Link>
+                            }
+                          >
+                            <li key={specialty.id} onClick={() => setSearchKeyword('')}>
+                              {specialty.name}
                             </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                  </>
-                )}
+                          </Link>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  {searchDoctors && searchDoctors.length > 0 && (
+                    <div className={classes.docContent}>
+                      <Typography component="h6">Doctors</Typography>
+                      <ul className={classes.doctorList}>
+                        {searchDoctors.map((doctor: DoctorsType) => (
+                          <li key={doctor.id}>
+                            <Link
+                              key={doctor.id}
+                              to={clientRoutes.specialtyDoctorDetails(
+                                doctor.specialty && doctor.specialty.name
+                                  ? readableParam(doctor.specialty.name)
+                                  : '',
+                                readableParam(doctor.fullName),
+                                doctor.id
+                              )}
+                            >
+                              <div className={classes.doctorContent}>
+                                <div className={classes.dImg}>
+                                  <img src={doctor.photoUrl} />
+                                </div>
+                                <div className={classes.doctorDetails}>
+                                  <Typography component="h2">{doctor.fullName}</Typography>
+                                  <Typography>
+                                    {doctor.specialty && doctor.specialty.name
+                                      ? doctor.specialty.name
+                                      : ''}{' '}
+                                    |{' '}
+                                    {doctor.doctorHospital &&
+                                    doctor.doctorHospital[0] &&
+                                    doctor.doctorHospital[0].facility
+                                      ? `${doctor.doctorHospital[0].facility.name || ''} ${doctor
+                                          .doctorHospital[0].facility.streetLine1 || ''} ${doctor
+                                          .doctorHospital[0].facility.city || ''} `
+                                      : ''}
+                                  </Typography>
+                                </div>
+                              </div>
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </>
+              )}
               {!searchLoading &&
                 searchDoctors &&
                 searchDoctors.length === 0 &&
