@@ -1475,6 +1475,12 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       onCallEnd: (consultType, callDuration) => {
         callOptions.stopMissedCallTimer();
         endCallNotificationAPI(true);
+        firebase
+          .analytics()
+          .logEvent(callType == 'A' ? 'Doctor_audio_call_end' : 'Doctor_video_call_end', {
+            caseSheet: caseSheet,
+            callDuration: callDuration,
+          });
         pubnub.publish(
           {
             message: {
@@ -1500,6 +1506,9 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     sendCallNotificationAPI(callType === 'V' ? APPT_CALL_TYPE.VIDEO : APPT_CALL_TYPE.AUDIO, true);
     Keyboard.dismiss();
     AsyncStorage.setItem('callDisconnected', 'false');
+    firebase.analytics().logEvent(callType == 'A' ? 'Doctor_audio_call' : 'Doctor_video_call', {
+      caseSheet: caseSheet,
+    });
     pubnub.publish(
       {
         message: {
