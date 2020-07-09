@@ -112,9 +112,9 @@ export const AuthProvider: React.FC = (props) => {
   const setNewToken = () => {
     try {
       firebase.auth().onAuthStateChanged(async (user) => {
-        console.log('authprovider', user);
+        // console.log('authprovider', user);
         if (user) {
-          console.log('authprovider login');
+          // console.log('authprovider login');
           const jwt = await user.getIdToken(true).catch((error) => {
             setIsSigningIn(false);
             setSignInError(true);
@@ -131,7 +131,7 @@ export const AuthProvider: React.FC = (props) => {
       const jwtDecode = require('jwt-decode');
       const millDate = jwtDecode(authToken).exp;
       const currentTime = new Date().valueOf() / 1000;
-      console.log('millDate', millDate, currentTime, millDate > currentTime);
+      // console.log('millDate', millDate, currentTime, millDate > currentTime);
       if (millDate < currentTime) {
         setNewToken();
       }
@@ -254,10 +254,10 @@ export const AuthProvider: React.FC = (props) => {
         let authStateRegistered = false;
         console.log('authprovider');
         auth.onAuthStateChanged(async (user) => {
-          console.log('authprovider', authStateRegistered, user);
+          // console.log('authprovider', authStateRegistered, user);
 
           if (user && !authStateRegistered) {
-            console.log('authprovider login');
+            // console.log('authprovider login');
             setIsSigningIn(true);
             authStateRegistered = true;
 
