@@ -11,6 +11,8 @@ import {
   Selected,
   UnSelected,
   Up,
+  SearchBackground,
+  EmptySearch,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { NeedHelpCard } from '@aph/mobile-doctors/src/components/ui/NeedHelpCard';
 import { PatientCard } from '@aph/mobile-doctors/src/components/ui/PatientCard';
@@ -439,6 +441,9 @@ export const Patients: React.FC<PatientsProps> = (props) => {
                     <Text style={styles.noRecordText2}>{` “${searchInput}”. `}</Text>
                     {strings.patientsSearch.noPatientText2}
                   </Text>
+                  <View style={styles.searchBackgroundContainer}>
+                    <EmptySearch />
+                  </View>
                 </View>
               ) : null}
               {showSearch && searchSpinner ? (
@@ -449,6 +454,9 @@ export const Patients: React.FC<PatientsProps> = (props) => {
               {showSearch && !searchSpinner && searchInput.length < 3 ? (
                 <View style={styles.searchTextBodyContainer}>
                   <Text style={styles.searchTextStyle}>{strings.patientsSearch.searchBody}</Text>
+                  <View style={styles.searchBackgroundContainer}>
+                    <SearchBackground />
+                  </View>
                 </View>
               ) : null}
             </>

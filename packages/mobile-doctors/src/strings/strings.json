@@ -262,6 +262,18 @@
       {
         "single": "capsule",
         "multiple": "capsule(s)"
+      },
+      {
+        "single": "sachet",
+        "multiple": "sachet(s)"
+      },
+      {
+        "single": "international unit",
+        "multiple": "international unit(s)"
+      },
+      {
+        "single": "teaspoon",
+        "multiple": "teaspoon(s)"
       }
     ]
   },

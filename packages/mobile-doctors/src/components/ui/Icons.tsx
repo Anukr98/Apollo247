@@ -875,3 +875,19 @@ export const ReloadGreen: React.FC<IconProps> = (props) => (
     source={require('../../images/icons/reload.png')}
   />
 );
+
+export const SearchBackground: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 78, width: 78 }}
+    {...props}
+    source={require('../../images/icons/search_background.png')}
+  />
+);
+
+export const EmptySearch: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 45, width: 78 }}
+    {...props}
+    source={require('../../images/icons/mailbox.png')}
+  />
+);
