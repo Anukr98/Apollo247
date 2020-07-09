@@ -150,8 +150,7 @@ export class PatientRepository extends Repository<Patient> {
     return patientDetails;
   }
   async getByMobileCache(mobile: string) {
-    const ids;
-    ids = await getCache(`${REDIS_PATIENT_MOBILE_KEY_PREFIX}${mobile}`);
+    const ids = await getCache(`${REDIS_PATIENT_MOBILE_KEY_PREFIX}${mobile}`);
     if (ids && typeof ids === 'string') {
       const patientIds: string[] = ids.split(',');
       const patients: Patient[] = [];
