@@ -160,7 +160,7 @@ const sendCallNotification: Resolver<
   const appointmentCallDetails = await callDetailsRepo.saveAppointmentCallDetails(
     appointmentCallDetailsAttrs
   );
-  if (args.callType == APPT_CALL_TYPE.CHAT) {
+  if (args.callType != APPT_CALL_TYPE.CHAT) {
     const pushNotificationInput = {
       appointmentId: args.appointmentId,
       notificationType: NotificationType.CALL_APPOINTMENT,
