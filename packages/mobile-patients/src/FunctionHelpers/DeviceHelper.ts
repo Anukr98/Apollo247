@@ -18,8 +18,8 @@ const bugsnag = new Client();
 const isReleaseOn = AppConfig.Configuration.ANALYTICAL_ENIVRONMENT == 'release';
 const isEnvironment = AppConfig.Configuration.LOG_ENVIRONMENT;
 
-// Bugfender.init('brmAJ2pHunypOwF6EpcWyOf5mffsl2Ea');
-Bugfender.init('CYHmWcrPEVpLXBHk2653OhhU3uHwyhwU');
+Bugfender.init('brmAJ2pHunypOwF6EpcWyOf5mffsl2Ea');
+// Bugfender.init('CYHmWcrPEVpLXBHk2653OhhU3uHwyhwU');
 
 export const isIphone5s = () => height === 568;
 
