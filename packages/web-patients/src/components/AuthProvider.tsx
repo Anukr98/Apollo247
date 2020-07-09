@@ -88,7 +88,6 @@ const buildApolloClient = (authToken: string, handleUnauthenticated: () => void)
   const errorLink = onError((error) => {
     const { graphQLErrors, operation, forward } = error;
     if (isLocal || isDevelopment) console.error(error);
-    // TrackJS.console.error(error);
     if (graphQLErrors) {
       const unauthenticatedError = graphQLErrors.some(
         (gqlError) => gqlError.extensions && gqlError.extensions.code === 'UNAUTHENTICATED'
@@ -212,7 +211,7 @@ export const AuthProvider: React.FC = (props) => {
       setIsSigningIn(true);
       setIsVerifyingOtp(true);
       otpCheckApiCall(otp, loginId).then((res) => {
-        // console.log('res', res);
+        // 
         if (!res) {
           setVerifyOtpError(true);
           setIsSigningIn(false);
@@ -351,6 +350,7 @@ export const AuthProvider: React.FC = (props) => {
 
   useEffect(() => {
     app.auth().onAuthStateChanged(async (user) => {
+
       if (user) {
         /**Gtm code start */
         const isNewUser = user.metadata.creationTime === user.metadata.lastSignInTime;
@@ -375,6 +375,11 @@ export const AuthProvider: React.FC = (props) => {
               res.data.getCurrentPatients &&
               res.data.getCurrentPatients.patients &&
               res.data.getCurrentPatients.patients[0].id;
+              
+              if(localStorage.getItem('currentUser') && localStorage.getItem('currentUser').length) {
+                localStorage.setItem('currentUser', userId);
+                setCurrentPatientId(userId);
+              }
             /**Gtm code start */
             if (isNewUser) {
               gtmTracking({ category: 'Profile', action: 'Register / Login', label: 'Register' });
@@ -466,7 +471,7 @@ export const AuthProvider: React.FC = (props) => {
 //     loginResult.data.login.status &&
 //     loginResult.data.login.loginId
 //   ) {
-//     console.log(loginResult, loginError, 'hello oooooooooooooooo');
+//     
 //     setSendOtpError(false);
 //     return loginResult.data.login.loginId;
 //   } else if (loginError) {
