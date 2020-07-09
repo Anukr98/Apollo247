@@ -462,7 +462,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       >({
         query: GET_RECOMMENDED_PRODUCTS_LIST,
         variables: { patientUhid: g(currentPatient, 'uhid') || '' },
-        fetchPolicy: 'cache-first', // as these products will not chnage frequently.
+        fetchPolicy: 'no-cache',
       });
       const _recommendedProducts =
         g(
