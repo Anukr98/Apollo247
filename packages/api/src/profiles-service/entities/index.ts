@@ -17,6 +17,7 @@ import { Validate, IsOptional } from 'class-validator';
 import { NameValidator, MobileNumberValidator } from 'validators/entityValidators';
 import { ConsultMode } from 'doctors-service/entities';
 import { delCache } from 'profiles-service/database/connectRedis';
+
 export type ONE_APOLLO_USER_REG = {
   FirstName: string;
   LastName: string;

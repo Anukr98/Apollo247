@@ -8,7 +8,6 @@ import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { ApiConstants } from 'ApiConstants';
 import { DoctorHospitalRepository } from 'doctors-service/repositories/doctorHospitalRepository';
-import { differenceInDays, addDays } from 'date-fns';
 
 export const getPatinetAppointmentsTypeDefs = gql`
   type PatinetAppointments {
@@ -138,7 +137,7 @@ type AppointmentPayment = {
 };
 
 type PersonalizedAppointmentResult = {
-  appointmentDetails: PersonalizedAppointment | '';
+  appointmentDetails: PersonalizedAppointment;
 };
 
 type offlineAppointment = {
@@ -249,12 +248,12 @@ const getPatientPersonalizedAppointments: Resolver<
 > = async (parent, args, { consultsDb, doctorsDb, patientsDb, mobileNumber }) => {
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
   const patientDetails = await patientRepo.findByUhid(args.patientUhid);
-  if (!patientDetails) {
-    throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
-  }
-  if (mobileNumber != patientDetails.mobileNumber) {
-    throw new AphError(AphErrorMessages.INVALID_PATIENT_DETAILS, undefined, {});
-  }
+  // if (!patientDetails) {
+  //   throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
+  // }
+  // if (mobileNumber != patientDetails.mobileNumber) {
+  //   throw new AphError(AphErrorMessages.INVALID_PATIENT_DETAILS, undefined, {});
+  // }
   let uhid = args.patientUhid;
   if (process.env.NODE_ENV == 'local') uhid = ApiConstants.CURRENT_UHID.toString();
   else if (process.env.NODE_ENV == 'dev') uhid = ApiConstants.CURRENT_UHID.toString();
@@ -311,7 +310,7 @@ const getPatientPersonalizedAppointments: Resolver<
   let apptDetails: any;
   let foundKey = -1;
   let apptCount = 0;
-  let checkDate = addDays(new Date(), -30);
+  let checkDate = addDays(new Date(), -2);
   if (offlineApptsList.errorCode == 0 && offlineApptsList.response.length > 0) {
     //console.log(offlineApptsList.response, offlineApptsList.response.length);
     offlineApptsList.response.forEach((appt: offlineAppointment) => {
@@ -324,16 +323,18 @@ const getPatientPersonalizedAppointments: Resolver<
     if (foundKey >= 0) {
       await getApptDetails(foundKey);
     } else {
-      throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
+      apptDetails = {};
+      //throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
     }
   } else {
+    apptDetails = {};
     console.log(offlineApptsList.errorMsg, offlineApptsList.errorCode, 'offline consults error');
-    throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
+    //throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
   }
 
   if (doctorFlag == 0) throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID);
   console.log(apptDetails, 'apptDetails');
-  if (apptDetails == null) throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
+  if (apptDetails == null) apptDetails = {};
   return { appointmentDetails: apptDetails };
 };
 
@@ -346,7 +347,10 @@ export const getPatinetAppointmentsResolvers = {
 
   PersonalizedAppointment: {
     doctorDetails(appointment: PersonalizedAppointment) {
-      return { __typename: 'DoctorDetailsWithStatusExclude', id: appointment.doctorId };
+      return {
+        __typename: 'DoctorDetailsWithStatusExclude',
+        id: appointment.doctorId ? appointment.doctorId : '',
+      };
     },
   },
 
