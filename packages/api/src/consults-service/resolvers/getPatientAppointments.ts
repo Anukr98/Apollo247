@@ -8,7 +8,7 @@ import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { ApiConstants } from 'ApiConstants';
 import { DoctorHospitalRepository } from 'doctors-service/repositories/doctorHospitalRepository';
-import { differenceInDays, addDays } from 'date-fns';
+import { addDays } from 'date-fns';
 
 export const getPatinetAppointmentsTypeDefs = gql`
   type PatinetAppointments {
@@ -138,7 +138,7 @@ type AppointmentPayment = {
 };
 
 type PersonalizedAppointmentResult = {
-  appointmentDetails: PersonalizedAppointment | '';
+  appointmentDetails: PersonalizedAppointment;
 };
 
 type offlineAppointment = {
@@ -324,16 +324,18 @@ const getPatientPersonalizedAppointments: Resolver<
     if (foundKey >= 0) {
       await getApptDetails(foundKey);
     } else {
-      throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
+      apptDetails = {};
+      //throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
     }
   } else {
+    apptDetails = {};
     console.log(offlineApptsList.errorMsg, offlineApptsList.errorCode, 'offline consults error');
-    throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
+    //throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
   }
 
   if (doctorFlag == 0) throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID);
   console.log(apptDetails, 'apptDetails');
-  if (apptDetails == null) throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
+  if (apptDetails == null) apptDetails = {};
   return { appointmentDetails: apptDetails };
 };
 
@@ -346,7 +348,10 @@ export const getPatinetAppointmentsResolvers = {
 
   PersonalizedAppointment: {
     doctorDetails(appointment: PersonalizedAppointment) {
-      return { __typename: 'DoctorDetailsWithStatusExclude', id: appointment.doctorId };
+      return {
+        __typename: 'DoctorDetailsWithStatusExclude',
+        id: appointment.doctorId ? appointment.doctorId : '',
+      };
     },
   },
 

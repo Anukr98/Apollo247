@@ -178,8 +178,7 @@ export const convertCaseSheetToRxPdfData = async (
               .replace(/,(?=[^,]*$)/, ' and')
               .split('_')
               .join(' ');
-        }
-        else if (csRx.medicineTimings.length > 1 ) {
+        } else if (csRx.medicineTimings.length > 1) {
           frequency = frequency + ' in the';
           frequency =
             frequency +
