@@ -114,6 +114,7 @@ const pharmaStateCodeMapping: PharmaStateCodeMappingType = {
 };
 
 const customerCareNumber = '04048217222';
+const kavachHelpline = '18605000202';
 
 const readableParam = (param: string) => {
   const a = 'àáâäæãåāăąçćčđďèéêëēėęěğǵḧîïíīįìłḿñńǹňôöòóœøōõőṕŕřßśšşșťțûüùúūǘůűųẃẍÿýžźż·/_,:;'
@@ -306,4 +307,5 @@ export {
   findAddrComponents,
   ORDER_BILLING_STATUS_STRINGS,
   getTypeOfProduct,
+  kavachHelpline
 };
