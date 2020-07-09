@@ -632,10 +632,10 @@ export const KavachLanding: React.FC = (props) => {
                         Get In Touch
                       </AphButton>
                     ) : (
-                        <div className={classes.loader}>
-                          <CircularProgress />
-                        </div>
-                      )}
+                      <div className={classes.loader}>
+                        <CircularProgress />
+                      </div>
+                    )}
                   </form>
                 </div>
                 <Popover
@@ -658,7 +658,7 @@ export const KavachLanding: React.FC = (props) => {
                     closeMascot={() => {
                       setIsPopoverOpen(false);
                     }}
-                  // refreshPage
+                    // refreshPage
                   />
                 </Popover>
               </Grid>
@@ -1697,7 +1697,7 @@ export const KavachLanding: React.FC = (props) => {
         <AphDialogTitle></AphDialogTitle>
         <div className={classes.expertBox}>
           <h2>CORONAVIRUS? Talk to our expert.</h2>
-          <a href={`tel:${kavachHelpline}`}>Call {kavachHelpline} in emergency</a>
+          <a href={`tel:${kavachHelpline}`}>Call 1860-500-0202 in emergency</a>
           <AphButton onClick={() => setIscoronaDialogOpen(false)} color="primary">
             Ok, Got It
           </AphButton>
