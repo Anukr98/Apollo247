@@ -2,7 +2,7 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
-import { DoctorType, Gender, DOCTOR_ONLINE_STATUS, Salutation, AccountType, ConsultMode, ConsultType, WeekDay } from "./globalTypes";
+import { DoctorType, Gender, DOCTOR_ONLINE_STATUS, AccountType, ConsultMode, ConsultType, WeekDay } from "./globalTypes";
 
 // ====================================================
 // GraphQL mutation operation: RemoveSecretary
@@ -112,7 +112,7 @@ export interface RemoveSecretary_removeSecretary {
   physicalConsultationFees: string;
   qualification: string | null;
   registrationNumber: string;
-  salutation: Salutation | null;
+  salutation: string | null;
   specialization: string | null;
   state: string | null;
   streetLine1: string | null;

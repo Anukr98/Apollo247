@@ -399,6 +399,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   const [paused, setPaused] = useState<boolean>(true);
 
   useEffect(() => {
+    newUserPastSearch();
     if (!currentPatient) {
       console.log('No current patients available');
       getPatientApiCall();
@@ -421,6 +422,12 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
 
   const client = useApolloClient();
 
+  const newUserPastSearch = async () => {
+    const newPatientId = await AsyncStorage.getItem('selectUserId');
+    setTimeout(() => {
+      newPatientId && fetchPastSearches(newPatientId);
+    }, 1500);
+  };
   const handleBack = async () => {
     BackHandler.removeEventListener('hardwareBackPress', handleBack);
     props.navigation.goBack();
@@ -1309,9 +1316,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     if (rowData) {
       let itemSymptom = rowData!.symptoms || '';
       itemSymptom = itemSymptom.charAt(0).toUpperCase() + itemSymptom.slice(1); // capitalize first character
-      const symptom = itemSymptom.replace(/,\s*([a-z])/g, 
-        (d, e) => ", " + e.toUpperCase()
-      ); // capitalize first character after comma (,)
+      const symptom = itemSymptom.replace(/,\s*([a-z])/g, (d, e) => ', ' + e.toUpperCase()); // capitalize first character after comma (,)
       return (
         <Mutation<saveSearch> mutation={SAVE_SEARCH}>
           {(mutate, { loading, data, error }) => (
@@ -1639,6 +1644,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   const selectUser = (selectedUser: any) => {
     AsyncStorage.setItem('selectUserId', selectedUser!.id);
     AsyncStorage.setItem('selectUserUHId', selectedUser!.uhid);
+    AsyncStorage.setItem('isNewProfile', 'yes');
   };
   const renderCTAs = () => (
     <View style={styles.aphAlertCtaViewStyle}>

@@ -609,7 +609,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     AsyncStorage.removeItem('deeplinkReferalCode');
     storePatientDetailsTOBugsnag();
     callAPIForNotificationResult();
-    getPersonalizesAppointments();
   }, []);
 
   const storePatientDetailsTOBugsnag = async () => {
@@ -749,6 +748,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     } else {
       AsyncStorage.setItem('selectedProfileId', JSON.stringify(currentPatient.id));
       if (selectedProfile !== currentPatient.id) {
+        getPersonalizesAppointments();
         setAppointmentLoading(true);
         setSelectedProfile(currentPatient.id);
         client
@@ -968,17 +968,28 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       .then((data: any) => {
         const appointmentsdata =
           g(data, 'data', 'data', 'getPatientPersonalizedAppointments', 'appointmentDetails') || [];
-        // console.log('appointmentsdata', appointmentsdata);
-        AsyncStorage.setItem('UHIDused', uhid);
+        console.log('appointmentsdata', appointmentsdata);
+        AsyncStorage.setItem('UHIDused', selectedUHID);
 
-        setPersonalizedData(appointmentsdata as any);
-        setisPersonalizedCard(true);
-        setAppointmentsPersonalized &&
-          setAppointmentsPersonalized(
-            appointmentsdata as getPatientPersonalizedAppointments_getPatientPersonalizedAppointments_appointmentDetails[]
-          );
+        if (appointmentsdata.doctorId !== null) {
+          console.log('appointmentsdata_if', appointmentsdata);
+          setPersonalizedData(appointmentsdata as any);
+          setisPersonalizedCard(true);
+          setAppointmentsPersonalized &&
+            setAppointmentsPersonalized(
+              appointmentsdata as getPatientPersonalizedAppointments_getPatientPersonalizedAppointments_appointmentDetails[]
+            );
+        } else {
+          setPersonalizedData([]);
+          setisPersonalizedCard(false);
+          setAppointmentsPersonalized && setAppointmentsPersonalized([]);
+          console.log('appointmentsdata_null_else', appointmentsdata);
+        }
       })
       .catch((e) => {
+        setPersonalizedData([]);
+        setisPersonalizedCard(false);
+        // console.log('ConsultRoom_getPatientPersonalizedAppointmentList', e);
         CommonBugFender('ConsultRoom_getPatientPersonalizedAppointmentList', e);
       });
   };
@@ -1664,7 +1675,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           onClickButton={() => {
             const { doctorDetails } = personalizedData;
             const eventAttributes: WebEngageEvents[WebEngageEventName.HOMEPAGE_WIDGET_FOLLOWUP_CLICK] = {
-              'Doctor ID': doctorDetails.id,
+              'Doctor ID': personalizedData.doctorId,
               'Speciality ID': doctorDetails.specialty.id,
               'Hospital City': personalizedData.hospitalLocation,
               'Consult Mode': personalizedData.appointmentType,

@@ -87,11 +87,11 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
   const medicineDetailOptions = [
     {
       id: 'search',
-      title: 'Search and add medicine',
+      title: 'Search and add medicine(s)',
     },
     {
       id: 'Need all medicine and for duration as per prescription',
-      title: 'All medicine from prescription',
+      title: 'All medicines from prescription',
     },
     {
       id: 'Call me for details',
@@ -115,7 +115,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
       } else {
         const days = durationDays ? parseInt(durationDays) : null;
         props.navigation.push(AppRoutes.YourCartUploadPrescriptions, {
-          prescriptionOptionSelected: prescriptionOption === 'duration' ? 'All medicine from prescription' : selectedMedicineOption,
+          prescriptionOptionSelected: prescriptionOption === 'duration' ? `All medicines as per prescription for ${days} days` : selectedMedicineOption,
           // durationDays: prescriptionOption === 'duration' ? `Need all medicine as per prescription for ${durationDays} days` : null,
           durationDays: prescriptionOption === 'duration' ? days : null,
           physicalPrescription: PhysicalPrescriptions,

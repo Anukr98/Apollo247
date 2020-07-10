@@ -441,9 +441,11 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
           showMedOrderStatusAlert(data, 'Order_Confirmed');
         }
         break;
-      case 'Order_ready_at_store': {
-        showOrderReadyAtStoreAlert(data, 'Order_ready_at_store');
-      }
+      case 'Order_ready_at_store':
+        {
+          showOrderReadyAtStoreAlert(data, 'Order_ready_at_store');
+        }
+        break;
       case 'Diagnostic_Order_Success':
         {
           return; // Not showing in app because PN overriding in-app notification
@@ -545,11 +547,19 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
             showAphAlert!({
               title: ' ',
               description: data.content,
+              unDismissable: true,
               CTAs: [
                 {
                   text: 'DISMISS',
                   onPress: () => {
                     hideAphAlert && hideAphAlert();
+                    props.navigation.dispatch(
+                      StackActions.reset({
+                        index: 0,
+                        key: null,
+                        actions: [NavigationActions.navigate({ routeName: AppRoutes.TabBar })],
+                      })
+                    );
                   },
                   type: 'white-button',
                 },
@@ -583,6 +593,20 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
                 text: 'DISMISS',
                 onPress: () => {
                   hideAphAlert && hideAphAlert();
+                  try {
+                    if (
+                      currentScreenName === AppRoutes.AppointmentDetails ||
+                      currentScreenName === AppRoutes.AppointmentOnlineDetails
+                    ) {
+                      props.navigation.dispatch(
+                        StackActions.reset({
+                          index: 0,
+                          key: null,
+                          actions: [NavigationActions.navigate({ routeName: AppRoutes.TabBar })],
+                        })
+                      );
+                    }
+                  } catch (error) {}
                 },
                 type: 'white-button',
               },

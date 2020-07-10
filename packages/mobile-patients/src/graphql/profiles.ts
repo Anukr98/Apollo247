@@ -138,11 +138,16 @@ export const ADD_NEW_PROFILE = gql`
 // `;
 
 export const PAST_APPOINTMENTS_COUNT = gql`
-  query getPastAppointmentsCount($doctorId: String!, $patientId: String!) {
-    getPastAppointmentsCount(doctorId: $doctorId, patientId: $patientId) {
+  query getPastAppointmentsCount($doctorId: String!, $patientId: String!, $appointmentId: String!) {
+    getPastAppointmentsCount(
+      doctorId: $doctorId
+      patientId: $patientId
+      appointmentId: $appointmentId
+    ) {
       count
       completedCount
       yesCount
+      noCount
     }
   }
 `;
@@ -1187,6 +1192,7 @@ export const GET_MEDICINE_ORDERS_OMS__LIST = gql`
     getMedicineOrdersOMSList(patientId: $patientId) {
       medicineOrdersList {
         id
+        createdDate
         orderAutoId
         billNumber
         shopAddress
@@ -1194,7 +1200,7 @@ export const GET_MEDICINE_ORDERS_OMS__LIST = gql`
         currentStatus
         medicineOrdersStatus {
           id
-          statusDate
+          # statusDate
           orderStatus
           hideStatus
         }
@@ -1216,6 +1222,7 @@ export const GET_LATEST_MEDICINE_ORDER = gql`
     getLatestMedicineOrder(patientUhid: $patientUhid) {
       medicineOrderDetails {
         id
+        createdDate
         orderAutoId
         billNumber
         shopAddress
@@ -1227,9 +1234,9 @@ export const GET_LATEST_MEDICINE_ORDER = gql`
           mrp
           quantity
         }
-        medicineOrdersStatus {
-          statusDate
-        }
+        # medicineOrdersStatus {
+        #   statusDate
+        # }
         medicineOrderShipments {
           medicineOrderInvoice {
             itemDetails
@@ -1427,6 +1434,7 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS = gql`
     ) {
       medicineOrderDetails {
         id
+        createdDate
         orderAutoId
         billNumber
         devliveryCharges
@@ -2698,11 +2706,13 @@ export const UPDATE_SAVE_EXTERNAL_CONNECT = gql`
     $doctorId: String!
     $patientId: String!
     $externalConnect: Boolean
+    $appointmentId: String!
   ) {
     updateSaveExternalConnect(
       doctorId: $doctorId
       patientId: $patientId
       externalConnect: $externalConnect
+      appointmentId: $appointmentId
     ) {
       status
     }

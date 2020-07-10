@@ -188,7 +188,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     // refetch: latestMedicineOrderRefetch,
   } = useQuery<getLatestMedicineOrder, getLatestMedicineOrderVariables>(GET_LATEST_MEDICINE_ORDER, {
     variables: { patientUhid: g(currentPatient, 'uhid') || '' },
-    fetchPolicy: 'cache-first', // as per jira ticket - Get this data from backend only once in session - when we go to medicine home page the first time.
+    fetchPolicy: 'no-cache',
   });
   const latestMedicineOrder =
     latestMedicineOrderLoading || latestMedicineOrderError
@@ -462,7 +462,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       >({
         query: GET_RECOMMENDED_PRODUCTS_LIST,
         variables: { patientUhid: g(currentPatient, 'uhid') || '' },
-        fetchPolicy: 'cache-first', // as these products will not chnage frequently.
+        fetchPolicy: 'no-cache',
       });
       const _recommendedProducts =
         g(
@@ -802,7 +802,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           />
         </View>
       );
-    } else if (banners.length) {
+    } else if (banners.length && !isSelectPrescriptionVisible) {
       return (
         <View>
           <Carousel
@@ -812,7 +812,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             sliderWidth={winWidth}
             itemWidth={winWidth}
             loop={true}
-            autoplay={true}
+            autoplay={isSelectPrescriptionVisible ? false : true}
             autoplayDelay={3000}
             autoplayInterval={3000}
           />
@@ -931,10 +931,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     ]
       .filter((a) => a)
       .join(', ');
-    const date = moment(g(order, 'medicineOrdersStatus', '0' as any, 'statusDate')).format(
-      'MMMM DD, YYYY'
-    );
-    return isOfflineOrder ? `Ordered at ${address} on ${date}` : `Ordered online on ${1}`;
+    const date = moment(g(order, 'createdDate')).format('MMMM DD, YYYY');
+    return isOfflineOrder ? `Ordered at ${address} on ${date}` : `Ordered online on ${date}`;
   };
 
   const [reOrderDetails, setReOrderDetails] = useState<MedicineReOrderOverlayProps['itemDetails']>({

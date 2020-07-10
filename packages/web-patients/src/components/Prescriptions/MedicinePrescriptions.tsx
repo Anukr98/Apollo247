@@ -359,8 +359,6 @@ export const MedicinePrescriptions: React.FC = (props) => {
             <div className={classes.leftGroup}>
               <div className={classes.priscriptionBox}>
                 <div className={classes.sectionGroup}>
-                  {/* <PHRCard />
-                    <PHRCard /> */}
                   {prescriptions && prescriptions.length > 0 && (
                     <>
                       <div className={classes.titleHeader}>
@@ -378,6 +376,7 @@ export const MedicinePrescriptions: React.FC = (props) => {
                                 removeImagePrescription(fileName)
                               }
                               key={index}
+                              readOnly={false}
                             />
                           );
                         })}
@@ -396,6 +395,7 @@ export const MedicinePrescriptions: React.FC = (props) => {
                           <EPrescriptionCard
                             prescription={prescription}
                             removePrescription={removePrescription}
+                            readOnly={false}
                           />
                         ))}
                       </div>

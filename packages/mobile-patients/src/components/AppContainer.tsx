@@ -14,6 +14,7 @@ import DeviceInfo from 'react-native-device-info';
 import { setJSExceptionHandler, setNativeExceptionHandler } from 'react-native-exception-handler';
 import AsyncStorage from '@react-native-community/async-storage';
 import Axios from 'axios';
+import { setBugFenderLog } from '../FunctionHelpers/DeviceHelper';
 
 const postToFirebase = (
   currentPatients: string | null,
@@ -56,6 +57,7 @@ const postToFirebase = (
 const reporter = (error: string, type: 'JS' | 'Native') => {
   // Logic for reporting to devs
   console.log(error, type);
+  setBugFenderLog('reporter_AppContainer', JSON.stringify(error));
   if (getBuildEnvironment() == 'PROD') {
     Promise.all([
       DeviceInfo.getDeviceName(),
@@ -138,17 +140,17 @@ export class AppContainer extends React.Component<AppContainerTypes> {
 
   render() {
     return (
-      <UIElementsProvider>
-        <AppCommonDataProvider>
-          <AuthProvider>
+      <AppCommonDataProvider>
+        <AuthProvider>
+          <UIElementsProvider>
             <ShoppingCartProvider>
               <DiagnosticsCartProvider>
                 <NavigatorContainer />
               </DiagnosticsCartProvider>
             </ShoppingCartProvider>
-          </AuthProvider>
-        </AppCommonDataProvider>
-      </UIElementsProvider>
+          </UIElementsProvider>
+        </AuthProvider>
+      </AppCommonDataProvider>
     );
   }
 }
