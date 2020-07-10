@@ -113,7 +113,7 @@ export class PatientRepository extends Repository<Patient> {
   async getByIdCache(id: string | number) {
     const cache = await getCache(`${REDIS_PATIENT_ID_KEY_PREFIX}${id}`);
     if (cache && typeof cache === 'string') {
-      let patient: Patient = JSON.parse(cache);
+      const patient: Patient = JSON.parse(cache);
       patient.dateOfBirth = new Date(patient.dateOfBirth);
       return patient;
     } else {
@@ -144,14 +144,17 @@ export class PatientRepository extends Repository<Patient> {
       setCache(
         `${REDIS_PATIENT_ID_KEY_PREFIX}${id}`,
         patientString,
+<<<<<<< HEAD
         ApiConstants.CACHE_EXPIRATION_900
+=======
+        ApiConstants.CACHE_EXPIRATION_14400
+>>>>>>> 15dbb54373c6d64fb1904726ede2aeeb3bfc1304
       );
     }
     return patientDetails;
   }
   async getByMobileCache(mobile: string) {
-    let ids;
-    ids = await getCache(`${REDIS_PATIENT_MOBILE_KEY_PREFIX}${mobile}`);
+    const ids = await getCache(`${REDIS_PATIENT_MOBILE_KEY_PREFIX}${mobile}`);
     if (ids && typeof ids === 'string') {
       const patientIds: string[] = ids.split(',');
       const patients: Patient[] = [];
@@ -576,6 +579,7 @@ export class PatientRepository extends Repository<Patient> {
   }
 
   async createNewUhid(id: string) {
+    await this.dropPatientCache(`${REDIS_PATIENT_ID_KEY_PREFIX}${id}`);
     const patientDetails = await this.getPatientDetails(id);
     if (!patientDetails) {
       throw new AphError(AphErrorMessages.GET_PROFILE_ERROR, undefined, {

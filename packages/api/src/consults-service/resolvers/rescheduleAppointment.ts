@@ -645,19 +645,19 @@ const bookRescheduleAppointment: Resolver<
     notificationType: NotificationType.ACCEPT_RESCHEDULED_APPOINTMENT,
   };
   if (bookRescheduleAppointmentInput.initiatedBy == TRANSFER_INITIATED_TYPE.DOCTOR) {
-    const notificationResult = await sendNotification(
-      pushNotificationInput,
-      patientsDb,
-      consultsDb,
-      doctorsDb
-    );
-    console.log(notificationResult, 'appt rescheduled notification');
+    // const notificationResult = await sendNotification(
+    //   pushNotificationInput,
+    //   patientsDb,
+    //   consultsDb,
+    //   doctorsDb
+    // );
+    //console.log(notificationResult, 'appt rescheduled notification');
   }
   if ((bookRescheduleAppointmentInput.initiatedBy = TRANSFER_INITIATED_TYPE.PATIENT)) {
-    const pushNotificationInput = {
-      appointmentId: bookRescheduleAppointmentInput.appointmentId,
-      notificationType: NotificationType.RESCHEDULE_APPOINTMENT_BY_PATIENT,
-    };
+    // const pushNotificationInput = {
+    //   appointmentId: bookRescheduleAppointmentInput.appointmentId,
+    //   notificationType: NotificationType.RESCHEDULE_APPOINTMENT_BY_PATIENT,
+    // };
     const notificationResult = await sendNotification(
       pushNotificationInput,
       patientsDb,

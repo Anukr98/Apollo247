@@ -303,7 +303,7 @@ export const InfoCard: React.FC<InfoCardProps> = (props) => {
                 alt=""
               />
             </div>
-            <div className={classes.doctorName}>{`Dr. ${doctorInfo.fullName}`}</div>
+            <div className={classes.doctorName}>{`${doctorInfo.fullName}`}</div>
             <div className={classes.doctorType}>
               <span title={'Specialty'}>{doctorInfo.specialty.userFriendlyNomenclature}</span>
               <span className={classes.doctorExp} title={'Experiance'}>

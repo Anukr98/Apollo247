@@ -178,8 +178,7 @@ export const convertCaseSheetToRxPdfData = async (
               .replace(/,(?=[^,]*$)/, ' and')
               .split('_')
               .join(' ');
-        }
-        else if (csRx.medicineTimings.length > 1 ) {
+        } else if (csRx.medicineTimings.length > 1) {
           frequency = frequency + ' in the';
           frequency =
             frequency +
@@ -607,6 +606,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
         if (prescription.since.length > 0) textArray.push('Since: ' + prescription.since);
         if (prescription.howOften) textArray.push('How Often: ' + prescription.howOften);
         if (prescription.severity) textArray.push('Severity: ' + prescription.severity);
+        if (prescription.details) textArray.push('Details: ' + prescription.details);
 
         doc
           .fontSize(12)
@@ -621,14 +621,14 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
           .text(`${textArray.join('  |  ')}`, margin + 15)
           .moveDown(0.8);
 
-        if (prescription.details) {
-          doc
-            .fontSize(12)
-            .font(assetsDir + '/fonts/IBMPlexSans-Regular.ttf')
-            .fillColor('#666666')
-            .text(`${prescription.details}`, margin + 15)
-            .moveDown(0.8);
-        }
+        // if (prescription.details) {
+        //   doc
+        //     .fontSize(12)
+        //     .font(assetsDir + '/fonts/IBMPlexSans-Regular.ttf')
+        //     .fillColor('#666666')
+        //     .text(`${prescription.details}`, margin + 15)
+        //     .moveDown(0.8);
+        // }
 
         if (doc.y > doc.page.height - 150) {
           pageBreak();
