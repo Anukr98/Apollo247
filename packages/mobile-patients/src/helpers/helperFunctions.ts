@@ -1024,7 +1024,7 @@ export const InitiateAppsFlyer = () => {
   appsFlyer.initSdk(
     {
       devKey: 'pP3MjHNkZGiMCamkJ7YpbH',
-      isDebug: true,
+      isDebug: false,
       appId: Platform.OS === 'ios' ? '1496740273' : '',
     },
     (result) => {
