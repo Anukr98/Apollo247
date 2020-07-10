@@ -109,7 +109,7 @@ const updatePatient: Resolver<
     if (patient.uhid == '' || patient.uhid == null) {
       console.log('calling createNewUhid');
       await patientRepo.createNewUhid(updatePatient.id);
-      delCache(`${REDIS_PATIENT_ID_KEY_PREFIX}${updatePatient.id}`);
+      await delCache(`${REDIS_PATIENT_ID_KEY_PREFIX}${updatePatient.id}`);
     }
   }
 
