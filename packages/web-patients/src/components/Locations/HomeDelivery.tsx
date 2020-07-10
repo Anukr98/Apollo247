@@ -35,16 +35,9 @@ import {
 import { checkServiceAvailability } from 'helpers/MedicineApiCalls';
 
 export const formatAddress = (address: Address) => {
-  const addrLine1 = [address.addressLine1, address.addressLine2].filter((v) => v).join(', ');
-  const addrLine2 = [address.city, address.state]
-    .filter((v) => v)
-    .join(', ')
-    .split(',')
-    .map((v) => v.trim())
-    .filter((item, idx, array) => array.indexOf(item) === idx)
-    .join(', ');
+  const addressFormat = [address.addressLine1, address.addressLine2].filter((v) => v).join(', ');
   const formattedZipcode = address.zipcode ? ` - ${address.zipcode}` : '';
-  return `${addrLine1}\n${addrLine2}${formattedZipcode}`;
+  return `${addressFormat}${formattedZipcode}`;
 };
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -518,21 +511,19 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
                 } = address;
                 const addressComponents = data.results[0].address_components || [];
                 city =
-                  city ||
                   (
                     addressComponents.find(
                       (item: any) =>
                         item.types.indexOf('locality') > -1 ||
                         item.types.indexOf('administrative_area_level_2') > -1
                     ) || {}
-                  ).long_name;
+                  ).long_name || city;
                 state =
-                  state ||
                   (
                     addressComponents.find(
                       (item: any) => item.types.indexOf('administrative_area_level_1') > -1
                     ) || {}
-                  ).long_name;
+                  ).long_name || state;
                 updateAddressMutation({
                   variables: {
                     UpdatePatientAddressInput: {
