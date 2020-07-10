@@ -3,11 +3,7 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { SectionHeader } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import {
-  More,
-  TestsCartIcon,
-  TestsCartMedicineIcon,
-} from '@aph/mobile-patients/src/components/ui/Icons';
+import { TestsCartIcon, MedicineCartIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { fonts } from '@aph/mobile-patients/src/theme/fonts';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -15,8 +11,6 @@ import { viewStyles } from '@aph/mobile-patients/src/theme/viewStyles';
 import React from 'react';
 import {
   BackHandler,
-  Image,
-  ImageSourcePropType,
   SafeAreaView,
   ScrollView,
   StyleSheet,
@@ -60,9 +54,9 @@ export const MedAndTestCart: React.FC<MedAndTestCartProps> = (props) => {
   const arrayTest: ArrayTest[] = [
     {
       id: 1,
-      title: `Medicines`,
+      title: `Medicines & Essentials`,
       descripiton: cartItems.length > 0 ? `${cartItems.length} Items` : 'No Items',
-      image: <TestsCartMedicineIcon />,
+      image: <MedicineCartIcon />,
       cartCount: cartItems.length,
     },
     {
@@ -82,15 +76,6 @@ export const MedAndTestCart: React.FC<MedAndTestCartProps> = (props) => {
           leftIcon="backArrow"
           container={{ borderBottomWidth: 0 }}
           onPressLeftIcon={() => backDataFunctionality()}
-          // rightComponent={
-          //   <TouchableOpacity
-          //   // onPress={() => {
-          //   //     setCancelAppointment(true);
-          //   // }}
-          //   >
-          //     <More />
-          //   </TouchableOpacity>
-          // }
         />
       </View>
     );
