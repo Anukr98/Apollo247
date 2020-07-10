@@ -56,6 +56,7 @@ import {
   TouchableOpacity,
   View,
   KeyboardAvoidingView,
+  BackHandler,
 } from 'react-native';
 import { Text } from 'react-native-elements';
 import { NavigationScreenProps } from 'react-navigation';
@@ -255,7 +256,10 @@ export interface EditProfileProps extends NavigationScreenProps {
 }
 
 export const EditProfile: React.FC<EditProfileProps> = (props) => {
-  const relationArray: RelationArray[] = getRelations() || relationArray1;
+  const [selectedGenderRelationArray, setSelectedGenderRelationArray] = useState<RelationArray[]>(
+    getRelations() || relationArray1
+  );
+  const relationArray: RelationArray[] = getRelations() || selectedGenderRelationArray;
   const isEdit = props.navigation.getParam('isEdit');
   const isPoptype = props.navigation.getParam('isPoptype');
   const { width, height } = Dimensions.get('window');
@@ -265,6 +269,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
 
   const [deleteProfile, setDeleteProfile] = useState<boolean>(false);
   const [uploadVisible, setUploadVisible] = useState<boolean>(false);
+  const [showSelectedRelation, setShowSelectedRelation] = useState<boolean>(false);
   const [profileData, setProfileData] = useState<
     getPatientByMobileNumber_getPatientByMobileNumber_patients
   >(props.navigation.getParam('profileData'));
@@ -321,16 +326,181 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
     photoUrl === profileData.photoUrl;
 
   useEffect(() => {
+    const _didFocus = props.navigation.addListener('didFocus', (payload) => {
+      BackHandler.addEventListener('hardwareBackPress', handleBack);
+    });
+
+    const _willBlur = props.navigation.addListener('willBlur', (payload) => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBack);
+      return () => {
+        _didFocus && _didFocus.remove();
+        _willBlur && _willBlur.remove();
+      };
+    });
+  }, []);
+
+  const handleBack = async () => {
+    BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    isEdit ? props.navigation.goBack() : props.navigation.navigate(AppRoutes.ConsultRoom, {});
+    return false;
+  };
+
+  useEffect(() => {
     if (profileData) {
       setFirstName(profileData.firstName || '');
       setLastName(profileData.lastName || '');
       setDate(new Date(profileData.dateOfBirth!));
-      setGender(profileData!.gender!);
       setRelation(relationArray.find((relation) => relation.key === profileData.relation));
+      setShowSelectedRelation(true);
+      setGender(profileData!.gender!);
       setEmail(profileData.emailAddress || '');
       setPhotoUrl(profileData.photoUrl || '');
     }
   }, []);
+
+  useEffect(() => {
+    if (!profileData) {
+      if (gender == Gender.MALE) {
+        setRelation(undefined);
+        const maleRelationArray: RelationArray[] = [
+          { key: Relation.ME, title: 'Self' },
+          {
+            key: Relation.FATHER,
+            title: 'Father',
+          },
+          {
+            key: Relation.SON,
+            title: 'Son',
+          },
+          {
+            key: Relation.HUSBAND,
+            title: 'Husband',
+          },
+          {
+            key: Relation.GRANDFATHER,
+            title: 'Grandfather',
+          },
+          {
+            key: Relation.GRANDSON,
+            title: 'Grandson',
+          },
+          {
+            key: Relation.COUSIN,
+            title: 'Cousin',
+          },
+          {
+            key: Relation.OTHER,
+            title: 'Other',
+          },
+        ];
+        setSelectedGenderRelationArray(maleRelationArray);
+      } else if (gender == Gender.FEMALE) {
+        setRelation(undefined);
+        const femaleRelationArray: RelationArray[] = [
+          { key: Relation.ME, title: 'Self' },
+          {
+            key: Relation.MOTHER,
+            title: 'Mother',
+          },
+          {
+            key: Relation.DAUGHTER,
+            title: 'Daughter',
+          },
+          {
+            key: Relation.WIFE,
+            title: 'Wife',
+          },
+          {
+            key: Relation.GRANDMOTHER,
+            title: 'Grandmother',
+          },
+          {
+            key: Relation.GRANDDAUGHTER,
+            title: 'Granddaughter',
+          },
+          {
+            key: Relation.COUSIN,
+            title: 'Cousin',
+          },
+          {
+            key: Relation.OTHER,
+            title: 'Other',
+          },
+        ];
+        setSelectedGenderRelationArray(femaleRelationArray);
+      }
+    } else {
+      if (gender == Gender.MALE) {
+        showSelectedRelation ? setShowSelectedRelation(false) : setRelation(undefined);
+        const maleRelationArray: RelationArray[] = [
+          { key: Relation.ME, title: 'Self' },
+          {
+            key: Relation.FATHER,
+            title: 'Father',
+          },
+          {
+            key: Relation.SON,
+            title: 'Son',
+          },
+          {
+            key: Relation.HUSBAND,
+            title: 'Husband',
+          },
+          {
+            key: Relation.GRANDFATHER,
+            title: 'Grandfather',
+          },
+          {
+            key: Relation.GRANDSON,
+            title: 'Grandson',
+          },
+          {
+            key: Relation.COUSIN,
+            title: 'Cousin',
+          },
+          {
+            key: Relation.OTHER,
+            title: 'Other',
+          },
+        ];
+        setSelectedGenderRelationArray(maleRelationArray);
+      } else if (gender == Gender.FEMALE) {
+        showSelectedRelation ? setShowSelectedRelation(false) : setRelation(undefined);
+        const femaleRelationArray: RelationArray[] = [
+          { key: Relation.ME, title: 'Self' },
+          {
+            key: Relation.MOTHER,
+            title: 'Mother',
+          },
+          {
+            key: Relation.DAUGHTER,
+            title: 'Daughter',
+          },
+          {
+            key: Relation.WIFE,
+            title: 'Wife',
+          },
+          {
+            key: Relation.GRANDMOTHER,
+            title: 'Grandmother',
+          },
+          {
+            key: Relation.GRANDDAUGHTER,
+            title: 'Granddaughter',
+          },
+          {
+            key: Relation.COUSIN,
+            title: 'Cousin',
+          },
+          {
+            key: Relation.OTHER,
+            title: 'Other',
+          },
+        ];
+        setSelectedGenderRelationArray(femaleRelationArray);
+      }
+    }
+  }, [gender]);
 
   const deleteConfirmation = () => {
     showAphAlert!({
@@ -445,7 +615,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
           }
           getPatientApiCall();
           props.navigation.goBack();
-          setLoading && setLoading(true);
+          // setLoading && setLoading(true);
           // props.navigation.pop(2);
           // props.navigation.push(AppRoutes.ManageProfile, {
           //   mobileNumber: props.navigation.getParam('mobileNumber'),
@@ -467,7 +637,13 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
       props.navigation.goBack();
     }
   };
-
+  const selectUser = (selectedUser: any) => {
+    try {
+      AsyncStorage.setItem('selectUserId', selectedUser!.id);
+      AsyncStorage.setItem('isNewProfile', 'yes');
+      AsyncStorage.setItem('selectUserUHId', selectedUser!.uhid);
+    } catch (error) {}
+  };
   const newProfile = () => {
     setLoading && setLoading(true);
     client
@@ -490,6 +666,8 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
         setLoading && setLoading(false);
         getPatientApiCall();
         props.navigation.goBack();
+        selectUser(data.data!.addNewProfile.patient);
+        // console.log('addprofiledata==>', data.data!.addNewProfile.patient);
         // if (relation!.key === Relation.ME) {
         //   setCurrentPatientId(data!.data!.addNewProfile!.patient!.id);
         //   AsyncStorage.setItem('selectUserId', profileData!.id);
@@ -517,9 +695,9 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
   const renderUploadSelection = () => {
     return (
       <UploadPrescriprionPopup
+        isVisible={uploadVisible}
         isProfileImage={true}
         heading="Upload Profile Picture"
-        isVisible={uploadVisible}
         hideTAndCs
         optionTexts={{
           camera: 'TAKE A PHOTO',
@@ -565,7 +743,9 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
         leftIcon={'backArrow'}
         title={isEdit ? 'EDIT PROFILE' : 'ADD NEW FAMILY MEMBER'}
         rightComponent={null}
-        onPressLeftIcon={() => props.navigation.goBack()}
+        onPressLeftIcon={() =>
+          isEdit ? props.navigation.goBack() : props.navigation.navigate(AppRoutes.ConsultRoom, {})
+        }
       />
     );
   };
@@ -574,7 +754,8 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
     return (
       <View style={styles.profilePicContainer}>
         <View style={styles.profileImageContainer}>
-          {photoUrl && photoUrl.match(/(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG)/) ? (
+          {photoUrl &&
+          photoUrl.match(/(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jpeg|JPEG)/) ? (
             <Image
               style={styles.profileImage}
               source={{
@@ -705,7 +886,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
   };
 
   const renderRelation = () => {
-    const relationsData = relationArray.map((i) => {
+    const relationsData = selectedGenderRelationArray.map((i) => {
       return { key: i.key, value: i.title };
     });
 
@@ -788,7 +969,11 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
       <StickyBottomComponent style={styles.stickyBottomStyle} defaultBG>
         <View style={styles.bottonButtonContainer}>
           <Button
-            onPress={() => props.navigation.goBack()}
+            onPress={() => {
+              isEdit
+                ? props.navigation.goBack()
+                : props.navigation.navigate(AppRoutes.ConsultRoom, {});
+            }}
             title={'CANCEL'}
             style={styles.bottomWhiteButtonStyle}
             titleTextStyle={styles.bottomWhiteButtonTextStyle}

@@ -1,6 +1,6 @@
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { Failure, Pending, Success } from '@aph/mobile-patients/src/components/ui/Icons';
+import { Failure, Pending, Success, Copy } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
@@ -29,21 +29,27 @@ import {
   Dimensions,
   PermissionsAndroid,
   Platform,
+  Linking,
   ScrollView,
   StatusBar,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
+  Clipboard,
 } from 'react-native';
-import { NavigationScreenProps } from 'react-navigation';
+import { NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
 import RNFetchBlob from 'rn-fetch-blob';
 import {
   getAppointmentData,
   getAppointmentDataVariables,
 } from '../../graphql/types/getAppointmentData';
 import { AppsFlyerEventName } from '../../helpers/AppsFlyerEvents';
-import { FirebaseEventName } from '../../helpers/firebaseEvents';
+import { FirebaseEvents, FirebaseEventName } from '../../helpers/firebaseEvents';
+import firebase from 'react-native-firebase';
+import { Button } from '@aph/mobile-patients/src/components/ui/Button';
+import { NotificationPermissionAlert } from '@aph/mobile-patients/src/components/ui/NotificationPermissionAlert';
+import { Snackbar } from 'react-native-paper';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -61,15 +67,24 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
   const orderId = props.navigation.getParam('orderId');
   const doctorName = props.navigation.getParam('doctorName');
   const doctorID = props.navigation.getParam('doctorID');
+  const doctor = props.navigation.getParam('doctor');
   const appointmentDateTime = props.navigation.getParam('appointmentDateTime');
   const appointmentType = props.navigation.getParam('appointmentType');
   const webEngageEventAttributes = props.navigation.getParam('webEngageEventAttributes');
+  const appsflyerEventAttributes = props.navigation.getParam('appsflyerEventAttributes');
   const fireBaseEventAttributes = props.navigation.getParam('fireBaseEventAttributes');
+  const coupon = props.navigation.getParam('coupon');
   const client = useApolloClient();
-  const { success, failure, pending } = Payment;
+  const { success, failure, pending, aborted } = Payment;
   const { showAphAlert } = useUIElements();
   const { currentPatient } = useAllCurrentPatients();
-
+  const [notificationAlert, setNotificationAlert] = useState(false);
+  const [copiedText, setCopiedText] = useState('');
+  const [snackbarState, setSnackbarState] = useState<boolean>(false);
+  const copyToClipboard = (refId: string) => {
+    Clipboard.setString(refId);
+    setSnackbarState(true);
+  };
   const renderErrorPopup = (desc: string) =>
     showAphAlert!({
       title: 'Uh oh.. :(',
@@ -77,8 +92,8 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
     });
 
   useEffect(() => {
-    requestReadSmsPermission();
     // getTxnStatus(orderId)
+    console.log(webEngageEventAttributes['Consult Mode']);
     client
       .query({
         query: GET_TRANSACTION_STATUS,
@@ -99,10 +114,14 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
         } catch (error) {}
         console.log(res.data);
         if (res.data.paymentTransactionStatus.appointment.paymentStatus == success) {
+          fireBaseFCM();
           try {
-            postWebEngageEvent(WebEngageEventName.CONSULTATION_BOOKED, webEngageEventAttributes);
-            postAppsFlyerEvent(AppsFlyerEventName.CONSULTATION_BOOKED, webEngageEventAttributes);
+            let eventAttributes = webEngageEventAttributes;
+            eventAttributes['Display ID'] = res.data.paymentTransactionStatus.appointment.displayId;
+            postWebEngageEvent(WebEngageEventName.CONSULTATION_BOOKED, eventAttributes);
+            postAppsFlyerEvent(AppsFlyerEventName.CONSULTATION_BOOKED, appsflyerEventAttributes);
             postFirebaseEvent(FirebaseEventName.CONSULTATION_BOOKED, fireBaseEventAttributes);
+            firePurchaseEvent();
           } catch (error) {}
         }
         setrefNo(res.data.paymentTransactionStatus.appointment.bankTxnId);
@@ -123,7 +142,54 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
     };
   }, []);
 
-  const requestReadSmsPermission = async () => {
+  const fireBaseFCM = async () => {
+    const enabled = await firebase.messaging().hasPermission();
+    if (enabled) {
+      // user has permissions
+      console.log('enabled', enabled);
+    } else {
+      // user doesn't have permission
+      console.log('not enabled');
+      setNotificationAlert(true);
+      try {
+        const authorized = await firebase.messaging().requestPermission();
+        console.log('authorized', authorized);
+
+        // User has authorised
+      } catch (error) {
+        // User has rejected permissions
+        CommonBugFender('Login_fireBaseFCM_try', error);
+        console.log('not enabled error', error);
+      }
+    }
+  };
+
+  const firePurchaseEvent = () => {
+    const eventAttributes: FirebaseEvents[FirebaseEventName.PURCHASE] = {
+      coupon: coupon,
+      currency: 'INR',
+      items: [
+        {
+          item_name: doctorName, // Product Name or Doctor Name
+          item_id: doctorID, // Product SKU or Doctor ID
+          price: Number(price), // Product Price After discount or Doctor VC price (create another item in array for PC price)
+          item_brand: doctor.doctorType, // Product brand or Apollo (for Apollo doctors) or Partner Doctors (for 3P doctors)
+          item_category: 'Consultations', // 'Pharmacy' or 'Consultations'
+          item_category2: doctor.specialty.name, // FMCG or Drugs (for Pharmacy) or Specialty Name (for Consultations)
+          item_category3: doctor.city, // City Name (for Consultations)
+          item_variant: webEngageEventAttributes['Consult Mode'], // "Default" (for Pharmacy) or Virtual / Physcial (for Consultations)
+          index: 1, // Item sequence number in the list
+          quantity: 1, // "1" or actual quantity
+        },
+      ],
+      transaction_id: orderId,
+      value: Number(price),
+    };
+    console.log(eventAttributes);
+    postFirebaseEvent(FirebaseEventName.PURCHASE, eventAttributes);
+  };
+
+  const requestStoragePermission = async () => {
     try {
       const resuts = await PermissionsAndroid.requestMultiple([
         PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
@@ -140,6 +206,8 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
       ) {
       }
       if (resuts) {
+        console.log(resuts);
+        downloadInvoice();
       }
     } catch (error) {
       CommonBugFender('PaymentStatusScreen_requestReadSmsPermission_try', error);
@@ -148,14 +216,24 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
   };
 
   const handleBack = () => {
-    props.navigation.navigate(AppRoutes.ConsultRoom);
+    props.navigation.dispatch(
+      StackActions.reset({
+        index: 0,
+        key: null,
+        actions: [
+          NavigationActions.navigate({
+            routeName: AppRoutes.ConsultRoom,
+          }),
+        ],
+      })
+    );
     return true;
   };
 
   const statusIcon = () => {
     if (status === success) {
       return <Success style={styles.statusIconStyles} />;
-    } else if (status === failure) {
+    } else if (status === failure || status === aborted) {
       return <Failure style={styles.statusIconStyles} />;
     } else {
       return <Pending style={styles.statusIconStyles} />;
@@ -175,7 +253,6 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
           marginHorizontal: needStyle ? 0.1 * windowWidth : undefined,
         }}
         numberOfLines={numOfLines}
-        selectable={true}
       >
         {message}
       </Text>
@@ -185,7 +262,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
   const statusCardColour = () => {
     if (status == success) {
       return colors.SUCCESS;
-    } else if (status == failure) {
+    } else if (status == failure || status == aborted) {
       return colors.FAILURE;
     } else {
       return colors.PENDING;
@@ -201,6 +278,9 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
     } else if (status === failure) {
       message = ' PAYMENT FAILED';
       textColor = theme.colors.FAILURE_TEXT;
+    } else if (status === aborted) {
+      message = ' PAYMENT ABORTED';
+      textColor = theme.colors.FAILURE_TEXT;
     }
     return textComponent(message, undefined, textColor, false);
   };
@@ -211,7 +291,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
         <TouchableOpacity
           style={{ justifyContent: 'flex-end' }}
           onPress={() => {
-            downloadInvoice();
+            requestStoragePermission();
           }}
         >
           {textComponent('VIEW INVOICE', undefined, theme.colors.APP_YELLOW, false)}
@@ -315,11 +395,27 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
         <View style={{ flex: 0.39, justifyContent: 'flex-start', alignItems: 'center' }}>
           <View style={{ flex: 0.6, justifyContent: 'flex-start', alignItems: 'center' }}>
             {textComponent('Payment Ref. Number - ', undefined, theme.colors.SHADE_GREY, false)}
-            {textComponent(refNumberText, undefined, theme.colors.SHADE_GREY, false)}
+            <TouchableOpacity
+              style={styles.refStyles}
+              onPress={() => copyToClipboard(refNumberText)}
+            >
+              {textComponent(refNumberText, undefined, theme.colors.SHADE_GREY, false)}
+              <Copy style={styles.iconStyle} />
+            </TouchableOpacity>
           </View>
           <View style={{ flex: 0.4, justifyContent: 'flex-start', alignItems: 'center' }}>
             {renderViewInvoice()}
           </View>
+          <Snackbar
+            style={{ position: 'absolute', zIndex: 1001, bottom: -10 }}
+            visible={snackbarState}
+            onDismiss={() => {
+              setSnackbarState(false);
+            }}
+            duration={1000}
+          >
+            Copied
+          </Snackbar>
         </View>
       </View>
     );
@@ -382,7 +478,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
     if (status === failure) {
       noteText =
         'Note : In case your account has been debited, you should get the refund in 1-7 working days.';
-    } else if (status != success && status != failure) {
+    } else if (status != success && status != failure && status != aborted) {
       noteText =
         'Note : Your payment is in progress and this may take a couple of minutes to confirm your booking. We’ll intimate you once your bank confirms the payment.';
     }
@@ -392,7 +488,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
   const getButtonText = () => {
     if (status == success) {
       return 'Fill Medical Details';
-    } else if (status == failure) {
+    } else if (status == failure || status == aborted) {
       return 'TRY AGAIN';
     } else {
       return 'GO TO HOME';
@@ -404,14 +500,24 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
     const { navigate } = navigation;
     if (status == success) {
       getAppointmentInfo();
-    } else if (status == failure) {
+    } else if (status == failure || status == aborted) {
       // navigate(AppRoutes.DoctorSearch);
       setLoading(true);
       navigate(AppRoutes.DoctorDetails, {
         doctorId: doctorID,
       });
     } else {
-      navigate(AppRoutes.ConsultRoom);
+      props.navigation.dispatch(
+        StackActions.reset({
+          index: 0,
+          key: null,
+          actions: [
+            NavigationActions.navigate({
+              routeName: AppRoutes.ConsultRoom,
+            }),
+          ],
+        })
+      );
     }
   };
 
@@ -477,7 +583,6 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#01475b" />
       <Header leftIcon="backArrow" title="PAYMENT STATUS" onPressLeftIcon={() => handleBack()} />
-
       {!loading ? (
         <ScrollView style={styles.container}>
           {renderStatusCard()}
@@ -490,6 +595,15 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
         <Spinner />
       )}
       {showSpinner && <Spinner />}
+      {notificationAlert && (
+        <NotificationPermissionAlert
+          onPressOutside={() => setNotificationAlert(false)}
+          onButtonPress={() => {
+            setNotificationAlert(false);
+            Linking.openSettings();
+          }}
+        />
+      )}
     </View>
   );
 };
@@ -563,5 +677,14 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.4,
     shadowRadius: 8,
     elevation: 5,
+  },
+  refStyles: {
+    flexDirection: 'row',
+  },
+  iconStyle: {
+    marginLeft: 6,
+    marginTop: 5,
+    width: 9,
+    height: 10,
   },
 });

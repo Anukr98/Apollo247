@@ -199,21 +199,19 @@ export const ViewAllAddress: React.FC<ViewAllAddressProps> = (props) => {
                 } = addressDetails;
                 const addressComponents = data.results[0].address_components || [];
                 city =
-                  city ||
                   (
                     addressComponents.find(
                       (item: any) =>
                         item.types.indexOf('locality') > -1 ||
                         item.types.indexOf('administrative_area_level_2') > -1
                     ) || {}
-                  ).long_name;
+                  ).long_name || city;
                 state =
-                  state ||
                   (
                     addressComponents.find(
                       (item: any) => item.types.indexOf('administrative_area_level_1') > -1
                     ) || {}
-                  ).long_name;
+                  ).long_name || state;
                 updateAddressMutation({
                   variables: {
                     UpdatePatientAddressInput: {

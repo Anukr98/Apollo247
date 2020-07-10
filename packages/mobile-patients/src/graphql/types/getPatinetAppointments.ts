@@ -2,7 +2,7 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
-import { PatientAppointmentsInput, APPOINTMENT_TYPE, STATUS, APPOINTMENT_STATE, Salutation, DoctorType } from "./globalTypes";
+import { PatientAppointmentsInput, APPOINTMENT_TYPE, STATUS, APPOINTMENT_STATE, DoctorType } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: getPatinetAppointments
@@ -46,7 +46,7 @@ export interface getPatinetAppointments_getPatinetAppointments_patinetAppointmen
 export interface getPatinetAppointments_getPatinetAppointments_patinetAppointments_doctorInfo {
   __typename: "DoctorDetailsWithStatusExclude";
   id: string;
-  salutation: Salutation | null;
+  salutation: string | null;
   firstName: string;
   lastName: string;
   displayName: string | null;

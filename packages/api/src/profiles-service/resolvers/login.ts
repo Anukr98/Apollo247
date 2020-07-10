@@ -8,7 +8,7 @@ import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { log } from 'customWinstonLogger';
 import { debugLog } from 'customWinstonLogger';
-import { sendNotificationWhatsapp } from 'notifications-service/resolvers/notifications';
+import { sendDoctorNotificationWhatsapp } from 'notifications-service/resolvers/notifications';
 
 export const loginTypeDefs = gql`
   enum LOGIN_TYPE {
@@ -310,14 +310,14 @@ const sendMessage = async (args: any) => {
   //let smsResult;
   if (loginType == LOGIN_TYPE.DOCTOR) {
     const message = ApiConstants.DOCTOR_WHATSAPP_OTP.replace('{0}', otp);
-    const promiseSendNotification = sendNotificationWhatsapp(mobileNumber, message, 1);
+    const promiseSendNotification = sendDoctorNotificationWhatsapp(mobileNumber, message, 1);
     const promiseSendSMS = sendSMS(mobileNumber, otp, hashCode);
     await Promise.all([
       promiseSendNotification.catch((err) => {
         log(
           'smsOtpAPILogger',
           `API_CALL_ERROR`,
-          'sendNotificationWhatsapp()->CATCH_BLOCK',
+          'sendDoctorNotificationWhatsapp ()->CATCH_BLOCK',
           '',
           JSON.stringify(err)
         );

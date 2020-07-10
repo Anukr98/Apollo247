@@ -2,7 +2,7 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
-import { Geolocation, Salutation, DoctorType } from "./globalTypes";
+import { Geolocation, DoctorType } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: SearchDoctorAndSpecialtyByName
@@ -34,7 +34,7 @@ export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_d
 export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctors {
   __typename: "DoctorDetails";
   id: string;
-  salutation: Salutation | null;
+  salutation: string | null;
   firstName: string;
   lastName: string;
   displayName: string | null;
@@ -94,7 +94,7 @@ export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_p
 export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_possibleMatches_doctors {
   __typename: "DoctorDetails";
   id: string;
-  salutation: Salutation | null;
+  salutation: string | null;
   firstName: string;
   lastName: string;
   displayName: string | null;
@@ -161,7 +161,7 @@ export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_o
 export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_otherDoctors {
   __typename: "DoctorDetails";
   id: string;
-  salutation: Salutation | null;
+  salutation: string | null;
   firstName: string;
   lastName: string;
   displayName: string | null;

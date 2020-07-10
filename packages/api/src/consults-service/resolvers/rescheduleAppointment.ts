@@ -201,7 +201,7 @@ const checkIfReschedule: Resolver<
     } else {
       if (
         Math.abs(differenceInDays(apptDetails.appointmentDateTime, args.rescheduleDate)) >
-          ApiConstants.APPOINTMENT_RESCHEDULE_DAYS_LIMIT &&
+        ApiConstants.APPOINTMENT_RESCHEDULE_DAYS_LIMIT &&
         apptDetails.isFollowPaid === false
       ) {
         isPaid = 1;
@@ -231,6 +231,7 @@ const initiateRescheduleAppointment: Resolver<
 > = async (parent, { RescheduleAppointmentInput }, { consultsDb, doctorsDb, patientsDb }) => {
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const appointment = await appointmentRepo.findById(RescheduleAppointmentInput.appointmentId);
+
   if (!appointment) {
     throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
   }
@@ -257,9 +258,11 @@ const initiateRescheduleAppointment: Resolver<
 
   const rescheduleApptRepo = consultsDb.getCustomRepository(RescheduleAppointmentRepository);
   const rescheduleAppointment = await rescheduleApptRepo.saveReschedule(rescheduleAppointmentAttrs);
+
   await appointmentRepo.updateTransferState(
     RescheduleAppointmentInput.appointmentId,
-    APPOINTMENT_STATE.AWAITING_RESCHEDULE
+    APPOINTMENT_STATE.AWAITING_RESCHEDULE,
+    appointment
   );
 
   const notificationType = NotificationType.INITIATE_RESCHEDULE;
@@ -368,9 +371,9 @@ const bookRescheduleAppointment: Resolver<
       .getUTCHours()
       .toString()
       .padStart(2, '0')}:${appointmentDateTime
-      .getUTCMinutes()
-      .toString()
-      .padStart(2, '0')}:00.000Z`;
+        .getUTCMinutes()
+        .toString()
+        .padStart(2, '0')}:00.000Z`;
     console.log(slotApptDt, apptDt, sl, appointment.doctorId, 'appoint date time');
     const esDocotrStatusOpen =
       status === 'OPEN' ? ES_DOCTOR_SLOT_STATUS.OPEN : ES_DOCTOR_SLOT_STATUS.BOOKED;
@@ -384,14 +387,17 @@ const bookRescheduleAppointment: Resolver<
   }
 
   if (bookRescheduleAppointmentInput.initiatedBy == TRANSFER_INITIATED_TYPE.PATIENT) {
+
     if (apptDetails.rescheduleCount == ApiConstants.APPOINTMENT_MAX_RESCHEDULE_COUNT_PATIENT) {
       //cancel appt
       await appointmentRepo.cancelAppointment(
         bookRescheduleAppointmentInput.appointmentId,
         REQUEST_ROLES.PATIENT,
         apptDetails.patientId,
-        'MAX_RESCHEDULES_EXCEEDED'
+        'MAX_RESCHEDULES_EXCEEDED',
+        apptDetails
       );
+
       const appointmentPayment = await appointmentRepo.findAppointmentPayment(apptDetails.id);
       if (appointmentPayment) {
         let refundResponse = await initiateRefund(
@@ -427,11 +433,13 @@ const bookRescheduleAppointment: Resolver<
         }
       }
     } else {
+
       await appointmentRepo.rescheduleAppointment(
         bookRescheduleAppointmentInput.appointmentId,
         bookRescheduleAppointmentInput.newDateTimeslot,
         apptDetails.rescheduleCount + 1,
-        APPOINTMENT_STATE.RESCHEDULE
+        APPOINTMENT_STATE.RESCHEDULE,
+        apptDetails
       );
       // update on ES, should update new slot to booked and previous slot to open
       //open old slot
@@ -461,13 +469,16 @@ const bookRescheduleAppointment: Resolver<
     if (
       apptDetails.rescheduleCountByDoctor == ApiConstants.APPOINTMENT_MAX_RESCHEDULE_COUNT_DOCTOR
     ) {
+
       //cancel appt
       await appointmentRepo.cancelAppointment(
         bookRescheduleAppointmentInput.appointmentId,
         REQUEST_ROLES.PATIENT,
         apptDetails.patientId,
-        'MAX_RESCHEDULES_EXCEEDED'
+        'MAX_RESCHEDULES_EXCEEDED',
+        apptDetails
       );
+
       const appointmentPayment = await appointmentRepo.findAppointmentPayment(apptDetails.id);
       if (appointmentPayment) {
         let refundResponse = await initiateRefund(
@@ -507,7 +518,8 @@ const bookRescheduleAppointment: Resolver<
         bookRescheduleAppointmentInput.appointmentId,
         bookRescheduleAppointmentInput.newDateTimeslot,
         apptDetails.rescheduleCountByDoctor + 1,
-        APPOINTMENT_STATE.RESCHEDULE
+        APPOINTMENT_STATE.RESCHEDULE,
+        apptDetails
       );
       // update on ES, should update new slot to booked and previous slot to open
       //open old slot
@@ -580,8 +592,8 @@ const bookRescheduleAppointment: Resolver<
   const toEmailId = process.env.BOOK_APPT_TO_EMAIL ? process.env.BOOK_APPT_TO_EMAIL : '';
   const ccEmailIds =
     process.env.NODE_ENV == 'dev' ||
-    process.env.NODE_ENV == 'development' ||
-    process.env.NODE_ENV == 'local'
+      process.env.NODE_ENV == 'development' ||
+      process.env.NODE_ENV == 'local'
       ? ApiConstants.PATIENT_APPT_CC_EMAILID
       : ApiConstants.PATIENT_APPT_CC_EMAILID_PRODUCTION;
   const emailContent: EmailMessage = {

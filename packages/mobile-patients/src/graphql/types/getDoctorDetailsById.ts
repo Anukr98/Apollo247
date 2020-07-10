@@ -2,7 +2,7 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
-import { Salutation, DoctorType, ConsultMode, WeekDay } from "./globalTypes";
+import { DoctorType, ConsultMode, WeekDay } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: getDoctorDetailsById
@@ -61,7 +61,7 @@ export interface getDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDo
 export interface getDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDoctor {
   __typename: "Profile";
   id: string;
-  salutation: Salutation | null;
+  salutation: string | null;
   firstName: string | null;
   lastName: string | null;
   fullName: string | null;
@@ -103,7 +103,7 @@ export interface getDoctorDetailsById_getDoctorDetailsById_consultHours {
 export interface getDoctorDetailsById_getDoctorDetailsById {
   __typename: "DoctorDetails";
   id: string;
-  salutation: Salutation | null;
+  salutation: string | null;
   firstName: string;
   lastName: string;
   fullName: string | null;
@@ -117,6 +117,7 @@ export interface getDoctorDetailsById_getDoctorDetailsById {
   city: string | null;
   awards: string | null;
   photoUrl: string | null;
+  availableModes: (ConsultMode | null)[] | null;
   specialty: getDoctorDetailsById_getDoctorDetailsById_specialty | null;
   registrationNumber: string;
   onlineConsultationFees: string;

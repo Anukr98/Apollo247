@@ -15,9 +15,9 @@ export enum ApiConstants {
   //appointment call started by doctor
   CALL_APPOINTMENT_TITLE = 'Appointment has been started',
   CALL_APPOINTMENT_BODY = "Hi {0}! :) Dr. {1}'s team doctor is waiting to start your consultation. Please proceed to the consult room",
-  WHATSAPP_SD_CONSULT_START_REMINDER = 'Hi {1}! {2} is waiting for you to start the consultation. Please go to My Appointments in Apollo 247 and start the consultation. {3}',
+  WHATSAPP_SD_CONSULT_START_REMINDER = 'Hi%20{0}%21%20{2}%20{1}%20is%20waiting%20for%20you%20to%20start%20the%20consultation.%20Please%20go%20to%20My%20Appointments%20in%20Apollo%2024%7C7%20and%20start%20the%20consultation.%20https%3A%2F%2F{3}%2Fdeeplink%3Furl%3Dapollopatients%3A%2F%2Fconsults',
   JUNIOR_CALL_APPOINTMENT_BODY = "Hi {0}! :) Dr. {1}'s team doctor is waiting to start your consultation. Please proceed to the consult room",
-  WHATSAPP_JD_CONSULT_START_REMINDER = 'Hi {0}! {1} team doctor is waiting for you to start the consultation. Please go to My Appointments in Apollo 247 and start the consultation. {3}',
+  WHATSAPP_JD_CONSULT_START_REMINDER = 'Hi%20{0}%21%20{2}%20{1}%27s%20team%20doctor%20is%20waiting%20for%20you%20to%20start%20the%20consultation.%20Please%20go%20to%20My%20Appointments%20in%20Apollo%2024%7C7%20and%20start%20the%20consultation.%20https%3A%2F%2F{3}%2Fdeeplink%3Furl%3Dapollopatients%3A%2F%2Fconsults',
   JUNIOR_AVCALL_APPOINTMENT_BODY = "Hi {0}! :) Dr. {1}'s team doctor is waiting for your call response. Please proceed to the consult room",
   AVCALL_APPOINTMENT_BODY = 'Hi {0}! :) Dr. {1} is waiting for your call response. Please proceed to the consult room.',
 
@@ -148,14 +148,14 @@ export enum ApiConstants {
   WHATSAPP_LINK = '\nClick here to check your today’s calendar on Mobile Application ',
   FOLLOWUP_NOTIFITICATION_TEXT = 'Hi {0}! Hope you are feeling better after your consultation with Dr. {1} :) You can book a free follow up with us till {2}.',
   CHAT_MESSGAE_TEXT = 'Hi Dr. {0}! Your patient {1} has sent you a chat message. ',
-  SEND_PATIENT_NOTIFICATION = 'Hi%20{3}%20{0}%21%20{1}%20is%20waiting%20for%20you%20to%20start%20the%20consultation.%20Please%20go%20to%20your%20dashboard%20in%20Apollo%2024%7C7%20and%20start%20the%20consultation.%20https%3A%2F%2Fpmt.apollo247.com%2Fdeeplink%3Furl%3Dapollodoctors%3A%2F%2Fappointments%3Fid%3D{2}%26date%3D{4}',
-  WHATSAPP_SD_CHAT_NOTIFICATION = 'Hi%20{2}%20{0}%21%20{1}%20has%20sent%20you%20a%20chat%20message.%20Click%20here%20to%20respond.%20https%3A%2F%2Fpmt.apollo247.com%2Fdeeplink%3Furl%3Dapollodoctors%3A%2F%2Fchat%3F{3}',
+  SEND_PATIENT_NOTIFICATION = 'Hi%20{3}%20{0}%21%20{1}%20is%20waiting%20for%20you%20to%20start%20the%20consultation.%20Please%20go%20to%20your%20dashboard%20in%20Apollo%2024%7C7%20and%20start%20the%20consultation.%20https%3A%2F%2F{5}%2Fdoctordeeplink%3Furl%3Dapollodoctors%3A%2F%2Fappointments%3Fid%3D{2}%26date%3D{4}',
+  WHATSAPP_SD_CHAT_NOTIFICATION = 'Hi%20{2}%20{0}%21%20{1}%20has%20sent%20you%20a%20chat%20message.%20Click%20here%20to%20respond.%20https%3A%2F%2F{4}%2Fdoctordeeplink%3Furl%3Dapollodoctors%3A%2F%2Fchat%3F{3}',
   DAILY_APPOINTMENT_SUMMARY_RESPONSE = 'Daily Appointment summaries have been sent to {0} Doctor(s) successfully',
   FOLLOW_UP_NOTIFICATION_RESPONSE = 'Follow up notifications sent to {0} patients successfully',
   PRESCRIPTION_READY_TITLE = 'Prescription ready',
   PRESCRIPTION_READY_BODY = 'Hi {0}! Your prescription from consultation with Doctor {1} for appointment {2} on {3} is ready :) ',
 
-  REFERRAL_CODE_TEXT = 'Hi {0}, Use code "CARE247" to avail discount up to Rs. 999  on the 1st Apollo Doctor consult on your Apollo 24|7 app. Click to learn https://youtu.be/gwIRbcO3hpk',
+  REFERRAL_CODE_TEXT = 'Hi {0}, Use code "CARE247" to avail discount up to Rs. 149  on the 1st Apollo Doctor consult on your Apollo 24|7 app. Click to learn https://youtu.be/gwIRbcO3hpk',
   REFERRAL_CODE_TEXT_WITH_COUPON = 'Hi {0}, Use code "{1}" to avail discount up to Rs. 299  on the 1st Apollo Doctor consult on your Apollo 24|7 app. Click to learn https://youtu.be/XF7MWPebtkw',
 
   BOOK_APPOINTMENT_HISTORY_REASON = 'Booking new appointment',
