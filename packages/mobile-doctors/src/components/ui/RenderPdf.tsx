@@ -13,6 +13,7 @@ import {
   TextStyle,
   ViewStyle,
   Text,
+  Linking,
 } from 'react-native';
 import Pdf from 'react-native-pdf';
 import { NavigationScreenProps } from 'react-navigation';
@@ -25,6 +26,7 @@ import { StickyBottomComponent } from '@aph/mobile-doctors/src/components/ui/Sti
 import { RenderPdfStyles } from '@aph/mobile-doctors/src/components/ui/RenderPdf.styles';
 import { nameFormater } from '@aph/mobile-doctors/src/helpers/helperFunctions';
 import { isIphoneX } from 'react-native-iphone-x-helper';
+import { string } from '@aph/mobile-doctors/src/strings/string';
 
 const { width, height } = Dimensions.get('window');
 
@@ -160,7 +162,16 @@ export const RenderPdf: React.FC<RenderPdfProps> = (props) => {
           console.log(`current page: ${page}`);
         }}
         onError={(error) => {
-          console.log(error);
+          showAphAlert &&
+            showAphAlert({
+              title: string.common.alert,
+              description: 'Loading pdf failed. Opening in browser.',
+              onPressOk: () => {
+                hideAphAlert && hideAphAlert();
+                Linking.openURL(uri);
+                setDisplayPdf && setDisplayPdf();
+              },
+            });
         }}
         source={{ uri: uri }}
         style={{

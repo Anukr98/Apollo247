@@ -2,7 +2,7 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
-import { DoctorType, Salutation, ConsultMode, ConsultType, WeekDay, AccountType } from "./globalTypes";
+import { DoctorType, ConsultMode, ConsultType, WeekDay, AccountType } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: GetDoctorDetails
@@ -77,7 +77,7 @@ export interface GetDoctorDetails_getDoctorDetails_starTeam_associatedDoctor {
   experience: string | null;
   photoUrl: string | null;
   mobileNumber: string;
-  salutation: Salutation | null;
+  salutation: string | null;
   qualification: string | null;
   doctorHospital: GetDoctorDetails_getDoctorDetails_starTeam_associatedDoctor_doctorHospital[];
 }
@@ -134,7 +134,7 @@ export interface GetDoctorDetails_getDoctorDetails {
   physicalConsultationFees: string;
   qualification: string | null;
   registrationNumber: string;
-  salutation: Salutation | null;
+  salutation: string | null;
   specialization: string | null;
   state: string | null;
   streetLine1: string | null;
