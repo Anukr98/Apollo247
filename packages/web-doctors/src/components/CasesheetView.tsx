@@ -302,6 +302,7 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
     removedMedicinePrescription,
     referralDescription,
     referralSpecialtyName,
+    updatedDate,
   } = useContext(CaseSheetContext);
 
   const [loader, setLoader] = useState<boolean>(false);
@@ -458,7 +459,7 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
       ) => (
         <li key={`removed-${index}`}>
           <s>{prescription.medicineName}</s>{' '}
-          <span className={classes.removed}>( This medication has been disontinued )</span>
+          <span className={classes.removed}>( This medication has been discontinued )</span>
         </li>
       )
     );
@@ -710,13 +711,13 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
                     <div className={`${classes.label} ${classes.labelRight}`}>Consult Date</div>
                     <div className={classes.labelContent}>
                       <div className={classes.labelBlue}>
-                        {sdConsultationDate && sdConsultationDate !== ''
-                          ? `${moment(sdConsultationDate).format('DD/MM/YYYY')} at ${moment(
-                              sdConsultationDate
+                        {updatedDate && updatedDate !== ''
+                          ? `${moment(updatedDate).format('DD/MM/YYYY')} at ${moment(
+                              updatedDate
                             ).format('h:mm a')}`
-                          : `${moment(appointmentInfo.appointmentDateTime).format(
-                              'DD/MM/YYYY'
-                            )} at ${moment(appointmentInfo.appointmentDateTime).format('h:mm a')}`}
+                          : `${moment(new Date()).format('DD/MM/YYYY')} at ${moment(
+                              new Date()
+                            ).format('h:mm a')}`}
                       </div>
                     </div>
                   </div>
@@ -778,7 +779,9 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
               </div>
             </div>
           ) : null}
-          {!loader && medicinePrescription && medicinePrescription.length > 0 ? (
+          {!loader &&
+          ((removedMedicinePrescription && removedMedicinePrescription.length > 0) ||
+            (medicinePrescription && medicinePrescription.length > 0)) ? (
             <div className={classes.prescriptionSection}>
               <div className={classes.sectionHeader}>
                 <img src={require('images/ic-medicines.svg')} /> Medication Prescribed
@@ -869,9 +872,9 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
                     (appointmentInfo && appointmentInfo!.appointmentDateTime)) && (
                     <h6>
                       Prescribed on{' '}
-                      {sdConsultationDate && sdConsultationDate !== ''
-                        ? moment(sdConsultationDate).format('DD/MM/YYYY')
-                        : moment(appointmentInfo.appointmentDateTime).format('DD/MM/YYYY')}{' '}
+                      {updatedDate && updatedDate !== ''
+                        ? moment(updatedDate).format('DD/MM/YYYY')
+                        : moment(new Date()).format('DD/MM/YYYY')}{' '}
                       by
                     </h6>
                   )}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Theme, Grid, CircularProgress, Popover, Typography } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
@@ -8,8 +8,6 @@ import ExpansionPanel from '@material-ui/core/ExpansionPanel';
 import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
 import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import Tabs from '@material-ui/core/Tabs';
-import Tab from '@material-ui/core/Tab';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { gtmTracking } from '../gtmTracking';
 // import { SearchObject } from 'components/DoctorsFilter';
@@ -29,6 +27,10 @@ import {
 import { SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME } from 'graphql/doctors';
 import { useApolloClient } from 'react-apollo-hooks';
 import { SpecialtySearch } from './SpecialtySearch';
+import { WhyApollo } from 'components/Doctors/WhyApollo';
+import { HowItWorks } from './Doctors/HowItWorks';
+import { ManageProfile } from 'components/ManageProfile';
+import { Relation } from 'graphql/types/globalTypes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -56,7 +58,14 @@ const useStyles = makeStyles((theme: Theme) => {
 
       [theme.breakpoints.down(650)]: {
         '&:after': {
-          height: 320,
+          height: 170,
+        },
+      },
+    },
+    slCotent1: {
+      [theme.breakpoints.down(650)]: {
+        '&:after': {
+          height: 280,
         },
       },
     },
@@ -163,7 +172,7 @@ const useStyles = makeStyles((theme: Theme) => {
         color: '#00a7b9',
         fontWeight: 'bold',
         [theme.breakpoints.down('sm')]: {
-          margin: '30px 0 10px',
+          margin: '20px 0 10px',
         },
       },
     },
@@ -607,41 +616,13 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-interface TabPanelProps {
-  children?: React.ReactNode;
-  index: any;
-  value: any;
-}
-
-function TabPanel(props: TabPanelProps) {
-  const { children, value, index, ...other } = props;
-
-  return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`simple-tabpanel-${index}`}
-      aria-labelledby={`simple-tab-${index}`}
-      {...other}
-    >
-      {value === index && <div>{children}</div>}
-    </div>
-  );
-}
-function a11yProps(index: any) {
-  return {
-    id: `simple-tab-${index}`,
-    'aria-controls': `simple-tabpanel-${index}`,
-  };
-}
-
 export const SpecialityListing: React.FC = (props) => {
   const classes = useStyles({});
-  const { currentPatient } = useAllCurrentPatients();
+  const scrollToRef = useRef<HTMLDivElement>(null);
+  const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const apolloClient = useApolloClient();
   const { isSignedIn } = useAuth();
   const [expanded, setExpanded] = React.useState<string | false>(false);
-  const [value, setValue] = React.useState(0);
   const prakticeSDKSpecialties = localStorage.getItem('symptomTracker');
   const [searchKeyword, setSearchKeyword] = useState<string>('');
   const [locationPopup, setLocationPopup] = useState<boolean>(false);
@@ -650,13 +631,11 @@ export const SpecialityListing: React.FC = (props) => {
   const [searchLoading, setSearchLoading] = useState<boolean>(false);
   const [faqs, setFaqs] = useState<any | null>(null);
   const [selectedCity, setSelectedCity] = useState<string>('');
+  const onePrimaryUser =
+    allCurrentPatients && allCurrentPatients.filter((x) => x.relation === Relation.ME).length === 1;
 
   const handleChange = (panel: string) => (event: React.ChangeEvent<{}>, isExpanded: boolean) => {
     setExpanded(isExpanded ? panel : false);
-  };
-
-  const handleTabChange = (event: React.ChangeEvent<{}>, newValue: number) => {
-    setValue(newValue);
   };
 
   useEffect(() => {
@@ -671,6 +650,9 @@ export const SpecialityListing: React.FC = (props) => {
 
   useEffect(() => {
     if (!faqs) {
+      scrollToRef &&
+        scrollToRef.current &&
+        scrollToRef.current.scrollIntoView({ behavior: 'auto', block: 'end' });
       fetchUtil(process.env.SPECIALTY_LISTING_FAQS, 'GET', {}, '', true).then((res: any) => {
         if (res && res.success === 'true' && res.data && res.data.length > 0) {
           setFaqs(res.data[0]);
@@ -717,10 +699,9 @@ export const SpecialityListing: React.FC = (props) => {
     <div className={classes.slContainer}>
       <Header />
       <div className={classes.container}>
-        <div className={classes.slContent}>
-          {' '}
+        <div className={`${classes.slContent} ${currentPatient ? classes.slCotent1 : ''}`}>
           {/* Please add a class slnoDoctor here when showing up noDoctor Content */}
-          <div className={classes.pageHeader}>
+          <div className={classes.pageHeader} ref={scrollToRef}>
             <Link to={clientRoutes.welcome()}>
               <div className={classes.backArrow} title={'Back to home page'}>
                 <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
@@ -798,130 +779,8 @@ export const SpecialityListing: React.FC = (props) => {
                       </div>
                     </div>
                   </div>
-                  <div className={classes.card}>
-                    <Typography component="h5">Why Apollo247</Typography>
-                    <ul className={classes.cardList}>
-                      <li>Verified doctor listing</li>
-                      <li>99% +ve feedback</li>
-                      <li>Free follow-up session</li>
-                      <li>In hac habitasse platea dictumst. Vivamus adipiscing fermentum </li>
-                    </ul>
-                  </div>
-                  <div className={classes.card}>
-                    <Typography component="h5">How it works</Typography>
-                    <div className={classes.tabsContainer}>
-                      <Tabs
-                        value={value}
-                        onChange={handleTabChange}
-                        aria-label="simple tabs example"
-                        classes={{
-                          root: classes.tabsRoot,
-                          indicator: classes.tabsIndicator,
-                        }}
-                      >
-                        <Tab
-                          label="Chat/Audio/Video"
-                          {...a11yProps(0)}
-                          classes={{
-                            root: classes.tabRoot,
-                            selected: classes.tabSelected,
-                          }}
-                        />
-                        <Tab
-                          label="Meet in Person"
-                          {...a11yProps(1)}
-                          classes={{
-                            root: classes.tabRoot,
-                            selected: classes.tabSelected,
-                          }}
-                        />
-                      </Tabs>
-                      <div className={classes.tabContent}>
-                        <TabPanel value={value} index={0}>
-                          <div className={classes.chatContainer}>
-                            <div className={classes.tabHead}>
-                              <img src={require('images/video-calling.svg')} />
-                              <Typography component="h6">
-                                How to consult via chat/audio/video?
-                              </Typography>
-                            </div>
-                            <div className={classes.tabBody}>
-                              <ul className={classes.tabList}>
-                                <li>
-                                  <img src={require('images/consult-doc.svg')} />
-                                  <Typography>Choose the doctor</Typography>
-                                </li>
-                                <li>
-                                  <img src={require('images/slot.svg')} />
-                                  <Typography>Book a slot</Typography>
-                                </li>
-                                <li>
-                                  <img src={require('images/ic-payment.svg')} />
-                                  <Typography>Make payment</Typography>
-                                </li>
-                                <li className={classes.highlight}>
-                                  <img src={require('images/ic-video.svg')} />
-                                  <Typography>Speak to the doctor via video/audio/chat</Typography>
-                                </li>
-                                <li>
-                                  <img src={require('images/prescription.svg')} />
-                                  <Typography>Receive prescriptions instantly </Typography>
-                                </li>
-                                <li className={classes.highlight}>
-                                  <img src={require('images/chat.svg')} />
-                                  <Typography>
-                                    Chat with the doctor for 6 days after your consult
-                                  </Typography>
-                                </li>
-                              </ul>
-                            </div>
-                          </div>
-                        </TabPanel>
-                        <TabPanel value={value} index={1}>
-                          <div className={classes.tabHead}>
-                            <img src={require('images/ic-specialist.svg')} />
-                            <Typography component="h6">How to consult in Person?</Typography>
-                          </div>
-                          <div className={classes.tabBody}>
-                            <ul className={classes.tabList}>
-                              <li>
-                                <img src={require('images/consult-doc.svg')} />
-                                <Typography>Choose the doctor</Typography>
-                              </li>
-                              <li>
-                                <img src={require('images/slot.svg')} />
-                                <Typography>Book a slot</Typography>
-                              </li>
-                              <li>
-                                <img src={require('images/ic-payment.svg')} />
-                                <Typography>Make payment</Typography>
-                              </li>
-                              <li className={classes.highlight}>
-                                <img src={require('images/hospital.svg')} />
-                                <Typography>Visit the doctor at Hospital/Clinic</Typography>
-                              </li>
-                              <li>
-                                <img src={require('images/prescription.svg')} />
-                                <Typography>Receive prescriptions instantly </Typography>
-                              </li>
-                            </ul>
-                          </div>
-                        </TabPanel>
-                      </div>
-                    </div>
-                    <div className={classes.appDetails}>
-                      <Typography component="h6">
-                        Consultancy works only on our mobile app
-                      </Typography>
-                      <Typography>
-                        To enjoy enhanced consultation experience download our mobile app
-                      </Typography>
-                      <div className={classes.appDownload}>
-                        <img src={require('images/apollo247.png')} />
-                        <AphButton>Download the App</AphButton>
-                      </div>
-                    </div>
-                  </div>
+                  <WhyApollo />
+                  <HowItWorks />
                 </div>
               </Grid>
             </Grid>
@@ -958,6 +817,7 @@ export const SpecialityListing: React.FC = (props) => {
           )}
         </div>
       </div>
+      {!onePrimaryUser && <ManageProfile />}
       <NavigationBottom />
       <div className={classes.footerLinks}>
         <BottomLinks />

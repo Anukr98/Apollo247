@@ -14,17 +14,16 @@ const useStyles = makeStyles((theme: Theme) => {
     container: {
       maxWidth: 1064,
       margin: 'auto',
+      backgroundColor: '#f7f8f5',
+      minHeight: '90vh',
     },
     breadcrumbs: {
       marginLeft: 20,
       marginRight: 20,
       fontSize: 14,
-      paddingTop: 17,
-      paddingBottom: 11,
       fontWeight: 'bold',
       color: '#02475b',
       textTransform: 'uppercase',
-      borderBottom: '0.5px solid rgba(2,71,91,0.3)',
       display: 'flex',
       alignItems: 'center',
       position: 'relative',
@@ -53,6 +52,7 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: '30px 40px',
       boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
       borderRadius: 5,
+      minHeight: 378,
       [theme.breakpoints.down('xs')]: {
         padding: 0,
         boxShadow: 'none',

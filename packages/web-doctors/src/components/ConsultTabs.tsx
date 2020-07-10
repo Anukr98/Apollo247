@@ -397,6 +397,8 @@ export const ConsultTabs: React.FC = () => {
   const [medicationHistory, setMedicationHistory] = useState<string>('');
   const [occupationHistory, setOccupationHistory] = useState<string>('');
   const [referralError, setReferralError] = useState<boolean>(false);
+  const [updatedDate, setUpdatedDate] = useState<string>('');
+  const [casesheetVersion, setCasesheetVersion] = useState<number>(1);
 
   const [appointmentStatus, setAppointmentStatus] = useState<string>('');
   const [sentToPatient, setSentToPatient] = useState<boolean>(false);
@@ -406,7 +408,7 @@ export const ConsultTabs: React.FC = () => {
   const isSecretary = currentUserType === LoggedInUserType.SECRETARY;
   const [lastMsg, setLastMsg] = useState<any>(null);
   const [messages, setMessages] = useState<MessagesObjectProps[]>([]);
-  const [presenceEventObject, setPresenceEventObject] = useState<any>(null);
+  //const [presenceEventObject, setPresenceEventObject] = useState<any>(null);
   const [hasCameraMicPermission, setCameraMicPermission] = useState<boolean>(true);
   const [isNewprescriptionEditable, setIsNewprescriptionEditable] = useState<boolean>(false);
   const [isNewPrescription, setIsNewPrescription] = useState<boolean>(false);
@@ -421,7 +423,7 @@ export const ConsultTabs: React.FC = () => {
     ssl: true,
     restore: true,
     keepAlive: true,
-    presenceTimeout: 20,
+    //presenceTimeout: 20,
     heartbeatInterval: 20,
     uuid: REQUEST_ROLES.DOCTOR,
   };
@@ -436,7 +438,7 @@ export const ConsultTabs: React.FC = () => {
   useEffect(() => {
     pubnub.subscribe({
       channels: [appointmentId],
-      withPresence: true,
+      //withPresence: true,
     });
     getHistory(0);
     pubnub.addListener({
@@ -464,19 +466,19 @@ export const ConsultTabs: React.FC = () => {
 
         setLastMsg(message);
       },
-      presence(presenceEvent: any) {
-        pubnub
-          .hereNow({
-            channels: [appointmentId],
-            includeUUIDs: true,
-          })
-          .then((response: any) => {
-            setPresenceEventObject(response);
-          })
-          .catch((error) => {
-            console.log(error);
-          });
-      },
+      // presence(presenceEvent: any) {
+      //   pubnub
+      //     .hereNow({
+      //       channels: [appointmentId],
+      //       includeUUIDs: true,
+      //     })
+      //     .then((response: any) => {
+      //       setPresenceEventObject(response);
+      //     })
+      //     .catch((error) => {
+      //       console.log(error);
+      //     });
+      // },
     });
     return () => {
       pubnub.unsubscribe({ channels: [appointmentId] });
@@ -638,11 +640,7 @@ export const ConsultTabs: React.FC = () => {
           _data!.data!.getCaseSheet!.caseSheetDetails!.appointment!.status
             ? setAppointmentStatus(_data!.data!.getCaseSheet!.caseSheetDetails!.appointment!.status)
             : setAppointmentStatus('');
-          // _data!.data!.getCaseSheet!.caseSheetDetails!.appointment!.sdConsultationDate
-          //   ? setSdConsultationDate(
-          //       _data!.data!.getCaseSheet!.caseSheetDetails!.appointment!.sdConsultationDate
-          //     )
-          //   : setSdConsultationDate('');
+
           _data!.data!.getCaseSheet!.caseSheetDetails!.prescriptionGeneratedDate
             ? setSdConsultationDate(
                 _data!.data!.getCaseSheet!.caseSheetDetails!.prescriptionGeneratedDate
@@ -651,6 +649,7 @@ export const ConsultTabs: React.FC = () => {
           _data!.data!.getCaseSheet!.caseSheetDetails!.sentToPatient
             ? setSentToPatient(_data!.data!.getCaseSheet!.caseSheetDetails!.sentToPatient)
             : setSentToPatient(false);
+            _data!.data!.getCaseSheet!.caseSheetDetails!.version ? setCasesheetVersion(_data.data.getCaseSheet.caseSheetDetails.version) : setCasesheetVersion(1);
           if (
             _data.data &&
             _data.data.getCaseSheet &&
@@ -704,6 +703,15 @@ export const ConsultTabs: React.FC = () => {
             setappointmentDateTime(
               _data.data.getCaseSheet.caseSheetDetails.appointment.appointmentDateTime
             );
+          }
+
+          if (
+            _data.data &&
+            _data.data.getCaseSheet &&
+            _data.data.getCaseSheet.caseSheetDetails &&
+            _data.data.getCaseSheet.caseSheetDetails.updatedDate
+          ) {
+            setUpdatedDate(_data.data.getCaseSheet.caseSheetDetails.updatedDate);
           }
 
           // Refferal
@@ -1405,13 +1413,8 @@ export const ConsultTabs: React.FC = () => {
           fetchPolicy: 'no-cache',
         })
         .then((_data) => {
+          setUpdatedDate(_data.data.modifyCaseSheet.updatedDate);
           setSaving(false);
-          // setSdConsultationDate(
-          //   _data!.data!.modifyCaseSheet!.appointment!.sdConsultationDate
-          //     ? _data!.data!.modifyCaseSheet!.appointment!.sdConsultationDate
-          //     : ''
-          // );
-          //setSdConsultationDate('');
           if (!flag) {
             setIsConfirmDialogOpen(true);
           }
@@ -1760,11 +1763,14 @@ export const ConsultTabs: React.FC = () => {
             setMedicationHistory,
             occupationHistory,
             setOccupationHistory,
+            updatedDate,
+            setUpdatedDate,
+            casesheetVersion
           }}
         >
           <Scrollbars
             ref={(s: any) => {
-              s !== null && s.scrollToTop();
+              !isClickedOnEdit && isClickedOnPriview && s !== null && s.scrollToTop();
             }}
             autoHide={true}
             style={{ height: 'calc(100vh - 65px)' }}
@@ -1795,7 +1801,7 @@ export const ConsultTabs: React.FC = () => {
                 pubnub={pubnub}
                 sessionClient={sessionClient}
                 lastMsg={lastMsg}
-                presenceEventObject={presenceEventObject}
+                //presenceEventObject={presenceEventObject}
                 endCallNotificationAction={(callId: boolean) => endCallNotificationAction(callId)}
                 hasCameraMicPermission={hasCameraMicPermission}
                 createSDCasesheetCall={(flag: boolean) => createSDCasesheetCall(flag)}

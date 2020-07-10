@@ -78,6 +78,8 @@ export const PaymentStatusModal: React.FC<PaymentStatusProps> = (props) => {
       switch (paymentStatusData.paymentStatus) {
         case 'PAYMENT_FAILED':
           return 'failed';
+        case 'PAYMENT_ABORTED':
+          return 'aborted';
         case 'PAYMENT_PENDING': {
           sessionStorage.removeItem('cartValues');
           return 'pending';
@@ -117,6 +119,15 @@ export const PaymentStatusModal: React.FC<PaymentStatusProps> = (props) => {
       },
     },
     failed: {
+      ctaText: 'TRY AGAIN',
+      info:
+        'In case your account has been debited,you should get the refund in 10-14 business days.',
+      callbackFunction: () => {
+        // paymentStatusRedirect(redirectUrl)
+        window && (window.location.href = clientRoutes.medicinesCart());
+      },
+    },
+    aborted: {
       ctaText: 'TRY AGAIN',
       info:
         'In case your account has been debited,you should get the refund in 10-14 business days.',
@@ -190,67 +201,67 @@ export const PaymentStatusModal: React.FC<PaymentStatusProps> = (props) => {
                 <CircularProgress />
               </div>
             ) : (
-              <OrderStatusContent
-                paymentStatus={paymentStatus}
-                paymentInfo={paymentDetail ? paymentDetail.info : ''}
-                orderStatusCallback={paymentDetail ? paymentDetail.callbackFunction : () => {}}
-                orderId={Number(params.orderAutoId)}
-                amountPaid={paymentStatusData.amountPaid}
-                // paymentType={paymentStatusData.paymentRefId ? 'Prepaid': 'COD'}
-                paymentType={
-                  getPaymentMethodFullName(paymentStatusData.paymentMode) ||
-                  _startCase(_camelCase(localStorage.getItem('selectedPaymentMode')))
-                }
-                paymentRefId={paymentStatusData.paymentRefId}
-                paymentDateTime={moment(
-                  paymentStatusData.orderDateTime
-                    ? paymentStatusData.orderDateTime
-                    : paymentStatusData.paymentDateTime
-                )
-                  .format('DD MMMM YYYY[,] LT')
-                  .replace(/(A|P)(M)/, '$1.$2.')
-                  .toString()}
-                type="ORDER"
-                onClose={() => {
-                  handleOnClose();
-                }}
-                ctaText={paymentDetail ? paymentDetail.ctaText : ''}
-              />
-            )}
+                <OrderStatusContent
+                  paymentStatus={paymentStatus}
+                  paymentInfo={paymentDetail ? paymentDetail.info : ''}
+                  orderStatusCallback={paymentDetail ? paymentDetail.callbackFunction : () => { }}
+                  orderId={Number(params.orderAutoId)}
+                  amountPaid={paymentStatusData.amountPaid}
+                  // paymentType={paymentStatusData.paymentRefId ? 'Prepaid': 'COD'}
+                  paymentType={
+                    getPaymentMethodFullName(paymentStatusData.paymentMode) ||
+                    _startCase(_camelCase(localStorage.getItem('selectedPaymentMode')))
+                  }
+                  paymentRefId={paymentStatusData.paymentRefId}
+                  paymentDateTime={moment(
+                    paymentStatusData.orderDateTime
+                      ? paymentStatusData.orderDateTime
+                      : paymentStatusData.paymentDateTime
+                  )
+                    .format('DD MMMM YYYY[,] LT')
+                    .replace(/(A|P)(M)/, '$1.$2.')
+                    .toString()}
+                  type="ORDER"
+                  onClose={() => {
+                    handleOnClose();
+                  }}
+                  ctaText={paymentDetail ? paymentDetail.ctaText : ''}
+                />
+              )}
           </>
         </Modal>
       ) : (
-        <Route
-          render={({ history }) => (
-            <Popover
-              open={showOrderPopup}
-              onClose={() => {
-                setShowOrderPopup(false);
-                history.push(clientRoutes.medicines());
-              }}
-              anchorEl={props.addToCartRef.current}
-              anchorOrigin={{
-                vertical: 'bottom',
-                horizontal: 'right',
-              }}
-              transformOrigin={{
-                vertical: 'top',
-                horizontal: 'right',
-              }}
-              classes={{ paper: classes.bottomPopover }}
-            >
-              <div className={classes.successPopoverWindow}>
-                <div className={classes.windowWrap}>
-                  <div className={classes.mascotIcon}>
-                    <img src={require('images/ic-mascot.png')} alt="" />
+          <Route
+            render={({ history }) => (
+              <Popover
+                open={showOrderPopup}
+                onClose={() => {
+                  setShowOrderPopup(false);
+                  history.push(clientRoutes.medicines());
+                }}
+                anchorEl={props.addToCartRef.current}
+                anchorOrigin={{
+                  vertical: 'bottom',
+                  horizontal: 'right',
+                }}
+                transformOrigin={{
+                  vertical: 'top',
+                  horizontal: 'right',
+                }}
+                classes={{ paper: classes.bottomPopover }}
+              >
+                <div className={classes.successPopoverWindow}>
+                  <div className={classes.windowWrap}>
+                    <div className={classes.mascotIcon}>
+                      <img src={require('images/ic-mascot.png')} alt="" />
+                    </div>
+                    <OrderPlaced setShowOrderPopup={setShowOrderPopup} />
                   </div>
-                  <OrderPlaced setShowOrderPopup={setShowOrderPopup} />
                 </div>
-              </div>
-            </Popover>
-          )}
-        />
-      )}
+              </Popover>
+            )}
+          />
+        )}
     </>
   );
 };

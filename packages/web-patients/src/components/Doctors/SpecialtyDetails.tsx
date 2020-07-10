@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Theme, Grid, CircularProgress, Typography } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { Link } from 'react-router-dom';
@@ -8,6 +8,7 @@ import { BottomLinks } from 'components/BottomLinks';
 import { AphButton, AphInput } from '@aph/web-ui-components';
 import { Filters } from 'components/Doctors/Filters';
 import { InfoCard } from 'components/Doctors/InfoCard';
+import { InfoCardPartner } from 'components/Doctors/InfoCardPartner';
 import { BookBest } from 'components/Doctors/BookBest';
 import { FrequentlyQuestions } from 'components/Doctors/FrequentlyQuestions';
 import { WhyApollo } from 'components/Doctors/WhyApollo';
@@ -321,12 +322,16 @@ const convertAvailabilityToDate = (availability: String[], dateSelectedFromFilte
     availableNow = {};
   }
   const availabilityArray: String[] = [];
-  const today = moment(new Date()).utc().format('YYYY-MM-DD');
+  const today = moment(new Date())
+    .utc()
+    .format('YYYY-MM-DD');
   if (availability.length > 0) {
     availability.forEach((value: String) => {
       if (value === 'Now') {
         availableNow = {
-          availableNow: moment(new Date()).utc().format('YYYY-MM-DD hh:mm'),
+          availableNow: moment(new Date())
+            .utc()
+            .format('YYYY-MM-DD hh:mm'),
         };
       } else if (value === 'Today') {
         availabilityArray.push(today);
@@ -371,6 +376,7 @@ interface SpecialityProps {
 
 export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
   const classes = useStyles({});
+  const scrollToRef = useRef<HTMLDivElement>(null);
   const { currentPincode, currentLong, currentLat } = useLocationDetails();
   const { currentPatient } = useAllCurrentPatients();
   const params = useParams<{
@@ -425,6 +431,7 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
             quantity: '1',
           });
       });
+
       gtmTracking({
         category: 'Consultations',
         action: 'Specialty Page',
@@ -560,6 +567,9 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
   useEffect(() => {
     setLoading(true);
     if (specialtyId || specialtyName) {
+      scrollToRef &&
+        scrollToRef.current &&
+        scrollToRef.current.scrollIntoView({ behavior: 'auto', block: 'end' });
       apolloClient
         .query({
           query: GET_DOCTORS_BY_SPECIALITY_AND_FILTERS,
@@ -594,14 +604,14 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
                   name: doctorDetails.fullName,
                   url: params.specialty
                     ? `${window.location.origin}${clientRoutes.specialtyDoctorDetails(
-                        params.specialty,
-                        readableParam(doctorDetails.fullName),
-                        doctorDetails.id
-                      )}`
+                      params.specialty,
+                      readableParam(doctorDetails.fullName),
+                      doctorDetails.id
+                    )}`
                     : `${window.location.origin}${clientRoutes.doctorDetails(
-                        readableParam(doctorDetails.fullName),
-                        doctorDetails.id
-                      )}`,
+                      readableParam(doctorDetails.fullName),
+                      doctorDetails.id
+                    )}`,
                 });
             });
             setDoctorData(doctors || []);
@@ -631,9 +641,9 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
     return _filter(data, (doctor: DoctorDetails) => {
       const consultMode =
         doctor.consultHours &&
-        doctor.consultHours.length > 0 &&
-        doctor.consultHours[0] &&
-        doctor.consultHours[0].consultMode
+          doctor.consultHours.length > 0 &&
+          doctor.consultHours[0] &&
+          doctor.consultHours[0].consultMode
           ? doctor.consultHours[0].consultMode
           : '';
       if (isOnlineSelected && isPhysicalSelected) {
@@ -671,15 +681,15 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
 
   const doctorsNextAvailability =
     data &&
-    data.getDoctorsBySpecialtyAndFilters &&
-    data.getDoctorsBySpecialtyAndFilters.doctorsNextAvailability
+      data.getDoctorsBySpecialtyAndFilters &&
+      data.getDoctorsBySpecialtyAndFilters.doctorsNextAvailability
       ? data.getDoctorsBySpecialtyAndFilters.doctorsNextAvailability
       : [];
 
   const doctorsAvailability =
     data &&
-    data.getDoctorsBySpecialtyAndFilters &&
-    data.getDoctorsBySpecialtyAndFilters.doctorsAvailability
+      data.getDoctorsBySpecialtyAndFilters &&
+      data.getDoctorsBySpecialtyAndFilters.doctorsAvailability
       ? data.getDoctorsBySpecialtyAndFilters.doctorsAvailability
       : [];
 
@@ -697,7 +707,7 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
       </div>
       <div className={classes.container}>
         <div className={classes.doctorListingPage}>
-          <div className={classes.breadcrumbs}>
+          <div className={classes.breadcrumbs} ref={scrollToRef}>
             <Link to={clientRoutes.specialityListing()}>
               <div className={classes.backArrow} title={'Back to home page'}>
                 <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
@@ -716,9 +726,9 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
             <div className={classes.leftGroup}>
               <div className={classes.sectionHeader}>
                 <h1>Book Best Doctors - {specialtyName}</h1>
-                <AphButton>
+                {/* <AphButton>
                   <img src={require('images/ic-share-green.svg')} alt="" />
-                </AphButton>
+                </AphButton> */}
               </div>
               <SpecialtySearch
                 setSearchKeyword={setSearchKeyword}
@@ -806,22 +816,31 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
                         }
                         return (
                           <Grid key={doctor.id} item xs={12} sm={12} md={12} lg={6}>
-                            <InfoCard
-                              doctorInfo={doctor}
-                              nextAvailability={nextAvailabilityString}
-                            />
+                            {doctorType.toLowerCase() == 'apollo' ? (
+                              <InfoCardPartner
+                                doctorInfo={doctor}
+                                doctorType={doctorType}
+                                nextAvailability={nextAvailabilityString}
+                              />
+                            ) : (
+                                <InfoCard
+                                  doctorInfo={doctor}
+                                  doctorType={doctorType}
+                                  nextAvailability={nextAvailabilityString}
+                                />
+                              )}
                           </Grid>
                         );
                       })}
                     </Grid>
                   </>
                 ) : (
-                  'no results found'
-                )}
+                      'no results found'
+                    )}
               </div>
               {faqData && faqData.length > 0 && (
                 <>
-                  <BookBest faqData={faqData[0]} />
+                  <BookBest faqData={faqData[0]} specialityName={specialtyName} />
                   <FrequentlyQuestions faqData={faqData[0].specialityFaq} />
                 </>
               )}

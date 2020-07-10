@@ -319,8 +319,9 @@ const bookAppointment: Resolver<
     const amount = appointmentInput.actualAmount
       ? appointmentInput.actualAmount
       : appointmentInput.appointmentType == APPOINTMENT_TYPE.PHYSICAL
-        ? docDetails.physicalConsultationFees
-        : docDetails.onlineConsultationFees;
+      ? parseInt(docDetails.physicalConsultationFees.toString(), 10)
+      : parseInt(docDetails.onlineConsultationFees.toString(), 10);
+
     const payload: ValidateCouponRequest = {
       mobile: patientDetails.mobileNumber.replace('+91', ''),
       billAmount: parseInt(amount.toString(), 10),
@@ -347,6 +348,11 @@ const bookAppointment: Resolver<
     const couponData = await validateCoupon(payload);
     if (!couponData || !couponData.response || !couponData.response.valid)
       throw new AphError(AphErrorMessages.INVALID_COUPON_CODE);
+
+    const amountToPay = amount - couponData.response.discount;
+
+    appointmentInput.discountedAmount = amountToPay < 0 ? 0 : amountToPay;
+    appointmentInput.actualAmount = amount;
   } else {
     let doctorFees = 0;
     if (appointmentInput.appointmentType === APPOINTMENT_TYPE.ONLINE)
@@ -371,6 +377,7 @@ const bookAppointment: Resolver<
       doctorId: appointmentInput.doctorId,
       patientId: appointmentInput.patientId,
       externalConnect: appointmentInput.externalConnect,
+      appointmentId: appointment.id,
     };
     externalConnectRepo.saveExternalConnectData(attrs);
   }

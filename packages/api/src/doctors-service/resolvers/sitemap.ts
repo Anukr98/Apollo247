@@ -5,15 +5,31 @@ import { DoctorSpecialtyRepository } from 'doctors-service/repositories/doctorSp
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import path from 'path';
 import fs from 'fs';
-import { ApiConstants } from 'ApiConstants';
 import { format } from 'date-fns';
-import { Tedis } from 'redis-typescript';
+import { keyCache, hgetAllCache } from 'doctors-service/database/connectRedis';
 
 export const sitemapTypeDefs = gql`
   extend type Mutation {
     generateSitemap: String
   }
 `;
+
+function readableParam(param: string) {
+  const a = 'àáâäæãåāăąçćčđďèéêëēėęěğǵḧîïíīįìłḿñńǹňôöòóœøōõőṕŕřßśšşșťțûüùúūǘůűųẃẍÿýžźż·/_,:;';
+  const b = 'aaaaaaaaaacccddeeeeeeeegghiiiiiilmnnnnoooooooooprrsssssttuuuuuuuuuwxyyzzz------';
+  const p = new RegExp(a.split('').join('|'), 'g');
+
+  return param
+    .toString()
+    .toLowerCase()
+    .replace(/\s+/g, '-') // Replace spaces with -
+    .replace(p, (c) => b.charAt(a.indexOf(c))) // Replace special characters
+    .replace(/&/g, '-and-') // Replace & with 'and'
+    .replace(/[^\w\-]+/g, '') // Remove all non-word characters
+    .replace(/\-\-+/g, '-') // Replace multiple - with single -
+    .replace(/^-+/, '') // Trim - from start of text
+    .replace(/-+$/, ''); // Trim - from end of text
+}
 
 const generateSitemap: Resolver<null, {}, DoctorsServiceContext, string> = async (
   parent,
@@ -24,18 +40,13 @@ const generateSitemap: Resolver<null, {}, DoctorsServiceContext, string> = async
   const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
   const specialitiesList = await specialtyRepo.findAll();
   let sitemapStr =
-    '<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">\n<!-- Doctor Specilaities -->\n';
+    '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">\n<!-- Doctor Specilaities -->\n';
   let doctorsStr = '';
+  const modifiedDate =
+    format(new Date(), 'yyyy-MM-dd') + 'T' + format(new Date(), 'hh:mm:ss') + '+00:00';
   if (specialitiesList.length > 0) {
     specialitiesList.forEach(async (specialty) => {
-      const specialtyName = specialty.name
-        .trim()
-        .toLowerCase()
-        .replace(/\s/g, '-')
-        .replace('/', '_')
-        .replace('&', '%26');
-      const modifiedDate =
-        format(new Date(), 'yyyy-MM-dd') + 'T' + format(new Date(), 'hh:mm:ss') + '+00:00';
+      const specialtyName = readableParam(specialty.name);
       const specialtyStr =
         '<url>\n<loc>' +
         process.env.SITEMAP_BASE_URL +
@@ -51,15 +62,7 @@ const generateSitemap: Resolver<null, {}, DoctorsServiceContext, string> = async
   const doctorList = await doctorRepo.getListBySpecialty();
   if (doctorList.length > 0) {
     doctorList.forEach((doctor) => {
-      const doctorName =
-        doctor.displayName
-          .trim()
-          .toLowerCase()
-          .replace(/\s/g, '-') +
-        '-' +
-        doctor.id;
-      const modifiedDate =
-        format(new Date(), 'yyyy-MM-dd') + 'T' + format(new Date(), 'hh:mm:ss') + '+00:00';
+      const doctorName = readableParam(doctor.displayName) + '-' + doctor.id;
       const docStr =
         '<url>\n<loc>' +
         process.env.SITEMAP_BASE_URL +
@@ -76,7 +79,7 @@ const generateSitemap: Resolver<null, {}, DoctorsServiceContext, string> = async
   if (process.env.NODE_ENV != 'local') {
     assetsDir = path.resolve(<string>process.env.ASSETS_DIRECTORY);
   }
-  const listResp = await fetch(
+  /*const listResp = await fetch(
     process.env.CMS_ARTICLES_SLUG_LIST_URL ? process.env.CMS_ARTICLES_SLUG_LIST_URL : '',
     {
       method: 'GET',
@@ -85,15 +88,14 @@ const generateSitemap: Resolver<null, {}, DoctorsServiceContext, string> = async
   );
   const textRes = await listResp.text();
   const cmsUrlsList = JSON.parse(textRes);
-  const modifiedDate =
-    format(new Date(), 'yyyy-MM-dd') + 'T' + format(new Date(), 'hh:mm:ss') + '+00:00';
-  let cmsUrls = '\n<!--CMS links-->\n';
+  
   if (cmsUrlsList && cmsUrlsList.data.length > 0) {
     cmsUrlsList.data.forEach((link: string) => {
-      const url = process.env.CMS_BASE_URL + link;
+      const url = process.env.SITEMAP_BASE_URL + 'covid19/article' + link;
       cmsUrls += '<url>\n<loc>' + url + '</loc>\n<lastmod>' + modifiedDate + '</lastmod>\n</url>\n';
     });
-  }
+  }*/
+
   const brandsPage =
     '\n<!--Brands url-->\n<url>\n<loc>' +
     process.env.SITEMAP_BASE_URL +
@@ -134,40 +136,24 @@ const generateSitemap: Resolver<null, {}, DoctorsServiceContext, string> = async
         '<url>\n<loc>' + url + '</loc>\n<lastmod>' + modifiedDate + '</lastmod>\n</url>\n';
     });
   }
-  const tedis = new Tedis({
-    port: <number>ApiConstants.REDIS_PORT,
-    host: ApiConstants.REDIS_URL.toString(),
-    password: ApiConstants.REDIS_PWD.toString(),
-  });
-  const redisMedKeys = await tedis.keys('medicine:sku:*');
+
+  const redisMedKeys = await keyCache('medicine:sku:*');
   let medicineUrls = '\n<!--Medicines list-->\n';
   if (redisMedKeys && redisMedKeys.length > 0) {
     for (let k = 0; k < redisMedKeys.length; k++) {
       //console.log(redisMedKeys[k], 'key');
-      const skuDets = await tedis.hgetall(redisMedKeys[k]);
+      const skuDets = await hgetAllCache(redisMedKeys[k]);
       //console.log(skuDets, 'indise key');
       if (skuDets && skuDets.url_key && skuDets.status == 'Enabled') {
-        medicineUrls +=
-          '<url>\n<loc>' +
-          process.env.SITEMAP_BASE_URL +
-          'medicine/' +
-          skuDets.url_key.toString() +
-          '</loc>\n<lastmod>' +
-          modifiedDate +
-          '</lastmod>\n</url>\n';
-        //console.log(medicineUrls, 'medurl');
+        medicineUrls += `<url>\n<loc>${
+          process.env.SITEMAP_BASE_URL
+        }medicine/${skuDets.url_key.toString()}</loc>\n<lastmod>${modifiedDate}</lastmod>\n</url>\n`;
       }
     }
   }
 
   sitemapStr +=
-    doctorsStr +
-    cmsUrls +
-    brandsPage +
-    healthAreaUrls +
-    ShopByCategory +
-    medicineUrls +
-    '</urlset>';
+    doctorsStr + brandsPage + healthAreaUrls + ShopByCategory + medicineUrls + '</urlset>';
   const fileName = 'sitemap.xml';
   const uploadPath = assetsDir + '/' + fileName;
   fs.writeFile(uploadPath, sitemapStr, {}, (err) => {

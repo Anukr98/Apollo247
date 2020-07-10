@@ -255,9 +255,9 @@ export const SpecialtySearch: React.FC<SpecialtySearchProps> = (props) => {
                               key={doctor.id}
                               to={clientRoutes.specialtyDoctorDetails(
                                 doctor.specialty && doctor.specialty.name
-                                  ? _lowerCase(doctor.specialty.name).replace(/[/ / /]/g, '-')
+                                  ? readableParam(doctor.specialty.name)
                                   : '',
-                                _lowerCase(doctor.fullName).replace(/ /g, '-'),
+                                readableParam(doctor.fullName),
                                 doctor.id
                               )}
                             >
@@ -266,9 +266,7 @@ export const SpecialtySearch: React.FC<SpecialtySearchProps> = (props) => {
                                   <img src={doctor.photoUrl} />
                                 </div>
                                 <div className={classes.doctorDetails}>
-                                  <Typography component="h2">
-                                    {doctor.salutation} {doctor.fullName}
-                                  </Typography>
+                                  <Typography component="h2">{doctor.fullName}</Typography>
                                   <Typography>
                                     {doctor.specialty && doctor.specialty.name
                                       ? doctor.specialty.name
@@ -277,9 +275,9 @@ export const SpecialtySearch: React.FC<SpecialtySearchProps> = (props) => {
                                     {doctor.doctorHospital &&
                                     doctor.doctorHospital[0] &&
                                     doctor.doctorHospital[0].facility
-                                      ? `${doctor.doctorHospital[0].facility.name || ''} ${
-                                          doctor.doctorHospital[0].facility.streetLine1 || ''
-                                        } ${doctor.doctorHospital[0].facility.city || ''} `
+                                      ? `${doctor.doctorHospital[0].facility.name || ''} ${doctor
+                                          .doctorHospital[0].facility.streetLine1 || ''} ${doctor
+                                          .doctorHospital[0].facility.city || ''} `
                                       : ''}
                                   </Typography>
                                 </div>
