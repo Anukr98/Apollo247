@@ -86,7 +86,7 @@ interface BanneDataArray {
 export const CarouselBanner: React.FC<BanneDataArray> = (props) => {
   const classes = useStyles({});
   const sliderSettings = {
-    infinite: true,
+    infinite: props.bannerData && props.bannerData.length > 1 ? true : false,
     dots: true,
     arrows: false,
     speed: 500,
