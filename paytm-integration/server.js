@@ -64,6 +64,14 @@ app.get(
     android_package_name: 'com.apollo.patientapp',
   })
 );
+app.get(
+  '/doctordeeplink',
+  deeplink({
+    fallback: 'https://doctors.apollo247.com/',
+    android_package_name: 'com.apollo.doctorapp',
+    ios_store_link: 'https://apps.apple.com/in/app/apollo-doctor-247/id1507758016',
+  })
+);
 
 app.get('/refreshDoctorDeepLinks', cronTabs.refreshDoctorDeepLinks);
 app.get('/generateDeeplinkForNewDoctors', cronTabs.generateDeeplinkForNewDoctors);
@@ -72,6 +80,7 @@ app.get('/invokesendUnreadMessagesNotification', cronTabs.sendUnreadMessagesNoti
 app.get('/invokeAutoSubmitJDCasesheet', cronTabs.autoSubmitJDCasesheet);
 app.get('/invokeFollowUpNotification', cronTabs.FollowUpNotification);
 app.get('/invokeApptReminder', cronTabs.ApptReminder);
+app.get('/invokeDoctorApptReminder', cronTabs.DoctorApptReminder);
 app.get('/invokeDailyAppointmentSummary', cronTabs.DailyAppointmentSummary);
 app.get('/invokePhysicalApptReminder', cronTabs.PhysicalApptReminder);
 app.get('/updateSdSummary', cronTabs.updateSdSummary);

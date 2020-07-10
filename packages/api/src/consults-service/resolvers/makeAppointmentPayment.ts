@@ -164,7 +164,7 @@ const makeAppointmentPayment: Resolver<
       throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
     }
   }
-
+  const currentStatus = processingAppointment.status;
   //insert payment details
 
   let paymentInfo = await apptsRepo.findAppointmentPayment(processingAppointment.id);
@@ -373,11 +373,22 @@ const makeAppointmentPayment: Resolver<
       const historyAttrs: Partial<AppointmentUpdateHistory> = {
         appointment: processingAppointment,
         userType: APPOINTMENT_UPDATED_BY.PATIENT,
-        fromValue: STATUS.PENDING,
+        fromValue: currentStatus,
         toValue: STATUS.PENDING,
         valueType: VALUE_TYPE.STATUS,
         userName: processingAppointment.patientId,
         reason: ApiConstants.APPOINTMENT_AUTO_SUBMIT_HISTORY.toString(),
+      };
+      apptsRepo.saveAppointmentHistory(historyAttrs);
+    } else {
+      const historyAttrs: Partial<AppointmentUpdateHistory> = {
+        appointment: processingAppointment,
+        userType: APPOINTMENT_UPDATED_BY.PATIENT,
+        fromValue: currentStatus,
+        toValue: STATUS.PENDING,
+        valueType: VALUE_TYPE.STATUS,
+        userName: processingAppointment.patientId,
+        reason: ApiConstants.BOOK_APPOINTMENT_HISTORY_REASON.toString(),
       };
       apptsRepo.saveAppointmentHistory(historyAttrs);
     }

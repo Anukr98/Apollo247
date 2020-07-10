@@ -4,7 +4,6 @@ import { Theme, Typography, CircularProgress } from '@material-ui/core';
 import { Header } from 'components/Header';
 import Paper from '@material-ui/core/Paper';
 import { AphButton, AphDialog, AphDialogTitle, AphDialogClose } from '@aph/web-ui-components';
-
 import Grid from '@material-ui/core/Grid';
 import Checkbox from '@material-ui/core/Checkbox';
 import FormGroup from '@material-ui/core/FormGroup';
@@ -399,6 +398,7 @@ export const PayMedicine: React.FC = (props) => {
     ePrescriptionData,
     cartItems,
   } = useShoppingCart();
+
   const params = useParams<{
     payType: string;
     prDis: string;
@@ -451,7 +451,6 @@ export const PayMedicine: React.FC = (props) => {
     doctorId,
     doctorName,
     hospitalId,
-    patientId,
     speciality,
   } = consultBookDetails;
 
@@ -729,7 +728,7 @@ export const PayMedicine: React.FC = (props) => {
     paymentMutationConsult({
       variables: {
         bookAppointment: {
-          patientId: patientId,
+          patientId: currentPatient ? currentPatient.id : '',
           doctorId: doctorId,
           appointmentDateTime: moment(appointmentDateTime).utc(),
           bookingSource: BOOKINGSOURCE.WEB,

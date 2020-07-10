@@ -384,19 +384,51 @@ interface SpecialtyDivisionProps {
   doctorsCount: number;
 }
 
+interface TopSpecialtyType {
+  specialtyName: string;
+  image: string;
+  description: string;
+  symptoms: string;
+  slugName: string;
+}
+
+const image_url = process.env.SPECIALTY_IMAGE_SOURCE;
+
 export const SpecialtyDivision: React.FC<SpecialtyDivisionProps> = (props) => {
   const classes = useStyles({});
   const { selectedCity, doctorsCount } = props;
   const { loading, error, data } = useQuery<GetAllSpecialties>(GET_ALL_SPECIALITIES);
 
-  const showSpecialty = (specialtyName: string) => {
-    return (
-      specialtyName === 'Paediatrics' ||
-      specialtyName === 'General Physician/ Internal Medicine' ||
-      specialtyName === 'Dermatology' ||
-      specialtyName === 'Obstetrics & Gynaecology'
-    );
-  };
+  const topSpecialtyListing = [
+    {
+      specialtyName: 'Paediatrics',
+      image: `${image_url}/ic_paediatrics.png`,
+      description: "For your child's health problems",
+      symptoms: 'Fever, Cough, Diarrhoea',
+      slugName: 'Paediatrics',
+    },
+    {
+      specialtyName: 'General Physician',
+      image: `${image_url}/ic_general_medicine.png`,
+      description: 'For any common health issues',
+      symptoms: 'Fever, Headache, Asthma',
+      slugName: 'General Physician/ Internal Medicine',
+    },
+    {
+      specialtyName: 'Dermatology',
+      image: `${image_url}/ic_dermatology.png`,
+      description: 'For skin & hair problems',
+      symptoms: 'Skin rash, Acne, Skin patch',
+      slugName: 'Dermatology',
+    },
+    {
+      specialtyName: 'Gynaecology',
+      image: `${image_url}/ic_obstetrics_and_gynaecology.png`,
+      description: "For women's health",
+      symptoms: 'Irregular periods, Pregnancy',
+      slugName: 'Obstetrics & Gynaecology',
+    },
+  ];
 
   const allSpecialties = data && data.getAllSpecialties;
 
@@ -412,38 +444,31 @@ export const SpecialtyDivision: React.FC<SpecialtyDivisionProps> = (props) => {
         </div>
         <div className={classes.tsContent}>
           <Grid container spacing={2}>
-            {allSpecialties &&
-              allSpecialties.length > 0 &&
-              allSpecialties.map(
-                (specialityDetails: SpecialtyType) =>
-                  showSpecialty(specialityDetails.name) && (
-                    <Grid key={specialityDetails.id} item xs={6} md={3}>
-                      <div className={classes.specialityCard}>
-                        <Link
-                          to={
-                            selectedCity === ''
-                              ? clientRoutes.specialties(readableParam(specialityDetails.name))
-                              : clientRoutes.citySpecialties(
-                                  _lowerCase(selectedCity),
-                                  readableParam(specialityDetails.name)
-                                )
-                          }
-                        >
-                          <Typography component="h3">{specialityDetails.name}</Typography>
-                          <img src={specialityDetails.image} />
-                          {specialityDetails.shortDescription && (
-                            <Typography>{specialityDetails.shortDescription}</Typography>
-                          )}
-                          {specialityDetails.symptoms && (
-                            <Typography className={classes.symptoms}>
-                              {getSymptoms(specialityDetails.symptoms)}
-                            </Typography>
-                          )}
-                        </Link>
-                      </div>
-                    </Grid>
-                  )
-              )}
+            {topSpecialtyListing &&
+              topSpecialtyListing.length > 0 &&
+              topSpecialtyListing.map((specialityDetails: TopSpecialtyType) => (
+                <Grid key={specialityDetails.specialtyName} item xs={6} md={3}>
+                  <div className={classes.specialityCard}>
+                    <Link
+                      to={
+                        selectedCity === ''
+                          ? clientRoutes.specialties(readableParam(specialityDetails.slugName))
+                          : clientRoutes.citySpecialties(
+                              _lowerCase(selectedCity),
+                              readableParam(specialityDetails.slugName)
+                            )
+                      }
+                    >
+                      <Typography component="h3">{specialityDetails.specialtyName}</Typography>
+                      <img src={specialityDetails.image} />
+                      <Typography>{specialityDetails.description}</Typography>
+                      <Typography className={classes.symptoms}>
+                        {specialityDetails.symptoms}
+                      </Typography>
+                    </Link>
+                  </div>
+                </Grid>
+              ))}
           </Grid>
         </div>
       </div>

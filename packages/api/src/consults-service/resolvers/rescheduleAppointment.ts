@@ -25,7 +25,7 @@ import {
   sendReminderNotification,
   NotificationType,
   sendNotification,
-  sendDoctorAppointmentNotification,
+  sendDoctorRescheduleAppointmentNotification,
 } from 'notifications-service/resolvers/notifications';
 import { addMilliseconds, differenceInDays } from 'date-fns';
 import { BlockedCalendarItemRepository } from 'doctors-service/repositories/blockedCalendarItemRepository';
@@ -605,8 +605,14 @@ const bookRescheduleAppointment: Resolver<
     messageContent: mailContent,
   };
   sendMail(emailContent);
-
-  sendDoctorAppointmentNotification(
+  // sendDoctorAppointmentNotification(
+  //   rescheduledapptDetails.appointmentDateTime,
+  //   rescheduledapptDetails.patientName,
+  //   rescheduledapptDetails.id,
+  //   rescheduledapptDetails.doctorId,
+  //   doctorsDb
+  // );
+  sendDoctorRescheduleAppointmentNotification(
     rescheduledapptDetails.appointmentDateTime,
     rescheduledapptDetails.patientName,
     rescheduledapptDetails.id,
@@ -651,19 +657,19 @@ const bookRescheduleAppointment: Resolver<
     notificationType: NotificationType.ACCEPT_RESCHEDULED_APPOINTMENT,
   };
   if (bookRescheduleAppointmentInput.initiatedBy == TRANSFER_INITIATED_TYPE.DOCTOR) {
-    const notificationResult = await sendNotification(
-      pushNotificationInput,
-      patientsDb,
-      consultsDb,
-      doctorsDb
-    );
-    console.log(notificationResult, 'appt rescheduled notification');
+    // const notificationResult = await sendNotification(
+    //   pushNotificationInput,
+    //   patientsDb,
+    //   consultsDb,
+    //   doctorsDb
+    // );
+    //console.log(notificationResult, 'appt rescheduled notification');
   }
   if ((bookRescheduleAppointmentInput.initiatedBy = TRANSFER_INITIATED_TYPE.PATIENT)) {
-    const pushNotificationInput = {
-      appointmentId: bookRescheduleAppointmentInput.appointmentId,
-      notificationType: NotificationType.RESCHEDULE_APPOINTMENT_BY_PATIENT,
-    };
+    // const pushNotificationInput = {
+    //   appointmentId: bookRescheduleAppointmentInput.appointmentId,
+    //   notificationType: NotificationType.RESCHEDULE_APPOINTMENT_BY_PATIENT,
+    // };
     const notificationResult = await sendNotification(
       pushNotificationInput,
       patientsDb,

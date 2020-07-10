@@ -61,7 +61,12 @@ export const uploadPrescriptions: Resolver<
   if (!process.env.PHR_V1_DONLOAD_PRESCRIPTION_DOCUMENT || !process.env.PHR_V1_ACCESS_TOKEN)
     throw new AphError(AphErrorMessages.INVALID_PRISM_URL);
 
-  prescriptionInput.prescriptionName = 'Prescribed By ' + prescriptionInput.prescribedBy;
+  const prescriptionName =
+    prescriptionInput.prescribedBy == ApiConstants.PRESCRIPTION_UPLOADED_BY_PATIENT
+      ? ApiConstants.PRESCRIPTION_UPLOADED_BY_PATIENT
+      : 'Prescribed By ' + prescriptionInput.prescribedBy;
+
+  prescriptionInput.prescriptionName = prescriptionName;
   prescriptionInput.dateOfPrescription =
     getUnixTime(new Date(prescriptionInput.dateOfPrescription)) * 1000;
   prescriptionInput.startDate = prescriptionInput.startDate

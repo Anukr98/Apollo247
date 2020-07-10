@@ -2,7 +2,7 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
-import { DOCTOR_ONLINE_STATUS, DoctorType, Salutation } from "./globalTypes";
+import { DOCTOR_ONLINE_STATUS, DoctorType } from "./globalTypes";
 
 // ====================================================
 // GraphQL mutation operation: UpdateDoctorOnlineStatus
@@ -32,7 +32,7 @@ export interface UpdateDoctorOnlineStatus_updateDoctorOnlineStatus_doctor {
   physicalConsultationFees: string;
   qualification: string | null;
   registrationNumber: string;
-  salutation: Salutation | null;
+  salutation: string | null;
   specialization: string | null;
   state: string | null;
   streetLine1: string | null;

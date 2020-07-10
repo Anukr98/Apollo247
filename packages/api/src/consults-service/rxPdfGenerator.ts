@@ -147,7 +147,7 @@ export const convertCaseSheetToRxPdfData = async (
       }
 
       if (csRx.medicineConsumptionDurationUnit == MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW) {
-        frequency += csRx.medicineConsumptionDurationUnit.split('_').join(' ');
+        frequency += ' ' + csRx.medicineConsumptionDurationUnit.split('_').join(' ');
       }
 
       if (csRx.medicineToBeTaken)
@@ -169,6 +169,16 @@ export const convertCaseSheetToRxPdfData = async (
           csRx.medicineTimings.length == 1 &&
           csRx.medicineTimings[0] != MEDICINE_TIMINGS.NOT_SPECIFIC
         ) {
+          frequency = frequency + ' in the';
+          frequency =
+            frequency +
+            ' ' +
+            csRx.medicineTimings
+              .join(', ')
+              .replace(/,(?=[^,]*$)/, ' and')
+              .split('_')
+              .join(' ');
+        } else if (csRx.medicineTimings.length > 1) {
           frequency = frequency + ' in the';
           frequency =
             frequency +
@@ -590,38 +600,39 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
   ) => {
     renderSectionHeader('Chief Complaints', '', headerEndY + 150);
 
-    prescriptions.forEach((prescription, index) => {
-      const textArray = [];
-      if (prescription.since.length > 0) textArray.push('Since: ' + prescription.since);
-      if (prescription.howOften) textArray.push('How Often: ' + prescription.howOften);
-      if (prescription.severity) textArray.push('Severity: ' + prescription.severity);
+    if (prescriptions)
+      prescriptions.forEach((prescription, index) => {
+        const textArray = [];
+        if (prescription.since.length > 0) textArray.push('Since: ' + prescription.since);
+        if (prescription.howOften) textArray.push('How Often: ' + prescription.howOften);
+        if (prescription.severity) textArray.push('Severity: ' + prescription.severity);
 
-      doc
-        .fontSize(12)
-        .font(assetsDir + '/fonts/IBMPlexSans-Regular.ttf')
-        .fillColor('#333333')
-        .text(`${_capitalize(prescription.symptom)}`, margin + 15)
-        .moveDown(0.5);
-      doc
-        .fontSize(11)
-        .font(assetsDir + '/fonts/IBMPlexSans-Regular.ttf')
-        .fillColor('#666666')
-        .text(`${textArray.join('  |  ')}`, margin + 15)
-        .moveDown(0.8);
-
-      if (prescription.details) {
         doc
           .fontSize(12)
           .font(assetsDir + '/fonts/IBMPlexSans-Regular.ttf')
+          .fillColor('#333333')
+          .text(`${_capitalize(prescription.symptom)}`, margin + 15)
+          .moveDown(0.5);
+        doc
+          .fontSize(11)
+          .font(assetsDir + '/fonts/IBMPlexSans-Regular.ttf')
           .fillColor('#666666')
-          .text(`${prescription.details}`, margin + 15)
+          .text(`${textArray.join('  |  ')}`, margin + 15)
           .moveDown(0.8);
-      }
 
-      if (doc.y > doc.page.height - 150) {
-        pageBreak();
-      }
-    });
+        if (prescription.details) {
+          doc
+            .fontSize(12)
+            .font(assetsDir + '/fonts/IBMPlexSans-Regular.ttf')
+            .fillColor('#666666')
+            .text(`${prescription.details}`, margin + 15)
+            .moveDown(0.8);
+        }
+
+        if (doc.y > doc.page.height - 150) {
+          pageBreak();
+        }
+      });
 
     const vitalsArray = [];
     if (vitals.weight) vitalsArray.push(`Weight : ${vitals.weight}`);
@@ -984,7 +995,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
     doc.moveDown(1.5);
   }
 
-  if (!_isEmpty(rxPdfData.caseSheetSymptoms)) {
+  if (!_isEmpty(rxPdfData.caseSheetSymptoms) || !_isEmpty(rxPdfData.vitals)) {
     renderSymptoms(rxPdfData.caseSheetSymptoms, rxPdfData.vitals);
     doc.moveDown(1.5);
   }
@@ -994,7 +1005,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
     doc.moveDown(1.5);
   }
 
-  if (!_isEmpty(rxPdfData.prescriptions)) {
+  if (!_isEmpty(rxPdfData.prescriptions) || !_isEmpty(rxPdfData.removedMedicinesList)) {
     renderPrescriptions(rxPdfData.prescriptions, rxPdfData.removedMedicinesList);
     doc.moveDown(1.5);
   }

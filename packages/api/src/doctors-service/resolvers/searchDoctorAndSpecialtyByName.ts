@@ -119,6 +119,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
         bool: {
           must: [
             { match: { 'doctorSlots.slots.status': 'OPEN' } },
+            { match: { isSearchable: true } },
             {
               multi_match: {
                 fields: [
@@ -148,6 +149,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
             must: [
               { match: { 'doctorSlots.slots.status': 'OPEN' } },
               { match: { 'facility.city': args.city } },
+              { match: { isSearchable: true } },
               {
                 multi_match: {
                   fields: [
@@ -177,6 +179,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
           bool: {
             must: [
               { match: { 'doctorSlots.slots.status': 'OPEN' } },
+              { match: { isSearchable: true } },
               {
                 multi_match: {
                   fields: ['facility.city'],
@@ -192,7 +195,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
     PerfectdocSearchParams = PerfectdocCitySearchParams;
   }
   console.log(
-    PerfectdocSearchParams,
+    JSON.stringify(PerfectdocSearchParams, null, 3),
     PerfectdocSearchParams.body.query.bool,
     'PerfectdocSearchParams'
   );
@@ -284,6 +287,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
         bool: {
           must: [
             { match: { 'doctorSlots.slots.status': 'OPEN' } },
+            { match: { isSearchable: true } },
             {
               multi_match: {
                 fields: [
@@ -415,6 +419,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
                   'doctorSlots.slots.status': 'OPEN',
                 },
               },
+              { match: { isSearchable: true } },
             ],
           },
         },

@@ -596,6 +596,9 @@ export class AppointmentCallDetails extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Column({ default: null })
+  appVersion: string;
+
   @Column()
   callType: string;
 

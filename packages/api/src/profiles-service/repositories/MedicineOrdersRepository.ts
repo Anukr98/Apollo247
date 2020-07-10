@@ -189,6 +189,7 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
       relations: [
         'patient',
         'medicineOrderLineItems',
+        'medicineOrderPayments',
         'patient.patientAddress',
         'medicineOrdersStatus',
         'medicineOrderShipments',
@@ -601,5 +602,20 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
         medicineOrderError,
       });
     });
+  }
+
+  getLatestMedicineOrderDetails(patientId: string) {
+    return MedicineOrders.createQueryBuilder('medicine_orders')
+      .leftJoinAndSelect('medicine_orders.medicineOrderLineItems', 'medicineOrderLineItems')
+      .leftJoinAndSelect('medicine_orders.medicineOrderPayments', 'medicineOrderPayments')
+      .leftJoinAndSelect('medicine_orders.medicineOrdersStatus', 'medicineOrdersStatus')
+      .leftJoinAndSelect('medicine_orders.medicineOrderShipments', 'medicineOrderShipments')
+      .leftJoinAndSelect('medicineOrderShipments.medicineOrderInvoice', 'medicineOrderInvoice')
+      .andWhere('medicine_orders."patientId" = :patientId', { patientId })
+      .andWhere('medicine_orders."currentStatus" in (:status1)', {
+        status1: MEDICINE_ORDER_STATUS.DELIVERED,
+      })
+      .orderBy('medicine_orders."createdDate"', 'DESC')
+      .getOne();
   }
 }
