@@ -204,7 +204,7 @@ export const medicineDescription = (
                 .join(', ') + '.'
             : ''
         }`
-      : `${item.medicineDosage ? item.medicineDosage + '' : ''}${
+      : `${item.medicineDosage ? item.medicineDosage + ' ' : ''}${
           item.medicineUnit ? unit + ' ' : ''
         }${
           item.medicineFrequency

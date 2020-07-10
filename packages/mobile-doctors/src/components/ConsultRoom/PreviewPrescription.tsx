@@ -383,9 +383,9 @@ export const PreviewPrescription: React.FC<PreviewPrescriptionProps> = (props) =
         <View style={[styles.subContainer, styles.subItemsContainer]}>
           <Text style={styles.disclamerHeaderText}>Disclaimer:</Text>
           <Text style={styles.disclamerText}>
-            This prescription is issued by the Apollo Hospitals Group on the basis of your
-            teleconsultation. It is valid from the date of issue for upto 90 days (for the specific
-            period/dosage of each medicine as advised).
+            This prescription is issued on the basis of your inputs during teleconsultation. It is
+            valid from the date of issue until the specific period/dosage of each medicine as
+            advised.
           </Text>
         </View>
       </View>
