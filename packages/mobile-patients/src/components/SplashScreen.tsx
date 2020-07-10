@@ -223,6 +223,11 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         case 'MyOrders':
           getData('MyOrders');
           break;
+        case 'webview':
+          if (data.length === 2) {
+            let url = data[1].replace('param=', '');
+            getData('webview', url);
+          }
         default:
           getData('ConsultRoom', undefined, true);
           break;
@@ -458,6 +463,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       case 'MyOrders':
         props.navigation.navigate(AppRoutes.YourOrdersScene);
         break;
+      case 'webview':
+        props.navigation.navigate(AppRoutes.CommonWebView, {
+          url: id,
+        });
       default:
         break;
     }
