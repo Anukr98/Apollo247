@@ -317,26 +317,14 @@ export class Appointment extends BaseEntity {
 
         if (isFinalStatus) {
           const haveSameStatus: boolean = currentAppointmentInDb.status == this.status;
-
-          if (!haveSameStatus) {
-            log('consultServiceLogger',
-              `In db: ${currentAppointmentInDb.status} => ${this.status} from current request`,
-              'index.ts',
-              '',
-              `Attempting to update ${currentAppointmentInDb.status} to ${this.status}`
-            );
-            throw new Error(`Attempting to update ${currentAppointmentInDb.status} to ${this.status} `);
-          }
-
           const haveSameAppointmentState: boolean = currentAppointmentInDb.appointmentState == this.appointmentState;
-          if (!haveSameAppointmentState) {
-            log('consultServiceLogger',
-              `In db: ${currentAppointmentInDb.appointmentState} => ${this.appointmentState} from current request`,
-              'index.ts',
-              '',
-              `Attempting to update ${currentAppointmentInDb.appointmentState} to ${this.appointmentState} with status ${this.status}`
-            );
-            throw new Error(`Attempting to update ${currentAppointmentInDb.appointmentState} to ${this.appointmentState} with status ${this.status}`);
+
+          if (!haveSameStatus || !haveSameAppointmentState) {
+            const logMessage = `Attempting to update status: ${currentAppointmentInDb.status}, state: ${currentAppointmentInDb.appointmentState}
+            to status: ${this.status} and state: ${this.appointmentState}`;
+
+            log('consultServiceLogger', logMessage, 'index.ts', '', logMessage);
+            throw new Error(logMessage);
           }
         }
       }
@@ -344,7 +332,7 @@ export class Appointment extends BaseEntity {
     catch (ex) {
       log(
         'consultServiceLogger',
-        'Unhandled exception occured',
+        'Unhandled exception occured whilte saving/updating appointment',
         'index.ts',
         '',
         `${JSON.stringify(ex)}`

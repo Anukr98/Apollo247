@@ -1106,22 +1106,6 @@ export class AppointmentRepository extends Repository<Appointment> {
     );
   }
 
-  //Not being used anywhere
-  // updateAppointmentStatusUsingOrderId(
-  //   paymentOrderId: string,
-  //   status: STATUS,
-  //   isSeniorConsultStarted: boolean
-  // ) {
-  //   this.update(paymentOrderId, { status, isSeniorConsultStarted }).catch((createErrors) => {
-  //     throw new AphError(AphErrorMessages.UPDATE_APPOINTMENT_ERROR, undefined, { createErrors });
-  //   });
-  // }
-
-  //NOT USED
-  // confirmAppointment(id: string, status: STATUS, apolloAppointmentId: number) {
-  //   this.update(id, { status, apolloAppointmentId });
-  // }
-
   patientLog(
     doctorId: string,
     sortBy: patientLogSort,
@@ -1210,14 +1194,6 @@ export class AppointmentRepository extends Repository<Appointment> {
     );
 
   }
-
-  //NOT USED
-  // updateJdQuestionStatus(id: string, isJdQuestionsComplete: boolean) {
-  //   return this.update(id, {
-  //     isJdQuestionsComplete,
-  //   });
-  // }
-
 
   updateJdQuestionStatusbyIds(ids: string[]) {
     return new Promise(async (resolve, reject) => {
@@ -1678,11 +1654,6 @@ export class AppointmentRepository extends Repository<Appointment> {
       AphErrorMessages.CANCEL_APPOINTMENT_ERROR
     );
   }
-
-  //NOT USED
-  // updateSeniorConsultStarted(id: string, status: Boolean) {
-  //   return this.update(id, { isSeniorConsultStarted: status });
-  // }
 
   getCompletedAppointments(doctorId: string, fromDate: Date, toDate: Date, statusNumber: Number) {
     const inProgress = 'IN_PROGRESS';
