@@ -15,6 +15,7 @@ import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { getUnixTime, format } from 'date-fns';
 import { hgetAllCache, hmsetCache } from 'profiles-service/database/connectRedis';
 import { ApiConstants } from 'ApiConstants';
+import { log } from 'customWinstonLogger';
 
 const path = require('path');
 
@@ -210,9 +211,17 @@ const getMedicineOrdersOMSList: Resolver<
 > = async (parent, args, { profilesDb, mobileNumber }) => {
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
   const patientDetails = await patientRepo.findById(args.patientId);
+  log(
+    'profileServiceLogger',
+    `getMedicineOrdersOMSList:${mobileNumber}`,
+    'getMedicineOrdersOMSList',
+    JSON.stringify(patientDetails),
+    ''
+  );
   if (!patientDetails) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
+
   if (mobileNumber != patientDetails.mobileNumber) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_DETAILS, undefined, {});
   }
@@ -224,6 +233,13 @@ const getMedicineOrdersOMSList: Resolver<
   let uhid = patientDetails.uhid;
   if (process.env.NODE_ENV == 'local') uhid = ApiConstants.CURRENT_UHID.toString();
   else if (process.env.NODE_ENV == 'dev') uhid = ApiConstants.CURRENT_UHID.toString();
+  log(
+    'profileServiceLogger',
+    `PRISM_GET_OFFLINE_ORDERS:${uhid}`,
+    'getMedicineOrdersOMSList',
+    mobileNumber,
+    ''
+  );
   const ordersResp = await fetch(
     process.env.PRISM_GET_OFFLINE_ORDERS ? process.env.PRISM_GET_OFFLINE_ORDERS + uhid : '',
     {
@@ -231,8 +247,22 @@ const getMedicineOrdersOMSList: Resolver<
       headers: {},
     }
   );
+  log(
+    'profileServiceLogger',
+    `PRISM_GET_OFFLINE_ORDERS_RESP:${uhid}`,
+    'getMedicineOrdersOMSList',
+    JSON.stringify(ordersResp),
+    ''
+  );
   const textRes = await ordersResp.text();
   const offlineOrdersList = JSON.parse(textRes);
+  log(
+    'profileServiceLogger',
+    `PRISM_GET_OFFLINE_ORDERS_RESP:${uhid}`,
+    'getMedicineOrdersOMSList',
+    JSON.stringify(offlineOrdersList),
+    ''
+  );
   //console.log(offlineOrdersList.response, offlineOrdersList.response.length, 'offlineOrdersList');
   if (offlineOrdersList.errorCode == 0) {
     //const orderDate = fromUnixTime(offlineOrdersList.response[0].billDateTime)
