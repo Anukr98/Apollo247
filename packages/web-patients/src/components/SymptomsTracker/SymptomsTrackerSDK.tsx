@@ -329,7 +329,7 @@ export const CustomComponent: React.FC<CustomComponentProps> = (props) => {
   useEffect(() => {
     if (props.stopRedirect === 'continue' && isRedirect) {
       setTimeout(() => {
-        window.location.href = clientRoutes.specialityListing();
+        window.location.href = clientRoutes.doctorsLanding();
       }, 5000);
     } else if (props.stopRedirect === 'stop') {
       window.location.reload();
@@ -389,10 +389,7 @@ export const SymptomsTrackerSDK: React.FC = () => {
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [isRedirect, setIsRedirect] = useState<boolean>(false);
 
-  const getAge = (dob: string) =>
-    moment()
-      .diff(moment(dob, 'YYYY-MM-DD'), 'years')
-      .toString();
+  const getAge = (dob: string) => moment().diff(moment(dob, 'YYYY-MM-DD'), 'years').toString();
   const setUserAge = (dob: string) => {
     setPatientAge(getAge(dob));
   };
@@ -457,7 +454,7 @@ export const SymptomsTrackerSDK: React.FC = () => {
   useEffect(() => {
     if (stopRedirect === 'continue' && isRedirect) {
       setTimeout(() => {
-        window.location.href = clientRoutes.specialityListing();
+        window.location.href = clientRoutes.doctorsLanding();
       }, 5000);
     } else if (stopRedirect === 'stop') {
       window.location.reload();

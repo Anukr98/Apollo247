@@ -209,17 +209,36 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
 
   // console.log(clinics);
 
+  const specialityName =
+    doctorDetails &&
+    doctorDetails.specialty &&
+    doctorDetails.specialty.name &&
+    doctorDetails.specialty.name.toLowerCase();
+
+  const navigateToDoctorDetails = () => {
+    const readableDoctorName = readableParam(doctorName);
+    if (specialityName) {
+      props.history.push(
+        clientRoutes.specialtyDoctorDetails(
+          readableParam(specialityName),
+          readableDoctorName,
+          doctorId
+        )
+      );
+    }
+  };
+
   return (
     <div className={classes.root}>
       <div
         className={classes.topContent}
         onClick={() => {
-          const readableDoctorName = readableParam(doctorName);
-          params.specialty
-            ? props.history.push(
-                clientRoutes.specialtyDoctorDetails(params.specialty, readableDoctorName, doctorId)
-              )
-            : props.history.push(clientRoutes.doctorDetails(readableDoctorName, doctorId));
+          navigateToDoctorDetails();
+          // params.specialty
+          //   ? props.history.push(
+          //       clientRoutes.specialtyDoctorDetails(params.specialty, readableDoctorName, doctorId)
+          //     )
+          //   : props.history.push(clientRoutes.doctorDetails(readableDoctorName, doctorId));
         }}
       >
         <Avatar
@@ -241,16 +260,16 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
         <div
           className={classes.doctorInfo}
           onClick={() => {
-            const readableDoctorName = readableParam(doctorName);
-            params.specialty
-              ? props.history.push(
-                  clientRoutes.specialtyDoctorDetails(
-                    params.specialty,
-                    readableDoctorName,
-                    doctorId
-                  )
-                )
-              : props.history.push(clientRoutes.doctorDetails(readableDoctorName, doctorId));
+            navigateToDoctorDetails();
+            // params.specialty
+            //   ? props.history.push(
+            //       clientRoutes.specialtyDoctorDetails(
+            //         params.specialty,
+            //         readableDoctorName,
+            //         doctorId
+            //       )
+            //     )
+            //   : props.history.push(clientRoutes.doctorDetails(readableDoctorName, doctorId));
           }}
         >
           {/* {loading ? (
