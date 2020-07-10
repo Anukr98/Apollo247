@@ -7,7 +7,7 @@ import {
   sendCallsNotification,
   DOCTOR_CALL_TYPE,
   APPT_CALL_TYPE,
-  sendNotificationWhatsapp,
+  sendDoctorNotificationWhatsapp,
 } from 'notifications-service/resolvers/notifications';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AphError } from 'AphError';
@@ -236,7 +236,7 @@ const sendPatientWaitNotification: Resolver<
       .replace('{4}', appointment.appointmentDateTime.toISOString())
       .replace('{5}', devLink);
     //whatsAppMessageBody += applicationLink;
-    await sendNotificationWhatsapp(doctorDetails.mobileNumber, whatsAppMessageBody, 1);
+    await sendDoctorNotificationWhatsapp(doctorDetails.mobileNumber, whatsAppMessageBody, 1);
   }
   return { status: true };
 };
