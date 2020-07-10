@@ -883,7 +883,7 @@ export const MedicineCart: React.FC = (props) => {
         medicineCartOMSInput: {
           quoteId: '',
           patientId: currentPatient ? currentPatient.id : '',
-          shopId: deliveryMode === 'HOME' ? '' : storeAddressId,
+          ...(storeAddressId && storeAddressId.length && { shopId: storeAddressId }),
           patientAddressId: deliveryMode === 'HOME' ? deliveryAddressId : '',
           medicineDeliveryType:
             deliveryMode === 'HOME'
@@ -1057,14 +1057,14 @@ export const MedicineCart: React.FC = (props) => {
           const uploadUrlscheck = data.map(({ data }: any) =>
             data && data.uploadDocument && data.uploadDocument.status ? data.uploadDocument : null
           );
-          const filtered = uploadUrlscheck.filter(function (el) {
+          const filtered = uploadUrlscheck.filter(function(el) {
             return el != null;
           });
           const phyPresUrls = filtered.map((item) => item.filePath).filter((i) => i);
           const phyPresPrismIds = filtered.map((item) => item.fileId).filter((i) => i);
           const prescriptionMedicineOMSInput: savePrescriptionMedicineOrderOMSVariables = {
             prescriptionMedicineOMSInput: {
-              shopId: storeAddressId || '0',
+              ...(storeAddressId && storeAddressId.length && { shopId: storeAddressId }),
               patientId: (currentPatient && currentPatient.id) || '',
               bookingSource: BOOKING_SOURCE.WEB,
               medicineDeliveryType: deliveryAddressId
@@ -1091,7 +1091,7 @@ export const MedicineCart: React.FC = (props) => {
     } else {
       const prescriptionMedicineOMSInput: savePrescriptionMedicineOrderOMSVariables = {
         prescriptionMedicineOMSInput: {
-          shopId: storeAddressId || '0',
+          ...(storeAddressId && storeAddressId.length && { shopId: storeAddressId }),
           patientId: (currentPatient && currentPatient.id) || '',
           bookingSource: BOOKING_SOURCE.WEB,
           medicineDeliveryType: deliveryAddressId
