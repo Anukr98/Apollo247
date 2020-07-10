@@ -144,11 +144,7 @@ export class PatientRepository extends Repository<Patient> {
       setCache(
         `${REDIS_PATIENT_ID_KEY_PREFIX}${id}`,
         patientString,
-<<<<<<< HEAD
         ApiConstants.CACHE_EXPIRATION_900
-=======
-        ApiConstants.CACHE_EXPIRATION_14400
->>>>>>> 15dbb54373c6d64fb1904726ede2aeeb3bfc1304
       );
     }
     return patientDetails;
