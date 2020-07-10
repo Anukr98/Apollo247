@@ -141,7 +141,11 @@ export class PatientRepository extends Repository<Patient> {
     const patientDetails = await this.getPatientData(id);
     if (patientDetails) {
       const patientString = JSON.stringify(patientDetails);
-      setCache(`${REDIS_PATIENT_ID_KEY_PREFIX}${id}`, patientString, ApiConstants.CACHE_EXPIRATION_14400);
+      setCache(
+        `${REDIS_PATIENT_ID_KEY_PREFIX}${id}`,
+        patientString,
+        ApiConstants.CACHE_EXPIRATION_900
+      );
     }
     return patientDetails;
   }
@@ -177,10 +181,18 @@ export class PatientRepository extends Repository<Patient> {
     });
 
     const patientIds: string[] = await patients.map((patient) => {
-      setCache(`${REDIS_PATIENT_ID_KEY_PREFIX}${patient.id}`, JSON.stringify(patient), ApiConstants.CACHE_EXPIRATION_14400);
+      setCache(
+        `${REDIS_PATIENT_ID_KEY_PREFIX}${patient.id}`,
+        JSON.stringify(patient),
+        ApiConstants.CACHE_EXPIRATION_900
+      );
       return patient.id;
     });
-    setCache(`${REDIS_PATIENT_MOBILE_KEY_PREFIX}${mobile}`, patientIds.join(','), ApiConstants.CACHE_EXPIRATION_14400);
+    setCache(
+      `${REDIS_PATIENT_MOBILE_KEY_PREFIX}${mobile}`,
+      patientIds.join(','),
+      ApiConstants.CACHE_EXPIRATION_900
+    );
     return patients;
   }
 
@@ -191,7 +203,7 @@ export class PatientRepository extends Repository<Patient> {
       patientList.map(async (patient) => {
         if (patient.firstName == '' || patient.uhid == '') {
           console.log(patient.id, 'blank card');
-          patient.isActive = false
+          patient.isActive = false;
           this.save(patient);
         } else if (patient.primaryPatientId == null) {
           patient.primaryPatientId = patient.id;

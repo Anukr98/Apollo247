@@ -52,7 +52,7 @@ export class PatientAddressRepository extends Repository<PatientAddress> {
     setCache(
       this.cacheKey(REDIS_ADDRESS_PATIENT_ID_KEY_PREFIX, id),
       JSON.stringify(queryResult),
-      ApiConstants.CACHE_EXPIRATION_14400
+      ApiConstants.CACHE_EXPIRATION_900
     );
     return queryResult;
   }
