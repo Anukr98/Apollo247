@@ -157,10 +157,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   const openPopUp = (rowData: any) => {
     setLoading && setLoading(true);
-    if (
-      rowData.url.match(/\.(pdf)$/) ||
-      (rowData.fileType && rowData.fileType === 'pdf' && rowData.id !== patientId)
-    ) {
+    if (rowData.url.match(/\.(pdf)$/) || (rowData.fileType && rowData.fileType === 'pdf')) {
       if (rowData.prismId) {
         getPrismUrls(client, rowData.id, rowData.prismId)
           .then((data: any) => {
@@ -180,7 +177,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       }
     } else if (
       rowData.url.match(/\.(jpeg|jpg|gif|png)$/) ||
-      (rowData.fileType && rowData.fileType === 'image' && rowData.id !== patientId)
+      (rowData.fileType && rowData.fileType === 'image')
     ) {
       if (rowData.prismId) {
         getPrismUrls(client, rowData.id, rowData.prismId)
@@ -270,22 +267,42 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   uri: rowData.url,
                 }}
                 style={{
-                  resizeMode: 'stretch',
+                  resizeMode: 'center',
                   width: 180,
                   height: 180,
-                  borderRadius: 10,
+                  borderTopLeftRadius: 10,
+                  borderTopRightRadius: 10,
                 }}
               />
             ) : (
               <FileBig
                 style={{
-                  resizeMode: 'stretch',
+                  resizeMode: 'contain',
                   width: 180,
                   height: 180,
                   borderRadius: 10,
                 }}
               />
             )}
+            <View
+              style={{
+                borderBottomLeftRadius: 10,
+                borderBottomRightRadius: 10,
+                backgroundColor: 'white',
+              }}
+            >
+              <Text
+                style={{
+                  color: 'rgba(2,71,91,0.6)',
+                  paddingHorizontal: 10,
+                  paddingVertical: 4,
+                  textAlign: 'right',
+                  ...theme.fonts.IBMPlexSansMedium(10),
+                }}
+              >
+                {convertChatTime(rowData)}
+              </Text>
+            </View>
           </View>
         </TouchableOpacity>
       </View>
@@ -295,7 +312,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const renderImageView = (rowData: any) => {
     const isMatched =
       rowData.url.match(/\.(jpeg|jpg|gif|png)$/) ||
-      (rowData.fileType && rowData.fileType === 'image' && rowData.id !== patientId);
+      (rowData.fileType && rowData.fileType === 'image');
     const onPress = () => {
       if (isMatched) {
         openPopUp(rowData);
@@ -368,7 +385,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const messageView = (rowData: any, index: number) => {
-    const isMatched = rowData.url && rowData.url.match(/\.(jpeg|jpg|gif|png)$/);
+    const isMatched =
+      (rowData.url && rowData.url.match(/\.(jpeg|jpg|gif|png)$/)) ||
+      (rowData.fileType && rowData.fileType === 'image');
     // const isMatched = rowData.url.match(/\.(jpeg|jpg|gif|png)$/);
     const onPress = () => {
       if (isMatched) {
@@ -789,7 +808,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             contentContainerStyle={{
               marginHorizontal: 20,
               marginTop: 0,
-              // paddingBottom: isIphoneX ? 5000 : 100,
             }}
             removeClippedSubviews={false}
             bounces={false}
@@ -798,6 +816,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             renderItem={({ item, index }) => renderChatRow(item, index)}
             keyExtractor={(_, index) => index.toString()}
             numColumns={1}
+            ListFooterComponent={() => {
+              return <View style={{ height: isIphoneX() ? 40 : 0 }} />;
+            }}
             keyboardShouldPersistTaps="always"
             keyboardDismissMode="on-drag"
           />
