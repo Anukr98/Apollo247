@@ -205,7 +205,9 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     props.navigation.getParam('caseSheetEnableEdit') || false
   );
   const [showEditPreviewButtons, setShowEditPreviewButtons] = useState<boolean>(false);
-  const [chatFiles, setChatFiles] = useState<{ prismId: string | null; url: string }[]>([]);
+  const [chatFiles, setChatFiles] = useState<
+    { prismId: string | null; url: string; fileType: 'image' | 'pdf' }[]
+  >([]);
   const [symptonsData, setSymptonsData] = useState<
     (GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms | null)[] | null
   >([]);
@@ -1305,6 +1307,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               chatFilesRetrived.push({
                 prismId: message.prismId,
                 url: message.url,
+                fileType: message.fileType,
               });
               AsyncStorage.setItem('chatFileData', JSON.stringify(chatFilesRetrived));
               setChatFiles(chatFilesRetrived);
@@ -1436,11 +1439,15 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             }
             insertText = newmessage;
             setMessages(newmessage as []);
-            const files: { prismId: string | null; url: string }[] = [];
+            const files: { prismId: string | null; url: string; fileType: 'image' | 'pdf' }[] = [];
 
             newmessage.forEach((element, index) => {
               if (element.id === patientId && element.message === messageCodes.imageconsult) {
-                files.push({ prismId: element.prismId, url: element.url });
+                files.push({
+                  prismId: element.prismId,
+                  url: element.url,
+                  fileType: element.fileType,
+                });
               }
             });
             setChatFiles(files);
@@ -2509,13 +2516,14 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const closeviews = () => {
     setPatientImageshow(false);
     setOverlayDisplay(null);
+    setUrl('');
   };
 
   useEffect(() => {
     if (patientImageshow) {
       setOverlayDisplay(<ImageZoom source={{ uri: url }} zoom pan onClose={() => closeviews()} />);
     }
-  }, [patientImageshow]);
+  }, [patientImageshow, url]);
 
   return (
     <View
