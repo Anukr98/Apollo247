@@ -883,9 +883,7 @@ export const MedicineCart: React.FC = (props) => {
         medicineCartOMSInput: {
           quoteId: '',
           patientId: currentPatient ? currentPatient.id : '',
-          ...(deliveryMode === 'HOME' &&
-            storeAddressId &&
-            storeAddressId.length && { shopId: storeAddressId }),
+          ...(storeAddressId && storeAddressId.length && { shopId: storeAddressId }),
           patientAddressId: deliveryMode === 'HOME' ? deliveryAddressId : '',
           medicineDeliveryType:
             deliveryMode === 'HOME'
