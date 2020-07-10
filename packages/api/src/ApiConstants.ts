@@ -63,7 +63,7 @@ export enum ApiConstants {
 
   //medicine order out for delivery
   ORDER_PLACED_TITLE = 'Medicine order is placed',
-  ORDER_PLACED_BODY = 'Hi {0}, we have received your order {1}. Our team may get in touch with you, in case of any clarifications. Click below to reach out to us through whatsapp for any concerns- https://bit.ly/apollo247Medicine',
+  ORDER_PLACED_BODY = 'Hi {0}, we have received your order {1}. For any support, please speak with our customer care executives on the official WhatsApp channel (during business hours 9 AM - 6 PM) https://bit.ly/apollo247medicines',
 
   // medicine order out for delivery
   UPLOAD_PRESCRIPTION_TITLE = 'Upload Prescription medicine order placed ',
@@ -74,11 +74,10 @@ export enum ApiConstants {
 
   //medicine order items changed
   MEDICINE_ORDER_CHANGED_TITLE = 'Medicine order is changed',
-  MEDICINE_ORDER_CHANGED_BODY = 'Hi {0}, your order {1}  is billed with some modifications, updated details are visible in your 247 App in the respective order summary. Please feel free to reach out to us on WhatsApp in case you have any questions: https://bit.ly/apollo247Medicine',
-
+  MEDICINE_ORDER_CHANGED_BODY = 'Hi {0}, your order {1}  is billed with some modifications, updated details are visible on Apollo 247 in the respective order summary. For any support, please speak with our customer care executives on the official WhatsApp channel (during business hours 9 AM - 6 PM) https://bit.ly/apollo247medicines',
   //medicine order ready at store
   ORDER_READY_AT_STORE_TITLE = 'Medicine order is ready',
-  ORDER_READY_AT_STORE_BODY = 'Hi {0}! items for your order {1} are ready for pickup at your selected store {2}. Store Contact Number: {3}. Kindly alert the store 10 minutes before reaching the store.',
+  ORDER_READY_AT_STORE_BODY = 'Hi {0}! items for your order {1} are ready for pickup at your selected store {2}. Store Contact Number: {3}. Kindly alert the store 10 minutes before reaching the store. For any support, please speak with our customer care executives on the official WhatsApp channel (during business hours 9 AM - 6 PM) https://bit.ly/apollo247medicines',
 
   //medicine order picked up
   ORDER_PICKEDUP_TITLE = 'Medicine order is pickedup',
@@ -93,7 +92,7 @@ export enum ApiConstants {
   ORDER_DELIVERY_BODY = 'Greetings from Apollo 24|7 Your order {1} is delivered successfully!',
 
   //medicine order cancelled
-  ORDER_CANCEL_BODY = 'Hi {name}, referring to your Apollo 247 Order {orderId}, {reason}',
+  ORDER_CANCEL_BODY = 'Hi {name}, for order {orderId}, {reason}. For any support, please speak with our customer care executives on the official WhatsApp channel (during business hours 9 AM - 6 PM) https://bit.ly/apollo247medicines',
   ORDER_CANCEL_PREPAID_BODY = 'For Order {orderId} the refund amount of Rs {refund} will be transferred to the source a/c within 7-10 working days.',
 
   //appointment cancellation
