@@ -9,7 +9,7 @@ export const clientRoutes = {
   doctorDetails: (doctorName: string, doctorId: string) => `/doctors/${doctorName}-${doctorId}`,
   specialtyDoctorDetails: (specialty: string, doctorName: string, doctorId: string) =>
     `/specialties/${specialty}/${doctorName}-${doctorId}`,
-  doctorsLanding: () => '/doctors',
+  doctorsLanding: () => '/track-symptoms/doctors',
   specialties: (specialty: string) => `/specialties/${specialty}`,
   citySpecialties: (city: string, specialty: string) => `/${city}/specialties/${specialty}`,
   appointments: () => '/appointments',

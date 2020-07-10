@@ -64,6 +64,7 @@ import { SpecialityListing } from 'components/SpecialityListing';
 import { SpecialtyDetails } from 'components/Doctors/SpecialtyDetails';
 import { MedicinePrescriptions } from './Prescriptions/MedicinePrescriptions';
 import { MedicineSearch } from './Medicine/MedicineSearch';
+import { DoctorsLanding } from 'components/DoctorsLanding';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -132,9 +133,7 @@ const App: React.FC = () => {
             path={clientRoutes.specialtyDoctorDetails(':specialty', ':name', ':id')}
             component={DoctorDetails}
           />
-          {currentPath === clientRoutes.doctorsLanding() && (
-            <Redirect to={clientRoutes.specialityListing()} />
-          )}
+          <Route exact path={clientRoutes.doctorsLanding()} component={DoctorsLanding} />
           <Route exact path={clientRoutes.specialties(':specialty')} component={SpecialtyDetails} />
           <Route
             exact
