@@ -2219,7 +2219,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               .finally(() => {
                 setLoading(false);
               });
-          }, 30000);
+          }, 180000);
         }
       }, 1000);
     } else {
