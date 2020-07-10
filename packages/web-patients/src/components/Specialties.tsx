@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { makeStyles, createStyles } from '@material-ui/styles';
 import { Theme, Grid, Avatar, CircularProgress } from '@material-ui/core';
 import _uniqueId from 'lodash/uniqueId';
@@ -13,9 +13,14 @@ import { clientRoutes } from 'helpers/clientRoutes';
 import { Route } from 'react-router-dom';
 import { readableParam } from 'helpers/commonHelpers';
 import { useMutation } from 'react-apollo-hooks';
-import { GetAllSpecialties_getAllSpecialties as SpecialtyType } from 'graphql/types/GetAllSpecialties';
 import { getSymptoms } from 'helpers/commonHelpers';
 import _lowerCase from 'lodash/lowerCase';
+import {
+  GetAllSpecialties,
+  GetAllSpecialties_getAllSpecialties as SpecialtyType,
+} from 'graphql/types/GetAllSpecialties';
+import { GET_ALL_SPECIALITIES } from 'graphql/specialities';
+import { useQuery } from 'react-apollo-hooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -96,27 +101,46 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: '0 10px 0 0',
       position: 'relative',
     },
+    circlularProgress: {
+      display: 'flex',
+      padding: 20,
+      justifyContent: 'center',
+    },
   });
 });
 
 interface SpecialtiesProps {
-  data: SpecialtyType[];
   selectedCity: string;
+  setSpecialtyCount?: (specialtyCount: number) => void;
 }
 
 export const Specialties: React.FC<SpecialtiesProps> = (props) => {
   const classes = useStyles({});
   const { currentPatient } = useAllCurrentPatients();
-  const { data, selectedCity } = props;
+  const { selectedCity, setSpecialtyCount } = props;
+  const { loading, error, data } = useQuery<GetAllSpecialties>(GET_ALL_SPECIALITIES);
+  const allSpecialties = data && data.getAllSpecialties;
+
+  useEffect(() => {
+    if (setSpecialtyCount && allSpecialties && allSpecialties.length) {
+      setSpecialtyCount && setSpecialtyCount(allSpecialties.length);
+    }
+  }, [allSpecialties]);
 
   const saveSearchMutation = useMutation(SAVE_PATIENT_SEARCH);
 
-  return data.length > 0 ? (
+  return loading ? (
+    <div className={classes.circlularProgress}>
+      <CircularProgress color="primary" />
+    </div>
+  ) : error ? (
+    <div>Error! </div>
+  ) : allSpecialties && allSpecialties.length > 0 ? (
     <>
       <div className={classes.root}>
         <div className={classes.searchList}>
           <Grid container spacing={1}>
-            {data.map(
+            {allSpecialties.map(
               (specialityDetails: SpecialtyType) =>
                 specialityDetails && (
                   <Route

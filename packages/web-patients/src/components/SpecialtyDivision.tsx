@@ -1,16 +1,9 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Theme, Grid, CircularProgress, Popover, Typography } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { Specialties } from 'components/Specialties';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { Link } from 'react-router-dom';
-import {
-  GetAllSpecialties,
-  GetAllSpecialties_getAllSpecialties as SpecialtyType,
-} from 'graphql/types/GetAllSpecialties';
-import { GET_ALL_SPECIALITIES } from 'graphql/specialities';
-import { useQuery } from 'react-apollo-hooks';
-import { getSymptoms } from 'helpers/commonHelpers';
 import { readableParam } from 'helpers/commonHelpers';
 import _lowerCase from 'lodash/lowerCase';
 
@@ -371,11 +364,6 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: '15px 0 0',
       borderTop: '1px solid rgba(1,71,91,0.5)',
     },
-    circlularProgress: {
-      display: 'flex',
-      padding: 20,
-      justifyContent: 'center',
-    },
   };
 });
 
@@ -397,8 +385,7 @@ const image_url = process.env.SPECIALTY_IMAGE_SOURCE;
 export const SpecialtyDivision: React.FC<SpecialtyDivisionProps> = (props) => {
   const classes = useStyles({});
   const { selectedCity, doctorsCount } = props;
-  const { loading, error, data } = useQuery<GetAllSpecialties>(GET_ALL_SPECIALITIES);
-
+  const [specialtyCount, setSpecialtyCount] = useState<number>(0);
   const topSpecialtyListing = [
     {
       specialtyName: 'Paediatrics',
@@ -430,13 +417,11 @@ export const SpecialtyDivision: React.FC<SpecialtyDivisionProps> = (props) => {
     },
   ];
 
-  const allSpecialties = data && data.getAllSpecialties;
-
   return (
     <>
       <Typography component="h2">
         Start your care now by choosing from {doctorsCount ? `${doctorsCount} doctors and ` : ''}
-        {allSpecialties && allSpecialties.length} specialities
+        {specialtyCount} specialities
       </Typography>
       <div className={classes.topSpeciality}>
         <div className={classes.sectionHeader}>
@@ -477,15 +462,7 @@ export const SpecialtyDivision: React.FC<SpecialtyDivisionProps> = (props) => {
           <Typography component="h2">Other Specialties</Typography>
         </div>
         <div className={classes.osContainer}>
-          {loading ? (
-            <div className={classes.circlularProgress}>
-              <CircularProgress color="primary" />
-            </div>
-          ) : error ? (
-            <div>Error! </div>
-          ) : (
-            allSpecialties && <Specialties selectedCity={selectedCity} data={allSpecialties} />
-          )}
+          <Specialties selectedCity={selectedCity} setSpecialtyCount={setSpecialtyCount} />
         </div>
       </div>
     </>
