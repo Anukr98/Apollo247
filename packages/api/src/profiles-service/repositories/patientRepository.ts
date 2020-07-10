@@ -575,6 +575,7 @@ export class PatientRepository extends Repository<Patient> {
   }
 
   async createNewUhid(id: string) {
+    await this.dropPatientCache(`${REDIS_PATIENT_ID_KEY_PREFIX}${id}`);
     const patientDetails = await this.getPatientDetails(id);
     if (!patientDetails) {
       throw new AphError(AphErrorMessages.GET_PROFILE_ERROR, undefined, {
