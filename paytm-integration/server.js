@@ -1016,7 +1016,7 @@ app.get('/processOmsOrders', (req, res) => {
                     deliveryZipcode = patientAddressDetails.zipcode || deliveryZipcode;
                   }
                 }
-                if (parseInt(orderDetails.shopId, 10)) {
+                if (orderDetails.shopId && orderDetails.shopId !== '0') {
                   if (!orderDetails.shopAddress) {
                     logger.error(
                       `store address details not present for store pick ${orderDetails.orderAutoId}`
@@ -1029,6 +1029,8 @@ app.get('/processOmsOrders', (req, res) => {
                   deliveryZipcode = shopAddress.zipcode;
                   deliveryAddress = shopAddress.address || '';
                   deliveryStateCode = shopAddress.stateCode;
+                } else {
+                  orderDetails.shopId = '';
                 }
                 const orderLineItems = [];
                 let requestType = 'NONCART';
