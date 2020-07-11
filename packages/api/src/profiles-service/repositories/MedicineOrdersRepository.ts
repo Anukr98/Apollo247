@@ -314,7 +314,6 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
         'medicineOrdersStatus',
         'medicineOrderShipments',
         'medicineOrderShipments.medicineOrderInvoice',
-        'medicineOrderInvoice',
       ],
     });
   }
