@@ -206,7 +206,7 @@ export const UploadEPrescriptionCard: React.FC<EPrescriptionCardProps> = (props)
             prismLabResults.forEach((item: LabResultsType) => {
               mergeArray.push({
                 id: `${item.id}-${item.labTestName}`,
-                uploadedUrl: '',
+                uploadedUrl: item.fileUrl || '',
                 forPatient: (currentPatient && currentPatient.firstName) || '',
                 date: item.date,
                 medicines: '',
