@@ -144,7 +144,7 @@ export class PatientRepository extends Repository<Patient> {
       setCache(
         `${REDIS_PATIENT_ID_KEY_PREFIX}${id}`,
         patientString,
-        ApiConstants.CACHE_EXPIRATION_900
+        ApiConstants.CACHE_EXPIRATION_3600
       );
     }
     return patientDetails;
@@ -183,14 +183,14 @@ export class PatientRepository extends Repository<Patient> {
       setCache(
         `${REDIS_PATIENT_ID_KEY_PREFIX}${patient.id}`,
         JSON.stringify(patient),
-        ApiConstants.CACHE_EXPIRATION_900
+        ApiConstants.CACHE_EXPIRATION_3600
       );
       return patient.id;
     });
     setCache(
       `${REDIS_PATIENT_MOBILE_KEY_PREFIX}${mobile}`,
       patientIds.join(','),
-      ApiConstants.CACHE_EXPIRATION_900
+      ApiConstants.CACHE_EXPIRATION_3600
     );
     return patients;
   }
