@@ -350,6 +350,7 @@ export class MedicineOrders extends BaseEntity {
   @Column({ default: 0 })
   isEprescription: number;
 
+  @Index('MedicineOrders_orderAutoId')
   @PrimaryGeneratedColumn({ type: 'bigint' })
   orderAutoId: number;
 
