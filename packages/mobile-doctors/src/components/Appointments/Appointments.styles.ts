@@ -1,7 +1,7 @@
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import { StyleSheet, Platform } from 'react-native';
 
-export default StyleSheet.create({
+export const AppointmentsStyles = StyleSheet.create({
   noAppointmentsText: {
     marginTop: 25,
     ...theme.fonts.IBMPlexSansMedium(12),
@@ -85,17 +85,36 @@ export default StyleSheet.create({
     marginBottom: 2,
     maxWidth: '75%',
   },
-  doctorname1: {
-    ...theme.fonts.IBMPlexSansSemiBold(28),
-    color: '#02475b',
-    marginBottom: 2,
-    maxWidth: '75%',
-  },
   schedule: {
     ...theme.fonts.IBMPlexSansMedium(16),
     color: '#0087ba',
     marginLeft: 20,
     marginBottom: 14,
     lineHeight: 24,
+  },
+  appointmentErrorContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginHorizontal: 32,
+  },
+  appointmentErrorText: {
+    ...theme.viewStyles.text('R', 12, theme.colors.SHARP_BLUE, 0.7),
+    textAlign: 'center',
+    marginTop: 16,
+  },
+  appointmentErrorText2: {
+    ...theme.viewStyles.text('M', 12, theme.colors.SHARP_BLUE, 0.9),
+  },
+  appointmentErrorReload: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 16,
+    marginBottom: 20,
+  },
+  appointmentErrorReloadText: {
+    ...theme.viewStyles.text('SB', 12, theme.colors.APP_GREEN, 1, 24),
+    textAlign: 'center',
+    textTransform: 'uppercase',
   },
 });

@@ -111,6 +111,7 @@ export interface CaseSheetContextProps {
   medicationHistory: string;
   occupationHistory: string;
   updatedDate: string;
+  casesheetVersion: number;
 
   setHeight: (height: string) => void;
   setWeight: (weight: string) => void;
@@ -203,6 +204,7 @@ export const CaseSheetContext = createContext<CaseSheetContextProps>({
   referralError: false,
   medicationHistory: '',
   occupationHistory: '',
+  casesheetVersion: 1,
 
   setBp: () => {},
   setHeight: () => {},

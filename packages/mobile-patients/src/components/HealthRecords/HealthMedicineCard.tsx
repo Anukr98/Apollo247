@@ -10,6 +10,8 @@ import {
   getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labTests,
   getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_healthChecks,
   getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_hospitalizations,
+  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labResults_response,
+  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_prescriptions_response,
 } from '../../graphql/types/getPatientPrismMedicalRecords';
 
 const styles = StyleSheet.create({
@@ -97,14 +99,12 @@ export interface HealthMedicineCardProps {
   onPressOrder?: () => void;
   onClickCard?: () => void;
   disableDelete?: boolean;
-  data?: getPatientMedicalRecords_getPatientMedicalRecords_medicalRecords;
-  datalab?: getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labTests;
-  datahealth?: getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_healthChecks;
-  datahospitalization?: getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_hospitalizations;
+  datalab?: getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labResults_response;
+  dataprescription?: getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_prescriptions_response;
 }
 
 export const HealthMedicineCard: React.FC<HealthMedicineCardProps> = (props) => {
-  const { data, datahospitalization, datahealth, datalab, disableDelete } = props;
+  const { datalab, dataprescription, disableDelete } = props;
   return (
     <View style={styles.viewStyle}>
       <View style={styles.trackerViewStyle}>
@@ -113,12 +113,9 @@ export const HealthMedicineCard: React.FC<HealthMedicineCardProps> = (props) => 
       </View>
       <View style={styles.rightViewStyle}>
         <Text style={styles.labelTextStyle}>
-          {moment(
-            (data && data.testDate) ||
-              (datahospitalization && datahospitalization.dateOfHospitalization) ||
-              (datahealth && datahealth.appointmentDate) ||
-              (datalab && datalab.labTestDate)
-          ).format('DD MMM YYYY')}
+          {moment((dataprescription && dataprescription.date) || (datalab && datalab.date)).format(
+            'DD MMM YYYY'
+          )}
         </Text>
         <TouchableOpacity
           activeOpacity={1}
@@ -132,9 +129,7 @@ export const HealthMedicineCard: React.FC<HealthMedicineCardProps> = (props) => 
             <View style={{ flex: 1 }}>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                 <Text style={styles.doctorNameStyles}>
-                  {(data && (data.testName || data.issuingDoctor || data.location)) ||
-                    (datahospitalization && datahospitalization.diagnosisNotes) ||
-                    (datahealth && datahealth.healthCheckName) ||
+                  {(dataprescription && dataprescription.prescriptionName) ||
                     (datalab && datalab.labTestName)}
                 </Text>
                 {disableDelete ? null : (
@@ -143,18 +138,12 @@ export const HealthMedicineCard: React.FC<HealthMedicineCardProps> = (props) => 
                   </TouchableOpacity>
                 )}
               </View>
-              {data && !!data.sourceName && (
-                <Text style={styles.descriptionTextStyles}>{data && data.sourceName}</Text>
-              )}
-              {datahealth && !!datahealth.source && (
-                <Text style={styles.descriptionTextStyles}>{datahealth && datahealth.source}</Text>
-              )}
               {datalab && !!datalab.labTestSource && (
                 <Text style={styles.descriptionTextStyles}>{datalab && datalab.labTestSource}</Text>
               )}
-              {datahospitalization && !!datahospitalization.source && (
+              {dataprescription && !!dataprescription.source && (
                 <Text style={styles.descriptionTextStyles}>
-                  {datahospitalization && datahospitalization.source}
+                  {dataprescription && dataprescription.source}
                 </Text>
               )}
             </View>

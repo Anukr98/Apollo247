@@ -1,9 +1,23 @@
 import React, { useState, useEffect, useContext, useRef } from 'react';
 import { makeStyles } from '@material-ui/styles';
-import { Popover, Theme, Typography, Tabs, Tab, CircularProgress } from '@material-ui/core';
+import {
+  Popover,
+  Theme,
+  Typography,
+  Tabs,
+  Tab,
+  CircularProgress,
+  FormControlLabel,
+} from '@material-ui/core';
 import { PaymentStatusModal } from 'components/Cart/PaymentStatusModal';
 import Scrollbars from 'react-custom-scrollbars';
-import { AphButton, AphDialog, AphDialogTitle, AphDialogClose } from '@aph/web-ui-components';
+import {
+  AphButton,
+  AphDialog,
+  AphDialogTitle,
+  AphDialogClose,
+  AphRadio,
+} from '@aph/web-ui-components';
 import { HomeDelivery } from 'components/Locations/HomeDelivery';
 import { StorePickUp } from 'components/Locations/StorePickUp';
 import { Checkout } from 'components/Cart/Checkout';
@@ -63,6 +77,7 @@ import { VALIDATE_PHARMA_COUPONS } from 'graphql/medicines';
 import { getItemSpecialPrice } from '../PayMedicine';
 import { getTypeOfProduct } from 'helpers/commonHelpers';
 import _lowerCase from 'lodash/lowerCase';
+import { truncate } from 'fs';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -548,6 +563,20 @@ const useStyles = makeStyles((theme: Theme) => {
       border: 'solid 1px #890000',
       padding: '4px 10px',
     },
+    radioContainer: {
+      padding: '15px 20px 15px 30px',
+      background: '#fff',
+      boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.2)',
+      borderRadius: 5,
+      '& label': {
+        width: '100%',
+        '& span': {
+          '&:last-child': {
+            fontWeight: 600,
+          },
+        },
+      },
+    },
   };
 });
 
@@ -574,6 +603,8 @@ export const MedicineCart: React.FC = (props) => {
     updateCartItemPrice,
     prescriptionOptionSelected,
     durationDays,
+    prescriptionDuration,
+    clearCartInfo,
   } = useShoppingCart();
 
   const addToCartRef = useRef(null);
@@ -586,7 +617,7 @@ export const MedicineCart: React.FC = (props) => {
   );
 
   const urlParams = new URLSearchParams(window.location.search);
-  const nonCartFlow = urlParams.get('prescription') ? urlParams.get('prescription') : false;
+  const nonCartFlow = urlParams.get('prescription') === 'true';
 
   const [tabValue, setTabValue] = useState<number>(0);
   const [isUploadPreDialogOpen, setIsUploadPreDialogOpen] = React.useState<boolean>(false);
@@ -952,7 +983,10 @@ export const MedicineCart: React.FC = (props) => {
           data.savePrescriptionMedicineOrderOMS.orderAutoId
         ) {
           if (prescriptionOptionSelected === 'duration') {
-            window.location.href = clientRoutes.medicines();
+            clearCartInfo();
+            setTimeout(() => {
+              window.location.href = clientRoutes.medicines();
+            }, 3000);
           } else {
             window.location.href = clientRoutes.medicinesCartInfo('prescription', 'success');
           }
@@ -1011,6 +1045,12 @@ export const MedicineCart: React.FC = (props) => {
     const ePresPrismIds =
       ePrescriptionData &&
       ePrescriptionData.map((item) => item.prismPrescriptionFileId).filter((i) => i);
+    const updatedPrescriptionOptionSelected =
+      prescriptionOptionSelected === 'specified'
+        ? prescriptionDuration === 'prescription'
+          ? 'Need all medicine and for duration as per prescription'
+          : `Need all medicine as per prescription for ${durationDays} days`
+        : 'Call me for details';
     if (prescriptions && prescriptions.length > 0) {
       uploadMultipleFiles(prescriptions)
         .then((data) => {
@@ -1035,8 +1075,8 @@ export const MedicineCart: React.FC = (props) => {
               prismPrescriptionFileId: [...phyPresPrismIds, ...ePresPrismIds].join(','),
               appointmentId: '',
               isEprescription: ePrescriptionData && ePrescriptionData.length ? 1 : 0, // if atleat one prescription is E-Prescription then pass it as one.
-              durationDays: durationDays,
-              prescriptionOptionSelected: prescriptionOptionSelected,
+              // durationDays: durationDays,
+              prescriptionOptionSelected: updatedPrescriptionOptionSelected,
               ...(chennaiOrderVariables && chennaiOrderVariables),
             },
           };
@@ -1063,10 +1103,14 @@ export const MedicineCart: React.FC = (props) => {
           appointmentId: '',
           isEprescription: ePrescriptionData && ePrescriptionData.length ? 1 : 0, // if atleat one prescription is E-Prescription then pass it as one.
           ...(chennaiOrderVariables && chennaiOrderVariables),
-          prescriptionOptionSelected: prescriptionOptionSelected,
-          durationDays: prescriptionOptionSelected === 'specified' ? durationDays : null,
+          prescriptionOptionSelected: updatedPrescriptionOptionSelected,
+          // durationDays:
+          //   prescriptionOptionSelected === 'specified' && prescriptionDuration === 'user'
+          //     ? durationDays
+          //     : null,
         },
       };
+      console.log('prescriptionMedicineOMSInput', prescriptionMedicineOMSInput);
       submitPrescriptionMedicineOrder(prescriptionMedicineOMSInput);
     }
   };
@@ -1113,7 +1157,6 @@ export const MedicineCart: React.FC = (props) => {
       zipCodeInt === 603211
     );
   };
-  const { city } = useLocationDetails();
 
   useEffect(() => {
     /**Gtm code start  */
@@ -1172,7 +1215,7 @@ export const MedicineCart: React.FC = (props) => {
                       <div className={classes.uploadedPreList}>
                         {prescriptions &&
                           prescriptions.length > 0 &&
-                          prescriptions.map((prescriptionDetails, index) => {
+                          prescriptions.map((prescriptionDetails) => {
                             const fileName = prescriptionDetails.name;
                             const imageUrl = prescriptionDetails.imageUrl;
                             return (
@@ -1182,7 +1225,8 @@ export const MedicineCart: React.FC = (props) => {
                                 removePrescription={(fileName: string) =>
                                   removeImagePrescription(fileName)
                                 }
-                                key={index}
+                                key={prescriptionDetails.name}
+                                readOnly={nonCartFlow}
                               />
                             );
                           })}
@@ -1190,18 +1234,22 @@ export const MedicineCart: React.FC = (props) => {
                           ePrescriptionData.length > 0 &&
                           ePrescriptionData.map((prescription: EPrescription) => (
                             <EPrescriptionCard
+                              key={prescription.id}
                               prescription={prescription}
                               removePrescription={removePrescription}
+                              readOnly={nonCartFlow}
                             />
                           ))}
-                        <div className={classes.uploadMore}>
-                          <AphButton
-                            disabled={uploadingFiles || mutationLoading}
-                            onClick={() => handleUploadPrescription()}
-                          >
-                            Upload More
-                          </AphButton>
-                        </div>
+                        {!nonCartFlow && (
+                          <div className={classes.uploadMore}>
+                            <AphButton
+                              disabled={uploadingFiles || mutationLoading}
+                              onClick={() => handleUploadPrescription()}
+                            >
+                              Upload More
+                            </AphButton>
+                          </div>
+                        )}
                       </div>
                     ) : uploadPrescriptionRequired >= 0 ? (
                       <div className={classes.uploadPrescription}>
@@ -1301,6 +1349,22 @@ export const MedicineCart: React.FC = (props) => {
                     )}
                   </div>
                 </div>
+                {nonCartFlow && (
+                  <>
+                    <div className={`${classes.sectionHeader} ${classes.topHeader}`}>
+                      <span>payment option</span>
+                    </div>
+                    <div className={classes.radioContainer}>
+                      <FormControlLabel
+                        checked={true}
+                        value={'CASH_ON_DELIVERY'}
+                        control={<AphRadio color="primary" />}
+                        label={'Cash On Delivery'}
+                        onChange={() => {}}
+                      />
+                    </div>
+                  </>
+                )}
               </>
             )}
             {cartItems && cartItems.length > 0 && !nonCartFlow && currentPatient && (
@@ -1521,7 +1585,7 @@ export const MedicineCart: React.FC = (props) => {
                   ) : uploadingFiles ? (
                     <CircularProgress size={22} color="secondary" />
                   ) : (
-                    'Submit Prescription'
+                    'Place order'
                   )}
                 </AphButton>
               )}

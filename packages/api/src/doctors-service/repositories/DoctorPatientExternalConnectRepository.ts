@@ -24,7 +24,19 @@ export class DoctorPatientExternalConnectRepository extends Repository<
   }
 
   findCountDoctorAndPatient(doctorId: string, patientId: string) {
-    return this.count({ where: { doctorId, patientId, externalConnect: true } }).catch((error) => {
+    return this.count({
+      where: { doctorId, patientId, externalConnect: true },
+    }).catch((error) => {
+      throw new AphError(AphErrorMessages.GET_EXTERNAL_CONNECT_ERROR, undefined, {
+        error,
+      });
+    });
+  }
+
+  findNoCountDoctorAndPatient(doctorId: string, patientId: string, appointmentId: string) {
+    return this.count({
+      where: { doctorId, patientId, externalConnect: false, appointmentId },
+    }).catch((error) => {
       throw new AphError(AphErrorMessages.GET_EXTERNAL_CONNECT_ERROR, undefined, {
         error,
       });

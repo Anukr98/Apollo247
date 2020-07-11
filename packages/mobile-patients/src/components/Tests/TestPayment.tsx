@@ -8,7 +8,11 @@ import {
   CommonLogEvent,
   CommonBugFender,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { getParameterByName, g } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  getParameterByName,
+  g,
+  postFirebaseEvent,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -25,6 +29,7 @@ import {
 } from 'react-native';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
 import { WebView } from 'react-native-webview';
+import { FirebaseEvents, FirebaseEventName } from '../../helpers/firebaseEvents';
 
 const styles = StyleSheet.create({
   popupButtonStyle: {
@@ -54,7 +59,7 @@ export const TestPayment: React.FC<TestPaymentProps> = (props) => {
   const currentPatiendId = currentPatient && currentPatient.id;
   const [loading, setLoading] = useState(true);
   const { showAphAlert, hideAphAlert } = useUIElements();
-  const { clearCartInfo } = useDiagnosticsCart();
+  const { cartItems, clearCartInfo, coupon } = useDiagnosticsCart();
 
   const handleBack = async () => {
     Alert.alert('Alert', 'Do you want to go back?', [
@@ -72,7 +77,38 @@ export const TestPayment: React.FC<TestPaymentProps> = (props) => {
     });
   };
 
+  const firePurchaseEvent = () => {
+    let items: any = [];
+    cartItems.forEach((item, index) => {
+      let itemObj: any = {};
+      itemObj.item_name = item.name; // Product Name or Doctor Name
+      itemObj.item_id = item.id; // Product SKU or Doctor ID
+      itemObj.price = item.specialPrice ? item.specialPrice : item.price; // Product Price After discount or Doctor VC price (create another item in array for PC price)
+      itemObj.item_brand = ''; // Product brand or Apollo (for Apollo doctors) or Partner Doctors (for 3P doctors)
+      itemObj.item_category = 'Diagnostics'; // 'Pharmacy' or 'Consultations'
+      itemObj.item_category2 = ''; // FMCG or Drugs (for Pharmacy) or Specialty Name (for Consultations)
+      itemObj.item_variant = item.collectionMethod; // "Default" (for Pharmacy) or Virtual / Physcial (for Consultations)
+      itemObj.index = index + 1; // Item sequence number in the list
+      itemObj.quantity = 1; // "1" or actual quantity
+      items.push(itemObj);
+    });
+    let code: any = coupon ? coupon.code : null;
+    const eventAttributes: FirebaseEvents[FirebaseEventName.PURCHASE] = {
+      coupon: code,
+      currency: 'INR',
+      items: items,
+      transaction_id: orderId,
+      value: Number(price),
+    };
+    postFirebaseEvent(FirebaseEventName.PURCHASE, eventAttributes);
+  };
+
   const handleOrderSuccess = async () => {
+    try {
+      firePurchaseEvent();
+    } catch (error) {
+      console.log(error);
+    }
     CommonLogEvent(AppRoutes.TestPayment, 'handleOrderSuccess');
     setLoading!(false);
     clearCartInfo!();

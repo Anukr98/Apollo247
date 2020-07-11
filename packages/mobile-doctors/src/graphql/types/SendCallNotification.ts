@@ -2,7 +2,7 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
-import { APPT_CALL_TYPE, DOCTOR_CALL_TYPE } from "./globalTypes";
+import { APPT_CALL_TYPE, DOCTOR_CALL_TYPE, DEVICETYPE, BOOKINGSOURCE } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: SendCallNotification
@@ -27,4 +27,7 @@ export interface SendCallNotificationVariables {
   appointmentId?: string | null;
   callType?: APPT_CALL_TYPE | null;
   doctorType?: DOCTOR_CALL_TYPE | null;
+  deviceType?: DEVICETYPE | null;
+  callSource?: BOOKINGSOURCE | null;
+  appVersion?: string | null;
 }

@@ -499,7 +499,8 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
   const getDaysCount = (type: MEDICINE_CONSUMPTION_DURATION | null) => {
     return type == MEDICINE_CONSUMPTION_DURATION.MONTHS
       ? 30
-      : type == MEDICINE_CONSUMPTION_DURATION.WEEKS
+      : type == MEDICINE_CONSUMPTION_DURATION.WEEKS ||
+        type == MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW
       ? 7
       : 1;
   };
@@ -668,7 +669,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
   ) => {
     const type = item.medicineFormTypes === MEDICINE_FORM_TYPES.OTHERS ? 'Take' : 'Apply';
     const customDosage = item.medicineCustomDosage
-      ? item.medicineCustomDosage.split('-').filter((i) => i !== '')
+      ? item.medicineCustomDosage.split('-').filter((i) => i !== '' && i != '0')
       : [];
     const medTimingsArray = [
       MEDICINE_TIMINGS.MORNING,
@@ -714,6 +715,10 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                 }`
               : ''
           }${
+            item.medicineConsumptionDurationUnit
+              ? `${nameFormater(item.medicineConsumptionDurationUnit || '', 'lower')} `
+              : ''
+          }${
             item.medicineToBeTaken && item.medicineToBeTaken.length
               ? item.medicineToBeTaken
                   .map((i: MEDICINE_TO_BE_TAKEN | null) => nameFormater(i || '', 'lower'))
@@ -735,6 +740,10 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                     ? `${item.medicineConsumptionDurationUnit.slice(0, -1).toLowerCase()}(s) `
                     : ``
                 }`
+              : ''
+          }${
+            item.medicineConsumptionDurationUnit
+              ? `${nameFormater(item.medicineConsumptionDurationUnit || '', 'lower')} `
               : ''
           }${
             item.medicineToBeTaken && item.medicineToBeTaken.length
@@ -979,6 +988,11 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                     <>
                       <Text style={styles.labelStyle}>{item!.itemname}</Text>
                       <Spearator style={{ marginBottom: index == array.length - 1 ? 2.5 : 11.5 }} />
+                      {item!.testInstruction ? (
+                        <Text style={styles.dataTextStyle}>
+                          Instuctions: {item!.testInstruction}
+                        </Text>
+                      ) : null}
                     </>
                   );
                 })}
@@ -1045,6 +1059,23 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
     }
   };
 
+  const getFileName = () => {
+    if (props.navigation.state.params!.DoctorInfo && props.navigation.state.params!.DisplayId) {
+      return (
+        'Prescription_' +
+        props.navigation.state.params!.DisplayId +
+        '_' +
+        moment(caseSheetDetails!.appointment!.appointmentDateTime).format('DD MM YYYY') +
+        '_' +
+        props.navigation.state.params!.DoctorInfo.displayName +
+        '_Apollo 247' +
+        '.pdf'
+      );
+    } else {
+      return 'Prescription_Apollo 247.pdf';
+    }
+  };
+
   const renderData = () => {
     if (caseSheetDetails)
       return (
@@ -1087,11 +1118,13 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                       let dirs = RNFetchBlob.fs.dirs;
 
                       console.log('blollb', props.navigation.state.params!.BlobName);
-                      let fileName: string =
-                        props.navigation.state.params!.BlobName.substring(
-                          0,
-                          props.navigation.state.params!.BlobName.indexOf('.pdf')
-                        ) + '.pdf';
+                      let fileName: string = getFileName();
+
+                      // props.navigation.state.params!.BlobName.substring(
+                      //   0,
+                      //   props.navigation.state.params!.BlobName.indexOf('.pdf')
+                      // )
+
                       const downloadPath =
                         Platform.OS === 'ios'
                           ? (dirs.DocumentDir || dirs.MainBundleDir) +

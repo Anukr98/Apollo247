@@ -7,8 +7,8 @@ import {
   MedicineProduct,
   PlacesApiResponse,
   getDeliveryTime,
-  autoCompletePlaceSearch,
-  getPlaceInfoByPlaceId,
+  medCartItemsDetailsApi,
+  MedicineOrderBilledItem,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   MEDICINE_ORDER_STATUS,
@@ -22,7 +22,6 @@ import moment from 'moment';
 import AsyncStorage from '@react-native-community/async-storage';
 import { Alert, Dimensions, Platform, Linking } from 'react-native';
 import RNAndroidLocationEnabler from 'react-native-android-location-enabler';
-import Geocoder from 'react-native-geocoding';
 import Permissions from 'react-native-permissions';
 import { DiagnosticsCartItem } from '../components/DiagnosticsCartProvider';
 import { getCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription } from '../graphql/types/getCaseSheet';
@@ -33,6 +32,10 @@ import {
   CommonLogEvent,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { getDiagnosticSlots_getDiagnosticSlots_diagnosticSlot_slotInfo } from '@aph/mobile-patients/src/graphql/types/getDiagnosticSlots';
+import {
+  getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails,
+  getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrderLineItems,
+} from '@aph/mobile-patients/src/graphql/types/getMedicineOrderOMSDetails';
 import ApolloClient from 'apollo-client';
 import {
   searchDiagnostics,
@@ -42,6 +45,7 @@ import { SEARCH_DIAGNOSTICS } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   WebEngageEvents,
   WebEngageEventName,
+  ReorderMedicines,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import WebEngage from 'react-native-webengage';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
@@ -54,11 +58,13 @@ import string from '@aph/mobile-patients/src/strings/strings.json';
 import {
   ShoppingCartItem,
   ShoppingCartContextProps,
+  EPrescription,
 } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { UIElementsContextProps } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { NavigationScreenProp, NavigationRoute } from 'react-navigation';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { postReorderMedicines } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
+import { getLatestMedicineOrder_getLatestMedicineOrder_medicineOrderDetails } from '@aph/mobile-patients/src/graphql/types/getLatestMedicineOrder';
 
 const googleApiKey = AppConfig.Configuration.GOOGLE_API_KEY;
 let onInstallConversionDataCanceller: any;
@@ -108,9 +114,14 @@ export const aphConsole: AphConsole = {
   },
 };
 
+export const productsThumbnailUrl = (filePath: string, baseUrl?: string) =>
+  (filePath || '').startsWith('http')
+    ? filePath
+    : `${baseUrl || AppConfig.Configuration.IMAGES_BASE_URL[0]}${filePath}`;
+
 export const formatAddress = (address: savePatientAddress_savePatientAddress_patientAddress) => {
   const addrLine1 = [address.addressLine1, address.addressLine2].filter((v) => v).join(', ');
-  // to resolve state value getting twice
+  // to handle state value getting twice
   const addrLine2 = [address.city, address.state]
     .filter((v) => v)
     .join(', ')
@@ -122,40 +133,22 @@ export const formatAddress = (address: savePatientAddress_savePatientAddress_pat
   return `${addrLine1}\n${addrLine2}${formattedZipcode}`;
 };
 
-export const getOrderStatusText = (status: MEDICINE_ORDER_STATUS): string => {
-  let statusString = '';
-  switch (status) {
-    case MEDICINE_ORDER_STATUS.CANCELLED:
-      statusString = 'Order Cancelled';
-      break;
-    case MEDICINE_ORDER_STATUS.CANCEL_REQUEST:
-      statusString = 'Cancel Requested';
-      break;
-    case MEDICINE_ORDER_STATUS.DELIVERED:
-      statusString = 'Order Delivered';
-      break;
-    case MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY:
-      statusString = 'Order Shipped';
-      break;
-    case MEDICINE_ORDER_STATUS.PICKEDUP:
-      statusString = 'Order Picked Up';
-      break;
-    case MEDICINE_ORDER_STATUS.RETURN_INITIATED:
-      statusString = 'Return Requested';
-      break;
-    case 'TO_BE_DELIVERED' as any:
-      statusString = 'Expected Order Delivery';
-      break;
-    default:
-      statusString = (status || '')
-        .split('_')
-        .map((item) => `${item.slice(0, 1).toUpperCase()}${item.slice(1).toLowerCase()}`)
-        .join(' ');
-  }
-  return statusString;
+export const formatOrderAddress = (
+  address: savePatientAddress_savePatientAddress_patientAddress
+) => {
+  // to handle state value getting twice
+  const addrLine = [address.addressLine1, address.addressLine2, address.city, address.state]
+    .filter((v) => v)
+    .join(', ')
+    .split(',')
+    .map((v) => v.trim())
+    .filter((item, idx, array) => array.indexOf(item) === idx)
+    .join(', ');
+  const formattedZipcode = address.zipcode ? ` - ${address.zipcode}` : '';
+  return `${addrLine}${formattedZipcode}`;
 };
 
-export const getNewOrderStatusText = (status: MEDICINE_ORDER_STATUS): string => {
+export const getOrderStatusText = (status: MEDICINE_ORDER_STATUS): string => {
   let statusString = '';
   switch (status) {
     case MEDICINE_ORDER_STATUS.CANCELLED:
@@ -181,6 +174,9 @@ export const getNewOrderStatusText = (status: MEDICINE_ORDER_STATUS): string => 
       break;
     case MEDICINE_ORDER_STATUS.RETURN_INITIATED:
       statusString = 'Return Requested';
+      break;
+    case MEDICINE_ORDER_STATUS.PURCHASED_IN_STORE:
+      statusString = 'Purchased In-store';
       break;
     case 'TO_BE_DELIVERED' as any:
       statusString = 'Expected Order Delivery';
@@ -436,48 +432,54 @@ export const findAddrComponents = (
   ];
 };
 
+/**
+ * Calculates great-circle distances between the two points – that is, the shortest distance over the earth’s surface – using the ‘Haversine’ formula.
+ */
+export const distanceBwTwoLatLng = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+  const deg2rad = (deg: number) => deg * (Math.PI / 180);
+  const R = 6371; // Radius of the earth in km
+  const dLat = deg2rad(lat2 - lat1); // deg2rad below
+  const dLon = deg2rad(lon2 - lon1);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  const d = R * c; // Distance in km
+  console.log(`Distance in km(s): ${d}`);
+  return d;
+};
+
+export const getlocationDataFromLatLang = async (latitude: number, longitude: number) => {
+  const placeInfo = await getPlaceInfoByLatLng(latitude, longitude);
+  const addrComponents = g(placeInfo, 'data', 'results', '0' as any, 'address_components') || [];
+  if (addrComponents.length == 0) {
+    throw 'Unable to get location.';
+  } else {
+    return getFormattedLocation(addrComponents, { lat: latitude, lng: longitude });
+  }
+};
+
 const getlocationData = (
   resolve: (value?: LocationData | PromiseLike<LocationData> | undefined) => void,
-  reject: (reason?: any) => void
+  reject: (reason?: any) => void,
+  latLngOnly?: boolean
 ) => {
   Geolocation.getCurrentPosition(
     (position) => {
       const { latitude, longitude } = position.coords;
+      if (latLngOnly) {
+        resolve({ latitude, longitude } as LocationData);
+        return;
+      }
       getPlaceInfoByLatLng(latitude, longitude)
         .then((response) => {
           const addrComponents =
             g(response, 'data', 'results', '0' as any, 'address_components') || [];
           if (addrComponents.length == 0) {
-            console.log('er78h98r');
-
+            console.log('Unable to get location info using latitude & longitude from Google API.');
             reject('Unable to get location.');
           } else {
-            const area = [
-              findAddrComponents('route', addrComponents),
-              findAddrComponents('sublocality_level_2', addrComponents),
-              findAddrComponents('sublocality_level_1', addrComponents),
-            ].filter((i) => i);
-            resolve({
-              displayName:
-                (area || []).pop() ||
-                findAddrComponents('locality', addrComponents) ||
-                findAddrComponents('administrative_area_level_2', addrComponents),
-              latitude,
-              longitude,
-              area: area.join(', '),
-              city:
-                findAddrComponents('locality', addrComponents) ||
-                findAddrComponents('administrative_area_level_2', addrComponents),
-              state: findAddrComponents('administrative_area_level_1', addrComponents),
-              stateCode: findAddrComponents(
-                'administrative_area_level_1',
-                addrComponents,
-                'short_name'
-              ),
-              country: findAddrComponents('country', addrComponents),
-              pincode: findAddrComponents('postal_code', addrComponents),
-              lastUpdated: new Date().getTime(),
-            });
+            resolve(getFormattedLocation(addrComponents, { lat: latitude, lng: longitude }));
           }
         })
         .catch((e) => {
@@ -494,7 +496,7 @@ const getlocationData = (
   );
 };
 
-export const doRequestAndAccessLocationModified = (): Promise<LocationData> => {
+export const doRequestAndAccessLocationModified = (latLngOnly?: boolean): Promise<LocationData> => {
   return new Promise((resolve, reject) => {
     Permissions.request('location')
       .then((response) => {
@@ -505,14 +507,14 @@ export const doRequestAndAccessLocationModified = (): Promise<LocationData> => {
               fastInterval: 5000,
             })
               .then(() => {
-                getlocationData(resolve, reject);
+                getlocationData(resolve, reject, latLngOnly);
               })
               .catch((e: Error) => {
                 CommonBugFender('helperFunctions_RNAndroidLocationEnabler', e);
                 reject('Unable to get location.');
               });
           } else {
-            getlocationData(resolve, reject);
+            getlocationData(resolve, reject, latLngOnly);
           }
         } else {
           if (response === 'denied' || response === 'restricted') {
@@ -594,57 +596,6 @@ export const doRequestAndAccessLocation = (): Promise<LocationData> => {
   });
 };
 
-export const getUserCurrentPosition = async () => {
-  const item = await AsyncStorage.getItem('location');
-  const location = item ? JSON.parse(item) : null;
-
-  if (location) {
-    console.log(location, 'location');
-
-    return {
-      latlong: location.latlong,
-      name: location.name.toUpperCase(),
-    };
-  } else {
-    return new Promise(async (resolve, reject) => {
-      Permissions.request('location')
-        .then((response) => {
-          if (response === 'authorized') {
-            Geolocation.getCurrentPosition(
-              async (position) => {
-                console.log(position, 'position');
-
-                (Geocoder as any).init(googleApiKey);
-                const jsonData = await (Geocoder as any).from(
-                  position.coords.latitude,
-                  position.coords.longitude
-                );
-                if (jsonData) {
-                  const result = jsonData.results[0];
-                  const addressComponent = result.address_components[1].long_name || '';
-                  const pincode = result.address_components.slice(-1)[0].long_name || '';
-                  console.log(jsonData, addressComponent, 'addressComponent', pincode);
-                  resolve({
-                    latlong: result.geometry.location,
-                    name: addressComponent,
-                    zipcode: pincode,
-                  });
-                }
-                reject(null);
-              },
-              (error) => console.log(JSON.stringify(error)),
-              { enableHighAccuracy: false, timeout: 20000 }
-            );
-          }
-        })
-        .catch((error) => {
-          CommonBugFender('helperFunctions_getUserCurrentPosition', error);
-          console.log(error, 'error permission');
-        });
-    });
-  }
-};
-
 const { height } = Dimensions.get('window');
 
 // export const isIphone5s = () => height === 568;
@@ -662,6 +613,99 @@ export const isValidName = (value: string) =>
     : value == '' || /^[a-zA-Z]+((['’ ][a-zA-Z])?[a-zA-Z]*)*$/.test(value)
     ? true
     : false;
+
+export const reOrderMedicines = async (
+  order:
+    | getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails
+    | getLatestMedicineOrder_getLatestMedicineOrder_medicineOrderDetails,
+  currentPatient: any,
+  source: ReorderMedicines['source']
+) => {
+  postReorderMedicines(source, currentPatient);
+  // Medicines
+  // use billedItems for delivered orders
+  const billedItems = g(
+    order,
+    'medicineOrderShipments',
+    '0' as any,
+    'medicineOrderInvoice',
+    '0' as any,
+    'itemDetails'
+  );
+  const billedLineItems = billedItems
+    ? (JSON.parse(billedItems) as MedicineOrderBilledItem[])
+    : null;
+  const isOfflineOrder = !!g(order, 'billNumber');
+  const lineItems = (g(order, 'medicineOrderLineItems') ||
+    []) as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrderLineItems[];
+  const lineItemsSkus = billedLineItems
+    ? billedLineItems.filter((item) => item.itemId).map((item) => item.itemId)
+    : lineItems.filter((item) => item.medicineSKU).map((item) => item.medicineSKU!);
+
+  const lineItemsDetails = (await medCartItemsDetailsApi(lineItemsSkus)).data.productdp.filter(
+    (m) => m.sku && m.name
+  );
+  const availableLineItemsSkus = lineItemsDetails.map((v) => v.sku);
+  const cartItemsToAdd = lineItemsDetails.map(
+    (item, index) =>
+      ({
+        id: item.sku,
+        mou: item.mou,
+        name: item.name,
+        price: parseNumber(item.price),
+        specialPrice: item.special_price ? parseNumber(item.special_price) : undefined,
+        quantity: Math.ceil(
+          (billedLineItems
+            ? billedLineItems[index].issuedQty
+            : isOfflineOrder
+            ? Math.ceil(
+                lineItems[index].price! / lineItems[index].mrp! / lineItems[index].quantity!
+              )
+            : lineItems[index].quantity) || 1
+        ),
+        prescriptionRequired: item.is_prescription_required == '1',
+        isMedicine: (item.type_id || '').toLowerCase() == 'pharma',
+        thumbnail: item.thumbnail || item.image,
+        isInStock: item.is_in_stock == 1,
+      } as ShoppingCartItem)
+  );
+  const unavailableItems = billedLineItems
+    ? billedLineItems
+        .filter((item) => !availableLineItemsSkus.includes(item.itemId))
+        .map((item) => item.itemName)
+    : lineItems
+        .filter((item) => !availableLineItemsSkus.includes(item.medicineSKU!))
+        .map((item) => item.medicineName!);
+
+  // Prescriptions
+  const prescriptionUrls = (order.prescriptionImageUrl || '')
+    .split(',')
+    .map((item) => item.trim())
+    .filter((v) => v);
+  const medicineNames = (billedLineItems
+    ? billedLineItems.filter((item) => item.itemName).map((item) => item.itemName)
+    : lineItems.filter((item) => item.medicineName).map((item) => item.medicineName!)
+  ).join(',');
+  const prescriptionsToAdd = prescriptionUrls.map(
+    (item) =>
+      ({
+        id: item,
+        date: moment(g(order, 'createdDate')).format('DD MMM YYYY'),
+        doctorName: `Meds Rx ${(order.id && order.id.substring(0, order.id.indexOf('-'))) || ''}`,
+        forPatient: g(currentPatient, 'firstName') || '',
+        medicines: medicineNames,
+        uploadedUrl: item,
+      } as EPrescription)
+  );
+
+  return {
+    items: cartItemsToAdd,
+    unavailableItems: unavailableItems,
+    prescriptions: prescriptionsToAdd,
+    totalItemsCount: lineItems.length,
+    unavailableItemsCount: unavailableItems.length,
+  };
+};
 
 export const addTestsToCart = async (
   testPrescription: getCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[], // testsIncluded will not come from API
@@ -980,7 +1024,7 @@ export const InitiateAppsFlyer = () => {
   appsFlyer.initSdk(
     {
       devKey: 'pP3MjHNkZGiMCamkJ7YpbH',
-      isDebug: true,
+      isDebug: false,
       appId: Platform.OS === 'ios' ? '1496740273' : '',
     },
     (result) => {
@@ -1065,26 +1109,20 @@ export const SetAppsFlyerCustID = (patientId: string) => {
 };
 
 export const postAppsFlyerAddToCartEvent = (
-  { sku, name, category_id, price, special_price }: MedicineProduct,
-  source: AppsFlyerEvents[AppsFlyerEventName.PHARMACY_ADD_TO_CART]['Source']
+  { sku, type_id, price, special_price, manufacturer }: MedicineProduct,
+  id: string
 ) => {
   const eventAttributes: AppsFlyerEvents[AppsFlyerEventName.PHARMACY_ADD_TO_CART] = {
-    'product name': name,
-    'product id': sku,
-    Brand: '',
-    'Brand ID': '',
-    'category name': '',
-    'category ID': category_id || '',
-    Price: price,
-    'Discounted Price': typeof special_price == 'string' ? Number(special_price) : special_price,
-    Quantity: 1,
-    Source: source,
+    'customer id': id,
     af_revenue: special_price
       ? typeof special_price == 'string'
         ? Number(special_price)
         : special_price
       : price,
     af_currency: 'INR',
+    item_type: type_id == 'Pharma' ? 'Drugs' : 'FMCG',
+    sku: sku,
+    brand: manufacturer,
   };
   postAppsFlyerEvent(AppsFlyerEventName.PHARMACY_ADD_TO_CART, eventAttributes);
 };
@@ -1185,6 +1223,12 @@ export const getFormattedLocation = (
   } as LocationData;
 };
 
+export const trimTextWithEllipsis = (text: string, count: number) =>
+  text.length > count ? `${text.slice(0, count)}...` : text;
+
+export const parseNumber = (number: string | number, decimalPoints?: number) =>
+  Number(Number(number).toFixed(decimalPoints || 2));
+
 export const isDeliveryDateWithInXDays = (deliveryDate: string) => {
   return (
     moment(deliveryDate, 'D-MMM-YYYY HH:mm a').diff(moment(), 'days') <=
@@ -1199,23 +1243,31 @@ export const addPharmaItemToCart = (
   setLoading: UIElementsContextProps['setLoading'],
   navigation: NavigationScreenProp<NavigationRoute<object>, object>,
   currentPatient: GetCurrentPatients_getCurrentPatients_patients,
+  isLocationServeiceable: boolean,
   onComplete?: () => void
 ) => {
   const unServiceableMsg = 'Sorry, not serviceable in your area.';
   const navigate = () => {
-    const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART_NONSERVICEABLE] = {
-      'product name': cartItem.name,
-      'product id': cartItem.id,
-      pincode: pincode,
-      'Mobile Number': g(currentPatient, 'mobileNumber')!,
-    };
-    console.log('eventAttributes------------------------', eventAttributes);
-    postWebEngageEvent(WebEngageEventName.PHARMACY_ADD_TO_CART_NONSERVICEABLE, eventAttributes);
+    if (!isLocationServeiceable) {
+      const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART_NONSERVICEABLE] = {
+        'product name': cartItem.name,
+        'product id': cartItem.id,
+        pincode: pincode,
+        'Mobile Number': g(currentPatient, 'mobileNumber')!,
+      };
+      postWebEngageEvent(WebEngageEventName.PHARMACY_ADD_TO_CART_NONSERVICEABLE, eventAttributes);
+    }
     navigation.navigate(AppRoutes.MedicineDetailsScene, {
       sku: cartItem.id,
       deliveryError: unServiceableMsg,
     });
   };
+  if (!isLocationServeiceable) {
+    onComplete && onComplete();
+    navigate();
+    return;
+  }
+
   setLoading && setLoading(true);
   getDeliveryTime({
     postalcode: pincode,

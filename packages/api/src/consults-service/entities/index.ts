@@ -14,6 +14,8 @@ import {
 import { IsDate } from 'class-validator';
 import { DoctorType, ROUTE_OF_ADMINISTRATION } from 'doctors-service/entities';
 
+import { log } from 'customWinstonLogger'
+
 export enum APPOINTMENT_UPDATED_BY {
   DOCTOR = 'DOCTOR',
   PATIENT = 'PATIENT',
@@ -304,6 +306,42 @@ export class Appointment extends BaseEntity {
     this.updatedDate = new Date();
   }
 
+  @BeforeUpdate()
+  async appointMentStatusConstraintCheck() {
+    try {
+      //fetch latest state
+      const currentAppointmentInDb = await Appointment.findOne(this.id);
+
+      if (currentAppointmentInDb) {
+        const isFinalStatus: boolean = currentAppointmentInDb.status == STATUS.COMPLETED || currentAppointmentInDb.status == STATUS.CANCELLED;
+
+        if (isFinalStatus) {
+          const haveSameStatus: boolean = currentAppointmentInDb.status == this.status;
+          const haveSameAppointmentState: boolean = currentAppointmentInDb.appointmentState == this.appointmentState;
+
+          if (!haveSameStatus || !haveSameAppointmentState) {
+            const logMessage = `Attempting to update status: ${currentAppointmentInDb.status}, state: ${currentAppointmentInDb.appointmentState}
+            to status: ${this.status} and state: ${this.appointmentState}`;
+
+            log('consultServiceLogger', logMessage, 'index.ts', '', logMessage);
+            throw new Error(logMessage);
+          }
+        }
+      }
+    }
+    catch (ex) {
+      log(
+        'consultServiceLogger',
+        'Unhandled exception occured whilte saving/updating appointment',
+        'index.ts',
+        '',
+        `${JSON.stringify(ex)}`
+      );
+      throw ex;
+    }
+  }
+
+
   @OneToMany(
     (type) => TransferAppointmentDetails,
     (transferAppointmentDetails) => transferAppointmentDetails.appointment
@@ -557,6 +595,9 @@ export class AppointmentSessions extends BaseEntity {
 export class AppointmentCallDetails extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
+
+  @Column({ default: null })
+  appVersion: string;
 
   @Column()
   callType: string;

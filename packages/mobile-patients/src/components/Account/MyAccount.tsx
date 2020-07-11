@@ -8,17 +8,13 @@ import {
   ManageProfileIcon,
   NeedHelpIcon,
   OneApollo,
-  PrimaryIcon,
   LinkedUhidIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import {
-  DELETE_DEVICE_TOKEN,
-  GET_MEDICINE_ORDERS_OMS__LIST,
-} from '@aph/mobile-patients/src/graphql/profiles';
+import { DELETE_DEVICE_TOKEN } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   deleteDeviceToken,
   deleteDeviceTokenVariables,
@@ -53,18 +49,14 @@ import {
   ScrollView,
   StackActions,
 } from 'react-navigation';
-import {
-  getMedicineOrdersOMSList,
-  getMedicineOrdersOMSListVariables,
-} from '../../graphql/types/getMedicineOrdersOMSList';
 import { AppConfig } from '../../strings/AppConfig';
 import { TabHeader } from '../ui/TabHeader';
+import { useAppCommonData } from '../AppCommonDataProvider';
 
 const { width } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   topView: {
-    backgroundColor: theme.colors.WHITE,
     marginBottom: 8,
     ...theme.viewStyles.cardViewStyle,
     borderRadius: 0,
@@ -157,6 +149,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
     GetCurrentPatients_getCurrentPatients_patients | null | undefined
   >(currentPatient);
   const { signOut, getPatientApiCall } = useAuth();
+  const { setSavePatientDetails, setAppointmentsPersonalized } = useAppCommonData();
 
   const buildName = () => {
     switch (apiRoutes.graphql()) {
@@ -180,19 +173,6 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
         return '';
     }
   };
-
-  const {
-    data: orders,
-    error: ordersError,
-    loading: ordersLoading,
-    refetch: ordersRefetch,
-  } = useQuery<getMedicineOrdersOMSList, getMedicineOrdersOMSListVariables>(
-    GET_MEDICINE_ORDERS_OMS__LIST,
-    {
-      variables: { patientId: currentPatient && currentPatient.id },
-      fetchPolicy: 'cache-first',
-    }
-  );
 
   useEffect(() => {
     if (!currentPatient) {
@@ -288,15 +268,18 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
     try {
       const webengage = new WebEngage();
       webengage.user.logout();
-      signOut();
       AsyncStorage.setItem('userLoggedIn', 'false');
       AsyncStorage.setItem('multiSignUp', 'false');
       AsyncStorage.setItem('signUp', 'false');
       AsyncStorage.setItem('selectUserId', '');
+      AsyncStorage.setItem('selectUserUHId', '');
       AsyncStorage.removeItem('phoneNumber');
       AsyncStorage.setItem('logginHappened', 'false');
       AsyncStorage.removeItem('deeplink');
       AsyncStorage.removeItem('deeplinkReferalCode');
+      setSavePatientDetails && setSavePatientDetails('');
+      setAppointmentsPersonalized && setAppointmentsPersonalized([]);
+      signOut();
 
       props.navigation.dispatch(
         StackActions.reset({
@@ -461,37 +444,14 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
           leftIcon={<Invoice />}
           onPress={() => {
             postMyOrdersClicked('My Account', currentPatient);
-            props.navigation.navigate(AppRoutes.YourOrdersScene, {
-              orders: (g(orders, 'getMedicineOrdersOMSList', 'medicineOrdersList') || []).filter(
-                (item) =>
-                  !(
-                    (item!.medicineOrdersStatus || []).length == 1 &&
-                    (item!.medicineOrdersStatus || []).find((item) => !item!.hideStatus)
-                  )
-              ),
-              header: 'MY ORDERS',
-              refetch: ordersRefetch,
-              error: ordersError,
-              loading: ordersLoading,
-            });
+            props.navigation.navigate(AppRoutes.YourOrdersScene);
           }}
         />
         <ListCard
           title={'My Payments'}
           leftIcon={<CurrencyIcon />}
           onPress={() => {
-            // postMyOrdersClicked('My Account', currentPatient);
             props.navigation.navigate(AppRoutes.MyPaymentsScreen, {
-              // orders: (g(orders, 'getMedicineOrdersList', 'MedicineOrdersList') || []).filter(
-              //   (item) =>
-              //     !(
-              //       (item!.medicineOrdersStatus || []).length == 1 &&
-              //       (item!.medicineOrdersStatus || []).find((item) => !item!.hideStatus)
-              //     )
-              // ),
-              // refetch: ordersRefetch,
-              // error: ordersError,
-              // loading: ordersLoading,
               patientId: currentPatient.id,
               fromNotification: false,
             });

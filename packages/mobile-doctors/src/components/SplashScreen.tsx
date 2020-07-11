@@ -1,17 +1,18 @@
 import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
 import SplashScreenStyles from '@aph/mobile-doctors/src/components/SplashScreen.styles';
+import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
 import { SplashLogo } from '@aph/mobile-doctors/src/components/ui/Icons';
+import { useUIElements } from '@aph/mobile-doctors/src/components/ui/UIElementsProvider';
+import { AppConfig, AppEnv } from '@aph/mobile-doctors/src/helpers/AppConfig';
 import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
 import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
+import AsyncStorage from '@react-native-community/async-storage';
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Linking, Platform, View, AppState, AppStateStatus } from 'react-native';
+import { ActivityIndicator, AppState, AppStateStatus, Linking, Platform, View } from 'react-native';
 import firebase from 'react-native-firebase';
 import SplashScreenView from 'react-native-splash-screen';
 import { NavigationScreenProps } from 'react-navigation';
-import AsyncStorage from '@react-native-community/async-storage';
-import { useUIElements } from '@aph/mobile-doctors/src/components/ui/UIElementsProvider';
-import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
-import { AppConfig, AppEnv } from '@aph/mobile-doctors/src/helpers/AppConfig';
+import moment from 'moment';
 
 const styles = SplashScreenStyles;
 
@@ -25,6 +26,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     try {
       firebase.analytics().setAnalyticsCollectionEnabled(true);
       checkForVersionUpdate();
+      AsyncStorage.removeItem('callDataSend');
       AppState.addEventListener('change', _handleAppStateChange);
       Linking.getInitialURL()
         .then((url) => {
@@ -39,6 +41,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
       Linking.addEventListener('url', (event) => handleOpenURL(event.url));
       AsyncStorage.removeItem('location');
+      AsyncStorage.setItem('showInAppNotification', 'true');
     } catch (error) {
       CommonBugFender('SplashScreen_Linking_URL_try', error);
       console.log('rrerererre', error);
@@ -48,6 +51,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const handleOpenURL = async (url: string) => {
     const route = url.replace('apollodoctors://', '');
     const data = route.split('?');
+    const multiData = data[1].split('&');
+
     console.log(url, data, 'deeplinkpress');
 
     const isLoggedIn = await AsyncStorage.getItem('isLoggedIn');
@@ -56,16 +61,38 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       switch (data[0].toLowerCase()) {
         case 'appointments':
           if (isLoggedIn) {
+            if (data.length == 1 || multiData.length !== 2) {
+              props.navigation.navigate(AppRoutes.TabBar);
+            } else if (data.length == 2 && multiData.length === 2) {
+              AsyncStorage.setItem('requestCompleted', 'false');
+              props.navigation.replace(AppRoutes.TabBar, {
+                goToDate: moment(multiData[1].split('=')[1]).isValid()
+                  ? moment(multiData[1].split('=')[1]).toDate()
+                  : new Date(),
+                openAppointment: multiData[0].split('=')[1],
+              });
+            }
+          }
+          break;
+        case 'chat':
+          if (isLoggedIn) {
             if (data.length == 1) {
               props.navigation.navigate(AppRoutes.TabBar);
             } else if (data.length == 2) {
               props.navigation.push(AppRoutes.ConsultRoomScreen, {
                 AppId: data[1],
-                DoctorId: '',
-                PatientId: '',
-                PatientConsultTime: null,
-                Appintmentdatetime: '',
-                AppoinementData: '',
+                activeTabIndex: 1,
+              });
+            }
+          }
+          break;
+        case 'calendar':
+          if (isLoggedIn) {
+            if (data.length == 1) {
+              props.navigation.navigate(AppRoutes.TabBar);
+            } else if (data.length == 2) {
+              props.navigation.replace(AppRoutes.TabBar, {
+                goToDate: moment(data[1]).isValid() ? moment(data[1]).toDate() : new Date(),
               });
             }
           }
@@ -93,52 +120,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     };
     asyncCall();
   }, [doctorDetails]);
-
-  const getRegistrationToken = async () => {
-    // const fcmToken = await firebase.messaging().getToken();
-    // if (fcmToken) {
-    //   // user has a device token
-    //   console.log('%cfcmToken', fcmToken, 'color:red');
-    // } else {
-    //   // user doesn't have a device token yet
-    //   console.log('%cuser doesnt have a device token yet', 'color:red');
-    // }
-  };
-
-  const checkNotificationPermission = async () => {
-    // const enabled = await firebase.messaging().hasPermission();
-    // if (enabled) {
-    //   // user has permissions
-    //   console.log('%cuser has permissions', 'color:green');
-    // } else {
-    //   // user doesn't have permission
-    //   console.log('%cuser doesnt have permission', 'color:blue');
-    //   try {
-    //     await firebase.messaging().requestPermission();
-    //     // User has authorised
-    //     console.log('%cUser has authorised', 'color:green');
-    //   } catch (error) {
-    //     // User has rejected permissions
-    //     console.log('%cUser has rejected permissions', 'color:red');
-    //   }
-    // }
-  };
-
-  useEffect(() => {
-    checkNotificationPermission();
-    //need to remove
-  }, []);
-
-  useEffect(() => {
-    getRegistrationToken();
-    // const onTokenRefreshListener = firebase.messaging().onTokenRefresh((fcmToken) => {
-    //   // Process your token as required
-    //   console.log('%cfcmToken', fcmToken, 'color:red');
-    // });
-    // return () => {
-    //   onTokenRefreshListener();
-    // };
-  }, []);
 
   useEffect(() => {
     firebase.analytics().setCurrentScreen('SplashScreen');

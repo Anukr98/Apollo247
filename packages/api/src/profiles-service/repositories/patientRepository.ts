@@ -2,6 +2,7 @@ import { EntityRepository, Repository, Not } from 'typeorm';
 import { Patient, PRISM_DOCUMENT_CATEGORY, PatientAddress } from 'profiles-service/entities';
 import { ApiConstants } from 'ApiConstants';
 import { UhidCreateResult } from 'types/uhidCreateTypes';
+import { getCache, setCache, delCache } from 'profiles-service/database/connectRedis';
 import { PrismSignUpUserData } from 'types/prism';
 
 import { UploadDocumentInput } from 'profiles-service/resolvers/uploadDocumentToPrism';
@@ -18,7 +19,6 @@ import {
   uploadPrescriptions,
 } from 'profiles-service/resolvers/prescriptionUpload';
 import { LabResultsInputArgs, uploadLabResults } from 'profiles-service/resolvers/labResultsUpload';
-import { pool } from 'profiles-service/database/connectRedis';
 
 type DeviceCount = {
   mobilenumber: string;
@@ -33,18 +33,11 @@ const dLogger = debugLog(
 );
 const REDIS_PATIENT_ID_KEY_PREFIX: string = 'patient:';
 const REDIS_PATIENT_MOBILE_KEY_PREFIX: string = 'patient:mobile:';
-const REDIS_PATIENT_DEVICE_COUNT_KEY_PREFIX: string = 'patient:deviceCodeCount:';
-
+// const REDIS_PATIENT_DEVICE_COUNT_KEY_PREFIX: string = 'patient:deviceCodeCount:';
 @EntityRepository(Patient)
 export class PatientRepository extends Repository<Patient> {
   async dropPatientCache(id: string) {
-    const redis = await pool.getTedis();
-    try {
-      await redis.del(id);
-    } catch (e) {
-    } finally {
-      await pool.putTedis(redis);
-    }
+    delCache(id);
   }
   async findById(id: string) {
     const relations = [
@@ -101,32 +94,12 @@ export class PatientRepository extends Repository<Patient> {
   }
 
   async getDeviceCodeCount(deviceCode: string) {
-    const redis = await pool.getTedis();
-    try {
-      const cacheCount = await redis.get(`${REDIS_PATIENT_DEVICE_COUNT_KEY_PREFIX}${deviceCode}`);
-      if (typeof cacheCount === 'string') {
-        return parseInt(cacheCount, 10);
-      }
-      const deviceCodeCount = (await this.createQueryBuilder('patient')
-        .select(['"mobileNumber" as mobilenumber'])
-        .where('patient."deviceCode" = :deviceCode', { deviceCode })
-        .groupBy('patient."mobileNumber"')
-        .getRawMany()).length;
-
-      this.setCache(
-        `${REDIS_PATIENT_DEVICE_COUNT_KEY_PREFIX}${deviceCode}`,
-        deviceCodeCount.toString()
-      );
-      return deviceCodeCount;
-    } catch (e) {
-      return (await this.createQueryBuilder('patient')
-        .select(['"mobileNumber" as mobilenumber'])
-        .where('patient."deviceCode" = :deviceCode', { deviceCode })
-        .groupBy('patient."mobileNumber"')
-        .getRawMany()).length;
-    } finally {
-      pool.putTedis(redis);
-    }
+    const deviceCodeCount: DeviceCount[] = await this.createQueryBuilder('patient')
+      .select(['"mobileNumber" as mobilenumber', 'count("mobileNumber") as mobilecount'])
+      .where('patient."deviceCode" = :deviceCode', { deviceCode })
+      .groupBy('patient."mobileNumber"')
+      .getRawMany();
+    return deviceCodeCount.length;
   }
 
   async getPatientDetails(id: string) {
@@ -138,31 +111,13 @@ export class PatientRepository extends Repository<Patient> {
   }
 
   async getByIdCache(id: string | number) {
-    const redis = await pool.getTedis();
-    try {
-      const cache = await redis.get(`${REDIS_PATIENT_ID_KEY_PREFIX}${id}`);
-
-      dLogger(
-        new Date(),
-        'Redis Cache Read of Patient',
-        `Cache hit ${REDIS_PATIENT_ID_KEY_PREFIX}${id}`
-      );
-      if (cache && typeof cache === 'string') {
-        const patient: Patient = JSON.parse(cache);
-        patient.dateOfBirth = new Date(patient.dateOfBirth);
-        return patient;
-      } else {
-        return this.setByIdCache(id);
-      }
-    } catch (e) {
-      dLogger(
-        new Date(),
-        'Redis Cache getByIdCache error',
-        `Redis Cache getByIdCache - ${REDIS_PATIENT_ID_KEY_PREFIX}${id} - ${e.stack}`
-      );
-      return this.getPatientData(id);
-    } finally {
-      pool.putTedis(redis);
+    const cache = await getCache(`${REDIS_PATIENT_ID_KEY_PREFIX}${id}`);
+    if (cache && typeof cache === 'string') {
+      const patient: Patient = JSON.parse(cache);
+      patient.dateOfBirth = new Date(patient.dateOfBirth);
+      return patient;
+    } else {
+      return await this.setByIdCache(id);
     }
   }
 
@@ -181,76 +136,22 @@ export class PatientRepository extends Repository<Patient> {
       relations: relations,
     });
   }
-  async setCache(key: string, value: string) {
-    const redis = await pool.getTedis();
-    try {
-      await redis.set(key, value);
-      await redis.expire(key, 14400);
-    } catch (e) {
-      dLogger(
-        new Date(),
-        'Redis Cache setCache error',
-        `Redis Cache setCache - ${REDIS_PATIENT_ID_KEY_PREFIX}${key}-${value} - ${e.stack}`
-      );
-      throw new AphError(AphErrorMessages.REDIS_SET_CACHE_FAILED, undefined, {
-        e,
-      });
-    } finally {
-      pool.putTedis(redis);
-    }
-  }
-  async dropCache(key: string) {
-    const redis = await pool.getTedis();
-    try {
-      await redis.del(key);
-    } catch (e) {
-      dLogger(
-        new Date(),
-        'Redis Cache dropCache error',
-        `Redis Cache dropCache - ${REDIS_PATIENT_ID_KEY_PREFIX}${key} - ${e.stack}`
-      );
-      throw new AphError(AphErrorMessages.REDIS_DROP_CACHE_FAILED, undefined, {
-        e,
-      });
-    } finally {
-      pool.putTedis(redis);
-    }
-  }
+
   async setByIdCache(id: string | number) {
-    try {
-      const patientDetails = await this.getPatientData(id);
-      if (patientDetails) {
-        const patientString = JSON.stringify(patientDetails);
-        this.setCache(`${REDIS_PATIENT_ID_KEY_PREFIX}${id}`, patientString);
-      }
-      dLogger(
-        new Date(),
-        'Redis Cache Write of Patient',
-        `Cache miss/write ${REDIS_PATIENT_ID_KEY_PREFIX}${id}`
+    const patientDetails = await this.getPatientData(id);
+    if (patientDetails) {
+      const patientString = JSON.stringify(patientDetails);
+      setCache(
+        `${REDIS_PATIENT_ID_KEY_PREFIX}${id}`,
+        patientString,
+        ApiConstants.CACHE_EXPIRATION_14400
       );
-      return patientDetails;
-    } catch (e) {
-      throw new AphError(AphErrorMessages.REDIS_SET_CACHE_BY_ID_FAILED, undefined, {
-        e,
-      });
     }
+    return patientDetails;
   }
   async getByMobileCache(mobile: string) {
-    const redis = await pool.getTedis();
-    let ids;
-    try {
-      ids = await redis.get(`${REDIS_PATIENT_MOBILE_KEY_PREFIX}${mobile}`);
-    } catch (e) {
-    } finally {
-      pool.putTedis(redis);
-    }
-
+    const ids = await getCache(`${REDIS_PATIENT_MOBILE_KEY_PREFIX}${mobile}`);
     if (ids && typeof ids === 'string') {
-      dLogger(
-        new Date(),
-        'Redis Cache Read of Patient',
-        `Cache hit ${REDIS_PATIENT_MOBILE_KEY_PREFIX}${mobile}`
-      );
       const patientIds: string[] = ids.split(',');
       const patients: Patient[] = [];
       for (let index = 0; index < patientIds.length; index++) {
@@ -258,11 +159,6 @@ export class PatientRepository extends Repository<Patient> {
         if (patient) {
           patients.push(patient);
         }
-        dLogger(
-          new Date(),
-          'Redis Cache Read of Patient',
-          `Cache hit ${REDIS_PATIENT_ID_KEY_PREFIX}${patientIds[index]}`
-        );
       }
       return patients;
     } else {
@@ -284,14 +180,17 @@ export class PatientRepository extends Repository<Patient> {
     });
 
     const patientIds: string[] = await patients.map((patient) => {
-      this.setCache(`${REDIS_PATIENT_ID_KEY_PREFIX}${patient.id}`, JSON.stringify(patient));
+      setCache(
+        `${REDIS_PATIENT_ID_KEY_PREFIX}${patient.id}`,
+        JSON.stringify(patient),
+        ApiConstants.CACHE_EXPIRATION_14400
+      );
       return patient.id;
     });
-    this.setCache(`${REDIS_PATIENT_MOBILE_KEY_PREFIX}${mobile}`, patientIds.join(','));
-    dLogger(
-      new Date(),
-      'Redis Cache Write of Patient',
-      `Cache miss/write ${REDIS_PATIENT_MOBILE_KEY_PREFIX}${mobile}`
+    setCache(
+      `${REDIS_PATIENT_MOBILE_KEY_PREFIX}${mobile}`,
+      patientIds.join(','),
+      ApiConstants.CACHE_EXPIRATION_14400
     );
     return patients;
   }
@@ -303,7 +202,8 @@ export class PatientRepository extends Repository<Patient> {
       patientList.map(async (patient) => {
         if (patient.firstName == '' || patient.uhid == '') {
           console.log(patient.id, 'blank card');
-          this.update(patient.id, { isActive: false });
+          patient.isActive = false;
+          this.save(patient);
         } else if (patient.primaryPatientId == null) {
           patient.primaryPatientId = patient.id;
           this.save(patient);
@@ -515,7 +415,7 @@ export class PatientRepository extends Repository<Patient> {
 
       const prescriptionInputArgs: PrescriptionInputArgs = {
         prescriptionInput: {
-          prescribedBy: 'Prescription uploaded by Patient',
+          prescribedBy: ApiConstants.PRESCRIPTION_UPLOADED_BY_PATIENT.toString(),
           prescriptionName: documentName,
           dateOfPrescription: getUnixTime(new Date()) * 1000,
           startDate: 0,

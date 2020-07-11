@@ -26,7 +26,7 @@ import { callPermissions, g, messageCodes } from '@aph/mobile-doctors/src/helper
 import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
 import moment from 'moment';
 import Pubnub from 'pubnub';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import { View } from 'react-native';
 import {
@@ -40,6 +40,7 @@ import {
   SUBMIT_JD_CASESHEET,
   CREATE_CASESHEET_FOR_SRD,
 } from '@aph/mobile-doctors/src/graphql/profiles';
+import AsyncStorage from '@react-native-community/async-storage';
 
 const styles = AppointmentsListStyles;
 
@@ -49,6 +50,7 @@ export interface AppointmentsListProps extends NavigationScreenProps {
   appointmentsHistory: (GetDoctorAppointments_getDoctorAppointments_appointmentsHistory | null)[];
   newPatientsList: (string | null)[];
   navigation: NavigationScreenProp<NavigationRoute<NavigationParams>, NavigationParams>;
+  openAppointment?: string;
 }
 
 export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
@@ -200,6 +202,217 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
       });
     });
   };
+  const showNotfoundAlert = () => {
+    showAphAlert &&
+      showAphAlert({ title: 'Alert!', description: 'Not able to find appointment. Try again' });
+  };
+
+  useEffect(() => {
+    const callBack = async () => {
+      const requestStatus = JSON.parse((await AsyncStorage.getItem('requestCompleted')) || 'false');
+      if (!requestStatus) {
+        if (props.openAppointment && props.appointmentsHistory.length > 0) {
+          const appointmentsHistory = props.appointmentsHistory.find(
+            (i) => i && i.id === props.openAppointment
+          );
+          if (appointmentsHistory) {
+            onAppointmentSelect(appointmentsHistory);
+          } else {
+            showNotfoundAlert();
+          }
+          AsyncStorage.setItem('requestCompleted', 'true');
+        } else if (props.openAppointment) {
+          showNotfoundAlert();
+          AsyncStorage.setItem('requestCompleted', 'true');
+        }
+      } else {
+        props.navigation.setParams({ openAppointment: '' });
+      }
+    };
+    callBack();
+  }, [props.openAppointment]);
+
+  const onAppointmentSelect = (
+    appointmentsHistory: GetDoctorAppointments_getDoctorAppointments_appointmentsHistory
+  ) => {
+    const appId = appointmentsHistory.id;
+    const doctorId = appointmentsHistory.doctorId;
+    const patientId = appointmentsHistory.patientId;
+    const caseSheet =
+      appointmentsHistory.caseSheet &&
+      appointmentsHistory.caseSheet
+        .filter(
+          (j: GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_caseSheet | null) =>
+            j && j.doctorType !== DoctorType.JUNIOR
+        )
+        .sort((a, b) => (b ? b.version || 1 : 1) - (a ? a.version || 1 : 1));
+    const prevCaseSheet =
+      caseSheet && caseSheet.length > 1
+        ? g(caseSheet && caseSheet[0], 'sentToPatient')
+          ? caseSheet[0]
+          : caseSheet[1]
+        : null;
+    const jrCaseSheet =
+      appointmentsHistory.caseSheet &&
+      appointmentsHistory.caseSheet.find(
+        (j: GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_caseSheet | null) =>
+          j && j.doctorType === DoctorType.JUNIOR
+      );
+    if (!appointmentsHistory.isJdQuestionsComplete) {
+      showAphAlert &&
+        showAphAlert({
+          title: `Hi ${doctorDetails ? doctorDetails.displayName || 'Doctor' : 'Doctor'} :)`,
+          description:
+            'Patient Details and Junior Doctor Case Sheet is not yet completed for this Appointment, Do you still want to proceed to Start consultation ?',
+          CTAs: alertCTAS(doctorId, patientId, appId, appointmentsHistory, prevCaseSheet),
+        });
+    } else if (
+      ((jrCaseSheet && !jrCaseSheet.isJdConsultStarted) || !jrCaseSheet) &&
+      appointmentsHistory.isJdQuestionsComplete
+    ) {
+      showAphAlert &&
+        showAphAlert({
+          title: `Hi ${doctorDetails ? doctorDetails.displayName || 'Doctor' : 'Doctor'} :)`,
+          description:
+            'Junior Doctor consultation is not yet initiated for this Appointment, Do you still want to proceed to Start consultation ?',
+          CTAs: alertCTAS(doctorId, patientId, appId, appointmentsHistory, prevCaseSheet),
+        });
+    } else if (
+      (jrCaseSheet && jrCaseSheet.isJdConsultStarted && jrCaseSheet.status !== 'COMPLETED') ||
+      !jrCaseSheet
+    ) {
+      showAphAlert &&
+        showAphAlert({
+          title: `Hi ${doctorDetails ? doctorDetails.displayName || 'Doctor' : 'Doctor'} :)`,
+          description:
+            'The Junior Doctor consultation is currently in progress for this appointment. You will be able to start this consult shortly..',
+        });
+    } else {
+      setLoading && setLoading(true);
+      if (
+        appointmentsHistory.status === STATUS.COMPLETED &&
+        g(caseSheet && caseSheet[0], 'sentToPatient')
+      ) {
+        const blobName = g(caseSheet && caseSheet[0], 'blobName');
+        setLoading && setLoading(false);
+        const caseSheetId = g(caseSheet && caseSheet[0], 'id');
+
+        props.navigation.push(AppRoutes.RenderPdf, {
+          uri: `${AppConfig.Configuration.DOCUMENT_BASE_URL}${blobName}`,
+          title: 'PRESCRIPTION',
+          menuCTAs: [
+            {
+              title: 'RESEND PRESCRIPTION',
+              onPress: () => {
+                if (caseSheetId) {
+                  setLoading && setLoading(true);
+                  const config: Pubnub.PubnubConfig = {
+                    subscribeKey: AppConfig.Configuration.PRO_PUBNUB_SUBSCRIBER,
+                    publishKey: AppConfig.Configuration.PRO_PUBNUB_PUBLISH,
+                    ssl: true,
+                  };
+
+                  const pubnub = new Pubnub(config);
+
+                  const followupObj = {
+                    appointmentId: appId,
+                    folloupDateTime: g(caseSheet && caseSheet[0], 'followUp')
+                      ? moment()
+                          .add(Number(g(caseSheet && caseSheet[0], 'followUpAfterInDays')), 'd')
+                          .format('YYYY-MM-DD')
+                      : '',
+                    doctorId: g(caseSheet && caseSheet[0], 'doctorId'),
+                    caseSheetId: caseSheetId,
+                    doctorInfo: doctorDetails,
+                    pdfUrl: `${AppConfig.Configuration.DOCUMENT_BASE_URL}${blobName}`,
+                    isResend: true,
+                  };
+
+                  pubnub.publish(
+                    {
+                      channel: appId,
+                      storeInHistory: true,
+                      message: {
+                        id: followupObj.doctorId || '',
+                        message: messageCodes.followupconsult,
+                        transferInfo: followupObj,
+                        messageDate: new Date(),
+                        sentBy: REQUEST_ROLES.DOCTOR,
+                      },
+                    },
+                    (status, response) => {
+                      pubnub.stop();
+                      setLoading && setLoading(false);
+                      showAphAlert &&
+                        showAphAlert({
+                          title: 'Hi',
+                          description: 'Prescription has been sent to patient successfully',
+                          onPressOk: () => {
+                            props.navigation.popToTop();
+                            hideAphAlert && hideAphAlert();
+                          },
+                          unDismissable: true,
+                        });
+                    }
+                  );
+                }
+              },
+            },
+            {
+              title: 'Issue New Prescription',
+              onPress: () => {
+                setLoading && setLoading(true);
+                client
+                  .mutate({
+                    mutation: CREATE_CASESHEET_FOR_SRD,
+                    variables: {
+                      appointmentId: appointmentsHistory.id,
+                    },
+                  })
+                  .then((data) => {
+                    setLoading && setLoading(false);
+                    navigateToConsultRoom(
+                      doctorId,
+                      patientId,
+                      appId,
+                      appointmentsHistory,
+                      prevCaseSheet,
+                      true
+                    );
+                  })
+                  .catch(() => {
+                    setLoading && setLoading(false);
+                    showAphAlert &&
+                      showAphAlert({
+                        title: 'Alert!',
+                        description: 'Error occured while creating Case Sheet. Please try again',
+                      });
+                  });
+              },
+            },
+          ],
+          CTAs: [
+            {
+              title: 'VIEW CASESHEET',
+              variant: 'white',
+              onPress: () => {
+                navigateToConsultRoom(
+                  doctorId,
+                  patientId,
+                  appId,
+                  appointmentsHistory,
+                  prevCaseSheet
+                );
+              },
+            },
+          ],
+        });
+      } else {
+        setLoading && setLoading(false);
+        navigateToConsultRoom(doctorId, patientId, appId, appointmentsHistory, prevCaseSheet);
+      }
+    }
+  };
 
   return (
     <ScrollView bounces={false}>
@@ -227,28 +440,6 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
 
           const consultDuration = filterData ? filterData.consultDuration : 0;
           const showNext = showUpNext(i.appointmentDateTime, index, i.status);
-          const caseSheet =
-            i.caseSheet &&
-            i.caseSheet
-              .filter(
-                (
-                  j: GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_caseSheet | null
-                ) => j && j.doctorType !== DoctorType.JUNIOR
-              )
-              .sort((a, b) => (b ? b.version || 1 : 1) - (a ? a.version || 1 : 1));
-          const prevCaseSheet =
-            caseSheet && caseSheet.length > 1
-              ? g(caseSheet && caseSheet[0], 'sentToPatient')
-                ? caseSheet[0]
-                : caseSheet[1]
-              : null;
-          const jrCaseSheet =
-            i.caseSheet &&
-            i.caseSheet.find(
-              (
-                j: GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_caseSheet | null
-              ) => j && j.doctorType === DoctorType.JUNIOR
-            );
 
           return (
             <>
@@ -264,171 +455,7 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
                   photoUrl={i.patientInfo ? i.patientInfo.photoUrl || '' : ''}
                   isNewPatient={isNewPatient(i.patientInfo!.id)}
                   onPress={(doctorId, patientId, PatientInfo, appointmentTime, appId) => {
-                    console.log('appppp', appId, i);
-                    // console.log( || null);
-                    if (!i.isJdQuestionsComplete) {
-                      showAphAlert &&
-                        showAphAlert({
-                          title: `Hi ${
-                            doctorDetails ? doctorDetails.displayName || 'Doctor' : 'Doctor'
-                          } :)`,
-                          description:
-                            'Patient Details and Junior Doctor Case Sheet is not yet completed for this Appointment, Do you still want to proceed to Start consultation ?',
-                          CTAs: alertCTAS(doctorId, patientId, appId, i, prevCaseSheet),
-                        });
-                    } else if (
-                      ((jrCaseSheet && !jrCaseSheet.isJdConsultStarted) || !jrCaseSheet) &&
-                      i.isJdQuestionsComplete
-                    ) {
-                      showAphAlert &&
-                        showAphAlert({
-                          title: `Hi ${
-                            doctorDetails ? doctorDetails.displayName || 'Doctor' : 'Doctor'
-                          } :)`,
-                          description:
-                            'Junior Doctor consultation is not yet initiated for this Appointment, Do you still want to proceed to Start consultation ?',
-                          CTAs: alertCTAS(doctorId, patientId, appId, i, prevCaseSheet),
-                        });
-                    } else if (
-                      (jrCaseSheet &&
-                        jrCaseSheet.isJdConsultStarted &&
-                        jrCaseSheet.status !== 'COMPLETED') ||
-                      !jrCaseSheet
-                    ) {
-                      showAphAlert &&
-                        showAphAlert({
-                          title: `Hi ${
-                            doctorDetails ? doctorDetails.displayName || 'Doctor' : 'Doctor'
-                          } :)`,
-                          description:
-                            'The Junior Doctor consultation is currently in progress for this appointment. You will be able to start this consult shortly..',
-                        });
-                    } else {
-                      setLoading && setLoading(true);
-                      if (
-                        i.status === STATUS.COMPLETED &&
-                        g(caseSheet && caseSheet[0], 'sentToPatient')
-                      ) {
-                        const blobName = g(caseSheet && caseSheet[0], 'blobName');
-                        setLoading && setLoading(false);
-                        const caseSheetId = g(caseSheet && caseSheet[0], 'id');
-
-                        props.navigation.push(AppRoutes.RenderPdf, {
-                          uri: `${AppConfig.Configuration.DOCUMENT_BASE_URL}${blobName}`,
-                          title: 'PRESCRIPTION',
-                          menuCTAs: [
-                            {
-                              title: 'RESEND PRESCRIPTION',
-                              onPress: () => {
-                                if (caseSheetId) {
-                                  setLoading && setLoading(true);
-                                  const config: Pubnub.PubnubConfig = {
-                                    subscribeKey: AppConfig.Configuration.PRO_PUBNUB_SUBSCRIBER,
-                                    publishKey: AppConfig.Configuration.PRO_PUBNUB_PUBLISH,
-                                    ssl: true,
-                                  };
-
-                                  const pubnub = new Pubnub(config);
-
-                                  const followupObj = {
-                                    appointmentId: appId,
-                                    folloupDateTime: g(caseSheet && caseSheet[0], 'followUp')
-                                      ? moment()
-                                          .add(
-                                            Number(
-                                              g(caseSheet && caseSheet[0], 'followUpAfterInDays')
-                                            ),
-                                            'd'
-                                          )
-                                          .format('YYYY-MM-DD')
-                                      : '',
-                                    doctorId: g(caseSheet && caseSheet[0], 'doctorId'),
-                                    caseSheetId: caseSheetId,
-                                    doctorInfo: doctorDetails,
-                                    pdfUrl: `${AppConfig.Configuration.DOCUMENT_BASE_URL}${blobName}`,
-                                    isResend: true,
-                                  };
-
-                                  pubnub.publish(
-                                    {
-                                      channel: appId,
-                                      storeInHistory: true,
-                                      message: {
-                                        id: followupObj.doctorId || '',
-                                        message: messageCodes.followupconsult,
-                                        transferInfo: followupObj,
-                                        messageDate: new Date(),
-                                        sentBy: REQUEST_ROLES.DOCTOR,
-                                      },
-                                    },
-                                    (status, response) => {
-                                      pubnub.stop();
-                                      setLoading && setLoading(false);
-                                      showAphAlert &&
-                                        showAphAlert({
-                                          title: 'Hi',
-                                          description:
-                                            'Prescription has been sent to patient successfully',
-                                          onPressOk: () => {
-                                            props.navigation.popToTop();
-                                            hideAphAlert && hideAphAlert();
-                                          },
-                                          unDismissable: true,
-                                        });
-                                    }
-                                  );
-                                }
-                              },
-                            },
-                            {
-                              title: 'Issue New Prescription',
-                              onPress: () => {
-                                setLoading && setLoading(true);
-                                client
-                                  .mutate({
-                                    mutation: CREATE_CASESHEET_FOR_SRD,
-                                    variables: {
-                                      appointmentId: i.id,
-                                    },
-                                  })
-                                  .then((data) => {
-                                    setLoading && setLoading(false);
-                                    navigateToConsultRoom(
-                                      doctorId,
-                                      patientId,
-                                      appId,
-                                      i,
-                                      prevCaseSheet,
-                                      true
-                                    );
-                                  })
-                                  .catch(() => {
-                                    setLoading && setLoading(false);
-                                    showAphAlert &&
-                                      showAphAlert({
-                                        title: 'Alert!',
-                                        description:
-                                          'Error occured while creating Case Sheet. Please try again',
-                                      });
-                                  });
-                              },
-                            },
-                          ],
-                          CTAs: [
-                            {
-                              title: 'VIEW CASESHEET',
-                              variant: 'white',
-                              onPress: () => {
-                                navigateToConsultRoom(doctorId, patientId, appId, i, prevCaseSheet);
-                              },
-                            },
-                          ],
-                        });
-                      } else {
-                        setLoading && setLoading(false);
-                        navigateToConsultRoom(doctorId, patientId, appId, i, prevCaseSheet);
-                      }
-                    }
+                    onAppointmentSelect(i);
                   }}
                   appointmentStatus={i.appointmentState || ''}
                   doctorname={i.patientInfo!.firstName || ''}

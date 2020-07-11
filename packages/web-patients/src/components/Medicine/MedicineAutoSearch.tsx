@@ -302,7 +302,7 @@ export const MedicineAutoSearch: React.FC = (props) => {
           className={classes.searchInput}
           value={searchText.replace(/\s+/gi, ' ').trimLeft()}
           onKeyDown={(e) => {
-            if (e.key === 'Enter') {
+            if (searchText.length > 1 && e.key === 'Enter') {
               window.location.href = clientRoutes.searchByMedicine(
                 'search-medicines',
                 searchText.replace(/\s/g, '-')

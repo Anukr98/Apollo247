@@ -127,7 +127,7 @@ export const ChennaiNonCartOrderForm: React.FC<ChennaiNonCartOrderFormProps> = (
     const isPayDisabled = !agreementCheckbox;
     return (
       <StickyBottomComponent
-        style={[styles.stickyBottomComponentStyle, { paddingHorizontal: 0, paddingTop: 25 }]}
+        style={[styles.stickyBottomComponentStyle, { paddingHorizontal: 40, paddingTop: 25 }]}
       >
         <Button
           style={{ width: '100%' }}
@@ -156,10 +156,10 @@ export const ChennaiNonCartOrderForm: React.FC<ChennaiNonCartOrderFormProps> = (
   const renderChennaiOrderFormAndPayButton = () => {
     return (
       <View style={{ ...theme.viewStyles.card(16, 20, 10, '#fff'), flex: 1 }}>
-        <ScrollView contentContainerStyle={{ flex: 1 }} bounces={false}>
+        <ScrollView contentContainerStyle={{ paddingBottom: 50 }} bounces={false}>
           {renderChennaiOrderForm()}
-          {renderChennaiOrderPayButton()}
         </ScrollView>
+        {renderChennaiOrderPayButton()}
       </View>
     );
   };

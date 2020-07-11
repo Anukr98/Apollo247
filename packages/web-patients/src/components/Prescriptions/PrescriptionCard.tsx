@@ -51,6 +51,7 @@ interface PrescriptionCardProps {
   imageUrl: string;
   fileName: string;
   removePrescription: (fileName: string) => void;
+  readOnly: boolean;
 }
 
 export const PrescriptionCard: React.FC<PrescriptionCardProps> = (props) => {
@@ -93,13 +94,19 @@ export const PrescriptionCard: React.FC<PrescriptionCardProps> = (props) => {
         </div>
       </div>
       <div className={classes.closeBtn}>
-        <AphButton
-          onClick={() => {
-            props.removePrescription(props.fileName);
-          }}
-        >
-          <img src={require('images/ic_cross_onorange_small.svg')} alt="Remove Document" />
-        </AphButton>
+        {props.readOnly ? (
+          <AphButton>
+            <img src={require('images/ic_tickmark.svg')} alt="" />
+          </AphButton>
+        ) : (
+          <AphButton
+            onClick={() => {
+              props.removePrescription(props.fileName);
+            }}
+          >
+            <img src={require('images/ic_cross_onorange_small.svg')} alt="Remove Document" />
+          </AphButton>
+        )}
       </div>
     </div>
   );
