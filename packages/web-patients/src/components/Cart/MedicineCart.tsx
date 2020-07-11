@@ -855,10 +855,14 @@ export const MedicineCart: React.FC = (props) => {
                 setErrorMessage(
                   'Coupon not applicable on your cart item(s) or item(s) with already higher discounts'
                 );
+                localStorage.removeItem('pharmaCoupon');
+                setCouponCode && setCouponCode('');
               }
             } else {
               setValidateCouponResult(null);
               setErrorMessage(couponValidateResult.reasonForInvalidStatus);
+              localStorage.removeItem('pharmaCoupon');
+              setCouponCode && setCouponCode('');
             }
           }
         })
