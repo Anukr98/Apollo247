@@ -233,101 +233,101 @@ const getMedicineOrdersOMSList: Resolver<
   let uhid = patientDetails.uhid;
   if (process.env.NODE_ENV == 'local') uhid = ApiConstants.CURRENT_UHID.toString();
   else if (process.env.NODE_ENV == 'dev') uhid = ApiConstants.CURRENT_UHID.toString();
-  log(
-    'profileServiceLogger',
-    `PRISM_GET_OFFLINE_ORDERS:${uhid}`,
-    'getMedicineOrdersOMSList',
-    mobileNumber,
-    ''
-  );
-  const ordersResp = await fetch(
-    process.env.PRISM_GET_OFFLINE_ORDERS ? process.env.PRISM_GET_OFFLINE_ORDERS + uhid : '',
-    {
-      method: 'GET',
-      headers: {},
-    }
-  );
-  log(
-    'profileServiceLogger',
-    `PRISM_GET_OFFLINE_ORDERS_RESP:${uhid}`,
-    'getMedicineOrdersOMSList',
-    JSON.stringify(ordersResp),
-    ''
-  );
-  const textRes = await ordersResp.text();
-  const offlineOrdersList = JSON.parse(textRes);
-  log(
-    'profileServiceLogger',
-    `PRISM_GET_OFFLINE_ORDERS_RESP:${uhid}`,
-    'getMedicineOrdersOMSList',
-    JSON.stringify(offlineOrdersList),
-    ''
-  );
-  //console.log(offlineOrdersList.response, offlineOrdersList.response.length, 'offlineOrdersList');
-  if (offlineOrdersList.errorCode == 0) {
-    //const orderDate = fromUnixTime(offlineOrdersList.response[0].billDateTime)
-    offlineOrdersList.response.forEach((order: any) => {
-      const lineItems: any[] = [];
-      if (order.lineItems) {
-        order.lineItems.forEach((item: any) => {
-          const itemDets = {
-            isMedicine: 1,
-            medicineSKU: item.itemId,
-            medicineName: item.itemName,
-            mrp: item.mrp,
-            mou: 1,
-            price: item.totalMrp,
-            quantity: item.saleQty,
-            isPrescriptionNeeded: 0,
-          };
-          lineItems.push(itemDets);
-        });
+  if (uhid) {
+    log(
+      'profileServiceLogger',
+      `PRISM_GET_OFFLINE_ORDERS:${uhid}`,
+      'getMedicineOrdersOMSList',
+      mobileNumber,
+      ''
+    );
+    const ordersResp = await fetch(
+      process.env.PRISM_GET_OFFLINE_ORDERS ? process.env.PRISM_GET_OFFLINE_ORDERS + uhid : '',
+      {
+        method: 'GET',
+        headers: {},
       }
-      const offlineShopAddress = {
-        storename: order.siteName,
-        address: order.address,
-        workinghrs: '24 Hrs',
-        phone: order.mobileNo,
-        city: order.city,
-        state: order.state,
-        zipcode: '500033',
-        stateCode: 'TS',
-      };
-      const offlineList: any = {
-        id: ApiConstants.OFFLINE_ORDERID,
-        orderAutoId: order.id,
-        shopAddress: JSON.stringify(offlineShopAddress),
-        createdDate:
-          format(getUnixTime(order.billDateTime) * 1000, 'yyyy-MM-dd') +
-          'T' +
-          format(getUnixTime(order.billDateTime) * 1000, 'hh:mm:ss') +
-          '.000Z',
-        billNumber: order.billNo,
-        medicineOrderLineItems: lineItems,
-        currentStatus: MEDICINE_ORDER_STATUS.PURCHASED_IN_STORE,
-        orderType: MEDICINE_ORDER_TYPE.CART_ORDER,
-        patientId: args.patientId,
-        deliveryType: MEDICINE_DELIVERY_TYPE.STORE_PICKUP,
-        estimatedAmount: order.mrpTotal,
-        productDiscount: order.discountTotal,
-        redeemedAmount: order.giftTotal,
-        medicineOrdersStatus: [
-          {
-            id: ApiConstants.OFFLINE_ORDERID,
-            statusDate:
-              format(getUnixTime(order.billDateTime) * 1000, 'yyyy-MM-dd') +
-              'T' +
-              format(getUnixTime(order.billDateTime) * 1000, 'hh:mm:ss') +
-              '.000Z',
-            orderStatus: MEDICINE_ORDER_STATUS.PURCHASED_IN_STORE,
-            hideStatus: true,
-          },
-        ],
-        medicineOrderShipments: [],
-      };
-      //offlineList.push(orderDetails)
-      medicineOrdersList.push(offlineList);
-    });
+    );
+    log(
+      'profileServiceLogger',
+      `PRISM_GET_OFFLINE_ORDERS_RESP:${uhid}`,
+      'getMedicineOrdersOMSList',
+      JSON.stringify(ordersResp),
+      ''
+    );
+    const textRes = await ordersResp.text();
+    const offlineOrdersList = JSON.parse(textRes);
+    log(
+      'profileServiceLogger',
+      `PRISM_GET_OFFLINE_ORDERS_RESP:${uhid}`,
+      'getMedicineOrdersOMSList',
+      JSON.stringify(offlineOrdersList),
+      ''
+    );
+    if (offlineOrdersList.errorCode == 0) {
+      offlineOrdersList.response.forEach((order: any) => {
+        const lineItems: any[] = [];
+        if (order.lineItems) {
+          order.lineItems.forEach((item: any) => {
+            const itemDets = {
+              isMedicine: 1,
+              medicineSKU: item.itemId,
+              medicineName: item.itemName,
+              mrp: item.mrp,
+              mou: 1,
+              price: item.totalMrp,
+              quantity: item.saleQty,
+              isPrescriptionNeeded: 0,
+            };
+            lineItems.push(itemDets);
+          });
+        }
+        const offlineShopAddress = {
+          storename: order.siteName,
+          address: order.address,
+          workinghrs: '24 Hrs',
+          phone: order.mobileNo,
+          city: order.city,
+          state: order.state,
+          zipcode: '500033',
+          stateCode: 'TS',
+        };
+        const offlineList: any = {
+          id: ApiConstants.OFFLINE_ORDERID,
+          orderAutoId: order.id,
+          shopAddress: JSON.stringify(offlineShopAddress),
+          createdDate:
+            format(getUnixTime(order.billDateTime) * 1000, 'yyyy-MM-dd') +
+            'T' +
+            format(getUnixTime(order.billDateTime) * 1000, 'hh:mm:ss') +
+            '.000Z',
+          billNumber: order.billNo,
+          medicineOrderLineItems: lineItems,
+          currentStatus: MEDICINE_ORDER_STATUS.PURCHASED_IN_STORE,
+          orderType: MEDICINE_ORDER_TYPE.CART_ORDER,
+          patientId: args.patientId,
+          deliveryType: MEDICINE_DELIVERY_TYPE.STORE_PICKUP,
+          estimatedAmount: order.mrpTotal,
+          productDiscount: order.discountTotal,
+          redeemedAmount: order.giftTotal,
+          medicineOrdersStatus: [
+            {
+              id: ApiConstants.OFFLINE_ORDERID,
+              statusDate:
+                format(getUnixTime(order.billDateTime) * 1000, 'yyyy-MM-dd') +
+                'T' +
+                format(getUnixTime(order.billDateTime) * 1000, 'hh:mm:ss') +
+                '.000Z',
+              orderStatus: MEDICINE_ORDER_STATUS.PURCHASED_IN_STORE,
+              hideStatus: true,
+            },
+          ],
+          medicineOrderShipments: [],
+        };
+        //offlineList.push(orderDetails)
+        medicineOrdersList.push(offlineList);
+      });
+    }
   }
   function GetSortOrder(a: MedicineOrders, b: MedicineOrders) {
     return new Date(b.createdDate).getTime() - new Date(a.createdDate).getTime();

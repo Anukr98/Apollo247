@@ -311,13 +311,10 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
       order: { createdDate: 'DESC' },
       relations: [
         'medicineOrderLineItems',
-        'medicineOrderPayments',
         'medicineOrdersStatus',
         'medicineOrderShipments',
-        'medicineOrderShipments.medicineOrdersStatus',
         'medicineOrderShipments.medicineOrderInvoice',
         'medicineOrderInvoice',
-        'patient',
       ],
     });
   }
