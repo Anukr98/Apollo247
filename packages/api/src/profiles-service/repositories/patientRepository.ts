@@ -40,19 +40,7 @@ export class PatientRepository extends Repository<Patient> {
     delCache(id);
   }
   async findById(id: string) {
-    const relations = [
-      'lifeStyle',
-      'healthVault',
-      'familyHistory',
-      'patientAddress',
-      'patientDeviceTokens',
-      'patientNotificationSettings',
-      'patientMedicalHistory',
-    ];
-    return this.findOne({
-      where: { id, isActive: true },
-      relations: relations,
-    });
+    return await this.getByIdCache(id);
   }
 
   async findByIdWithoutRelations(id: string) {

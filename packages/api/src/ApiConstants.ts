@@ -253,7 +253,7 @@ export enum ApiConstants {
   CACHE_EXPIRATION_120 = 120, // 2 mins
   CACHE_EXPIRATION_300 = 300, // 5 mins
   CACHE_EXPIRATION_600 = 600, // 10 mins
-  CACHE_EXPIRATION_900 = 900, //30 mins
+  CACHE_EXPIRATION_900 = 900, //15 mins
   CACHE_EXPIRATION_3600 = 3600, // 1hour
   CACHE_EXPIRATION_14400 = 14400, // 4hour
   //doctor no-photo url
