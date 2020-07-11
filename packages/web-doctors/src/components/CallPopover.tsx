@@ -1007,6 +1007,17 @@ const useStyles = makeStyles((theme: Theme) => {
       clip: 'rect(0,0,0,0)',
       border: 0,
     },
+    toastMessage: {
+      width: '482px',
+      height: '40px',
+      borderRadius: '10px',
+      boxShadow: '0 1px 13px 0 rgba(0, 0, 0, 0.16)',
+      backgroundColor: '#00b38e',
+      position: 'relative',
+      top: '37px',
+      right: '529px',
+      marginBottom: '5px',
+    },
   };
 });
 const ringtoneUrl = require('../images/phone_ringing.mp3');
@@ -1020,6 +1031,7 @@ interface errorObjectReshedule {
   otherError: boolean;
 }
 interface CallPopoverProps {
+  setShowToastMessage: (flag: boolean) => void;
   setStartConsultAction(isVideo: boolean): void;
   createSessionAction: () => void;
   saveCasesheetAction: (onlySave: boolean, sendToPatientFlag: boolean) => void;
@@ -2719,6 +2731,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
             </Popover>
           </span>
         </div>
+
         <Modal
           className={classes.modalPopup}
           open={connectCall}
@@ -2795,6 +2808,9 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                         },
                         fetchPolicy: 'no-cache',
                       });
+                      props.setShowToastMessage(true);
+                      // clearTimeout(5000);
+                      // setTimeout(() => props.setShowToastMessage(false), 5000);
                     }}
                   >
                     {'PROCEED TO CONNECT'}
