@@ -1521,6 +1521,9 @@ export const MedicineCart: React.FC = (props) => {
                     const zipCodeInt = parseInt(selectedZip);
 
                     if (cartItems && cartItems.length > 0 && !nonCartFlow) {
+                      if((prescriptions && prescriptions.length > 0)) {
+                        uploadMultipleFiles(prescriptions);
+                      }
                       if (
                         checkForCartChanges().then((res) => {
                           if (res) {
