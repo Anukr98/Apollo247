@@ -19,7 +19,7 @@ export class LoginOtpRepository extends Repository<LoginOtp> {
   }
 
   async insertOtp(otpAttrs: Partial<LoginOtp>) {
-    let id = uuidv1();
+    const id = uuidv1();
     await setCache(
       this.cacheKey(REDIS_OTP_MOBILE_PREFIX, id),
       JSON.stringify({ ...otpAttrs, id, incorrectAttempts: 0 }),
