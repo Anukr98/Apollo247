@@ -34,6 +34,7 @@ import fetchUtil from 'helpers/fetch';
 import { Route } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { kavachHelpline } from 'helpers/commonHelpers';
+import { MetaTagsComp } from 'MetaTagsComp';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -529,8 +530,20 @@ export const KavachLanding: React.FC = (props) => {
       setIsLoading(false);
     });
   };
+
+  const metaTagProps = {
+    title: 'Apollo Project Kavach - Protection from Covid-19, Covid19 Isolation Facilities',
+    description:
+      'Project Kavach is a comprehensive & an integrated response for Protection against COVID-19. Apollo Group offers medically supervised rooms as isolation facilities at hotels. Apollo will take care of you if you need supervision at home, hotel or at Apollo Fever Clinics. Apollo also offers Corona Kit - which includes Pulse Oximeter, Thermometer, Masks, Sanitizers, Disinfectant Spray & other essential Products.',
+    canonicalLink: window && window.location && window.location.href,
+    src: process.env.KAVACH_LANDING_SCRIPT_URL || '',
+    keywords:
+      'Covid Isolation Facilities, Hotel Stay for Covid Patients, Pulse Oximeter, Project Kavach',
+  };
+
   return (
     <div className={classes.kavachLanding}>
+      <MetaTagsComp {...metaTagProps} />
       <Header />
       <div className={classes.container}>
         <div className={classes.kavachContent}>
