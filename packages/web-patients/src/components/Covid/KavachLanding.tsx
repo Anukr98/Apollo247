@@ -536,7 +536,7 @@ export const KavachLanding: React.FC = (props) => {
     description:
       'Project Kavach is a comprehensive & an integrated response for Protection against COVID-19. Apollo Group offers medically supervised rooms as isolation facilities at hotels. Apollo will take care of you if you need supervision at home, hotel or at Apollo Fever Clinics. Apollo also offers Corona Kit - which includes Pulse Oximeter, Thermometer, Masks, Sanitizers, Disinfectant Spray & other essential Products.',
     canonicalLink: window && window.location && window.location.href,
-    src: 'https://api.adohm.com/pixel/tracker.js?user=5ef9ba546106f9386526d73e',
+    src: process.env.KAVACH_LANDING_SCRIPT_URL || '',
     keywords:
       'Covid Isolation Facilities, Hotel Stay for Covid Patients, Pulse Oximeter, Project Kavach',
   };
