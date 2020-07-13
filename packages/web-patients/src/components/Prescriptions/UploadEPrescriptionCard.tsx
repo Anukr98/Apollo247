@@ -146,7 +146,16 @@ interface EPrescriptionCardProps {
 
 export const UploadEPrescriptionCard: React.FC<EPrescriptionCardProps> = (props) => {
   const classes = useStyles({});
+<<<<<<< HEAD
+  const {
+    ePrescriptionData,
+    setEPrescriptionData,
+    setUploadedEPrescription,
+    uploadedEPrescription,
+  } = useShoppingCart();
+=======
   const { ePrescriptionData, setEPrescriptionData, setUploadedEPrescription } = useShoppingCart();
+>>>>>>> development
   const { isSigningIn } = useAuth();
   const apolloClient = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
@@ -176,10 +185,17 @@ export const UploadEPrescriptionCard: React.FC<EPrescriptionCardProps> = (props)
   });
 
   const sortByDate = (array: EPrescription[]) => {
+<<<<<<< HEAD
     return array.sort((data1, data2) => {
       let date1 = moment(data1.date).toDate().getTime();
       let date2 = moment(data2.date).toDate().getTime();
       return date1 > date2 ? -1 : date1 < date2 ? 1 : 0;
+=======
+    return array.sort((data1: any, data2: any) => {
+      let date1 = moment(data1.date).toDate().getTime();
+      let date2 = moment(data2.date).toDate().getTime();
+      return date1 > date2 ? -1 : date1 < date2 ? 1 : data2.id - data1.id;
+>>>>>>> development
     });
   };
 
@@ -201,7 +217,11 @@ export const UploadEPrescriptionCard: React.FC<EPrescriptionCardProps> = (props)
             prismLabResults.forEach((item: LabResultsType) => {
               mergeArray.push({
                 id: `${item.id}-${item.labTestName}`,
+<<<<<<< HEAD
                 uploadedUrl: item.fileUrl || '',
+=======
+                uploadedUrl: '',
+>>>>>>> development
                 forPatient: (currentPatient && currentPatient.firstName) || '',
                 date: item.date,
                 medicines: '',
