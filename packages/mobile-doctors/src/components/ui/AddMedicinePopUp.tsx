@@ -78,7 +78,7 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
   const [medList, setMedList] = useState<MedicineProduct[]>([]);
   const [listLoader, setListLoader] = useState<boolean>(false);
   const [medDetailLoading, setMedDetailLoading] = useState<boolean>(false);
-
+  const [forTextDisabled, setForTextDisabled] = useState<boolean>(false);
   const [defaultForm, setDefaultForm] = useState<boolean>(true);
   const [renderType, setRenderType] = useState<string>('');
   const radioOptions = [
@@ -109,7 +109,12 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
     },
     {
       key: MEDICINE_TIMINGS.AS_NEEDED,
-      value: nameFormater(MEDICINE_TIMINGS.AS_NEEDED),
+      value: nameFormater(MEDICINE_TIMINGS.AS_NEEDED, 'title'),
+      color: theme.colors.APP_RED,
+    },
+    {
+      key: MEDICINE_TIMINGS.NOT_SPECIFIC,
+      value: nameFormater(MEDICINE_TIMINGS.NOT_SPECIFIC, 'title'),
       color: theme.colors.APP_RED,
     },
   ];
@@ -126,6 +131,10 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
     { key: MEDICINE_CONSUMPTION_DURATION.DAYS, value: 'Day(s)' },
     { key: MEDICINE_CONSUMPTION_DURATION.WEEKS, value: 'Week(s)' },
     { key: MEDICINE_CONSUMPTION_DURATION.MONTHS, value: 'Month(s)' },
+    {
+      key: MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW,
+      value: nameFormater(MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW, 'title'),
+    },
   ];
   const takeTime: OptionsObject[] = [
     { key: MEDICINE_FREQUENCY.ONCE_A_DAY, value: nameFormater(MEDICINE_FREQUENCY.ONCE_A_DAY) },
@@ -360,14 +369,25 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
                 : nameFormater(data.medicineFrequency),
           });
         }
-        if (data.medicineConsumptionDurationUnit) {
-          setForTimeDrop({
-            key: data.medicineConsumptionDurationUnit,
-            value: nameFormater(data.medicineConsumptionDurationUnit).slice(0, -1) + '(s)',
-          });
-        }
         if (data.medicineConsumptionDurationInDays) {
           setForTime(data.medicineConsumptionDurationInDays);
+        }
+        if (data.medicineConsumptionDurationUnit) {
+          if (
+            data.medicineConsumptionDurationUnit === MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW
+          ) {
+            setForTimeDrop({
+              key: data.medicineConsumptionDurationUnit,
+              value: nameFormater(data.medicineConsumptionDurationUnit, 'title'),
+            });
+            setForTextDisabled(true);
+            setForTime('');
+          } else {
+            setForTimeDrop({
+              key: data.medicineConsumptionDurationUnit,
+              value: nameFormater(data.medicineConsumptionDurationUnit).slice(0, -1) + '(s)',
+            });
+          }
         }
         if (data.medicineCustomDosage) {
           const formValues = data.medicineCustomDosage.split('-');
@@ -383,21 +403,22 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
                 medAnswers.push({
                   key: item.key,
                   selected: true,
-                  value:
-                    valueIndexCounter < formValues.length
-                      ? formValues[valueIndexCounter] || ''
-                      : '',
+                  value: valueIndexCounter < formValues.length ? formValues[valueIndexCounter] : '',
                 });
               } else {
-                medAnswers.push({ key: item.key, selected: false, value: '' });
+                medAnswers.push({
+                  key: item.key,
+                  selected: false,
+                  value: formValues[valueIndexCounter],
+                });
               }
               valueIndexCounter++;
             });
           }
           if (medAnswers.length === 0) {
             medTimingsArray.forEach((item, index) => {
-              if (item.key === MEDICINE_TIMINGS.AS_NEEDED) {
-                return;
+              if ([MEDICINE_TIMINGS.AS_NEEDED, MEDICINE_TIMINGS.NOT_SPECIFIC].includes(item.key)) {
+                medAnswers.push({ key: item.key, selected: false, value: '' });
               } else if (index <= formValues.length - 1) {
                 if (formValues[index] === '0' || formValues[index] === '') {
                   medAnswers.push({
@@ -429,6 +450,18 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
               })
             );
           }
+        } else {
+          if (data.medicineTimings && data.medicineTimings.length > 0) {
+            setMedTimingAnswers(
+              medTimingsArray.map((item) => {
+                if (data.medicineTimings && data.medicineTimings.includes(item.key)) {
+                  return { key: item.key, selected: true, value: '' };
+                } else {
+                  return { key: item.key, selected: false, value: '' };
+                }
+              })
+            );
+          }
         }
         if (data.externalId) {
           setExternalId(data.externalId);
@@ -445,7 +478,7 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
   const routeOfAdminOptions: OptionsObject[] = Object.values(ROUTE_OF_ADMINISTRATION).map(
     (item) => ({
       key: item,
-      value: nameFormater(item),
+      value: nameFormater(item, 'title'),
     })
   );
 
@@ -503,7 +536,15 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
         <Button
           title={data ? strings.smartPrescr.update_medicine : strings.smartPrescr.add_medicine}
           onPress={() => {
-            if (defaultForm && medicineDosage.length === 0) {
+            if (
+              defaultForm &&
+              medicineDosage.length === 0 &&
+              !(
+                typeDrop.key === MEDICINE_UNIT.AS_PRESCRIBED &&
+                renderType === MEDICINE_FORM_TYPES.GEL_LOTION_OINTMENT &&
+                medicineDosage.length === 0
+              )
+            ) {
               showAphAlert &&
                 showAphAlert({
                   title: 'Alert!',
@@ -513,7 +554,10 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
             } else if (
               !defaultForm &&
               medTimingAnswers.filter(
-                (i) => i.key !== MEDICINE_TIMINGS.AS_NEEDED && i.selected && i.value.length === 0
+                (i) =>
+                  ![MEDICINE_TIMINGS.AS_NEEDED, MEDICINE_TIMINGS.NOT_SPECIFIC].includes(i.key) &&
+                  i.selected &&
+                  (i.value.length === 0 || (i.value !== '' && Number(i.value) === 0))
               ).length > 0
             ) {
               showAphAlert &&
@@ -522,18 +566,27 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
                   description: `Enter (${medTimingAnswers
                     .filter(
                       (i) =>
-                        i.key !== MEDICINE_TIMINGS.AS_NEEDED && i.selected && i.value.length === 0
+                        ![MEDICINE_TIMINGS.AS_NEEDED, MEDICINE_TIMINGS.NOT_SPECIFIC].includes(
+                          i.key
+                        ) &&
+                        i.selected &&
+                        (i.value.length === 0 || (i.value !== '' && Number(i.value) === 0))
                     )
                     .map((i) => nameFormater(i.key, 'lower'))
-                    .join(', ')}) dosage(s)`,
+                    .join(', ')}) dosage(s).\nSelected timing dosages can't be empty or '0'.`,
                 });
               return;
             } else if (
               !defaultForm &&
-              medTimingAnswers.filter((i) => i.key !== MEDICINE_TIMINGS.AS_NEEDED && i.selected)
-                .length !==
+              medTimingAnswers.filter(
+                (i) =>
+                  ![MEDICINE_TIMINGS.AS_NEEDED, MEDICINE_TIMINGS.NOT_SPECIFIC].includes(i.key) &&
+                  (i.selected || (i.value !== '' && !i.selected && Number(i.value) === 0))
+              ).length !==
                 medTimingAnswers.filter(
-                  (i) => i.key !== MEDICINE_TIMINGS.AS_NEEDED && i.value.length !== 0
+                  (i) =>
+                    ![MEDICINE_TIMINGS.AS_NEEDED, MEDICINE_TIMINGS.NOT_SPECIFIC].includes(i.key) &&
+                    i.value.length !== 0
                 ).length
             ) {
               showAphAlert &&
@@ -542,7 +595,11 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
                   description: `Timings (${medTimingAnswers
                     .filter(
                       (i) =>
-                        i.key !== MEDICINE_TIMINGS.AS_NEEDED && !i.selected && i.value.length !== 0
+                        ![MEDICINE_TIMINGS.AS_NEEDED, MEDICINE_TIMINGS.NOT_SPECIFIC].includes(
+                          i.key
+                        ) &&
+                        !i.selected &&
+                        i.value.length !== 0
                     )
                     .map((i) => nameFormater(i.key, 'lower'))
                     .join(', ')}) have dosages, select the timing(s) or empty the input field(s).`,
@@ -552,13 +609,22 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
               showAphAlert &&
                 showAphAlert({
                   title: 'Alert!',
-                  description: 'Select at least one timing\n(Morning/Noon/Evening/Night/As needed)',
+                  description:
+                    'Select at least one timing\n(Morning/Noon/Evening/Night/As Needed/Not Specific)',
                 });
               return;
             } else if (
               !defaultForm &&
-              medTimingAnswers.filter((i) => i.key !== MEDICINE_TIMINGS.AS_NEEDED && i.selected)
-                .length === 0
+              medTimingAnswers.filter(
+                (i) =>
+                  ![MEDICINE_TIMINGS.AS_NEEDED, MEDICINE_TIMINGS.NOT_SPECIFIC].includes(i.key) &&
+                  i.selected
+              ).length === 0 &&
+              !(
+                typeDrop.key === MEDICINE_UNIT.AS_PRESCRIBED &&
+                renderType === MEDICINE_FORM_TYPES.GEL_LOTION_OINTMENT &&
+                medicineDosage.length === 0
+              )
             ) {
               showAphAlert &&
                 showAphAlert({
@@ -566,7 +632,11 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
                   description: 'Select at least one timing\n(Morning/Noon/Evening/Night)',
                 });
               return;
-            } else if (forTime.length === 0) {
+            } else if (
+              forTime.length === 0 &&
+              Number(forTime) === 0 &&
+              forTimeDrop.key !== MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW
+            ) {
               showAphAlert &&
                 showAphAlert({
                   title: 'Alert!',
@@ -600,7 +670,11 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
               medicineCustomDosage: !defaultForm
                 ? medTimingsArray
                     .map((item) => {
-                      if (item.key === MEDICINE_TIMINGS.AS_NEEDED) {
+                      if (
+                        [MEDICINE_TIMINGS.AS_NEEDED, MEDICINE_TIMINGS.NOT_SPECIFIC].includes(
+                          item.key
+                        )
+                      ) {
                         return '';
                       } else {
                         return (
@@ -644,7 +718,7 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
       );
     } else {
       return medTimingsArray.map((item) => {
-        if (item.key === MEDICINE_TIMINGS.AS_NEEDED) {
+        if ([MEDICINE_TIMINGS.AS_NEEDED, MEDICINE_TIMINGS.NOT_SPECIFIC].includes(item.key)) {
           return null;
         }
         const existingAnswers = medTimingAnswers.find((i) => i.key === item.key);
@@ -661,10 +735,20 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
               selectionColor={theme.colors.INPUT_CURSOR_COLOR}
               onChange={(text) => {
                 setMedTimingAnswers([
-                  ...(medTimingAnswers.filter((i) => i.key !== item.key) || []),
+                  ...(medTimingAnswers.filter((i) => i.key !== item.key) || []).map((i) => {
+                    if (
+                      [MEDICINE_TIMINGS.AS_NEEDED, MEDICINE_TIMINGS.NOT_SPECIFIC].includes(i.key)
+                    ) {
+                      return { key: i.key, selected: false, value: i.value };
+                    } else {
+                      return { key: i.key, selected: i.selected, value: i.value };
+                    }
+                  }),
                   {
                     key: existingAnswers.key,
-                    selected: formatFractionalNumber(text.nativeEvent.text) !== '',
+                    selected:
+                      formatFractionalNumber(text.nativeEvent.text) !== '' &&
+                      Number(formatFractionalNumber(text.nativeEvent.text)) !== 0,
                     value: formatFractionalNumber(text.nativeEvent.text),
                   },
                 ]);
@@ -799,9 +883,13 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
         <Text style={styles.inTheText}>{strings.smartPrescr.in_the}</Text>
         <View style={styles.sessionsView}>
           {medTimingsArray.map((item) => {
-            if (!defaultForm && item.key === MEDICINE_TIMINGS.AS_NEEDED) {
+            if (
+              !defaultForm &&
+              [MEDICINE_TIMINGS.AS_NEEDED, MEDICINE_TIMINGS.NOT_SPECIFIC].includes(item.key)
+            ) {
               return null;
             }
+
             const existingAnswers = medTimingAnswers.find((i) => i.key === item.key);
             if (existingAnswers) {
               return (
@@ -809,12 +897,14 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
                   title={item.value}
                   isChecked={existingAnswers.selected}
                   onChange={() => {
-                    if (item.key === MEDICINE_TIMINGS.AS_NEEDED) {
+                    if (
+                      [MEDICINE_TIMINGS.AS_NEEDED, MEDICINE_TIMINGS.NOT_SPECIFIC].includes(item.key)
+                    ) {
                       setMedTimingAnswers([
                         ...(medTimingAnswers
                           .filter((i) => i.key !== item.key)
                           .map((i) => {
-                            if (i.key !== MEDICINE_TIMINGS.AS_NEEDED) {
+                            if (i.key !== item.key) {
                               return { key: i.key, selected: false, value: '' };
                             } else {
                               return { key: i.key, selected: i.selected, value: i.value };
@@ -831,7 +921,11 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
                         ...(medTimingAnswers
                           .filter((i) => i.key !== item.key)
                           .map((i) => {
-                            if (i.key === MEDICINE_TIMINGS.AS_NEEDED) {
+                            if (
+                              [MEDICINE_TIMINGS.AS_NEEDED, MEDICINE_TIMINGS.NOT_SPECIFIC].includes(
+                                i.key
+                              )
+                            ) {
                               return { key: i.key, selected: false, value: i.value };
                             } else {
                               return { key: i.key, selected: i.selected, value: i.value };
@@ -885,13 +979,14 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
         <Text style={styles.forLable}>{strings.smartPrescr.for}</Text>
         <View style={styles.forInputView}>
           <TextInput
-            style={styles.textInputStyles}
+            style={forTextDisabled ? styles.textInputDisabledStyles : styles.textInputStyles}
             placeholder=""
             placeholderTextColor="rgba(1, 71, 91, 0.3)"
             value={forTime}
             keyboardType={'numbers-and-punctuation'}
             selectionColor={theme.colors.INPUT_CURSOR_COLOR}
             onChange={(text) => setForTime((formatInt(text.nativeEvent.text) || '').toString())}
+            editable={!forTextDisabled}
           />
           <MaterialMenu
             options={forTimeArray}
@@ -899,6 +994,12 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
             menuContainerStyle={styles.MMContainer}
             onPress={(item) => {
               setForTimeDrop(item);
+              if (item.key === MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW) {
+                setForTextDisabled(true);
+                setForTime('');
+              } else {
+                setForTextDisabled(false);
+              }
             }}
             selectedTextStyle={styles.MMseleStyle}
             itemTextStyle={styles.MMitemText}

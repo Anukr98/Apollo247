@@ -221,7 +221,7 @@ const updateOrderStatus: Resolver<
         );
       }
       if (status == MEDICINE_ORDER_STATUS.DELIVERED || status == MEDICINE_ORDER_STATUS.PICKEDUP) {
-        let notificationType =
+        const notificationType =
           status == MEDICINE_ORDER_STATUS.DELIVERED
             ? NotificationType.MEDICINE_ORDER_DELIVERED
             : NotificationType.MEDICINE_ORDER_PICKEDUP;

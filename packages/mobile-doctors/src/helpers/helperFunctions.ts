@@ -6,6 +6,7 @@ import {
   MEDICINE_TIMINGS,
   MEDICINE_TO_BE_TAKEN,
   MEDICINE_FREQUENCY,
+  MEDICINE_CONSUMPTION_DURATION,
 } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
 import Permissions, { PERMISSIONS, Permission } from 'react-native-permissions';
 import { Alert, Platform } from 'react-native';
@@ -148,7 +149,7 @@ export const medicineDescription = (
 ) => {
   const type = item.medicineFormTypes === MEDICINE_FORM_TYPES.OTHERS ? 'Take' : 'Apply';
   const customDosage = item.medicineCustomDosage
-    ? item.medicineCustomDosage.split('-').filter((i) => i !== '')
+    ? item.medicineCustomDosage.split('-').filter((i) => i !== '' && i !== '0')
     : [];
   const medTimingsArray = [
     MEDICINE_TIMINGS.MORNING,
@@ -186,12 +187,15 @@ export const medicineDescription = (
               ') '
             : ''
         }${
-          item.medicineConsumptionDurationInDays
+          Number(item.medicineConsumptionDurationInDays || '')
             ? `for ${item.medicineConsumptionDurationInDays} ${
                 item.medicineConsumptionDurationUnit
                   ? `${item.medicineConsumptionDurationUnit.slice(0, -1).toLowerCase()}(s) `
                   : ``
               }`
+            : item.medicineConsumptionDurationUnit ===
+              MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW
+            ? `${nameFormater(item.medicineConsumptionDurationUnit, 'lower')} `
             : ''
         }${
           item.medicineToBeTaken && item.medicineToBeTaken.length
@@ -200,19 +204,24 @@ export const medicineDescription = (
                 .join(', ') + '.'
             : ''
         }`
-      : `${item.medicineDosage ? item.medicineDosage : ''} ${item.medicineUnit ? unit + ' ' : ''}${
+      : `${item.medicineDosage ? item.medicineDosage + ' ' : ''}${
+          item.medicineUnit ? unit + ' ' : ''
+        }${
           item.medicineFrequency
             ? item.medicineFrequency === MEDICINE_FREQUENCY.STAT
               ? 'STAT (Immediately) '
               : nameFormater(item.medicineFrequency, 'lower') + ' '
             : ''
         }${
-          item.medicineConsumptionDurationInDays
+          Number(item.medicineConsumptionDurationInDays || '')
             ? `for ${item.medicineConsumptionDurationInDays} ${
                 item.medicineConsumptionDurationUnit
                   ? `${item.medicineConsumptionDurationUnit.slice(0, -1).toLowerCase()}(s) `
                   : ``
               }`
+            : item.medicineConsumptionDurationUnit ===
+              MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW
+            ? `${nameFormater(item.medicineConsumptionDurationUnit, 'lower')} `
             : ''
         }${
           item.medicineToBeTaken && item.medicineToBeTaken.length
@@ -410,7 +419,7 @@ export const permissionHandler = (
       } else if (message === 'denied' || message === 'blocked') {
         Alert.alert((permission.split('.').pop() || 'permission').toUpperCase(), deniedMessage, [
           {
-            text: 'Cancle',
+            text: 'Cancel',
             onPress: () => {},
           },
           {
