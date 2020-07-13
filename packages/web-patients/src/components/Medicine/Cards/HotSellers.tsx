@@ -231,6 +231,7 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
                         <AphButton
                           onClick={() => {
                             const cartItem: MedicineCartItem = {
+                              MaxOrderQty: hotSeller.MaxOrderQty,
                               url_key: hotSeller.url_key,
                               description: hotSeller.description,
                               id: hotSeller.id,
