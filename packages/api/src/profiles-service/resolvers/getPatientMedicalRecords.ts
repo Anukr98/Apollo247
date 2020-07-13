@@ -317,6 +317,10 @@ const getPatientPrismMedicalRecords: Resolver<
       labresult.testResultFiles.length > 0
         ? labResultDocumentUrl.replace('{RECORDID}', labresult.id)
         : '';
+
+    if (labresult.labTestDate.toString().length < 11) {
+      labresult.labTestDate = labresult.labTestDate * 1000;
+    }
     labresult.date = new Date(format(new Date(labresult.labTestDate), 'yyyy-MM-dd'));
   });
 
@@ -335,6 +339,10 @@ const getPatientPrismMedicalRecords: Resolver<
       prescription.fileUrl.length > 0
         ? prescription.fileUrl.replace('{FILE_NAME}', prescription.prescriptionFiles[0].fileName)
         : '';
+
+    if (prescription.dateOfPrescription.toString().length < 11) {
+      prescription.dateOfPrescription = prescription.dateOfPrescription * 1000;
+    }
     prescription.date = new Date(format(new Date(prescription.dateOfPrescription), 'yyyy-MM-dd'));
   });
 
@@ -370,6 +378,10 @@ const getPatientPrismMedicalRecords: Resolver<
       });
     }
 
+    if (element.labTestDate.toString().length < 11) {
+      element.labTestDate = element.labTestDate * 1000;
+    }
+
     const labResult = {
       id: element.id,
       labTestName: element.labTestName,
@@ -401,6 +413,10 @@ const getPatientPrismMedicalRecords: Resolver<
       prismFileIds = element.prescriptionFiles.map((item) => {
         return `${item.id}_${item.fileName}`;
       });
+    }
+
+    if (element.dateOfPrescription.toString().length < 11) {
+      element.dateOfPrescription = element.dateOfPrescription * 1000;
     }
 
     const labResult = {
