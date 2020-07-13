@@ -211,7 +211,7 @@ export const AuthProvider: React.FC = (props) => {
       setIsSigningIn(true);
       setIsVerifyingOtp(true);
       otpCheckApiCall(otp, loginId).then((res) => {
-        // 
+        //
         if (!res) {
           setVerifyOtpError(true);
           setIsSigningIn(false);
@@ -350,7 +350,6 @@ export const AuthProvider: React.FC = (props) => {
 
   useEffect(() => {
     app.auth().onAuthStateChanged(async (user) => {
-
       if (user) {
         /**Gtm code start */
         const isNewUser = user.metadata.creationTime === user.metadata.lastSignInTime;
@@ -375,11 +374,16 @@ export const AuthProvider: React.FC = (props) => {
               res.data.getCurrentPatients &&
               res.data.getCurrentPatients.patients &&
               res.data.getCurrentPatients.patients[0].id;
-              
-              if(localStorage.getItem('currentUser') && localStorage.getItem('currentUser').length) {
+
+            if (localStorage.getItem('currentUser') && localStorage.getItem('currentUser').length) {
+              const patientIds = res.data.getCurrentPatients.patients.map((patient) => patient.id);
+              if (!patientIds.includes(localStorage.getItem('currentUser'))) {
                 localStorage.setItem('currentUser', userId);
                 setCurrentPatientId(userId);
+              } else {
+                setCurrentPatientId(localStorage.getItem('currentUser'));
               }
+            }
             /**Gtm code start */
             if (isNewUser) {
               gtmTracking({ category: 'Profile', action: 'Register / Login', label: 'Register' });
@@ -471,7 +475,7 @@ export const AuthProvider: React.FC = (props) => {
 //     loginResult.data.login.status &&
 //     loginResult.data.login.loginId
 //   ) {
-//     
+//
 //     setSendOtpError(false);
 //     return loginResult.data.login.loginId;
 //   } else if (loginError) {
