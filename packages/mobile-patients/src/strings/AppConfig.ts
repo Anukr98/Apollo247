@@ -232,6 +232,10 @@ const PharmaApiConfig = {
       'http://online.apollopharmacy.org:8085/IEngine/webresources/Inventory/getDeliveryTimePartial',
       pharmaTokenYXV,
     ],
+    GET_DELIVERY_TIME_HEADER_TAT: [
+      'http://online.apollopharmacy.org:8085/IEngine/webresources/Inventory/getHeaderTAT',
+      pharmaTokenYXV,
+    ],
     GET_SUBSTITUTES: [`${apolloUatBaseUrl}/popcsrchprdsubt_api.php`, pharmaToken201],
     PRODUCTS_BY_CATEGORY: [`${apolloUatBaseUrl}/categoryproducts_api.php`, pharmaToken201],
     MEDICINE_PAGE: [`${apolloUatBaseUrl}/apollo_24x7_api.php`, pharmaToken201],
@@ -264,6 +268,10 @@ const PharmaApiConfig = {
     IMAGES_BASE_URL: [`https://d27zlipt1pllog.cloudfront.net/pub/media`],
     GET_DELIVERY_TIME: [
       'http://online.apollopharmacy.org:8085/IEngine/webresources/Inventory/getDeliveryTimePartial',
+      pharmaTokenYXV,
+    ],
+    GET_DELIVERY_TIME_HEADER_TAT: [
+      'http://online.apollopharmacy.org:8085/IEngine/webresources/Inventory/getHeaderTAT',
       pharmaTokenYXV,
     ],
     GET_SUBSTITUTES: [`${apolloProdBaseUrl}/popcsrchprdsubt_api.php`, pharmaToken201],
