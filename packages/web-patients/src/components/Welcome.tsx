@@ -52,9 +52,10 @@ export const Welcome: React.FC = (props) => {
   };
   const metaTagProps = {
     title: 'Doctor Appointments Online, Order Medicines And Pathological Tests - Apollo 247',
-    description: 'Find doctors online and book appointments and consult online. Order pathological tests and buy medicines in just a few clicks. Apollo 247 is your one-stop healthcare and medical solution.',
-    canonicalLink: window && window.location && window.location.href
-  }
+    description:
+      'Find doctors online and book appointments and consult online. Order pathological tests and buy medicines in just a few clicks. Apollo 247 is your one-stop healthcare and medical solution.',
+    canonicalLink: window && window.location && window.location.href,
+  };
 
   return (
     <div className={classes.welcome}>

@@ -155,7 +155,7 @@ export enum ApiConstants {
   PRESCRIPTION_READY_TITLE = 'Prescription ready',
   PRESCRIPTION_READY_BODY = 'Hi {0}! Your prescription from consultation with Doctor {1} for appointment {2} on {3} is ready :) ',
 
-  REFERRAL_CODE_TEXT = 'Hi {0}, Use code "CARE247" to avail discount up to Rs. 999  on the 1st Apollo Doctor consult on your Apollo 24|7 app. Click to learn https://youtu.be/gwIRbcO3hpk',
+  REFERRAL_CODE_TEXT = 'Hi {0}, Use code "CARE247" to avail discount up to Rs. 149  on the 1st Apollo Doctor consult on your Apollo 24|7 app. Click to learn https://youtu.be/gwIRbcO3hpk',
   REFERRAL_CODE_TEXT_WITH_COUPON = 'Hi {0}, Use code "{1}" to avail discount up to Rs. 299  on the 1st Apollo Doctor consult on your Apollo 24|7 app. Click to learn https://youtu.be/XF7MWPebtkw',
 
   BOOK_APPOINTMENT_HISTORY_REASON = 'Booking new appointment',
@@ -164,6 +164,7 @@ export enum ApiConstants {
   CONSULT_QUEUE_HISTORY2 = 'JD for this doctor is not required, so virtual JD is assigned',
   CONSULT_QUEUE_HISTORY = 'Added to JD consult queue',
   CASESHEET_COMPLETED_HISTORY = 'SD Casesheet completed, prescription sent to patient',
+  JD_CASESHEET_COMPLETED_HISTORY = 'JD Casesheet completed',
   CASESHEET_CREATED_HISTORY = 'casesheet created',
   APPT_SESSION_HISTORY = 'session created',
   APPT_SESSION_COMPLETE_HISTORY = 'session completed',

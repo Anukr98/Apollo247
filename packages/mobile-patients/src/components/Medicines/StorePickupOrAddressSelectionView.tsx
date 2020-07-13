@@ -9,12 +9,20 @@ import { RadioSelectionItem } from './RadioSelectionItem';
 import { AppRoutes } from '../NavigatorContainer';
 import { savePatientAddress_savePatientAddress_patientAddress } from '../../graphql/types/savePatientAddress';
 import { useUIElements } from '../UIElementsProvider';
-import { aphConsole, handleGraphQlError, formatAddress } from '../../helpers/helperFunctions';
+import { aphConsole, handleGraphQlError, formatAddress, g } from '../../helpers/helperFunctions';
 import React, { useState, useEffect } from 'react';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { postPharmacyAddNewAddressClick } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import { AddressSource } from '@aph/mobile-patients/src/components/Medicines/AddAddress';
 import string from '@aph/mobile-patients/src/strings/strings.json';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { useApolloClient } from 'react-apollo-hooks';
+import {
+  getPatientAddressList,
+  getPatientAddressListVariables,
+} from '@aph/mobile-patients/src/graphql/types/getPatientAddressList';
+import { GET_PATIENT_ADDRESS_LIST } from '@aph/mobile-patients/src/graphql/profiles';
+import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 
 const styles = StyleSheet.create({
   yellowTextStyle: {
@@ -34,6 +42,7 @@ export const StorePickupOrAddressSelectionView: React.FC<StorePickupOrAddressSel
 ) => {
   const {
     addresses,
+    setAddresses,
     setDeliveryAddressId,
     deliveryAddressId,
     storeId,
@@ -43,7 +52,10 @@ export const StorePickupOrAddressSelectionView: React.FC<StorePickupOrAddressSel
     stores,
     setStores,
   } = useShoppingCart();
-  const { showAphAlert } = useUIElements();
+  const { setAddresses: setTestAddresses } = useDiagnosticsCart();
+  const { showAphAlert, setLoading } = useUIElements();
+  const { currentPatient } = useAllCurrentPatients();
+  const client = useApolloClient();
 
   const tabs = [{ title: 'Home Delivery' }, { title: 'Store Pick Up' }];
   const [selectedTab, setselectedTab] = useState<string>(storeId ? tabs[1].title : tabs[0].title);
@@ -52,13 +64,45 @@ export const StorePickupOrAddressSelectionView: React.FC<StorePickupOrAddressSel
   const isValidPinCode = (text: string): boolean => /^(\s*|[1-9][0-9]*)$/.test(text);
 
   const [slicedStoreList, setSlicedStoreList] = useState<Store[]>([]);
-  const [slicedAddressList, setSlicedAddressList] = useState<
-    savePatientAddress_savePatientAddress_patientAddress[]
-  >([]);
 
   useEffect(() => {
     setDeliveryAddressId!('');
   }, []);
+
+  useEffect(() => {
+    fetchAddresses();
+  }, []);
+
+  const renderAlert = (message: string) => {
+    showAphAlert!({ title: string.common.uhOh, description: message });
+  };
+
+  const fetchAddresses = async () => {
+    try {
+      if (addresses.length) {
+        return;
+      }
+      setLoading!(true);
+      const userId = g(currentPatient, 'id');
+      const addressApiCall = await client.query<
+        getPatientAddressList,
+        getPatientAddressListVariables
+      >({
+        query: GET_PATIENT_ADDRESS_LIST,
+        variables: { patientId: userId },
+        fetchPolicy: 'no-cache',
+      });
+      const addressList =
+        (addressApiCall.data.getPatientAddressList
+          .addressList as savePatientAddress_savePatientAddress_patientAddress[]) || [];
+      setAddresses!(addressList);
+      setTestAddresses!(addressList);
+      setLoading!(false);
+    } catch (error) {
+      setLoading!(false);
+      renderAlert(`Something went wrong, unable to fetch addresses.`);
+    }
+  };
 
   const updateStoreSelection = () => {
     const selectedStoreIndex = stores.findIndex(({ storeid }) => storeid == storeId);
@@ -70,32 +114,18 @@ export const StorePickupOrAddressSelectionView: React.FC<StorePickupOrAddressSel
     setSlicedStoreList(_slicedStoreList);
   };
 
-  const updateAddressSelection = () => {
-    const selectedAddressIndex = addresses.findIndex((address) => address.id == deliveryAddressId);
-    const addressListLength = addresses.length;
-    const spliceStartIndex =
-      selectedAddressIndex == addressListLength - 1
-        ? selectedAddressIndex - 1
-        : selectedAddressIndex;
-    const startIndex = spliceStartIndex == -1 ? 0 : spliceStartIndex;
-    const _slicedAddressList = [...addresses].slice(startIndex, startIndex + 2);
-    setSlicedAddressList(_slicedAddressList);
-  };
-
   useEffect(() => {
     const _didFocusSubscription = props.navigation.addListener('didFocus', () => {
       updateStoreSelection();
-      updateAddressSelection();
     });
     const _willBlurSubscription = props.navigation.addListener('willBlur', () => {
       updateStoreSelection();
-      updateAddressSelection();
     });
     return () => {
       _didFocusSubscription && _didFocusSubscription.remove();
       _willBlurSubscription && _willBlurSubscription.remove();
     };
-  }, [stores, storeId, addresses, deliveryAddressId]);
+  }, [stores, storeId]);
 
   useEffect(() => {
     pinCode.length !== 6 && setSlicedStoreList([]);
@@ -244,7 +274,7 @@ export const StorePickupOrAddressSelectionView: React.FC<StorePickupOrAddressSel
             <ActivityIndicator size="large" color="green" />
           </View>
         ) : null}
-        {slicedAddressList.map((item, index, array) => {
+        {addresses.slice(0, 2).map((item, index, array) => {
           return (
             <RadioSelectionItem
               key={item.id}

@@ -477,6 +477,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
     showAphAlert!({
       title: `Hi ${g(currentPatient, 'firstName') || ''}!`,
       description: `As per your request, your appointment #${appointmentNum} with ${doctorName} scheduled for ${appointmentTime} has been cancelled.`,
+      unDismissable: true,
       onPressOk: () => {
         hideAphAlert!();
         props.navigation.dispatch(
@@ -592,7 +593,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
               <View style={styles.imageView}>
                 {data.doctorInfo.thumbnailUrl &&
                 data.doctorInfo.thumbnailUrl.match(
-                  /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG)/
+                  /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jpeg|JPEG)/
                 ) ? (
                   <Image
                     source={{ uri: data.doctorInfo.thumbnailUrl }}
