@@ -100,6 +100,7 @@ export type Resolver<Parent, Args, Context, Result> = (
     'https://apollo247.com',
     'https://uatdoctors.apollo247.com',
     'https://uatpatients.apollo247.com',
+    'https://*.apollo247.com',
     'https://consult-tool.apollo247.com',
     'https://corporate.apollo247.com',
     'https://corporate-uat.apollo247.com',

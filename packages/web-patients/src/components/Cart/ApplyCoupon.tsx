@@ -263,11 +263,13 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
                   'Coupon not applicable on your cart item(s) or item(s) with already higher discounts'
                 );
                 setCouponCode && setCouponCode('');
+                localStorage.removeItem('pharmaCoupon');
               }
               setMuationLoading(false);
             } else {
               setMuationLoading(false);
               setErrorMessage(couponValidateResult.reasonForInvalidStatus);
+              localStorage.removeItem('pharmaCoupon');
             }
           }
         })

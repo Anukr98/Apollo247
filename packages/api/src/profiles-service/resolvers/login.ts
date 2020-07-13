@@ -317,7 +317,7 @@ const sendMessage = async (args: any) => {
         log(
           'smsOtpAPILogger',
           `API_CALL_ERROR`,
-          'sendDoctorNotificationWhatsapp ()->CATCH_BLOCK',
+          'sendDoctorNotificationWhatsapp()->CATCH_BLOCK',
           '',
           JSON.stringify(err)
         );

@@ -176,10 +176,10 @@ export const UploadEPrescriptionCard: React.FC<EPrescriptionCardProps> = (props)
   });
 
   const sortByDate = (array: EPrescription[]) => {
-    return array.sort((data1: any, data2: any) => {
+    return array.sort((data1, data2) => {
       let date1 = moment(data1.date).toDate().getTime();
       let date2 = moment(data2.date).toDate().getTime();
-      return date1 > date2 ? -1 : date1 < date2 ? 1 : data2.id - data1.id;
+      return date1 > date2 ? -1 : date1 < date2 ? 1 : 0;
     });
   };
 
@@ -201,7 +201,7 @@ export const UploadEPrescriptionCard: React.FC<EPrescriptionCardProps> = (props)
             prismLabResults.forEach((item: LabResultsType) => {
               mergeArray.push({
                 id: `${item.id}-${item.labTestName}`,
-                uploadedUrl: '',
+                uploadedUrl: item.fileUrl || '',
                 forPatient: (currentPatient && currentPatient.firstName) || '',
                 date: item.date,
                 medicines: '',

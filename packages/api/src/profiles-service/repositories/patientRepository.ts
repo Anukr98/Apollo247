@@ -40,19 +40,7 @@ export class PatientRepository extends Repository<Patient> {
     delCache(id);
   }
   async findById(id: string) {
-    const relations = [
-      'lifeStyle',
-      'healthVault',
-      'familyHistory',
-      'patientAddress',
-      'patientDeviceTokens',
-      'patientNotificationSettings',
-      'patientMedicalHistory',
-    ];
-    return this.findOne({
-      where: { id, isActive: true },
-      relations: relations,
-    });
+    return await this.getByIdCache(id);
   }
 
   async findByIdWithoutRelations(id: string) {
@@ -144,7 +132,7 @@ export class PatientRepository extends Repository<Patient> {
       setCache(
         `${REDIS_PATIENT_ID_KEY_PREFIX}${id}`,
         patientString,
-        ApiConstants.CACHE_EXPIRATION_14400
+        ApiConstants.CACHE_EXPIRATION_3600
       );
     }
     return patientDetails;
@@ -183,14 +171,14 @@ export class PatientRepository extends Repository<Patient> {
       setCache(
         `${REDIS_PATIENT_ID_KEY_PREFIX}${patient.id}`,
         JSON.stringify(patient),
-        ApiConstants.CACHE_EXPIRATION_14400
+        ApiConstants.CACHE_EXPIRATION_3600
       );
       return patient.id;
     });
     setCache(
       `${REDIS_PATIENT_MOBILE_KEY_PREFIX}${mobile}`,
       patientIds.join(','),
-      ApiConstants.CACHE_EXPIRATION_14400
+      ApiConstants.CACHE_EXPIRATION_3600
     );
     return patients;
   }
@@ -575,6 +563,7 @@ export class PatientRepository extends Repository<Patient> {
   }
 
   async createNewUhid(id: string) {
+    await this.dropPatientCache(`${REDIS_PATIENT_ID_KEY_PREFIX}${id}`);
     const patientDetails = await this.getPatientDetails(id);
     if (!patientDetails) {
       throw new AphError(AphErrorMessages.GET_PROFILE_ERROR, undefined, {
