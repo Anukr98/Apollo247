@@ -1,12 +1,8 @@
 import { MedicineIcon, OrderPlacedIcon } from '@aph/mobile-patients/src/components/ui/Icons';
-import {
-  MEDICINE_ORDER_STATUS,
-  DIAGNOSTIC_ORDER_STATUS,
-} from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { MEDICINE_ORDER_STATUS } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
 import { StyleProp, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
-import { isTest } from 'apollo-utilities';
 
 const styles = StyleSheet.create({
   containerStyle: {
@@ -35,7 +31,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.04,
     color: theme.colors.LIGHT_BLUE,
     opacity: 0.6,
-    flex: 1,
+    flex: 1.5,
   },
   idStyle: {
     ...theme.fonts.IBMPlexSansMedium(12),
@@ -49,7 +45,7 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     letterSpacing: 0.04,
     color: theme.colors.LIGHT_BLUE,
-    textTransform: 'capitalize',
+    // textTransform: 'capitalize',
     flex: 1,
   },
   dateTimeStyle: {
@@ -100,29 +96,21 @@ const styles = StyleSheet.create({
 type OrderStatusType = MEDICINE_ORDER_STATUS;
 
 export interface OrderCardProps {
-  isTest?: boolean;
   orderId: string;
   title: string;
   description: string;
   dateTime: string;
   status?: OrderStatusType;
-  statusDiag?: String;
   statusDesc: string;
   onPress: () => void;
   style?: StyleProp<ViewStyle>;
 }
 
 export const OrderCard: React.FC<OrderCardProps> = (props) => {
-  const isOrderWithProgressIcons = isTest
-    ? props.statusDiag == DIAGNOSTIC_ORDER_STATUS.PICKUP_CONFIRMED ||
-      props.statusDiag == DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED
-    : props.status == MEDICINE_ORDER_STATUS.ORDER_PLACED ||
-      props.status == MEDICINE_ORDER_STATUS.ORDER_VERIFIED ||
-      props.status == MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY;
-
-  const isReschedule =
+  const isOrderWithProgressIcons =
     props.status == MEDICINE_ORDER_STATUS.ORDER_PLACED ||
-    props.status == MEDICINE_ORDER_STATUS.ORDER_VERIFIED;
+    props.status == MEDICINE_ORDER_STATUS.ORDER_VERIFIED ||
+    props.status == MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY;
 
   const getProgressWidth = (
     status: OrderCardProps['status'],
@@ -145,7 +133,10 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
   };
 
   const renderGraphicalStatus = () => {
-    if (props.status == MEDICINE_ORDER_STATUS.DELIVERED) {
+    if (
+      props.status == MEDICINE_ORDER_STATUS.DELIVERED ||
+      props.status == MEDICINE_ORDER_STATUS.PURCHASED_IN_STORE
+    ) {
       return <View style={styles.progressLineDone} />;
     }
     if (isOrderWithProgressIcons) {
@@ -179,7 +170,7 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
               : {},
           ]}
         >
-          {props.statusDesc.replace('_', ' ')}
+          {props.statusDesc}
         </Text>
         <Text numberOfLines={1} style={styles.dateTimeStyle}>
           {props.dateTime}
@@ -191,7 +182,7 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
   const renderDescriptionAndId = () => {
     return (
       <View style={styles.viewRowStyle}>
-        <Text numberOfLines={1} style={styles.descriptionStyle}>
+        <Text numberOfLines={2} style={styles.descriptionStyle}>
           {props.description}
         </Text>
         <Text numberOfLines={1} style={styles.idStyle}>
@@ -201,33 +192,15 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
     );
   };
 
-  const renderReschedule = () => {
-    return (
-      <View>
-        <View style={[styles.separator, { marginTop: 16, marginBottom: 7 }]} />
-        <TouchableOpacity activeOpacity={1} onPress={() => {}}>
-          <View style={{ alignItems: 'flex-end' }}>
-            <Text
-              style={{
-                ...theme.viewStyles.yellowTextStyle,
-              }}
-            >
-              RESCHEDULE
-            </Text>
-          </View>
-        </TouchableOpacity>
-      </View>
-    );
-  };
-
   const renderDetails = () => {
     return (
       <View style={styles.detailsViewStyle}>
-        <Text style={styles.titleStyle}>{props.title || 'Medicines'}</Text>
+        <Text numberOfLines={1} ellipsizeMode="middle" style={styles.titleStyle}>
+          {props.title || 'Medicines'}
+        </Text>
         {renderDescriptionAndId()}
         {renderGraphicalStatus()}
         {renderStatusAndTime()}
-        {props.isTest && isReschedule && renderReschedule()}
       </View>
     );
   };

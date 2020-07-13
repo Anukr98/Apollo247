@@ -2,7 +2,7 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
-import { PatientConsultsAndOrdersInput, APPOINTMENT_TYPE, APPOINTMENT_STATE, DoctorType, MEDICINE_TO_BE_TAKEN, MEDICINE_TIMINGS, MEDICINE_UNIT, MEDICINE_FORM_TYPES, MEDICINE_FREQUENCY, MEDICINE_CONSUMPTION_DURATION, ROUTE_OF_ADMINISTRATION, STATUS, Salutation, MEDICINE_DELIVERY_TYPE, MEDICINE_ORDER_STATUS, MEDICINE_ORDER_TYPE } from "./globalTypes";
+import { PatientConsultsAndOrdersInput, APPOINTMENT_TYPE, APPOINTMENT_STATE, DoctorType, MEDICINE_TO_BE_TAKEN, MEDICINE_TIMINGS, MEDICINE_UNIT, MEDICINE_FORM_TYPES, MEDICINE_FREQUENCY, MEDICINE_CONSUMPTION_DURATION, ROUTE_OF_ADMINISTRATION, STATUS, MEDICINE_DELIVERY_TYPE, MEDICINE_ORDER_STATUS, MEDICINE_ORDER_TYPE } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: getPatientPastConsultsAndPrescriptions
@@ -73,7 +73,7 @@ export interface getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAn
 export interface getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_doctorInfo {
   __typename: "DoctorDetails";
   id: string;
-  salutation: Salutation | null;
+  salutation: string | null;
   firstName: string;
   lastName: string;
   displayName: string | null;

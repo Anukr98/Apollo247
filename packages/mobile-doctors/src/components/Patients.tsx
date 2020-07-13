@@ -1,40 +1,49 @@
 import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
-import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
+import { useNotification } from '@aph/mobile-doctors/src/components/Notification/NotificationContext';
+import { styles } from '@aph/mobile-doctors/src/components/Patients.styles';
+import { CommonNotificationHeader } from '@aph/mobile-doctors/src/components/ui/CommonNotificationHeader';
 import {
-  ApploLogo,
-  Chat,
+  BackArrowOrange,
+  ChatOrange,
+  ChatWhite,
   ClosePopup,
-  Notification,
-  RoundIcon,
+  SearchIcon,
   Selected,
   UnSelected,
   Up,
-  ChatWhite,
-  ChatOrange,
+  SearchBackground,
+  EmptySearch,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
+import { NeedHelpCard } from '@aph/mobile-doctors/src/components/ui/NeedHelpCard';
 import { PatientCard } from '@aph/mobile-doctors/src/components/ui/PatientCard';
 import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
 import { TabsComponent } from '@aph/mobile-doctors/src/components/ui/TabsComponent';
+import { useUIElements } from '@aph/mobile-doctors/src/components/ui/UIElementsProvider';
 import { GET_PATIENT_LOG } from '@aph/mobile-doctors/src/graphql/profiles';
 import {
   getPatientLog,
+  getPatientLogVariables,
   getPatientLog_getPatientLog_patientLog,
 } from '@aph/mobile-doctors/src/graphql/types/getPatientLog';
 import { patientLogSort, patientLogType } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
+import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
+import { callPermissions, isValidSearch } from '@aph/mobile-doctors/src/helpers/helperFunctions';
+import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
+import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
-import { ActivityIndicator, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
+import {
+  ActivityIndicator,
+  SafeAreaView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
-import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
-import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
-import { NeedHelpCard } from '@aph/mobile-doctors/src/components/ui/NeedHelpCard';
-import strings from '@aph/mobile-doctors/src/strings/strings.json';
-import { styles } from '@aph/mobile-doctors/src/components/Patients.styles';
-import { callPermissions } from '@aph/mobile-doctors/src/helpers/helperFunctions';
-import { CommonNotificationHeader } from '@aph/mobile-doctors/src/components/ui/CommonNotificationHeader';
-import { useNotification } from '@aph/mobile-doctors/src/components/Notification/NotificationContext';
+import AsyncStorage from '@react-native-community/async-storage';
 
 export interface PatientsProps extends NavigationScreenProps {}
 
@@ -78,18 +87,28 @@ export const Patients: React.FC<PatientsProps> = (props) => {
 
   const [SelectableValue, setSelectableValue] = useState(patientLogType.All);
   const [showNeedHelp, setshowNeedHelp] = useState(false);
-
+  const [showSearch, setShowSearch] = useState<boolean>(false);
+  const [searchSpinner, setSearchSpinner] = useState<boolean>(false);
+  const [searchInput, setSearchInput] = useState<string>('');
   const client = useApolloClient();
   const { doctorDetails } = useAuth();
-
+  const { showAphAlert } = useUIElements();
   useEffect(() => {
     ShowAllTypeData(patientLogType.All, sortingList[0].key);
-    const _didFocusSubscription = props.navigation.addListener('didFocus', () => {
-      ShowAllTypeData(patientLogType.All, sortingList[0].key);
+    const _didFocusSubscription = props.navigation.addListener('didFocus', async () => {
+      const searchValue = await AsyncStorage.getItem('patientSearchValue');
+      ShowAllTypeData(patientLogType.All, sortingList[0].key, 0, searchValue || '');
     });
-
+    const _willFocusSubscription = props.navigation.addListener('willFocus', async () => {
+      const searchValue = (await AsyncStorage.getItem('patientSearchValue')) || '';
+      if (searchValue === '') {
+        setShowSearch(false);
+        setshowSpinner(true);
+      }
+    });
     return () => {
       _didFocusSubscription && _didFocusSubscription.remove();
+      _willFocusSubscription && _willFocusSubscription.remove();
     };
   }, []);
 
@@ -119,7 +138,7 @@ export const Patients: React.FC<PatientsProps> = (props) => {
                     ? patientLogType.FOLLOW_UP
                     : patientLogType.REGULAR;
                 setSelectableValue(selectedValue);
-                ShowAllTypeData(selectedValue, selectedSorting);
+                ShowAllTypeData(selectedValue, selectedSorting, 0, searchInput);
               }}
               data={tabsData}
               selectedTab={selectedTab}
@@ -146,47 +165,121 @@ export const Patients: React.FC<PatientsProps> = (props) => {
     );
   };
 
-  const renderDoctorGreeting = () => {
+  const searchAPI = async (name?: string) => {
+    ShowAllTypeData(SelectableValue, selectedSorting, 0, name || name === '' ? name : searchInput);
+  };
+  const renderSearchInput = () => {
     return (
-      <View style={{ backgroundColor: '#ffffff' }}>
-        <View style={styles.doctornameContainer}>
-          <Text style={styles.doctorname}>{`${strings.case_sheet.hello_dr} `}</Text>
-          <Text style={styles.doctorname1} numberOfLines={1}>
-            {doctorDetails ? doctorDetails.displayName : ''}
-          </Text>
-          <Text style={styles.doctorname}>{` :)`}</Text>
-        </View>
-        <Text
-          style={{
-            ...theme.fonts.IBMPlexSansMedium(16),
-            color: '#0087ba',
-            marginLeft: 20,
-            marginBottom: 14,
-            lineHeight: 24,
+      <View style={{ flex: 1, marginTop: 7 }}>
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={() => {
+            setShowSearch(false);
+            if (searchInput !== '') {
+              setshowSpinner(true);
+              ShowAllTypeData(SelectableValue, selectedSorting);
+            }
+            setSearchInput('');
+            AsyncStorage.removeItem('patientSearchValue');
           }}
         >
-          {strings.case_sheet.here_are_all_patients}
-        </Text>
+          <BackArrowOrange />
+        </TouchableOpacity>
+        <View style={styles.textInputContainer}>
+          <TextInput
+            autoCorrect={false}
+            value={searchInput}
+            placeholder={'Search by patient name'}
+            style={searchInput === '' ? styles.textInputEmptyStyle : styles.textInputStyle}
+            placeholderTextColor={theme.colors.darkBlueColor(0.4)}
+            onChange={(value) => {
+              if (isValidSearch(value.nativeEvent.text)) {
+                setSearchInput(value.nativeEvent.text);
+                AsyncStorage.setItem('patientSearchValue', value.nativeEvent.text);
+                if (value.nativeEvent.text.length > 2) {
+                  searchAPI(value.nativeEvent.text);
+                }
+              }
+            }}
+            selectionColor={theme.colors.APP_GREEN}
+            underlineColorAndroid={theme.colors.TRANSPARENT}
+            scrollEnabled={true}
+          />
+        </View>
+      </View>
+    );
+  };
+  const renderDoctorGreeting = () => {
+    return (
+      <View style={styles.doctorGreetingContainer}>
+        <View style={{ flex: 1 }}>
+          {!showSearch ? (
+            <View>
+              <View style={styles.doctornameContainer}>
+                <Text style={styles.doctorname}>{`${strings.case_sheet.hello_dr} `}</Text>
+                <Text style={styles.doctorname1} numberOfLines={1}>
+                  {doctorDetails ? doctorDetails.displayName : ''}
+                </Text>
+                <Text style={styles.doctorname}>{` :)`}</Text>
+              </View>
+              <Text style={theme.viewStyles.text('M', 16, theme.colors.SKY_BLUE, 1, 24)}>
+                {strings.case_sheet.here_are_all_patients}
+              </Text>
+            </View>
+          ) : (
+            renderSearchInput()
+          )}
+        </View>
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={() => {
+            if (showSearch) {
+              if (searchInput.length > 2) {
+                searchAPI();
+              } else {
+                showAphAlert &&
+                  showAphAlert({
+                    title: strings.common.alert,
+                    description: strings.patientsSearch.searchCharLimit,
+                  });
+              }
+            } else {
+              setShowSearch(true);
+            }
+          }}
+        >
+          <View>
+            <SearchIcon />
+          </View>
+        </TouchableOpacity>
       </View>
     );
   };
 
   const ShowAllTypeData = (
-    SelectableValue: patientLogType,
+    type: patientLogType,
     patientLogSortData: patientLogSort,
-    offset = 0
+    offsetCount = 0,
+    name?: string
   ) => {
-    if (offset !== totalResultCount || totalResultCount <= 0) {
-      !offset && setshowSpinner(true);
-      offset && setloadMoreSpinner(true);
+    if (offsetCount !== totalResultCount || totalResultCount <= 0) {
+      if (!showSearch) {
+        !offsetCount && setshowSpinner(true);
+        offsetCount && setloadMoreSpinner(true);
+      } else {
+        setSearchSpinner(true);
+      }
+
       client
-        .query<getPatientLog>({
+        .query<getPatientLog, getPatientLogVariables>({
           query: GET_PATIENT_LOG,
           variables: {
             limit: 6,
-            offset: offset,
+            offset: offsetCount,
             sortBy: patientLogSortData,
-            type: SelectableValue,
+            type: type,
+            doctorId: doctorDetails ? doctorDetails.id : null,
+            patientName: name ? name : null,
           },
           fetchPolicy: 'no-cache',
         })
@@ -194,7 +287,7 @@ export const Patients: React.FC<PatientsProps> = (props) => {
           if (data.getPatientLog) {
             console.log('getPatientLog', data!);
             setAllData(
-              offset === 0
+              offsetCount === 0
                 ? data.getPatientLog.patientLog
                 : JSON.parse(JSON.stringify(allData)).concat(data.getPatientLog.patientLog)
             );
@@ -204,18 +297,28 @@ export const Patients: React.FC<PatientsProps> = (props) => {
                 : allData!.length
             );
             settotalResultCount(data.getPatientLog.totalResultCount || 0);
-            !offset ? setshowSpinner(false) : setloadMoreSpinner(false);
+            !offsetCount ? setshowSpinner(false) : setloadMoreSpinner(false);
+            setSearchSpinner(false);
           }
         })
         .catch((e) => {
           setshowSpinner(false);
+          setSearchSpinner(false);
           const error = JSON.parse(JSON.stringify(e));
           CommonBugFender('PatientLog', error);
           console.log('Error occured while fetching patient log', error);
         });
     }
   };
-
+  const renderSearchText = () => {
+    return searchInput && showSearch ? (
+      <View style={styles.searchResultTextContainer}>
+        <Text style={styles.searchResultText}>
+          {strings.patientsSearch.searchResult.replace('{0}', searchInput)}
+        </Text>
+      </View>
+    ) : null;
+  };
   const renderItemComponent = (
     item: getPatientLog_getPatientLog_patientLog | null,
     index: number
@@ -231,12 +334,17 @@ export const Patients: React.FC<PatientsProps> = (props) => {
             })
             .reduce((a, b) => a + b, 0)
         : 0;
-    return (
-      item &&
-      item.appointmentids && (
+    return item &&
+      item.appointmentids &&
+      !searchSpinner &&
+      !(searchInput.length < 3 && showSearch) ? (
+      <View>
+        {index === 0 ? renderSearchText() : null}
         <PatientCard
           photoUrl={item.patientInfo ? item.patientInfo.photoUrl || '' : ''}
-          containerStyle={index === 0 ? { marginTop: 30 } : {}}
+          containerStyle={
+            index === 0 ? (showSearch && searchInput ? { marginTop: 10 } : { marginTop: 30 }) : {}
+          }
           doctorname={item.patientInfo!.firstName}
           icon={
             moment(new Date(item.appointmentdatetime))
@@ -292,8 +400,8 @@ export const Patients: React.FC<PatientsProps> = (props) => {
             })
           }
         />
-      )
-    );
+      </View>
+    ) : null;
   };
 
   return (
@@ -308,7 +416,7 @@ export const Patients: React.FC<PatientsProps> = (props) => {
           onEndReachedThreshold={0.5}
           onEndReached={(info) => {
             console.log('onEndReached', info, flatListReady, 'flatListReady');
-            flatListReady && ShowAllTypeData(SelectableValue, selectedSorting, offset);
+            flatListReady && ShowAllTypeData(SelectableValue, selectedSorting, offset, searchInput);
           }}
           stickyHeaderIndices={[0]}
           renderItem={({ item, index }) => renderItemComponent(item, index)}
@@ -318,27 +426,39 @@ export const Patients: React.FC<PatientsProps> = (props) => {
               <CommonNotificationHeader navigation={props.navigation} />
               <View style={{ marginBottom: 0 }}>{renderDoctorGreeting()}</View>
               {renderTabs()}
-              {allData && allData.length == 0 && !showSpinner && (
-                <View
-                  style={{
-                    flex: 1,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
-                  <Text
-                    style={{
-                      marginTop: 50,
-                      flex: 1,
-                      color: '#01475b',
-                      ...theme.fonts.IBMPlexSansMedium(14),
-                      textAlign: 'center',
-                    }}
-                  >
-                    {strings.common.no_data}
-                  </Text>
+              {allData && allData.length == 0 && !showSpinner && !showSearch ? (
+                <View style={styles.listTextContainer}>
+                  <Text style={styles.searchTextStyle}>{strings.common.no_data}</Text>
                 </View>
-              )}
+              ) : allData &&
+                allData.length == 0 &&
+                showSearch &&
+                !searchSpinner &&
+                searchInput.length > 2 ? (
+                <View style={styles.listTextContainer}>
+                  <Text style={styles.noRecordText1}>
+                    {strings.patientsSearch.noPatientText1}
+                    <Text style={styles.noRecordText2}>{` “${searchInput}”. `}</Text>
+                    {strings.patientsSearch.noPatientText2}
+                  </Text>
+                  <View style={styles.searchBackgroundContainer}>
+                    <EmptySearch />
+                  </View>
+                </View>
+              ) : null}
+              {showSearch && searchSpinner ? (
+                <View style={styles.listTextContainer}>
+                  <ActivityIndicator animating={true} size="large" color="green" />
+                </View>
+              ) : null}
+              {showSearch && !searchSpinner && searchInput.length < 3 ? (
+                <View style={styles.searchTextBodyContainer}>
+                  <Text style={styles.searchTextStyle}>{strings.patientsSearch.searchBody}</Text>
+                  <View style={styles.searchBackgroundContainer}>
+                    <SearchBackground />
+                  </View>
+                </View>
+              ) : null}
             </>
           }
           ListFooterComponent={
@@ -393,7 +513,7 @@ export const Patients: React.FC<PatientsProps> = (props) => {
                       onPress={() => {
                         setshowSorting(false);
                         setselectedSorting(obj.key);
-                        ShowAllTypeData(SelectableValue, obj.key);
+                        ShowAllTypeData(SelectableValue, obj.key, 0, searchInput);
                       }}
                     >
                       {selectedSorting === obj.key ? <Selected /> : <UnSelected />}

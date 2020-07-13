@@ -25,12 +25,14 @@ export const ConsultPaymentnew: React.FC<ConsultPaymentnewProps> = (props) => {
   const appointmentId = props.navigation.getParam('appointmentId');
   const doctorName = props.navigation.getParam('doctorName');
   const doctorID = props.navigation.getParam('doctorID');
+  const doctor = props.navigation.getParam('doctor');
   const paymentTypeID = props.navigation.getParam('paymentTypeID');
   const appointmentInput = props.navigation.getParam('appointmentInput');
   const bankCode = props.navigation.getParam('bankCode')
     ? props.navigation.getParam('bankCode')
     : null;
   const webEngageEventAttributes = props.navigation.getParam('webEngageEventAttributes');
+  const appsflyerEventAttributes = props.navigation.getParam('appsflyerEventAttributes');
   const fireBaseEventAttributes = props.navigation.getParam('fireBaseEventAttributes');
   const { currentPatient } = useAllCurrentPatients();
   const currentPatiendId = currentPatient && currentPatient.id;
@@ -51,13 +53,16 @@ export const ConsultPaymentnew: React.FC<ConsultPaymentnewProps> = (props) => {
       orderId: appointmentId,
       price: price,
       doctorName: doctorName,
-      doctorID:doctorID,
+      doctorID: doctorID,
+      doctor: doctor,
       appointmentDateTime: appointmentInput.appointmentDateTime,
       appointmentType: appointmentInput.appointmentType,
+      coupon: appointmentInput.couponCode,
       displayID: displayID,
       status: status,
       webEngageEventAttributes: webEngageEventAttributes,
       fireBaseEventAttributes: fireBaseEventAttributes,
+      appsflyerEventAttributes: appsflyerEventAttributes,
     });
   };
 

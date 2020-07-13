@@ -301,14 +301,16 @@ const updatePatientType: Resolver<
 
   const appointmentDetails = await apptRepo.getAppointmentsByDocId(args.doctorId);
   if (appointmentDetails.length) {
-    appointmentDetails.forEach(async (appointmentData) => {
+    //forEach loops do not support await
+    for (let k = 0, totalItems = appointmentDetails.length; k < totalItems; k++) {
+      const appointmentData = appointmentDetails[k];
       if (appointmentData.patientId != prevPatientId) {
         prevPatientId = appointmentData.patientId;
         await apptRepo.updatePatientType(appointmentData, PATIENT_TYPE.NEW);
       } else {
         await apptRepo.updatePatientType(appointmentData, PATIENT_TYPE.REPEAT);
       }
-    });
+    }
   }
   return { status: true };
 };

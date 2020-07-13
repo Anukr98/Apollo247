@@ -261,12 +261,13 @@ export const styles = StyleSheet.create({
     flexWrap: 'wrap',
   },
   healthvaultImageContainer: {
-    margin: 2,
+    margin: 4,
   },
   healthvaultImage: {
     height: 100,
     width: 100,
-    resizeMode: 'contain',
+    resizeMode: 'cover',
+    borderRadius: 10,
   },
   materialContainer: {
     alignItems: 'flex-end',

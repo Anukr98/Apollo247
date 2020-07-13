@@ -339,7 +339,10 @@ export const DoctorsLanding: React.FC<DoctorsLandingProps> = (props) => {
 
   // console.log(specialityNames, '----------------------');
 
+<<<<<<< HEAD
   // let derivedSpecialityId = '';
+=======
+>>>>>>> development
   const matchingDoctorsFound =
     data && data.SearchDoctorAndSpecialtyByName && data.SearchDoctorAndSpecialtyByName.doctors
       ? data.SearchDoctorAndSpecialtyByName.doctors.length

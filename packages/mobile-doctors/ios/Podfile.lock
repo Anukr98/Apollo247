@@ -133,7 +133,7 @@ PODS:
   - nanopb/decode (1.30905.0)
   - nanopb/encode (1.30905.0)
   - OpenTok (2.17.0)
-  - opentok-react-native (0.13.0):
+  - opentok-react-native (0.14.0):
     - OpenTok
     - React
   - Permission-Camera (2.0.10):
@@ -367,6 +367,8 @@ PODS:
     - React
   - ReactNativeExceptionHandler (2.10.8):
     - React
+  - ReactNativeIncallManager (3.2.7):
+    - React
   - rn-fetch-blob (0.12.0):
     - React-Core
   - RNCAsyncStorage (1.7.1):
@@ -458,6 +460,7 @@ DEPENDENCIES:
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
   - "ReactNativeART (from `../node_modules/@react-native-community/art`)"
   - ReactNativeExceptionHandler (from `../node_modules/react-native-exception-handler`)
+  - ReactNativeIncallManager (from `../node_modules/react-native-incall-manager`)
   - rn-fetch-blob (from `../node_modules/rn-fetch-blob`)
   - "RNCAsyncStorage (from `../node_modules/@react-native-community/async-storage`)"
   - RNExitApp (from `../node_modules/react-native-exit-app`)
@@ -587,6 +590,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@react-native-community/art"
   ReactNativeExceptionHandler:
     :path: "../node_modules/react-native-exception-handler"
+  ReactNativeIncallManager:
+    :path: "../node_modules/react-native-incall-manager"
   rn-fetch-blob:
     :path: "../node_modules/rn-fetch-blob"
   RNCAsyncStorage:
@@ -643,7 +648,7 @@ SPEC CHECKSUMS:
   leveldb-library: 55d93ee664b4007aac644a782d11da33fba316f7
   nanopb: c43f40fadfe79e8b8db116583945847910cbabc9
   OpenTok: 8335775f5556f2b96945b485c00f13eee03daf92
-  opentok-react-native: d48f9ce9bde178d088d836762b78ce2678bdb0e9
+  opentok-react-native: 94f76268b310825f787c4d2401f8a2d933288b65
   Permission-Camera: 8f0e5decca5f28f70f28a8dc31f012c9bad40ad8
   Permission-Microphone: 97ba829d2f3bab3ceb299f112d82b967d48c1d5a
   Permission-Notifications: 6925b1c95603159fe683e6652b8aed40c222eb0d
@@ -681,6 +686,7 @@ SPEC CHECKSUMS:
   ReactCommon: c2c63d9290b422ca6ad5b3663073a015dd892ae9
   ReactNativeART: c496c53089b3149663215d74d6f1adb3a62e07eb
   ReactNativeExceptionHandler: 8025d98049c25f186835a3af732dd7c9974d6dce
+  ReactNativeIncallManager: 35e387f58d3fc6e8cc042f47a2256b5f50134a67
   rn-fetch-blob: f065bb7ab7fb48dd002629f8bdcb0336602d3cba
   RNCAsyncStorage: 8539fc80a0075fcc9c8e2dff84cd22dc5bf1dacf
   RNExitApp: 7d81855142a4d11eb75f4f06fdebf5a950d7aef2
@@ -694,6 +700,6 @@ SPEC CHECKSUMS:
   RSKImageCropper: a446db0e8444a036b34f3c43db01b2373baa4b2a
   Yoga: 02036f6383c0008edb7ef0773a0e6beb6ce82bd1
 
-PODFILE CHECKSUM: 066aa1068288b2bea8082938f3f99e00e4e28154
+PODFILE CHECKSUM: da80a8c2226e94049b7a8fbb3d13e247a67caeb7
 
 COCOAPODS: 1.8.4

@@ -61,7 +61,10 @@ import {
   WebEngageEvents,
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
-import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
+import {
+  AppsFlyerEventName,
+  AppsFlyerEvents,
+} from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
 import { useApolloClient } from 'react-apollo-hooks';
 import { Relation } from '../graphql/types/globalTypes';
 import { ApolloLogo } from './ApolloLogo';
@@ -386,7 +389,6 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
       'Mobile Number': phoneNumberFromParams,
     };
     postWebEngageEvent(WebEngageEventName.OTP_VERIFICATION_SUCCESS, eventAttributes);
-    postAppsFlyerEvent(AppsFlyerEventName.OTP_VERIFICATION_SUCCESS, eventAttributes);
   };
 
   const onClickOk = (readOtp?: string) => {
@@ -569,11 +571,19 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     }
   };
 
+  const postOtpSuccessAppsflyerEvet = (id: string) => {
+    const appsflyerEventAttributes: AppsFlyerEvents[AppsFlyerEventName.OTP_VERIFICATION_SUCCESS] = {
+      'customer id': id,
+    };
+    postAppsFlyerEvent(AppsFlyerEventName.OTP_VERIFICATION_SUCCESS, appsflyerEventAttributes);
+  };
+
   const moveScreenForward = (mePatient: any) => {
     AsyncStorage.setItem('logginHappened', 'true');
     setOpenFillerView(false);
     console.log('mePatient-----------------------', mePatient);
     SetAppsFlyerCustID(mePatient.primaryPatientId);
+    postOtpSuccessAppsflyerEvet(mePatient.primaryPatientId);
     if (mePatient && mePatient.uhid && mePatient.uhid !== '') {
       if (mePatient.relation == null) {
         const eventAttributes: WebEngageEvents[WebEngageEventName.PRE_APOLLO_CUSTOMER] = {
@@ -879,9 +889,9 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
         <View style={{ padding: 16 }}>
           <Text style={styles.bannerTitle}>Specially for you :)</Text>
           <Text style={styles.bannerDescription}>
-            Use coupon code ‘<Text style={styles.bannerWelcome}>WELCOME</Text>
+            Use coupon code ‘<Text style={styles.bannerWelcome}>CARE247</Text>
             {'’ for\n'}
-            <Text style={styles.bannerBoldText}>Rs. 999 off</Text> on your 1st doctor
+            <Text style={styles.bannerBoldText}>Rs. 149 off</Text> on your 1st doctor
             {'\n'}consultation, <Text style={styles.bannerBoldText}> 10% off</Text> on medicines
           </Text>
         </View>

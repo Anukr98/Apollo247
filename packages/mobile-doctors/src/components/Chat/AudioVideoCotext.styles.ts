@@ -222,4 +222,19 @@ export const AudioVideoStyles = StyleSheet.create({
     elevation: 5,
     textAlign: 'center',
   },
+  exoToastContainer: {
+    backgroundColor: theme.colors.APP_RED,
+    paddingVertical: 5,
+    marginRight: 16,
+    position: 'absolute',
+    bottom: 90,
+  },
+  exoCloseContainer: {
+    borderWidth: 1,
+    borderColor: theme.colors.WHITE,
+    borderRadius: 100,
+    marginRight: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
 });
