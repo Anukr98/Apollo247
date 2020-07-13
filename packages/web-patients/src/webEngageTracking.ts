@@ -560,3 +560,63 @@ export const pharmacyPaymentInitiateTracking = (data: any) => {
     }
   }
 };
+
+export const pharmacySearchTracking = (data: any) => {
+  if (window && window.webengage) {
+    const { keyword, source, results } = data;
+    try {
+      window.webengage.track('Pharmacy Search - web', {
+        keyword: keyword,
+        Source: source,
+        'Results displayed': results,
+      });
+    } catch (err) {
+      console.log('WebEngage Err: ', err);
+    }
+  }
+};
+
+export const pharmacyProductClickTracking = (data: any) => {
+  if (window && window.webengage) {
+    const {
+      productName,
+      source,
+      productId,
+      brand,
+      brandId,
+      categoryName,
+      categoryId,
+      sectionName,
+    } = data;
+    try {
+      window.webengage.track('Pharmacy Product Clicked - web', {
+        'product name': productName,
+        Source: source,
+        'product id (SKUID)': productId,
+        Brand: brand,
+        'Brand ID': brandId,
+        'category name': categoryName,
+        'category ID': categoryId,
+        'Section Name': sectionName,
+      });
+    } catch (err) {
+      console.log('WebEngage Err: ', err);
+    }
+  }
+};
+
+export const pharmacyCategoryClickTracking = (data: any) => {
+  if (window && window.webengage) {
+    const { source, categoryName, categoryId, sectionName } = data;
+    try {
+      window.webengage.track('Pharmacy Category Clicked - web', {
+        Source: source,
+        'category name': categoryName,
+        'category ID': categoryId,
+        'Section Name': sectionName,
+      });
+    } catch (err) {
+      console.log('WebEngage Err: ', err);
+    }
+  }
+};
