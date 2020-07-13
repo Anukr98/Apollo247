@@ -338,7 +338,6 @@ export const YourCartUploadPrescriptions: React.FC<YourCartUploadPrescriptionPro
   };
 
   const onPressSubmit = () => {
-    setLoading!(true);
     const selectedAddress = addresses.find((addr) => addr.id == deliveryAddressId);
     const zipcode = g(selectedAddress, 'zipcode');
     const isChennaiAddress = AppConfig.Configuration.CHENNAI_PHARMA_DELIVERY_PINCODES.find(
@@ -417,7 +416,6 @@ export const YourCartUploadPrescriptions: React.FC<YourCartUploadPrescriptionPro
         },
       };
 
-      setLoading!(false);
       submitPrescriptionMedicineOrder(prescriptionMedicineInput);
     } catch (error) {
       setLoading!(false);
@@ -657,9 +655,10 @@ export const YourCartUploadPrescriptions: React.FC<YourCartUploadPrescriptionPro
         </ScrollView>
         <StickyBottomComponent defaultBG>
           <Button
-            disabled={disablePlaceOrder}
+            disabled={disablePlaceOrder || loading}
             title={'PLACE ORDER'}
             onPress={() => {
+              setLoading!(true);
               onPressSubmit();
             }}
             style={{ flex: 1, marginHorizontal: 40 }}
