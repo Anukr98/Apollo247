@@ -43,6 +43,7 @@ const windowHeight = Dimensions.get('window').height;
 export interface ConsultCheckoutProps extends NavigationScreenProps {}
 
 export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
+  const consultedWithDoctorBefore = props.navigation.getParam('consultedWithDoctorBefore');
   const client = useApolloClient();
   const doctor = props.navigation.getParam('doctor');
   const tabs =
@@ -258,6 +259,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
 
         !item.bankCode
           ? props.navigation.navigate(AppRoutes.ConsultPaymentnew, {
+              consultedWithDoctorBefore: consultedWithDoctorBefore,
               doctorName: doctorName,
               doctorID: doctor.id,
               doctor: doctor,
@@ -278,6 +280,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
               ),
             })
           : props.navigation.navigate(AppRoutes.ConsultPaymentnew, {
+              consultedWithDoctorBefore: consultedWithDoctorBefore,
               doctorName: doctorName,
               doctorID: doctor.id,
               doctor: doctor,
