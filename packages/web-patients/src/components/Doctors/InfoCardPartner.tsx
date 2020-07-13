@@ -222,7 +222,8 @@ export const InfoCardPartner: React.FC<InfoCardProps> = (props) => {
       } else if (differenceInMinutes >= 1380) {
         return (
           <div className={`${classes.availability}`}>
-            AVAILABLE IN {differenceInDays} {differenceInDays === 1 ? 'Day' : 'Days'}
+            AVAILABLE IN {differenceInDays || 1}{' '}
+            {differenceInDays === 1 || differenceInDays === 0 ? 'Day' : 'Days'}
           </div>
         );
       }

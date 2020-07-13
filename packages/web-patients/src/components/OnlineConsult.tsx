@@ -331,6 +331,21 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
         setMutationLoading(false);
       });
   };
+
+  // get doctor next availability.
+  const { data: nextAvailableSlot, loading: nextAvailableSlotLoading } = useQueryWithSkip<
+    GetDoctorNextAvailableSlot,
+    GetDoctorNextAvailableSlotVariables
+  >(GET_DOCTOR_NEXT_AVAILABILITY, {
+    variables: {
+      DoctorNextAvailableSlotInput: {
+        doctorIds: [doctorId],
+        availableDate: format(new Date(), 'yyyy-MM-dd'),
+      },
+    },
+    fetchPolicy: 'no-cache',
+  });
+
   // get available slots.
   const {
     data: availableSlotsData,
@@ -348,24 +363,6 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
       fetchPolicy: 'no-cache',
     }
   );
-
-  const { city } = useLocationDetails();
-
-  // console.log(availableSlotsData);
-
-  // get doctor next availability.
-  const { data: nextAvailableSlot, loading: nextAvailableSlotLoading } = useQueryWithSkip<
-    GetDoctorNextAvailableSlot,
-    GetDoctorNextAvailableSlotVariables
-  >(GET_DOCTOR_NEXT_AVAILABILITY, {
-    variables: {
-      DoctorNextAvailableSlotInput: {
-        doctorIds: [doctorId],
-        availableDate: format(new Date(), 'yyyy-MM-dd'),
-      },
-    },
-    fetchPolicy: 'no-cache',
-  });
 
   if (availableSlotsLoading || nextAvailableSlotLoading) {
     return (
@@ -391,7 +388,6 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
   ) {
     nextAvailableSlot.getDoctorNextAvailableSlot.doctorAvailalbeSlots.forEach((availability) => {
       if (availability && availability.availableSlot !== '') {
-        const slotArray = availability.availableSlot.split('T');
         const nextAvailabilityTime = availability.availableSlot;
         differenceInHours = getDiffInHours(nextAvailabilityTime);
         differenceInMinutes = getDiffInMinutes(nextAvailabilityTime);
@@ -607,9 +603,9 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
                 </p>
               ) : differenceInMinutes > 0 ? (
                 <p>
-                  Dr. {doctorName} is available in {differenceInDays}{' '}
-                  {differenceInDays === 1 ? 'day!' : 'days!'} Would you like to consult now or
-                  schedule for later?
+                  Dr. {doctorName} is available in {differenceInDays || 1}{' '}
+                  {differenceInDays === 1 || differenceInDays === 0 ? 'day!' : 'days!'} Would you
+                  like to consult now or schedule for later?
                 </p>
               ) : null}
               <div className={classes.actions}>
