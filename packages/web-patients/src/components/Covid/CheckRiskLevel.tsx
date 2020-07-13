@@ -2,7 +2,12 @@ import React, { useState } from 'react';
 import { Theme, useMediaQuery } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { AphDialogTitle, AphDialog, AphDialogClose, AphButton } from '@aph/web-ui-components';
-import { customerCareNumber } from 'helpers/commonHelpers';
+
+import { ProtectedWithLoginPopup } from '../ProtectedWithLoginPopup';
+import { Link } from 'react-router-dom';
+import { useAuth } from '../../hooks/authHooks';
+import { customerCareNumber } from '../../helpers/commonHelpers';
+import { clientRoutes } from '../../helpers/clientRoutes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -152,11 +157,12 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const CheckRiskLevel: React.FC = (props) => {
+export const CheckRiskLevel: React.FC = (props: any) => {
   const classes = useStyles({});
   const covidScannerUrl = process.env.COVID_RISK_CALCULATOR_URL;
   const isDesktopOnly = useMediaQuery('(min-width:768px)');
   const [iscoronaDialogOpen, setIscoronaDialogOpen] = useState<boolean>(false);
+  const { isSignedIn } = useAuth();
 
   return (
     <div className={classes.root}>
@@ -174,12 +180,28 @@ export const CheckRiskLevel: React.FC = (props) => {
           our experts for advice.
         </p>
         <div className={classes.rightActions}>
-          <AphButton className={classes.filledBtn}>
-            <span>
-              <img src={require('images/guide.svg')} alt="" />
-            </span>
-            <span>Get your personalized guide</span>
-          </AphButton>
+          <ProtectedWithLoginPopup>
+            {({ protectWithLoginPopup }) => (
+              <AphButton className={classes.filledBtn}>
+                <Link
+                  to={isSignedIn && clientRoutes.covidProtocol('covid-diabetes')}
+                  onClick={(e) =>
+                    !isSignedIn
+                      ? protectWithLoginPopup()
+                      : () => {
+                          console.log(444);
+                        }
+                  }
+                >
+                  <span>
+                    <img src={require('images/guide.svg')} alt="" />
+                  </span>
+                  <span>Get your personalized guide</span>
+                </Link>
+              </AphButton>
+            )}
+          </ProtectedWithLoginPopup>
+
           <AphButton className={classes.filledBtn} onClick={() => window.open(covidScannerUrl)}>
             <span>
               <img src={require('images/ic_covid-white.svg')} alt="" />
