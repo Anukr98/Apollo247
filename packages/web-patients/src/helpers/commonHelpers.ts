@@ -165,7 +165,7 @@ const toBase64 = (file: any) =>
 
 const getDiffInDays = (nextAvailability: string) => {
   if (nextAvailability && nextAvailability.length > 0) {
-    const nextAvailabilityTime = nextAvailability && moment(nextAvailability);
+    const nextAvailabilityTime = moment(new Date(nextAvailability));
     const currentTime = moment(new Date());
     const differenceInDays = nextAvailabilityTime.diff(currentTime, 'days');
     return differenceInDays;
@@ -173,10 +173,9 @@ const getDiffInDays = (nextAvailability: string) => {
     return 0;
   }
 };
-const getDiffInMinutes = (doctorAvailablePhysicalSlots: string) => {
-  if (doctorAvailablePhysicalSlots && doctorAvailablePhysicalSlots.length > 0) {
-    const nextAvailabilityTime =
-      doctorAvailablePhysicalSlots && moment(doctorAvailablePhysicalSlots);
+const getDiffInMinutes = (doctorAvailableSlots: string) => {
+  if (doctorAvailableSlots && doctorAvailableSlots.length > 0) {
+    const nextAvailabilityTime = moment(doctorAvailableSlots);
     const currentTime = moment(new Date());
     const differenceInMinutes = currentTime.diff(nextAvailabilityTime, 'minutes') * -1;
     return differenceInMinutes + 1; // for some reason moment is returning 1 second less. so that 1 is added.;
@@ -185,10 +184,9 @@ const getDiffInMinutes = (doctorAvailablePhysicalSlots: string) => {
   }
 };
 
-const getDiffInHours = (doctorAvailablePhysicalSlots: string) => {
-  if (doctorAvailablePhysicalSlots && doctorAvailablePhysicalSlots.length > 0) {
-    const nextAvailabilityTime =
-      doctorAvailablePhysicalSlots && moment(doctorAvailablePhysicalSlots);
+const getDiffInHours = (doctorAvailableSlots: string) => {
+  if (doctorAvailableSlots && doctorAvailableSlots.length > 0) {
+    const nextAvailabilityTime = moment(doctorAvailableSlots);
     const currentTime = moment(new Date());
     const differenceInHours = currentTime.diff(nextAvailabilityTime, 'hours') * -1;
     return Math.round(differenceInHours) + 1;

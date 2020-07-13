@@ -9,9 +9,8 @@ import {
   GetDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors as DoctorDetails,
   GetDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors_doctorHospital,
 } from 'graphql/types/GetDoctorsBySpecialtyAndFilters';
-import { ConsultMode, SEARCH_TYPE } from 'graphql/types/globalTypes';
+import { SEARCH_TYPE } from 'graphql/types/globalTypes';
 import { getDiffInDays, getDiffInMinutes, getDiffInHours } from 'helpers/commonHelpers';
-import moment from 'moment';
 import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
 import { useAuth } from 'hooks/authHooks';
 import { useMutation } from 'react-apollo-hooks';
@@ -190,10 +189,10 @@ export const InfoCard: React.FC<InfoCardProps> = (props) => {
     doctorInfo.specialty.name.toLowerCase();
   const consultMode =
     doctorInfo &&
-      doctorInfo.consultHours &&
-      doctorInfo.consultHours.length > 0 &&
-      doctorInfo.consultHours[0] &&
-      doctorInfo.consultHours[0].consultMode
+    doctorInfo.consultHours &&
+    doctorInfo.consultHours.length > 0 &&
+    doctorInfo.consultHours[0] &&
+    doctorInfo.consultHours[0].consultMode
       ? doctorInfo.consultHours[0].consultMode
       : '';
   const consultModeOnline: any = [];
@@ -209,6 +208,7 @@ export const InfoCard: React.FC<InfoCardProps> = (props) => {
       }
     });
   const differenceInMinutes = getDiffInMinutes(nextAvailability);
+  const differenceInDays = getDiffInDays(nextAvailability);
   const availabilityMarkup = () => {
     if (nextAvailability && nextAvailability.length > 0) {
       if (differenceInMinutes === 0) {
@@ -234,7 +234,7 @@ export const InfoCard: React.FC<InfoCardProps> = (props) => {
       } else if (differenceInMinutes >= 1380) {
         return (
           <div className={`${classes.availability}`}>
-            AVAILABLE IN {getDiffInDays(nextAvailability)} Days
+            AVAILABLE IN {differenceInDays} {differenceInDays === 1 ? 'Day' : 'Days'}
           </div>
         );
       }
@@ -369,10 +369,10 @@ export const InfoCard: React.FC<InfoCardProps> = (props) => {
                 <CircularProgress size={22} color="secondary" />
               ) : getDiffInMinutes(nextAvailability) > 0 &&
                 getDiffInMinutes(nextAvailability) <= 60 ? (
-                    'CONSULT NOW'
-                  ) : (
-                    'BOOK APPOINTMENT'
-                  )}
+                'CONSULT NOW'
+              ) : (
+                'BOOK APPOINTMENT'
+              )}
             </AphButton>
           </div>
         )}
