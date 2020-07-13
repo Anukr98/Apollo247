@@ -219,6 +219,7 @@ const apiDetails = {
   deliveryUrl: process.env.PHARMACY_MED_DELIVERY_TIME,
   deliveryAuthToken: process.env.PHARMACY_MED_DELIVERY_AUTH_TOKEN,
   service_url: process.env.PHARMACY_SERVICE_AVAILABILITY,
+  deliveryHeaderTATUrl: process.env.PHARMACY_MED_DELIVERY_HEADER_TAT,
 };
 
 type HomeDeliveryProps = {
@@ -231,6 +232,11 @@ interface TatInterface {
   artCode: string;
   deliverydate: string;
   siteId: string;
+}
+
+interface lookupType {
+  sku: string;
+  qty: number;
 }
 
 export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
@@ -387,6 +393,42 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
     changeCartTatStatus(true);
   };
 
+  const fetchUserDisplayDeliveryTime = async (paramObject: {
+    postalcode: string;
+    ordertype: string;
+    lookup: lookupType[];
+  }) => {
+    const CancelToken = axios.CancelToken;
+    let cancelGetDeliveryTimeApi: Canceler | undefined;
+    await axios
+      .post(
+        apiDetails.deliveryHeaderTATUrl,
+        {
+          ...paramObject,
+        },
+        {
+          headers: {
+            Authentication: apiDetails.deliveryAuthToken,
+          },
+          timeout: TAT_API_TIMEOUT_IN_MILLI_SEC,
+          cancelToken: new CancelToken((c) => {
+            // An executor function receives a cancel function as a parameter
+            cancelGetDeliveryTimeApi = c;
+          }),
+        }
+      )
+      .then(({ data }: any) => {
+        if (data && data.tat && data.tat[0]) {
+          setDeliveryTime(data.tat[0].deliverydate);
+          changeCartTatStatus && changeCartTatStatus(true);
+        }
+      })
+      .catch((e) => {
+        console.log(e);
+        setDefaultDeliveryTime();
+      });
+  };
+
   const fetchDeliveryTime = async (zipCode: string) => {
     const CancelToken = axios.CancelToken;
     let cancelGetDeliveryTimeApi: Canceler | undefined;
@@ -433,12 +475,6 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
                 .filter((item: TatInterface) => getDiffInDays(item.deliverydate) <= 10)
                 .map((filteredSku: TatInterface) => filteredSku.artCode);
 
-              const deliveryTime = tatResult
-                .filter((item: TatInterface) => getDiffInDays(item.deliverydate) <= 10)
-                .map((e: TatInterface) => e.deliverydate)
-                .sort()
-                .reverse()[0];
-
               deliverableSku.map((deliverableSKU: string) => {
                 let obj = cartItems.find((o) => o.sku === deliverableSKU);
                 if (obj && !isNull(obj)) {
@@ -458,11 +494,14 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
                 setShowNonDeliverablePopup(true);
                 setNonServicableSKU(nonDeliverySKUArr);
               } else {
-                changeCartTatStatus && changeCartTatStatus(true);
+                fetchUserDisplayDeliveryTime({
+                  postalcode: zipCode || '',
+                  ordertype: medicineCartType,
+                  lookup: lookUp,
+                });
               }
 
               setErrorDeliveryTimeMsg('');
-              setDeliveryTime(deliveryTime);
             } else if (
               typeof res.data.errorMSG === 'string' ||
               typeof res.data.errorMsg === 'string'
