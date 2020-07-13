@@ -224,7 +224,7 @@ const sendPatientWaitNotification: Resolver<
   const patientDetails = await patientRepo.getPatientDetails(appointment.patientId);
   if (patientDetails == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
   //const applicationLink = process.env.WHATSAPP_LINK_BOOK_APOINTMENT + '?' + appointment.id;
-  const devLink: any = process.env.DOCTOR_DEEP_LINK;
+  const devLink = process.env.DOCTOR_DEEP_LINK ? process.env.DOCTOR_DEEP_LINK : '';
   if (appointment) {
     const whatsAppMessageBody = ApiConstants.SEND_PATIENT_NOTIFICATION.replace(
       '{0}',
@@ -236,7 +236,12 @@ const sendPatientWaitNotification: Resolver<
       .replace('{4}', appointment.appointmentDateTime.toISOString())
       .replace('{5}', devLink);
     //whatsAppMessageBody += applicationLink;
-    await sendDoctorNotificationWhatsapp(doctorDetails.mobileNumber, whatsAppMessageBody, 1);
+    await sendDoctorNotificationWhatsapp(
+      doctorDetails.mobileNumber,
+      whatsAppMessageBody,
+      1,
+      doctorDetails.doctorType
+    );
   }
   return { status: true };
 };
