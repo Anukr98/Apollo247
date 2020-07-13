@@ -1352,7 +1352,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         globalLoading,
         props.navigation,
         currentPatient,
-        isPharmacyLocationServiceable
+        !!isPharmacyLocationServiceable
       );
 
       postwebEngageAddToCartEvent(data.item, 'Pharmacy Home', title);
@@ -1703,7 +1703,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       null,
       props.navigation,
       currentPatient,
-      isPharmacyLocationServiceable,
+      !!isPharmacyLocationServiceable,
       () => setItemsLoading({ ...itemsLoading, [sku]: false })
     );
     postwebEngageAddToCartEvent(item, 'Pharmacy Partial Search');
