@@ -174,7 +174,6 @@ export const PaymentStatusModal: React.FC<PaymentStatusProps> = (props) => {
             const pharmacyCheckoutValues = sessionStorage.getItem('pharmacyCheckoutValues')
               ? JSON.parse(sessionStorage.getItem('pharmacyCheckoutValues'))
               : {};
-            console.log('paymentStatus>>>>>', paymentStatus);
             paymentStatus === 'success' &&
               pharmacyCheckoutTracking({
                 orderId:

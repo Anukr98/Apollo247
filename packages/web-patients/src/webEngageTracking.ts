@@ -1,5 +1,3 @@
-import { Source } from 'webpack-sources';
-
 //PHR Consult & RX
 declare global {
   interface Window {
@@ -493,7 +491,6 @@ export const consultPayButtonClickTracking = (data: any) => {
 };
 
 export const consultPayInitiateTracking = (data: any) => {
-  console.log('data', data);
   if (window && window.webengage) {
     const {
       actualPrice,
@@ -527,7 +524,6 @@ export const consultPayInitiateTracking = (data: any) => {
 };
 
 export const pharmacyCheckoutTracking = (data: any) => {
-  console.log('data', data);
   if (window && window.webengage) {
     const {
       serviceArea,
@@ -746,7 +742,7 @@ export const pharmacyProceedToPayTracking = (data: any) => {
       pincode,
     } = data;
     try {
-      window.webengage.track('Buy Now Clicked - web', {
+      window.webengage.track('Pharmacy Proceed To Pay Clicked - web', {
         'Service Area': serviceArea,
         'Total items in cart': totalItems,
         'Sub Total': subTotal,
@@ -768,7 +764,7 @@ export const pharmacySubmitPrescTracking = (data: any) => {
   if (window && window.webengage) {
     const { orderId, deliveryType, storeId, deliverAdd, pincode } = data;
     try {
-      window.webengage.track('Pharmacy Category Clicked - web', {
+      window.webengage.track('Pharmacy Submit Prescription - web', {
         'Order ID': orderId,
         'Delivery type': deliveryType,
         'Store ID': storeId,
