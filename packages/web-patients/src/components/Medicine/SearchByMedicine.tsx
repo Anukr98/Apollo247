@@ -18,7 +18,11 @@ import { ManageProfile } from 'components/ManageProfile';
 import { hasOnePrimaryUser } from '../../helpers/onePrimaryUser';
 import { BottomLinks } from 'components/BottomLinks';
 import { MedicineAutoSearch } from 'components/Medicine/MedicineAutoSearch';
-import { uploadPrescriptionTracking, pharmacySearchEnterTracking } from 'webEngageTracking';
+import {
+  uploadPrescriptionTracking,
+  pharmacySearchEnterTracking,
+  pharmacyCategoryClickTracking,
+} from 'webEngageTracking';
 import { UploadPrescription } from 'components/Prescriptions/UploadPrescription';
 import { UploadEPrescriptionCard } from 'components/Prescriptions/UploadEPrescriptionCard';
 import { useCurrentPatient } from 'hooks/authHooks';
@@ -297,13 +301,13 @@ export const SearchByMedicine: React.FC = (props) => {
             },
           }
         )
-        .then(({ data }) => {
-          setCategoryId(data.category_id || paramSearchText);
+        .then((res) => {
+          setCategoryId(res.data.category_id || paramSearchText);
           axios
             .post(
               apiDetails.url || '',
               {
-                category_id: data.category_id || paramSearchText,
+                category_id: res.data.category_id || paramSearchText,
                 page_id: 1,
               },
               {
@@ -318,6 +322,12 @@ export const SearchByMedicine: React.FC = (props) => {
                 setMedicineList(data.products);
                 setHeading('');
                 setIsLoading(false);
+                pharmacyCategoryClickTracking({
+                  source: 'Home',
+                  categoryName: paramSearchText,
+                  categoryId: res.data.category_id,
+                  sectionName: paramSearchType,
+                });
                 /** gtm code start */
                 let gtmItems: any[] = [];
                 if (data.products.length) {

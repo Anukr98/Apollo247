@@ -7,6 +7,7 @@ import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { gtmTracking } from '../../gtmTracking';
 import { validatePharmaCoupon_validatePharmaCoupon } from 'graphql/types/validatePharmaCoupon';
+import { removeFromCartTracking } from 'webEngageTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -363,6 +364,18 @@ export const MedicineListingCard: React.FC<MedicineListingCardProps> = (props) =
                 <div className={classes.addToCart}>
                   <AphButton
                     onClick={() => {
+                      removeFromCartTracking({
+                        productName: item.name,
+                        cartSize: cartItems.length,
+                        productId: item.sku,
+                        brand: '',
+                        brandId: '',
+                        categoryName: '',
+                        categoryId: '',
+                        discountedPrice: item.special_price,
+                        price: item.price,
+                        quantity: item.quantity,
+                      });
                       /**Gtm code start  */
                       gtmTracking({
                         category: 'Pharmacy',

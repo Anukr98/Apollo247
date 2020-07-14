@@ -10,7 +10,11 @@ import { MedicineProduct } from './../../helpers/MedicineApiCalls';
 import FormHelperText from '@material-ui/core/FormHelperText';
 import { useShoppingCart, MedicineCartItem } from 'components/MedicinesCartProvider';
 import { gtmTracking } from '../../gtmTracking';
-import { notifyMeTracking } from '../../webEngageTracking';
+import {
+  notifyMeTracking,
+  pharmacySearchTracking,
+  addToCartTracking,
+} from '../../webEngageTracking';
 import { NotifyMeNotification } from './NotifyMeNotification';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 
@@ -267,6 +271,11 @@ export const MedicineAutoSearch: React.FC = (props) => {
         if (data && data.products) {
           setShowError(data.products.length === 0);
           setSearchMedicines(data.products);
+          pharmacySearchTracking({
+            keyword: value,
+            source: window.location.href.includes('medicines') ? 'Pharmacy Home' : 'Pharmacy List',
+            results: data.products && data.products.length,
+          });
         } else {
           setShowError(true);
           setSearchMedicines([]);
@@ -410,6 +419,18 @@ export const MedicineAutoSearch: React.FC = (props) => {
                                 quantity: 1,
                                 isShippable: true,
                               };
+                              addToCartTracking({
+                                productName: medicine.name,
+                                source: 'Pharmacy Search',
+                                productId: medicine.sku,
+                                brand: '',
+                                brandId: '',
+                                categoryName: '',
+                                categoryId: medicine.category_id,
+                                discountedPrice: medicine.special_price,
+                                price: medicine.price,
+                                quantity: 1,
+                              });
                               /* Gtm code start  */
                               gtmTracking({
                                 category: 'Pharmacy',
