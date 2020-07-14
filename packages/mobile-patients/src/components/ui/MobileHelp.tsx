@@ -360,7 +360,7 @@ export const MobileHelp: React.FC<MobileHelpProps> = (props) => {
     };
     // setBugFenderLog('SEND_HELP_EMAIL', helpEmail);
     let whatsapp_options = NeedHelpWhatsAppOptions;
-    if (whatsapp_options.includes(selectedQuery)) {
+    if (helpCategory === 'Pharmacy' && whatsapp_options.includes(selectedQuery)) {
       let my_message = `Issue Category : ${helpCategory}\nIssue sub category : ${selectedQuery}\nText : ${comment}`;
       let whatsapp_url = `https://api.whatsapp.com/send?phone=+914041894343&text=${my_message}&source=&data=&app_absent=`;
       // console.log('my_message', my_message, 'whatsapp_url', whatsapp_url);
