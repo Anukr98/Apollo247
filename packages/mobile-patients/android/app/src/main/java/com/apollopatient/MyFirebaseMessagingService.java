@@ -1,10 +1,8 @@
 package com.apollopatient;
 
-import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.media.RingtoneManager;
@@ -13,29 +11,18 @@ import android.os.Build;
 import android.util.Log;
 
 import androidx.core.app.NotificationCompat;
-import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
-import com.facebook.react.HeadlessJsTaskService;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.webengage.sdk.android.WebEngage;
 import com.google.firebase.messaging.RemoteMessage;
 
-import io.invertase.firebase.Utils;
-import io.invertase.firebase.messaging.RNFirebaseBackgroundMessagingService;
 import io.vitacloud.life.careplan.VitaTasksNotificationsManager;
 
 import java.util.Map;
 
 public class MyFirebaseMessagingService
         extends FirebaseMessagingService {
-
-    private static final String TAG = "RNFMessagingService";
-
-    public static final String MESSAGE_EVENT = "messaging-message";
-    public static final String NEW_TOKEN_EVENT = "messaging-token-refresh";
-    public static final String REMOTE_NOTIFICATION_EVENT = "notifications-remote-notification";
 
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
