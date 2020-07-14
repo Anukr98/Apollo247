@@ -514,9 +514,11 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   };
 
   const renderBottomButtons = () => {
-    const opitons = Array.from({ length: 20 }).map((_, i) => {
-      return { key: (i + 1).toString(), value: i + 1 };
-    });
+    const opitons = Array.from({ length: AppConfig.Configuration.CART_ITEM_MAX_QUANTITY }).map(
+      (_, i) => {
+        return { key: (i + 1).toString(), value: i + 1 };
+      }
+    );
 
     return (
       <StickyBottomComponent style={{ height: 'auto' }} defaultBG>

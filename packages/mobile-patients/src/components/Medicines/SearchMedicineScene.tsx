@@ -660,7 +660,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
           onNotifyMeClick();
         }}
         onPressAddQuantity={() =>
-          getItemQuantity(medicine.sku) == 20
+          getItemQuantity(medicine.sku) == AppConfig.Configuration.CART_ITEM_MAX_QUANTITY
             ? null
             : onUpdateCartItem(medicine, getItemQuantity(medicine.sku) + 1)
         }
@@ -873,7 +873,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         }}
         onPressAdd={() => {
           const q = getItemQuantity(item.sku);
-          if (q == 20) return;
+          if (q == AppConfig.Configuration.CART_ITEM_MAX_QUANTITY) return;
           onUpdateCartItem(item, getItemQuantity(item.sku) + 1);
         }}
         onPressSubstract={() => {

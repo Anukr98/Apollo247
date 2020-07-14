@@ -342,7 +342,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
         }}
         onPressAdd={() => {
           const q = getItemQuantity(item.sku);
-          if (q == 20) return;
+          if (q == AppConfig.Configuration.CART_ITEM_MAX_QUANTITY) return;
           onUpdateCartItem(item, getItemQuantity(item.sku) + 1);
         }}
         onPressSubstract={() => {
@@ -529,7 +529,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
           onNotifyMeClick(medicine.name);
         }}
         onPressAddQuantity={() =>
-          getItemQuantity(medicine.sku) == 20
+          getItemQuantity(medicine.sku) == AppConfig.Configuration.CART_ITEM_MAX_QUANTITY
             ? null
             : onUpdateCartItem(medicine, getItemQuantity(medicine.sku) + 1)
         }
