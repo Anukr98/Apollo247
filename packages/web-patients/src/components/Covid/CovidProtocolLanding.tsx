@@ -200,7 +200,7 @@ export const covidProtocolLanding: React.FC = (props: any) => {
   const [expanded, setExpanded] = React.useState<string | false>(false);
   const [seemore, setSeemore] = React.useState<boolean>(false);
   const [isLoading, setIsLoading] = React.useState<boolean>(true);
-  const [symptomData, setSymptomData] = React.useState<CovidProtocolData>();
+  const [symptomData, setSymptomData] = React.useState<CovidProtocolData>(null);
   // const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   // const onePrimaryUser =
   //   allCurrentPatients && allCurrentPatients.filter((x) => x.relation === Relation.ME).length === 1;
