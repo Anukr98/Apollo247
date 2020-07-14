@@ -404,7 +404,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
               </Link>
               <Link to={clientRoutes.welcome()}>Home</Link>
               <img src={require('images/triangle.svg')} alt="" />
-              <Link to={clientRoutes.specialityListing()}>Specialities</Link>
+              <Link to={clientRoutes.specialityListing()}>Specialties</Link>
               <img src={require('images/triangle.svg')} alt="" />
               {doctorData && (
                 <>
