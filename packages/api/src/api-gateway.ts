@@ -105,9 +105,9 @@ export type Resolver<Parent, Args, Context, Result> = (
     'https://corporate.apollo247.com',
     'https://corporate-uat.apollo247.com',
     'https://uatdoctors.apollo247.com',
-    'https://qadoctors.apollo247.com/',
-    'https://qapatients.apollo247.com/',
-    'https://qapmt.apollo247.com/',
+    'https://qadoctors.apollo247.com',
+    'https://qapatients.apollo247.com',
+    'https://qapmt.apollo247.com',
   ];
 
   const logger = winstonLogger.loggers.get('apiGatewayLogger');
