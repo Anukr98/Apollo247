@@ -33,6 +33,7 @@ export const updatePatientTypeDefs = gql`
     photoUrl: String
     deviceCode: String
     employeeId: String
+    partnerId: String
   }
 
   input UpdatePatientAllergiesInput {
