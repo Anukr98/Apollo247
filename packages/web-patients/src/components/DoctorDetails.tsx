@@ -356,8 +356,9 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
             title: `${fullName}: ${
               specialty && specialty.name ? specialty.name : ''
             } - Online Consultation/Appointment - Apollo 247`,
-            description: `Book an appointment with ${fullName} - ${specialty &&
-              specialty.name} and consult online at Apollo 247. Know more about ${fullName} and his work here. Get medical help online in just a few clicks at Apollo 247.`,
+            description: `Book an appointment with ${fullName} - ${
+              specialty && specialty.name
+            } and consult online at Apollo 247. Know more about ${fullName} and his work here. Get medical help online in just a few clicks at Apollo 247.`,
             canonicalLink:
               window &&
               window.location &&
@@ -422,13 +423,24 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
               <Link className={classes.backArrow} to={clientRoutes.specialties(params.specialty)}>
                 <img src={require('images/ic_back.svg')} alt="" />
               </Link>
+              <Link to={clientRoutes.welcome()}>Home</Link>
+              <img src={require('images/triangle.svg')} alt="" />
               <Link to={clientRoutes.specialityListing()}>Specialities</Link>
               <img src={require('images/triangle.svg')} alt="" />
+              {doctorData && (
+                <>
+                  {doctorData.specialty && doctorData.specialty.name ? (
+                    <>
+                      <Link to={clientRoutes.specialties(params.specialty)}>
+                        {doctorData.specialty.name}
+                      </Link>
+                      <img src={require('images/triangle.svg')} alt="" />
+                    </>
+                  ) : null}
 
-              <Link to={clientRoutes.specialties(params.specialty)}>Doctors</Link>
-              <img src={require('images/triangle.svg')} alt="" />
-
-              <span>Doctor Details</span>
+                  <span>{doctorData.fullName || ''}</span>
+                </>
+              )}
             </div>
             <div className={classes.doctorProfileSection}>
               <div className={classes.leftSection}>

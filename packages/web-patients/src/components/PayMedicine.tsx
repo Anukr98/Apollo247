@@ -554,7 +554,6 @@ export const PayMedicine: React.FC = (props) => {
         medicineCartOMSInput: {
           quoteId: '',
           patientId: currentPatient ? currentPatient.id : '',
-          shopId: '',
           patientAddressId: deliveryAddressId,
           medicineDeliveryType: MEDICINE_DELIVERY_TYPE.HOME_DELIVERY,
           bookingSource: BOOKINGSOURCE.WEB,

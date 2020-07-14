@@ -54,7 +54,7 @@ export async function refreshLink(existingDeeplinkDetails: Deeplink, doctorType:
   //doctor deeplink
   const af_dp = ApiConstants.DOCTOR_DEEPLINK_CONSTANT.toString() + existingDeeplinkDetails.doctorId;
   const deepLinkInput: DeepLinkInput = {
-    brand_domain: ApiConstants.BRAND_DOMAIN.toString(),
+    //brand_domain: ApiConstants.BRAND_DOMAIN.toString(),
     ttl: ApiConstants.LINK_TTL.toString(),
     data: {
       pid: existingDeeplinkDetails.partnerId,
@@ -130,7 +130,7 @@ export function generateDeepLinkBody(doctordata: Partial<Doctor>): DeepLinkInput
       : ApiConstants.CHANNEL_NAME_APOLLO.toString();
 
   const deepLinkAttrs: DeepLinkInput = {
-    brand_domain: ApiConstants.BRAND_DOMAIN.toString(),
+    //brand_domain: ApiConstants.BRAND_DOMAIN.toString(),
     ttl: ApiConstants.LINK_TTL.toString(),
     data: {
       pid: partnerId,

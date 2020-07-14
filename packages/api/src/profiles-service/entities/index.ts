@@ -350,6 +350,7 @@ export class MedicineOrders extends BaseEntity {
   @Column({ default: 0 })
   isEprescription: number;
 
+  @Index('MedicineOrders_orderAutoId')
   @PrimaryGeneratedColumn({ type: 'bigint' })
   orderAutoId: number;
 
@@ -898,12 +899,13 @@ export class Patient extends BaseEntity {
   }
   @AfterInsert()
   async dropPatientMobileCache() {
-    delCache(`patient:mobile:${this.mobileNumber}`);
+    await delCache(`patient:mobile:${this.mobileNumber}`);
   }
 
   @AfterUpdate()
   async dropPatientCache() {
-    delCache(`patient:${this.id}`);
+    console.log('testing drop petient cache');
+    await delCache(`patient:${this.id}`);
   }
 }
 //patient Ends
@@ -1037,8 +1039,8 @@ export class PatientAddress extends BaseEntity {
   @AfterInsert()
   @AfterUpdate()
   async dropPatientAddressList() {
-    delCache(`address:list:patient:${this.patientId}`);
-    delCache(`patient:${this.patientId}`);
+    await delCache(`address:list:patient:${this.patientId}`);
+    await delCache(`patient:${this.patientId}`);
   }
 }
 //patientAddress Ends
@@ -1080,7 +1082,7 @@ export class PatientFamilyHistory extends BaseEntity {
   @AfterInsert()
   @AfterUpdate()
   async dropPatientAddressList() {
-    delCache(`patient:${this.patientId}`);
+    await delCache(`patient:${this.patientId}`);
   }
 }
 //patient family history ends
@@ -1123,7 +1125,7 @@ export class PatientLifeStyle extends BaseEntity {
   @AfterInsert()
   @AfterUpdate()
   async dropPatientAddressList() {
-    delCache(`patient:${this.patientId}`);
+    await delCache(`patient:${this.patientId}`);
   }
 }
 //patientLifestyle ends
@@ -1547,7 +1549,7 @@ export class PatientMedicalHistory extends BaseEntity {
   @AfterInsert()
   @AfterUpdate()
   async dropPatientCache() {
-    delCache(`patient:${this.patientId}`);
+    await delCache(`patient:${this.patientId}`);
   }
 }
 //patientMedicalHistory ends

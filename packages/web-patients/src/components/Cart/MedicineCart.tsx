@@ -855,10 +855,14 @@ export const MedicineCart: React.FC = (props) => {
                 setErrorMessage(
                   'Coupon not applicable on your cart item(s) or item(s) with already higher discounts'
                 );
+                localStorage.removeItem('pharmaCoupon');
+                setCouponCode && setCouponCode('');
               }
             } else {
               setValidateCouponResult(null);
               setErrorMessage(couponValidateResult.reasonForInvalidStatus);
+              localStorage.removeItem('pharmaCoupon');
+              setCouponCode && setCouponCode('');
             }
           }
         })
@@ -883,7 +887,7 @@ export const MedicineCart: React.FC = (props) => {
         medicineCartOMSInput: {
           quoteId: '',
           patientId: currentPatient ? currentPatient.id : '',
-          shopId: deliveryMode === 'HOME' ? '' : storeAddressId,
+          ...(storeAddressId && storeAddressId.length && { shopId: storeAddressId }),
           patientAddressId: deliveryMode === 'HOME' ? deliveryAddressId : '',
           medicineDeliveryType:
             deliveryMode === 'HOME'
@@ -1064,7 +1068,7 @@ export const MedicineCart: React.FC = (props) => {
           const phyPresPrismIds = filtered.map((item) => item.fileId).filter((i) => i);
           const prescriptionMedicineOMSInput: savePrescriptionMedicineOrderOMSVariables = {
             prescriptionMedicineOMSInput: {
-              shopId: storeAddressId || '0',
+              ...(storeAddressId && storeAddressId.length && { shopId: storeAddressId }),
               patientId: (currentPatient && currentPatient.id) || '',
               bookingSource: BOOKING_SOURCE.WEB,
               medicineDeliveryType: deliveryAddressId
@@ -1091,7 +1095,7 @@ export const MedicineCart: React.FC = (props) => {
     } else {
       const prescriptionMedicineOMSInput: savePrescriptionMedicineOrderOMSVariables = {
         prescriptionMedicineOMSInput: {
-          shopId: storeAddressId || '0',
+          ...(storeAddressId && storeAddressId.length && { shopId: storeAddressId }),
           patientId: (currentPatient && currentPatient.id) || '',
           bookingSource: BOOKING_SOURCE.WEB,
           medicineDeliveryType: deliveryAddressId
@@ -1520,6 +1524,9 @@ export const MedicineCart: React.FC = (props) => {
                     const zipCodeInt = parseInt(selectedZip);
 
                     if (cartItems && cartItems.length > 0 && !nonCartFlow) {
+                      if((prescriptions && prescriptions.length > 0)) {
+                        uploadMultipleFiles(prescriptions);
+                      }
                       if (
                         checkForCartChanges().then((res) => {
                           if (res) {
