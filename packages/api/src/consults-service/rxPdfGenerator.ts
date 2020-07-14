@@ -313,7 +313,7 @@ export const convertCaseSheetToRxPdfData = async (
         hospitalAddress = {
           name: hospitalDetails.name,
           streetLine1: hospitalDetails.streetLine1,
-          streetLine2: hospitalDetails.streetLine2,
+          streetLine2: hospitalDetails.streetLine2 ? hospitalDetails.streetLine2 : '',
           city: hospitalDetails.city,
           zipcode: hospitalDetails.zipcode,
           state: hospitalDetails.state,
@@ -449,6 +449,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
     if (doc.y > doc.page.height - 150) {
       pageBreak();
     }
+
     if (image.length > 0)
       return (
         doc
@@ -567,7 +568,29 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
     if (hospitalAddress.streetLine2) doc.moveDown(0.2).text(hospitalAddress.streetLine2);
     doc.moveDown(0.2).text(addressLastLine);
 
-    doc.moveDown(2);
+    doc
+      .moveDown(0.6)
+      .fillColor('#7f7f7f')
+      .text(`${ApiConstants.CASESHEET_WATSAPP_LABEL.toString()}`, { lineBreak: false })
+      .text(`${ApiConstants.CASESHEET_EMAIL_LABEL.toString()}`, 465, doc.y);
+
+    doc
+      .moveDown(0.5)
+      .fillColor('#333333')
+      .image(loadAsset('ic-phone.png'), 370, doc.y, {
+        valign: 'bottom',
+        height: 12,
+        width: 12,
+      })
+      .text(`${ApiConstants.CASESHEET_WATSAPP_NUMBER.toString()}`, 385, doc.y - 12, {
+        lineBreak: false,
+      })
+      .image(loadAsset('ic-email.png'), 465, doc.y, {
+        valign: 'bottom',
+        height: 12,
+        width: 12,
+      })
+      .text(`${ApiConstants.CASESHEET_EMAIL.toString()}`, 480, doc.y - 12);
   };
 
   const renderFooter = () => {
@@ -992,6 +1015,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
   renderHeader(rxPdfData.doctorInfo, rxPdfData.hospitalAddress);
 
   if (!_isEmpty(rxPdfData.patientInfo)) {
+    doc.moveUp(1);
     renderpatients(rxPdfData.patientInfo, rxPdfData.appointmentDetails);
     doc.moveDown(1.5);
   }
