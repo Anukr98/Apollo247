@@ -267,6 +267,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
   }, [locationDetails, currentPatient, diagnosticsCities]);
 
   useEffect(() => {
+    checkLocation();
+  }, [locationDetails]);
+
+  const checkLocation = () => {
     !locationDetails &&
       showAphAlert!({
         unDismissable: true,
@@ -321,7 +325,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
           </View>
         ),
       });
-  }, [locationDetails]);
+  }
 
   useEffect(() => {
     if (
@@ -607,7 +611,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
             zIndex: 15,
             elevation: 15,
           }}
-          onPress={() => setshowLocationpopup(false)}
+          onPress={() => {setshowLocationpopup(false), checkLocation()}}
         >
           <View
             style={{
@@ -1700,7 +1704,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     return (
       <>
         <Input
-          autoFocus={focusSearch}
+          autoFocus={!locationDetails ? false : focusSearch}
           onSubmitEditing={() => {
             if (searchText.length > 2) {
               props.navigation.navigate(AppRoutes.SearchTestScene, {

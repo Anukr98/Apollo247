@@ -25,6 +25,7 @@ import {
   OrangeCallIcon,
   ArrowRight,
   ShoppingBasketIcon,
+  LocationOff,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
@@ -61,6 +62,8 @@ import {
   addPharmaItemToCart,
   productsThumbnailUrl,
   reOrderMedicines,
+  doRequestAndAccessLocation,
+  getNetStatus,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { postMyOrdersClicked } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import {
@@ -160,6 +163,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     setPharmacyLocationServiceable,
     medicinePageAPiResponse,
     setMedicinePageAPiResponse,
+    setLocationDetails
   } = useAppCommonData();
   const [ShowPopop, setShowPopop] = useState<boolean>(false);
   const [pincodePopupVisible, setPincodePopupVisible] = useState<boolean>(false);
@@ -179,7 +183,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const [allBrandData, setAllBrandData] = useState<Brand[]>([]);
   const [serviceabilityMsg, setServiceabilityMsg] = useState('');
-
+  const hasLocation = (locationDetails || pharmacyLocation);
   const { showAphAlert, hideAphAlert, setLoading: globalLoading } = useUIElements();
   const {
     data: latestMedicineOrderData,
@@ -390,6 +394,47 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     fetchRecommendedProducts();
   }, []);
 
+  useEffect(() => {
+    !locationDetails &&
+      showAphAlert!({
+        unDismissable: true,
+        title: 'Hi! :)',
+        description:
+          'We need to know your location to function better. Please allow us to auto detect your location or enter location manually.',
+        children: (
+          <View
+            style={{
+              flexDirection: 'row',
+              marginHorizontal: 20,
+              justifyContent: 'space-between',
+              alignItems: 'flex-end',
+              marginVertical: 18,
+            }}
+          >
+            <Button
+              style={{
+                flex: 1,
+                marginRight: 16,
+              }}
+              title={'ENTER MANUALLY'}
+              onPress={() => {
+                hideAphAlert!();
+                setPincodePopupVisible(true);
+              }}
+            />
+            <Button
+              style={{ flex: 1 }}
+              title={'ALLOW AUTO DETECT'}
+              onPress={() => {
+                hideAphAlert!();
+                autoDetectLocation();
+              }}
+            />
+          </View>
+        ),
+      });
+  }, [locationDetails]);
+
   const [recommendedProducts, setRecommendedProducts] = useState<MedicineProduct[]>([]);
   const [data, setData] = useState<MedicinePageAPiResponse | null>(medicinePageAPiResponse);
   const [loading, setLoading] = useState<boolean>(!medicinePageAPiResponse);
@@ -508,6 +553,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         globalLoading!(false);
         response && setPharmacyLocation!(response);
         response && WebEngageEventAutoDetectLocation(response.pincode, true);
+        response && !locationDetails && setLocationDetails!(response);
       })
       .catch((e) => {
         CommonBugFender('Medicine__ALLOW_AUTO_DETECT', e);
@@ -585,7 +631,10 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         <MaterialMenu
           options={options}
           itemContainer={localStyles.menuItemContainer}
-          menuContainerStyle={localStyles.menuMenuContainerStyle}
+          menuContainerStyle={[localStyles.menuMenuContainerStyle,{
+            marginLeft: hasLocation ? winWidth * 0.25 : 35,
+            marginTop: hasLocation ? 50 : 35
+          }]}
           scrollViewContainerStyle={localStyles.menuScrollViewContainerStyle}
           itemTextStyle={localStyles.menuItemTextStyle}
           bottomPadding={localStyles.menuBottomPadding}
@@ -624,27 +673,34 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             locationDetails,
             'pincode'
           )}`;
-
       return (
-        <View style={{ paddingLeft: 15, marginTop: -3.5 }}>
-          <View style={{ flexDirection: 'row' }}>
-            <View>
-              <Text numberOfLines={1} style={localStyles.deliverToText}>
-                Deliver to {formatText(g(currentPatient, 'firstName') || '', 15)}
-              </Text>
-              <View>
-                <Text style={localStyles.locationText}>{location}</Text>
-                {!serviceabilityMsg ? (
-                  <Spearator style={localStyles.locationTextUnderline} />
-                ) : (
-                  <View style={{ height: 2 }} />
-                )}
+        <View style={{ paddingLeft: 15, marginTop: 3.5}}>
+          {
+            hasLocation
+              ?
+              <View style={{ marginTop: -7.5 }}>
+              <View style={{ flexDirection: 'row' }}>
+                <View>
+                  <Text numberOfLines={1} style={localStyles.deliverToText}>
+                    Deliver to {formatText(g(currentPatient, 'firstName') || '', 15)}
+                  </Text>
+                  <View>
+                    <Text style={localStyles.locationText}>{location}</Text>
+                    {!serviceabilityMsg ? (
+                      <Spearator style={localStyles.locationTextUnderline} />
+                    ) : (
+                        <View style={{ height: 2 }} />
+                      )}
+                  </View>
+                </View>
+                <View style={localStyles.dropdownGreenContainer}>
+                  <DropdownGreen />
+                </View>
               </View>
-            </View>
-            <View style={localStyles.dropdownGreenContainer}>
-              <DropdownGreen />
-            </View>
-          </View>
+              </View>
+              :
+              <LocationOff />
+          }
           {!!serviceabilityMsg && (
             <Text style={localStyles.serviceabilityMsg}>{serviceabilityMsg}</Text>
           )}
@@ -1601,7 +1657,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     return (
       <>
         <Input
-          autoFocus={focusSearch}
+          autoFocus={(!pharmacyLocation && !locationDetails) ? false : focusSearch}
           onSubmitEditing={() => {
             if (searchText.length > 2) {
               const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_SEARCH_RESULTS] = {
