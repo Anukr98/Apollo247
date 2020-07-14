@@ -20,8 +20,8 @@ import { useParams } from '../../hooks/routerHooks';
 import fetchUtil from 'helpers/fetch';
 
 interface CovidProtocolData {
-  introdunctionBody: string;
-  introdunctionTitle: string;
+  introductionBody: string;
+  introductionTitle: string;
 
   [index: string]: any;
 }
@@ -256,64 +256,64 @@ export const covidProtocolLanding: React.FC = (props: any) => {
               <CircularProgress size={22} color="secondary" />
             </div>
           ) : (
-            <>
-              <div className={classes.cdIntro}>
-                <Typography component="h4">{symptomData.introdunctionTitle}</Typography>
-                <Typography>
-                  <div
-                    // className={classes.htmlContent}
-                    dangerouslySetInnerHTML={{ __html: symptomData.introdunctionBody }}
-                  />
-                </Typography>
-              </div>
+              <>
+                <div className={classes.cdIntro}>
+                  <Typography component="h4">{symptomData.introductionTitle}</Typography>
+                  <Typography>
+                    <div
+                      // className={classes.htmlContent}
+                      dangerouslySetInnerHTML={{ __html: symptomData.introductionBody }}
+                    />
+                  </Typography>
+                </div>
 
-              <div className={` ${classes.expansionContainer} `}>
-                {// eslint-disable-next-line @typescript-eslint/no-explicit-any
-                symptomData[params.symptom] &&
-                  symptomData[params.symptom].map((item: any, index: number) => {
-                    return (
-                      <ExpansionPanel
-                        expanded={true}
-                        onChange={handleChange(`panel${index + 1}`)}
-                        className={classes.panelRoot}
-                      >
-                        <ExpansionPanelSummary
-                          expandIcon={<ExpandMoreIcon />}
-                          classes={{
-                            root: classes.panelHeader,
-                            content: classes.summaryContent,
-                            expandIcon: classes.expandIcon,
-                            expanded: classes.panelExpanded,
-                          }}
+                <div className={` ${classes.expansionContainer} `}>
+                  {// eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    symptomData[params.symptom] &&
+                    symptomData[params.symptom].map((item: any, index: number) => {
+                      return (
+                        <ExpansionPanel
+                          expanded={true}
+                          onChange={handleChange(`panel${index + 1}`)}
+                          className={classes.panelRoot}
                         >
-                          <img src={item.iconImage} />
-                          <Typography className={classes.panelHeading}>{item.category}</Typography>
-                        </ExpansionPanelSummary>
-                        <ExpansionPanelDetails className={classes.panelDetails}>
-                          <div className={classes.detailsContent}>
-                            {item.bodyContent && <div>{item.bodyContent}</div>}
-                            <ul
-                              className={`${classes.cdList} ${seemore ? classes.heightAuto : ''}`}
-                            >
-                              {item.bodyContentList &&
-                                item.bodyContentList.map((text: string) => <li>{text}</li>)}
-                            </ul>
+                          <ExpansionPanelSummary
+                            expandIcon={<ExpandMoreIcon />}
+                            classes={{
+                              root: classes.panelHeader,
+                              content: classes.summaryContent,
+                              expandIcon: classes.expandIcon,
+                              expanded: classes.panelExpanded,
+                            }}
+                          >
+                            <img src={item.iconImage} />
+                            <Typography className={classes.panelHeading}>{item.category}</Typography>
+                          </ExpansionPanelSummary>
+                          <ExpansionPanelDetails className={classes.panelDetails}>
+                            <div className={classes.detailsContent}>
+                              {item.bodyContent && <div>{item.bodyContent}</div>}
+                              <ul
+                                className={`${classes.cdList} ${seemore ? classes.heightAuto : ''}`}
+                              >
+                                {item.bodyContentList &&
+                                  item.bodyContentList.map((text: string) => <li>{text}</li>)}
+                              </ul>
 
-                            <a
-                              href="javascript:void(0);"
-                              className={classes.seemore}
-                              onClick={() => setSeemore(!seemore)}
-                            >
-                              {seemore ? <span>See Less</span> : <span>See More</span>}
-                            </a>
-                          </div>
-                        </ExpansionPanelDetails>
-                      </ExpansionPanel>
-                    );
-                  })}
-              </div>
-            </>
-          )}
+                              <a
+                                href="javascript:void(0);"
+                                className={classes.seemore}
+                                onClick={() => setSeemore(!seemore)}
+                              >
+                                {seemore ? <span>See Less</span> : <span>See More</span>}
+                              </a>
+                            </div>
+                          </ExpansionPanelDetails>
+                        </ExpansionPanel>
+                      );
+                    })}
+                </div>
+              </>
+            )}
           <CheckRiskLevel />
         </div>
       </div>

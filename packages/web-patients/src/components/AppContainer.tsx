@@ -64,7 +64,7 @@ import { SpecialityListing } from 'components/SpecialityListing';
 import { SpecialtyDetails } from 'components/Doctors/SpecialtyDetails';
 import { MedicinePrescriptions } from './Prescriptions/MedicinePrescriptions';
 import { MedicineSearch } from './Medicine/MedicineSearch';
-import { covidProtocolLanding } from 'components/Covid/covidProtocolLanding';
+import { covidProtocolLanding } from 'components/Covid/CovidProtocolLanding';
 import { DoctorsLanding } from 'components/DoctorsLanding';
 
 const useStyles = makeStyles((theme: Theme) => {
