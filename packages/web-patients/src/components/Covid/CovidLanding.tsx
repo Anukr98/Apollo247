@@ -186,6 +186,11 @@ const useStyles = makeStyles((theme: Theme) => {
       height: 24,
       cursor: 'pointer',
     },
+    headerCovid: {
+      [theme.breakpoints.down('xs')]: {
+        visibility: 'hidden',
+      },
+    },
     modalFooter: {
       textAlign: 'left',
       position: 'relative',
@@ -318,7 +323,9 @@ export const CovidLanding: React.FC = (props: any) => {
 
   return (
     <div className={classes.root}>
-      {isDesktopOnly ? <Header /> : ''}
+      <div className={classes.headerCovid}>
+        <Header />
+      </div>
       <div className={classes.container}>
         <div className={classes.pageContainer} ref={scrollToRef}>
           <Banner isWebView={isWebView} />
