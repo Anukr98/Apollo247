@@ -179,6 +179,9 @@ const useStyles = makeStyles((theme: Theme) => {
       transition: '0.1s ease',
       overflow: 'hidden',
       zIndex: 9,
+      [theme.breakpoints.down('sm')]: {
+        top: 60,
+      },
     },
     userAccountList: {
       padding: 0,
@@ -203,6 +206,14 @@ const useStyles = makeStyles((theme: Theme) => {
           },
         },
       },
+      [theme.breakpoints.down('sm')]: {
+        '& li': {
+          '& a': {
+            padding: '6px 10px !important',
+            fontSize: 12,
+          },
+        },
+      },
     },
     downloadAppBtn: {
       boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
@@ -211,9 +222,15 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 'bold',
       padding: '8px 20px',
       display: 'block',
+      [theme.breakpoints.down('sm')]: {
+        padding: 8,
+      },
     },
     userListActive: {
       width: '300px !important',
+      [theme.breakpoints.down('sm')]: {
+        width: '240px !important',
+      },
     },
     userDetails: {
       padding: '10px 20px',
@@ -231,6 +248,17 @@ const useStyles = makeStyles((theme: Theme) => {
         padding: '10px 0',
         textTransform: 'uppercase',
       },
+      [theme.breakpoints.down('sm')]: {
+        padding: '5px 10px',
+        '& h2': {
+          fontSize: 16,
+          padding: '0 0 8px',
+        },
+        '& p': {
+          fontSize: 12,
+          padding: '8px 0',
+        },
+      },
     },
     userInfo: {
       display: 'flex',
@@ -244,6 +272,9 @@ const useStyles = makeStyles((theme: Theme) => {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'space-between',
+      [theme.breakpoints.down('sm')]: {
+        padding: 10,
+      },
     },
   };
 });
