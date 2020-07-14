@@ -148,6 +148,12 @@ const styles = StyleSheet.create({
     color: theme.colors.SHERPA_BLUE,
     lineHeight: 18,
   },
+  topSpecialityNameiOS: {
+    ...theme.fonts.IBMPlexSansMedium(14),
+    marginHorizontal: 8,
+    textAlign: 'center',
+    color: theme.colors.SHERPA_BLUE,
+  },
   topSpecialityDescription: {
     ...theme.fonts.IBMPlexSansMedium(12),
     marginHorizontal: 20,
@@ -1077,7 +1083,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
                           justifyContent: 'center',
                         }}
                       >
-                        <Text numberOfLines={2} style={styles.topSpecialityName}>
+                        <Text numberOfLines={2} style={Platform.OS === 'ios' ? styles.topSpecialityNameiOS : styles.topSpecialityName}>
                           {item.name}
                         </Text>
                       </View>
