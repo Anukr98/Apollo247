@@ -279,7 +279,7 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
     if (isNonCartOrder && !isOrderBilled && tabValue === 1) {
       setTabValue(0);
     }
-  }, [isNonCartOrder]);
+  }, [isNonCartOrder, isOrderBilled, tabValue]);
 
   return (
     <div className={classes.root}>
