@@ -133,7 +133,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
     const localTimeSlot = moment(new Date(time));
     console.log(localTimeSlot.format('DD MMM YYYY, h:mm A'));
     let date = new Date(time);
-    date = new Date(date.getTime() + 5.5 * 60 * 60 * 1000);
+    // date = new Date(date.getTime() + 5.5 * 60 * 60 * 1000);
     const doctorClinics = (g(doctor, 'doctorHospital') || []).filter((item) => {
       if (item && item.facility && item.facility.facilityType)
         return item.facility.facilityType === 'HOSPITAL';

@@ -235,7 +235,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   const getConsultationBookedEventAttributes = (time: string, id: string) => {
     const localTimeSlot = moment(new Date(time));
     let date = new Date(time);
-    date = new Date(date.getTime() + 5.5 * 60 * 60 * 1000);
+    // date = new Date(date.getTime() + 5.5 * 60 * 60 * 1000);
     const doctorClinics = (g(props.doctor, 'doctorHospital') || []).filter((item) => {
       if (item && item.facility && item.facility.facilityType)
         return item.facility.facilityType === 'HOSPITAL';
