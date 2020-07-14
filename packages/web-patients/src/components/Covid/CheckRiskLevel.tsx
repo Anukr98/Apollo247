@@ -182,16 +182,15 @@ export const CheckRiskLevel: React.FC = (props: any) => {
         <div className={classes.rightActions}>
           <ProtectedWithLoginPopup>
             {({ protectWithLoginPopup }) => (
-              <AphButton className={classes.filledBtn}>
+              <AphButton className={classes.filledBtn}
+                onClick={() => {
+                  if (!isSignedIn) {
+                    protectWithLoginPopup();
+                  }
+                }}
+              >
                 <Link
                   to={isSignedIn && clientRoutes.covidProtocol('covid-diabetes')}
-                  onClick={(e) =>
-                    !isSignedIn
-                      ? protectWithLoginPopup()
-                      : () => {
-                          console.log(444);
-                        }
-                  }
                 >
                   <span>
                     <img src={require('images/guide.svg')} alt="" />
@@ -234,6 +233,6 @@ export const CheckRiskLevel: React.FC = (props: any) => {
           </AphButton>
         </div>
       </AphDialog>
-    </div>
+    </div >
   );
 };
