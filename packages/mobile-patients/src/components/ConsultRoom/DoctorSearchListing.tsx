@@ -434,7 +434,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     }
   };
 
-  const fetchCurrentLocation = () => {
+  const checkLocation = () => {
     if(!locationDetails){
       showAphAlert!({
         unDismissable: true,
@@ -1113,7 +1113,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             zIndex: 15,
             elevation: 15
           }}
-          onPress={() => {setshowLocationpopup(false), !locationDetails && fetchCurrentLocation()}}
+          onPress={() => {setshowLocationpopup(false), !locationDetails && checkLocation()}}
         >
           <View
             style={{
@@ -1294,7 +1294,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
                     'Sort By': 'distance',
                   });
                   setSortValue('distance');
-                  fetchCurrentLocation();
+                  checkLocation();
                 }
               }}
             >

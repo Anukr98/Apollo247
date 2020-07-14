@@ -395,6 +395,10 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   }, []);
 
   useEffect(() => {
+    checkLocation();
+  }, [locationDetails]);
+
+  const checkLocation = () => {
     !locationDetails &&
       showAphAlert!({
         unDismissable: true,
@@ -433,7 +437,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           </View>
         ),
       });
-  }, [locationDetails]);
+  }
 
   const [recommendedProducts, setRecommendedProducts] = useState<MedicineProduct[]>([]);
   const [data, setData] = useState<MedicinePageAPiResponse | null>(medicinePageAPiResponse);
@@ -1961,7 +1965,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         setPharmacyLocationServiceable!(true);
       }
     };
-    return pincodePopupVisible && <PincodePopup onClickClose={onClose} onComplete={onClose} />;
+    return pincodePopupVisible && <PincodePopup onClickClose={() => {onClose(), checkLocation()}} onComplete={onClose} />;
   };
 
   return (
