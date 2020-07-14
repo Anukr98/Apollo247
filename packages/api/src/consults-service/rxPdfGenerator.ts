@@ -313,7 +313,7 @@ export const convertCaseSheetToRxPdfData = async (
         hospitalAddress = {
           name: hospitalDetails.name,
           streetLine1: hospitalDetails.streetLine1,
-          streetLine2: hospitalDetails.streetLine2 ? hospitalDetails.streetLine2 : '',
+          streetLine2: hospitalDetails.streetLine2 || '',
           city: hospitalDetails.city,
           zipcode: hospitalDetails.zipcode,
           state: hospitalDetails.state,
