@@ -490,7 +490,6 @@ export const PayMedicine: React.FC = (props) => {
 
   useEffect(() => {
     if (validateConsultCouponResult && validateConsultCouponResult.valid) {
-      console.log('validateConsultCouponResult', validateConsultCouponResult);
       setRevisedAmount(
         validateConsultCouponResult.billAmount - validateConsultCouponResult.discount
       );
@@ -638,11 +637,18 @@ export const PayMedicine: React.FC = (props) => {
     /**Gtm code End  */
     pharmacyPaymentInitiateTracking({
       amount: totalWithCouponDiscount,
-      serviceArea: localStorage.getItem('pharmaPincode')
-        ? localStorage.getItem('pharmaPincode')
-        : '',
+      serviceArea: 'pharmacy',
       payMode: value,
     });
+    sessionStorage.setItem(
+      'pharmacyCheckoutValues',
+      JSON.stringify({
+        grandTotal: mrpTotal,
+        discountAmount:
+          (productDiscount && productDiscount.toFixed(2)) ||
+          (couponValue && couponValue.toFixed(2)),
+      })
+    );
     setMutationLoading(true);
     paymentMutation()
       .then((res) => {

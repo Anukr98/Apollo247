@@ -1,3 +1,5 @@
+import { Source } from 'webpack-sources';
+
 //PHR Consult & RX
 declare global {
   interface Window {
@@ -527,18 +529,27 @@ export const consultPayInitiateTracking = (data: any) => {
 export const pharmacyCheckoutTracking = (data: any) => {
   console.log('data', data);
   if (window && window.webengage) {
-    const { netAmount, orderId, orderType, payStatus, payType, isPrescription, totalItems } = data;
+    const {
+      serviceArea,
+      orderId,
+      shippingInfo,
+      payStatus,
+      payType,
+      grandTotal,
+      discountAmount,
+      netAfterDiscount,
+    } = data;
     try {
       window.webengage.track('Pharmacy Checkout completed - web', {
-        af_currency: '',
-        af_revenue: '',
-        'Net after discount': netAmount,
+        'Servie Area': serviceArea,
         'Order ID': orderId,
-        'Order Type': orderType,
-        'Payment status': payStatus,
+        'Shipping information': shippingInfo,
+        'Grand Total': grandTotal,
+        'Discount Amount': discountAmount,
+        'Net after discount': netAfterDiscount,
         'Payment Type': payType,
-        'Prescription Added': '',
-        'Total items in cart': '',
+        'Payment status': payStatus,
+        'Cart ID': '',
       });
     } catch (err) {
       console.log('WebEngage Err: ', err);
@@ -614,6 +625,184 @@ export const pharmacyCategoryClickTracking = (data: any) => {
         'category name': categoryName,
         'category ID': categoryId,
         'Section Name': sectionName,
+      });
+    } catch (err) {
+      console.log('WebEngage Err: ', err);
+    }
+  }
+};
+
+export const addToCartTracking = (data: any) => {
+  if (window && window.webengage) {
+    const {
+      productName,
+      source,
+      productId,
+      brand,
+      brandId,
+      categoryName,
+      categoryId,
+      discountedPrice,
+      price,
+      quantity,
+    } = data;
+    try {
+      window.webengage.track('Add to Cart - web', {
+        'product name': productName,
+        Source: source,
+        'product id (SKUID)': productId,
+        Brand: brand,
+        'Brand ID': brandId,
+        'category name': categoryName,
+        'category ID': categoryId,
+        'Discounted Price': discountedPrice,
+        Price: price,
+        Quantity: quantity,
+      });
+    } catch (err) {
+      console.log('WebEngage Err: ', err);
+    }
+  }
+};
+
+export const removeFromCartTracking = (data: any) => {
+  if (window && window.webengage) {
+    const {
+      productName,
+      cartSize,
+      productId,
+      brand,
+      brandId,
+      categoryName,
+      categoryId,
+      discountedPrice,
+      price,
+      quantity,
+    } = data;
+    try {
+      window.webengage.track('Removed from Cart - web', {
+        'product name': productName,
+        'Cart Size': cartSize,
+        'product id (SKUID)': productId,
+        Brand: brand,
+        'Brand ID': brandId,
+        'category name': categoryName,
+        'category ID': categoryId,
+        'Discounted Price': discountedPrice,
+        Price: price,
+        Quantity: quantity,
+      });
+    } catch (err) {
+      console.log('WebEngage Err: ', err);
+    }
+  }
+};
+
+export const buyNowTracking = (data: any) => {
+  if (window && window.webengage) {
+    const {
+      productName,
+      serviceArea,
+      productId,
+      brand,
+      brandId,
+      categoryName,
+      categoryId,
+      discountedPrice,
+      price,
+      quantity,
+    } = data;
+    try {
+      window.webengage.track('Buy Now Clicked - web', {
+        'product name': productName,
+        'Service Area': serviceArea,
+        'product id (SKUID)': productId,
+        Brand: brand,
+        'Brand ID': brandId,
+        'category name': categoryName,
+        'category ID': categoryId,
+        'Discounted Price': discountedPrice,
+        Price: price,
+        Quantity: quantity,
+      });
+    } catch (err) {
+      console.log('WebEngage Err: ', err);
+    }
+  }
+};
+
+export const pharmacyProceedToPayTracking = (data: any) => {
+  if (window && window.webengage) {
+    const {
+      totalItems,
+      serviceArea,
+      subTotal,
+      deliveryCharge,
+      netAfterDiscount,
+      isPrescription,
+      cartId,
+      deliveryMode,
+      deliveryDateTime,
+      pincode,
+    } = data;
+    try {
+      window.webengage.track('Buy Now Clicked - web', {
+        'Service Area': serviceArea,
+        'Total items in cart': totalItems,
+        'Sub Total': subTotal,
+        'Delivery charge': deliveryCharge,
+        'Net after discount': netAfterDiscount,
+        'Prescription Needed?': isPrescription,
+        'Cart ID': cartId,
+        'Mode of Delivery': deliveryMode,
+        'Delivery Date Time': deliveryDateTime,
+        'Pin Code': pincode,
+      });
+    } catch (err) {
+      console.log('WebEngage Err: ', err);
+    }
+  }
+};
+
+export const pharmacySubmitPrescTracking = (data: any) => {
+  if (window && window.webengage) {
+    const { orderId, deliveryType, storeId, deliverAdd, pincode } = data;
+    try {
+      window.webengage.track('Pharmacy Category Clicked - web', {
+        'Order ID': orderId,
+        'Delivery type': deliveryType,
+        'Store ID': storeId,
+        'Delivery address': deliverAdd,
+        Pincode: pincode,
+      });
+    } catch (err) {
+      console.log('WebEngage Err: ', err);
+    }
+  }
+};
+
+export const pincodeAutoSelectTracking = (data: any) => {
+  if (window && window.webengage) {
+    const { pincode, serviceability } = data;
+    try {
+      window.webengage.track('PIN Code autoselection clicked - web', {
+        'pin code': pincode,
+        serviceability: serviceability,
+      });
+    } catch (err) {
+      console.log('WebEngage Err: ', err);
+    }
+  }
+};
+
+export const pincodeManualSelectTracking = (data: any) => {
+  if (window && window.webengage) {
+    const { pincode, serviceability, source } = data;
+    try {
+      window.webengage.track('Pharmacy Enter Delivery Pincode Submitted - web', {
+        'pin code': pincode,
+        serviceability: serviceability,
+        source: source,
       });
     } catch (err) {
       console.log('WebEngage Err: ', err);

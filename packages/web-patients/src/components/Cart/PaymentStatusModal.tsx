@@ -139,6 +139,7 @@ export const PaymentStatusModal: React.FC<PaymentStatusProps> = (props) => {
   };
   const handleOnClose = () => {
     localStorage.removeItem('selectedPaymentMode');
+    sessionStorage.removeItem('pharmacyCheckoutValues');
     paymentStatusRedirect(clientRoutes.medicines());
   };
   const paymentStatusRedirect = (url: string) => {
@@ -157,12 +158,7 @@ export const PaymentStatusModal: React.FC<PaymentStatusProps> = (props) => {
       })
         .then((resp: any) => {
           if (resp && resp.data && resp.data.pharmaPaymentStatus) {
-            const {
-              paymentStatus,
-              paymentRefId,
-              amountPaid,
-              paymentMode,
-            } = resp.data.pharmaPaymentStatus;
+            const { paymentRefId, amountPaid, paymentMode } = resp.data.pharmaPaymentStatus;
             setPaymentStatusData(resp.data.pharmaPaymentStatus);
             /* WebEngage Tracking Start*/
             paymentRefId &&
@@ -175,17 +171,25 @@ export const PaymentStatusModal: React.FC<PaymentStatusProps> = (props) => {
                     ? parseInt(params.orderAutoId)
                     : params.orderAutoId,
               });
+            const pharmacyCheckoutValues = sessionStorage.getItem('pharmacyCheckoutValues')
+              ? JSON.parse(sessionStorage.getItem('pharmacyCheckoutValues'))
+              : {};
+            console.log('paymentStatus>>>>>', paymentStatus);
+            paymentStatus === 'success' &&
+              pharmacyCheckoutTracking({
+                orderId:
+                  typeof params.orderAutoId === 'string'
+                    ? parseInt(params.orderAutoId)
+                    : params.orderAutoId,
+                payStatus: paymentStatus,
+                payType: paymentMode,
+                serviceArea: 'pharmacy',
+                shippingInfo: '',
+                grandTotal: pharmacyCheckoutValues && pharmacyCheckoutValues.grandTotal,
+                discountAmount: pharmacyCheckoutValues && pharmacyCheckoutValues.discountAmount,
+                netAfterDiscount: amountPaid,
+              });
             /* WebEngage Tracking End*/
-            pharmacyCheckoutTracking({
-              netAmount: amountPaid,
-              orderId:
-                typeof params.orderAutoId === 'string'
-                  ? parseInt(params.orderAutoId)
-                  : params.orderAutoId,
-              orderType: 'online',
-              payStatus: paymentStatus,
-              payType: paymentMode,
-            });
           } else {
             // redirect to medicine
             paymentStatusRedirect(clientRoutes.medicines());
