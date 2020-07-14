@@ -233,7 +233,7 @@ const PharmaApiConfig = {
       pharmaTokenYXV,
     ],
     GET_DELIVERY_TIME_HEADER_TAT: [
-      'http://online.apollopharmacy.org:8085/IEngine/webresources/Inventory/getHeaderTAT',
+      'https://online.apollopharmacy.org/UATTAT/Apollo/GetHeaderTat',
       pharmaTokenYXV,
     ],
     GET_SUBSTITUTES: [`${apolloUatBaseUrl}/popcsrchprdsubt_api.php`, pharmaToken201],
@@ -271,7 +271,7 @@ const PharmaApiConfig = {
       pharmaTokenYXV,
     ],
     GET_DELIVERY_TIME_HEADER_TAT: [
-      'http://online.apollopharmacy.org:8085/IEngine/webresources/Inventory/getHeaderTAT',
+      'https://online.apollopharmacy.org/TAT/Apollo/GetHeaderTat',
       pharmaTokenYXV,
     ],
     GET_SUBSTITUTES: [`${apolloProdBaseUrl}/popcsrchprdsubt_api.php`, pharmaToken201],
