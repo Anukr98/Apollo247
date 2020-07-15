@@ -27,6 +27,7 @@ import {
 import { format, addMinutes, parseISO } from 'date-fns';
 import { log } from 'customWinstonLogger';
 import { PharmaItemsResponse } from 'types/medicineOrderTypes';
+import { OneApollo } from 'profiles-service/repositories/ExternalRequests';
 
 export const updateOrderStatusTypeDefs = gql`
   input OrderStatusInput {
@@ -382,8 +383,9 @@ const createOneApolloTransaction = async (
       JSON.stringify(Transaction),
       ''
     );
-    //if (mobileNumber == '9560923408' || mobileNumber == '7993961498') {
-    const oneApolloResponse = await medicineOrdersRepo.createOneApolloTransaction(Transaction);
+
+    const oneApollo = new OneApollo();
+    const oneApolloResponse = await oneApollo.createOneApolloTransaction(Transaction);
     log(
       'profileServiceLogger',
       `oneApollo Transaction response- ${order.orderAutoId}`,
@@ -391,7 +393,6 @@ const createOneApolloTransaction = async (
       JSON.stringify(oneApolloResponse),
       ''
     );
-    //}
     return true;
   } else {
     throw new AphError(AphErrorMessages.INVALID_RESPONSE_FOR_SKU_PHARMACY, undefined, {});
