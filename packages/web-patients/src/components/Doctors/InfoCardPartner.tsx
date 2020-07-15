@@ -9,7 +9,7 @@ import {
   GetDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors as DoctorDetails,
   GetDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors_doctorHospital,
 } from 'graphql/types/GetDoctorsBySpecialtyAndFilters';
-import { ConsultMode, SEARCH_TYPE } from 'graphql/types/globalTypes';
+import { SEARCH_TYPE, ConsultMode } from 'graphql/types/globalTypes';
 import { getDiffInDays, getDiffInMinutes, getDiffInHours } from 'helpers/commonHelpers';
 import moment from 'moment';
 import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
@@ -175,14 +175,7 @@ export const InfoCardPartner: React.FC<InfoCardProps> = (props) => {
     doctorInfo.specialty &&
     doctorInfo.specialty.name &&
     doctorInfo.specialty.name.toLowerCase();
-  const consultMode =
-    doctorInfo &&
-      doctorInfo.consultHours &&
-      doctorInfo.consultHours.length > 0 &&
-      doctorInfo.consultHours[0] &&
-      doctorInfo.consultHours[0].consultMode
-      ? doctorInfo.consultHours[0].consultMode
-      : '';
+
   const consultModeOnline: any = [];
   const consultModePhysical: any = [];
   doctorInfo &&
@@ -195,7 +188,17 @@ export const InfoCardPartner: React.FC<InfoCardProps> = (props) => {
         consultModeOnline.push(item.consultMode);
       }
     });
+
+  const consultMode =
+    consultModeOnline.length > 0 && consultModePhysical.length > 0
+      ? ConsultMode.BOTH
+      : consultModeOnline.length > 0
+      ? ConsultMode.ONLINE
+      : consultModePhysical.length > 0
+      ? ConsultMode.PHYSICAL
+      : null;
   const differenceInMinutes = getDiffInMinutes(nextAvailability);
+  const differenceInDays = getDiffInDays(nextAvailability);
   const availabilityMarkup = () => {
     if (nextAvailability && nextAvailability.length > 0) {
       if (differenceInMinutes === 0) {
@@ -221,7 +224,8 @@ export const InfoCardPartner: React.FC<InfoCardProps> = (props) => {
       } else if (differenceInMinutes >= 1380) {
         return (
           <div className={`${classes.availability}`}>
-            AVAILABLE IN {getDiffInDays(nextAvailability)} Days
+            AVAILABLE IN {differenceInDays || 1}{' '}
+            {differenceInDays === 1 || differenceInDays === 0 ? 'Day' : 'Days'}
           </div>
         );
       }
@@ -356,10 +360,10 @@ export const InfoCardPartner: React.FC<InfoCardProps> = (props) => {
                 <CircularProgress size={22} color="secondary" />
               ) : getDiffInMinutes(nextAvailability) > 0 &&
                 getDiffInMinutes(nextAvailability) <= 60 ? (
-                    'CONSULT NOW'
-                  ) : (
-                    'BOOK APPOINTMENT'
-                  )}
+                'CONSULT NOW'
+              ) : (
+                'BOOK APPOINTMENT'
+              )}
             </AphButton>
           </div>
         )}
@@ -371,7 +375,7 @@ export const InfoCardPartner: React.FC<InfoCardProps> = (props) => {
         disableEscapeKeyDown
       >
         <BookConsult
-          physicalDirection={false}
+          consultMode={consultMode}
           doctorId={doctorInfo.id}
           doctorAvailableIn={differenceInMinutes}
           setIsPopoverOpen={setIsPopoverOpen}
