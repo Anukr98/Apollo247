@@ -348,7 +348,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
       suggestionItem ? null : globalLoading,
       props.navigation,
       currentPatient,
-      isPharmacyLocationServiceable,
+      !!isPharmacyLocationServiceable,
       suggestionItem ? () => setItemsLoading({ ...itemsLoading, [sku]: false }) : undefined
     );
     postwebEngageAddToCartEvent(item, 'Pharmacy Full Search');
