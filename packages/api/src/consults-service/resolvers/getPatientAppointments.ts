@@ -165,11 +165,6 @@ type PersonalizedAppointment = {
   doctorId: string;
 };
 
-type Doctor = {
-  id: string;
-  doctorName: string;
-};
-
 type AppointmentInputArgs = { patientAppointmentsInput: PatientAppointmentsInput };
 
 const getPatinetAppointments: Resolver<
@@ -247,7 +242,10 @@ const getPatientPersonalizedAppointments: Resolver<
   ConsultServiceContext,
   PersonalizedAppointmentResult
 > = async (parent, args, { consultsDb, doctorsDb, patientsDb, mobileNumber }) => {
+  const MAX_DAYS_PAST_CONSULT: number = 30;
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
+  const doctorFacilityRepo = doctorsDb.getCustomRepository(DoctorHospitalRepository);
+  const apptRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const patientDetails = await patientRepo.findByUhid(args.patientUhid);
   if (!patientDetails) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
@@ -269,22 +267,40 @@ const getPatientPersonalizedAppointments: Resolver<
   );
   const textRes = await apptsResp.text();
   const offlineApptsList = JSON.parse(textRes);
-  let doctorFlag = 1;
+  let apptDetails: any = {};
 
-  function getApptDetails(key: number) {
-    return new Promise<PersonalizedAppointment>(async (resolve) => {
-      const doctorRepo = doctorsDb.getCustomRepository(DoctorHospitalRepository);
-      const appt = offlineApptsList.response[key];
-      const doctorDets = await doctorRepo.getDoctorIdByMedmantraId(appt.doctorid);
-      console.log(appt.doctorid, 'doctor id');
+  if (offlineApptsList.errorCode == 0 && offlineApptsList.response.length > 0) {
+    const aDateInPast = addDays(new Date(), -1 * MAX_DAYS_PAST_CONSULT);
+
+    /**
+     * appointmentsToConsider array contains appointments which
+     *  a. has valid consultedtime
+     *  b. are after "aDateInPast"
+     *
+     * This array is sorted on the basis of consultedtime in descending order
+     */
+    let appointmentsToConsider = offlineApptsList
+      .sort(
+        (a: offlineAppointment, b: offlineAppointment) =>
+          new Date(b.consultedtime).getTime() - new Date(a.consultedtime).getTime()
+      )
+      .filter(
+        (a: offlineAppointment) =>
+          !isNaN(new Date(a.consultedtime).getTime()) &&
+          new Date(a.consultedtime).getTime() >= aDateInPast.getTime()
+      );
+
+    for (let appt of appointmentsToConsider) {
+      let doctorDets = await doctorFacilityRepo.getDoctorIdByMedmantraId(appt.doctorid);
+      let patientDetails = await patientRepo.findByUhid(args.patientUhid);
+      let apptDetailsBooked = undefined;
       if (doctorDets) {
-        const apptRepo = consultsDb.getCustomRepository(AppointmentRepository);
-        const apptDetailsBooked = await apptRepo.checkIfAppointmentBooked(
-          doctorDets.doctor.id,
-          patientDetails ? patientDetails.id : '',
+        patientDetails = await patientRepo.findByUhid(args.patientUhid);
+        apptDetailsBooked = await apptRepo.checkIfAppointmentBooked(
+          appt.doctor.id,
+          patientDetails ? appt.uh : '',
           new Date(appt.consultedtime)
         );
-        console.log(apptDetailsBooked, 'apptDetailsBooked');
         if (apptDetailsBooked == 0) {
           const apptDetailsOffline: PersonalizedAppointment = {
             id: appt.appointmentid,
@@ -297,45 +313,12 @@ const getPatientPersonalizedAppointments: Resolver<
             doctorId: doctorDets.doctor.id,
           };
           apptDetails = apptDetailsOffline;
-          doctorFlag = 1;
+        } else {
+          apptDetails = {};
         }
-      } else {
-        doctorFlag = 0;
-        resolve(apptDetails);
       }
-      console.log(apptDetails, 'appt details inside');
-      resolve(apptDetails);
-    });
-  }
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let apptDetails: any;
-  let foundKey = -1;
-  let apptCount = 0;
-  let checkDate = addDays(new Date(), -30);
-  if (offlineApptsList.errorCode == 0 && offlineApptsList.response.length > 0) {
-    //console.log(offlineApptsList.response, offlineApptsList.response.length);
-    offlineApptsList.response.forEach((appt: offlineAppointment) => {
-      if (new Date(appt.consultedtime) > checkDate) {
-        checkDate = new Date(appt.consultedtime);
-        foundKey = apptCount;
-      }
-      apptCount++;
-    });
-    if (foundKey >= 0) {
-      await getApptDetails(foundKey);
-    } else {
-      apptDetails = {};
-      //throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
     }
-  } else {
-    apptDetails = {};
-    console.log(offlineApptsList.errorMsg, offlineApptsList.errorCode, 'offline consults error');
-    //throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
   }
-
-  if (doctorFlag == 0) throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID);
-  console.log(apptDetails, 'apptDetails');
-  if (apptDetails == null) apptDetails = {};
   return { appointmentDetails: apptDetails };
 };
 
