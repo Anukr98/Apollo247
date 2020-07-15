@@ -92,8 +92,14 @@ const generateSitemap: Resolver<null, {}, DoctorsServiceContext, string> = async
   const cmsUrlsList = JSON.parse(textRes);
 
   if (cmsUrlsList && cmsUrlsList.data.length > 0) {
-    cmsUrlsList.data.forEach((link: string) => {
-      const url = process.env.SITEMAP_BASE_URL + 'covid19/article' + link;
+    console.log(cmsUrlsList.data, 'cmsUrlsList.data');
+    cmsUrlsList.data.forEach((link: any) => {
+      let url = process.env.SITEMAP_BASE_URL + 'covid19/';
+      if (link.type == 'ARTICLE') {
+        url += 'article' + link.slug;
+      } else {
+        url += 'report' + link.slug;
+      }
       cmsUrls += '<url>\n<loc>' + url + '</loc>\n<lastmod>' + modifiedDate + '</lastmod>\n</url>\n';
     });
   }
