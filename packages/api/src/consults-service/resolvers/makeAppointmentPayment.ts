@@ -164,7 +164,7 @@ const makeAppointmentPayment: Resolver<
       throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
     }
   }
-
+  const currentStatus = processingAppointment.status;
   //insert payment details
 
   let paymentInfo = await apptsRepo.findAppointmentPayment(processingAppointment.id);
@@ -187,13 +187,13 @@ const makeAppointmentPayment: Resolver<
       return { appointment: paymentInfo, isRefunded: false };
     }
     const paymentInputUpdates: Partial<AppointmentPaymentInput> = {};
-    paymentInputUpdates.responseCode = paymentInfo.responseCode;
-    paymentInputUpdates.responseMessage = paymentInfo.responseMessage;
-    paymentInputUpdates.bankName = paymentInfo.bankName;
-    paymentInputUpdates.paymentStatus = paymentInfo.paymentStatus;
-    paymentInputUpdates.bankTxnId = paymentInfo.bankTxnId;
-    paymentInputUpdates.paymentDateTime = paymentInfo.paymentDateTime;
-    paymentInputUpdates.orderId = paymentInfo.orderId;
+    paymentInputUpdates.responseCode = paymentInput.responseCode;
+    paymentInputUpdates.responseMessage = paymentInput.responseMessage;
+    paymentInputUpdates.bankName = paymentInput.bankName;
+    paymentInputUpdates.paymentStatus = paymentInput.paymentStatus;
+    paymentInputUpdates.bankTxnId = paymentInput.bankTxnId;
+    paymentInputUpdates.paymentDateTime = paymentInput.paymentDateTime;
+    paymentInputUpdates.orderId = paymentInput.orderId;
     if (paymentMode) paymentInputUpdates.paymentMode = paymentMode as PAYMENT_METHODS_REVERSE;
     await apptsRepo.updateAppointmentPayment(paymentInfo.id, paymentInputUpdates);
   } else {
@@ -204,6 +204,7 @@ const makeAppointmentPayment: Resolver<
     paymentInfo = await apptsRepo.saveAppointmentPayment(apptPaymentAttrs);
   }
   delete paymentInfo.appointment;
+  let appointmentStatus = STATUS.PENDING;
 
   //update appointment status to PENDING
   if (paymentInput.paymentStatus == 'TXN_SUCCESS') {
@@ -219,6 +220,7 @@ const makeAppointmentPayment: Resolver<
       };
       await acceptCoupon(payload);
     }
+
     //check if any appointment already exists in this slot before confirming payment
     const apptCount = await apptsRepo.checkIfAppointmentExistWithId(
       processingAppointment.doctorId,
@@ -234,7 +236,7 @@ const makeAppointmentPayment: Resolver<
         `${JSON.stringify(processingAppointment)}`,
         'true'
       );
-      await apptsRepo.systemCancelAppointment(processingAppointment.id);
+      await apptsRepo.systemCancelAppointment(processingAppointment.id, processingAppointment);
       let isRefunded: boolean = false;
       if (paymentInfo.amountPaid && paymentInfo.amountPaid >= 1) {
         let refundResponse = await initiateRefund(
@@ -290,9 +292,9 @@ const makeAppointmentPayment: Resolver<
       .getUTCHours()
       .toString()
       .padStart(2, '0')}:${processingAppointment.appointmentDateTime
-      .getUTCMinutes()
-      .toString()
-      .padStart(2, '0')}:00.000Z`;
+        .getUTCMinutes()
+        .toString()
+        .padStart(2, '0')}:00.000Z`;
     console.log(slotApptDt, apptDt, sl, processingAppointment.doctorId, 'appoint date time');
     apptsRepo.updateDoctorSlotStatusES(
       processingAppointment.doctorId,
@@ -313,10 +315,6 @@ const makeAppointmentPayment: Resolver<
 
     //update appointment status
     //apptsRepo.updateAppointmentStatusUsingOrderId(paymentInput.orderId, STATUS.PENDING, false);
-    await apptsRepo.updateAppointment(processingAppointment.id, {
-      status: STATUS.PENDING,
-      paymentInfo,
-    });
 
     //autosubmit case sheet code starts
     const currentTime = new Date();
@@ -325,9 +323,23 @@ const makeAppointmentPayment: Resolver<
       currentTime
     );
 
+    //submit casesheet if skipAutoQuestions:false, isJdrequired = false
+    const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
+    const doctorDets = await doctorRepo.findById(processingAppointment.doctorId);
+    let submitFlag = 0;
+
+    let notes = ApiConstants.APPOINTMENT_BOOKED_WITHIN_10_MIN.toString().replace(
+      '{0}',
+      ApiConstants.AUTO_SUBMIT_CASESHEET_TIME_APPOINMENT.toString()
+    );
+    if (doctorDets && doctorDets.skipAutoQuestions == true && doctorDets.isJdAllowed == false) {
+      submitFlag = 1;
+      notes = ApiConstants.APPOINTMENT_BOOKED_SKIP_QUESTIONS.toString();
+    }
     if (
       timeDifference / 60 <=
-      parseInt(ApiConstants.AUTO_SUBMIT_CASESHEET_TIME_APPOINMENT.toString(), 10)
+      parseInt(ApiConstants.AUTO_SUBMIT_CASESHEET_TIME_APPOINMENT.toString(), 10) ||
+      submitFlag == 1
     ) {
       const consultQueueRepo = consultsDb.getCustomRepository(ConsultQueueRepository);
       const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
@@ -353,10 +365,7 @@ const makeAppointmentPayment: Resolver<
         patientId: processingAppointment.patientId,
         appointment: processingAppointment,
         status: CASESHEET_STATUS.COMPLETED,
-        notes: ApiConstants.APPOINTMENT_BOOKED_WITHIN_10_MIN.toString().replace(
-          '{0}',
-          ApiConstants.AUTO_SUBMIT_CASESHEET_TIME_APPOINMENT.toString()
-        ),
+        notes,
         isJdConsultStarted: true,
       };
       caseSheetRepo.savecaseSheet(casesheetAttrs);
@@ -364,11 +373,22 @@ const makeAppointmentPayment: Resolver<
       const historyAttrs: Partial<AppointmentUpdateHistory> = {
         appointment: processingAppointment,
         userType: APPOINTMENT_UPDATED_BY.PATIENT,
-        fromValue: STATUS.PENDING,
+        fromValue: currentStatus,
         toValue: STATUS.PENDING,
         valueType: VALUE_TYPE.STATUS,
         userName: processingAppointment.patientId,
         reason: ApiConstants.APPOINTMENT_AUTO_SUBMIT_HISTORY.toString(),
+      };
+      apptsRepo.saveAppointmentHistory(historyAttrs);
+    } else {
+      const historyAttrs: Partial<AppointmentUpdateHistory> = {
+        appointment: processingAppointment,
+        userType: APPOINTMENT_UPDATED_BY.PATIENT,
+        fromValue: currentStatus,
+        toValue: STATUS.PENDING,
+        valueType: VALUE_TYPE.STATUS,
+        userName: processingAppointment.patientId,
+        reason: ApiConstants.BOOK_APPOINTMENT_HISTORY_REASON.toString(),
       };
       apptsRepo.saveAppointmentHistory(historyAttrs);
     }
@@ -383,15 +403,9 @@ const makeAppointmentPayment: Resolver<
     };
     apptsRepo.saveAppointmentHistory(historyAttrs);
     if (paymentInput.responseCode == '141' || paymentInput.responseCode == '810') {
-      await apptsRepo.updateAppointment(processingAppointment.id, {
-        status: STATUS.PAYMENT_ABORTED,
-        paymentInfo,
-      });
+      appointmentStatus = STATUS.PAYMENT_ABORTED;
     } else {
-      await apptsRepo.updateAppointment(processingAppointment.id, {
-        status: STATUS.PAYMENT_FAILED,
-        paymentInfo,
-      });
+      appointmentStatus = STATUS.PAYMENT_FAILED;
 
       if (paymentInfo.paymentStatus === 'PENDING') {
         //NOTIFICATION logic starts here
@@ -416,11 +430,17 @@ const makeAppointmentPayment: Resolver<
       }
     }
   } else if (paymentInput.paymentStatus == 'PENDING') {
-    await apptsRepo.updateAppointment(processingAppointment.id, {
-      status: STATUS.PAYMENT_PENDING_PG,
-      paymentInfo,
-    });
+    appointmentStatus = STATUS.PAYMENT_PENDING_PG;
   }
+
+  paymentInfo.paymentStatus = paymentInput.paymentStatus;
+  paymentInfo.responseCode = paymentInput.responseCode;
+  paymentInfo.responseMessage = paymentInput.responseMessage;
+  await apptsRepo.updateAppointment(processingAppointment.id, {
+    status: appointmentStatus,
+    paymentInfo,
+  }, processingAppointment);
+  processingAppointment.status = appointmentStatus;
   paymentInfo.appointment = processingAppointment;
   return { appointment: paymentInfo, isRefunded: false };
 };
@@ -518,8 +538,8 @@ const sendPatientAcknowledgements = async (
   const toEmailId = process.env.BOOK_APPT_TO_EMAIL ? process.env.BOOK_APPT_TO_EMAIL : '';
   const ccEmailIds =
     process.env.NODE_ENV == 'dev' ||
-    process.env.NODE_ENV == 'development' ||
-    process.env.NODE_ENV == 'local'
+      process.env.NODE_ENV == 'development' ||
+      process.env.NODE_ENV == 'local'
       ? ApiConstants.PATIENT_APPT_CC_EMAILID
       : ApiConstants.PATIENT_APPT_CC_EMAILID_PRODUCTION;
   const emailContent: EmailMessage = {

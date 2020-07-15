@@ -12,6 +12,10 @@ import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { format, addMinutes, parseISO } from 'date-fns';
 import { log } from 'customWinstonLogger';
+import {
+  NotificationType,
+  sendMedicineOrderStatusNotification,
+} from 'notifications-service/resolvers/notifications';
 
 export const saveOrderShipmentInvoiceTypeDefs = gql`
   input SaveOrderShipmentInvoiceInput {
@@ -92,7 +96,7 @@ type SaveOrderShipmentInvoiceInput = {
 type BillingDetails = {
   invoiceTime: string;
   invoiceNo: string;
-  invoiceValue: string;
+  invoiceValue: number;
   cashValue: number;
   prepaidValue: number;
   discountValue: number;
@@ -237,6 +241,16 @@ const saveOrderShipmentInvoice: Resolver<
       new Date(statusDate),
       currentStatus
     );
+    if (
+      billDetails.invoiceValue - orderDetails.estimatedAmount > 1 &&
+      orderDetails.deliveryType == MEDICINE_DELIVERY_TYPE.HOME_DELIVERY
+    ) {
+      sendMedicineOrderStatusNotification(
+        NotificationType.MEDICINE_ORDER_BILL_CHANGED,
+        orderDetails,
+        profilesDb
+      );
+    }
   }
 
   return {

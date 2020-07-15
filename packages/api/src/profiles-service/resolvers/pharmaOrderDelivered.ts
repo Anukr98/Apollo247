@@ -247,7 +247,7 @@ const createOneApolloTransaction = async (
     });
     if (val.billDetails) {
       const billDetails: BillDetails = JSON.parse(val.billDetails);
-      Transaction.BillNo = billDetails.billNumber;
+      Transaction.BillNo = `${billDetails.billNumber}_${order.orderAutoId}`;
       Transaction.NetAmount = netAmount;
       Transaction.TransactionDate = billDetails.billDateTime;
       Transaction.GrossAmount = +new Decimal(netAmount).plus(totalDiscount);

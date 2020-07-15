@@ -5,6 +5,7 @@ import { GooglePlacesType } from 'components/LocationProvider';
 import { CouponCategoryApplicable } from 'graphql/types/globalTypes';
 import _lowerCase from 'lodash/lowerCase';
 import _upperFirst from 'lodash/upperFirst';
+import { MEDICINE_ORDER_STATUS } from 'graphql/types/globalTypes';
 
 declare global {
   interface Window {
@@ -114,13 +115,23 @@ const pharmaStateCodeMapping: PharmaStateCodeMappingType = {
 };
 
 const customerCareNumber = '04048217222';
+const kavachHelpline = '18605000202';
 
 const readableParam = (param: string) => {
-  const replaceSpace =
-    param && param.includes('-')
-      ? param.replace(/-/g, ' ')
-      : param.replace(/\s+/g, '-').toLowerCase();
-  return (replaceSpace && replaceSpace.replace(/[&\/\\#,+()$~%.'":*?<>{}]/g, '')) || '';
+  const a = 'àáâäæãåāăąçćčđďèéêëēėęěğǵḧîïíīįìłḿñńǹňôöòóœøōõőṕŕřßśšşșťțûüùúūǘůűųẃẍÿýžźż·/_,:;';
+  const b = 'aaaaaaaaaacccddeeeeeeeegghiiiiiilmnnnnoooooooooprrsssssttuuuuuuuuuwxyyzzz------';
+  const p = new RegExp(a.split('').join('|'), 'g');
+
+  return param
+    .toString()
+    .toLowerCase()
+    .replace(/\s+/g, '-') // Replace spaces with -
+    .replace(p, (c) => b.charAt(a.indexOf(c))) // Replace special characters
+    .replace(/&/g, '-and-') // Replace & with 'and'
+    .replace(/[^\w\-]+/g, '') // Remove all non-word characters
+    .replace(/\-\-+/g, '-') // Replace multiple - with single -
+    .replace(/^-+/, '') // Trim - from start of text
+    .replace(/-+$/, ''); // Trim - from end of text
 };
 
 const dayMapping = {
@@ -205,6 +216,17 @@ const findAddrComponents = (
   return findItem ? findItem.short_name || findItem.long_name : '';
 };
 
+const getTypeOfProduct = (type: string) => {
+  switch (_lowerCase(type)) {
+    case 'pharma':
+      return CouponCategoryApplicable.PHARMA;
+    case 'fmcg':
+      return CouponCategoryApplicable.FMCG;
+    default:
+      return CouponCategoryApplicable.FMCG;
+  }
+};
+
 const ORDER_BILLING_STATUS_STRINGS = {
   TOTAL_ORDER_BILLED: 'Total Ordered Value',
   TOTAL_BILLED_VALUE: 'Total Billed Value',
@@ -249,17 +271,6 @@ const availabilityList = ['Now', 'Today', 'Tomorrow', 'Next 3 days'];
 
 // End of doctors list based on specialty related changes
 
-const getTypeOfProduct = (type: string) => {
-  switch (_lowerCase(type)) {
-    case 'pharma':
-      return CouponCategoryApplicable.PHARMA;
-    case 'fmcg':
-      return CouponCategoryApplicable.FMCG;
-    default:
-      return CouponCategoryApplicable.FMCG;
-  }
-};
-
 const getSymptoms = (symptoms: string) => {
   const symptomsList = symptoms.split(', ');
   const structuredSymptomString = symptomsList.map((symptom: string) => {
@@ -268,9 +279,70 @@ const getSymptoms = (symptoms: string) => {
   return structuredSymptomString.join(', ');
 };
 
+const getStatus = (status: MEDICINE_ORDER_STATUS) => {
+  let statusString = '';
+  switch (status) {
+    case MEDICINE_ORDER_STATUS.CANCELLED:
+      return 'Order Cancelled';
+    case MEDICINE_ORDER_STATUS.CANCEL_REQUEST:
+      return 'Cancel Requested';
+    case MEDICINE_ORDER_STATUS.DELIVERED:
+      return 'Order Delivered';
+    case MEDICINE_ORDER_STATUS.ITEMS_RETURNED:
+      return 'Items Returned';
+    case MEDICINE_ORDER_STATUS.ORDER_INITIATED:
+      return 'Order Initiated';
+    case MEDICINE_ORDER_STATUS.ORDER_BILLED:
+      return 'Order Billed and Packed';
+    case MEDICINE_ORDER_STATUS.ORDER_CONFIRMED:
+      return 'Order Confirmed';
+    case MEDICINE_ORDER_STATUS.ORDER_FAILED:
+      return 'Order Failed';
+    case MEDICINE_ORDER_STATUS.ORDER_PLACED:
+      return 'Order Placed';
+    case MEDICINE_ORDER_STATUS.ORDER_VERIFIED:
+      return 'Order Verified';
+    case MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY:
+      return 'Order Dispatched';
+    case MEDICINE_ORDER_STATUS.PAYMENT_FAILED:
+      return 'Payment Failed';
+    case MEDICINE_ORDER_STATUS.PAYMENT_PENDING:
+      return 'Payment Pending';
+    case MEDICINE_ORDER_STATUS.PAYMENT_SUCCESS:
+      return 'Payment Success';
+    case MEDICINE_ORDER_STATUS.PICKEDUP:
+      return 'Order Picked Up';
+    case MEDICINE_ORDER_STATUS.PRESCRIPTION_CART_READY:
+      return 'Prescription Cart Ready';
+    case MEDICINE_ORDER_STATUS.PRESCRIPTION_UPLOADED:
+      return 'Prescription Uploaded';
+    case MEDICINE_ORDER_STATUS.RETURN_ACCEPTED:
+      return 'Return Accepted';
+    case MEDICINE_ORDER_STATUS.RETURN_INITIATED:
+      return 'Return Requested';
+    case MEDICINE_ORDER_STATUS.READY_AT_STORE:
+      return 'Ready At Store';
+    case 'TO_BE_DELIVERED' as any:
+      return 'Expected Order Delivery';
+    default:
+      statusString = status
+        .split('_')
+        .map((item) => `${item.slice(0, 1).toUpperCase()}${item.slice(1).toLowerCase()}`)
+        .join(' ');
+      return statusString;
+  }
+};
+
+const isRejectedStatus = (status: MEDICINE_ORDER_STATUS) => {
+  return (
+    status === MEDICINE_ORDER_STATUS.CANCELLED || status === MEDICINE_ORDER_STATUS.PAYMENT_FAILED
+  );
+};
+
 export {
+  isRejectedStatus,
+  getStatus,
   getSymptoms,
-  getTypeOfProduct,
   feeInRupees,
   experienceList,
   genderList,
@@ -299,4 +371,6 @@ export {
   TAT_API_TIMEOUT_IN_MILLI_SEC,
   findAddrComponents,
   ORDER_BILLING_STATUS_STRINGS,
+  getTypeOfProduct,
+  kavachHelpline,
 };

@@ -4,6 +4,8 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-community/async-storage';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { getDoctorsBySpecialtyAndFilters } from '@aph/mobile-patients/src/graphql/types/getDoctorsBySpecialtyAndFilters';
+import { getPatientPersonalizedAppointments_getPatientPersonalizedAppointments_appointmentDetails } from '../graphql/types/getPatientPersonalizedAppointments';
+import { MedicinePageAPiResponse } from '@aph/mobile-patients/src/helpers/apiCalls';
 
 export interface LocationData {
   displayName: string;
@@ -23,6 +25,10 @@ export interface AppCommonDataContextProps {
   pharmacyLocation: LocationData | null;
   setLocationDetails: ((items: LocationData) => void) | null;
   setPharmacyLocation: ((items: LocationData) => void) | null;
+  isPharmacyLocationServiceable?: boolean;
+  setPharmacyLocationServiceable: ((value: boolean) => void) | null;
+  medicinePageAPiResponse: MedicinePageAPiResponse | null;
+  setMedicinePageAPiResponse: ((value: MedicinePageAPiResponse | null) => void) | null;
   diagnosticsCities: getDiagnosticsCites_getDiagnosticsCites_diagnosticsCities[];
   setDiagnosticsCities:
     | ((items: getDiagnosticsCites_getDiagnosticsCites_diagnosticsCities[]) => void)
@@ -52,6 +58,14 @@ export interface AppCommonDataContextProps {
   setisSelected: ((arg0: any[]) => void) | null;
   isUHID: string[];
   setisUHID: ((arg0: string[]) => void) | null;
+  appointmentsPersonalized: getPatientPersonalizedAppointments_getPatientPersonalizedAppointments_appointmentDetails[];
+  setAppointmentsPersonalized:
+    | ((
+        items: getPatientPersonalizedAppointments_getPatientPersonalizedAppointments_appointmentDetails[]
+      ) => void)
+    | null;
+  savePatientDetails: any;
+  setSavePatientDetails: ((items: any) => void) | null;
 }
 
 export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
@@ -59,8 +73,14 @@ export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
   pharmacyLocation: null,
   setLocationDetails: null,
   setPharmacyLocation: null,
+  isPharmacyLocationServiceable: false,
+  setPharmacyLocationServiceable: null,
+  medicinePageAPiResponse: null,
+  setMedicinePageAPiResponse: null,
   diagnosticsCities: [],
   setDiagnosticsCities: null,
+  appointmentsPersonalized: [],
+  setAppointmentsPersonalized: null,
   locationForDiagnostics: null,
   VirtualConsultationFee: '',
   setVirtualConsultationFee: null,
@@ -84,6 +104,8 @@ export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
   setisSelected: null,
   isUHID: [],
   setisUHID: null,
+  savePatientDetails: [],
+  setSavePatientDetails: null,
 });
 
 export const AppCommonDataProvider: React.FC = (props) => {
@@ -99,9 +121,26 @@ export const AppCommonDataProvider: React.FC = (props) => {
     AppCommonDataContextProps['pharmacyLocation']
   >(null);
 
+  const [isPharmacyLocationServiceable, setPharmacyLocationServiceable] = useState<
+    AppCommonDataContextProps['isPharmacyLocationServiceable']
+  >();
+
+  const [medicinePageAPiResponse, setMedicinePageAPiResponse] = useState<
+    AppCommonDataContextProps['medicinePageAPiResponse']
+  >(null);
+
   const [diagnosticsCities, setDiagnosticsCities] = useState<
     AppCommonDataContextProps['diagnosticsCities']
   >([]);
+
+  const [appointmentsPersonalized, setAppointmentsPersonalized] = useState<
+    AppCommonDataContextProps['appointmentsPersonalized']
+  >([]);
+
+  const [savePatientDetails, setSavePatientDetails] = useState<
+    AppCommonDataContextProps['savePatientDetails']
+  >([]);
+
   const [VirtualConsultationFee, setVirtualConsultationFee] = useState<string>('');
   const [generalPhysicians, setGeneralPhysicians] = useState<{
     id: string;
@@ -197,6 +236,10 @@ export const AppCommonDataProvider: React.FC = (props) => {
         setLocationDetails,
         pharmacyLocation,
         setPharmacyLocation,
+        isPharmacyLocationServiceable,
+        setPharmacyLocationServiceable,
+        medicinePageAPiResponse,
+        setMedicinePageAPiResponse,
         diagnosticsCities,
         setDiagnosticsCities,
         locationForDiagnostics,
@@ -220,6 +263,10 @@ export const AppCommonDataProvider: React.FC = (props) => {
         setisSelected,
         isUHID,
         setisUHID,
+        appointmentsPersonalized,
+        setAppointmentsPersonalized,
+        savePatientDetails,
+        setSavePatientDetails,
       }}
     >
       {props.children}

@@ -40,6 +40,7 @@ export const bookAppointmentTypeDefs = gql`
     JUNIOR_DOCTOR_ENDED
     CALL_ABANDON
     UNAVAILABLE_MEDMANTRA
+    PAYMENT_ABORTED
   }
 
   enum APPOINTMENT_TYPE {
@@ -301,22 +302,29 @@ const bookAppointment: Resolver<
   const appointmentDetails = await apptsrepo.getAppointmentsByDocId(appointmentInput.doctorId);
   let prevPatientId = '0';
   if (appointmentDetails.length) {
-    appointmentDetails.forEach(async (appointmentData) => {
+    //forEach loops do not support await
+    for (let k = 0, totalItems = appointmentDetails.length; k < totalItems; k++) {
+      const appointmentData = appointmentDetails[k];
       if (appointmentData.patientId != prevPatientId) {
         prevPatientId = appointmentData.patientId;
         await apptsrepo.updatePatientType(appointmentData, PATIENT_TYPE.NEW);
       } else {
         await apptsrepo.updatePatientType(appointmentData, PATIENT_TYPE.REPEAT);
       }
-    });
+    }
   }
 
   //calculate coupon discount value
   if (appointmentInput.couponCode) {
-    //chnage the code
+    const amount = appointmentInput.actualAmount
+      ? appointmentInput.actualAmount
+      : appointmentInput.appointmentType == APPOINTMENT_TYPE.PHYSICAL
+      ? parseInt(docDetails.physicalConsultationFees.toString(), 10)
+      : parseInt(docDetails.onlineConsultationFees.toString(), 10);
+
     const payload: ValidateCouponRequest = {
       mobile: patientDetails.mobileNumber.replace('+91', ''),
-      billAmount: appointmentInput.discountedAmount ? appointmentInput.discountedAmount : 0,
+      billAmount: parseInt(amount.toString(), 10),
       coupon: appointmentInput.couponCode,
       paymentType: '',
       pinCode: appointmentInput.pinCode ? appointmentInput.pinCode : '',
@@ -330,9 +338,9 @@ const bookAppointment: Resolver<
             appointmentInput.appointmentType == APPOINTMENT_TYPE.ONLINE
               ? 1
               : appointmentInput.appointmentType == APPOINTMENT_TYPE.PHYSICAL
-              ? 0
-              : -1,
-          cost: appointmentInput.discountedAmount ? appointmentInput.discountedAmount : 0,
+                ? 0
+                : -1,
+          cost: parseInt(amount.toString(), 10),
           rescheduling: false,
         },
       ],
@@ -340,6 +348,11 @@ const bookAppointment: Resolver<
     const couponData = await validateCoupon(payload);
     if (!couponData || !couponData.response || !couponData.response.valid)
       throw new AphError(AphErrorMessages.INVALID_COUPON_CODE);
+
+    const amountToPay = amount - couponData.response.discount;
+
+    appointmentInput.discountedAmount = amountToPay < 0 ? 0 : amountToPay;
+    appointmentInput.actualAmount = amount;
   } else {
     let doctorFees = 0;
     if (appointmentInput.appointmentType === APPOINTMENT_TYPE.ONLINE)
@@ -364,6 +377,7 @@ const bookAppointment: Resolver<
       doctorId: appointmentInput.doctorId,
       patientId: appointmentInput.patientId,
       externalConnect: appointmentInput.externalConnect,
+      appointmentId: appointment.id,
     };
     externalConnectRepo.saveExternalConnectData(attrs);
   }

@@ -12,7 +12,6 @@ import { useShoppingCart, MedicineCartItem } from 'components/MedicinesCartProvi
 import { gtmTracking } from '../../gtmTracking';
 import { notifyMeTracking } from '../../webEngageTracking';
 import { NotifyMeNotification } from './NotifyMeNotification';
-import { MEDICINE_QUANTITY } from 'helpers/commonHelpers';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -302,7 +301,7 @@ export const MedicineAutoSearch: React.FC = (props) => {
           className={classes.searchInput}
           value={searchText.replace(/\s+/gi, ' ').trimLeft()}
           onKeyDown={(e) => {
-            if (e.key === 'Enter') {
+            if (searchText.length > 1 && e.key === 'Enter') {
               window.location.href = clientRoutes.searchByMedicine(
                 'search-medicines',
                 searchText.replace(/\s/g, '-')
@@ -392,6 +391,7 @@ export const MedicineAutoSearch: React.FC = (props) => {
                           onClick={() => {
                             if (medicine.is_in_stock) {
                               const cartItem: MedicineCartItem = {
+                                MaxOrderQty: medicine.MaxOrderQty,
                                 url_key: medicine.url_key,
                                 description: medicine.description,
                                 id: medicine.id,
@@ -423,7 +423,7 @@ export const MedicineAutoSearch: React.FC = (props) => {
                                       {
                                         item_name: medicine.name,
                                         item_id: medicine.sku,
-                                        price: medicine.price,
+                                        price: medicine.special_price || medicine.price,
                                         item_category: 'Pharmacy',
                                         item_category_2: medicine.type_id
                                           ? medicine.type_id.toLowerCase() === 'pharma'
@@ -480,6 +480,7 @@ export const MedicineAutoSearch: React.FC = (props) => {
                                 removeCartItem && removeCartItem(medicine.id);
                               } else {
                                 const cartItem: MedicineCartItem = {
+                                  MaxOrderQty: medicine.MaxOrderQty,
                                   url_key: medicine.url_key,
                                   description: medicine.description,
                                   id: medicine.id,
@@ -511,7 +512,7 @@ export const MedicineAutoSearch: React.FC = (props) => {
                                         {
                                           item_name: medicine.name,
                                           item_id: medicine.sku,
-                                          price: medicine.price,
+                                          price: medicine.special_price || medicine.price,
                                           item_category: 'Pharmacy',
                                           item_category_2: medicine.type_id
                                             ? medicine.type_id.toLowerCase() === 'pharma'
@@ -538,8 +539,9 @@ export const MedicineAutoSearch: React.FC = (props) => {
                           <AphButton
                             onClick={() => {
                               const medicineQtyInCart = getQuantity(medicine);
-                              if (medicineQtyInCart < MEDICINE_QUANTITY) {
+                              if (medicineQtyInCart < (medicine.MaxOrderQty || 20)) {
                                 const cartItem: MedicineCartItem = {
+                                  MaxOrderQty: medicine.MaxOrderQty,
                                   url_key: medicine.url_key,
                                   description: medicine.description,
                                   id: medicine.id,
@@ -571,7 +573,7 @@ export const MedicineAutoSearch: React.FC = (props) => {
                                         {
                                           item_name: medicine.name,
                                           item_id: medicine.sku,
-                                          price: medicine.price,
+                                          price: medicine.special_price || medicine.price,
                                           item_category: 'Pharmacy',
                                           item_category_2: medicine.type_id
                                             ? medicine.type_id.toLowerCase() === 'pharma'

@@ -6,6 +6,7 @@ const apiDetails = {
 };
 
 export interface MedicineProduct {
+  MaxOrderQty: number;
   url_key: string;
   description: string;
   id: number;

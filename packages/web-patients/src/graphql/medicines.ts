@@ -1,16 +1,5 @@
 import gql from 'graphql-tag';
 
-export const SAVE_MEDICINE_ORDER = gql`
-  mutation SaveMedicineOrder($medicineCartInput: MedicineCartInput) {
-    SaveMedicineOrder(MedicineCartInput: $medicineCartInput) {
-      errorCode
-      errorMessage
-      orderId
-      orderAutoId
-    }
-  }
-`;
-
 export const SAVE_MEDICINE_ORDER_OMS = gql`
   mutation saveMedicineOrderOMS($medicineCartOMSInput: MedicineCartOMSInput) {
     saveMedicineOrderOMS(medicineCartOMSInput: $medicineCartOMSInput) {
@@ -179,19 +168,6 @@ export const GET_MEDICINE_ORDERS_OMS_LIST = gql`
           statusDate
           orderStatus
           hideStatus
-        }
-        medicineOrderShipments {
-          id
-          siteId
-          siteName
-          apOrderNo
-          currentStatus
-          medicineOrdersStatus {
-            id
-            statusDate
-            hideStatus
-            orderStatus
-          }
         }
       }
     }

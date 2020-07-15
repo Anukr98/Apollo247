@@ -4,7 +4,7 @@ import { Header } from 'components/Header';
 import React, { useState, useEffect } from 'react';
 import { DoctorsFilter } from 'components/DoctorsFilter';
 import { PastSearches } from 'components/PastSearches';
-import { Specialities } from 'components/Specialities';
+import { Specialties } from 'components/Specialties';
 import { DoctorCard } from 'components/DoctorCard';
 import { DoctorsListing } from 'components/DoctorsListing';
 import { SearchObject } from 'components/DoctorsFilter';
@@ -282,15 +282,15 @@ export const DoctorsLanding: React.FC<DoctorsLandingProps> = (props) => {
   let showError = false;
 
   useEffect(() => {
-    if (filterOptions.searchKeyword.length > 2 && specialitySelected.length === 0) {
+    if ((filterOptions.searchKeyword.length > 2 && specialitySelected.length === 0) || !data) {
       setLoading(true);
       apolloClient
         .query<SearchDoctorAndSpecialtyByName, SearchDoctorAndSpecialtyByNameVariables>({
           query: SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME,
           variables: {
+            city: '',
             searchText: filterOptions.searchKeyword,
             patientId: currentPatient ? currentPatient.id : '',
-            pincode: currentPincode ? currentPincode : localStorage.getItem('currentPincode') || '',
           },
           fetchPolicy: 'no-cache',
         })
@@ -299,7 +299,7 @@ export const DoctorsLanding: React.FC<DoctorsLandingProps> = (props) => {
           setLoading(false);
         });
     }
-  }, [filterOptions.searchKeyword, specialitySelected, currentPincode]);
+  }, [filterOptions.searchKeyword, specialitySelected, currentPincode, data]);
 
   useEffect(() => {
     if (specialitySelected.length > 0) {
@@ -335,33 +335,9 @@ export const DoctorsLanding: React.FC<DoctorsLandingProps> = (props) => {
     }
   }, [failedStatus, failedPopupOpened]);
 
-  // const { data, loading } = useQueryWithSkip<
-  //   SearchDoctorAndSpecialtyByName,
-  //   SearchDoctorAndSpecialtyByNameVariables
-  // >(SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME, {
-  //   variables: {
-  //     searchText: filterOptions.searchKeyword,
-  //     patientId: currentPatient ? currentPatient.id : '',
-  //   },
-  //   fetchPolicy: 'no-cache',
-  // });
-
   const specialityNames = specialitySelected.length > 0 ? specialitySelected.split('_') : '';
 
   // console.log(specialityNames, '----------------------');
-
-  /*
-  if (data && data.SearchDoctorAndSpecialtyByName) {
-    // matchingDoctorsFound = data.SearchDoctorAndSpecialtyByName.doctors.length;
-    otherDoctorsFound = data.SearchDoctorAndSpecialtyByName.otherDoctors
-      ? data.SearchDoctorAndSpecialtyByName.otherDoctors.length
-      : 0;
-    matchingSpecialitesFound = data.SearchDoctorAndSpecialtyByName.specialties.length;
-    derivedSpecialites = data.SearchDoctorAndSpecialtyByName.specialties;
-    derivedSpecialityId = derivedSpecialites.length > 0 ? derivedSpecialites[0].id : '';
-    doctorsNextAvailability = data.SearchDoctorAndSpecialtyByName.doctorsNextAvailability;
-    otherDoctorsNextAvailability = data.SearchDoctorAndSpecialtyByName.otherDoctorsNextAvailability;
-  }*/
 
   // let derivedSpecialityId = '';
   const matchingDoctorsFound =
@@ -549,17 +525,7 @@ export const DoctorsLanding: React.FC<DoctorsLandingProps> = (props) => {
                             filterOptions.searchKeyword.length <= 0 &&
                             specialitySelected.length === 0 &&
                             showSearchAndPastSearch ? (
-                              <PastSearches
-                              // speciality={(specialitySelected) =>
-                              //   setSpecialitySelected(specialitySelected)
-                              // }
-                              // disableFilter={(disableFilters) => {
-                              //   setDisableFilters(disableFilters);
-                              // }}
-                              // specialityId={(specialityId: string) =>
-                              //   setSpecialtyId(specialityId)
-                              // }
-                              />
+                              <PastSearches />
                             ) : null}
                             {matchingDoctorsFound > 0 || matchingSpecialitesFound > 0 ? (
                               <>
@@ -674,27 +640,7 @@ export const DoctorsLanding: React.FC<DoctorsLandingProps> = (props) => {
                                     </div>
                                   </>
                                 ) : (
-                                  <></>
-                                  // <Specialities
-                                  //   keyword={filterOptions.searchKeyword}
-                                  //   matched={(matchingSpecialities) =>
-                                  //     setMatchingSpecialities(matchingSpecialities)
-                                  //   }
-                                  //   speciality={(specialitySelected) =>
-                                  //     setSpecialitySelected(specialitySelected)
-                                  //   }
-                                  //   specialityId={(specialityId: string) =>
-                                  //     setSpecialtyId(specialityId)
-                                  //   }
-                                  //   disableFilter={(disableFilters) => {
-                                  //     setDisableFilters(disableFilters);
-                                  //   }}
-                                  //   subHeading={
-                                  //     filterOptions.searchKeyword !== '' && showSearchAndPastSearch
-                                  //       ? 'Matching Specialities'
-                                  //       : 'Specialities'
-                                  //   }
-                                  // />
+                                  <Specialties selectedCity="" />
                                 )}
                               </>
                             ) : (
@@ -757,7 +703,6 @@ export const DoctorsLanding: React.FC<DoctorsLandingProps> = (props) => {
                                 data.SearchDoctorAndSpecialtyByName &&
                                 data.SearchDoctorAndSpecialtyByName.possibleMatches &&
                                 data.SearchDoctorAndSpecialtyByName.possibleMatches.specialties ? (
-
                                 ) : null} */}
 
                                 <>

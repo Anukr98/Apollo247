@@ -13,36 +13,6 @@ const useStyles = makeStyles((theme: Theme) => {
       overflow: 'hidden',
       position: 'relative',
       marginTop: 12,
-      '& ul': {
-        bottom: 12,
-        right: 20,
-        textAlign: 'right',
-        width: 'auto',
-        '& li': {
-          width: 'auto',
-          height: 'auto',
-          margin: 0,
-          '& button': {
-            fontSize: 0,
-            width: 40,
-            height: 1,
-            backgroundColor: '#fff',
-            padding: 0,
-            marginLeft: 2,
-            '&:before': {
-              display: 'none',
-            },
-          },
-          '& .slick-active': {
-            display: 'none',
-          },
-        },
-        '& .slick-active': {
-          '& button': {
-            backgroundColor: '#fcb716',
-          },
-        },
-      },
     },
     card: {
       color: '#fff',
@@ -74,6 +44,27 @@ const useStyles = makeStyles((theme: Theme) => {
         color: '#fc9916',
       },
     },
+    slider: {
+      '& >.slick-dots': {
+        position: 'static !important',
+        '& li': {
+          margin: 0,
+          '& button': {
+            '&:before': {
+              fontSize: 10,
+              color: 'rgba(0,0,0,0.4)',
+            },
+          },
+          '&.slick-active': {
+            '& button': {
+              '&:before': {
+                color: 'rgba(0,0,0,0.8)',
+              },
+            },
+          },
+        },
+      },
+    },
   };
 });
 type BannerData = {
@@ -95,7 +86,7 @@ interface BanneDataArray {
 export const CarouselBanner: React.FC<BanneDataArray> = (props) => {
   const classes = useStyles({});
   const sliderSettings = {
-    infinite: true,
+    infinite: props.bannerData && props.bannerData.length > 1 ? true : false,
     dots: true,
     arrows: false,
     speed: 500,
@@ -107,7 +98,7 @@ export const CarouselBanner: React.FC<BanneDataArray> = (props) => {
 
   return (
     <div className={classes.root}>
-      <Slider {...sliderSettings}>
+      <Slider {...sliderSettings} className={classes.slider}>
         {props.bannerData.map((sidebaner, index) => (
           <div
             className={classes.card}

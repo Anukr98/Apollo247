@@ -1,9 +1,12 @@
-import { EntityRepository, Repository, MoreThanOrEqual } from 'typeorm';
+import { EntityRepository, Repository } from 'typeorm';
 import { LoginOtp, OTP_STATUS } from 'profiles-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
-import { subMinutes } from 'date-fns';
+import { v1 as uuidv1 } from 'uuid';
 import { ApiConstants } from 'ApiConstants';
+import { setCache, getCache } from 'profiles-service/database/connectRedis';
+
+const REDIS_OTP_MOBILE_PREFIX: string = 'otp:mobile:';
 
 @EntityRepository(LoginOtp)
 export class LoginOtpRepository extends Repository<LoginOtp> {
@@ -14,64 +17,49 @@ export class LoginOtpRepository extends Repository<LoginOtp> {
       });
     });
   }
+
   async insertOtp(otpAttrs: Partial<LoginOtp>) {
-    return this.create(otpAttrs)
-      .save()
-      .catch((error) => {
-        throw new AphError(AphErrorMessages.CREATE_OTP_ERROR, undefined, {
-          error,
-        });
-      });
+    const id = uuidv1();
+    await setCache(
+      this.cacheKey(REDIS_OTP_MOBILE_PREFIX, id),
+      JSON.stringify({ ...otpAttrs, id, incorrectAttempts: 0 }),
+      ApiConstants.CACHE_EXPIRATION_900
+    );
+    return { id };
   }
 
   async verifyOtp(otpAttrs: Partial<LoginOtp>) {
-    const { id, loginType } = otpAttrs;
-    const currentTime = new Date();
-    const expirationTime = subMinutes(currentTime, ApiConstants.OTP_EXPIRATION_MINUTES);
-    const validOtpRecord = await this.find({
-      where: {
-        id,
-        loginType,
-        createdDate: MoreThanOrEqual(expirationTime),
-      },
-      order: { createdDate: 'DESC' },
-      take: 1,
-    }).catch((error) => {
-      throw new AphError(AphErrorMessages.GET_OTP_ERROR, undefined, {
-        error,
-      });
-    });
-
-    return validOtpRecord;
+    const { id } = otpAttrs;
+    if (id) {
+      const validOtpRecord = await getCache(this.cacheKey(REDIS_OTP_MOBILE_PREFIX, id));
+      if (typeof validOtpRecord === 'string') {
+        return JSON.parse(validOtpRecord);
+      } else return null;
+    }
   }
 
-  async getValidOtpRecord(id: string, mobileNumber: string) {
-    const validOtpRecord = await this.find({
-      where: {
-        id,
-        mobileNumber,
-        status: OTP_STATUS.NOT_VERIFIED,
-      },
-      order: { createdDate: 'DESC' },
-      take: 1,
-    }).catch((error) => {
-      throw new AphError(AphErrorMessages.GET_OTP_ERROR, undefined, {
-        error,
-      });
-    });
-
-    return validOtpRecord;
+  async getValidOtpRecord(id: string) {
+    const OtpRecord = await getCache(this.cacheKey(REDIS_OTP_MOBILE_PREFIX, id));
+    if (typeof OtpRecord === 'string') {
+      const validOtpRecord = JSON.parse(OtpRecord);
+      return validOtpRecord && validOtpRecord.status == OTP_STATUS.NOT_VERIFIED
+        ? validOtpRecord
+        : null;
+    } else return null;
   }
 
   async updateOtpStatus(id: string, updateAttrs: Partial<LoginOtp>) {
-    return this.update(id, updateAttrs).catch((error) => {
-      throw new AphError(AphErrorMessages.CREATE_OTP_ERROR, undefined, {
-        error,
-      });
-    });
+    await setCache(
+      this.cacheKey(REDIS_OTP_MOBILE_PREFIX, id),
+      JSON.stringify(updateAttrs),
+      ApiConstants.CACHE_EXPIRATION_900
+    );
   }
 
   deleteOtpRecord(id: string) {
     return this.delete(id);
+  }
+  cacheKey(key: string, id: string) {
+    return `${key}:${id}`;
   }
 }

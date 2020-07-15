@@ -1241,10 +1241,11 @@ export const FavouriteMedicines: React.FC = () => {
       return slot;
     });
     setToBeTakenSlots(slots);
-
+    //console.log(selectedMedicinesArr![idx].medicineTimings)
     const dayslots = daySlots.map((slot: SlotsObject) => {
       selectedMedicinesArr![idx].medicineTimings!.map((selectedSlot: any) => {
-        if (selectedSlot.toLowerCase() === slot.id) {
+        //const selectedValue = selectedSlot.replace('_', '');
+        if (selectedSlot.toLowerCase() === slot.id.toLowerCase()) {
           slot.selected = true;
         }
       });
@@ -1423,7 +1424,9 @@ export const FavouriteMedicines: React.FC = () => {
             : ''
         }`}
         onClick={() => {
-          daySlotsToggleAction(daySlotitem.id);
+          if (!isCustomform) {
+            daySlotsToggleAction(daySlotitem.id);
+          }
         }}
       >
         {daySlotitem.value}
@@ -1442,7 +1445,7 @@ export const FavouriteMedicines: React.FC = () => {
     });
     const daySlotsSelected = daySlots.filter((slot: SlotsObject) => {
       if (slot.selected) {
-        daySlotsArr.push(slot.value.toUpperCase());
+        daySlotsArr.push(slot.value.toUpperCase().replace(' ', '_'));
       }
       return slot.selected !== false;
     });
@@ -1465,7 +1468,7 @@ export const FavouriteMedicines: React.FC = () => {
       customDosageArray.push(customDosageNight.trim());
     if (
       !isCustomform &&
-      tabletsCount.trim() === '' &&
+      (tabletsCount.trim() === '' || tabletsCount.trim() === '0') &&
       medicineForm !== MEDICINE_FORM_TYPES.GEL_LOTION_OINTMENT
     ) {
       setErrorState({
@@ -1584,7 +1587,9 @@ export const FavouriteMedicines: React.FC = () => {
       });
     } else if (
       forUnit !== MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW &&
-      (consumptionDuration === '' || isNaN(Number(consumptionDuration)))
+      (consumptionDuration === '' ||
+        isNaN(Number(consumptionDuration)) ||
+        consumptionDuration === '0')
     ) {
       setErrorState({
         ...errorState,
@@ -1693,7 +1698,7 @@ export const FavouriteMedicines: React.FC = () => {
     });
     const daySlotsSelected = daySlots.filter((slot: SlotsObject) => {
       if (slot.selected) {
-        daySlotsArr.push(slot.value.toUpperCase());
+        daySlotsArr.push(slot.value.toUpperCase().replace(' ', '_'));
       }
       return slot.selected !== false;
     });
@@ -1724,7 +1729,7 @@ export const FavouriteMedicines: React.FC = () => {
       customDosageArray.push(customDosageNight.trim());
     if (
       !isCustomform &&
-      tabletsCount.trim() === '' &&
+      (tabletsCount.trim() === '' || tabletsCount.trim() === '0') &&
       medicineForm !== MEDICINE_FORM_TYPES.GEL_LOTION_OINTMENT
     ) {
       setErrorState({
@@ -1843,7 +1848,9 @@ export const FavouriteMedicines: React.FC = () => {
       });
     } else if (
       forUnit !== MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW &&
-      (consumptionDuration === '' || isNaN(Number(consumptionDuration)))
+      (consumptionDuration === '' ||
+        isNaN(Number(consumptionDuration)) ||
+        consumptionDuration === '0')
     ) {
       setErrorState({
         ...errorState,
@@ -2520,7 +2527,7 @@ export const FavouriteMedicines: React.FC = () => {
                                       component="div"
                                       error={errorState.dosageErr}
                                     >
-                                      Please enter dosage.
+                                      Please enter valid dosage.
                                     </FormHelperText>
                                   )}
                                 </Grid>
@@ -2611,7 +2618,7 @@ export const FavouriteMedicines: React.FC = () => {
                                       component="div"
                                       error={errorState.dosageErr}
                                     >
-                                      Please enter dosage.
+                                      Please enter valid dosage.
                                     </FormHelperText>
                                   )}
                                 </Grid>
@@ -2750,7 +2757,7 @@ export const FavouriteMedicines: React.FC = () => {
                                   component="div"
                                   error={errorState.durationErr}
                                 >
-                                  Please enter number of {term(forUnit.toLowerCase(), '(s)')}
+                                  Please enter valid number of {term(forUnit.toLowerCase(), '(s)')}
                                 </FormHelperText>
                               )}
                           </div>

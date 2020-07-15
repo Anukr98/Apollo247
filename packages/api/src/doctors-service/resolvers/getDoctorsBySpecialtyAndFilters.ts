@@ -62,7 +62,7 @@ export const getDoctorsBySpecialtyAndFiltersTypeDefs = gql`
     geolocation: Geolocation
     consultMode: ConsultMode
     pincode: String
-    doctorType: String
+    doctorType: [String]
     sort: String
   }
   extend type Query {
@@ -75,7 +75,7 @@ type FilterDoctorsResult = {
   doctorsNextAvailability: DoctorSlotAvailability[];
   doctorsAvailability: DoctorConsultModeAvailability[];
   specialty?: DoctorSpecialty;
-  doctorType?: DoctorType;
+  doctorType?: DoctorType[];
   sort: string;
 };
 
@@ -108,7 +108,7 @@ export type FilterDoctorInput = {
   geolocation: Geolocation;
   consultMode: ConsultMode;
   pincode: string;
-  doctorType: String;
+  doctorType: String[];
   sort: string;
 };
 
@@ -222,9 +222,12 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
       elasticMatch.push({ match: { languages: language } });
     });
   }
-  if (args.filterInput.doctorType) {
-    elasticMatch.push({ match: { doctorType: args.filterInput.doctorType } });
+
+  if (args.filterInput.doctorType && args.filterInput.doctorType.length > 0) {
+    elasticMatch.push({ match: { doctorType: args.filterInput.doctorType.join(',') } });
   }
+
+  elasticMatch.push({ match: { isSearchable: 'true' } });
 
   const searchParams: RequestParams.Search = {
     index: 'doctors',

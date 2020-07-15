@@ -231,6 +231,7 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
                         <AphButton
                           onClick={() => {
                             const cartItem: MedicineCartItem = {
+                              MaxOrderQty: hotSeller.MaxOrderQty,
                               url_key: hotSeller.url_key,
                               description: hotSeller.description,
                               id: hotSeller.id,
@@ -305,7 +306,7 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
                                     {
                                       item_name: hotSeller.name,
                                       item_id: hotSeller.sku,
-                                      price: hotSeller.price,
+                                      price: hotSeller.special_price || hotSeller.price,
                                       item_category: 'Pharmacy',
                                       item_variant: 'Default',
                                       index: 1,

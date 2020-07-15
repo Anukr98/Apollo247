@@ -71,7 +71,7 @@ import {
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
-// import { useAppCommonData } from '../AppCommonDataProvider';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
@@ -82,15 +82,20 @@ import {
   Dimensions,
   Platform,
   StyleSheet,
+  Linking,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
-import { AppsFlyerEventName } from '../../helpers/AppsFlyerEvents';
+import { AppsFlyerEventName, AppsFlyerEvents } from '../../helpers/AppsFlyerEvents';
 import { WhatsAppStatus } from '../ui/WhatsAppStatus';
 import { FirebaseEvents, FirebaseEventName } from '../../helpers/firebaseEvents';
+import { validateConsultCoupon } from '@aph/mobile-patients/src/helpers/apiCalls';
+import firebase from 'react-native-firebase';
+import { NotificationPermissionAlert } from '@aph/mobile-patients/src/components/ui/NotificationPermissionAlert';
+import AsyncStorage from '@react-native-community/async-storage';
 
 const { width, height } = Dimensions.get('window');
 
@@ -107,13 +112,18 @@ export interface ConsultOverlayProps extends NavigationScreenProps {
   appointmentId: string;
   consultModeSelected: ConsultMode;
   externalConnect: boolean | null;
-  // availableSlots: string[] | null;
+  availableMode: string;
+  consultedWithDoctorBefore: boolean;
 }
 export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   const client = useApolloClient();
   const tabs =
     props.doctor!.doctorType !== DoctorType.PAYROLL
-      ? [{ title: 'Consult Online' }, { title: 'Visit Clinic' }]
+      ? props.availableMode === ConsultMode.BOTH
+        ? [{ title: 'Consult Online' }, { title: 'Visit Clinic' }]
+        : props.availableMode === ConsultMode.ONLINE
+        ? [{ title: 'Consult Online' }]
+        : [{ title: 'Visit Clinic' }]
       : [{ title: 'Consult Online' }];
   const [selectedTab, setselectedTab] = useState<string>(tabs[0].title);
   const [selectedTimeSlot, setselectedTimeSlot] = useState<string>('');
@@ -125,6 +135,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   const [date, setDate] = useState<Date>(new Date());
   const [coupon, setCoupon] = useState('');
   const [whatsAppUpdate, setWhatsAppUpdate] = useState<boolean>(true);
+  const [notificationAlert, setNotificationAlert] = useState(false);
 
   const doctorFees =
     tabs[0].title === selectedTab
@@ -143,7 +154,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   );
   const { showAphAlert, hideAphAlert } = useUIElements();
   const { currentPatient } = useAllCurrentPatients();
-  // const { VirtualConsultationFee } = useAppCommonData();
+  const { locationDetails } = useAppCommonData();
   const { getPatientApiCall } = useAuth();
 
   const renderErrorPopup = (desc: string) =>
@@ -224,9 +235,9 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   };
 
   const getConsultationBookedEventAttributes = (time: string, id: string) => {
-    const localTimeSlot = new Date(time);
-    console.log(localTimeSlot);
-
+    const localTimeSlot = moment(new Date(time));
+    let date = new Date(time);
+    // date = new Date(date.getTime() + 5.5 * 60 * 60 * 1000);
     const doctorClinics = (g(props.doctor, 'doctorHospital') || []).filter((item) => {
       if (item && item.facility && item.facility.facilityType)
         return item.facility.facilityType === 'HOSPITAL';
@@ -247,7 +258,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       'Customer ID': g(currentPatient, 'id'),
       'Consult ID': id,
       'Speciality ID': g(props.doctor, 'specialty', 'id')!,
-      'Consult Date Time': localTimeSlot,
+      'Consult Date Time': date,
       'Consult Mode': tabs[0].title === selectedTab ? 'Online' : 'Physical',
       'Hospital Name':
         doctorClinics.length > 0 && props.doctor!.doctorType !== DoctorType.PAYROLL
@@ -260,11 +271,25 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       'Doctor ID': g(props.doctor, 'id')!,
       'Doctor Name': g(props.doctor, 'fullName')!,
       'Net Amount': coupon ? doctorDiscountedFees : Number(doctorFees),
-      revenue: coupon ? doctorDiscountedFees : Number(doctorFees),
+      af_revenue: coupon ? doctorDiscountedFees : Number(doctorFees),
+      af_currency: 'INR',
     };
     return eventAttributes;
   };
 
+  const getConsultationBookedAppsFlyerEventAttributes = (id: string) => {
+    const eventAttributes: AppsFlyerEvents[AppsFlyerEventName.CONSULTATION_BOOKED] = {
+      'customer id': g(currentPatient, 'id'),
+      'doctor id': g(props.doctor, 'id')!,
+      'specialty id': g(props.doctor, 'specialty', 'id')!,
+      'consult type': 'Consult Online' === selectedTab ? 'online' : 'clinic',
+      af_revenue: coupon ? doctorDiscountedFees : Number(doctorFees),
+      af_currency: 'INR',
+      'consult id': id,
+      'coupon applied': coupon ? true : false,
+    };
+    return eventAttributes;
+  };
   // const getConsultationBookedFirebaseEventAttributes = () => {
   //   const eventAttributes: FirebaseEvents[FirebaseEventName.IN_APP_PURCHASE] = {
   //     type: 'Consultation',
@@ -272,7 +297,12 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   //   return eventAttributes;
   // };
 
-  const makePayment = (id: string, amountPaid: number, paymentDateTime: string) => {
+  const makePayment = (
+    id: string,
+    amountPaid: number,
+    paymentDateTime: string,
+    displayID: string
+  ) => {
     client
       .mutate<makeAppointmentPayment, makeAppointmentPaymentVariables>({
         mutation: MAKE_APPOINTMENT_PAYMENT,
@@ -292,17 +322,15 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       })
       .then(({ data }) => {
         console.log('makeAppointmentPayment', '\n', JSON.stringify(data!.makeAppointmentPayment));
-        postWebEngageEvent(
-          WebEngageEventName.CONSULTATION_BOOKED,
-          getConsultationBookedEventAttributes(
-            paymentDateTime,
-            g(data, 'makeAppointmentPayment', 'appointment', 'id')!
-          )
+        let eventAttributes = getConsultationBookedEventAttributes(
+          paymentDateTime,
+          g(data, 'makeAppointmentPayment', 'appointment', 'id')!
         );
+        eventAttributes['Display ID'] = displayID;
+        postWebEngageEvent(WebEngageEventName.CONSULTATION_BOOKED, eventAttributes);
         postAppsFlyerEvent(
           AppsFlyerEventName.CONSULTATION_BOOKED,
-          getConsultationBookedEventAttributes(
-            paymentDateTime,
+          getConsultationBookedAppsFlyerEventAttributes(
             g(data, 'makeAppointmentPayment', 'appointment', 'id')!
           )
         );
@@ -322,13 +350,28 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       .finally(() => setshowSpinner(false));
   };
 
+  const storeAppointmentId = async (appointmentId: string) => {
+    if (!appointmentId) return;
+    try {
+      const ids = await AsyncStorage.getItem('APPOINTMENTS_CONSULTED_WITH_DOCTOR_BEFORE');
+      const appointmentIds: string[] = ids ? JSON.parse(ids || '[]') : [];
+      AsyncStorage.setItem(
+        'APPOINTMENTS_CONSULTED_WITH_DOCTOR_BEFORE',
+        JSON.stringify([...appointmentIds, appointmentId])
+      );
+    } catch (error) {
+      console.log({ error });
+    }
+  };
+
   const onSubmitBookAppointment = async () => {
     CommonLogEvent(AppRoutes.DoctorDetails, 'ConsultOverlay onSubmitBookAppointment clicked');
     setshowSpinner(true);
     // again check coupon is valid or not
     if (coupon) {
       try {
-        await validateAndApplyCoupon(coupon, isConsultOnline, true);
+        // await validateAndApplyCoupon(coupon, isConsultOnline, true);
+        await validateCoupon(coupon, true);
       } catch (error) {
         setCoupon('');
         setDoctorDiscountedFees(0);
@@ -375,6 +418,9 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       bookingSource: BOOKINGSOURCE.MOBILE,
       deviceType: Platform.OS == 'android' ? DEVICETYPE.ANDROID : DEVICETYPE.IOS,
       ...externalConnectParam,
+      actualAmount: Number(doctorFees),
+      discountedAmount: doctorDiscountedFees,
+      pinCode: locationDetails && locationDetails.pincode,
     };
     console.log(appointmentInput, 'input');
     const price = coupon ? doctorDiscountedFees : Number(doctorFees);
@@ -394,9 +440,17 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
         })
         .then((data) => {
           const apptmt = g(data, 'data', 'bookAppointment', 'appointment');
-
+          if (props.consultedWithDoctorBefore) {
+            storeAppointmentId(g(apptmt, 'id')!);
+          }
+          console.log('apptmt', apptmt);
           // If amount is zero don't redirect to PG
-          makePayment(g(apptmt, 'id')!, Number(price), g(apptmt, 'appointmentDateTime'));
+          makePayment(
+            g(apptmt, 'id')!,
+            Number(price),
+            g(apptmt, 'appointmentDateTime'),
+            g(apptmt, 'displayId')!
+          );
 
           // props.navigation.navigate(AppRoutes.ConsultPayment, {
           //   doctorName: `${g(props.doctor, 'fullName')}`,
@@ -448,6 +502,8 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
         doctorName: `${g(props.doctor, 'fullName')}`,
         price: coupon ? doctorDiscountedFees : Number(doctorFees),
         appointmentInput: appointmentInput,
+        couponApplied: coupon == '' ? false : true,
+        consultedWithDoctorBefore: props.consultedWithDoctorBefore,
       });
     }
   };
@@ -512,7 +568,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   const onPressPay = () => {
     // Pay Button Clicked	event
     postWebEngagePayButtonClickedEvent();
-    callPermissions();
+    // callPermissions();
     whatsappAPICalled();
     CommonLogEvent(AppRoutes.DoctorDetails, 'Book Appointment clicked');
     CommonLogEvent(
@@ -680,6 +736,28 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
     );
   };
 
+  const fireBaseFCM = async () => {
+    const enabled = await firebase.messaging().hasPermission();
+    if (enabled) {
+      // user has permissions
+      console.log('enabled', enabled);
+    } else {
+      // user doesn't have permission
+      console.log('not enabled');
+      setNotificationAlert(true);
+      try {
+        const authorized = await firebase.messaging().requestPermission();
+        console.log('authorized', authorized);
+
+        // User has authorised
+      } catch (error) {
+        // User has rejected permissions
+        CommonBugFender('Login_fireBaseFCM_try', error);
+        console.log('not enabled error', error);
+      }
+    }
+  };
+
   const validateAndApplyCoupon = (
     couponValue: string,
     isOnlineConsult: boolean,
@@ -723,6 +801,9 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
                 'Coupon Applied': true,
               };
               postWebEngageEvent(WebEngageEventName.CONSULT_COUPON_APPLIED, eventAttributes);
+              if (Number(revisedAmount) == 0) {
+                fireBaseFCM();
+              }
             }
           } else {
             if (!dontFireEvent) {
@@ -746,8 +827,86 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
     setDoctorDiscountedFees(0);
   };
 
+  const validateCoupon = (coupon: string, fireEvent?: boolean) => {
+    const timeSlot =
+      tabs[0].title === selectedTab &&
+      isConsultOnline &&
+      availableInMin! <= 60 &&
+      0 < availableInMin!
+        ? nextAvailableSlot
+        : selectedTimeSlot;
+
+    let ts = new Date(timeSlot).getTime();
+    console.log(ts);
+    const data = {
+      mobile: g(currentPatient, 'mobileNumber'),
+      billAmount: Number(doctorFees),
+      coupon: coupon,
+      // paymentType: 'CASH', //CASH,NetBanking, CARD, COD
+      pinCode: locationDetails && locationDetails.pincode,
+      consultations: [
+        {
+          hospitalId: g(props.doctor, 'doctorHospital')![0].facility.id,
+          doctorId: g(props.doctor, 'id'),
+          specialityId: g(props.doctor, 'specialty', 'id'),
+          consultationTime: ts, //Unix timestamp“
+          consultationType: selectedTab === 'Consult Online' ? 1 : 0, //Physical 0, Virtual 1,  All -1
+          cost: Number(doctorFees),
+          rescheduling: false,
+        },
+      ],
+    };
+
+    // console.log('validateCouponData', data);
+    return new Promise((res, rej) => {
+      validateConsultCoupon(data)
+        .then((resp: any) => {
+          // console.log(g(resp, 'data'), 'data');
+          if (resp.data.errorCode == 0) {
+            if (resp.data.response.valid) {
+              const revisedAmount =
+                Number(doctorFees) - Number(g(resp, 'data', 'response', 'discount')!);
+              setCoupon(coupon);
+              setDoctorDiscountedFees(revisedAmount);
+              res();
+              if (fireEvent) {
+                const eventAttributes: WebEngageEvents[WebEngageEventName.CONSULT_COUPON_APPLIED] = {
+                  CouponCode: coupon,
+                  'Discount Amount': Number(g(resp, 'data', 'response', 'discount')!),
+                  'Net Amount': Number(revisedAmount),
+                  'Coupon Applied': true,
+                };
+                postWebEngageEvent(WebEngageEventName.CONSULT_COUPON_APPLIED, eventAttributes);
+              }
+              if (Number(revisedAmount) == 0) {
+                fireBaseFCM();
+              }
+            } else {
+              rej(resp.data.response.reason);
+              if (fireEvent) {
+                const eventAttributes: WebEngageEvents[WebEngageEventName.CONSULT_COUPON_APPLIED] = {
+                  CouponCode: coupon,
+                  'Coupon Applied': false,
+                };
+                postWebEngageEvent(WebEngageEventName.CONSULT_COUPON_APPLIED, eventAttributes);
+              }
+            }
+          } else {
+            rej(resp.data.errorMsg);
+          }
+        })
+        .catch((error) => {
+          CommonBugFender('validatingConsultCoupon', error);
+          console.log(error);
+          rej();
+          renderErrorPopup(`Something went wrong, plaease try again after sometime`);
+        });
+    });
+  };
+
   const onApplyCoupon = (value: string) => {
-    return validateAndApplyCoupon(value, isConsultOnline);
+    // return validateAndApplyCoupon(value, isConsultOnline);
+    return validateCoupon(value);
   };
 
   const renderApplyCoupon = () => {
@@ -1007,6 +1166,15 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
           </View>
         </View>
       </View>
+      {notificationAlert && (
+        <NotificationPermissionAlert
+          onPressOutside={() => setNotificationAlert(false)}
+          onButtonPress={() => {
+            setNotificationAlert(false);
+            Linking.openSettings();
+          }}
+        />
+      )}
       {showSpinner && <Spinner />}
       {showOfflinePopup && <NoInterNetPopup onClickClose={() => setshowOfflinePopup(false)} />}
     </View>

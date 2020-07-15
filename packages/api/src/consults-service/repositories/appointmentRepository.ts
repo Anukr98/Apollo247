@@ -45,6 +45,7 @@ import { log } from 'customWinstonLogger';
 import { ApiConstants } from 'ApiConstants';
 import { Client, RequestParams } from '@elastic/elasticsearch';
 
+
 @EntityRepository(Appointment)
 export class AppointmentRepository extends Repository<Appointment> {
   findById(id: string) {
@@ -110,22 +111,43 @@ export class AppointmentRepository extends Repository<Appointment> {
     });
   }
 
+
+  /**
+   * One stop method to create/update appointments
+   * This was needed in order to always pass the @BeforeUpdate hook in index.ts 
+   * and prevent certain status/states to change after they have reached a final status/states
+   * Check out the hook in index.ts for more context around the code that does that
+   */
+  createUpdateAppointment(appt: Appointment, updateDetails: Partial<Appointment>, errorType: AphErrorMessages): Promise<Appointment> {
+    const appointment = this.create(appt);
+    Object.assign(appointment, { ...updateDetails });
+    return appointment
+      .save()
+      .catch((appointmentError) => {
+        throw new AphError(errorType, undefined, { appointmentError });
+      })
+  }
+
   updatePatientType(appt: Appointment, patientType: PATIENT_TYPE) {
-    this.update(appt.id, { patientType }).catch((getApptError) => {
-      throw new AphError(AphErrorMessages.UPDATE_APPOINTMENT_ERROR, undefined, {
-        getApptError,
-      });
-    });
+    return this.createUpdateAppointment(
+      appt,
+      {
+        id: appt.id,
+        patientType
+      },
+      AphErrorMessages.UPDATE_APPOINTMENT_ERROR
+    )
   }
 
   getAppointmentsByDocId(doctorId: string) {
     const appointmentData = this.createQueryBuilder('appointment')
       .andWhere('appointment.doctorId = :doctorId', { doctorId: doctorId })
-      .andWhere('appointment.status not in(:status1,:status2,:status3,:status4)', {
+      .andWhere('appointment.status not in(:status1,:status2,:status3,:status4,:status5)', {
         status1: STATUS.CANCELLED,
         status2: STATUS.PAYMENT_PENDING,
         status3: STATUS.PAYMENT_FAILED,
         status4: STATUS.PAYMENT_PENDING_PG,
+        status5: STATUS.PAYMENT_ABORTED,
       })
       .orderBy('appointment.patientId', 'ASC')
       .getMany();
@@ -216,11 +238,12 @@ export class AppointmentRepository extends Repository<Appointment> {
         fromDate: appointmentDateTime,
       })
       .andWhere('appointment.doctorId = :doctorId', { doctorId: doctorId })
-      .andWhere('appointment.status not in(:status1,:status2,:status3,:status4)', {
+      .andWhere('appointment.status not in(:status1,:status2,:status3,:status4,:status5)', {
         status1: STATUS.CANCELLED,
         status2: STATUS.PAYMENT_PENDING,
         status3: STATUS.PAYMENT_FAILED,
         status4: STATUS.PAYMENT_PENDING_PG,
+        status5: STATUS.PAYMENT_ABORTED,
       })
       .getCount();
   }
@@ -240,11 +263,12 @@ export class AppointmentRepository extends Repository<Appointment> {
       })
       .andWhere('appointment.doctorId = :doctorId', { doctorId: doctorId })
       .andWhere('appointment.id != :id', { id: id })
-      .andWhere('appointment.status not in(:status1,:status2,:status3,:status4)', {
+      .andWhere('appointment.status not in(:status1,:status2,:status3,:status4,:status5)', {
         status1: STATUS.CANCELLED,
         status2: STATUS.PAYMENT_PENDING,
         status3: STATUS.PAYMENT_FAILED,
         status4: STATUS.PAYMENT_PENDING_PG,
+        status5: STATUS.PAYMENT_ABORTED,
       })
       .getCount();
   }
@@ -268,11 +292,12 @@ export class AppointmentRepository extends Repository<Appointment> {
         toDate: endDate,
       })
       .andWhere('appointment.doctorId = :doctorId', { doctorId: doctorId })
-      .andWhere('appointment.status not in(:status1,:status2,:status3,:status4)', {
+      .andWhere('appointment.status not in(:status1,:status2,:status3,:status4,:status5)', {
         status1: STATUS.CANCELLED,
         status2: STATUS.PAYMENT_PENDING,
         status3: STATUS.PAYMENT_FAILED,
         status4: STATUS.PAYMENT_PENDING_PG,
+        status5: STATUS.PAYMENT_ABORTED,
       })
       .getMany();
   }
@@ -290,7 +315,12 @@ export class AppointmentRepository extends Repository<Appointment> {
         {
           doctorId: In(doctorIds),
           appointmentDateTime: Between(fromDate, toDate),
-          status: Not([STATUS.PAYMENT_PENDING, STATUS.PAYMENT_PENDING_PG, STATUS.PAYMENT_FAILED]),
+          status: Not([
+            STATUS.PAYMENT_PENDING,
+            STATUS.PAYMENT_PENDING_PG,
+            STATUS.PAYMENT_FAILED,
+            STATUS.PAYMENT_ABORTED,
+          ]),
         },
       ],
     });
@@ -322,12 +352,15 @@ export class AppointmentRepository extends Repository<Appointment> {
     });
   }
 
-  updateAppointment(id: string, appointmentInfo: Partial<Appointment>) {
-    return this.update(id, appointmentInfo).catch((getErrors) => {
-      throw new AphError(AphErrorMessages.UPDATE_APPOINTMENT_ERROR, undefined, {
-        getErrors,
-      });
-    });
+  updateAppointment(id: string, appointmentInfo: Partial<Appointment>, apptDetails: Appointment) {
+    return this.createUpdateAppointment(
+      apptDetails,
+      {
+        id,
+        ...appointmentInfo
+      },
+      AphErrorMessages.UPDATE_APPOINTMENT_ERROR
+    )
   }
 
   findAppointmentPayment(id: string) {
@@ -392,13 +425,17 @@ export class AppointmentRepository extends Repository<Appointment> {
       })
       .andWhere('appointment.patientId IN (:...ids)', { ids: patientIds })
       .andWhere('appointment.doctorId = :doctorId', { doctorId: doctorId })
-      .andWhere('appointment.status not in(:status1,:status2,:status3,:status4,:status5)', {
-        status1: STATUS.CANCELLED,
-        status2: STATUS.PAYMENT_PENDING,
-        status3: STATUS.UNAVAILABLE_MEDMANTRA,
-        status4: STATUS.PAYMENT_FAILED,
-        status5: STATUS.PAYMENT_PENDING_PG,
-      })
+      .andWhere(
+        'appointment.status not in(:status1,:status2,:status3,:status4,:status5,:status6)',
+        {
+          status1: STATUS.CANCELLED,
+          status2: STATUS.PAYMENT_PENDING,
+          status3: STATUS.UNAVAILABLE_MEDMANTRA,
+          status4: STATUS.PAYMENT_FAILED,
+          status5: STATUS.PAYMENT_PENDING_PG,
+          status6: STATUS.PAYMENT_ABORTED,
+        }
+      )
       .orderBy('appointment.appointmentDateTime', 'DESC')
       .getMany();
   }
@@ -451,13 +488,17 @@ export class AppointmentRepository extends Repository<Appointment> {
         toDate: newEndDate,
       })
       .andWhere('appointment.doctorId = :doctorId', { doctorId: doctorId })
-      .andWhere('appointment.status not in(:status1,:status2,:status3,:status4,:status5)', {
-        status1: STATUS.CANCELLED,
-        status2: STATUS.PAYMENT_PENDING,
-        status3: STATUS.UNAVAILABLE_MEDMANTRA,
-        status4: STATUS.PAYMENT_FAILED,
-        status5: STATUS.PAYMENT_PENDING_PG,
-      })
+      .andWhere(
+        'appointment.status not in(:status1,:status2,:status3,:status4,:status5,:status6)',
+        {
+          status1: STATUS.CANCELLED,
+          status2: STATUS.PAYMENT_PENDING,
+          status3: STATUS.UNAVAILABLE_MEDMANTRA,
+          status4: STATUS.PAYMENT_FAILED,
+          status5: STATUS.PAYMENT_PENDING_PG,
+          status6: STATUS.PAYMENT_ABORTED,
+        }
+      )
       .orderBy('appointment.appointmentDateTime', 'ASC')
       .getMany();
   }
@@ -482,13 +523,17 @@ export class AppointmentRepository extends Repository<Appointment> {
         toDate: endDate,
       })
       .andWhere('appointment.doctorId = :doctorId', { doctorId: doctorId })
-      .andWhere('appointment.status not in(:status1,:status2,:status3,:status4,:status5)', {
-        status1: STATUS.CANCELLED,
-        status2: STATUS.PAYMENT_PENDING,
-        status3: STATUS.UNAVAILABLE_MEDMANTRA,
-        status4: STATUS.PAYMENT_FAILED,
-        status5: STATUS.PAYMENT_PENDING_PG,
-      })
+      .andWhere(
+        'appointment.status not in(:status1,:status2,:status3,:status4,:status5,:status6)',
+        {
+          status1: STATUS.CANCELLED,
+          status2: STATUS.PAYMENT_PENDING,
+          status3: STATUS.UNAVAILABLE_MEDMANTRA,
+          status4: STATUS.PAYMENT_FAILED,
+          status5: STATUS.PAYMENT_PENDING_PG,
+          status6: STATUS.PAYMENT_ABORTED,
+        }
+      )
       .orderBy('appointment.appointmentDateTime', 'ASC')
       .getMany();
   }
@@ -519,13 +564,17 @@ export class AppointmentRepository extends Repository<Appointment> {
       })
       .andWhere('appointment.patientId IN (:...ids)', { ids })
       .andWhere('appointment.doctorId = :doctorId', { doctorId: doctorId })
-      .andWhere('appointment.status not in(:status1,:status2,:status3,:status4,:status5)', {
-        status1: STATUS.CANCELLED,
-        status2: STATUS.PAYMENT_PENDING,
-        status3: STATUS.UNAVAILABLE_MEDMANTRA,
-        status4: STATUS.PAYMENT_FAILED,
-        status5: STATUS.PAYMENT_PENDING_PG,
-      })
+      .andWhere(
+        'appointment.status not in(:status1,:status2,:status3,:status4,:status5,:status6)',
+        {
+          status1: STATUS.CANCELLED,
+          status2: STATUS.PAYMENT_PENDING,
+          status3: STATUS.UNAVAILABLE_MEDMANTRA,
+          status4: STATUS.PAYMENT_FAILED,
+          status5: STATUS.PAYMENT_PENDING_PG,
+          status6: STATUS.PAYMENT_ABORTED,
+        }
+      )
       .getMany();
   }
 
@@ -535,13 +584,17 @@ export class AppointmentRepository extends Repository<Appointment> {
       .leftJoinAndSelect('appointment.caseSheet', 'caseSheet')
       .leftJoinAndSelect('appointment.appointmentPayments', 'appointmentPayments')
       .andWhere('appointment.patientId IN (:...ids)', { ids })
-      .andWhere('appointment.status not in(:status1,:status2,:status3,:status4,:status5)', {
-        status1: STATUS.CANCELLED,
-        status2: STATUS.PAYMENT_PENDING,
-        status3: STATUS.UNAVAILABLE_MEDMANTRA,
-        status4: STATUS.PAYMENT_FAILED,
-        status5: STATUS.PAYMENT_PENDING_PG,
-      })
+      .andWhere(
+        'appointment.status not in(:status1,:status2,:status3,:status4,:status5,:status6)',
+        {
+          status1: STATUS.CANCELLED,
+          status2: STATUS.PAYMENT_PENDING,
+          status3: STATUS.UNAVAILABLE_MEDMANTRA,
+          status4: STATUS.PAYMENT_FAILED,
+          status5: STATUS.PAYMENT_PENDING_PG,
+          status6: STATUS.PAYMENT_ABORTED,
+        }
+      )
       .offset(offset)
       .limit(limit)
       .orderBy('appointment.appointmentDateTime', 'DESC')
@@ -554,13 +607,17 @@ export class AppointmentRepository extends Repository<Appointment> {
   ) {
     const queryBuilder = this.createQueryBuilder('appointment')
       .where('appointment.doctorId IN (:...doctorIds)', { doctorIds })
-      .andWhere('appointment.status not in(:status1,:status2,:status3,:status4,:status5)', {
-        status1: STATUS.CANCELLED,
-        status2: STATUS.PAYMENT_PENDING,
-        status3: STATUS.UNAVAILABLE_MEDMANTRA,
-        status4: STATUS.PAYMENT_FAILED,
-        status5: STATUS.PAYMENT_PENDING_PG,
-      });
+      .andWhere(
+        'appointment.status not in(:status1,:status2,:status3,:status4,:status5,:status6)',
+        {
+          status1: STATUS.CANCELLED,
+          status2: STATUS.PAYMENT_PENDING,
+          status3: STATUS.UNAVAILABLE_MEDMANTRA,
+          status4: STATUS.PAYMENT_FAILED,
+          status5: STATUS.PAYMENT_PENDING_PG,
+          status6: STATUS.PAYMENT_ABORTED,
+        }
+      );
 
     if (utcAppointmentDateTimes && utcAppointmentDateTimes.length > 0) {
       queryBuilder.andWhere(
@@ -614,13 +671,17 @@ export class AppointmentRepository extends Repository<Appointment> {
         toDate: endDate,
       })
       .andWhere('appointment.patientId = :patientId', { patientId: patientId })
-      .andWhere('appointment.status not in(:status1,:status2,:status3,:status4,:status5)', {
-        status1: STATUS.CANCELLED,
-        status2: STATUS.PAYMENT_PENDING,
-        status3: STATUS.UNAVAILABLE_MEDMANTRA,
-        status4: STATUS.PAYMENT_FAILED,
-        status5: STATUS.PAYMENT_PENDING_PG,
-      })
+      .andWhere(
+        'appointment.status not in(:status1,:status2,:status3,:status4,:status5,:status6)',
+        {
+          status1: STATUS.CANCELLED,
+          status2: STATUS.PAYMENT_PENDING,
+          status3: STATUS.UNAVAILABLE_MEDMANTRA,
+          status4: STATUS.PAYMENT_FAILED,
+          status5: STATUS.PAYMENT_PENDING_PG,
+          status6: STATUS.PAYMENT_ABORTED,
+        }
+      )
       .getMany();
   }
 
@@ -632,13 +693,17 @@ export class AppointmentRepository extends Repository<Appointment> {
       .leftJoinAndSelect('appointment.appointmentPayments', 'appointmentPayments')
       .where('appointment.appointmentDateTime > :apptDate', { apptDate: new Date() })
       .andWhere('appointment.patientId IN (:...ids)', { ids })
-      .andWhere('appointment.status not in(:status1,:status2,:status3,:status4,:status5)', {
-        status1: STATUS.CANCELLED,
-        status2: STATUS.PAYMENT_PENDING,
-        status3: STATUS.UNAVAILABLE_MEDMANTRA,
-        status4: STATUS.PAYMENT_FAILED,
-        status5: STATUS.PAYMENT_PENDING_PG,
-      })
+      .andWhere(
+        'appointment.status not in(:status1,:status2,:status3,:status4,:status5,:status6)',
+        {
+          status1: STATUS.CANCELLED,
+          status2: STATUS.PAYMENT_PENDING,
+          status3: STATUS.UNAVAILABLE_MEDMANTRA,
+          status4: STATUS.PAYMENT_FAILED,
+          status5: STATUS.PAYMENT_PENDING_PG,
+          status6: STATUS.PAYMENT_ABORTED,
+        }
+      )
       .orderBy('appointment.appointmentDateTime', 'ASC')
       .getMany();
 
@@ -648,13 +713,17 @@ export class AppointmentRepository extends Repository<Appointment> {
         toDate: new Date(),
       })
       .andWhere('appointment.patientId IN (:...ids)', { ids })
-      .andWhere('appointment.status not in(:status1,:status2,:status3,:status4,:status5)', {
-        status1: STATUS.CANCELLED,
-        status2: STATUS.PAYMENT_PENDING,
-        status3: STATUS.UNAVAILABLE_MEDMANTRA,
-        status4: STATUS.PAYMENT_FAILED,
-        status5: STATUS.PAYMENT_PENDING_PG,
-      })
+      .andWhere(
+        'appointment.status not in(:status1,:status2,:status3,:status4,:status5,:status6)',
+        {
+          status1: STATUS.CANCELLED,
+          status2: STATUS.PAYMENT_PENDING,
+          status3: STATUS.UNAVAILABLE_MEDMANTRA,
+          status4: STATUS.PAYMENT_FAILED,
+          status5: STATUS.PAYMENT_PENDING_PG,
+          status6: STATUS.PAYMENT_ABORTED,
+        }
+      )
       .orderBy('appointment.appointmentDateTime', 'DESC')
       .getMany();
 
@@ -865,11 +934,12 @@ export class AppointmentRepository extends Repository<Appointment> {
         fromDate: currentStartDate,
         toDate: currentEndDate,
       })
-      .andWhere('appointment.status not in(:status1,:status2,:status3,:status4)', {
+      .andWhere('appointment.status not in(:status1,:status2,:status3,:status4,:status5)', {
         status1: STATUS.CANCELLED,
         status2: STATUS.PAYMENT_PENDING,
         status3: STATUS.PAYMENT_FAILED,
         status4: STATUS.PAYMENT_PENDING_PG,
+        status5: STATUS.PAYMENT_ABORTED,
       })
       .andWhere('appointment."doctorId" = :doctorId', { doctorId })
       .getMany();
@@ -1005,37 +1075,35 @@ export class AppointmentRepository extends Repository<Appointment> {
     else return 0;
   }
 
-  updateAppointmentStatus(id: string, status: STATUS, isSeniorConsultStarted: boolean) {
-    this.update(id, { status, isSeniorConsultStarted }).catch((createErrors) => {
-      throw new AphError(AphErrorMessages.UPDATE_APPOINTMENT_ERROR, undefined, { createErrors });
-    });
+  async updateAppointmentStatus(id: string, status: STATUS, isSeniorConsultStarted: boolean, apptDetails: Appointment) {
+    return this.createUpdateAppointment(
+      apptDetails,
+      {
+        id,
+        status,
+        isSeniorConsultStarted
+      },
+      AphErrorMessages.UPDATE_APPOINTMENT_ERROR
+    );
   }
 
   updateSDAppointmentStatus(
     id: string,
     status: STATUS,
     isSeniorConsultStarted: boolean,
-    sdConsultationDate: Date
+    sdConsultationDate: Date,
+    apptDetails: Appointment
   ) {
-    this.update(id, { status, isSeniorConsultStarted, sdConsultationDate }).catch(
-      (createErrors) => {
-        throw new AphError(AphErrorMessages.UPDATE_APPOINTMENT_ERROR, undefined, { createErrors });
-      }
+    return this.createUpdateAppointment(
+      apptDetails,
+      {
+        id,
+        status,
+        isSeniorConsultStarted,
+        sdConsultationDate
+      },
+      AphErrorMessages.UPDATE_APPOINTMENT_ERROR
     );
-  }
-
-  updateAppointmentStatusUsingOrderId(
-    paymentOrderId: string,
-    status: STATUS,
-    isSeniorConsultStarted: boolean
-  ) {
-    this.update(paymentOrderId, { status, isSeniorConsultStarted }).catch((createErrors) => {
-      throw new AphError(AphErrorMessages.UPDATE_APPOINTMENT_ERROR, undefined, { createErrors });
-    });
-  }
-
-  confirmAppointment(id: string, status: STATUS, apolloAppointmentId: number) {
-    this.update(id, { status, apolloAppointmentId });
   }
 
   patientLog(
@@ -1090,9 +1158,16 @@ export class AppointmentRepository extends Repository<Appointment> {
     return results.getRawMany();
   }
 
-  updateTransferState(id: string, appointmentState: APPOINTMENT_STATE) {
-    //this.update(id, { appointmentState, isConsultStarted: false, isSeniorConsultStarted: false });
-    this.update(id, { appointmentState, isSeniorConsultStarted: false });
+  updateTransferState(id: string, appointmentState: APPOINTMENT_STATE, apptDetails: Appointment) {
+    return this.createUpdateAppointment(
+      apptDetails,
+      {
+        id,
+        appointmentState,
+        isSeniorConsultStarted: false
+      },
+      AphErrorMessages.UPDATE_APPOINTMENT_ERROR
+    )
   }
 
   checkDoctorAppointmentByDate(doctorId: string, appointmentDateTime: Date) {
@@ -1103,84 +1178,109 @@ export class AppointmentRepository extends Repository<Appointment> {
     id: string,
     appointmentDateTime: Date,
     rescheduleCount: number,
-    appointmentState: APPOINTMENT_STATE
+    appointmentState: APPOINTMENT_STATE,
+    apptDetails: Appointment
   ) {
-    return this.update(id, {
-      appointmentDateTime,
-      rescheduleCount,
-      appointmentState,
-      status: STATUS.PENDING,
-    });
-  }
+    return this.createUpdateAppointment(
+      apptDetails,
+      {
+        id,
+        appointmentDateTime,
+        rescheduleCount,
+        appointmentState,
+        status: STATUS.PENDING
+      },
+      AphErrorMessages.RESCHEDULE_APPOINTMENT_ERROR
+    );
 
-  updateJdQuestionStatus(id: string, isJdQuestionsComplete: boolean) {
-    return this.update(id, {
-      isJdQuestionsComplete,
-    });
   }
 
   updateJdQuestionStatusbyIds(ids: string[]) {
-    return this.update([...ids], {
-      isJdQuestionsComplete: true,
-      isConsultStarted: true,
-    }).catch((getApptError) => {
-      throw new AphError(AphErrorMessages.UPDATE_APPOINTMENT_ERROR, undefined, {
-        getApptError,
-      });
-    });
+    return new Promise(async (resolve, reject) => {
+      try {
+
+        //Do not use forEach here, forEach loops do not support await
+        for (let k = 0, totalItemsTosave = ids.length; k < totalItemsTosave; k++) {
+          await this.createUpdateAppointment(
+            this.create(),
+            {
+              id: ids[k],
+              isJdQuestionsComplete: true,
+              isConsultStarted: true
+            },
+            AphErrorMessages.UPDATE_APPOINTMENT_ERROR
+          )
+        }
+
+        return resolve();
+      }
+      catch (exception) {
+        return reject(exception);
+      }
+    })
   }
+
 
   rescheduleAppointmentByDoctor(
     id: string,
     appointmentDateTime: Date,
     rescheduleCountByDoctor: number,
-    appointmentState: APPOINTMENT_STATE
+    appointmentState: APPOINTMENT_STATE,
+    apptDetails: Appointment
   ) {
-    return this.update(id, {
-      appointmentDateTime,
-      rescheduleCountByDoctor,
-      appointmentState,
-      status: STATUS.PENDING,
-    });
+    return this.createUpdateAppointment(
+      apptDetails,
+      {
+        id,
+        appointmentDateTime,
+        rescheduleCountByDoctor,
+        appointmentState,
+        status: STATUS.PENDING
+      },
+      AphErrorMessages.RESCHEDULE_APPOINTMENT_ERROR
+    );
   }
 
   cancelAppointment(
     id: string,
     cancelledBy: REQUEST_ROLES,
     cancelledById: string,
-    cancelReason: string
+    cancelReason: string,
+    apptDetails: Appointment
   ) {
-    if (cancelledBy == REQUEST_ROLES.DOCTOR) {
-      return this.update(id, {
-        status: STATUS.CANCELLED,
-        cancelledBy,
-        cancelledById,
-        doctorCancelReason: cancelReason,
-        cancelledDate: new Date(),
-      }).catch((cancelError) => {
-        throw new AphError(AphErrorMessages.CANCEL_APPOINTMENT_ERROR, undefined, { cancelError });
-      });
-    } else {
-      return this.update(id, {
-        status: STATUS.CANCELLED,
-        cancelledBy,
-        cancelledById,
-        patientCancelReason: cancelReason,
-        cancelledDate: new Date(),
-      }).catch((cancelError) => {
-        throw new AphError(AphErrorMessages.CANCEL_APPOINTMENT_ERROR, undefined, { cancelError });
-      });
+    const apptUpdatePartial: Partial<Appointment> = {
+      id,
+      status: STATUS.CANCELLED,
+      cancelledBy,
+      cancelledById,
+      cancelledDate: new Date()
     }
+
+    if (cancelledBy == REQUEST_ROLES.DOCTOR) {
+      apptUpdatePartial['doctorCancelReason'] = cancelReason;
+    }
+    else {
+      apptUpdatePartial['patientCancelReason'] = cancelReason;
+    }
+
+    return this.createUpdateAppointment(
+      apptDetails,
+      apptUpdatePartial,
+      AphErrorMessages.CANCEL_APPOINTMENT_ERROR
+    );
   }
 
-  systemCancelAppointment(id: string) {
-    return this.update(id, {
-      status: STATUS.CANCELLED,
-      cancelledBy: REQUEST_ROLES.SYSTEM,
-      cancelledDate: new Date(),
-    }).catch((cancelError) => {
-      throw new AphError(AphErrorMessages.CANCEL_APPOINTMENT_ERROR, undefined, { cancelError });
-    });
+  systemCancelAppointment(id: string, apptDetails: Appointment) {
+    return this.createUpdateAppointment(
+      apptDetails,
+      {
+        id,
+        cancelledBy: REQUEST_ROLES.SYSTEM,
+        cancelledDate: new Date(),
+        status: STATUS.CANCELLED
+      },
+      AphErrorMessages.CANCEL_APPOINTMENT_ERROR
+    );
   }
 
   getAppointmentsByPatientId(patientId: string, startDate: Date, endDate: Date) {
@@ -1203,13 +1303,17 @@ export class AppointmentRepository extends Repository<Appointment> {
         toDate: newEndDate,
       })
       .andWhere('appointment.patientId = :patientId', { patientId: patientId })
-      .andWhere('appointment.status not in(:status1,:status2,:status3,:status4,:status5)', {
-        status1: STATUS.CANCELLED,
-        status2: STATUS.PAYMENT_PENDING,
-        status3: STATUS.UNAVAILABLE_MEDMANTRA,
-        status4: STATUS.PAYMENT_FAILED,
-        status5: STATUS.PAYMENT_PENDING_PG,
-      })
+      .andWhere(
+        'appointment.status not in(:status1,:status2,:status3,:status4,:status5,:status6)',
+        {
+          status1: STATUS.CANCELLED,
+          status2: STATUS.PAYMENT_PENDING,
+          status3: STATUS.UNAVAILABLE_MEDMANTRA,
+          status4: STATUS.PAYMENT_FAILED,
+          status5: STATUS.PAYMENT_PENDING_PG,
+          status6: STATUS.PAYMENT_ABORTED,
+        }
+      )
       .orderBy('appointment.appointmentDateTime', 'ASC')
       .getMany();
   }
@@ -1440,13 +1544,17 @@ export class AppointmentRepository extends Repository<Appointment> {
       .andWhere('appointment.appointmentState = :appointmentState', {
         appointmentState: APPOINTMENT_STATE.NEW,
       })
-      .andWhere('appointment.status not in(:status1,:status2,:status3,:status4,:status5)', {
-        status1: STATUS.CANCELLED,
-        status2: STATUS.PAYMENT_PENDING,
-        status3: STATUS.UNAVAILABLE_MEDMANTRA,
-        status4: STATUS.PAYMENT_FAILED,
-        status5: STATUS.PAYMENT_PENDING_PG,
-      })
+      .andWhere(
+        'appointment.status not in(:status1,:status2,:status3,:status4,:status5,:status6)',
+        {
+          status1: STATUS.CANCELLED,
+          status2: STATUS.PAYMENT_PENDING,
+          status3: STATUS.UNAVAILABLE_MEDMANTRA,
+          status4: STATUS.PAYMENT_FAILED,
+          status5: STATUS.PAYMENT_PENDING_PG,
+          status6: STATUS.PAYMENT_ABORTED,
+        }
+      )
       .getMany();
   }
 
@@ -1536,13 +1644,17 @@ export class AppointmentRepository extends Repository<Appointment> {
       order: { bookingDate: 'ASC' },
     });*/
 
-  updateConsultStarted(id: string, status: Boolean) {
-    return this.update(id, { isConsultStarted: status });
+  updateConsultStarted(id: string, status: Boolean, apptDetails: Appointment) {
+    return this.createUpdateAppointment(
+      apptDetails,
+      {
+        id,
+        isConsultStarted: status
+      },
+      AphErrorMessages.CANCEL_APPOINTMENT_ERROR
+    );
   }
 
-  updateSeniorConsultStarted(id: string, status: Boolean) {
-    return this.update(id, { isSeniorConsultStarted: status });
-  }
   getCompletedAppointments(doctorId: string, fromDate: Date, toDate: Date, statusNumber: Number) {
     const inProgress = 'IN_PROGRESS';
     const completed = 'COMPLETED';
@@ -1767,7 +1879,7 @@ export class AppointmentRepository extends Repository<Appointment> {
       })
       .andWhere('appointment.patientId = :patientId', { patientId: patientId })
       .andWhere(
-        'appointment.status not in(:status1,:status2,:status3,:status4,:status5,:status6)',
+        'appointment.status not in(:status1,:status2,:status3,:status4,:status5,:status6,:status7)',
         {
           status1: STATUS.CANCELLED,
           status2: STATUS.PAYMENT_PENDING,
@@ -1775,6 +1887,7 @@ export class AppointmentRepository extends Repository<Appointment> {
           status4: STATUS.COMPLETED,
           status5: STATUS.PAYMENT_FAILED,
           status6: STATUS.PAYMENT_PENDING_PG,
+          status7: STATUS.PAYMENT_ABORTED,
         }
       )
       .orderBy('appointment.appointmentDateTime', 'ASC')
@@ -1797,6 +1910,21 @@ export class AppointmentRepository extends Repository<Appointment> {
       .andWhere('appointment.couponCode = :couponCode', { couponCode })
       .andWhere('appointment.status not in(:status1)', {
         status1: STATUS.PAYMENT_PENDING,
+      })
+      .getCount();
+  }
+
+  checkIfAppointmentBooked(doctorId: string, patientId: string, appointmentDateTime: Date) {
+    return this.createQueryBuilder('appointment')
+      .andWhere('appointment.patientId = :patientId', { patientId })
+      .andWhere('appointment.doctorId = :doctorId', { doctorId })
+      .andWhere('appointment.appointmentDateTime >= :appointmentDateTime', { appointmentDateTime })
+      .andWhere('appointment.status not in(:status1,:status2,:status3,:status4,:status5)', {
+        status1: STATUS.PAYMENT_PENDING,
+        status2: STATUS.CANCELLED,
+        status3: STATUS.PAYMENT_FAILED,
+        status4: STATUS.PAYMENT_ABORTED,
+        status5: STATUS.PAYMENT_PENDING_PG,
       })
       .getCount();
   }

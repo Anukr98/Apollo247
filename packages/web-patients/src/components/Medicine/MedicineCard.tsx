@@ -10,7 +10,6 @@ import { gtmTracking } from '../../gtmTracking';
 import { notifyMeTracking } from '../../webEngageTracking';
 import { NotifyMeNotification } from './NotifyMeNotification';
 import { useParams } from 'hooks/routerHooks';
-import { MEDICINE_QUANTITY } from 'helpers/commonHelpers';
 import _replace from 'lodash/replace';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 
@@ -226,6 +225,7 @@ export const MedicineCard: React.FC<MedicineInformationProps> = (props) => {
                       onClick={() => {
                         if (product.is_in_stock) {
                           const cartItem: MedicineCartItem = {
+                            MaxOrderQty: product.MaxOrderQty,
                             url_key: product.url_key,
                             description: product.description,
                             id: product.id,
@@ -257,7 +257,7 @@ export const MedicineCard: React.FC<MedicineInformationProps> = (props) => {
                                   {
                                     item_name: product.name,
                                     item_id: product.sku,
-                                    price: product.price,
+                                    price: product.special_price || product.price,
                                     item_category: 'Pharmacy',
                                     item_category_2: product.type_id
                                       ? product.type_id.toLowerCase() === 'pharma'
@@ -318,6 +318,7 @@ export const MedicineCard: React.FC<MedicineInformationProps> = (props) => {
                           removeCartItem && removeCartItem(product.id);
                         } else {
                           const cartItem: MedicineCartItem = {
+                            MaxOrderQty: product.MaxOrderQty,
                             url_key: product.url_key,
                             description: product.description,
                             id: product.id,
@@ -349,7 +350,7 @@ export const MedicineCard: React.FC<MedicineInformationProps> = (props) => {
                                   {
                                     item_name: product.name,
                                     item_id: product.sku,
-                                    price: product.price,
+                                    price: product.special_price || product.price,
                                     item_category: 'Pharmacy',
                                     item_category_2: product.type_id
                                       ? product.type_id.toLowerCase() === 'pharma'
@@ -376,8 +377,9 @@ export const MedicineCard: React.FC<MedicineInformationProps> = (props) => {
                     <AphButton
                       onClick={() => {
                         const medicineQtyInCart = getQuantity(product);
-                        if (medicineQtyInCart < MEDICINE_QUANTITY) {
+                        if (medicineQtyInCart < (product.MaxOrderQty || 20)) {
                           const cartItem: MedicineCartItem = {
+                            MaxOrderQty: product.MaxOrderQty,
                             url_key: product.url_key,
                             description: product.description,
                             id: product.id,
@@ -409,7 +411,7 @@ export const MedicineCard: React.FC<MedicineInformationProps> = (props) => {
                                   {
                                     item_name: product.name,
                                     item_id: product.sku,
-                                    price: product.price,
+                                    price: product.special_price || product.price,
                                     item_category: 'Pharmacy',
                                     item_category_2: product.type_id
                                       ? product.type_id.toLowerCase() === 'pharma'

@@ -302,25 +302,30 @@ type MedicineInformationProps = {
 };
 
 export const MedicineInformation: React.FC<MedicineInformationProps> = (props) => {
+  const { data } = props;
   const classes = useStyles({});
   const {
     addCartItem,
     cartItems,
-    updateCartItem,
+    updateCartItemQty,
     pharmaAddressDetails,
     setMedicineAddress,
     setPharmaAddressDetails,
     setHeaderPincodeError,
   } = useShoppingCart();
   const { currentPatient } = useAllCurrentPatients();
-  const [medicineQty, setMedicineQty] = React.useState(1);
+  const itemIndexInCart = (item: MedicineProduct) => {
+    return cartItems.findIndex((cartItem) => cartItem.id == item.id);
+  };
+  const [medicineQty, setMedicineQty] = React.useState(
+    itemIndexInCart(data) !== -1 ? cartItems[itemIndexInCart(data)].quantity : 1
+  );
   const notifyPopRef = useRef(null);
   const addToCartRef = useRef(null);
   const subDrugsRef = useRef(null);
   const [isSubDrugsPopoverOpen, setIsSubDrugsPopoverOpen] = React.useState<boolean>(false);
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
   const [substitutes, setSubstitutes] = React.useState<MedicineProductDetails[] | null>(null);
-  const { data } = props;
   const params = useParams<{ sku: string }>();
   const [pinCode, setPinCode] = React.useState<string>('');
   const [deliveryTime, setDeliveryTime] = React.useState<string>('');
@@ -522,21 +527,17 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
       });
   };
 
-  const itemIndexInCart = (item: MedicineProduct) => {
-    return cartItems.findIndex((cartItem) => cartItem.id == item.id);
-  };
-
   const applyCartOperations = (cartItem: MedicineCartItem) => {
     const index = cartItems.findIndex((item) => item.id === cartItem.id);
     if (index >= 0) {
-      updateCartItem && updateCartItem(cartItem);
+      updateCartItemQty && updateCartItemQty(cartItem);
     } else {
       addCartItem && addCartItem(cartItem);
     }
   };
   const isSmallScreen = useMediaQuery('(max-width:767px)');
 
-  const options = Array.from(Array(20), (_, x) => x + 1);
+  const options = Array.from(Array(data.MaxOrderQty || 20), (_, x) => x + 1);
   return (
     <div className={classes.root}>
       <div className={`${classes.medicineSection}`}>
@@ -657,7 +658,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                                       {
                                         item_name: data.name,
                                         item_id: data.sku,
-                                        price: data.price,
+                                        price: data.special_price || data.price,
                                         item_category: 'Pharmacy',
                                         item_category_2: data.type_id
                                           ? data.type_id.toLowerCase() === 'pharma'
@@ -737,6 +738,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                       setClickAddCart(true);
                       setAddMutationLoading(true);
                       const cartItem: MedicineCartItem = {
+                        MaxOrderQty: data.MaxOrderQty,
                         url_key: data.url_key,
                         description: data.description,
                         id: data.id,
@@ -768,7 +770,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                               {
                                 item_name: data.name,
                                 item_id: data.sku,
-                                price: data.price,
+                                price: data.special_price || data.price,
                                 item_category: 'Pharmacy',
                                 item_category_2: data.type_id
                                   ? data.type_id.toLowerCase() === 'pharma'
@@ -793,10 +795,6 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                     {' '}
                     {addMutationLoading ? (
                       <CircularProgress size={22} color="secondary" />
-                    ) : itemIndexInCart(data) !== -1 && isUpdateQuantity ? (
-                      'Update Cart'
-                    ) : itemIndexInCart(data) !== -1 ? (
-                      'Added To Cart'
                     ) : (
                       'Add To Cart'
                     )}
@@ -808,6 +806,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                     onClick={() => {
                       setUpdateMutationLoading(true);
                       const cartItem: MedicineCartItem = {
+                        MaxOrderQty: data.MaxOrderQty,
                         url_key: data.url_key,
                         description: data.description,
                         id: data.id,

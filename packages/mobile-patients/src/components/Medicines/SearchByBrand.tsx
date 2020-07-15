@@ -104,23 +104,23 @@ export interface SearchByBrandProps
   extends NavigationScreenProps<{
     title: string;
     category_id: string;
-    isTest?: boolean; // Ignoring for now
     movedFrom?: string;
+    products?: MedicineProduct[];
   }> {}
 
 export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
+  const products = props.navigation.getParam('products');
   const category_id = props.navigation.getParam('category_id');
   const pageTitle = props.navigation.getParam('title');
-  const isTest = props.navigation.getParam('isTest');
   const [searchText, setSearchText] = useState<string>('');
-  const [productsList, setProductsList] = useState<MedicineProduct[]>([]);
+  const [productsList, setProductsList] = useState<MedicineProduct[]>(products || []);
   const [medicineList, setMedicineList] = useState<MedicineProduct[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isLoading, setIsLoading] = useState<boolean>(products ? false : true);
   const [searchSate, setsearchSate] = useState<'load' | 'success' | 'fail' | undefined>();
   const medicineListRef = useRef<FlatList<MedicineProduct> | null>();
   const [pageCount, setPageCount] = useState<number>(1);
-  const [listFetching, setListFetching] = useState<boolean>(true);
-  const [endReached, setEndReached] = useState<boolean>(false);
+  const [listFetching, setListFetching] = useState<boolean>(false);
+  const [endReached, setEndReached] = useState<boolean>(products ? true : false);
   const [prevData, setPrevData] = useState<MedicineProduct[]>();
   const [itemsLoading, setItemsLoading] = useState<{ [key: string]: boolean }>({});
   const { currentPatient } = useAllCurrentPatients();
@@ -129,7 +129,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
   const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
   const { getPatientApiCall } = useAuth();
   const { showAphAlert, setLoading: globalLoading } = useUIElements();
-  const { locationDetails, pharmacyLocation } = useAppCommonData();
+  const { locationDetails, pharmacyLocation, isPharmacyLocationServiceable } = useAppCommonData();
   const pharmacyPincode = g(pharmacyLocation, 'pincode') || g(locationDetails, 'pincode');
 
   useEffect(() => {
@@ -139,6 +139,9 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
   }, [currentPatient]);
 
   useEffect(() => {
+    if (products) {
+      return;
+    }
     getProductsByCategoryApi(category_id, pageCount)
       .then(({ data }) => {
         console.log(data, 'getProductsByCategoryApi');
@@ -207,10 +210,12 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
       suggestionItem ? null : globalLoading,
       props.navigation,
       currentPatient,
+      !!isPharmacyLocationServiceable,
       suggestionItem ? () => setItemsLoading({ ...itemsLoading, [sku]: false }) : undefined
     );
     postwebEngageAddToCartEvent(item, 'Pharmacy List');
-    postAppsFlyerAddToCartEvent(item, 'Pharmacy List');
+    let id = currentPatient && currentPatient.id ? currentPatient.id : '';
+    postAppsFlyerAddToCartEvent(item, id);
   };
 
   const onRemoveCartItem = ({ sku }: MedicineProduct) => {
@@ -256,7 +261,14 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
                 marginRight: 24,
               }}
               activeOpacity={1}
-              onPress={() => setFilterVisible(true)}
+              onPress={() => {
+                const eventAttributes: WebEngageEvents[WebEngageEventName.CATEGORY_FILTER_CLICKED] = {
+                  'category ID': category_id,
+                  'category name': pageTitle,
+                };
+                postWebEngageEvent(WebEngageEventName.CATEGORY_FILTER_CLICKED, eventAttributes);
+                setFilterVisible(true);
+              }}
             >
               <Filter />
             </TouchableOpacity>
@@ -379,6 +391,12 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
           Source: 'Pharmacy Search',
         };
         postWebEngageEvent(WebEngageEventName.PHARMACY_SEARCH_RESULTS, eventAttributes);
+
+        const searchEventAttribute: WebEngageEvents[WebEngageEventName.SEARCH_ENTER_CLICK] = {
+          keyword: searchText,
+          numberofresults: medicineList.length,
+        };
+        postWebEngageEvent(WebEngageEventName.SEARCH_ENTER_CLICK, searchEventAttribute);
         props.navigation.navigate(AppRoutes.SearchMedicineScene, { searchText });
         resetSearchState();
       }
@@ -588,6 +606,17 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
           setSortBy(sortBy);
           medicineListRef.current && medicineListRef.current.scrollToOffset({ offset: 0 });
           setIsLoading(false);
+
+          const dicountRangeEvent = discountRange.from + '-' + discountRange.to;
+          const eventAttributes: WebEngageEvents[WebEngageEventName.CATEGORY_FILTER_APPLIED] = {
+            'category ID': category_id,
+            'category name': pageTitle,
+            discount: dicountRangeEvent === '0-100' ? '' : dicountRangeEvent,
+            price:
+              typeof priceRange.from === 'undefined' ? '' : priceRange.from + '-' + priceRange.to,
+            'sort by': typeof sortBy === 'undefined' ? '' : JSON.stringify(sortBy),
+          };
+          postWebEngageEvent(WebEngageEventName.CATEGORY_FILTER_APPLIED, eventAttributes);
         }}
       />
     );
@@ -648,54 +677,57 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
     }
 
     return filteredProductsList.length ? (
-      <FlatList
-        removeClippedSubviews={true}
-        onScroll={() => Keyboard.dismiss()}
-        ref={(ref) => {
-          medicineListRef.current = ref;
-        }}
-        data={filteredProductsList}
-        renderItem={({ item, index }) => renderMedicineCard(item, index, filteredProductsList)}
-        keyExtractor={(_, index) => `${index}`}
-        bounces={false}
-        ListFooterComponent={
-          listFetching ? (
-            <View style={{ marginBottom: 20 }}>
-              <ActivityIndicator animating={true} size="large" color="green" />
-            </View>
-          ) : null
-        }
-        onEndReachedThreshold={0.5}
-        onEndReached={() => {
-          if (!listFetching && !endReached) {
-            setListFetching(true);
-            getProductsByCategoryApi(category_id, pageCount)
-              .then(({ data }) => {
-                const products = data.products || [];
-                if (prevData && JSON.stringify(prevData) !== JSON.stringify(products)) {
-                  setProductsList([...productsList, ...products]);
-                  setPageCount(pageCount + 1);
-                  setPrevData(products);
-                } else {
-                  setEndReached(true);
-                  showAphAlert &&
-                    showAphAlert({
-                      title: 'Alert!',
-                      description: "You've reached the end of the list",
-                    });
-                }
-              })
-              .catch((err) => {
-                CommonBugFender('SearchByBrand_getProductsByCategoryApi', err);
-                console.log(err, 'errr');
-              })
-              .finally(() => {
-                setIsLoading(false);
-                setListFetching(false);
-              });
-          }
-        }}
-      />
+      <>
+        <FlatList
+          removeClippedSubviews={true}
+          onScroll={() => Keyboard.dismiss()}
+          ref={(ref) => {
+            medicineListRef.current = ref;
+          }}
+          data={filteredProductsList}
+          renderItem={({ item, index }) => renderMedicineCard(item, index, filteredProductsList)}
+          keyExtractor={(_, index) => `${index}`}
+          bounces={false}
+          onEndReachedThreshold={0.5}
+          onEndReached={() => {
+            if (!listFetching && !endReached) {
+              setListFetching(true);
+              getProductsByCategoryApi(category_id, pageCount)
+                .then(({ data }) => {
+                  const products = data.products || [];
+                  if (prevData && JSON.stringify(prevData) !== JSON.stringify(products)) {
+                    setProductsList([...productsList, ...products]);
+                    setPageCount(pageCount + 1);
+                    setPrevData(products);
+                  } else {
+                    setEndReached(true);
+                    showAphAlert &&
+                      showAphAlert({
+                        title: 'Alert!',
+                        description: "You've reached the end of the list",
+                      });
+                  }
+                })
+                .catch((err) => {
+                  CommonBugFender('SearchByBrand_getProductsByCategoryApi', err);
+                  console.log(err, 'errr');
+                })
+                .finally(() => {
+                  setIsLoading(false);
+                  setListFetching(false);
+                });
+            }
+          }}
+        />
+        {listFetching ? (
+          <ActivityIndicator
+            style={{ backgroundColor: 'transparent' }}
+            animating={listFetching}
+            size="large"
+            color="green"
+          />
+        ) : null}
+      </>
     ) : (
       renderEmptyData()
     );

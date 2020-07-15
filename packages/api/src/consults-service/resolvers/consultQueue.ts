@@ -217,9 +217,11 @@ const addToConsultQueue: Resolver<
   AddToConsultQueueResult
 > = async (parent, { appointmentId }, context) => {
   const { cqRepo, docRepo, apptRepo, caseSheetRepo } = getRepos(context);
-  await apptRepo.findOneOrFail(appointmentId);
+  const apptDetails = await apptRepo.findOneOrFail(appointmentId);
+
   const jrDocList: JuniorDoctorsList[] = [];
   const juniorDoctorCaseSheet = await caseSheetRepo.getJuniorDoctorCaseSheet(appointmentId);
+
   if (juniorDoctorCaseSheet != null) {
     const queueResult: AddToConsultQueueResult = {
       id: 0,
@@ -245,6 +247,8 @@ const addToConsultQueue: Resolver<
     isActive: true,
   });
   let doctorId: string = '0';
+
+
   const nextDoctorId = await cqRepo.getNextJuniorDoctor(context.doctorsDb);
   if (nextDoctorId && nextDoctorId != '0') {
     doctorId = nextDoctorId;
@@ -253,7 +257,7 @@ const addToConsultQueue: Resolver<
   }
 
   const { id } = await cqRepo.save(cqRepo.create({ appointmentId, doctorId, isActive: true }));
-  await apptRepo.updateConsultStarted(appointmentId, true);
+  await apptRepo.updateConsultStarted(appointmentId, true, apptDetails);
 
   function getJuniorDocInfo() {
     return new Promise(async (resolve, reject) => {
@@ -390,9 +394,9 @@ const addToConsultQueueWithAutomatedQuestions: Resolver<
         isJdAllowed === false
           ? ApiConstants.NOT_APPLICABLE
           : ApiConstants.APPOINTMENT_BOOKED_WITHIN_10_MIN.toString().replace(
-              '{0}',
-              ApiConstants.AUTO_SUBMIT_CASESHEET_TIME_APPOINMENT.toString()
-            ),
+            '{0}',
+            ApiConstants.AUTO_SUBMIT_CASESHEET_TIME_APPOINMENT.toString()
+          ),
       isJdConsultStarted: true,
     };
     caseSheetRepo.savecaseSheet(casesheetAttrs);
@@ -537,9 +541,7 @@ const addToConsultQueueWithAutomatedQuestions: Resolver<
     const familyHistoryRepo = context.patientsDb.getCustomRepository(
       PatientFamilyHistoryRepository
     );
-    const familyHistoryRecord = await familyHistoryRepo.getPatientFamilyHistory(
-      appointmentData.patientId
-    );
+    const familyHistoryRecord = patientData.familyHistory[0];
 
     if (familyHistoryRecord == null) {
       //create
@@ -558,7 +560,9 @@ const addToConsultQueueWithAutomatedQuestions: Resolver<
       description: lifeStyle.length > 0 ? lifeStyle : undefined,
     };
     const lifeStyleRepo = context.patientsDb.getCustomRepository(PatientLifeStyleRepository);
-    const lifeStyleRecord = await lifeStyleRepo.getPatientLifeStyle(appointmentData.patientId);
+    const lifeStyleRecord = patientData.lifeStyle
+      ? patientData.lifeStyle[0]
+      : patientData.lifeStyle;
 
     if (lifeStyleRecord == null) {
       //create
@@ -592,9 +596,7 @@ const addToConsultQueueWithAutomatedQuestions: Resolver<
   const medicalHistoryRepo = context.patientsDb.getCustomRepository(
     PatientMedicalHistoryRepository
   );
-  const medicalHistoryRecord = await medicalHistoryRepo.getPatientMedicalHistory(
-    appointmentData.patientId
-  );
+  const medicalHistoryRecord = patientData.patientMedicalHistory;
   if (medicalHistoryRecord == null) {
     //create
     medicalHistoryRepo.savePatientMedicalHistory(medicalHistoryInputs);

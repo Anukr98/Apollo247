@@ -35,6 +35,7 @@ import { fetchPaymentOptions } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { FirebaseEvents, FirebaseEventName } from '../../helpers/firebaseEvents';
 import { postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { AppsFlyerEventName, AppsFlyerEvents } from '../../helpers/AppsFlyerEvents';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -42,6 +43,7 @@ const windowHeight = Dimensions.get('window').height;
 export interface ConsultCheckoutProps extends NavigationScreenProps {}
 
 export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
+  const consultedWithDoctorBefore = props.navigation.getParam('consultedWithDoctorBefore');
   const client = useApolloClient();
   const doctor = props.navigation.getParam('doctor');
   const tabs =
@@ -55,6 +57,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const [loading, setLoading] = useState(true);
   const { showAphAlert } = useUIElements();
+  const couponApplied = props.navigation.getParam('couponApplied');
 
   type bankOptions = {
     name: string;
@@ -129,8 +132,9 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
 
   const getConsultationBookedEventAttributes = (time: string, id: string) => {
     const localTimeSlot = moment(new Date(time));
-    console.log(localTimeSlot.format('DD-MM-YYY, hh:mm A'));
-
+    console.log(localTimeSlot.format('DD MMM YYYY, h:mm A'));
+    let date = new Date(time);
+    // date = new Date(date.getTime() + 5.5 * 60 * 60 * 1000);
     const doctorClinics = (g(doctor, 'doctorHospital') || []).filter((item) => {
       if (item && item.facility && item.facility.facilityType)
         return item.facility.facilityType === 'HOSPITAL';
@@ -151,7 +155,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
       'Customer ID': g(currentPatient, 'id'),
       'Consult ID': id,
       'Speciality ID': g(doctor, 'specialty', 'id'),
-      'Consult Date Time': localTimeSlot,
+      'Consult Date Time': date,
       'Consult Mode': tabs[0].title === selectedTab ? 'Online' : 'Physical',
       'Hospital Name':
         doctorClinics.length > 0 && doctor!.doctorType !== DoctorType.PAYROLL
@@ -166,6 +170,20 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
       'Net Amount': price,
       af_revenue: price,
       af_currency: 'INR',
+    };
+    return eventAttributes;
+  };
+
+  const getConsultationBookedAppsFlyerEventAttributes = (id: string) => {
+    const eventAttributes: AppsFlyerEvents[AppsFlyerEventName.CONSULTATION_BOOKED] = {
+      'customer id': g(currentPatient, 'id'),
+      'doctor id': g(doctor, 'id')!,
+      'specialty id': g(doctor, 'specialty', 'id')!,
+      'consult type': 'Consult Online' === selectedTab ? 'online' : 'clinic',
+      af_revenue: price,
+      af_currency: 'INR',
+      'consult id': id,
+      'coupon applied': couponApplied,
     };
     return eventAttributes;
   };
@@ -207,6 +225,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
   };
 
   const initiatePayment = (item) => {
+    console.log('appointmentInput---------------', appointmentInput);
     setLoading && setLoading(true);
     client
       .mutate<bookAppointment>({
@@ -227,19 +246,32 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
           };
           postWebEngageEvent(WebEngageEventName.PAYMENT_INSTRUMENT, paymentEventAttributes);
           postFirebaseEvent(FirebaseEventName.PAYMENT_INSTRUMENT, paymentEventAttributes);
+
+          const paymentModeEventAttribute: WebEngageEvents[WebEngageEventName.CONSULT_PAYMENT_MODE_SELECTED] = {
+            'Payment Mode': item.paymentMode,
+          };
+          postWebEngageEvent(
+            WebEngageEventName.CONSULT_PAYMENT_MODE_SELECTED,
+            paymentModeEventAttribute
+          );
         } catch (error) {}
         const apptmt = g(data, 'data', 'bookAppointment', 'appointment');
 
         !item.bankCode
           ? props.navigation.navigate(AppRoutes.ConsultPaymentnew, {
+              consultedWithDoctorBefore: consultedWithDoctorBefore,
               doctorName: doctorName,
               doctorID: doctor.id,
+              doctor: doctor,
               appointmentId: g(data, 'data', 'bookAppointment', 'appointment', 'id'),
               price: price,
               paymentTypeID: item.paymentMode,
               appointmentInput: appointmentInput,
               webEngageEventAttributes: getConsultationBookedEventAttributes(
                 g(apptmt, 'appointmentDateTime'),
+                g(data, 'data', 'bookAppointment', 'appointment', 'id')!
+              ),
+              appsflyerEventAttributes: getConsultationBookedAppsFlyerEventAttributes(
                 g(data, 'data', 'bookAppointment', 'appointment', 'id')!
               ),
               fireBaseEventAttributes: getConsultationBookedFirebaseEventAttributes(
@@ -248,8 +280,10 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
               ),
             })
           : props.navigation.navigate(AppRoutes.ConsultPaymentnew, {
+              consultedWithDoctorBefore: consultedWithDoctorBefore,
               doctorName: doctorName,
               doctorID: doctor.id,
+              doctor: doctor,
               appointmentId: g(data, 'data', 'bookAppointment', 'appointment', 'id'),
               price: price,
               paymentTypeID: item.paymentMode,
@@ -257,6 +291,9 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
               bankCode: item.bankCode,
               webEngageEventAttributes: getConsultationBookedEventAttributes(
                 g(apptmt, 'appointmentDateTime'),
+                g(data, 'data', 'bookAppointment', 'appointment', 'id')!
+              ),
+              appsflyerEventAttributes: getConsultationBookedAppsFlyerEventAttributes(
                 g(data, 'data', 'bookAppointment', 'appointment', 'id')!
               ),
               fireBaseEventAttributes: getConsultationBookedFirebaseEventAttributes(

@@ -15,6 +15,7 @@ import { PharmaCancelResult } from 'types/medicineOrderTypes';
 import { log } from 'customWinstonLogger';
 import { Connection } from 'typeorm';
 import {} from 'coupons-service/resolvers/validatePharmaCoupon';
+import { medicineOrderCancelled } from 'notifications-service/resolvers/notifications';
 
 export const medicineOrderCancelOMSTypeDefs = gql`
   input MedicineOrderCancelOMSInput {
@@ -142,6 +143,7 @@ const cancelMedicineOrderOMS: Resolver<
   } else {
     await updateOrderCancelled(profilesDb, orderDetails, medicineOrderCancelOMSInput);
   }
+  medicineOrderCancelled(orderDetails, medicineOrderCancelOMSInput.cancelReasonCode, profilesDb);
 
   return { orderStatus: MEDICINE_ORDER_STATUS.CANCEL_REQUEST };
 };

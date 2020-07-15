@@ -20,8 +20,8 @@ import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import {
-  sendCartNotification,
   NotificationType,
+  medicineOrderCancelled,
   sendMedicineOrderStatusNotification,
 } from 'notifications-service/resolvers/notifications';
 import { format, addMinutes, parseISO } from 'date-fns';
@@ -221,22 +221,20 @@ const updateOrderStatus: Resolver<
         );
       }
       if (status == MEDICINE_ORDER_STATUS.DELIVERED || status == MEDICINE_ORDER_STATUS.PICKEDUP) {
+        const notificationType =
+          status == MEDICINE_ORDER_STATUS.DELIVERED
+            ? NotificationType.MEDICINE_ORDER_DELIVERED
+            : NotificationType.MEDICINE_ORDER_PICKEDUP;
+        sendMedicineOrderStatusNotification(notificationType, orderDetails, profilesDb);
         await createOneApolloTransaction(
           medicineOrdersRepo,
           orderDetails,
           orderDetails.patient,
           mobileNumberIn
         );
-        const pushNotificationInput = {
-          orderAutoId: orderDetails.orderAutoId,
-          notificationType:
-            status == MEDICINE_ORDER_STATUS.DELIVERED
-              ? NotificationType.MEDICINE_ORDER_DELIVERED
-              : NotificationType.MEDICINE_ORDER_PICKEDUP,
-        };
-        console.log(pushNotificationInput, 'pushNotificationInput');
-        const notificationResult = sendCartNotification(pushNotificationInput, profilesDb);
-        console.log(notificationResult, 'medicine order delivered notification');
+      }
+      if (status == MEDICINE_ORDER_STATUS.CANCELLED) {
+        medicineOrderCancelled(orderDetails, updateOrderStatusInput.reasonCode, profilesDb);
       }
     }
   }
@@ -320,7 +318,7 @@ const createOneApolloTransaction = async (
     });
     if (val.billDetails) {
       const billDetails: BillDetails = JSON.parse(val.billDetails);
-      Transaction.BillNo = billDetails.billNumber;
+      Transaction.BillNo = `${billDetails.billNumber}_${order.orderAutoId}`;
       Transaction.NetAmount = netAmount;
       Transaction.TransactionDate = billDetails.billDateTime;
       Transaction.GrossAmount = +new Decimal(netAmount).plus(totalDiscount);

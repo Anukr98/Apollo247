@@ -13,7 +13,7 @@ import { AppointmentRepository } from 'consults-service/repositories/appointment
 
 @EntityRepository(RescheduleAppointmentDetails)
 export class RescheduleAppointmentDetailsRepository extends Repository<
-  RescheduleAppointmentDetails
+RescheduleAppointmentDetails
 > {
   async getAppointmentsAndReschedule(
     doctorId: string,
@@ -46,7 +46,9 @@ export class RescheduleAppointmentDetailsRepository extends Repository<
               });
             }
           );
-          await apptRepo.updateTransferState(appt.id, APPOINTMENT_STATE.AWAITING_RESCHEDULE);
+
+          await apptRepo.updateTransferState(appt.id, APPOINTMENT_STATE.AWAITING_RESCHEDULE, appt);
+
           // send notification
           const pushNotificationInput = {
             appointmentId: appt.id,

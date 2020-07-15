@@ -112,6 +112,9 @@ const useStyles = makeStyles((theme: Theme) => {
         },
       },
     },
+    kavachImage: {
+      width: 24,
+    },
     serviceCard: {
       display: 'flex',
       alignItems: 'center',
@@ -227,6 +230,18 @@ export const WeAreHelpYou: React.FC = (props) => {
                   </span>
                   <span>Call our experts</span>
                 </div>
+              </Grid>
+              <Grid item sm={4} xs={12}>
+                <Link className={classes.serviceCard} to={clientRoutes.kavachLanding()}>
+                  <span>
+                    <img
+                      className={classes.kavachImage}
+                      src={require('images/apollo-kavach.png')}
+                      alt=""
+                    />
+                  </span>
+                  <span>Explore the Apollo Kavach Program</span>
+                </Link>
               </Grid>
             </Grid>
           </div>

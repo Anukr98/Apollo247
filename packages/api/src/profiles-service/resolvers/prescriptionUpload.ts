@@ -1,6 +1,6 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
-import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
+
 import { PrescriptionUploadRequest, PrescriptionUploadResponse } from 'types/phrv1';
 import { ApiConstants } from 'ApiConstants';
 import { getUnixTime } from 'date-fns';
@@ -41,14 +41,11 @@ export const prescriptionUploadTypeDefs = gql`
       prescriptionInput: PrescriptionUploadRequest
       uhid: String
     ): PrescriptionResponse
-    uploadMediaDocument(
-      prescriptionInput: PrescriptionUploadRequest
-      uhid: String
-    ): PrescriptionResponse
   }
 `;
 
 export type PrescriptionInputArgs = { prescriptionInput: PrescriptionUploadRequest; uhid: string };
+
 export enum prescriptionSource {
   SELF = 'SELF',
   EPRESCRIPTION = 'EPRESCRIPTION',
@@ -64,7 +61,12 @@ export const uploadPrescriptions: Resolver<
   if (!process.env.PHR_V1_DONLOAD_PRESCRIPTION_DOCUMENT || !process.env.PHR_V1_ACCESS_TOKEN)
     throw new AphError(AphErrorMessages.INVALID_PRISM_URL);
 
-  prescriptionInput.prescriptionName = 'Prescribed By ' + prescriptionInput.prescribedBy;
+  const prescriptionName =
+    prescriptionInput.prescribedBy == ApiConstants.PRESCRIPTION_UPLOADED_BY_PATIENT
+      ? ApiConstants.PRESCRIPTION_UPLOADED_BY_PATIENT
+      : 'Prescribed By ' + prescriptionInput.prescribedBy;
+
+  prescriptionInput.prescriptionName = prescriptionName;
   prescriptionInput.dateOfPrescription =
     getUnixTime(new Date(prescriptionInput.dateOfPrescription)) * 1000;
   prescriptionInput.startDate = prescriptionInput.startDate
@@ -98,58 +100,11 @@ export const uploadPrescriptions: Resolver<
     uploadedFileDetails.response
   );
 
-  return { recordId: uploadedFileDetails.response, fileUrl: prescriptionDocumentUrl };
-};
-
-export const uploadMediaDocument: Resolver<
-  null,
-  PrescriptionInputArgs,
-  ProfilesServiceContext,
-  { recordId: string }
-> = async (parent, { prescriptionInput, uhid }, {}) => {
-  if (!uhid) throw new AphError(AphErrorMessages.INVALID_UHID);
-  if (!process.env.PHR_V1_DONLOAD_PRESCRIPTION_DOCUMENT || !process.env.PHR_V1_ACCESS_TOKEN)
-    throw new AphError(AphErrorMessages.INVALID_PRISM_URL);
-
-  prescriptionInput.prescriptionName = 'MediaDocument';
-  prescriptionInput.dateOfPrescription =
-    getUnixTime(new Date(prescriptionInput.dateOfPrescription)) * 1000;
-  prescriptionInput.startDate = prescriptionInput.startDate
-    ? getUnixTime(new Date(prescriptionInput.startDate)) * 1000
-    : 0;
-  prescriptionInput.endDate = prescriptionInput.endDate
-    ? getUnixTime(new Date(prescriptionInput.endDate)) * 1000
-    : 0;
-  prescriptionInput.prescriptionSource =
-    ApiConstants.PRESCRIPTION_SOURCE_PREFIX + lowerCase(prescriptionInput.prescriptionSource);
-  prescriptionInput.prescriptionDetail = [];
-
-  prescriptionInput.prescriptionFiles.map((item) => {
-    item.id = '';
-    item.dateCreated = getUnixTime(new Date()) * 1000;
-  });
-
-  const uploadedFileDetails: PrescriptionUploadResponse = await savePrescription(
-    uhid,
-    prescriptionInput
-  );
-
-  let prescriptionDocumentUrl = process.env.PHR_V1_DONLOAD_PRESCRIPTION_DOCUMENT.toString();
-  prescriptionDocumentUrl = prescriptionDocumentUrl.replace(
-    '{ACCESS_KEY}',
-    process.env.PHR_V1_ACCESS_TOKEN
-  );
-  prescriptionDocumentUrl = prescriptionDocumentUrl.replace('{UHID}', uhid);
-  prescriptionDocumentUrl = prescriptionDocumentUrl.replace(
-    '{RECORDID}',
-    uploadedFileDetails.response
-  );
   return { recordId: uploadedFileDetails.response, fileUrl: prescriptionDocumentUrl };
 };
 
 export const prescriptionUploadResolvers = {
   Mutation: {
     uploadPrescriptions,
-    uploadMediaDocument,
   },
 };
