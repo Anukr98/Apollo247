@@ -98,7 +98,7 @@ const getOrderInvoice: Resolver<
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
 
-  const patientDetails = await patientsRep.findById(args.patientId);
+  const patientDetails = await patientsRep.getPatientDetails(args.patientId);
 
   const docResponse = await docConsultRep.findDoctorByIdWithoutRelations(
     patientResponse[0].doctorId

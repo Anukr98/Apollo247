@@ -55,10 +55,11 @@ const addPatientFeedback: Resolver<
   AddPatientFeedbackResult
 > = async (parent, { patientFeedbackInput }, { profilesDb, consultsDb }) => {
   const patientsRepo = profilesDb.getCustomRepository(PatientRepository);
-  const patient = await patientsRepo.findById(patientFeedbackInput.patientId);
+  const patient = await patientsRepo.getPatientDetails(patientFeedbackInput.patientId);
   if (patient == null) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
+
   let doctorId = '';
   if (patientFeedbackInput.feedbackType === FEEDBACKTYPE.CONSULT) {
     const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
@@ -70,6 +71,7 @@ const addPatientFeedback: Resolver<
     }
     doctorId = appointmentDetails[0].doctorId;
   }
+
   const addPatientFeedbackAttrs: Partial<PatientFeedback> = {
     patient: patient,
     rating: patientFeedbackInput.rating,
@@ -79,6 +81,7 @@ const addPatientFeedback: Resolver<
     transactionId: patientFeedbackInput.transactionId,
     doctorId: doctorId ? doctorId : '',
   };
+
   const patientFeedbackRepo = profilesDb.getCustomRepository(PatientFeedbackRepository);
   await patientFeedbackRepo.addFeedbackRecord(addPatientFeedbackAttrs);
   return { status: true };

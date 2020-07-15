@@ -355,10 +355,11 @@ const bookRescheduleAppointment: Resolver<
 
   //check details
   const patient = patientsDb.getCustomRepository(PatientRepository);
-  const patientDetails = await patient.findById(bookRescheduleAppointmentInput.patientId);
+  const patientDetails = await patient.getPatientDetails(bookRescheduleAppointmentInput.patientId);
   if (!patientDetails) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
+
   //eslint-disable-next-line @typescript-eslint/no-explicit-any
   async function updateSlotsInEs(appointment: any, appointmentDateTime: any, status: string) {
     const slotApptDt = format(appointmentDateTime, 'yyyy-MM-dd') + ' 18:30:00';

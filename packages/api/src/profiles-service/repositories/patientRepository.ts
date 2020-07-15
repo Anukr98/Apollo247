@@ -39,14 +39,14 @@ export class PatientRepository extends Repository<Patient> {
   async dropPatientCache(id: string) {
     delCache(id);
   }
-  async findById(id: string) {
-    return await this.getByIdCache(id);
-  }
 
-  async findByIdWithoutRelations(id: string) {
-    return this.findOne({
+  async findByIdWithRelations(id: string, relations: string[]) {
+    const findClause = {
       where: { id, isActive: true },
-    });
+      relations: relations,
+    };
+
+    return this.findOne(findClause);
   }
 
   async findOrCreatePatient(
@@ -766,7 +766,7 @@ export class PatientRepository extends Repository<Patient> {
   }
 
   async updateWhatsAppStatus(id: string, whatsAppConsult: Boolean, whatsAppMedicine: Boolean) {
-    const patient = await this.getByIdCache(id);
+    const patient = await this.getPatientDetails(id);
     if (patient) {
       patient.whatsAppConsult = whatsAppConsult;
       patient.whatsAppMedicine = whatsAppMedicine;

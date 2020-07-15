@@ -156,8 +156,7 @@ const initateConferenceTelephoneCall: Resolver<
 
     // lookup with patientId
     const patientRepo = patientsDb.getCustomRepository(PatientRepository);
-    const patient = await patientRepo.findById(appt.patientId);
-
+    const patient = await patientRepo.getPatientDetails(appt.patientId);
     if (!patient) {
       throw new AphError(AphErrorMessages.GET_PATIENTS_ERROR, undefined, {});
     }

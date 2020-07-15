@@ -38,7 +38,8 @@ const getOneApolloUser: Resolver<
   let response = await medOrdersRepo.getOneApolloUser(mobNumberIN);
   if (!response.Success) {
     const patientRepo = profilesDb.getCustomRepository(PatientRepository);
-    const patient = await patientRepo.findById(args.patientId);
+    const patient = await patientRepo.getPatientDetails(args.patientId);
+
     if (patient) {
       let storeCode: ONE_APOLLO_STORE_CODE = ONE_APOLLO_STORE_CODE.WEBCUS;
       if (patient.iosVersion) {

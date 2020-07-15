@@ -1040,12 +1040,12 @@ export class PatientAddress extends BaseEntity {
   @AfterUpdate()
   async dropPatientAddressList() {
     await delCache(`address:list:patient:${this.patientId}`);
-    await delCache(`patient:${this.patientId}`);
   }
 }
 //patientAddress Ends
 
 //patient family history starts
+
 @Entity()
 export class PatientFamilyHistory extends BaseEntity {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
@@ -1079,15 +1079,11 @@ export class PatientFamilyHistory extends BaseEntity {
   updateDateUpdate() {
     this.updatedDate = new Date();
   }
-  @AfterInsert()
-  @AfterUpdate()
-  async dropPatientAddressList() {
-    await delCache(`patient:${this.patientId}`);
-  }
 }
 //patient family history ends
 
 //patientLifeStyle starts
+
 @Entity()
 export class PatientLifeStyle extends BaseEntity {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
@@ -1120,12 +1116,6 @@ export class PatientLifeStyle extends BaseEntity {
   @BeforeUpdate()
   updateDateUpdate() {
     this.updatedDate = new Date();
-  }
-
-  @AfterInsert()
-  @AfterUpdate()
-  async dropPatientAddressList() {
-    await delCache(`patient:${this.patientId}`);
   }
 }
 //patientLifestyle ends
@@ -1488,6 +1478,8 @@ export class CouponPharmaRules extends BaseEntity {
 //Pharma Coupon Rules ends
 
 //patientMedicalHistory starts
+
+
 @Entity()
 export class PatientMedicalHistory extends BaseEntity {
   @Column({ nullable: true })
@@ -1544,12 +1536,6 @@ export class PatientMedicalHistory extends BaseEntity {
   @BeforeUpdate()
   updateDateUpdate() {
     this.updatedDate = new Date();
-  }
-
-  @AfterInsert()
-  @AfterUpdate()
-  async dropPatientCache() {
-    await delCache(`patient:${this.patientId}`);
   }
 }
 //patientMedicalHistory ends
