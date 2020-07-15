@@ -280,6 +280,8 @@ interface savingProps {
 export const CasesheetView: React.FC<savingProps> = (props) => {
   const classes = useStyles({});
   const currentDoctor = useCurrentPatient();
+  const whatsAppno = '+91 9355031397';
+  const helpdeskMail = 'Helpdesk@apollo247.com';
   const {
     patientDetails,
     sdConsultationDate,
@@ -658,6 +660,10 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
                   </p>
                 </>
               ) : null}
+              <p className={classes.specialty}>WhatsApp</p>
+              <span>{whatsAppno}</span>
+              <p className={classes.specialty}>E-mail</p>
+              <span>{helpdeskMail}</span>
             </div>
           ) : null}
         </div>
