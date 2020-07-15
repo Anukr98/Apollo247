@@ -9,15 +9,13 @@ import _isEmpty from 'lodash/isEmpty';
 import { Navigation } from 'components/Navigation';
 import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
 import { clientRoutes } from 'helpers/clientRoutes';
-import { locationRoutesBlackList } from 'helpers/commonHelpers';
-import { useLoginPopupState, useAuth } from 'hooks/authHooks';
-import { LocationSearch } from 'components/LocationSearch';
-import { LocationProvider, LocationContext } from 'components/LocationProvider';
+import { useLoginPopupState, useAuth, useAllCurrentPatients } from 'hooks/authHooks';
 import { MedicinesCartContext } from 'components/MedicinesCartProvider';
 import { getAppStoreLink } from 'helpers/dateHelpers';
 import { MedicineLocationSearch } from 'components/MedicineLocationSearch';
 import { AphButton } from '@aph/web-ui-components';
 import { useParams } from 'hooks/routerHooks';
+import moment from 'moment';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -283,6 +281,7 @@ export const Header: React.FC = (props) => {
   const classes = useStyles({});
   const avatarRef = useRef(null);
   const { isSigningIn, isSignedIn, setVerifyOtpError, signOut } = useAuth();
+  const { allCurrentPatients, currentPatient } = useAllCurrentPatients();
   const { isLoginPopupVisible, setIsLoginPopupVisible } = useLoginPopupState();
   const [profileVisible, setProfileVisible] = React.useState<boolean>(false);
   const [mobileNumber, setMobileNumber] = React.useState('');
@@ -325,6 +324,13 @@ export const Header: React.FC = (props) => {
     clientRoutes.medicinePrescription(),
     clientRoutes.medicineSearch(),
   ];
+
+  const getAge = (dob: string) => {
+    if (dob && dob.length) {
+      return ` | ${moment().diff(dob, 'years')}`;
+    }
+    return null;
+  };
 
   return (
     <div className={classes.headerSticky}>
@@ -373,14 +379,19 @@ export const Header: React.FC = (props) => {
                             profileVisible ? classes.userListActive : ''
                           }`}
                         >
-                          <div className={classes.userDetails}>
-                            <Typography component="h2">Surj Gupta</Typography>
-                            <Typography>UHID : APD1.0010783329</Typography>
-                            <div className={classes.userInfo}>
-                              <Typography>Male | 31</Typography>
-                              <Typography>+91 9769435788</Typography>
+                          {currentPatient && (
+                            <div className={classes.userDetails}>
+                              <Typography component="h2">{currentPatient.firstName}</Typography>
+                              <Typography>UHID : {currentPatient.uhid}</Typography>
+                              <div className={classes.userInfo}>
+                                <Typography>
+                                  {currentPatient.gender}
+                                  {getAge(currentPatient.dateOfBirth)}
+                                </Typography>
+                                <Typography>{currentPatient.mobileNumber}</Typography>
+                              </div>
                             </div>
-                          </div>
+                          )}
                           <ul className={classes.userAccountList}>
                             <li>
                               <Link to={clientRoutes.myAccount()}>
@@ -395,25 +406,32 @@ export const Header: React.FC = (props) => {
                               </Link>
                               <img src={require('images/ic_arrow_right.svg')} alt="" />
                             </li>
-                            <li>
-                              <Link to={clientRoutes.addressBook()}>
-                                <img src={require('images/ic_invoice.svg')} alt="" /> My Orders
-                              </Link>
-                              <img src={require('images/ic_arrow_right.svg')} alt="" />
-                            </li>
+                            {currentPatient && (
+                              <li>
+                                <Link to={clientRoutes.yourOrders()}>
+                                  <img src={require('images/ic_invoice.svg')} alt="" /> My Orders
+                                </Link>
+                                <img src={require('images/ic_arrow_right.svg')} alt="" />
+                              </li>
+                            )}
                             <li>
                               <Link to={clientRoutes.myPayments()}>
                                 <img src={require('images/ic_fees.svg')} alt="" /> My Payments
                               </Link>
                               <img src={require('images/ic_arrow_right.svg')} alt="" />
                             </li>
-                            <li>
-                              <Link to={clientRoutes.healthRecords()}>
-                                <img src={require('images/ic_notificaiton_accounts.svg')} alt="" />{' '}
-                                Health Records
-                              </Link>
-                              <img src={require('images/ic_arrow_right.svg')} alt="" />
-                            </li>
+                            {currentPatient && (
+                              <li>
+                                <Link to={clientRoutes.healthRecords()}>
+                                  <img
+                                    src={require('images/ic_notificaiton_accounts.svg')}
+                                    alt=""
+                                  />{' '}
+                                  Health Records
+                                </Link>
+                                <img src={require('images/ic_arrow_right.svg')} alt="" />
+                              </li>
+                            )}
                             <li>
                               <Link to={clientRoutes.needHelp()}>
                                 <img src={require('images/ic_round_live_help.svg')} alt="" /> Need
