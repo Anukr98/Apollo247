@@ -9,7 +9,7 @@ import { PatientRepository } from 'profiles-service/repositories/patientReposito
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { DoctorPatientExternalConnectRepository } from 'doctors-service/repositories/DoctorPatientExternalConnectRepository';
-
+import { addHours } from 'date-fns';
 export const getAppointmentOverviewTypeDefs = gql`
   type AppointmentList {
     appointment: Appointment!
@@ -109,30 +109,32 @@ const getAppointmentOverview: Resolver<
     },
     order: { appointmentDateTime: 'DESC' },
   });
-  const completedAppointments = await apptRepo.getCompletedAppointments(
-    doctorId,
-    fromDate,
-    toDate,
-    0
-  );
-  const cannceldAppointments = await apptRepo.getCompletedAppointments(
-    doctorId,
-    fromDate,
-    toDate,
-    1
-  );
-  const doctorAway = await apptRepo.getDoctorAway(doctorId, fromDate, toDate);
-  const inNextHour = await apptRepo.getAppointmentsInNextHour(doctorId);
+
+  const completedAppointments = allAppointments.filter(appointment => {
+    return (appointment.status == 'COMPLETED');
+  }).length;
+  const cancelledAppointments = allAppointments.filter(appointment => {
+    return (appointment.status == 'CANCELLED');
+  }).length;
+
+
+  const doctorAway = allAppointments.length
+  const inNextHour = allAppointments.filter((appointment) => {
+    const now = addHours(appointment.appointmentDateTime, -30);
+    const nextHr = addHours(now, 1);
+    return (appointment.appointmentDateTime >= now && appointment.appointmentDateTime <= nextHr);
+  }).length;
 
   const appointments = await Promise.all(
     allAppointments.map(async (appointment) => {
       return { appointment };
     })
   );
+
   const appointmentOverviewOutput = {
     appointments,
     completed: completedAppointments,
-    cancelled: cannceldAppointments,
+    cancelled: cancelledAppointments,
     upcoming: inNextHour,
     doctorAway: doctorAway,
   };
