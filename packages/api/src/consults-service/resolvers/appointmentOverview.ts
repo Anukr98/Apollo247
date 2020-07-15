@@ -120,7 +120,7 @@ const getAppointmentOverview: Resolver<
 
   const doctorAway = allAppointments.length
   const inNextHour = allAppointments.filter((appointment) => {
-    const now = addHours(appointment.appointmentDateTime, -30);
+    const now = new Date();
     const nextHr = addHours(now, 1);
     return (appointment.appointmentDateTime >= now && appointment.appointmentDateTime <= nextHr);
   }).length;
