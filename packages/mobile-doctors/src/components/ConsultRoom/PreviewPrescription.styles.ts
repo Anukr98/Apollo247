@@ -157,4 +157,11 @@ export const PreviewPrescriptionStyles = StyleSheet.create({
     height: 60,
     resizeMode: 'contain',
   },
+  contactContainer: { flexDirection: 'row', flexWrap: 'wrap' },
+  contactSubContainer: { flexDirection: 'row', marginTop: 4, alignItems: 'center' },
+  contactHeadingText: theme.viewStyles.text('R', 9, theme.colors.BLACK, 0.4, 15),
+  contactSubHeadingText: {
+    ...theme.viewStyles.text('R', 9, theme.colors.BLACK, 0.8, 15),
+    marginLeft: 6,
+  },
 });

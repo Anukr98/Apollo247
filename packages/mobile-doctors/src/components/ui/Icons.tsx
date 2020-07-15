@@ -891,3 +891,11 @@ export const EmptySearch: React.FC<IconProps> = (props) => (
     source={require('../../images/icons/mailbox.png')}
   />
 );
+
+export const Mail: React.FC<IconProps> = (props) => (
+  <IconBase size="xs" {...props} source={require('../../images/icons/email.png')} />
+);
+
+export const Whatsapp: React.FC<IconProps> = (props) => (
+  <IconBase size="xs" {...props} source={require('../../images/icons/whatsapp.png')} />
+);
