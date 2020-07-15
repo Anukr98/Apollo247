@@ -1693,6 +1693,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             props.navigation.navigate(AppRoutes.DoctorDetails, {
               doctorId: personalizedData ? personalizedData.doctorDetails.id : '',
               showBookAppointment: true,
+              consultedWithDoctorBefore: true,
             });
           }}
         />

@@ -210,7 +210,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
       suggestionItem ? null : globalLoading,
       props.navigation,
       currentPatient,
-      isPharmacyLocationServiceable,
+      !!isPharmacyLocationServiceable,
       suggestionItem ? () => setItemsLoading({ ...itemsLoading, [sku]: false }) : undefined
     );
     postwebEngageAddToCartEvent(item, 'Pharmacy List');
