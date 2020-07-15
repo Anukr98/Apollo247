@@ -261,15 +261,39 @@ export const sendDoctorNotificationWhatsapp = async (
       '&auth_scheme=plain&format=text&v=1.1&channel=WHATSAPP';
     const whatsAppResponse = await fetch(apiUrl)
       .then(async (res) => {
-        if (loginType == 1) {
-          const sendApiUrl = `${process.env.WHATSAPP_URL}?method=SendMessage&send_to=${mobileNumber}&userid=${process.env.WHATSAPP_DOCTOR_USERNAME}&password=${process.env.WHATSAPP_DOCTOR_PASSWORD}&auth_scheme=plain&msg_type=TEXT&format=text&v=1.1&msg=${message}`;
-          fetch(sendApiUrl)
-            .then((res) => res)
-            .catch((error) => {
-              console.log('whatsapp error', error);
-              throw new AphError(AphErrorMessages.MESSAGE_SEND_WHATSAPP_ERROR);
+        const sendApiUrl = `${process.env.WHATSAPP_URL}?method=SendMessage&send_to=${mobileNumber}&userid=${process.env.WHATSAPP_DOCTOR_USERNAME}&password=${process.env.WHATSAPP_DOCTOR_PASSWORD}&auth_scheme=plain&msg_type=TEXT&format=text&v=1.1&msg=${message}`;
+        fetch(sendApiUrl)
+          .then((res) => {
+            const fileName =
+              process.env.NODE_ENV +
+              '_docwhatsappnotification_' +
+              format(new Date(), 'yyyyMMdd') +
+              '.txt';
+            let assetsDir = path.resolve('/apollo-hospitals/packages/api/src/assets');
+            if (process.env.NODE_ENV != 'local') {
+              assetsDir = path.resolve(<string>process.env.ASSETS_DIRECTORY);
+            }
+            let content =
+              format(new Date(), 'yyyy-MM-dd hh:mm') +
+              '\n mobile number: ' +
+              mobileNumber +
+              '\n message: ' +
+              message +
+              '\n multicastId: ';
+            content +=
+              res +
+              '\n------------------------------------------------------------------------------------\n';
+            fs.appendFile(assetsDir + '/' + fileName, content, (err) => {
+              if (err) {
+                console.log('file saving error', err);
+              }
+              console.log('notification results saved');
             });
-        }
+          })
+          .catch((error) => {
+            console.log('whatsapp error', error);
+            throw new AphError(AphErrorMessages.MESSAGE_SEND_WHATSAPP_ERROR);
+          });
       })
       .catch((error) => {
         throw new AphError(AphErrorMessages.GET_OTP_ERROR);
@@ -753,6 +777,7 @@ export async function sendNotification(
         .replace('{1}', patientDetails.firstName + ' ' + patientDetails.lastName)
         .replace('{2}', finalTime)
         .replace('{3}', doctorDetails.salutation);
+      console.log('DOCTOR_BOOK_APPOINTMENT_WHATSAPP', appointment.id, doctorDetails.mobileNumber);
       sendDoctorNotificationWhatsapp(
         doctorDetails.mobileNumber,
         doctorWhatsAppMessage,
@@ -1377,6 +1402,7 @@ export async function sendReminderNotification(
     whatsappMsg = whatsappMsg
       .replace('{3}', diffMins.toString())
       .replace('{2}', doctorDetails.salutation);
+    console.log('WHATSAPP_SD_CONSULT_REMINDER_15_MIN', appointment.id, doctorDetails.mobileNumber);
     sendDoctorNotificationWhatsapp(
       doctorDetails.mobileNumber,
       whatsappMsg,
@@ -1500,6 +1526,7 @@ export async function sendReminderNotification(
       whatsappMsg = whatsappMsg
         .replace('{1}', doctorDetails.firstName)
         .replace('{2}', doctorDetails.salutation);
+      console.log('doctor whatsapp', appointment.id, doctorDetails.mobileNumber);
       sendDoctorNotificationWhatsapp(
         doctorDetails.mobileNumber,
         whatsappMsg,
@@ -2473,6 +2500,7 @@ const sendChatMessageToDoctor: Resolver<
     .replace('{3}', args.appointmentId)
     .replace('{4}', devLink);
   whatsAppMessageBody = whatsAppMessageBody;
+  console.log('WHATSAPP_SD_CHAT_NOTIFICATION', appointment.id, doctorDetails.mobileNumber);
   await sendDoctorNotificationWhatsapp(
     doctorDetails.mobileNumber,
     whatsAppMessageBody,
