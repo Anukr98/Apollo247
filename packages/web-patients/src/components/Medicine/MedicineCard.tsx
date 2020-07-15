@@ -389,7 +389,10 @@ export const MedicineCard: React.FC<MedicineInformationProps> = (props) => {
                     <AphButton
                       onClick={() => {
                         const medicineQtyInCart = getQuantity(product);
-                        if (medicineQtyInCart < (product.MaxOrderQty || 10)) {
+                        if (
+                          medicineQtyInCart <
+                          (product.MaxOrderQty || process.env.PHARMACY_MEDICINE_QUANTITY)
+                        ) {
                           const cartItem: MedicineCartItem = {
                             MaxOrderQty: product.MaxOrderQty,
                             url_key: product.url_key,
