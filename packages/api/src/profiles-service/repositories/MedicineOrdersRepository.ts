@@ -311,13 +311,9 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
       order: { createdDate: 'DESC' },
       relations: [
         'medicineOrderLineItems',
-        'medicineOrderPayments',
         'medicineOrdersStatus',
         'medicineOrderShipments',
-        'medicineOrderShipments.medicineOrdersStatus',
         'medicineOrderShipments.medicineOrderInvoice',
-        'medicineOrderInvoice',
-        'patient',
       ],
     });
   }
@@ -610,6 +606,7 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
       .leftJoinAndSelect('medicine_orders.medicineOrderPayments', 'medicineOrderPayments')
       .leftJoinAndSelect('medicine_orders.medicineOrdersStatus', 'medicineOrdersStatus')
       .leftJoinAndSelect('medicine_orders.medicineOrderShipments', 'medicineOrderShipments')
+      .leftJoinAndSelect('medicineOrderShipments.medicineOrderInvoice', 'medicineOrderInvoice')
       .andWhere('medicine_orders."patientId" = :patientId', { patientId })
       .andWhere('medicine_orders."currentStatus" in (:status1)', {
         status1: MEDICINE_ORDER_STATUS.DELIVERED,

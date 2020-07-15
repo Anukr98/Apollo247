@@ -14,6 +14,7 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState } from 'react';
 import { StyleProp, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
 import { Image } from 'react-native-elements';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
 const styles = StyleSheet.create({
   containerStyle: {
@@ -246,9 +247,11 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
   };
 
   const renderUnitDropdownAndPrice = () => {
-    const opitons = Array.from({ length: 20 }).map((_, i) => {
-      return { key: (i + 1).toString(), value: i + 1 };
-    });
+    const opitons = Array.from({ length: AppConfig.Configuration.CART_ITEM_MAX_QUANTITY }).map(
+      (_, i) => {
+        return { key: (i + 1).toString(), value: i + 1 };
+      }
+    );
 
     return (
       <View style={styles.unitAndPriceView}>

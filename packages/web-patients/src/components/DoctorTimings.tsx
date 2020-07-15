@@ -57,10 +57,17 @@ const useStyles = makeStyles((theme: Theme) => {
         paddingLeft: 6,
       },
     },
-    row: {
-      display: 'flex',
-      '& span:last-child': {
-        marginLeft: 'auto',
+    timingList: {
+      listStyle: 'none',
+      padding: '0 0 0 10px',
+      margin: 0,
+      '& li': {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: '2px 0',
+        fontWeight: 500,
+        color: '#0087ba',
       },
     },
   };
@@ -106,10 +113,12 @@ export const DoctorTimings: React.FC<DoctorTimingsProps> = (props) => {
                 .format('hh:mm a');
               return (
                 (item.consultMode === 'ONLINE' || item.consultMode === 'BOTH') && (
-                  <div className={classes.row}>
-                    <span>{actualDay}</span>
-                    <span>{`${weeDaysStartTime}-${weeDaysEndTime}`}</span>
-                  </div>
+                  <ul className={classes.timingList}>
+                    <li>
+                      <span>{actualDay}</span>
+                      <span>{`${weeDaysStartTime} - ${weeDaysEndTime}`}</span>
+                    </li>
+                  </ul>
                 )
               );
             })}
@@ -130,10 +139,12 @@ export const DoctorTimings: React.FC<DoctorTimingsProps> = (props) => {
                 .format('hh:mm a');
               return (
                 (item.consultMode === 'PHYSICAL' || item.consultMode === 'BOTH') && (
-                  <div className={classes.row}>
-                    <span>{actualDay}</span>
-                    <span>{`${weeDaysStartTime}-${weeDaysEndTime}`}</span>
-                  </div>
+                  <ul className={classes.timingList}>
+                    <li>
+                      <span>{actualDay}</span>
+                      <span>{`${weeDaysStartTime} - ${weeDaysEndTime}`}</span>
+                    </li>
+                  </ul>
                 )
               );
             })}

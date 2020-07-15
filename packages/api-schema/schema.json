@@ -2623,6 +2623,16 @@
                   "ofType": null
                 },
                 "defaultValue": null
+              },
+              {
+                "name": "appVersion",
+                "description": null,
+                "type": {
+                  "kind": "SCALAR",
+                  "name": "String",
+                  "ofType": null
+                },
+                "defaultValue": null
               }
             ],
             "type": {
@@ -37652,6 +37662,16 @@
             "type": {
               "kind": "ENUM",
               "name": "APPT_CALL_TYPE",
+              "ofType": null
+            },
+            "defaultValue": null
+          },
+          {
+            "name": "appVersion",
+            "description": null,
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
               "ofType": null
             },
             "defaultValue": null

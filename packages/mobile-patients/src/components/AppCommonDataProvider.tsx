@@ -25,7 +25,7 @@ export interface AppCommonDataContextProps {
   pharmacyLocation: LocationData | null;
   setLocationDetails: ((items: LocationData) => void) | null;
   setPharmacyLocation: ((items: LocationData) => void) | null;
-  isPharmacyLocationServiceable: boolean;
+  isPharmacyLocationServiceable?: boolean;
   setPharmacyLocationServiceable: ((value: boolean) => void) | null;
   medicinePageAPiResponse: MedicinePageAPiResponse | null;
   setMedicinePageAPiResponse: ((value: MedicinePageAPiResponse | null) => void) | null;
@@ -123,7 +123,7 @@ export const AppCommonDataProvider: React.FC = (props) => {
 
   const [isPharmacyLocationServiceable, setPharmacyLocationServiceable] = useState<
     AppCommonDataContextProps['isPharmacyLocationServiceable']
-  >(false);
+  >();
 
   const [medicinePageAPiResponse, setMedicinePageAPiResponse] = useState<
     AppCommonDataContextProps['medicinePageAPiResponse']

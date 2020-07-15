@@ -654,7 +654,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
     const params = {
       phone: '91' + storedPhoneNumber,
-      size: 10,
+      size: 40,
     };
     console.log('params', params);
     notifcationsApi(params)
@@ -1693,6 +1693,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             props.navigation.navigate(AppRoutes.DoctorDetails, {
               doctorId: personalizedData ? personalizedData.doctorDetails.id : '',
               showBookAppointment: true,
+              consultedWithDoctorBefore: true,
             });
           }}
         />

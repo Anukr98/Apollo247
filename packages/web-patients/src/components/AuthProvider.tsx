@@ -88,7 +88,6 @@ const buildApolloClient = (authToken: string, handleUnauthenticated: () => void)
   const errorLink = onError((error) => {
     const { graphQLErrors, operation, forward } = error;
     if (isLocal || isDevelopment) console.error(error);
-    // TrackJS.console.error(error);
     if (graphQLErrors) {
       const unauthenticatedError = graphQLErrors.some(
         (gqlError) => gqlError.extensions && gqlError.extensions.code === 'UNAUTHENTICATED'
@@ -212,7 +211,6 @@ export const AuthProvider: React.FC = (props) => {
       setIsSigningIn(true);
       setIsVerifyingOtp(true);
       otpCheckApiCall(otp, loginId).then((res) => {
-        // console.log('res', res);
         if (!res) {
           setVerifyOtpError(true);
           setIsSigningIn(false);
@@ -375,6 +373,16 @@ export const AuthProvider: React.FC = (props) => {
               res.data.getCurrentPatients &&
               res.data.getCurrentPatients.patients &&
               res.data.getCurrentPatients.patients[0].id;
+
+            if (localStorage.getItem('currentUser') && localStorage.getItem('currentUser').length) {
+              const patientIds = res.data.getCurrentPatients.patients.map(patient => patient.id) || [];
+              if (!patientIds.includes(localStorage.getItem('currentUser'))) {
+                localStorage.setItem('currentUser', userId);
+                setCurrentPatientId(userId);
+              } else {
+                setCurrentPatientId(localStorage.getItem('currentUser'));
+              }
+            }
             /**Gtm code start */
             if (isNewUser) {
               gtmTracking({ category: 'Profile', action: 'Register / Login', label: 'Register' });
@@ -466,7 +474,7 @@ export const AuthProvider: React.FC = (props) => {
 //     loginResult.data.login.status &&
 //     loginResult.data.login.loginId
 //   ) {
-//     console.log(loginResult, loginError, 'hello oooooooooooooooo');
+//
 //     setSendOtpError(false);
 //     return loginResult.data.login.loginId;
 //   } else if (loginError) {

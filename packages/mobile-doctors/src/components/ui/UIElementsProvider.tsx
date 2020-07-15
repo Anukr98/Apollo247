@@ -73,6 +73,7 @@ type PopUpParams = {
   okTextStyle?: StyleProp<TextStyle>;
   okContainerStyle?: StyleProp<ViewStyle>;
   style?: StyleProp<ViewStyle>;
+  mainStyle?: StyleProp<ViewStyle>;
   popUpPointerStyle?: StyleProp<ViewStyle>;
   onPressOk?: () => void;
   icon?: React.ReactNode;
@@ -214,6 +215,7 @@ export const UIElementsProvider: React.FC = (props) => {
       icon,
       hideOk,
       timer,
+      mainStyle,
     } = popUpData;
     if (timer) {
       setTimeout(() => {
@@ -222,7 +224,7 @@ export const UIElementsProvider: React.FC = (props) => {
     }
     return (
       isPopUpVisible && (
-        <View style={styles.popUpContainer}>
+        <View style={[styles.popUpContainer, mainStyle]}>
           <TouchableOpacity
             style={{ flex: 1 }}
             activeOpacity={1}

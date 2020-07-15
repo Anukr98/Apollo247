@@ -8,7 +8,7 @@ import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { log } from 'customWinstonLogger';
 import { debugLog } from 'customWinstonLogger';
-import { sendNotificationWhatsapp } from 'notifications-service/resolvers/notifications';
+import { sendDoctorNotificationWhatsapp } from 'notifications-service/resolvers/notifications';
 
 export const loginTypeDefs = gql`
   enum LOGIN_TYPE {
@@ -87,7 +87,14 @@ const login: Resolver<
   if (bypassRes) return bypassRes;
 
   //call sms gateway service to send the OTP here
-  return sendMessage({ mobileNumber, otp, hashCode, logger: loginLogger, otpSaveResponse });
+  return sendMessage({
+    loginType,
+    mobileNumber,
+    otp,
+    hashCode,
+    logger: loginLogger,
+    otpSaveResponse,
+  });
 };
 
 const resendOtp: Resolver<
@@ -160,7 +167,14 @@ const resendOtp: Resolver<
   }
 
   //call sms gateway service to send the OTP here
-  return sendMessage({ mobileNumber, otp, hashCode, logger: resendLogger, otpSaveResponse });
+  return sendMessage({
+    loginType,
+    mobileNumber,
+    otp,
+    hashCode,
+    logger: resendLogger,
+    otpSaveResponse,
+  });
 };
 type testSMSResult = {
   send: Boolean;
@@ -296,13 +310,24 @@ const sendMessage = async (args: any) => {
   //let smsResult;
   if (loginType == LOGIN_TYPE.DOCTOR) {
     const message = ApiConstants.DOCTOR_WHATSAPP_OTP.replace('{0}', otp);
-    const promiseSendNotification = sendNotificationWhatsapp(mobileNumber, message, 1);
+    const promiseSendNotification = sendDoctorNotificationWhatsapp(mobileNumber, message, 1, '');
     const promiseSendSMS = sendSMS(mobileNumber, otp, hashCode);
-    const messageSentResponse = await Promise.all([
-      promiseSendNotification.catch((err) => { log('smsOtpAPILogger', `API_CALL_ERROR`, 'sendNotificationWhatsapp()->CATCH_BLOCK', '', JSON.stringify(err)); return err; }),
-      promiseSendSMS.catch((err) => { log('smsOtpAPILogger', `API_CALL_ERROR`, 'sendSMS()->CATCH_BLOCK', '', JSON.stringify(err)); return err; }),
+    await Promise.all([
+      promiseSendNotification.catch((err) => {
+        log(
+          'smsOtpAPILogger',
+          `API_CALL_ERROR`,
+          'sendDoctorNotificationWhatsapp()->CATCH_BLOCK',
+          '',
+          JSON.stringify(err)
+        );
+        return err;
+      }),
+      promiseSendSMS.catch((err) => {
+        log('smsOtpAPILogger', `API_CALL_ERROR`, 'sendSMS()->CATCH_BLOCK', '', JSON.stringify(err));
+        return err;
+      }),
     ]);
-    messageSentResponse[1];
   } else {
     await sendSMS(mobileNumber, otp, hashCode);
   }
@@ -355,7 +380,15 @@ const getStaticOTP = (args: any) => {
   ) {
     return process.env.PERFORMANCE_ENV_STATIC_OTP.toString();
   }
-
+  //if staging environment, and specific mobileNumber, use the static otp
+  if (
+    process.env.NODE_ENV === 'staging' &&
+    process.env.STAGING_ENV_STATIC_APP_STORE_MOBILE_NUMBER &&
+    process.env.STAGING_ENV_STATIC_APP_STORE_OTP &&
+    mobileNumber == process.env.STAGING_ENV_STATIC_APP_STORE_MOBILE_NUMBER
+  ) {
+    return process.env.STAGING_ENV_STATIC_APP_STORE_OTP.toString();
+  }
   //if production environment, and specific mobileNumber, use the static otp
   if (
     process.env.NODE_ENV === 'production' &&

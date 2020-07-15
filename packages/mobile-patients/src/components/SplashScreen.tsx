@@ -581,6 +581,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
               'min_value_to_nudge_users_to_avail_free_delivery',
               'QA_pharmacy_homepage',
               'pharmacy_homepage',
+              'QA_cart_item_max_quantity',
+              'cart_item_max_quantity',
               'QA_hotsellers_max_quantity',
               'hotsellers_max_quantity',
             ]);
@@ -663,6 +665,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
             const top6_specailties = snapshot['top6_specailties'].val();
             top6_specailties && updateAppConfig('TOP_SPECIALITIES', JSON.parse(top6_specailties));
           }
+
           const qaHotsellersMaxQuantity = snapshot['QA_hotsellers_max_quantity'].val();
           qaHotsellersMaxQuantity &&
             AppConfig.APP_ENV != AppEnv.PROD &&
@@ -672,6 +675,16 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           hotsellersMaxQuantity &&
             AppConfig.APP_ENV == AppEnv.PROD &&
             updateAppConfig('HOTSELLERS_MAX_QUANTITY', hotsellersMaxQuantity);
+
+          const qaCartItemMaxQuantity = snapshot['QA_cart_item_max_quantity'].val();
+          qaCartItemMaxQuantity &&
+            AppConfig.APP_ENV != AppEnv.PROD &&
+            updateAppConfig('CART_ITEM_MAX_QUANTITY', qaCartItemMaxQuantity);
+
+          const cartItemMaxQuantity = snapshot['cart_item_max_quantity'].val();
+          cartItemMaxQuantity &&
+            AppConfig.APP_ENV == AppEnv.PROD &&
+            updateAppConfig('CART_ITEM_MAX_QUANTITY', cartItemMaxQuantity);
 
           const myValye = snapshot;
           let index: number = 0;

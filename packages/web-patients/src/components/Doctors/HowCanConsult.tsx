@@ -53,6 +53,7 @@ const useStyles = makeStyles((theme: Theme) => {
       minWidth: 135,
       textAlign: 'left',
       marginRight: 12,
+      height: 130,
       '&:hover': {
         backgroundColor: '#f7f8f5',
       },
@@ -69,32 +70,36 @@ const useStyles = makeStyles((theme: Theme) => {
     btnActive: {
       border: '1px solid #00b38e',
       '&:before': {
-        top: '100%',
-        left: '50%',
-        border: 'solid transparent',
-        content: '""',
-        height: 0,
-        width: 0,
+        content: "''",
         position: 'absolute',
-        pointerEvents: 'none',
-        borderColor: 'rgba(0, 179, 142, 0)',
-        borderTopColor: '#00b38e',
-        borderWidth: 11,
-        marginLeft: -11,
+        bottom: -128,
+        left: 0,
+        right: 0,
+        zIndex: 2,
+        width: 20,
+        height: '100%',
+        margin: '0 auto',
+        borderRadius: 4,
+        borderTop: '10px solid #f7f8f5',
+        borderBottom: '10px solid transparent',
+        borderLeft: ' 40px solid transparent',
+        borderRight: '40px solid transparent',
       },
       '&:after': {
-        top: '100%',
-        left: '50%',
-        border: 'solid transparent',
-        content: '""',
-        height: 0,
-        width: 0,
+        content: "''",
         position: 'absolute',
-        pointerEvents: 'none',
-        borderColor: 'rgba(247, 248, 142, 0)',
-        borderTopColor: '#f7f8f5',
-        borderWidth: 10,
-        marginLeft: -10,
+        bottom: -129,
+        left: 0,
+        right: 0,
+        zIndex: 1,
+        width: 20,
+        height: '100%',
+        margin: '0 auto',
+        borderRadius: 4,
+        borderTop: '10px solid #00b38e',
+        borderBottom: '10px solid transparent',
+        borderLeft: ' 40px solid transparent',
+        borderRight: '40px solid transparent',
       },
     },
     consultGroup: {
@@ -195,6 +200,9 @@ const useStyles = makeStyles((theme: Theme) => {
         borderRadius: '0 0 10px 10px',
         padding: '0 20px 20px 20px',
       },
+    },
+    noteInfo: {
+      margin: '20px 0 0',
     },
     price: {
       fontSize: 16,
@@ -319,7 +327,7 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
   return (
     <div className={classes.root}>
       <div className={classes.headerGroup}>
-        <h3>How can I consult with Dr.{doctorName}:</h3>
+        <h3>How can I consult with {doctorName}:</h3>
         <div className={classes.tabButtons}>
           <AphButton
             className={
@@ -451,18 +459,18 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
               }}
               // fullWidth
               color="primary"
-              // className={classes.bottomActions}
+            // className={classes.bottomActions}
             >
               {popupLoading ? (
                 <CircularProgress size={22} color="secondary" />
               ) : getDiffInMinutes(doctorAvailablePhysicalSlots) > 0 &&
                 getDiffInMinutes(doctorAvailablePhysicalSlots) <= 60 ? (
-                'CONSULT NOW'
-              ) : (
-                'BOOK APPOINTMENT'
-              )}
+                    'CONSULT NOW'
+                  ) : (
+                    'BOOK APPOINTMENT'
+                  )}
             </AphButton>
-            <p>
+            <p className={classes.noteInfo}>
               Please note that after booking, you will need to download the Apollo 247 app to
               continue with your consultation.
             </p>

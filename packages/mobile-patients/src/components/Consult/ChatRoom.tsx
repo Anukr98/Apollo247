@@ -150,7 +150,7 @@ import { RenderPdf } from '../ui/RenderPdf';
 import { useUIElements } from '../UIElementsProvider';
 import { ChatQuestions } from './ChatQuestions';
 import strings from '@aph/mobile-patients/src/strings/strings.json';
-// import { CustomAlert } from '../ui/CustomAlert';
+import { CustomAlert } from '../ui/CustomAlert';
 import { Snackbar } from 'react-native-paper';
 import BackgroundTimer from 'react-native-background-timer';
 import { UploadPrescriprionPopup } from '../Medicines/UploadPrescriprionPopup';
@@ -349,7 +349,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [showAudioPipView, setShowAudioPipView] = useState<boolean>(true);
   const [showPopup, setShowPopup] = useState(false);
   const [showCallAbandmentPopup, setShowCallAbandmentPopup] = useState(false);
-  // const [showConnectAlertPopup, setShowConnectAlertPopup] = useState(false);
+  const [showConnectAlertPopup, setShowConnectAlertPopup] = useState(false);
 
   const [name, setname] = useState<string>('');
   const [talkStyles, setTalkStyles] = useState<object>({
@@ -589,7 +589,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       currentPatient && currentPatient.firstName ? currentPatient.firstName.split(' ')[0] : '';
     setuserName(userName);
     setUserAnswers({ appointmentId: channel });
-    // getAppointmentCount();
+    getAppointmentCount();
     // requestToJrDoctor();
     // updateSessionAPI();
   }, []);
@@ -648,49 +648,49 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   const client = useApolloClient();
 
-  // const getAppointmentCount = () => {
-  //   getPastAppoinmentCount(client, doctorId, patientId, channel)
-  //     .then((data: any) => {
-  //       const yesCount = g(data, 'data', 'data', 'getPastAppointmentsCount', 'yesCount');
-  //       const noCount = g(data, 'data', 'data', 'getPastAppointmentsCount', 'noCount');
-  //       // console.log('yesCount', yesCount);
-  //       // console.log('noCount', noCount);
+  const getAppointmentCount = async () => {
+    try {
+      const ids = await AsyncStorage.getItem('APPOINTMENTS_CONSULTED_WITH_DOCTOR_BEFORE');
+      const appointmentIds: string[] = JSON.parse(ids || '[]');
+      if (appointmentIds.find((id) => id == channel)) {
+        return;
+      }
+      getPastAppoinmentCount(client, doctorId, patientId, channel).then((data: any) => {
+        const yesCount = g(data, 'data', 'data', 'getPastAppointmentsCount', 'yesCount');
+        const noCount = g(data, 'data', 'data', 'getPastAppointmentsCount', 'noCount');
+        if (yesCount && yesCount > 0) {
+          setShowConnectAlertPopup(false);
+        } else {
+          if (noCount && noCount > 0) {
+            setShowConnectAlertPopup(false);
+          } else {
+            setShowConnectAlertPopup(true);
+          }
+        }
+      });
+    } catch (error) {
+      console.log('getAppointmentCount_error', error);
+    }
+  };
 
-  //       // console.log('data', data);
+  const getUpdateExternalConnect = (connected: boolean) => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.CONSULTED_WITH_DOCTOR_BEFORE] = {
+      ...currentPatient,
+      ConsultedBefore: connected ? 'Yes' : 'No',
+    };
+    postWebEngageEvent(WebEngageEventName.CONSULTED_WITH_DOCTOR_BEFORE, eventAttributes);
+    setLoading(true);
 
-  //       if (yesCount && yesCount > 0) {
-  //         setShowConnectAlertPopup(false);
-  //       } else {
-  //         if (noCount && noCount > 0) {
-  //           setShowConnectAlertPopup(false);
-  //         } else {
-  //           setShowConnectAlertPopup(true);
-  //         }
-  //       }
-  //     })
-  //     .catch((error) => {
-  //       console.log('getAppointmentCount_error', error);
-  //     });
-  // };
-
-  // const getUpdateExternalConnect = (connected: boolean) => {
-  //   const eventAttributes: WebEngageEvents[WebEngageEventName.CONSULTED_WITH_DOCTOR_BEFORE] = {
-  //     ...currentPatient,
-  //     ConsultedBefore: connected ? 'Yes' : 'No',
-  //   };
-  //   postWebEngageEvent(WebEngageEventName.CONSULTED_WITH_DOCTOR_BEFORE, eventAttributes);
-  //   setLoading(true);
-
-  //   updateExternalConnect(client, doctorId, patientId, connected, channel)
-  //     .then((data) => {
-  //       setLoading(false);
-  //       console.log('getUpdateExternalConnect', data);
-  //     })
-  //     .catch((error) => {
-  //       setLoading(false);
-  //       console.log('InsertMessageToDoctor_error', error);
-  //     });
-  // };
+    updateExternalConnect(client, doctorId, patientId, connected, channel)
+      .then((data) => {
+        setLoading(false);
+        console.log('getUpdateExternalConnect', data);
+      })
+      .catch((error) => {
+        setLoading(false);
+        console.log('InsertMessageToDoctor_error', error);
+      });
+  };
 
   const InsertMessageToDoctor = (message: string) => {
     // if (status !== STATUS.COMPLETED) return;
@@ -1261,16 +1261,18 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
       console.log('input', input);
 
-      setDoctorJoined(true);
+      CheckDoctorPresentInChat();
+
+      // setDoctorJoined(true);
       setTextChange(true);
 
       setTimeout(() => {
         setApiCalled(true);
       }, 1000);
 
-      setTimeout(() => {
-        setDoctorJoined(false);
-      }, 10000);
+      // setTimeout(() => {
+      //   setDoctorJoined(false);
+      // }, 10000);
 
       client
         .mutate<updateAppointmentSession, updateAppointmentSessionVariables>({
@@ -1289,6 +1291,28 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           console.log('Error occured while adding Doctor', e);
         });
     }
+  };
+
+  const CheckDoctorPresentInChat = () => {
+    pubnub
+      .hereNow({
+        channels: [channel],
+        includeUUIDs: true,
+      })
+      .then((response: HereNowResponse) => {
+        console.log('hereNowresponse', response);
+
+        if (response.totalOccupancy >= 2) {
+          setDoctorJoined(true);
+
+          setTimeout(() => {
+            setDoctorJoined(false);
+          }, 10000);
+        }
+      })
+      .catch((error) => {
+        console.log(error);
+      });
   };
 
   const startInterval = (timer: number) => {
@@ -6954,7 +6978,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           navigation={props.navigation}
         />
       )}
-      {/* {showConnectAlertPopup && (
+      {showConnectAlertPopup && (
         <CustomAlert
           description={`Have you consulted with ${appointmentData.doctorInfo.displayName} before?`}
           onNoPress={() => {
@@ -6966,7 +6990,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             getUpdateExternalConnect(true);
           }}
         />
-      )} */}
+      )}
     </View>
   );
 };
