@@ -111,10 +111,10 @@ const getAppointmentOverview: Resolver<
   });
 
   const completedAppointments = allAppointments.filter(appointment => {
-    return (appointment.status == 'COMPLETED');
+    return (appointment.status == STATUS.COMPLETED);
   }).length;
   const cancelledAppointments = allAppointments.filter(appointment => {
-    return (appointment.status == 'CANCELLED');
+    return (appointment.status == STATUS.CANCELLED);
   }).length;
 
 
@@ -126,7 +126,7 @@ const getAppointmentOverview: Resolver<
   }).length;
 
   const appointments = await Promise.all(
-    allAppointments.map(async (appointment) => {
+    allAppointments.map((appointment) => {
       return { appointment };
     })
   );
