@@ -560,7 +560,7 @@ export const MedicineAutoSearch: React.FC = (props) => {
                           <AphButton
                             onClick={() => {
                               const medicineQtyInCart = getQuantity(medicine);
-                              if (medicineQtyInCart < (medicine.MaxOrderQty || 20)) {
+                              if (medicineQtyInCart < (medicine.MaxOrderQty || 10)) {
                                 const cartItem: MedicineCartItem = {
                                   MaxOrderQty: medicine.MaxOrderQty,
                                   url_key: medicine.url_key,

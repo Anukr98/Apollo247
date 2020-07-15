@@ -542,7 +542,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
   };
   const isSmallScreen = useMediaQuery('(max-width:767px)');
 
-  const options = Array.from(Array(data.MaxOrderQty || 20), (_, x) => x + 1);
+  const options = Array.from(Array(data.MaxOrderQty || 10), (_, x) => x + 1);
   return (
     <div className={classes.root}>
       <div className={`${classes.medicineSection}`}>
