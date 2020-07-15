@@ -140,8 +140,8 @@ const useStyles = makeStyles((theme: Theme) => {
       margin: '0 !important',
       minHeight: 'auto !important',
       '& img': {
-        margin: '0 20px 0 0',
-        maxWidth: 24,
+        margin: '0 10px 0 0',
+        maxWidth: 50,
       },
     },
 
@@ -196,14 +196,9 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 export const covidProtocolLanding: React.FC = (props: any) => {
   const classes = useStyles({});
-  // const isDesktopOnly = useMediaQuery('(min-width:768px)');
-  const [expanded, setExpanded] = React.useState<string | false>(false);
   const [seemore, setSeemore] = React.useState<boolean>(false);
   const [isLoading, setIsLoading] = React.useState<boolean>(true);
   const [symptomData, setSymptomData] = React.useState<CovidProtocolData>(null);
-  // const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
-  // const onePrimaryUser =
-  //   allCurrentPatients && allCurrentPatients.filter((x) => x.relation === Relation.ME).length === 1;
   const scrollToRef = useRef<HTMLDivElement>(null);
 
   const params = useParams<{
@@ -241,9 +236,6 @@ export const covidProtocolLanding: React.FC = (props: any) => {
     }
   }, []);
 
-  const handleChange = (panel: string) => (event: React.ChangeEvent<{}>, isExpanded: boolean) => {
-    setExpanded(isExpanded ? panel : false);
-  };
   const [isWebView, setIsWebView] = useState<boolean>(false);
   return (
     <div className={classes.cdLanding} ref={scrollToRef}>
@@ -272,11 +264,7 @@ export const covidProtocolLanding: React.FC = (props: any) => {
                 symptomData[params.symptom] &&
                   symptomData[params.symptom].map((item: any, index: number) => {
                     return (
-                      <ExpansionPanel
-                        expanded={true}
-                        onChange={handleChange(`panel${index + 1}`)}
-                        className={classes.panelRoot}
-                      >
+                      <ExpansionPanel defaultExpanded className={classes.panelRoot}>
                         <ExpansionPanelSummary
                           expandIcon={<ExpandMoreIcon />}
                           classes={{
@@ -291,7 +279,7 @@ export const covidProtocolLanding: React.FC = (props: any) => {
                         </ExpansionPanelSummary>
                         <ExpansionPanelDetails className={classes.panelDetails}>
                           <div className={classes.detailsContent}>
-                            {item.bodyContent && <div>{item.bodyContent}</div>}
+                            {item.bodyContent && <p>{item.bodyContent}</p>}
                             <ul
                               className={`${classes.cdList} ${seemore ? classes.heightAuto : ''}`}
                             >
