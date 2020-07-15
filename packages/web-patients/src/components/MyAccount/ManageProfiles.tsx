@@ -3,7 +3,6 @@ import { makeStyles } from '@material-ui/styles';
 import React, { useRef, useState } from 'react';
 import Scrollbars from 'react-custom-scrollbars';
 import { AphDialogTitle, AphDialog, AphDialogClose, AphButton } from '@aph/web-ui-components';
-import { isDobValid } from '@aph/universal/dist/aphValidators';
 import { AddNewProfile } from 'components/MyAccount/AddNewProfile';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import { useAllCurrentPatients } from 'hooks/authHooks';
@@ -254,7 +253,7 @@ export const ManageProfiles: React.FC = (props) => {
                         </div>
                         <div className={classes.userBottomGroup}>
                           <div className={classes.userId}>UHID : {uhid}</div>
-                          {dob && isDobValid(dob) && (
+                          {dob && dob.length && (
                             <div className={classes.rightGroup}>
                               {`DOB : ${moment(dob).format('DD MMM, YYYY')}`}
                             </div>
