@@ -9,7 +9,7 @@ import {
   GetDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors as DoctorDetails,
   GetDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors_doctorHospital,
 } from 'graphql/types/GetDoctorsBySpecialtyAndFilters';
-import { SEARCH_TYPE } from 'graphql/types/globalTypes';
+import { SEARCH_TYPE, ConsultMode } from 'graphql/types/globalTypes';
 import { getDiffInDays, getDiffInMinutes, getDiffInHours } from 'helpers/commonHelpers';
 import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
 import { useAuth } from 'hooks/authHooks';
@@ -187,14 +187,6 @@ export const InfoCard: React.FC<InfoCardProps> = (props) => {
     doctorInfo.specialty &&
     doctorInfo.specialty.name &&
     doctorInfo.specialty.name.toLowerCase();
-  const consultMode =
-    doctorInfo &&
-    doctorInfo.consultHours &&
-    doctorInfo.consultHours.length > 0 &&
-    doctorInfo.consultHours[0] &&
-    doctorInfo.consultHours[0].consultMode
-      ? doctorInfo.consultHours[0].consultMode
-      : '';
   const consultModeOnline: any = [];
   const consultModePhysical: any = [];
   doctorInfo &&
@@ -207,6 +199,14 @@ export const InfoCard: React.FC<InfoCardProps> = (props) => {
         consultModeOnline.push(item.consultMode);
       }
     });
+  const consultMode =
+    consultModeOnline.length > 0 && consultModePhysical.length > 0
+      ? ConsultMode.BOTH
+      : consultModeOnline.length > 0
+      ? ConsultMode.ONLINE
+      : consultModePhysical.length > 0
+      ? ConsultMode.PHYSICAL
+      : null;
   const differenceInMinutes = getDiffInMinutes(nextAvailability);
   const differenceInDays = getDiffInDays(nextAvailability);
   const availabilityMarkup = () => {
@@ -385,7 +385,7 @@ export const InfoCard: React.FC<InfoCardProps> = (props) => {
         disableEscapeKeyDown
       >
         <BookConsult
-          physicalDirection={false}
+          consultMode={consultMode}
           doctorId={doctorInfo.id}
           doctorAvailableIn={differenceInMinutes}
           setIsPopoverOpen={setIsPopoverOpen}

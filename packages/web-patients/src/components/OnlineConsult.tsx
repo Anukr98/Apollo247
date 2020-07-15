@@ -46,8 +46,9 @@ import {
   ValidateConsultCouponVariables,
 } from 'graphql/types/ValidateConsultCoupon';
 import { Alerts } from 'components/Alerts/Alerts';
-import { useLocationDetails } from 'components/LocationProvider';
 import { gtmTracking, _cbTracking } from '../gtmTracking';
+import { useApolloClient } from 'react-apollo-hooks';
+import { ShowSlots } from './ShowSlots';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -232,22 +233,25 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
   const [alertMessage, setAlertMessage] = useState<string>('');
   const [isAlertOpen, setIsAlertOpen] = useState<boolean>(false);
 
+  const [nextAvailability, setNextAvailability] = useState<string | null>(null);
+  const [availableSlots, setAvailableSlots] = useState<string[] | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [availableSlotsError, setAvailableSlotsError] = useState<boolean>(false);
+  const [availableSlotsLoading, setAvailableSlotsLoading] = useState<boolean>(false);
+
   const couponMutation = useMutation<ValidateConsultCoupon, ValidateConsultCouponVariables>(
     VALIDATE_CONSULT_COUPON
   );
 
   const { currentPatient } = useAllCurrentPatients();
-  // const currentTime = new Date().getTime();
-  // const autoSlot = getAutoSlot();
+  const apolloClient = useApolloClient();
+
   const doctorAvailableTime = moment().add(props.doctorAvailableIn, 'm') || moment();
 
   const { doctorDetails, setIsPopoverOpen, tabValue, isShownOnce, setIsShownOnce } = props;
 
   let slotAvailableNext = '',
     consultNowSlotTime = '';
-  // let autoSlot = '';
-
-  // console.log('-------', autoSlot);
 
   const doctorName = doctorDetails && doctorDetails.firstName ? doctorDetails.firstName : '';
 
@@ -261,22 +265,9 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
       ? doctorDetails.doctorHospital[0].facility.id
       : '';
 
-  const morningSlots: number[] = [],
-    afternoonSlots: number[] = [],
-    eveningSlots: number[] = [],
-    lateNightSlots: number[] = [];
-
   const doctorId = doctorDetails && doctorDetails.id ? doctorDetails.id : '';
 
-  const apiDateFormat =
-    dateSelected === '' ? doctorAvailableTime.format('YYYY-MM-DD') : getYyMmDd(dateSelected);
-
-  const morningStartTime = getIstTimestamp(new Date(apiDateFormat), '06:01');
-  const morningTime = getIstTimestamp(new Date(apiDateFormat), '12:01');
-  const afternoonTime = getIstTimestamp(new Date(apiDateFormat), '17:01');
-  const eveningTime = getIstTimestamp(new Date(apiDateFormat), '21:01');
   const prevDateSelected = usePrevious(dateSelected);
-
   useEffect(() => {
     if (prevDateSelected !== dateSelected) setTimeSelected('');
   }, [dateSelected, prevDateSelected]);
@@ -331,40 +322,89 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
         setMutationLoading(false);
       });
   };
+  const apiDateFormat =
+    dateSelected === ''
+      ? nextAvailability
+        ? moment(nextAvailability).format('YYYY-MM-DD')
+        : doctorAvailableTime.format('YYYY-MM-DD')
+      : getYyMmDd(dateSelected);
 
   // get doctor next availability.
-  const { data: nextAvailableSlot, loading: nextAvailableSlotLoading } = useQueryWithSkip<
-    GetDoctorNextAvailableSlot,
-    GetDoctorNextAvailableSlotVariables
-  >(GET_DOCTOR_NEXT_AVAILABILITY, {
-    variables: {
-      DoctorNextAvailableSlotInput: {
-        doctorIds: [doctorId],
-        availableDate: format(new Date(), 'yyyy-MM-dd'),
-      },
-    },
-    fetchPolicy: 'no-cache',
-  });
+  useEffect(() => {
+    if (!nextAvailability) {
+      setLoading(true);
+      apolloClient
+        .query<GetDoctorNextAvailableSlot, GetDoctorNextAvailableSlotVariables>({
+          query: GET_DOCTOR_NEXT_AVAILABILITY,
+          variables: {
+            DoctorNextAvailableSlotInput: {
+              doctorIds: [doctorId],
+              availableDate: format(new Date(), 'yyyy-MM-dd'),
+            },
+          },
+        })
+        .then(({ data }: any) => {
+          if (
+            data &&
+            data.getDoctorNextAvailableSlot &&
+            data.getDoctorNextAvailableSlot.doctorAvailalbeSlots &&
+            data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0] &&
+            data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0].availableSlot
+          ) {
+            setNextAvailability(
+              data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0].availableSlot
+            );
+          } else {
+            setNextAvailability('');
+          }
+          setAvailableSlotsError(false);
+        })
+        .catch((e) => {
+          setAvailableSlotsError(true);
+          console.log(e);
+        })
+        .finally(() => {
+          setLoading(false);
+        });
+    }
+  }, [nextAvailability]);
 
   // get available slots.
-  const {
-    data: availableSlotsData,
-    loading: availableSlotsLoading,
-    error: availableSlotsError,
-  } = useQueryWithSkip<GetDoctorAvailableSlots, GetDoctorAvailableSlotsVariables>(
-    GET_DOCTOR_AVAILABLE_SLOTS,
-    {
-      variables: {
-        DoctorAvailabilityInput: {
-          doctorId: doctorId,
-          availableDate: apiDateFormat,
-        },
-      },
-      fetchPolicy: 'no-cache',
+  useEffect(() => {
+    if (nextAvailability && nextAvailability.length && !availableSlots) {
+      const availableTimeSlot =
+        dateSelected === ''
+          ? moment(nextAvailability).format('YYYY-MM-DD')
+          : getYyMmDd(dateSelected);
+      setAvailableSlotsLoading(true);
+      apolloClient
+        .query<GetDoctorAvailableSlots, GetDoctorAvailableSlotsVariables>({
+          query: GET_DOCTOR_AVAILABLE_SLOTS,
+          variables: {
+            DoctorAvailabilityInput: {
+              doctorId: doctorId,
+              availableDate: availableTimeSlot,
+            },
+          },
+          fetchPolicy: 'no-cache',
+        })
+        .then(({ data }: any) => {
+          if (data && data.getDoctorAvailableSlots && data.getDoctorAvailableSlots.availableSlots) {
+            setAvailableSlots(data.getDoctorAvailableSlots.availableSlots);
+          }
+          setAvailableSlotsError(false);
+        })
+        .catch((e) => {
+          console.log(e);
+          setAvailableSlotsError(true);
+        })
+        .finally(() => {
+          setAvailableSlotsLoading(false);
+        });
     }
-  );
+  }, [nextAvailability, availableSlots]);
 
-  if (availableSlotsLoading || nextAvailableSlotLoading) {
+  if (availableSlotsLoading || loading) {
     return (
       <div className={classes.circlularProgress}>
         <CircularProgress />
@@ -372,35 +412,11 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
     );
   }
 
-  if (availableSlotsError) {
-    return <div className={classes.noDataAvailable}>Unable to load Available slots.</div>;
-  }
-
-  let differenceInMinutes = 0;
-  let differenceInHours = 0;
-  let differenceInDays = 0;
-
-  // it must be always one record or we return only first record.
-  if (
-    nextAvailableSlot &&
-    nextAvailableSlot.getDoctorNextAvailableSlot &&
-    nextAvailableSlot.getDoctorNextAvailableSlot.doctorAvailalbeSlots
-  ) {
-    nextAvailableSlot.getDoctorNextAvailableSlot.doctorAvailalbeSlots.forEach((availability) => {
-      if (availability && availability.availableSlot !== '') {
-        const nextAvailabilityTime = availability.availableSlot;
-        differenceInHours = getDiffInHours(nextAvailabilityTime);
-        differenceInMinutes = getDiffInMinutes(nextAvailabilityTime);
-        differenceInDays = getDiffInDays(nextAvailabilityTime);
-        if (differenceInMinutes >= 0 && differenceInMinutes <= 60) {
-          consultNowSlotTime = availability.availableSlot;
-        }
-
-        // }
-      } else {
-        differenceInMinutes = -1;
-      }
-    });
+  const differenceInHours = getDiffInHours(nextAvailability);
+  const differenceInMinutes = getDiffInMinutes(nextAvailability);
+  const differenceInDays = getDiffInDays(nextAvailability);
+  if (differenceInMinutes >= 0 && differenceInMinutes <= 60) {
+    consultNowSlotTime = nextAvailability;
   }
 
   if (differenceInMinutes < 0 && (isShownOnce === false || isShownOnce === undefined)) {
@@ -408,27 +424,9 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
     setIsShownOnce && setIsShownOnce(true);
   }
 
-  const availableSlots =
-    (availableSlotsData && availableSlotsData.getDoctorAvailableSlots.availableSlots) || [];
-
-  availableSlots.map((slot) => {
-    const slotTime = new Date(slot).getTime();
-    const currentTime = new Date(new Date().toISOString()).getTime();
-    if (slotTime > currentTime) {
-      if (slotTime < morningTime && slotTime > morningStartTime) morningSlots.push(slotTime);
-      else if (slotTime >= morningTime && slotTime < afternoonTime) afternoonSlots.push(slotTime);
-      else if (slotTime >= afternoonTime && slotTime < eveningTime) eveningSlots.push(slotTime);
-      else lateNightSlots.push(slotTime);
-    }
-  });
-
   const consultNowAvailable = differenceInMinutes > 0 && differenceInMinutes <= 60;
 
-  let disableSubmit =
-    morningSlots.length === 0 &&
-    afternoonSlots.length === 0 &&
-    eveningSlots.length === 0 &&
-    lateNightSlots.length === 0;
+  let disableSubmit = availableSlots && availableSlots.length === 0;
 
   const paymentMutation = useMutation(BOOK_APPOINTMENT);
   const makePaymentMutation = useMutation<makeAppointmentPayment, makeAppointmentPaymentVariables>(
@@ -449,7 +447,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
   } else {
     appointmentDateTime = consultNowSlotTime;
   }
-  const consultType: AppointmentType = AppointmentType.ONLINE;
+  // const consultType: AppointmentType = AppointmentType.ONLINE;
   const bookAppointment = () => {
     paymentMutation({
       variables: {
@@ -579,12 +577,14 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
         setMutationLoading(false);
       });
   };
-  const disableCoupon =
-    disableSubmit ||
-    mutationLoading ||
-    isDialogOpen ||
-    (!consultNowAvailable && timeSelected === '') ||
-    (scheduleLater && timeSelected === '');
+
+  // const disableCoupon =
+  //   disableSubmit ||
+  //   mutationLoading ||
+  //   isDialogOpen ||
+  //   (!consultNowAvailable && timeSelected === '') ||
+  //   (scheduleLater && timeSelected === '');
+
   return (
     <div className={classes.root}>
       <Scrollbars autoHide={true} autoHeight autoHeightMax={isSmallScreen ? '50vh' : '65vh'}>
@@ -672,40 +672,24 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
                     }`}
                     ref={calendarRef}
                   >
-                    <AphCalendar
-                      getDate={(dateSelected: string) => setDateSelected(dateSelected)}
-                      selectedDate={new Date(apiDateFormat)}
-                    />
+                    {nextAvailability && (
+                      <AphCalendar
+                        getDate={(dateSelected: string) => setDateSelected(dateSelected)}
+                        selectedDate={new Date(apiDateFormat)}
+                      />
+                    )}
                   </div>
                 </Grid>
                 <Grid item sm={6} xs={12}>
-                  {morningSlots.length > 0 ||
-                  afternoonSlots.length > 0 ||
-                  eveningSlots.length > 0 ||
-                  lateNightSlots.length > 0 ? (
-                    <div
-                      className={`${classes.consultGroup} ${classes.scheduleTimeSlots} ${
-                        showCalendar || scheduleLater || !consultNowAvailable
-                          ? classes.showTimeSlot
-                          : ''
-                      }`}
-                    >
-                      <DayTimeSlots
-                        morningSlots={morningSlots}
-                        afternoonSlots={afternoonSlots}
-                        eveningSlots={eveningSlots}
-                        latenightSlots={lateNightSlots}
-                        doctorName={doctorName}
-                        timeSelected={(timeSelected) => setTimeSelected(timeSelected)}
-                      />
-                    </div>
-                  ) : (
-                    <div className={classes.consultGroup}>
-                      <div className={classes.noSlotsAvailable}>
-                        Oops! No slots available with Dr. {doctorName} :(
-                      </div>
-                    </div>
-                  )}
+                  <ShowSlots
+                    availableSlots={availableSlots}
+                    apiDateFormat={apiDateFormat}
+                    setTimeSelected={setTimeSelected}
+                    doctorName={doctorName}
+                    showCalendar={showCalendar}
+                    scheduleLater={scheduleLater}
+                    consultNowAvailable={consultNowAvailable}
+                  />
                 </Grid>
               </Grid>
             </>

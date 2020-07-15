@@ -8,7 +8,7 @@ import { getDiffInDays, getDiffInMinutes, getDiffInHours } from 'helpers/commonH
 import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
 import { useAuth } from 'hooks/authHooks';
 import { BookConsult } from 'components/BookConsult';
-import { SEARCH_TYPE } from 'graphql/types/globalTypes';
+import { SEARCH_TYPE, ConsultMode } from 'graphql/types/globalTypes';
 import { SaveSearch, SaveSearchVariables } from 'graphql/types/SaveSearch';
 import { useMutation } from 'react-apollo-hooks';
 import { SAVE_PATIENT_SEARCH } from 'graphql/pastsearches';
@@ -253,6 +253,15 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
   const onlineFee = doctorDetails && doctorDetails.onlineConsultationFees;
   const doctorId = doctorDetails && doctorDetails.id;
 
+  const consultMode =
+    doctorAvailableOnlineSlot.length > 0 && doctorAvailablePhysicalSlots.length > 0
+      ? ConsultMode.BOTH
+      : doctorAvailableOnlineSlot.length > 0
+      ? ConsultMode.ONLINE
+      : doctorAvailablePhysicalSlots.length > 0
+      ? ConsultMode.PHYSICAL
+      : null;
+
   const differenceInMinutes = getDiffInMinutes(doctorAvailablePhysicalSlots);
   const differenceInOnlineMinutes = getDiffInMinutes(doctorAvailableOnlineSlot);
   const availabilityMarkup = () => {
@@ -459,16 +468,16 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
               }}
               // fullWidth
               color="primary"
-            // className={classes.bottomActions}
+              // className={classes.bottomActions}
             >
               {popupLoading ? (
                 <CircularProgress size={22} color="secondary" />
               ) : getDiffInMinutes(doctorAvailablePhysicalSlots) > 0 &&
                 getDiffInMinutes(doctorAvailablePhysicalSlots) <= 60 ? (
-                    'CONSULT NOW'
-                  ) : (
-                    'BOOK APPOINTMENT'
-                  )}
+                'CONSULT NOW'
+              ) : (
+                'BOOK APPOINTMENT'
+              )}
             </AphButton>
             <p className={classes.noteInfo}>
               Please note that after booking, you will need to download the Apollo 247 app to
@@ -484,7 +493,7 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
         disableEscapeKeyDown
       >
         <BookConsult
-          physicalDirection={physicalDirection}
+          consultMode={consultMode}
           doctorId={doctorId}
           doctorAvailableIn={differenceInMinutes}
           setIsPopoverOpen={setIsPopoverOpen}
