@@ -2208,7 +2208,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const checkWhatsappNotificationAPI = async () => {
     const stopCallingNoticationApi =
       (await AsyncStorage.getItem(notify_async_key + appointmentData.id)) || '';
-    if (stopCallingNoticationApi != appointmentData.id) {
+    if (stopCallingNoticationApi != appointmentData.id + appointmentData.appointmentDateTime) {
       console.log('if notify_async_key + appointmentData.id', stopCallingNoticationApi);
       notificationIntervalId = BackgroundTimer.setInterval(() => {
         const diffMin = moment(appointmentData.appointmentDateTime).diff(moment(), 'minutes', true);
@@ -2230,7 +2230,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 setLoading(false);
                 const notifi_status = g(data.data!, 'sendPatientWaitNotification', 'status');
                 if (notifi_status) {
-                  AsyncStorage.setItem(notify_async_key + appointmentData.id, appointmentData.id);
+                  AsyncStorage.setItem(
+                    notify_async_key + appointmentData.id,
+                    appointmentData.id + appointmentData.appointmentDateTime
+                  );
                   BackgroundTimer.clearTimeout(notificationTimerId);
                   // setCallPatientWaitNotificationApi(false);
                 }
