@@ -313,8 +313,7 @@ const getPatientPersonalizedAppointments: Resolver<
             doctorId: doctorDets.doctor.id,
           };
           apptDetails = apptDetailsOffline;
-        } else {
-          apptDetails = {};
+          break;
         }
       }
     }
