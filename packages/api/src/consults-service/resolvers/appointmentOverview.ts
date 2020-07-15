@@ -118,6 +118,7 @@ const getAppointmentOverview: Resolver<
   }).length;
 
 
+
   const doctorAway = allAppointments.length
   const inNextHour = allAppointments.filter((appointment) => {
     const now = new Date();
