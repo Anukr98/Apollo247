@@ -6,6 +6,8 @@ import {
   ApploLogo2,
   MedicineIcon,
   TestsIcon,
+  Whatsapp,
+  Mail,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { StickyBottomComponent } from '@aph/mobile-doctors/src/components/ui/StickyBottomComponent';
 import {
@@ -474,6 +476,27 @@ export const PreviewPrescription: React.FC<PreviewPrescriptionProps> = (props) =
     );
   };
 
+  const renderContact = () => {
+    return (
+      <View style={styles.contactContainer}>
+        <View style={{ marginRight: 16 }}>
+          <Text style={styles.contactHeadingText}>{string.case_sheet.whatsapp}</Text>
+          <View style={styles.contactSubContainer}>
+            <Whatsapp />
+            <Text style={styles.contactSubHeadingText}>{string.case_sheet.whatsapp_number}</Text>
+          </View>
+        </View>
+        <View>
+          <Text style={styles.contactHeadingText}>{string.case_sheet.email}</Text>
+          <View style={styles.contactSubContainer}>
+            <Mail />
+            <Text style={styles.contactSubHeadingText}>{string.case_sheet.help_desk_email}</Text>
+          </View>
+        </View>
+      </View>
+    );
+  };
+
   const renderApolloLogo = () => {
     return (
       <View style={styles.ApolloLogo}>
@@ -484,6 +507,7 @@ export const PreviewPrescription: React.FC<PreviewPrescriptionProps> = (props) =
           <View style={styles.doctorDetailsStyle}>
             {renderDoctorDetails()}
             {renderDoctorAddress()}
+            {renderContact()}
           </View>
         ) : null}
       </View>
