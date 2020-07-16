@@ -110,19 +110,9 @@ export class PatientRepository extends Repository<Patient> {
   }
 
   async getPatientData(id: string | number) {
-    const relations = [
-      'lifeStyle',
-      'healthVault',
-      'familyHistory',
-      'patientAddress',
-      'patientDeviceTokens',
-      'patientNotificationSettings',
-      'patientMedicalHistory',
-    ];
     return this.findOne({
-      where: { id, isActive: true },
-      relations: relations,
-    });
+      where: { id, isActive: true }
+    })
   }
 
   async setByIdCache(id: string | number) {
@@ -748,7 +738,7 @@ export class PatientRepository extends Repository<Patient> {
   }
 
   async getLinkedPatientIds(patientId: string) {
-    const linkedPatient = await this.findOne({ where: { id: patientId } });
+    const linkedPatient = await this.getPatientDetails(patientId);
     const primaryPatientIds: string[] = [];
     if (linkedPatient && linkedPatient.uhid != '' && linkedPatient.uhid != null) {
       const patientsList = await this.find({
