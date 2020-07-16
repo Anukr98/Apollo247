@@ -14,11 +14,12 @@ import DeviceInfo from 'react-native-device-info';
 import { setJSExceptionHandler, setNativeExceptionHandler } from 'react-native-exception-handler';
 import AsyncStorage from '@react-native-community/async-storage';
 import Axios from 'axios';
-import codePush from "react-native-code-push";
+import { setBugFenderLog } from '../FunctionHelpers/DeviceHelper';
+import codePush from 'react-native-code-push';
 
 const codePushOptions = {
   checkFrequency: codePush.CheckFrequency.ON_APP_RESUME,
-  installMode: codePush.InstallMode.ON_NEXT_RESUME
+  installMode: codePush.InstallMode.ON_NEXT_RESUME,
 };
 
 const postToFirebase = (
@@ -62,6 +63,7 @@ const postToFirebase = (
 const reporter = (error: string, type: 'JS' | 'Native') => {
   // Logic for reporting to devs
   console.log(error, type);
+  setBugFenderLog('reporter_AppContainer', JSON.stringify(error));
   if (getBuildEnvironment() == 'PROD') {
     Promise.all([
       DeviceInfo.getDeviceName(),

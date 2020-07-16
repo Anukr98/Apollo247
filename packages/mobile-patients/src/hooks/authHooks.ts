@@ -59,14 +59,16 @@ export const useAllCurrentPatients = () => {
 
   // console.log('patientsArray', patientsArray);
   const getNewSelectedPatient = async () => {
-    const isNewProfile = await AsyncStorage.getItem('isNewProfile');
-    if (isNewProfile === 'yes') {
-      console.log('allCurrentPatients==>', allCurrentPatients);
-      const retrievedItem: any = await AsyncStorage.getItem('selectUserId');
-      Promise.all([retrievedItem]).then((values) => {
-        setCurrentPatientId(values[0]);
-      });
-    }
+    try {
+      const isNewProfile = await AsyncStorage.getItem('isNewProfile');
+      if (isNewProfile === 'yes') {
+        // console.log('allCurrentPatients==>', allCurrentPatients);
+        const retrievedItem: any = await AsyncStorage.getItem('selectUserId');
+        Promise.all([retrievedItem]).then((values) => {
+          setCurrentPatientId(values[0]);
+        });
+      }
+    } catch (error) {}
   };
 
   const setCurrentPatientId = useAuthContext().setCurrentPatientId!;

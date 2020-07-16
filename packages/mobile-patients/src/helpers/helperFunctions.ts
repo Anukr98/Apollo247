@@ -690,9 +690,7 @@ export const reOrderMedicines = async (
     (item) =>
       ({
         id: item,
-        date: moment(g(order, 'medicineOrdersStatus', '0' as any, 'statusDate')).format(
-          'DD MMM YYYY'
-        ),
+        date: moment(g(order, 'createdDate')).format('DD MMM YYYY'),
         doctorName: `Meds Rx ${(order.id && order.id.substring(0, order.id.indexOf('-'))) || ''}`,
         forPatient: g(currentPatient, 'firstName') || '',
         medicines: medicineNames,
@@ -1026,7 +1024,7 @@ export const InitiateAppsFlyer = () => {
   appsFlyer.initSdk(
     {
       devKey: 'pP3MjHNkZGiMCamkJ7YpbH',
-      isDebug: true,
+      isDebug: false,
       appId: Platform.OS === 'ios' ? '1496740273' : '',
     },
     (result) => {

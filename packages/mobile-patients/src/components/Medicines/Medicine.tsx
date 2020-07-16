@@ -462,7 +462,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       >({
         query: GET_RECOMMENDED_PRODUCTS_LIST,
         variables: { patientUhid: g(currentPatient, 'uhid') || '' },
-        fetchPolicy: 'cache-first', // as these products will not chnage frequently.
+        fetchPolicy: 'no-cache',
       });
       const _recommendedProducts =
         g(
@@ -802,7 +802,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           />
         </View>
       );
-    } else if (banners.length) {
+    } else if (banners.length && !isSelectPrescriptionVisible) {
       return (
         <View>
           <Carousel
@@ -812,7 +812,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             sliderWidth={winWidth}
             itemWidth={winWidth}
             loop={true}
-            autoplay={true}
+            autoplay={isSelectPrescriptionVisible ? false : true}
             autoplayDelay={3000}
             autoplayInterval={3000}
           />
@@ -870,7 +870,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         style={[
           {
             ...theme.viewStyles.card(),
-            marginTop: 10,
+            marginTop: 0,
             marginBottom: 16,
           },
           medicineList.length > 0 && searchText
@@ -931,9 +931,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     ]
       .filter((a) => a)
       .join(', ');
-    const date = moment(g(order, 'medicineOrdersStatus', '0' as any, 'statusDate')).format(
-      'MMMM DD, YYYY'
-    );
+    const date = moment(g(order, 'createdDate')).format('MMMM DD, YYYY');
     return isOfflineOrder ? `Ordered at ${address} on ${date}` : `Ordered online on ${date}`;
   };
 
@@ -1354,7 +1352,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         globalLoading,
         props.navigation,
         currentPatient,
-        isPharmacyLocationServiceable
+        !!isPharmacyLocationServiceable
       );
 
       postwebEngageAddToCartEvent(data.item, 'Pharmacy Home', title);
@@ -1705,7 +1703,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       null,
       props.navigation,
       currentPatient,
-      isPharmacyLocationServiceable,
+      !!isPharmacyLocationServiceable,
       () => setItemsLoading({ ...itemsLoading, [sku]: false })
     );
     postwebEngageAddToCartEvent(item, 'Pharmacy Partial Search');
@@ -1754,7 +1752,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         }}
         onPressAdd={() => {
           const q = getItemQuantity(item.sku);
-          if (q == 20) return;
+          if (q == AppConfig.Configuration.CART_ITEM_MAX_QUANTITY) return;
           onUpdateCartItem(item.sku, getItemQuantity(item.sku) + 1);
         }}
         onPressSubstract={() => {
@@ -1891,9 +1889,9 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         {renderBannerImageToGetAspectRatio()}
         {renderBanners()}
         {renderYourOrders()}
+        {renderUploadPrescriptionSection()}
         {renderRecommendedProducts()}
         {loading ? renderSectionLoader() : !error && renderSectionsWithOrdering()}
-        {renderUploadPrescriptionSection()}
         {!error && <View style={{ height: 20 }} />}
       </TouchableOpacity>
     );

@@ -1,5 +1,5 @@
 export interface DeepLinkInput {
-  brand_domain: string;
+  //brand_domain: string;
   ttl: string;
   data: DeepLinkInputData;
 }

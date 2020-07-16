@@ -644,16 +644,16 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   const client = useApolloClient();
 
-  const getAppointmentCount = () => {
-    getPastAppoinmentCount(client, doctorId, patientId, channel)
-      .then((data: any) => {
+  const getAppointmentCount = async () => {
+    try {
+      const ids = await AsyncStorage.getItem('APPOINTMENTS_CONSULTED_WITH_DOCTOR_BEFORE');
+      const appointmentIds: string[] = JSON.parse(ids || '[]');
+      if (appointmentIds.find((id) => id == channel)) {
+        return;
+      }
+      getPastAppoinmentCount(client, doctorId, patientId, channel).then((data: any) => {
         const yesCount = g(data, 'data', 'data', 'getPastAppointmentsCount', 'yesCount');
         const noCount = g(data, 'data', 'data', 'getPastAppointmentsCount', 'noCount');
-        // console.log('yesCount', yesCount);
-        // console.log('noCount', noCount);
-
-        // console.log('data', data);
-
         if (yesCount && yesCount > 0) {
           setShowConnectAlertPopup(false);
         } else {
@@ -663,10 +663,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             setShowConnectAlertPopup(true);
           }
         }
-      })
-      .catch((error) => {
-        console.log('getAppointmentCount_error', error);
       });
+    } catch (error) {
+      console.log('getAppointmentCount_error', error);
+    }
   };
 
   const getUpdateExternalConnect = (connected: boolean) => {
@@ -1257,16 +1257,18 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
       console.log('input', input);
 
-      setDoctorJoined(true);
+      CheckDoctorPresentInChat();
+
+      // setDoctorJoined(true);
       setTextChange(true);
 
       setTimeout(() => {
         setApiCalled(true);
       }, 1000);
 
-      setTimeout(() => {
-        setDoctorJoined(false);
-      }, 10000);
+      // setTimeout(() => {
+      //   setDoctorJoined(false);
+      // }, 10000);
 
       client
         .mutate<updateAppointmentSession, updateAppointmentSessionVariables>({
@@ -1285,6 +1287,28 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           console.log('Error occured while adding Doctor', e);
         });
     }
+  };
+
+  const CheckDoctorPresentInChat = () => {
+    pubnub
+      .hereNow({
+        channels: [channel],
+        includeUUIDs: true,
+      })
+      .then((response: HereNowResponse) => {
+        console.log('hereNowresponse', response);
+
+        if (response.totalOccupancy >= 2) {
+          setDoctorJoined(true);
+
+          setTimeout(() => {
+            setDoctorJoined(false);
+          }, 10000);
+        }
+      })
+      .catch((error) => {
+        console.log(error);
+      });
   };
 
   const startInterval = (timer: number) => {
@@ -1559,6 +1583,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         console.log(`pubnub.addListener - ${messageType}`, { message });
 
         if (messageType == followupconsult) {
+          // setStatus(STATUS.COMPLETED);  //Uncomment it if you are not getting the automated message
           postAppointmentWEGEvent(WebEngageEventName.PRESCRIPTION_RECEIVED);
         }
         if (messageType == stopConsultJr) {

@@ -219,9 +219,10 @@ const TabContainer: React.FC = (props) => {
 export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const { isSignedIn } = useAuth();
   const classes = useStyles({});
-  const params = useParams<{ id: string; specialty: string }>();
-  const doctorIdLength = params && params.id && params.id.length;
-  const doctorId = doctorIdLength && params.id.slice(doctorIdLength - 36);
+  const params = useParams<{ id: string; specialty: string; name: string }>();
+  const nameId = params && params.name && params.id && params.name + '-' + params.id;
+  const nameIdLength = nameId && nameId.length;
+  const doctorId = nameIdLength && nameId.slice(nameIdLength - 36);
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
   const [tabValue, setTabValue] = useState<number>(0);
   const [isShownOnce, setIsShownOnce] = useState<boolean>(false);
@@ -401,13 +402,24 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
               <Link className={classes.backArrow} to={clientRoutes.specialties(params.specialty)}>
                 <img src={require('images/ic_back.svg')} alt="" />
               </Link>
+              <Link to={clientRoutes.welcome()}>Home</Link>
+              <img src={require('images/triangle.svg')} alt="" />
               <Link to={clientRoutes.specialityListing()}>Specialities</Link>
               <img src={require('images/triangle.svg')} alt="" />
+              {doctorData && (
+                <>
+                  {doctorData.specialty && doctorData.specialty.name ? (
+                    <>
+                      <Link to={clientRoutes.specialties(params.specialty)}>
+                        {doctorData.specialty.name}
+                      </Link>
+                      <img src={require('images/triangle.svg')} alt="" />
+                    </>
+                  ) : null}
 
-              <Link to={clientRoutes.specialties(params.specialty)}>Doctors</Link>
-              <img src={require('images/triangle.svg')} alt="" />
-
-              <span>Doctor Details</span>
+                  <span>{doctorData.fullName || ''}</span>
+                </>
+              )}
             </div>
             <div className={classes.doctorProfileSection}>
               <div className={classes.leftSection}>

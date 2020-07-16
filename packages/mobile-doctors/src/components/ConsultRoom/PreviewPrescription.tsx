@@ -129,9 +129,9 @@ export const PreviewPrescription: React.FC<PreviewPrescriptionProps> = (props) =
       : '',
     uhid: (patientDetails && patientDetails.uhid) || '',
     appId: g(caseSheet, 'caseSheetDetails', 'appointment', 'displayId') || '',
-    date: moment(g(caseSheet, 'caseSheetDetails', 'appointment', 'sdConsultationDate')).format(
-      'DD/MM/YYYY [at] hh:mm A'
-    ),
+    date: moment(
+      g(caseSheet, 'caseSheetDetails', 'appointment', 'sdConsultationDate') || new Date()
+    ).format('DD/MM/YYYY [at] hh:mm A'),
     type: `${
       (g(caseSheet, 'caseSheetDetails', 'appointment', 'appointmentType') ||
         APPOINTMENT_TYPE.ONLINE) === APPOINTMENT_TYPE.PHYSICAL
@@ -383,9 +383,9 @@ export const PreviewPrescription: React.FC<PreviewPrescriptionProps> = (props) =
         <View style={[styles.subContainer, styles.subItemsContainer]}>
           <Text style={styles.disclamerHeaderText}>Disclaimer:</Text>
           <Text style={styles.disclamerText}>
-            This prescription is issued by the Apollo Hospitals Group on the basis of your
-            teleconsultation. It is valid from the date of issue for upto 90 days (for the specific
-            period/dosage of each medicine as advised).
+            This prescription is issued on the basis of your inputs during teleconsultation. It is
+            valid from the date of issue until the specific period/dosage of each medicine as
+            advised.
           </Text>
         </View>
       </View>
@@ -444,7 +444,7 @@ export const PreviewPrescription: React.FC<PreviewPrescriptionProps> = (props) =
           {doctorDetails.specialty && (
             <Text
               style={theme.viewStyles.text('S', 9, theme.colors.SHARP_BLUE, 1, 13)}
-            >{`${doctorDetails.specialty.name} | MCI Reg. No. ${doctorDetails.registrationNumber}`}</Text>
+            >{`${doctorDetails.specialty.name} | Reg. No. ${doctorDetails.registrationNumber}`}</Text>
           )}
         </>
       )

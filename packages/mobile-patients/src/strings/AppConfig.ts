@@ -19,7 +19,7 @@ export enum AppEnv {
   DEVReplica = 'DEVReplica',
 }
 
-const APP_ENV: AppEnv = AppEnv.QA as AppEnv; //Change to AppEnv.(DEV, QA, PROD) for respective API environments in the app. Also don't forget to change src/helpers/apiRoutes.ts
+const APP_ENV: AppEnv = AppEnv.PROD as AppEnv; // For respective API environments in the app.
 
 const pharmaToken201 = 'Bearer 2o1kd4bjapqifpb27fy7tnbivu8bqo1d';
 const pharmaTokenYXV = 'YXV0aF91c2VyOnN1cGVyc2VjcmV0X3Rhd';
@@ -107,6 +107,7 @@ const appStaticVariables = {
       visible: true,
     },
   ] as PharmacyHomepageInfo[],
+  CART_ITEM_MAX_QUANTITY: 10, // max. allowed qty to add to cart
   HOTSELLERS_MAX_QUANTITY: 20, // max. allowed qty to add hot sellers to cart
   HOME_SCREEN_KAVACH_TEXT: string.common.KavachText,
 };
@@ -232,6 +233,10 @@ const PharmaApiConfig = {
       'http://online.apollopharmacy.org:8085/IEngine/webresources/Inventory/getDeliveryTimePartial',
       pharmaTokenYXV,
     ],
+    GET_DELIVERY_TIME_HEADER_TAT: [
+      'https://online.apollopharmacy.org/UATTAT/Apollo/GetHeaderTat',
+      pharmaTokenYXV,
+    ],
     GET_SUBSTITUTES: [`${apolloUatBaseUrl}/popcsrchprdsubt_api.php`, pharmaToken201],
     PRODUCTS_BY_CATEGORY: [`${apolloUatBaseUrl}/categoryproducts_api.php`, pharmaToken201],
     MEDICINE_PAGE: [`${apolloUatBaseUrl}/apollo_24x7_api.php`, pharmaToken201],
@@ -264,6 +269,10 @@ const PharmaApiConfig = {
     IMAGES_BASE_URL: [`https://d27zlipt1pllog.cloudfront.net/pub/media`],
     GET_DELIVERY_TIME: [
       'http://online.apollopharmacy.org:8085/IEngine/webresources/Inventory/getDeliveryTimePartial',
+      pharmaTokenYXV,
+    ],
+    GET_DELIVERY_TIME_HEADER_TAT: [
+      'https://online.apollopharmacy.org/TAT/Apollo/GetHeaderTat',
       pharmaTokenYXV,
     ],
     GET_SUBSTITUTES: [`${apolloProdBaseUrl}/popcsrchprdsubt_api.php`, pharmaToken201],
@@ -354,8 +363,8 @@ const ConfigurationQA = {
   TOP_SPECIALITIES: QA_top6_specailties,
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
-  iOS_Version: '2.617',
-  Android_Version: '2.617',
+  iOS_Version: '2.623',
+  Android_Version: '2.623',
   CONDITIONAL_MANAGENET_BASE_URL: 'https://aph.staging.pmt.popcornapps.com',
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e',
   COVID_RISK_LEVEL_URL:
@@ -433,8 +442,8 @@ const ConfigurationProd = {
   TOP_SPECIALITIES: top6_specailties,
   ...PharmaApiConfig.prod,
   ...appStaticVariables,
-  iOS_Version: '2.61',
-  Android_Version: '2.61',
+  iOS_Version: '2.63',
+  Android_Version: '2.63',
   CONDITIONAL_MANAGENET_BASE_URL: 'https://pmt.apollo247.com',
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e',
   COVID_RISK_LEVEL_URL: 'https://www.apollo247.com/covid19/scan?utm_source=mobile_app',
@@ -743,20 +752,29 @@ export const TestsFeedBackData = {
   },
 };
 
+export const NeedHelpWhatsAppOptions = [
+  'I would like to know the Delivery status of my order.',
+  'I was not able to place the order due to technical errors.',
+  'I received an order with Partial items/ Wrong items/ Wrong bill',
+  'Excess amount was charged to me by Delivery Executive',
+  'I need to know my refund status',
+  'I have prescription related queries (Invalid/ Order cancelled)',
+];
+
 export const NeedHelp = [
   {
     category: 'Pharmacy',
     options: [
-      'I want to cancel my medicine order with a refund',
-      'The order was successfully placed but medicines not yet delivered',
-      'I was not able to make the payment due to technical errors',
-      'My money got deducted but no order confirmation received',
-      'My order got canceled with no prior notice hence, need the refund',
-      'There is a mismatch in the quantity of medicines ordered and delivered',
-      'The medicines delivered are not the ones which were ordered by me',
-      'The app is crashing/ website is working too slow',
-      'The excess amount charged for medicine delivery',
-      'Inappropriate attitude or behaviour of delivery staff',
+      'I would like to cancel the order!',
+      'I would like to know the Delivery status of my order.',
+      'I was not able to place the order due to technical errors',
+      'I was not able to place the order due to technical errors.',
+      'I need to know why my order was cancelled',
+      'I received an order with Partial items/ Wrong items/ Wrong bill',
+      'Excess amount was charged to me by Delivery Executive',
+      'Inappropriate attitude & behaviour of Delivery Executive',
+      'I need to know my refund status',
+      'I have prescription related queries (Invalid/ Order cancelled)',
     ],
   },
   {

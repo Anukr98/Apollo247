@@ -36,12 +36,12 @@ const useStyles = makeStyles((theme: Theme) => {
       lineHeight: 1.67,
       color: '#02475b',
       paddingBottom: 0,
-      borderbottom: 'none',
+      borderBottom: 'none',
     },
     cityText: {
-      paddingBottom: 0,
       fontSize: 12,
       fontWeight: 500,
+      padding: '0 5px',
     },
     sectionHeader: {
       color: theme.palette.secondary.dark,
@@ -74,12 +74,12 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     imageGroup: {
       display: 'flex',
-      marginLeft: -10,
-      marginRight: -10,
+      flexWrap: 'wrap',
+      margin: '0 -10px',
     },
     imageCol: {
-      paddingLeft: 10,
-      paddingRight: 10,
+      padding: '0 10px',
+      margin: '0 0 20px',
     },
   };
 });
@@ -135,19 +135,17 @@ export const DoctorClinics: React.FC<DoctorClinicsProps> = (props) => {
                     {clinicDetails && clinicDetails.facility.streetLine1
                       ? clinicDetails.facility.streetLine1
                       : ''}
-                    &nbsp;
                     {clinicDetails && clinicDetails.facility.streetLine2
                       ? clinicDetails.facility.streetLine2
                       : ''}
-                    &nbsp;
                     {clinicDetails && clinicDetails.facility.streetLine3
                       ? clinicDetails.facility.streetLine3
-                      : ''}
-                  </div>
-                  <div className={classes.cityText}>
-                    {clinicDetails && clinicDetails.facility.city
-                      ? clinicDetails.facility.city
-                      : ''}
+                      : ''}{' '}
+                    <span className={classes.cityText}>
+                      {clinicDetails && clinicDetails.facility.city
+                        ? clinicDetails.facility.city
+                        : ''}
+                    </span>
                   </div>
                 </div>
                 <div className={classes.imageGroup}>

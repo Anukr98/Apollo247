@@ -33,7 +33,8 @@ import { MascotWithMessage } from '../MascotWithMessage';
 import fetchUtil from 'helpers/fetch';
 import { Route } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
-import { customerCareNumber } from 'helpers/commonHelpers';
+import { kavachHelpline } from 'helpers/commonHelpers';
+import { MetaTagsComp } from 'MetaTagsComp';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -529,8 +530,20 @@ export const KavachLanding: React.FC = (props) => {
       setIsLoading(false);
     });
   };
+
+  const metaTagProps = {
+    title: 'Apollo Project Kavach - Protection from Covid-19, Covid19 Isolation Facilities',
+    description:
+      'Project Kavach is a comprehensive & an integrated response for Protection against COVID-19. Apollo Group offers medically supervised rooms as isolation facilities at hotels. Apollo will take care of you if you need supervision at home, hotel or at Apollo Fever Clinics. Apollo also offers Corona Kit - which includes Pulse Oximeter, Thermometer, Masks, Sanitizers, Disinfectant Spray & other essential Products.',
+    canonicalLink: window && window.location && window.location.href,
+    src: process.env.KAVACH_LANDING_SCRIPT_URL || '',
+    keywords:
+      'Covid Isolation Facilities, Hotel Stay for Covid Patients, Pulse Oximeter, Project Kavach',
+  };
+
   return (
     <div className={classes.kavachLanding}>
+      <MetaTagsComp {...metaTagProps} />
       <Header />
       <div className={classes.container}>
         <div className={classes.kavachContent}>
@@ -715,7 +728,7 @@ export const KavachLanding: React.FC = (props) => {
                     </li>
                     <li>Get prescriptions over SMS</li>
                   </ul>
-                  <a href={isDesktopOnly ? '#' : `tel:${customerCareNumber}`}>
+                  <a href={isDesktopOnly ? '#' : `tel:${kavachHelpline}`}>
                     <AphButton
                       variant="contained"
                       color="primary"
@@ -747,14 +760,14 @@ export const KavachLanding: React.FC = (props) => {
                   </Grid>
                   <Grid item xs={12} sm={6}>
                     <div className={classes.card}>
-                      <Typography component="h4">COVID Mangement</Typography>
+                      <Typography component="h4" className={classes.mb20}>
+                        Fever Clinic
+                      </Typography>
                       <ul className="careList">
-                        <li>Specialist consultation</li>
-                        <li>All protocols under ICMR guidelines</li>
-                        <li>International infection control protocols</li>
-                        <li>Patient segregation to prevent cross infection</li>
-                        <li>COVID-19 testing</li>
-                        <li>In-hospital treatment </li>
+                        <li>Consultations by appointment</li>
+                        <li>Efficient screening</li>
+                        <li>Fast tracked consultation</li>
+                        <li>Accurate diagnosis and effective treatment</li>
                       </ul>
                     </div>
                   </Grid>
@@ -777,7 +790,7 @@ export const KavachLanding: React.FC = (props) => {
           </div>
           <div className={classes.heading}>
             <Typography component="h3">Basic &amp; Advanced Packages To Suit All Needs</Typography>
-            <a href={isDesktopOnly ? '#' : `tel:${customerCareNumber}`}>
+            <a href={isDesktopOnly ? '#' : `tel:${kavachHelpline}`}>
               <AphButton
                 color="primary"
                 variant="contained"
@@ -1697,7 +1710,7 @@ export const KavachLanding: React.FC = (props) => {
         <AphDialogTitle></AphDialogTitle>
         <div className={classes.expertBox}>
           <h2>CORONAVIRUS? Talk to our expert.</h2>
-          <a href={`tel:${customerCareNumber}`}>Call {customerCareNumber} in emergency</a>
+          <a href={`tel:${kavachHelpline}`}>Call 1860-500-0202 in emergency</a>
           <AphButton onClick={() => setIscoronaDialogOpen(false)} color="primary">
             Ok, Got It
           </AphButton>

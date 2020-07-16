@@ -654,7 +654,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
     const params = {
       phone: '91' + storedPhoneNumber,
-      size: 10,
+      size: 40,
     };
     console.log('params', params);
     notifcationsApi(params)
@@ -968,15 +968,23 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       .then((data: any) => {
         const appointmentsdata =
           g(data, 'data', 'data', 'getPatientPersonalizedAppointments', 'appointmentDetails') || [];
-        // console.log('appointmentsdata', appointmentsdata);
+        console.log('appointmentsdata', appointmentsdata);
         AsyncStorage.setItem('UHIDused', selectedUHID);
 
-        setPersonalizedData(appointmentsdata as any);
-        setisPersonalizedCard(true);
-        setAppointmentsPersonalized &&
-          setAppointmentsPersonalized(
-            appointmentsdata as getPatientPersonalizedAppointments_getPatientPersonalizedAppointments_appointmentDetails[]
-          );
+        if (appointmentsdata.doctorId !== null) {
+          console.log('appointmentsdata_if', appointmentsdata);
+          setPersonalizedData(appointmentsdata as any);
+          setisPersonalizedCard(true);
+          setAppointmentsPersonalized &&
+            setAppointmentsPersonalized(
+              appointmentsdata as getPatientPersonalizedAppointments_getPatientPersonalizedAppointments_appointmentDetails[]
+            );
+        } else {
+          setPersonalizedData([]);
+          setisPersonalizedCard(false);
+          setAppointmentsPersonalized && setAppointmentsPersonalized([]);
+          console.log('appointmentsdata_null_else', appointmentsdata);
+        }
       })
       .catch((e) => {
         setPersonalizedData([]);
@@ -1667,7 +1675,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           onClickButton={() => {
             const { doctorDetails } = personalizedData;
             const eventAttributes: WebEngageEvents[WebEngageEventName.HOMEPAGE_WIDGET_FOLLOWUP_CLICK] = {
-              'Doctor ID': doctorDetails.id,
+              'Doctor ID': personalizedData.doctorId,
               'Speciality ID': doctorDetails.specialty.id,
               'Hospital City': personalizedData.hospitalLocation,
               'Consult Mode': personalizedData.appointmentType,
@@ -1685,6 +1693,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             props.navigation.navigate(AppRoutes.DoctorDetails, {
               doctorId: personalizedData ? personalizedData.doctorDetails.id : '',
               showBookAppointment: true,
+              consultedWithDoctorBefore: true,
             });
           }}
         />

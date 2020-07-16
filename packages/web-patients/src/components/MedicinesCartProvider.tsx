@@ -27,6 +27,7 @@ export interface MedicineCartItem {
   quantity: number;
   mou: string;
   isShippable: boolean;
+  MaxOrderQty: number;
 }
 
 export interface StoreAddresses {

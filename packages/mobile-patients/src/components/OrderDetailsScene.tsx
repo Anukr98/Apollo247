@@ -1300,10 +1300,20 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     postWebEngageEvent(WebEngageEventName.ORDER_SUMMARY_CLICKED, eventAttributes);
     return (
       <View>
-        <OrderSummary orderDetails={orderDetails as any} addressData={addressData} />
+        <OrderSummary
+          orderDetails={orderDetails as any}
+          addressData={addressData}
+          onBillChangesClick={onBillChangesClick}
+        />
         <View style={{ marginTop: 30 }} />
       </View>
     );
+  };
+
+  const onBillChangesClick = () => {
+    props.navigation.navigate(AppRoutes.OrderModifiedScreen, {
+      orderDetails: orderDetails,
+    });
   };
 
   const onPressConfirmCancelOrder = () => {
@@ -1409,11 +1419,16 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         item!.orderStatus == MEDICINE_ORDER_STATUS.ORDER_FAILED ||
         item!.orderStatus == MEDICINE_ORDER_STATUS.PURCHASED_IN_STORE
     );
+    const isBeforeOrderPlacedStatus = !orderStatusList.find(
+      (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.ORDER_PLACED
+    );
     const cannotCancelOrder = orderStatusList.find(
       (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.ORDER_BILLED
       // || item!.orderStatus == MEDICINE_ORDER_STATUS.PRESCRIPTION_CART_READY
     );
-    if (hideMenuIcon || !orderStatusList.length) return <View style={{ width: 24 }} />;
+    if (hideMenuIcon || !orderStatusList.length || isBeforeOrderPlacedStatus) {
+      return <View style={{ width: 24 }} />;
+    }
     return (
       <MaterialMenu
         options={['Cancel Order'].map((item) => ({

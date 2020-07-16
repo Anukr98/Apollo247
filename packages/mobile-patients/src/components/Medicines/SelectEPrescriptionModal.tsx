@@ -534,16 +534,16 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
                 {prescriptionUpto6months.map((item, index, array) => {
                   return renderEPrescription(item, index, array.length);
                 })}
+                {props.displayPrismRecords && renderHealthRecords()}
                 {!!prescriptionOlderThan6months.length && (
                   <SectionHeader
-                    style={{ marginTop: 14 }}
+                    style={{ marginTop: 14, marginBottom: 10 }}
                     leftText="PRESCRIPTIOINS OLDER THAN 6 MONTHS"
                   />
                 )}
                 {prescriptionOlderThan6months.map((item, index, array) => {
                   return renderEPrescription(item, index, array.length, true);
                 })}
-                {props.displayPrismRecords && renderHealthRecords()}
                 <View style={{ height: 12 }} />
               </>
             )}

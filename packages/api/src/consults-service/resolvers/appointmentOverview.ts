@@ -190,7 +190,7 @@ const getPastAppointmentsCount: Resolver<
     DoctorPatientExternalConnectRepository
   );
   let apptId = '';
-  if (!appointmentId) {
+  if (appointmentId) {
     apptId = appointmentId;
   }
   const yesCount = await externalConnectRepo.findCountDoctorAndPatient(doctorId, patientId);
