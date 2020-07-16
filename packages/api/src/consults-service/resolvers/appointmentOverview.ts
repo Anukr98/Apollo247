@@ -109,23 +109,25 @@ const getAppointmentOverview: Resolver<
     },
     order: { appointmentDateTime: 'DESC' },
   });
+  let completedAppointments = 0;
+  let cancelledAppointments = 0;
+  let inNextHour = 0;
+  const doctorAway = allAppointments.length;
 
-  const completedAppointments = allAppointments.filter(appointment => {
-    return (appointment.status == STATUS.COMPLETED);
-  }).length;
-  const cancelledAppointments = allAppointments.filter(appointment => {
-    return (appointment.status == STATUS.CANCELLED);
-  }).length;
-
-
-
-  const doctorAway = allAppointments.length
-  const inNextHour = allAppointments.filter((appointment) => {
+  // updating the count for appointments
+  for (let i = 0; i < allAppointments.length; i++) {
+    const { status, appointmentDateTime } = allAppointments[i];
     const now = new Date();
     const nextHr = addHours(now, 1);
-    return (appointment.appointmentDateTime >= now && appointment.appointmentDateTime <= nextHr);
-  }).length;
-
+    if (status && status == STATUS.COMPLETED) {
+      completedAppointments++;
+    } else if (status && status == STATUS.CANCELLED) {
+      cancelledAppointments++;
+    }
+    if (appointmentDateTime && appointmentDateTime >= now && appointmentDateTime <= nextHr) {
+      inNextHour++;
+    }
+  }
   const appointments = await Promise.all(
     allAppointments.map((appointment) => {
       return { appointment };
