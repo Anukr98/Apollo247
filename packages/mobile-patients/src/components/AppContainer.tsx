@@ -15,11 +15,17 @@ import { setJSExceptionHandler, setNativeExceptionHandler } from 'react-native-e
 import AsyncStorage from '@react-native-community/async-storage';
 import Axios from 'axios';
 import { setBugFenderLog } from '../FunctionHelpers/DeviceHelper';
-import codePush from 'react-native-code-push';
+import codePush, { CodePushOptions } from 'react-native-code-push';
+import { AppConfig } from '../strings/AppConfig';
 
-const codePushOptions = {
+const codePushOptions: CodePushOptions = {
   checkFrequency: codePush.CheckFrequency.ON_APP_RESUME,
   installMode: codePush.InstallMode.ON_NEXT_RESUME,
+  deploymentKey:
+    Platform.OS == 'android'
+      ? AppConfig.Configuration.CODE_PUSH_DEPLOYMENT_KEY_ANDROID
+      : AppConfig.Configuration.CODE_PUSH_DEPLOYMENT_KEY_IOS,
+  updateDialog: {},
 };
 
 const postToFirebase = (

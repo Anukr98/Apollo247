@@ -295,6 +295,8 @@ const PharmaApiConfig = {
 
 //Development;
 const ConfigurationDev = {
+  CODE_PUSH_DEPLOYMENT_KEY_ANDROID: 'ztcR3MB6vWyWtIAzpnsOczanc57pCQeMAIhUS',
+  CODE_PUSH_DEPLOYMENT_KEY_IOS: 't1yzL4Cj0zDKiAUuKVZt_zIYuwHrleGaNVihE',
   LOG_ENVIRONMENT: 'debug',
   ANALYTICAL_ENIVRONMENT: 'debug',
   MEDICINE_PAST_SEARCHES_SHOW_COUNT: 5,
@@ -336,6 +338,8 @@ const ConfigurationDev = {
 
 // QA
 const ConfigurationQA = {
+  CODE_PUSH_DEPLOYMENT_KEY_ANDROID: '8njVNeiezjGyi0BjIuIWOWm_N3zo2uVb5Z5_B',
+  CODE_PUSH_DEPLOYMENT_KEY_IOS: 'IwojMQex0fbTUlvY1ydYzMT5l7hrLrbLy0ciH',
   LOG_ENVIRONMENT: 'release',
   ANALYTICAL_ENIVRONMENT: 'release',
   MEDICINE_PAST_SEARCHES_SHOW_COUNT: 5,
@@ -377,6 +381,8 @@ const ConfigurationQA = {
 
 // staging
 const ConfigurationStaging = {
+  CODE_PUSH_DEPLOYMENT_KEY_ANDROID: '8njVNeiezjGyi0BjIuIWOWm_N3zo2uVb5Z5_B',
+  CODE_PUSH_DEPLOYMENT_KEY_IOS: 'IwojMQex0fbTUlvY1ydYzMT5l7hrLrbLy0ciH',
   LOG_ENVIRONMENT: 'release',
   ANALYTICAL_ENIVRONMENT: 'release',
   MEDICINE_PAST_SEARCHES_SHOW_COUNT: 5,
@@ -415,6 +421,8 @@ const ConfigurationStaging = {
 };
 //Production
 const ConfigurationProd = {
+  CODE_PUSH_DEPLOYMENT_KEY_ANDROID: 'ncBcxm590r0jEGT4BjQFTAW0_rkHKvF5xYUDX',
+  CODE_PUSH_DEPLOYMENT_KEY_IOS: 'N9LT5oUoB9DUv394XXz05Tywn3LKgHsugfl3i',
   LOG_ENVIRONMENT: 'release',
   ANALYTICAL_ENIVRONMENT: 'release',
   MEDICINE_PAST_SEARCHES_SHOW_COUNT: 5,
@@ -455,6 +463,8 @@ const ConfigurationProd = {
 
 //PERFORMANCE
 const ConfigurationPERFORM = {
+  CODE_PUSH_DEPLOYMENT_KEY_ANDROID: '',
+  CODE_PUSH_DEPLOYMENT_KEY_IOS: '',
   LOG_ENVIRONMENT: 'perform',
   ANALYTICAL_ENIVRONMENT: 'perform',
   MEDICINE_PAST_SEARCHES_SHOW_COUNT: 5,
@@ -496,6 +506,8 @@ const ConfigurationPERFORM = {
 
 //VAPT
 const ConfigurationVAPT = {
+  CODE_PUSH_DEPLOYMENT_KEY_ANDROID: '',
+  CODE_PUSH_DEPLOYMENT_KEY_IOS: '',
   LOG_ENVIRONMENT: 'VAPT',
   ANALYTICAL_ENIVRONMENT: 'VAPT',
   MEDICINE_PAST_SEARCHES_SHOW_COUNT: 5,
@@ -537,6 +549,8 @@ const ConfigurationVAPT = {
 
 //DevelopmentReplica
 const ConfigurationDevReplica = {
+  CODE_PUSH_DEPLOYMENT_KEY_ANDROID: '',
+  CODE_PUSH_DEPLOYMENT_KEY_IOS: '',
   LOG_ENVIRONMENT: 'debug',
   ANALYTICAL_ENIVRONMENT: 'debug',
   MEDICINE_PAST_SEARCHES_SHOW_COUNT: 5,
