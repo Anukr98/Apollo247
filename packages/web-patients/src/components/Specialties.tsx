@@ -10,7 +10,7 @@ import { SAVE_PATIENT_SEARCH } from 'graphql/pastsearches';
 import { SEARCH_TYPE } from 'graphql/types/globalTypes';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { clientRoutes } from 'helpers/clientRoutes';
-import { Route } from 'react-router-dom';
+import { Route, Link } from 'react-router-dom';
 import { readableParam } from 'helpers/commonHelpers';
 import { useMutation } from 'react-apollo-hooks';
 import { getSymptoms } from 'helpers/commonHelpers';
@@ -176,40 +176,42 @@ export const Specialties: React.FC<SpecialtiesProps> = (props) => {
                                 },
                               },
                             });
-                          const specialityUpdated = readableParam(`${e.currentTarget.title}`);
-                          history.push(
-                            selectedCity === ''
-                              ? clientRoutes.specialties(specialityUpdated)
-                              : clientRoutes.citySpecialties(
-                                  _lowerCase(selectedCity),
-                                  specialityUpdated
-                                )
-                          );
                         }}
                       >
-                        <div className={classes.contentBox}>
-                          <Avatar
-                            alt={specialityDetails.name || ''}
-                            src={specialityDetails.image || ''}
-                            className={classes.bigAvatar}
-                          />
-                          <div className={classes.spContent}>
-                            <div>{specialityDetails.name}</div>
-                            {specialityDetails.shortDescription && (
-                              <div className={classes.specialityDetails}>
-                                {specialityDetails.shortDescription}
-                              </div>
-                            )}
-                            {specialityDetails.symptoms && (
-                              <div className={classes.symptoms}>
-                                {getSymptoms(specialityDetails.symptoms)}
-                              </div>
-                            )}
-                            <span className={classes.rightArrow}>
-                              <img src={require('images/ic_arrow_right.svg')} />
-                            </span>
+                        <Link
+                          to={
+                            selectedCity === ''
+                              ? clientRoutes.specialties(readableParam(specialityDetails.name))
+                              : clientRoutes.citySpecialties(
+                                  _lowerCase(selectedCity),
+                                  readableParam(specialityDetails.name)
+                                )
+                          }
+                        >
+                          <div className={classes.contentBox}>
+                            <Avatar
+                              alt={specialityDetails.name || ''}
+                              src={specialityDetails.image || ''}
+                              className={classes.bigAvatar}
+                            />
+                            <div className={classes.spContent}>
+                              <div>{specialityDetails.name}</div>
+                              {specialityDetails.shortDescription && (
+                                <div className={classes.specialityDetails}>
+                                  {specialityDetails.shortDescription}
+                                </div>
+                              )}
+                              {specialityDetails.symptoms && (
+                                <div className={classes.symptoms}>
+                                  {getSymptoms(specialityDetails.symptoms)}
+                                </div>
+                              )}
+                              <span className={classes.rightArrow}>
+                                <img src={require('images/ic_arrow_right.svg')} />
+                              </span>
+                            </div>
                           </div>
-                        </div>
+                        </Link>
                       </Grid>
                     )}
                   />

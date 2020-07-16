@@ -181,6 +181,14 @@ const useStyles = makeStyles((theme: Theme) => {
         marginTop: 20,
       },
     },
+    mainHead: {
+      display: 'flex',
+      fontSize: 56,
+      fontWeight: 600,
+      [theme.breakpoints.down('xs')]: {
+        fontSize: 36,
+      },
+    },
   };
 });
 
@@ -249,7 +257,7 @@ export const HeroBanner: React.FC = () => {
             </AphSelect>
           </Typography>
         ) : (
-          <Typography variant="h1">hello there!</Typography>
+          <span className={classes.mainHead}>hello there!</span>
         )}
         <p>How can we help you today? :)</p>
         <OurServices />
