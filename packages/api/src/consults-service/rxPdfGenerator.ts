@@ -527,7 +527,9 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
       .image(loadAsset('apolloLogo.png'), margin, margin / 2, { width: 87, height: 64 });
 
     //Doctor Details
-    const nameLine = `${doctorInfo.salutation}. ${doctorInfo.firstName} ${doctorInfo.lastName}`;
+    const nameLine = `${doctorInfo.salutation.replace('.', '')}. ${doctorInfo.firstName} ${
+      doctorInfo.lastName
+    }`;
     const specialty = doctorInfo.specialty;
     const registrationLine = `Reg.No. ${doctorInfo.registrationNumber}`;
 
@@ -591,6 +593,8 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
         width: 12,
       })
       .text(`${ApiConstants.CASESHEET_EMAIL.toString()}`, 480, doc.y - 12);
+
+    doc.moveDown(0.5);
   };
 
   const renderFooter = () => {
@@ -974,7 +978,9 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
       }
 
       //Doctor Details
-      const nameLine = `${doctorInfo.salutation}. ${doctorInfo.firstName} ${doctorInfo.lastName}`;
+      const nameLine = `${doctorInfo.salutation.replace('.', '')}. ${doctorInfo.firstName} ${
+        doctorInfo.lastName
+      }`;
       const specialty = doctorInfo.specialty;
       const registrationLine = `Reg.No. ${doctorInfo.registrationNumber}`;
 
@@ -1015,7 +1021,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
   renderHeader(rxPdfData.doctorInfo, rxPdfData.hospitalAddress);
 
   if (!_isEmpty(rxPdfData.patientInfo)) {
-    doc.moveUp(1);
+    doc.moveUp(1.5);
     renderpatients(rxPdfData.patientInfo, rxPdfData.appointmentDetails);
     doc.moveDown(1.5);
   }
