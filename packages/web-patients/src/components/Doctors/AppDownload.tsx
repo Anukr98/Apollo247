@@ -2,6 +2,7 @@ import React from 'react';
 import { makeStyles, createStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
 import { AphButton } from '@aph/web-ui-components';
+import { getAppStoreLink } from 'helpers/dateHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -44,7 +45,7 @@ const useStyles = makeStyles((theme: Theme) => {
         marginLeft: 16,
         backgroundColor: '#fff',
       },
-    },    
+    },
   });
 });
 
@@ -56,8 +57,10 @@ export const AppDownload: React.FC = (props) => {
       <div className={classes.appDownloadGroup}>
         <h4>To enjoy enhanced consultation experience download our mobile app</h4>
         <div className={classes.appDownload}>
-          <span><img src={require('images/apollo-logo.jpg')} alt="" /></span>
-          <AphButton>Download the App</AphButton>
+          <span>
+            <img src={require('images/apollo-logo.jpg')} alt="" />
+          </span>
+          <AphButton onClick={() => window.open(getAppStoreLink())}>Download the App</AphButton>
         </div>
       </div>
     </div>

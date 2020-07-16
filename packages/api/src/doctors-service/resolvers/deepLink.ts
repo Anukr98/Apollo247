@@ -6,7 +6,7 @@ import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { DeepLinkInput } from 'types/deeplinks';
 import { getDeeplink, refreshLink, generateDeepLinkBody } from 'helpers/appsflyer';
-import { Deeplink, DeepLinkType, DoctorType } from 'doctors-service/entities';
+import { Deeplink, DeepLinkType, DoctorType, Doctor } from 'doctors-service/entities';
 import { ApiConstants } from 'ApiConstants';
 import { DeeplinkRepository } from 'doctors-service/repositories/deepLinkRepository';
 import { format, addDays, differenceInDays } from 'date-fns';
@@ -22,6 +22,7 @@ export const deepLinkTypeDefs = gql`
     upsertDoctorsDeeplink(doctorId: String): Deeplink
     insertBulkDeepLinks: String
     refreshDoctorDeepLinks: String
+    generateDeepLinksByCron: String
   }
 `;
 
@@ -203,10 +204,62 @@ const refreshDoctorDeepLinks: Resolver<null, {}, DoctorsServiceContext, string> 
   return 'Deeplink Refresh Completed :)';
 };
 
+const generateDeepLinksByCron: Resolver<null, {}, DoctorsServiceContext, string> = async (
+  parent,
+  args,
+  { doctorsDb }
+) => {
+  const linkRepository = doctorsDb.getCustomRepository(DeeplinkRepository);
+  const doctorsWithDeeplink = await linkRepository.getDoctorsWithDeepLink();
+
+  if (doctorsWithDeeplink.length == 0) return 'No new doctors :)';
+  const excludeDoctorIds = doctorsWithDeeplink.map((item) => item.doctorId);
+
+  //get doctors excluding the above list
+  const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
+  const doctorsWithOutDeeplink = await doctorRepository.getSeniorDoctorsFromExcludeList(
+    excludeDoctorIds
+  );
+
+  doctorsWithOutDeeplink.forEach(async (doctordata: Doctor) => {
+    const deepLinkAttrs: DeepLinkInput = generateDeepLinkBody(doctordata);
+    const deepLink = await getDeeplink(deepLinkAttrs, doctordata.doctorType);
+    const refreshDays = ApiConstants.LINK_TTL ? parseInt(ApiConstants.LINK_TTL, 10) : 0;
+    const refreshDate = addDays(new Date(), refreshDays);
+
+    const linkDetails = deepLink.split('/');
+    const shortId = linkDetails[linkDetails.length - 1];
+
+    const templateId =
+      doctordata.doctorType == DoctorType.DOCTOR_CONNECT
+        ? ApiConstants.DOCTOR_DEEPLINK_TEMPLATE_ID_NON_APOLLO.toString()
+        : ApiConstants.DOCTOR_DEEPLINK_TEMPLATE_ID_APOLLO.toString();
+
+    //insert link data
+    const dataAttributes: Partial<Deeplink> = {
+      shortId: shortId,
+      linkRefreshDate: refreshDate,
+      campaignName: deepLinkAttrs.data.c,
+      channelName: deepLinkAttrs.data.af_channel,
+      deepLink: deepLink,
+      doctorId: doctordata.id,
+      partnerId: deepLinkAttrs.data.pid,
+      referralCode: deepLinkAttrs.data.af_sub1,
+      templateId: templateId,
+      type: DeepLinkType.DOCTOR,
+    };
+
+    await linkRepository.createDeeplink(dataAttributes);
+  });
+
+  return 'Data Insertion Completed :)';
+};
+
 export const deepLinkResolvers = {
   Mutation: {
     upsertDoctorsDeeplink,
     insertBulkDeepLinks,
+    generateDeepLinksByCron,
     refreshDoctorDeepLinks,
   },
 };

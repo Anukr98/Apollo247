@@ -5,7 +5,7 @@ import { AphButton, AphTextField, AphCustomDropdown } from '@aph/web-ui-componen
 import Scrollbars from 'react-custom-scrollbars';
 
 import { NotifyMeNotification } from './NotifyMeNotification';
-import { notifyMeTracking } from '../../webEngageTracking';
+import { notifyMeTracking, pharmacyPdpPincodeTracking } from 'webEngageTracking';
 import { SubstituteDrugsList } from 'components/Medicine/SubstituteDrugsList';
 import { MedicineProductDetails, MedicineProduct } from '../../helpers/MedicineApiCalls';
 import { useParams } from 'hooks/routerHooks';
@@ -27,6 +27,7 @@ import { Alerts } from 'components/Alerts/Alerts';
 import { findAddrComponents } from 'helpers/commonHelpers';
 import { CartTypes } from 'components/MedicinesCartProvider';
 import _lowerCase from 'lodash/lowerCase';
+import { useAllCurrentPatients } from 'hooks/authHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -301,24 +302,30 @@ type MedicineInformationProps = {
 };
 
 export const MedicineInformation: React.FC<MedicineInformationProps> = (props) => {
+  const { data } = props;
   const classes = useStyles({});
   const {
     addCartItem,
     cartItems,
-    updateCartItem,
+    updateCartItemQty,
     pharmaAddressDetails,
     setMedicineAddress,
     setPharmaAddressDetails,
     setHeaderPincodeError,
   } = useShoppingCart();
-  const [medicineQty, setMedicineQty] = React.useState(1);
+  const { currentPatient } = useAllCurrentPatients();
+  const itemIndexInCart = (item: MedicineProduct) => {
+    return cartItems.findIndex((cartItem) => cartItem.id == item.id);
+  };
+  const [medicineQty, setMedicineQty] = React.useState(
+    itemIndexInCart(data) !== -1 ? cartItems[itemIndexInCart(data)].quantity : 1
+  );
   const notifyPopRef = useRef(null);
   const addToCartRef = useRef(null);
   const subDrugsRef = useRef(null);
   const [isSubDrugsPopoverOpen, setIsSubDrugsPopoverOpen] = React.useState<boolean>(false);
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
   const [substitutes, setSubstitutes] = React.useState<MedicineProductDetails[] | null>(null);
-  const { data } = props;
   const params = useParams<{ sku: string }>();
   const [pinCode, setPinCode] = React.useState<string>('');
   const [deliveryTime, setDeliveryTime] = React.useState<string>('');
@@ -330,6 +337,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
   const [alertMessage, setAlertMessage] = React.useState<string>('');
   const [isAlertOpen, setIsAlertOpen] = React.useState<boolean>(false);
   const [clickAddCart, setClickAddCart] = React.useState<boolean>(false);
+  const [isUpdateQuantity, setIsUpdateQuantity] = React.useState<boolean>(false);
 
   const apiDetails = {
     skuUrl: process.env.PHARMACY_MED_PROD_SKU_URL,
@@ -519,21 +527,17 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
       });
   };
 
-  const itemIndexInCart = (item: MedicineProduct) => {
-    return cartItems.findIndex((cartItem) => cartItem.id == item.id);
-  };
-
   const applyCartOperations = (cartItem: MedicineCartItem) => {
     const index = cartItems.findIndex((item) => item.id === cartItem.id);
     if (index >= 0) {
-      updateCartItem && updateCartItem(cartItem);
+      updateCartItemQty && updateCartItemQty(cartItem);
     } else {
       addCartItem && addCartItem(cartItem);
     }
   };
   const isSmallScreen = useMediaQuery('(max-width:767px)');
 
-  const options = Array.from(Array(20), (_, x) => x + 1);
+  const options = Array.from(Array(data.MaxOrderQty || 20), (_, x) => x + 1);
   return (
     <div className={classes.root}>
       <div className={`${classes.medicineSection}`}>
@@ -595,6 +599,14 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                       }}
                       onClick={() => {
                         checkDeliveryTime(pinCode);
+                        const { sku, name } = data;
+                        const eventData = {
+                          pinCode,
+                          productId: sku,
+                          productName: name,
+                          customerId: currentPatient && currentPatient.id,
+                        };
+                        pharmacyPdpPincodeTracking(eventData);
                       }}
                     >
                       {tatLoading ? <CircularProgress size={20} /> : ' Check'}
@@ -628,6 +640,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                           classes={{ selectMenu: classes.selectMenuItem }}
                           value={medicineQty}
                           onChange={(e: React.ChangeEvent<{ value: any }>) => {
+                            itemIndexInCart(data) !== -1 && setIsUpdateQuantity(true);
                             const quantity = parseInt(e.target.value);
                             /* Gtm code start  */
                             itemIndexInCart(data) !== -1 &&
@@ -645,7 +658,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                                       {
                                         item_name: data.name,
                                         item_id: data.sku,
-                                        price: data.price,
+                                        price: data.special_price || data.price,
                                         item_category: 'Pharmacy',
                                         item_category_2: data.type_id
                                           ? data.type_id.toLowerCase() === 'pharma'
@@ -721,9 +734,11 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                   <AphButton
                     disabled={addMutationLoading || updateMutationLoading}
                     onClick={() => {
+                      setIsUpdateQuantity(false);
                       setClickAddCart(true);
                       setAddMutationLoading(true);
                       const cartItem: MedicineCartItem = {
+                        MaxOrderQty: data.MaxOrderQty,
                         url_key: data.url_key,
                         description: data.description,
                         id: data.id,
@@ -755,7 +770,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                               {
                                 item_name: data.name,
                                 item_id: data.sku,
-                                price: data.price,
+                                price: data.special_price || data.price,
                                 item_category: 'Pharmacy',
                                 item_category_2: data.type_id
                                   ? data.type_id.toLowerCase() === 'pharma'
@@ -780,8 +795,6 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                     {' '}
                     {addMutationLoading ? (
                       <CircularProgress size={22} color="secondary" />
-                    ) : itemIndexInCart(data) !== -1 ? (
-                      'Added To Cart'
                     ) : (
                       'Add To Cart'
                     )}
@@ -793,6 +806,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                     onClick={() => {
                       setUpdateMutationLoading(true);
                       const cartItem: MedicineCartItem = {
+                        MaxOrderQty: data.MaxOrderQty,
                         url_key: data.url_key,
                         description: data.description,
                         id: data.id,

@@ -1,5 +1,6 @@
 import AbortController from 'abort-controller';
 import { debugLog } from 'customWinstonLogger';
+import fetch from 'node-fetch';
 import {
   LabResultsUploadResponse,
   LabResultsUploadRequest,
@@ -9,6 +10,7 @@ import {
   LabResultsDownloadResponse,
   GetUsersResponse,
   CreateNewUsersResponse,
+  GetAuthTokenResponse,
 } from 'types/phrv1';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
@@ -375,10 +377,6 @@ export async function linkUhid(
   primaryuhid: string,
   uhids: string //coma seperated uhids
 ): Promise<PrismGetUsersResponse> {
-  const prismHeaders = {
-    method: 'GET',
-  };
-
   if (!process.env.PHR_V1_PRISM_LINK_UHID_API || !process.env.PHR_V1_ACCESS_TOKEN)
     throw new AphError(AphErrorMessages.INVALID_PRISM_URL);
 
@@ -388,7 +386,18 @@ export async function linkUhid(
   apiUrl = apiUrl.replace('{LINKINGUHIDS}', uhids);
 
   const reqStartTime = new Date();
-  return await fetch(apiUrl, prismHeaders)
+  const controller = new AbortController();
+  const timeout = setTimeout(() => {
+    controller.abort();
+  }, prismTimeoutMillSeconds);
+
+  return await fetch(apiUrl, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json;charset=utf-8',
+    },
+    signal: controller.signal,
+  })
     .then((res) => res.json())
     .then(
       (data) => {
@@ -397,6 +406,7 @@ export async function linkUhid(
           'linkUhid PRISM_LINK_UHID_API_CALL___END',
           `${apiUrl} --- ${JSON.stringify(data)}`
         );
+        if (data.errorCode) throw new AphError(AphErrorMessages.PRISM_LINK_UHID_ERROR);
         return data;
       },
       (err) => {
@@ -405,18 +415,23 @@ export async function linkUhid(
           'linkUhid PRISM_LINK_UHID_API_CALL___ERROR',
           `${apiUrl} --- ${JSON.stringify(err)}`
         );
+
+        if (err.name === 'AbortError') {
+          throw new AphError(AphErrorMessages.NO_RESPONSE_FROM_PRISM);
+        } else {
+          throw new AphError(AphErrorMessages.PRISM_LINK_UHID_ERROR);
+        }
       }
-    );
+    )
+    .finally(() => {
+      clearTimeout(timeout);
+    });
 }
 
 export async function delinkUhid(
   primaryuhid: string,
   uhids: string //coma seperated uhids
 ): Promise<PrismGetUsersResponse> {
-  const prismHeaders = {
-    method: 'GET',
-  };
-
   if (!process.env.PHR_V1_PRISM_DELINK_UHID_API || !process.env.PHR_V1_ACCESS_TOKEN)
     throw new AphError(AphErrorMessages.INVALID_PRISM_URL);
 
@@ -426,7 +441,18 @@ export async function delinkUhid(
   apiUrl = apiUrl.replace('{DELINKINGUHIDS}', uhids);
 
   const reqStartTime = new Date();
-  return await fetch(apiUrl, prismHeaders)
+  const controller = new AbortController();
+  const timeout = setTimeout(() => {
+    controller.abort();
+  }, prismTimeoutMillSeconds);
+
+  return await fetch(apiUrl, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json;charset=utf-8',
+    },
+    signal: controller.signal,
+  })
     .then((res) => res.json())
     .then(
       (data) => {
@@ -435,6 +461,7 @@ export async function delinkUhid(
           'delinkuhids PRISM_DELINK_UHID_API_CALL___END',
           `${apiUrl} --- ${JSON.stringify(data)}`
         );
+        if (data.errorCode) throw new AphError(AphErrorMessages.PRISM_DELINK_UHID_ERROR);
         return data;
       },
       (err) => {
@@ -443,6 +470,64 @@ export async function delinkUhid(
           'delinkuhids PRISM_DELINK_UHID_API_CALL___ERROR',
           `${apiUrl} --- ${JSON.stringify(err)}`
         );
+        if (err.name === 'AbortError') {
+          throw new AphError(AphErrorMessages.NO_RESPONSE_FROM_PRISM);
+        } else {
+          throw new AphError(AphErrorMessages.PRISM_DELINK_UHID_ERROR);
+        }
       }
-    );
+    )
+    .finally(() => {
+      clearTimeout(timeout);
+    });
+}
+
+export async function getAuthToken(primaryuhid: string): Promise<GetAuthTokenResponse> {
+  if (!process.env.PHR_V1_GET_AUTH_TOKEN || !process.env.PHR_V1_ACCESS_TOKEN)
+    throw new AphError(AphErrorMessages.INVALID_PRISM_URL);
+
+  let apiUrl = process.env.PHR_V1_GET_AUTH_TOKEN.toString();
+  apiUrl = apiUrl.replace('{ACCESS_KEY}', process.env.PHR_V1_ACCESS_TOKEN);
+  apiUrl = apiUrl.replace('{UHID}', primaryuhid);
+
+  const reqStartTime = new Date();
+  const controller = new AbortController();
+  const timeout = setTimeout(() => {
+    controller.abort();
+  }, prismTimeoutMillSeconds);
+
+  return await fetch(apiUrl, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json;charset=utf-8',
+    },
+    signal: controller.signal,
+  })
+    .then((res) => res.json())
+    .then(
+      (data) => {
+        dLogger(
+          reqStartTime,
+          'getAuthToken PRISM_GET_AUTH_TOKEN_API_CALL___END',
+          `${apiUrl} --- ${JSON.stringify(data)}`
+        );
+        if (data.errorCode) throw new AphError(AphErrorMessages.PRISM_AUTH_TOKEN_ERROR);
+        return data;
+      },
+      (err) => {
+        dLogger(
+          reqStartTime,
+          'getAuthToken PRISM_GET_AUTH_TOKEN_API_CALL___ERROR',
+          `${apiUrl} --- ${JSON.stringify(err)}`
+        );
+        if (err.name === 'AbortError') {
+          throw new AphError(AphErrorMessages.NO_RESPONSE_FROM_PRISM);
+        } else {
+          throw new AphError(AphErrorMessages.PRISM_AUTH_TOKEN_ERROR);
+        }
+      }
+    )
+    .finally(() => {
+      clearTimeout(timeout);
+    });
 }

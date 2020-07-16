@@ -7,6 +7,7 @@ import {
   ConsultMode,
   SpecialtySearchType,
   DOCTOR_ONLINE_STATUS,
+  DoctorType,
 } from 'doctors-service/entities/';
 import { Client, RequestParams } from '@elastic/elasticsearch';
 import { differenceInMinutes } from 'date-fns';
@@ -26,6 +27,7 @@ export const getDoctorsBySpecialtyAndFiltersTypeDefs = gql`
     doctorsNextAvailability: [DoctorSlotAvailability]
     doctorsAvailability: [DoctorConsultModeAvailability]
     specialty: DoctorSpecialty
+    doctorType: DoctorType
     sort: String
   }
   type DoctorSlotAvailability {
@@ -60,6 +62,7 @@ export const getDoctorsBySpecialtyAndFiltersTypeDefs = gql`
     geolocation: Geolocation
     consultMode: ConsultMode
     pincode: String
+    doctorType: [String]
     sort: String
   }
   extend type Query {
@@ -72,6 +75,7 @@ type FilterDoctorsResult = {
   doctorsNextAvailability: DoctorSlotAvailability[];
   doctorsAvailability: DoctorConsultModeAvailability[];
   specialty?: DoctorSpecialty;
+  doctorType?: DoctorType[];
   sort: string;
 };
 
@@ -104,6 +108,7 @@ export type FilterDoctorInput = {
   geolocation: Geolocation;
   consultMode: ConsultMode;
   pincode: string;
+  doctorType: String[];
   sort: string;
 };
 
@@ -217,6 +222,13 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
       elasticMatch.push({ match: { languages: language } });
     });
   }
+
+  if (args.filterInput.doctorType && args.filterInput.doctorType.length > 0) {
+    elasticMatch.push({ match: { doctorType: args.filterInput.doctorType.join(',') } });
+  }
+
+  elasticMatch.push({ match: { isSearchable: 'true' } });
+
   const searchParams: RequestParams.Search = {
     index: 'doctors',
     body: {

@@ -13,6 +13,8 @@ import { Alert, BackAndroid, Platform, Text, TextInput } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import { setJSExceptionHandler, setNativeExceptionHandler } from 'react-native-exception-handler';
 import AsyncStorage from '@react-native-community/async-storage';
+import Axios from 'axios';
+import { setBugFenderLog } from '../FunctionHelpers/DeviceHelper';
 
 const postToFirebase = (
   currentPatients: string | null,
@@ -55,6 +57,7 @@ const postToFirebase = (
 const reporter = (error: string, type: 'JS' | 'Native') => {
   // Logic for reporting to devs
   console.log(error, type);
+  setBugFenderLog('reporter_AppContainer', JSON.stringify(error));
   if (getBuildEnvironment() == 'PROD') {
     Promise.all([
       DeviceInfo.getDeviceName(),
@@ -102,6 +105,28 @@ setNativeExceptionHandler((exceptionString) => {
   //WILL NOT WORK in case of NATIVE ERRORS.
 });
 
+if (__DEV__) {
+  Axios.interceptors.request.use((request) => {
+    // console.log(
+    //   '\n\nStarting Axios Request',
+    //   '\n\nURL\n',
+    //   JSON.stringify(request.url),
+    //   '\n\nInput\n',
+    //   JSON.stringify(request.data),
+    //   '\n\nHeaders\n',
+    //   JSON.stringify(request.headers),
+    //   '\n\n'
+    // );
+    return request;
+  });
+}
+
+if (__DEV__) {
+  Axios.interceptors.response.use((response) => {
+    // console.log(`Axios Response :\n`, response.data, '\n\n');
+    return response;
+  });
+}
 interface AppContainerTypes {}
 
 export class AppContainer extends React.Component<AppContainerTypes> {
@@ -115,17 +140,17 @@ export class AppContainer extends React.Component<AppContainerTypes> {
 
   render() {
     return (
-      <AuthProvider>
-        <UIElementsProvider>
-          <AppCommonDataProvider>
+      <AppCommonDataProvider>
+        <AuthProvider>
+          <UIElementsProvider>
             <ShoppingCartProvider>
               <DiagnosticsCartProvider>
                 <NavigatorContainer />
               </DiagnosticsCartProvider>
             </ShoppingCartProvider>
-          </AppCommonDataProvider>
-        </UIElementsProvider>
-      </AuthProvider>
+          </UIElementsProvider>
+        </AuthProvider>
+      </AppCommonDataProvider>
     );
   }
 }

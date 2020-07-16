@@ -677,6 +677,7 @@ export const MedicinePrescription: React.FC = () => {
     setMedicinePrescription: setSelectedMedicinesArr,
     removedMedicinePrescription,
     setRemovedMedicinePrescription,
+    casesheetVersion
   } = useContext(CaseSheetContext);
   const [removedMedicinePrescriptionState, setRemovedMedicinePrescriptionState] = useState<any>([]);
   const [medicinePrescriptionState, setMedicinePrescriptionState] = useState<any>([]);
@@ -985,7 +986,7 @@ export const MedicinePrescription: React.FC = () => {
     },
     {
       id: MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW,
-      value: 'Till next review',
+      value: ' Till next review',
       selected: false,
     },
   ];
@@ -1370,7 +1371,8 @@ export const MedicinePrescription: React.FC = () => {
   };
 
   const deletemedicine = (idx: any) => {
-    removedMedicinePrescriptionFn('add', idx);
+    casesheetVersion === 1 ? removedMedicinePrescriptionFn('delete', idx) : removedMedicinePrescriptionFn('add', idx);
+    //removedMedicinePrescriptionFn('add', idx);
     selectedMedicines.splice(idx, 1);
     setSelectedMedicines(selectedMedicines);
     selectedMedicinesArr!.splice(idx, 1);
@@ -1691,7 +1693,7 @@ export const MedicinePrescription: React.FC = () => {
       customDosageArray.push(customDosageNight.trim());
     if (
       !isCustomform &&
-      tabletsCount.trim() === '' &&
+      (tabletsCount.trim() === '' || tabletsCount.trim() === '0') &&
       medicineForm !== MEDICINE_FORM_TYPES.GEL_LOTION_OINTMENT
     ) {
       setErrorState({
@@ -1810,7 +1812,9 @@ export const MedicinePrescription: React.FC = () => {
       });
     } else if (
       forUnit !== MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW &&
-      (consumptionDuration === '' || isNaN(Number(consumptionDuration)))
+      (consumptionDuration === '' ||
+        isNaN(Number(consumptionDuration)) ||
+        consumptionDuration === '0')
     ) {
       setErrorState({
         ...errorState,
@@ -2253,7 +2257,9 @@ export const MedicinePrescription: React.FC = () => {
                   <s>{medicine.medicineName}</s>
                 </h5>
               )}
-              {!isPresent && <p className={classes.removed}>This medicine has been discontinued</p>}
+              {!isPresent && (
+                <p className={classes.removed}>This medicine has been discontinued </p>
+              )}
               <h6>
                 {`${
                   medicine.medicineFormTypes === 'OTHERS' ? 'Take' : 'Apply'
@@ -2710,7 +2716,7 @@ export const MedicinePrescription: React.FC = () => {
                                   component="div"
                                   error={errorState.dosageErr}
                                 >
-                                  Please enter dosage.
+                                  Please enter valid dosage.
                                 </FormHelperText>
                               )}
                             </Grid>
@@ -2801,7 +2807,7 @@ export const MedicinePrescription: React.FC = () => {
                                   component="div"
                                   error={errorState.dosageErr}
                                 >
-                                  Please enter dosage.
+                                  Please enter valid dosage.
                                 </FormHelperText>
                               )}
                             </Grid>
@@ -2937,7 +2943,7 @@ export const MedicinePrescription: React.FC = () => {
                               component="div"
                               error={errorState.durationErr}
                             >
-                              Please enter number of {term(forUnit.toLowerCase(), '(s)')}
+                              Please enter valid number of {term(forUnit.toLowerCase(), '(s)')}
                             </FormHelperText>
                           )}
                       </div>
@@ -3297,7 +3303,7 @@ export const MedicinePrescription: React.FC = () => {
                                     component="div"
                                     error={errorState.dosageErr}
                                   >
-                                    Please enter dosage.
+                                    Please enter valid dosage.
                                   </FormHelperText>
                                 )}
                               </Grid>
@@ -3523,7 +3529,7 @@ export const MedicinePrescription: React.FC = () => {
                                 component="div"
                                 error={errorState.durationErr}
                               >
-                                Please enter number of {term(forUnit.toLowerCase(), '(s)')}
+                                Please enter valid number of {term(forUnit.toLowerCase(), '(s)')}
                               </FormHelperText>
                             )}
                         </div>

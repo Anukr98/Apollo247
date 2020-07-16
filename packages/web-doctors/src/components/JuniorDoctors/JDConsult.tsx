@@ -168,6 +168,9 @@ interface ConsultProps {
   isNewMsg: boolean;
   convertCall: () => void;
   JDPhotoUrl: string;
+  setSessionError: (error: any) => void;
+  setPublisherError: (error: any) => void;
+  setSubscriberError: (error: any) => void;
 }
 function getCookieValue() {
   const name = 'action=';
@@ -190,10 +193,19 @@ export const JDConsult: React.FC<ConsultProps> = (props) => {
   const [subscribeToVideo, setSubscribeToVideo] = React.useState(props.isVideoCall ? true : false);
   const [callerAudio, setCallerAudio] = React.useState<boolean>(true);
   const [callerVideo, setCallerVideo] = React.useState<boolean>(true);
+
+  const [reconnecting, setReconnecting] = React.useState<boolean>(false);
+
   const [downgradeToAudio, setDowngradeToAudio] = React.useState<boolean>(false);
   const { patientDetails } = useContext(CaseSheetContextJrd);
   const isRetry = true;
   const apikey = process.env.OPENTOK_KEY;
+
+  const checkReconnecting = () => {
+    if (reconnecting)
+      return 'There is a problem with network connection. Reconnecting, Please wait...';
+    else return null;
+  };
 
   const checkDowngradeToAudio = () => {
     if (downgradeToAudio) return 'Falling back to audio due to bad network';
@@ -202,9 +214,9 @@ export const JDConsult: React.FC<ConsultProps> = (props) => {
 
   const isPaused = () => {
     if (!callerAudio && !callerVideo && getCookieValue() === 'videocall')
-      return `Audio & Video are paused`;
-    else if (!callerAudio) return `Audio is paused`;
-    else if (!callerVideo && getCookieValue() === 'videocall') return `Video is paused`;
+      return `Patient’s audio & video are paused`;
+    else if (!callerAudio) return `Patient’s audio is paused`;
+    else if (!callerVideo && getCookieValue() === 'videocall') return `Patient’s video is paused`;
     else return null;
   };
 
@@ -232,6 +244,7 @@ export const JDConsult: React.FC<ConsultProps> = (props) => {
                     ? '0' + props.timerSeconds
                     : props.timerSeconds
                 }`}
+              <p className={classes.audioVideoState}>{checkReconnecting()}</p>
               <p className={classes.audioVideoState}>{checkDowngradeToAudio()}</p>
               <p className={classes.audioVideoState}>{isPaused()}</p>
             </div>
@@ -242,6 +255,10 @@ export const JDConsult: React.FC<ConsultProps> = (props) => {
               apiKey={apikey}
               sessionId={props.sessionId}
               token={props.token}
+              onError={(error: any) => {
+                console.log('Session Error', error);
+                props.setSessionError(error);
+              }}
               eventHandlers={{
                 connectionDestroyed: (event: any) => {
                   props.toggelChatVideo();
@@ -255,6 +272,20 @@ export const JDConsult: React.FC<ConsultProps> = (props) => {
                     setCallerVideo(event.stream.hasVideo);
                   }
                 },
+                sessionReconnected: (event: string) => {
+                  console.log('session stream sessionReconnected!', event);
+                  setReconnecting(false);
+                },
+                sessionReconnecting: (event: string) => {
+                  console.log('session stream sessionReconnecting!', event);
+                  setReconnecting(true);
+                },
+                error: (error: any) => {
+                  console.log(
+                    `There was an error with the sessionEventHandlers: ${JSON.stringify(error)}`
+                  );
+                  props.setSessionError(error);
+                },
               }}
             >
               <OTPublisher
@@ -264,7 +295,18 @@ export const JDConsult: React.FC<ConsultProps> = (props) => {
                 properties={{
                   publishAudio: isPublishAudio,
                   publishVideo: subscribeToVideo,
-                  resolution: '352x288'
+                }}
+                onError={(error: any) => {
+                  console.log('Publisher Error', error);
+                  props.setPublisherError(error);
+                }}
+                eventHandlers={{
+                  error: (error: any) => {
+                    console.log(
+                      `There was an error with the publisherEventHandlers: ${JSON.stringify(error)}`
+                    );
+                    props.setPublisherError(error);
+                  },
                 }}
               />
 
@@ -298,18 +340,30 @@ export const JDConsult: React.FC<ConsultProps> = (props) => {
                   <OTSubscriber
                     className={!props.showVideoChat ? classes.subscriber : classes.minSubscriber}
                     retry={isRetry}
+                    onError={(error: any) => {
+                      console.log('Subscriber Error', error);
+                      props.setSubscriberError(error);
+                    }}
                     eventHandlers={{
-                      videoDisabled: (error: any) => {
-                        console.log(`videoDisabled: ${JSON.stringify(error)}`);
-                        if (error.reason === 'quality') {
+                      videoDisabled: (event: any) => {
+                        console.log(`videoDisabled: ${JSON.stringify(event)}`);
+                        if (event.reason === 'quality') {
                           setDowngradeToAudio(true);
                         }
                       },
-                      videoEnabled: (error: any) => {
-                        console.log(`videoDisabled: ${JSON.stringify(error)}`);
-                        if (error.reason === 'quality') {
+                      videoEnabled: (event: any) => {
+                        console.log(`videoDisabled: ${JSON.stringify(event)}`);
+                        if (event.reason === 'quality') {
                           setDowngradeToAudio(false);
                         }
+                      },
+                      error: (error: any) => {
+                        console.log(
+                          `There was an error with the subscriberEventHandlers: ${JSON.stringify(
+                            error
+                          )}`
+                        );
+                        props.setSubscriberError(error);
                       },
                     }}
                   />
@@ -343,6 +397,7 @@ export const JDConsult: React.FC<ConsultProps> = (props) => {
                       />
                     </div>
                     <div className={classes.errorMessage}>
+                      <p className={classes.audioVideoState}>{checkReconnecting()}</p>
                       <p className={classes.audioVideoState}>{checkDowngradeToAudio()}</p>
                       <p className={classes.audioVideoState}>{isPaused()}</p>
                     </div>
@@ -371,7 +426,10 @@ export const JDConsult: React.FC<ConsultProps> = (props) => {
                       </Grid>
                       <Grid item lg={10} sm={8} xs={8} className={classes.VideoAlignment}>
                         {isCall && isPublishAudio && (
-                          <button className={classes.muteBtn} onClick={() => setIsPublishAudio(!isPublishAudio)}>
+                          <button
+                            className={classes.muteBtn}
+                            onClick={() => setIsPublishAudio(!isPublishAudio)}
+                          >
                             <img
                               className={classes.whiteArrow}
                               src={require('images/ic_mute.svg')}
@@ -380,7 +438,10 @@ export const JDConsult: React.FC<ConsultProps> = (props) => {
                           </button>
                         )}
                         {isCall && !isPublishAudio && (
-                          <button className={classes.muteBtn} onClick={() => setIsPublishAudio(!isPublishAudio)}>
+                          <button
+                            className={classes.muteBtn}
+                            onClick={() => setIsPublishAudio(!isPublishAudio)}
+                          >
                             <img
                               className={classes.whiteArrow}
                               src={require('images/ic_unmute.svg')}

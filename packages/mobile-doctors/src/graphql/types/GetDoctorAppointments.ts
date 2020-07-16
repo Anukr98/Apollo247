@@ -2,7 +2,7 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
-import { STATUS, APPOINTMENT_TYPE, APPOINTMENT_STATE, DoctorType, Relation, Gender } from "./globalTypes";
+import { STATUS, APPOINTMENT_TYPE, APPOINTMENT_STATE, MEDICINE_TO_BE_TAKEN, MEDICINE_TIMINGS, MEDICINE_UNIT, MEDICINE_FORM_TYPES, MEDICINE_FREQUENCY, MEDICINE_CONSUMPTION_DURATION, ROUTE_OF_ADMINISTRATION, DoctorType, Relation, Gender } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: GetDoctorAppointments
@@ -13,24 +13,95 @@ export interface GetDoctorAppointments_getDoctorAppointments_appointmentsHistory
   appointmentDateTime: any;
 }
 
+export interface GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_caseSheet_medicinePrescription {
+  __typename: "MedicinePrescription";
+  id: string | null;
+  externalId: string | null;
+  medicineName: string | null;
+  medicineDosage: string | null;
+  medicineToBeTaken: (MEDICINE_TO_BE_TAKEN | null)[] | null;
+  medicineInstructions: string | null;
+  medicineTimings: (MEDICINE_TIMINGS | null)[] | null;
+  medicineUnit: MEDICINE_UNIT | null;
+  medicineConsumptionDurationInDays: string | null;
+  medicineConsumptionDuration: string | null;
+  medicineFormTypes: MEDICINE_FORM_TYPES | null;
+  medicineFrequency: MEDICINE_FREQUENCY | null;
+  medicineConsumptionDurationUnit: MEDICINE_CONSUMPTION_DURATION | null;
+  routeOfAdministration: ROUTE_OF_ADMINISTRATION | null;
+  medicineCustomDosage: string | null;
+}
+
+export interface GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_caseSheet_removedMedicinePrescription {
+  __typename: "MedicinePrescription";
+  id: string | null;
+  externalId: string | null;
+  medicineName: string | null;
+  medicineDosage: string | null;
+  medicineToBeTaken: (MEDICINE_TO_BE_TAKEN | null)[] | null;
+  medicineInstructions: string | null;
+  medicineTimings: (MEDICINE_TIMINGS | null)[] | null;
+  medicineUnit: MEDICINE_UNIT | null;
+  medicineConsumptionDurationInDays: string | null;
+  medicineConsumptionDuration: string | null;
+  medicineFormTypes: MEDICINE_FORM_TYPES | null;
+  medicineFrequency: MEDICINE_FREQUENCY | null;
+  medicineConsumptionDurationUnit: MEDICINE_CONSUMPTION_DURATION | null;
+  routeOfAdministration: ROUTE_OF_ADMINISTRATION | null;
+  medicineCustomDosage: string | null;
+}
+
+export interface GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_caseSheet_otherInstructions {
+  __typename: "OtherInstructions";
+  instruction: string | null;
+}
+
 export interface GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_caseSheet_symptoms {
   __typename: "SymptomList";
   symptom: string | null;
+  since: string | null;
+  howOften: string | null;
+  severity: string | null;
+  details: string | null;
+}
+
+export interface GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_caseSheet_diagnosis {
+  __typename: "Diagnosis";
+  name: string | null;
+}
+
+export interface GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_caseSheet_diagnosticPrescription {
+  __typename: "DiagnosticPrescription";
+  itemname: string | null;
 }
 
 export interface GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_caseSheet {
   __typename: "CaseSheet";
+  id: string | null;
+  blobName: string | null;
+  doctorId: string | null;
+  patientId: string | null;
+  sentToPatient: boolean | null;
+  status: string | null;
+  referralSpecialtyName: string | null;
+  referralDescription: string | null;
   appointment: GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_caseSheet_appointment | null;
+  medicinePrescription: (GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_caseSheet_medicinePrescription | null)[] | null;
+  removedMedicinePrescription: (GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_caseSheet_removedMedicinePrescription | null)[] | null;
+  otherInstructions: (GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_caseSheet_otherInstructions | null)[] | null;
+  symptoms: (GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_caseSheet_symptoms | null)[] | null;
+  diagnosis: (GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_caseSheet_diagnosis | null)[] | null;
+  diagnosticPrescription: (GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_caseSheet_diagnosticPrescription | null)[] | null;
   followUp: boolean | null;
   followUpDate: any | null;
   followUpAfterInDays: string | null;
-  symptoms: (GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_caseSheet_symptoms | null)[] | null;
-  id: string | null;
-  status: string | null;
   doctorType: DoctorType | null;
-  sentToPatient: boolean | null;
-  blobName: string | null;
-  doctorId: string | null;
+  followUpConsultType: APPOINTMENT_TYPE | null;
+  consultType: string | null;
+  notes: string | null;
+  updatedDate: any | null;
+  isJdConsultStarted: boolean | null;
+  version: number | null;
 }
 
 export interface GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_patientInfo_addressList {
@@ -66,6 +137,7 @@ export interface GetDoctorAppointments_getDoctorAppointments_appointmentsHistory
   displayId: number | null;
   isFollowUp: boolean | null;
   followUpParentId: string | null;
+  isJdQuestionsComplete: boolean | null;
   caseSheet: (GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_caseSheet | null)[] | null;
   patientInfo: GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_patientInfo | null;
 }

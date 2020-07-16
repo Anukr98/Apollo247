@@ -64,13 +64,23 @@ app.get(
     android_package_name: 'com.apollo.patientapp',
   })
 );
+app.get(
+  '/doctordeeplink',
+  deeplink({
+    fallback: 'https://doctors.apollo247.com/',
+    android_package_name: 'com.apollo.doctorapp',
+    ios_store_link: 'https://apps.apple.com/in/app/apollo-doctor-247/id1507758016',
+  })
+);
 
 app.get('/refreshDoctorDeepLinks', cronTabs.refreshDoctorDeepLinks);
+app.get('/generateDeeplinkForNewDoctors', cronTabs.generateDeeplinkForNewDoctors);
 app.get('/invokeArchiveMessages', cronTabs.archiveMessages);
 app.get('/invokesendUnreadMessagesNotification', cronTabs.sendUnreadMessagesNotification);
 app.get('/invokeAutoSubmitJDCasesheet', cronTabs.autoSubmitJDCasesheet);
 app.get('/invokeFollowUpNotification', cronTabs.FollowUpNotification);
 app.get('/invokeApptReminder', cronTabs.ApptReminder);
+app.get('/invokeDoctorApptReminder', cronTabs.DoctorApptReminder);
 app.get('/invokeDailyAppointmentSummary', cronTabs.DailyAppointmentSummary);
 app.get('/invokePhysicalApptReminder', cronTabs.PhysicalApptReminder);
 app.get('/updateSdSummary', cronTabs.updateSdSummary);
@@ -1006,7 +1016,7 @@ app.get('/processOmsOrders', (req, res) => {
                     deliveryZipcode = patientAddressDetails.zipcode || deliveryZipcode;
                   }
                 }
-                if (orderDetails.shopId) {
+                if (orderDetails.shopId && orderDetails.shopId !== '0') {
                   if (!orderDetails.shopAddress) {
                     logger.error(
                       `store address details not present for store pick ${orderDetails.orderAutoId}`
@@ -1019,6 +1029,8 @@ app.get('/processOmsOrders', (req, res) => {
                   deliveryZipcode = shopAddress.zipcode;
                   deliveryAddress = shopAddress.address || '';
                   deliveryStateCode = shopAddress.stateCode;
+                } else {
+                  orderDetails.shopId = '';
                 }
                 const orderLineItems = [];
                 let requestType = 'NONCART';
@@ -1059,6 +1071,8 @@ app.get('/processOmsOrders', (req, res) => {
                       comment: '',
                     });
                   }
+                } else {
+                  orderType = 'Pharma';
                 }
                 const paymentDetails =
                   (orderDetails.medicineOrderPayments && orderDetails.medicineOrderPayments[0]) ||
@@ -1086,10 +1100,13 @@ app.get('/processOmsOrders', (req, res) => {
                 if (!orderDetails.orderTat) {
                   orderDetails.orderTat = '';
                 }
-                const orderTat =
+                let orderTat =
                   orderDetails.orderTat && Date.parse(orderDetails.orderTat)
                     ? new Date(orderDetails.orderTat)
                     : '';
+                if (orderDetails.orderTat && orderDetails.orderTat.length > 20) {
+                  orderTat = addMinutes(orderTat, 330);
+                }
                 const medicineOrderPharma = {
                   orderid: orderDetails.orderAutoId,
                   orderdate: format(
@@ -1109,7 +1126,7 @@ app.get('/processOmsOrders', (req, res) => {
                   timeslot: orderTat ? format(orderTat, 'HH:mm') : '',
                   shippingcharges: orderDetails.devliveryCharges || 0,
                   categorytype: orderType,
-                  customercomment: '',
+                  customercomment: orderDetails.customerComment || '',
                   landmark: landmark,
                   issubscribe: false,
                   customerdetails: {

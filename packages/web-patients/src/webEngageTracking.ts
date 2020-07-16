@@ -222,3 +222,137 @@ export const notifyMeTracking = (data: MedicineDetails) => {
     }
   }
 };
+
+export const pharmacySearchEnterTracking = (results: number) => {
+  if (window && window.webengage) {
+    try {
+      window.webengage.track('Pharmacy Search enter clicked - web', {
+        'No. of results': results,
+      });
+    } catch (err) {
+      console.log('WebEngage Err: ', err);
+    }
+  }
+};
+
+export const pharmacyOrderSummaryTracking = (data: any) => {
+  if (window && window.webengage) {
+    const {
+      orderId,
+      orderDate,
+      orderType,
+      customerId,
+      deliveryDate,
+      mobileNumber,
+      orderStatus,
+    } = data;
+    try {
+      window.webengage.track('Pharmacy Order summary clicked - web', {
+        'Order ID': orderId,
+        'Order date': orderDate,
+        'Order type': orderType,
+        'Customer ID': customerId,
+        'Delivery date': deliveryDate,
+        'Mobile number': mobileNumber,
+        'Order status': orderStatus,
+      });
+    } catch (err) {
+      console.log('WebEngage Err: ', err);
+    }
+  }
+};
+
+export const pharmacyFilterTracking = (data: any) => {
+  if (window && window.webengage) {
+    const { categoryName, categoryId } = data;
+    try {
+      window.webengage.track('Filter apply option clicked - web', {
+        'Category Name': categoryName,
+        'Category ID': categoryId,
+      });
+    } catch (err) {
+      console.log('WebEngage Err: ', err);
+    }
+  }
+};
+
+export const pharmacyPdpPincodeTracking = (data: any) => {
+  if (window && window.webengage) {
+    const { productName, productId, customerId, pinCode } = data;
+    try {
+      window.webengage.track('Pharmacy PDP Pin code checked - web', {
+        'Product ID': productId,
+        'Product Name': productName,
+        'Customer ID': customerId,
+        'PIN Code': Number(pinCode),
+      });
+    } catch (err) {
+      console.log('WebEngage Err: ', err);
+    }
+  }
+};
+
+export const pharmacyPdpOverviewTracking = (result: string) => {
+  if (window && window.webengage) {
+    try {
+      window.webengage.track('Pharmacy PDP Pharma overview clicked - web', {
+        'Type of information': result,
+      });
+    } catch (err) {
+      console.log('WebEngage Err: ', err);
+    }
+  }
+};
+
+export const pharmacyPdpSubstituteTracking = (data: any) => {
+  if (window && window.webengage) {
+    const { productName, productId } = data;
+    try {
+      window.webengage.track('Pharmacy PDP substitute clicked - web', {
+        'Product ID': productId,
+        'Product Name': productName,
+      });
+    } catch (err) {
+      console.log('WebEngage Err: ', err);
+    }
+  }
+};
+
+export const pharmacyConfigSectionTracking = (data: any) => {
+  if (window && window.webengage) {
+    const { productName, productId, sectionName } = data;
+    try {
+      window.webengage.track('Pharmacy Configurable section clicked - web', {
+        'Section name': sectionName,
+        'Product ID': productId,
+        'Product Name': productName,
+      });
+    } catch (err) {
+      console.log('WebEngage Err: ', err);
+    }
+  }
+};
+
+export const pharmacyHomeBannerTracking = (result: number) => {
+  if (window && window.webengage) {
+    try {
+      window.webengage.track('Pharmacy Home page banner - web', {
+        'Banner position': result,
+      });
+    } catch (err) {
+      console.log('WebEngage Err: ', err);
+    }
+  }
+};
+
+export const pharmacyPrescriptionTracking = (result: string) => {
+  if (window && window.webengage) {
+    try {
+      window.webengage.track('Pharmacy prescription proceed - web', {
+        'Option selected': result,
+      });
+    } catch (err) {
+      console.log('WebEngage Err: ', err);
+    }
+  }
+};

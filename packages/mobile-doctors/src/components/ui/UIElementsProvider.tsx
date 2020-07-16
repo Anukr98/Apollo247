@@ -20,6 +20,7 @@ const styles = UIElementsProviderStyles;
 
 export interface UIElementsContextProps {
   loading: boolean;
+  isAlertVisible: boolean;
   setLoading: ((isLoading: boolean) => void) | null;
   showAphAlert: ((params: AphAlertParams) => void) | null;
   hideAphAlert: (() => void) | null;
@@ -31,6 +32,7 @@ export interface UIElementsContextProps {
 
 export const UIElementsContext = createContext<UIElementsContextProps>({
   loading: false,
+  isAlertVisible: false,
   setLoading: null,
   showAphAlert: null,
   hideAphAlert: null,
@@ -40,7 +42,7 @@ export const UIElementsContext = createContext<UIElementsContextProps>({
   setShowNeedHelp: (show) => {},
 });
 
-type AphAlertCTAs = {
+export type AphAlertCTAs = {
   text: string;
   onPress: () => void;
   type?: 'orange-button' | 'white-button' | 'orange-link';
@@ -71,8 +73,12 @@ type PopUpParams = {
   okTextStyle?: StyleProp<TextStyle>;
   okContainerStyle?: StyleProp<ViewStyle>;
   style?: StyleProp<ViewStyle>;
+  mainStyle?: StyleProp<ViewStyle>;
   popUpPointerStyle?: StyleProp<ViewStyle>;
   onPressOk?: () => void;
+  icon?: React.ReactNode;
+  hideOk?: boolean;
+  timer?: number;
 };
 
 export const UIElementsProvider: React.FC = (props) => {
@@ -206,30 +212,44 @@ export const UIElementsProvider: React.FC = (props) => {
       style,
       onPressOk,
       popUpPointerStyle,
+      icon,
+      hideOk,
+      timer,
+      mainStyle,
     } = popUpData;
+    if (timer) {
+      setTimeout(() => {
+        hidePopup();
+      }, timer * 1000);
+    }
     return (
       isPopUpVisible && (
-        <View style={styles.popUpContainer}>
+        <View style={[styles.popUpContainer, mainStyle]}>
           <TouchableOpacity
             style={{ flex: 1 }}
             activeOpacity={1}
             onPress={() => (unDismissable ? null : hidePopup())}
           >
             <View style={[styles.popUpMainContainer, style]}>
+              {icon ? icon : null}
               <View style={[styles.popUpPointer, popUpPointerStyle]} />
-              {title && <Text style={[styles.popUpTitleText, titleStyle]}>{title}</Text>}
-              {description && (
-                <Text style={[styles.popUpDescriptionText, descriptionTextStyle]}>
-                  {description}
-                </Text>
-              )}
-              <TouchableOpacity
-                style={[styles.okContainer, okContainerStyle]}
-                activeOpacity={1}
-                onPress={() => (onPressOk ? onPressOk() : hidePopup())}
-              >
-                <Text style={[styles.okText, okTextStyle]}>{okText ? okText : 'OKAY'}</Text>
-              </TouchableOpacity>
+              <View>
+                {title && <Text style={[styles.popUpTitleText, titleStyle]}>{title}</Text>}
+                {description && (
+                  <Text style={[styles.popUpDescriptionText, descriptionTextStyle]}>
+                    {description}
+                  </Text>
+                )}
+                {!hideOk ? (
+                  <TouchableOpacity
+                    style={[styles.okContainer, okContainerStyle]}
+                    activeOpacity={1}
+                    onPress={() => (onPressOk ? onPressOk() : hidePopup())}
+                  >
+                    <Text style={[styles.okText, okTextStyle]}>{okText ? okText : 'OKAY'}</Text>
+                  </TouchableOpacity>
+                ) : null}
+              </View>
             </View>
           </TouchableOpacity>
         </View>
@@ -252,6 +272,7 @@ export const UIElementsProvider: React.FC = (props) => {
       value={{
         loading,
         setLoading,
+        isAlertVisible,
         showAphAlert,
         hideAphAlert,
         showPopup,

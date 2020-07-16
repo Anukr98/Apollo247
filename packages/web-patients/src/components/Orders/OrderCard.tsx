@@ -1,6 +1,6 @@
 import { makeStyles } from '@material-ui/styles';
 import { Theme, CircularProgress } from '@material-ui/core';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { AphTrackSlider } from '@aph/web-ui-components';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import {
@@ -11,13 +11,13 @@ import {
 } from 'graphql/types/getMedicineOrdersOMSList';
 
 import moment from 'moment';
-import { useQueryWithSkip } from 'hooks/apolloHooks';
+import { useApolloClient } from 'react-apollo-hooks';
 import { GET_MEDICINE_ORDERS_OMS_LIST } from 'graphql/medicines';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { MEDICINE_ORDER_STATUS, MEDICINE_DELIVERY_TYPE } from 'graphql/types/globalTypes';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
-import { getStatus, isRejectedStatus } from './OrderStatusCard';
+import { getStatus, isRejectedStatus } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -229,15 +229,43 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
   const classes = useStyles({});
   const { currentPatient } = useAllCurrentPatients();
   const isSmallScreen = useMediaQuery('(max-width:767px)');
+  const apolloClient = useApolloClient();
+  const [orderListData, setOrderListData] = useState<OrdersList[] | null>(null);
+  const [error, setError] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
 
-  const { data, error, loading } = useQueryWithSkip<
-    getMedicineOrdersOMSList,
-    getMedicineOrdersOMSListVariables
-  >(GET_MEDICINE_ORDERS_OMS_LIST, {
-    variables: {
-      patientId: currentPatient && currentPatient.id,
-    },
-  });
+  useEffect(() => {
+    if (currentPatient && currentPatient.id) {
+      setLoading(true);
+      apolloClient
+        .query<getMedicineOrdersOMSList, getMedicineOrdersOMSListVariables>({
+          query: GET_MEDICINE_ORDERS_OMS_LIST,
+          variables: {
+            patientId: (currentPatient && currentPatient.id) || '',
+          },
+        })
+        .then(({ data }: any) => {
+          if (
+            data &&
+            data.getMedicineOrdersOMSList &&
+            data.getMedicineOrdersOMSList.medicineOrdersList
+          ) {
+            setOrderListData(data.getMedicineOrdersOMSList.medicineOrdersList || []);
+          } else {
+            setOrderListData([]);
+          }
+          setError(false);
+        })
+        .catch((e) => {
+          console.log(e);
+          setError(true);
+        })
+        .finally(() => {
+          setLoading(false);
+        });
+    }
+  }, [currentPatient]);
+
   if (loading)
     return (
       <div className={classes.loader}>
@@ -352,11 +380,8 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
         return 'Store Pickup';
     }
   };
-
-  if (data && data.getMedicineOrdersOMSList && data.getMedicineOrdersOMSList.medicineOrdersList) {
-    if (data.getMedicineOrdersOMSList.medicineOrdersList.length > 0) {
-      const orderListData = data.getMedicineOrdersOMSList.medicineOrdersList;
-
+  if (orderListData) {
+    if (orderListData.length > 0) {
       const firstOrderInfo = orderListData[0];
       if (!isSmallScreen && !props.orderAutoId && firstOrderInfo && firstOrderInfo.orderAutoId) {
         props.setOrderAutoId(firstOrderInfo.orderAutoId);
@@ -367,9 +392,11 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
           <div className={classes.customScroll}>
             {orderListData && orderListData.length > 0 ? (
               orderListData.map(
-                (orderInfo) =>
+                (orderInfo: OrdersList) =>
                   orderInfo &&
                   orderInfo.medicineOrdersStatus &&
+                  orderInfo.currentStatus !== MEDICINE_ORDER_STATUS.QUOTE &&
+                  orderInfo.currentStatus !== MEDICINE_ORDER_STATUS.PURCHASED_IN_STORE &&
                   getOrderStatus(orderInfo.medicineOrdersStatus) && (
                     <div
                       key={orderInfo.id}
@@ -437,7 +464,7 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
           </div>
         </div>
       );
-    } else if (data.getMedicineOrdersOMSList.medicineOrdersList.length === 0) {
+    } else if (orderListData.length === 0) {
       return (
         <div className={classes.noOrdersWrapper}>
           <div>Uh oh! :)</div>

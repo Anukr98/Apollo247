@@ -44,7 +44,7 @@ export const UIElementsProviderStyles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.4)',
     zIndex: 5000,
-    elevation: 500,
+    elevation: 5000,
   },
   popUpMainContainer: {
     paddingHorizontal: 20,
@@ -54,6 +54,8 @@ export const UIElementsProviderStyles = StyleSheet.create({
     marginTop: Platform.OS === 'ios' ? (isIphoneX() ? 100 : 75) : 55,
     backgroundColor: theme.colors.WHITE,
     borderRadius: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   popUpPointer: {
     position: 'absolute',

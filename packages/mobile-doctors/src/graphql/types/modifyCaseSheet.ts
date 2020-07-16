@@ -2,7 +2,7 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
-import { ModifyCaseSheetInput, Gender, PATIENT_ADDRESS_TYPE, Relation, APPOINTMENT_TYPE, STATUS, DoctorType, Salutation, MEDICINE_TO_BE_TAKEN, MEDICINE_TIMINGS, MEDICINE_UNIT, MEDICINE_FORM_TYPES, MEDICINE_FREQUENCY, MEDICINE_CONSUMPTION_DURATION, ROUTE_OF_ADMINISTRATION } from "./globalTypes";
+import { ModifyCaseSheetInput, Gender, PATIENT_ADDRESS_TYPE, Relation, APPOINTMENT_TYPE, STATUS, DoctorType, MEDICINE_TO_BE_TAKEN, MEDICINE_TIMINGS, MEDICINE_UNIT, MEDICINE_FORM_TYPES, MEDICINE_FREQUENCY, MEDICINE_CONSUMPTION_DURATION, ROUTE_OF_ADMINISTRATION } from "./globalTypes";
 
 // ====================================================
 // GraphQL mutation operation: modifyCaseSheet
@@ -147,7 +147,7 @@ export interface modifyCaseSheet_modifyCaseSheet_createdDoctorProfile {
   mobileNumber: string;
   photoUrl: string | null;
   qualification: string | null;
-  salutation: Salutation | null;
+  salutation: string | null;
   state: string | null;
   streetLine1: string | null;
   streetLine2: string | null;
@@ -170,6 +170,25 @@ export interface modifyCaseSheet_modifyCaseSheet_diagnosticPrescription {
 }
 
 export interface modifyCaseSheet_modifyCaseSheet_medicinePrescription {
+  __typename: "MedicinePrescription";
+  id: string | null;
+  externalId: string | null;
+  medicineName: string | null;
+  medicineDosage: string | null;
+  medicineToBeTaken: (MEDICINE_TO_BE_TAKEN | null)[] | null;
+  medicineInstructions: string | null;
+  medicineTimings: (MEDICINE_TIMINGS | null)[] | null;
+  medicineUnit: MEDICINE_UNIT | null;
+  medicineConsumptionDurationInDays: string | null;
+  medicineConsumptionDuration: string | null;
+  medicineFormTypes: MEDICINE_FORM_TYPES | null;
+  medicineFrequency: MEDICINE_FREQUENCY | null;
+  medicineConsumptionDurationUnit: MEDICINE_CONSUMPTION_DURATION | null;
+  routeOfAdministration: ROUTE_OF_ADMINISTRATION | null;
+  medicineCustomDosage: string | null;
+}
+
+export interface modifyCaseSheet_modifyCaseSheet_removedMedicinePrescription {
   __typename: "MedicinePrescription";
   id: string | null;
   externalId: string | null;
@@ -221,6 +240,7 @@ export interface modifyCaseSheet_modifyCaseSheet {
   followUpConsultType: APPOINTMENT_TYPE | null;
   id: string | null;
   medicinePrescription: (modifyCaseSheet_modifyCaseSheet_medicinePrescription | null)[] | null;
+  removedMedicinePrescription: (modifyCaseSheet_modifyCaseSheet_removedMedicinePrescription | null)[] | null;
   notes: string | null;
   otherInstructions: (modifyCaseSheet_modifyCaseSheet_otherInstructions | null)[] | null;
   patientId: string | null;
@@ -230,6 +250,7 @@ export interface modifyCaseSheet_modifyCaseSheet {
   updatedDate: any | null;
   referralSpecialtyName: string | null;
   referralDescription: string | null;
+  version: number | null;
 }
 
 export interface modifyCaseSheet {

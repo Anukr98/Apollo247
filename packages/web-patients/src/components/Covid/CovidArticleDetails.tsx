@@ -340,7 +340,13 @@ export const CovidArticleDetails: React.FC = (props: any) => {
           ) : (
             <>
               <div className={classes.bannerGroup}>
-                <ArticleBanner title={title} source={source} type={type} isWebView={isWebView} />
+                <ArticleBanner
+                  slug={articleSlug}
+                  title={title}
+                  source={source}
+                  type={type}
+                  isWebView={isWebView}
+                />
                 <div className={classes.imageBanner}>
                   <img className={classes.mobileBanner} src={thumbnailMobile} alt="" />
                   <img className={classes.desktopBanner} src={thumbnailWeb} alt="" />

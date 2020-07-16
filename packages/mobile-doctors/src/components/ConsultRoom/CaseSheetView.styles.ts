@@ -1,5 +1,5 @@
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
-import { ifIphoneX } from 'react-native-iphone-x-helper';
+import { ifIphoneX, isIphoneX } from 'react-native-iphone-x-helper';
 import { Dimensions, StyleSheet } from 'react-native';
 
 const { width } = Dimensions.get('window');
@@ -124,7 +124,7 @@ export const styles = StyleSheet.create({
   },
   footerButtonsContainer: {
     justifyContent: 'center',
-    paddingTop: 5,
+    height: '100%',
     flexDirection: 'row',
     width: '100%',
     alignSelf: 'center',
@@ -133,8 +133,8 @@ export const styles = StyleSheet.create({
   footerButtonsContainersave: {
     zIndex: -1,
     justifyContent: 'center',
-    paddingTop: 5,
     flexDirection: 'row',
+    height: '100%',
     width: '80%',
     alignSelf: 'center',
     alignItems: 'center',
@@ -261,12 +261,13 @@ export const styles = StyleSheet.create({
     flexWrap: 'wrap',
   },
   healthvaultImageContainer: {
-    margin: 2,
+    margin: 4,
   },
   healthvaultImage: {
     height: 100,
     width: 100,
-    resizeMode: 'contain',
+    resizeMode: 'cover',
+    borderRadius: 10,
   },
   materialContainer: {
     alignItems: 'flex-end',

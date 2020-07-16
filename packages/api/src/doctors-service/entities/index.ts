@@ -35,12 +35,13 @@ export enum DoctorType {
   CRADLE = 'CRADLE',
   DOCTOR_CONNECT = 'DOCTOR_CONNECT',
   FERTILITY = 'FERTILITY',
-  HOMECARE = 'HOMECARE',
   JUNIOR = 'JUNIOR',
   PAYROLL = 'PAYROLL',
   SPECTRA = 'SPECTRA',
   STAR_APOLLO = 'STAR_APOLLO',
   SUGAR = 'SUGAR',
+  APOLLO_HOMECARE = 'APOLLO_HOMECARE',
+  WHITE_DENTAL = 'WHITE_DENTAL',
 }
 
 export enum FacilityType {
@@ -57,13 +58,6 @@ export enum Gender {
   MALE = 'MALE',
   FEMALE = 'FEMALE',
   OTHER = 'OTHER',
-}
-
-export enum Salutation {
-  MR = 'MR',
-  MRS = 'MRS',
-  DR = 'DR',
-  MS = 'MS',
 }
 
 export enum WeekDay {
@@ -185,6 +179,33 @@ export class BlockedCalendarItem extends BaseEntity {
   start: Date;
 }
 ///////////////////////////////////////////////////////////
+
+//AdminAuditLogs starts
+@Entity()
+export class AdminAuditLogs extends BaseEntity {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column({ nullable: true, type: 'text' })
+  updatedBy: string;
+
+  @Column({ nullable: true, type: 'timestamp' })
+  updatedAt: Date;
+
+  @Column({ nullable: true, type: 'text' })
+  updatedField: string;
+
+  @Column({ nullable: true, type: 'text' })
+  previousDetails: string;
+
+  @Column({ nullable: true })
+  doctorId: string;
+
+  @Column({ nullable: true, type: 'text' })
+  currentDetails: string;
+}
+
+//AdminAuditLogs ends
 
 //consult Hours starts
 @Entity()
@@ -396,8 +417,8 @@ export class Doctor extends BaseEntity {
   @Column()
   registrationNumber: string;
 
-  @Column({ nullable: true })
-  salutation: Salutation;
+  @Column({ nullable: false, type: 'text', default: 'Dr.' })
+  salutation: string;
 
   @Column({ nullable: true, type: 'text' })
   signature: string;
@@ -435,6 +456,9 @@ export class Doctor extends BaseEntity {
   @Column({ nullable: true })
   zip: string;
 
+  @Column({ default: false })
+  skipAutoQuestions: Boolean;
+
   @BeforeUpdate()
   updateDateUpdate() {
     this.updatedDate = new Date();
@@ -459,6 +483,9 @@ export class DoctorAndHospital extends BaseEntity {
 
   @PrimaryGeneratedColumn('uuid')
   id: string;
+
+  @Column({ nullable: true })
+  medmantraId: string;
 
   @Column({ nullable: true })
   updatedDate: Date;
@@ -1195,4 +1222,7 @@ export class DoctorPatientExternalConnect extends BaseEntity {
 
   @Column({ nullable: true })
   patientId: string;
+
+  @Column({ nullable: true })
+  appointmentId: string;
 }

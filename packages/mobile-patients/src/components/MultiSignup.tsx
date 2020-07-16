@@ -65,7 +65,10 @@ import {
   WebEngageEvents,
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
-import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
+import {
+  AppsFlyerEventName,
+  AppsFlyerEvents,
+} from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
 import DeviceInfo from 'react-native-device-info';
 import { FirebaseEventName, FirebaseEvents } from '../helpers/firebaseEvents';
 import { useApolloClient } from 'react-apollo-hooks';
@@ -477,7 +480,15 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
       }
 
       postWebEngageEvent(WebEngageEventName.REGISTRATION_DONE, eventAttributes);
-      postAppsFlyerEvent(AppsFlyerEventName.REGISTRATION_DONE, eventAttributes);
+
+      const appsflyereventAttributes: AppsFlyerEvents[AppsFlyerEventName.REGISTRATION_DONE] = {
+        'customer id': currentPatient ? currentPatient.id : '',
+      };
+      if (referral) {
+        // only send if referral has a value
+        appsflyereventAttributes['referral code'] = referral;
+      }
+      postAppsFlyerEvent(AppsFlyerEventName.REGISTRATION_DONE, appsflyereventAttributes);
 
       const eventFirebaseAttributes: FirebaseEvents[FirebaseEventName.SIGN_UP] = {
         Customer_ID: currentPatient ? currentPatient.id : '',

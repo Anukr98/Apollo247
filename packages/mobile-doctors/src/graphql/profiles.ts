@@ -110,6 +110,12 @@ export const GET_DOCTOR_DETAILS = gql`
   }
 `;
 
+export const SUBMIT_JD_CASESHEET = gql`
+  mutation SubmitJdCasesheet($appointmentId: String) {
+    submitJDCaseSheet(appointmentId: $appointmentId)
+  }
+`;
+
 export const GET_DOCTOR_APPOINTMENTS = gql`
   query GetDoctorAppointments($startDate: Date, $endDate: Date) {
     getDoctorAppointments(startDate: $startDate, endDate: $endDate) {
@@ -125,22 +131,79 @@ export const GET_DOCTOR_APPOINTMENTS = gql`
         displayId
         isFollowUp
         followUpParentId
+        isJdQuestionsComplete
         caseSheet {
+          id
+          blobName
+          doctorId
+          patientId
+          sentToPatient
+          status
+          referralSpecialtyName
+          referralDescription
           appointment {
             appointmentDateTime
+          }
+          medicinePrescription {
+            id
+            externalId
+            medicineName
+            medicineDosage
+            medicineToBeTaken
+            medicineInstructions
+            medicineTimings
+            medicineUnit
+            medicineConsumptionDurationInDays
+            medicineConsumptionDuration
+            medicineFormTypes
+            medicineFrequency
+            medicineConsumptionDurationUnit
+            routeOfAdministration
+            medicineCustomDosage
+          }
+          removedMedicinePrescription {
+            id
+            externalId
+            medicineName
+            medicineDosage
+            medicineToBeTaken
+            medicineInstructions
+            medicineTimings
+            medicineUnit
+            medicineConsumptionDurationInDays
+            medicineConsumptionDuration
+            medicineFormTypes
+            medicineFrequency
+            medicineConsumptionDurationUnit
+            routeOfAdministration
+            medicineCustomDosage
+          }
+          otherInstructions {
+            instruction
+          }
+          symptoms {
+            symptom
+            since
+            howOften
+            severity
+            details
+          }
+          diagnosis {
+            name
+          }
+          diagnosticPrescription {
+            itemname
           }
           followUp
           followUpDate
           followUpAfterInDays
-          symptoms {
-            symptom
-          }
-          id
-          status
           doctorType
-          sentToPatient
-          blobName
-          doctorId
+          followUpConsultType
+          consultType
+          notes
+          updatedDate
+          isJdConsultStarted
+          version
         }
         patientInfo {
           id
@@ -163,8 +226,22 @@ export const GET_DOCTOR_APPOINTMENTS = gql`
   }
 `;
 export const GET_PATIENT_LOG = gql`
-  query getPatientLog($limit: Int, $offset: Int, $sortBy: patientLogSort, $type: patientLogType) {
-    getPatientLog(limit: $limit, offset: $offset, sortBy: $sortBy, type: $type) {
+  query getPatientLog(
+    $limit: Int
+    $offset: Int
+    $sortBy: patientLogSort
+    $type: patientLogType
+    $patientName: String
+    $doctorId: ID
+  ) {
+    getPatientLog(
+      limit: $limit
+      offset: $offset
+      sortBy: $sortBy
+      type: $type
+      patientName: $patientName
+      doctorId: $doctorId
+    ) {
       patientLog {
         patientid
         consultscount
@@ -364,6 +441,23 @@ export const MODIFY_CASESHEET = gql`
         routeOfAdministration
         medicineCustomDosage
       }
+      removedMedicinePrescription {
+        id
+        externalId
+        medicineName
+        medicineDosage
+        medicineToBeTaken
+        medicineInstructions
+        medicineTimings
+        medicineUnit
+        medicineConsumptionDurationInDays
+        medicineConsumptionDuration
+        medicineFormTypes
+        medicineFrequency
+        medicineConsumptionDurationUnit
+        routeOfAdministration
+        medicineCustomDosage
+      }
       notes
       otherInstructions {
         instruction
@@ -381,6 +475,7 @@ export const MODIFY_CASESHEET = gql`
       updatedDate
       referralSpecialtyName
       referralDescription
+      version
     }
   }
 `;
@@ -699,6 +794,23 @@ export const GET_CASESHEET = gql`
           routeOfAdministration
           medicineCustomDosage
         }
+        removedMedicinePrescription {
+          id
+          externalId
+          medicineName
+          medicineDosage
+          medicineToBeTaken
+          medicineInstructions
+          medicineTimings
+          medicineUnit
+          medicineConsumptionDurationInDays
+          medicineConsumptionDuration
+          medicineFormTypes
+          medicineFrequency
+          medicineConsumptionDurationUnit
+          routeOfAdministration
+          medicineCustomDosage
+        }
         otherInstructions {
           instruction
         }
@@ -722,6 +834,7 @@ export const GET_CASESHEET = gql`
         consultType
         notes
         updatedDate
+        version
       }
       pastAppointments {
         id
@@ -771,10 +884,28 @@ export const GET_CASESHEET = gql`
             routeOfAdministration
             medicineCustomDosage
           }
+          removedMedicinePrescription {
+            id
+            externalId
+            medicineName
+            medicineDosage
+            medicineToBeTaken
+            medicineInstructions
+            medicineTimings
+            medicineUnit
+            medicineConsumptionDurationInDays
+            medicineConsumptionDuration
+            medicineFormTypes
+            medicineFrequency
+            medicineConsumptionDurationUnit
+            routeOfAdministration
+            medicineCustomDosage
+          }
           otherInstructions {
             instruction
           }
           notes
+          version
         }
         appointmentType
         sdConsultationDate
@@ -866,6 +997,13 @@ export const SAVE_DOCTOR_DEVICE_TOKEN = gql`
         createdDate
         updatedDate
       }
+    }
+  }
+`;
+export const DELETE_DOCTOR_DEVICE_TOKEN = gql`
+  mutation deleteDoctorDeviceToken($deviceToken: String, $doctorId: String) {
+    deleteDoctorDeviceToken(deviceToken: $deviceToken, doctorId: $doctorId) {
+      status
     }
   }
 `;
@@ -1341,11 +1479,17 @@ export const SEND_CALL_NOTIFICATION = gql`
     $appointmentId: String
     $callType: APPT_CALL_TYPE
     $doctorType: DOCTOR_CALL_TYPE
+    $deviceType: DEVICETYPE
+    $callSource: BOOKINGSOURCE
+    $appVersion: String
   ) {
     sendCallNotification(
       appointmentId: $appointmentId
       callType: $callType
       doctorType: $doctorType
+      deviceType: $deviceType
+      callSource: $callSource
+      appVersion: $appVersion
     ) {
       status
       callDetails {
@@ -1470,6 +1614,35 @@ export const GET_ALL_SPECIALTIES = gql`
       # specialistPluralTerm
       userFriendlyNomenclature
       # displayOrder
+    }
+  }
+`;
+
+export const UPSERT_DOCTORS_DEEPLINK = gql`
+  mutation UpsertDoctorsDeeplink($doctorId: String) {
+    upsertDoctorsDeeplink(doctorId: $doctorId) {
+      deepLink
+    }
+  }
+`;
+
+export const SEND_MESSAGE_TO_MOBILE_NUMBER = gql`
+  query SendMessageToMobileNumber($mobileNumber: String, $textToSend: String) {
+    sendMessageToMobileNumber(mobileNumber: $mobileNumber, textToSend: $textToSend) {
+      status
+      message
+    }
+  }
+`;
+
+export const EXO_TEL_CALL = gql`
+  query initateConferenceTelephoneCall($exotelInput: exotelInput) {
+    initateConferenceTelephoneCall(exotelInput: $exotelInput) {
+      isError
+      from
+      to
+      response
+      errorMessage
     }
   }
 `;

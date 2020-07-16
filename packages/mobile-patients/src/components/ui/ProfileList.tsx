@@ -3,25 +3,13 @@ import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/a
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import { Dimensions, View, Text, StyleSheet, ViewStyle, StyleProp, TextStyle } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import {
-  DropdownGreen,
-  PrimaryIcon,
-  LinkedUhidIcon,
-} from '@aph/mobile-patients/src/components/ui/Icons';
+import { DropdownGreen, LinkedUhidIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import { Relation, Gender } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { NavigationScreenProp, NavigationRoute } from 'react-navigation';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import { useApolloClient } from 'react-apollo-hooks';
-import {
-  getPatientAddressList,
-  getPatientAddressListVariables,
-} from '../../graphql/types/getPatientAddressList';
-import { GET_PATIENT_ADDRESS_LIST } from '../../graphql/profiles';
 import { useShoppingCart } from '../ShoppingCartProvider';
 import { useDiagnosticsCart } from '../DiagnosticsCartProvider';
-import { useUIElements } from '../UIElementsProvider';
-import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import AsyncStorage from '@react-native-community/async-storage';
 import { g } from '../../helpers/helperFunctions';
 import { useAppCommonData } from '../AppCommonDataProvider';
@@ -48,6 +36,7 @@ const styles = StyleSheet.create({
 
 export interface ProfileListProps {
   selectedProfile?: GetCurrentPatients_getCurrentPatients_patients;
+  /** @deprecated Avoid using this prop, it'll be removed in future. */
   setDisplayAddProfile?: (args0: boolean) => void;
   saveUserChange: boolean;
   defaultText?: string;
@@ -57,6 +46,7 @@ export interface ProfileListProps {
   listContainerStyle?: StyleProp<ViewStyle>;
   addStringValue?: string;
   navigation: NavigationScreenProp<NavigationRoute<{}>, {}>;
+  /** @deprecated Not using this prop anymore. */
   unsetloaderDisplay?: boolean;
   showList?: boolean;
   menuHidden?: () => void;
@@ -72,12 +62,11 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
     selectedProfile,
     setDisplayAddProfile,
     listContainerStyle,
-    unsetloaderDisplay,
+    // unsetloaderDisplay,
   } = props;
-  const addString = 'ADD MEMBER';
+  const addString = '+ADD MEMBER';
   const addBoolen = false;
   const { getPatientApiCall } = useAuth();
-  const client = useApolloClient();
   const shopCart = useShoppingCart();
   const diagCart = useDiagnosticsCart();
   const {
@@ -86,7 +75,6 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
     currentPatient,
     profileAllPatients,
   } = useAllCurrentPatients();
-  const { loading, setLoading } = useUIElements();
   const { width, height } = Dimensions.get('window');
 
   const [profile, setProfile] = useState<
@@ -95,7 +83,6 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
   const [profileArray, setProfileArray] = useState<
     GetCurrentPatients_getCurrentPatients_patients[] | null
   >(allCurrentPatients);
-  const [isAddressCalled, setAddressCalled] = useState<boolean>(false);
 
   const { isUHID } = useAppCommonData();
 
@@ -121,7 +108,16 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
         };
       })) ||
     [];
-
+  const moveSelectedToTop = () => {
+    if (profile !== undefined) {
+      const patientLinkedProfiles = [
+        pickerData.find((item) => item.uhid === profile!.uhid),
+        ...pickerData.filter((item) => item.uhid !== profile!.uhid),
+      ];
+      return patientLinkedProfiles;
+    }
+    return pickerData;
+  };
   useEffect(() => {
     if (isUHID) {
       isUHID.map(async (el: any) => {
@@ -188,41 +184,10 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
   }, [profileArray!, profile]);
 
   const setAddressList = (key: string) => {
-    unsetloaderDisplay ? null : setLoading && setLoading(true);
-    if (!isAddressCalled) {
-      setAddressCalled(true);
-      client
-        .query<getPatientAddressList, getPatientAddressListVariables>({
-          query: GET_PATIENT_ADDRESS_LIST,
-          variables: { patientId: key },
-          fetchPolicy: 'no-cache',
-        })
-        .then(
-          ({
-            data: {
-              getPatientAddressList: { addressList },
-            },
-          }) => {
-            console.log(addressList, 'addresslidt');
-
-            shopCart.setDeliveryAddressId && shopCart.setDeliveryAddressId('');
-            diagCart.setDeliveryAddressId && diagCart.setDeliveryAddressId('');
-            shopCart.setAddresses && shopCart.setAddresses(addressList!);
-            diagCart.setAddresses && diagCart.setAddresses(addressList!);
-            unsetloaderDisplay ? null : setLoading && setLoading(false);
-            setAddressCalled(false);
-          }
-        )
-        .catch((e) => {
-          CommonBugFender('ProfileList_setAddressList', e);
-
-          unsetloaderDisplay ? null : setLoading && setLoading(false);
-          setAddressCalled(false);
-        });
-      // .finally(() => {
-
-      // });
-    }
+    shopCart.setDeliveryAddressId!('');
+    diagCart.setDeliveryAddressId!('');
+    shopCart.setAddresses!([]);
+    diagCart.setAddresses!([]);
   };
 
   const isNewEntry = (
@@ -274,13 +239,14 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
   };
 
   const renderPicker = () => {
+    const usersList = moveSelectedToTop();
     return (
       <MaterialMenu
         showMenu={props.showList}
         menuHidden={() => {
           props.menuHidden && props.menuHidden();
         }}
-        options={pickerData}
+        options={usersList[0] === undefined ? pickerData : usersList}
         defaultOptions={[]}
         selectedText={profile && profile!.id}
         menuContainerStyle={[
@@ -292,16 +258,16 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
           listContainerStyle,
         ]}
         itemContainer={{ height: 44.8, marginHorizontal: 12, width: width / 2 }}
-        itemTextStyle={{ ...theme.viewStyles.text('M', 16, '#01475b'), paddingHorizontal: 0 }}
+        itemTextStyle={{ ...theme.viewStyles.text('M', 13, '#01475b'), paddingHorizontal: 0 }}
         selectedTextStyle={{
-          ...theme.viewStyles.text('M', 16, '#00b38e'),
+          ...theme.viewStyles.text('M', 13, '#00b38e'),
           alignSelf: 'flex-start',
         }}
         lastTextStyle={{
-          alignSelf: 'flex-end',
+          alignSelf: 'flex-start',
           paddingBottom: 5,
           textTransform: 'uppercase',
-          ...theme.viewStyles.text('B', 13, '#fc9916'),
+          ...theme.viewStyles.text('M', 12, '#fc9916'),
         }}
         bottomPadding={{ paddingBottom: 20 }}
         lastContainerStyle={{
@@ -312,6 +278,8 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
         }}
         onPress={(selectedUser) => {
           if (selectedUser.key === addString) {
+            const pfl = profileArray!.find((i) => selectedUser.key === i.id);
+            props.onProfileChange && props.onProfileChange(pfl!);
             props.navigation.navigate(AppRoutes.EditProfile, {
               isEdit: false,
               isPoptype: true,

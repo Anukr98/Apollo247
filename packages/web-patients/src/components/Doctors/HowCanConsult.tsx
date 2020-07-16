@@ -2,13 +2,13 @@ import React, { useState } from 'react';
 import { makeStyles, createStyles } from '@material-ui/styles';
 import { Theme, CircularProgress, Modal } from '@material-ui/core';
 import { AphButton } from '@aph/web-ui-components';
-import { GetDoctorDetailsById as DoctorDetails } from 'graphql/types/GetDoctorDetailsById';
+import { GetDoctorDetailsById_getDoctorDetailsById as DoctorDetails } from 'graphql/types/GetDoctorDetailsById';
 import moment from 'moment';
 import { getDiffInDays, getDiffInMinutes, getDiffInHours } from 'helpers/commonHelpers';
 import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
 import { useAuth } from 'hooks/authHooks';
 import { BookConsult } from 'components/BookConsult';
-import { SEARCH_TYPE } from 'graphql/types/globalTypes';
+import { SEARCH_TYPE, ConsultMode } from 'graphql/types/globalTypes';
 import { SaveSearch, SaveSearchVariables } from 'graphql/types/SaveSearch';
 import { useMutation } from 'react-apollo-hooks';
 import { SAVE_PATIENT_SEARCH } from 'graphql/pastsearches';
@@ -53,6 +53,7 @@ const useStyles = makeStyles((theme: Theme) => {
       minWidth: 135,
       textAlign: 'left',
       marginRight: 12,
+      height: 130,
       '&:hover': {
         backgroundColor: '#f7f8f5',
       },
@@ -69,32 +70,36 @@ const useStyles = makeStyles((theme: Theme) => {
     btnActive: {
       border: '1px solid #00b38e',
       '&:before': {
-        top: '100%',
-        left: '50%',
-        border: 'solid transparent',
-        content: '""',
-        height: 0,
-        width: 0,
+        content: "''",
         position: 'absolute',
-        pointerEvents: 'none',
-        borderColor: 'rgba(0, 179, 142, 0)',
-        borderTopColor: '#00b38e',
-        borderWidth: 11,
-        marginLeft: -11,
+        bottom: -128,
+        left: 0,
+        right: 0,
+        zIndex: 2,
+        width: 20,
+        height: '100%',
+        margin: '0 auto',
+        borderRadius: 4,
+        borderTop: '10px solid #f7f8f5',
+        borderBottom: '10px solid transparent',
+        borderLeft: ' 40px solid transparent',
+        borderRight: '40px solid transparent',
       },
       '&:after': {
-        top: '100%',
-        left: '50%',
-        border: 'solid transparent',
-        content: '""',
-        height: 0,
-        width: 0,
+        content: "''",
         position: 'absolute',
-        pointerEvents: 'none',
-        borderColor: 'rgba(247, 248, 142, 0)',
-        borderTopColor: '#f7f8f5',
-        borderWidth: 10,
-        marginLeft: -10,
+        bottom: -129,
+        left: 0,
+        right: 0,
+        zIndex: 1,
+        width: 20,
+        height: '100%',
+        margin: '0 auto',
+        borderRadius: 4,
+        borderTop: '10px solid #00b38e',
+        borderBottom: '10px solid transparent',
+        borderLeft: ' 40px solid transparent',
+        borderRight: '40px solid transparent',
       },
     },
     consultGroup: {
@@ -196,6 +201,9 @@ const useStyles = makeStyles((theme: Theme) => {
         padding: '0 20px 20px 20px',
       },
     },
+    noteInfo: {
+      margin: '20px 0 0',
+    },
     price: {
       fontSize: 16,
       fontWeight: 600,
@@ -237,13 +245,22 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const [popupLoading, setPopupLoading] = useState<boolean>(false);
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
+  const [physicalDirection, setPhysicalDirection] = useState<boolean>(false);
+  const [onlineDirection, setOnlineDirection] = useState<boolean>(true);
   const { doctorDetails, doctorAvailablePhysicalSlots, doctorAvailableOnlineSlot } = props;
-  const doctorDetailsId = doctorDetails && doctorDetails.getDoctorDetailsById;
-  const doctorName = doctorDetailsId && doctorDetailsId.fullName;
-  const physcalFee = doctorDetailsId && doctorDetailsId.physicalConsultationFees;
-  const onlineFee = doctorDetailsId && doctorDetailsId.onlineConsultationFees;
-  const doctorId =
-    doctorDetails && doctorDetails.getDoctorDetailsById && doctorDetails.getDoctorDetailsById.id;
+  const doctorName = doctorDetails && doctorDetails.fullName;
+  const physcalFee = doctorDetails && doctorDetails.physicalConsultationFees;
+  const onlineFee = doctorDetails && doctorDetails.onlineConsultationFees;
+  const doctorId = doctorDetails && doctorDetails.id;
+
+  const consultMode =
+    doctorAvailableOnlineSlot.length > 0 && doctorAvailablePhysicalSlots.length > 0
+      ? ConsultMode.BOTH
+      : doctorAvailableOnlineSlot.length > 0
+      ? ConsultMode.ONLINE
+      : doctorAvailablePhysicalSlots.length > 0
+      ? ConsultMode.PHYSICAL
+      : null;
 
   const differenceInMinutes = getDiffInMinutes(doctorAvailablePhysicalSlots);
   const differenceInOnlineMinutes = getDiffInMinutes(doctorAvailableOnlineSlot);
@@ -319,26 +336,52 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
   return (
     <div className={classes.root}>
       <div className={classes.headerGroup}>
-        <h3>How can I consult with Dr.{doctorName}:</h3>
+        <h3>How can I consult with {doctorName}:</h3>
         <div className={classes.tabButtons}>
-          <AphButton className={`${classes.button} ${classes.btnActive}`}>
-            <span>Meet in Person</span>
-            <span className={classes.price}>Rs. {physcalFee}</span>
-            <span>{availabilityMarkup()}</span>
-          </AphButton>
-          <AphButton className={`${classes.button}`}>
+          <AphButton
+            className={
+              onlineDirection ? `${classes.button} ${classes.btnActive}` : `${classes.button}`
+            }
+            onClick={() => {
+              setOnlineDirection(true);
+              setPhysicalDirection(false);
+            }}
+          >
             <span>Chat/Audio/Video</span>
             <span className={classes.price}>Rs. {onlineFee}</span>
             <span>{availabilityOnlineMarkup()}</span>
+          </AphButton>
+          <AphButton
+            className={
+              physicalDirection ? `${classes.button} ${classes.btnActive}` : `${classes.button}`
+            }
+            id="btnActive"
+            onClick={() => {
+              setPhysicalDirection(true);
+              setOnlineDirection(false);
+            }}
+          >
+            <span>Meet in Person</span>
+            <span className={classes.price}>Rs. {physcalFee}</span>
+            <span>{availabilityMarkup()}</span>
           </AphButton>
         </div>
       </div>
       <div className={classes.consultGroup}>
         <div className={classes.groupHead}>
           <span>
-            <img src={require('images/ic-specialist.svg')} alt="" />
+            <img
+              src={require(physicalDirection
+                ? 'images/ic-specialist.svg'
+                : 'images/video-calling.svg')}
+              alt=""
+            />
           </span>
-          <h4>How to consult in person</h4>
+          <h4>
+            {physicalDirection
+              ? 'How to consult in person'
+              : 'How to consult via chat/audio/video?'}
+          </h4>
         </div>
         <div className={classes.groupContent}>
           <ul>
@@ -362,9 +405,18 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
             </li>
             <li className={classes.blueText}>
               <span>
-                <img src={require('images/ic_hospital.svg')} alt="" />
+                <img
+                  src={require(onlineDirection
+                    ? 'images/ic_video-blue.svg'
+                    : 'images/ic_hospital.svg')}
+                  alt=""
+                />
               </span>
-              <span>Visit the doctor at Hospital/Clinic</span>
+              <span>
+                {onlineDirection
+                  ? 'Speak to the doctor via video/audio/chat'
+                  : 'Visit the doctor at Hospital/Clinic'}
+              </span>
             </li>
             <li>
               <span>
@@ -372,54 +424,14 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
               </span>
               <span>Receive prescriptions instantly </span>
             </li>
-          </ul>
-        </div>
-      </div>
-      <div className={classes.consultGroup}>
-        <div className={classes.groupHead}>
-          <span>
-            <img src={require('images/video-calling.svg')} alt="" />
-          </span>
-          <h4>How to consult via chat/audio/video?</h4>
-        </div>
-        <div className={classes.groupContent}>
-          <ul>
-            <li>
-              <span>
-                <img src={require('images/ic_doctor_small.svg')} alt="" />
-              </span>
-              <span>Choose the doctor</span>
-            </li>
-            <li>
-              <span>
-                <img src={require('images/ic_book-slot.svg')} alt="" />
-              </span>
-              <span>Book a slot</span>
-            </li>
-            <li>
-              <span>
-                <img src={require('images/ic-payment.svg')} alt="" />
-              </span>
-              <span>Make payment</span>
-            </li>
-            <li className={classes.blueText}>
-              <span>
-                <img src={require('images/ic_video-blue.svg')} alt="" />
-              </span>
-              <span>Speak to the doctor via video/audio/chat</span>
-            </li>
-            <li>
-              <span>
-                <img src={require('images/ic_prescription-sm.svg')} alt="" />
-              </span>
-              <span>Receive prescriptions instantly</span>
-            </li>
-            <li className={classes.blueText}>
-              <span>
-                <img src={require('images/ic_chat.svg')} alt="" />
-              </span>
-              <span>Chat with the doctor for 6 days after your consult</span>
-            </li>
+            {!physicalDirection && (
+              <li className={classes.blueText}>
+                <span>
+                  <img src={require('images/ic_chat.svg')} alt="" />
+                </span>
+                <span>Chat with the doctor for 6 days after your consult</span>
+              </li>
+            )}
           </ul>
         </div>
       </div>
@@ -437,10 +449,7 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
                     variables: {
                       saveSearchInput: {
                         type: SEARCH_TYPE.DOCTOR,
-                        typeId:
-                          doctorDetails &&
-                          doctorDetails.getDoctorDetailsById &&
-                          doctorDetails.getDoctorDetailsById.id,
+                        typeId: doctorDetails && doctorDetails.id,
                         patient: currentPatient ? currentPatient.id : '',
                       },
                     },
@@ -470,7 +479,7 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
                 'BOOK APPOINTMENT'
               )}
             </AphButton>
-            <p>
+            <p className={classes.noteInfo}>
               Please note that after booking, you will need to download the Apollo 247 app to
               continue with your consultation.
             </p>
@@ -484,6 +493,7 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
         disableEscapeKeyDown
       >
         <BookConsult
+          consultMode={consultMode}
           doctorId={doctorId}
           doctorAvailableIn={differenceInMinutes}
           setIsPopoverOpen={setIsPopoverOpen}

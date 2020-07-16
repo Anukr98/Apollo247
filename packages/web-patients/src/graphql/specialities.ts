@@ -10,6 +10,18 @@ export const GET_ALL_SPECIALITIES = gql`
       specialistPluralTerm
       userFriendlyNomenclature
       displayOrder
+      slugName
+      symptoms
+      commonSearchWords
+      shortDescription
+    }
+  }
+`;
+
+export const GET_ALL_CITIES = gql`
+  query getAllCities {
+    getAllCities {
+      city
     }
   }
 `;

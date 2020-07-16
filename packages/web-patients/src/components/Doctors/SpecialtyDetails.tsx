@@ -1,13 +1,14 @@
-import React, { useEffect, useState } from 'react';
-import { Theme, Grid, CircularProgress, MenuItem, InputAdornment } from '@material-ui/core';
+import React, { useEffect, useState, useRef } from 'react';
+import { Theme, Grid, CircularProgress, Typography } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { Header } from 'components/Header';
 import { BottomLinks } from 'components/BottomLinks';
-import { AphButton, AphSelect, AphTextField } from '@aph/web-ui-components';
+import { AphButton, AphInput } from '@aph/web-ui-components';
 import { Filters } from 'components/Doctors/Filters';
 import { InfoCard } from 'components/Doctors/InfoCard';
+import { InfoCardPartner } from 'components/Doctors/InfoCardPartner';
 import { BookBest } from 'components/Doctors/BookBest';
 import { FrequentlyQuestions } from 'components/Doctors/FrequentlyQuestions';
 import { WhyApollo } from 'components/Doctors/WhyApollo';
@@ -29,8 +30,21 @@ import {
 import _find from 'lodash/find';
 import { ConsultMode, DoctorType } from 'graphql/types/globalTypes';
 import _filter from 'lodash/filter';
+import { MetaTagsComp } from 'MetaTagsComp';
 import { GET_ALL_SPECIALITIES } from 'graphql/specialities';
 import { NavigationBottom } from 'components/NavigationBottom';
+import { SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME } from 'graphql/doctors';
+import {
+  SearchDoctorAndSpecialtyByNameVariables,
+  SearchDoctorAndSpecialtyByName,
+  SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctors as DoctorsType,
+  SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_specialties as SpecialtyType,
+} from 'graphql/types/SearchDoctorAndSpecialtyByName';
+import _lowerCase from 'lodash/lowerCase';
+import { useAuth } from 'hooks/authHooks';
+import axios from 'axios';
+import { gtmTracking } from 'gtmTracking';
+import { SpecialtySearch } from 'components/SpecialtySearch';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -41,6 +55,14 @@ const useStyles = makeStyles((theme: Theme) => {
       maxWidth: 1064,
       margin: 'auto',
     },
+    pastSearch: {
+      padding: '20px 0 0',
+      '& h6': {
+        fontSize: 14,
+        fontWeight: 'bold',
+      },
+    },
+    doctorDetails: {},
     doctorListingPage: {
       backgroundColor: '#f7f8f5',
       [theme.breakpoints.down('xs')]: {
@@ -225,7 +247,7 @@ const useStyles = makeStyles((theme: Theme) => {
         backgroundColor: '#fff',
         display: 'block',
         padding: '10px 20px',
-      }
+      },
     },
     selectCity: {
       width: 165,
@@ -354,9 +376,11 @@ interface SpecialityProps {
 
 export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
   const classes = useStyles({});
+  const scrollToRef = useRef<HTMLDivElement>(null);
   const { currentPincode, currentLong, currentLat } = useLocationDetails();
   const { currentPatient } = useAllCurrentPatients();
   const params = useParams<{
+    city: string;
     specialty: string;
   }>();
   const prakticeSDKSpecialties = localStorage.getItem('symptomTracker');
@@ -365,7 +389,7 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
   const [structuredJSON, setStructuredJSON] = useState(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [filter, setFilter] = useState<SearchObject>(searchObject);
-  const [filteredDoctorData, setFilteredDoctorData] = useState<DoctorDetails[] | null>(null);
+  const [filteredDoctorData, setFilteredDoctorData] = useState<any>(null);
   const [doctorData, setDoctorData] = useState<DoctorDetails[] | null>(null);
   const [isOnlineSelected, setIsOnlineSelected] = useState<boolean>(false);
   const [isPhysicalSelected, setIsPhysicalSelected] = useState<boolean>(false);
@@ -373,6 +397,87 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
   const [onlyFilteredCount, setOnlyFilteredCount] = useState<number>(0);
   const [specialtyId, setSpecialtyId] = useState<string>('');
   const [specialtyName, setSpecialtyName] = useState<string>('');
+  const [locationPopup, setLocationPopup] = useState<boolean>(false);
+  const [selectedCity, setSelectedCity] = useState<string>(
+    params && params.city ? params.city : ''
+  );
+  const [searchSpecialty, setSearchSpecialty] = useState<SpecialtyType[] | null>(null);
+  const [searchKeyword, setSearchKeyword] = useState<string>('');
+  const [searchDoctors, setSearchDoctors] = useState<DoctorsType[] | null>(null);
+  const [searchLoading, setSearchLoading] = useState<boolean>(false);
+  const [slugName, setSlugName] = useState<string>('');
+  const [faqData, setFaqData] = useState<any>();
+
+  /* Gtm code start */
+  useEffect(() => {
+    if (doctorData && doctorData.length > 0) {
+      let ecommItems: any[] = [];
+      doctorData.map((doctorDetails: any, ind: number) => {
+        doctorDetails &&
+          doctorDetails.fullName &&
+          ecommItems.push({
+            item_name: doctorDetails.fullName,
+            item_id: doctorDetails.id,
+            item_category: 'Consultations',
+            item_category_2: doctorDetails.specialty && doctorDetails.specialty.name,
+            item_category_3:
+              doctorDetails.doctorHospital &&
+              doctorDetails.doctorHospital.length &&
+              doctorDetails.doctorHospital[0].facility &&
+              doctorDetails.doctorHospital[0].facility.city,
+            // 'item_category_4': '', // Future USe
+            item_variant: 'Virtual / Physcial',
+            index: ind + 1,
+            quantity: '1',
+          });
+      });
+
+      gtmTracking({
+        category: 'Consultations',
+        action: 'Specialty Page',
+        label: 'Specialty Details Page Viewed',
+        value: null,
+        ecommObj: {
+          event: 'view_item_list',
+          ecommerce: {
+            items: ecommItems,
+          },
+        },
+      });
+    }
+  }, [doctorData]);
+  /* Gtm code end */
+
+  useEffect(() => {
+    if (searchKeyword.length > 2) {
+      setSearchLoading(true);
+      apolloClient
+        .query<SearchDoctorAndSpecialtyByName, SearchDoctorAndSpecialtyByNameVariables>({
+          query: SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME,
+          variables: {
+            searchText: searchKeyword,
+            patientId: currentPatient ? currentPatient.id : '',
+            pincode: currentPincode ? currentPincode : localStorage.getItem('currentPincode') || '',
+            city: selectedCity,
+          },
+          fetchPolicy: 'no-cache',
+        })
+        .then((response) => {
+          const specialtiesAndDoctorsList =
+            response && response.data && response.data.SearchDoctorAndSpecialtyByName;
+          if (specialtiesAndDoctorsList) {
+            const doctorsArray = specialtiesAndDoctorsList.doctors || [];
+            const specialtiesArray = specialtiesAndDoctorsList.specialties || [];
+            setSearchSpecialty(specialtiesArray);
+            setSearchDoctors(doctorsArray);
+          }
+        })
+        .catch((e) => console.log(e))
+        .finally(() => {
+          setSearchLoading(false);
+        });
+    }
+  }, [searchKeyword]);
 
   useEffect(() => {
     if (params && params.specialty) {
@@ -393,12 +498,26 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
               ) {
                 setSpecialtyId(specialty.id);
                 setSpecialtyName(specialty.name);
+                setSlugName(specialty.slugName);
               }
             });
         });
     }
-  }, []);
+  }, [params.specialty]);
 
+  useEffect(() => {
+    if (slugName !== '') {
+      axios
+        .get(`${process.env.CMS_BASE_URL}/api/specialty-details/${readableParam(specialtyName)}`, {
+          headers: { 'Content-Type': 'application/json', Authorization: process.env.CMS_TOKEN },
+        })
+        .then((res: any) => {
+          if (res && res.data && res.data.success) {
+            setFaqData(res && res.data && res.data.data);
+          }
+        });
+    }
+  }, [slugName]);
   let expRange: Range = [],
     feeRange: Range = [];
 
@@ -448,6 +567,9 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
   useEffect(() => {
     setLoading(true);
     if (specialtyId || specialtyName) {
+      scrollToRef &&
+        scrollToRef.current &&
+        scrollToRef.current.scrollIntoView({ behavior: 'auto', block: 'end' });
       apolloClient
         .query({
           query: GET_DOCTORS_BY_SPECIALITY_AND_FILTERS,
@@ -456,36 +578,6 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
         })
         .then((response) => {
           let potentialActionSchema: any[] = [];
-          if (
-            response &&
-            response.data &&
-            response.data.getDoctorsBySpecialtyAndFilters &&
-            response.data.getDoctorsBySpecialtyAndFilters.doctors
-          ) {
-            const doctors = response.data.getDoctorsBySpecialtyAndFilters.doctors;
-            setDoctorData(doctors || []);
-            setOnlyFilteredCount(doctors.length || 0);
-            const finalList = getFilteredDoctorList(doctors || []);
-            setFilteredDoctorData(finalList);
-            doctors.map((doctorDetails: docDetails) => {
-              doctorDetails &&
-                doctorDetails.fullName &&
-                potentialActionSchema.push({
-                  '@type': 'EntryPoint',
-                  name: doctorDetails.fullName,
-                  url: params.specialty
-                    ? `${window.location.origin}${clientRoutes.specialtyDoctorDetails(
-                        params.specialty,
-                        readableParam(doctorDetails.fullName),
-                        doctorDetails.id
-                      )}`
-                    : `${window.location.origin}${clientRoutes.doctorDetails(
-                        readableParam(doctorDetails.fullName),
-                        doctorDetails.id
-                      )}`,
-                });
-            });
-          }
           setStructuredJSON({
             '@context': 'https://schema.org/',
             '@type': 'MedicalSpecialty',
@@ -496,7 +588,40 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
               target: potentialActionSchema,
             },
           });
+          if (
+            response &&
+            response.data &&
+            response.data.getDoctorsBySpecialtyAndFilters &&
+            response.data.getDoctorsBySpecialtyAndFilters.doctors
+          ) {
+            const doctors = response.data.getDoctorsBySpecialtyAndFilters.doctors;
+            const finalList = getFilteredDoctorList(doctors || []);
+            doctors.map((doctorDetails: docDetails) => {
+              doctorDetails &&
+                doctorDetails.fullName &&
+                potentialActionSchema.push({
+                  '@type': 'EntryPoint',
+                  name: doctorDetails.fullName,
+                  url: params.specialty
+                    ? `${window.location.origin}${clientRoutes.specialtyDoctorDetails(
+                      params.specialty,
+                      readableParam(doctorDetails.fullName),
+                      doctorDetails.id
+                    )}`
+                    : `${window.location.origin}${clientRoutes.doctorDetails(
+                      readableParam(doctorDetails.fullName),
+                      doctorDetails.id
+                    )}`,
+                });
+            });
+            setDoctorData(doctors || []);
+            setOnlyFilteredCount(doctors.length || 0);
+            setFilteredDoctorData(finalList);
+          }
           setData(response.data);
+        })
+        .catch((e) => console.log(e))
+        .finally(() => {
           setLoading(false);
         });
     }
@@ -516,17 +641,17 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
     return _filter(data, (doctor: DoctorDetails) => {
       const consultMode =
         doctor.consultHours &&
-        doctor.consultHours.length > 0 &&
-        doctor.consultHours[0] &&
-        doctor.consultHours[0].consultMode
+          doctor.consultHours.length > 0 &&
+          doctor.consultHours[0] &&
+          doctor.consultHours[0].consultMode
           ? doctor.consultHours[0].consultMode
           : '';
       if (isOnlineSelected && isPhysicalSelected) {
         return consultMode === ConsultMode.BOTH;
       } else if (isOnlineSelected) {
-        return consultMode === ConsultMode.ONLINE;
+        return consultMode !== ConsultMode.PHYSICAL;
       } else if (isPhysicalSelected) {
-        return consultMode === ConsultMode.PHYSICAL;
+        return consultMode !== ConsultMode.ONLINE;
       }
       return false;
     });
@@ -556,26 +681,33 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
 
   const doctorsNextAvailability =
     data &&
-    data.getDoctorsBySpecialtyAndFilters &&
-    data.getDoctorsBySpecialtyAndFilters.doctorsNextAvailability
+      data.getDoctorsBySpecialtyAndFilters &&
+      data.getDoctorsBySpecialtyAndFilters.doctorsNextAvailability
       ? data.getDoctorsBySpecialtyAndFilters.doctorsNextAvailability
       : [];
 
   const doctorsAvailability =
     data &&
-    data.getDoctorsBySpecialtyAndFilters &&
-    data.getDoctorsBySpecialtyAndFilters.doctorsAvailability
+      data.getDoctorsBySpecialtyAndFilters &&
+      data.getDoctorsBySpecialtyAndFilters.doctorsAvailability
       ? data.getDoctorsBySpecialtyAndFilters.doctorsAvailability
       : [];
 
+  const metaTagProps = {
+    title: `${specialtyName} - Book Online Appointments And Consultations - Apollo 247`,
+    description: `Book online appointments with ${specialtyName} in just a few clicks. Consult the best ${specialtyName} in India at the best prices. Apollo 247 is the one-stop solution to all your medical needs.`,
+    canonicalLink: window && window.location && window.location.href,
+  };
+
   return (
     <div className={classes.root}>
+      <MetaTagsComp {...metaTagProps} />
       <div className={classes.mHide}>
         <Header />
       </div>
       <div className={classes.container}>
         <div className={classes.doctorListingPage}>
-          <div className={classes.breadcrumbs}>
+          <div className={classes.breadcrumbs} ref={scrollToRef}>
             <Link to={clientRoutes.specialityListing()}>
               <div className={classes.backArrow} title={'Back to home page'}>
                 <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
@@ -594,47 +726,21 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
             <div className={classes.leftGroup}>
               <div className={classes.sectionHeader}>
                 <h1>Book Best Doctors - {specialtyName}</h1>
-                <AphButton>
+                {/* <AphButton>
                   <img src={require('images/ic-share-green.svg')} alt="" />
-                </AphButton>
+                </AphButton> */}
               </div>
-              <div className={classes.topSearch}>
-                <div className={classes.selectCity}>
-                  <div className={classes.inputIcon}>
-                    <img src={require('images/location.svg')} alt="" />
-                  </div>
-                  <AphSelect
-                    value={1}
-                  >
-                    <MenuItem
-                      classes= {{
-                        root: classes.menuRoot,
-                        selected: classes.menuSelected,
-                      }}
-                      value={1}
-                    >
-                      Hyderabad
-                    </MenuItem>
-                    <MenuItem
-                      classes= {{
-                        root: classes.menuRoot,
-                        selected: classes.menuSelected,
-                      }}
-                      value={2}
-                    >
-                      Chennai
-                    </MenuItem>
-                  </AphSelect>
-                </div>
-                <div className={classes.inputSearch}>
-                  <div className={classes.inputIcon}>
-                    <img src={require('images/ic-search.svg')} alt="" />
-                  </div>
-                  <AphTextField
-                    placeholder="Search for Doctors, Specialities or Hospitals"
-                  />
-                </div>
-              </div>
+              <SpecialtySearch
+                setSearchKeyword={setSearchKeyword}
+                searchKeyword={searchKeyword}
+                selectedCity={selectedCity}
+                searchSpecialty={searchSpecialty}
+                searchDoctors={searchDoctors}
+                searchLoading={searchLoading}
+                setLocationPopup={setLocationPopup}
+                locationPopup={locationPopup}
+                setSelectedCity={setSelectedCity}
+              />
               <div className={classes.tabsFilter}>
                 <h2>{filteredDoctorData ? filteredDoctorData.length : 0} Doctors found</h2>
                 <div className={classes.filterButtons}>
@@ -666,61 +772,78 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
                 onlyFilteredCount={onlyFilteredCount}
               />
               <div className={classes.doctorCards}>
-              {(filter.language.length > 0 ||
-                filter.availability.length > 0 ||
-                filter.experience.length > 0 ||
-                filter.fees.length > 0 ||
-                filter.gender.length > 0) && <AddedFilters filter={filter} />}
-              {loading ? (
-                <div className={classes.circlularProgress}>
-                  <CircularProgress />
-                </div>
-              ) : filteredDoctorData && filteredDoctorData.length ? (
-                <>
-                  <Grid container spacing={2}>
-                    {filteredDoctorData.map((doctor: DoctorDetails) => {
-                      let availableMode = '';
-                      let nextAvailabilityString = '';
-                      const nextAvailability = _find(doctorsNextAvailability, (availability) => {
-                        const availabilityDoctorId =
-                          availability && availability.doctorId ? availability.doctorId : '';
-                        const currentDoctorId = doctor && doctor.id ? doctor.id : '';
-                        return availabilityDoctorId === currentDoctorId;
-                      });
-                      const availableModes = _find(doctorsAvailability, (availability) => {
-                        const availabilityDoctorId =
-                          availability && availability.doctorId ? availability.doctorId : '';
-                        const currentDoctorId = doctor && doctor.id ? doctor.id : '';
-                        return availabilityDoctorId === currentDoctorId;
-                      });
-                      if (
-                        availableModes &&
-                        availableModes.availableModes &&
-                        availableModes.availableModes.length > 0
-                      ) {
-                        availableMode = availableModes.availableModes[0];
-                      } else {
-                        availableMode = 'ONLINE';
-                      }
-                      if (availableMode === 'ONLINE' || availableMode === 'BOTH') {
-                        nextAvailabilityString = nextAvailability && nextAvailability.onlineSlot;
-                      } else {
-                        nextAvailabilityString = nextAvailability && nextAvailability.physicalSlot;
-                      }
-                      return (
-                        <Grid key={doctor.id} item xs={12} sm={12} md={12} lg={6}>
-                          <InfoCard doctorInfo={doctor} nextAvailability={nextAvailabilityString} />
-                        </Grid>
-                      );
-                    })}
-                  </Grid>
-                </>
-              ) : (
-                'no results found'
-              )}
+                {(filter.language.length > 0 ||
+                  filter.availability.length > 0 ||
+                  filter.experience.length > 0 ||
+                  filter.fees.length > 0 ||
+                  filter.gender.length > 0) && <AddedFilters filter={filter} />}
+                {loading ? (
+                  <div className={classes.circlularProgress}>
+                    <CircularProgress />
+                  </div>
+                ) : filteredDoctorData && filteredDoctorData.length ? (
+                  <>
+                    <Grid container spacing={2}>
+                      {filteredDoctorData.map((doctor: DoctorDetails) => {
+                        let availableMode = '';
+                        let nextAvailabilityString = '';
+                        const nextAvailability = _find(doctorsNextAvailability, (availability) => {
+                          const availabilityDoctorId =
+                            availability && availability.doctorId ? availability.doctorId : '';
+                          const currentDoctorId = doctor && doctor.id ? doctor.id : '';
+                          return availabilityDoctorId === currentDoctorId;
+                        });
+                        const availableModes = _find(doctorsAvailability, (availability) => {
+                          const availabilityDoctorId =
+                            availability && availability.doctorId ? availability.doctorId : '';
+                          const currentDoctorId = doctor && doctor.id ? doctor.id : '';
+                          return availabilityDoctorId === currentDoctorId;
+                        });
+                        if (
+                          availableModes &&
+                          availableModes.availableModes &&
+                          availableModes.availableModes.length > 0
+                        ) {
+                          availableMode = availableModes.availableModes[0];
+                        } else {
+                          availableMode = 'ONLINE';
+                        }
+                        if (availableMode === 'ONLINE' || availableMode === 'BOTH') {
+                          nextAvailabilityString = nextAvailability && nextAvailability.onlineSlot;
+                        } else {
+                          nextAvailabilityString =
+                            nextAvailability && nextAvailability.physicalSlot;
+                        }
+                        return (
+                          <Grid key={doctor.id} item xs={12} sm={12} md={12} lg={6}>
+                            {doctorType.toLowerCase() == 'apollo' ? (
+                              <InfoCardPartner
+                                doctorInfo={doctor}
+                                doctorType={doctorType}
+                                nextAvailability={nextAvailabilityString}
+                              />
+                            ) : (
+                                <InfoCard
+                                  doctorInfo={doctor}
+                                  doctorType={doctorType}
+                                  nextAvailability={nextAvailabilityString}
+                                />
+                              )}
+                          </Grid>
+                        );
+                      })}
+                    </Grid>
+                  </>
+                ) : (
+                      'no results found'
+                    )}
               </div>
-              <BookBest />
-              <FrequentlyQuestions />
+              {faqData && faqData.length > 0 && (
+                <>
+                  <BookBest faqData={faqData[0]} specialityName={specialtyName} />
+                  <FrequentlyQuestions faqData={faqData[0].specialityFaq} />
+                </>
+              )}
             </div>
             <div className={classes.rightBar}>
               <div className={classes.stickyBlock}>

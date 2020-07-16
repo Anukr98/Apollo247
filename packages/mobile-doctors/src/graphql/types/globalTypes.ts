@@ -32,6 +32,11 @@ export enum AccountType {
   SAVINGS = "SAVINGS",
 }
 
+export enum BOOKINGSOURCE {
+  MOBILE = "MOBILE",
+  WEB = "WEB",
+}
+
 export enum CASESHEET_STATUS {
   COMPLETED = "COMPLETED",
   PENDING = "PENDING",
@@ -46,6 +51,12 @@ export enum ConsultMode {
 export enum ConsultType {
   FIXED = "FIXED",
   PREFERRED = "PREFERRED",
+}
+
+export enum DEVICETYPE {
+  ANDROID = "ANDROID",
+  DESKTOP = "DESKTOP",
+  IOS = "IOS",
 }
 
 export enum DIAGNOSTICS_TYPE {
@@ -66,6 +77,7 @@ export enum DOCTOR_DEVICE_TYPE {
 
 export enum DoctorType {
   APOLLO = "APOLLO",
+  APOLLO_HOMECARE = "APOLLO_HOMECARE",
   CLINIC = "CLINIC",
   CRADLE = "CRADLE",
   DOCTOR_CONNECT = "DOCTOR_CONNECT",
@@ -75,6 +87,7 @@ export enum DoctorType {
   SPECTRA = "SPECTRA",
   STAR_APOLLO = "STAR_APOLLO",
   SUGAR = "SUGAR",
+  WHITE_DENTAL = "WHITE_DENTAL",
 }
 
 export enum Gender {
@@ -91,6 +104,7 @@ export enum LOGIN_TYPE {
 export enum MEDICINE_CONSUMPTION_DURATION {
   DAYS = "DAYS",
   MONTHS = "MONTHS",
+  TILL_NEXT_REVIEW = "TILL_NEXT_REVIEW",
   WEEKS = "WEEKS",
 }
 
@@ -124,6 +138,7 @@ export enum MEDICINE_TIMINGS {
   MORNING = "MORNING",
   NIGHT = "NIGHT",
   NOON = "NOON",
+  NOT_SPECIFIC = "NOT_SPECIFIC",
 }
 
 export enum MEDICINE_TO_BE_TAKEN {
@@ -137,9 +152,11 @@ export enum MEDICINE_UNIT {
   CAPSULE = "CAPSULE",
   CREAM = "CREAM",
   DROP = "DROP",
+  DROPS = "DROPS",
   GEL = "GEL",
   GM = "GM",
   INJECTION = "INJECTION",
+  INTERNATIONAL_UNIT = "INTERNATIONAL_UNIT",
   LOTION = "LOTION",
   MG = "MG",
   ML = "ML",
@@ -157,6 +174,7 @@ export enum MEDICINE_UNIT {
   SUSPENSION = "SUSPENSION",
   SYRUP = "SYRUP",
   TABLET = "TABLET",
+  TEASPOON = "TEASPOON",
   UNIT = "UNIT",
 }
 
@@ -184,18 +202,23 @@ export enum REQUEST_ROLES {
 export enum ROUTE_OF_ADMINISTRATION {
   EAR_DROPS = "EAR_DROPS",
   EYE_DROPS = "EYE_DROPS",
+  EYE_OINTMENT = "EYE_OINTMENT",
   GARGLE = "GARGLE",
   INHALE = "INHALE",
   INTRAMUSCULAR = "INTRAMUSCULAR",
+  INTRANASAL_SPRAY = "INTRANASAL_SPRAY",
   INTRAVAGINAL = "INTRAVAGINAL",
   INTRAVENOUS = "INTRAVENOUS",
+  INTRA_ARTICULAR = "INTRA_ARTICULAR",
   LOCAL_APPLICATION = "LOCAL_APPLICATION",
+  NASALLY = "NASALLY",
   NASAL_DROPS = "NASAL_DROPS",
   ORALLY = "ORALLY",
   ORAL_DROPS = "ORAL_DROPS",
   PER_RECTAL = "PER_RECTAL",
   SUBCUTANEOUS = "SUBCUTANEOUS",
   SUBLINGUAL = "SUBLINGUAL",
+  TRIGGER_POINT_INJECTION = "TRIGGER_POINT_INJECTION",
 }
 
 export enum Relation {
@@ -225,18 +248,12 @@ export enum STATUS {
   JUNIOR_DOCTOR_ENDED = "JUNIOR_DOCTOR_ENDED",
   JUNIOR_DOCTOR_STARTED = "JUNIOR_DOCTOR_STARTED",
   NO_SHOW = "NO_SHOW",
+  PAYMENT_ABORTED = "PAYMENT_ABORTED",
   PAYMENT_FAILED = "PAYMENT_FAILED",
   PAYMENT_PENDING = "PAYMENT_PENDING",
   PAYMENT_PENDING_PG = "PAYMENT_PENDING_PG",
   PENDING = "PENDING",
   UNAVAILABLE_MEDMANTRA = "UNAVAILABLE_MEDMANTRA",
-}
-
-export enum Salutation {
-  DR = "DR",
-  MR = "MR",
-  MRS = "MRS",
-  MS = "MS",
 }
 
 export enum TEST_COLLECTION_TYPE {
@@ -321,6 +338,7 @@ export interface DiagnosisInput {
 
 export interface DiagnosticPrescriptionInput {
   itemname?: string | null;
+  testInstruction?: string | null;
 }
 
 export interface DoctorAvailabilityInput {
@@ -344,6 +362,10 @@ export interface EndAppointmentSessionInput {
   appointmentId: string;
   status: STATUS;
   noShowBy?: REQUEST_ROLES | null;
+  deviceType?: DEVICETYPE | null;
+  callSource?: BOOKINGSOURCE | null;
+  callType?: APPT_CALL_TYPE | null;
+  appVersion?: string | null;
 }
 
 export interface MedicinePrescriptionInput {
@@ -496,6 +518,13 @@ export interface UpdatePatientInput {
   relation?: Relation | null;
   photoUrl?: string | null;
   deviceCode?: string | null;
+  employeeId?: string | null;
+}
+
+export interface exotelInput {
+  from?: string | null;
+  to?: string | null;
+  appointmentId?: string | null;
 }
 
 //==============================================================

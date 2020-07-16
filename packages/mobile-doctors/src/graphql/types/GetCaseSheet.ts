@@ -2,7 +2,7 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
-import { Gender, Relation, PATIENT_ADDRESS_TYPE, APPOINTMENT_TYPE, STATUS, DoctorType, Salutation, MEDICINE_TO_BE_TAKEN, MEDICINE_TIMINGS, MEDICINE_UNIT, MEDICINE_FORM_TYPES, MEDICINE_FREQUENCY, MEDICINE_CONSUMPTION_DURATION, ROUTE_OF_ADMINISTRATION } from "./globalTypes";
+import { Gender, Relation, PATIENT_ADDRESS_TYPE, APPOINTMENT_TYPE, STATUS, DoctorType, MEDICINE_TO_BE_TAKEN, MEDICINE_TIMINGS, MEDICINE_UNIT, MEDICINE_FORM_TYPES, MEDICINE_FREQUENCY, MEDICINE_CONSUMPTION_DURATION, ROUTE_OF_ADMINISTRATION } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: GetCaseSheet
@@ -195,7 +195,7 @@ export interface GetCaseSheet_getCaseSheet_caseSheetDetails_createdDoctorProfile
   emailAddress: string | null;
   firstName: string | null;
   lastName: string | null;
-  salutation: Salutation | null;
+  salutation: string | null;
   registrationNumber: string | null;
   signature: string | null;
   photoUrl: string | null;
@@ -204,6 +204,25 @@ export interface GetCaseSheet_getCaseSheet_caseSheetDetails_createdDoctorProfile
 }
 
 export interface GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription {
+  __typename: "MedicinePrescription";
+  id: string | null;
+  externalId: string | null;
+  medicineName: string | null;
+  medicineDosage: string | null;
+  medicineToBeTaken: (MEDICINE_TO_BE_TAKEN | null)[] | null;
+  medicineInstructions: string | null;
+  medicineTimings: (MEDICINE_TIMINGS | null)[] | null;
+  medicineUnit: MEDICINE_UNIT | null;
+  medicineConsumptionDurationInDays: string | null;
+  medicineConsumptionDuration: string | null;
+  medicineFormTypes: MEDICINE_FORM_TYPES | null;
+  medicineFrequency: MEDICINE_FREQUENCY | null;
+  medicineConsumptionDurationUnit: MEDICINE_CONSUMPTION_DURATION | null;
+  routeOfAdministration: ROUTE_OF_ADMINISTRATION | null;
+  medicineCustomDosage: string | null;
+}
+
+export interface GetCaseSheet_getCaseSheet_caseSheetDetails_removedMedicinePrescription {
   __typename: "MedicinePrescription";
   id: string | null;
   externalId: string | null;
@@ -260,6 +279,7 @@ export interface GetCaseSheet_getCaseSheet_caseSheetDetails {
   appointment: GetCaseSheet_getCaseSheet_caseSheetDetails_appointment | null;
   createdDoctorProfile: GetCaseSheet_getCaseSheet_caseSheetDetails_createdDoctorProfile | null;
   medicinePrescription: (GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription | null)[] | null;
+  removedMedicinePrescription: (GetCaseSheet_getCaseSheet_caseSheetDetails_removedMedicinePrescription | null)[] | null;
   otherInstructions: (GetCaseSheet_getCaseSheet_caseSheetDetails_otherInstructions | null)[] | null;
   symptoms: (GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms | null)[] | null;
   diagnosis: (GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis | null)[] | null;
@@ -271,6 +291,7 @@ export interface GetCaseSheet_getCaseSheet_caseSheetDetails {
   consultType: string | null;
   notes: string | null;
   updatedDate: any | null;
+  version: number | null;
 }
 
 export interface GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_diagnosis {
@@ -311,6 +332,25 @@ export interface GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_medicinePr
   medicineCustomDosage: string | null;
 }
 
+export interface GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_removedMedicinePrescription {
+  __typename: "MedicinePrescription";
+  id: string | null;
+  externalId: string | null;
+  medicineName: string | null;
+  medicineDosage: string | null;
+  medicineToBeTaken: (MEDICINE_TO_BE_TAKEN | null)[] | null;
+  medicineInstructions: string | null;
+  medicineTimings: (MEDICINE_TIMINGS | null)[] | null;
+  medicineUnit: MEDICINE_UNIT | null;
+  medicineConsumptionDurationInDays: string | null;
+  medicineConsumptionDuration: string | null;
+  medicineFormTypes: MEDICINE_FORM_TYPES | null;
+  medicineFrequency: MEDICINE_FREQUENCY | null;
+  medicineConsumptionDurationUnit: MEDICINE_CONSUMPTION_DURATION | null;
+  routeOfAdministration: ROUTE_OF_ADMINISTRATION | null;
+  medicineCustomDosage: string | null;
+}
+
 export interface GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_otherInstructions {
   __typename: "OtherInstructions";
   instruction: string | null;
@@ -329,8 +369,10 @@ export interface GetCaseSheet_getCaseSheet_pastAppointments_caseSheet {
   followUpAfterInDays: string | null;
   followUp: boolean | null;
   medicinePrescription: (GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_medicinePrescription | null)[] | null;
+  removedMedicinePrescription: (GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_removedMedicinePrescription | null)[] | null;
   otherInstructions: (GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_otherInstructions | null)[] | null;
   notes: string | null;
+  version: number | null;
 }
 
 export interface GetCaseSheet_getCaseSheet_pastAppointments {
@@ -353,7 +395,7 @@ export interface GetCaseSheet_getCaseSheet_juniorDoctorCaseSheet_createdDoctorPr
   __typename: "Profile";
   firstName: string | null;
   lastName: string | null;
-  salutation: Salutation | null;
+  salutation: string | null;
 }
 
 export interface GetCaseSheet_getCaseSheet_juniorDoctorCaseSheet {

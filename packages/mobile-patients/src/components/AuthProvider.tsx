@@ -23,7 +23,10 @@ import {
 import { DEVICE_TYPE, Relation } from '../graphql/types/globalTypes';
 import { GetCurrentPatientsVariables } from '../graphql/types/GetCurrentPatients';
 import { AppConfig } from '../strings/AppConfig';
-import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import {
+  CommonBugFender,
+  setBugFenderLog,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
   getPatientByMobileNumber,
   getPatientByMobileNumberVariables,
@@ -34,6 +37,7 @@ import {
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import WebEngage from 'react-native-webengage';
 import AsyncStorage from '@react-native-community/async-storage';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 
 function wait<R, E>(promise: Promise<R>): [R, E] {
   return (promise.then(
@@ -98,45 +102,6 @@ let apolloClient: ApolloClient<NormalizedCacheObject>;
 
 const knownErrors = ['NO_HUB_SLOTS', 'INVALID_ZIPCODE'];
 
-const buildApolloClient = (authToken: string, handleUnauthenticated: () => void) => {
-  const errorLink = onError((error) => {
-    console.log('-------error-------', error);
-    const { graphQLErrors, operation, forward } = error;
-    if (graphQLErrors) {
-      const unauthenticatedError = graphQLErrors.some(
-        (gqlError) => gqlError.extensions && gqlError.extensions.code === 'UNAUTHENTICATED'
-      );
-      if (unauthenticatedError) {
-        handleUnauthenticated();
-        console.log('-------unauthenticatedError-------', unauthenticatedError);
-      }
-    }
-    //This stops multiple trigger of graphql for known errors
-    if (graphQLErrors && graphQLErrors.findIndex((i) => knownErrors.includes(i.message)) > -1) {
-      return;
-    } else {
-      return;
-      // return forward(operation);
-    }
-  });
-  const authLink = setContext(async (_, { headers }) => ({
-    headers: {
-      ...headers,
-      Authorization: authToken,
-    },
-  }));
-  const httpLink = createHttpLink({
-    uri: apiRoutes.graphql(),
-  });
-
-  const link = errorLink.concat(authLink).concat(httpLink);
-  const cache = apolloClient ? apolloClient.cache : new InMemoryCache();
-  return new ApolloClient({
-    link,
-    cache,
-  });
-};
-
 const webengage = new WebEngage();
 
 export const AuthProvider: React.FC = (props) => {
@@ -144,7 +109,72 @@ export const AuthProvider: React.FC = (props) => {
   const hasAuthToken = !_isEmpty(authToken);
 
   const [analytics, setAnalytics] = useState<AuthContextProps['analytics']>(null);
+  const setNewToken = () => {
+    try {
+      firebase.auth().onAuthStateChanged(async (user) => {
+        // console.log('authprovider', user);
+        if (user) {
+          // console.log('authprovider login');
+          const jwt = await user.getIdToken(true).catch((error) => {
+            setIsSigningIn(false);
+            setSignInError(true);
+            setAuthToken('');
+            throw error;
+          });
+          setAuthToken(jwt);
+        }
+      });
+    } catch (e) {}
+  };
+  const buildApolloClient = (authToken: string, handleUnauthenticated: any) => {
+    if (authToken) {
+      const jwtDecode = require('jwt-decode');
+      const millDate = jwtDecode(authToken).exp;
+      const currentTime = new Date().valueOf() / 1000;
+      // console.log('millDate', millDate, currentTime, millDate > currentTime);
+      if (millDate < currentTime) {
+        setNewToken();
+      }
+    } else {
+      setNewToken();
+    }
+    const errorLink = onError((error) => {
+      console.log('-------error-------', error);
+      const { graphQLErrors, operation, forward } = error;
+      if (graphQLErrors) {
+        const unauthenticatedError = graphQLErrors.some(
+          (gqlError) => gqlError.extensions && gqlError.extensions.code === 'UNAUTHENTICATED'
+        );
+        if (unauthenticatedError) {
+          setNewToken();
+          console.log('-------unauthenticatedError-------', unauthenticatedError);
+        }
+      }
+      //This stops multiple trigger of graphql for known errors
+      if (graphQLErrors && graphQLErrors.findIndex((i) => knownErrors.includes(i.message)) > -1) {
+        return;
+      } else {
+        return;
+        // return forward(operation);
+      }
+    });
+    const authLink = setContext(async (_, { headers }) => ({
+      headers: {
+        ...headers,
+        Authorization: !authToken.length ? 'Bearer 3d1833da7020e0602165529446587434' : authToken,
+      },
+    }));
+    const httpLink = createHttpLink({
+      uri: apiRoutes.graphql(),
+    });
 
+    const link = errorLink.concat(authLink).concat(httpLink);
+    const cache = apolloClient ? apolloClient.cache : new InMemoryCache();
+    return new ApolloClient({
+      link,
+      cache,
+    });
+  };
   apolloClient = buildApolloClient(authToken, () => getFirebaseToken());
 
   const [currentPatientId, setCurrentPatientId] = useState<AuthContextProps['currentPatientId']>(
@@ -161,6 +191,8 @@ export const AuthProvider: React.FC = (props) => {
   const auth = firebase.auth();
 
   const [allPatients, setAllPatients] = useState<AuthContextProps['allPatients']>(null);
+
+  const { setSavePatientDetails } = useAppCommonData();
 
   const sendOtp = (customToken: string) => {
     return new Promise(async (resolve, reject) => {
@@ -222,10 +254,10 @@ export const AuthProvider: React.FC = (props) => {
         let authStateRegistered = false;
         console.log('authprovider');
         auth.onAuthStateChanged(async (user) => {
-          console.log('authprovider', authStateRegistered, user);
+          // console.log('authprovider', authStateRegistered, user);
 
           if (user && !authStateRegistered) {
-            console.log('authprovider login');
+            // console.log('authprovider login');
             setIsSigningIn(true);
             authStateRegistered = true;
 
@@ -245,7 +277,6 @@ export const AuthProvider: React.FC = (props) => {
 
             apolloClient = buildApolloClient(jwt, () => getFirebaseToken());
             authStateRegistered = false;
-            setAuthToken(jwt);
             resolve(jwt);
             getNetStatus()
               .then(async (item) => {
@@ -289,6 +320,11 @@ export const AuthProvider: React.FC = (props) => {
                 console.log('SplashScreen Webengage----', { error });
               }
 
+              setBugFenderLog('GET_PATIENT_API_CALL_SUCCESS');
+
+              const allPatients = g(data, 'data', 'getPatientByMobileNumber', 'patients');
+              setSavePatientDetails && setSavePatientDetails(allPatients);
+
               setSignInError(false);
               console.log('getPatientApiCall', data);
               AsyncStorage.setItem('currentPatient', JSON.stringify(data));
@@ -298,6 +334,8 @@ export const AuthProvider: React.FC = (props) => {
               setMobileAPICalled(false);
             })
             .catch(async (error) => {
+              setBugFenderLog('GET_PATIENT_API_CALL_FAIL');
+
               CommonBugFender('AuthProvider_getPatientApiCall', error);
               const retrievedItem: any = await AsyncStorage.getItem('currentPatient');
               const item = JSON.parse(retrievedItem);
@@ -333,6 +371,9 @@ export const AuthProvider: React.FC = (props) => {
               count: g(data, 'data', 'getCurrentPatients', 'patients', 'length') || 0,
             };
             postWebEngageEvent(WebEngageEventName.NUMBER_OF_PROFILES_FETCHED, eventAttributes);
+
+            const allPatients = g(data, 'data', 'getCurrentPatients', 'patients');
+            setSavePatientDetails && setSavePatientDetails(allPatients);
 
             AsyncStorage.setItem('callByPrism', 'true');
             AsyncStorage.setItem('currentPatient', JSON.stringify(data));

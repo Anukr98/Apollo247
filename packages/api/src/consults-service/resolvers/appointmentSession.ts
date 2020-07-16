@@ -13,6 +13,12 @@ import {
   APPOINTMENT_STATE,
   AppointmentNoShow,
   CASESHEET_STATUS,
+  DEVICETYPE,
+  BOOKINGSOURCE,
+  AppointmentCallDetails,
+  APPOINTMENT_UPDATED_BY,
+  AppointmentUpdateHistory,
+  VALUE_TYPE,
 } from 'consults-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
@@ -21,8 +27,11 @@ import {
   NotificationType,
   sendNotification,
   sendNotificationSMS,
+  APPT_CALL_TYPE,
+  DOCTOR_CALL_TYPE,
 } from 'notifications-service/resolvers/notifications';
 import { RescheduleAppointmentRepository } from 'consults-service/repositories/rescheduleAppointmentRepository';
+import { AppointmentCallDetailsRepository } from 'consults-service/repositories/appointmentCallDetailsRepository';
 import { AppointmentNoShowRepository } from 'consults-service/repositories/appointmentNoShowRepository';
 import { AdminDoctorMap } from 'doctors-service/repositories/adminDoctorRepository';
 import { sendMail } from 'notifications-service/resolvers/email';
@@ -77,6 +86,10 @@ export const createAppointmentSessionTypeDefs = gql`
     appointmentId: ID!
     status: STATUS!
     noShowBy: REQUEST_ROLES
+    deviceType: DEVICETYPE
+    callSource: BOOKINGSOURCE
+    callType: APPT_CALL_TYPE
+    appVersion: String
   }
 
   extend type Mutation {
@@ -137,6 +150,10 @@ type EndAppointmentSessionInput = {
   appointmentId: string;
   status: STATUS;
   noShowBy: REQUEST_ROLES;
+  deviceType: DEVICETYPE;
+  callSource: BOOKINGSOURCE;
+  callType: APPT_CALL_TYPE;
+  appVersion: string;
 };
 
 const createJuniorAppointmentSession: Resolver<
@@ -204,6 +221,16 @@ const createJuniorAppointmentSession: Resolver<
     doctorsDb
   );
   console.log(notificationResult, 'notificationResult');
+  const historyAttrs: Partial<AppointmentUpdateHistory> = {
+    appointment: apptDetails,
+    userType: APPOINTMENT_UPDATED_BY.PATIENT,
+    fromValue: STATUS.PENDING,
+    toValue: STATUS.PENDING,
+    valueType: VALUE_TYPE.STATUS,
+    userName: apptDetails.doctorId,
+    reason: 'JD ' + ApiConstants.APPT_SESSION_HISTORY.toString(),
+  };
+  apptRepo.saveAppointmentHistory(historyAttrs);
   return {
     sessionId: sessionId,
     appointmentToken: token,
@@ -216,6 +243,7 @@ const createAppointmentSession: Resolver<
   ConsultServiceContext,
   CreateAppointmentSession
 > = async (parent, { createAppointmentSessionInput }, { consultsDb, patientsDb, doctorsDb }) => {
+
   if (!process.env.OPENTOK_KEY && !process.env.OPENTOK_SECRET) {
     throw new AphError(AphErrorMessages.INVALID_OPENTOK_KEYS);
   }
@@ -230,6 +258,7 @@ const createAppointmentSession: Resolver<
   ) {
     throw new AphError(AphErrorMessages.INVALID_REQUEST_ROLE);
   }
+
   const apptDetails = await apptRepo.findById(createAppointmentSessionInput.appointmentId);
   if (apptDetails == null) throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
 
@@ -284,7 +313,8 @@ const createAppointmentSession: Resolver<
         createAppointmentSessionInput.appointmentId,
         STATUS.IN_PROGRESS,
         true,
-        new Date()
+        new Date(),
+        apptDetails
       );
     }
 
@@ -352,7 +382,8 @@ const createAppointmentSession: Resolver<
       createAppointmentSessionInput.appointmentId,
       STATUS.IN_PROGRESS,
       true,
-      new Date()
+      new Date(),
+      apptDetails
     );
   }
 
@@ -391,6 +422,16 @@ const createAppointmentSession: Resolver<
       sendNotificationSMS(patientData.mobileNumber, messageBody);
     }
   }
+  const historyAttrs: Partial<AppointmentUpdateHistory> = {
+    appointment: apptDetails,
+    userType: APPOINTMENT_UPDATED_BY.DOCTOR,
+    fromValue: STATUS.PENDING,
+    toValue: STATUS.IN_PROGRESS,
+    valueType: VALUE_TYPE.STATUS,
+    userName: apptDetails.doctorId,
+    reason: 'SD ' + ApiConstants.APPT_SESSION_HISTORY.toString(),
+  };
+  apptRepo.saveAppointmentHistory(historyAttrs);
   return {
     sessionId: sessionId,
     appointmentToken: token,
@@ -436,18 +477,49 @@ const endAppointmentSession: Resolver<
   const apptRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const apptDetails = await apptRepo.findById(endAppointmentSessionInput.appointmentId);
   if (apptDetails == null) throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
+
+  const callDetailsRepo = consultsDb.getCustomRepository(AppointmentCallDetailsRepository);
+
   await apptRepo.updateAppointmentStatus(
     endAppointmentSessionInput.appointmentId,
     endAppointmentSessionInput.status,
-    true
+    true,
+    apptDetails
   );
+
   const apptSessionRepo = consultsDb.getCustomRepository(AppointmentsSessionRepository);
   const apptSession = await apptSessionRepo.getAppointmentSession(
     endAppointmentSessionInput.appointmentId
   );
+  if (endAppointmentSessionInput.callSource && endAppointmentSessionInput.deviceType) {
+    const appointmentCallDetailsAttrs: Partial<AppointmentCallDetails> = {
+      appointment: apptDetails,
+      callType: endAppointmentSessionInput.callType
+        ? endAppointmentSessionInput.callType
+        : APPT_CALL_TYPE.CHAT,
+      doctorType: DOCTOR_CALL_TYPE.SENIOR,
+      startTime: new Date(),
+      endTime: new Date(),
+      deviceType: endAppointmentSessionInput.deviceType,
+      callSource: endAppointmentSessionInput.callSource,
+      appVersion: endAppointmentSessionInput.appVersion,
+    };
+    await callDetailsRepo.saveAppointmentCallDetails(appointmentCallDetailsAttrs);
+  }
   if (apptSession) {
     await apptSessionRepo.endAppointmentSession(apptSession.id, new Date());
   }
+
+  const historyAttrs: Partial<AppointmentUpdateHistory> = {
+    appointment: apptDetails,
+    userType: APPOINTMENT_UPDATED_BY.DOCTOR,
+    fromValue: apptDetails.status,
+    toValue: endAppointmentSessionInput.status,
+    valueType: VALUE_TYPE.STATUS,
+    userName: apptDetails.doctorId,
+    reason: 'SD ' + ApiConstants.APPT_SESSION_COMPLETE_HISTORY.toString(),
+  };
+  apptRepo.saveAppointmentHistory(historyAttrs);
 
   if (
     endAppointmentSessionInput.status == STATUS.NO_SHOW ||
@@ -460,6 +532,7 @@ const endAppointmentSession: Resolver<
       appointment: apptDetails,
       noShowStatus: endAppointmentSessionInput.status,
     };
+
     await noShowRepo.saveNoShow(noShowAttrs);
     const rescheduleAppointmentAttrs: Partial<RescheduleAppointmentDetails> = {
       rescheduleReason: endAppointmentSessionInput.status.toString(),
@@ -508,8 +581,8 @@ const endAppointmentSession: Resolver<
     });
     const ccEmailIds =
       process.env.NODE_ENV == 'dev' ||
-      process.env.NODE_ENV == 'development' ||
-      process.env.NODE_ENV == 'local'
+        process.env.NODE_ENV == 'development' ||
+        process.env.NODE_ENV == 'local'
         ? ApiConstants.PATIENT_APPT_CC_EMAILID
         : ApiConstants.PATIENT_APPT_CC_EMAILID_PRODUCTION;
     let isDoctorNoShow = 0;
@@ -519,14 +592,14 @@ const endAppointmentSession: Resolver<
       rescheduleAppointmentAttrs.rescheduleInitiatedId = apptDetails.doctorId;
       const adminRepo = doctorsDb.getCustomRepository(AdminDoctorMap);
       const adminDetails = await adminRepo.findByadminId(apptDetails.doctorId);
-      console.log(adminDetails, 'adminDetails');
+      //console.log(adminDetails, 'adminDetails');
       if (adminDetails == null) throw new AphError(AphErrorMessages.GET_ADMIN_USER_ERROR);
 
       const listOfEmails: string[] = [];
 
       adminDetails.length > 0 &&
         adminDetails.map((value) => listOfEmails.push(value.adminuser.email));
-      console.log('listOfEmails', listOfEmails);
+      //console.log('listOfEmails', listOfEmails);
       listOfEmails.forEach(async (adminemail) => {
         const adminEmailContent: EmailMessage = {
           ccEmail: ccEmailIds.toString(),
@@ -540,7 +613,8 @@ const endAppointmentSession: Resolver<
       });
     }
     await rescheduleRepo.saveReschedule(rescheduleAppointmentAttrs);
-    await apptRepo.updateTransferState(apptDetails.id, APPOINTMENT_STATE.AWAITING_RESCHEDULE);
+    await apptRepo.updateTransferState(apptDetails.id, APPOINTMENT_STATE.AWAITING_RESCHEDULE, apptDetails);
+
     // send notification
     let pushNotificationInput = {
       appointmentId: apptDetails.id,

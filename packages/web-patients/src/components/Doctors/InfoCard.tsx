@@ -9,9 +9,8 @@ import {
   GetDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors as DoctorDetails,
   GetDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors_doctorHospital,
 } from 'graphql/types/GetDoctorsBySpecialtyAndFilters';
-import { ConsultMode, SEARCH_TYPE } from 'graphql/types/globalTypes';
+import { SEARCH_TYPE, ConsultMode } from 'graphql/types/globalTypes';
 import { getDiffInDays, getDiffInMinutes, getDiffInHours } from 'helpers/commonHelpers';
-import moment from 'moment';
 import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
 import { useAuth } from 'hooks/authHooks';
 import { useMutation } from 'react-apollo-hooks';
@@ -21,18 +20,19 @@ import { useAllCurrentPatients } from 'hooks/authHooks';
 import { BookConsult } from 'components/BookConsult';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
+import { readableParam } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
     root: {
-      backgroundColor: theme.palette.common.white,
+      backgroundColor: 'transparent',
       borderRadius: 10,
-      boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
+      boxShadow: 'none',
       height: '100%',
       position: 'relative',
       paddingBottom: 40,
       [theme.breakpoints.down('sm')]: {
-        boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
+        boxShadow: 'none',
       },
     },
     iconGroup: {
@@ -48,6 +48,9 @@ const useStyles = makeStyles((theme: Theme) => {
     doctorAvatar: {
       width: 80,
       height: 80,
+    },
+    otherDoctorType: {
+      width: 80,
     },
     doctorInfo: {
       paddingLeft: 15,
@@ -121,15 +124,28 @@ const useStyles = makeStyles((theme: Theme) => {
       position: 'absolute',
       right: -5,
       top: -8,
+      [theme.breakpoints.down('sm')]: {
+        right: 0,
+        top: 0,
+      },
+      '& img': {
+        width: 80,
+      },
     },
     bottomAction: {
       position: 'absolute',
       width: '100%',
       bottom: 0,
+      '& button': {
+        backgroundColor: '#fff',
+        boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
+        color: '#fc9916',
+        fontWeight: 'bold',
+      },
     },
     button: {
       width: '100%',
-      borderRadius: '0 0 10px 10px',
+      borderRadius: 10,
       boxShadow: 'none',
     },
     cardLoader: {
@@ -155,26 +171,44 @@ const useStyles = makeStyles((theme: Theme) => {
 interface InfoCardProps {
   doctorInfo: DoctorDetails;
   nextAvailability: string;
+  doctorType: string;
 }
 
 export const InfoCard: React.FC<InfoCardProps> = (props) => {
-  const { doctorInfo, nextAvailability } = props;
+  const { doctorInfo, nextAvailability, doctorType } = props;
   const { isSignedIn } = useAuth();
   const { currentPatient } = useAllCurrentPatients();
   const classes = useStyles({});
   const [popupLoading, setPopupLoading] = useState<boolean>(false);
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
-  const doctorValue = doctorInfo.fullName;
-  const consultMode =
+  const doctorValue = doctorInfo.fullName.toLowerCase();
+  const specialityName =
     doctorInfo &&
+    doctorInfo.specialty &&
+    doctorInfo.specialty.name &&
+    doctorInfo.specialty.name.toLowerCase();
+  const consultModeOnline: any = [];
+  const consultModePhysical: any = [];
+  doctorInfo &&
     doctorInfo.consultHours &&
-    doctorInfo.consultHours.length > 0 &&
-    doctorInfo.consultHours[0] &&
-    doctorInfo.consultHours[0].consultMode
-      ? doctorInfo.consultHours[0].consultMode
-      : '';
-
+    doctorInfo.consultHours.map((item: any) => {
+      if (item.consultMode === 'PHYSICAL' || item.consultMode === 'BOTH') {
+        consultModePhysical.push(item.consultMode);
+      }
+      if (item.consultMode === 'ONLINE' || item.consultMode === 'BOTH') {
+        consultModeOnline.push(item.consultMode);
+      }
+    });
+  const consultMode =
+    consultModeOnline.length > 0 && consultModePhysical.length > 0
+      ? ConsultMode.BOTH
+      : consultModeOnline.length > 0
+      ? ConsultMode.ONLINE
+      : consultModePhysical.length > 0
+      ? ConsultMode.PHYSICAL
+      : null;
   const differenceInMinutes = getDiffInMinutes(nextAvailability);
+  const differenceInDays = getDiffInDays(nextAvailability);
   const availabilityMarkup = () => {
     if (nextAvailability && nextAvailability.length > 0) {
       if (differenceInMinutes === 0) {
@@ -200,7 +234,8 @@ export const InfoCard: React.FC<InfoCardProps> = (props) => {
       } else if (differenceInMinutes >= 1380) {
         return (
           <div className={`${classes.availability}`}>
-            AVAILABLE IN {getDiffInDays(nextAvailability)} Days
+            AVAILABLE IN {differenceInDays || 1}{' '}
+            {differenceInDays === 1 || differenceInDays === 0 ? 'Day' : 'Days'}
           </div>
         );
       }
@@ -225,7 +260,13 @@ export const InfoCard: React.FC<InfoCardProps> = (props) => {
   const saveSearchMutation = useMutation<SaveSearch, SaveSearchVariables>(SAVE_PATIENT_SEARCH);
   return (
     <div className={classes.root}>
-      <Link to={clientRoutes.doctorDetails(doctorValue.replace(/ /g, ''), doctorInfo.id)}>
+      <Link
+        to={clientRoutes.specialtyDoctorDetails(
+          readableParam(specialityName),
+          readableParam(doctorValue),
+          doctorInfo.id
+        )}
+      >
         <div className={classes.topContent}>
           <div className={classes.iconGroup}>
             <Avatar
@@ -234,14 +275,14 @@ export const InfoCard: React.FC<InfoCardProps> = (props) => {
               className={classes.doctorAvatar}
             />
             <div className={classes.consultType}>
-              {(consultMode === ConsultMode.BOTH || consultMode === ConsultMode.ONLINE) && (
+              {consultModeOnline.length > 0 && (
                 <span>
                   <img src={require('images/ic-video.svg')} alt="" />
                   <br />
                   Online
                 </span>
               )}
-              {(consultMode === ConsultMode.BOTH || consultMode === ConsultMode.PHYSICAL) && (
+              {consultModePhysical.length > 0 && (
                 <span>
                   <img src={require('images/fa-solid-hospital.svg')} alt="" />
                   <br />
@@ -253,9 +294,17 @@ export const InfoCard: React.FC<InfoCardProps> = (props) => {
           <div className={classes.doctorInfo}>
             <>{availabilityMarkup()}</>
             <div className={`${classes.apolloLogo}`}>
-              <img src={require('images/ic_apollo.svg')} alt="" />
+              <img
+                className={doctorType.toLowerCase() !== 'apollo' ? classes.otherDoctorType : ''}
+                src={
+                  doctorType.toLowerCase() === 'apollo'
+                    ? require('images/ic_apollo.png')
+                    : require('images/partner_doc.png')
+                }
+                alt=""
+              />
             </div>
-            <div className={classes.doctorName}>{`Dr. ${doctorInfo.fullName}`}</div>
+            <div className={classes.doctorName}>{`${doctorInfo.fullName}`}</div>
             <div className={classes.doctorType}>
               <span title={'Specialty'}>{doctorInfo.specialty.userFriendlyNomenclature}</span>
               <span className={classes.doctorExp} title={'Experiance'}>
@@ -336,6 +385,7 @@ export const InfoCard: React.FC<InfoCardProps> = (props) => {
         disableEscapeKeyDown
       >
         <BookConsult
+          consultMode={consultMode}
           doctorId={doctorInfo.id}
           doctorAvailableIn={differenceInMinutes}
           setIsPopoverOpen={setIsPopoverOpen}

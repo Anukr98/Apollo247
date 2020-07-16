@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { makeStyles } from '@material-ui/styles';
-import { Theme, CircularProgress } from '@material-ui/core';
+import { Theme, CircularProgress, Typography } from '@material-ui/core';
 import { Link } from 'react-router-dom';
 import Popover from '@material-ui/core/Popover';
 import Paper from '@material-ui/core/Paper';
@@ -171,12 +171,11 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     userOptions: {
       position: 'absolute',
-      top: 89,
+      top: 80,
       right: 0,
       left: 'auto',
       width: 0,
       borderRadius: 10,
-      textAlign: 'center',
       transition: '0.1s ease',
       overflow: 'hidden',
       zIndex: 9,
@@ -187,11 +186,18 @@ const useStyles = makeStyles((theme: Theme) => {
       listStyle: 'none',
       textAlign: 'left',
       '& li': {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        borderBottom: '1px solid rgba(2, 71, 91, 0.3)',
+        '& >img': {
+          margin: '0 20px 0 0',
+        },
         '& a': {
           padding: '10px 20px',
           display: 'flex',
           alignItems: 'center',
-          borderBottom: '1px solid rgba(2, 71, 91, 0.3)',
+          fontWeight: 500,
           '& img': {
             margin: '0 10px 0 0',
           },
@@ -199,7 +205,6 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     downloadAppBtn: {
-      margin: '10px auto',
       boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
       borderRadius: 10,
       fontSize: 13,
@@ -209,6 +214,36 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     userListActive: {
       width: '300px !important',
+    },
+    userDetails: {
+      padding: '10px 20px',
+      textAlign: 'left',
+      '& h2': {
+        fontSize: 23,
+        fontWeight: 700,
+        padding: '0 0 10px',
+        margin: 0,
+        borderBottom: '1px solid rgba(2,71,91, 0.3)',
+      },
+      '& p': {
+        fontSize: 14,
+        fontWeight: 500,
+        padding: '10px 0',
+        textTransform: 'uppercase',
+      },
+    },
+    userInfo: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      borderTop: '1px solid rgba(2,71,91, 0.3)',
+      borderBottom: '1px solid rgba(2,71,91, 0.3)',
+    },
+    downloadOptions: {
+      padding: '10px 20px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
     },
   };
 });
@@ -256,6 +291,8 @@ export const Header: React.FC = (props) => {
     clientRoutes.medicineAllBrands(),
     clientRoutes.prescriptionsLanding(),
     clientRoutes.prescriptionReview(),
+    clientRoutes.medicinePrescription(),
+    clientRoutes.medicineSearch(),
   ];
 
   return (
@@ -305,34 +342,53 @@ export const Header: React.FC = (props) => {
                             profileVisible ? classes.userListActive : ''
                           }`}
                         >
+                          <div className={classes.userDetails}>
+                            <Typography component="h2">Surj Gupta</Typography>
+                            <Typography>UHID : APD1.0010783329</Typography>
+                            <div className={classes.userInfo}>
+                              <Typography>Male | 31</Typography>
+                              <Typography>+91 9769435788</Typography>
+                            </div>
+                          </div>
                           <ul className={classes.userAccountList}>
                             <li>
                               <Link to={clientRoutes.myAccount()}>
                                 <img src={require('images/ic_manageprofile.svg')} alt="" /> Manage
                                 Profiles
                               </Link>
+                              <img src={require('images/ic_arrow_right.svg')} alt="" />
+                            </li>
+                            <li>
+                              <Link to={clientRoutes.addressBook()}>
+                                <img src={require('images/ic_location.svg')} alt="" /> Address Book
+                              </Link>
+                              <img src={require('images/ic_arrow_right.svg')} alt="" />
+                            </li>
+                            <li>
+                              <Link to={clientRoutes.addressBook()}>
+                                <img src={require('images/ic_invoice.svg')} alt="" /> My Orders
+                              </Link>
+                              <img src={require('images/ic_arrow_right.svg')} alt="" />
                             </li>
                             <li>
                               <Link to={clientRoutes.myPayments()}>
                                 <img src={require('images/ic_fees.svg')} alt="" /> My Payments
                               </Link>
+                              <img src={require('images/ic_arrow_right.svg')} alt="" />
                             </li>
                             <li>
                               <Link to={clientRoutes.healthRecords()}>
                                 <img src={require('images/ic_notificaiton_accounts.svg')} alt="" />{' '}
                                 Health Records
                               </Link>
-                            </li>
-                            <li>
-                              <Link to={clientRoutes.addressBook()}>
-                                <img src={require('images/ic_location.svg')} alt="" /> Address Book
-                              </Link>
+                              <img src={require('images/ic_arrow_right.svg')} alt="" />
                             </li>
                             <li>
                               <Link to={clientRoutes.needHelp()}>
                                 <img src={require('images/ic_round_live_help.svg')} alt="" /> Need
                                 Help
                               </Link>
+                              <img src={require('images/ic_arrow_right.svg')} alt="" />
                             </li>
                             <li>
                               <a href="javascript:void(0)" onClick={() => signOut()}>
@@ -340,13 +396,16 @@ export const Header: React.FC = (props) => {
                               </a>
                             </li>
                           </ul>
-                          <AphButton
-                            color="primary"
-                            onClick={() => window.open(getAppStoreLink())}
-                            className={classes.downloadAppBtn}
-                          >
-                            Download App
-                          </AphButton>
+                          <div className={classes.downloadOptions}>
+                            <img src={require('images/apollo247.png')} />
+                            <AphButton
+                              color="primary"
+                              onClick={() => window.open(getAppStoreLink())}
+                              className={classes.downloadAppBtn}
+                            >
+                              Download App
+                            </AphButton>
+                          </div>
                         </Paper>
                       )}
                     </>

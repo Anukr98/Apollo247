@@ -6,6 +6,11 @@ import android.content.Context;
 
 import com.facebook.react.PackageList;
 import com.facebook.react.ReactApplication;
+import com.zxcpoiu.incallmanager.InCallManagerPackage;
+import com.ninty.system.setting.SystemSettingPackage;
+import com.zmxv.RNSound.RNSoundPackage;
+import com.opentokreactnative.OTPackage;
+import com.pritesh.calldetection.CallDetectionManager;
 import com.corbt.keepawake.KCKeepAwakePackage;
 import me.furtado.smsretriever.RNSmsRetrieverPackage;
 import com.reactnativecommunity.rnpermissions.RNPermissionsPackage;

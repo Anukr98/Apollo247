@@ -13,6 +13,9 @@ import {
   CaseSheetOtherInstruction,
   APPOINTMENT_TYPE,
   STATUS,
+  VALUE_TYPE,
+  APPOINTMENT_UPDATED_BY,
+  AppointmentUpdateHistory,
 } from 'consults-service/entities';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { AphError } from 'AphError';
@@ -95,12 +98,13 @@ export const caseSheetTypeDefs = gql`
     CRADLE
     DOCTOR_CONNECT
     FERTILITY
-    HOMECARE
     JUNIOR
     PAYROLL
     SPECTRA
     STAR_APOLLO
     SUGAR
+    WHITE_DENTAL
+    APOLLO_HOMECARE
   }
 
   enum Gender {
@@ -644,7 +648,6 @@ const getCaseSheet: Resolver<
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
   const patientDetails = await patientRepo.getPatientDetails(appointmentData.patientId);
   if (patientDetails == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
-
   //check if logged in mobile number is associated with doctor
   const secretaryRepo = doctorsDb.getCustomRepository(SecretaryRepository);
   const secretaryDetails = await secretaryRepo.getSecretary(mobileNumber, true);
@@ -664,9 +667,7 @@ const getCaseSheet: Resolver<
   let juniorDoctorNotes = '';
 
   //check whether there is a senior doctor case-sheet
-  const caseSheetDetails = await caseSheetRepo.getSeniorDoctorCompletedCaseSheet(
-    appointmentData.id
-  );
+  const caseSheetDetails = await caseSheetRepo.getSeniorDoctorLatestCaseSheet(appointmentData.id);
   if (caseSheetDetails == null) throw new AphError(AphErrorMessages.NO_CASESHEET_EXIST);
 
   const juniorDoctorCaseSheet = await caseSheetRepo.getJuniorDoctorCaseSheet(appointmentData.id);
@@ -857,19 +858,14 @@ const modifyCaseSheet: Resolver<
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
   const patientData = await patientRepo.getPatientDetails(getCaseSheetData.patientId);
   if (patientData == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
-
   //familyHistory upsert starts
   if (!(inputArguments.familyHistory === undefined)) {
     const familyHistoryInputs: Partial<PatientFamilyHistory> = {
       patient: patientData,
-      description:
-        inputArguments.familyHistory.length > 0 ? inputArguments.familyHistory : undefined,
+      description: inputArguments.familyHistory.length > 0 ? inputArguments.familyHistory : '',
     };
     const familyHistoryRepo = patientsDb.getCustomRepository(PatientFamilyHistoryRepository);
-    const familyHistoryRecord = await familyHistoryRepo.getPatientFamilyHistory(
-      getCaseSheetData.patientId
-    );
-
+    const familyHistoryRecord = patientData.familyHistory[0];
     if (familyHistoryRecord == null) {
       //create
       familyHistoryRepo.savePatientFamilyHistory(familyHistoryInputs);
@@ -892,7 +888,9 @@ const modifyCaseSheet: Resolver<
       lifeStyleInputs.occupationHistory = inputArguments.occupationHistory;
     }
     const lifeStyleRepo = patientsDb.getCustomRepository(PatientLifeStyleRepository);
-    const lifeStyleRecord = await lifeStyleRepo.getPatientLifeStyle(getCaseSheetData.patientId);
+    const lifeStyleRecord = patientData.lifeStyle
+      ? patientData.lifeStyle[0]
+      : patientData.lifeStyle;
 
     if (lifeStyleRecord == null) {
       //create
@@ -908,46 +906,46 @@ const modifyCaseSheet: Resolver<
   const medicalHistoryInputs: Partial<PatientMedicalHistory> = {
     patient: patientData,
   };
+  if (patientData.patientMedicalHistory) {
+    medicalHistoryInputs.id = patientData.patientMedicalHistory.id;
+  }
 
   if (inputArguments.medicationHistory) {
     medicalHistoryInputs.medicationHistory = inputArguments.medicationHistory;
   }
 
   if (!(inputArguments.bp === undefined))
-    medicalHistoryInputs.bp = inputArguments.bp.length > 0 ? inputArguments.bp : undefined;
+    medicalHistoryInputs.bp = inputArguments.bp.length > 0 ? inputArguments.bp : '';
 
   if (!(inputArguments.weight === undefined))
-    medicalHistoryInputs.weight =
-      inputArguments.weight.length > 0 ? inputArguments.weight : undefined;
+    medicalHistoryInputs.weight = inputArguments.weight.length > 0 ? inputArguments.weight : '';
 
   if (!(inputArguments.temperature === undefined))
     medicalHistoryInputs.temperature =
-      inputArguments.temperature.length > 0 ? inputArguments.temperature : undefined;
+      inputArguments.temperature.length > 0 ? inputArguments.temperature : '';
 
   if (!(inputArguments.pastSurgicalHistory === undefined))
     medicalHistoryInputs.pastSurgicalHistory =
-      inputArguments.pastSurgicalHistory.length > 0
-        ? inputArguments.pastSurgicalHistory
-        : undefined;
+      inputArguments.pastSurgicalHistory.length > 0 ? inputArguments.pastSurgicalHistory : '';
 
   if (!(inputArguments.pastMedicalHistory === undefined))
     medicalHistoryInputs.pastMedicalHistory =
-      inputArguments.pastMedicalHistory.length > 0 ? inputArguments.pastMedicalHistory : undefined;
+      inputArguments.pastMedicalHistory.length > 0 ? inputArguments.pastMedicalHistory : '';
 
   if (!(inputArguments.menstrualHistory === undefined)) {
     if (patientData.gender === Gender.FEMALE)
       medicalHistoryInputs.menstrualHistory =
-        inputArguments.menstrualHistory.length > 0 ? inputArguments.menstrualHistory : undefined;
+        inputArguments.menstrualHistory.length > 0 ? inputArguments.menstrualHistory : '';
   }
 
   if (!(inputArguments.height === undefined)) medicalHistoryInputs.height = inputArguments.height;
   if (!(inputArguments.drugAllergies === undefined))
     medicalHistoryInputs.drugAllergies =
-      inputArguments.drugAllergies.length > 0 ? inputArguments.drugAllergies : undefined;
+      inputArguments.drugAllergies.length > 0 ? inputArguments.drugAllergies : '';
 
   if (!(inputArguments.dietAllergies === undefined))
     medicalHistoryInputs.dietAllergies =
-      inputArguments.dietAllergies.length > 0 ? inputArguments.dietAllergies : undefined;
+      inputArguments.dietAllergies.length > 0 ? inputArguments.dietAllergies : '';
 
   const medicalHistoryRepo = patientsDb.getCustomRepository(PatientMedicalHistoryRepository);
   const medicalHistoryRecord = await medicalHistoryRepo.getPatientMedicalHistory(
@@ -1049,6 +1047,16 @@ const createJuniorDoctorCaseSheet: Resolver<
   }
 
   caseSheetDetails = await caseSheetRepo.savecaseSheet(caseSheetAttrs);
+  const historyAttrs: Partial<AppointmentUpdateHistory> = {
+    appointment: appointmentData,
+    userType: APPOINTMENT_UPDATED_BY.DOCTOR,
+    fromValue: appointmentData.status,
+    toValue: appointmentData.status,
+    valueType: VALUE_TYPE.STATUS,
+    userName: doctorData.id,
+    reason: 'JD ' + ApiConstants.CASESHEET_CREATED_HISTORY.toString() + ', ' + doctorData.id,
+  };
+  appointmentRepo.saveAppointmentHistory(historyAttrs);
   return caseSheetDetails;
 };
 
@@ -1093,6 +1101,17 @@ const createSeniorDoctorCaseSheet: Resolver<
       createdDoctorId: appointmentData.doctorId,
       doctorType: doctorData.doctorType,
     };
+    const historyAttrs: Partial<AppointmentUpdateHistory> = {
+      appointment: appointmentData,
+      userType: APPOINTMENT_UPDATED_BY.DOCTOR,
+      fromValue: appointmentData.status,
+      toValue: appointmentData.status,
+      valueType: VALUE_TYPE.STATUS,
+      userName: appointmentData.doctorId,
+      reason:
+        'SD ' + ApiConstants.CASESHEET_CREATED_HISTORY.toString() + ', ' + appointmentData.doctorId,
+    };
+    appointmentRepo.saveAppointmentHistory(historyAttrs);
     return await caseSheetRepo.savecaseSheet(caseSheetAttrs);
   }
 
@@ -1122,6 +1141,16 @@ const createSeniorDoctorCaseSheet: Resolver<
       isJdConsultStarted: sdCaseSheets[0].isJdConsultStarted,
       notes: sdCaseSheets[0].notes,
     };
+    const historyAttrs: Partial<AppointmentUpdateHistory> = {
+      appointment: appointmentData,
+      userType: APPOINTMENT_UPDATED_BY.DOCTOR,
+      fromValue: appointmentData.status,
+      toValue: appointmentData.status,
+      valueType: VALUE_TYPE.STATUS,
+      userName: appointmentData.doctorId,
+      reason: 'SD ' + ApiConstants.CASESHEET_CREATED_HISTORY.toString() + ', ' + doctorData.id,
+    };
+    appointmentRepo.saveAppointmentHistory(historyAttrs);
     return await caseSheetRepo.savecaseSheet(caseSheetAttrs);
   }
 
@@ -1150,6 +1179,16 @@ const submitJDCaseSheet: Resolver<
   );
 
   if (juniorDoctorcaseSheet && juniorDoctorcaseSheet.isJdConsultStarted) {
+    const historyAttrs: Partial<AppointmentUpdateHistory> = {
+      appointment: appointmentData,
+      userType: APPOINTMENT_UPDATED_BY.DOCTOR,
+      fromValue: appointmentData.status,
+      toValue: appointmentData.status,
+      valueType: VALUE_TYPE.STATUS,
+      userName: juniorDoctorcaseSheet.createdDoctorId,
+      reason: ApiConstants.JD_CASESHEET_COMPLETED_HISTORY.toString(),
+    };
+    appointmentRepo.saveAppointmentHistory(historyAttrs);
     return false;
   }
 
@@ -1196,7 +1235,16 @@ const submitJDCaseSheet: Resolver<
     };
     await caseSheetRepo.savecaseSheet(casesheetAttrsToAdd);
   }
-
+  const historyAttrs: Partial<AppointmentUpdateHistory> = {
+    appointment: appointmentData,
+    userType: APPOINTMENT_UPDATED_BY.DOCTOR,
+    fromValue: appointmentData.status,
+    toValue: appointmentData.status,
+    valueType: VALUE_TYPE.STATUS,
+    userName: virtualJDId,
+    reason: 'Virtaul JD ' + ApiConstants.CASESHEET_COMPLETED_HISTORY.toString(),
+  };
+  appointmentRepo.saveAppointmentHistory(historyAttrs);
   return true;
 };
 
@@ -1299,6 +1347,20 @@ const updatePatientPrescriptionSentStatus: Resolver<
   }
 
   await caseSheetRepo.updateCaseSheet(args.caseSheetId, caseSheetAttrs);
+  const apptRepo = consultsDb.getCustomRepository(AppointmentRepository);
+  const appointment = await apptRepo.findById(getCaseSheetData.appointment.id);
+  if (appointment) {
+    const historyAttrs: Partial<AppointmentUpdateHistory> = {
+      appointment,
+      userType: APPOINTMENT_UPDATED_BY.PATIENT,
+      fromValue: appointment.status,
+      toValue: appointment.status,
+      valueType: VALUE_TYPE.STATUS,
+      userName: appointment.patientId,
+      reason: ApiConstants.CASESHEET_COMPLETED_HISTORY.toString(),
+    };
+    apptRepo.saveAppointmentHistory(historyAttrs);
+  }
   return {
     success: true,
     blobName: caseSheetAttrs.blobName || '',

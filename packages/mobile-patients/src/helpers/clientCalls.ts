@@ -15,6 +15,9 @@ import {
   NEXT_AVAILABLE_SLOT,
   SEND_CHAT_MESSAGE_TO_DOCTOR,
   UPDATE_WHATSAPP_STATUS,
+  UPDATE_SAVE_EXTERNAL_CONNECT,
+  PAST_APPOINTMENTS_COUNT,
+  GET_PERSONALIZED_APPOITNMENTS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { GetDoctorNextAvailableSlot } from '@aph/mobile-patients/src/graphql/types/GetDoctorNextAvailableSlot';
 import ApolloClient from 'apollo-client';
@@ -50,6 +53,18 @@ import {
   sendChatMessageToDoctorVariables,
 } from '../graphql/types/sendChatMessageToDoctor';
 import { updateWhatsAppStatus } from '../graphql/types/updateWhatsAppStatus';
+import {
+  updateSaveExternalConnect,
+  updateSaveExternalConnectVariables,
+} from '../graphql/types/updateSaveExternalConnect';
+import {
+  getPastAppointmentsCount,
+  getPastAppointmentsCountVariables,
+} from '../graphql/types/getPastAppointmentsCount';
+import {
+  getPatientPersonalizedAppointments,
+  getPatientPersonalizedAppointmentsVariables,
+} from '../graphql/types/getPatientPersonalizedAppointments';
 
 export const getNextAvailableSlots = (
   client: ApolloClient<object>,
@@ -423,6 +438,88 @@ export const whatsAppUpdateAPICall = (
       })
       .catch((e) => {
         CommonBugFender('clientCalls_addToConsultQueue', e);
+        rej({ error: e });
+      });
+  });
+};
+
+export const updateExternalConnect = (
+  client: ApolloClient<object>,
+  doctorId: string,
+  patientId: string,
+  externalConnect: boolean,
+  appointmentID: string
+) => {
+  return new Promise((res, rej) => {
+    const inputVariables = {
+      doctorId: doctorId,
+      patientId: patientId,
+      externalConnect: externalConnect,
+      appointmentId: appointmentID,
+    };
+
+    console.log('inputVariables', inputVariables);
+    client
+      .mutate<updateSaveExternalConnect, updateSaveExternalConnectVariables>({
+        mutation: UPDATE_SAVE_EXTERNAL_CONNECT,
+        variables: inputVariables,
+        fetchPolicy: 'no-cache',
+      })
+      .then((data: any) => {
+        res({ data });
+      })
+      .catch((e) => {
+        CommonBugFender('clientCalls_addToConsultQueueWithAutomatedQuestions', e);
+        rej({ error: e });
+      });
+  });
+};
+
+export const getPastAppoinmentCount = (
+  client: ApolloClient<object>,
+  doctorId: string,
+  patientId: string,
+  appointmentID: string
+) => {
+  return new Promise((res, rej) => {
+    client
+      .query<getPastAppointmentsCount, getPastAppointmentsCountVariables>({
+        query: PAST_APPOINTMENTS_COUNT,
+        variables: {
+          doctorId: doctorId,
+          patientId: patientId,
+          appointmentId: appointmentID,
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((data: any) => {
+        res({ data });
+      })
+      .catch((e) => {
+        CommonBugFender('clientCalls_addToConsultQueueWithAutomatedQuestions', e);
+        rej({ error: e });
+      });
+  });
+};
+
+export const getPatientPersonalizedAppointmentList = (
+  client: ApolloClient<object>,
+  patientUhid: string
+) => {
+  return new Promise((res, rej) => {
+    client
+      .query<getPatientPersonalizedAppointments, getPatientPersonalizedAppointmentsVariables>({
+        query: GET_PERSONALIZED_APPOITNMENTS,
+        variables: {
+          patientUhid: patientUhid,
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((data: any) => {
+        res({ data });
+      })
+      .catch((e) => {
+        CommonBugFender('clientCalls_addToConsultQueueWithAutomatedQuestions', e);
         rej({ error: e });
       });
   });

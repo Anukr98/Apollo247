@@ -69,7 +69,7 @@ const styles = StyleSheet.create({
 
 export interface StoreDriveWayPickupPopupProps {
   onPressOkGotIt: () => void;
-  store: Store;
+  store?: Store;
 }
 
 export const StoreDriveWayPickupPopup: React.FC<StoreDriveWayPickupPopupProps> = (props) => {
@@ -120,9 +120,10 @@ export const StoreDriveWayPickupPopup: React.FC<StoreDriveWayPickupPopupProps> =
 
   const renderInfo = () => {
     const infoTextList = [
-      "Place your order, get an SMS with store executive's number",
-      'Contact executive 15 minutes before you reach',
-      'Collect your medicines & drive off',
+      "Place your order, get an SMS with store details and executive's number",
+      'Once the items are ready, you will have an option to alert store.',
+      'Alert the store 10 minutes before you reach',
+      'Collect your medicines and drive off',
     ];
     return (
       <View style={{ marginTop: 5 }}>

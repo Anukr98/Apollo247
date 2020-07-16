@@ -10,11 +10,14 @@ import {
   BeforeInsert,
   BeforeUpdate,
   Index,
+  AfterUpdate,
+  AfterInsert,
 } from 'typeorm';
 import { Validate, IsOptional } from 'class-validator';
 import { NameValidator, MobileNumberValidator } from 'validators/entityValidators';
 import { ConsultMode } from 'doctors-service/entities';
 import { BlockUserPointsResponse, ONE_APOLLO_STORE_CODE } from 'types/oneApolloTypes';
+import { delCache } from 'profiles-service/database/connectRedis';
 
 export type ONE_APOLLO_USER_REG = {
   FirstName: string;
@@ -91,6 +94,7 @@ export enum PAYMENT_STATUS_MAP {
   TXN_SUCCESS = 'PAYMENT_SUCCESS',
   PENDING = 'PAYMENT_PENDING_PG',
   TXN_FAILURE = 'PAYMENT_FAILED',
+  PAYMENT_ABORTED = 'PAYMENT_ABORTED',
   UNKNOWN = 'PAYMENT_STATUS_NOT_KNOWN',
 }
 
@@ -98,6 +102,7 @@ export enum STATUS_PAYMENT_MAP {
   PAYMENT_SUCCESS = 'TXN_SUCCESS',
   PAYMENT_PENDING_PG = 'PENDING',
   PAYMENT_FAILED = 'TXN_FAILURE',
+  PAYMENT_ABORTED = 'PAYMENT_ABORTED',
 }
 
 export enum Relation {
@@ -340,6 +345,7 @@ export class MedicineOrders extends BaseEntity {
   @Column({ default: 0 })
   isEprescription: number;
 
+  @Index('MedicineOrders_orderAutoId')
   @PrimaryGeneratedColumn({ type: 'bigint' })
   orderAutoId: number;
 
@@ -401,6 +407,9 @@ export class MedicineOrders extends BaseEntity {
   paymentInfo: Partial<MedicineOrderPayments>;
 
   @Column({ nullable: true })
+  customerComment: string;
+
+  @Column({ nullable: true })
   isOmsOrder: boolean;
 
   @Column({ nullable: true })
@@ -417,10 +426,7 @@ export class MedicineOrders extends BaseEntity {
   }
 
   @Index('MedicineOrders_patientId')
-  @ManyToOne(
-    (type) => Patient,
-    (patient) => patient.medicineOrders
-  )
+  @ManyToOne((type) => Patient, (patient) => patient.medicineOrders)
   patient: Patient;
 
   @OneToMany(
@@ -502,10 +508,7 @@ export class MedicineOrderLineItems extends BaseEntity {
   @Column()
   quantity: number;
 
-  @ManyToOne(
-    (type) => MedicineOrders,
-    (medicineOrders) => medicineOrders.medicineOrderLineItems
-  )
+  @ManyToOne((type) => MedicineOrders, (medicineOrders) => medicineOrders.medicineOrderLineItems)
   medicineOrders: MedicineOrders;
 
   @Column({ nullable: true })
@@ -577,10 +580,7 @@ export class MedicineOrderPayments extends BaseEntity {
   @Column('decimal', { precision: 10, scale: 2, nullable: false, default: 0 })
   healthCreditsRedeemed: number;
 
-  @ManyToOne(
-    (type) => MedicineOrders,
-    (medicineOrders) => medicineOrders.medicineOrderPayments
-  )
+  @ManyToOne((type) => MedicineOrders, (medicineOrders) => medicineOrders.medicineOrderPayments)
   medicineOrders: Partial<MedicineOrders>;
 
   @Column({ nullable: true, type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
@@ -604,10 +604,7 @@ export class MedicineOrdersStatus extends BaseEntity {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
 
-  @ManyToOne(
-    (type) => MedicineOrders,
-    (medicineOrders) => medicineOrders.medicineOrdersStatus
-  )
+  @ManyToOne((type) => MedicineOrders, (medicineOrders) => medicineOrders.medicineOrdersStatus)
   medicineOrders: MedicineOrders;
 
   @ManyToOne(
@@ -655,10 +652,7 @@ export class MedicineOrderInvoice extends BaseEntity {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
 
-  @ManyToOne(
-    (type) => MedicineOrders,
-    (medicineOrders) => medicineOrders.medicineOrderInvoice
-  )
+  @ManyToOne((type) => MedicineOrders, (medicineOrders) => medicineOrders.medicineOrderInvoice)
   medicineOrders: MedicineOrders;
 
   @ManyToOne(
@@ -713,15 +707,13 @@ export class MedicineOrderInvoice extends BaseEntity {
 //patient device tokens starts
 @Entity()
 export class PatientDeviceTokens extends BaseEntity {
-  @ManyToOne(
-    (type) => Patient,
-    (patient) => patient.patientDeviceTokens
-  )
+  @ManyToOne((type) => Patient, (patient) => patient.patientDeviceTokens)
   patient: Patient;
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
 
+  @Index('device_token')
   @Column({ type: 'text' })
   deviceToken: string;
 
@@ -777,10 +769,7 @@ export class Patient extends BaseEntity {
   @IsOptional()
   emailAddress: string;
 
-  @OneToMany(
-    (type) => PatientFamilyHistory,
-    (familyHistory) => familyHistory.patient
-  )
+  @OneToMany((type) => PatientFamilyHistory, (familyHistory) => familyHistory.patient)
   familyHistory: PatientFamilyHistory[];
 
   @Column({ nullable: true })
@@ -793,10 +782,7 @@ export class Patient extends BaseEntity {
   @Column({ nullable: true })
   gender: Gender;
 
-  @OneToMany(
-    (type) => PatientHealthVault,
-    (healthVault) => healthVault.patient
-  )
+  @OneToMany((type) => PatientHealthVault, (healthVault) => healthVault.patient)
   healthVault: PatientHealthVault[];
 
   @Index('Patient_id')
@@ -815,34 +801,19 @@ export class Patient extends BaseEntity {
   @Column({ nullable: true })
   iosVersion: string;
 
-  @OneToMany(
-    (type) => PatientLifeStyle,
-    (lifeStyle) => lifeStyle.patient
-  )
+  @OneToMany((type) => PatientLifeStyle, (lifeStyle) => lifeStyle.patient)
   lifeStyle: PatientLifeStyle[];
 
-  @OneToMany(
-    (type) => MedicineOrders,
-    (medicineOrders) => medicineOrders.patient
-  )
+  @OneToMany((type) => MedicineOrders, (medicineOrders) => medicineOrders.patient)
   medicineOrders: MedicineOrders[];
 
-  @OneToMany(
-    (type) => DiagnosticOrders,
-    (diagnosticOrders) => diagnosticOrders.patient
-  )
+  @OneToMany((type) => DiagnosticOrders, (diagnosticOrders) => diagnosticOrders.patient)
   diagnosticOrders: DiagnosticOrders[];
 
-  @OneToMany(
-    (type) => MedicalRecords,
-    (medicalRecords) => medicalRecords.patient
-  )
+  @OneToMany((type) => MedicalRecords, (medicalRecords) => medicalRecords.patient)
   medicalRecords: MedicalRecords[];
 
-  @OneToMany(
-    (type) => PatientFeedback,
-    (patientfeedback) => patientfeedback.patient
-  )
+  @OneToMany((type) => PatientFeedback, (patientfeedback) => patientfeedback.patient)
   patientfeedback: PatientFeedback[];
 
   @Index('Patient_mobileNumber')
@@ -850,16 +821,10 @@ export class Patient extends BaseEntity {
   @Validate(MobileNumberValidator)
   mobileNumber: string;
 
-  @OneToMany(
-    (type) => PatientAddress,
-    (patientAddress) => patientAddress.patient
-  )
+  @OneToMany((type) => PatientAddress, (patientAddress) => patientAddress.patient)
   patientAddress: PatientAddress[];
 
-  @OneToMany(
-    (type) => PatientDeviceTokens,
-    (patientDeviceTokens) => patientDeviceTokens.patient
-  )
+  @OneToMany((type) => PatientDeviceTokens, (patientDeviceTokens) => patientDeviceTokens.patient)
   patientDeviceTokens: PatientDeviceTokens[];
 
   @OneToMany(
@@ -880,10 +845,7 @@ export class Patient extends BaseEntity {
   )
   patientMedicalHistory: PatientMedicalHistory;
 
-  @OneToOne(
-    (type) => RegistrationCodes,
-    (registrationCodes) => registrationCodes.patient
-  )
+  @OneToOne((type) => RegistrationCodes, (registrationCodes) => registrationCodes.patient)
   registrationCodes: RegistrationCodes;
 
   @Column({ nullable: true, type: 'text' })
@@ -921,16 +883,10 @@ export class Patient extends BaseEntity {
   @Column({ default: false })
   whatsAppMedicine: Boolean;
 
-  @OneToMany(
-    (type) => SearchHistory,
-    (searchHistory) => searchHistory.patient
-  )
+  @OneToMany((type) => SearchHistory, (searchHistory) => searchHistory.patient)
   searchHistory: SearchHistory[];
 
-  @OneToMany(
-    (type) => PatientHelpTickets,
-    (patientHelpTickets) => patientHelpTickets.patient
-  )
+  @OneToMany((type) => PatientHelpTickets, (patientHelpTickets) => patientHelpTickets.patient)
   patientHelpTickets: PatientHelpTickets[];
 
   @Column({ nullable: true })
@@ -948,6 +904,16 @@ export class Patient extends BaseEntity {
   updateDateUpdate() {
     this.updatedDate = new Date();
   }
+  @AfterInsert()
+  async dropPatientMobileCache() {
+    await delCache(`patient:mobile:${this.mobileNumber}`);
+  }
+
+  @AfterUpdate()
+  async dropPatientCache() {
+    console.log('testing drop petient cache');
+    await delCache(`patient:${this.id}`);
+  }
 }
 //patient Ends
 
@@ -964,10 +930,7 @@ export class RegistrationCodes extends BaseEntity {
   @Column({ default: REGISTRATION_CODES_STATUS.NOT_SENT })
   codeStatus: REGISTRATION_CODES_STATUS;
 
-  @OneToOne(
-    (type) => Patient,
-    (patient) => patient.registrationCodes
-  )
+  @OneToOne((type) => Patient, (patient) => patient.registrationCodes)
   @JoinColumn()
   patient: Patient;
 
@@ -1004,10 +967,7 @@ export class SearchHistory extends BaseEntity {
   @Column({ nullable: true })
   typeName: string;
 
-  @ManyToOne(
-    (type) => Patient,
-    (patient) => patient.searchHistory
-  )
+  @ManyToOne((type) => Patient, (patient) => patient.searchHistory)
   patient: Patient;
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
@@ -1060,11 +1020,12 @@ export class PatientAddress extends BaseEntity {
   @Column({ nullable: true })
   stateCode: string;
 
-  @ManyToOne(
-    (type) => Patient,
-    (patient) => patient.patientAddress
-  )
+  @ManyToOne((type) => Patient, (patient) => patient.patientAddress)
+  @JoinColumn({ name: 'patientId' })
   patient: Patient;
+
+  @Column('string', { nullable: true })
+  patientId: string;
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
@@ -1080,6 +1041,13 @@ export class PatientAddress extends BaseEntity {
   @BeforeUpdate()
   updateDateUpdate() {
     this.updatedDate = new Date();
+  }
+
+  @AfterInsert()
+  @AfterUpdate()
+  async dropPatientAddressList() {
+    await delCache(`address:list:patient:${this.patientId}`);
+    await delCache(`patient:${this.patientId}`);
   }
 }
 //patientAddress Ends
@@ -1096,11 +1064,12 @@ export class PatientFamilyHistory extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @ManyToOne(
-    (type) => Patient,
-    (patient) => patient.familyHistory
-  )
+  @ManyToOne((type) => Patient, (patient) => patient.familyHistory)
+  @JoinColumn({ name: 'patientId' })
   patient: Patient;
+
+  @Column('string', { nullable: true })
+  patientId: string;
 
   @Column({ nullable: true })
   relation: Relation;
@@ -1116,6 +1085,11 @@ export class PatientFamilyHistory extends BaseEntity {
   @BeforeUpdate()
   updateDateUpdate() {
     this.updatedDate = new Date();
+  }
+  @AfterInsert()
+  @AfterUpdate()
+  async dropPatientAddressList() {
+    await delCache(`patient:${this.patientId}`);
   }
 }
 //patient family history ends
@@ -1135,11 +1109,12 @@ export class PatientLifeStyle extends BaseEntity {
   @Column({ nullable: true })
   occupationHistory: string;
 
-  @ManyToOne(
-    (type) => Patient,
-    (patient) => patient.lifeStyle
-  )
+  @ManyToOne((type) => Patient, (patient) => patient.lifeStyle)
+  @JoinColumn({ name: 'patientId' })
   patient: Patient;
+
+  @Column('string', { nullable: true })
+  patientId: string;
 
   @Column({ type: 'timestamp', nullable: true })
   updatedDate: Date;
@@ -1152,6 +1127,12 @@ export class PatientLifeStyle extends BaseEntity {
   @BeforeUpdate()
   updateDateUpdate() {
     this.updatedDate = new Date();
+  }
+
+  @AfterInsert()
+  @AfterUpdate()
+  async dropPatientAddressList() {
+    await delCache(`patient:${this.patientId}`);
   }
 }
 //patientLifestyle ends
@@ -1168,10 +1149,7 @@ export class PatientHealthVault extends BaseEntity {
   @Column({ nullable: true, type: 'text' })
   imageUrls: string;
 
-  @ManyToOne(
-    (type) => Patient,
-    (patient) => patient.healthVault
-  )
+  @ManyToOne((type) => Patient, (patient) => patient.healthVault)
   patient: Patient;
 
   @Column({ nullable: true, type: 'text' })
@@ -1207,10 +1185,7 @@ export class PatientNotificationSettings extends BaseEntity {
   @Column({ default: false })
   messageFromDoctorNotification: boolean;
 
-  @OneToOne(
-    (type) => Patient,
-    (patient) => patient.patientNotificationSettings
-  )
+  @OneToOne((type) => Patient, (patient) => patient.patientNotificationSettings)
   @JoinColumn()
   patient: Patient;
 
@@ -1274,10 +1249,7 @@ export class MedicalRecords extends BaseEntity {
   @Column({ nullable: true, type: 'text' })
   observations: string;
 
-  @ManyToOne(
-    (type) => Patient,
-    (patient) => patient.medicalRecords
-  )
+  @ManyToOne((type) => Patient, (patient) => patient.medicalRecords)
   patient: Patient;
 
   @Column()
@@ -1322,10 +1294,7 @@ export class MedicalRecordParameters extends BaseEntity {
   @Column('decimal', { precision: 5, scale: 2 })
   maximum: number;
 
-  @ManyToOne(
-    (type) => MedicalRecords,
-    (medicalRecords) => medicalRecords.medicalRecordParameters
-  )
+  @ManyToOne((type) => MedicalRecords, (medicalRecords) => medicalRecords.medicalRecordParameters)
   medicalRecords: MedicalRecords;
 
   @Column('decimal', { precision: 5, scale: 2 })
@@ -1368,28 +1337,16 @@ export class Coupon extends BaseEntity {
   @Column({ default: CouponApplicability.CONSULT })
   couponApplicability: CouponApplicability;
 
-  @ManyToOne(
-    (type) => CouponConsultRules,
-    (couponConsultRule) => couponConsultRule.coupon
-  )
+  @ManyToOne((type) => CouponConsultRules, (couponConsultRule) => couponConsultRule.coupon)
   couponConsultRule: CouponConsultRules;
 
-  @ManyToOne(
-    (type) => CouponGenericRules,
-    (couponGenericRule) => couponGenericRule.coupon
-  )
+  @ManyToOne((type) => CouponGenericRules, (couponGenericRule) => couponGenericRule.coupon)
   couponGenericRule: CouponGenericRules;
 
-  @ManyToOne(
-    (type) => CouponPharmaRules,
-    (couponPharmaRule) => couponPharmaRule.coupon
-  )
+  @ManyToOne((type) => CouponPharmaRules, (couponPharmaRule) => couponPharmaRule.coupon)
   couponPharmaRule: CouponPharmaRules;
 
-  @OneToMany(
-    (type) => ReferalCouponMapping,
-    (referalCouponMapping) => referalCouponMapping.coupon
-  )
+  @OneToMany((type) => ReferalCouponMapping, (referalCouponMapping) => referalCouponMapping.coupon)
   referalCouponMapping: ReferalCouponMapping[];
 
   @Column({ type: 'text', nullable: true })
@@ -1417,10 +1374,7 @@ export class Coupon extends BaseEntity {
 //Consult Coupon Rules starts
 @Entity()
 export class CouponGenericRules extends BaseEntity {
-  @OneToMany(
-    (type) => Coupon,
-    (coupon) => coupon.couponGenericRule
-  )
+  @OneToMany((type) => Coupon, (coupon) => coupon.couponGenericRule)
   coupon: Coupon[];
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
@@ -1478,10 +1432,7 @@ export class CouponGenericRules extends BaseEntity {
 //Consult Coupon Rules starts
 @Entity()
 export class CouponConsultRules extends BaseEntity {
-  @OneToMany(
-    (type) => Coupon,
-    (coupon) => coupon.couponConsultRule
-  )
+  @OneToMany((type) => Coupon, (coupon) => coupon.couponConsultRule)
   coupon: Coupon[];
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
@@ -1509,10 +1460,7 @@ export class CouponConsultRules extends BaseEntity {
 //Pharma Coupon Rules starts
 @Entity()
 export class CouponPharmaRules extends BaseEntity {
-  @OneToMany(
-    (type) => Coupon,
-    (coupon) => coupon.couponPharmaRule
-  )
+  @OneToMany((type) => Coupon, (coupon) => coupon.couponPharmaRule)
   coupon: Coupon[];
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
@@ -1573,12 +1521,12 @@ export class PatientMedicalHistory extends BaseEntity {
   @Column({ nullable: true, type: 'text' })
   pastSurgicalHistory: string;
 
-  @OneToOne(
-    (type) => Patient,
-    (patient) => patient.patientMedicalHistory
-  )
-  @JoinColumn()
+  @OneToOne((type) => Patient, (patient) => patient.patientMedicalHistory)
+  @JoinColumn({ name: 'patientId' })
   patient: Patient;
+
+  @Column({ nullable: true, type: 'text' })
+  patientId: string;
 
   @PrimaryGeneratedColumn('uuid')
   id: string;
@@ -1603,6 +1551,12 @@ export class PatientMedicalHistory extends BaseEntity {
   @BeforeUpdate()
   updateDateUpdate() {
     this.updatedDate = new Date();
+  }
+
+  @AfterInsert()
+  @AfterUpdate()
+  async dropPatientCache() {
+    await delCache(`patient:${this.patientId}`);
   }
 }
 //patientMedicalHistory ends
@@ -1691,10 +1645,7 @@ export class Diagnostics extends BaseEntity {
   @Column({ nullable: true })
   testPreparationData: string;
 
-  @OneToMany(
-    (type) => DiagnosticOrgans,
-    (diagnosticOrgans) => diagnosticOrgans.diagnostics
-  )
+  @OneToMany((type) => DiagnosticOrgans, (diagnosticOrgans) => diagnosticOrgans.diagnostics)
   diagnosticOrgans: DiagnosticOrgans[];
 
   @OneToMany(
@@ -1806,10 +1757,7 @@ export class DiagnosticOrders extends BaseEntity {
   }
 
   @Index('DiagnosticOrders_patientId')
-  @ManyToOne(
-    (type) => Patient,
-    (patient) => patient.diagnosticOrders
-  )
+  @ManyToOne((type) => Patient, (patient) => patient.diagnosticOrders)
   patient: Patient;
 
   @OneToMany(
@@ -1924,10 +1872,7 @@ export class DiagnosticOrderLineItems extends BaseEntity {
   )
   diagnosticOrders: DiagnosticOrders;
 
-  @ManyToOne(
-    (type) => Diagnostics,
-    (diagnostics) => diagnostics.diagnosticOrderLineItems
-  )
+  @ManyToOne((type) => Diagnostics, (diagnostics) => diagnostics.diagnosticOrderLineItems)
   diagnostics: Diagnostics;
 
   @Column()
@@ -2015,10 +1960,7 @@ export class DiagnosticOrgans extends BaseEntity {
   @Column({ default: true })
   isActive: Boolean;
 
-  @ManyToOne(
-    (type) => Diagnostics,
-    (diagnostics) => diagnostics.diagnosticOrgans
-  )
+  @ManyToOne((type) => Diagnostics, (diagnostics) => diagnostics.diagnosticOrgans)
   diagnostics: Diagnostics;
 }
 
@@ -2045,10 +1987,7 @@ export class DiagnosticHotSellers extends BaseEntity {
   @Column()
   itemId: number;
 
-  @ManyToOne(
-    (type) => Diagnostics,
-    (diagnostics) => diagnostics.diagnosticHotSellers
-  )
+  @ManyToOne((type) => Diagnostics, (diagnostics) => diagnostics.diagnosticHotSellers)
   diagnostics: Diagnostics;
 }
 
@@ -2081,10 +2020,7 @@ export class DiagnosticPincodeHubs extends BaseEntity {
 
 @Entity()
 export class PatientFeedback extends BaseEntity {
-  @ManyToOne(
-    (type) => Patient,
-    (patient) => patient.id
-  )
+  @ManyToOne((type) => Patient, (patient) => patient.id)
   patient: Patient;
 
   @PrimaryGeneratedColumn('uuid')
@@ -2127,10 +2063,7 @@ export class PatientFeedback extends BaseEntity {
 
 @Entity()
 export class PatientHelpTickets extends BaseEntity {
-  @ManyToOne(
-    (type) => Patient,
-    (patient) => patient.id
-  )
+  @ManyToOne((type) => Patient, (patient) => patient.id)
   patient: Patient;
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
@@ -2255,10 +2188,7 @@ export class ReferalCouponMapping extends BaseEntity {
   )
   referralCodesMaster: ReferralCodesMaster;
 
-  @ManyToOne(
-    (type) => Coupon,
-    (coupon) => coupon.referalCouponMapping
-  )
+  @ManyToOne((type) => Coupon, (coupon) => coupon.referalCouponMapping)
   coupon: Coupon;
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
@@ -2318,10 +2248,7 @@ export class MedicineOrderShipments extends BaseEntity {
   )
   medicineOrderInvoice: MedicineOrderInvoice[];
 
-  @ManyToOne(
-    (type) => MedicineOrders,
-    (medicineOrders) => medicineOrders.medicineOrderShipments
-  )
+  @ManyToOne((type) => MedicineOrders, (medicineOrders) => medicineOrders.medicineOrderShipments)
   medicineOrders: MedicineOrders;
 
   @BeforeInsert()
@@ -2373,9 +2300,6 @@ export class PharmacologistConsult extends BaseEntity {
   @Column({ nullable: true })
   queries: string;
 
-  @ManyToOne(
-    (type) => Patient,
-    (patient) => patient.pharmacologistConsult
-  )
+  @ManyToOne((type) => Patient, (patient) => patient.pharmacologistConsult)
   patient: Patient;
 }

@@ -5,6 +5,9 @@ import {
   REQUEST_ROLES,
   APPOINTMENT_STATE,
   ES_DOCTOR_SLOT_STATUS,
+  AppointmentUpdateHistory,
+  APPOINTMENT_UPDATED_BY,
+  VALUE_TYPE,
 } from 'consults-service/entities';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
@@ -71,6 +74,7 @@ const cancelAppointment: Resolver<
     throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
   }
 
+  const currentStatus = appointment.status;
   if (
     (appointment.status == STATUS.IN_PROGRESS ||
       appointment.status == STATUS.NO_SHOW ||
@@ -107,8 +111,11 @@ const cancelAppointment: Resolver<
     cancelAppointmentInput.appointmentId,
     cancelAppointmentInput.cancelledBy,
     cancelAppointmentInput.cancelledById,
-    cancelAppointmentInput.cancelReason
+    cancelAppointmentInput.cancelReason,
+    appointment
   );
+
+
   if (
     appointment.appointmentPayments.length &&
     appointment.appointmentPayments[0].amountPaid >= 1
@@ -157,9 +164,9 @@ const cancelAppointment: Resolver<
     .getUTCHours()
     .toString()
     .padStart(2, '0')}:${appointment.appointmentDateTime
-    .getUTCMinutes()
-    .toString()
-    .padStart(2, '0')}:00.000Z`;
+      .getUTCMinutes()
+      .toString()
+      .padStart(2, '0')}:00.000Z`;
   console.log(slotApptDt, apptDt, sl, appointment.doctorId, 'appoint date time');
   appointmentRepo.updateDoctorSlotStatusES(
     appointment.doctorId,
@@ -168,6 +175,23 @@ const cancelAppointment: Resolver<
     appointment.appointmentType,
     ES_DOCTOR_SLOT_STATUS.BOOKED
   );
+
+  const historyAttrs: Partial<AppointmentUpdateHistory> = {
+    appointment,
+    userType:
+      cancelAppointmentInput.cancelledBy == 'PATIENT'
+        ? APPOINTMENT_UPDATED_BY.PATIENT
+        : APPOINTMENT_UPDATED_BY.DOCTOR,
+    fromValue: currentStatus,
+    toValue: STATUS.CANCELLED,
+    valueType: VALUE_TYPE.STATUS,
+    userName:
+      cancelAppointmentInput.cancelledBy == 'PATIENT'
+        ? appointment.patientId
+        : appointment.doctorId,
+    reason: cancelAppointmentInput.cancelReason,
+  };
+  appointmentRepo.saveAppointmentHistory(historyAttrs);
 
   //remove from consult queue
   const cqRepo = consultsDb.getCustomRepository(ConsultQueueRepository);
@@ -236,14 +260,14 @@ const cancelAppointment: Resolver<
   const toEmailId = process.env.BOOK_APPT_TO_EMAIL ? process.env.BOOK_APPT_TO_EMAIL : '';
   const ccEmailIds =
     process.env.NODE_ENV == 'dev' ||
-    process.env.NODE_ENV == 'development' ||
-    process.env.NODE_ENV == 'local'
+      process.env.NODE_ENV == 'development' ||
+      process.env.NODE_ENV == 'local'
       ? ApiConstants.PATIENT_APPT_CC_EMAILID
       : ApiConstants.PATIENT_APPT_CC_EMAILID_PRODUCTION;
   const ccTriggerEmailIds =
     process.env.NODE_ENV == 'dev' ||
-    process.env.NODE_ENV == 'development' ||
-    process.env.NODE_ENV == 'local'
+      process.env.NODE_ENV == 'development' ||
+      process.env.NODE_ENV == 'local'
       ? ApiConstants.PATIENT_APPT_CC_EMAILID_TRIGGER
       : ApiConstants.PATIENT_APPT_CC_EMAILID_PRODUCTION;
   const emailContent: EmailMessage = {

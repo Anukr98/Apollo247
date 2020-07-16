@@ -9,6 +9,7 @@ import { log } from 'customWinstonLogger';
 import fetch from 'node-fetch';
 import { MEDICINE_ORDER_STATUS } from 'profiles-service/entities';
 import { StoreAlertResp } from 'types/medicineOrderTypes';
+import { ApiConstants } from 'ApiConstants';
 
 export const alertMedicineOrderPickupTypeDefs = gql`
   input AlertMedicineOrderPickupInput {
@@ -76,12 +77,16 @@ const alertMedicineOrderPickup: Resolver<
   const authToken = process.env.PHARMACY_MED_DELIVERY_AUTH_TOKEN || '';
 
   const reqBody = JSON.stringify({
-    shopId: orderDetails.shopId,
+    shopId: orderDetails.medicineOrderShipments[0].siteId || orderDetails.shopId,
     customerName: patientDetails.firstName,
-    remarks: alertMedicineOrderPickupInput.remarks || '',
+    remarks:
+      alertMedicineOrderPickupInput.remarks ||
+      ApiConstants.ALERT_STORE_REMARKS.replace('{name}', patientDetails.firstName)
+        .replace('{mobile}', patientDetails.mobileNumber)
+        .replace('{orderNo}', orderDetails.orderAutoId.toString()),
     mobile: patientDetails.mobileNumber.substr(3),
-    orderId: 245002686,
-    apolloId: 'FL20200611000003',
+    orderId: orderDetails.orderAutoId,
+    apolloId: orderDetails.medicineOrderShipments[0].apOrderNo,
   });
   log(
     'profileServiceLogger',

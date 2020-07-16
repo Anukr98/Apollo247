@@ -31,6 +31,7 @@ export interface getCaseSheet_getCaseSheet_caseSheetDetails_diagnosis {
 export interface getCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription {
   __typename: "DiagnosticPrescription";
   itemname: string | null;
+  testInstruction: string | null;
 }
 
 export interface getCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription {

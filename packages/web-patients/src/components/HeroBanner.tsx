@@ -234,7 +234,8 @@ export const HeroBanner: React.FC = () => {
                 );
               })}
               <MenuItem classes={{ selected: classes.menuSelected }}>
-                <AphButton
+                {/* @TODO: Uncomment this after fixing */}
+                {/* <AphButton
                   color="primary"
                   classes={{ root: classes.addMemberBtn }}
                   onClick={() => {
@@ -243,7 +244,7 @@ export const HeroBanner: React.FC = () => {
                   title={'Add Member'}
                 >
                   Add Member
-                </AphButton>
+                </AphButton> */}
               </MenuItem>
             </AphSelect>
           </Typography>
@@ -261,7 +262,7 @@ export const HeroBanner: React.FC = () => {
             setIsAddNewProfileDialogOpen(isAddNewProfileDialogOpen)
           }
           isMeClicked={isMeClicked}
-          selectedPatientId=""
+          selectedPatientId={''}
           successHandler={(isPopoverOpen: boolean) => setIsPopoverOpen(isPopoverOpen)}
           isProfileDelete={false}
         />

@@ -8,6 +8,7 @@ import { clientRoutes } from 'helpers/clientRoutes';
 import { Link } from 'react-router-dom';
 import { useShoppingCart, MedicineCartItem } from '../../MedicinesCartProvider';
 import { gtmTracking } from '../../../gtmTracking';
+import { pharmacyConfigSectionTracking } from 'webEngageTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -118,6 +119,7 @@ const useStyles = makeStyles((theme: Theme) => {
 
 interface HotSellerProps {
   data?: { products: MedicineProduct[] };
+  section?: string;
 }
 
 export const HotSellers: React.FC<HotSellerProps> = (props) => {
@@ -198,7 +200,16 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
                         </span>
                       </div>
                     )}
-                  <Link to={clientRoutes.medicineDetails(hotSeller.url_key)}>
+                  <Link
+                    to={clientRoutes.medicineDetails(hotSeller.url_key)}
+                    onClick={() =>
+                      pharmacyConfigSectionTracking({
+                        sectionName: props.section,
+                        productId: hotSeller.sku,
+                        productName: hotSeller.name,
+                      })
+                    }
+                  >
                     <div className={classes.productIcon}>
                       <img src={`${apiDetails.url}${hotSeller.small_image}`} alt="" />
                     </div>
@@ -220,6 +231,7 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
                         <AphButton
                           onClick={() => {
                             const cartItem: MedicineCartItem = {
+                              MaxOrderQty: hotSeller.MaxOrderQty,
                               url_key: hotSeller.url_key,
                               description: hotSeller.description,
                               id: hotSeller.id,
@@ -294,7 +306,7 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
                                     {
                                       item_name: hotSeller.name,
                                       item_id: hotSeller.sku,
-                                      price: hotSeller.price,
+                                      price: hotSeller.special_price || hotSeller.price,
                                       item_category: 'Pharmacy',
                                       item_variant: 'Default',
                                       index: 1,

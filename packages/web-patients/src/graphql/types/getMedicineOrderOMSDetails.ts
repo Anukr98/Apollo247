@@ -88,6 +88,7 @@ export interface getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineO
 
 export interface getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_patient {
   __typename: "Patient";
+  mobileNumber: string;
   id: string;
   firstName: string | null;
   lastName: string | null;

@@ -6,20 +6,19 @@ import { Consultations } from 'components/HealthRecords/Consultations';
 import { MedicalRecords } from 'components/HealthRecords/MedicalRecords';
 import { NavigationBottom } from 'components/NavigationBottom';
 import { GET_PAST_CONSULTS_PRESCRIPTIONS } from '../../graphql/profiles';
-import { getPatientPastConsultsAndPrescriptions } from '../../graphql/types/getPatientPastConsultsAndPrescriptions';
+import {
+  getPatientPastConsultsAndPrescriptions,
+  getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults as ConsultsType,
+  getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_medicineOrders as medicineOrdersType,
+} from '../../graphql/types/getPatientPastConsultsAndPrescriptions';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { useApolloClient } from 'react-apollo-hooks';
 import moment from 'moment';
-import { GET_MEDICAL_PRISM_RECORD, GET_MEDICAL_RECORD } from '../../graphql/profiles';
-import {
-  getPatientMedicalRecords,
-  getPatientMedicalRecords_getPatientMedicalRecords_medicalRecords as MedicalRecordsType,
-} from '../../graphql/types/getPatientMedicalRecords';
+import { GET_MEDICAL_PRISM_RECORD } from '../../graphql/profiles';
 import {
   getPatientPrismMedicalRecords,
-  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labTests as LabTestsType,
-  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_healthChecks as HealthChecksType,
-  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_hospitalizations as HospitalizationsType,
+  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labResults_response as LabResultsType,
+  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_prescriptions_response as PrescriptionsType,
 } from '../../graphql/types/getPatientPrismMedicalRecords';
 import { useAuth, useCurrentPatient } from 'hooks/authHooks';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
@@ -133,16 +132,13 @@ export const PHRLanding: React.FC<LandingProps> = (props) => {
   const client = useApolloClient();
   const [consultsLoading, setConsultsLoading] = useState<boolean>(false);
   const [consultError, setConsultError] = useState<boolean>(false);
-  const [consultsData, setConsultsData] = useState<any[] | null>();
+  const [consultsData, setConsultsData] = useState<ConsultsType[] | null>();
   const [allConsultsData, setAllConsultsData] = useState<any[] | null>(null);
 
-  const [medicalRecords, setMedicalRecords] = useState<(MedicalRecordsType | null)[] | null>(null);
+  const [medicalRecords, setMedicalRecords] = useState<(medicineOrdersType | null)[] | null>(null);
   const [medicalLoading, setMedicalLoading] = useState<boolean>(false);
-  const [labTests, setLabTests] = useState<(LabTestsType | null)[] | null>(null);
-  const [healthChecks, setHealthChecks] = useState<(HealthChecksType | null)[] | null>(null);
-  const [hospitalizations, setHospitalizations] = useState<(HospitalizationsType | null)[] | null>(
-    null
-  );
+  const [labResults, setLabResults] = useState<(LabResultsType | null)[] | null>(null);
+  const [prescriptions, setPrescriptions] = useState<(PrescriptionsType | null)[] | null>(null);
   const [alertMessage, setAlertMessage] = useState<string>('');
   const [isAlertOpen, setIsAlertOpen] = useState<boolean>(false);
 
@@ -150,7 +146,6 @@ export const PHRLanding: React.FC<LandingProps> = (props) => {
   const [allCombinedData, setAllCombinedData] = useState<any | null>();
   const [activeMedicalData, setActiveMedicalData] = useState<any | null>(null);
   const [medicalError, setMedicalError] = useState<boolean>(false);
-  const [medicalRecordError, setMedicalRecordError] = useState<boolean>(false);
   const isSmallScreen = useMediaQuery('(max-width:767px)');
 
   useEffect(() => {
@@ -163,7 +158,7 @@ export const PHRLanding: React.FC<LandingProps> = (props) => {
     }
   }, [props]);
 
-  const fetchPastData = () => {
+  const fetchPastConsultsData = () => {
     setConsultsLoading(true);
     if (currentPatient) {
       client
@@ -180,41 +175,10 @@ export const PHRLanding: React.FC<LandingProps> = (props) => {
         .then((_data) => {
           const consults = _data.data.getPatientPastConsultsAndPrescriptions!.consults || [];
           const medOrders = _data.data.getPatientPastConsultsAndPrescriptions!.medicineOrders || [];
-          const consultsAndMedOrders: { [key: string]: any } = {};
-
-          consults.forEach((c) => {
-            consultsAndMedOrders[c!.bookingDate] = {
-              ...consultsAndMedOrders[c!.bookingDate],
-              ...c,
-            };
-          });
-
-          medOrders.forEach((c) => {
-            consultsAndMedOrders[c!.quoteDateTime] = {
-              ...consultsAndMedOrders[c!.quoteDateTime],
-              ...c,
-            };
-          });
-          const array = Object.keys(consultsAndMedOrders)
-            .map((i) => consultsAndMedOrders[i])
-            .sort(
-              (a: any, b: any) =>
-                moment(b.bookingDate || b.quoteDateTime)
-                  .toDate()
-                  .getTime() -
-                moment(a.bookingDate || a.quoteDateTime)
-                  .toDate()
-                  .getTime()
-            )
-            .filter(
-              (i) =>
-                (!i.patientId && (i.prescriptionImageUrl || i.prismPrescriptionFileId)) ||
-                i.patientId
-            );
           setConsultError(false);
           setConsultsLoading(false);
-          setConsultsData(array);
-          setAllConsultsData(array);
+          setConsultsData(consults);
+          setMedicalRecords(medOrders);
         })
         .catch((e) => {
           const error = JSON.parse(JSON.stringify(e));
@@ -226,36 +190,11 @@ export const PHRLanding: React.FC<LandingProps> = (props) => {
 
   useEffect(() => {
     if (!consultsData) {
-      fetchPastData();
+      fetchPastConsultsData();
     }
   }, [consultsData, currentPatient]);
 
-  const fetchData = () => {
-    client
-      .query<getPatientMedicalRecords>({
-        query: GET_MEDICAL_RECORD,
-        variables: {
-          patientId: currentPatient && currentPatient.id ? currentPatient.id : '',
-        },
-        fetchPolicy: 'no-cache',
-      })
-      .then(({ data }) => {
-        if (data && data.getPatientMedicalRecords && data.getPatientMedicalRecords.medicalRecords) {
-          setMedicalRecords(data.getPatientMedicalRecords.medicalRecords);
-        } else {
-          setMedicalRecords([]);
-        }
-        setMedicalRecordError(false);
-      })
-      .catch((error) => {
-        setIsAlertOpen(true);
-        setAlertMessage(error);
-        setMedicalRecordError(true);
-        setMedicalLoading(false);
-      });
-  };
-
-  const fetchTestData = () => {
+  const fetchPrismData = () => {
     client
       .query<getPatientPrismMedicalRecords>({
         query: GET_MEDICAL_PRISM_RECORD,
@@ -266,13 +205,16 @@ export const PHRLanding: React.FC<LandingProps> = (props) => {
       })
       .then(({ data }) => {
         if (data && data.getPatientPrismMedicalRecords) {
-          setLabTests(data.getPatientPrismMedicalRecords.labTests);
-          setHealthChecks(data.getPatientPrismMedicalRecords.healthChecks);
-          setHospitalizations(data.getPatientPrismMedicalRecords.hospitalizations);
+          const prismMedicalRecords = data.getPatientPrismMedicalRecords;
+          if (prismMedicalRecords.labResults && prismMedicalRecords.labResults.response) {
+            setLabResults(prismMedicalRecords.labResults.response || []);
+          }
+          if (prismMedicalRecords.prescriptions && prismMedicalRecords.prescriptions.response) {
+            setPrescriptions(prismMedicalRecords.prescriptions.response);
+          }
         } else {
-          setLabTests([]);
-          setHealthChecks([]);
-          setHospitalizations([]);
+          setLabResults([]);
+          setPrescriptions([]);
         }
         setMedicalError(false);
       })
@@ -283,17 +225,65 @@ export const PHRLanding: React.FC<LandingProps> = (props) => {
       });
   };
 
-  const sortByDate = (array: { type: string; data: any }[]) => {
-    return array.sort(({ data: data1 }, { data: data2 }) => {
-      let date1 = new Date(
-        data1.testDate || data1.labTestDate || data1.appointmentDate || data1.dateOfHospitalization
-      );
-      let date2 = new Date(
-        data2.testDate || data2.labTestDate || data2.appointmentDate || data2.dateOfHospitalization
-      );
-      return date1 > date2 ? -1 : date1 < date2 ? 1 : 0;
-    });
+  const sortByDate = (array: { type: string; data: any }[], type: string) => {
+    if (type === 'medRecords') {
+      return array.sort(({ data: data1 }, { data: data2 }) => {
+        let date1 = moment(data1.date).toDate().getTime();
+        let date2 = moment(data2.date).toDate().getTime();
+        return date1 > date2 ? -1 : date1 < date2 ? 1 : data2.id - data1.id;
+      });
+    } else {
+      return array.sort((a: any, b: any) => {
+        let date1 = moment(a.bookingDate || a.date || a.quoteDateTime)
+          .toDate()
+          .getTime();
+        let date2 = moment(b.bookingDate || b.date || b.quoteDateTime)
+          .toDate()
+          .getTime();
+        return date1 > date2 ? -1 : date1 < date2 ? 1 : a.id - b.id;
+      });
+    }
   };
+
+  useEffect(() => {
+    if (!isSigningIn && !labResults && !prescriptions) {
+      setMedicalLoading(true);
+      fetchPrismData();
+    }
+  }, [labResults, prescriptions, isSigningIn]);
+
+  useEffect(() => {
+    if (labResults) {
+      let mergeArray: { type: string; data: any }[] = [];
+      labResults &&
+        labResults.forEach((item: LabResultsType) => {
+          mergeArray.push({ type: 'lab', data: item });
+        });
+      const sortedData = sortByDate(mergeArray, 'medRecords');
+      if (!isSmallScreen && sortedData && sortedData.length) {
+        setActiveMedicalData(sortedData[0]);
+      }
+      setAllCombinedData(sortedData);
+      setMedicalLoading(false);
+    }
+  }, [labResults]);
+
+  useEffect(() => {
+    if (consultsData && prescriptions && medicalRecords) {
+      const consultsAndMedOrders: any[] = [];
+      consultsData.forEach((c) => {
+        c.patientId && consultsAndMedOrders.push(c);
+      });
+      medicalRecords.forEach((c) => {
+        (c.prescriptionImageUrl || c.prismPrescriptionFileId) && consultsAndMedOrders.push(c);
+      });
+      prescriptions.forEach((c) => {
+        c.id && consultsAndMedOrders.push(c);
+      });
+      const sortedData = sortByDate(consultsAndMedOrders, 'consults');
+      setAllConsultsData(sortedData);
+    }
+  }, [consultsData, medicalRecords, prescriptions]);
 
   const deleteReportMutation = useMutation(DELETE_PATIENT_MEDICAL_RECORD);
 
@@ -304,20 +294,13 @@ export const PHRLanding: React.FC<LandingProps> = (props) => {
       fetchPolicy: 'no-cache',
     })
       .then((_data) => {
-        if (type === 'medical') {
+        if (type === 'lab') {
+          const newRecords = labResults && labResults.filter((record: any) => record.id !== id);
+          setLabResults(newRecords);
+        } else if (type === 'prescription') {
           const newRecords =
-            medicalRecords && medicalRecords.filter((record: any) => record.id !== id);
-          setMedicalRecords(newRecords);
-        } else if (type === 'lab') {
-          const newRecords = labTests && labTests.filter((record: any) => record.id !== id);
-          setLabTests(newRecords);
-        } else if (type === 'health') {
-          const newRecords = healthChecks && healthChecks.filter((record: any) => record.id !== id);
-          setHealthChecks(newRecords);
-        } else if (type === 'hospital') {
-          const newRecords =
-            hospitalizations && hospitalizations.filter((record: any) => record.id !== id);
-          setHospitalizations(newRecords);
+            prescriptions && prescriptions.filter((record: any) => record.id !== id);
+          setPrescriptions(newRecords);
         }
       })
       .catch((e) => {
@@ -325,43 +308,9 @@ export const PHRLanding: React.FC<LandingProps> = (props) => {
       });
   };
 
-  useEffect(() => {
-    if (!isSigningIn) {
-      if (!medicalRecords) {
-        setMedicalLoading(true);
-        fetchData();
-      }
-      if (!labTests && !healthChecks && !hospitalizations) {
-        fetchTestData();
-      }
-    }
-    if (medicalRecords && (labTests || healthChecks || hospitalizations)) {
-      let mergeArray: { type: string; data: any }[] = [];
-      medicalRecords.forEach((item) => {
-        mergeArray.push({ type: 'medical', data: item });
-      });
-      labTests &&
-        labTests.forEach((item) => {
-          mergeArray.push({ type: 'lab', data: item });
-        });
-      healthChecks &&
-        healthChecks.forEach((item) => {
-          mergeArray.push({ type: 'health', data: item });
-        });
-      hospitalizations &&
-        hospitalizations.forEach((item) => {
-          mergeArray.push({ type: 'hospital', data: item });
-        });
-      const sortedData = sortByDate(mergeArray);
-      if (!isSmallScreen && sortedData && sortedData.length) {
-        setActiveMedicalData(sortedData[0]);
-      }
-      setAllCombinedData(sortedData);
-      setMedicalLoading(false);
-    }
-  }, [medicalRecords, labTests, healthChecks, hospitalizations, isSigningIn]);
   const patient = useCurrentPatient();
   const age = patient && patient.dateOfBirth ? moment().diff(patient.dateOfBirth, 'years') : null;
+
   return (
     <div className={classes.root}>
       <Header />
@@ -387,7 +336,7 @@ export const PHRLanding: React.FC<LandingProps> = (props) => {
                 >
                   <Tab
                     classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
-                    label={`Consults & Rx — ${consultsData ? consultsData.length : 0}`}
+                    label={`Consults & Rx — ${allConsultsData ? allConsultsData.length : 0}`}
                   />
                   <Tab
                     classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
@@ -402,14 +351,13 @@ export const PHRLanding: React.FC<LandingProps> = (props) => {
                       error={consultError}
                       consultsData={consultsData}
                       allConsultsData={allConsultsData}
-                      setConsultsData={setConsultsData}
                     />
                   </TabContainer>
                 )}
                 {tabValue === 1 && (
                   <TabContainer>
                     <MedicalRecords
-                      error={medicalError || medicalRecordError}
+                      error={medicalError}
                       loading={medicalLoading}
                       allCombinedData={allCombinedData}
                       activeData={activeMedicalData}
@@ -436,3 +384,103 @@ export const PHRLanding: React.FC<LandingProps> = (props) => {
     </div>
   );
 };
+
+// previous code
+
+// const consultsAndMedOrders: { [key: string]: any } = {};
+
+// const medOrders = _data.data.getPatientPastConsultsAndPrescriptions!.medicineOrders || [];
+// const consultsAndMedOrders: { [key: string]: any } = {};
+
+// consults.forEach((c) => {
+//   consultsAndMedOrders[c!.bookingDate] = {
+//     ...consultsAndMedOrders[c!.bookingDate],
+//     ...c,
+//   };
+// });
+
+// medOrders.forEach((c) => {
+//   consultsAndMedOrders[c!.quoteDateTime] = {
+//     ...consultsAndMedOrders[c!.quoteDateTime],
+//     ...c,
+//   };
+// });
+// const array = Object.keys(consultsAndMedOrders)
+//   .map((i) => consultsAndMedOrders[i])
+//   .sort(
+//     (a: any, b: any) =>
+//       moment(b.bookingDate || b.quoteDateTime)
+//         .toDate()
+//         .getTime() -
+//       moment(a.bookingDate || a.quoteDateTime)
+//         .toDate()
+//         .getTime()
+//   )
+//   .filter(
+//     (i) =>
+//       (!i.patientId && (i.prescriptionImageUrl || i.prismPrescriptionFileId)) ||
+//       i.patientId
+//   );
+// setConsultsData(array);
+// setAllConsultsData(array);
+
+// const fetchData = () => {
+//   client
+//     .query<getPatientMedicalRecords>({
+//       query: GET_MEDICAL_RECORD,
+//       variables: {
+//         patientId: currentPatient && currentPatient.id ? currentPatient.id : '',
+//       },
+//       fetchPolicy: 'no-cache',
+//     })
+//     .then(({ data }) => {
+//       if (data && data.getPatientMedicalRecords && data.getPatientMedicalRecords.medicalRecords) {
+//         setMedicalRecords(data.getPatientMedicalRecords.medicalRecords);
+//       } else {
+//         setMedicalRecords([]);
+//       }
+//       setMedicalRecordError(false);
+//     })
+//     .catch((error) => {
+//       setIsAlertOpen(true);
+//       setAlertMessage(error);
+//       setMedicalRecordError(true);
+//       setMedicalLoading(false);
+//     });
+// };
+
+// useEffect(() => {
+//   if (!isSigningIn) {
+//     if (!medicalRecords) {
+//       setMedicalLoading(true);
+//       fetchData();
+//     }
+//     if (!labTests && !healthChecks && !hospitalizations) {
+//       fetchTestData();
+//     }
+//   }
+//   if (labTests || healthChecks || hospitalizations) {
+//     let mergeArray: { type: string; data: any }[] = [];
+//     // medicalRecords.forEach((item) => {
+//     //   mergeArray.push({ type: 'medical', data: item });
+//     // });
+//     labTests &&
+//       labTests.forEach((item) => {
+//         mergeArray.push({ type: 'lab', data: item });
+//       });
+//     healthChecks &&
+//       healthChecks.forEach((item) => {
+//         mergeArray.push({ type: 'health', data: item });
+//       });
+//     hospitalizations &&
+//       hospitalizations.forEach((item) => {
+//         mergeArray.push({ type: 'hospital', data: item });
+//       });
+//     const sortedData = sortByDate(mergeArray);
+//     if (!isSmallScreen && sortedData && sortedData.length) {
+//       setActiveMedicalData(sortedData[0]);
+//     }
+//     setAllCombinedData(sortedData);
+//     setMedicalLoading(false);
+//   }
+// }, [medicalRecords, labTests, healthChecks, hospitalizations, isSigningIn]);

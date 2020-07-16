@@ -548,7 +548,7 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
   };
 
   const metaTagProps = {
-    title: `${specialityName} - Book Online Appointments And Consultations - Apollo 247`,
+    title: ` Book Online Appointments And Consultations - Apollo 247`,
     description: `Book online appointments with ${specialityName} in just a few clicks. Consult the best ${specialityName} in India at the best prices. Apollo 247 is the one-stop solution to all your medical needs.`,
     canonicalLink: window && window.location && window.location.href,
   };
@@ -561,7 +561,7 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
         <div className={classes.pageHeader}>
           <div className={classes.headerTitle}>
             <h2 className={classes.title}>{`Found ${doctorsList.length} Results for`}</h2>
-            <div style={{ paddingBottom: '10px' }}>{`${specialityName}`}</div>
+            {specialityName && <div style={{ paddingBottom: '10px' }}>{specialityName}</div>}
           </div>
           <div className={classes.filterSection}>
             {_map(consultOptions, (consultName, consultType) => {

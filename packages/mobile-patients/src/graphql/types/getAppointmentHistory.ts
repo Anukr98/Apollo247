@@ -8,6 +8,17 @@ import { AppointmentHistoryInput, APPOINTMENT_TYPE, STATUS } from "./globalTypes
 // GraphQL query operation: getAppointmentHistory
 // ====================================================
 
+export interface getAppointmentHistory_getAppointmentHistory_appointmentsHistory_caseSheet_symptoms {
+  __typename: "SymptomList";
+  symptom: string | null;
+  details: string | null;
+}
+
+export interface getAppointmentHistory_getAppointmentHistory_appointmentsHistory_caseSheet {
+  __typename: "CaseSheet";
+  symptoms: (getAppointmentHistory_getAppointmentHistory_appointmentsHistory_caseSheet_symptoms | null)[] | null;
+}
+
 export interface getAppointmentHistory_getAppointmentHistory_appointmentsHistory {
   __typename: "AppointmentHistory";
   id: string;
@@ -19,6 +30,7 @@ export interface getAppointmentHistory_getAppointmentHistory_appointmentsHistory
   status: STATUS;
   bookingDate: any | null;
   isSeniorConsultStarted: boolean | null;
+  caseSheet: (getAppointmentHistory_getAppointmentHistory_appointmentsHistory_caseSheet | null)[] | null;
 }
 
 export interface getAppointmentHistory_getAppointmentHistory {

@@ -10,9 +10,10 @@ import winston from 'winston';
 import path from 'path';
 import { ApiConstants } from 'ApiConstants';
 
-import { getLabResults, getPrescriptionData } from 'helpers/phrV1Services';
+import { getLabResults, getPrescriptionData, getAuthToken } from 'helpers/phrV1Services';
 import { LabResultsDownloadResponse, PrescriptionDownloadResponse } from 'types/phrv1';
 import { format } from 'date-fns';
+import { prescriptionSource } from 'profiles-service/resolvers/prescriptionUpload';
 
 export const getPatientMedicalRecordsTypeDefs = gql`
   type MedicalRecords {
@@ -120,6 +121,7 @@ export const getPatientMedicalRecordsTypeDefs = gql`
     labTestResults: [LabTestFileParameters]
     fileUrl: String!
     date: Date!
+    testResultFiles: [PrecriptionFileParameters]
   }
 
   type LabResultsDownloadResponse {
@@ -143,6 +145,7 @@ export const getPatientMedicalRecordsTypeDefs = gql`
     source: String!
     fileUrl: String!
     date: Date!
+    prescriptionFiles: [PrecriptionFileParameters]
   }
 
   type PrecriptionFileParameters {
@@ -159,7 +162,6 @@ export const getPatientMedicalRecordsTypeDefs = gql`
     errorMsg: String
     errorType: String
     response: [PrescriptionsBaseResponse]
-    prescriptionFiles: [PrecriptionFileParameters]
   }
 
   type PrismMedicalRecordsResult {
@@ -285,7 +287,6 @@ const getPatientPrismMedicalRecords: Resolver<
 
   if (!patientDetails.uhid) throw new AphError(AphErrorMessages.INVALID_UHID);
 
-  //document download URLs start
   if (
     !process.env.PHR_V1_DONLOAD_LABRESULT_DOCUMENT ||
     !process.env.PHR_V1_ACCESS_TOKEN ||
@@ -293,33 +294,55 @@ const getPatientPrismMedicalRecords: Resolver<
   )
     throw new AphError(AphErrorMessages.INVALID_PRISM_URL);
 
-  let labResultDocumentUrl = process.env.PHR_V1_DONLOAD_LABRESULT_DOCUMENT.toString();
-  labResultDocumentUrl = labResultDocumentUrl.replace(
-    '{ACCESS_KEY}',
-    process.env.PHR_V1_ACCESS_TOKEN
-  );
-  labResultDocumentUrl = labResultDocumentUrl.replace('{UHID}', patientDetails.uhid);
-
-  let prescriptionDocumentUrl = process.env.PHR_V1_DONLOAD_PRESCRIPTION_DOCUMENT.toString();
-  prescriptionDocumentUrl = prescriptionDocumentUrl.replace(
-    '{ACCESS_KEY}',
-    process.env.PHR_V1_ACCESS_TOKEN
-  );
-  prescriptionDocumentUrl = prescriptionDocumentUrl.replace('{UHID}', patientDetails.uhid);
-  //document download URLs end
-
   //get labresults
   const labResults = await getLabResults(patientDetails.uhid);
   const prescriptions = await getPrescriptionData(patientDetails.uhid);
 
+  //get authtoken for downloading urls
+  const getToken = await getAuthToken(patientDetails.uhid);
+
+  //document download URLs start
+  let labResultDocumentUrl = process.env.PHR_V1_DONLOAD_LABRESULT_DOCUMENT.toString();
+  labResultDocumentUrl = labResultDocumentUrl.replace('{AUTH_KEY}', getToken.response);
+  labResultDocumentUrl = labResultDocumentUrl.replace('{UHID}', patientDetails.uhid);
+
+  let prescriptionDocumentUrl = process.env.PHR_V1_DONLOAD_PRESCRIPTION_DOCUMENT.toString();
+  prescriptionDocumentUrl = prescriptionDocumentUrl.replace('{AUTH_KEY}', getToken.response);
+  prescriptionDocumentUrl = prescriptionDocumentUrl.replace('{UHID}', patientDetails.uhid);
+  //document download URLs end
+
   //add documet urls in the labresults and prescription objects
   labResults.response.map((labresult) => {
-    labresult.fileUrl = labResultDocumentUrl.replace('{RECORDID}', labresult.id);
+    labresult.fileUrl =
+      labresult.testResultFiles.length > 0
+        ? labResultDocumentUrl.replace('{RECORDID}', labresult.id)
+        : '';
+
+    if (labresult.labTestDate.toString().length < 11) {
+      labresult.labTestDate = labresult.labTestDate * 1000;
+    }
     labresult.date = new Date(format(new Date(labresult.labTestDate), 'yyyy-MM-dd'));
   });
 
+  prescriptions.response = prescriptions.response.filter(
+    (item) =>
+      item.source !==
+      ApiConstants.PRESCRIPTION_SOURCE_PREFIX + prescriptionSource.EPRESCRIPTION.toLocaleLowerCase()
+  );
+
   prescriptions.response.map((prescription) => {
-    prescription.fileUrl = prescriptionDocumentUrl.replace('{RECORDID}', prescription.id);
+    prescription.fileUrl =
+      prescription.prescriptionFiles.length > 0
+        ? prescriptionDocumentUrl.replace('{RECORDID}', prescription.id)
+        : '';
+    prescription.fileUrl =
+      prescription.fileUrl.length > 0
+        ? prescription.fileUrl.replace('{FILE_NAME}', prescription.prescriptionFiles[0].fileName)
+        : '';
+
+    if (prescription.dateOfPrescription.toString().length < 11) {
+      prescription.dateOfPrescription = prescription.dateOfPrescription * 1000;
+    }
     prescription.date = new Date(format(new Date(prescription.dateOfPrescription), 'yyyy-MM-dd'));
   });
 
@@ -355,6 +378,10 @@ const getPatientPrismMedicalRecords: Resolver<
       });
     }
 
+    if (element.labTestDate.toString().length < 11) {
+      element.labTestDate = element.labTestDate * 1000;
+    }
+
     const labResult = {
       id: element.id,
       labTestName: element.labTestName,
@@ -372,6 +399,12 @@ const getPatientPrismMedicalRecords: Resolver<
     formattedLabResults.push(labResult);
   });
 
+  prescriptions.response = prescriptions.response.filter(
+    (item) =>
+      item.source !==
+      ApiConstants.PRESCRIPTION_SOURCE_PREFIX + prescriptionSource.EPRESCRIPTION.toLocaleLowerCase()
+  );
+
   prescriptions.response.forEach((element) => {
     let prismFileIds: string[] = [];
     const labResultParams: LabTestResultParameter[] = [];
@@ -380,6 +413,10 @@ const getPatientPrismMedicalRecords: Resolver<
       prismFileIds = element.prescriptionFiles.map((item) => {
         return `${item.id}_${item.fileName}`;
       });
+    }
+
+    if (element.dateOfPrescription.toString().length < 11) {
+      element.dateOfPrescription = element.dateOfPrescription * 1000;
     }
 
     const labResult = {

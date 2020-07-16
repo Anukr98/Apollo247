@@ -329,75 +329,32 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
 
   const { allCombinedData, loading, activeData, setActiveData, error, deleteReport } = props;
 
-  const getFormattedDate = (combinedData: any, type: string) => {
-    switch (combinedData.type) {
-      case 'medical':
-        return type === 'title' &&
-          moment().format('DD/MM/YYYY') ===
-            moment(combinedData.data.testDate).format('DD/MM/YYYY') ? (
-          <span>Today , {moment(combinedData.data.testDate).format('DD MMM YYYY')}</span>
-        ) : (
-          <span>{moment(combinedData.data.testDate).format('DD MMM YYYY')}</span>
-        );
+  const getFormattedDate = (combinedData: any, type: string, dateFor: string) => {
+    return dateFor === 'title' &&
+      moment().format('DD/MM/YYYY') === moment(combinedData.date).format('DD/MM/YYYY') ? (
+      <span>Today , {moment(combinedData.date).format('DD MMM YYYY')}</span>
+    ) : (
+      <span>{moment(combinedData.date).format('DD MMM YYYY')}</span>
+    );
+  };
+
+  const getName = (combinedData: any, type: string) => {
+    switch (type) {
       case 'lab':
-        return type === 'title' &&
-          moment().format('DD/MM/YYYY') ===
-            moment(combinedData.data.labTestDate).format('DD/MM/YYYY') ? (
-          <span>Today , {moment(combinedData.data.labTestDate).format('DD MMM YYYY')}</span>
-        ) : (
-          <span>{moment(combinedData.data.labTestDate).format('DD MMM YYYY')}</span>
-        );
-      case 'hospital':
-        return type === 'title' &&
-          moment().format('DD/MM/YYYY') ===
-            moment(combinedData.data.dateOfHospitalization).format('DD/MM/YYYY') ? (
-          <span>
-            Today , {moment(combinedData.data.dateOfHospitalization).format('DD MMM YYYY')}
-          </span>
-        ) : (
-          <span>{moment(combinedData.data.dateOfHospitalization).format('DD MMM YYYY')}</span>
-        );
-      case 'health':
-        return type === 'title' &&
-          moment().format('DD/MM/YYYY') ===
-            moment(combinedData.data.appointmentDate).format('DD/MM/YYYY') ? (
-          <span>Today , {moment(combinedData.data.appointmentDate).format('DD MMM YYYY')}</span>
-        ) : (
-          <span>{moment(combinedData.data.appointmentDate).format('DD MMM YYYY')}</span>
-        );
+        return combinedData.labTestName;
+      case 'prescription':
+        return combinedData.prescriptionName;
       default:
         return '';
     }
   };
 
-  const getName = (combinedData: any) => {
-    switch (combinedData.type) {
-      case 'medical':
-        return (
-          combinedData.data.testName ||
-          combinedData.data.issuingDoctor ||
-          combinedData.data.location
-        );
+  const getSource = (activeData: any, type: string) => {
+    switch (type) {
       case 'lab':
-        return combinedData.data.labTestName;
-      case 'hospital':
-        return combinedData.data.diagnosisNotes;
-      case 'health':
-        return combinedData.data.healthCheckName;
-      default:
-        return '';
-    }
-  };
-
-  const getSource = (activeData: any) => {
-    switch (activeData.type) {
-      case 'medical':
-        return !!activeData.data.sourceName ? activeData.data.sourceName : '-';
-      case 'lab':
-        return !!activeData.data.labTestSource ? activeData.data.labTestSource : '-';
-      case 'hospital':
-      case 'health':
-        return !!activeData.data.source ? activeData.data.source : '-';
+        return !!activeData.labTestSource ? activeData.labTestSource : '-';
+      case 'prescription':
+        return !!activeData.prescriptionSource ? activeData.prescriptionSource : '-';
       default:
         return '-';
     }
@@ -449,17 +406,15 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
                 >
                   <div className={classes.consultGroupHeader}>
                     <div className={classes.circle}></div>
-                    <span>{getFormattedDate(combinedData, 'title')}</span>
+                    <span>{getFormattedDate(combinedData.data, combinedData.type, 'title')}</span>
                   </div>
                   <MedicalCard
                     deleteReport={deleteReport}
-                    name={getName(combinedData)}
-                    source={getSource(combinedData)}
+                    name={getName(combinedData.data, combinedData.type)}
+                    source={getSource(combinedData.data, combinedData.type)}
                     type={combinedData.type}
-                    id={combinedData.data.id}
-                    isActiveCard={
-                      activeData && activeData.data && activeData.data === combinedData.data
-                    }
+                    id={`${combinedData.type}-${combinedData.data.id}`}
+                    isActiveCard={activeData && activeData.data === combinedData.data}
                   />
                 </div>
               ))}
@@ -524,42 +479,32 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
                   <div className={classes.cbcDetails}>
                     <div className={classes.reportsDetails}>
                       <label>Check-up Date</label>
-                      <p>{getFormattedDate(activeData, 'checkUp')}</p>
+                      <p>{getFormattedDate(activeData.data, activeData.type, 'checkUp')}</p>
                     </div>
                     <div className={classes.reportsDetails}>
                       <label>Source</label>
-                      <p>{getSource(activeData)}</p>
+                      <p>{getSource(activeData.data, activeData.type)}</p>
                     </div>
                     <div className={classes.reportsDetails}>
                       <label>Referring Doctor</label>
                       <p>
-                        {!!activeData.data.referringDoctor
-                          ? activeData.data.referringDoctor
-                          : !!activeData.data.signingDocName
-                          ? activeData.data.signingDocName
+                        {!!activeData.data.prescribedBy
+                          ? activeData.data.prescribedBy
+                          : !!activeData.data.labTestRefferedBy
+                          ? activeData.data.labTestRefferedBy
                           : '-'}
                       </p>
                     </div>
                   </div>
-                  {(activeData.data.observations ||
-                    activeData.data.additionalNotes ||
-                    activeData.data.healthCheckSummary) && (
+                  {(activeData.data.observations || activeData.data.additionalNotes) && (
                     <ToplineReport activeData={activeData} />
                   )}
-                  {((activeData.data.medicalRecordParameters &&
-                    activeData.data.medicalRecordParameters.length > 0) ||
-                    (activeData.data.labTestResultParameters &&
-                      activeData.data.labTestResultParameters.length > 0)) && (
+                  {activeData.data.labTestResults && activeData.data.labTestResults.length > 0 && (
                     <DetailedFindings activeData={activeData} />
                   )}
-                  {activeData.data &&
-                    ((activeData.data.prismFileIds && activeData.data.prismFileIds.length > 0) ||
-                      (activeData.data.hospitalizationPrismFileIds &&
-                        activeData.data.hospitalizationPrismFileIds.length > 0) ||
-                      (activeData.data.healthCheckPrismFileIds &&
-                        activeData.data.healthCheckPrismFileIds.length > 0) ||
-                      (activeData.data.testResultPrismFileIds &&
-                        activeData.data.testResultPrismFileIds.length > 0)) && (
+                  {activeData &&
+                    ((activeData.data.fileUrl && activeData.data.fileUrl.length > 0) ||
+                      (activeData.data.fileUrl && activeData.data.fileUrl.length > 0)) && (
                       <RenderImage activeData={activeData} />
                     )}
                 </div>

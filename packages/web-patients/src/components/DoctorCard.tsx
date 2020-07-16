@@ -17,7 +17,7 @@ import _toLower from 'lodash/toLower';
 import { Mutation } from 'react-apollo';
 import { SaveSearch, SaveSearchVariables } from 'graphql/types/SaveSearch';
 import { SAVE_PATIENT_SEARCH } from 'graphql/pastsearches';
-import { SEARCH_TYPE } from 'graphql/types/globalTypes';
+import { SEARCH_TYPE, ConsultMode } from 'graphql/types/globalTypes';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { BookConsult } from 'components/BookConsult';
 import moment from 'moment';
@@ -157,9 +157,26 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
 
   const clinics: any = [];
 
-  const params = useParams<{
-    specialty: string;
-  }>();
+  const consultModeOnline: any = [];
+  const consultModePhysical: any = [];
+  doctorDetails &&
+    doctorDetails.consultHours &&
+    doctorDetails.consultHours.map((item: any) => {
+      if (item.consultMode === 'PHYSICAL' || item.consultMode === 'BOTH') {
+        consultModePhysical.push(item.consultMode);
+      }
+      if (item.consultMode === 'ONLINE' || item.consultMode === 'BOTH') {
+        consultModeOnline.push(item.consultMode);
+      }
+    });
+  const consultMode =
+    consultModeOnline.length > 0 && consultModePhysical.length > 0
+      ? ConsultMode.BOTH
+      : consultModeOnline.length > 0
+      ? ConsultMode.ONLINE
+      : consultModePhysical.length > 0
+      ? ConsultMode.PHYSICAL
+      : null;
 
   const differenceInMinutes = getDiffInMinutes(nextAvailability);
   const availabilityMarkup = () => {
@@ -209,17 +226,36 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
 
   // console.log(clinics);
 
+  const specialityName =
+    doctorDetails &&
+    doctorDetails.specialty &&
+    doctorDetails.specialty.name &&
+    doctorDetails.specialty.name.toLowerCase();
+
+  const navigateToDoctorDetails = () => {
+    const readableDoctorName = readableParam(doctorName);
+    if (specialityName) {
+      props.history.push(
+        clientRoutes.specialtyDoctorDetails(
+          readableParam(specialityName),
+          readableDoctorName,
+          doctorId
+        )
+      );
+    }
+  };
+
   return (
     <div className={classes.root}>
       <div
         className={classes.topContent}
         onClick={() => {
-          const readableDoctorName = readableParam(doctorName);
-          params.specialty
-            ? props.history.push(
-                clientRoutes.specialtyDoctorDetails(params.specialty, readableDoctorName, doctorId)
-              )
-            : props.history.push(clientRoutes.doctorDetails(readableDoctorName, doctorId));
+          navigateToDoctorDetails();
+          // params.specialty
+          //   ? props.history.push(
+          //       clientRoutes.specialtyDoctorDetails(params.specialty, readableDoctorName, doctorId)
+          //     )
+          //   : props.history.push(clientRoutes.doctorDetails(readableDoctorName, doctorId));
         }}
       >
         <Avatar
@@ -241,16 +277,16 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
         <div
           className={classes.doctorInfo}
           onClick={() => {
-            const readableDoctorName = readableParam(doctorName);
-            params.specialty
-              ? props.history.push(
-                  clientRoutes.specialtyDoctorDetails(
-                    params.specialty,
-                    readableDoctorName,
-                    doctorId
-                  )
-                )
-              : props.history.push(clientRoutes.doctorDetails(readableDoctorName, doctorId));
+            navigateToDoctorDetails();
+            // params.specialty
+            //   ? props.history.push(
+            //       clientRoutes.specialtyDoctorDetails(
+            //         params.specialty,
+            //         readableDoctorName,
+            //         doctorId
+            //       )
+            //     )
+            //   : props.history.push(clientRoutes.doctorDetails(readableDoctorName, doctorId));
           }}
         >
           {/* {loading ? (
@@ -369,6 +405,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
         disableEscapeKeyDown
       >
         <BookConsult
+          consultMode={consultMode}
           doctorId={doctorDetails.id}
           doctorAvailableIn={differenceInMinutes}
           setIsPopoverOpen={setIsPopoverOpen}
