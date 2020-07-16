@@ -290,7 +290,6 @@ export class Doctor extends BaseEntity {
   @Column({ nullable: true, type: 'text' })
   awards: string;
 
-  @Index('Doctor_city')
   @Column({ nullable: true })
   city: string;
 
@@ -596,7 +595,6 @@ export class DoctorSpecialty extends BaseEntity {
   @Column({ nullable: true })
   groupName: string;
 
-  @Index('DoctorSpecialty_commonSearchTerm')
   @Column({ nullable: true })
   commonSearchTerm: string;
 
