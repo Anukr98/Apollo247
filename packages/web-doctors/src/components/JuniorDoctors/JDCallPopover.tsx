@@ -352,6 +352,7 @@ const useStyles = makeStyles((theme: Theme) => {
       fontStretch: 'normal',
       fontStyle: 'normal',
       lineHeight: 2,
+      marginRight: 16,
       letterSpacing: 'normal',
       color: '#fc9916',
       cursor: 'pointer',
