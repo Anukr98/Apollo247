@@ -41,10 +41,10 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     serviceInfo: {
-      '& h5': {
+      '& h1': {
         color: '#01475b',
         fontWeight: 500,
-        fontSize: 14,
+        fontSize: '14px !important',
       },
     },
     bigAvatar: {
@@ -93,7 +93,7 @@ const ServiceItem: React.FC<ServiceItemProps> = (props) => {
             >
               <Avatar alt="" src={imgUrl} className={classes.bigAvatar} />
               <div className={classes.serviceInfo}>
-                <Typography variant="h5" title={title}>
+                <Typography variant="h1" title={title}>
                   {title}
                 </Typography>
               </div>

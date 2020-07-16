@@ -8,6 +8,7 @@ import { useShoppingCart } from 'components/MedicinesCartProvider';
 import { useDiagnosticsCart } from 'components/Tests/DiagnosticsCartProvider';
 import { getAppStoreLink } from 'helpers/dateHelpers';
 import { useParams } from 'hooks/routerHooks';
+import Typography from '@material-ui/core/Typography';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -45,12 +46,15 @@ const useStyles = makeStyles((theme: Theme) => {
       borderBottom: '1px solid #01475b',
       paddingBottom: 3,
       display: 'inline-block',
+      fontSize: '13px !important',
+      lineHeight: '18px !important',
     },
     menuInfo: {
       paddingTop: 3,
-      fontSize: 12,
+      fontSize: '12px !important',
       opacity: 0.6,
       display: 'block',
+      lineHeight: '17px !important',
     },
     menuItemActive: {
       backgroundColor: '#f7f8f5',
@@ -220,11 +224,11 @@ export const Navigation: React.FC<NavigationProps> = (props) => {
     <div
       className={`${classes.appNavigation} ${isSignedIn ? classes.postLoginNavigation : ''} ${
         currentPath === clientRoutes.welcome() ||
-        clientRoutes.termsConditions() ||
-        clientRoutes.aboutUs()
+          clientRoutes.termsConditions() ||
+          clientRoutes.aboutUs()
           ? classes.homePageNav
           : ''
-      }`}
+        }`}
       data-cypress="Navigation"
     >
       {isSignedIn ? (
@@ -293,38 +297,45 @@ export const Navigation: React.FC<NavigationProps> = (props) => {
           </Link> */}
         </>
       ) : (
-        <>
-          <Link
-            className={
-              doctorRoutes.find((route) => route === currentPath) ||
-              currentPath.includes('specialties')
-                ? classes.menuItemActive
-                : ''
-            }
-            to={clientRoutes.specialityListing()}
-            title={'Doctors'}
-          >
-            <span className={classes.menuTitle}>Doctors</span>
-            <span className={classes.menuInfo}>
-              Consult
+          <>
+            <Link
+              className={
+                doctorRoutes.find((route) => route === currentPath) ||
+                  currentPath.includes('specialties')
+                  ? classes.menuItemActive
+                  : ''
+              }
+              to={clientRoutes.specialityListing()}
+              title={'Doctors'}
+            >
+              <Typography variant="h1" className={classes.menuTitle}>
+                Doctors
+            </Typography>
+              <Typography variant="h1" className={classes.menuInfo}>
+                Consult
               <br /> Online
-            </span>
-          </Link>
-          <Link
-            to={clientRoutes.medicines()}
-            className={
-              props.activeMedicineRoutes.find((route) => route === currentPath)
-                ? classes.menuItemActive
-                : ''
-            }
-            title={'Pharmacy'}
-          >
-            <span className={classes.menuTitle}>Pharmacy</span>
-            <span className={classes.menuInfo}>
-              Medicines &<br /> other products
-            </span>
-          </Link>
-          {/* <Link
+            </Typography>
+            </Link>
+            <Link
+              to={clientRoutes.medicines()}
+              className={
+                props.activeMedicineRoutes.find((route) => route === currentPath)
+                  ? classes.menuItemActive
+                  : ''
+              }
+              title={'Pharmacy'}
+            >
+              <Typography variant="h1" className={classes.menuTitle}>
+                Pharmacy
+            </Typography>
+              <Typography variant="h1" className={classes.menuInfo}>
+                Medicines &<br /> other products
+            </Typography>
+              {/* <span className={classes.menuInfo}>
+                Medicines &<br /> other products
+            </span> */}
+            </Link>
+            {/* <Link
             to={clientRoutes.tests()}
             className={currentPath === clientRoutes.tests() ? classes.menuItemActive : ''}
             title={'Tests'}
@@ -332,19 +343,19 @@ export const Navigation: React.FC<NavigationProps> = (props) => {
             <span className={classes.menuTitle}>Tests</span>
             <span className={classes.menuInfo}>Health<br/> checks</span>
           </Link> */}
-          <Link
-            to={clientRoutes.covidLanding()}
-            className={currentPath === clientRoutes.covidLanding() ? classes.menuItemActive : ''}
-            title={'Covid-19'}
-          >
-            <span className={classes.menuTitle}>Covid-19</span>
-            <span className={classes.menuInfo}>
-              Latest
+            <Link
+              to={clientRoutes.covidLanding()}
+              className={currentPath === clientRoutes.covidLanding() ? classes.menuItemActive : ''}
+              title={'Covid-19'}
+            >
+              <span className={classes.menuTitle}>Covid-19</span>
+              <span className={classes.menuInfo}>
+                Latest
               <br /> updates
             </span>
-          </Link>
-        </>
-      )}
+            </Link>
+          </>
+        )}
       {/* {currentPath === clientRoutes.welcome() ||
       currentPath === clientRoutes.termsConditions() ||
       currentPath === clientRoutes.aboutUs() ? (
@@ -364,7 +375,7 @@ export const Navigation: React.FC<NavigationProps> = (props) => {
         tabIndex={0}
         className={`${classes.notificationBtn} ${
           currentPath === clientRoutes.medicinesCart() ? classes.menuItemActive : ''
-        }  ${currentPath === clientRoutes.testsCart() ? classes.menuItemActive : ''}`}
+          }  ${currentPath === clientRoutes.testsCart() ? classes.menuItemActive : ''}`}
         title={'cart'}
       >
         <span>

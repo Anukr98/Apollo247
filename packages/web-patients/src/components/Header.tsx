@@ -338,7 +338,11 @@ export const Header: React.FC = (props) => {
         <header className={classes.header} data-cypress="Header">
           <div className={classes.logo}>
             <Link to="/">
-              <img src={require('images/ic_logo.png')} title={'Open the home page'} />
+              <img
+                src={require('images/ic_logo.png')}
+                title={'Online Doctor Consultation & Medicines'}
+                alt={'Online Doctor Consultation & Medicines'}
+              />
             </Link>
           </div>
           {/* {checkIfDisabled() && currentPath !== '/' && <LocationSearch />} */}
