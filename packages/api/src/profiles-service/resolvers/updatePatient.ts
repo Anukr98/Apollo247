@@ -143,7 +143,15 @@ const updatePatient: Resolver<
       }
     }
   }
-  Object.assign(patient, await patientRepo.getPatientDetails(patientInput.id));
+
+  const patientObjWithRelations = await patientRepo.findByIdWithRelations(patientInput.id, [
+    PATIENT_REPO_RELATIONS.PATIENT_ADDRESS,
+    PATIENT_REPO_RELATIONS.FAMILY_HISTORY,
+    PATIENT_REPO_RELATIONS.LIFESTYLE,
+    PATIENT_REPO_RELATIONS.PATIENT_MEDICAL_HISTORY
+  ]);
+
+  Object.assign(patient, patientObjWithRelations);
   return { patient };
 };
 
