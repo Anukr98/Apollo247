@@ -559,7 +559,7 @@ export class MedicineOrderPayments extends BaseEntity {
   @Column({ nullable: true })
   paymentDateTime: Date;
 
-  @Column({ nullable: true })
+  @Column()
   paymentStatus: string;
 
   @Column({ nullable: true })
@@ -581,7 +581,7 @@ export class MedicineOrderPayments extends BaseEntity {
   healthCreditsRedeemed: number;
 
   @ManyToOne((type) => MedicineOrders, (medicineOrders) => medicineOrders.medicineOrderPayments)
-  medicineOrders: Partial<MedicineOrders>;
+  medicineOrders: MedicineOrders;
 
   @Column({ nullable: true, type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   updatedDate: Date;
