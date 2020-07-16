@@ -852,7 +852,7 @@ export class Patient extends BaseEntity {
   @Column({ nullable: true, type: 'text' })
   photoUrl: string;
 
-  @Index("Patient_primaryUhid")
+  @Index('Patient_primaryUhid')
   @Column({ nullable: true })
   primaryUhid: string;
 
@@ -1072,7 +1072,6 @@ export class PatientFamilyHistory extends BaseEntity {
   @ManyToOne((type) => Patient, (patient) => patient.familyHistory)
   @JoinColumn({ name: 'patientId' })
   patient: Patient;
-
 
   @Column('string', { nullable: true })
   patientId: string;
@@ -1612,7 +1611,6 @@ export class Diagnostics extends BaseEntity {
   @Index('Diagnostics_labcode')
   @Column({ nullable: true })
   labCode: string;
-
 
   @Index('Diagostics_labID')
   @Column({ nullable: true })

@@ -10,6 +10,7 @@ import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { DoctorPatientExternalConnectRepository } from 'doctors-service/repositories/DoctorPatientExternalConnectRepository';
 import { addHours } from 'date-fns';
+
 export const getAppointmentOverviewTypeDefs = gql`
   type AppointmentList {
     appointment: Appointment!

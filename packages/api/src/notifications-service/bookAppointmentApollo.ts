@@ -8,4 +8,3 @@ import { STATUS } from 'consults-service/entities';
 import { log } from 'customWinstonLogger';
 
 type TestMessage = AphMqMessage<AphMqMessageTypes.BOOKAPPOINTMENT, AppointmentPayload>;
-
