@@ -337,7 +337,38 @@ const isRejectedStatus = (status: MEDICINE_ORDER_STATUS) => {
   );
 };
 
+const getAvailability = (nextAvailability: string, differenceInMinutes: number, type: string) => {
+  const nextAvailabilityMoment = moment(nextAvailability);
+  const tomorrowAvailabilityHourTime = moment('06:00', 'HH:mm');
+  const tomorrowAvailabilityTime = moment()
+    .add('days', 1)
+    .set({
+      hour: tomorrowAvailabilityHourTime.get('hour'),
+      minute: tomorrowAvailabilityHourTime.get('minute'),
+    });
+  const diffInHoursForTomorrowAvailabilty = nextAvailabilityMoment.diff(
+    tomorrowAvailabilityTime,
+    'minutes'
+  );
+  const isAvailableTomorrow =
+    diffInHoursForTomorrowAvailabilty > 0 && diffInHoursForTomorrowAvailabilty < 1440;
+  const isAvailableAfterTomorrow = diffInHoursForTomorrowAvailabilty >= 1440;
+  const message = type === 'doctorInfo' ? 'Consult' : 'Available';
+  if (differenceInMinutes > 0 && differenceInMinutes < 120) {
+    return `${message} in ${differenceInMinutes} ${differenceInMinutes === 1 ? 'min' : 'mins'}`;
+  } else if (isAvailableAfterTomorrow) {
+    return `${message} in ${nextAvailabilityMoment.diff(moment(), 'days')} days`;
+  } else if (isAvailableTomorrow) {
+    return `${message} tomorrow`;
+  } else if (!isAvailableTomorrow && differenceInMinutes >= 120) {
+    return `${message} at ${nextAvailabilityMoment.format('hh:mm a')}.`;
+  } else {
+    return type === 'doctorInfo' ? 'Book Consult' : 'Available';
+  }
+};
+
 export {
+  getAvailability,
   isRejectedStatus,
   getStatus,
   getSymptoms,
