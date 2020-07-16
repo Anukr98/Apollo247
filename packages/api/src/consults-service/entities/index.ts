@@ -193,10 +193,7 @@ export class Appointment extends BaseEntity {
   @Column({ nullable: true })
   cancelledById: string;
 
-  @OneToMany(
-    (type) => CaseSheet,
-    (caseSheet) => caseSheet.appointment
-  )
+  @OneToMany((type) => CaseSheet, (caseSheet) => caseSheet.appointment)
   caseSheet: CaseSheet[];
 
   @OneToMany(
@@ -364,16 +361,10 @@ export class Appointment extends BaseEntity {
   )
   appointmentPayments: AppointmentPayments[];
 
-  @OneToMany(
-    (type) => AppointmentRefunds,
-    (appointmentRefunds) => appointmentRefunds.appointment
-  )
+  @OneToMany((type) => AppointmentRefunds, (appointmentRefunds) => appointmentRefunds.appointment)
   appointmentRefunds: AppointmentRefunds[];
 
-  @OneToMany(
-    (type) => AppointmentNoShow,
-    (appointmentNoShow) => appointmentNoShow.appointment
-  )
+  @OneToMany((type) => AppointmentNoShow, (appointmentNoShow) => appointmentNoShow.appointment)
   appointmentNoShow: AppointmentNoShow[];
 
   @OneToMany(
@@ -382,10 +373,7 @@ export class Appointment extends BaseEntity {
   )
   appointmentDocuments: AppointmentDocuments[];
 
-  @OneToMany(
-    (type) => AuditHistory,
-    (auditHistory) => auditHistory.appointment
-  )
+  @OneToMany((type) => AuditHistory, (auditHistory) => auditHistory.appointment)
   auditHistory: AuditHistory[];
 }
 //Appointment ends
@@ -408,10 +396,7 @@ export class AppointmentDocuments extends BaseEntity {
   @Column({ default: 1 })
   userType: number;
 
-  @ManyToOne(
-    (type) => Appointment,
-    (appointment) => appointment.appointmentDocuments
-  )
+  @ManyToOne((type) => Appointment, (appointment) => appointment.appointmentDocuments)
   appointment: Appointment;
 }
 //AppointmentDocuments ends
@@ -469,10 +454,7 @@ export class AppointmentPayments extends BaseEntity {
     this.updatedDate = new Date();
   }
 
-  @ManyToOne(
-    (type) => Appointment,
-    (appointment) => appointment.appointmentPayments
-  )
+  @ManyToOne((type) => Appointment, (appointment) => appointment.appointmentPayments)
   appointment: Appointment;
 
   @OneToMany(
@@ -551,10 +533,7 @@ export class AppointmentRefunds extends BaseEntity {
     this.updatedDate = new Date();
   }
 
-  @ManyToOne(
-    () => Appointment,
-    (appointment) => appointment.appointmentRefunds
-  )
+  @ManyToOne(() => Appointment, (appointment) => appointment.appointmentRefunds)
   appointment: Appointment;
 
   @ManyToOne(
@@ -648,10 +627,7 @@ export class AppointmentCallDetails extends BaseEntity {
   @Column('decimal', { precision: 10, scale: 5, default: 0 })
   callDuration: number;
 
-  @ManyToOne(
-    (type) => Appointment,
-    (appointment) => appointment.appointmentPayments
-  )
+  @ManyToOne((type) => Appointment, (appointment) => appointment.appointmentPayments)
   appointment: Appointment;
 
   @Column()
@@ -831,10 +807,7 @@ export type CaseSheetSymptom = {
 
 @Entity()
 export class CaseSheet extends BaseEntity {
-  @ManyToOne(
-    (type) => Appointment,
-    (appointment) => appointment.caseSheet
-  )
+  @ManyToOne((type) => Appointment, (appointment) => appointment.caseSheet)
   appointment: Appointment;
 
   @Column({ nullable: true, type: 'text' })
@@ -976,10 +949,7 @@ export class ConsultQueueItem extends BaseEntity {
 //transfer-appointment starts
 @Entity()
 export class TransferAppointmentDetails extends BaseEntity {
-  @ManyToOne(
-    (type) => Appointment,
-    (appointment) => appointment.transferAppointmentDetails
-  )
+  @ManyToOne((type) => Appointment, (appointment) => appointment.transferAppointmentDetails)
   appointment: Appointment;
 
   @Column()
@@ -1027,10 +997,7 @@ export class TransferAppointmentDetails extends BaseEntity {
 //AppointmentUpdateHistory starts
 @Entity()
 export class AppointmentUpdateHistory extends BaseEntity {
-  @ManyToOne(
-    (type) => Appointment,
-    (appointment) => appointment.appointmentUpdateHistory
-  )
+  @ManyToOne((type) => Appointment, (appointment) => appointment.appointmentUpdateHistory)
   appointment: Appointment;
 
   @PrimaryGeneratedColumn('uuid')
@@ -1062,10 +1029,7 @@ export class AppointmentUpdateHistory extends BaseEntity {
 //Reschedule-appointment starts
 @Entity()
 export class RescheduleAppointmentDetails extends BaseEntity {
-  @ManyToOne(
-    (type) => Appointment,
-    (appointment) => appointment.rescheduleAppointmentDetails
-  )
+  @ManyToOne((type) => Appointment, (appointment) => appointment.rescheduleAppointmentDetails)
   appointment: Appointment;
 
   @Column()
@@ -1149,10 +1113,7 @@ export class AppointmentNoShow extends BaseEntity {
   @Column({ default: STATUS.NO_SHOW })
   noShowStatus: STATUS;
 
-  @ManyToOne(
-    (type) => Appointment,
-    (appointment) => appointment.appointmentNoShow
-  )
+  @ManyToOne((type) => Appointment, (appointment) => appointment.appointmentNoShow)
   appointment: Appointment;
 
   @Column()
@@ -1636,10 +1597,7 @@ export class AuditHistory extends BaseEntity {
   @Column({ nullable: true })
   doctorType: string;
 
-  @ManyToOne(
-    (type) => Appointment,
-    (appointment) => appointment.auditHistory
-  )
+  @ManyToOne((type) => Appointment, (appointment) => appointment.auditHistory)
   appointment: Appointment;
 
   @Column()
