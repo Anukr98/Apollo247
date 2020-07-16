@@ -167,6 +167,7 @@ export enum ApiConstants {
   CASESHEET_CREATED_HISTORY = 'casesheet created',
   APPT_SESSION_HISTORY = 'session created',
   APPT_SESSION_COMPLETE_HISTORY = 'session completed',
+  JD_CASESHEET_COMPLETED_HISTORY = 'JD Casesheet completed',
 
   /*** push-notification messages end here ***/
 
