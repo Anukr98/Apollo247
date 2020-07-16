@@ -97,6 +97,8 @@ target 'ApolloPatient' do
 
   pod 'react-native-background-timer', :path => '../node_modules/react-native-background-timer'
 
+  pod 'CodePush', :path => '../node_modules/react-native-code-push'
+
   target 'NotificationService' do
       platform :ios, '10.0'
       pod 'WebEngageBannerPush'
