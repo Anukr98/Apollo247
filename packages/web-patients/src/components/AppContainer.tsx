@@ -66,6 +66,7 @@ import { MedicinePrescriptions } from './Prescriptions/MedicinePrescriptions';
 import { MedicineSearch } from './Medicine/MedicineSearch';
 import { CovidDiabetesLanding } from 'components/Covid/CovidDiabetesLanding';
 import { DoctorsLanding } from 'components/DoctorsLanding';
+import { Sitemap } from 'components/Sitemap';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -226,6 +227,7 @@ const App: React.FC = () => {
             component={MedicinePrescriptions}
           />
           <Route exact path={clientRoutes.covidDiabetes()} component={CovidDiabetesLanding} />
+          <Route exact path={clientRoutes.sitemap()} component={Sitemap} />
         </Switch>
       </div>
     </Scrollbars>
