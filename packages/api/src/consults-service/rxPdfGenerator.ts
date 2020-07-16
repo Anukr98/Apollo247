@@ -571,7 +571,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
     doc
       .moveDown(0.6)
       .fillColor('#7f7f7f')
-      .text(`${ApiConstants.CASESHEET_WATSAPP_LABEL.toString()}`, { lineBreak: false })
+      .text(`${ApiConstants.CASESHEET_WHATSAPP_LABEL.toString()}`, { lineBreak: false })
       .text(`${ApiConstants.CASESHEET_EMAIL_LABEL.toString()}`, 465, doc.y);
 
     doc
@@ -582,7 +582,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
         height: 12,
         width: 12,
       })
-      .text(`${ApiConstants.CASESHEET_WATSAPP_NUMBER.toString()}`, 385, doc.y - 12, {
+      .text(`${ApiConstants.CASESHEET_WHATSAPP_NUMBER.toString()}`, 385, doc.y - 12, {
         lineBreak: false,
       })
       .image(loadAsset('ic-email.png'), 465, doc.y, {
