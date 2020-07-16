@@ -10,7 +10,8 @@ import {
   ES_DOCTOR_SLOT_STATUS,
   CASESHEET_STATUS,
 } from 'consults-service/entities';
-import { initiateRefund, PaytmResponse } from 'consults-service/helpers/refundHelper';
+import { initiateRefund } from 'consults-service/helpers/refundHelper';
+import { PaytmResponse } from 'types/refundHelperTypes';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';

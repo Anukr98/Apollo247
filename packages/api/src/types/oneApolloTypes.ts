@@ -1,5 +1,8 @@
-import { ONE_APOLLO_STORE_CODE } from 'profiles-service/entities';
-
+export enum ONE_APOLLO_STORE_CODE {
+  ANDCUS = 'ANDCUS',
+  IOSCUS = 'IOSCUS',
+  WEBCUS = 'WEBCUS',
+}
 export type BlockOneApolloPointsRequest = {
   BusinessUnit: string;
   StoreCode: ONE_APOLLO_STORE_CODE;

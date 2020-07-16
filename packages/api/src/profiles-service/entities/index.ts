@@ -14,7 +14,7 @@ import {
 import { Validate, IsOptional } from 'class-validator';
 import { NameValidator, MobileNumberValidator } from 'validators/entityValidators';
 import { ConsultMode } from 'doctors-service/entities';
-import { BlockUserPointsResponse } from 'types/oneApolloTypes';
+import { BlockUserPointsResponse, ONE_APOLLO_STORE_CODE } from 'types/oneApolloTypes';
 
 export type ONE_APOLLO_USER_REG = {
   FirstName: string;
@@ -24,12 +24,6 @@ export type ONE_APOLLO_USER_REG = {
   BusinessUnit: string;
   StoreCode: string;
 };
-
-export enum ONE_APOLLO_STORE_CODE {
-  ANDCUS = 'ANDCUS',
-  IOSCUS = 'IOSCUS',
-  WEBCUS = 'WEBCUS',
-}
 
 export enum ONE_APOLLO_PRODUCT_CATEGORY {
   PRIVATE_LABEL = 'A247',
@@ -194,9 +188,6 @@ export enum MEDICINE_ORDER_PAYMENT_TYPE {
   COD = 'COD',
   NO_PAYMENT = 'NO_PAYMENT',
   CASHLESS = 'CASHLESS',
-  COD_HEALTH_CREDITS = 'COD_HEALTH_CREDITS',
-  CASHLESS_HEALTH_CREDITS = 'CASHLESS_HEALTH_CREDITS',
-  HEALTH_CREDITS = 'HEALTH_CREDITS',
 }
 
 export enum BOOKING_SOURCE {
@@ -583,7 +574,7 @@ export class MedicineOrderPayments extends BaseEntity {
   })
   healthCreditsRedemptionRequest: Partial<BlockUserPointsResponse>;
 
-  @Column('decimal', { precision: 10, scale: 2, nullable: true })
+  @Column('decimal', { precision: 10, scale: 2, nullable: false, default: 0 })
   healthCreditsRedeemed: number;
 
   @ManyToOne(

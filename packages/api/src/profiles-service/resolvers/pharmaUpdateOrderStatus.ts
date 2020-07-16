@@ -10,12 +10,13 @@ import {
   MedicineOrders,
   Patient,
   OneApollTransaction,
-  ONE_APOLLO_STORE_CODE,
   BOOKING_SOURCE,
   DEVICE_TYPE,
   TransactionLineItems,
   ONE_APOLLO_PRODUCT_CATEGORY,
 } from 'profiles-service/entities';
+import { ONE_APOLLO_STORE_CODE } from 'types/oneApolloTypes';
+
 import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';

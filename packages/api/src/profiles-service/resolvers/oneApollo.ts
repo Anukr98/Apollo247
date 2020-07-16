@@ -1,18 +1,13 @@
 import gql from 'graphql-tag';
 import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
-import { MedicineOrdersRepository } from 'profiles-service/repositories/MedicineOrdersRepository';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
-import { BlockOneApolloPointsRequest, BlockUserPointsResponse } from 'types/oneApolloTypes';
 import { OneApollo } from 'profiles-service/repositories/ExternalRequests';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
-import {
-  ONE_APOLLO_STORE_CODE,
-  DEVICE_TYPE,
-  MEDICINE_ORDER_PAYMENT_TYPE,
-} from 'profiles-service/entities';
-import { log } from 'customWinstonLogger';
+import { DEVICE_TYPE, MEDICINE_ORDER_PAYMENT_TYPE } from 'profiles-service/entities';
+
+import { ONE_APOLLO_STORE_CODE } from 'types/oneApolloTypes';
 
 export const oneApolloTypeDefs = gql`
   type UserDetailResponse {
@@ -22,24 +17,6 @@ export const oneApolloTypeDefs = gql`
     tier: String!
   }
 
-  input BlockUserPointsRequest {
-    mobileNumber: String!
-    deviceType: DEVICE_TYPE!
-    creditsToBlock: Float!
-    orderId: Int!
-    id: String!
-    paymentType: MEDICINE_ORDER_PAYMENT_TYPE
-  }
-
-  type BlockUserPointsResponse {
-    Success: Boolean!
-    Message: String!
-    RequestNumber: String
-    AvailablePoints: Float
-    BalancePoints: Float
-    RedeemedPoints: Float
-    PointsValue: Float
-  }
   type TransactionDetails {
     businessUnit: String!
     earnedHC: Float!
@@ -53,9 +30,6 @@ export const oneApolloTypeDefs = gql`
     getOneApolloUser(patientId: String): UserDetailResponse
     getOneApolloUserTransactions: [TransactionDetails]
   }
-  extend type Mutation {
-    blockOneApolloUserPoints(userDetailInput: BlockUserPointsRequest): BlockUserPointsResponse
-  }
 `;
 
 type UserDetailResponse = {
@@ -65,16 +39,6 @@ type UserDetailResponse = {
   tier: string;
 };
 
-type BlockUserPointsRequest = {
-  userDetailInput: {
-    mobileNumber: string;
-    deviceType: DEVICE_TYPE | DEVICE_TYPE.ANDROID;
-    creditsToBlock: number;
-    orderId: number;
-    id: string;
-    paymentType: MEDICINE_ORDER_PAYMENT_TYPE;
-  };
-};
 type TransactionDetails = {
   businessUnit: string;
   earnedHC: number;
@@ -133,54 +97,6 @@ const getOneApolloUser: Resolver<
   };
 };
 
-const blockOneApolloUserPoints: Resolver<
-  null,
-  BlockUserPointsRequest,
-  ProfilesServiceContext,
-  Partial<BlockUserPointsResponse>
-> = async (parent, { userDetailInput }, { profilesDb }) => {
-  let storeCode = ONE_APOLLO_STORE_CODE.WEBCUS;
-  switch (userDetailInput.deviceType) {
-    case DEVICE_TYPE.ANDROID:
-      storeCode = ONE_APOLLO_STORE_CODE.ANDCUS;
-      break;
-    case DEVICE_TYPE.IOS:
-      storeCode = ONE_APOLLO_STORE_CODE.IOSCUS;
-      break;
-  }
-  const blockUserPointsInput: BlockOneApolloPointsRequest = {
-    MobileNumber: +userDetailInput.mobileNumber.slice(3),
-    CreditsRedeemed: userDetailInput.creditsToBlock,
-    StoreCode: storeCode,
-    BusinessUnit: process.env.ONEAPOLLO_BUSINESS_UNIT || '',
-  };
-  const oneApollo = new OneApollo();
-  const response: Partial<BlockUserPointsResponse> = await oneApollo.blockOneUserCredits(
-    blockUserPointsInput
-  );
-  if (!response.Success) {
-    log(
-      'profileServiceLogger',
-      `Redemption request failed - ${userDetailInput.orderId}`,
-      'blockUserPoints()',
-      JSON.stringify(response),
-      'true'
-    );
-    return response;
-  } else {
-    const medRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
-    await medRepo.saveMedicineOrderPayment({
-      medicineOrders: {
-        orderAutoId: userDetailInput.orderId,
-        id: userDetailInput.id,
-      },
-      healthCreditsRedemptionRequest: response,
-      paymentType: userDetailInput.paymentType,
-    });
-    return response;
-  }
-};
-
 const getOneApolloUserTransactions: Resolver<
   null,
   {},
@@ -222,8 +138,5 @@ export const oneApolloResolvers = {
   Query: {
     getOneApolloUser,
     getOneApolloUserTransactions,
-  },
-  Mutation: {
-    blockOneApolloUserPoints,
   },
 };

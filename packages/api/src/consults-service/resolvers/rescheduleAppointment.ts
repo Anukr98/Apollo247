@@ -31,7 +31,8 @@ import { addMilliseconds, differenceInDays } from 'date-fns';
 import { BlockedCalendarItemRepository } from 'doctors-service/repositories/blockedCalendarItemRepository';
 import { AdminDoctorMap } from 'doctors-service/repositories/adminDoctorRepository';
 import { rescheduleAppointmentEmailTemplate } from 'helpers/emailTemplates/rescheduleAppointmentEmailTemplate';
-import { initiateRefund, PaytmResponse } from 'consults-service/helpers/refundHelper';
+import { initiateRefund } from 'consults-service/helpers/refundHelper';
+import { PaytmResponse } from 'types/refundHelperTypes';
 import { log } from 'customWinstonLogger';
 
 export const rescheduleAppointmentTypeDefs = gql`

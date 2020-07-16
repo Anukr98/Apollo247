@@ -12,47 +12,12 @@ import {
 import { PAYTM_STATUS } from 'consults-service/entities';
 import { log } from 'customWinstonLogger';
 import { genchecksumbystring } from './paytmLib/checksum.js';
-
-type RefundInput = {
-  refundAmount: number;
-  txnId: string;
-  orderId: string;
-  appointment: Appointment;
-  appointmentPayments: AppointmentPayments;
-};
-
-type ResultInfo = {
-  resultCode: string;
-  resultMsg: string;
-  resultStatus: PAYTM_STATUS;
-};
-
-export type PaytmResponse = {
-  resultInfo: ResultInfo;
-  orderId: string;
-  refId: string;
-  refundAmount: string;
-  refundId: string;
-  txnAmount: string;
-  txnId: string;
-  txnTimeStamp: string;
-};
-
-interface PaytmBody {
-  refundAmount: string;
-  txnId: string;
-  mid: string;
-  refId: string;
-  txnType: string;
-  orderId: string;
-}
-
-export interface PaytmHeadBody {
-  head: {
-    signature: unknown;
-  };
-  body: PaytmBody;
-}
+import {
+  RefundInput,
+  PaytmBody,
+  PaytmHeadBody,
+  PaytmResponse,
+} from '../../types/refundHelperTypes';
 
 type refundMethod<refundInput, Context, Result> = (
   refundInput: refundInput,

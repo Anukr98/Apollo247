@@ -10,9 +10,16 @@ module.exports = async (req, res) => {
   // variable to log order id in catch
   let orderId;
   try {
-    const { oid: orderAutoId, pid: patientId, amount } = req.query;
+    let { oid: orderAutoId, pid: patientId, amount, hc: healthCredits } = req.query;
 
     orderId = orderAutoId;
+    amount = amount ? +amount : 0;
+    healthCredits = healthCredits ? +healthCredits : 0;
+
+    const effectiveAmount = amount + healthCredits;
+
+    console.log(effectiveAmount);
+
     // Decide if we need token here or we can use static token
     axios.defaults.headers.common['authorization'] = process.env.API_TOKEN;
 
@@ -59,18 +66,20 @@ module.exports = async (req, res) => {
         estimatedAmount: responseAmount,
         bookingSource,
       } = response.data.data.getMedicineOrderDetails.MedicineOrderDetails;
-      if (responseAmount != amount) {
+      if (responseAmount != effectiveAmount) {
         return res.status(400).json({
           status: 'failed',
           reason: PAYMENT_REQUEST_FAILURE_INVALID_PARAMETERS,
           code: '10000',
         });
       }
+      const merc_unq_ref = `${bookingSource}:${healthCredits}`;
+
       const success = await initPayment(
         patientId,
         responseOrderId.toString(),
         amount,
-        bookingSource,
+        merc_unq_ref,
         addParams
       );
       return res.render('paytmRedirect.ejs', {
