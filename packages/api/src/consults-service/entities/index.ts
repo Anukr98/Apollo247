@@ -816,6 +816,7 @@ export class CaseSheet extends BaseEntity {
   @Column({ nullable: true, type: 'text' })
   prismFileId: string;
 
+  @Index('CaseSheet_consultType')
   @Column()
   consultType: APPOINTMENT_TYPE;
 
@@ -826,6 +827,7 @@ export class CaseSheet extends BaseEntity {
   @Column({ nullable: true })
   createdDoctorId: string;
 
+  @Index('CaseSheet_doctorType')
   @Column('enum', { default: DoctorType.JUNIOR, enum: DoctorType })
   doctorType: DoctorType;
 
@@ -1077,6 +1079,7 @@ export class DoctorNextAvaialbleSlots extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Index('DoctorNextAvaialbleSlots_doctorId')
   @Column({ nullable: true })
   doctorId: string;
 
@@ -1246,15 +1249,18 @@ export class JdDashboardSummary extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Index('JdDashboardSummary_doctorId')
   @Column()
   doctorId: string;
 
+  @Index('JdDashboardSummary_isActive')
   @Column({ default: true })
   isActive: boolean;
 
   @Column()
   doctorName: string;
 
+  @Index('JdDashboardSummary_adminIds')
   @Column({ default: '' })
   adminIds: string;
 
@@ -1356,15 +1362,18 @@ export class SdDashboardSummary extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Index('SdDashboardSummary_doctorId')
   @Column()
   doctorId: string;
 
+  @Index('SdDashboardSummary_isActive')
   @Column({ default: true })
   isActive: boolean;
 
   @Column()
   doctorName: string;
 
+  @Index('SdDashboardSummary_adminIds')
   @Column({ default: '' })
   adminIds: string;
 
@@ -1428,9 +1437,11 @@ export class SdDashboardSummary extends BaseEntity {
   @Column({ default: 0 })
   unPaidFollowUp: number;
 
+  @Index('SdDashboardSummary_noOfAwayDoctors')
   @Column({ default: 0 })
   noOfAwayDoctors: number;
 
+  @Index('SdDashboardSummary_noOfOnlineDoctors')
   @Column({ default: 0 })
   noOfOnlineDoctors: number;
 
@@ -1485,15 +1496,18 @@ export class DoctorFeeSummary extends BaseEntity {
   @Column()
   appointmentDateTime: Date;
 
+  @Index('DoctorFeeSummary_doctorId')
   @Column()
   doctorId: string;
 
+  @Index('DoctorFeeSummary_isActive')
   @Column()
   isActive: boolean;
 
   @Column({ default: '' })
   doctorName: string;
 
+  @Index('DoctorFeeSummary_specialtiyId')
   @Column({ default: '' })
   specialtiyId: string;
 
@@ -1540,6 +1554,8 @@ export class PlannedDoctors extends BaseEntity {
   @Column()
   speciality: string;
 
+
+  @Index('PlannedDoctors_specialityId')
   @Column()
   specialityId: string;
 
@@ -1594,12 +1610,14 @@ export class AuditHistory extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Index('AuditHistory_doctorType')
   @Column({ nullable: true })
   doctorType: string;
 
   @ManyToOne((type) => Appointment, (appointment) => appointment.auditHistory)
   appointment: Appointment;
 
+  @Index('AuditHistory_auditorId')
   @Column()
   auditorId: string;
 
@@ -1621,6 +1639,7 @@ export class CurrentAvailabilityStatus extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Index('CurrentAvailabilityStatus_specialityId')
   @Column({ nullable: true })
   specialityId: string;
 
@@ -1645,6 +1664,7 @@ export class UtilizationCapacity extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Index('UtilizationCapacity_specialityId')
   @Column({ nullable: true })
   specialityId: string;
 
