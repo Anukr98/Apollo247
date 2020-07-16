@@ -9,6 +9,7 @@ import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { ApiConstants } from 'ApiConstants';
 import { DoctorHospitalRepository } from 'doctors-service/repositories/doctorHospitalRepository';
 import { addDays } from 'date-fns';
+import { getCache, setCache } from 'profiles-service/database/connectRedis';
 
 export const getPatinetAppointmentsTypeDefs = gql`
   type PatinetAppointments {
@@ -88,6 +89,8 @@ export const getPatinetAppointmentsTypeDefs = gql`
   }
 `;
 
+const REDIS_PATIENT_PASTCONSULT_BY_UHID_PREFIX: string = 'patient:pastconsult:';
+
 type PatientAppointmentsResult = {
   patinetAppointments: PatinetAppointments[] | null;
 };
@@ -163,6 +166,11 @@ type PersonalizedAppointment = {
   appointmentDateTime: Date;
   appointmentType: APPOINTMENT_TYPE;
   doctorId: string;
+};
+
+type MedmantraApolloDoctor = {
+  apolloDoctorId: string;
+  medmantraId: string;
 };
 
 type AppointmentInputArgs = { patientAppointmentsInput: PatientAppointmentsInput };
@@ -256,17 +264,7 @@ const getPatientPersonalizedAppointments: Resolver<
   let uhid = args.patientUhid;
   if (process.env.NODE_ENV == 'local') uhid = ApiConstants.CURRENT_UHID.toString();
   else if (process.env.NODE_ENV == 'dev') uhid = ApiConstants.CURRENT_UHID.toString();
-  const apptsResp = await fetch(
-    process.env.PRISM_GET_OFFLINE_APPOINTMENTS
-      ? process.env.PRISM_GET_OFFLINE_APPOINTMENTS + uhid
-      : '',
-    {
-      method: 'GET',
-      headers: {},
-    }
-  );
-  const textRes = await apptsResp.text();
-  const offlineApptsList = JSON.parse(textRes);
+  const offlineApptsList = await getOfflineAppointments(uhid);
   let apptDetails: any = {};
 
   if (offlineApptsList.errorCode == 0 && offlineApptsList.response.length > 0) {
@@ -290,14 +288,23 @@ const getPatientPersonalizedAppointments: Resolver<
           new Date(a.consultedtime).getTime() >= aDateInPast.getTime()
       );
 
+    let medMantraIds: string[] = appointmentsToConsider.map((x: offlineAppointment) => x.doctorid);
+    let medmantraApolloDoctors: MedmantraApolloDoctor[] = await doctorFacilityRepo.getDoctorIdsByMedMantraIds(
+      medMantraIds
+    );
+
+    let mapMedMantraApolloDoctor = new Map<string, string>();
+    medmantraApolloDoctors.map((x: MedmantraApolloDoctor) =>
+      mapMedMantraApolloDoctor.set(x.medmantraId, x.apolloDoctorId)
+    );
+
     for (let appt of appointmentsToConsider) {
-      let doctorDets = await doctorFacilityRepo.getDoctorIdByMedmantraId(appt.doctorid);
       let patientDetails = await patientRepo.findByUhid(args.patientUhid);
       let apptDetailsBooked = undefined;
-      if (doctorDets) {
-        patientDetails = await patientRepo.findByUhid(args.patientUhid);
+      let apolloDoctorId = mapMedMantraApolloDoctor.get(appt.doctorid);
+      if (mapMedMantraApolloDoctor.has(appt.doctorid)) {
         apptDetailsBooked = await apptRepo.checkIfAppointmentBooked(
-          appt.doctor.id,
+          apolloDoctorId || '',
           patientDetails ? appt.uh : '',
           new Date(appt.consultedtime)
         );
@@ -310,7 +317,7 @@ const getPatientPersonalizedAppointments: Resolver<
               appt.appointmenttype == 'WALKIN'
                 ? APPOINTMENT_TYPE.PHYSICAL
                 : APPOINTMENT_TYPE.ONLINE,
-            doctorId: doctorDets.doctor.id,
+            doctorId: apolloDoctorId || '',
           };
           apptDetails = apptDetailsOffline;
           break;
@@ -344,3 +351,28 @@ export const getPatinetAppointmentsResolvers = {
     getPatientPersonalizedAppointments,
   },
 };
+async function getOfflineAppointments(uhid: string) {
+  let pastConsultFromCache = await getCache(`${REDIS_PATIENT_PASTCONSULT_BY_UHID_PREFIX}${uhid}`);
+  let offlineApptsList;
+  if (pastConsultFromCache && typeof pastConsultFromCache === 'string') {
+    offlineApptsList = JSON.parse(pastConsultFromCache);
+  } else {
+    const apptsResp = await fetch(
+      process.env.PRISM_GET_OFFLINE_APPOINTMENTS
+        ? process.env.PRISM_GET_OFFLINE_APPOINTMENTS + uhid
+        : '',
+      {
+        method: 'GET',
+        headers: {},
+      }
+    );
+    const textRes = await apptsResp.text();
+    setCache(
+      `${REDIS_PATIENT_PASTCONSULT_BY_UHID_PREFIX}${uhid}`,
+      textRes,
+      ApiConstants.CACHE_EXPIRATION_86400
+    );
+    offlineApptsList = JSON.parse(textRes);
+  }
+  return offlineApptsList;
+}

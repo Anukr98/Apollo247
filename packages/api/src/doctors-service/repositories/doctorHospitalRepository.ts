@@ -49,4 +49,14 @@ export class DoctorHospitalRepository extends Repository<DoctorAndHospital> {
   getDoctorIdByMedmantraId(medmantraId: string) {
     return this.findOne({ where: { medmantraId }, relations: ['doctor'] });
   }
+
+  getDoctorIdsByMedMantraIds(medMantraIds: string[]) {
+    return this.createQueryBuilder('doctorAndHospital')
+      .select([
+        '"doctorAndHospital.doctor.id" as apolloDoctorId',
+        '"doctorAndHospital.doctor.medmantraId" as medmantraId',
+      ])
+      .where('doctorAndHospital.medmantraId IN (:...idArray)', { idArray: medMantraIds })
+      .getRawMany();
+  }
 }
