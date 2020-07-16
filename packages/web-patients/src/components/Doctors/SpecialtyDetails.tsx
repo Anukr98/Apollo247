@@ -322,16 +322,12 @@ const convertAvailabilityToDate = (availability: String[], dateSelectedFromFilte
     availableNow = {};
   }
   const availabilityArray: String[] = [];
-  const today = moment(new Date())
-    .utc()
-    .format('YYYY-MM-DD');
+  const today = moment(new Date()).utc().format('YYYY-MM-DD');
   if (availability.length > 0) {
     availability.forEach((value: String) => {
       if (value === 'Now') {
         availableNow = {
-          availableNow: moment(new Date())
-            .utc()
-            .format('YYYY-MM-DD hh:mm'),
+          availableNow: moment(new Date()).utc().format('YYYY-MM-DD hh:mm'),
         };
       } else if (value === 'Today') {
         availabilityArray.push(today);
@@ -604,14 +600,14 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
                   name: doctorDetails.fullName,
                   url: params.specialty
                     ? `${window.location.origin}${clientRoutes.specialtyDoctorDetails(
-                      params.specialty,
-                      readableParam(doctorDetails.fullName),
-                      doctorDetails.id
-                    )}`
+                        params.specialty,
+                        readableParam(doctorDetails.fullName),
+                        doctorDetails.id
+                      )}`
                     : `${window.location.origin}${clientRoutes.doctorDetails(
-                      readableParam(doctorDetails.fullName),
-                      doctorDetails.id
-                    )}`,
+                        readableParam(doctorDetails.fullName),
+                        doctorDetails.id
+                      )}`,
                 });
             });
             setDoctorData(doctors || []);
@@ -641,9 +637,9 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
     return _filter(data, (doctor: DoctorDetails) => {
       const consultMode =
         doctor.consultHours &&
-          doctor.consultHours.length > 0 &&
-          doctor.consultHours[0] &&
-          doctor.consultHours[0].consultMode
+        doctor.consultHours.length > 0 &&
+        doctor.consultHours[0] &&
+        doctor.consultHours[0].consultMode
           ? doctor.consultHours[0].consultMode
           : '';
       if (isOnlineSelected && isPhysicalSelected) {
@@ -681,15 +677,15 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
 
   const doctorsNextAvailability =
     data &&
-      data.getDoctorsBySpecialtyAndFilters &&
-      data.getDoctorsBySpecialtyAndFilters.doctorsNextAvailability
+    data.getDoctorsBySpecialtyAndFilters &&
+    data.getDoctorsBySpecialtyAndFilters.doctorsNextAvailability
       ? data.getDoctorsBySpecialtyAndFilters.doctorsNextAvailability
       : [];
 
   const doctorsAvailability =
     data &&
-      data.getDoctorsBySpecialtyAndFilters &&
-      data.getDoctorsBySpecialtyAndFilters.doctorsAvailability
+    data.getDoctorsBySpecialtyAndFilters &&
+    data.getDoctorsBySpecialtyAndFilters.doctorsAvailability
       ? data.getDoctorsBySpecialtyAndFilters.doctorsAvailability
       : [];
 
@@ -785,58 +781,46 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
                   <>
                     <Grid container spacing={2}>
                       {filteredDoctorData.map((doctor: DoctorDetails) => {
-                        let availableMode = '';
-                        let nextAvailabilityString = '';
-                        const nextAvailability = _find(doctorsNextAvailability, (availability) => {
-                          const availabilityDoctorId =
-                            availability && availability.doctorId ? availability.doctorId : '';
-                          const currentDoctorId = doctor && doctor.id ? doctor.id : '';
-                          return availabilityDoctorId === currentDoctorId;
-                        });
-                        const availableModes = _find(doctorsAvailability, (availability) => {
-                          const availabilityDoctorId =
-                            availability && availability.doctorId ? availability.doctorId : '';
-                          const currentDoctorId = doctor && doctor.id ? doctor.id : '';
-                          return availabilityDoctorId === currentDoctorId;
-                        });
-                        if (
-                          availableModes &&
-                          availableModes.availableModes &&
-                          availableModes.availableModes.length > 0
-                        ) {
-                          availableMode = availableModes.availableModes[0];
-                        } else {
-                          availableMode = 'ONLINE';
+                        if (doctor && doctor.id) {
+                          const nextAvailability = doctorsNextAvailability.find(
+                            (nextAvailabilitySlot) => nextAvailabilitySlot.doctorId === doctor.id
+                          );
+
+                          const availabiltyMode = doctorsAvailability.find(
+                            (availability) => availability.doctorId === doctor.id
+                          );
+
+                          const doctorAvailableMode =
+                            availabiltyMode && availabiltyMode.availableModes[0];
+
+                          return (
+                            doctorAvailableMode && (
+                              <Grid key={doctor.id} item xs={12} sm={12} md={12} lg={6}>
+                                {doctorType.toLowerCase() == 'apollo' ? (
+                                  <InfoCardPartner
+                                    doctorInfo={doctor}
+                                    doctorType={doctorType}
+                                    nextAvailability={nextAvailability}
+                                    consultMode={doctorAvailableMode}
+                                  />
+                                ) : (
+                                  <InfoCard
+                                    doctorInfo={doctor}
+                                    doctorType={doctorType}
+                                    nextAvailability={nextAvailability}
+                                    consultMode={doctorAvailableMode}
+                                  />
+                                )}
+                              </Grid>
+                            )
+                          );
                         }
-                        if (availableMode === 'ONLINE' || availableMode === 'BOTH') {
-                          nextAvailabilityString = nextAvailability && nextAvailability.onlineSlot;
-                        } else {
-                          nextAvailabilityString =
-                            nextAvailability && nextAvailability.physicalSlot;
-                        }
-                        return (
-                          <Grid key={doctor.id} item xs={12} sm={12} md={12} lg={6}>
-                            {doctorType.toLowerCase() == 'apollo' ? (
-                              <InfoCardPartner
-                                doctorInfo={doctor}
-                                doctorType={doctorType}
-                                nextAvailability={nextAvailabilityString}
-                              />
-                            ) : (
-                                <InfoCard
-                                  doctorInfo={doctor}
-                                  doctorType={doctorType}
-                                  nextAvailability={nextAvailabilityString}
-                                />
-                              )}
-                          </Grid>
-                        );
                       })}
                     </Grid>
                   </>
                 ) : (
-                      'no results found'
-                    )}
+                  'no results found'
+                )}
               </div>
               {faqData && faqData.length > 0 && (
                 <>

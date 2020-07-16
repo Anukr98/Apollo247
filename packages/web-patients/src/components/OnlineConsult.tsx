@@ -4,9 +4,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { AphButton, AphDialog, AphDialogTitle } from '@aph/web-ui-components';
 import { AphCalendar } from 'components/AphCalendar';
-import { DayTimeSlots } from 'components/DayTimeSlots';
 import Scrollbars from 'react-custom-scrollbars';
-import { useQueryWithSkip } from 'hooks/apolloHooks';
 import { GetDoctorDetailsById_getDoctorDetailsById as DoctorDetails } from 'graphql/types/GetDoctorDetailsById';
 import {
   GetDoctorAvailableSlots,
@@ -30,13 +28,11 @@ import {
 } from 'graphql/types/makeAppointmentPayment';
 import { MAKE_APPOINTMENT_PAYMENT } from 'graphql/consult';
 import { format } from 'date-fns';
-import { getIstTimestamp } from 'helpers/dateHelpers';
 import {
   GetDoctorNextAvailableSlot,
   GetDoctorNextAvailableSlotVariables,
 } from 'graphql/types/GetDoctorNextAvailableSlot';
 import { usePrevious } from 'hooks/reactCustomHooks';
-import { TRANSFER_INITIATED_TYPE, BookRescheduleAppointmentInput } from 'graphql/types/globalTypes';
 import moment from 'moment';
 import { CouponCode } from 'components/Coupon/CouponCode';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
@@ -49,6 +45,7 @@ import { Alerts } from 'components/Alerts/Alerts';
 import { gtmTracking, _cbTracking } from '../gtmTracking';
 import { useApolloClient } from 'react-apollo-hooks';
 import { ShowSlots } from './ShowSlots';
+import { GetDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctorsNextAvailability as NextAvailabilityType } from 'graphql/types/GetDoctorsBySpecialtyAndFilters';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -208,9 +205,6 @@ interface OnlineConsultProps {
   setIsPopoverOpen: (openPopup: boolean) => void;
   doctorDetails: DoctorDetails;
   onBookConsult: (popover: boolean) => void;
-  isRescheduleConsult: boolean;
-  appointmentId?: string;
-  rescheduleAPI?: (bookRescheduleInput: BookRescheduleAppointmentInput) => void;
   tabValue?: (tabValue: number) => void;
   setIsShownOnce?: (shownOnce: boolean) => void;
   isShownOnce?: boolean;
@@ -219,6 +213,7 @@ interface OnlineConsultProps {
 
 export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
   const classes = useStyles({});
+  const { doctorAvailableIn } = props;
   const [showCalendar, setShowCalendar] = useState<boolean>(false);
   const [dateSelected, setDateSelected] = useState<string>('');
   const [timeSelected, setTimeSelected] = useState<string>('');
@@ -245,8 +240,6 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
 
   const { currentPatient } = useAllCurrentPatients();
   const apolloClient = useApolloClient();
-
-  const doctorAvailableTime = moment().add(props.doctorAvailableIn, 'm') || moment();
 
   const { doctorDetails, setIsPopoverOpen, tabValue, isShownOnce, setIsShownOnce } = props;
 
@@ -322,6 +315,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
         setMutationLoading(false);
       });
   };
+  const doctorAvailableTime = moment().add(props.doctorAvailableIn, 'm') || moment();
   const apiDateFormat =
     dateSelected === ''
       ? nextAvailability
@@ -589,72 +583,69 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
     <div className={classes.root}>
       <Scrollbars autoHide={true} autoHeight autoHeightMax={isSmallScreen ? '50vh' : '65vh'}>
         <div className={classes.customScrollBar}>
-          {!props.isRescheduleConsult && (
-            <div className={classes.consultGroup}>
-              {differenceInMinutes > 0 && differenceInMinutes <= 60 ? (
-                <p>
-                  Dr. {doctorName} is available in {differenceInMinutes} mins! Would you like to
-                  consult now or schedule for later?
-                </p>
-              ) : differenceInMinutes > 60 && differenceInMinutes <= 1440 ? (
-                <p>
-                  Dr. {doctorName} is available in {differenceInHours} hours! Would you like to
-                  consult now or schedule for later?
-                </p>
-              ) : differenceInMinutes > 0 ? (
-                <p>
-                  Dr. {doctorName} is available in {differenceInDays || 1}{' '}
-                  {differenceInDays === 1 || differenceInDays === 0 ? 'day!' : 'days!'} Would you
-                  like to consult now or schedule for later?
-                </p>
-              ) : null}
-              <div className={classes.actions}>
-                <AphButton
-                  onClick={(e) => {
-                    setShowCalendar(false);
-                    setConsultNow(true);
-                    setScheduleLater(false);
-                    setTimeSelected('');
-                  }}
-                  color="secondary"
-                  className={`${classes.button} ${
-                    consultNowAvailable && consultNow
-                      ? !scheduleLater
-                        ? classes.buttonActive
-                        : ''
-                      : classes.disabledButton
-                  }`}
-                  disabled={!(consultNow && slotAvailableNext !== '') || !consultNowAvailable}
-                  title={' Consult Now'}
-                >
-                  Consult Now
-                </AphButton>
-                <AphButton
-                  onClick={(e) => {
-                    setShowCalendar(!showCalendar);
-                    setScheduleLater(true);
-                  }}
-                  color="secondary"
-                  className={`${classes.button} ${
-                    showCalendar || scheduleLater || !consultNowAvailable
+          <div className={classes.consultGroup}>
+            {differenceInMinutes > 0 && differenceInMinutes <= 60 ? (
+              <p>
+                Dr. {doctorName} is available in {differenceInMinutes} mins! Would you like to
+                consult now or schedule for later?
+              </p>
+            ) : differenceInMinutes > 60 && differenceInMinutes <= 1440 ? (
+              <p>
+                Dr. {doctorName} is available in {differenceInHours} hours! Would you like to
+                consult now or schedule for later?
+              </p>
+            ) : differenceInMinutes > 0 ? (
+              <p>
+                Dr. {doctorName} is available in {differenceInDays || 1}{' '}
+                {differenceInDays === 1 || differenceInDays === 0 ? 'day!' : 'days!'} Would you like
+                to consult now or schedule for later?
+              </p>
+            ) : null}
+            <div className={classes.actions}>
+              <AphButton
+                onClick={(e) => {
+                  setShowCalendar(false);
+                  setConsultNow(true);
+                  setScheduleLater(false);
+                  setTimeSelected('');
+                }}
+                color="secondary"
+                className={`${classes.button} ${
+                  consultNowAvailable && consultNow
+                    ? !scheduleLater
                       ? classes.buttonActive
                       : ''
-                  }`}
-                  title={' Schedule For Later'}
-                >
-                  Schedule For Later
-                </AphButton>
-              </div>
-              {showCalendar || scheduleLater || !consultNowAvailable ? (
-                ''
-              ) : (
-                <p className={classes.consultNowInfo}>
-                  Please note that after booking, you will need to download the Apollo 247 app to
-                  continue with your consultation.
-                </p>
-              )}
+                    : classes.disabledButton
+                }`}
+                disabled={!(consultNow && slotAvailableNext !== '') || !consultNowAvailable}
+                title={' Consult Now'}
+              >
+                Consult Now
+              </AphButton>
+              <AphButton
+                onClick={(e) => {
+                  setShowCalendar(!showCalendar);
+                  setScheduleLater(true);
+                }}
+                color="secondary"
+                className={`${classes.button} ${
+                  showCalendar || scheduleLater || !consultNowAvailable ? classes.buttonActive : ''
+                }`}
+                title={' Schedule For Later'}
+              >
+                Schedule For Later
+              </AphButton>
             </div>
-          )}
+            {showCalendar || scheduleLater || !consultNowAvailable ? (
+              ''
+            ) : (
+              <p className={classes.consultNowInfo}>
+                Please note that after booking, you will need to download the Apollo 247 app to
+                continue with your consultation.
+              </p>
+            )}
+          </div>
+
           {(!consultNow || showCalendar || scheduleLater || !consultNowAvailable) && (
             <>
               <p className={classes.consultGroup}>
@@ -728,81 +719,52 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
           </p>
         </div>
       </Scrollbars>
-      {props.isRescheduleConsult ? (
-        <div>
+      <div className={classes.bottomActions}>
+        <Link to={clientRoutes.payOnlineConsult()}>
           <AphButton
-            className={classes.viewButton}
+            color="primary"
+            disabled={
+              disableSubmit ||
+              mutationLoading ||
+              isDialogOpen ||
+              (!consultNowAvailable && timeSelected === '') ||
+              (scheduleLater && timeSelected === '')
+            }
             onClick={() => {
-              const bookRescheduleInput = {
-                appointmentId: props.appointmentId || '',
-                doctorId: doctorId,
-                newDateTimeslot: new Date(
-                  `${apiDateFormat} ${
-                    timeSelected !== ''
-                      ? timeSelected.padStart(5, '0')
-                      : slotAvailableNext.padStart(5, '0')
-                  }:00`
-                ).toISOString(),
-                initiatedBy: TRANSFER_INITIATED_TYPE.PATIENT,
-                initiatedId: currentPatient ? currentPatient.id : '',
-                patientId: currentPatient ? currentPatient.id : '',
-                rescheduledId: '',
-              };
-              props.rescheduleAPI && props.rescheduleAPI(bookRescheduleInput);
-              setIsPopoverOpen(false);
+              localStorage.setItem(
+                'consultBookDetails',
+                JSON.stringify({
+                  patientId: currentPatient ? currentPatient.id : '',
+                  doctorId: doctorId,
+                  doctorName,
+                  appointmentDateTime: appointmentDateTime,
+                  appointmentType: AppointmentType.ONLINE,
+                  hospitalId: hospitalId,
+                  couponCode: couponCode ? couponCode : null,
+                  amount: revisedAmount,
+                  speciality: getSpeciality(),
+                })
+              );
             }}
+            className={
+              disableSubmit ||
+              mutationLoading ||
+              isDialogOpen ||
+              (!consultNowAvailable && timeSelected === '') ||
+              (scheduleLater && timeSelected === '')
+                ? classes.buttonDisable
+                : ''
+            }
+            title={'Pay'}
           >
-            Reschedule
+            {mutationLoading ? (
+              <CircularProgress size={22} color="secondary" />
+            ) : (
+              `PAY Rs. ${revisedAmount}`
+            )}
           </AphButton>
-        </div>
-      ) : (
-        <div className={classes.bottomActions}>
-          <Link to={clientRoutes.payOnlineConsult()}>
-            <AphButton
-              color="primary"
-              disabled={
-                disableSubmit ||
-                mutationLoading ||
-                isDialogOpen ||
-                (!consultNowAvailable && timeSelected === '') ||
-                (scheduleLater && timeSelected === '')
-              }
-              onClick={() => {
-                localStorage.setItem(
-                  'consultBookDetails',
-                  JSON.stringify({
-                    patientId: currentPatient ? currentPatient.id : '',
-                    doctorId: doctorId,
-                    doctorName,
-                    appointmentDateTime: appointmentDateTime,
-                    appointmentType: AppointmentType.ONLINE,
-                    hospitalId: hospitalId,
-                    couponCode: couponCode ? couponCode : null,
-                    amount: revisedAmount,
-                    speciality: getSpeciality(),
-                  })
-                );
-              }}
-              className={
-                disableSubmit ||
-                mutationLoading ||
-                isDialogOpen ||
-                (!consultNowAvailable && timeSelected === '') ||
-                (scheduleLater && timeSelected === '')
-                  ? classes.buttonDisable
-                  : ''
-              }
-              title={'Pay'}
-            >
-              {mutationLoading ? (
-                <CircularProgress size={22} color="secondary" />
-              ) : (
-                `PAY Rs. ${revisedAmount}`
-              )}
-            </AphButton>
-          </Link>
-        </div>
-      )}
+        </Link>
+      </div>
       <AphDialog
         open={isDialogOpen}
         disableBackdropClick

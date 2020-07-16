@@ -10,7 +10,6 @@ import {
   GetDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors_doctorHospital,
 } from 'graphql/types/GetDoctorsBySpecialtyAndFilters';
 import { SEARCH_TYPE, ConsultMode } from 'graphql/types/globalTypes';
-import { getDiffInDays, getDiffInMinutes, getDiffInHours } from 'helpers/commonHelpers';
 import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
 import { useAuth } from 'hooks/authHooks';
 import { useMutation } from 'react-apollo-hooks';
@@ -20,7 +19,9 @@ import { useAllCurrentPatients } from 'hooks/authHooks';
 import { BookConsult } from 'components/BookConsult';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
-import { readableParam } from 'helpers/commonHelpers';
+import { readableParam, getAvailability } from 'helpers/commonHelpers';
+import { GetDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctorsNextAvailability as NextAvailabilityType } from 'graphql/types/GetDoctorsBySpecialtyAndFilters';
+import moment from 'moment';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -170,12 +171,14 @@ const useStyles = makeStyles((theme: Theme) => {
 
 interface InfoCardProps {
   doctorInfo: DoctorDetails;
-  nextAvailability: string;
+  nextAvailability: NextAvailabilityType;
   doctorType: string;
+  consultMode: ConsultMode;
 }
 
 export const InfoCard: React.FC<InfoCardProps> = (props) => {
-  const { doctorInfo, nextAvailability, doctorType } = props;
+  const { doctorInfo, nextAvailability, doctorType, consultMode } = props;
+  const differenceInMinutes = nextAvailability ? nextAvailability.availableInMinutes : 0;
   const { isSignedIn } = useAuth();
   const { currentPatient } = useAllCurrentPatients();
   const classes = useStyles({});
@@ -187,61 +190,27 @@ export const InfoCard: React.FC<InfoCardProps> = (props) => {
     doctorInfo.specialty &&
     doctorInfo.specialty.name &&
     doctorInfo.specialty.name.toLowerCase();
-  const consultModeOnline: any = [];
-  const consultModePhysical: any = [];
-  doctorInfo &&
-    doctorInfo.consultHours &&
-    doctorInfo.consultHours.map((item: any) => {
-      if (item.consultMode === 'PHYSICAL' || item.consultMode === 'BOTH') {
-        consultModePhysical.push(item.consultMode);
-      }
-      if (item.consultMode === 'ONLINE' || item.consultMode === 'BOTH') {
-        consultModeOnline.push(item.consultMode);
-      }
-    });
-  const consultMode =
-    consultModeOnline.length > 0 && consultModePhysical.length > 0
-      ? ConsultMode.BOTH
-      : consultModeOnline.length > 0
-      ? ConsultMode.ONLINE
-      : consultModePhysical.length > 0
-      ? ConsultMode.PHYSICAL
-      : null;
-  const differenceInMinutes = getDiffInMinutes(nextAvailability);
-  const differenceInDays = getDiffInDays(nextAvailability);
+
+  const availabilityMarkupString = nextAvailability
+    ? getAvailability(
+        nextAvailability.onlineSlot.length > 0
+          ? nextAvailability.onlineSlot
+          : nextAvailability.physicalSlot,
+        differenceInMinutes,
+        'doctorInfo'
+      )
+    : '';
+
   const availabilityMarkup = () => {
-    if (nextAvailability && nextAvailability.length > 0) {
-      if (differenceInMinutes === 0) {
-        return (
-          <div className={`${classes.availability} ${classes.availableNow}`}>AVAILABLE NOW</div>
-        );
-      } else if (differenceInMinutes > 0 && differenceInMinutes <= 15) {
-        return (
-          <div className={`${classes.availability} ${classes.availableNow}`}>
-            AVAILABLE IN {differenceInMinutes} {differenceInMinutes === 1 ? 'MIN' : 'MINS'}
-          </div>
-        );
-      } else if (differenceInMinutes > 15 && differenceInMinutes <= 60) {
-        return (
-          <div className={`${classes.availability}`}>AVAILABLE IN {differenceInMinutes} MINS</div>
-        );
-      } else if (differenceInMinutes >= 60 && differenceInMinutes < 1380) {
-        return (
-          <div className={`${classes.availability}`}>
-            AVAILABLE IN {getDiffInHours(nextAvailability)} HOURS
-          </div>
-        );
-      } else if (differenceInMinutes >= 1380) {
-        return (
-          <div className={`${classes.availability}`}>
-            AVAILABLE IN {differenceInDays || 1}{' '}
-            {differenceInDays === 1 || differenceInDays === 0 ? 'Day' : 'Days'}
-          </div>
-        );
-      }
-    } else {
-      return null;
-    }
+    return nextAvailability ? (
+      <div
+        className={`${classes.availability} ${
+          differenceInMinutes < 15 ? classes.availableNow : null
+        }`}
+      >
+        {availabilityMarkupString}
+      </div>
+    ) : null;
   };
 
   const clinics: GetDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors_doctorHospital[] = [];
@@ -275,14 +244,14 @@ export const InfoCard: React.FC<InfoCardProps> = (props) => {
               className={classes.doctorAvatar}
             />
             <div className={classes.consultType}>
-              {consultModeOnline.length > 0 && (
+              {(consultMode === ConsultMode.BOTH || consultMode === ConsultMode.ONLINE) && (
                 <span>
                   <img src={require('images/ic-video.svg')} alt="" />
                   <br />
                   Online
                 </span>
               )}
-              {consultModePhysical.length > 0 && (
+              {consultMode === ConsultMode.PHYSICAL && (
                 <span>
                   <img src={require('images/fa-solid-hospital.svg')} alt="" />
                   <br />
@@ -368,11 +337,8 @@ export const InfoCard: React.FC<InfoCardProps> = (props) => {
             >
               {popupLoading ? (
                 <CircularProgress size={22} color="secondary" />
-              ) : getDiffInMinutes(nextAvailability) > 0 &&
-                getDiffInMinutes(nextAvailability) <= 60 ? (
-                'CONSULT NOW'
               ) : (
-                'BOOK APPOINTMENT'
+                availabilityMarkupString
               )}
             </AphButton>
           </div>
