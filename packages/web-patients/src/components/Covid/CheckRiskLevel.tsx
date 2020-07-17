@@ -58,7 +58,7 @@ const useStyles = makeStyles((theme: Theme) => {
     rightActions: {
       display: 'flex',
       alignItems: 'center',
-      justifyContent: 'space-between',
+      justifyContent: 'flex-end',
       margin: '10px 0 0',
       [theme.breakpoints.down('sm')]: {
         flexDirection: 'column',
@@ -72,6 +72,7 @@ const useStyles = makeStyles((theme: Theme) => {
         justifyContent: 'normal',
         fontWeight: 600,
         borderRadius: 10,
+        marginRight: 20,
         [theme.breakpoints.down('sm')]: {
           width: '100%',
           margin: '0 0 10px',
@@ -174,12 +175,12 @@ export const CheckRiskLevel: React.FC = (props) => {
           our experts for advice.
         </p>
         <div className={classes.rightActions}>
-          <AphButton className={classes.filledBtn}>
+          {/* <AphButton className={classes.filledBtn}>
             <span>
               <img src={require('images/guide.svg')} alt="" />
             </span>
             <span>Get your personalized guide</span>
-          </AphButton>
+          </AphButton> */}
           <AphButton className={classes.filledBtn} onClick={() => window.open(covidScannerUrl)}>
             <span>
               <img src={require('images/ic_covid-white.svg')} alt="" />
