@@ -396,57 +396,61 @@ export const Header: React.FC = (props) => {
                             </div>
                           )}
                           <ul className={classes.userAccountList}>
-                            <li>
-                              <Link to={clientRoutes.myAccount()}>
+                            <Link to={clientRoutes.myAccount()}>
+                              <li>
                                 <img src={require('images/ic_manageprofile.svg')} alt="" /> Manage
                                 Profiles
-                              </Link>
-                              <img src={require('images/ic_arrow_right.svg')} alt="" />
-                            </li>
-                            <li>
-                              <Link to={clientRoutes.addressBook()}>
-                                <img src={require('images/ic_location.svg')} alt="" /> Address Book
-                              </Link>
-                              <img src={require('images/ic_arrow_right.svg')} alt="" />
-                            </li>
-                            {currentPatient && (
-                              <li>
-                                <Link to={clientRoutes.yourOrders()}>
-                                  <img src={require('images/ic_invoice.svg')} alt="" /> My Orders
-                                </Link>
                                 <img src={require('images/ic_arrow_right.svg')} alt="" />
                               </li>
-                            )}
-                            <li>
-                              <Link to={clientRoutes.myPayments()}>
-                                <img src={require('images/ic_fees.svg')} alt="" /> My Payments
-                              </Link>
-                              <img src={require('images/ic_arrow_right.svg')} alt="" />
-                            </li>
-                            {currentPatient && (
+                            </Link>
+
+                            <Link to={clientRoutes.addressBook()}>
                               <li>
-                                <Link to={clientRoutes.healthRecords()}>
+                                <img src={require('images/ic_location.svg')} alt="" /> Address Book
+                                <img src={require('images/ic_arrow_right.svg')} alt="" />
+                              </li>
+                            </Link>
+
+                            {currentPatient && (
+                              <Link to={clientRoutes.yourOrders()}>
+                                <li>
+                                  <img src={require('images/ic_invoice.svg')} alt="" /> My Orders
+                                  <img src={require('images/ic_arrow_right.svg')} alt="" />
+                                </li>
+                              </Link>
+                            )}
+
+                            <Link to={clientRoutes.myPayments()}>
+                              <li>
+                                <img src={require('images/ic_fees.svg')} alt="" /> My Payments
+                                <img src={require('images/ic_arrow_right.svg')} alt="" />
+                              </li>
+                            </Link>
+
+                            {currentPatient && (
+                              <Link to={clientRoutes.healthRecords()}>
+                                <li>
                                   <img
                                     src={require('images/ic_notificaiton_accounts.svg')}
                                     alt=""
                                   />{' '}
                                   Health Records
-                                </Link>
-                                <img src={require('images/ic_arrow_right.svg')} alt="" />
-                              </li>
+                                  <img src={require('images/ic_arrow_right.svg')} alt="" />
+                                </li>
+                              </Link>
                             )}
-                            <li>
-                              <Link to={clientRoutes.needHelp()}>
+                            <Link to={clientRoutes.needHelp()}>
+                              <li>
                                 <img src={require('images/ic_round_live_help.svg')} alt="" /> Need
                                 Help
-                              </Link>
-                              <img src={require('images/ic_arrow_right.svg')} alt="" />
-                            </li>
-                            <li>
-                              <a href="javascript:void(0)" onClick={() => signOut()}>
+                                <img src={require('images/ic_arrow_right.svg')} alt="" />
+                              </li>
+                            </Link>
+                            <a href="javascript:void(0)" onClick={() => signOut()}>
+                              <li>
                                 <img src={require('images/ic_logout.svg')} alt="" /> Logout
-                              </a>
-                            </li>
+                              </li>
+                            </a>
                           </ul>
                           <div className={classes.downloadOptions}>
                             <img src={require('images/apollo247.png')} />
