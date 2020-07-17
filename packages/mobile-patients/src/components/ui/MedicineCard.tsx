@@ -148,7 +148,7 @@ export interface MedicineCardProps {
   onEditPress: () => void;
   onAddSubscriptionPress: () => void;
   containerStyle?: StyleProp<ViewStyle>;
-  maxQty: number;
+  maxQty?: number;
 }
 
 export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
