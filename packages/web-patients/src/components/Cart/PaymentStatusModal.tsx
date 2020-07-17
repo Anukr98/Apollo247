@@ -72,10 +72,10 @@ export const PaymentStatusModal: React.FC<PaymentStatusProps> = (props) => {
   const [showOrderPopup, setShowOrderPopup] = useState<boolean>(true);
   const pharmaPayments = useMutation(PHRAMA_PAYMENT_STATUS);
 
-  const getPaymentStatus = (payStatus?: any) => {
+  const getPaymentStatus = () => {
     if (!paymentStatusData) return '';
     else {
-      switch (paymentStatusData.paymentStatus || payStatus) {
+      switch (paymentStatusData.paymentStatus) {
         case 'PAYMENT_FAILED':
           return 'failed';
         case 'PAYMENT_ABORTED':
