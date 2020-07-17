@@ -21,7 +21,7 @@ import { TransferAppointmentRepository } from 'consults-service/repositories/tra
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { MedicineOrdersRepository } from 'profiles-service/repositories/MedicineOrdersRepository';
 import { FacilityRepository } from 'doctors-service/repositories/facilityRepository';
-import { addMilliseconds, format, differenceInMinutes, addDays } from 'date-fns';
+import { addMilliseconds, format, differenceInMinutes, addDays, differenceInHours } from 'date-fns';
 import path from 'path';
 import fs from 'fs';
 import { log } from 'customWinstonLogger';
@@ -759,19 +759,21 @@ export async function sendNotification(
     //sendNotificationWhatsapp(patientDetails.mobileNumber, smsLink);
 
     //send sms to doctor if Appointment DateTime is less than 24 hours
-    const todaysDate = new Date(format(new Date(), 'yyyy-MM-dd') + 'T18:30:00');
-    const yesterdaysDate = new Date(format(addDays(new Date(), -1), 'yyyy-MM-dd') + 'T18:30:00');
+    //const todaysDate = new Date(format(new Date(), 'yyyy-MM-dd') + 'T18:30:00');
+    //const yesterdaysDate = new Date(format(addDays(new Date(), -1), 'yyyy-MM-dd') + 'T18:30:00');
+
+    const todaysDate = new Date(format(new Date(), 'yyyy-MM-dd') + 'T23:59:00');
     console.log(
-      todaysDate,
-      yesterdaysDate,
       'check dates for todays date appt',
       appointment.appointmentDateTime,
-      appointment.appointmentDateTime <= new Date(todaysDate) &&
-        appointment.appointmentDateTime >= yesterdaysDate
+      new Date(),
+      differenceInHours(appointment.appointmentDateTime, new Date()),
+      todaysDate,
+      'todays date'
     );
     if (
-      appointment.appointmentDateTime <= todaysDate &&
-      appointment.appointmentDateTime >= yesterdaysDate
+      differenceInHours(appointment.appointmentDateTime, new Date()) <= 24 &&
+      new Date() < todaysDate
     ) {
       const finalTime = format(istDateTime, 'hh:mm a');
       const doctorWhatsAppMessage = ApiConstants.DOCTOR_BOOK_APPOINTMENT_WHATSAPP.replace(
