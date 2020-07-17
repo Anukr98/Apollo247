@@ -1215,7 +1215,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
             justifyContent: 'center',
           }}
         >
-          {doctorDetails && (
+          {/* {doctorDetails && (
             <>
               <CommonVideoPlayer isPlayClicked={!showVideo} />
               <TouchableOpacity
@@ -1235,7 +1235,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                 <View style={{ position: 'absolute', height: 160, width: '100%' }} />
               </TouchableOpacity>
             </>
-          )}
+          )} */}
           {!showVideo &&
           doctorDetails &&
           doctorDetails &&

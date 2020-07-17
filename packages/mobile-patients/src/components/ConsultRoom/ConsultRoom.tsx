@@ -654,7 +654,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
     const params = {
       phone: '91' + storedPhoneNumber,
-      size: 10,
+      size: 40,
     };
     console.log('params', params);
     notifcationsApi(params)
@@ -990,7 +990,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         setPersonalizedData([]);
         setisPersonalizedCard(false);
         // console.log('ConsultRoom_getPatientPersonalizedAppointmentList', e);
-        CommonBugFender('ConsultRoom_getPatientPersonalizedAppointmentList', e);
+        // CommonBugFender('ConsultRoom_getPatientPersonalizedAppointmentList', e);
       });
   };
 

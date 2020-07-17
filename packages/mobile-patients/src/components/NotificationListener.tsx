@@ -861,7 +861,9 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
         .android.setChannelId('fcm_FirebaseNotifiction_default_channel') // e.g. the id you chose above
         .android.setSmallIcon('@drawable/ic_notification_white') // create this icon in Android Studio
         .android.setColor('#fcb716') // you can set a color here
-        .android.setPriority(firebase.notifications.Android.Priority.Max);
+        .android.setPriority(firebase.notifications.Android.Priority.Max)
+        .android.setAutoCancel(true)
+        .android.setBigText(notification.body, notification.title);
       firebase
         .notifications()
         .displayNotification(localNotification)
