@@ -191,25 +191,30 @@ export const InfoCard: React.FC<InfoCardProps> = (props) => {
     doctorInfo.specialty.name &&
     doctorInfo.specialty.name.toLowerCase();
 
-  const availabilityMarkupString = nextAvailability
-    ? getAvailability(
-        nextAvailability.onlineSlot.length > 0
-          ? nextAvailability.onlineSlot
-          : nextAvailability.physicalSlot,
-        differenceInMinutes,
-        'doctorInfo'
-      )
-    : '';
+  const availabilityMarkupString = (type: string) =>
+    nextAvailability
+      ? getAvailability(
+          nextAvailability.onlineSlot.length > 0
+            ? nextAvailability.onlineSlot
+            : nextAvailability.physicalSlot,
+          differenceInMinutes,
+          type
+        )
+      : '';
 
-  const availabilityMarkup = () => {
+  const availabilityMarkup = (type: string) => {
     return nextAvailability ? (
-      <div
-        className={`${classes.availability} ${
-          differenceInMinutes < 15 ? classes.availableNow : null
-        }`}
-      >
-        {availabilityMarkupString}
-      </div>
+      type === 'markup' ? (
+        <div
+          className={`${classes.availability} ${
+            differenceInMinutes < 15 ? classes.availableNow : null
+          }`}
+        >
+          {availabilityMarkupString(type)}
+        </div>
+      ) : (
+        availabilityMarkupString(type)
+      )
     ) : null;
   };
 
@@ -261,7 +266,7 @@ export const InfoCard: React.FC<InfoCardProps> = (props) => {
             </div>
           </div>
           <div className={classes.doctorInfo}>
-            <>{availabilityMarkup()}</>
+            <>{availabilityMarkup('markup')}</>
             <div className={`${classes.apolloLogo}`}>
               <img
                 className={doctorType.toLowerCase() !== 'apollo' ? classes.otherDoctorType : ''}
@@ -338,7 +343,7 @@ export const InfoCard: React.FC<InfoCardProps> = (props) => {
               {popupLoading ? (
                 <CircularProgress size={22} color="secondary" />
               ) : (
-                availabilityMarkupString
+                availabilityMarkup('doctorInfo')
               )}
             </AphButton>
           </div>
