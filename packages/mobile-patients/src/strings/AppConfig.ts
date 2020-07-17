@@ -766,29 +766,20 @@ export const TestsFeedBackData = {
   },
 };
 
-export const NeedHelpWhatsAppOptions = [
-  'I would like to know the Delivery status of my order.',
-  'I was not able to place the order due to technical errors.',
-  'I received an order with Partial items/ Wrong items/ Wrong bill',
-  'Excess amount was charged to me by Delivery Executive',
-  'I need to know my refund status',
-  'I have prescription related queries (Invalid/ Order cancelled)',
-];
-
 export const NeedHelp = [
   {
     category: 'Pharmacy',
     options: [
-      'I would like to cancel the order!',
-      'I would like to know the Delivery status of my order.',
-      'I was not able to place the order due to technical errors',
-      'I was not able to place the order due to technical errors.',
-      'I need to know why my order was cancelled',
-      'I received an order with Partial items/ Wrong items/ Wrong bill',
-      'Excess amount was charged to me by Delivery Executive',
-      'Inappropriate attitude & behaviour of Delivery Executive',
-      'I need to know my refund status',
-      'I have prescription related queries (Invalid/ Order cancelled)',
+      'I want to cancel my medicine order with a refund',
+      'The order was successfully placed but medicines not yet delivered',
+      'I was not able to make the payment due to technical errors',
+      'My money got deducted but no order confirmation received',
+      'My order got canceled with no prior notice hence, need the refund',
+      'There is a mismatch in the quantity of medicines ordered and delivered',
+      'The medicines delivered are not the ones which were ordered by me',
+      'The app is crashing/ website is working too slow',
+      'The excess amount charged for medicine delivery',
+      'Inappropriate attitude or behaviour of delivery staff',
     ],
   },
   {
