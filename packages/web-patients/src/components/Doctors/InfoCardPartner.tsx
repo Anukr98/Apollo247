@@ -243,7 +243,7 @@ export const InfoCardPartner: React.FC<InfoCardProps> = (props) => {
                   Online
                 </span>
               )}
-              {consultMode === ConsultMode.PHYSICAL && (
+              {(consultMode === ConsultMode.BOTH || consultMode === ConsultMode.PHYSICAL) && (
                 <span>
                   <img src={require('images/fa-solid-hospital.svg')} alt="" />
                   <br />
