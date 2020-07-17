@@ -234,7 +234,7 @@ export const PHRLanding: React.FC<LandingProps> = (props) => {
         let date2 = moment(data2.date)
           .toDate()
           .getTime();
-        return date1 > date2 ? -1 : date1 < date2 ? 1 : data1.id - data2.id;
+        return date1 > date2 ? -1 : date1 < date2 ? 1 : data2.id - data1.id;
       });
     } else {
       return array.sort((a: any, b: any) => {
