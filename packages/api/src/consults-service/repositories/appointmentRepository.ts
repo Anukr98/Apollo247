@@ -875,9 +875,9 @@ export class AppointmentRepository extends Repository<Appointment> {
         .getUTCHours()
         .toString()
         .padStart(2, '0')}:${appointmentDate
-        .getUTCMinutes()
-        .toString()
-        .padStart(2, '0')}:00.000Z`;
+          .getUTCMinutes()
+          .toString()
+          .padStart(2, '0')}:00.000Z`;
       console.log(availableSlots, 'availableSlots final list');
       console.log(availableSlots.indexOf(sl), 'indexof');
       console.log(checkStart, checkEnd, 'check start end');
@@ -1035,9 +1035,9 @@ export class AppointmentRepository extends Repository<Appointment> {
             .getUTCHours()
             .toString()
             .padStart(2, '0')}:${doctorAppointment.appointmentDateTime
-            .getUTCMinutes()
-            .toString()
-            .padStart(2, '0')}:00.000Z`;
+              .getUTCMinutes()
+              .toString()
+              .padStart(2, '0')}:00.000Z`;
           if (availableSlots.indexOf(aptSlot) >= 0) {
             availableSlots.splice(availableSlots.indexOf(aptSlot), 1);
           }
@@ -1200,25 +1200,13 @@ export class AppointmentRepository extends Repository<Appointment> {
   }
 
   updateJdQuestionStatusbyIds(ids: string[]) {
-    return new Promise(async (resolve, reject) => {
-      try {
-        //Do not use forEach here, forEach loops do not support await
-        for (let k = 0, totalItemsTosave = ids.length; k < totalItemsTosave; k++) {
-          await this.createUpdateAppointment(
-            this.create(),
-            {
-              id: ids[k],
-              isJdQuestionsComplete: true,
-              isConsultStarted: true,
-            },
-            AphErrorMessages.UPDATE_APPOINTMENT_ERROR
-          );
-        }
-
-        return resolve();
-      } catch (exception) {
-        return reject(exception);
-      }
+    return this.update([...ids], {
+      isJdQuestionsComplete: true,
+      isConsultStarted: true,
+    }).catch((getApptError) => {
+      throw new AphError(AphErrorMessages.UPDATE_APPOINTMENT_ERROR, undefined, {
+        getApptError,
+      });
     });
   }
 
@@ -1367,9 +1355,9 @@ export class AppointmentRepository extends Repository<Appointment> {
             .getUTCHours()
             .toString()
             .padStart(2, '0')}:${blockedSlot.start
-            .getUTCMinutes()
-            .toString()
-            .padStart(2, '0')}:00.000Z`;
+              .getUTCMinutes()
+              .toString()
+              .padStart(2, '0')}:00.000Z`;
 
           let blockedSlotsCount =
             (Math.abs(differenceInMinutes(blockedSlot.end, blockedSlot.start)) / 60) * duration;
@@ -1427,9 +1415,9 @@ export class AppointmentRepository extends Repository<Appointment> {
               .getUTCHours()
               .toString()
               .padStart(2, '0')}:${slot
-              .getUTCMinutes()
-              .toString()
-              .padStart(2, '0')}:00.000Z`;
+                .getUTCMinutes()
+                .toString()
+                .padStart(2, '0')}:00.000Z`;
           }
           console.log('start slot', slot);
 
