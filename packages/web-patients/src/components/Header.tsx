@@ -35,7 +35,7 @@ const useStyles = makeStyles((theme: Theme) => {
     headerSticky: {
       position: 'fixed',
       width: '100%',
-      zIndex: 99,
+      zIndex: 999,
       top: 0,
     },
     container: {
@@ -187,20 +187,20 @@ const useStyles = makeStyles((theme: Theme) => {
       listStyle: 'none',
       textAlign: 'left',
       '& li': {
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
         borderBottom: '1px solid rgba(2, 71, 91, 0.3)',
-        '& >img': {
-          margin: '0 20px 0 0',
-        },
+
         '& a': {
           padding: '10px 20px',
+          fontWeight: 500,
           display: 'flex',
           alignItems: 'center',
-          fontWeight: 500,
-          '& img': {
-            margin: '0 10px 0 0',
+          justifyContent: 'space-between',
+          '& span': {
+            display: 'flex',
+            alignItems: 'center',
+            '& img': {
+              margin: '0 10px 0 0',
+            },
           },
         },
       },
@@ -396,61 +396,78 @@ export const Header: React.FC = (props) => {
                             </div>
                           )}
                           <ul className={classes.userAccountList}>
-                            <Link to={clientRoutes.myAccount()}>
-                              <li>
-                                <img src={require('images/ic_manageprofile.svg')} alt="" /> Manage
-                                Profiles
+                            <li>
+                              <Link to={clientRoutes.myAccount()}>
+                                <span>
+                                  <img src={require('images/ic_manageprofile.svg')} alt="" /> Manage
+                                  Profiles
+                                </span>
                                 <img src={require('images/ic_arrow_right.svg')} alt="" />
-                              </li>
-                            </Link>
+                              </Link>
+                            </li>
 
-                            <Link to={clientRoutes.addressBook()}>
-                              <li>
-                                <img src={require('images/ic_location.svg')} alt="" /> Address Book
+                            <li>
+                              <Link to={clientRoutes.addressBook()}>
+                                <span>
+                                  <img src={require('images/ic_location.svg')} alt="" /> Address
+                                  Book
+                                </span>
                                 <img src={require('images/ic_arrow_right.svg')} alt="" />
-                              </li>
-                            </Link>
+                              </Link>
+                            </li>
 
                             {currentPatient && (
-                              <Link to={clientRoutes.yourOrders()}>
-                                <li>
-                                  <img src={require('images/ic_invoice.svg')} alt="" /> My Orders
+                              <li>
+                                <Link to={clientRoutes.yourOrders()}>
+                                  <span>
+                                    <img src={require('images/ic_invoice.svg')} alt="" /> My Orders
+                                  </span>
                                   <img src={require('images/ic_arrow_right.svg')} alt="" />
-                                </li>
-                              </Link>
+                                </Link>
+                              </li>
                             )}
 
-                            <Link to={clientRoutes.myPayments()}>
-                              <li>
-                                <img src={require('images/ic_fees.svg')} alt="" /> My Payments
+                            <li>
+                              <Link to={clientRoutes.myPayments()}>
+                                <span>
+                                  <img src={require('images/ic_fees.svg')} alt="" /> My Payments
+                                </span>
                                 <img src={require('images/ic_arrow_right.svg')} alt="" />
-                              </li>
-                            </Link>
+                              </Link>
+                            </li>
 
                             {currentPatient && (
-                              <Link to={clientRoutes.healthRecords()}>
-                                <li>
-                                  <img
-                                    src={require('images/ic_notificaiton_accounts.svg')}
-                                    alt=""
-                                  />{' '}
-                                  Health Records
+                              <li>
+                                <Link to={clientRoutes.healthRecords()}>
+                                  <span>
+                                    <img
+                                      src={require('images/ic_notificaiton_accounts.svg')}
+                                      alt=""
+                                    />{' '}
+                                    Health Records
+                                  </span>
                                   <img src={require('images/ic_arrow_right.svg')} alt="" />
-                                </li>
-                              </Link>
+                                </Link>
+                              </li>
                             )}
-                            <Link to={clientRoutes.needHelp()}>
-                              <li>
-                                <img src={require('images/ic_round_live_help.svg')} alt="" /> Need
-                                Help
+
+                            <li>
+                              <Link to={clientRoutes.needHelp()}>
+                                <span>
+                                  <img src={require('images/ic_round_live_help.svg')} alt="" /> Need
+                                  Help
+                                </span>
                                 <img src={require('images/ic_arrow_right.svg')} alt="" />
-                              </li>
-                            </Link>
-                            <a href="javascript:void(0)" onClick={() => signOut()}>
-                              <li>
-                                <img src={require('images/ic_logout.svg')} alt="" /> Logout
-                              </li>
-                            </a>
+                              </Link>
+                            </li>
+
+                            <li>
+                              <a href="javascript:void(0)" onClick={() => signOut()}>
+                                <span>
+                                  <img src={require('images/ic_logout.svg')} alt="" /> Logout
+                                </span>
+                              </a>
+                            </li>
                           </ul>
                           <div className={classes.downloadOptions}>
                             <img src={require('images/apollo247.png')} />
