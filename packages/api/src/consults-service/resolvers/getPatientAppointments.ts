@@ -9,7 +9,6 @@ import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { ApiConstants } from 'ApiConstants';
 import { DoctorHospitalRepository } from 'doctors-service/repositories/doctorHospitalRepository';
 import { addDays } from 'date-fns';
-import { arSA } from 'date-fns/esm/locale';
 
 export const getPatinetAppointmentsTypeDefs = gql`
   type PatinetAppointments {
