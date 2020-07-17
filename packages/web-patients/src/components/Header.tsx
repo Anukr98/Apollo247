@@ -233,6 +233,7 @@ const useStyles = makeStyles((theme: Theme) => {
     userDetails: {
       padding: '10px 20px',
       textAlign: 'left',
+      cursor: 'auto',
       '& h2': {
         fontSize: 23,
         fontWeight: 700,
