@@ -361,9 +361,8 @@ export const Header: React.FC = (props) => {
               }`}
             >
               {isSignedIn ? (
-                <Link
+                <div
                   className={`${classes.userCircle} ${isSignedIn ? classes.userActive : ''}`}
-                  to={profileVisible ? clientRoutes.myAccount() : '#'}
                   title={'Control profile'}
                   ref={node}
                   onClick={(e) => {
@@ -463,7 +462,7 @@ export const Header: React.FC = (props) => {
                       )}
                     </>
                   )}
-                </Link>
+                </div>
               ) : (
                 <ProtectedWithLoginPopup>
                   {({ protectWithLoginPopup }) => (
