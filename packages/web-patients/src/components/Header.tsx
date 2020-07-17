@@ -35,7 +35,7 @@ const useStyles = makeStyles((theme: Theme) => {
     headerSticky: {
       position: 'fixed',
       width: '100%',
-      zIndex: 99,
+      zIndex: 999,
       top: 0,
     },
     container: {
@@ -187,20 +187,20 @@ const useStyles = makeStyles((theme: Theme) => {
       listStyle: 'none',
       textAlign: 'left',
       '& li': {
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
         borderBottom: '1px solid rgba(2, 71, 91, 0.3)',
-        '& >img': {
-          margin: '0 20px 0 0',
-        },
+
         '& a': {
           padding: '10px 20px',
+          fontWeight: 500,
           display: 'flex',
           alignItems: 'center',
-          fontWeight: 500,
-          '& img': {
-            margin: '0 10px 0 0',
+          justifyContent: 'space-between',
+          '& span': {
+            display: 'flex',
+            alignItems: 'center',
+            '& img': {
+              margin: '0 10px 0 0',
+            },
           },
         },
       },
@@ -398,53 +398,74 @@ export const Header: React.FC = (props) => {
                           <ul className={classes.userAccountList}>
                             <li>
                               <Link to={clientRoutes.myAccount()}>
-                                <img src={require('images/ic_manageprofile.svg')} alt="" /> Manage
-                                Profiles
+                                <span>
+                                  <img src={require('images/ic_manageprofile.svg')} alt="" /> Manage
+                                  Profiles
+                                </span>
+                                <img src={require('images/ic_arrow_right.svg')} alt="" />
                               </Link>
-                              <img src={require('images/ic_arrow_right.svg')} alt="" />
                             </li>
+
                             <li>
                               <Link to={clientRoutes.addressBook()}>
-                                <img src={require('images/ic_location.svg')} alt="" /> Address Book
+                                <span>
+                                  <img src={require('images/ic_location.svg')} alt="" /> Address
+                                  Book
+                                </span>
+                                <img src={require('images/ic_arrow_right.svg')} alt="" />
                               </Link>
-                              <img src={require('images/ic_arrow_right.svg')} alt="" />
                             </li>
+
                             {currentPatient && (
                               <li>
                                 <Link to={clientRoutes.yourOrders()}>
-                                  <img src={require('images/ic_invoice.svg')} alt="" /> My Orders
+                                  <span>
+                                    <img src={require('images/ic_invoice.svg')} alt="" /> My Orders
+                                  </span>
+                                  <img src={require('images/ic_arrow_right.svg')} alt="" />
                                 </Link>
-                                <img src={require('images/ic_arrow_right.svg')} alt="" />
                               </li>
                             )}
+
                             <li>
                               <Link to={clientRoutes.myPayments()}>
-                                <img src={require('images/ic_fees.svg')} alt="" /> My Payments
+                                <span>
+                                  <img src={require('images/ic_fees.svg')} alt="" /> My Payments
+                                </span>
+                                <img src={require('images/ic_arrow_right.svg')} alt="" />
                               </Link>
-                              <img src={require('images/ic_arrow_right.svg')} alt="" />
                             </li>
+
                             {currentPatient && (
                               <li>
                                 <Link to={clientRoutes.healthRecords()}>
-                                  <img
-                                    src={require('images/ic_notificaiton_accounts.svg')}
-                                    alt=""
-                                  />{' '}
-                                  Health Records
+                                  <span>
+                                    <img
+                                      src={require('images/ic_notificaiton_accounts.svg')}
+                                      alt=""
+                                    />{' '}
+                                    Health Records
+                                  </span>
+                                  <img src={require('images/ic_arrow_right.svg')} alt="" />
                                 </Link>
-                                <img src={require('images/ic_arrow_right.svg')} alt="" />
                               </li>
                             )}
+
                             <li>
                               <Link to={clientRoutes.needHelp()}>
-                                <img src={require('images/ic_round_live_help.svg')} alt="" /> Need
-                                Help
+                                <span>
+                                  <img src={require('images/ic_round_live_help.svg')} alt="" /> Need
+                                  Help
+                                </span>
+                                <img src={require('images/ic_arrow_right.svg')} alt="" />
                               </Link>
-                              <img src={require('images/ic_arrow_right.svg')} alt="" />
                             </li>
+
                             <li>
                               <a href="javascript:void(0)" onClick={() => signOut()}>
-                                <img src={require('images/ic_logout.svg')} alt="" /> Logout
+                                <span>
+                                  <img src={require('images/ic_logout.svg')} alt="" /> Logout
+                                </span>
                               </a>
                             </li>
                           </ul>
