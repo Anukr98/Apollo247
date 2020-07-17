@@ -15,12 +15,7 @@ import { useMutation } from 'react-apollo-hooks';
 import { AppointmentType, BOOKINGSOURCE } from 'graphql/types/globalTypes';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { clientRoutes } from 'helpers/clientRoutes';
-import {
-  getDeviceType,
-  getDiffInHours,
-  getDiffInDays,
-  getDiffInMinutes,
-} from 'helpers/commonHelpers';
+import { getDeviceType, getDiffInMinutes, getAvailability } from 'helpers/commonHelpers';
 import { GET_DOCTOR_NEXT_AVAILABILITY } from 'graphql/doctors';
 import {
   makeAppointmentPayment,
@@ -45,7 +40,7 @@ import { Alerts } from 'components/Alerts/Alerts';
 import { gtmTracking, _cbTracking } from '../gtmTracking';
 import { useApolloClient } from 'react-apollo-hooks';
 import { ShowSlots } from './ShowSlots';
-import { GetDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctorsNextAvailability as NextAvailabilityType } from 'graphql/types/GetDoctorsBySpecialtyAndFilters';
+import _lowerCase from 'lodash/lowerCase';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -213,7 +208,6 @@ interface OnlineConsultProps {
 
 export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
   const classes = useStyles({});
-  const { doctorAvailableIn } = props;
   const [showCalendar, setShowCalendar] = useState<boolean>(false);
   const [dateSelected, setDateSelected] = useState<string>('');
   const [timeSelected, setTimeSelected] = useState<string>('');
@@ -406,9 +400,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
     );
   }
 
-  const differenceInHours = getDiffInHours(nextAvailability);
   const differenceInMinutes = getDiffInMinutes(nextAvailability);
-  const differenceInDays = getDiffInDays(nextAvailability);
   if (differenceInMinutes >= 0 && differenceInMinutes <= 60) {
     consultNowSlotTime = nextAvailability;
   }
@@ -579,28 +571,17 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
   //   (!consultNowAvailable && timeSelected === '') ||
   //   (scheduleLater && timeSelected === '');
 
+  const availabilityMarkup = () => {
+    return getAvailability(nextAvailability, differenceInMinutes, 'consultType');
+  };
+
   return (
     <div className={classes.root}>
       <Scrollbars autoHide={true} autoHeight autoHeightMax={isSmallScreen ? '50vh' : '65vh'}>
         <div className={classes.customScrollBar}>
           <div className={classes.consultGroup}>
-            {differenceInMinutes > 0 && differenceInMinutes <= 60 ? (
-              <p>
-                Dr. {doctorName} is available in {differenceInMinutes} mins! Would you like to
-                consult now or schedule for later?
-              </p>
-            ) : differenceInMinutes > 60 && differenceInMinutes <= 1440 ? (
-              <p>
-                Dr. {doctorName} is available in {differenceInHours} hours! Would you like to
-                consult now or schedule for later?
-              </p>
-            ) : differenceInMinutes > 0 ? (
-              <p>
-                Dr. {doctorName} is available in {differenceInDays || 1}{' '}
-                {differenceInDays === 1 || differenceInDays === 0 ? 'day!' : 'days!'} Would you like
-                to consult now or schedule for later?
-              </p>
-            ) : null}
+            <p>{`Dr. ${doctorName} is ${_lowerCase(availabilityMarkup())}! Would you like to
+                consult now or schedule for later?`}</p>
             <div className={classes.actions}>
               <AphButton
                 onClick={(e) => {
