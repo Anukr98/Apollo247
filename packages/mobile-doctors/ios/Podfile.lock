@@ -322,7 +322,7 @@ PODS:
     - React
   - react-native-keep-awake (4.0.0):
     - React
-  - react-native-netinfo (5.3.3):
+  - react-native-netinfo (5.9.5):
     - React
   - react-native-pdf (6.0.1):
     - React
@@ -671,7 +671,7 @@ SPEC CHECKSUMS:
   react-native-geolocation: cbd9d6bd06bac411eed2671810f454d4908484a8
   react-native-image-picker: 7e19aefccd42aad840a758181e16ce05d4e95578
   react-native-keep-awake: eba3137546b10003361b37c761f6c429b59814ae
-  react-native-netinfo: 75711548b53a527515d9226e6370249f75083e63
+  react-native-netinfo: 7f3f3ed9e8f0e7ab3e7cac00cbfdc6997e25ecaf
   react-native-pdf: 29a09815e99c92743aa8459a90564aaddd4065e0
   react-native-splash-screen: 200d11d188e2e78cea3ad319964f6142b6384865
   React-RCTActionSheet: 94671eef55b01a93be735605822ef712d5ea208e

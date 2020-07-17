@@ -189,7 +189,7 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
                 {renderShareLink()}
               </View>
               {renderData()}
-              <View style={{ marginTop: 20 }}>
+              <View style={{ marginVertical: 20 }}>
                 <Text
                   style={{
                     ...theme.fonts.IBMPlexSansBold(13),
