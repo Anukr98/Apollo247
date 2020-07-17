@@ -204,6 +204,7 @@ export enum BOOKING_SOURCE {
   WEB = 'WEB',
   MOBILE = 'MOBILE',
   ORDER_PUNCHING_TOOL = 'ORDER_PUNCHING_TOOL',
+  MFINE = 'MFINE',
 }
 
 export enum DEVICE_TYPE {
@@ -302,6 +303,7 @@ export enum PROFILE_SOURCE {
   WEB = 'WEB',
   MOBILE = 'MOBILE',
   ORDER_PUNCHING_TOOL = 'ORDER_PUNCHING_TOOL',
+  MFINE = 'MFINE',
 }
 
 //medicine orders starts

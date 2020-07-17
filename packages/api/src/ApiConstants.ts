@@ -89,7 +89,7 @@ export enum ApiConstants {
 
   //medicine order delivered
   ORDER_DELIVERY_TITLE = 'Medicine order is delivered',
-  ORDER_DELIVERY_BODY = 'Greetings from Apollo 24|7 Your order {1} is delivered successfully!',
+  ORDER_DELIVERY_BODY = 'Greetings from Apollo 24|7, Your order {1} is delivered successfully! In case of any issues or feedback related to your delivery, please speak with our customer care executives on the official WhatsApp channel (during business hours 9 AM - 8:30 PM) https://bit.ly/apollo247medicines',
 
   //medicine order cancelled
   ORDER_CANCEL_BODY = 'Hi {name}, for order {orderId}, {reason}. For any support, please speak with our customer care executives on the official WhatsApp channel (during business hours 9 AM - 6 PM) https://bit.ly/apollo247medicines',
