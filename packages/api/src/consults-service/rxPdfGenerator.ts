@@ -537,7 +537,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
       .fontSize(11)
       .font(assetsDir + '/fonts/IBMPlexSans-Regular.ttf')
       .fillColor('#02475b')
-      .text(nameLine, 370, margin);
+      .text(nameLine, 320, margin);
 
     if (doctorInfo.qualifications) {
       doc
@@ -563,7 +563,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
       .moveDown(0.3)
       .fontSize(8)
       .font(assetsDir + '/fonts/IBMPlexSans-Regular.ttf')
-      .fillColor('#000000')
+      .fillColor('#666666')
       .text(hospitalAddress.name);
 
     doc.moveDown(0.2).text(hospitalAddress.streetLine1);
@@ -572,27 +572,28 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
 
     doc
       .moveDown(0.6)
-      .fillColor('#7f7f7f')
+      .fillColor('#999999')
       .text(`${ApiConstants.CASESHEET_WHATSAPP_LABEL.toString()}`, { lineBreak: false })
-      .text(`${ApiConstants.CASESHEET_EMAIL_LABEL.toString()}`, 465, doc.y);
+      .text(`${ApiConstants.CASESHEET_EMAIL_LABEL.toString()}`, 435, doc.y);
 
     doc
       .moveDown(0.5)
       .fillColor('#333333')
-      .image(loadAsset('ic-phone.png'), 370, doc.y, {
+      .image(loadAsset('ic-phone.png'), 320, doc.y, {
         valign: 'bottom',
         height: 12,
         width: 12,
       })
-      .text(`${ApiConstants.CASESHEET_WHATSAPP_NUMBER.toString()}`, 385, doc.y - 12, {
+      .fontSize(10)
+      .text(`${ApiConstants.CASESHEET_WHATSAPP_NUMBER.toString()}`, 340, doc.y - 12, {
         lineBreak: false,
       })
-      .image(loadAsset('ic-email.png'), 465, doc.y, {
+      .image(loadAsset('ic-email.png'), 435, doc.y, {
         valign: 'bottom',
         height: 12,
         width: 12,
       })
-      .text(`${ApiConstants.CASESHEET_EMAIL.toString()}`, 480, doc.y - 12);
+      .text(`${ApiConstants.CASESHEET_EMAIL.toString()}`, 455, doc.y - 12);
 
     doc.moveDown(0.5);
   };
