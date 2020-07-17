@@ -990,7 +990,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         setPersonalizedData([]);
         setisPersonalizedCard(false);
         // console.log('ConsultRoom_getPatientPersonalizedAppointmentList', e);
-        CommonBugFender('ConsultRoom_getPatientPersonalizedAppointmentList', e);
+        // CommonBugFender('ConsultRoom_getPatientPersonalizedAppointmentList', e);
       });
   };
 
