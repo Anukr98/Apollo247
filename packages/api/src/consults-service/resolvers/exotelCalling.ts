@@ -8,6 +8,7 @@ import { AppointmentRepository } from 'consults-service/repositories/appointment
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { ExotelDetailsRepository } from 'consults-service/repositories/exotelDetailsRepository'
+import { uploadFileToBlobStorage } from 'helpers/uploadFileToBlob';
 
 export const exotelTypeDefs = gql`
   input exotelInput {
@@ -43,6 +44,9 @@ export const exotelTypeDefs = gql`
     doctorPickedUp: String
     totalCallDuration: String
     deviceType: String
+    recordingUrl: String
+    appointmentId: String
+    status: String
   }
 
   extend type Query {
@@ -173,7 +177,9 @@ const initateConferenceTelephoneCall: Resolver<
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
   const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
 
-  if (!exotelInput.from && !exotelInput.to) {
+  // if (!exotelInput.from && !exotelInput.to) {
+    
+    // exotelInput.appointmentId made mandatory later on.
     if (!exotelInput.appointmentId) {
       throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
     }
@@ -198,41 +204,18 @@ const initateConferenceTelephoneCall: Resolver<
 
     fromMobileNumber = doctor.mobileNumber;
     toMobileNumber = patient.mobileNumber;
-  }
+  // }
 
-  if (exotelInput.from && !exotelInput.to) {
-    throw new AphError(AphErrorMessages.INVALID_PARAMETERS, undefined, {});
-  }
+  // if (exotelInput.from && !exotelInput.to) {
+  //   throw new AphError(AphErrorMessages.INVALID_PARAMETERS, undefined, {});
+  // }
 
-  if (!exotelInput.from && exotelInput.to) {
-    throw new AphError(AphErrorMessages.INVALID_PARAMETERS, undefined, {});
-  }
+  // if (!exotelInput.from && exotelInput.to) {
+  //   throw new AphError(AphErrorMessages.INVALID_PARAMETERS, undefined, {});
+  // }
 
-  fromMobileNumber = exotelInput.from;
-  toMobileNumber = exotelInput.to;
-
-  if(!fromMobileNumber.includes('+91')){
-    fromMobileNumber = '+91' + fromMobileNumber
-  }
-  if(!toMobileNumber.includes('+91')){
-    toMobileNumber = '+91' + toMobileNumber
-  }
-
-  doctor = await doctorRepo.searchDoctorByMobileNumber(fromMobileNumber, true);
-  if (!doctor) {
-    throw new AphError(AphErrorMessages.GET_DOCTORS_ERROR, undefined, {});
-  }
-
-  patient = await patientRepo.findByMobileNumber(toMobileNumber);
-  if (!patient.length) {
-    throw new AphError(AphErrorMessages.GET_PATIENTS_ERROR, undefined, {});
-  }
-
-  appt = await apptsRepo.getPatientAndDoctorsAppointments(patient[0].id, [doctor.id])
-  if (!appt.length) {
-    throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
-  }
-
+  // fromMobileNumber = exotelInput.from;
+  // toMobileNumber = exotelInput.to;
 
   const exotelRequest = {
     From: fromMobileNumber,
@@ -252,10 +235,10 @@ const initateConferenceTelephoneCall: Resolver<
     status: exotelResponse['Call']['Status'],
     callStartTime: exotelResponse['Call']['StartTime'],
     direction: exotelResponse['Call']['Direction'],
-    appointmentId: appt[0].id,
+    appointmentId: appt.id,
     doctorType: doctor.doctorType,
     doctorId: doctor.id,
-    device: "",
+    deviceType: "",
   }
 
   try {
@@ -301,13 +284,42 @@ const updateCallStatusBySid: Resolver<null, callStatusInputArgs, ConsultServiceC
     .then(res => res.json())
     .then(async (res) => {
 
-      await exotelRepo.updateCallDetails(each.id, {
-        status: res['Call']['Status'],
-        callEndTime: res['Call']['EndTime'],
-        totalCallDuration: res['Call']['Duration'],
-        price: res['Call']['Price'],
-        recordingUrl: res['Call']['RecordingUrl']
-      });
+      if(res['Call']['RecordingUrl']){
+        await fetch(res['Call']['RecordingUrl'], {
+          method: 'GET',
+        })
+        .then((response) => response.arrayBuffer())
+        .then(async (resp) => {
+
+          let uploadDocumentInput = {
+            fileType: "MPEG",
+            base64FileInput: Buffer.from(resp).toString('base64')
+          }
+
+          //upload file to blob storage
+          const blobUrl = await uploadFileToBlobStorage(
+            uploadDocumentInput.fileType,
+            uploadDocumentInput.base64FileInput
+          );
+
+          await exotelRepo.updateCallDetails(each.id, {
+            status: res['Call']['Status'],
+            callEndTime: res['Call']['EndTime'],
+            totalCallDuration: res['Call']['Duration'],
+            price: res['Call']['Price'],
+            recordingUrl: blobUrl,
+          });
+
+        })
+      } else {
+        await exotelRepo.updateCallDetails(each.id, {
+          status: res['Call']['Status'],
+          callEndTime: res['Call']['EndTime'],
+          totalCallDuration: res['Call']['Duration'],
+          price: res['Call']['Price'],
+        });
+      }
+
     })
     .catch((error) => {
       console.error('exotelError in update: ', error);
@@ -332,6 +344,9 @@ type callDetailsResult = {
   doctorPickedUp: string
   totalCallDuration: string
   deviceType: string
+  recordingUrl: string
+  appointmentId: string
+  status: string
 };
 
 type appointmentInputArgs = { appointment: appointment };
@@ -348,14 +363,21 @@ const getCallDetailsByAppintment: Resolver<
 
   const calls = await exotelRepo.findByAppointmentId(appointment.id)
   
+  if (!calls) {
+    throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
+  }
+
   return {
-    callEndTime: calls? calls.callEndTime.toUTCString() : "",
-    callStartTime: calls? calls.callStartTime.toUTCString() : "",
-    patientPickedUp: calls? (calls.patientPickedUp ? "Yes" : "No") : "",
-    doctorPickedUp: calls? (calls.doctorPickedUp ? "Yes" : "No") : "",
-    totalCallDuration: calls? calls.totalCallDuration.toString() : "",
-    deviceType: calls? calls.deviceType: "",
-  };
+    callStartTime: calls.callStartTime.toUTCString(),
+    callEndTime: calls.callEndTime.toUTCString(),
+    patientPickedUp: (calls.patientPickedUp ? "Yes" : "No"),
+    doctorPickedUp: (calls.doctorPickedUp ? "Yes" : "No"),
+    totalCallDuration: calls.totalCallDuration.toString(),
+    deviceType: calls.deviceType,
+    recordingUrl: calls.recordingUrl,
+    appointmentId: calls.appointmentId,
+    status: calls.status,
+};
 
 };
 

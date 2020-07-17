@@ -1820,7 +1820,7 @@ export class ExotelDetails extends BaseEntity {
   patientMobileNumber: string;
 
   @Column({ nullable: true })
-  deviceType: DEVICETYPE;
+  deviceType: string;
 
   @Column({ nullable: true })
   updatedDate: Date;
