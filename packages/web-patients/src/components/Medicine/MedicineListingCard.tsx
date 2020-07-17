@@ -208,7 +208,7 @@ export const MedicineListingCard: React.FC<MedicineListingCardProps> = (props) =
       {cartItems &&
         cartItems.map((item, idx) => {
           const options = Array.from(
-            Array(item.MaxOrderQty || process.env.PHARMACY_MEDICINE_QUANTITY),
+            Array(Number(item.MaxOrderQty) || process.env.PHARMACY_MEDICINE_QUANTITY),
             (_, x) => x + 1
           );
           return (

@@ -100,6 +100,7 @@ export const addRecordClickTracking = (source: string) => {
 };
 //Upload Prescription
 export const uploadPrescriptionTracking = (data: any) => {
+  console.log('data', data);
   const { id, mobileNumber, firstName, relation, age, gender, uhid } = data;
   try {
     window.webengage.track('Upload Prescription - web', {
@@ -118,7 +119,7 @@ export const uploadPrescriptionTracking = (data: any) => {
 //Upload Photo
 export const uploadPhotoTracking = (source: string) => {
   try {
-    window.webengage.track('Upload Photo - web', {
+    window.webengage.track('Pharmacy Prescription Image Uploaded - web', {
       Source: source, //Take Photo/Gallery
     });
   } catch (err) {
@@ -799,6 +800,18 @@ export const pincodeManualSelectTracking = (data: any) => {
         'pin code': pincode,
         serviceability: serviceability,
         source: source,
+      });
+    } catch (err) {
+      console.log('WebEngage Err: ', err);
+    }
+  }
+};
+
+export const pharmacyUploadPresClickTracking = (result: string) => {
+  if (window && window.webengage) {
+    try {
+      window.webengage.track('Pharmacy Upload Prescription Clicked - web', {
+        Source: result,
       });
     } catch (err) {
       console.log('WebEngage Err: ', err);

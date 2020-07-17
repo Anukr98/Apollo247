@@ -211,9 +211,13 @@ export const HeroBanner: React.FC = () => {
         <img
           className={classes.mobileBanner}
           src={require('images/img_doctors_xxhdpi.png')}
-          alt=""
+          alt="Online Doctor Consultation & Medicines"
         />
-        <img className={classes.desktopBanner} src={require('images/img-doctors@1x.png')} alt="" />
+        <img
+          className={classes.desktopBanner}
+          src={require('images/img-doctors@1x.png')}
+          alt="Online Doctor Consultation & Medicines"
+        />
       </div>
       <div className={classes.bannerInfo}>
         {allCurrentPatients && currentPatient && !_isEmpty(currentPatient.firstName) ? (
