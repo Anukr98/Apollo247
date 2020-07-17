@@ -532,7 +532,6 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
             }
             return false;
           });
-          localStorage.removeItem('symptomTracker');
   }
 
   const scrollToBottom = () => {

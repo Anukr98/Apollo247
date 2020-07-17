@@ -123,6 +123,7 @@ export const Specialties: React.FC<SpecialtiesProps> = (props) => {
   const allSpecialties = data && data.getAllSpecialties;
 
   useEffect(() => {
+    localStorage.removeItem('symptomTracker');
     if (setSpecialtyCount && allSpecialties && allSpecialties.length) {
       setSpecialtyCount && setSpecialtyCount(allSpecialties.length);
     }
