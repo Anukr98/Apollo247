@@ -309,21 +309,25 @@ export enum PROFILE_SOURCE {
 //medicine orders starts
 @Entity()
 export class MedicineOrders extends BaseEntity {
+  @Index()
   @Column({ nullable: true })
   apOrderNo: string;
 
   @Column({ nullable: true })
   referenceNo: string;
 
+  @Index()
   @Column({ nullable: true })
   appointmentId: string;
 
   @Column({ nullable: true })
   coupon: string;
 
+  @Index()
   @Column({ nullable: true })
   currentStatus: MEDICINE_ORDER_STATUS;
 
+  @Index()
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
 
@@ -610,6 +614,7 @@ export class MedicineOrdersStatus extends BaseEntity {
   )
   medicineOrderShipments: MedicineOrderShipments;
 
+  @Index()
   @Column()
   orderStatus: MEDICINE_ORDER_STATUS;
 
@@ -646,6 +651,7 @@ export class MedicineOrdersStatus extends BaseEntity {
 //medicine orders invoice starts
 @Entity()
 export class MedicineOrderInvoice extends BaseEntity {
+  @Index()
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
 
@@ -745,6 +751,7 @@ export class PatientDeviceTokens extends BaseEntity {
 //patient Starts
 @Entity()
 export class Patient extends BaseEntity {
+  @Index()
   @Column({ default: null, nullable: true })
   deviceCode: string;
 
@@ -763,6 +770,7 @@ export class Patient extends BaseEntity {
   @Column({ nullable: true })
   dateOfBirth: Date;
 
+  @Index()
   @Column({ nullable: true })
   employeeId: string;
 
@@ -931,6 +939,7 @@ export class RegistrationCodes extends BaseEntity {
   @Column()
   registrationCode: string;
 
+  @Index()
   @Column({ default: REGISTRATION_CODES_STATUS.NOT_SENT })
   codeStatus: REGISTRATION_CODES_STATUS;
 
@@ -962,9 +971,11 @@ export class SearchHistory extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Index()
   @Column()
   type: SEARCH_TYPE;
 
+  @Index()
   @Column()
   typeId: string;
 
@@ -1231,12 +1242,14 @@ export class MedicalRecords extends BaseEntity {
   @Column({ nullable: true, type: 'text' })
   additionalNotes: string;
 
+  @Index()
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
 
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Index()
   @Column({ nullable: true, type: 'text' })
   documentURLs: string;
 
@@ -1369,9 +1382,11 @@ export class Coupon extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Index('Coupon_isActive')
   @Column({ default: false })
   isActive: Boolean;
 
+  @Index('Coupon_displayStatus')
   @Column({ default: true })
   displayStatus: Boolean;
 
@@ -1391,6 +1406,7 @@ export class CouponGenericRules extends BaseEntity {
   @OneToMany((type) => Coupon, (coupon) => coupon.couponGenericRule)
   coupon: Coupon[];
 
+  @Index()
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
 
@@ -1415,6 +1431,7 @@ export class CouponGenericRules extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Index()
   @Column({ default: false })
   isActive: Boolean;
 
@@ -1449,6 +1466,7 @@ export class CouponConsultRules extends BaseEntity {
   @OneToMany((type) => Coupon, (coupon) => coupon.couponConsultRule)
   coupon: Coupon[];
 
+  @Index()
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
 
@@ -1458,6 +1476,7 @@ export class CouponConsultRules extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Index()
   @Column({ default: false })
   isActive: Boolean;
 
@@ -1495,6 +1514,7 @@ export class CouponPharmaRules extends BaseEntity {
   @Column({ type: 'text', nullable: true })
   successMessage: string;
 
+  @Index()
   @Column({ default: false })
   isActive: Boolean;
 
@@ -1514,6 +1534,7 @@ export class PatientMedicalHistory extends BaseEntity {
   @Column({ nullable: true })
   bp: string;
 
+  @Index()
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
 
@@ -1584,6 +1605,7 @@ export class Diagnostics extends BaseEntity {
   @Column({ nullable: true, default: 0 })
   itemId: number;
 
+  @Index()
   @Column({ nullable: true })
   itemName: string;
 
@@ -1648,6 +1670,7 @@ export class Diagnostics extends BaseEntity {
   @Column({ nullable: true })
   state: string;
 
+  @Index()
   @Column({ nullable: true })
   city: string;
 
@@ -1731,6 +1754,7 @@ export class DiagnosticOrders extends BaseEntity {
   @Column({ default: DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED })
   orderStatus: DIAGNOSTIC_ORDER_STATUS;
 
+  @Index()
   @Column({ generated: 'increment' })
   displayId: number;
 
@@ -1932,6 +1956,7 @@ export class DiagnosticOrdersStatus extends BaseEntity {
   )
   diagnosticOrders: DiagnosticOrders;
 
+  @Index()
   @Column()
   orderStatus: DIAGNOSTIC_ORDER_STATUS;
 
@@ -1964,6 +1989,7 @@ export class DiagnosticOrdersStatus extends BaseEntity {
 
 @Entity()
 export class DiagnosticOrgans extends BaseEntity {
+  @Index()
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
 
@@ -1990,6 +2016,7 @@ export class DiagnosticOrgans extends BaseEntity {
 
 @Entity()
 export class DiagnosticHotSellers extends BaseEntity {
+  @Index()
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
 
@@ -2002,6 +2029,7 @@ export class DiagnosticHotSellers extends BaseEntity {
   @Column({ nullable: true })
   packageImage: string;
 
+  @Index()
   @Column({ default: true })
   isActive: Boolean;
 
@@ -2074,6 +2102,7 @@ export class PatientFeedback extends BaseEntity {
   @Column({ nullable: true })
   doctorId: string;
 
+  @Index()
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
 
@@ -2097,6 +2126,7 @@ export class PatientHelpTickets extends BaseEntity {
   @ManyToOne((type) => Patient, (patient) => patient.id)
   patient: Patient;
 
+  @Index()
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
 
@@ -2239,6 +2269,7 @@ export class MedicineOrderShipments extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Index()
   @Column({ nullable: true })
   apOrderNo: string;
 
@@ -2260,6 +2291,7 @@ export class MedicineOrderShipments extends BaseEntity {
   @Column({ nullable: true })
   cancelReasonCode: string;
 
+  @Index()
   @Column({ nullable: true })
   currentStatus: MEDICINE_ORDER_STATUS;
 
