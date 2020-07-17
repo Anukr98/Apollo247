@@ -60,13 +60,13 @@ export const exotelTypeDefs = gql`
   extend type Query {
     initateConferenceTelephoneCall(exotelInput: exotelInput): exotelResult!
     getCallDetailsByAppintment(appointment: appointment): callDetailsResult!
-  }
-  
-  extend type Mutation {
     updateCallStatusBySid(callStatusInput: callStatusInput): callStatusResult
   }
 `;
-
+  
+  // extend type Mutation {
+  //   updateCallStatusBySid(callStatusInput: callStatusInput): callStatusResult
+  // }
 type exotelInput = {
   from?: string;
   to?: string;
@@ -420,8 +420,9 @@ export const exotelCallingResolvers = {
   Query: {
     initateConferenceTelephoneCall,
     getCallDetailsByAppintment,
-  },
-  Mutation: {
     updateCallStatusBySid,
-  }
+  },
+  // Mutation: {
+  //   updateCallStatusBySid,
+  // }
 };
