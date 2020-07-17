@@ -158,6 +158,7 @@ const useStyles = makeStyles((theme: Theme) => {
       '& p': {
         fontSize: 16,
         margin: '0 0 10px',
+        padding: '0 12px',
         '&:last-child': {
           margin: 0,
         },
@@ -172,7 +173,7 @@ const useStyles = makeStyles((theme: Theme) => {
     cdList: {
       padding: '0 0 0 25px',
       margin: 0,
-      height: 100,
+      height: 75,
       overflow: 'hidden',
       transition: '0.5s ease',
       '& li': {
@@ -196,7 +197,7 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 export const covidProtocolLanding: React.FC = (props: any) => {
   const classes = useStyles({});
-  const [seemore, setSeemore] = React.useState<boolean>(false);
+  const [seemore, setSeemore] = React.useState<string>('');
   const [isLoading, setIsLoading] = React.useState<boolean>(true);
   const [symptomData, setSymptomData] = React.useState<CovidProtocolData>(null);
   const scrollToRef = useRef<HTMLDivElement>(null);
@@ -210,10 +211,12 @@ export const covidProtocolLanding: React.FC = (props: any) => {
       scrollToRef.current &&
       scrollToRef.current.scrollIntoView({ behavior: 'smooth' });
   }, []);
+  const covidProtocolUrl =
+    process.env.COVID_PROTOCOL_URL || 'https://uatcms.apollo247.com/api/phrcovid-protocol';
 
   useEffect(() => {
     if (isLoading) {
-      fetchUtil(process.env.COVID_PROTOCOL_URL + '/covid-diabetes', 'GET', {}, '', true)
+      fetchUtil(covidProtocolUrl + '/' + params.symptom, 'GET', {}, '', true)
         .then((res: any) => {
           if (res && res.success) {
             setSymptomData(res.data);
@@ -280,20 +283,26 @@ export const covidProtocolLanding: React.FC = (props: any) => {
                         <ExpansionPanelDetails className={classes.panelDetails}>
                           <div className={classes.detailsContent}>
                             {item.bodyContent && <p>{item.bodyContent}</p>}
-                            <ul
-                              className={`${classes.cdList} ${seemore ? classes.heightAuto : ''}`}
-                            >
-                              {item.bodyContentList &&
-                                item.bodyContentList.map((text: string) => <li>{text}</li>)}
-                            </ul>
-
-                            <a
-                              href="javascript:void(0);"
-                              className={classes.seemore}
-                              onClick={() => setSeemore(!seemore)}
-                            >
-                              {seemore ? <span>See Less</span> : <span>See More</span>}
-                            </a>
+                            {item && item.bodyContentList && (
+                              <ul>
+                                {item.bodyContentList && seemore === item.id
+                                  ? item.bodyContentList.map((text: string) => {
+                                      return <li>{text}</li>;
+                                    })
+                                  : item.bodyContentList.slice(0, 2).map((text: string) => {
+                                      return <li>{text}</li>;
+                                    })}
+                              </ul>
+                            )}
+                            {item && item.bodyContentList && (
+                              <a href="javascript:void(0);" className={classes.seemore}>
+                                {seemore === item.id ? (
+                                  <span onClick={() => setSeemore('')}>See Less</span>
+                                ) : (
+                                  <span onClick={() => setSeemore(item.id)}>See More</span>
+                                )}
+                              </a>
+                            )}
                           </div>
                         </ExpansionPanelDetails>
                       </ExpansionPanel>
