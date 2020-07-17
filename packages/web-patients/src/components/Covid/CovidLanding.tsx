@@ -17,6 +17,7 @@ import useMediaQuery from '@material-ui/core/useMediaQuery';
 import fetchUtil from 'helpers/fetch';
 import { NavigationBottom } from 'components/NavigationBottom';
 import { BottomLinks } from 'components/BottomLinks';
+import { useAllCurrentPatients } from 'hooks/authHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -255,9 +256,11 @@ export const CovidLanding: React.FC = (props: any) => {
   const [isWebView, setIsWebView] = useState<boolean>(false);
   const [expandedImage, setExpandedImage] = useState<string>('');
   const [expandedTitle, setExpandedTitle] = useState<string>('');
+  const [covidCategory, setCovidCategory] = useState<string>('');
   const [expandedSourceUrl, setExpandedSourceUrl] = useState<string>('');
   const [modalOpen, setModalOpen] = useState<boolean>(false);
   const scrollToRef = useRef<HTMLDivElement>(null);
+  const { currentPatient } = useAllCurrentPatients();
 
   const didMount = useRef(false);
   const covidArticleBaseUrl =
@@ -293,6 +296,25 @@ export const CovidLanding: React.FC = (props: any) => {
       setCovidContent(covidObj);
     });
   }, []);
+
+  useEffect(() => {
+    if (currentPatient && currentPatient.uhid) {
+      // fetch the covid category from phr api
+      fetchUtil(
+        `${process.env.COVID_PROTOCOL_PRISM_URL}&uhid=${currentPatient.uhid}`,
+        'GET',
+        {},
+        '',
+        true
+      ).then((res: any) => {
+        console.log(435, res);
+        // {"errorCode":0,"errorMsg":null,"errorType":null,"response":"UNKNOWN"}
+        if (res && res.errorCode === 0) {
+          setCovidCategory(res.response);
+        }
+      });
+    }
+  }, [currentPatient]);
 
   useEffect(() => {
     if (didMount.current && categoryToFetch !== '') {
@@ -391,7 +413,10 @@ export const CovidLanding: React.FC = (props: any) => {
                 </ExpansionPanel>
               ))}
             </div>
-            <CheckRiskLevel />
+            <CheckRiskLevel
+              category={'diabetes'}
+              // category={covidCategory}
+            />
           </div>
 
           <Modal open={modalOpen} onClose={() => setModalOpen(false)}>
