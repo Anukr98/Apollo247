@@ -380,7 +380,7 @@ export const consultNowClickTracking = (data: any) => {
 export const pharmacyCartViewTracking = (result: any) => {
   if (window && window.webengage) {
     try {
-      window.webengage.track('Pharmacy Cart Viewed - web', {
+      window.webengage.track('Cart Viewed - web', {
         'Cart Items': result,
       });
     } catch (err) {
