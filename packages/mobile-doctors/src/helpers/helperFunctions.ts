@@ -106,7 +106,7 @@ export const divideSlots = (availableSlots: string[], date: Date) => {
 
 export const getNetStatus = async () => {
   const status = await NetInfo.fetch().then((connectionInfo) => {
-    return connectionInfo.type !== 'none';
+    return connectionInfo.isConnected && connectionInfo.isInternetReachable;
   });
   return status;
 };

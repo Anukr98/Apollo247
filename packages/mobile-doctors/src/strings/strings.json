@@ -77,7 +77,7 @@
   },
   "alerts": {
     "successfully_updated_delegate_num": "Successfully Updated Delegate Number",
-    "something_went_wrong": "Something went wrong.",
+    "something_went_wrong": "Something went wrong. Try again!",
     "error_code": "Error Code:",
     "enter_all": "Please enter all fields",
     "update_cs": "UpdateCaseSheet",
@@ -472,6 +472,7 @@
   },
   "toastMessages": {
     "error": "Something went wrong!! Trying to connect",
+    "willFallback": "Will fall-back to audio if network drops further",
     "fallback": "Falling back to audio due to bad network",
     "reconnecting": "There is a problem with network connection. Reconnecting, Please wait...",
     "videoBack": "Network improved switching back to video",

@@ -40,7 +40,7 @@ type OpentokConnect = {
 };
 
 type OpentokError = {
-  code: string;
+  code: string | number;
   message: string;
 };
 type OpentokArchive = {
@@ -600,7 +600,7 @@ export const AudioVideoProvider: React.FC = (props) => {
     },
     videoDisabled: (event: OpentokVideoWarn) => {
       if (event.reason === 'quality') {
-        errorPopup(strings.toastMessages.fallback, theme.colors.APP_YELLOW);
+        errorPopup(strings.toastMessages.fallback, theme.colors.APP_RED);
         setDowngradeToAudio(true);
         setVideoEnabled(false);
       }
@@ -615,9 +615,7 @@ export const AudioVideoProvider: React.FC = (props) => {
       console.log('Subscriber stream videoEnabled!', event);
     },
     videoDisableWarning: () => {
-      errorPopup(strings.toastMessages.fallback, theme.colors.APP_YELLOW);
-      setDowngradeToAudio(true);
-      setVideoEnabled(false);
+      errorPopup(strings.toastMessages.willFallback, theme.colors.APP_YELLOW);
       console.log('Subscriber stream videoDisableWarning!');
     },
     videoDisableWarningLifted: () => {
@@ -637,12 +635,36 @@ export const AudioVideoProvider: React.FC = (props) => {
   const sessionEventHandlers = {
     error: (error: OpentokError) => {
       AsyncStorage.setItem('callDisconnected', 'true');
-      errorPopup(error.message, theme.colors.APP_RED);
+      let message = error.message;
+      if (
+        [
+          'ConnectionDropped',
+          'ConnectionFailed',
+          'ConnectionRefused',
+          'SessionStateFailed',
+          'SessionConnectionTimeout',
+          1022,
+          1006,
+          1023,
+          1020,
+          1021,
+        ].includes(error.code)
+      ) {
+        message = 'Check the network connection.';
+        callEnd(false);
+      } else if (['AuthorizationFailure', 'InvalidSessionId', 1004, 1005].includes(error.code)) {
+        message = 'There is an error, please restart application/consult';
+      }
+      errorPopup(message, theme.colors.APP_RED);
       console.log('session stream error!', error);
     },
     otrnError: (event: string) => {
+      AsyncStorage.getItem('callDisconnected').then((data) => {
+        if (!JSON.parse(data || 'false')) {
+          errorPopup(strings.toastMessages.error, theme.colors.APP_RED);
+        }
+      });
       AsyncStorage.setItem('callDisconnected', 'true');
-      errorPopup(strings.toastMessages.error, theme.colors.APP_RED);
       console.log('session stream otrnError!', event);
     },
     connectionCreated: (event: string) => {
@@ -673,6 +695,10 @@ export const AudioVideoProvider: React.FC = (props) => {
       setMessageReceived(false);
       setDowngradeToAudio(false);
       setStremConnected(false);
+      if (audioTrack) {
+        setPrevVolume();
+        audioTrack.stop();
+      }
       console.log('session stream connectionDestroyed!', event);
     },
     sessionConnected: (event: OpenTokSessionConnect) => {
