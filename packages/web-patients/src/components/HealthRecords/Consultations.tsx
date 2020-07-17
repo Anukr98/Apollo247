@@ -598,11 +598,12 @@ export const Consultations: React.FC<ConsultationProps> = (props) => {
                     {(activeConsult.observations || activeConsult.additionalNotes) && (
                       <ToplineReport activeData={activeConsult} />
                     )}
-                    {activeConsult.fileUrl &&
+                    {activeConsult &&
+                      activeConsult.fileUrl &&
                       activeConsult.fileUrl.length > 0 &&
                       (activeConsult.fileUrl.includes('.pdf') ? (
                         <div className={classes.prescriptionImage}>
-                          <a href={activeConsult.prescriptionImageUrl}>Download File</a>
+                          <a href={activeConsult.fileUrl}>Download File</a>
                         </div>
                       ) : (
                         <div className={classes.prescriptionImage}>
