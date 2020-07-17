@@ -18,7 +18,7 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/SendHelpEmail';
 import { g, handleGraphQlError } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
-import { NeedHelp, NeedHelpWhatsAppOptions } from '@aph/mobile-patients/src/strings/AppConfig';
+import { NeedHelp } from '@aph/mobile-patients/src/strings/AppConfig';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
@@ -33,7 +33,6 @@ import {
   TouchableOpacity,
   View,
   ViewStyle,
-  Linking,
 } from 'react-native';
 import { Overlay } from 'react-native-elements';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
@@ -359,56 +358,40 @@ export const MobileHelp: React.FC<MobileHelpProps> = (props) => {
       email: email,
     };
     // setBugFenderLog('SEND_HELP_EMAIL', helpEmail);
-    let whatsapp_options = NeedHelpWhatsAppOptions;
-    if (helpCategory === 'Pharmacy' && whatsapp_options.includes(selectedQuery)) {
-      let my_message = `Issue Category : ${helpCategory}\nIssue sub category : ${selectedQuery}\nText : ${comment}`;
-      let whatsapp_url = `https://api.whatsapp.com/send?phone=+914041894343&text=${my_message}&source=&data=&app_absent=`;
-      // console.log('my_message', my_message, 'whatsapp_url', whatsapp_url);
-      Linking.openURL(whatsapp_url).catch((err) => console.error('An error occurred', err));
-      setLoading(false);
-      props.navigation.dispatch(
-        StackActions.reset({
-          index: 0,
-          key: null,
-          actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
-        })
-      );
-    } else {
-      client
-        .query<SendHelpEmail, SendHelpEmailVariables>({
-          query: SEND_HELP_EMAIL,
-          variables: {
-            helpEmailInput: helpEmail,
+    client
+      .query<SendHelpEmail, SendHelpEmailVariables>({
+        query: SEND_HELP_EMAIL,
+        variables: {
+          helpEmailInput: helpEmail,
+        },
+      })
+      .then(() => {
+        setLoading(false);
+        showAphAlert!({
+          title: 'Hi:)',
+          description:
+            needHelpToContactInMessage ||
+            'Thank you for reaching out. Our team will call you back shortly.',
+          unDismissable: true,
+          onPressOk: () => {
+            hideAphAlert && hideAphAlert();
+            CommonLogEvent(AppRoutes.MobileHelp, 'Submitted successfully');
+            props.navigation.dispatch(
+              StackActions.reset({
+                index: 0,
+                key: null,
+                actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
+              })
+            );
           },
-        })
-        .then(() => {
-          setLoading(false);
-          showAphAlert!({
-            title: 'Hi:)',
-            description:
-              needHelpToContactInMessage ||
-              'Thank you for reaching out. Our team will call you back shortly.',
-            unDismissable: true,
-            onPressOk: () => {
-              hideAphAlert && hideAphAlert();
-              CommonLogEvent(AppRoutes.MobileHelp, 'Submitted successfully');
-              props.navigation.dispatch(
-                StackActions.reset({
-                  index: 0,
-                  key: null,
-                  actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
-                })
-              );
-            },
-          });
-        })
-        .catch((e) => {
-          CommonBugFender('MobileHelp_onSubmit', e);
-          setLoading(false);
-          props.navigation.goBack();
-          handleGraphQlError(e);
         });
-    }
+      })
+      .catch((e) => {
+        CommonBugFender('MobileHelp_onSubmit', e);
+        setLoading(false);
+        props.navigation.goBack();
+        handleGraphQlError(e);
+      });
   };
 
   const isInitialState = !(helpCategory || email || selectedQuery || comment);
