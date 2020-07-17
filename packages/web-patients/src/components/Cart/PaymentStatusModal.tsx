@@ -72,10 +72,10 @@ export const PaymentStatusModal: React.FC<PaymentStatusProps> = (props) => {
   const [showOrderPopup, setShowOrderPopup] = useState<boolean>(true);
   const pharmaPayments = useMutation(PHRAMA_PAYMENT_STATUS);
 
-  const getPaymentStatus = () => {
+  const getPaymentStatus = (payStatus?: any) => {
     if (!paymentStatusData) return '';
     else {
-      switch (paymentStatusData.paymentStatus) {
+      switch (paymentStatusData.paymentStatus || payStatus) {
         case 'PAYMENT_FAILED':
           return 'failed';
         case 'PAYMENT_ABORTED':
@@ -174,13 +174,13 @@ export const PaymentStatusModal: React.FC<PaymentStatusProps> = (props) => {
             const pharmacyCheckoutValues = sessionStorage.getItem('pharmacyCheckoutValues')
               ? JSON.parse(sessionStorage.getItem('pharmacyCheckoutValues'))
               : {};
-            paymentStatus === 'success' &&
+            resp.data.pharmaPaymentStatus.paymentStatus === 'PAYMENT_SUCCESS' &&
               pharmacyCheckoutTracking({
                 orderId:
                   typeof params.orderAutoId === 'string'
                     ? parseInt(params.orderAutoId)
                     : params.orderAutoId,
-                payStatus: paymentStatus,
+                payStatus: 'success',
                 payType: paymentMode,
                 serviceArea: 'pharmacy',
                 shippingInfo: '',

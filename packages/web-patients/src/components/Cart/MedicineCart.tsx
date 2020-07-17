@@ -68,6 +68,7 @@ import {
   pharmacyCartViewTracking,
   pharmacyProceedToPayTracking,
   pharmacySubmitPrescTracking,
+  pharmacyUploadPresClickTracking,
 } from '../../webEngageTracking';
 import { ChennaiCheckout, submitFormType } from 'components/Cart/ChennaiCheckout';
 import { OrderPlaced } from 'components/Cart/OrderPlaced';
@@ -1169,6 +1170,7 @@ export const MedicineCart: React.FC = (props) => {
 
   const handleUploadPrescription = () => {
     uploadPrescriptionTracking({ ...patient, age });
+    pharmacyUploadPresClickTracking('Cart');
     setIsUploadPreDialogOpen(true);
   };
 
@@ -1193,7 +1195,7 @@ export const MedicineCart: React.FC = (props) => {
     }
     /**Gtm code  End */
     if (cartItems && cartItems.length > 0 && !nonCartFlow) {
-      pharmacyCartViewTracking(cartItems);
+      pharmacyCartViewTracking(cartItems.length);
     }
   }, [cartTotal]);
 
