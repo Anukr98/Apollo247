@@ -9,6 +9,7 @@ import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { ApiConstants } from 'ApiConstants';
 import { DoctorHospitalRepository } from 'doctors-service/repositories/doctorHospitalRepository';
 import { addDays } from 'date-fns';
+import { arSA } from 'date-fns/esm/locale';
 
 export const getPatinetAppointmentsTypeDefs = gql`
   type PatinetAppointments {
@@ -248,6 +249,9 @@ const getPatientPersonalizedAppointments: Resolver<
   PersonalizedAppointmentResult
 > = async (parent, args, { consultsDb, doctorsDb, patientsDb, mobileNumber }) => {
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
+  if (args.patientUhid == '' || args.patientUhid == null) {
+    throw new AphError(AphErrorMessages.INVALID_UHID, undefined, {});
+  }
   const patientDetails = await patientRepo.findByUhid(args.patientUhid);
   if (!patientDetails) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
