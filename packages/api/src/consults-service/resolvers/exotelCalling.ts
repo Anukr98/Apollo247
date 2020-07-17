@@ -30,6 +30,7 @@ export const exotelTypeDefs = gql`
   }
 
   type callStatusResult {
+    updatedCallSidArray: [String]
     errorArray: String
   }
 
@@ -37,7 +38,8 @@ export const exotelTypeDefs = gql`
     id: String
   }
 
-  type callDetailsResult {
+  type callDetails {
+    callSid: String
     callEndTime: String
     callStartTime: String
     patientPickedUp: String
@@ -49,10 +51,17 @@ export const exotelTypeDefs = gql`
     status: String
   }
 
+  type callDetailsResult {
+    calls: [callDetails!]! 
+  }
+
   extend type Query {
     initateConferenceTelephoneCall(exotelInput: exotelInput): exotelResult!
-    updateCallStatusBySid(callStatusInput: callStatusInput): callStatusResult!
     getCallDetailsByAppintment(appointment: appointment): callDetailsResult!
+  }
+  
+  extend type Mutation {
+    updateCallStatusBySid(callStatusInput: callStatusInput): callStatusResult
   }
 `;
 
@@ -257,6 +266,7 @@ type callStatusInput = {
 };
 
 type callStatusResult = {
+  updatedCallSidArray: string[]
   errorArray: string
 };
 
@@ -274,7 +284,9 @@ const updateCallStatusBySid: Resolver<null, callStatusInputArgs, ConsultServiceC
   let exotel_url = `https://${process.env.EXOTEL_API_KEY}:${process.env.EXOTEL_API_TOKEN}@${process.env.EXOTEL_SUB_DOMAIN}${process.env.EXOTEL_URI}`;
 
 
+  let updatedCallSidArray: string[] = [];
   let errorArray: any[] = [];
+  
   for(let each of inProgressCalls){
 
     await fetch(exotel_url + '/'  + each.callSid + '.json', {
@@ -320,6 +332,8 @@ const updateCallStatusBySid: Resolver<null, callStatusInputArgs, ConsultServiceC
         });
       }
 
+      updatedCallSidArray.push(each.callSid)
+
     })
     .catch((error) => {
       console.error('exotelError in update: ', error);
@@ -328,7 +342,7 @@ const updateCallStatusBySid: Resolver<null, callStatusInputArgs, ConsultServiceC
 
   }
 
-  return { errorArray: JSON.stringify(errorArray) };
+  return { updatedCallSidArray, errorArray: JSON.stringify(errorArray) };
 
 }
 
@@ -337,7 +351,8 @@ type appointment = {
   id: string
 };
 
-type callDetailsResult = {
+type callDetails = {
+  callSid: string
   callEndTime: string
   callStartTime: string
   patientPickedUp: string
@@ -348,6 +363,10 @@ type callDetailsResult = {
   appointmentId: string
   status: string
 };
+
+type callDetailsResult = {
+  calls: callDetails[]
+}
 
 type appointmentInputArgs = { appointment: appointment };
 
@@ -361,30 +380,42 @@ const getCallDetailsByAppintment: Resolver<
 
   const exotelRepo = consultsDb.getCustomRepository(ExotelDetailsRepository);
 
-  const calls = await exotelRepo.findByAppointmentId(appointment.id)
+  let calls = await exotelRepo.findAllByAppointmentId(appointment.id)
   
-  if (!calls) {
+  if (!calls.length) {
     throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
   }
 
-  return {
-    callStartTime: calls.callStartTime.toUTCString(),
-    callEndTime: calls.callEndTime.toUTCString(),
-    patientPickedUp: (calls.patientPickedUp ? "Yes" : "No"),
-    doctorPickedUp: (calls.doctorPickedUp ? "Yes" : "No"),
-    totalCallDuration: calls.totalCallDuration.toString(),
-    deviceType: calls.deviceType,
-    recordingUrl: calls.recordingUrl,
-    appointmentId: calls.appointmentId,
-    status: calls.status,
-};
+  let callsArray: any[] = [];
+  for(let call of calls){
+
+    let newCallObj = {
+      callSid: call.callSid,
+      callStartTime: call.callStartTime.toUTCString(),
+      callEndTime: call.callEndTime.toUTCString(),
+      patientPickedUp: (call.patientPickedUp ? "Yes" : "No"),
+      doctorPickedUp: (call.doctorPickedUp ? "Yes" : "No"),
+      totalCallDuration: call.totalCallDuration.toString(),
+      deviceType: call.deviceType,
+      recordingUrl: call.recordingUrl,
+      appointmentId: call.appointmentId,
+      status: call.status,
+    }
+
+    callsArray.push(newCallObj);
+
+  }
+
+  return { calls: callsArray };
 
 };
 
 export const exotelCallingResolvers = {
   Query: {
     initateConferenceTelephoneCall,
-    updateCallStatusBySid,
-    getCallDetailsByAppintment
+    getCallDetailsByAppintment,
   },
+  Mutation: {
+    updateCallStatusBySid,
+  }
 };

@@ -1729,33 +1729,6 @@
             "deprecationReason": null
           },
           {
-            "name": "updateCallStatusBySid",
-            "description": null,
-            "args": [
-              {
-                "name": "callStatusInput",
-                "description": null,
-                "type": {
-                  "kind": "INPUT_OBJECT",
-                  "name": "callStatusInput",
-                  "ofType": null
-                },
-                "defaultValue": null
-              }
-            ],
-            "type": {
-              "kind": "NON_NULL",
-              "name": null,
-              "ofType": {
-                "kind": "OBJECT",
-                "name": "callStatusResult",
-                "ofType": null
-              }
-            },
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
             "name": "getCallDetailsByAppintment",
             "description": null,
             "args": [
@@ -16140,50 +16113,6 @@
       },
       {
         "kind": "INPUT_OBJECT",
-        "name": "callStatusInput",
-        "description": null,
-        "fields": null,
-        "inputFields": [
-          {
-            "name": "status",
-            "description": null,
-            "type": {
-              "kind": "SCALAR",
-              "name": "String",
-              "ofType": null
-            },
-            "defaultValue": null
-          }
-        ],
-        "interfaces": null,
-        "enumValues": null,
-        "possibleTypes": null
-      },
-      {
-        "kind": "OBJECT",
-        "name": "callStatusResult",
-        "description": null,
-        "fields": [
-          {
-            "name": "errorArray",
-            "description": null,
-            "args": [],
-            "type": {
-              "kind": "SCALAR",
-              "name": "String",
-              "ofType": null
-            },
-            "isDeprecated": false,
-            "deprecationReason": null
-          }
-        ],
-        "inputFields": null,
-        "interfaces": [],
-        "enumValues": null,
-        "possibleTypes": null
-      },
-      {
-        "kind": "INPUT_OBJECT",
         "name": "appointment",
         "description": null,
         "fields": null,
@@ -16208,6 +16137,53 @@
         "name": "callDetailsResult",
         "description": null,
         "fields": [
+          {
+            "name": "calls",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "LIST",
+                "name": null,
+                "ofType": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": {
+                    "kind": "OBJECT",
+                    "name": "callDetails",
+                    "ofType": null
+                  }
+                }
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
+        "inputFields": null,
+        "interfaces": [],
+        "enumValues": null,
+        "possibleTypes": null
+      },
+      {
+        "kind": "OBJECT",
+        "name": "callDetails",
+        "description": null,
+        "fields": [
+          {
+            "name": "callSid",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
           {
             "name": "callEndTime",
             "description": null,
@@ -27706,6 +27682,29 @@
             "deprecationReason": null
           },
           {
+            "name": "updateCallStatusBySid",
+            "description": null,
+            "args": [
+              {
+                "name": "callStatusInput",
+                "description": null,
+                "type": {
+                  "kind": "INPUT_OBJECT",
+                  "name": "callStatusInput",
+                  "ofType": null
+                },
+                "defaultValue": null
+              }
+            ],
+            "type": {
+              "kind": "OBJECT",
+              "name": "callStatusResult",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
             "name": "bookAppointment",
             "description": null,
             "args": [
@@ -36987,6 +36986,66 @@
         "fields": [
           {
             "name": "deepLink",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
+        "inputFields": null,
+        "interfaces": [],
+        "enumValues": null,
+        "possibleTypes": null
+      },
+      {
+        "kind": "INPUT_OBJECT",
+        "name": "callStatusInput",
+        "description": null,
+        "fields": null,
+        "inputFields": [
+          {
+            "name": "status",
+            "description": null,
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "defaultValue": null
+          }
+        ],
+        "interfaces": null,
+        "enumValues": null,
+        "possibleTypes": null
+      },
+      {
+        "kind": "OBJECT",
+        "name": "callStatusResult",
+        "description": null,
+        "fields": [
+          {
+            "name": "updatedCallSidArray",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "LIST",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "String",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "errorArray",
             "description": null,
             "args": [],
             "type": {
