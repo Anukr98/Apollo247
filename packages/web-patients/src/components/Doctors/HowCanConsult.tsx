@@ -3,8 +3,7 @@ import { makeStyles, createStyles } from '@material-ui/styles';
 import { Theme, CircularProgress, Modal } from '@material-ui/core';
 import { AphButton } from '@aph/web-ui-components';
 import { GetDoctorDetailsById_getDoctorDetailsById as DoctorDetails } from 'graphql/types/GetDoctorDetailsById';
-import moment from 'moment';
-import { getDiffInDays, getDiffInMinutes, getDiffInHours } from 'helpers/commonHelpers';
+import { getDiffInMinutes, getAvailability } from 'helpers/commonHelpers';
 import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
 import { useAuth } from 'hooks/authHooks';
 import { BookConsult } from 'components/BookConsult';
@@ -13,6 +12,7 @@ import { SaveSearch, SaveSearchVariables } from 'graphql/types/SaveSearch';
 import { useMutation } from 'react-apollo-hooks';
 import { SAVE_PATIENT_SEARCH } from 'graphql/pastsearches';
 import { useAllCurrentPatients } from 'hooks/authHooks';
+import useMediaQuery from '@material-ui/core/useMediaQuery';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -232,6 +232,18 @@ const useStyles = makeStyles((theme: Theme) => {
         boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
       },
     },
+    availability: {
+      fontSize: 9,
+      fontWeight: 'bold',
+      textAlign: 'center',
+      backgroundColor: 'rgba(0,135,186,0.11)',
+      padding: '6px 12px',
+      color: '#02475b',
+      textTransform: 'uppercase',
+      letterSpacing: 0.5,
+      borderRadius: 10,
+      marginTop: '14px',
+    },
   });
 });
 interface HowCanConsultProps {
@@ -252,6 +264,7 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
   const physcalFee = doctorDetails && doctorDetails.physicalConsultationFees;
   const onlineFee = doctorDetails && doctorDetails.onlineConsultationFees;
   const doctorId = doctorDetails && doctorDetails.id;
+  const isSmallScreen = useMediaQuery('(max-width:767px)');
 
   const consultMode =
     doctorAvailableOnlineSlot.length > 0 && doctorAvailablePhysicalSlots.length > 0
@@ -262,109 +275,69 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
       ? ConsultMode.PHYSICAL
       : null;
 
-  const differenceInMinutes = getDiffInMinutes(doctorAvailablePhysicalSlots);
-  const differenceInOnlineMinutes = getDiffInMinutes(doctorAvailableOnlineSlot);
-  const availabilityMarkup = () => {
-    if (doctorAvailablePhysicalSlots && doctorAvailablePhysicalSlots.length > 0) {
-      if (differenceInMinutes === 0) {
-        return <div className={classes.availablity}>AVAILABLE NOW</div>;
-      } else if (differenceInMinutes > 0 && differenceInMinutes <= 15) {
-        return (
-          <div className={classes.availablity}>
-            AVAILABLE IN {differenceInMinutes} {differenceInMinutes === 1 ? 'MIN' : 'MINS'}
-          </div>
-        );
-      } else if (differenceInMinutes > 15 && differenceInMinutes <= 60) {
-        return (
-          <div className={`${classes.availablity}`}>AVAILABLE IN {differenceInMinutes} MINS</div>
-        );
-      } else if (differenceInMinutes >= 60 && differenceInMinutes < 1380) {
-        return (
-          <div className={`${classes.availablity}`}>
-            AVAILABLE IN {getDiffInHours(doctorAvailablePhysicalSlots)} HOURS
-          </div>
-        );
-      } else if (differenceInMinutes >= 1380) {
-        return (
-          <div className={`${classes.availablity}`}>
-            AVAILABLE IN {getDiffInDays(doctorAvailablePhysicalSlots)} Days
-          </div>
-        );
-      }
-    } else {
-      return null;
-    }
-  };
-  const availabilityOnlineMarkup = () => {
-    if (doctorAvailableOnlineSlot && doctorAvailableOnlineSlot.length > 0) {
-      if (differenceInMinutes === 0) {
-        return (
-          <div className={`${classes.availablity} ${classes.availableNow}`}>AVAILABLE NOW</div>
-        );
-      } else if (differenceInOnlineMinutes > 0 && differenceInOnlineMinutes <= 15) {
-        return (
-          <div className={`${classes.availablity} ${classes.availableNow}`}>
-            AVAILABLE IN {differenceInOnlineMinutes}{' '}
-            {differenceInOnlineMinutes === 1 ? 'MIN' : 'MINS'}
-          </div>
-        );
-      } else if (differenceInOnlineMinutes > 15 && differenceInOnlineMinutes <= 60) {
-        return (
-          <div className={`${classes.availablity} ${classes.availableNow}`}>
-            AVAILABLE IN {differenceInOnlineMinutes} MINS
-          </div>
-        );
-      } else if (differenceInOnlineMinutes >= 60 && differenceInOnlineMinutes < 1380) {
-        return (
-          <div className={`${classes.availablity} ${classes.availableNow}`}>
-            AVAILABLE IN {getDiffInHours(doctorAvailableOnlineSlot)} HOURS
-          </div>
-        );
-      } else if (differenceInMinutes >= 1380) {
-        return (
-          <div className={`${classes.availablity} ${classes.availableNow}`}>
-            AVAILABLE IN {getDiffInDays(doctorAvailableOnlineSlot)} Days
-          </div>
-        );
-      }
-    } else {
-      return null;
-    }
-  };
   const saveSearchMutation = useMutation<SaveSearch, SaveSearchVariables>(SAVE_PATIENT_SEARCH);
+
+  const differenceInOnlineMinutes = getDiffInMinutes(doctorAvailableOnlineSlot);
+  const differenceInPhysicalMinutes = getDiffInMinutes(doctorAvailablePhysicalSlots);
+
+  const availabilityMarkup = (consultType: string) => {
+    const differenceInMinutes =
+      consultType === 'online' ? differenceInOnlineMinutes : differenceInPhysicalMinutes;
+    return getAvailability(
+      consultType === 'online' ? doctorAvailableOnlineSlot : doctorAvailablePhysicalSlots,
+      differenceInMinutes,
+      'consultType'
+    );
+  };
 
   return (
     <div className={classes.root}>
       <div className={classes.headerGroup}>
         <h3>How can I consult with {doctorName}:</h3>
         <div className={classes.tabButtons}>
-          <AphButton
-            className={
-              onlineDirection ? `${classes.button} ${classes.btnActive}` : `${classes.button}`
-            }
-            onClick={() => {
-              setOnlineDirection(true);
-              setPhysicalDirection(false);
-            }}
-          >
-            <span>Chat/Audio/Video</span>
-            <span className={classes.price}>Rs. {onlineFee}</span>
-            <span>{availabilityOnlineMarkup()}</span>
-          </AphButton>
-          <AphButton
-            className={
-              physicalDirection ? `${classes.button} ${classes.btnActive}` : `${classes.button}`
-            }
-            id="btnActive"
-            onClick={() => {
-              setPhysicalDirection(true);
-              setOnlineDirection(false);
-            }}
-          >
-            <span>Meet in Person</span>
-            <span className={classes.price}>Rs. {physcalFee}</span>
-            <span>{availabilityMarkup()}</span>
-          </AphButton>
+          {(consultMode === ConsultMode.BOTH || consultMode === ConsultMode.ONLINE) && (
+            <AphButton
+              className={`${classes.button}  ${onlineDirection ? classes.btnActive : ''}`}
+              onClick={() => {
+                setOnlineDirection(true);
+                setPhysicalDirection(false);
+              }}
+            >
+              <span>Chat/Audio/Video</span>
+              <span className={classes.price}>Rs. {onlineFee}</span>
+              <span>
+                <div
+                  className={`${classes.availability} ${
+                    differenceInOnlineMinutes < 15 ? classes.availableNow : null
+                  }`}
+                >
+                  {availabilityMarkup('online')}
+                </div>
+              </span>
+            </AphButton>
+          )}
+          {(consultMode === ConsultMode.BOTH || consultMode === ConsultMode.PHYSICAL) && (
+            <AphButton
+              className={`${classes.button} ${physicalDirection ? classes.btnActive : ''}`}
+              id="btnActive"
+              onClick={() => {
+                setPhysicalDirection(true);
+                setOnlineDirection(false);
+              }}
+            >
+              <span>Meet in Person</span>
+              <span className={classes.price}>Rs. {physcalFee}</span>
+              <span>
+                <div
+                  className={`${classes.availability} ${
+                    differenceInPhysicalMinutes < 15 ? classes.availableNow : null
+                  }`}
+                >
+                  {availabilityMarkup('physical')}
+                </div>
+              </span>
+            </AphButton>
+          )}
         </div>
       </div>
       <div className={classes.consultGroup}>
@@ -382,7 +355,9 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
               ? 'How to consult in person'
               : 'How to consult via chat/audio/video?'}
           </h4>
+          {isSmallScreen && <p>{availabilityMarkup(physicalDirection ? 'physical' : 'online')}</p>}
         </div>
+
         <div className={classes.groupContent}>
           <ul>
             <li>
@@ -424,7 +399,7 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
               </span>
               <span>Receive prescriptions instantly </span>
             </li>
-            {!physicalDirection && (
+            {onlineDirection && (
               <li className={classes.blueText}>
                 <span>
                   <img src={require('images/ic_chat.svg')} alt="" />
@@ -495,7 +470,9 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
         <BookConsult
           consultMode={consultMode}
           doctorId={doctorId}
-          doctorAvailableIn={differenceInMinutes}
+          doctorAvailableIn={
+            onlineDirection ? differenceInOnlineMinutes : differenceInPhysicalMinutes
+          }
           setIsPopoverOpen={setIsPopoverOpen}
         />
       </Modal>
