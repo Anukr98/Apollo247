@@ -9,12 +9,14 @@ import { DoctorRepository } from 'doctors-service/repositories/doctorRepository'
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { ExotelDetailsRepository } from 'consults-service/repositories/exotelDetailsRepository'
 import { uploadFileToBlobStorage } from 'helpers/uploadFileToBlob';
+import { DEVICETYPE } from 'consults-service/entities'
 
 export const exotelTypeDefs = gql`
   input exotelInput {
     from: String
     to: String
-    appointmentId: String
+    appointmentId: String!
+    deviceType: DEVICETYPE
   }
 
   type exotelResult {
@@ -66,9 +68,10 @@ export const exotelTypeDefs = gql`
 `;
 
 type exotelInput = {
-  from: string;
-  to: string;
+  from?: string;
+  to?: string;
   appointmentId: string;
+  deviceType?: DEVICETYPE;
 };
 
 type exotelResult = {
@@ -235,7 +238,7 @@ const initateConferenceTelephoneCall: Resolver<
 
   const exotelRepo = consultsDb.getCustomRepository(ExotelDetailsRepository);
   const exotelResponse = JSON.parse(exotelResult.response)
-  const createObj = {
+  let createObj = {
     callSid: exotelResponse['Call']['Sid'],
     accountSid: exotelResponse['Call']['AccountSid'],
     doctorMobileNumber: exotelResponse['Call']['From'],
@@ -247,7 +250,10 @@ const initateConferenceTelephoneCall: Resolver<
     appointmentId: appt.id,
     doctorType: doctor.doctorType,
     doctorId: doctor.id,
-    deviceType: "",
+  }
+
+  if(exotelInput.deviceType){
+    createObj = Object.assign(createObj, {deviceType: exotelInput.deviceType})
   }
 
   try {
@@ -391,11 +397,11 @@ const getCallDetailsByAppintment: Resolver<
 
     let newCallObj = {
       callSid: call.callSid,
-      callStartTime: call.callStartTime.toUTCString(),
-      callEndTime: call.callEndTime.toUTCString(),
+      callStartTime: call.callStartTime && call.callStartTime.toUTCString(),
+      callEndTime: call.callEndTime ? call.callEndTime.toUTCString() : "",
       patientPickedUp: (call.patientPickedUp ? "Yes" : "No"),
       doctorPickedUp: (call.doctorPickedUp ? "Yes" : "No"),
-      totalCallDuration: call.totalCallDuration.toString(),
+      totalCallDuration: call.totalCallDuration ? call.totalCallDuration.toString() : "",
       deviceType: call.deviceType,
       recordingUrl: call.recordingUrl,
       appointmentId: call.appointmentId,
