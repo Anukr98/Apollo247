@@ -14,6 +14,7 @@ import { isMobileNumberValid } from '@aph/universal/dist/aphValidators';
 import { SecretaryRepository } from 'doctors-service/repositories/secretaryRepository';
 import { DoctorSecretaryRepository } from 'doctors-service/repositories/doctorSecretary';
 import { DoctorPatientExternalConnectRepository } from 'doctors-service/repositories/DoctorPatientExternalConnectRepository';
+import { RELATIONS } from 'ApiConstants';
 
 export const delegateFunctionsTypeDefs = gql`
   type DoctorSecretaryData {
@@ -71,7 +72,7 @@ const updateDelegateNumber: Resolver<
 
   await doctorRepository.updateDelegateNumber(doctorData.id, args.delegateNumber);
 
-  const updatedDoctorDetails = await doctorRepository.getDoctorProfileData(doctorData.id);
+  const updatedDoctorDetails = await doctorRepository.getDoctorProfileData(doctorData.id, RELATIONS.GET_PROFILE_DATA.ALL);
   if (updatedDoctorDetails == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
   return updatedDoctorDetails;
 };
@@ -90,7 +91,7 @@ const removeDelegateNumber: Resolver<null, {}, DoctorsServiceContext, Doctor> = 
 
   const updatedDoctorDetails =
     doctorData.delegateNumber != null
-      ? await doctorRepository.getDoctorProfileData(doctorData.id)
+      ? await doctorRepository.getDoctorProfileData(doctorData.id, RELATIONS.GET_PROFILE_DATA.ALL)
       : doctorData;
   if (updatedDoctorDetails == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
   return updatedDoctorDetails;

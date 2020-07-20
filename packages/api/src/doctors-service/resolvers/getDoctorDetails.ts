@@ -11,6 +11,7 @@ import { AdminUser } from 'doctors-service/repositories/adminRepository';
 import { DashboardData, getJuniorDoctorsDashboard } from 'doctors-service/resolvers/JDAdmin';
 import { SecretaryRepository } from 'doctors-service/repositories/secretaryRepository';
 import { format } from 'date-fns';
+import { RELATIONS } from 'ApiConstants';
 
 export const getDoctorDetailsTypeDefs = gql`
   enum Gender {
@@ -459,7 +460,7 @@ export const getDoctorDetailsResolvers = {
     async __resolveReference(object: Doctor) {
       const connection = getConnection();
       const doctorRepo = connection.getCustomRepository(DoctorRepository);
-      return await doctorRepo.getDoctorProfileData(object.id.toString());
+      return await doctorRepo.getDoctorProfileData(object.id.toString(), RELATIONS.GET_PROFILE_DATA.ALL);
     },
   },
   DoctorDetailsWithStatusExclude: {
