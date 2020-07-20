@@ -382,7 +382,7 @@ export async function sendCallsNotification(
     if (callType == APPT_CALL_TYPE.CHAT) {
       notificationBody = ApiConstants.JUNIOR_CALL_APPOINTMENT_BODY;
       //send whatsapp message for junior doctor call
-      const devLink: any = process.env.DOCTOR_DEEP_LINK;
+      const devLink = process.env.DOCTOR_DEEP_LINK ? process.env.DOCTOR_DEEP_LINK : '';
       let whatsappMsg = ApiConstants.WHATSAPP_JD_CONSULT_START_REMINDER.replace(
         '{0}',
         patientDetails.firstName + ' ' + patientDetails.lastName
@@ -2496,7 +2496,7 @@ const sendChatMessageToDoctor: Resolver<
   const doctorDetails = await doctorRepo.findById(appointment.doctorId);
   if (!doctorDetails) throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID, undefined, {});
   //const whatsAppLink= process.env.WHATSAPP_LINK_BOOK_APOINTMENT;
-  const devLink: any = process.env.DOCTOR_DEEP_LINK;
+  const devLink = process.env.DOCTOR_DEEP_LINK ? process.env.DOCTOR_DEEP_LINK : '';
   let whatsAppMessageBody = ApiConstants.WHATSAPP_SD_CHAT_NOTIFICATION.replace(
     '{0}',
     doctorDetails.firstName

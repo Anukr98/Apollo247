@@ -160,7 +160,7 @@ export class PatientRepository extends Repository<Patient> {
   async setByMobileCache(mobile: string) {
     const patients = await this.find({
       where: { mobileNumber: mobile, isActive: true },
-      relations: [
+      /*relations: [
         'lifeStyle',
         'healthVault',
         'familyHistory',
@@ -168,7 +168,7 @@ export class PatientRepository extends Repository<Patient> {
         'patientDeviceTokens',
         'patientNotificationSettings',
         'patientMedicalHistory',
-      ],
+      ],*/
     });
 
     const patientIds: string[] = await patients.map((patient) => {

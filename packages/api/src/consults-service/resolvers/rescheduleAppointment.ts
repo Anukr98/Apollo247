@@ -8,6 +8,7 @@ import {
   STATUS,
   REQUEST_ROLES,
   ES_DOCTOR_SLOT_STATUS,
+  RescheduleAppointmentDetails,
 } from 'consults-service/entities';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
@@ -96,6 +97,15 @@ export const rescheduleAppointmentTypeDefs = gql`
     isFollowUp: Int!
   }
 
+  type RescheduleAppointmentDetails {
+    id: String!
+    rescheduledDateTime: DateTime!
+    rescheduleReason: String!
+    rescheduleInitiatedBy: TRANSFER_INITIATED_TYPE
+    rescheduleInitiatedId: String!
+    rescheduleStatus: TRANSFER_STATUS!
+  }
+
   extend type Mutation {
     initiateRescheduleAppointment(
       RescheduleAppointmentInput: RescheduleAppointmentInput
@@ -110,6 +120,7 @@ export const rescheduleAppointmentTypeDefs = gql`
       existAppointmentId: String!
       rescheduleDate: DateTime!
     ): CheckRescheduleResult!
+    getAppointmentRescheduleDetails(appointmentId: String!): RescheduleAppointmentDetails!
   }
 `;
 
@@ -163,6 +174,47 @@ type CheckRescheduleResult = {
 type RescheduleAppointmentInputArgs = { RescheduleAppointmentInput: RescheduleAppointmentInput };
 type BookRescheduleAppointmentInputArgs = {
   bookRescheduleAppointmentInput: BookRescheduleAppointmentInput;
+};
+
+const getAppointmentRescheduleDetails: Resolver<
+  null,
+  { appointmentId: string },
+  ConsultServiceContext,
+  RescheduleAppointmentDetails
+> = async (parent, args, { consultsDb, doctorsDb }) => {
+  const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
+  const apptDetails = await appointmentRepo.findById(args.appointmentId);
+  if (!apptDetails) {
+    throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
+  }
+  const rescheduleRepo = consultsDb.getCustomRepository(RescheduleAppointmentRepository);
+  const rescheduleDetails = await rescheduleRepo.getRescheduleDetailsByAppointment(apptDetails.id);
+  if (!rescheduleDetails) throw new AphError(AphErrorMessages.NO_RESCHEDULE_DETAILS, undefined, {});
+  const apptCount = await appointmentRepo.checkIfAppointmentExist(
+    rescheduleDetails.rescheduleInitiatedId,
+    rescheduleDetails.rescheduledDateTime
+  );
+  if (rescheduleDetails.rescheduledDateTime < new Date() || apptCount > 0) {
+    let nextDate = new Date();
+    let availableSlot;
+    while (true) {
+      const nextSlot = await appointmentRepo.getDoctorNextSlotDate(
+        rescheduleDetails.rescheduleInitiatedId,
+        nextDate,
+        doctorsDb,
+        apptDetails.appointmentType,
+        new Date()
+      );
+      if (nextSlot != '' && nextSlot != undefined) {
+        availableSlot = nextSlot;
+        break;
+      }
+      nextDate = addDays(nextDate, 1);
+    }
+    rescheduleDetails.rescheduledDateTime = new Date(availableSlot);
+  }
+
+  return rescheduleDetails;
 };
 
 const checkIfReschedule: Resolver<
@@ -687,5 +739,6 @@ export const rescheduleAppointmentResolvers = {
 
   Query: {
     checkIfReschedule,
+    getAppointmentRescheduleDetails,
   },
 };
