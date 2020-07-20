@@ -188,7 +188,6 @@ export const connect = async () => {
         MedicineOrderPayments,
         MedicineOrderRefunds,
         MedicineOrders,
-        MedicineOrderRefunds,
         MedicineOrdersStatus,
         MedicineOrderShipments,
         Patient,
