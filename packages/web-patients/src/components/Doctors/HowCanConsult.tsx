@@ -448,8 +448,9 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
             >
               {popupLoading ? (
                 <CircularProgress size={22} color="secondary" />
-              ) : getDiffInMinutes(doctorAvailablePhysicalSlots) > 0 &&
-                getDiffInMinutes(doctorAvailablePhysicalSlots) <= 60 ? (
+              ) : physicalDirection ? (
+                differenceInPhysicalMinutes > 0 && differenceInPhysicalMinutes <= 60
+              ) : differenceInOnlineMinutes > 0 && differenceInOnlineMinutes <= 60 ? (
                 'CONSULT NOW'
               ) : (
                 'BOOK APPOINTMENT'
