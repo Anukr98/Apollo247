@@ -230,9 +230,12 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 9,
       marginTop: 16,
     },
-    availableSoon: {
+    availableNow: {
       backgroundColor: '#ff748e !important',
       color: '#fff !important',
+    },
+    availableSoon: {
+      color: '#ff748e',
     },
     headerGroup: {
       [theme.breakpoints.down('xs')]: {
@@ -319,7 +322,7 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
                 <span className={classes.price}>Rs. {onlineFee}</span>
                 <span
                   className={`${classes.availability} ${
-                    differenceInOnlineMinutes < 15 ? classes.availableSoon : null
+                    differenceInOnlineMinutes < 15 ? classes.availableNow : null
                   }`}
                 >
                   {availabilityMarkup('online')}
@@ -342,7 +345,7 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
                 <span className={classes.price}>Rs. {physcalFee}</span>
                 <span
                   className={`${classes.availability} ${
-                    differenceInPhysicalMinutes < 15 ? classes.availableSoon : null
+                    differenceInPhysicalMinutes < 15 ? classes.availableNow : null
                   }`}
                 >
                   {availabilityMarkup('physical')}
@@ -369,7 +372,7 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
                 : 'How to consult via chat/audio/video?'}
             </h4>
             {isSmallScreen && (
-              <span
+              <p
                 className={
                   physicalDirection
                     ? differenceInPhysicalMinutes < 15
@@ -381,7 +384,7 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
                 }
               >
                 {availabilityMarkup(physicalDirection ? 'physical' : 'online')}
-              </span>
+              </p>
             )}
           </div>
         </div>
