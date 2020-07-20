@@ -803,14 +803,16 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 {rowData.message === documentUpload ? (
                   <div
                     onClick={() => {
-                      if (rowData.url.substr(-4).toLowerCase() !== '.pdf') {
-                        setModalOpen(true);
-                        setImgPrevUrl(rowData.url);
-                      }
+                      setModalOpen(rowData.fileType === 'pdf' ? false : true);
+                      setImgPrevUrl(rowData.url);
                     }}
                     className={classes.imageUpload}
                   >
-                    {rowData.url.substr(-4).toLowerCase() !== '.pdf' ? (
+                    {rowData.fileType === 'pdf' ? (
+                      <a href={rowData.url} target="_blank">
+                        <img src={require('images/pdf_thumbnail.png')} />
+                      </a>
+                    ) : (
                       <img
                         src={rowData.url}
                         alt={rowData.url}
@@ -818,10 +820,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                           handleImageError(e, rowData.url);
                         }}
                       />
-                    ) : (
-                      <a href={rowData.url} target="_blank">
-                        <img src={require('images/pdf_thumbnail.png')} />
-                      </a>
                     )}
                     {rowData.messageDate && (
                       <div className={classes.timeStampImg}>
