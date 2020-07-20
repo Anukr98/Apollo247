@@ -203,7 +203,6 @@ export const covidProtocolLanding: React.FC = (props: any) => {
   const scrollToRef = useRef<HTMLDivElement>(null);
   const { currentPatient } = useAllCurrentPatients();
 
-
   useEffect(() => {
     scrollToRef &&
       scrollToRef.current &&
@@ -219,7 +218,7 @@ export const covidProtocolLanding: React.FC = (props: any) => {
           if (res && res.success) {
             setSymptomData(res.data);
           } else {
-            setSymptomData(null)
+            setSymptomData(null);
           }
         })
         .finally(() => {
@@ -252,10 +251,14 @@ export const covidProtocolLanding: React.FC = (props: any) => {
           ) : (
             <>
               <div className={classes.cdIntro}>
-                <Typography component="h4">{symptomData && symptomData.introductionTitle}</Typography>
+                <Typography component="h4">
+                  {symptomData && symptomData.introductionTitle}
+                </Typography>
                 <Typography>
                   <div
-                    dangerouslySetInnerHTML={{ __html: symptomData && symptomData.introductionBody }}
+                    dangerouslySetInnerHTML={{
+                      __html: symptomData && symptomData.introductionBody,
+                    }}
                   />
                 </Typography>
               </div>

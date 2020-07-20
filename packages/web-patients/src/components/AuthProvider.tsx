@@ -375,7 +375,8 @@ export const AuthProvider: React.FC = (props) => {
               res.data.getCurrentPatients.patients[0].id;
 
             if (localStorage.getItem('currentUser') && localStorage.getItem('currentUser').length) {
-              const patientIds = res.data.getCurrentPatients.patients.map(patient => patient.id) || [];
+              const patientIds =
+                res.data.getCurrentPatients.patients.map((patient) => patient.id) || [];
               if (!patientIds.includes(localStorage.getItem('currentUser'))) {
                 localStorage.setItem('currentUser', userId);
                 setCurrentPatientId(userId);
