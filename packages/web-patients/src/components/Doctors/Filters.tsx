@@ -425,7 +425,7 @@ export const Filters: React.FC<FilterProps> = (props) => {
                 }}
               >
                 Clear Filters
-            </AphButton>
+              </AphButton>
               <AphButton
                 onClick={() => {
                   setFilter(localFilter);
@@ -434,7 +434,7 @@ export const Filters: React.FC<FilterProps> = (props) => {
                 className={classes.applyBtn}
               >
                 Apply Filters
-            </AphButton>
+              </AphButton>
             </span>
           </div>
         </div>

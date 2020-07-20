@@ -324,7 +324,7 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#01475b',
       fontSize: 12,
       fontWeight: 500,
-    }
+    },
   });
 });
 
@@ -441,7 +441,9 @@ export const HowItWorks: React.FC = (props) => {
           <TabPanel value={value} index={1}>
             <div className={classes.tabHead}>
               <img src={require('images/ic-specialist.svg')} />
-              <Typography component="h6">How to consult <br /> in person </Typography>
+              <Typography component="h6">
+                How to consult <br /> in person{' '}
+              </Typography>
             </div>
             <div className={classes.tabBody}>
               <ul className={classes.tabList}>
