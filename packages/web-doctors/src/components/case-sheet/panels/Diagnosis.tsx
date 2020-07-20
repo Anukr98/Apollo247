@@ -203,7 +203,7 @@ export const Diagnosis: React.FC = () => {
   const [diagnosisValue, setDiagnosisValue] = useState('');
   const { caseSheetEdit } = useContext(CaseSheetContext);
   const client = useApolloClient();
-  const [found, setFound] = useState<boolean>(false);
+  // const [found, setFound] = useState<boolean>(false);
 
   useEffect(() => {
     if (idx >= 0) {
@@ -232,8 +232,8 @@ export const Diagnosis: React.FC = () => {
     setSuggestions([]);
   };
   const fetchDignosis = async (value: string) => {
-    // let found = false;
-    setFound(false);
+    let found = false;
+    //setFound(false);
     client
       .query<SearchDiagnosis, any>({
         query: SEARCH_DIAGNOSIS,
@@ -250,12 +250,12 @@ export const Diagnosis: React.FC = () => {
           });
 
           if (val.name.toLowerCase() === value.toLowerCase() && val.name.length === value.length) {
-            setFound(true);
+            found = true;
           }
         });
 
-        // (!found || filterVal.length === 0) &&
-        //   filterVal.unshift({ name: value, id: '', __typename: 'Diagnosis' });
+        (!found || filterVal.length === 0) &&
+          filterVal.unshift({ name: value, id: '', __typename: 'Diagnosis' });
 
         suggestions = filterVal;
         setSearchInput(value);
@@ -281,9 +281,9 @@ export const Diagnosis: React.FC = () => {
     event: React.ChangeEvent<{}>,
     { newValue }: Autosuggest.ChangeEvent
   ) => {
-    suggestions.length > 0 && suggestions[0].id == '' && suggestions.splice(0, 1);
+    //suggestions.length > 0 && suggestions[0].id == '' && suggestions.splice(0, 1);
     if (event.nativeEvent.type === 'input' && newValue.length > 2) {
-      suggestions.unshift({ name: newValue, id: '', __typename: 'Diagnosis' });
+      //  suggestions.unshift({ name: newValue, id: '', __typename: 'Diagnosis' });
       fetchDignosis(newValue);
     }
     setDiagnosisValue(newValue);
@@ -304,7 +304,7 @@ export const Diagnosis: React.FC = () => {
       diagnosisValue.length > 2 && (
         <AphTooltip open={isHighlighted} title={suggestion.name}>
           <>
-            {suggestion.id !== '' && (
+            {suggestion.id !== '' ? (
               <div>
                 {parts.map((part) => (
                   <span
@@ -319,8 +319,7 @@ export const Diagnosis: React.FC = () => {
                 ))}
                 <img src={require('images/ic_dark_plus.svg')} alt="" />
               </div>
-            )}
-            {!found && (
+            ) : (
               <div>
                 <span>Add</span>
                 <span
