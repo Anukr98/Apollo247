@@ -1200,25 +1200,13 @@ export class AppointmentRepository extends Repository<Appointment> {
   }
 
   updateJdQuestionStatusbyIds(ids: string[]) {
-    return new Promise(async (resolve, reject) => {
-      try {
-        //Do not use forEach here, forEach loops do not support await
-        for (let k = 0, totalItemsTosave = ids.length; k < totalItemsTosave; k++) {
-          await this.createUpdateAppointment(
-            this.create(),
-            {
-              id: ids[k],
-              isJdQuestionsComplete: true,
-              isConsultStarted: true,
-            },
-            AphErrorMessages.UPDATE_APPOINTMENT_ERROR
-          );
-        }
-
-        return resolve();
-      } catch (exception) {
-        return reject(exception);
-      }
+    return this.update([...ids], {
+      isJdQuestionsComplete: true,
+      isConsultStarted: true,
+    }).catch((getApptError) => {
+      throw new AphError(AphErrorMessages.UPDATE_APPOINTMENT_ERROR, undefined, {
+        getApptError,
+      });
     });
   }
 

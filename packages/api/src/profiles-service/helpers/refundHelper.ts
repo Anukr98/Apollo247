@@ -79,7 +79,7 @@ export const initiateRefund: refundMethod<RefundInput, Connection, Partial<Paytm
       refundAmount: '' + refundInput.refundAmount,
     };
 
-    const checksumHash = await genCheckSumPromiseWrapper(
+    const checksumHash: string = await genCheckSumPromiseWrapper(
       paytmBody,
       process.env.PAYTM_MERCHANT_KEY_PHARMACY ? process.env.PAYTM_MERCHANT_KEY_PHARMACY : ''
     );
