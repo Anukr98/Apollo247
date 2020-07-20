@@ -63,7 +63,7 @@ const useStyles = makeStyles((theme: Theme) => {
     rightActions: {
       display: 'flex',
       alignItems: 'center',
-      justifyContent: 'space-between',
+      justifyContent: 'flex-end',
       margin: '10px 0 0',
       [theme.breakpoints.down('sm')]: {
         flexDirection: 'column',
@@ -77,6 +77,7 @@ const useStyles = makeStyles((theme: Theme) => {
         justifyContent: 'normal',
         fontWeight: 600,
         borderRadius: 10,
+        marginRight: 20,
         [theme.breakpoints.down('sm')]: {
           width: '100%',
           margin: '0 0 10px',

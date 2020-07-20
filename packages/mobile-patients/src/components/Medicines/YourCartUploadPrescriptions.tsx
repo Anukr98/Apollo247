@@ -401,7 +401,7 @@ export const YourCartUploadPrescriptions: React.FC<YourCartUploadPrescriptionPro
           medicineDeliveryType: deliveryAddressId
             ? MEDICINE_DELIVERY_TYPE.HOME_DELIVERY
             : MEDICINE_DELIVERY_TYPE.STORE_PICKUP,
-          shopId: storeId || '0',
+          ...(storeId? {shopId: storeId}: {}),
           appointmentId: '',
           patinetAddressId: deliveryAddressId || '',
           prescriptionImageUrl: [...phyPresUrls, ...ePresUrls].join(','),

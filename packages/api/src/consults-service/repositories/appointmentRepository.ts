@@ -45,7 +45,6 @@ import { log } from 'customWinstonLogger';
 import { ApiConstants } from 'ApiConstants';
 import { Client, RequestParams } from '@elastic/elasticsearch';
 
-
 @EntityRepository(Appointment)
 export class AppointmentRepository extends Repository<Appointment> {
   findById(id: string) {
@@ -111,21 +110,22 @@ export class AppointmentRepository extends Repository<Appointment> {
     });
   }
 
-
   /**
    * One stop method to create/update appointments
-   * This was needed in order to always pass the @BeforeUpdate hook in index.ts 
+   * This was needed in order to always pass the @BeforeUpdate hook in index.ts
    * and prevent certain status/states to change after they have reached a final status/states
    * Check out the hook in index.ts for more context around the code that does that
    */
-  createUpdateAppointment(appt: Appointment, updateDetails: Partial<Appointment>, errorType: AphErrorMessages): Promise<Appointment> {
+  createUpdateAppointment(
+    appt: Appointment,
+    updateDetails: Partial<Appointment>,
+    errorType: AphErrorMessages
+  ): Promise<Appointment> {
     const appointment = this.create(appt);
     Object.assign(appointment, { ...updateDetails });
-    return appointment
-      .save()
-      .catch((appointmentError) => {
-        throw new AphError(errorType, undefined, { appointmentError });
-      })
+    return appointment.save().catch((appointmentError) => {
+      throw new AphError(errorType, undefined, { appointmentError });
+    });
   }
 
   updatePatientType(appt: Appointment, patientType: PATIENT_TYPE) {
@@ -133,10 +133,10 @@ export class AppointmentRepository extends Repository<Appointment> {
       appt,
       {
         id: appt.id,
-        patientType
+        patientType,
       },
       AphErrorMessages.UPDATE_APPOINTMENT_ERROR
-    )
+    );
   }
 
   getAppointmentsByDocId(doctorId: string) {
@@ -357,10 +357,10 @@ export class AppointmentRepository extends Repository<Appointment> {
       apptDetails,
       {
         id,
-        ...appointmentInfo
+        ...appointmentInfo,
       },
       AphErrorMessages.UPDATE_APPOINTMENT_ERROR
-    )
+    );
   }
 
   findAppointmentPayment(id: string) {
@@ -1075,13 +1075,18 @@ export class AppointmentRepository extends Repository<Appointment> {
     else return 0;
   }
 
-  async updateAppointmentStatus(id: string, status: STATUS, isSeniorConsultStarted: boolean, apptDetails: Appointment) {
+  async updateAppointmentStatus(
+    id: string,
+    status: STATUS,
+    isSeniorConsultStarted: boolean,
+    apptDetails: Appointment
+  ) {
     return this.createUpdateAppointment(
       apptDetails,
       {
         id,
         status,
-        isSeniorConsultStarted
+        isSeniorConsultStarted,
       },
       AphErrorMessages.UPDATE_APPOINTMENT_ERROR
     );
@@ -1100,7 +1105,7 @@ export class AppointmentRepository extends Repository<Appointment> {
         id,
         status,
         isSeniorConsultStarted,
-        sdConsultationDate
+        sdConsultationDate,
       },
       AphErrorMessages.UPDATE_APPOINTMENT_ERROR
     );
@@ -1164,10 +1169,10 @@ export class AppointmentRepository extends Repository<Appointment> {
       {
         id,
         appointmentState,
-        isSeniorConsultStarted: false
+        isSeniorConsultStarted: false,
       },
       AphErrorMessages.UPDATE_APPOINTMENT_ERROR
-    )
+    );
   }
 
   checkDoctorAppointmentByDate(doctorId: string, appointmentDateTime: Date) {
@@ -1188,38 +1193,22 @@ export class AppointmentRepository extends Repository<Appointment> {
         appointmentDateTime,
         rescheduleCount,
         appointmentState,
-        status: STATUS.PENDING
+        status: STATUS.PENDING,
       },
       AphErrorMessages.RESCHEDULE_APPOINTMENT_ERROR
     );
-
   }
 
   updateJdQuestionStatusbyIds(ids: string[]) {
-    return new Promise(async (resolve, reject) => {
-      try {
-
-        //Do not use forEach here, forEach loops do not support await
-        for (let k = 0, totalItemsTosave = ids.length; k < totalItemsTosave; k++) {
-          await this.createUpdateAppointment(
-            this.create(),
-            {
-              id: ids[k],
-              isJdQuestionsComplete: true,
-              isConsultStarted: true
-            },
-            AphErrorMessages.UPDATE_APPOINTMENT_ERROR
-          )
-        }
-
-        return resolve();
-      }
-      catch (exception) {
-        return reject(exception);
-      }
-    })
+    return this.update([...ids], {
+      isJdQuestionsComplete: true,
+      isConsultStarted: true,
+    }).catch((getApptError) => {
+      throw new AphError(AphErrorMessages.UPDATE_APPOINTMENT_ERROR, undefined, {
+        getApptError,
+      });
+    });
   }
-
 
   rescheduleAppointmentByDoctor(
     id: string,
@@ -1235,7 +1224,7 @@ export class AppointmentRepository extends Repository<Appointment> {
         appointmentDateTime,
         rescheduleCountByDoctor,
         appointmentState,
-        status: STATUS.PENDING
+        status: STATUS.PENDING,
       },
       AphErrorMessages.RESCHEDULE_APPOINTMENT_ERROR
     );
@@ -1253,13 +1242,12 @@ export class AppointmentRepository extends Repository<Appointment> {
       status: STATUS.CANCELLED,
       cancelledBy,
       cancelledById,
-      cancelledDate: new Date()
-    }
+      cancelledDate: new Date(),
+    };
 
     if (cancelledBy == REQUEST_ROLES.DOCTOR) {
       apptUpdatePartial['doctorCancelReason'] = cancelReason;
-    }
-    else {
+    } else {
       apptUpdatePartial['patientCancelReason'] = cancelReason;
     }
 
@@ -1277,7 +1265,7 @@ export class AppointmentRepository extends Repository<Appointment> {
         id,
         cancelledBy: REQUEST_ROLES.SYSTEM,
         cancelledDate: new Date(),
-        status: STATUS.CANCELLED
+        status: STATUS.CANCELLED,
       },
       AphErrorMessages.CANCEL_APPOINTMENT_ERROR
     );
@@ -1649,7 +1637,7 @@ export class AppointmentRepository extends Repository<Appointment> {
       apptDetails,
       {
         id,
-        isConsultStarted: status
+        isConsultStarted: status,
       },
       AphErrorMessages.CANCEL_APPOINTMENT_ERROR
     );

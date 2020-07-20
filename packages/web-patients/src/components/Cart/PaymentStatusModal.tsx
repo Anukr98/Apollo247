@@ -16,7 +16,7 @@ import { useAllCurrentPatients } from 'hooks/authHooks';
 import { OrderStatusContent } from '../OrderStatusContent';
 import { OrderPlaced } from 'components/Cart/OrderPlaced';
 import { getPaymentMethodFullName } from 'helpers/commonHelpers';
-import { paymentStatusTracking } from 'webEngageTracking';
+import { paymentStatusTracking, pharmacyCheckoutTracking } from 'webEngageTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -143,6 +143,7 @@ export const PaymentStatusModal: React.FC<PaymentStatusProps> = (props) => {
   };
   const handleOnClose = () => {
     localStorage.removeItem('selectedPaymentMode');
+    sessionStorage.removeItem('pharmacyCheckoutValues');
     paymentStatusRedirect(clientRoutes.medicines());
   };
   const paymentStatusRedirect = (url: string) => {
@@ -160,15 +161,17 @@ export const PaymentStatusModal: React.FC<PaymentStatusProps> = (props) => {
               : params.orderAutoId,
         },
       })
-        .then(({ data }: any) => {
-          if (
-            data &&
-            data.getMedicineOrderOMSDetails &&
-            data.getMedicineOrderOMSDetails.medicineOrderDetails
-          ) {
-            pharmaPayments({
-              variables: {
-                orderId:
+        .then((resp: any) => {
+          if (resp && resp.data && resp.data.pharmaPaymentStatus) {
+            const { paymentRefId, amountPaid, paymentMode } = resp.data.pharmaPaymentStatus;
+            setPaymentStatusData(resp.data.pharmaPaymentStatus);
+            /* WebEngage Tracking Start*/
+            paymentRefId &&
+              paymentStatusTracking({
+                orderId: paymentRefId,
+                paymentStatus,
+                type: 'Pharmacy',
+                orderAutoId:
                   typeof params.orderAutoId === 'string'
                     ? parseInt(params.orderAutoId)
                     : params.orderAutoId,
@@ -198,6 +201,27 @@ export const PaymentStatusModal: React.FC<PaymentStatusProps> = (props) => {
               .catch(() => {
                 paymentStatusRedirect(clientRoutes.medicines());
               });
+            const pharmacyCheckoutValues = sessionStorage.getItem('pharmacyCheckoutValues')
+              ? JSON.parse(sessionStorage.getItem('pharmacyCheckoutValues'))
+              : {};
+            resp.data.pharmaPaymentStatus.paymentStatus === 'PAYMENT_SUCCESS' &&
+              pharmacyCheckoutTracking({
+                orderId:
+                  typeof params.orderAutoId === 'string'
+                    ? parseInt(params.orderAutoId)
+                    : params.orderAutoId,
+                payStatus: 'success',
+                payType: paymentMode,
+                serviceArea: 'pharmacy',
+                shippingInfo: '',
+                grandTotal: pharmacyCheckoutValues && pharmacyCheckoutValues.grandTotal,
+                discountAmount: pharmacyCheckoutValues && pharmacyCheckoutValues.discountAmount,
+                netAfterDiscount: amountPaid,
+              });
+            /* WebEngage Tracking End*/
+          } else {
+            // redirect to medicine
+            paymentStatusRedirect(clientRoutes.medicines());
           }
         })
         .catch(() => {

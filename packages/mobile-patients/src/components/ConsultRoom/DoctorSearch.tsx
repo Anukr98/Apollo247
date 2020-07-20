@@ -738,24 +738,25 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
 
   const todayDate = moment(new Date()).format('YYYY-MM-DD');
   const callSpecialityAPI = async () => {
-    let isToday = false;
-    const checkDate: any = await AsyncStorage.getItem('APICalledDate');
-    if (checkDate == null) {
-      AsyncStorage.setItem('APICalledDate', todayDate);
-    }
-    isToday = checkDate ? checkDate === todayDate : false;
-    const specialistData = await AsyncStorage.getItem('SpecialistData');
-    if (isToday && specialistData && specialistData.length) {
-      if (specialistData) {
-        setSpecialities(JSON.parse(specialistData));
-        setLocalData(JSON.parse(specialistData));
-        fetchTopSpecialities(JSON.parse(specialistData));
-        // fetchDoctorData(JSON.parse(specialistData)[0].id);
-      }
-      setshowSpinner(false);
-    } else {
-      fetchSpecialities();
-    }
+    // let isToday = false;
+    // const checkDate: any = await AsyncStorage.getItem('APICalledDate');
+    // if (checkDate == null) {
+    //   AsyncStorage.setItem('APICalledDate', todayDate);
+    // }
+    // isToday = checkDate ? checkDate === todayDate : false;
+    // const specialistData = await AsyncStorage.getItem('SpecialistData');
+    // if (isToday && specialistData && specialistData.length) {
+    //   if (specialistData) {
+    //     setSpecialities(JSON.parse(specialistData));
+    //     setLocalData(JSON.parse(specialistData));
+    //     fetchTopSpecialities(JSON.parse(specialistData));
+    //     // fetchDoctorData(JSON.parse(specialistData)[0].id);
+    //   }
+    //   setshowSpinner(false);
+    // } else {
+    setshowSpinner(false);
+    fetchSpecialities();
+    // }
   };
 
   const setLocalData = (data: any) => {

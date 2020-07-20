@@ -5582,6 +5582,18 @@
             "description": null,
             "isDeprecated": false,
             "deprecationReason": null
+          },
+          {
+            "name": "ORDER_PUNCHING_TOOL",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "MFINE",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
           }
         ],
         "possibleTypes": null
@@ -29091,6 +29103,16 @@
               "ofType": null
             },
             "defaultValue": null
+          },
+          {
+            "name": "partnerId",
+            "description": null,
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "defaultValue": null
           }
         ],
         "interfaces": null,
@@ -35511,6 +35533,12 @@
             "description": null,
             "isDeprecated": false,
             "deprecationReason": null
+          },
+          {
+            "name": "MFINE",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
           }
         ],
         "possibleTypes": null
@@ -35525,9 +35553,13 @@
             "description": null,
             "args": [],
             "type": {
-              "kind": "OBJECT",
-              "name": "Patient",
-              "ofType": null
+              "kind": "LIST",
+              "name": null,
+              "ofType": {
+                "kind": "OBJECT",
+                "name": "Patient",
+                "ofType": null
+              }
             },
             "isDeprecated": false,
             "deprecationReason": null
@@ -42731,93 +42763,6 @@
               "ofType": null
             },
             "defaultValue": "\"No longer supported\""
-          }
-        ]
-      },
-      {
-        "name": "key",
-        "description": "",
-        "locations": [
-          "OBJECT",
-          "INTERFACE"
-        ],
-        "args": [
-          {
-            "name": "fields",
-            "description": "",
-            "type": {
-              "kind": "NON_NULL",
-              "name": null,
-              "ofType": {
-                "kind": "SCALAR",
-                "name": "String",
-                "ofType": null
-              }
-            },
-            "defaultValue": null
-          }
-        ]
-      },
-      {
-        "name": "extends",
-        "description": "",
-        "locations": [
-          "OBJECT"
-        ],
-        "args": []
-      },
-      {
-        "name": "external",
-        "description": "",
-        "locations": [
-          "OBJECT",
-          "FIELD_DEFINITION"
-        ],
-        "args": []
-      },
-      {
-        "name": "requires",
-        "description": "",
-        "locations": [
-          "FIELD_DEFINITION"
-        ],
-        "args": [
-          {
-            "name": "fields",
-            "description": "",
-            "type": {
-              "kind": "NON_NULL",
-              "name": null,
-              "ofType": {
-                "kind": "SCALAR",
-                "name": "String",
-                "ofType": null
-              }
-            },
-            "defaultValue": null
-          }
-        ]
-      },
-      {
-        "name": "provides",
-        "description": "",
-        "locations": [
-          "FIELD_DEFINITION"
-        ],
-        "args": [
-          {
-            "name": "fields",
-            "description": "",
-            "type": {
-              "kind": "NON_NULL",
-              "name": null,
-              "ofType": {
-                "kind": "SCALAR",
-                "name": "String",
-                "ofType": null
-              }
-            },
-            "defaultValue": null
           }
         ]
       }
