@@ -92,6 +92,10 @@ export const Unauthorized: React.FC = (props) => {
       <Typography variant="h2" className={classes.needHelp}>
       Unauthorized User
       </Typography>
+      <img
+                src={require('images/unauthorized.svg')}
+                alt=""
+              />
       <div className={classes.helpSection}>
         <h5>It appears you are not allowed to access this page. if you think you should be able to access it, please relogin or contact on doctor helpline.</h5>
         <Link to="/calendar">GO BACK</Link>
