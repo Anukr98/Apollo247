@@ -506,10 +506,14 @@ export class MedicineOrderRefunds extends BaseEntity {
   @Column({ nullable: true, type: 'text' })
   comments: string;
 
-  @Column({ nullable: false, default: 'REFUND_REQUEST_NOT_RAISED' })
+  @Column('enum', {
+    nullable: false,
+    default: REFUND_STATUS.REFUND_REQUEST_NOT_RAISED,
+    enum: REFUND_STATUS,
+  })
   refundStatus: REFUND_STATUS;
 
-  @Column({ nullable: true })
+  @Column('enum', { nullable: true, enum: PAYTM_STATUS })
   paytmRequestStatus: PAYTM_STATUS;
 
   @Column({ nullable: true })

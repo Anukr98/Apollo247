@@ -64,7 +64,7 @@ export const saveMedicineOrderPaymentMqTypeDefs = gql`
     CODCity: CODCity
     orderId: String
     paymentMode: PAYMENT_METHODS
-    healthCredits: Int
+    healthCredits: Float
   }
 
   type SaveMedicineOrderPaymentMqResult {
