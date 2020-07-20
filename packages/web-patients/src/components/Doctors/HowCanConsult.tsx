@@ -102,22 +102,22 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     consultGroup: {
-      [theme.breakpoints.down('xs')]: {
+      padding: '20px 0',
+      [theme.breakpoints.down('sm')]: {
         borderRadius: '10px 10px 0 0',
         boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
         backgroundColor: '#ffffff',
         marginTop: 20,
         padding: 20,
-        paddingTop: 0,
       },
     },
     groupHead: {
       display: 'flex',
-      alignItems: 'center',
-      padding: 16,
-      paddingTop: 25,
-      paddingBottom: 20,
+      padding: '20px 0',
       borderBottom: '0.5px solid rgba(2,71,91,0.3)',
+      [theme.breakpoints.down('sm')]: {
+        padding: '0 0 10px',
+      },
       '& img': {
         verticalAlign: 'middle',
         marginRight: 16,
@@ -128,10 +128,21 @@ const useStyles = makeStyles((theme: Theme) => {
         color: '#0589bb',
         fontWeight: 500,
         textTransform: 'uppercase',
+        lineHeight: 'normal',
+      },
+      '& p': {
+        margin: 0,
+        fontSize: 10,
       },
     },
+    groupDetails: {
+      padding: '0 10px',
+    },
     groupContent: {
-      paddingTop: 20,
+      padding: '20px  0 0 ',
+      [theme.breakpoints.down('sm')]: {
+        padding: '10px 0 0',
+      },
       '& ul': {
         padding: 0,
         margin: 0,
@@ -186,7 +197,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     bottomActions: {
-      paddingTop: 20,
+      // paddingTop: 20,
       fontSize: 12,
       lineHeight: '16px',
       color: '#01475b',
@@ -296,7 +307,6 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
         <ul className={classes.tabButtons}>
           {(consultMode === ConsultMode.BOTH || consultMode === ConsultMode.ONLINE) && (
             <li>
-              {' '}
               <AphButton
                 className={`${classes.button}  ${onlineDirection ? classes.btnActive : ''}`}
                 onClick={() => {
@@ -351,12 +361,16 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
               alt=""
             />
           </span>
-          <h4>
-            {physicalDirection
-              ? 'How to consult in person'
-              : 'How to consult via chat/audio/video?'}
-          </h4>
-          {isSmallScreen && <p>{availabilityMarkup(physicalDirection ? 'physical' : 'online')}</p>}
+          <div className={classes.groupDetails}>
+            <h4>
+              {physicalDirection
+                ? 'How to consult in person'
+                : 'How to consult via chat/audio/video?'}
+            </h4>
+            {isSmallScreen && (
+              <p>{availabilityMarkup(physicalDirection ? 'physical' : 'online')}</p>
+            )}
+          </div>
         </div>
 
         <div className={classes.groupContent}>
@@ -448,9 +462,8 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
             >
               {popupLoading ? (
                 <CircularProgress size={22} color="secondary" />
-              ) : physicalDirection ? (
-                differenceInPhysicalMinutes > 0 && differenceInPhysicalMinutes <= 60
-              ) : differenceInOnlineMinutes > 0 && differenceInOnlineMinutes <= 60 ? (
+              ) : getDiffInMinutes(doctorAvailablePhysicalSlots) > 0 &&
+                getDiffInMinutes(doctorAvailablePhysicalSlots) <= 60 ? (
                 'CONSULT NOW'
               ) : (
                 'BOOK APPOINTMENT'
