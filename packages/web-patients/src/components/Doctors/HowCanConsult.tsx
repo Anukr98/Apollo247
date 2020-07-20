@@ -133,6 +133,7 @@ const useStyles = makeStyles((theme: Theme) => {
       '& p': {
         margin: 0,
         fontSize: 10,
+        textTransform: 'uppercase',
       },
     },
     groupDetails: {
@@ -230,8 +231,11 @@ const useStyles = makeStyles((theme: Theme) => {
       marginTop: 16,
     },
     availableNow: {
-      backgroundColor: '#ff748e',
-      color: '#fff',
+      backgroundColor: '#ff748e !important',
+      color: '#fff !important',
+    },
+    availableSoon: {
+      color: '#ff748e !important',
     },
     headerGroup: {
       [theme.breakpoints.down('xs')]: {
@@ -372,10 +376,10 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
                 className={
                   physicalDirection
                     ? differenceInPhysicalMinutes < 15
-                      ? classes.availableNow
+                      ? classes.availableSoon
                       : ''
                     : differenceInOnlineMinutes < 15
-                    ? classes.availableNow
+                    ? classes.availableSoon
                     : ''
                 }
               >
