@@ -338,8 +338,8 @@ const bookAppointment: Resolver<
             appointmentInput.appointmentType == APPOINTMENT_TYPE.ONLINE
               ? 1
               : appointmentInput.appointmentType == APPOINTMENT_TYPE.PHYSICAL
-                ? 0
-                : -1,
+              ? 0
+              : -1,
           cost: parseInt(amount.toString(), 10),
           rescheduling: false,
         },

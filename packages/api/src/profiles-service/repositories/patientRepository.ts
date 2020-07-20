@@ -53,10 +53,14 @@ export class PatientRepository extends Repository<Patient> {
     findOptions: { mobileNumber: Patient['mobileNumber'] },
     createOptions: Partial<Patient>
   ) {
-    return this.findOne({
+    return this.find({
       where: { mobileNumber: findOptions.mobileNumber },
-    }).then((existingPatient) => {
-      return existingPatient || this.create(createOptions).save();
+    }).then(async (existingPatient) => {
+      if (existingPatient.length > 0) {
+        return existingPatient;
+      }
+      const newPatient = await this.create(createOptions).save();
+      return [newPatient];
     });
   }
   findEmpId(empId: string, patientId: string) {

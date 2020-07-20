@@ -6,6 +6,8 @@ import { clientRoutes } from 'helpers/clientRoutes';
 import { Link } from 'react-router-dom';
 import { readableParam } from 'helpers/commonHelpers';
 import _lowerCase from 'lodash/lowerCase';
+import { useAllCurrentPatients } from 'hooks/authHooks';
+import { specialtyClickTracking } from 'webEngageTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -378,12 +380,14 @@ interface TopSpecialtyType {
   description: string;
   symptoms: string;
   slugName: string;
+  id: string;
 }
 
 const image_url = process.env.SPECIALTY_IMAGE_SOURCE;
 
 export const SpecialtyDivision: React.FC<SpecialtyDivisionProps> = (props) => {
   const classes = useStyles({});
+  const { currentPatient } = useAllCurrentPatients();
   const { selectedCity, doctorsCount } = props;
   const [specialtyCount, setSpecialtyCount] = useState<number>(0);
   const topSpecialtyListing = [
@@ -393,6 +397,7 @@ export const SpecialtyDivision: React.FC<SpecialtyDivisionProps> = (props) => {
       description: "For your child's health problems",
       symptoms: 'Fever, Cough, Diarrhoea',
       slugName: 'Paediatrics',
+      id: '91cee893-55cf-41fd-9d6b-73157c6518a9',
     },
     {
       specialtyName: 'General Physician',
@@ -400,6 +405,7 @@ export const SpecialtyDivision: React.FC<SpecialtyDivisionProps> = (props) => {
       description: 'For any common health issues',
       symptoms: 'Fever, Headache, Asthma',
       slugName: 'General Physician/ Internal Medicine',
+      id: '4dc1c5de-e062-4b3b-aec9-090389687865',
     },
     {
       specialtyName: 'Dermatology',
@@ -407,6 +413,7 @@ export const SpecialtyDivision: React.FC<SpecialtyDivisionProps> = (props) => {
       description: 'For skin & hair problems',
       symptoms: 'Skin rash, Acne, Skin patch',
       slugName: 'Dermatology',
+      id: 'fba32e11-eb1c-4e18-8d45-8c25f45d7672',
     },
     {
       specialtyName: 'Gynaecology',
@@ -414,6 +421,7 @@ export const SpecialtyDivision: React.FC<SpecialtyDivisionProps> = (props) => {
       description: "For women's health",
       symptoms: 'Irregular periods, Pregnancy',
       slugName: 'Obstetrics & Gynaecology',
+      id: '3b69e637-684d-4545-aace-91810bc5739d',
     },
   ];
 
@@ -433,7 +441,22 @@ export const SpecialtyDivision: React.FC<SpecialtyDivisionProps> = (props) => {
               topSpecialtyListing.length > 0 &&
               topSpecialtyListing.map((specialityDetails: TopSpecialtyType) => (
                 <Grid key={specialityDetails.specialtyName} item xs={6} md={3}>
-                  <div className={classes.specialityCard}>
+                  <div
+                    className={classes.specialityCard}
+                    onClick={() => {
+                      const patientAge =
+                        new Date().getFullYear() -
+                        new Date(currentPatient && currentPatient.dateOfBirth).getFullYear();
+                      const eventData = {
+                        patientAge: patientAge,
+                        patientGender: currentPatient && currentPatient.gender,
+                        specialtyId: specialityDetails.id,
+                        specialtyName: specialityDetails.slugName,
+                        relation: currentPatient && currentPatient.relation,
+                      };
+                      specialtyClickTracking(eventData);
+                    }}
+                  >
                     <Link
                       to={
                         selectedCity === ''

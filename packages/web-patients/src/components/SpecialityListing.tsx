@@ -31,6 +31,7 @@ import { WhyApollo } from 'components/Doctors/WhyApollo';
 import { HowItWorks } from './Doctors/HowItWorks';
 import { ManageProfile } from 'components/ManageProfile';
 import { Relation } from 'graphql/types/globalTypes';
+import { MetaTagsComp } from 'MetaTagsComp';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -695,8 +696,16 @@ export const SpecialityListing: React.FC = (props) => {
     }
   }, [searchKeyword, selectedCity]);
 
+  const metaTagProps = {
+    title: 'Online Doctor Consultation within 15 mins - via Video Call / Audio / Chat - Apollo 247',
+    description:
+      'Online doctor consultation within 15 minutes at Apollo 247. Book doctor appointments online in just a few clicks. Consult a doctor via Video Call, Audio or Chat. Get all your need in one place at Apollo 247 your one-stop solution for all medical needs.',
+    canonicalLink: window && window.location && window.location.href,
+  };
+
   return (
     <div className={classes.slContainer}>
+      <MetaTagsComp {...metaTagProps} />
       <Header />
       <div className={classes.container}>
         <div className={`${classes.slContent} ${currentPatient ? classes.slCotent1 : ''}`}>

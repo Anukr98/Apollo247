@@ -89,7 +89,7 @@ export enum ApiConstants {
 
   //medicine order delivered
   ORDER_DELIVERY_TITLE = 'Medicine order is delivered',
-  ORDER_DELIVERY_BODY = 'Greetings from Apollo 24|7 Your order {1} is delivered successfully!',
+  ORDER_DELIVERY_BODY = 'Greetings from Apollo 24|7, Your order {1} is delivered successfully! In case of any issues or feedback related to your delivery, please speak with our customer care executives on the official WhatsApp channel (during business hours 9 AM - 8:30 PM) https://bit.ly/apollo247medicines',
 
   //medicine order cancelled
   ORDER_CANCEL_BODY = 'Hi {name}, for order {orderId}, {reason}. For any support, please speak with our customer care executives on the official WhatsApp channel (during business hours 9 AM - 6 PM) https://bit.ly/apollo247medicines',
@@ -349,6 +349,10 @@ export enum ApiConstants {
   DOCTOR_CHAT_SMS_TEXT = 'Hi {0}, you have pending chat messages from {1} patient(s). Please login to your doctor portal to reply.',
   DOCTOR_CHAT_SMS_LAST_DAY = 'Hi {0}, you have pending chat messages from {1} patient(s). Please login to your doctor portal to reply. Please note that for {2} patient(s), today is the last day to reply.',
   CASESHEET_PROVISIONAL_HEADING = 'Diagnosis',
+  CASESHEET_WHATSAPP_LABEL = 'WhatsApp',
+  CASESHEET_WHATSAPP_NUMBER = '+91 93550 31397',
+  CASESHEET_EMAIL_LABEL = 'E-mail',
+  CASESHEET_EMAIL = 'Helpdesk@apollo247.com',
   AUTO_SUBMIT_CASESHEET_TIME_APPOINMENT = 10,
   AUTO_SUBMIT_CASESHEET_TIME = 10,
   STAT_LOWECASE = 'stat',

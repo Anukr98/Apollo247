@@ -19,6 +19,8 @@ export const getMedicineOrdersListTypeDefs = gql`
   enum BOOKING_SOURCE {
     WEB
     MOBILE
+    ORDER_PUNCHING_TOOL
+    MFINE
   }
 
   type MedicineOrders {
