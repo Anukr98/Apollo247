@@ -13,7 +13,7 @@ import { AppointmentRepository } from 'consults-service/repositories/appointment
 
 @EntityRepository(RescheduleAppointmentDetails)
 export class RescheduleAppointmentDetailsRepository extends Repository<
-RescheduleAppointmentDetails
+  RescheduleAppointmentDetails
 > {
   async getAppointmentsAndReschedule(
     doctorId: string,

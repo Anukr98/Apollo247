@@ -870,7 +870,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         style={[
           {
             ...theme.viewStyles.card(),
-            marginTop: 10,
+            marginTop: 0,
             marginBottom: 16,
           },
           medicineList.length > 0 && searchText
@@ -1352,7 +1352,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         globalLoading,
         props.navigation,
         currentPatient,
-        isPharmacyLocationServiceable
+        !!isPharmacyLocationServiceable
       );
 
       postwebEngageAddToCartEvent(data.item, 'Pharmacy Home', title);
@@ -1703,7 +1703,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       null,
       props.navigation,
       currentPatient,
-      isPharmacyLocationServiceable,
+      !!isPharmacyLocationServiceable,
       () => setItemsLoading({ ...itemsLoading, [sku]: false })
     );
     postwebEngageAddToCartEvent(item, 'Pharmacy Partial Search');
@@ -1889,9 +1889,9 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         {renderBannerImageToGetAspectRatio()}
         {renderBanners()}
         {renderYourOrders()}
+        {renderUploadPrescriptionSection()}
         {renderRecommendedProducts()}
         {loading ? renderSectionLoader() : !error && renderSectionsWithOrdering()}
-        {renderUploadPrescriptionSection()}
         {!error && <View style={{ height: 20 }} />}
       </TouchableOpacity>
     );

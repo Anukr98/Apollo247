@@ -11,6 +11,7 @@ import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import Typography from '@material-ui/core/Typography';
 import { ConsultRoom } from 'components/ConsultRoom';
+import { Unauthorized } from 'components/Unauthorized';
 import { AuthContext, AuthContextProps } from 'components/AuthProvider';
 import { useApolloClient } from 'react-apollo-hooks';
 import { LoggedInUserType } from 'graphql/types/globalTypes';
@@ -314,6 +315,7 @@ export const ConsultTabs: React.FC = () => {
     },
   });
   const [isClickedOnEdit, setIsClickedOnEdit] = useState(false);
+  const [isUnauthorized, setIsUnauthorized] = useState(false);
   const [isClickedOnPriview, setIsClickedOnPriview] = useState(false);
   const [patientId, setpatientId] = useState<string>(params.patientId);
   const [appointmentId, setAppointmentId] = useState<string>(paramId);
@@ -577,7 +579,10 @@ export const ConsultTabs: React.FC = () => {
         .then((_data) => {
           setCasesheetInfo(_data.data);
           setError('');
-          _data!.data!.getCaseSheet!.caseSheetDetails &&
+          if(_data!.data!.getCaseSheet!.caseSheetDetails.doctorId !== doctorId){
+            setIsUnauthorized(true);
+          }else{
+            _data!.data!.getCaseSheet!.caseSheetDetails &&
           _data!.data!.getCaseSheet!.caseSheetDetails.id
             ? setCaseSheetId(_data!.data!.getCaseSheet!.caseSheetDetails.id)
             : '';
@@ -857,6 +862,8 @@ export const ConsultTabs: React.FC = () => {
               console.log('GUM failed with error', err);
             });
           // -------------------------------------------------------------- //
+          }
+          
         })
         .catch((error: ApolloError) => {
           const networkErrorMessage = error.networkError ? error.networkError.message : null;
@@ -1668,7 +1675,8 @@ export const ConsultTabs: React.FC = () => {
       )}
 
       {error && error !== '' && <Typography className={classes.tabRoot}>{error}</Typography>}
-      {loaded && error === '' && (
+      {loaded && error === '' && isUnauthorized && (<Unauthorized />)}
+      {loaded && error === '' && !isUnauthorized && (
         <CaseSheetContext.Provider
           value={{
             loading: !loaded,

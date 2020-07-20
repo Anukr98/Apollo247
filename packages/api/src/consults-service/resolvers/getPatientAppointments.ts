@@ -248,6 +248,9 @@ const getPatientPersonalizedAppointments: Resolver<
   PersonalizedAppointmentResult
 > = async (parent, args, { consultsDb, doctorsDb, patientsDb, mobileNumber }) => {
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
+  if (args.patientUhid == '' || args.patientUhid == null) {
+    throw new AphError(AphErrorMessages.INVALID_UHID, undefined, {});
+  }
   const patientDetails = await patientRepo.findByUhid(args.patientUhid);
   if (!patientDetails) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});

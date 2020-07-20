@@ -298,25 +298,6 @@ export const CovidLanding: React.FC = (props: any) => {
   }, []);
 
   useEffect(() => {
-    if (currentPatient && currentPatient.uhid) {
-      // fetch the covid category from phr api
-      fetchUtil(
-        `${process.env.COVID_PROTOCOL_PRISM_URL}&uhid=${currentPatient.uhid}`,
-        'GET',
-        {},
-        '',
-        true
-      ).then((res: any) => {
-        console.log(435, res);
-        // {"errorCode":0,"errorMsg":null,"errorType":null,"response":"UNKNOWN"}
-        if (res && res.errorCode === 0) {
-          setCovidCategory(res.response);
-        }
-      });
-    }
-  }, [currentPatient]);
-
-  useEffect(() => {
     if (didMount.current && categoryToFetch !== '') {
       const currentOffset = covidContent[categoryToFetch].length;
       fetchUtil(
@@ -413,10 +394,7 @@ export const CovidLanding: React.FC = (props: any) => {
                 </ExpansionPanel>
               ))}
             </div>
-            <CheckRiskLevel
-              category={'diabetes'}
-              // category={covidCategory}
-            />
+            <CheckRiskLevel />
           </div>
 
           <Modal open={modalOpen} onClose={() => setModalOpen(false)}>

@@ -40,6 +40,8 @@ import { AppDownload } from 'components/Doctors/AppDownload';
 import { NavigationBottom } from 'components/NavigationBottom';
 import { GetDoctorNextAvailableSlot } from 'graphql/types/GetDoctorNextAvailableSlot';
 import { GetDoctorDetailsById_getDoctorDetailsById as DoctorDetailsType } from 'graphql/types/GetDoctorDetailsById';
+import { doctorProfileViewTracking } from 'webEngageTracking';
+import { getDiffInMinutes } from 'helpers/commonHelpers';
 
 export interface DoctorDetailsProps {
   id: string;
@@ -244,6 +246,25 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     doctorAvailableSlots.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0];
 
   useEffect(() => {
+    if (doctorSlots && doctorSlots.availableSlot) {
+      const {
+        doctorType,
+        experience,
+        fullName,
+        specialty: { name },
+      } = doctorData;
+      const eventData = {
+        availableInMins: getDiffInMinutes(doctorSlots.availableSlot),
+        docCategory: doctorType,
+        exp: experience,
+        name: fullName,
+        specialty: name,
+      };
+      doctorProfileViewTracking(eventData);
+    }
+  }, [doctorSlots, doctorData]);
+
+  useEffect(() => {
     setLoading(true);
     apolloClient
       .query<GetDoctorDetailsById, GetDoctorDetailsByIdVariables>({
@@ -404,7 +425,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
               </Link>
               <Link to={clientRoutes.welcome()}>Home</Link>
               <img src={require('images/triangle.svg')} alt="" />
-              <Link to={clientRoutes.specialityListing()}>Specialities</Link>
+              <Link to={clientRoutes.specialityListing()}>Specialties</Link>
               <img src={require('images/triangle.svg')} alt="" />
               {doctorData && (
                 <>

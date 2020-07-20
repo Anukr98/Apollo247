@@ -301,6 +301,22 @@ export const InfoCardPartner: React.FC<InfoCardProps> = (props) => {
                 if (!isSignedIn) {
                   protectWithLoginPopup();
                 } else {
+                  const hospitalName =
+                    doctorInfo &&
+                    doctorInfo.doctorHospital &&
+                    doctorInfo.doctorHospital.length &&
+                    doctorInfo.doctorHospital[0].facility &&
+                    doctorInfo.doctorHospital[0].facility.name;
+                  const eventdata = {
+                    availableInMins: getDiffInMinutes(nextAvailability),
+                    docCategory: doctorType,
+                    exp: doctorInfo.experience,
+                    hospital: hospitalName,
+                    name: doctorInfo.fullName,
+                    specialty: specialityName,
+                    listingType: '',
+                  };
+                  consultNowClickTracking(eventdata);
                   setPopupLoading(true);
                   saveSearchMutation({
                     variables: {

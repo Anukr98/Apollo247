@@ -202,7 +202,7 @@ const checkIfReschedule: Resolver<
     } else {
       if (
         Math.abs(differenceInDays(apptDetails.appointmentDateTime, args.rescheduleDate)) >
-        ApiConstants.APPOINTMENT_RESCHEDULE_DAYS_LIMIT &&
+          ApiConstants.APPOINTMENT_RESCHEDULE_DAYS_LIMIT &&
         apptDetails.isFollowPaid === false
       ) {
         isPaid = 1;
@@ -372,9 +372,9 @@ const bookRescheduleAppointment: Resolver<
       .getUTCHours()
       .toString()
       .padStart(2, '0')}:${appointmentDateTime
-        .getUTCMinutes()
-        .toString()
-        .padStart(2, '0')}:00.000Z`;
+      .getUTCMinutes()
+      .toString()
+      .padStart(2, '0')}:00.000Z`;
     console.log(slotApptDt, apptDt, sl, appointment.doctorId, 'appoint date time');
     const esDocotrStatusOpen =
       status === 'OPEN' ? ES_DOCTOR_SLOT_STATUS.OPEN : ES_DOCTOR_SLOT_STATUS.BOOKED;
@@ -388,7 +388,6 @@ const bookRescheduleAppointment: Resolver<
   }
 
   if (bookRescheduleAppointmentInput.initiatedBy == TRANSFER_INITIATED_TYPE.PATIENT) {
-
     if (apptDetails.rescheduleCount == ApiConstants.APPOINTMENT_MAX_RESCHEDULE_COUNT_PATIENT) {
       //cancel appt
       await appointmentRepo.cancelAppointment(
@@ -434,7 +433,6 @@ const bookRescheduleAppointment: Resolver<
         }
       }
     } else {
-
       await appointmentRepo.rescheduleAppointment(
         bookRescheduleAppointmentInput.appointmentId,
         bookRescheduleAppointmentInput.newDateTimeslot,
@@ -470,7 +468,6 @@ const bookRescheduleAppointment: Resolver<
     if (
       apptDetails.rescheduleCountByDoctor == ApiConstants.APPOINTMENT_MAX_RESCHEDULE_COUNT_DOCTOR
     ) {
-
       //cancel appt
       await appointmentRepo.cancelAppointment(
         bookRescheduleAppointmentInput.appointmentId,
@@ -593,8 +590,8 @@ const bookRescheduleAppointment: Resolver<
   const toEmailId = process.env.BOOK_APPT_TO_EMAIL ? process.env.BOOK_APPT_TO_EMAIL : '';
   const ccEmailIds =
     process.env.NODE_ENV == 'dev' ||
-      process.env.NODE_ENV == 'development' ||
-      process.env.NODE_ENV == 'local'
+    process.env.NODE_ENV == 'development' ||
+    process.env.NODE_ENV == 'local'
       ? ApiConstants.PATIENT_APPT_CC_EMAILID
       : ApiConstants.PATIENT_APPT_CC_EMAILID_PRODUCTION;
   const emailContent: EmailMessage = {
