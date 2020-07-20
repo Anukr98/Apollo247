@@ -696,6 +696,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
                         prescriptionRequired: medicineDetails.is_prescription_required == '1',
                         isMedicine: (medicineDetails.type_id || '').toLowerCase() == 'pharma',
                         thumbnail: medicineDetails.thumbnail || medicineDetails.image,
+                        maxOrderQty: medicineDetails.MaxOrderQty,
                       } as ShoppingCartItem;
                     })
                     .filter((item) => item) as ShoppingCartItem[];
