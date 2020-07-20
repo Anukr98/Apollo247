@@ -287,6 +287,20 @@ export enum OTP_STATUS {
   EXPIRED = 'EXPIRED',
   BLOCKED = 'BLOCKED',
 }
+// REDUND and PAYTM STATUS also same defined in consults-service
+export enum REFUND_STATUS {
+  REFUND_REQUEST_RAISED = 'REFUND_REQUEST_RAISED',
+  REFUND_FAILED = 'REFUND_FAILED',
+  REFUND_SUCCESSFUL = 'REFUND_SUCCESSFUL',
+  REFUND_REQUEST_NOT_RAISED = 'REFUND_REQUEST_NOT_RAISED',
+}
+
+export enum PAYTM_STATUS {
+  TXN_FAILURE = 'TXN_FAILURE',
+  PENDING = 'PENDING',
+  TXN_SUCCESS = 'TXN_SUCCESS',
+  PAYMENT_ABORTED = 'PAYMENT_ABORTED',
+}
 
 enum customerTypeInCoupons {
   FIRST = 'FIRST',
@@ -460,8 +474,95 @@ export class MedicineOrders extends BaseEntity {
     (medicineOrderShipments) => medicineOrderShipments.medicineOrders
   )
   medicineOrderShipments: MedicineOrderShipments[];
+
+  @OneToMany(
+    (type) => MedicineOrderRefunds,
+    (medicineOrderRefunds) => medicineOrderRefunds.medicineOrders
+  )
+  medicineOrderRefunds: MedicineOrderRefunds[];
 }
 //medicine orders ends
+
+//Medicine Orders Refunds Start
+@Entity()
+export class MedicineOrderRefunds extends BaseEntity {
+  @PrimaryGeneratedColumn('uuid')
+  refId: string;
+
+  @Column({ nullable: false })
+  txnId: string;
+
+  @Column('decimal', { precision: 10, scale: 5, nullable: false })
+  refundAmount: number;
+
+  @Column({ nullable: true })
+  totalRefundAmount: number;
+
+  @Column({ nullable: true, type: 'text' })
+  comments: string;
+
+  @Column({ nullable: false, default: 'REFUND_REQUEST_NOT_RAISED' })
+  refundStatus: REFUND_STATUS;
+
+  @Column({ nullable: true })
+  paytmRequestStatus: PAYTM_STATUS;
+
+  @Column({ nullable: true })
+  refundId: string;
+
+  @Column({ nullable: true })
+  txnAmount: number;
+
+  @Column({ nullable: true })
+  txnTimestamp: Date;
+
+  @Column({ nullable: false })
+  orderId: string;
+
+  @Column({ nullable: true })
+  payMethod: string;
+
+  @Column({ nullable: true })
+  acceptRefundTimestamp: Date;
+
+  @Column({ nullable: true })
+  userCreditInitiateTimestamp: Date;
+
+  @Column({ nullable: true })
+  resultCode: string;
+
+  @Column({ type: 'text', nullable: true })
+  resultMsg: string;
+
+  @Column({ nullable: false, default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
+  @Column({ nullable: true, type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  updatedDate: Date;
+
+  @Column({
+    nullable: true,
+    type: 'jsonb',
+    array: false,
+    default: () => "'{}'",
+  })
+  refundDetailInfo: JSON;
+
+  @BeforeUpdate()
+  updateDateUpdate() {
+    this.updatedDate = new Date();
+  }
+
+  @ManyToOne(() => MedicineOrders, (medicineOrders) => medicineOrders.medicineOrderRefunds)
+  medicineOrders: MedicineOrders;
+
+  @ManyToOne(
+    () => MedicineOrderPayments,
+    (medicineOrderPayments) => medicineOrderPayments.medicineOrderRefunds
+  )
+  medicineOrderPayments: MedicineOrderPayments;
+}
+//Medicine Refunds ends
 
 //medicine orders  line items start
 @Entity()
@@ -582,6 +683,12 @@ export class MedicineOrderPayments extends BaseEntity {
 
   @ManyToOne((type) => MedicineOrders, (medicineOrders) => medicineOrders.medicineOrderPayments)
   medicineOrders: MedicineOrders;
+
+  @OneToMany(
+    (type) => MedicineOrderRefunds,
+    (medicineOrderRefunds) => medicineOrderRefunds.medicineOrderPayments
+  )
+  medicineOrderRefunds: MedicineOrderRefunds[];
 
   @Column({ nullable: true, type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   updatedDate: Date;

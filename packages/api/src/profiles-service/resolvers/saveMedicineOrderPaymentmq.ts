@@ -29,7 +29,8 @@ import { ApiConstants } from 'ApiConstants';
 import { EmailMessage } from 'types/notificationMessageTypes';
 import { log } from 'customWinstonLogger';
 import { BlockOneApolloPointsRequest, BlockUserPointsResponse } from 'types/oneApolloTypes';
-import { OneApollo } from 'profiles-service/repositories/ExternalRequests';
+import { OneApollo } from 'helpers/oneApollo';
+import { initiateRefund } from 'profiles-service/helpers/refundHelper';
 
 export const saveMedicineOrderPaymentMqTypeDefs = gql`
   enum CODCity {
@@ -305,6 +306,7 @@ const SaveMedicineOrderPaymentMq: Resolver<
           /// initiateRefund;
           // send communication to the user
           // return error code
+          throw new AphError(AphErrorMessages.ONEAPOLLO_CREDITS_BLOCK_FAILED, undefined, {});
         }
       }
 

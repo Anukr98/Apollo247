@@ -522,7 +522,6 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                   setIsPopoverOpen={setIsPopoverOpen}
                   doctorDetails={doctorData}
                   onBookConsult={(popover: boolean) => setIsPopoverOpen(popover)}
-                  isRescheduleConsult={false}
                   tabValue={(tabValue: number) => setTabValue(tabValue)}
                   setIsShownOnce={(isShownOnce: boolean) => setIsShownOnce(isShownOnce)}
                   isShownOnce={isShownOnce}

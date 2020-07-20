@@ -157,7 +157,11 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const CheckRiskLevel: React.FC = (props: any) => {
+interface CheckRiskLevelInterface {
+  category?: string;
+}
+
+export const CheckRiskLevel: React.FC<CheckRiskLevelInterface> = (props) => {
   const classes = useStyles({});
   const covidScannerUrl = process.env.COVID_RISK_CALCULATOR_URL;
   const isDesktopOnly = useMediaQuery('(min-width:768px)');
@@ -182,16 +186,15 @@ export const CheckRiskLevel: React.FC = (props: any) => {
         <div className={classes.rightActions}>
           <ProtectedWithLoginPopup>
             {({ protectWithLoginPopup }) => (
-              <AphButton className={classes.filledBtn}
+              <AphButton
+                className={classes.filledBtn}
                 onClick={() => {
                   if (!isSignedIn) {
                     protectWithLoginPopup();
                   }
                 }}
               >
-                <Link
-                  to={isSignedIn && clientRoutes.covidProtocol('covid-diabetes')}
-                >
+                <Link to={isSignedIn && clientRoutes.covidProtocol(props.category)}>
                   <span>
                     <img src={require('images/guide.svg')} alt="" />
                   </span>
@@ -233,6 +236,6 @@ export const CheckRiskLevel: React.FC = (props: any) => {
           </AphButton>
         </div>
       </AphDialog>
-    </div >
+    </div>
   );
 };

@@ -28,7 +28,7 @@ import {
 import { format, addMinutes, parseISO } from 'date-fns';
 import { log } from 'customWinstonLogger';
 import { PharmaItemsResponse } from 'types/medicineOrderTypes';
-import { OneApollo } from 'profiles-service/repositories/ExternalRequests';
+import { OneApollo } from 'helpers/oneApollo';
 
 export const updateOrderStatusTypeDefs = gql`
   input OrderStatusInput {

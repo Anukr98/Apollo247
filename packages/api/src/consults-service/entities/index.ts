@@ -14,7 +14,7 @@ import {
 import { IsDate } from 'class-validator';
 import { DoctorType, ROUTE_OF_ADMINISTRATION } from 'doctors-service/entities';
 
-import { log } from 'customWinstonLogger'
+import { log } from 'customWinstonLogger';
 
 export enum APPOINTMENT_UPDATED_BY {
   DOCTOR = 'DOCTOR',
@@ -313,11 +313,14 @@ export class Appointment extends BaseEntity {
       const currentAppointmentInDb = await Appointment.findOne(this.id);
 
       if (currentAppointmentInDb) {
-        const isFinalStatus: boolean = currentAppointmentInDb.status == STATUS.COMPLETED || currentAppointmentInDb.status == STATUS.CANCELLED;
+        const isFinalStatus: boolean =
+          currentAppointmentInDb.status == STATUS.COMPLETED ||
+          currentAppointmentInDb.status == STATUS.CANCELLED;
 
         if (isFinalStatus) {
           const haveSameStatus: boolean = currentAppointmentInDb.status == this.status;
-          const haveSameAppointmentState: boolean = currentAppointmentInDb.appointmentState == this.appointmentState;
+          const haveSameAppointmentState: boolean =
+            currentAppointmentInDb.appointmentState == this.appointmentState;
 
           if (!haveSameStatus || !haveSameAppointmentState) {
             const logMessage = `Attempting to update status: ${currentAppointmentInDb.status}, state: ${currentAppointmentInDb.appointmentState}
@@ -328,8 +331,7 @@ export class Appointment extends BaseEntity {
           }
         }
       }
-    }
-    catch (ex) {
+    } catch (ex) {
       log(
         'consultServiceLogger',
         'Unhandled exception occured whilte saving/updating appointment',
@@ -340,7 +342,6 @@ export class Appointment extends BaseEntity {
       throw ex;
     }
   }
-
 
   @OneToMany(
     (type) => TransferAppointmentDetails,
@@ -825,7 +826,7 @@ export class CaseSheet extends BaseEntity {
   @Column({ nullable: true })
   createdDoctorId: string;
 
-  @Column({ default: DoctorType.JUNIOR })
+  @Column('enum', { default: DoctorType.JUNIOR, enum: DoctorType })
   doctorType: DoctorType;
 
   @Column({ nullable: true, type: 'json' })

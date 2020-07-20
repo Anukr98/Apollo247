@@ -24,7 +24,7 @@ import {
   sendMedicineOrderStatusNotification,
 } from 'notifications-service/resolvers/notifications';
 import { log } from 'customWinstonLogger';
-import { OneApollo } from 'profiles-service/repositories/ExternalRequests';
+import { OneApollo } from 'helpers/oneApollo';
 
 export const pharmaOrderDeliveredTypeDefs = gql`
   input OrderDeliveryInput {

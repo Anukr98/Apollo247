@@ -1769,14 +1769,14 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
               <div className={classes.modalBoxClose} onClick={() => setIsModalOpen(false)}>
                 <img src={require('images/ic_cross_popup.svg')} alt="" />
               </div>
-              <OnlineConsult
+              {/* <OnlineConsult
                 setIsPopoverOpen={setIsModalOpen}
                 doctorDetails={doctorDetails.getDoctorDetailsById}
                 onBookConsult={(popover: boolean) => setIsModalOpen(popover)}
                 isRescheduleConsult={true}
                 appointmentId={params.appointmentId}
                 rescheduleAPI={rescheduleAPI}
-              />
+              /> */}
             </Paper>
           </Modal>
         )}

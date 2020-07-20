@@ -1,24 +1,25 @@
 import { Connection } from 'typeorm';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
-import { AppointmentRefundsRepository } from 'consults-service/repositories/appointmentRefundsRepository';
+import { MedicineOrderRefundsRepository } from 'profiles-service/repositories/MedicineOrderRefundsRepository';
+//to avoid code duplication...
+import { genchecksumbystring } from 'lib/paytmLib/checksum.js';
+import { PAYTM_STATUS, REFUND_STATUS } from 'profiles-service/entities';
+
 import {
-  REFUND_STATUS,
-  PAYTM_STATUS,
-  AppointmentRefunds,
-  AppointmentPayments,
-  Appointment,
-} from 'consults-service/entities/index';
+  MedicineOrderRefunds,
+  MedicineOrderPayments,
+  MedicineOrders,
+} from 'profiles-service/entities/index';
 
 import { log } from 'customWinstonLogger';
-import { genchecksumbystring } from 'lib/paytmLib/checksum.js';
 
 type RefundInput = {
   refundAmount: number;
   txnId: string;
   orderId: string;
-  appointment: Appointment;
-  appointmentPayments: AppointmentPayments;
+  medicineOrderPayments: MedicineOrderPayments;
+  medicineOrders: MedicineOrders;
 };
 
 type ResultInfo = {
@@ -61,16 +62,16 @@ type refundMethod<refundInput, Context, Result> = (
 
 export const initiateRefund: refundMethod<RefundInput, Connection, Partial<PaytmResponse>> = async (
   refundInput,
-  consultsDb: Connection
+  profilesDb: Connection
 ) => {
   try {
-    const appointmentRefRepo = consultsDb.getCustomRepository(AppointmentRefundsRepository);
-    const saveRefundAttr: Partial<AppointmentRefunds> = refundInput;
+    const medicineOrderRefundRepo = profilesDb.getCustomRepository(MedicineOrderRefundsRepository);
+    const saveRefundAttr: Partial<MedicineOrderRefunds> = refundInput;
     saveRefundAttr.refundStatus = REFUND_STATUS.REFUND_REQUEST_NOT_RAISED;
-    const response = await appointmentRefRepo.saveRefundInfo(saveRefundAttr);
+    const response = await medicineOrderRefundRepo.saveRefundInfo(saveRefundAttr);
 
     const paytmBody: PaytmBody = {
-      mid: process.env.MID_CONSULTS ? process.env.MID_CONSULTS : '',
+      mid: process.env.MID_PHARMACY ? process.env.MID_PHARMACY : '',
       refId: response.refId,
       txnType: 'REFUND',
       txnId: refundInput.txnId,
@@ -78,9 +79,9 @@ export const initiateRefund: refundMethod<RefundInput, Connection, Partial<Paytm
       refundAmount: '' + refundInput.refundAmount,
     };
 
-    const checksumHash = await genCheckSumPromiseWrapper(
+    const checksumHash: string = await genCheckSumPromiseWrapper(
       paytmBody,
-      process.env.PAYTM_MERCHANT_KEY_CONSULTS ? process.env.PAYTM_MERCHANT_KEY_CONSULTS : ''
+      process.env.PAYTM_MERCHANT_KEY_PHARMACY ? process.env.PAYTM_MERCHANT_KEY_PHARMACY : ''
     );
     const paytmParams: PaytmHeadBody = {
       head: {
@@ -89,18 +90,18 @@ export const initiateRefund: refundMethod<RefundInput, Connection, Partial<Paytm
       body: paytmBody,
     };
     log(
-      'consultServiceLogger',
+      'profileServiceLogger',
       'Paytm Request Body',
       'initiateRefund()',
       JSON.stringify(paytmParams),
       ''
     );
-    const paytmResponse = await appointmentRefRepo.raiseRefundRequestWithPaytm(
+    const paytmResponse = await medicineOrderRefundRepo.raiseRefundRequestWithPaytm(
       paytmParams,
       process.env.PAYTM_REFUND_URL ? process.env.PAYTM_REFUND_URL : ''
     );
     log(
-      'consultServiceLogger',
+      'profileServiceLogger',
       'Paytm Request Body',
       'initiateRefund()',
       JSON.stringify(paytmResponse),
@@ -117,7 +118,7 @@ export const initiateRefund: refundMethod<RefundInput, Connection, Partial<Paytm
     // make copy of response body
     Object.assign(paytmResult, paytmResponse.body);
 
-    const refundObj: Partial<AppointmentRefunds> = {};
+    const refundObj: Partial<MedicineOrderRefunds> = {};
 
     refundObj.resultCode = paytmResponse.body.resultInfo.resultCode;
     refundObj.resultMsg = paytmResponse.body.resultInfo.resultMsg;
@@ -140,17 +141,17 @@ export const initiateRefund: refundMethod<RefundInput, Connection, Partial<Paytm
     }
 
     delete refundObj.refId;
-    await appointmentRefRepo.updateRefund(response.refId, refundObj);
+    await medicineOrderRefundRepo.updateRefund(response.refId, refundObj);
 
     if (paytmResult.resultInfo) paytmResult.resultInfo.resultStatus = resultStatus;
     return paytmResult;
   } catch (e) {
-    log('consultServiceLogger', JSON.stringify(refundInput), 'initiateRefund()', e.stack, 'true');
+    log('profileServiceLogger', JSON.stringify(refundInput), 'initiateRefund()', e.stack, 'true');
     throw new AphError(AphErrorMessages.SOMETHING_WENT_WRONG, undefined, {});
   }
 };
 
-const genCheckSumPromiseWrapper = (body: PaytmBody, key: string) => {
+const genCheckSumPromiseWrapper = (body: PaytmBody, key: string): Promise<string> => {
   return new Promise((resolve, reject) => {
     genchecksumbystring(JSON.stringify(body), key, (err: Error, result: string) => {
       if (err) {

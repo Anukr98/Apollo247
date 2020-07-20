@@ -24,12 +24,28 @@ export const addPatientFeedbackTypeDefs = gql`
     transactionId: ID!
   }
 
+  type GetPatientFeedback {
+    patientId: String
+    rating: String
+    thankyouNote: String
+    reason: String
+    feedbackType: FEEDBACKTYPE
+    transactionId: String
+  }
+
+  type GetPatientFeedbackResult {
+    feedback: [GetPatientFeedback]
+  }
+
   type AddPatientFeedbackResult {
     status: Boolean
   }
 
   extend type Mutation {
     addPatientFeedback(patientFeedbackInput: PatientFeedbackInput): AddPatientFeedbackResult!
+  }
+  extend type Query {
+    getPatientFeedback(patientId: String, transactionId: String): GetPatientFeedbackResult!
   }
 `;
 
@@ -46,6 +62,10 @@ type PatientFeedbackInputArgs = { patientFeedbackInput: PatientFeedbackInput };
 
 type AddPatientFeedbackResult = {
   status: boolean;
+};
+
+type GetPatientFeedbackResult = {
+  feedback: PatientFeedback[];
 };
 
 const addPatientFeedback: Resolver<
@@ -84,8 +104,23 @@ const addPatientFeedback: Resolver<
   return { status: true };
 };
 
+const getPatientFeedback: Resolver<
+  null,
+  { patientId: string; transactionId: string },
+  ProfilesServiceContext,
+  GetPatientFeedbackResult
+> = async (parent, args, { profilesDb, consultsDb }) => {
+  const patientFeedbackRepo = profilesDb.getCustomRepository(PatientFeedbackRepository);
+  const feedback = await patientFeedbackRepo.getFeedbackRecord(args.patientId, args.transactionId);
+  console.log(feedback);
+  return { feedback };
+};
+
 export const addPatientFeedbackResolvers = {
   Mutation: {
     addPatientFeedback,
+  },
+  Query: {
+    getPatientFeedback,
   },
 };

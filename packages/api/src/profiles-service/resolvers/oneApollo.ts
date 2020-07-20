@@ -3,7 +3,7 @@ import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext'
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
-import { OneApollo } from 'profiles-service/repositories/ExternalRequests';
+import { OneApollo } from 'helpers/oneApollo';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { DEVICE_TYPE, MEDICINE_ORDER_PAYMENT_TYPE } from 'profiles-service/entities';
 
