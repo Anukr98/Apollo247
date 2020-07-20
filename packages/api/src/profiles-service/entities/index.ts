@@ -488,7 +488,6 @@ export class MedicineOrders extends BaseEntity {
 }
 //medicine orders ends
 
-
 //Medicine Orders Refunds Start
 @Entity()
 export class MedicineOrderRefunds extends BaseEntity {
@@ -559,10 +558,7 @@ export class MedicineOrderRefunds extends BaseEntity {
     this.updatedDate = new Date();
   }
 
-  @ManyToOne(
-    () => MedicineOrders,
-    (medicineOrders) => medicineOrders.medicineOrderRefunds
-  )
+  @ManyToOne(() => MedicineOrders, (medicineOrders) => medicineOrders.medicineOrderRefunds)
   medicineOrders: MedicineOrders;
 
   @ManyToOne(
@@ -686,7 +682,6 @@ export class MedicineOrderPayments extends BaseEntity {
     (medicineOrderRefunds) => medicineOrderRefunds.medicineOrderPayments
   )
   medicineOrderRefunds: MedicineOrderRefunds[];
-
 
   @Column({ nullable: true, type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   updatedDate: Date;
