@@ -61,6 +61,7 @@ import {
   addPharmaItemToCart,
   productsThumbnailUrl,
   reOrderMedicines,
+  getMaxQtyForMedicineItem,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { postMyOrdersClicked } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import {
@@ -72,7 +73,6 @@ import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { viewStyles } from '@aph/mobile-patients/src/theme/viewStyles';
-import AsyncStorage from '@react-native-community/async-storage';
 import Axios from 'axios';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
@@ -164,13 +164,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const [ShowPopop, setShowPopop] = useState<boolean>(false);
   const [pincodePopupVisible, setPincodePopupVisible] = useState<boolean>(false);
   const [isSelectPrescriptionVisible, setSelectPrescriptionVisible] = useState(false);
-  const config = AppConfig.Configuration;
   const {
     cartItems,
     addCartItem,
     removeCartItem,
     updateCartItem,
-    setItemsWithQtyRestriction,
     addMultipleCartItems,
     addMultipleEPrescriptions,
   } = useShoppingCart();
@@ -413,12 +411,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const widget2CategoryId = g(data, 'widget_2', 'category_id') || 0;
   const widget3 = g(data, 'widget_3', 'products') || [];
   const widget3CategoryId = g(data, 'widget_3', 'category_id') || 0;
-
-  useEffect(() => {
-    if (hotSellers.length) {
-      setItemsWithQtyRestriction!(hotSellers.map((v) => v.sku));
-    }
-  }, [hotSellers]);
 
   useEffect(() => {
     if (!loading && !banners.length) {
@@ -1327,6 +1319,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       image,
       thumbnail,
       type_id,
+      MaxOrderQty,
     } = data.item;
 
     const addToCart = () => {
@@ -1346,6 +1339,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           quantity: 1,
           thumbnail,
           isInStock: true,
+          maxOrderQty: MaxOrderQty,
         },
         pharmacyPincode!,
         addCartItem,
@@ -1679,6 +1673,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       is_prescription_required,
       type_id,
       thumbnail,
+      MaxOrderQty,
     } = item;
     setItemsLoading({ ...itemsLoading, [sku]: true });
     addPharmaItemToCart(
@@ -1697,6 +1692,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         quantity: Number(1),
         thumbnail: thumbnail,
         isInStock: true,
+        maxOrderQty: MaxOrderQty,
       },
       pharmacyPincode!,
       addCartItem,
@@ -1752,7 +1748,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         }}
         onPressAdd={() => {
           const q = getItemQuantity(item.sku);
-          if (q == 20) return;
+          if (q == getMaxQtyForMedicineItem(item.MaxOrderQty)) return;
           onUpdateCartItem(item.sku, getItemQuantity(item.sku) + 1);
         }}
         onPressSubstract={() => {

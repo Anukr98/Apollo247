@@ -107,7 +107,7 @@ const appStaticVariables = {
       visible: true,
     },
   ] as PharmacyHomepageInfo[],
-  HOTSELLERS_MAX_QUANTITY: 20, // max. allowed qty to add hot sellers to cart
+  CART_ITEM_MAX_QUANTITY: 10, // max. allowed qty to add to cart
   HOME_SCREEN_KAVACH_TEXT: string.common.KavachText,
 };
 

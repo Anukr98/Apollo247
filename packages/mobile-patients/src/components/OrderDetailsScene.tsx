@@ -1564,7 +1564,20 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
                     item!.orderStatus == MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY ||
                     item!.orderStatus == MEDICINE_ORDER_STATUS.DELIVERED
                 );
-                if (!isNonCartOrder || isNonCartOrderBilledAndReadyAtStore) {
+                const isCartOrder = orderStatusList.find(
+                  (item) =>
+                    item!.orderStatus == MEDICINE_ORDER_STATUS.ORDER_PLACED ||
+                    item!.orderStatus == MEDICINE_ORDER_STATUS.ORDER_VERIFIED ||
+                    item!.orderStatus == MEDICINE_ORDER_STATUS.ORDER_INITIATED
+                );
+                // if (!isNonCartOrder || isNonCartOrderBilledAndReadyAtStore) {
+                //   setSelectedTab(title);
+                // }
+                if (
+                  (orderDetails.orderType == MEDICINE_ORDER_TYPE.UPLOAD_PRESCRIPTION &&
+                    isNonCartOrderBilledAndReadyAtStore) ||
+                  (orderDetails.orderType != MEDICINE_ORDER_TYPE.UPLOAD_PRESCRIPTION && isCartOrder)
+                ) {
                   setSelectedTab(title);
                 }
               }}
