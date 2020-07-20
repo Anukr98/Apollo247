@@ -34,12 +34,16 @@ const useStyles = makeStyles((theme: Theme) => {
         fontWeight: 600,
         paddingBottom: 20,
       },
-      '& ul': {
-        paddingLeft: 20,
-      },
     },
     tabButtons: {
+      margin: '0 -6px',
+      padding: 0,
+      listStyle: 'none',
       display: 'flex',
+      alignItems: 'center',
+      '& li': {
+        padding: '0 6px',
+      },
     },
     button: {
       fontSize: 12,
@@ -52,17 +56,12 @@ const useStyles = makeStyles((theme: Theme) => {
       border: '1px solid #f7f8f5',
       minWidth: 135,
       textAlign: 'left',
-      marginRight: 12,
+
       height: 130,
       '&:hover': {
         backgroundColor: '#f7f8f5',
       },
-      '&:last-child': {
-        marginRight: 0,
-        [theme.breakpoints.up('sm')]: {
-          marginLeft: 'auto',
-        },
-      },
+
       '& span': {
         display: 'block',
       },
@@ -294,51 +293,53 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
     <div className={classes.root}>
       <div className={classes.headerGroup}>
         <h3>How can I consult with {doctorName}:</h3>
-        <div className={classes.tabButtons}>
+        <ul className={classes.tabButtons}>
           {(consultMode === ConsultMode.BOTH || consultMode === ConsultMode.ONLINE) && (
-            <AphButton
-              className={`${classes.button}  ${onlineDirection ? classes.btnActive : ''}`}
-              onClick={() => {
-                setOnlineDirection(true);
-                setPhysicalDirection(false);
-              }}
-            >
-              <span>Chat/Audio/Video</span>
-              <span className={classes.price}>Rs. {onlineFee}</span>
-              <span>
-                <div
+            <li>
+              {' '}
+              <AphButton
+                className={`${classes.button}  ${onlineDirection ? classes.btnActive : ''}`}
+                onClick={() => {
+                  setOnlineDirection(true);
+                  setPhysicalDirection(false);
+                }}
+              >
+                <span>Chat/Audio/Video</span>
+                <span className={classes.price}>Rs. {onlineFee}</span>
+                <span
                   className={`${classes.availability} ${
                     differenceInOnlineMinutes < 15 ? classes.availableNow : null
                   }`}
                 >
                   {availabilityMarkup('online')}
-                </div>
-              </span>
-            </AphButton>
+                </span>
+              </AphButton>
+            </li>
           )}
           {(consultMode === ConsultMode.BOTH || consultMode === ConsultMode.PHYSICAL) && (
-            <AphButton
-              className={`${classes.button} ${physicalDirection ? classes.btnActive : ''}`}
-              id="btnActive"
-              onClick={() => {
-                setPhysicalDirection(true);
-                setOnlineDirection(false);
-              }}
-            >
-              <span>Meet in Person</span>
-              <span className={classes.price}>Rs. {physcalFee}</span>
-              <span>
-                <div
+            <li>
+              {' '}
+              <AphButton
+                className={`${classes.button} ${physicalDirection ? classes.btnActive : ''}`}
+                id="btnActive"
+                onClick={() => {
+                  setPhysicalDirection(true);
+                  setOnlineDirection(false);
+                }}
+              >
+                <span>Meet in Person</span>
+                <span className={classes.price}>Rs. {physcalFee}</span>
+                <span
                   className={`${classes.availability} ${
                     differenceInPhysicalMinutes < 15 ? classes.availableNow : null
                   }`}
                 >
                   {availabilityMarkup('physical')}
-                </div>
-              </span>
-            </AphButton>
+                </span>
+              </AphButton>
+            </li>
           )}
-        </div>
+        </ul>
       </div>
       <div className={classes.consultGroup}>
         <div className={classes.groupHead}>
