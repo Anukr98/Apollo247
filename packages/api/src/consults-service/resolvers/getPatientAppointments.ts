@@ -299,7 +299,6 @@ const getPatientPersonalizedAppointments: Resolver<
     );
 
     for (let appt of appointmentsToConsider) {
-      let patientDetails = await patientRepo.findByUhid(args.patientUhid);
       let apptDetailsBooked = undefined;
       let apolloDoctorId = mapMedMantraApolloDoctor.get(appt.doctorid);
       if (mapMedMantraApolloDoctor.has(appt.doctorid)) {
