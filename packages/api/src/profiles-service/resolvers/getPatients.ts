@@ -1,10 +1,10 @@
 import gql from 'graphql-tag';
-import _ from 'lodash';
+//import _ from 'lodash';
 import { Resolver } from 'api-gateway';
 import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
 import { Patient, Gender, Relation } from 'profiles-service/entities';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
-import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
+//import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import {
