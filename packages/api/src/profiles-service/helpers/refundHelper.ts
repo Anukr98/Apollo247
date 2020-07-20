@@ -151,7 +151,7 @@ export const initiateRefund: refundMethod<RefundInput, Connection, Partial<Paytm
   }
 };
 
-const genCheckSumPromiseWrapper = (body: PaytmBody, key: string) => {
+const genCheckSumPromiseWrapper = (body: PaytmBody, key: string): Promise<string> => {
   return new Promise((resolve, reject) => {
     genchecksumbystring(JSON.stringify(body), key, (err: Error, result: string) => {
       if (err) {
