@@ -235,7 +235,8 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#fff !important',
     },
     availableSoon: {
-      color: '#ff748e !important',
+      backgroundColor: '#ff748e !important',
+      color: '#fff !important',
     },
     headerGroup: {
       [theme.breakpoints.down('xs')]: {
@@ -322,7 +323,7 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
                 <span className={classes.price}>Rs. {onlineFee}</span>
                 <span
                   className={`${classes.availability} ${
-                    differenceInOnlineMinutes < 15 ? classes.availableNow : null
+                    differenceInOnlineMinutes < 15 ? classes.availableSoon : null
                   }`}
                 >
                   {availabilityMarkup('online')}
@@ -345,7 +346,7 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
                 <span className={classes.price}>Rs. {physcalFee}</span>
                 <span
                   className={`${classes.availability} ${
-                    differenceInPhysicalMinutes < 15 ? classes.availableNow : null
+                    differenceInPhysicalMinutes < 15 ? classes.availableSoon : null
                   }`}
                 >
                   {availabilityMarkup('physical')}
