@@ -142,7 +142,7 @@ const getPatientByMobileNumber: Resolver<
   if (!patients) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_DETAILS, undefined, {});
   }
-  const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
+  /*const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
   let appointmentList = [];
 
   for (let i = 0; i < patients.length; i++) {
@@ -167,8 +167,8 @@ const getPatientByMobileNumber: Resolver<
     }
     patientResult.push(objResult);
   }
-
-  return { patients: patientResult };
+  return { patients: patientResult };*/
+  return { patients };
 };
 
 const addNewProfile: Resolver<
