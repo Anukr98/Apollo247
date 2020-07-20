@@ -230,10 +230,6 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 9,
       marginTop: 16,
     },
-    availableNow: {
-      backgroundColor: '#ff748e !important',
-      color: '#fff !important',
-    },
     availableSoon: {
       backgroundColor: '#ff748e !important',
       color: '#fff !important',
@@ -373,7 +369,7 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
                 : 'How to consult via chat/audio/video?'}
             </h4>
             {isSmallScreen && (
-              <p
+              <span
                 className={
                   physicalDirection
                     ? differenceInPhysicalMinutes < 15
@@ -385,7 +381,7 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
                 }
               >
                 {availabilityMarkup(physicalDirection ? 'physical' : 'online')}
-              </p>
+              </span>
             )}
           </div>
         </div>
