@@ -158,11 +158,9 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-interface CheckRiskLevelInterface {
-  category?: string;
-}
 
-export const CheckRiskLevel: React.FC<CheckRiskLevelInterface> = (props) => {
+
+export const CheckRiskLevel: React.FC = (props) => {
   const classes = useStyles({});
   const covidScannerUrl = process.env.COVID_RISK_CALCULATOR_URL;
   const isDesktopOnly = useMediaQuery('(min-width:768px)');
@@ -195,7 +193,7 @@ export const CheckRiskLevel: React.FC<CheckRiskLevelInterface> = (props) => {
                   }
                 }}
               >
-                <Link to={isSignedIn && clientRoutes.covidProtocol(props.category)}>
+                <Link to={isSignedIn && clientRoutes.covidProtocol()}>
                   <span>
                     <img src={require('images/guide.svg')} alt="" />
                   </span>

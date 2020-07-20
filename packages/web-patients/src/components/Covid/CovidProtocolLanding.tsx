@@ -15,8 +15,8 @@ import { NavigationBottom } from 'components/NavigationBottom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { Banner } from 'components/Covid/Banner';
 import { CheckRiskLevel } from 'components/Covid/CheckRiskLevel';
+import { useAllCurrentPatients } from 'hooks/authHooks';
 
-import { useParams } from '../../hooks/routerHooks';
 import fetchUtil from 'helpers/fetch';
 
 interface CovidProtocolData {
@@ -201,10 +201,8 @@ export const covidProtocolLanding: React.FC = (props: any) => {
   const [isLoading, setIsLoading] = React.useState<boolean>(true);
   const [symptomData, setSymptomData] = React.useState<CovidProtocolData>(null);
   const scrollToRef = useRef<HTMLDivElement>(null);
+  const { currentPatient } = useAllCurrentPatients();
 
-  const params = useParams<{
-    symptom: string;
-  }>();
 
   useEffect(() => {
     scrollToRef &&
@@ -215,19 +213,20 @@ export const covidProtocolLanding: React.FC = (props: any) => {
     process.env.COVID_PROTOCOL_URL || 'https://uatcms.apollo247.com/api/phrcovid-protocol';
 
   useEffect(() => {
-    if (isLoading) {
-      fetchUtil(covidProtocolUrl + '/' + params.symptom, 'GET', {}, '', true)
+    if (isLoading && currentPatient && currentPatient.uhid) {
+      fetchUtil(covidProtocolUrl + '/' + currentPatient.uhid, 'GET', {}, '', true)
         .then((res: any) => {
           if (res && res.success) {
             setSymptomData(res.data);
           } else {
+            setSymptomData(null)
           }
         })
         .finally(() => {
           setIsLoading(false);
         });
     }
-  }, []);
+  }, [currentPatient]);
 
   useEffect(() => {
     if (props && props.location && props.location.search && props.location.search.length) {
@@ -246,26 +245,25 @@ export const covidProtocolLanding: React.FC = (props: any) => {
       <div className={classes.container}>
         <div className={classes.cdContent}>
           <Banner isWebView={isWebView} backLocation={clientRoutes.covidLanding()} />
-          {isLoading ? (
+          {isLoading && !symptomData ? (
             <div className={classes.loader}>
               <CircularProgress size={22} color="secondary" />
             </div>
           ) : (
             <>
               <div className={classes.cdIntro}>
-                <Typography component="h4">{symptomData.introductionTitle}</Typography>
+                <Typography component="h4">{symptomData && symptomData.introductionTitle}</Typography>
                 <Typography>
                   <div
-                    // className={classes.htmlContent}
-                    dangerouslySetInnerHTML={{ __html: symptomData.introductionBody }}
+                    dangerouslySetInnerHTML={{ __html: symptomData && symptomData.introductionBody }}
                   />
                 </Typography>
               </div>
 
               <div className={` ${classes.expansionContainer} `}>
                 {// eslint-disable-next-line @typescript-eslint/no-explicit-any
-                symptomData[params.symptom] &&
-                  symptomData[params.symptom].map((item: any, index: number) => {
+                symptomData['covidProtocolData'] &&
+                  symptomData['covidProtocolData'].map((item: any, index: number) => {
                     return (
                       <ExpansionPanel defaultExpanded className={classes.panelRoot}>
                         <ExpansionPanelSummary
