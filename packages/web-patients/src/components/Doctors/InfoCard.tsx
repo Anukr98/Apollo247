@@ -19,6 +19,7 @@ import { useAllCurrentPatients } from 'hooks/authHooks';
 import { BookConsult } from 'components/BookConsult';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
+import { consultNowClickTracking } from 'webEngageTracking';
 import { readableParam, getAvailability } from 'helpers/commonHelpers';
 import { GetDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctorsNextAvailability as NextAvailabilityType } from 'graphql/types/GetDoctorsBySpecialtyAndFilters';
 import moment from 'moment';
@@ -194,12 +195,12 @@ export const InfoCard: React.FC<InfoCardProps> = (props) => {
   const availabilityMarkupString = (type: string) =>
     nextAvailability
       ? getAvailability(
-      nextAvailability.onlineSlot.length > 0
-        ? nextAvailability.onlineSlot
-        : nextAvailability.physicalSlot,
-      differenceInMinutes,
-      type
-      )
+          nextAvailability.onlineSlot.length > 0
+            ? nextAvailability.onlineSlot
+            : nextAvailability.physicalSlot,
+          differenceInMinutes,
+          type
+        )
       : '';
 
   const availabilityMarkup = (type: string) => {
@@ -221,15 +222,15 @@ export const InfoCard: React.FC<InfoCardProps> = (props) => {
   const clinics: GetDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors_doctorHospital[] = [];
 
   doctorInfo &&
-  _forEach(doctorInfo.doctorHospital, (hospitalDetails) => {
-    if (
-      hospitalDetails &&
-      (hospitalDetails.facility.facilityType === 'CLINIC' ||
-        hospitalDetails.facility.facilityType === 'HOSPITAL')
-    ) {
-      clinics.push(hospitalDetails);
-    }
-  });
+    _forEach(doctorInfo.doctorHospital, (hospitalDetails) => {
+      if (
+        hospitalDetails &&
+        (hospitalDetails.facility.facilityType === 'CLINIC' ||
+          hospitalDetails.facility.facilityType === 'HOSPITAL')
+      ) {
+        clinics.push(hospitalDetails);
+      }
+    });
 
   const saveSearchMutation = useMutation<SaveSearch, SaveSearchVariables>(SAVE_PATIENT_SEARCH);
   return (
@@ -314,6 +315,22 @@ export const InfoCard: React.FC<InfoCardProps> = (props) => {
                 if (!isSignedIn) {
                   protectWithLoginPopup();
                 } else {
+                  const hospitalName =
+                    doctorInfo &&
+                    doctorInfo.doctorHospital &&
+                    doctorInfo.doctorHospital.length &&
+                    doctorInfo.doctorHospital[0].facility &&
+                    doctorInfo.doctorHospital[0].facility.name;
+                  const eventdata = {
+                    availableInMins: differenceInMinutes,
+                    docCategory: doctorType,
+                    exp: doctorInfo.experience,
+                    hospital: hospitalName,
+                    name: doctorInfo.fullName,
+                    specialty: specialityName,
+                    listingType: '',
+                  };
+                  consultNowClickTracking(eventdata);
                   setPopupLoading(true);
                   saveSearchMutation({
                     variables: {

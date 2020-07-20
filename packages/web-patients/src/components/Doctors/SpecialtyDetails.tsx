@@ -796,7 +796,7 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
                           return (
                             doctorAvailableMode && (
                               <Grid key={doctor.id} item xs={12} sm={12} md={12} lg={6}>
-                                {doctorType.toLowerCase() == 'apollo' ? (
+                                {doctorType.toLowerCase() === 'apollo' ? (
                                   <InfoCardPartner
                                     doctorInfo={doctor}
                                     doctorType={doctorType}
