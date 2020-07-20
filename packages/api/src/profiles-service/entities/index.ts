@@ -16,6 +16,7 @@ import {
 import { Validate, IsOptional } from 'class-validator';
 import { NameValidator, MobileNumberValidator } from 'validators/entityValidators';
 import { ConsultMode } from 'doctors-service/entities';
+import { BlockUserPointsResponse, ONE_APOLLO_STORE_CODE } from 'types/oneApolloTypes';
 import { delCache } from 'profiles-service/database/connectRedis';
 
 export type ONE_APOLLO_USER_REG = {
@@ -26,12 +27,6 @@ export type ONE_APOLLO_USER_REG = {
   BusinessUnit: string;
   StoreCode: string;
 };
-
-export enum ONE_APOLLO_STORE_CODE {
-  ANDCUS = 'ANDCUS',
-  IOSCUS = 'IOSCUS',
-  WEBCUS = 'WEBCUS',
-}
 
 export enum ONE_APOLLO_PRODUCT_CATEGORY {
   PRIVATE_LABEL = 'A247',
@@ -493,7 +488,6 @@ export class MedicineOrders extends BaseEntity {
 }
 //medicine orders ends
 
-
 //Medicine Orders Refunds Start
 @Entity()
 export class MedicineOrderRefunds extends BaseEntity {
@@ -564,10 +558,7 @@ export class MedicineOrderRefunds extends BaseEntity {
     this.updatedDate = new Date();
   }
 
-  @ManyToOne(
-    () => MedicineOrders,
-    (medicineOrders) => medicineOrders.medicineOrderRefunds
-  )
+  @ManyToOne(() => MedicineOrders, (medicineOrders) => medicineOrders.medicineOrderRefunds)
   medicineOrders: MedicineOrders;
 
   @ManyToOne(
@@ -684,6 +675,18 @@ export class MedicineOrderPayments extends BaseEntity {
   @Column({ nullable: true })
   responseMessage: string;
 
+  @Column({
+    nullable: true,
+    type: 'jsonb',
+    array: false,
+    name: 'healthCreditsRedemptionRequest',
+    default: () => "'{}'",
+  })
+  healthCreditsRedemptionRequest: Partial<BlockUserPointsResponse>;
+
+  @Column('decimal', { precision: 10, scale: 2, nullable: false, default: 0 })
+  healthCreditsRedeemed: number;
+
   @Index('MedicineOrderPayments_medicineOrderId')
   @ManyToOne((type) => MedicineOrders, (medicineOrders) => medicineOrders.medicineOrderPayments)
   medicineOrders: MedicineOrders;
@@ -693,7 +696,6 @@ export class MedicineOrderPayments extends BaseEntity {
     (medicineOrderRefunds) => medicineOrderRefunds.medicineOrderPayments
   )
   medicineOrderRefunds: MedicineOrderRefunds[];
-
 
   @Column({ nullable: true, type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   updatedDate: Date;

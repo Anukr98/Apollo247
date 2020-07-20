@@ -1554,7 +1554,6 @@ export class PlannedDoctors extends BaseEntity {
   @Column()
   speciality: string;
 
-
   @Index('PlannedDoctors_specialityId')
   @Column()
   specialityId: string;
