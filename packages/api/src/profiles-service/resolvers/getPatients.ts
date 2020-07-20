@@ -194,7 +194,13 @@ const addNewProfile: Resolver<
   await patientRepo.createNewUhid(savePatient.id);
   patientRepo.createAthsToken(savePatient.id);
 
-  const patient = await patientRepo.getPatientDetails(savePatient.id);
+  const patient = await patientRepo.findByIdWithRelations(savePatient.id, [
+    PATIENT_REPO_RELATIONS.PATIENT_ADDRESS,
+    PATIENT_REPO_RELATIONS.FAMILY_HISTORY,
+    PATIENT_REPO_RELATIONS.LIFESTYLE,
+    PATIENT_REPO_RELATIONS.PATIENT_MEDICAL_HISTORY
+  ]);
+
   if (!patient || patient == null) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_DETAILS, undefined, {});
   }
