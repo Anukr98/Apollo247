@@ -258,7 +258,10 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
         (j: GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_caseSheet | null) =>
           j && j.doctorType === DoctorType.JUNIOR
       );
-    if (!appointmentsHistory.isJdQuestionsComplete) {
+    if (
+      appointmentsHistory.status !== STATUS.COMPLETED &&
+      !appointmentsHistory.isJdQuestionsComplete
+    ) {
       showAphAlert &&
         showAphAlert({
           title: `Hi ${doctorDetails ? doctorDetails.displayName || 'Doctor' : 'Doctor'} :)`,
@@ -267,6 +270,7 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
           CTAs: alertCTAS(doctorId, patientId, appId, appointmentsHistory, prevCaseSheet),
         });
     } else if (
+      appointmentsHistory.status !== STATUS.COMPLETED &&
       ((jrCaseSheet && !jrCaseSheet.isJdConsultStarted) || !jrCaseSheet) &&
       appointmentsHistory.isJdQuestionsComplete
     ) {
@@ -278,8 +282,9 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
           CTAs: alertCTAS(doctorId, patientId, appId, appointmentsHistory, prevCaseSheet),
         });
     } else if (
-      (jrCaseSheet && jrCaseSheet.isJdConsultStarted && jrCaseSheet.status !== 'COMPLETED') ||
-      !jrCaseSheet
+      appointmentsHistory.status !== STATUS.COMPLETED &&
+      ((jrCaseSheet && jrCaseSheet.isJdConsultStarted && jrCaseSheet.status !== 'COMPLETED') ||
+        !jrCaseSheet)
     ) {
       showAphAlert &&
         showAphAlert({
