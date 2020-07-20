@@ -227,7 +227,7 @@ const App: React.FC = () => {
           />
           <Route
             exact
-            path={clientRoutes.covidProtocol(':symptom')}
+            path={clientRoutes.covidProtocol()}
             component={covidProtocolLanding}
           />
         </Switch>
