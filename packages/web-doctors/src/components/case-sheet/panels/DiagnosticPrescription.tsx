@@ -436,7 +436,7 @@ export const DiagnosticPrescription: React.FC = () => {
           }
         });
 
-        (!found || filterVal.length === 0) &&
+        !found &&
           filterVal.unshift({ itemName: value, id: '', __typename: 'Diagnostics' });
 
         suggestions = filterVal;
