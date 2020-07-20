@@ -10,6 +10,8 @@ import {
   OneToMany,
   ManyToOne,
   Index,
+  UpdateDateColumn,
+  CreateDateColumn
 } from 'typeorm';
 import { Validate, IsDate } from 'class-validator';
 import { DoctorType, ROUTE_OF_ADMINISTRATION } from 'doctors-service/entities';
@@ -375,6 +377,10 @@ export class Appointment extends BaseEntity {
 
   @OneToMany((type) => AuditHistory, (auditHistory) => auditHistory.appointment)
   auditHistory: AuditHistory[];
+
+  @OneToMany(() => ExotelDetails, (callDetail: ExotelDetails) => { callDetail.appointment }, {onDelete: 'CASCADE', onUpdate: 'CASCADE'})
+  callDetails: Array<ExotelDetails>
+
 }
 //Appointment ends
 
@@ -1773,6 +1779,10 @@ export class ExotelDetails extends BaseEntity {
   @Column()
   appointmentId: string;
 
+  @ManyToOne(() => Appointment, (appointment: Appointment) => { appointment.callDetails })
+  @JoinColumn({name: 'appointmentId'})
+  appointment: Appointment
+
   @Index('ExotelDetails_doctorType')
   @Column()
   doctorType: string;
@@ -1822,15 +1832,10 @@ export class ExotelDetails extends BaseEntity {
   @Column({ nullable: true })
   deviceType: DEVICETYPE;
 
-  @Column({ nullable: true })
+  @UpdateDateColumn()
   updatedDate: Date;
 
-  @BeforeUpdate()
-  updateDateUpdate() {
-    this.updatedDate = new Date();
-  }
-
-  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  @CreateDateColumn()
   createdDate: Date;
 
   @Column({type: 'timestamp' })

@@ -9,7 +9,7 @@ import { DoctorRepository } from 'doctors-service/repositories/doctorRepository'
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { ExotelDetailsRepository } from 'consults-service/repositories/exotelDetailsRepository'
 import { uploadFileToBlobStorage } from 'helpers/uploadFileToBlob';
-import { DEVICETYPE } from 'consults-service/entities'
+import { DEVICETYPE, Appointment } from 'consults-service/entities'
 
 export const exotelTypeDefs = gql`
   input exotelInput {
@@ -49,7 +49,7 @@ export const exotelTypeDefs = gql`
     totalCallDuration: String
     deviceType: String
     recordingUrl: String
-    appointmentId: String
+    appointment: Appointment
     status: String
   }
 
@@ -60,13 +60,12 @@ export const exotelTypeDefs = gql`
   extend type Query {
     initateConferenceTelephoneCall(exotelInput: exotelInput): exotelResult!
     getCallDetailsByAppintment(appointment: appointment): callDetailsResult!
+  }
+  extend type Mutation {
     updateCallStatusBySid(callStatusInput: callStatusInput): callStatusResult
   }
 `;
   
-  // extend type Mutation {
-  //   updateCallStatusBySid(callStatusInput: callStatusInput): callStatusResult
-  // }
 type exotelInput = {
   from?: string;
   to?: string;
@@ -74,19 +73,7 @@ type exotelInput = {
   deviceType?: DEVICETYPE;
 };
 
-type exotelResult = {
-  isError: boolean;
-  from: string;
-  to: string;
-  response: string;
-  errorMessage: string;
-};
-
 type exotelInputArgs = { exotelInput: exotelInput };
-
-type exotelOutputResult = {
-  exotel: exotelResult;
-};
 
 type ExotelRequest = {
   From: string;
@@ -126,8 +113,6 @@ async function exotelCalling(callInputs: callInputs): Promise<ExotelCalling> {
   .then(res => res.json())
   .then((res) => {
 
-      console.log('API_response==>', res);
-
       log(
         'consultServiceLogger',
         'API_CALL_RESPONSE',
@@ -147,7 +132,6 @@ async function exotelCalling(callInputs: callInputs): Promise<ExotelCalling> {
       return exotelResult;
     })
     .catch((error) => {
-      console.error('exotelError:', error);
 
       log(
         'consultServiceLogger',
@@ -302,6 +286,15 @@ const updateCallStatusBySid: Resolver<null, callStatusInputArgs, ConsultServiceC
     .then(res => res.json())
     .then(async (res) => {
 
+      let updateObj = {
+        status: res['Call']['Status'],
+        callEndTime: res['Call']['EndTime'],
+        totalCallDuration: res['Call']['Duration'],
+        price: res['Call']['Price'],
+        patientPickedUp: res['Call']['Status'] === 'completed' ? true : false,
+        doctorPickedUp: res['Call']['Status'] === 'completed' ? true : false,
+      }
+
       if(res['Call']['RecordingUrl']){
         await fetch(res['Call']['RecordingUrl'], {
           method: 'GET',
@@ -320,22 +313,13 @@ const updateCallStatusBySid: Resolver<null, callStatusInputArgs, ConsultServiceC
             uploadDocumentInput.base64FileInput
           );
 
-          await exotelRepo.updateCallDetails(each.id, {
-            status: res['Call']['Status'],
-            callEndTime: res['Call']['EndTime'],
-            totalCallDuration: res['Call']['Duration'],
-            price: res['Call']['Price'],
-            recordingUrl: blobUrl,
-          });
+          updateObj = Object.assign(updateObj, { recordingUrl: blobUrl })
+
+          await exotelRepo.updateCallDetails(each.id, updateObj);
 
         })
       } else {
-        await exotelRepo.updateCallDetails(each.id, {
-          status: res['Call']['Status'],
-          callEndTime: res['Call']['EndTime'],
-          totalCallDuration: res['Call']['Duration'],
-          price: res['Call']['Price'],
-        });
+        await exotelRepo.updateCallDetails(each.id, updateObj);
       }
 
       updatedCallSidArray.push(each.callSid)
@@ -366,7 +350,7 @@ type callDetails = {
   totalCallDuration: string
   deviceType: string
   recordingUrl: string
-  appointmentId: string
+  appointment: Appointment
   status: string
 };
 
@@ -404,7 +388,7 @@ const getCallDetailsByAppintment: Resolver<
       totalCallDuration: call.totalCallDuration ? call.totalCallDuration.toString() : "",
       deviceType: call.deviceType,
       recordingUrl: call.recordingUrl,
-      appointmentId: call.appointmentId,
+      appointment: call.appointment,
       status: call.status,
     }
 
@@ -420,9 +404,8 @@ export const exotelCallingResolvers = {
   Query: {
     initateConferenceTelephoneCall,
     getCallDetailsByAppintment,
-    updateCallStatusBySid,
   },
-  // Mutation: {
-  //   updateCallStatusBySid,
-  // }
+  Mutation: {
+    updateCallStatusBySid,
+  }
 };

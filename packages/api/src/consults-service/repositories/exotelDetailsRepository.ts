@@ -16,52 +16,40 @@ export class ExotelDetailsRepository extends Repository<ExotelDetails> {
   }
 
   async updateCallDetails(id: string, exotelUpdates: Partial<ExotelDetails>) {
-
-    let updateObj = {
-      status: exotelUpdates.status,
-      callEndTime: exotelUpdates.callEndTime,
-      totalCallDuration: exotelUpdates.totalCallDuration,
-      recordingUrl: exotelUpdates.recordingUrl,
-      updatedDate: new Date(),
-      price: exotelUpdates.price,
-    }
-    
-    if(exotelUpdates.status == 'completed'){
-      updateObj = Object.assign(updateObj, {patientPickedUp: true, doctorPickedUp: true });
-    }
-
-    return this.update(id, updateObj);
+    return this.update(id, exotelUpdates);
   }
 
   getCallDetailsById(id: string) {
-    return this.findOne({ where: { id } });
+    return this.findOne({ where: { id }, relations: ['appointment']  });
   }
 
   getCallDetailsBySid(callSid: string) {
-    return this.findOne({ where: { callSid } });
+    return this.findOne({ where: { callSid }, relations: ['appointment']  });
   }
 
   getAllCallDetailsByStatus(status: string) {
-    return this.find({ where: { status } });
+    return this.find({ where: { status }, relations: ['appointment']  });
   }
 
   findByAppointmentId(appointmentId: string) {
-    return this.findOne({ where: { appointmentId } });
+    return this.findOne({ where: { appointmentId }, relations: ['appointment'] });
   }
 
   findAllByAppointmentId(appointmentId: string) {
-    return this.find({ where: { appointmentId } });
+    return this.find({ where: { appointmentId }, relations: ['appointment'] });
   }
 
   findByJuniorAppointments(appointmentId: string) {
     return this.find({
       where: { appointmentId, doctorType: DOCTOR_CALL_TYPE.JUNIOR },
+      relations: ['appointment'] 
     });
   }
 
   findBySeniorAppointments(appointmentId: string) {
     return this.find({
       where: { appointmentId, doctorType: DOCTOR_CALL_TYPE.SENIOR },
+      relations: ['appointment'] 
     });
   }
 
