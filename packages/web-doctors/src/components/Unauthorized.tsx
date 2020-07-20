@@ -89,16 +89,19 @@ export const Unauthorized: React.FC = (props) => {
   const classes = useStyles({});
   return (
     <div>
-      <Typography variant="h2" className={classes.needHelp}>
-      Unauthorized User
-      </Typography>
       <img
                 src={require('images/unauthorized.svg')}
                 alt=""
               />
+      <Typography variant="h2" className={classes.needHelp}>
+      Unauthorized User
+      </Typography>
       <div className={classes.helpSection}>
         <h5>It appears you are not allowed to access this page. if you think you should be able to access it, please relogin or contact on doctor helpline.</h5>
-        <Link to="/calendar">GO BACK</Link>
+        <img
+                src={require('images/backarrow.svg')}
+                alt=""
+              /><Link to="/calendar">GO BACK</Link>
       </div>
     </div>
   );
