@@ -35,6 +35,7 @@ import {
   postAppsFlyerAddToCartEvent,
   addPharmaItemToCart,
   g,
+  getMaxQtyForMedicineItem,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
@@ -320,6 +321,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
       is_prescription_required,
       thumbnail,
       type_id,
+      MaxOrderQty,
     } = item;
     savePastSeacrh(sku, name).catch((e) => {
       aphConsole.log({ e });
@@ -342,6 +344,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         quantity: 1,
         thumbnail,
         isInStock: true,
+        maxOrderQty: MaxOrderQty,
       },
       pharmacyPincode!,
       addCartItem,
@@ -660,7 +663,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
           onNotifyMeClick();
         }}
         onPressAddQuantity={() =>
-          getItemQuantity(medicine.sku) == AppConfig.Configuration.CART_ITEM_MAX_QUANTITY
+          getItemQuantity(medicine.sku) == getMaxQtyForMedicineItem(medicine.MaxOrderQty)
             ? null
             : onUpdateCartItem(medicine, getItemQuantity(medicine.sku) + 1)
         }
@@ -873,7 +876,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         }}
         onPressAdd={() => {
           const q = getItemQuantity(item.sku);
-          if (q == AppConfig.Configuration.CART_ITEM_MAX_QUANTITY) return;
+          if (q == getMaxQtyForMedicineItem(item.MaxOrderQty)) return;
           onUpdateCartItem(item, getItemQuantity(item.sku) + 1);
         }}
         onPressSubstract={() => {

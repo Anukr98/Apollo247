@@ -6,6 +6,7 @@ import {
   g,
   postWebEngageEvent,
   postWEGWhatsAppEvent,
+  getMaxQtyForMedicineItem,
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
@@ -904,6 +905,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
 
           return (
             <MedicineCard
+              maxQty={getMaxQtyForMedicineItem(medicine.maxOrderQty)}
               // personName={
               //   currentPatient && currentPatient.firstName ? currentPatient.firstName : ''
               // }

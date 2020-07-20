@@ -37,6 +37,7 @@ import {
   postAppsFlyerAddToCartEvent,
   g,
   isDeliveryDateWithInXDays,
+  getMaxQtyForMedicineItem,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -387,6 +388,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       is_prescription_required,
       type_id,
       thumbnail,
+      MaxOrderQty,
     } = item;
     addCartItem!({
       id: sku,
@@ -403,6 +405,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       quantity: Number(selectedQuantity),
       thumbnail: thumbnail,
       isInStock: true,
+      maxOrderQty: MaxOrderQty,
     });
     postwebEngageAddToCartEvent(item, 'Pharmacy PDP');
     let id = currentPatient && currentPatient.id ? currentPatient.id : '';
@@ -524,11 +527,11 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   };
 
   const renderBottomButtons = () => {
-    const opitons = Array.from({ length: AppConfig.Configuration.CART_ITEM_MAX_QUANTITY }).map(
-      (_, i) => {
-        return { key: (i + 1).toString(), value: i + 1 };
-      }
-    );
+    const opitons = Array.from({
+      length: getMaxQtyForMedicineItem(medicineDetails.MaxOrderQty),
+    }).map((_, i) => {
+      return { key: (i + 1).toString(), value: i + 1 };
+    });
 
     return (
       <StickyBottomComponent style={{ height: 'auto' }} defaultBG>

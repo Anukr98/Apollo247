@@ -19,6 +19,7 @@ export interface MedicineProduct {
   mou: string; // minimum order unit
   manufacturer: string;
   PharmaOverview: PharmaOverview[];
+  MaxOrderQty: number;
 }
 
 export type Doseform = 'TABLET' | 'INJECTION' | 'SYRUP' | '';
