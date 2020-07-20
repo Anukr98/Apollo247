@@ -237,7 +237,7 @@ export default StyleSheet.create({
     elevation: 500,
   },
   touchableCloseIcon: {
-    marginTop: Platform.OS === 'ios' ? (isIphoneX ? 58 : 34) : 50,
+    marginTop: Platform.OS === 'ios' ? (isIphoneX() ? 58 : 34) : 50,
     backgroundColor: 'white',
     height: 28,
     width: 28,

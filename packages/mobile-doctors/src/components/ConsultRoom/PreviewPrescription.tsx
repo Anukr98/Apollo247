@@ -329,6 +329,9 @@ export const PreviewPrescription: React.FC<PreviewPrescriptionProps> = (props) =
                 item.itemname && (
                   <View style={styles.singleItemContainer}>
                     {renderSubHeading(`${index + 1}. ${item.itemname}`)}
+                    {item.testInstruction
+                      ? renderSubHeading(item.testInstruction, styles.description3Text)
+                      : null}
                   </View>
                 )
             )}

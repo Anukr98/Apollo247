@@ -167,6 +167,7 @@ export interface modifyCaseSheet_modifyCaseSheet_diagnosis {
 export interface modifyCaseSheet_modifyCaseSheet_diagnosticPrescription {
   __typename: "DiagnosticPrescription";
   itemname: string | null;
+  testInstruction: string | null;
 }
 
 export interface modifyCaseSheet_modifyCaseSheet_medicinePrescription {
