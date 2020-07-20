@@ -3,8 +3,8 @@ import { PatientAddress } from 'profiles-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { getCache, setCache } from 'profiles-service/database/connectRedis';
+import { ApiConstants } from 'ApiConstants';
 //import { debugLog } from 'customWinstonLogger';
-//import { ApiConstants } from 'ApiConstants';
 // const dLogger = debugLog(
 //   'profileServiceLogger',
 //   'patientRepository',
