@@ -368,7 +368,19 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
                 : 'How to consult via chat/audio/video?'}
             </h4>
             {isSmallScreen && (
-              <p>{availabilityMarkup(physicalDirection ? 'physical' : 'online')}</p>
+              <p
+                className={
+                  physicalDirection
+                    ? differenceInPhysicalMinutes < 15
+                      ? classes.availableNow
+                      : ''
+                    : differenceInOnlineMinutes < 15
+                    ? classes.availableNow
+                    : ''
+                }
+              >
+                {availabilityMarkup(physicalDirection ? 'physical' : 'online')}
+              </p>
             )}
           </div>
         </div>
@@ -462,8 +474,9 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
             >
               {popupLoading ? (
                 <CircularProgress size={22} color="secondary" />
-              ) : getDiffInMinutes(doctorAvailablePhysicalSlots) > 0 &&
-                getDiffInMinutes(doctorAvailablePhysicalSlots) <= 60 ? (
+              ) : physicalDirection ? (
+                differenceInPhysicalMinutes > 0 && differenceInPhysicalMinutes <= 120
+              ) : differenceInOnlineMinutes > 0 && differenceInOnlineMinutes <= 120 ? (
                 'CONSULT NOW'
               ) : (
                 'BOOK APPOINTMENT'
