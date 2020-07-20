@@ -11,7 +11,11 @@ export const getMedicineOrdersListTypeDefs = gql`
   type MedicineOrdersListResult {
     MedicineOrdersList: [MedicineOrders]
   }
-
+  enum DEVICE_TYPE {
+    IOS
+    ANDROID
+    DESKTOP
+  }
   type MedicineOrderDetailsResult {
     MedicineOrderDetails: MedicineOrders
   }
@@ -35,6 +39,7 @@ export const getMedicineOrdersListTypeDefs = gql`
     deliveryType: MEDICINE_DELIVERY_TYPE!
     patientAddressId: ID
     devliveryCharges: Float
+    deviceType: DEVICE_TYPE
     prescriptionImageUrl: String
     prismPrescriptionFileId: String
     pharmaRequest: String

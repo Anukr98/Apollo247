@@ -3420,6 +3420,12 @@
             "description": null,
             "isDeprecated": false,
             "deprecationReason": null
+          },
+          {
+            "name": "DESKTOP",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
           }
         ],
         "possibleTypes": null
@@ -6809,6 +6815,18 @@
             "type": {
               "kind": "SCALAR",
               "name": "Float",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "deviceType",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "ENUM",
+              "name": "DEVICE_TYPE",
               "ofType": null
             },
             "isDeprecated": false,
@@ -31626,6 +31644,16 @@
             "type": {
               "kind": "ENUM",
               "name": "PAYMENT_METHODS",
+              "ofType": null
+            },
+            "defaultValue": null
+          },
+          {
+            "name": "healthCredits",
+            "description": null,
+            "type": {
+              "kind": "SCALAR",
+              "name": "Int",
               "ofType": null
             },
             "defaultValue": null
