@@ -340,6 +340,7 @@ export interface EndAppointmentSessionInput {
   deviceType?: DEVICETYPE | null;
   callSource?: BOOKINGSOURCE | null;
   callType?: APPT_CALL_TYPE | null;
+  appVersion?: string | null;
 }
 
 export interface MedicinePrescriptionInput {
@@ -487,6 +488,7 @@ export interface UpdatePatientInput {
   photoUrl?: string | null;
   deviceCode?: string | null;
   employeeId?: string | null;
+  partnerId?: string | null;
 }
 
 export interface Vitals {
