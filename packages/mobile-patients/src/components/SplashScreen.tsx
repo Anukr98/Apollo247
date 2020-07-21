@@ -102,6 +102,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     DeviceEventEmitter.addListener('accept', (params) => {
       console.log('Accept Params', params);
       props.navigation.navigate('MEDICINES');
+      // getAppointmentDataAndNavigate(params.appointment_id)
     });
     DeviceEventEmitter.addListener('reject', () => {
       props.navigation.replace(AppRoutes.ConsultRoom);
