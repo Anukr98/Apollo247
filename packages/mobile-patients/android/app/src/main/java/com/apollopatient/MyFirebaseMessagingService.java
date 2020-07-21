@@ -34,7 +34,7 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 public class MyFirebaseMessagingService
         extends FirebaseMessagingService {
-    private static Activity ma;
+
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
         try {
@@ -47,7 +47,6 @@ public class MyFirebaseMessagingService
             String disconnectCallType="call_disconnected";
             if(startCallType.equals(notifDataType)|| disconnectCallType.equals(notifDataType)) {
                 isAppRunning();
-                startActiviy();
                 showUnlockScreen(remoteMessage);
                 return;
             }
@@ -93,14 +92,11 @@ public class MyFirebaseMessagingService
                 Intent i = new Intent(getApplicationContext(), UnlockScreenActivity.class);
                 i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
                 i.putExtra("DOCTOR_NAME", remoteMessage.getData().get("doctor_name"));
+                i.putExtra("APPOINTMENT_ID",remoteMessage.getData().get("appointment_id"));
                 startActivity(i);
         }
         }
-    @ReactMethod
-    public  void  startActiviy() {
-        Intent intent = new Intent(ma,MainActivity.class);
-        ma.startActivity(intent);
-    }
+
     private boolean isAppRunning() {
         ActivityManager m = (ActivityManager) this.getSystemService( ACTIVITY_SERVICE );
         List<ActivityManager.RunningTaskInfo> runningTaskInfoList =  m.getRunningTasks(10);

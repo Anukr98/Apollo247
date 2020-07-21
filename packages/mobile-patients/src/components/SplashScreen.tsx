@@ -99,7 +99,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   useEffect(() => {
     getData('ConsultRoom', undefined, true);
     InitiateAppsFlyer();
-    DeviceEventEmitter.addListener('accept', () => {
+    DeviceEventEmitter.addListener('accept', (params) => {
+      console.log('Accept Params', params);
       props.navigation.navigate('MEDICINES');
     });
     DeviceEventEmitter.addListener('reject', () => {

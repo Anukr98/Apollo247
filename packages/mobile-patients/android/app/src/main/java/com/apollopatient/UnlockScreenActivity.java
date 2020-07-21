@@ -72,6 +72,7 @@ public class UnlockScreenActivity extends ReactActivity implements UnlockScreenA
 
 
         String host_name = intent.getStringExtra("DOCTOR_NAME");
+        String appointment_id=intent.getStringExtra("APPOINTMENT_ID");
         TextView tvName = (TextView)findViewById(R.id.callerName);
         tvName.setText(host_name);
         //
@@ -83,6 +84,7 @@ public class UnlockScreenActivity extends ReactActivity implements UnlockScreenA
             public void onClick(View view) {
                 WritableMap params = Arguments.createMap();
                 params.putBoolean("done", true);
+                params.putString("appointment_id",appointment_id);
                 sendEvent(reactContext, "accept", params);
                 finish();
                 r.stop();
