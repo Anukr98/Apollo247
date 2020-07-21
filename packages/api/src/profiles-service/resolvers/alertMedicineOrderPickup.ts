@@ -52,10 +52,11 @@ const alertMedicineOrderPickup: Resolver<
   let error = 0,
     errorMessage = '';
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
-  const patientDetails = await patientRepo.findById(alertMedicineOrderPickupInput.patientId);
+  const patientDetails = await patientRepo.getPatientDetails(alertMedicineOrderPickupInput.patientId);
   if (!patientDetails) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
+
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
   const orderDetails = await medicineOrdersRepo.getMedicineOrderDetails(
     alertMedicineOrderPickupInput.orderId

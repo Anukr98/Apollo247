@@ -47,7 +47,7 @@ import { PatientMedicalHistoryRepository } from 'profiles-service/repositories/p
 import { SecretaryRepository } from 'doctors-service/repositories/secretaryRepository';
 import { SymptomsList } from 'types/appointmentTypes';
 import { differenceInSeconds } from 'date-fns';
-import { ApiConstants } from 'ApiConstants';
+import { ApiConstants, PATIENT_REPO_RELATIONS } from 'ApiConstants';
 import { sendNotification, NotificationType } from 'notifications-service/resolvers/notifications';
 import { NotificationBinRepository } from 'notifications-service/repositories/notificationBinRepository';
 import { ConsultQueueRepository } from 'consults-service/repositories/consultQueueRepository';
@@ -553,6 +553,7 @@ const getJuniorDoctorCaseSheet: Resolver<
     allowedDosages: string[];
   }
 > = async (parent, args, { mobileNumber, consultsDb, doctorsDb, patientsDb }) => {
+
   //check appointment id
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const appointmentData = await appointmentRepo.findById(args.appointmentId);
@@ -579,7 +580,12 @@ const getJuniorDoctorCaseSheet: Resolver<
 
   //get patient info
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
-  const patientDetails = await patientRepo.getPatientDetails(appointmentData.patientId);
+  const patientDetails = await patientRepo.findByIdWithRelations(appointmentData.patientId, [
+    PATIENT_REPO_RELATIONS.PATIENT_ADDRESS,
+    PATIENT_REPO_RELATIONS.FAMILY_HISTORY,
+    PATIENT_REPO_RELATIONS.LIFESTYLE,
+    PATIENT_REPO_RELATIONS.PATIENT_MEDICAL_HISTORY
+  ]);
   if (patientDetails == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
 
   const primaryPatientIds = await patientRepo.getLinkedPatientIds(appointmentData.patientId);
@@ -639,6 +645,7 @@ const getCaseSheet: Resolver<
     allowedDosages: string[];
   }
 > = async (parent, args, { mobileNumber, consultsDb, doctorsDb, patientsDb }) => {
+
   //check appointment id
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const appointmentData = await appointmentRepo.findById(args.appointmentId);
@@ -646,7 +653,13 @@ const getCaseSheet: Resolver<
 
   //get patient info
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
-  const patientDetails = await patientRepo.getPatientDetails(appointmentData.patientId);
+  const patientDetails = await patientRepo.findByIdWithRelations(appointmentData.patientId, [
+    PATIENT_REPO_RELATIONS.PATIENT_ADDRESS,
+    PATIENT_REPO_RELATIONS.FAMILY_HISTORY,
+    PATIENT_REPO_RELATIONS.LIFESTYLE,
+    PATIENT_REPO_RELATIONS.PATIENT_MEDICAL_HISTORY
+  ]);
+
   if (patientDetails == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
   //check if logged in mobile number is associated with doctor
   const secretaryRepo = doctorsDb.getCustomRepository(SecretaryRepository);
@@ -768,6 +781,7 @@ const modifyCaseSheet: Resolver<
   ConsultServiceContext,
   CaseSheet
 > = async (parent, { ModifyCaseSheetInput }, { consultsDb, doctorsDb, patientsDb }) => {
+
   const inputArguments = ModifyCaseSheetInput;
 
   //validate casesheetid
@@ -856,8 +870,14 @@ const modifyCaseSheet: Resolver<
   }
 
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
-  const patientData = await patientRepo.getPatientDetails(getCaseSheetData.patientId);
+  const patientData = await patientRepo.findByIdWithRelations(getCaseSheetData.patientId, [
+    PATIENT_REPO_RELATIONS.PATIENT_ADDRESS,
+    PATIENT_REPO_RELATIONS.FAMILY_HISTORY,
+    PATIENT_REPO_RELATIONS.LIFESTYLE,
+    PATIENT_REPO_RELATIONS.PATIENT_MEDICAL_HISTORY
+  ]);
   if (patientData == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
+
   //familyHistory upsert starts
   if (!(inputArguments.familyHistory === undefined)) {
     const familyHistoryInputs: Partial<PatientFamilyHistory> = {

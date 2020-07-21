@@ -21,7 +21,8 @@ module.exports = async (req, res, next) => {
     }
 
     axios.defaults.headers.common['authorization'] = process.env.API_TOKEN;
-
+    const [bookingSource, healthCredits] = payload.MERC_UNQ_REF.split(':');
+    payload.HEALTH_CREDITS = healthCredits;
     // this needs to be altered later.
     const requestJSON = {
       query: medicineOrderQuery(payload),

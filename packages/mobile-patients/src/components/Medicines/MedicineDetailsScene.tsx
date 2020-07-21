@@ -27,6 +27,7 @@ import {
   getSubstitutes,
   MedicineProduct,
   MedicineProductDetails,
+  pinCodeServiceabilityApi,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   aphConsole,
@@ -36,6 +37,7 @@ import {
   postAppsFlyerAddToCartEvent,
   g,
   isDeliveryDateWithInXDays,
+  getMaxQtyForMedicineItem,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -386,6 +388,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       is_prescription_required,
       type_id,
       thumbnail,
+      MaxOrderQty,
     } = item;
     addCartItem!({
       id: sku,
@@ -402,6 +405,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       quantity: Number(selectedQuantity),
       thumbnail: thumbnail,
       isInStock: true,
+      maxOrderQty: MaxOrderQty,
     });
     postwebEngageAddToCartEvent(item, 'Pharmacy PDP');
     let id = currentPatient && currentPatient.id ? currentPatient.id : '';
@@ -415,7 +419,8 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     });
   };
 
-  const fetchDeliveryTime = () => {
+  const fetchDeliveryTime = async () => {
+    if (!pincode) return;
     const eventAttributes: WebEngageEvents[WebEngageEventName.PRODUCT_DETAIL_PINCODE_CHECK] = {
       'product id': sku,
       'product name': medicineDetails.name,
@@ -429,14 +434,22 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       .set('hours', 20)
       .set('minutes', 0)
       .format('DD-MMM-YYYY hh:mm');
-
     Keyboard.dismiss();
-    if (pharmacyPincode == pincode && !isPharmacyLocationServiceable) {
-      setdeliveryError(unServiceableMsg);
+    setshowDeliverySpinner(true);
+
+    // To handle deeplink scenario and
+    // If we performed pincode serviceability check already in Medicine Home Screen and the current pincode is same as Pharma pincode
+    const pinCodeNotServiceable =
+      isPharmacyLocationServiceable == undefined
+        ? !(await pinCodeServiceabilityApi(pincode)).data.Availability
+        : pharmacyPincode == pincode && !isPharmacyLocationServiceable;
+    if (pinCodeNotServiceable) {
       setdeliveryTime('');
+      setdeliveryError(unServiceableMsg);
+      setshowDeliverySpinner(false);
       return;
     }
-    setshowDeliverySpinner(true);
+
     getDeliveryTime({
       postalcode: pincode,
       ordertype: (medicineDetails.type_id || '').toLowerCase() == 'pharma' ? 'pharma' : 'fmcg',
@@ -514,7 +527,9 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   };
 
   const renderBottomButtons = () => {
-    const opitons = Array.from({ length: 20 }).map((_, i) => {
+    const opitons = Array.from({
+      length: getMaxQtyForMedicineItem(medicineDetails.MaxOrderQty),
+    }).map((_, i) => {
       return { key: (i + 1).toString(), value: i + 1 };
     });
 

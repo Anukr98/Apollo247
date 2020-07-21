@@ -194,11 +194,6 @@ const SearchDoctorAndSpecialtyByName: Resolver<
     };
     PerfectdocSearchParams = PerfectdocCitySearchParams;
   }
-  console.log(
-    JSON.stringify(PerfectdocSearchParams, null, 3),
-    PerfectdocSearchParams.body.query.bool,
-    'PerfectdocSearchParams'
-  );
   const responsePerfectMatchDoctors = await client.search(PerfectdocSearchParams);
   //console.log(responsePerfectMatchDoctors.body.hits.hits, 'city hits');
   for (const doc of responsePerfectMatchDoctors.body.hits.hits) {

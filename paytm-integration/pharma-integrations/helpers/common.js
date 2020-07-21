@@ -7,7 +7,7 @@ const { POSSIBLE_PAYMENT_TYPES, INVALID_PAYMENT_TYPE } = require('../../Constant
  * @param {*} amount
  * @param {*} bookingSource
  */
-const initPayment = function (patientId, orderAutoId, amount, bookingSource, addParams) {
+const initPayment = function (patientId, orderAutoId, amount, merc_unq_ref, addParams) {
   return new Promise((resolve, reject) => {
     let paymentObj = {
       ORDER_ID: orderAutoId,
@@ -18,11 +18,10 @@ const initPayment = function (patientId, orderAutoId, amount, bookingSource, add
       MID: process.env.MID_PHARMACY,
       WEBSITE: process.env.WEBSITE_PHARMACY,
       CALLBACK_URL: process.env.CALLBACK_URL_PHARMACY,
-      MERC_UNQ_REF: bookingSource,
+      MERC_UNQ_REF: merc_unq_ref,
     };
 
     Object.assign(paymentObj, addParams);
-
     genchecksum(paymentObj, process.env.PAYTM_MERCHANT_KEY_PHARMACY, (err, result) => {
       if (err) {
         return reject('Error while generating checksum');
