@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # $1 refers the environment: 'local' | 'development' | 'staging' | 'production'
+#
 
 echo -e "\nusing $1 env..."
 cp -fv .env _original.env
