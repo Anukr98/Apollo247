@@ -7,6 +7,7 @@ import {
   Linking,
   AppStateStatus,
   AppState,
+  DeviceEventEmitter,
 } from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
 import { NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
@@ -98,6 +99,12 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   useEffect(() => {
     getData('ConsultRoom', undefined, true);
     InitiateAppsFlyer();
+    DeviceEventEmitter.addListener('accept', () => {
+      props.navigation.navigate('MEDICINES');
+    });
+    DeviceEventEmitter.addListener('reject', () => {
+      props.navigation.replace(AppRoutes.ConsultRoom);
+    });
     setBugfenderPhoneNumber();
     AppState.addEventListener('change', _handleAppStateChange);
     checkForVersionUpdate();
