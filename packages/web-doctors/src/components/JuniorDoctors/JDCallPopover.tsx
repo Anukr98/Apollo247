@@ -704,6 +704,17 @@ const useStyles = makeStyles((theme: Theme) => {
       clip: 'rect(0,0,0,0)',
       border: 0,
     },
+    toastMessage: {
+      width: '482px',
+      height: '40px',
+      borderRadius: '10px',
+      boxShadow: '0 1px 13px 0 rgba(0, 0, 0, 0.16)',
+      backgroundColor: '#00b38e',
+      position: 'relative',
+      top: '37px',
+      right: '529px',
+      marginBottom: '5px',
+    },
   };
 });
 
@@ -725,6 +736,7 @@ interface assignedDoctorType {
   assignedDoctorPhoto: string;
 }
 interface CallPopoverProps {
+  setShowToastMessage: (flag: boolean) => void;
   setStartConsultAction(isVideo: boolean): void;
   createSessionAction: () => void;
   saveCasesheetAction: (onlySave: boolean, endConsult: boolean) => void;
@@ -2142,6 +2154,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
                       },
                       fetchPolicy: 'no-cache',
                     });
+                    props.setShowToastMessage(true);
                   }}
                 >
                   {'PROCEED TO CONNECT'}
