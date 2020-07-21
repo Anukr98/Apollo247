@@ -468,7 +468,11 @@ export const SpecialtyDivision: React.FC<SpecialtyDivisionProps> = (props) => {
                       }
                     >
                       <Typography component="h3">{specialityDetails.specialtyName}</Typography>
-                      <img src={specialityDetails.image} />
+                      <img
+                        src={specialityDetails.image}
+                        title={`Online Doctor Consultation - ${specialityDetails.specialtyName}`}
+                        alt={`Online Doctor Consultation - ${specialityDetails.specialtyName}`}
+                      />
                       <Typography>{specialityDetails.description}</Typography>
                       <Typography className={classes.symptoms}>
                         {specialityDetails.symptoms}

@@ -697,9 +697,9 @@ export const SpecialityListing: React.FC = (props) => {
   }, [searchKeyword, selectedCity]);
 
   const metaTagProps = {
-    title: 'Online Doctor Consultation within 15 mins - via Video Call / Audio / Chat - Apollo 247',
+    title: 'Best Specialist Doctors Online - Consult within 15 mins - via Video Call/ Audio / Chat',
     description:
-      'Online doctor consultation within 15 minutes at Apollo 247. Book doctor appointments online in just a few clicks. Consult a doctor via Video Call, Audio or Chat. Get all your need in one place at Apollo 247 your one-stop solution for all medical needs.',
+      'Online doctor consultation in 15 mins with 1000+ Top Specialist Doctors. Video Call or Chat with a Doctor from 100+ Specialties including General Physicians, Pediatricians, Dermatologists, Gynaecologists & more.',
     canonicalLink: window && window.location && window.location.href,
   };
 
@@ -731,7 +731,7 @@ export const SpecialityListing: React.FC = (props) => {
               <Grid item xs={12} md={8}>
                 <div className={classes.specialityContent}>
                   <div className={classes.sHeader}>
-                    <Typography component="h1">Book Doctor Appointments Online</Typography>
+                    <Typography component="h1">Online Doctor Consultation</Typography>
                   </div>
                   <SpecialtySearch
                     setSearchKeyword={setSearchKeyword}
