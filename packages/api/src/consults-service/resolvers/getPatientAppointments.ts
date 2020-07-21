@@ -263,7 +263,7 @@ const getPatientPersonalizedAppointments: Resolver<
 
   // Following code will be executed if data is not found in cache
 
-  const MAX_DAYS_PAST_CONSULT: number = 60;
+  const MAX_DAYS_PAST_CONSULT: number = 30;
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
   const doctorFacilityRepo = doctorsDb.getCustomRepository(DoctorHospitalRepository);
 
