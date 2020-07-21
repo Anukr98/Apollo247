@@ -592,26 +592,26 @@ export const JDConsultRoom: React.FC = () => {
   // retrieve patient details
   const patientFirstName =
     casesheetInfo &&
-      casesheetInfo!.getJuniorDoctorCaseSheet &&
-      casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails
+    casesheetInfo!.getJuniorDoctorCaseSheet &&
+    casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails
       ? casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails.firstName
       : '';
   const patientLastName =
     casesheetInfo &&
-      casesheetInfo!.getJuniorDoctorCaseSheet &&
-      casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails
+    casesheetInfo!.getJuniorDoctorCaseSheet &&
+    casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails
       ? casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails.lastName
       : '';
   const patientUhid =
     casesheetInfo &&
-      casesheetInfo!.getJuniorDoctorCaseSheet &&
-      casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails
+    casesheetInfo!.getJuniorDoctorCaseSheet &&
+    casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails
       ? casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails.uhid
       : '';
   const patientMobileNumber =
     casesheetInfo &&
-      casesheetInfo.getJuniorDoctorCaseSheet &&
-      casesheetInfo.getJuniorDoctorCaseSheet.patientDetails
+    casesheetInfo.getJuniorDoctorCaseSheet &&
+    casesheetInfo.getJuniorDoctorCaseSheet.patientDetails
       ? casesheetInfo.getJuniorDoctorCaseSheet.patientDetails.mobileNumber
       : '';
   const patientAppointmentId =
@@ -630,9 +630,9 @@ export const JDConsultRoom: React.FC = () => {
     '';
   const patientPhotoUrl =
     casesheetInfo &&
-      casesheetInfo.getJuniorDoctorCaseSheet &&
-      casesheetInfo.getJuniorDoctorCaseSheet.patientDetails &&
-      !isNull(casesheetInfo.getJuniorDoctorCaseSheet.patientDetails.photoUrl)
+    casesheetInfo.getJuniorDoctorCaseSheet &&
+    casesheetInfo.getJuniorDoctorCaseSheet.patientDetails &&
+    !isNull(casesheetInfo.getJuniorDoctorCaseSheet.patientDetails.photoUrl)
       ? casesheetInfo.getJuniorDoctorCaseSheet.patientDetails.photoUrl
       : '';
 
@@ -666,19 +666,19 @@ export const JDConsultRoom: React.FC = () => {
             ? setDosageList(_data!.data!.getJuniorDoctorCaseSheet!.allowedDosages)
             : setDosageList([]);
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails &&
-            _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails.id
+          _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails.id
             ? setCaseSheetId(_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails.id)
             : '';
 
           const patientFamilyHistory =
             _data!.data!.getJuniorDoctorCaseSheet!.patientDetails &&
-              _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.familyHistory
+            _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.familyHistory
               ? _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.familyHistory[0]
               : null;
 
           const patientLifeStyle =
             _data!.data!.getJuniorDoctorCaseSheet!.patientDetails &&
-              _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.lifeStyle
+            _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.lifeStyle
               ? _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.lifeStyle[0]
               : null;
 
@@ -699,52 +699,65 @@ export const JDConsultRoom: React.FC = () => {
           );
 
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.diagnosis !== null
-            ? setDiagnosis((_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
-              .diagnosis as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_diagnosis[])
+            ? setDiagnosis(
+                (_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+                  .diagnosis as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_diagnosis[]
+              )
             : setDiagnosis([]);
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.symptoms
-            ? setSymptoms((_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
-              .symptoms as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_symptoms[])
+            ? setSymptoms(
+                (_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+                  .symptoms as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_symptoms[]
+              )
             : setSymptoms([]);
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.otherInstructions
-            ? setOtherInstructions((_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
-              .otherInstructions as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_otherInstructions[])
+            ? setOtherInstructions(
+                (_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+                  .otherInstructions as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_otherInstructions[]
+              )
             : setOtherInstructions([]);
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.diagnosticPrescription
-            ? setDiagnosticPrescription((_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
-              .diagnosticPrescription as unknown) as any[])
+            ? setDiagnosticPrescription(
+                (_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+                  .diagnosticPrescription as unknown) as any[]
+              )
             : setDiagnosticPrescription([]);
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.medicinePrescription
-            ? setMedicinePrescription((_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
-              .medicinePrescription as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_medicinePrescription[])
+            ? setMedicinePrescription(
+                (_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+                  .medicinePrescription as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_medicinePrescription[]
+              )
             : setMedicinePrescription([]);
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.notes
-            ? setNotes((_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
-              .notes as unknown) as string)
+            ? setNotes(
+                (_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+                  .notes as unknown) as string
+              )
             : setNotes('');
           _data!.data!.getJuniorDoctorCaseSheet!.juniorDoctorNotes
-            ? setJuniorDoctorNotes((_data!.data!.getJuniorDoctorCaseSheet!
-              .juniorDoctorNotes as unknown) as string)
+            ? setJuniorDoctorNotes(
+                (_data!.data!.getJuniorDoctorCaseSheet!.juniorDoctorNotes as unknown) as string
+              )
             : setJuniorDoctorNotes('');
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.consultType
             ? setConsultType(([
-              _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.consultType,
-            ] as unknown) as string[])
+                _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.consultType,
+              ] as unknown) as string[])
             : setConsultType([]);
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.followUp
             ? setFollowUp(([
-              _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.followUp,
-            ] as unknown) as boolean[])
+                _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.followUp,
+              ] as unknown) as boolean[])
             : setFollowUp([]);
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.followUpAfterInDays
             ? setFollowUpAfterInDays(([
-              _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.followUpAfterInDays,
-            ] as unknown) as string[])
+                _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.followUpAfterInDays,
+              ] as unknown) as string[])
             : setFollowUpAfterInDays([]);
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.followUpDate
             ? setFollowUpDate(([
-              _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.followUpDate,
-            ] as unknown) as string[])
+                _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.followUpDate,
+              ] as unknown) as string[])
             : setFollowUpDate([]);
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.doctorId
             ? setAssignedDoctorId(_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.doctorId)
@@ -806,8 +819,8 @@ export const JDConsultRoom: React.FC = () => {
           /* patient personal data state vars */
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.followUpDate
             ? setFollowUpDate(([
-              _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.followUpDate,
-            ] as unknown) as string[])
+                _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.followUpDate,
+              ] as unknown) as string[])
             : setFollowUpDate([]);
           if (
             _data.data &&
@@ -829,9 +842,9 @@ export const JDConsultRoom: React.FC = () => {
             cardStripArr.push(
               Math.abs(
                 new Date(Date.now()).getUTCFullYear() -
-                new Date(
-                  _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.dateOfBirth
-                ).getUTCFullYear()
+                  new Date(
+                    _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.dateOfBirth
+                  ).getUTCFullYear()
               ).toString()
             );
           }
@@ -935,10 +948,10 @@ export const JDConsultRoom: React.FC = () => {
           // -------------------------------------------------------------- //
           navigator.mediaDevices
             .getUserMedia({ audio: true, video: false })
-            .then(function (stream) {
+            .then(function(stream) {
               setCameraMicPermission(true);
             })
-            .catch(function (err) {
+            .catch(function(err) {
               setCameraMicPermission(false);
             });
           // -------------------------------------------------------------- //
@@ -1366,363 +1379,363 @@ export const JDConsultRoom: React.FC = () => {
   return !loaded ? (
     <LinearProgress />
   ) : (
-      <div className={classes.root}>
-        {casesheetInfo!.getJuniorDoctorCaseSheet!.caseSheetDetails!.appointment!.appointmentState !==
-          'AWAITING_RESCHEDULE' &&
-          !disableChat() &&
-          !isAudioVideoCall && (
-            <IdleTimer
-              ref={idleTimerRef}
-              element={document}
-              onIdle={(e) => {
-                setJrdNoFillDialog(true);
-              }}
-              debounce={250}
-              timeout={1000 * 60 * idleTimeValueInMinutes}
-            />
-          )}
-        <div className={classes.headerSticky}>
-          <Header />
-          {showToastMessage && (
-            <div className={classes.toastMessage}>
-              <span className={classes.toastMessageText}>
-                <img
-                  src={require('images/ic_cancel_green.svg')}
-                  alt=""
-                  style={{
-                    height: 18,
-                    width: 18,
-                    position: 'relative',
-                    top: 4,
-                    marginLeft: 12,
-                    marginRight: 20,
-                    cursor: 'pointer',
-                  }}
-                  onClick={() => {
-                    setShowToastMessage(false);
-                  }}
-                />
-                You will get a call from {process.env.EXOTEL_CALLER_ID}. Please pick up the call !
-              </span>
-            </div>
-          )}
-        </div>
-        {error && error !== '' && <Typography className={classes.tabRoot}>{error}</Typography>}
-        {loaded && error === '' && (
-          <CaseSheetContextJrd.Provider
-            value={{
-              loading: !loaded,
-              dosageList: dosageList,
-              caseSheetId: appointmentId,
-              patientDetails: casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails,
-              appointmentInfo: casesheetInfo!.getJuniorDoctorCaseSheet!.caseSheetDetails!.appointment,
-              symptoms,
-              setSymptoms,
-              notes,
-              setNotes,
-              juniorDoctorNotes,
-              diagnosis,
-              setDiagnosis,
-              documentArray,
-              setDocumentArray,
-              otherInstructions,
-              setOtherInstructions,
-              diagnosticPrescription,
-              setDiagnosticPrescription,
-              medicinePrescription,
-              setMedicinePrescription,
-              consultType,
-              setConsultType,
-              caseSheetEdit,
-              setCaseSheetEdit,
-              followUp,
-              setFollowUp,
-              followUpAfterInDays,
-              setFollowUpAfterInDays,
-              followUpDate,
-              setFollowUpDate,
-              healthVault: casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.healthVault,
-              appointmentDocuments: casesheetInfo!.getJuniorDoctorCaseSheet!.caseSheetDetails!
-                .appointment!.appointmentDocuments,
-              pastAppointments: casesheetInfo!.getJuniorDoctorCaseSheet!.pastAppointments,
-              setCasesheetNotes,
-              autoCloseCaseSheet,
-              height,
-              weight,
-              vitalError,
-              bp,
-              temperature,
-              pastMedicalHistory,
-              pastSurgicalHistory,
-              dietAllergies,
-              drugAllergies,
-              lifeStyle,
-              familyHistory,
-              menstrualHistory,
-              gender,
-              setPastMedicalHistory,
-              setPastSurgicalHistory,
-              setDietAllergies,
-              setDrugAllergies,
-              setLifeStyle,
-              setFamilyHistory,
-              setMenstrualHistory,
-              setHeight,
-              setVitalError,
-              setWeight,
-              setBp,
-              setTemperature,
-              setGender,
-              medicationHistory,
-              setMedicationHistory,
-              occupationHistory,
-              setOccupationHistory,
-              referralSpecialtyName,
-              referralDescription,
-              referralError,
-              setReferralError,
-              setReferralSpecialtyName,
-              setReferralDescription,
+    <div className={classes.root}>
+      {casesheetInfo!.getJuniorDoctorCaseSheet!.caseSheetDetails!.appointment!.appointmentState !==
+        'AWAITING_RESCHEDULE' &&
+        !disableChat() &&
+        !isAudioVideoCall && (
+          <IdleTimer
+            ref={idleTimerRef}
+            element={document}
+            onIdle={(e) => {
+              setJrdNoFillDialog(true);
             }}
-          >
-            <Scrollbars autoHide={true} style={{ height: 'calc(100vh - 65px)' }}>
-              <div className={classes.container}>
-                <div className={classes.pageContainer}>
-                  {/* patient and doctors details start */}
-                  <div className={classes.pageHeader}>
-                    <div className={classes.backArrowSection}>
-                      <div className={classes.backArrow}>
-                        <a href={clientRoutes.juniorDoctor()}>
-                          <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
-                          <img
-                            className={classes.whiteArrow}
-                            src={require('images/ic_back_white.svg')}
-                          />
-                        </a>
-                      </div>
-                    </div>
-                    <div className={classes.patientSection}>
-                      <div
-                        className={`${classes.patientImage}  ${
-                          patientPhotoUrl === '' ? classes.noDoctorImage : ''
-                          }`}
-                      >
+            debounce={250}
+            timeout={1000 * 60 * idleTimeValueInMinutes}
+          />
+        )}
+      <div className={classes.headerSticky}>
+        <Header />
+        {showToastMessage && (
+          <div className={classes.toastMessage}>
+            <span className={classes.toastMessageText}>
+              <img
+                src={require('images/ic_cancel_green.svg')}
+                alt=""
+                style={{
+                  height: 18,
+                  width: 18,
+                  position: 'relative',
+                  top: 4,
+                  marginLeft: 12,
+                  marginRight: 20,
+                  cursor: 'pointer',
+                }}
+                onClick={() => {
+                  setShowToastMessage(false);
+                }}
+              />
+              You will get a call from {process.env.EXOTEL_CALLER_ID}. Please pick up the call !
+            </span>
+          </div>
+        )}
+      </div>
+      {error && error !== '' && <Typography className={classes.tabRoot}>{error}</Typography>}
+      {loaded && error === '' && (
+        <CaseSheetContextJrd.Provider
+          value={{
+            loading: !loaded,
+            dosageList: dosageList,
+            caseSheetId: appointmentId,
+            patientDetails: casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails,
+            appointmentInfo: casesheetInfo!.getJuniorDoctorCaseSheet!.caseSheetDetails!.appointment,
+            symptoms,
+            setSymptoms,
+            notes,
+            setNotes,
+            juniorDoctorNotes,
+            diagnosis,
+            setDiagnosis,
+            documentArray,
+            setDocumentArray,
+            otherInstructions,
+            setOtherInstructions,
+            diagnosticPrescription,
+            setDiagnosticPrescription,
+            medicinePrescription,
+            setMedicinePrescription,
+            consultType,
+            setConsultType,
+            caseSheetEdit,
+            setCaseSheetEdit,
+            followUp,
+            setFollowUp,
+            followUpAfterInDays,
+            setFollowUpAfterInDays,
+            followUpDate,
+            setFollowUpDate,
+            healthVault: casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.healthVault,
+            appointmentDocuments: casesheetInfo!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+              .appointment!.appointmentDocuments,
+            pastAppointments: casesheetInfo!.getJuniorDoctorCaseSheet!.pastAppointments,
+            setCasesheetNotes,
+            autoCloseCaseSheet,
+            height,
+            weight,
+            vitalError,
+            bp,
+            temperature,
+            pastMedicalHistory,
+            pastSurgicalHistory,
+            dietAllergies,
+            drugAllergies,
+            lifeStyle,
+            familyHistory,
+            menstrualHistory,
+            gender,
+            setPastMedicalHistory,
+            setPastSurgicalHistory,
+            setDietAllergies,
+            setDrugAllergies,
+            setLifeStyle,
+            setFamilyHistory,
+            setMenstrualHistory,
+            setHeight,
+            setVitalError,
+            setWeight,
+            setBp,
+            setTemperature,
+            setGender,
+            medicationHistory,
+            setMedicationHistory,
+            occupationHistory,
+            setOccupationHistory,
+            referralSpecialtyName,
+            referralDescription,
+            referralError,
+            setReferralError,
+            setReferralSpecialtyName,
+            setReferralDescription,
+          }}
+        >
+          <Scrollbars autoHide={true} style={{ height: 'calc(100vh - 65px)' }}>
+            <div className={classes.container}>
+              <div className={classes.pageContainer}>
+                {/* patient and doctors details start */}
+                <div className={classes.pageHeader}>
+                  <div className={classes.backArrowSection}>
+                    <div className={classes.backArrow}>
+                      <a href={clientRoutes.juniorDoctor()}>
+                        <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
                         <img
-                          style={{ width: '100px' }}
-                          src={
-                            patientPhotoUrl !== '' ? patientPhotoUrl : require('images/no_photo.png')
-                          }
-                          alt="Patient Profile Photo"
+                          className={classes.whiteArrow}
+                          src={require('images/ic_back_white.svg')}
                         />
-                      </div>
-                      <div className={classes.patientInfo}>
-                        <div className={classes.patientName}>
-                          {patientFirstName} {patientLastName}
-                          <span>({userCardStrip})</span>
-                        </div>
-                        <div className={classes.patientTextInfo}>
-                          <label>UHID:</label> {patientUhid} | <label>Phone No.:</label>
-                          {patientMobileNumber}
-                        </div>
-                        <div className={classes.patientTextInfo}>
-                          <label>Appt ID:</label> {patientAppointmentId}
-                        </div>
-                        <div className={classes.patientTextInfo}>
-                          <label>Appt Date:</label> {appointmentDateIST}
-                        </div>
-                      </div>
-                    </div>
-                    <div className={classes.doctorSection}>
-                      {casesheetInfo ? (
-                        <>
-                          <div className={classes.doctorImg}>
-                            <Avatar
-                              src={
-                                assignedDoctor.assignedDoctorPhoto !== ''
-                                  ? assignedDoctor.assignedDoctorPhoto
-                                  : require('images/no_photo.png')
-                              }
-                              alt="Doctor Profile Photo"
-                              className={classes.avatar}
-                            />
-                          </div>
-                          <div className={classes.doctorInfo}>
-                            <div className={classes.assign}>Assigned to:</div>
-                            <div className={classes.doctorName}>{`${
-                              assignedDoctor.assignedDoctorSalutation
-                              }${'.'} ${assignedDoctor.assignedDoctorFirstName} ${
-                              assignedDoctor.assignedDoctorLastName
-                              }`}</div>
-                            <div className={classes.doctorType}>
-                              {assignedDoctor.assignedDoctorSpecialty}
-                            </div>
-                            <div className={classes.doctorContact}>
-                              {assignedDoctor.assignedDoctorMobile.slice(0, 3)}{' '}
-                              {assignedDoctor.assignedDoctorMobile.split('+91').join(' ')}
-                            </div>
-                          </div>
-                        </>
-                      ) : (
-                          <CircularProgress />
-                        )}
+                      </a>
                     </div>
                   </div>
-                  {/* patient and doctors details end */}
-
-                  {!disableChat() && (
-                    <JDCallPopover
-                      setShowToastMessage={setShowToastMessage}
-                      setStartConsultAction={(flag: boolean) => setStartConsultAction(flag)}
-                      createSessionAction={createSessionAction}
-                      saveCasesheetAction={(flag: boolean, endConsult: boolean) =>
-                        saveCasesheetAction(flag, endConsult)
-                      }
-                      endConsultAction={endConsultAction}
-                      appointmentId={appointmentId}
-                      appointmentDateTime={appointmentDateTime}
-                      doctorId={doctorId}
-                      isEnded={isEnded}
-                      caseSheetId={caseSheetId}
-                      prescriptionPdf={prescriptionPdf}
-                      sessionId={sessionId}
-                      token={token}
-                      saving={saving}
-                      startAppointment={startAppointment}
-                      startAppointmentClick={startAppointmentClick}
-                      assignedDoctor={assignedDoctor}
-                      isAudioVideoCallEnded={(isAudioVideoCall: boolean) => {
-                        setIsAuditoVideoCall(isAudioVideoCall);
-                      }}
-                      endCallNotificationAction={(callId: boolean) =>
-                        endCallNotificationAction(callId)
-                      }
-                      hasCameraMicPermission={hasCameraMicPermission}
-                      setSessionError={setSessionError}
-                      setPublisherError={setPublisherError}
-                      setSubscriberError={setSubscriberError}
-                    />
-                  )}
-                  <div className={classes.contentGroup}>
-                    <div className={classes.leftSection}>
-                      <div className={classes.blockGroup}>
-                        <div className={classes.blockHeader}>Case Sheet</div>
-                        <div className={`${classes.blockBody} ${classes.caseSheetBody}`}>
-                          <Scrollbars autoHide={false} style={{ height: 'calc(100vh - 230px' }}>
-                            <div className={classes.customScroll}>
-                              {casesheetInfo ? <CaseSheet /> : null}
-                            </div>
-                          </Scrollbars>
-                        </div>
+                  <div className={classes.patientSection}>
+                    <div
+                      className={`${classes.patientImage}  ${
+                        patientPhotoUrl === '' ? classes.noDoctorImage : ''
+                      }`}
+                    >
+                      <img
+                        style={{ width: '100px' }}
+                        src={
+                          patientPhotoUrl !== '' ? patientPhotoUrl : require('images/no_photo.png')
+                        }
+                        alt="Patient Profile Photo"
+                      />
+                    </div>
+                    <div className={classes.patientInfo}>
+                      <div className={classes.patientName}>
+                        {patientFirstName} {patientLastName}
+                        <span>({userCardStrip})</span>
+                      </div>
+                      <div className={classes.patientTextInfo}>
+                        <label>UHID:</label> {patientUhid} | <label>Phone No.:</label>
+                        {patientMobileNumber}
+                      </div>
+                      <div className={classes.patientTextInfo}>
+                        <label>Appt ID:</label> {patientAppointmentId}
+                      </div>
+                      <div className={classes.patientTextInfo}>
+                        <label>Appt Date:</label> {appointmentDateIST}
                       </div>
                     </div>
-                    <div className={classes.rightSection}>
-                      <div className={classes.blockGroup}>
-                        <div className={classes.blockHeader}>Chat</div>
-                        <div className={`${classes.blockBody}`}>
-                          <ChatWindow
-                            startConsult={startConsult}
-                            sessionId={sessionId}
-                            token={token}
-                            appointmentId={appointmentId}
-                            doctorId={doctorId}
-                            patientId={patientId}
-                            disableChat={disableChat()}
-                            isNewMessage={(isNewMessage: boolean) => setIsNewMessage(isNewMessage)}
-                            autoCloseCaseSheet={autoCloseCaseSheet}
-                            setSessionError={setSessionError}
-                            setPublisherError={setPublisherError}
-                            setSubscriberError={setSubscriberError}
+                  </div>
+                  <div className={classes.doctorSection}>
+                    {casesheetInfo ? (
+                      <>
+                        <div className={classes.doctorImg}>
+                          <Avatar
+                            src={
+                              assignedDoctor.assignedDoctorPhoto !== ''
+                                ? assignedDoctor.assignedDoctorPhoto
+                                : require('images/no_photo.png')
+                            }
+                            alt="Doctor Profile Photo"
+                            className={classes.avatar}
                           />
                         </div>
+                        <div className={classes.doctorInfo}>
+                          <div className={classes.assign}>Assigned to:</div>
+                          <div className={classes.doctorName}>{`${
+                            assignedDoctor.assignedDoctorSalutation
+                          }${'.'} ${assignedDoctor.assignedDoctorFirstName} ${
+                            assignedDoctor.assignedDoctorLastName
+                          }`}</div>
+                          <div className={classes.doctorType}>
+                            {assignedDoctor.assignedDoctorSpecialty}
+                          </div>
+                          <div className={classes.doctorContact}>
+                            {assignedDoctor.assignedDoctorMobile.slice(0, 3)}{' '}
+                            {assignedDoctor.assignedDoctorMobile.split('+91').join(' ')}
+                          </div>
+                        </div>
+                      </>
+                    ) : (
+                      <CircularProgress />
+                    )}
+                  </div>
+                </div>
+                {/* patient and doctors details end */}
+
+                {!disableChat() && (
+                  <JDCallPopover
+                    setShowToastMessage={setShowToastMessage}
+                    setStartConsultAction={(flag: boolean) => setStartConsultAction(flag)}
+                    createSessionAction={createSessionAction}
+                    saveCasesheetAction={(flag: boolean, endConsult: boolean) =>
+                      saveCasesheetAction(flag, endConsult)
+                    }
+                    endConsultAction={endConsultAction}
+                    appointmentId={appointmentId}
+                    appointmentDateTime={appointmentDateTime}
+                    doctorId={doctorId}
+                    isEnded={isEnded}
+                    caseSheetId={caseSheetId}
+                    prescriptionPdf={prescriptionPdf}
+                    sessionId={sessionId}
+                    token={token}
+                    saving={saving}
+                    startAppointment={startAppointment}
+                    startAppointmentClick={startAppointmentClick}
+                    assignedDoctor={assignedDoctor}
+                    isAudioVideoCallEnded={(isAudioVideoCall: boolean) => {
+                      setIsAuditoVideoCall(isAudioVideoCall);
+                    }}
+                    endCallNotificationAction={(callId: boolean) =>
+                      endCallNotificationAction(callId)
+                    }
+                    hasCameraMicPermission={hasCameraMicPermission}
+                    setSessionError={setSessionError}
+                    setPublisherError={setPublisherError}
+                    setSubscriberError={setSubscriberError}
+                  />
+                )}
+                <div className={classes.contentGroup}>
+                  <div className={classes.leftSection}>
+                    <div className={classes.blockGroup}>
+                      <div className={classes.blockHeader}>Case Sheet</div>
+                      <div className={`${classes.blockBody} ${classes.caseSheetBody}`}>
+                        <Scrollbars autoHide={false} style={{ height: 'calc(100vh - 230px' }}>
+                          <div className={classes.customScroll}>
+                            {casesheetInfo ? <CaseSheet /> : null}
+                          </div>
+                        </Scrollbars>
+                      </div>
+                    </div>
+                  </div>
+                  <div className={classes.rightSection}>
+                    <div className={classes.blockGroup}>
+                      <div className={classes.blockHeader}>Chat</div>
+                      <div className={`${classes.blockBody}`}>
+                        <ChatWindow
+                          startConsult={startConsult}
+                          sessionId={sessionId}
+                          token={token}
+                          appointmentId={appointmentId}
+                          doctorId={doctorId}
+                          patientId={patientId}
+                          disableChat={disableChat()}
+                          isNewMessage={(isNewMessage: boolean) => setIsNewMessage(isNewMessage)}
+                          autoCloseCaseSheet={autoCloseCaseSheet}
+                          setSessionError={setSessionError}
+                          setPublisherError={setPublisherError}
+                          setSubscriberError={setSubscriberError}
+                        />
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
-              <div ref={scrollbars} />
-            </Scrollbars>
-          </CaseSheetContextJrd.Provider>
-        )}
+            </div>
+            <div ref={scrollbars} />
+          </Scrollbars>
+        </CaseSheetContextJrd.Provider>
+      )}
 
-        <Dialog
-          open={isDialogOpen}
-          onClose={() => setIsDialogOpen(false)}
-          disableBackdropClick
-          disableEscapeKeyDown
-        >
-          <DialogContent>
-            <DialogContentText>Casesheet has been successfully submitted.</DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button
-              color="primary"
-              onClick={() => {
-                setIsDialogOpen(false);
-                if (document.getElementById('homeId')) {
-                  document.getElementById('homeId')!.click();
-                }
-              }}
-              autoFocus
-            >
-              Ok
+      <Dialog
+        open={isDialogOpen}
+        onClose={() => setIsDialogOpen(false)}
+        disableBackdropClick
+        disableEscapeKeyDown
+      >
+        <DialogContent>
+          <DialogContentText>Casesheet has been successfully submitted.</DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            color="primary"
+            onClick={() => {
+              setIsDialogOpen(false);
+              if (document.getElementById('homeId')) {
+                document.getElementById('homeId')!.click();
+              }
+            }}
+            autoFocus
+          >
+            Ok
           </Button>
-          </DialogActions>
-        </Dialog>
+        </DialogActions>
+      </Dialog>
 
-        <Dialog
-          open={!isDialogOpen && jrdNoFillDialog}
-          onClose={() => setJrdNoFillDialog(false)}
-          disableBackdropClick
-          disableEscapeKeyDown
-        >
-          <DialogTitle className={classes.popoverTile}>Apollo 24x7 - Alert</DialogTitle>
-          <DialogContent>
-            <DialogContentText>
-              Hi! Seems like you've gone offline. Please click on 'OK' to continue chatting with your
-              patient.
+      <Dialog
+        open={!isDialogOpen && jrdNoFillDialog}
+        onClose={() => setJrdNoFillDialog(false)}
+        disableBackdropClick
+        disableEscapeKeyDown
+      >
+        <DialogTitle className={classes.popoverTile}>Apollo 24x7 - Alert</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Hi! Seems like you've gone offline. Please click on 'OK' to continue chatting with your
+            patient.
             <div className={classes.countdownLoader}>
-                <ReactCountdownClock
-                  seconds={60}
-                  color="#fcb716"
-                  alpha={0.9}
-                  size={50}
-                  onComplete={() => triggerAutoEndConsult()}
-                />
-              </div>
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button
-              color="primary"
-              onClick={() => {
-                setJrdNoFillDialog(false);
-              }}
-              autoFocus
-            >
-              Ok
+              <ReactCountdownClock
+                seconds={60}
+                color="#fcb716"
+                alpha={0.9}
+                size={50}
+                onComplete={() => triggerAutoEndConsult()}
+              />
+            </div>
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            color="primary"
+            onClick={() => {
+              setJrdNoFillDialog(false);
+            }}
+            autoFocus
+          >
+            Ok
           </Button>
-          </DialogActions>
-        </Dialog>
-        {/* Ot Errors Start */}
-        <Alert
-          error={sessionError}
-          onClose={() => {
-            setSessionError(null);
-          }}
-        />
-        <Alert
-          error={publisherError}
-          onClose={() => {
-            setPublisherError(null);
-          }}
-        />
-        <Alert
-          error={subscriberError}
-          onClose={() => {
-            setSubscriberError(null);
-          }}
-        />
-        {/* Ot Errors Ends */}
-      </div>
-    );
+        </DialogActions>
+      </Dialog>
+      {/* Ot Errors Start */}
+      <Alert
+        error={sessionError}
+        onClose={() => {
+          setSessionError(null);
+        }}
+      />
+      <Alert
+        error={publisherError}
+        onClose={() => {
+          setPublisherError(null);
+        }}
+      />
+      <Alert
+        error={subscriberError}
+        onClose={() => {
+          setSubscriberError(null);
+        }}
+      />
+      {/* Ot Errors Ends */}
+    </div>
+  );
 };

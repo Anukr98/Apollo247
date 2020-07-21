@@ -925,14 +925,14 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
         storeInHistory: true,
         sendByPost: true,
       },
-      (status, response) => { }
+      (status, response) => {}
     );
     const stoptext = {
       id: props.doctorId,
       message: `${isVideoCall ? 'Video' : 'Audio'} call ended`,
       duration: `${
         timerLastMinuts.toString().length < 2 ? '0' + timerLastMinuts : timerLastMinuts
-        } : ${timerLastSeconds.toString().length < 2 ? '0' + timerLastSeconds : timerLastSeconds}`,
+      } : ${timerLastSeconds.toString().length < 2 ? '0' + timerLastSeconds : timerLastSeconds}`,
       isTyping: true,
       messageDate: new Date(),
       sentBy: REQUEST_ROLES.JUNIOR,
@@ -944,7 +944,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
         storeInHistory: true,
         sendByPost: true,
       },
-      (status, response) => { }
+      (status, response) => {}
     );
     stopIntervalTimer();
     props.endCallNotificationAction(true);
@@ -964,7 +964,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
         storeInHistory: true,
         sendByPost: true,
       },
-      (status, response) => { }
+      (status, response) => {}
     );
     setPlayRingtone(true);
     actionBtn();
@@ -994,7 +994,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
         storeInHistory: true,
         sendByPost: true,
       },
-      (status, response) => { }
+      (status, response) => {}
     );
     stopIntervalTimer();
   };
@@ -1012,7 +1012,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
           channel: channel,
           storeInHistory: false,
         },
-        (status, response) => { }
+        (status, response) => {}
       );
     }, 10);
   };
@@ -1201,7 +1201,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
           channel: channel,
           storeInHistory: true,
         },
-        (status, response) => { }
+        (status, response) => {}
       );
       unSubscribeBrowserButtonsListener();
     }
@@ -1250,7 +1250,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
       //withPresence: true,
     });
     pubnub.addListener({
-      status: (statusEvent) => { },
+      status: (statusEvent) => {},
       message: (message) => {
         if (
           !showVideoChat &&
@@ -1312,7 +1312,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
         channel: channel,
         storeInHistory: true,
       },
-      (status, response) => { }
+      (status, response) => {}
     );
     setTimeout(() => {
       const texts = {
@@ -1330,7 +1330,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
           channel: channel,
           storeInHistory: true,
         },
-        (status, response) => { }
+        (status, response) => {}
       );
     }, 2000);
   };
@@ -1357,7 +1357,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
         channel: channel,
         storeInHistory: true,
       },
-      (status, response) => { }
+      (status, response) => {}
     );
   };
 
@@ -1431,7 +1431,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
       if (diff.hours() <= 0) {
         return `| Time to consult ${
           diff.minutes().toString().length < 2 ? '0' + diff.minutes() : diff.minutes()
-          } : ${diff.seconds().toString().length < 2 ? '0' + diff.seconds() : diff.seconds()}`;
+        } : ${diff.seconds().toString().length < 2 ? '0' + diff.seconds() : diff.seconds()}`;
       }
     return '';
   };
@@ -1496,12 +1496,12 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
                 {remainingConsultStartTime} minute(s) left for Senior Doctor to start the consult.
               </div>
             ) : (
-                  !props.hasCameraMicPermission && (
-                    <div className={`${classes.consultDur} ${classes.consultDurShow}`}>
-                      Note: Please allow access to Camera & Mic.
-                    </div>
-                  )
-                )}
+              !props.hasCameraMicPermission && (
+                <div className={`${classes.consultDur} ${classes.consultDurShow}`}>
+                  Note: Please allow access to Camera & Mic.
+                </div>
+              )
+            )}
           </div>
 
           {/* code commented as requested by the testing team
@@ -1524,8 +1524,8 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
                 }}
               >
                 <img src={require('images/call_connect.svg')} />
-                  Connect via phone call
-                </span>
+                Connect via phone call
+              </span>
               <AphButton
                 classes={{
                   root: classes.saveBtn,
@@ -1566,35 +1566,35 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
               )}
             </span>
           ) : (
-              <AphButton
-                className={classes.consultButton}
-                disabled={
-                  disableOnCancel ||
-                  (appointmentInfo!.appointmentState !== 'NEW' &&
-                    appointmentInfo!.appointmentState !== 'RESCHEDULE') ||
-                  (appointmentInfo!.status !== STATUS.IN_PROGRESS &&
-                    appointmentInfo!.status !== STATUS.PENDING)
-                }
-                onClick={() => {
-                  if (startAppointment) {
-                    const isEmptyFields = checkForEmptyFields();
-                    if (!isEmptyFields) {
-                      onStopConsult();
-                      stopInterval();
-                    }
-                  } else {
-                    props.createSessionAction();
+            <AphButton
+              className={classes.consultButton}
+              disabled={
+                disableOnCancel ||
+                (appointmentInfo!.appointmentState !== 'NEW' &&
+                  appointmentInfo!.appointmentState !== 'RESCHEDULE') ||
+                (appointmentInfo!.status !== STATUS.IN_PROGRESS &&
+                  appointmentInfo!.status !== STATUS.PENDING)
+              }
+              onClick={() => {
+                if (startAppointment) {
+                  const isEmptyFields = checkForEmptyFields();
+                  if (!isEmptyFields) {
+                    onStopConsult();
+                    stopInterval();
                   }
-                  setCaseSheetEdit(true);
-                  setStartAppointment(!startAppointment);
-                }}
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-                  <path fill="#fff" d="M8 5v14l11-7z" />
-                </svg>
-                {startAppointment ? 'End Consult' : 'Start Consult'}
-              </AphButton>
-            )}
+                } else {
+                  props.createSessionAction();
+                }
+                setCaseSheetEdit(true);
+                setStartAppointment(!startAppointment);
+              }}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                <path fill="#fff" d="M8 5v14l11-7z" />
+              </svg>
+              {startAppointment ? 'End Consult' : 'Start Consult'}
+            </AphButton>
+          )}
           <AphButton
             className={classes.iconButton}
             aria-describedby={id}
@@ -1936,7 +1936,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
                     setIsCancelPopoverOpen(false);
                     cancelConsultAction();
                     mutationRemoveConsult()
-                      .then(() => { })
+                      .then(() => {})
                       .catch((e: ApolloError) => {
                         const logObject = {
                           api: 'RemoveFromConsultQueue',
@@ -1951,8 +1951,8 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
                           currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
                           appointmentDateTime: props.appointmentDateTime
                             ? moment(new Date(props.appointmentDateTime)).format(
-                              'MMMM DD YYYY h:mm:ss a'
-                            )
+                                'MMMM DD YYYY h:mm:ss a'
+                              )
                             : '',
                           error: JSON.stringify(e),
                         };
@@ -1999,8 +1999,8 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
                       currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
                       appointmentDateTime: props.appointmentDateTime
                         ? moment(new Date(props.appointmentDateTime)).format(
-                          'MMMM DD YYYY h:mm:ss a'
-                        )
+                            'MMMM DD YYYY h:mm:ss a'
+                          )
                         : '',
                       error: JSON.stringify(e),
                     };
@@ -2104,8 +2104,8 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
                 <span className={classes.callOption}>1</span>
                 <span className={classes.callOptionFirst}>
                   Answer the call from {process.env.EXOTEL_CALLER_ID} <br />
-                    to connect.
-                  </span>
+                  to connect.
+                </span>
                 <span className={classes.callOption}>2</span>
                 <span className={classes.callOptionFirst}>Wait for the patient to connect.</span>
               </span>
@@ -2164,7 +2164,6 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
           </Paper>
         </div>
       </Modal>
-
 
       {/* audio/video start*/}
       <div className={classes.posRelative}>
