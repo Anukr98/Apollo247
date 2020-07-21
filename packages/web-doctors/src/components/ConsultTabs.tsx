@@ -278,6 +278,27 @@ const useStyles = makeStyles((theme: Theme) => {
       top: 94,
       zIndex: 2,
     },
+    toastMessage: {
+      width: '482px',
+      height: '40px',
+      borderRadius: '10px',
+      boxShadow: '0 1px 13px 0 rgba(0, 0, 0, 0.16)',
+      backgroundColor: '#00b38e',
+      position: 'relative',
+      top: '27px',
+      left: '201px',
+    },
+    toastMessageText: {
+      fontSize: '14px',
+      fontWeight: 500,
+      fontStretch: 'normal',
+      fontStyle: 'normal',
+      lineHeight: 1.43,
+      letterSpacing: 'normal',
+      color: '#ffffff',
+      position: 'relative',
+      top: 6,
+    },
   };
 });
 
@@ -303,7 +324,7 @@ export const ConsultTabs: React.FC = () => {
   const classes = useStyles({});
   const params = useParams<Params>();
   const paramId = params.id;
-
+  const [showToastMessage, setShowToastMessage] = useState<boolean>(false);
   const { currentPatient, isSignedIn, sessionClient } = useAuth();
 
   const mutationCreateSrdCaseSheet = useMutation<
@@ -1668,6 +1689,29 @@ export const ConsultTabs: React.FC = () => {
     <div className={classes.consultRoom}>
       <div className={classes.headerSticky}>
         <Header />
+        {showToastMessage && (
+          <div className={classes.toastMessage}>
+            <span className={classes.toastMessageText}>
+              <img
+                src={require('images/ic_cancel_green.svg')}
+                alt=""
+                style={{
+                  height: 18,
+                  width: 18,
+                  position: 'relative',
+                  top: 4,
+                  marginLeft: 12,
+                  marginRight: 20,
+                  cursor: 'pointer',
+                }}
+                onClick={() => {
+                  setShowToastMessage(false);
+                }}
+              />
+              {`You will get a call from ${process.env.EXOTEL_CALLER_ID}. Please pick up the call !`}
+            </span>
+          </div>
+        )}
       </div>
       {!loaded && (
         <div>
@@ -1793,6 +1837,7 @@ export const ConsultTabs: React.FC = () => {
           >
             <div className={classes.container}>
               <CallPopover
+                setShowToastMessage={setShowToastMessage}
                 setStartConsultAction={(flag: boolean) => setStartConsultAction(flag)}
                 createSessionAction={createSessionAction}
                 saveCasesheetAction={(flag: boolean, sendToPatientFlag: boolean) =>
