@@ -23,6 +23,7 @@ import {
   NotificationBin,
   NotificationBinArchive,
   AppointmentUpdateHistory,
+  ExotelDetails,
 } from 'consults-service/entities/';
 import {
   AdminDoctorMapper,
@@ -74,6 +75,7 @@ import {
   MedicineOrders,
   MedicineOrdersStatus,
   MedicineOrderShipments,
+  MedicineOrderRefunds,
   Patient,
   PatientAddress,
   PatientDeviceTokens,
@@ -160,6 +162,7 @@ export const connect = async () => {
         TransferAppointmentDetails,
         UtilizationCapacity,
         AppointmentUpdateHistory,
+        ExotelDetails,
       ],
       type: 'postgres',
       host: process.env.CONSULTS_DB_HOST,
@@ -199,6 +202,7 @@ export const connect = async () => {
         MedicineOrders,
         MedicineOrdersStatus,
         MedicineOrderShipments,
+        MedicineOrderRefunds,
         Patient,
         PatientAddress,
         PatientDeviceTokens,

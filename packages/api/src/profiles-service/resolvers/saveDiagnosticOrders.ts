@@ -217,12 +217,13 @@ const SaveDiagnosticOrder: Resolver<
     throw new AphError(AphErrorMessages.CART_EMPTY_ERROR, undefined, {});
   }
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
-  const patientDetails = await patientRepo.findById(diagnosticOrderInput.patientId);
+  const patientDetails = await patientRepo.getPatientDetails(diagnosticOrderInput.patientId);
   let patientAddress = '',
     addressZipcode = '';
   if (!patientDetails) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
+
   if (
     diagnosticOrderInput.patientAddressId != '' &&
     diagnosticOrderInput.patientAddressId != null

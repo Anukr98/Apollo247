@@ -210,7 +210,7 @@ const getMedicineOrdersOMSList: Resolver<
   MedicineOrdersOMSListResult
 > = async (parent, args, { profilesDb, mobileNumber }) => {
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
-  const patientDetails = await patientRepo.findById(args.patientId);
+  const patientDetails = await patientRepo.getPatientDetails(args.patientId);
   log(
     'profileServiceLogger',
     `getMedicineOrdersOMSList:${mobileNumber}`,
@@ -218,6 +218,7 @@ const getMedicineOrdersOMSList: Resolver<
     JSON.stringify(patientDetails),
     ''
   );
+
   if (!patientDetails) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
@@ -345,9 +346,10 @@ const getMedicineOrderOMSDetails: Resolver<
   let medicineOrderDetails: any = '';
   if (args.billNumber && args.billNumber != '' && args.billNumber != '0' && args.patientId) {
     const patientRepo = profilesDb.getCustomRepository(PatientRepository);
-    const patientDetails = await patientRepo.findById(args.patientId);
+    const patientDetails = await patientRepo.getPatientDetails(args.patientId);
     if (!patientDetails) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
     let uhid = patientDetails.uhid;
+
     if (process.env.NODE_ENV == 'local') uhid = ApiConstants.CURRENT_UHID.toString();
     else if (process.env.NODE_ENV == 'dev') uhid = ApiConstants.CURRENT_UHID.toString();
     const ordersResp = await fetch(
@@ -432,7 +434,7 @@ const getMedicineOrderOMSDetails: Resolver<
   } else {
     const patientRepo = profilesDb.getCustomRepository(PatientRepository);
     if (args.patientId) {
-      const patientDetails = await patientRepo.findById(args.patientId);
+      const patientDetails = await patientRepo.getPatientDetails(args.patientId);
       if (!patientDetails) {
         throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
       }

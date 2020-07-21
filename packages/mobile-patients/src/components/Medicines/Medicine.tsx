@@ -148,10 +148,12 @@ const styles = StyleSheet.create({
 export interface MedicineProps
   extends NavigationScreenProps<{
     focusSearch?: boolean;
+    showUploadPrescriptionPopup?: boolean;
   }> {}
 
 export const Medicine: React.FC<MedicineProps> = (props) => {
   const focusSearch = props.navigation.getParam('focusSearch');
+  const showUploadPrescriptionPopup = props.navigation.getParam('showUploadPrescriptionPopup');
   const {
     locationDetails,
     pharmacyLocation,
@@ -161,7 +163,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     medicinePageAPiResponse,
     setMedicinePageAPiResponse,
   } = useAppCommonData();
-  const [ShowPopop, setShowPopop] = useState<boolean>(false);
+  const [ShowPopop, setShowPopop] = useState<boolean>(!!showUploadPrescriptionPopup);
   const [pincodePopupVisible, setPincodePopupVisible] = useState<boolean>(false);
   const [isSelectPrescriptionVisible, setSelectPrescriptionVisible] = useState(false);
   const {
@@ -796,7 +798,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       );
     } else if (banners.length && !isSelectPrescriptionVisible) {
       return (
-        <View>
+        <View style={{ marginBottom: 10 }}>
           <Carousel
             onSnapToItem={setSlideIndex}
             data={banners}
@@ -862,7 +864,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         style={[
           {
             ...theme.viewStyles.card(),
-            marginTop: 0,
+            marginTop: 10,
             marginBottom: 16,
           },
           medicineList.length > 0 && searchText
@@ -1014,7 +1016,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
   const renderYourOrders = () => {
     return (
-      <View style={{ ...theme.viewStyles.card(), paddingVertical: 0, marginTop: 5 }}>
+      <View style={{ ...theme.viewStyles.card(), paddingVertical: 0, marginTop: 0 }}>
         <ListItem
           title={'My Orders'}
           leftAvatar={<MedicineIcon />}
@@ -1826,7 +1828,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     );
   };
 
-  const renderSectionsWithOrdering = () => {
+  const renderRecommendedProducts = () => {
+    return renderHotSellers('RECOMMENDED FOR YOU', recommendedProducts, -1);
+  };
+
+  const renderSections = () => {
     const info = AppConfig.Configuration.PHARMACY_HOMEPAGE_INFO;
     const sectionMapping = {
       healthareas: renderCategories,
@@ -1837,6 +1843,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       monsoon_essentials: renderHotSellers,
       widget_2: renderHotSellers,
       widget_3: renderHotSellers,
+      renderBannerImageToGetAspectRatio: renderBannerImageToGetAspectRatio,
+      banners: renderBanners,
+      orders: renderYourOrders,
+      upload_prescription: renderUploadPrescriptionSection,
+      recommended_products: renderRecommendedProducts,
     };
     const sectionDataMapping = {
       healthareas: [healthAreas, 0],
@@ -1847,8 +1858,22 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       monsoon_essentials: [monsoonEssentials, monsoonEssentialsCategoryId],
       widget_2: [widget2, widget2CategoryId],
       widget_3: [widget3, widget3CategoryId],
+      renderBannerImageToGetAspectRatio: [[], 0],
+      banners: [[], 0],
+      orders: [[], 0],
+      upload_prescription: [[], 0],
+      recommended_products: [[], 0],
     };
-    const sectionsView = info
+    const bannersKey = info.findIndex((i) => i.section_key == 'banners');
+    const sectionsView = [
+      {
+        section_key: 'renderBannerImageToGetAspectRatio',
+        section_name: 'Banners',
+        section_position: bannersKey > -1 ? info[bannersKey].section_position : '0',
+        visible: bannersKey > -1 ? info[bannersKey].visible : false,
+      },
+      ...info,
+    ]
       .filter((item) => item.visible)
       .sort((a, b) => Number(a.section_position) - Number(b.section_position))
       .map((item) => {
@@ -1864,14 +1889,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           : null;
       });
 
-    return sectionsView;
-  };
-
-  const renderRecommendedProducts = () => {
-    return renderHotSellers('RECOMMENDED FOR YOU', recommendedProducts, -1);
-  };
-
-  const renderSections = () => {
     return (
       <TouchableOpacity
         activeOpacity={1}
@@ -1882,12 +1899,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         }}
         style={{ flex: 1 }}
       >
-        {renderBannerImageToGetAspectRatio()}
-        {renderBanners()}
-        {renderYourOrders()}
-        {renderUploadPrescriptionSection()}
-        {renderRecommendedProducts()}
-        {loading ? renderSectionLoader() : !error && renderSectionsWithOrdering()}
+        <View style={{ height: 10 }} />
+        {sectionsView}
         {!error && <View style={{ height: 20 }} />}
       </TouchableOpacity>
     );

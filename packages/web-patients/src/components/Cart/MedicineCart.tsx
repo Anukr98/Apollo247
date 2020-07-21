@@ -63,7 +63,13 @@ import { savePrescriptionMedicineOrderOMSVariables } from '../../graphql/types/s
 import { SAVE_PRESCRIPTION_MEDICINE_ORDER_OMS } from 'graphql/medicines';
 import moment from 'moment';
 import { Alerts } from 'components/Alerts/Alerts';
-import { uploadPrescriptionTracking } from '../../webEngageTracking';
+import {
+  uploadPrescriptionTracking,
+  pharmacyCartViewTracking,
+  pharmacyProceedToPayTracking,
+  pharmacySubmitPrescTracking,
+  pharmacyUploadPresClickTracking,
+} from '../../webEngageTracking';
 import { ChennaiCheckout, submitFormType } from 'components/Cart/ChennaiCheckout';
 import { OrderPlaced } from 'components/Cart/OrderPlaced';
 import { useParams } from 'hooks/routerHooks';
@@ -986,6 +992,20 @@ export const MedicineCart: React.FC = (props) => {
           data.savePrescriptionMedicineOrderOMS &&
           data.savePrescriptionMedicineOrderOMS.orderAutoId
         ) {
+          prescriptions &&
+            prescriptions.length > 0 &&
+            pharmacySubmitPrescTracking({
+              orderId: data.savePrescriptionMedicineOrderOMS.orderAutoId,
+              deliveryType: deliveryAddressId
+                ? MEDICINE_DELIVERY_TYPE.HOME_DELIVERY
+                : MEDICINE_DELIVERY_TYPE.STORE_PICKUP,
+              storeId: '',
+              deliverAdd: deliveryAddressId,
+              pincode:
+                storePickupPincode && storePickupPincode.length === 6
+                  ? storePickupPincode
+                  : currentPincode,
+            });
           if (prescriptionOptionSelected === 'duration') {
             clearCartInfo();
             setTimeout(() => {
@@ -1150,6 +1170,7 @@ export const MedicineCart: React.FC = (props) => {
 
   const handleUploadPrescription = () => {
     uploadPrescriptionTracking({ ...patient, age });
+    pharmacyUploadPresClickTracking('Cart');
     setIsUploadPreDialogOpen(true);
   };
 
@@ -1173,6 +1194,9 @@ export const MedicineCart: React.FC = (props) => {
       });
     }
     /**Gtm code  End */
+    if (cartItems && cartItems.length > 0 && !nonCartFlow) {
+      pharmacyCartViewTracking(cartItems.length);
+    }
   }, [cartTotal]);
 
   return (
@@ -1521,7 +1545,7 @@ export const MedicineCart: React.FC = (props) => {
                     const zipCodeInt = parseInt(selectedZip);
 
                     if (cartItems && cartItems.length > 0 && !nonCartFlow) {
-                      if((prescriptions && prescriptions.length > 0)) {
+                      if (prescriptions && prescriptions.length > 0) {
                         uploadMultipleFiles(prescriptions);
                       }
                       if (
@@ -1564,6 +1588,19 @@ export const MedicineCart: React.FC = (props) => {
                       }
                       onPressSubmit();
                     }
+                    pharmacyProceedToPayTracking({
+                      totalItems: cartItems.length,
+                      serviceArea: 'Pharmacy',
+                      subTotal: mrpTotal,
+                      deliveryCharge: deliveryCharges,
+                      netAfterDiscount: totalWithCouponDiscount,
+                      isPrescription:
+                        ePrescriptionData && ePrescriptionData.length > 0 ? true : false,
+                      cartId: '',
+                      deliveryMode,
+                      deliveryDateTime: deliveryTime,
+                      pincode: currentPincode,
+                    });
                   }}
                   color="primary"
                   fullWidth

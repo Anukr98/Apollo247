@@ -151,10 +151,11 @@ const SaveMedicineOrder: Resolver<
     throw new AphError(AphErrorMessages.CART_EMPTY_ERROR, undefined, {});
   }
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
-  const patientDetails = await patientRepo.findById(MedicineCartInput.patientId);
+  const patientDetails = await patientRepo.getPatientDetails(MedicineCartInput.patientId);
   if (!patientDetails) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
+
   if (MedicineCartInput.patientAddressId != '' && MedicineCartInput.patientAddressId != null) {
     const patientAddressRepo = profilesDb.getCustomRepository(PatientAddressRepository);
     const patientAddressDetails = await patientAddressRepo.findById(

@@ -17,6 +17,7 @@ import useMediaQuery from '@material-ui/core/useMediaQuery';
 import fetchUtil from 'helpers/fetch';
 import { NavigationBottom } from 'components/NavigationBottom';
 import { BottomLinks } from 'components/BottomLinks';
+import { useAllCurrentPatients } from 'hooks/authHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -186,6 +187,11 @@ const useStyles = makeStyles((theme: Theme) => {
       height: 24,
       cursor: 'pointer',
     },
+    headerCovid: {
+      [theme.breakpoints.down('xs')]: {
+        visibility: 'hidden',
+      },
+    },
     modalFooter: {
       textAlign: 'left',
       position: 'relative',
@@ -250,9 +256,11 @@ export const CovidLanding: React.FC = (props: any) => {
   const [isWebView, setIsWebView] = useState<boolean>(false);
   const [expandedImage, setExpandedImage] = useState<string>('');
   const [expandedTitle, setExpandedTitle] = useState<string>('');
+  const [covidCategory, setCovidCategory] = useState<string>('');
   const [expandedSourceUrl, setExpandedSourceUrl] = useState<string>('');
   const [modalOpen, setModalOpen] = useState<boolean>(false);
   const scrollToRef = useRef<HTMLDivElement>(null);
+  const { currentPatient } = useAllCurrentPatients();
 
   const didMount = useRef(false);
   const covidArticleBaseUrl =
@@ -318,7 +326,9 @@ export const CovidLanding: React.FC = (props: any) => {
 
   return (
     <div className={classes.root}>
-      {isDesktopOnly ? <Header /> : ''}
+      <div className={classes.headerCovid}>
+        <Header />
+      </div>
       <div className={classes.container}>
         <div className={classes.pageContainer} ref={scrollToRef}>
           <Banner isWebView={isWebView} />

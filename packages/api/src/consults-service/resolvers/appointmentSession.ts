@@ -243,7 +243,6 @@ const createAppointmentSession: Resolver<
   ConsultServiceContext,
   CreateAppointmentSession
 > = async (parent, { createAppointmentSessionInput }, { consultsDb, patientsDb, doctorsDb }) => {
-
   if (!process.env.OPENTOK_KEY && !process.env.OPENTOK_SECRET) {
     throw new AphError(AphErrorMessages.INVALID_OPENTOK_KEYS);
   }
@@ -339,7 +338,8 @@ const createAppointmentSession: Resolver<
       currentDate < apptDetails.appointmentDateTime
     ) {
       const patientRepo = patientsDb.getCustomRepository(PatientRepository);
-      const patientData = await patientRepo.findById(apptDetails.patientId);
+      const patientData = await patientRepo.getPatientDetails(apptDetails.patientId);
+
       const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
       const doctorData = await doctorRepository.findDoctorByIdWithoutRelations(
         apptDetails.doctorId
@@ -409,7 +409,8 @@ const createAppointmentSession: Resolver<
     currentDate < apptDetails.appointmentDateTime
   ) {
     const patientRepo = patientsDb.getCustomRepository(PatientRepository);
-    const patientData = await patientRepo.findById(apptDetails.patientId);
+    const patientData = await patientRepo.getPatientDetails(apptDetails.patientId);
+
     const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
     const doctorData = await doctorRepository.findDoctorByIdWithoutRelations(apptDetails.doctorId);
     if (patientData && doctorData) {
@@ -581,8 +582,8 @@ const endAppointmentSession: Resolver<
     });
     const ccEmailIds =
       process.env.NODE_ENV == 'dev' ||
-        process.env.NODE_ENV == 'development' ||
-        process.env.NODE_ENV == 'local'
+      process.env.NODE_ENV == 'development' ||
+      process.env.NODE_ENV == 'local'
         ? ApiConstants.PATIENT_APPT_CC_EMAILID
         : ApiConstants.PATIENT_APPT_CC_EMAILID_PRODUCTION;
     let isDoctorNoShow = 0;
@@ -613,7 +614,11 @@ const endAppointmentSession: Resolver<
       });
     }
     await rescheduleRepo.saveReschedule(rescheduleAppointmentAttrs);
-    await apptRepo.updateTransferState(apptDetails.id, APPOINTMENT_STATE.AWAITING_RESCHEDULE, apptDetails);
+    await apptRepo.updateTransferState(
+      apptDetails.id,
+      APPOINTMENT_STATE.AWAITING_RESCHEDULE,
+      apptDetails
+    );
 
     // send notification
     let pushNotificationInput = {

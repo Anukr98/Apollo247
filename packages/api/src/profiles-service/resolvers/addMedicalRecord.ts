@@ -120,7 +120,7 @@ const addPatientMedicalRecord: Resolver<
   AddMedicalRecordResult
 > = async (parent, { addMedicalRecordInput }, { profilesDb }) => {
   const patientsRepo = profilesDb.getCustomRepository(PatientRepository);
-  const patient = await patientsRepo.findById(addMedicalRecordInput.patientId);
+  const patient = await patientsRepo.getPatientDetails(addMedicalRecordInput.patientId);
   if (patient == null) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
