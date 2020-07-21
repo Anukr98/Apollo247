@@ -254,8 +254,7 @@ export const Diagnosis: React.FC = () => {
           }
         });
 
-        (!found || filterVal.length === 0) &&
-          filterVal.unshift({ name: value, id: '', __typename: 'Diagnosis' });
+        !found && filterVal.unshift({ name: value, id: '', __typename: 'Diagnosis' });
 
         suggestions = filterVal;
         setSearchInput(value);
@@ -281,9 +280,9 @@ export const Diagnosis: React.FC = () => {
     event: React.ChangeEvent<{}>,
     { newValue }: Autosuggest.ChangeEvent
   ) => {
-    //suggestions.length > 0 && suggestions[0].id == '' && suggestions.splice(0, 1);
+    // suggestions.length > 0 && suggestions[0].id == '' && suggestions.splice(0, 1);
     if (event.nativeEvent.type === 'input' && newValue.length > 2) {
-      //  suggestions.unshift({ name: newValue, id: '', __typename: 'Diagnosis' });
+      suggestions.unshift({ name: newValue, id: '', __typename: 'Diagnosis' });
       fetchDignosis(newValue);
     }
     setDiagnosisValue(newValue);
