@@ -280,7 +280,6 @@ export const Diagnosis: React.FC = () => {
     event: React.ChangeEvent<{}>,
     { newValue }: Autosuggest.ChangeEvent
   ) => {
-    console.log(newValue);
     // suggestions.length > 0 && suggestions[0].id == '' && suggestions.splice(0, 1);
     if (event.nativeEvent.type === 'input' && newValue.length > 2) {
       suggestions.unshift({ name: newValue, id: '', __typename: 'Diagnosis' });
