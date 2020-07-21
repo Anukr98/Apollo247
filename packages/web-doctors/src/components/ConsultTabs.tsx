@@ -579,291 +579,299 @@ export const ConsultTabs: React.FC = () => {
         .then((_data) => {
           setCasesheetInfo(_data.data);
           setError('');
-          if(_data!.data!.getCaseSheet!.caseSheetDetails.doctorId !== doctorId){
+          if (_data!.data!.getCaseSheet!.caseSheetDetails.doctorId !== doctorId && !isSecretary) {
             setIsUnauthorized(true);
-          }else{
+          } else {
             _data!.data!.getCaseSheet!.caseSheetDetails &&
-          _data!.data!.getCaseSheet!.caseSheetDetails.id
-            ? setCaseSheetId(_data!.data!.getCaseSheet!.caseSheetDetails.id)
-            : '';
-          _data!.data!.getCaseSheet!.caseSheetDetails!.diagnosis !== null
-            ? setDiagnosis((_data!.data!.getCaseSheet!.caseSheetDetails!
-                .diagnosis as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis[])
-            : setDiagnosis([]);
-          _data!.data!.getCaseSheet!.caseSheetDetails!.symptoms
-            ? setSymptoms((_data!.data!.getCaseSheet!.caseSheetDetails!
-                .symptoms as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms[])
-            : setSymptoms([]);
-          _data!.data!.getCaseSheet!.caseSheetDetails!.otherInstructions
-            ? setOtherInstructions((_data!.data!.getCaseSheet!.caseSheetDetails!
-                .otherInstructions as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_otherInstructions[])
-            : setOtherInstructions([]);
-          _data!.data!.getCaseSheet!.caseSheetDetails!.diagnosticPrescription
-            ? setDiagnosticPrescription((_data!.data!.getCaseSheet!.caseSheetDetails!
-                .diagnosticPrescription as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[])
-            : setDiagnosticPrescription([]);
-          _data!.data!.getCaseSheet!.caseSheetDetails!.medicinePrescription
-            ? setMedicinePrescription((_data!.data!.getCaseSheet!.caseSheetDetails!
-                .medicinePrescription as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[])
-            : setMedicinePrescription([]);
-          _data!.data!.getCaseSheet!.caseSheetDetails!.removedMedicinePrescription
-            ? setRemovedMedicinePrescription((_data!.data!.getCaseSheet!.caseSheetDetails!
-                .removedMedicinePrescription as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[])
-            : setRemovedMedicinePrescription([]);
-          _data!.data!.getCaseSheet!.caseSheetDetails!.notes
-            ? setSRDNotes((_data!.data!.getCaseSheet!.caseSheetDetails!.notes as unknown) as string)
-            : setSRDNotes('');
-          _data!.data!.getCaseSheet!.juniorDoctorNotes
-            ? setJuniorDoctorNotes((_data!.data!.getCaseSheet!
-                .juniorDoctorNotes as unknown) as string)
-            : setJuniorDoctorNotes('');
-          _data!.data!.getCaseSheet!.caseSheetDetails!.consultType
-            ? setConsultType(([
-                _data!.data!.getCaseSheet!.caseSheetDetails!.consultType,
-              ] as unknown) as string[])
-            : setConsultType([]);
-          _data!.data!.getCaseSheet!.caseSheetDetails!.followUp
-            ? setFollowUp(([
-                _data!.data!.getCaseSheet!.caseSheetDetails!.followUp,
-              ] as unknown) as boolean[])
-            : setFollowUp([]);
-          _data!.data!.getCaseSheet!.caseSheetDetails!.followUpAfterInDays
-            ? setFollowUpAfterInDays(([
-                _data!.data!.getCaseSheet!.caseSheetDetails!.followUpAfterInDays,
-              ] as unknown) as string[])
-            : setFollowUpAfterInDays([]);
-          _data!.data!.getCaseSheet!.caseSheetDetails!.followUpDate
-            ? setFollowUpDate(([
-                _data!.data!.getCaseSheet!.caseSheetDetails!.followUpDate,
-              ] as unknown) as string[])
-            : setFollowUpDate([]);
-          _data!.data!.getCaseSheet!.caseSheetDetails!.followUpConsultType
-            ? setFollowUpConsultType(([
-                _data!.data!.getCaseSheet!.caseSheetDetails!.followUpConsultType,
-              ] as unknown) as string[])
-            : setFollowUpConsultType([]);
-          _data!.data!.getCaseSheet!.caseSheetDetails!.appointment!.status
-            ? setAppointmentStatus(_data!.data!.getCaseSheet!.caseSheetDetails!.appointment!.status)
-            : setAppointmentStatus('');
+            _data!.data!.getCaseSheet!.caseSheetDetails.id
+              ? setCaseSheetId(_data!.data!.getCaseSheet!.caseSheetDetails.id)
+              : '';
+            _data!.data!.getCaseSheet!.caseSheetDetails!.diagnosis !== null
+              ? setDiagnosis((_data!.data!.getCaseSheet!.caseSheetDetails!
+                  .diagnosis as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis[])
+              : setDiagnosis([]);
+            _data!.data!.getCaseSheet!.caseSheetDetails!.symptoms
+              ? setSymptoms((_data!.data!.getCaseSheet!.caseSheetDetails!
+                  .symptoms as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms[])
+              : setSymptoms([]);
+            _data!.data!.getCaseSheet!.caseSheetDetails!.otherInstructions
+              ? setOtherInstructions((_data!.data!.getCaseSheet!.caseSheetDetails!
+                  .otherInstructions as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_otherInstructions[])
+              : setOtherInstructions([]);
+            _data!.data!.getCaseSheet!.caseSheetDetails!.diagnosticPrescription
+              ? setDiagnosticPrescription((_data!.data!.getCaseSheet!.caseSheetDetails!
+                  .diagnosticPrescription as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[])
+              : setDiagnosticPrescription([]);
+            _data!.data!.getCaseSheet!.caseSheetDetails!.medicinePrescription
+              ? setMedicinePrescription((_data!.data!.getCaseSheet!.caseSheetDetails!
+                  .medicinePrescription as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[])
+              : setMedicinePrescription([]);
+            _data!.data!.getCaseSheet!.caseSheetDetails!.removedMedicinePrescription
+              ? setRemovedMedicinePrescription((_data!.data!.getCaseSheet!.caseSheetDetails!
+                  .removedMedicinePrescription as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[])
+              : setRemovedMedicinePrescription([]);
+            _data!.data!.getCaseSheet!.caseSheetDetails!.notes
+              ? setSRDNotes((_data!.data!.getCaseSheet!.caseSheetDetails!
+                  .notes as unknown) as string)
+              : setSRDNotes('');
+            _data!.data!.getCaseSheet!.juniorDoctorNotes
+              ? setJuniorDoctorNotes((_data!.data!.getCaseSheet!
+                  .juniorDoctorNotes as unknown) as string)
+              : setJuniorDoctorNotes('');
+            _data!.data!.getCaseSheet!.caseSheetDetails!.consultType
+              ? setConsultType(([
+                  _data!.data!.getCaseSheet!.caseSheetDetails!.consultType,
+                ] as unknown) as string[])
+              : setConsultType([]);
+            _data!.data!.getCaseSheet!.caseSheetDetails!.followUp
+              ? setFollowUp(([
+                  _data!.data!.getCaseSheet!.caseSheetDetails!.followUp,
+                ] as unknown) as boolean[])
+              : setFollowUp([]);
+            _data!.data!.getCaseSheet!.caseSheetDetails!.followUpAfterInDays
+              ? setFollowUpAfterInDays(([
+                  _data!.data!.getCaseSheet!.caseSheetDetails!.followUpAfterInDays,
+                ] as unknown) as string[])
+              : setFollowUpAfterInDays([]);
+            _data!.data!.getCaseSheet!.caseSheetDetails!.followUpDate
+              ? setFollowUpDate(([
+                  _data!.data!.getCaseSheet!.caseSheetDetails!.followUpDate,
+                ] as unknown) as string[])
+              : setFollowUpDate([]);
+            _data!.data!.getCaseSheet!.caseSheetDetails!.followUpConsultType
+              ? setFollowUpConsultType(([
+                  _data!.data!.getCaseSheet!.caseSheetDetails!.followUpConsultType,
+                ] as unknown) as string[])
+              : setFollowUpConsultType([]);
+            _data!.data!.getCaseSheet!.caseSheetDetails!.appointment!.status
+              ? setAppointmentStatus(
+                  _data!.data!.getCaseSheet!.caseSheetDetails!.appointment!.status
+                )
+              : setAppointmentStatus('');
 
-          _data!.data!.getCaseSheet!.caseSheetDetails!.prescriptionGeneratedDate
-            ? setSdConsultationDate(
-                _data!.data!.getCaseSheet!.caseSheetDetails!.prescriptionGeneratedDate
-              )
-            : setSdConsultationDate('');
-          _data!.data!.getCaseSheet!.caseSheetDetails!.sentToPatient
-            ? setSentToPatient(_data!.data!.getCaseSheet!.caseSheetDetails!.sentToPatient)
-            : setSentToPatient(false);
-            _data!.data!.getCaseSheet!.caseSheetDetails!.version ? setCasesheetVersion(_data.data.getCaseSheet.caseSheetDetails.version) : setCasesheetVersion(1);
-          if (
-            _data.data &&
-            _data.data.getCaseSheet &&
-            _data.data.getCaseSheet.caseSheetDetails &&
-            _data.data.getCaseSheet.caseSheetDetails.appointment &&
-            _data.data.getCaseSheet.caseSheetDetails.appointment.status &&
-            _data.data.getCaseSheet.caseSheetDetails.appointment.status === 'COMPLETED' &&
-            _data.data.getCaseSheet.caseSheetDetails.version === 1
-          ) {
-            setIsPdfPageOpen(true);
-            setIsNewprescriptionEditable(false);
-            setIsNewPrescription(false);
-          }
-          if (
-            _data.data &&
-            _data.data.getCaseSheet &&
-            _data.data.getCaseSheet.caseSheetDetails &&
-            _data.data.getCaseSheet.caseSheetDetails.appointment &&
-            _data.data.getCaseSheet.caseSheetDetails.appointment.status &&
-            _data.data.getCaseSheet.caseSheetDetails.appointment.status === 'COMPLETED' &&
-            _data.data.getCaseSheet.caseSheetDetails.version > 1
-          ) {
-            if (_data.data.getCaseSheet.caseSheetDetails.sentToPatient) {
+            _data!.data!.getCaseSheet!.caseSheetDetails!.prescriptionGeneratedDate
+              ? setSdConsultationDate(
+                  _data!.data!.getCaseSheet!.caseSheetDetails!.prescriptionGeneratedDate
+                )
+              : setSdConsultationDate('');
+            _data!.data!.getCaseSheet!.caseSheetDetails!.sentToPatient
+              ? setSentToPatient(_data!.data!.getCaseSheet!.caseSheetDetails!.sentToPatient)
+              : setSentToPatient(false);
+            _data!.data!.getCaseSheet!.caseSheetDetails!.version
+              ? setCasesheetVersion(_data.data.getCaseSheet.caseSheetDetails.version)
+              : setCasesheetVersion(1);
+            if (
+              _data.data &&
+              _data.data.getCaseSheet &&
+              _data.data.getCaseSheet.caseSheetDetails &&
+              _data.data.getCaseSheet.caseSheetDetails.appointment &&
+              _data.data.getCaseSheet.caseSheetDetails.appointment.status &&
+              _data.data.getCaseSheet.caseSheetDetails.appointment.status === 'COMPLETED' &&
+              _data.data.getCaseSheet.caseSheetDetails.version === 1
+            ) {
               setIsPdfPageOpen(true);
               setIsNewprescriptionEditable(false);
               setIsNewPrescription(false);
-            } else {
-              setIsPdfPageOpen(false);
-              setIsNewprescriptionEditable(true);
-              setIsNewPrescription(true);
             }
-          }
-          if (
-            _data.data &&
-            _data.data.getCaseSheet &&
-            _data.data.getCaseSheet.caseSheetDetails &&
-            _data.data.getCaseSheet.caseSheetDetails!.blobName &&
-            _data.data.getCaseSheet.caseSheetDetails!.blobName !== undefined &&
-            _data.data.getCaseSheet.caseSheetDetails!.blobName !== ''
-          ) {
-            const url = storageClient.getBlobUrl(_data.data.getCaseSheet.caseSheetDetails.blobName);
-            setPrescriptionPdf(url);
-          }
-          if (
-            _data.data &&
-            _data.data.getCaseSheet &&
-            _data.data.getCaseSheet.caseSheetDetails &&
-            _data.data.getCaseSheet.caseSheetDetails.appointment &&
-            _data.data.getCaseSheet.caseSheetDetails.appointment.appointmentDateTime
-          ) {
-            setappointmentDateTime(
+            if (
+              _data.data &&
+              _data.data.getCaseSheet &&
+              _data.data.getCaseSheet.caseSheetDetails &&
+              _data.data.getCaseSheet.caseSheetDetails.appointment &&
+              _data.data.getCaseSheet.caseSheetDetails.appointment.status &&
+              _data.data.getCaseSheet.caseSheetDetails.appointment.status === 'COMPLETED' &&
+              _data.data.getCaseSheet.caseSheetDetails.version > 1
+            ) {
+              if (_data.data.getCaseSheet.caseSheetDetails.sentToPatient) {
+                setIsPdfPageOpen(true);
+                setIsNewprescriptionEditable(false);
+                setIsNewPrescription(false);
+              } else {
+                setIsPdfPageOpen(false);
+                setIsNewprescriptionEditable(true);
+                setIsNewPrescription(true);
+              }
+            }
+            if (
+              _data.data &&
+              _data.data.getCaseSheet &&
+              _data.data.getCaseSheet.caseSheetDetails &&
+              _data.data.getCaseSheet.caseSheetDetails!.blobName &&
+              _data.data.getCaseSheet.caseSheetDetails!.blobName !== undefined &&
+              _data.data.getCaseSheet.caseSheetDetails!.blobName !== ''
+            ) {
+              const url = storageClient.getBlobUrl(
+                _data.data.getCaseSheet.caseSheetDetails.blobName
+              );
+              setPrescriptionPdf(url);
+            }
+            if (
+              _data.data &&
+              _data.data.getCaseSheet &&
+              _data.data.getCaseSheet.caseSheetDetails &&
+              _data.data.getCaseSheet.caseSheetDetails.appointment &&
               _data.data.getCaseSheet.caseSheetDetails.appointment.appointmentDateTime
+            ) {
+              setappointmentDateTime(
+                _data.data.getCaseSheet.caseSheetDetails.appointment.appointmentDateTime
+              );
+            }
+
+            if (
+              _data.data &&
+              _data.data.getCaseSheet &&
+              _data.data.getCaseSheet.caseSheetDetails &&
+              _data.data.getCaseSheet.caseSheetDetails.updatedDate
+            ) {
+              setUpdatedDate(_data.data.getCaseSheet.caseSheetDetails.updatedDate);
+            }
+
+            // Refferal
+            if (
+              _data &&
+              _data.data &&
+              _data.data.getCaseSheet &&
+              _data.data.getCaseSheet.caseSheetDetails &&
+              _data.data.getCaseSheet.caseSheetDetails.referralSpecialtyName
+            )
+              setReferralSpecialtyName(
+                _data.data.getCaseSheet.caseSheetDetails.referralSpecialtyName || ''
+              );
+
+            if (
+              _data &&
+              _data.data &&
+              _data.data.getCaseSheet &&
+              _data.data.getCaseSheet.caseSheetDetails &&
+              _data.data.getCaseSheet.caseSheetDetails.referralDescription
+            )
+              setReferralDescription(
+                _data.data.getCaseSheet.caseSheetDetails.referralDescription || ''
+              );
+
+            // patient medical and family history
+            if (
+              _data &&
+              _data.data &&
+              _data.data.getCaseSheet &&
+              _data.data.getCaseSheet.patientDetails &&
+              _data.data.getCaseSheet.patientDetails.patientMedicalHistory
+            ) {
+              setBp(_data.data.getCaseSheet.patientDetails.patientMedicalHistory.bp || '');
+              setDietAllergies(
+                _data.data.getCaseSheet.patientDetails.patientMedicalHistory.dietAllergies || ''
+              );
+              setDrugAllergies(
+                _data.data.getCaseSheet.patientDetails.patientMedicalHistory.drugAllergies || ''
+              );
+              setHeight(_data.data.getCaseSheet.patientDetails.patientMedicalHistory.height || '');
+              setMenstrualHistory(
+                _data.data.getCaseSheet.patientDetails.patientMedicalHistory.menstrualHistory || ''
+              );
+              setPastMedicalHistory(
+                _data.data.getCaseSheet.patientDetails.patientMedicalHistory.pastMedicalHistory ||
+                  ''
+              );
+              setMedicationHistory(
+                _data.data.getCaseSheet.patientDetails.patientMedicalHistory.medicationHistory || ''
+              );
+              setPastSurgicalHistory(
+                _data.data.getCaseSheet.patientDetails.patientMedicalHistory.pastSurgicalHistory ||
+                  ''
+              );
+              setTemperature(
+                _data.data.getCaseSheet.patientDetails.patientMedicalHistory.temperature || ''
+              );
+              setWeight(_data.data.getCaseSheet.patientDetails.patientMedicalHistory.weight || '');
+            }
+
+            const patientFamilyHistory =
+              _data!.data!.getCaseSheet!.patientDetails &&
+              _data!.data!.getCaseSheet!.patientDetails!.familyHistory
+                ? _data!.data!.getCaseSheet!.patientDetails!.familyHistory[0]
+                : null;
+
+            const patientLifeStyle =
+              _data!.data!.getCaseSheet!.patientDetails &&
+              _data!.data!.getCaseSheet!.patientDetails!.lifeStyle
+                ? _data!.data!.getCaseSheet!.patientDetails!.lifeStyle[0]
+                : null;
+
+            setFamilyHistory(
+              patientFamilyHistory && patientFamilyHistory!.description
+                ? patientFamilyHistory!.description
+                : ''
             );
+
+            setLifeStyle(
+              patientLifeStyle && patientLifeStyle!.description ? patientLifeStyle!.description : ''
+            );
+
+            setOccupationHistory(
+              patientLifeStyle && patientLifeStyle!.occupationHistory
+                ? patientLifeStyle!.occupationHistory
+                : ''
+            );
+
+            // set Jrd name and Jrd Casesheet submit date.
+            let jrdFirstName = '',
+              jrdLastName = '';
+            if (
+              _data &&
+              _data.data &&
+              _data.data.getCaseSheet &&
+              _data.data.getCaseSheet.juniorDoctorCaseSheet &&
+              _data.data.getCaseSheet.juniorDoctorCaseSheet.updatedDate
+            ) {
+              setJrdSubmitDate(_data.data.getCaseSheet.juniorDoctorCaseSheet.updatedDate);
+            }
+
+            if (
+              _data &&
+              _data.data &&
+              _data.data.getCaseSheet &&
+              _data.data.getCaseSheet.juniorDoctorCaseSheet &&
+              _data.data.getCaseSheet.juniorDoctorCaseSheet.createdDoctorProfile &&
+              _data.data.getCaseSheet.juniorDoctorCaseSheet.createdDoctorProfile.firstName
+            ) {
+              jrdFirstName =
+                _data.data.getCaseSheet.juniorDoctorCaseSheet.createdDoctorProfile.firstName;
+            }
+
+            if (
+              _data &&
+              _data.data &&
+              _data.data.getCaseSheet &&
+              _data.data.getCaseSheet.juniorDoctorCaseSheet &&
+              _data.data.getCaseSheet.juniorDoctorCaseSheet.createdDoctorProfile &&
+              _data.data.getCaseSheet.juniorDoctorCaseSheet.createdDoctorProfile.lastName
+            ) {
+              jrdLastName =
+                _data.data.getCaseSheet.juniorDoctorCaseSheet.createdDoctorProfile.lastName;
+            }
+            setJrdName(`${jrdFirstName} ${jrdLastName}`);
+            if (
+              _data &&
+              _data.data &&
+              _data.data.getCaseSheet &&
+              _data.data.getCaseSheet.juniorDoctorCaseSheet &&
+              _data.data.getCaseSheet.juniorDoctorCaseSheet.updatedDate
+            ) {
+              setJrdSubmitDate(_data.data.getCaseSheet.juniorDoctorCaseSheet.updatedDate);
+            }
+            // -------------------------------------------------------------- //
+            navigator.mediaDevices
+              .getUserMedia({ audio: true, video: false })
+              .then((stream) => {
+                console.log('Got stream', stream);
+                setCameraMicPermission(true);
+              })
+              .catch((err) => {
+                setCameraMicPermission(false);
+                console.log('GUM failed with error', err);
+              });
+            // -------------------------------------------------------------- //
           }
-
-          if (
-            _data.data &&
-            _data.data.getCaseSheet &&
-            _data.data.getCaseSheet.caseSheetDetails &&
-            _data.data.getCaseSheet.caseSheetDetails.updatedDate
-          ) {
-            setUpdatedDate(_data.data.getCaseSheet.caseSheetDetails.updatedDate);
-          }
-
-          // Refferal
-          if (
-            _data &&
-            _data.data &&
-            _data.data.getCaseSheet &&
-            _data.data.getCaseSheet.caseSheetDetails &&
-            _data.data.getCaseSheet.caseSheetDetails.referralSpecialtyName
-          )
-            setReferralSpecialtyName(
-              _data.data.getCaseSheet.caseSheetDetails.referralSpecialtyName || ''
-            );
-
-          if (
-            _data &&
-            _data.data &&
-            _data.data.getCaseSheet &&
-            _data.data.getCaseSheet.caseSheetDetails &&
-            _data.data.getCaseSheet.caseSheetDetails.referralDescription
-          )
-            setReferralDescription(
-              _data.data.getCaseSheet.caseSheetDetails.referralDescription || ''
-            );
-
-          // patient medical and family history
-          if (
-            _data &&
-            _data.data &&
-            _data.data.getCaseSheet &&
-            _data.data.getCaseSheet.patientDetails &&
-            _data.data.getCaseSheet.patientDetails.patientMedicalHistory
-          ) {
-            setBp(_data.data.getCaseSheet.patientDetails.patientMedicalHistory.bp || '');
-            setDietAllergies(
-              _data.data.getCaseSheet.patientDetails.patientMedicalHistory.dietAllergies || ''
-            );
-            setDrugAllergies(
-              _data.data.getCaseSheet.patientDetails.patientMedicalHistory.drugAllergies || ''
-            );
-            setHeight(_data.data.getCaseSheet.patientDetails.patientMedicalHistory.height || '');
-            setMenstrualHistory(
-              _data.data.getCaseSheet.patientDetails.patientMedicalHistory.menstrualHistory || ''
-            );
-            setPastMedicalHistory(
-              _data.data.getCaseSheet.patientDetails.patientMedicalHistory.pastMedicalHistory || ''
-            );
-            setMedicationHistory(
-              _data.data.getCaseSheet.patientDetails.patientMedicalHistory.medicationHistory || ''
-            );
-            setPastSurgicalHistory(
-              _data.data.getCaseSheet.patientDetails.patientMedicalHistory.pastSurgicalHistory || ''
-            );
-            setTemperature(
-              _data.data.getCaseSheet.patientDetails.patientMedicalHistory.temperature || ''
-            );
-            setWeight(_data.data.getCaseSheet.patientDetails.patientMedicalHistory.weight || '');
-          }
-
-          const patientFamilyHistory =
-            _data!.data!.getCaseSheet!.patientDetails &&
-            _data!.data!.getCaseSheet!.patientDetails!.familyHistory
-              ? _data!.data!.getCaseSheet!.patientDetails!.familyHistory[0]
-              : null;
-
-          const patientLifeStyle =
-            _data!.data!.getCaseSheet!.patientDetails &&
-            _data!.data!.getCaseSheet!.patientDetails!.lifeStyle
-              ? _data!.data!.getCaseSheet!.patientDetails!.lifeStyle[0]
-              : null;
-
-          setFamilyHistory(
-            patientFamilyHistory && patientFamilyHistory!.description
-              ? patientFamilyHistory!.description
-              : ''
-          );
-
-          setLifeStyle(
-            patientLifeStyle && patientLifeStyle!.description ? patientLifeStyle!.description : ''
-          );
-
-          setOccupationHistory(
-            patientLifeStyle && patientLifeStyle!.occupationHistory
-              ? patientLifeStyle!.occupationHistory
-              : ''
-          );
-
-          // set Jrd name and Jrd Casesheet submit date.
-          let jrdFirstName = '',
-            jrdLastName = '';
-          if (
-            _data &&
-            _data.data &&
-            _data.data.getCaseSheet &&
-            _data.data.getCaseSheet.juniorDoctorCaseSheet &&
-            _data.data.getCaseSheet.juniorDoctorCaseSheet.updatedDate
-          ) {
-            setJrdSubmitDate(_data.data.getCaseSheet.juniorDoctorCaseSheet.updatedDate);
-          }
-
-          if (
-            _data &&
-            _data.data &&
-            _data.data.getCaseSheet &&
-            _data.data.getCaseSheet.juniorDoctorCaseSheet &&
-            _data.data.getCaseSheet.juniorDoctorCaseSheet.createdDoctorProfile &&
-            _data.data.getCaseSheet.juniorDoctorCaseSheet.createdDoctorProfile.firstName
-          ) {
-            jrdFirstName =
-              _data.data.getCaseSheet.juniorDoctorCaseSheet.createdDoctorProfile.firstName;
-          }
-
-          if (
-            _data &&
-            _data.data &&
-            _data.data.getCaseSheet &&
-            _data.data.getCaseSheet.juniorDoctorCaseSheet &&
-            _data.data.getCaseSheet.juniorDoctorCaseSheet.createdDoctorProfile &&
-            _data.data.getCaseSheet.juniorDoctorCaseSheet.createdDoctorProfile.lastName
-          ) {
-            jrdLastName =
-              _data.data.getCaseSheet.juniorDoctorCaseSheet.createdDoctorProfile.lastName;
-          }
-          setJrdName(`${jrdFirstName} ${jrdLastName}`);
-          if (
-            _data &&
-            _data.data &&
-            _data.data.getCaseSheet &&
-            _data.data.getCaseSheet.juniorDoctorCaseSheet &&
-            _data.data.getCaseSheet.juniorDoctorCaseSheet.updatedDate
-          ) {
-            setJrdSubmitDate(_data.data.getCaseSheet.juniorDoctorCaseSheet.updatedDate);
-          }
-          // -------------------------------------------------------------- //
-          navigator.mediaDevices
-            .getUserMedia({ audio: true, video: false })
-            .then((stream) => {
-              console.log('Got stream', stream);
-              setCameraMicPermission(true);
-            })
-            .catch((err) => {
-              setCameraMicPermission(false);
-              console.log('GUM failed with error', err);
-            });
-          // -------------------------------------------------------------- //
-          }
-          
         })
         .catch((error: ApolloError) => {
           const networkErrorMessage = error.networkError ? error.networkError.message : null;
@@ -1675,7 +1683,7 @@ export const ConsultTabs: React.FC = () => {
       )}
 
       {error && error !== '' && <Typography className={classes.tabRoot}>{error}</Typography>}
-      {loaded && error === '' && isUnauthorized && (<Unauthorized />)}
+      {loaded && error === '' && isUnauthorized && <Unauthorized />}
       {loaded && error === '' && !isUnauthorized && (
         <CaseSheetContext.Provider
           value={{
@@ -1773,7 +1781,7 @@ export const ConsultTabs: React.FC = () => {
             setOccupationHistory,
             updatedDate,
             setUpdatedDate,
-            casesheetVersion
+            casesheetVersion,
           }}
         >
           <Scrollbars
