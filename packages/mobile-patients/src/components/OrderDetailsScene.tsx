@@ -1470,7 +1470,9 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
                     onPress: () => {
                       Linking.openURL(
                         AppConfig.Configuration.MED_ORDERS_CUSTOMER_CARE_WHATSAPP_LINK
-                      ).catch((err) => console.error('An error occurred', err));
+                      ).catch((err) =>
+                        CommonBugFender(`${AppRoutes.OrderDetailsScene}_Linking.openURL`, err)
+                      );
                       hideAphAlert!();
                     },
                   },

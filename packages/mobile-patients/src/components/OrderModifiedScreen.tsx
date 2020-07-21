@@ -14,6 +14,8 @@ import { NavigationScreenProps } from 'react-navigation';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 
 const styles = StyleSheet.create({
   orderIDViewStyle: {
@@ -392,7 +394,9 @@ export const OrderModifiedScreen: React.FC<OrderModifiedScreenProps> = (props) =
         onPress={() => {
           Linking.openURL(
             AppConfig.Configuration.MED_ORDERS_CUSTOMER_CARE_WHATSAPP_LINK
-          ).catch((err) => console.error('An error occurred', err));
+          ).catch((err) =>
+            CommonBugFender(`${AppRoutes.OrderModifiedScreen}_Linking.openURL`, err)
+          );
         }}
       >
         <Text
