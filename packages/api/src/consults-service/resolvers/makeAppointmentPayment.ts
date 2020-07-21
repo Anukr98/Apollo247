@@ -376,6 +376,8 @@ const makeAppointmentPayment: Resolver<
         userType: APPOINTMENT_UPDATED_BY.PATIENT,
         fromValue: currentStatus,
         toValue: STATUS.PENDING,
+        fromState: processingAppointment.appointmentState,
+        toState: processingAppointment.appointmentState,
         valueType: VALUE_TYPE.STATUS,
         userName: processingAppointment.patientId,
         reason: ApiConstants.APPOINTMENT_AUTO_SUBMIT_HISTORY.toString(),
@@ -388,6 +390,8 @@ const makeAppointmentPayment: Resolver<
         fromValue: currentStatus,
         toValue: STATUS.PENDING,
         valueType: VALUE_TYPE.STATUS,
+        fromState: processingAppointment.appointmentState,
+        toState: processingAppointment.appointmentState,
         userName: processingAppointment.patientId,
         reason: ApiConstants.BOOK_APPOINTMENT_HISTORY_REASON.toString(),
       };
@@ -399,6 +403,8 @@ const makeAppointmentPayment: Resolver<
       userType: APPOINTMENT_UPDATED_BY.PATIENT,
       fromValue: STATUS.PAYMENT_PENDING,
       toValue: STATUS.PAYMENT_FAILED,
+      fromState: processingAppointment.appointmentState,
+      toState: processingAppointment.appointmentState,
       valueType: VALUE_TYPE.STATUS,
       userName: processingAppointment.patientId,
     };
@@ -424,6 +430,8 @@ const makeAppointmentPayment: Resolver<
           userType: APPOINTMENT_UPDATED_BY.PATIENT,
           fromValue: STATUS.PAYMENT_PENDING,
           toValue: STATUS.PAYMENT_PENDING_PG,
+          fromState: processingAppointment.appointmentState,
+          toState: processingAppointment.appointmentState,
           valueType: VALUE_TYPE.STATUS,
           userName: processingAppointment.patientId,
         };

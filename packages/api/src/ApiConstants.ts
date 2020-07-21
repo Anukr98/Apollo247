@@ -167,6 +167,9 @@ export enum ApiConstants {
   CASESHEET_CREATED_HISTORY = 'casesheet created',
   APPT_SESSION_HISTORY = 'session created',
   APPT_SESSION_COMPLETE_HISTORY = 'session completed',
+  APPT_STATE_CHANGED_1 = 'Appointment state changed to AWAITING_RESCHEDULE',
+  APPT_STATE_CHANGED_2 = 'Appointment state changed to RESCHEDULED',
+  APPT_STATE_CHANGED_3 = 'Appointment cancelled due to max. reschedules',
 
   /*** push-notification messages end here ***/
 

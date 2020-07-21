@@ -1053,6 +1053,8 @@ const createJuniorDoctorCaseSheet: Resolver<
     fromValue: appointmentData.status,
     toValue: appointmentData.status,
     valueType: VALUE_TYPE.STATUS,
+    fromState: appointmentData.appointmentState,
+    toState: appointmentData.appointmentState,
     userName: doctorData.id,
     reason: 'JD ' + ApiConstants.CASESHEET_CREATED_HISTORY.toString() + ', ' + doctorData.id,
   };
@@ -1107,6 +1109,8 @@ const createSeniorDoctorCaseSheet: Resolver<
       fromValue: appointmentData.status,
       toValue: appointmentData.status,
       valueType: VALUE_TYPE.STATUS,
+      fromState: appointmentData.appointmentState,
+      toState: appointmentData.appointmentState,
       userName: appointmentData.doctorId,
       reason:
         'SD ' + ApiConstants.CASESHEET_CREATED_HISTORY.toString() + ', ' + appointmentData.doctorId,
@@ -1147,6 +1151,8 @@ const createSeniorDoctorCaseSheet: Resolver<
       fromValue: appointmentData.status,
       toValue: appointmentData.status,
       valueType: VALUE_TYPE.STATUS,
+      fromState: appointmentData.appointmentState,
+      toState: appointmentData.appointmentState,
       userName: appointmentData.doctorId,
       reason: 'SD ' + ApiConstants.CASESHEET_CREATED_HISTORY.toString() + ', ' + doctorData.id,
     };
@@ -1185,6 +1191,8 @@ const submitJDCaseSheet: Resolver<
       fromValue: appointmentData.status,
       toValue: appointmentData.status,
       valueType: VALUE_TYPE.STATUS,
+      fromState: appointmentData.appointmentState,
+      toState: appointmentData.appointmentState,
       userName: juniorDoctorcaseSheet.createdDoctorId,
       reason: ApiConstants.JD_CASESHEET_COMPLETED_HISTORY.toString(),
     };
@@ -1241,6 +1249,8 @@ const submitJDCaseSheet: Resolver<
     fromValue: appointmentData.status,
     toValue: appointmentData.status,
     valueType: VALUE_TYPE.STATUS,
+    fromState: appointmentData.appointmentState,
+    toState: appointmentData.appointmentState,
     userName: virtualJDId,
     reason: 'Virtaul JD ' + ApiConstants.CASESHEET_COMPLETED_HISTORY.toString(),
   };
@@ -1356,6 +1366,8 @@ const updatePatientPrescriptionSentStatus: Resolver<
       fromValue: appointment.status,
       toValue: appointment.status,
       valueType: VALUE_TYPE.STATUS,
+      fromState: appointment.appointmentState,
+      toState: appointment.appointmentState,
       userName: appointment.patientId,
       reason: ApiConstants.CASESHEET_COMPLETED_HISTORY.toString(),
     };

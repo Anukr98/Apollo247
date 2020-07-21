@@ -227,6 +227,8 @@ const createJuniorAppointmentSession: Resolver<
     fromValue: STATUS.PENDING,
     toValue: STATUS.PENDING,
     valueType: VALUE_TYPE.STATUS,
+    fromState: apptDetails.appointmentState,
+    toState: apptDetails.appointmentState,
     userName: apptDetails.doctorId,
     reason: 'JD ' + ApiConstants.APPT_SESSION_HISTORY.toString(),
   };
@@ -427,6 +429,8 @@ const createAppointmentSession: Resolver<
     fromValue: STATUS.PENDING,
     toValue: STATUS.IN_PROGRESS,
     valueType: VALUE_TYPE.STATUS,
+    fromState: apptDetails.appointmentState,
+    toState: apptDetails.appointmentState,
     userName: apptDetails.doctorId,
     reason: 'SD ' + ApiConstants.APPT_SESSION_HISTORY.toString(),
   };
@@ -515,6 +519,8 @@ const endAppointmentSession: Resolver<
     fromValue: apptDetails.status,
     toValue: endAppointmentSessionInput.status,
     valueType: VALUE_TYPE.STATUS,
+    fromState: apptDetails.appointmentState,
+    toState: apptDetails.appointmentState,
     userName: apptDetails.doctorId,
     reason: 'SD ' + ApiConstants.APPT_SESSION_COMPLETE_HISTORY.toString(),
   };
