@@ -623,6 +623,15 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           '',
           `Your order is ready for pickup at your selected ${addressData}`,
         ],
+        [MEDICINE_ORDER_STATUS.DELIVERED]: [
+          '',
+          `In case of any concerns or feedback related to your order, please speak with our customer care executives on the official WhatsApp channel (during business hours 9 AM - 8:30 PM)\nhttps://bit.ly/apollo247Medicines`,
+          () => {
+            Linking.openURL('https://bit.ly/apollo247Medicines').catch((err) =>
+              CommonBugFender(`${AppRoutes.OrderDetailsScene}_getOrderDescription`, err)
+            );
+          },
+        ],
         [MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY]: [
           '',
           `Your order has been picked up from our store!`,
@@ -639,6 +648,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         ? {
             heading: g(orderStatusDescMapping, status as any, '0'),
             description: g(orderStatusDescMapping, status as any, '1'),
+            onPress: g(orderStatusDescMapping, status as any, '2'),
           }
         : null;
     };
