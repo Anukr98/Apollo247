@@ -265,8 +265,13 @@ const getPatientPersonalizedAppointments: Resolver<
   const MAX_DAYS_PAST_CONSULT: number = 30;
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
   const doctorFacilityRepo = doctorsDb.getCustomRepository(DoctorHospitalRepository);
-
   const apptRepo = consultsDb.getCustomRepository(AppointmentRepository);
+
+  let uhid = args.patientUhid;
+
+  if (uhid == '' || uhid == null) {
+    throw new AphError(AphErrorMessages.INVALID_UHID, undefined, {});
+  }
   const patientDetails = await patientRepo.findByUhid(args.patientUhid);
   if (!patientDetails) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
@@ -275,7 +280,6 @@ const getPatientPersonalizedAppointments: Resolver<
     throw new AphError(AphErrorMessages.INVALID_PATIENT_DETAILS, undefined, {});
   }
 
-  let uhid = args.patientUhid;
   const offlineApptsResponse = await getOfflineAppointmentsFromPrism(uhid);
   let apptDetails: any = {};
 

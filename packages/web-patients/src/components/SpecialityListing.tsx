@@ -31,6 +31,7 @@ import { WhyApollo } from 'components/Doctors/WhyApollo';
 import { HowItWorks } from './Doctors/HowItWorks';
 import { ManageProfile } from 'components/ManageProfile';
 import { Relation } from 'graphql/types/globalTypes';
+import { MetaTagsComp } from 'MetaTagsComp';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -695,8 +696,16 @@ export const SpecialityListing: React.FC = (props) => {
     }
   }, [searchKeyword, selectedCity]);
 
+  const metaTagProps = {
+    title: 'Best Specialist Doctors Online - Consult within 15 mins - via Video Call/ Audio / Chat',
+    description:
+      'Online doctor consultation in 15 mins with 1000+ Top Specialist Doctors. Video Call or Chat with a Doctor from 100+ Specialties including General Physicians, Pediatricians, Dermatologists, Gynaecologists & more.',
+    canonicalLink: window && window.location && window.location.href,
+  };
+
   return (
     <div className={classes.slContainer}>
+      <MetaTagsComp {...metaTagProps} />
       <Header />
       <div className={classes.container}>
         <div className={`${classes.slContent} ${currentPatient ? classes.slCotent1 : ''}`}>
@@ -722,7 +731,7 @@ export const SpecialityListing: React.FC = (props) => {
               <Grid item xs={12} md={8}>
                 <div className={classes.specialityContent}>
                   <div className={classes.sHeader}>
-                    <Typography component="h1">Book Doctor Appointments Online</Typography>
+                    <Typography component="h1">Online Doctor Consultation</Typography>
                   </div>
                   <SpecialtySearch
                     setSearchKeyword={setSearchKeyword}

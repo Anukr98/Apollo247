@@ -4,14 +4,14 @@ import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { AppointmentRefundsRepository } from 'consults-service/repositories/appointmentRefundsRepository';
 import {
   REFUND_STATUS,
+  PAYTM_STATUS,
   AppointmentRefunds,
   AppointmentPayments,
   Appointment,
 } from 'consults-service/entities/index';
 
-import { PAYTM_STATUS } from 'consults-service/entities';
 import { log } from 'customWinstonLogger';
-import { genchecksumbystring } from './paytmLib/checksum.js';
+import { genchecksumbystring } from 'lib/paytmLib/checksum.js';
 
 type RefundInput = {
   refundAmount: number;

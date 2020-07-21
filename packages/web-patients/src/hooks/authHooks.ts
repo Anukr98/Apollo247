@@ -103,7 +103,7 @@ export const useAllCurrentPatients = () => {
         }
         setCurrentPatientId(currentUserId);
       }
-    } 
+    }
   }, [allCurrentPatients, currentPatientId, setCurrentPatientId]);
 
   return {

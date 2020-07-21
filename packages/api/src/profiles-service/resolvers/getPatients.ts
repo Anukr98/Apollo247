@@ -1,17 +1,17 @@
 import gql from 'graphql-tag';
-import _ from 'lodash';
+//import _ from 'lodash';
 import { Resolver } from 'api-gateway';
 import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
 import { Patient, Gender, Relation } from 'profiles-service/entities';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
-import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
+//import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import {
   sendPatientRegistrationNotification,
   sendNotificationWhatsapp,
 } from 'notifications-service/resolvers/notifications';
-import { ApiConstants } from 'ApiConstants';
+import { ApiConstants, PATIENT_REPO_RELATIONS } from 'ApiConstants';
 
 export const getPatientTypeDefs = gql`
   type PatientInfo {
@@ -53,6 +53,8 @@ export const getPatientTypeDefs = gql`
   type UpdateWhatsAppStatusResult {
     status: Boolean
   }
+
+
   extend type Query {
     getPatientById(patientId: String): PatientInfo
     getAthsToken(patientId: String): PatientInfo
@@ -70,7 +72,7 @@ export const getPatientTypeDefs = gql`
       patientId: String
     ): UpdateWhatsAppStatusResult!
   }
-`;
+`
 
 type PatientProfileInput = {
   firstName: string;
@@ -121,7 +123,14 @@ const getPatientById: Resolver<
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
   const patientData = await patientRepo.checkMobileIdInfo(mobileNumber, '', args.patientId);
   if (!patientData) throw new AphError(AphErrorMessages.INVALID_PATIENT_DETAILS);
-  const patient = await patientRepo.findById(args.patientId);
+
+  const patient = await patientRepo.findByIdWithRelations(args.patientId, [
+    PATIENT_REPO_RELATIONS.PATIENT_ADDRESS,
+    PATIENT_REPO_RELATIONS.FAMILY_HISTORY,
+    PATIENT_REPO_RELATIONS.LIFESTYLE,
+    PATIENT_REPO_RELATIONS.PATIENT_MEDICAL_HISTORY
+  ]);
+
   if (!patient) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
@@ -142,7 +151,7 @@ const getPatientByMobileNumber: Resolver<
   if (!patients) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_DETAILS, undefined, {});
   }
-  const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
+  /*const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
   let appointmentList = [];
 
   for (let i = 0; i < patients.length; i++) {
@@ -167,8 +176,8 @@ const getPatientByMobileNumber: Resolver<
     }
     patientResult.push(objResult);
   }
-
-  return { patients: patientResult };
+  return { patients: patientResult };*/
+  return { patients };
 };
 
 const addNewProfile: Resolver<
@@ -184,7 +193,14 @@ const addNewProfile: Resolver<
   const savePatient = await patientRepo.saveNewProfile(patientProfileInput);
   await patientRepo.createNewUhid(savePatient.id);
   patientRepo.createAthsToken(savePatient.id);
-  const patient = await patientRepo.getPatientDetails(savePatient.id);
+
+  const patient = await patientRepo.findByIdWithRelations(savePatient.id, [
+    PATIENT_REPO_RELATIONS.PATIENT_ADDRESS,
+    PATIENT_REPO_RELATIONS.FAMILY_HISTORY,
+    PATIENT_REPO_RELATIONS.LIFESTYLE,
+    PATIENT_REPO_RELATIONS.PATIENT_MEDICAL_HISTORY
+  ]);
+
   if (!patient || patient == null) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_DETAILS, undefined, {});
   }
@@ -204,10 +220,12 @@ const editProfile: Resolver<
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
   const patientId = editProfileInput.id;
   delete editProfileInput.id;
+
   await patientRepo.updateProfile(patientId, editProfileInput);
-  const patient = await patientRepo.findById(patientId);
+  const patient = await patientRepo.getPatientDetails(patientId);
+
   if (patient == null) throw new AphError(AphErrorMessages.UPDATE_PROFILE_ERROR, undefined, {});
-  return { patient };
+  return { patient }
 };
 
 const deleteProfile: Resolver<
@@ -217,8 +235,9 @@ const deleteProfile: Resolver<
   DeleteProfileResult
 > = async (parent, args, { profilesDb }) => {
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
-  const patient = await patientRepo.findById(args.patientId);
+  const patient = await patientRepo.getPatientDetails(args.patientId);
   if (patient == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
+
   await patientRepo.deleteProfile(args.patientId);
   return { status: true };
 };
@@ -250,7 +269,8 @@ const updateWhatsAppStatus: Resolver<
     args.whatsAppConsult,
     args.whatsAppMedicine
   );
-  const patientDetails = await patientRepo.findById(args.patientId);
+  const patientDetails = await patientRepo.getPatientDetails(args.patientId);
+
   const mobileNumber = patientDetails ? patientDetails.mobileNumber : '';
   if (args.whatsAppConsult === true || args.whatsAppMedicine === true) {
     sendNotificationWhatsapp(mobileNumber, '', 0);
@@ -284,17 +304,20 @@ const getAthsToken: Resolver<
   PatientInfo
 > = async (parent, args, { profilesDb }) => {
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
-  const patientDetails = await patientRepo.findById(args.patientId);
-  if (!patientDetails) {
-    throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
-  }
-  if (patientDetails.athsToken == '' || patientDetails.athsToken == null) {
-    await patientRepo.createAthsToken(patientDetails.id);
-  }
-  const patient = await patientRepo.findById(args.patientId);
+  const patient = await patientRepo.findByIdWithRelations(args.patientId, [
+    PATIENT_REPO_RELATIONS.PATIENT_ADDRESS,
+    PATIENT_REPO_RELATIONS.FAMILY_HISTORY,
+    PATIENT_REPO_RELATIONS.LIFESTYLE,
+    PATIENT_REPO_RELATIONS.PATIENT_MEDICAL_HISTORY
+  ]);
   if (!patient) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
+
+  if (patient.athsToken == '' || patient.athsToken == null) {
+    await patientRepo.createAthsToken(patient.id);
+  }
+
   return { patient };
 };
 

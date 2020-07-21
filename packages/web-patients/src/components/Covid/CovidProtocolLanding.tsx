@@ -15,8 +15,8 @@ import { NavigationBottom } from 'components/NavigationBottom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { Banner } from 'components/Covid/Banner';
 import { CheckRiskLevel } from 'components/Covid/CheckRiskLevel';
+import { useAllCurrentPatients } from 'hooks/authHooks';
 
-import { useParams } from '../../hooks/routerHooks';
 import fetchUtil from 'helpers/fetch';
 
 interface CovidProtocolData {
@@ -140,8 +140,8 @@ const useStyles = makeStyles((theme: Theme) => {
       margin: '0 !important',
       minHeight: 'auto !important',
       '& img': {
-        margin: '0 20px 0 0',
-        maxWidth: 24,
+        margin: '0 10px 0 0',
+        maxWidth: 50,
       },
     },
 
@@ -158,6 +158,7 @@ const useStyles = makeStyles((theme: Theme) => {
       '& p': {
         fontSize: 16,
         margin: '0 0 10px',
+        padding: '0 12px',
         '&:last-child': {
           margin: 0,
         },
@@ -172,7 +173,7 @@ const useStyles = makeStyles((theme: Theme) => {
     cdList: {
       padding: '0 0 0 25px',
       margin: 0,
-      height: 100,
+      height: 75,
       overflow: 'hidden',
       transition: '0.5s ease',
       '& li': {
@@ -196,40 +197,35 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 export const covidProtocolLanding: React.FC = (props: any) => {
   const classes = useStyles({});
-  // const isDesktopOnly = useMediaQuery('(min-width:768px)');
-  const [expanded, setExpanded] = React.useState<string | false>(false);
-  const [seemore, setSeemore] = React.useState<boolean>(false);
+  const [seemore, setSeemore] = React.useState<string>('');
   const [isLoading, setIsLoading] = React.useState<boolean>(true);
   const [symptomData, setSymptomData] = React.useState<CovidProtocolData>(null);
-  // const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
-  // const onePrimaryUser =
-  //   allCurrentPatients && allCurrentPatients.filter((x) => x.relation === Relation.ME).length === 1;
   const scrollToRef = useRef<HTMLDivElement>(null);
-
-  const params = useParams<{
-    symptom: string;
-  }>();
+  const { currentPatient } = useAllCurrentPatients();
 
   useEffect(() => {
     scrollToRef &&
       scrollToRef.current &&
       scrollToRef.current.scrollIntoView({ behavior: 'smooth' });
   }, []);
+  const covidProtocolUrl =
+    process.env.COVID_PROTOCOL_URL || 'https://uatcms.apollo247.com/api/phrcovid-protocol';
 
   useEffect(() => {
-    if (isLoading) {
-      fetchUtil(process.env.COVID_PROTOCOL_URL + '/covid-diabetes', 'GET', {}, '', true)
+    if (isLoading && currentPatient && currentPatient.uhid) {
+      fetchUtil(covidProtocolUrl + '/' + currentPatient.uhid, 'GET', {}, '', true)
         .then((res: any) => {
           if (res && res.success) {
             setSymptomData(res.data);
           } else {
+            setSymptomData(null);
           }
         })
         .finally(() => {
           setIsLoading(false);
         });
     }
-  }, []);
+  }, [currentPatient]);
 
   useEffect(() => {
     if (props && props.location && props.location.search && props.location.search.length) {
@@ -241,9 +237,6 @@ export const covidProtocolLanding: React.FC = (props: any) => {
     }
   }, []);
 
-  const handleChange = (panel: string) => (event: React.ChangeEvent<{}>, isExpanded: boolean) => {
-    setExpanded(isExpanded ? panel : false);
-  };
   const [isWebView, setIsWebView] = useState<boolean>(false);
   return (
     <div className={classes.cdLanding} ref={scrollToRef}>
@@ -251,32 +244,31 @@ export const covidProtocolLanding: React.FC = (props: any) => {
       <div className={classes.container}>
         <div className={classes.cdContent}>
           <Banner isWebView={isWebView} backLocation={clientRoutes.covidLanding()} />
-          {isLoading ? (
+          {isLoading && !symptomData ? (
             <div className={classes.loader}>
               <CircularProgress size={22} color="secondary" />
             </div>
           ) : (
             <>
               <div className={classes.cdIntro}>
-                <Typography component="h4">{symptomData.introductionTitle}</Typography>
+                <Typography component="h4">
+                  {symptomData && symptomData.introductionTitle}
+                </Typography>
                 <Typography>
                   <div
-                    // className={classes.htmlContent}
-                    dangerouslySetInnerHTML={{ __html: symptomData.introductionBody }}
+                    dangerouslySetInnerHTML={{
+                      __html: symptomData && symptomData.introductionBody,
+                    }}
                   />
                 </Typography>
               </div>
 
               <div className={` ${classes.expansionContainer} `}>
                 {// eslint-disable-next-line @typescript-eslint/no-explicit-any
-                symptomData[params.symptom] &&
-                  symptomData[params.symptom].map((item: any, index: number) => {
+                symptomData['covidProtocolData'] &&
+                  symptomData['covidProtocolData'].map((item: any, index: number) => {
                     return (
-                      <ExpansionPanel
-                        expanded={true}
-                        onChange={handleChange(`panel${index + 1}`)}
-                        className={classes.panelRoot}
-                      >
+                      <ExpansionPanel defaultExpanded className={classes.panelRoot}>
                         <ExpansionPanelSummary
                           expandIcon={<ExpandMoreIcon />}
                           classes={{
@@ -287,25 +279,31 @@ export const covidProtocolLanding: React.FC = (props: any) => {
                           }}
                         >
                           <img src={item.iconImage} />
-                          <Typography className={classes.panelHeading}>{item.category}</Typography>
+                          <Typography className={classes.panelHeading}>{item.title}</Typography>
                         </ExpansionPanelSummary>
                         <ExpansionPanelDetails className={classes.panelDetails}>
                           <div className={classes.detailsContent}>
-                            {item.bodyContent && <div>{item.bodyContent}</div>}
-                            <ul
-                              className={`${classes.cdList} ${seemore ? classes.heightAuto : ''}`}
-                            >
-                              {item.bodyContentList &&
-                                item.bodyContentList.map((text: string) => <li>{text}</li>)}
-                            </ul>
-
-                            <a
-                              href="javascript:void(0);"
-                              className={classes.seemore}
-                              onClick={() => setSeemore(!seemore)}
-                            >
-                              {seemore ? <span>See Less</span> : <span>See More</span>}
-                            </a>
+                            {item.bodyContent && <p>{item.bodyContent}</p>}
+                            {item && item.bodyContentList && (
+                              <ul>
+                                {item.bodyContentList && seemore === item.id
+                                  ? item.bodyContentList.map((text: string) => {
+                                      return <li>{text}</li>;
+                                    })
+                                  : item.bodyContentList.slice(0, 2).map((text: string) => {
+                                      return <li>{text}</li>;
+                                    })}
+                              </ul>
+                            )}
+                            {item && item.bodyContentList && (
+                              <a href="javascript:void(0);" className={classes.seemore}>
+                                {seemore === item.id ? (
+                                  <span onClick={() => setSeemore('')}>See Less</span>
+                                ) : (
+                                  <span onClick={() => setSeemore(item.id)}>See More</span>
+                                )}
+                              </a>
+                            )}
                           </div>
                         </ExpansionPanelDetails>
                       </ExpansionPanel>

@@ -16,6 +16,12 @@ export class PatientFeedbackRepository extends Repository<PatientFeedback> {
       });
   }
 
+  getFeedbackRecord(patient: string, transactionId: string) {
+    return this.find({
+      where: { patient, transactionId },
+    });
+  }
+
   getFeedbackByDate(feedbackDate: Date, feedbackType: FEEDBACKTYPE) {
     const inputDate = format(feedbackDate, 'yyyy-MM-dd');
     const endDate = new Date(inputDate + 'T18:29');

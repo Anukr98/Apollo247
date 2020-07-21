@@ -14,6 +14,7 @@ const Alert = (props: AlertProps) => {
         vertical: 'bottom',
         horizontal: 'left',
       }}
+      style={{zIndex: 999999}}
       open={Boolean(props.error)}
       autoHideDuration={6000}
       onClose={props.onClose}

@@ -696,6 +696,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
                         prescriptionRequired: medicineDetails.is_prescription_required == '1',
                         isMedicine: (medicineDetails.type_id || '').toLowerCase() == 'pharma',
                         thumbnail: medicineDetails.thumbnail || medicineDetails.image,
+                        maxOrderQty: medicineDetails.MaxOrderQty,
                       } as ShoppingCartItem;
                     })
                     .filter((item) => item) as ShoppingCartItem[];
@@ -861,7 +862,9 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
         .android.setChannelId('fcm_FirebaseNotifiction_default_channel') // e.g. the id you chose above
         .android.setSmallIcon('@drawable/ic_notification_white') // create this icon in Android Studio
         .android.setColor('#fcb716') // you can set a color here
-        .android.setPriority(firebase.notifications.Android.Priority.Max);
+        .android.setPriority(firebase.notifications.Android.Priority.Max)
+        .android.setAutoCancel(true)
+        .android.setBigText(notification.body, notification.title);
       firebase
         .notifications()
         .displayNotification(localNotification)

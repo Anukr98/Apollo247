@@ -139,7 +139,7 @@ const savePatientFamilyHistory: Resolver<
   AddPatientFamilyHistoryResult
 > = async (parent, { patientFamilyHistoryInput }, { profilesDb }) => {
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
-  const patientDetails = await patientRepo.findById(patientFamilyHistoryInput.patientId);
+  const patientDetails = await patientRepo.getPatientDetails(patientFamilyHistoryInput.patientId);
   if (!patientDetails) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }

@@ -3,8 +3,7 @@ import { makeStyles, createStyles } from '@material-ui/styles';
 import { Theme, CircularProgress, Modal } from '@material-ui/core';
 import { AphButton } from '@aph/web-ui-components';
 import { GetDoctorDetailsById_getDoctorDetailsById as DoctorDetails } from 'graphql/types/GetDoctorDetailsById';
-import moment from 'moment';
-import { getDiffInDays, getDiffInMinutes, getDiffInHours } from 'helpers/commonHelpers';
+import { getDiffInMinutes, getAvailability } from 'helpers/commonHelpers';
 import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
 import { useAuth } from 'hooks/authHooks';
 import { BookConsult } from 'components/BookConsult';
@@ -13,6 +12,7 @@ import { SaveSearch, SaveSearchVariables } from 'graphql/types/SaveSearch';
 import { useMutation } from 'react-apollo-hooks';
 import { SAVE_PATIENT_SEARCH } from 'graphql/pastsearches';
 import { useAllCurrentPatients } from 'hooks/authHooks';
+import useMediaQuery from '@material-ui/core/useMediaQuery';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -34,12 +34,16 @@ const useStyles = makeStyles((theme: Theme) => {
         fontWeight: 600,
         paddingBottom: 20,
       },
-      '& ul': {
-        paddingLeft: 20,
-      },
     },
     tabButtons: {
+      margin: '0 -6px',
+      padding: 0,
+      listStyle: 'none',
       display: 'flex',
+      alignItems: 'center',
+      '& li': {
+        padding: '0 6px',
+      },
     },
     button: {
       fontSize: 12,
@@ -52,17 +56,12 @@ const useStyles = makeStyles((theme: Theme) => {
       border: '1px solid #f7f8f5',
       minWidth: 135,
       textAlign: 'left',
-      marginRight: 12,
+
       height: 130,
       '&:hover': {
         backgroundColor: '#f7f8f5',
       },
-      '&:last-child': {
-        marginRight: 0,
-        [theme.breakpoints.up('sm')]: {
-          marginLeft: 'auto',
-        },
-      },
+
       '& span': {
         display: 'block',
       },
@@ -103,22 +102,22 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     consultGroup: {
-      [theme.breakpoints.down('xs')]: {
+      padding: '20px 0',
+      [theme.breakpoints.down('sm')]: {
         borderRadius: '10px 10px 0 0',
         boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
         backgroundColor: '#ffffff',
         marginTop: 20,
         padding: 20,
-        paddingTop: 0,
       },
     },
     groupHead: {
       display: 'flex',
-      alignItems: 'center',
-      padding: 16,
-      paddingTop: 25,
-      paddingBottom: 20,
+      padding: '20px 0',
       borderBottom: '0.5px solid rgba(2,71,91,0.3)',
+      [theme.breakpoints.down('sm')]: {
+        padding: '0 0 10px',
+      },
       '& img': {
         verticalAlign: 'middle',
         marginRight: 16,
@@ -129,10 +128,22 @@ const useStyles = makeStyles((theme: Theme) => {
         color: '#0589bb',
         fontWeight: 500,
         textTransform: 'uppercase',
+        lineHeight: 'normal',
+      },
+      '& p': {
+        margin: 0,
+        fontSize: 10,
+        textTransform: 'uppercase',
       },
     },
+    groupDetails: {
+      padding: '0 10px',
+    },
     groupContent: {
-      paddingTop: 20,
+      padding: '20px  0 0 ',
+      [theme.breakpoints.down('sm')]: {
+        padding: '10px 0 0',
+      },
       '& ul': {
         padding: 0,
         margin: 0,
@@ -187,7 +198,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     bottomActions: {
-      paddingTop: 20,
+      // paddingTop: 20,
       fontSize: 12,
       lineHeight: '16px',
       color: '#01475b',
@@ -220,8 +231,11 @@ const useStyles = makeStyles((theme: Theme) => {
       marginTop: 16,
     },
     availableNow: {
-      backgroundColor: '#ff748e',
-      color: '#fff',
+      backgroundColor: '#ff748e !important',
+      color: '#fff !important',
+    },
+    availableSoon: {
+      color: '#ff748e',
     },
     headerGroup: {
       [theme.breakpoints.down('xs')]: {
@@ -231,6 +245,18 @@ const useStyles = makeStyles((theme: Theme) => {
         marginRight: -20,
         boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
       },
+    },
+    availability: {
+      fontSize: 9,
+      fontWeight: 'bold',
+      textAlign: 'center',
+      backgroundColor: 'rgba(0,135,186,0.11)',
+      padding: '6px 12px',
+      color: '#02475b',
+      textTransform: 'uppercase',
+      letterSpacing: 0.5,
+      borderRadius: 10,
+      marginTop: '14px',
     },
   });
 });
@@ -252,6 +278,7 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
   const physcalFee = doctorDetails && doctorDetails.physicalConsultationFees;
   const onlineFee = doctorDetails && doctorDetails.onlineConsultationFees;
   const doctorId = doctorDetails && doctorDetails.id;
+  const isSmallScreen = useMediaQuery('(max-width:767px)');
 
   const consultMode =
     doctorAvailableOnlineSlot.length > 0 && doctorAvailablePhysicalSlots.length > 0
@@ -262,110 +289,71 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
       ? ConsultMode.PHYSICAL
       : null;
 
-  const differenceInMinutes = getDiffInMinutes(doctorAvailablePhysicalSlots);
-  const differenceInOnlineMinutes = getDiffInMinutes(doctorAvailableOnlineSlot);
-  const availabilityMarkup = () => {
-    if (doctorAvailablePhysicalSlots && doctorAvailablePhysicalSlots.length > 0) {
-      if (differenceInMinutes === 0) {
-        return <div className={classes.availablity}>AVAILABLE NOW</div>;
-      } else if (differenceInMinutes > 0 && differenceInMinutes <= 15) {
-        return (
-          <div className={classes.availablity}>
-            AVAILABLE IN {differenceInMinutes} {differenceInMinutes === 1 ? 'MIN' : 'MINS'}
-          </div>
-        );
-      } else if (differenceInMinutes > 15 && differenceInMinutes <= 60) {
-        return (
-          <div className={`${classes.availablity}`}>AVAILABLE IN {differenceInMinutes} MINS</div>
-        );
-      } else if (differenceInMinutes >= 60 && differenceInMinutes < 1380) {
-        return (
-          <div className={`${classes.availablity}`}>
-            AVAILABLE IN {getDiffInHours(doctorAvailablePhysicalSlots)} HOURS
-          </div>
-        );
-      } else if (differenceInMinutes >= 1380) {
-        return (
-          <div className={`${classes.availablity}`}>
-            AVAILABLE IN {getDiffInDays(doctorAvailablePhysicalSlots)} Days
-          </div>
-        );
-      }
-    } else {
-      return null;
-    }
-  };
-  const availabilityOnlineMarkup = () => {
-    if (doctorAvailableOnlineSlot && doctorAvailableOnlineSlot.length > 0) {
-      if (differenceInMinutes === 0) {
-        return (
-          <div className={`${classes.availablity} ${classes.availableNow}`}>AVAILABLE NOW</div>
-        );
-      } else if (differenceInOnlineMinutes > 0 && differenceInOnlineMinutes <= 15) {
-        return (
-          <div className={`${classes.availablity} ${classes.availableNow}`}>
-            AVAILABLE IN {differenceInOnlineMinutes}{' '}
-            {differenceInOnlineMinutes === 1 ? 'MIN' : 'MINS'}
-          </div>
-        );
-      } else if (differenceInOnlineMinutes > 15 && differenceInOnlineMinutes <= 60) {
-        return (
-          <div className={`${classes.availablity} ${classes.availableNow}`}>
-            AVAILABLE IN {differenceInOnlineMinutes} MINS
-          </div>
-        );
-      } else if (differenceInOnlineMinutes >= 60 && differenceInOnlineMinutes < 1380) {
-        return (
-          <div className={`${classes.availablity} ${classes.availableNow}`}>
-            AVAILABLE IN {getDiffInHours(doctorAvailableOnlineSlot)} HOURS
-          </div>
-        );
-      } else if (differenceInMinutes >= 1380) {
-        return (
-          <div className={`${classes.availablity} ${classes.availableNow}`}>
-            AVAILABLE IN {getDiffInDays(doctorAvailableOnlineSlot)} Days
-          </div>
-        );
-      }
-    } else {
-      return null;
-    }
-  };
   const saveSearchMutation = useMutation<SaveSearch, SaveSearchVariables>(SAVE_PATIENT_SEARCH);
+
+  const differenceInOnlineMinutes = getDiffInMinutes(doctorAvailableOnlineSlot);
+  const differenceInPhysicalMinutes = getDiffInMinutes(doctorAvailablePhysicalSlots);
+
+  const availabilityMarkup = (consultType: string) => {
+    const differenceInMinutes =
+      consultType === 'online' ? differenceInOnlineMinutes : differenceInPhysicalMinutes;
+    return getAvailability(
+      consultType === 'online' ? doctorAvailableOnlineSlot : doctorAvailablePhysicalSlots,
+      differenceInMinutes,
+      'consultType'
+    );
+  };
 
   return (
     <div className={classes.root}>
       <div className={classes.headerGroup}>
         <h3>How can I consult with {doctorName}:</h3>
-        <div className={classes.tabButtons}>
-          <AphButton
-            className={
-              onlineDirection ? `${classes.button} ${classes.btnActive}` : `${classes.button}`
-            }
-            onClick={() => {
-              setOnlineDirection(true);
-              setPhysicalDirection(false);
-            }}
-          >
-            <span>Chat/Audio/Video</span>
-            <span className={classes.price}>Rs. {onlineFee}</span>
-            <span>{availabilityOnlineMarkup()}</span>
-          </AphButton>
-          <AphButton
-            className={
-              physicalDirection ? `${classes.button} ${classes.btnActive}` : `${classes.button}`
-            }
-            id="btnActive"
-            onClick={() => {
-              setPhysicalDirection(true);
-              setOnlineDirection(false);
-            }}
-          >
-            <span>Meet in Person</span>
-            <span className={classes.price}>Rs. {physcalFee}</span>
-            <span>{availabilityMarkup()}</span>
-          </AphButton>
-        </div>
+        <ul className={classes.tabButtons}>
+          {(consultMode === ConsultMode.BOTH || consultMode === ConsultMode.ONLINE) && (
+            <li>
+              <AphButton
+                className={`${classes.button}  ${onlineDirection ? classes.btnActive : ''}`}
+                onClick={() => {
+                  setOnlineDirection(true);
+                  setPhysicalDirection(false);
+                }}
+              >
+                <span>Chat/Audio/Video</span>
+                <span className={classes.price}>Rs. {onlineFee}</span>
+                <span
+                  className={`${classes.availability} ${
+                    differenceInOnlineMinutes < 15 ? classes.availableNow : null
+                  }`}
+                >
+                  {availabilityMarkup('online')}
+                </span>
+              </AphButton>
+            </li>
+          )}
+          {(consultMode === ConsultMode.BOTH || consultMode === ConsultMode.PHYSICAL) && (
+            <li>
+              {' '}
+              <AphButton
+                className={`${classes.button} ${physicalDirection ? classes.btnActive : ''}`}
+                id="btnActive"
+                onClick={() => {
+                  setPhysicalDirection(true);
+                  setOnlineDirection(false);
+                }}
+              >
+                <span>Meet in Person</span>
+                <span className={classes.price}>Rs. {physcalFee}</span>
+                <span
+                  className={`${classes.availability} ${
+                    differenceInPhysicalMinutes < 15 ? classes.availableNow : null
+                  }`}
+                >
+                  {availabilityMarkup('physical')}
+                </span>
+              </AphButton>
+            </li>
+          )}
+        </ul>
       </div>
       <div className={classes.consultGroup}>
         <div className={classes.groupHead}>
@@ -377,12 +365,30 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
               alt=""
             />
           </span>
-          <h4>
-            {physicalDirection
-              ? 'How to consult in person'
-              : 'How to consult via chat/audio/video?'}
-          </h4>
+          <div className={classes.groupDetails}>
+            <h4>
+              {physicalDirection
+                ? 'How to consult in person'
+                : 'How to consult via chat/audio/video?'}
+            </h4>
+            {isSmallScreen && (
+              <p
+                className={
+                  physicalDirection
+                    ? differenceInPhysicalMinutes < 15
+                      ? classes.availableSoon
+                      : ''
+                    : differenceInOnlineMinutes < 15
+                    ? classes.availableSoon
+                    : ''
+                }
+              >
+                {availabilityMarkup(physicalDirection ? 'physical' : 'online')}
+              </p>
+            )}
+          </div>
         </div>
+
         <div className={classes.groupContent}>
           <ul>
             <li>
@@ -424,7 +430,7 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
               </span>
               <span>Receive prescriptions instantly </span>
             </li>
-            {!physicalDirection && (
+            {onlineDirection && (
               <li className={classes.blueText}>
                 <span>
                   <img src={require('images/ic_chat.svg')} alt="" />
@@ -472,8 +478,9 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
             >
               {popupLoading ? (
                 <CircularProgress size={22} color="secondary" />
-              ) : getDiffInMinutes(doctorAvailablePhysicalSlots) > 0 &&
-                getDiffInMinutes(doctorAvailablePhysicalSlots) <= 60 ? (
+              ) : physicalDirection ? (
+                differenceInPhysicalMinutes > 0 && differenceInPhysicalMinutes <= 120
+              ) : differenceInOnlineMinutes > 0 && differenceInOnlineMinutes <= 120 ? (
                 'CONSULT NOW'
               ) : (
                 'BOOK APPOINTMENT'
@@ -495,7 +502,9 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
         <BookConsult
           consultMode={consultMode}
           doctorId={doctorId}
-          doctorAvailableIn={differenceInMinutes}
+          doctorAvailableIn={
+            onlineDirection ? differenceInOnlineMinutes : differenceInPhysicalMinutes
+          }
           setIsPopoverOpen={setIsPopoverOpen}
         />
       </Modal>

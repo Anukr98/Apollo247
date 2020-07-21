@@ -63,7 +63,7 @@ const useStyles = makeStyles((theme: Theme) => {
     rightActions: {
       display: 'flex',
       alignItems: 'center',
-      justifyContent: 'space-between',
+      justifyContent: 'flex-end',
       margin: '10px 0 0',
       [theme.breakpoints.down('sm')]: {
         flexDirection: 'column',
@@ -77,6 +77,7 @@ const useStyles = makeStyles((theme: Theme) => {
         justifyContent: 'normal',
         fontWeight: 600,
         borderRadius: 10,
+        marginRight: 20,
         [theme.breakpoints.down('sm')]: {
           width: '100%',
           margin: '0 0 10px',
@@ -157,7 +158,7 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const CheckRiskLevel: React.FC = (props: any) => {
+export const CheckRiskLevel: React.FC = (props) => {
   const classes = useStyles({});
   const covidScannerUrl = process.env.COVID_RISK_CALCULATOR_URL;
   const isDesktopOnly = useMediaQuery('(min-width:768px)');
@@ -182,16 +183,15 @@ export const CheckRiskLevel: React.FC = (props: any) => {
         <div className={classes.rightActions}>
           <ProtectedWithLoginPopup>
             {({ protectWithLoginPopup }) => (
-              <AphButton className={classes.filledBtn}
+              <AphButton
+                className={classes.filledBtn}
                 onClick={() => {
                   if (!isSignedIn) {
                     protectWithLoginPopup();
                   }
                 }}
               >
-                <Link
-                  to={isSignedIn && clientRoutes.covidProtocol('covid-diabetes')}
-                >
+                <Link to={isSignedIn && clientRoutes.covidProtocol()}>
                   <span>
                     <img src={require('images/guide.svg')} alt="" />
                   </span>
@@ -200,13 +200,15 @@ export const CheckRiskLevel: React.FC = (props: any) => {
               </AphButton>
             )}
           </ProtectedWithLoginPopup>
+          <a href={covidScannerUrl} target={'_blank'}>
+            <AphButton className={classes.filledBtn}>
+              <span>
+                <img src={require('images/ic_covid-white.svg')} alt="" />
+              </span>
+              <span>Check your Covid-19 risk level</span>
+            </AphButton>
+          </a>
 
-          <AphButton className={classes.filledBtn} onClick={() => window.open(covidScannerUrl)}>
-            <span>
-              <img src={require('images/ic_covid-white.svg')} alt="" />
-            </span>
-            <span>Check your Covid-19 risk level</span>
-          </AphButton>
           <a className={classes.callBtn} href={isDesktopOnly ? '#' : `tel:${customerCareNumber}`}>
             <div
               onClick={() => {
@@ -233,6 +235,6 @@ export const CheckRiskLevel: React.FC = (props: any) => {
           </AphButton>
         </div>
       </AphDialog>
-    </div >
+    </div>
   );
 };

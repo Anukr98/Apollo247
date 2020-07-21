@@ -17,10 +17,12 @@ import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
+import AsyncStorage from '@react-native-community/async-storage';
 
 export interface ConsultPaymentnewProps extends NavigationScreenProps {}
 
 export const ConsultPaymentnew: React.FC<ConsultPaymentnewProps> = (props) => {
+  const consultedWithDoctorBefore = props.navigation.getParam('consultedWithDoctorBefore');
   const price = props.navigation.getParam('price');
   const appointmentId = props.navigation.getParam('appointmentId');
   const doctorName = props.navigation.getParam('doctorName');
@@ -48,7 +50,23 @@ export const ConsultPaymentnew: React.FC<ConsultPaymentnewProps> = (props) => {
     };
   }, []);
 
+  const storeAppointmentId = async () => {
+    try {
+      const ids = await AsyncStorage.getItem('APPOINTMENTS_CONSULTED_WITH_DOCTOR_BEFORE');
+      const appointmentIds: string[] = ids ? JSON.parse(ids || '[]') : [];
+      AsyncStorage.setItem(
+        'APPOINTMENTS_CONSULTED_WITH_DOCTOR_BEFORE',
+        JSON.stringify([...appointmentIds, appointmentId])
+      );
+    } catch (error) {
+      console.log({ error });
+    }
+  };
+
   const navigatetoStatusscreen = (status: string) => {
+    if (consultedWithDoctorBefore) {
+      storeAppointmentId();
+    }
     props.navigation.navigate(AppRoutes.ConsultPaymentStatus, {
       orderId: appointmentId,
       price: price,

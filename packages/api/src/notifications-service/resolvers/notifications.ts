@@ -21,14 +21,14 @@ import { TransferAppointmentRepository } from 'consults-service/repositories/tra
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { MedicineOrdersRepository } from 'profiles-service/repositories/MedicineOrdersRepository';
 import { FacilityRepository } from 'doctors-service/repositories/facilityRepository';
-import { addMilliseconds, format, differenceInMinutes, addDays } from 'date-fns';
+import { addMilliseconds, format, differenceInMinutes, addDays, differenceInHours } from 'date-fns';
 import path from 'path';
 import fs from 'fs';
 import { log } from 'customWinstonLogger';
 import { APPOINTMENT_TYPE, Appointment, STATUS } from 'consults-service/entities';
 import Pubnub from 'pubnub';
 import fetch from 'node-fetch';
-import { Doctor } from 'doctors-service/entities';
+import { Doctor, DoctorType } from 'doctors-service/entities';
 
 export const getNotificationsTypeDefs = gql`
   type PushNotificationMessage {
@@ -164,6 +164,7 @@ export enum NotificationType {
   APPOINTMENT_PAYMENT_REFUND = 'APPOINTMENT_PAYMENT_REFUND',
   DOCTOR_APPOINTMENT_REMINDER = 'DOCTOR_APPOINTMENT_REMINDER',
   MEDICINE_ORDER_BILL_CHANGED = 'MEDICINE_ORDER_BILL_CHANGED',
+  WHATSAPP_CHAT_NOTIFICATION = 'WHATSAPP_CHAT_NOTIFICATION',
 }
 
 export enum APPT_CALL_TYPE {
@@ -246,33 +247,60 @@ export const sendNotificationWhatsapp = async (
 export const sendDoctorNotificationWhatsapp = async (
   mobileNumber: string,
   message: string,
-  loginType: number
+  loginType: number,
+  doctorType: string
 ) => {
-  const apiUrl =
-    process.env.WHATSAPP_URL +
-    '?method=OPT_IN&phone_number=' +
-    mobileNumber +
-    '&userid=' +
-    process.env.WHATSAPP_DOCTOR_USERNAME +
-    '&password=' +
-    process.env.WHATSAPP_DOCTOR_PASSWORD +
-    '&auth_scheme=plain&format=text&v=1.1&channel=WHATSAPP';
-  const whatsAppResponse = await fetch(apiUrl)
-    .then(async (res) => {
-      if (loginType == 1) {
+  if (doctorType != DoctorType.DOCTOR_CONNECT) {
+    const apiUrl =
+      process.env.WHATSAPP_URL +
+      '?method=OPT_IN&phone_number=' +
+      mobileNumber +
+      '&userid=' +
+      process.env.WHATSAPP_DOCTOR_USERNAME +
+      '&password=' +
+      process.env.WHATSAPP_DOCTOR_PASSWORD +
+      '&auth_scheme=plain&format=text&v=1.1&channel=WHATSAPP';
+    const whatsAppResponse = await fetch(apiUrl)
+      .then(async (res) => {
         const sendApiUrl = `${process.env.WHATSAPP_URL}?method=SendMessage&send_to=${mobileNumber}&userid=${process.env.WHATSAPP_DOCTOR_USERNAME}&password=${process.env.WHATSAPP_DOCTOR_PASSWORD}&auth_scheme=plain&msg_type=TEXT&format=text&v=1.1&msg=${message}`;
         fetch(sendApiUrl)
-          .then((res) => res)
+          .then((res) => {
+            const fileName =
+              process.env.NODE_ENV +
+              '_docwhatsappnotification_' +
+              format(new Date(), 'yyyyMMdd') +
+              '.txt';
+            let assetsDir = path.resolve('/apollo-hospitals/packages/api/src/assets');
+            if (process.env.NODE_ENV != 'local') {
+              assetsDir = path.resolve(<string>process.env.ASSETS_DIRECTORY);
+            }
+            let content =
+              format(new Date(), 'yyyy-MM-dd hh:mm') +
+              '\n mobile number: ' +
+              mobileNumber +
+              '\n message: ' +
+              message +
+              '\n multicastId: ';
+            content +=
+              res +
+              '\n------------------------------------------------------------------------------------\n';
+            fs.appendFile(assetsDir + '/' + fileName, content, (err) => {
+              if (err) {
+                console.log('file saving error', err);
+              }
+              console.log('notification results saved');
+            });
+          })
           .catch((error) => {
             console.log('whatsapp error', error);
             throw new AphError(AphErrorMessages.MESSAGE_SEND_WHATSAPP_ERROR);
           });
-      }
-    })
-    .catch((error) => {
-      throw new AphError(AphErrorMessages.GET_OTP_ERROR);
-    });
-  return whatsAppResponse;
+      })
+      .catch((error) => {
+        throw new AphError(AphErrorMessages.GET_OTP_ERROR);
+      });
+    return whatsAppResponse;
+  }
 };
 
 export const sendNotificationSMS = async (mobileNumber: string, message: string) => {
@@ -314,16 +342,6 @@ export async function sendCallsNotification(
   //get doctor details
   const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
 
-  // if (doctorType == DOCTOR_CALL_TYPE.JUNIOR) {
-  //   const consultQueueRepo = consultsDb.getCustomRepository(ConsultQueueRepository);
-  //   const queueDetails = await consultQueueRepo.findByAppointmentId(
-  //     pushNotificationInput.appointmentId
-  //   );
-  //   if (queueDetails == null) throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID);
-  //   doctorDetails = await doctorRepo.findById(queueDetails.doctorId);
-  // } else {
-  //   doctorDetails = await doctorRepo.findById(appointment.doctorId);
-  // }
   const doctorDetails = await doctorRepo.findById(appointment.doctorId);
   if (doctorDetails == null) throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID);
   //check patient existence and get his details
@@ -331,18 +349,31 @@ export async function sendCallsNotification(
   const patientDetails = await patientRepo.getPatientDetails(appointment.patientId);
   if (patientDetails == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
 
-  //check for registered device tokens
-  //if (patientDetails.patientDeviceTokens.length == 0) return;
-
-  //if notiifcation of type reschedule & check for reschedule notification setting
-  // if (
-  //   patientDetails.patientNotificationSettings &&
-  //   pushNotificationInput.notificationType == NotificationType.INITIATE_RESCHEDULE &&
-  //   !patientDetails.patientNotificationSettings.reScheduleAndCancellationNotification
-  // ) {
-  //   return;
-  // }
-
+  if (callType == APPT_CALL_TYPE.CHAT && doctorType == DOCTOR_CALL_TYPE.SENIOR) {
+    const devLink = process.env.DOCTOR_DEEP_LINK ? process.env.DOCTOR_DEEP_LINK : '';
+    let whatsappMsg = ApiConstants.WHATSAPP_SD_CONSULT_START_REMINDER.replace(
+      '{0}',
+      patientDetails.firstName + ' ' + patientDetails.lastName
+    );
+    whatsappMsg = whatsappMsg
+      .replace('{1}', doctorDetails.firstName)
+      .replace('{2}', doctorDetails.salutation)
+      .replace('{3}', devLink);
+    sendNotificationWhatsapp(patientDetails.mobileNumber, whatsappMsg, 1);
+    return;
+  } else if (callType == APPT_CALL_TYPE.CHAT && doctorType == DOCTOR_CALL_TYPE.JUNIOR) {
+    const devLink = process.env.DOCTOR_DEEP_LINK ? process.env.DOCTOR_DEEP_LINK : '';
+    let whatsappMsg = ApiConstants.WHATSAPP_JD_CONSULT_START_REMINDER.replace(
+      '{0}',
+      patientDetails.firstName + ' ' + patientDetails.lastName
+    );
+    whatsappMsg = whatsappMsg
+      .replace('{1}', doctorDetails.firstName)
+      .replace('{2}', doctorDetails.salutation)
+      .replace('{3}', devLink);
+    sendNotificationWhatsapp(patientDetails.mobileNumber, whatsappMsg, 1);
+    return;
+  }
   let notificationTitle: string = '';
   let notificationBody: string = '';
   notificationTitle = ApiConstants.CALL_APPOINTMENT_TITLE;
@@ -351,7 +382,7 @@ export async function sendCallsNotification(
     if (callType == APPT_CALL_TYPE.CHAT) {
       notificationBody = ApiConstants.JUNIOR_CALL_APPOINTMENT_BODY;
       //send whatsapp message for junior doctor call
-      const devLink: any = process.env.DOCTOR_DEEP_LINK;
+      const devLink = process.env.DOCTOR_DEEP_LINK ? process.env.DOCTOR_DEEP_LINK : '';
       let whatsappMsg = ApiConstants.WHATSAPP_JD_CONSULT_START_REMINDER.replace(
         '{0}',
         patientDetails.firstName + ' ' + patientDetails.lastName
@@ -369,17 +400,17 @@ export async function sendCallsNotification(
     notificationBody = ApiConstants.CALL_APPOINTMENT_BODY;
   }
 
-  //send whatsapp message for senior doctor call
-  const devLink = process.env.DOCTOR_DEEP_LINK ? process.env.DOCTOR_DEEP_LINK : '';
-  let whatsappMsg = ApiConstants.WHATSAPP_SD_CONSULT_START_REMINDER.replace(
-    '{0}',
-    patientDetails.firstName + ' ' + patientDetails.lastName
-  );
-  whatsappMsg = whatsappMsg
-    .replace('{1}', doctorDetails.firstName)
-    .replace('{2}', doctorDetails.salutation)
-    .replace('{3}', devLink);
-  sendNotificationWhatsapp(patientDetails.mobileNumber, whatsappMsg, 1);
+  // //send whatsapp message for senior doctor call
+  // const devLink = process.env.DOCTOR_DEEP_LINK ? process.env.DOCTOR_DEEP_LINK : '';
+  // let whatsappMsg = ApiConstants.WHATSAPP_SD_CONSULT_START_REMINDER.replace(
+  //   '{0}',
+  //   patientDetails.firstName + ' ' + patientDetails.lastName
+  // );
+  // whatsappMsg = whatsappMsg
+  //   .replace('{1}', doctorDetails.firstName)
+  //   .replace('{2}', doctorDetails.salutation)
+  //   .replace('{3}', devLink);
+  // sendNotificationWhatsapp(patientDetails.mobileNumber, whatsappMsg, 1);
 
   notificationBody = notificationBody.replace('{0}', patientDetails.firstName);
   notificationBody = notificationBody.replace(
@@ -728,19 +759,21 @@ export async function sendNotification(
     //sendNotificationWhatsapp(patientDetails.mobileNumber, smsLink);
 
     //send sms to doctor if Appointment DateTime is less than 24 hours
-    const todaysDate = new Date(format(new Date(), 'yyyy-MM-dd') + 'T18:30:00');
-    const yesterdaysDate = new Date(format(addDays(new Date(), -1), 'yyyy-MM-dd') + 'T18:30:00');
+    //const todaysDate = new Date(format(new Date(), 'yyyy-MM-dd') + 'T18:30:00');
+    //const yesterdaysDate = new Date(format(addDays(new Date(), -1), 'yyyy-MM-dd') + 'T18:30:00');
+
+    const todaysDate = new Date(format(new Date(), 'yyyy-MM-dd') + 'T23:59:00');
     console.log(
-      todaysDate,
-      yesterdaysDate,
       'check dates for todays date appt',
       appointment.appointmentDateTime,
-      appointment.appointmentDateTime <= new Date(todaysDate) &&
-        appointment.appointmentDateTime >= yesterdaysDate
+      new Date(),
+      differenceInHours(appointment.appointmentDateTime, new Date()),
+      todaysDate,
+      'todays date'
     );
     if (
-      appointment.appointmentDateTime <= todaysDate &&
-      appointment.appointmentDateTime >= yesterdaysDate
+      differenceInHours(appointment.appointmentDateTime, new Date()) <= 24 &&
+      new Date() < todaysDate
     ) {
       const finalTime = format(istDateTime, 'hh:mm a');
       const doctorWhatsAppMessage = ApiConstants.DOCTOR_BOOK_APPOINTMENT_WHATSAPP.replace(
@@ -750,7 +783,13 @@ export async function sendNotification(
         .replace('{1}', patientDetails.firstName + ' ' + patientDetails.lastName)
         .replace('{2}', finalTime)
         .replace('{3}', doctorDetails.salutation);
-      sendDoctorNotificationWhatsapp(doctorDetails.mobileNumber, doctorWhatsAppMessage, 1);
+      console.log('DOCTOR_BOOK_APPOINTMENT_WHATSAPP', appointment.id, doctorDetails.mobileNumber);
+      sendDoctorNotificationWhatsapp(
+        doctorDetails.mobileNumber,
+        doctorWhatsAppMessage,
+        1,
+        doctorDetails.doctorType
+      );
     }
     let doctorSMS = ApiConstants.DOCTOR_BOOK_APPOINTMENT_SMS.replace(
       '{0}',
@@ -1369,7 +1408,13 @@ export async function sendReminderNotification(
     whatsappMsg = whatsappMsg
       .replace('{3}', diffMins.toString())
       .replace('{2}', doctorDetails.salutation);
-    sendDoctorNotificationWhatsapp(doctorDetails.mobileNumber, whatsappMsg, 1);
+    console.log('WHATSAPP_SD_CONSULT_REMINDER_15_MIN', appointment.id, doctorDetails.mobileNumber);
+    sendDoctorNotificationWhatsapp(
+      doctorDetails.mobileNumber,
+      whatsappMsg,
+      1,
+      doctorDetails.doctorType
+    );
     if (appointment.appointmentType != APPOINTMENT_TYPE.PHYSICAL) {
       payload = {
         notification: {
@@ -1487,7 +1532,13 @@ export async function sendReminderNotification(
       whatsappMsg = whatsappMsg
         .replace('{1}', doctorDetails.firstName)
         .replace('{2}', doctorDetails.salutation);
-      sendDoctorNotificationWhatsapp(doctorDetails.mobileNumber, whatsappMsg, 1);
+      console.log('doctor whatsapp', appointment.id, doctorDetails.mobileNumber);
+      sendDoctorNotificationWhatsapp(
+        doctorDetails.mobileNumber,
+        whatsappMsg,
+        1,
+        doctorDetails.doctorType
+      );
     }
     //sendNotificationWhatsapp(patientDetails.mobileNumber, notificationBody);
   } else if (
@@ -2249,7 +2300,12 @@ const sendDailyAppointmentSummary: Resolver<
           onlineAppointmentsText + '' + physicalAppointmentsText + whatsAppLink;
         sendBrowserNotitication(doctor.id, messageBody);
         sendNotificationSMS(doctor.mobileNumber, messageBody);
-        sendDoctorNotificationWhatsapp(doctor.mobileNumber, whatsAppMessageBody, 1);
+        sendDoctorNotificationWhatsapp(
+          doctor.mobileNumber,
+          whatsAppMessageBody,
+          1,
+          doctor.doctorType
+        );
       }
       if (index + 1 === array.length) {
         resolve(doctorsCount);
@@ -2440,7 +2496,7 @@ const sendChatMessageToDoctor: Resolver<
   const doctorDetails = await doctorRepo.findById(appointment.doctorId);
   if (!doctorDetails) throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID, undefined, {});
   //const whatsAppLink= process.env.WHATSAPP_LINK_BOOK_APOINTMENT;
-  const devLink: any = process.env.DOCTOR_DEEP_LINK;
+  const devLink = process.env.DOCTOR_DEEP_LINK ? process.env.DOCTOR_DEEP_LINK : '';
   let whatsAppMessageBody = ApiConstants.WHATSAPP_SD_CHAT_NOTIFICATION.replace(
     '{0}',
     doctorDetails.firstName
@@ -2450,7 +2506,13 @@ const sendChatMessageToDoctor: Resolver<
     .replace('{3}', args.appointmentId)
     .replace('{4}', devLink);
   whatsAppMessageBody = whatsAppMessageBody;
-  await sendDoctorNotificationWhatsapp(doctorDetails.mobileNumber, whatsAppMessageBody, 1);
+  console.log('WHATSAPP_SD_CHAT_NOTIFICATION', appointment.id, doctorDetails.mobileNumber);
+  await sendDoctorNotificationWhatsapp(
+    doctorDetails.mobileNumber,
+    whatsAppMessageBody,
+    1,
+    doctorDetails.doctorType
+  );
   const messageBody = ApiConstants.CHAT_MESSGAE_TEXT.replace(
     '{0}',
     doctorDetails.firstName
