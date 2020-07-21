@@ -19,6 +19,8 @@ import {
   uploadPrescriptions,
 } from 'profiles-service/resolvers/prescriptionUpload';
 import { LabResultsInputArgs, uploadLabResults } from 'profiles-service/resolvers/labResultsUpload';
+import { log } from 'customWinstonLogger';
+import { currentLineHeight } from 'pdfkit';
 
 type DeviceCount = {
   mobilenumber: string;
@@ -63,6 +65,8 @@ export class PatientRepository extends Repository<Patient> {
       return [newPatient];
     });
   }
+
+
   findEmpId(empId: string, patientId: string) {
     return this.findOne({
       where: {
@@ -522,38 +526,66 @@ export class PatientRepository extends Repository<Patient> {
     primaryUhid?: string,
     primaryPatientId?: string
   ) {
-    const fieldToUpdate: Partial<Patient> = { [column]: flag };
-    let check = true;
-    if (primaryUhid) {
-      if (primaryUhid == 'null') {
-        check = false;
-      } else {
-        fieldToUpdate.primaryUhid = primaryUhid;
-        fieldToUpdate.primaryPatientId = primaryPatientId;
-      }
-    }
+    return new Promise(async (resolve, reject) => {
+      try {
+        const fieldToUpdate: Partial<Patient> = { [column]: flag };
+        let check = true;
+        if (primaryUhid) {
+          if (primaryUhid == 'null') {
+            check = false;
+          }
+          else {
+            fieldToUpdate.primaryUhid = primaryUhid;
+            fieldToUpdate.primaryPatientId = primaryPatientId;
+          }
+        }
 
-    if (check) {
-      ids.forEach((patientId) => {
-        this.dropPatientCache(`${REDIS_PATIENT_ID_KEY_PREFIX}${patientId}`);
-      });
-      return this.update([...ids], fieldToUpdate).catch((updatePatientError) => {
-        throw new AphError(AphErrorMessages.UPDATE_PROFILE_ERROR, undefined, {
-          updatePatientError,
-        });
-      });
-    } else {
-      this.dropPatientCache(`${REDIS_PATIENT_ID_KEY_PREFIX}${primaryPatientId}`);
-      return this.createQueryBuilder('patient')
-        .update()
-        .set({
-          primaryUhid: () => 'patient.uhid',
-          primaryPatientId: () => 'patient.id',
-          ...fieldToUpdate,
-        })
-        .where('id IN (:...ids)', { ids })
-        .execute();
-    }
+        if (check) {
+          let updatedPatients: Patient[] = [];
+          for (let j = 0, totalItems = ids.length; j < totalItems; j++) {
+            const id = ids[j];
+            const currentPatient = await this.getPatientDetails(id);
+
+            //drop cache only after retrieval
+            await this.dropPatientCache(`${REDIS_PATIENT_ID_KEY_PREFIX}${id}`);
+
+            Object.assign(currentPatient, { ...fieldToUpdate })
+
+            const patientObj = this.create({ ...currentPatient });;
+            const updatedPatient = await patientObj.save();
+            updatedPatients.push(updatedPatient);
+          }
+          return resolve(updatedPatients);
+        }
+        else {
+          let updatedPatients: Patient[] = [];
+          for (let j = 0, totalItems = ids.length; j < totalItems; j++) {
+            const id = ids[j];
+            const currentPatient = await this.getPatientDetails(id);
+
+            //drop cache only after retrieval
+            await this.dropPatientCache(`${REDIS_PATIENT_ID_KEY_PREFIX}${primaryPatientId}`);
+
+            if (currentPatient) {
+              Object.assign(currentPatient, {
+                primaryPatientId: id,
+                primaryUhid: currentPatient.uhid,
+                ...fieldToUpdate
+              })
+
+              const patientObj = this.create({ ...currentPatient });
+              const updatedPatient = await patientObj.save();
+              updatedPatients.push(updatedPatient);
+            }
+          }
+          return resolve(updatedPatients);
+        }
+      }
+      catch (exception) {
+        log('profileServiceLogger', 'Exception in updateLinkedUhidAccount', 'patientRepository.ts', 'undefined', JSON.stringify(exception));
+        return reject(exception);
+      }
+    })
   }
 
   async updateToken(id: string, athsToken: string) {

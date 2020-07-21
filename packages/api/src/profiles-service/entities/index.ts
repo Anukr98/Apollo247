@@ -17,6 +17,7 @@ import { Validate, IsOptional } from 'class-validator';
 import { NameValidator, MobileNumberValidator } from 'validators/entityValidators';
 import { ConsultMode } from 'doctors-service/entities';
 import { delCache } from 'profiles-service/database/connectRedis';
+import { log } from 'customWinstonLogger';
 
 export type ONE_APOLLO_USER_REG = {
   FirstName: string;
@@ -907,6 +908,22 @@ export class Patient extends BaseEntity {
   @Column({ nullable: true })
   uhidCreatedDate: Date;
 
+  isUpdationAllowedAgainstCurrentValue(currentValue: any, incomingValue: any): Boolean {
+    const updateAllowed: Boolean = currentValue ? Boolean(incomingValue && currentValue) : true;
+    return updateAllowed;
+  }
+
+  isValidString(input: string): Boolean {
+    if (input) {
+      input = input.trim().toLowerCase();
+      const disallowedStrings: Set<string> = new Set(['', ' ', '.', 'null', 'undefined']);
+      return !disallowedStrings.has(input);
+    }
+    else {
+      return true;
+    }
+  }
+
   @BeforeInsert()
   updateDateCreation() {
     this.createdDate = new Date();
@@ -916,6 +933,72 @@ export class Patient extends BaseEntity {
   updateDateUpdate() {
     this.updatedDate = new Date();
   }
+
+  @BeforeUpdate()
+  async getCurrentPatientFromDb() {
+    let currentPatientFromDb: Patient = await Patient.findOne(this.id) || Patient.create();
+    this.checkNullsValidation(currentPatientFromDb);
+  }
+
+  checkNullsValidation(currentPatientFromDb: Patient) {
+    this.checkNulls_Fname(currentPatientFromDb);
+    this.checkNulls_Lname(currentPatientFromDb);
+    this.checkNulls_PrimaryUhid(currentPatientFromDb);
+    this.checkNulls_Uhid(currentPatientFromDb);
+  }
+
+  checkNulls_Fname(currentPatientFromDb: Patient) {
+    const isValidString: Boolean = this.isValidString(this.firstName);
+    const isUpdateApplicable: Boolean = this.isUpdationAllowedAgainstCurrentValue(currentPatientFromDb.firstName, this.firstName);
+
+    if (!(isValidString && isUpdateApplicable)) {
+      const error = `Attempt to overwrite Fname: ${currentPatientFromDb.firstName} with Fname: ${this.firstName}
+      isValidString: ${isValidString} isUpdateApplicable: ${isUpdateApplicable}`;
+
+      log('profileServiceLogger', 'Invalid patient updation attempt', 'index.ts/checkNulls_Fname', 'undefined', error);
+      throw new Error(error);
+    }
+  }
+
+  checkNulls_Lname(currentPatientFromDb: Patient) {
+    const isValidString: Boolean = this.isValidString(this.lastName);
+    const isUpdateApplicable: Boolean = this.isUpdationAllowedAgainstCurrentValue(currentPatientFromDb.lastName, this.lastName);
+
+    if (!(isValidString && isUpdateApplicable)) {
+      const error = `Attempt to overwrite Lname: ${currentPatientFromDb.lastName} with Lname: ${this.lastName}
+      isValidString: ${isValidString} isUpdateApplicable: ${isUpdateApplicable}`;
+
+      log('profileServiceLogger', 'Invalid patient updation attempt', 'index.ts/checkNulls_Lname', 'undefined', error);
+      throw new Error(error);
+    }
+  }
+
+  checkNulls_PrimaryUhid(currentPatientFromDb: Patient) {
+    const isValidString: Boolean = this.isValidString(this.primaryUhid);
+    const isUpdateApplicable: Boolean = this.isUpdationAllowedAgainstCurrentValue(currentPatientFromDb.primaryUhid, this.primaryUhid);
+
+    if (!(isValidString && isUpdateApplicable)) {
+      const error = `Attempt to overwrite PrimaryUhid: ${currentPatientFromDb.primaryUhid} with PrimaryUhid: ${this.primaryUhid}
+      isValidString: ${isValidString} isUpdateApplicable: ${isUpdateApplicable}`;
+
+      log('profileServiceLogger', 'Invalid patient updation attempt', 'index.ts/checkNulls_PrimaryUhid', 'undefined', error);
+      throw new Error(error);
+    }
+  }
+
+  checkNulls_Uhid(currentPatientFromDb: Patient) {
+    const isValidString: Boolean = this.isValidString(this.uhid);
+    const isUpdateApplicable: Boolean = this.isUpdationAllowedAgainstCurrentValue(currentPatientFromDb.uhid, this.uhid);
+
+    if (!(isValidString && isUpdateApplicable)) {
+      const error = `Attempt to overwrite Uhid: ${currentPatientFromDb.uhid} with Uhid: ${this.uhid}
+      isValidString: ${isValidString} isUpdateApplicable: ${isUpdateApplicable}`;
+
+      log('profileServiceLogger', 'Invalid patient updation attempt', 'index.ts/checkNulls_Uhid', 'undefined', error);
+      throw new Error(error);
+    }
+  }
+
   @AfterInsert()
   async dropPatientMobileCache() {
     await delCache(`patient:mobile:${this.mobileNumber}`);
