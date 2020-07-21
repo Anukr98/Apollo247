@@ -369,7 +369,9 @@ const makeAppointmentPayment: Resolver<
         isJdConsultStarted: true,
       };
       caseSheetRepo.savecaseSheet(casesheetAttrs);
-      apptsRepo.updateJdQuestionStatusbyIds([processingAppointment.id]);
+      //apptsRepo.updateJdQuestionStatusbyIds([processingAppointment.id]);
+      processingAppointment.isConsultStarted = true;
+      processingAppointment.isJdQuestionsComplete = true;
       const historyAttrs: Partial<AppointmentUpdateHistory> = {
         appointment: processingAppointment,
         userType: APPOINTMENT_UPDATED_BY.PATIENT,
