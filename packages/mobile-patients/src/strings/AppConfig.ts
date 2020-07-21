@@ -109,6 +109,7 @@ const appStaticVariables = {
   ] as PharmacyHomepageInfo[],
   CART_ITEM_MAX_QUANTITY: 10, // max. allowed qty to add to cart
   HOME_SCREEN_KAVACH_TEXT: string.common.KavachText,
+  MED_ORDERS_CUSTOMER_CARE_WHATSAPP_LINK: 'https://bit.ly/apollo247medicines',
 };
 
 const DEV_top6_specailties = [
