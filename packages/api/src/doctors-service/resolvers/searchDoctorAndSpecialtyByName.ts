@@ -11,17 +11,37 @@ import { Client, RequestParams } from '@elastic/elasticsearch';
 import { differenceInMinutes } from 'date-fns';
 import { debugLog } from 'customWinstonLogger';
 
+export type DoctorSpecialityPartial = {
+  image: string
+  userFriendlyNomenclature: string
+  specialistPluralTerm: string
+  groupName: string
+  specialistSingularTerm: string
+  commonSearchTerm: string
+  name: string
+}
+
 export const searchDoctorAndSpecialtyByNameTypeDefs = gql`
+  type DoctorSpecialityPartial {
+    image: String
+    userFriendlyNomenclature: String
+    specialistPluralTerm: String
+    groupName: String
+    specialistSingularTerm: String
+    commonSearchTerm: String
+    name: String
+  }
+
   type PossibleSearchMatches {
     doctors: [DoctorDetails]
     doctorsNextAvailability: [DoctorSlotAvailability]
-    specialties: [DoctorSpecialty]
+    specialties: [DoctorSpecialityPartial]
   }
 
   type SearchDoctorAndSpecialtyByNameResult {
     doctors: [DoctorDetails]
     doctorsNextAvailability: [DoctorSlotAvailability]
-    specialties: [DoctorSpecialty]
+    specialties: [DoctorSpecialityPartial]
     possibleMatches: PossibleSearchMatches
     otherDoctors: [DoctorDetails]
     otherDoctorsNextAvailability: [DoctorSlotAvailability]
@@ -45,13 +65,13 @@ export const searchDoctorAndSpecialtyByNameTypeDefs = gql`
 
 type PossibleSearchMatches = {
   doctors?: Doctor[];
-  specialties?: DoctorSpecialty[];
+  specialties?: DoctorSpecialityPartial[];
   doctorsNextAvailability?: DoctorSlotAvailability[];
 };
 
 type SearchDoctorAndSpecialtyByNameResult = {
   doctors: Doctor[];
-  specialties: DoctorSpecialty[];
+  specialties: DoctorSpecialityPartial[];
   doctorsNextAvailability: DoctorSlotAvailability[];
   possibleMatches: PossibleSearchMatches;
   otherDoctors?: Doctor[];
@@ -86,7 +106,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
   );
 
   searchLogger('API_CALL___STARTED');
-  let matchedSpecialties: DoctorSpecialty[] = [];
+  let matchedSpecialties: DoctorSpecialityPartial[] = [];
   const searchTextLowerCase = args.searchText.trim().toLowerCase();
   let finalMatchedDoctors = [],
     finalPossibleDoctors = [];
@@ -101,14 +121,14 @@ const SearchDoctorAndSpecialtyByName: Resolver<
   const possibleDoctors = [],
     earlyAvailableApolloPossibleDoctors = [],
     earlyAvailableNonApolloPossibleDoctors = [],
-    possibleSpecialties: DoctorSpecialty[] = [],
+    possibleSpecialties: DoctorSpecialityPartial[] = [],
     possibleDoctorsNextAvailability: DoctorSlotAvailability[] = [];
   const otherDoctors: Doctor[] = [],
     otherDoctorsNextAvailability: DoctorSlotAvailability[] = [];
 
   // const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
-  const specialtyRepository = doctorsDb.getCustomRepository(DoctorSpecialtyRepository);
 
+  // const specialtyRepository = doctorsDb.getCustomRepository(DoctorSpecialtyRepository);
   const client = new Client({ node: process.env.ELASTIC_CONNECTION_URL });
   searchLogger(`GET_MATCHED_DOCTORS_AND_SPECIALTIES___START`);
   let PerfectdocSearchParams: RequestParams.Search = {
@@ -123,11 +143,11 @@ const SearchDoctorAndSpecialtyByName: Resolver<
             {
               multi_match: {
                 fields: [
-                  'fullName',
-                  'specialty.name',
-                  'specialty.groupName',
-                  'specialty.commonSearchTerm',
-                  'specialty.userFriendlyNomenclature',
+                  `fullName^${5}`,
+                  `specialty.name^${4}`,
+                  `specialty.groupName^${3}`,
+                  `specialty.commonSearchTerm^${2}`,
+                  `specialty.userFriendlyNomenclature^${1}`,
                 ],
                 type: 'phrase_prefix',
                 query: searchTextLowerCase,
@@ -153,11 +173,11 @@ const SearchDoctorAndSpecialtyByName: Resolver<
               {
                 multi_match: {
                   fields: [
-                    'fullName',
-                    'specialty.name',
-                    'specialty.groupName',
-                    'specialty.commonSearchTerm',
-                    'specialty.userFriendlyNomenclature',
+                    `fullName^${5}`,
+                    `specialty.name^${4}`,
+                    `specialty.groupName^${3}`,
+                    `specialty.commonSearchTerm^${2}`,
+                    `specialty.userFriendlyNomenclature^${1}`,
                   ],
                   type: 'phrase_prefix',
                   query: searchTextLowerCase,
@@ -286,11 +306,11 @@ const SearchDoctorAndSpecialtyByName: Resolver<
             {
               multi_match: {
                 fields: [
-                  'fullName',
-                  'specialty.name',
-                  'specialty.groupName',
-                  'specialty.commonSearchTerm',
-                  'specialty.userFriendlyNomenclature',
+                  `fullName^${5}`,
+                  `specialty.name^${4}`,
+                  `specialty.groupName^${3}`,
+                  `specialty.commonSearchTerm^${2}`,
+                  `specialty.userFriendlyNomenclature^${1}`,
                 ],
                 fuzziness: 'AUTO',
                 query: searchTextLowerCase,
@@ -391,7 +411,74 @@ const SearchDoctorAndSpecialtyByName: Resolver<
   //console.log('earlyAvailableApolloMatchedDoctors', earlyAvailableApolloMatchedDoctors);
   //console.log('earlyAvailableNonApolloMatchedDoctors', earlyAvailableNonApolloMatchedDoctors);
   //console.log('matchedDoctors', matchedDoctors);
-  matchedSpecialties = await specialtyRepository.searchByName(searchTextLowerCase);
+  
+  // matchedSpecialties = await specialtyRepository.searchByName(searchTextLowerCase);
+
+  const specialtiesSearchParams: RequestParams.Search = {
+    "index": 'doctors',
+    "body": {
+      "_source": ["specialty"],
+      "query": {
+        "bool": {
+          "must": [
+            { "match": { 'doctorSlots.slots.status': 'OPEN' } },
+            { "match": { "isSearchable": true } },
+            {
+              "multi_match": {
+                "fields": [
+                  'specialty.name',
+                ],
+                "type": 'phrase_prefix',
+                "query": searchTextLowerCase,
+              },
+            },
+          ],
+        },
+      },
+      "size":0,
+      "aggs": {
+        "matched_specialities": {
+          "terms": {
+            "field": "specialty.name.keyword",
+            "size": 1000
+          },
+          "aggs": {
+            "matched_specialities_hits": {
+              "top_hits": {
+                "sort": [
+                  {
+                    "_score": {
+                      "order": "desc"
+                    }
+                  }
+                ],
+                "_source": ["specialty"],
+                "size": 1
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  if(args.city){
+    specialtiesSearchParams["body"]["query"]["bool"]["must"].push({ "match": { 'facility.city': args.city } });
+  }
+
+  let matchedSpecialtiesES: any = await client.search(specialtiesSearchParams);
+  const specialityBuckets = matchedSpecialtiesES.body.aggregations.matched_specialities.buckets;
+
+  if(specialityBuckets && specialityBuckets.length){
+    matchedSpecialtiesES = specialityBuckets.map((speciality: any) => {
+      speciality = speciality.matched_specialities_hits.hits.hits[0]["_source"]["specialty"];
+      delete speciality["specialtyId"];
+      return speciality;
+    })
+  }
+  
+  matchedSpecialties = matchedSpecialtiesES;
+
   searchLogger(`GET_MATCHED_DOCTORS_AND_SPECIALTIES___END`);
 
   //fetch possible doctors only if there are not matched doctors and specialties
