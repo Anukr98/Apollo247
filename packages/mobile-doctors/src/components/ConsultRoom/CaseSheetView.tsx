@@ -204,12 +204,14 @@ export interface CaseSheetViewProps extends NavigationScreenProps {
   >;
   tests: {
     itemname: string;
+    testInstruction?: string;
     isSelected: boolean;
   }[];
   setTests: React.Dispatch<
     React.SetStateAction<
       {
         itemname: string;
+        testInstruction?: string;
         isSelected: boolean;
       }[]
     >
@@ -293,8 +295,6 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   // This is dependent : 1728 // const [consultationPayType, setConsultationPayType] = useState<'PAID' | 'FREE' | ''>('');
 
   const [folloUpNotes, setFolloUpNotes] = useState<string>('');
-
-  const [ShowAddTestPopup, setShowAddTestPopup] = useState<boolean>(false);
 
   const { showAphAlert, setLoading, loading, hideAphAlert } = useUIElements();
   const { doctorDetails, specialties } = useAuth();
@@ -472,7 +472,9 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
             )) ||
           [],
         removedMedicine: removedMedicinePrescriptionData,
-        tests: tests.filter((i) => i.isSelected).map((i) => ({ itemname: i.itemname })),
+        tests: tests
+          .filter((i) => i.isSelected)
+          .map((i) => ({ itemname: i.itemname, testInstruction: i.testInstruction })),
         advice: addedAdvices.map((i) => ({ instruction: i.value })),
         followUp: {
           doFollowUp: switchValue,
@@ -1146,8 +1148,12 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
               <View style={{ marginLeft: 20, marginRight: 20, marginBottom: 16 }}>
                 <DiagnosicsCard
                   diseaseName={item.itemname}
+                  subText={item.testInstruction}
                   containerStyle={{
                     backgroundColor: !item.isSelected ? theme.colors.WHITE : '#F9F9F9',
+                  }}
+                  onPress={() => {
+                    props.overlayDisplay(renderAddTestPopup(item));
                   }}
                   icon={
                     <TouchableOpacity
@@ -1160,6 +1166,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                             0,
                             {
                               itemname: item.itemname,
+                              testInstruction: item.testInstruction || '',
                               isSelected: !item.isSelected,
                             }
                           );
@@ -1208,12 +1215,23 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                                 setTests([
                                   ...tests.map((i) =>
                                     i.itemname === showdata.itemname
-                                      ? { itemname: i.itemname, isSelected: true }
+                                      ? {
+                                          itemname: i.itemname,
+                                          testInstruction: i.testInstruction || '',
+                                          isSelected: true,
+                                        }
                                       : i
                                   ),
                                 ]);
                               } else {
-                                setTests([...tests, { ...showdata, isSelected: true }]);
+                                setTests([
+                                  ...tests,
+                                  {
+                                    ...showdata,
+                                    testInstruction: '',
+                                    isSelected: true,
+                                  },
+                                ]);
                               }
                             }}
                           >
@@ -1229,7 +1247,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         {caseSheetEdit && (
           <AddIconLabel
             label={strings.buttons.add_tests}
-            onPress={() => setShowAddTestPopup(true)}
+            onPress={() => props.overlayDisplay(renderAddTestPopup())}
             style={{ marginBottom: 19, marginLeft: 16, marginTop: 0 }}
           />
         )}
@@ -2484,30 +2502,44 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     );
   };
 
-  const renderAddTestPopup = () => {
+  const renderAddTestPopup = (selectedTest?: {
+    itemname: string;
+    testInstruction?: string;
+    isSelected: boolean;
+  }) => {
     return (
       <AddTestPopup
-        // searchTestVal={searchTestVal}
+        searchTestVal={selectedTest ? selectedTest.itemname : undefined}
+        instructionVal={selectedTest ? selectedTest.testInstruction : undefined}
         onClose={() => {
-          setShowAddTestPopup(false);
+          props.overlayDisplay(null);
         }}
-        onPressDone={(searchTestVal, tempTestArray) => {
-          const tempTest = tests;
+        onPressDone={(searchTestVal, tempTestArray, instruction) => {
+          const tempTest = tests.filter((i) =>
+            selectedTest ? i.itemname !== selectedTest.itemname : true
+          );
           const newData = tempTestArray.length
             ? tempTestArray.map((ele) => {
-                const existingElement = tests.findIndex((i) => i.itemname === ele.itemName);
+                const existingElement = tempTest.findIndex(
+                  (i) => i.itemname.toLowerCase() === ele.itemName.toLowerCase()
+                );
                 if (existingElement > -1) {
                   tempTest[existingElement].isSelected = true;
-                  return { itemname: '', isSelected: false };
+                  tempTest[existingElement].testInstruction = instruction;
+                  return { itemname: '', testInstruction: instruction || '', isSelected: false };
                 } else {
-                  return { itemname: ele.itemName || '', isSelected: true };
+                  return {
+                    itemname: ele.itemName || '',
+                    testInstruction: instruction || '',
+                    isSelected: true,
+                  };
                 }
               })
-            : [{ itemname: searchTestVal, isSelected: true }];
-
+            : [{ itemname: searchTestVal, testInstruction: instruction || '', isSelected: true }];
           setTests([...tempTest, ...newData.filter((i) => i.itemname !== '')]);
-          setShowAddTestPopup(!ShowAddTestPopup);
+          props.overlayDisplay(null);
         }}
+        hasInstructions={true}
       />
     );
   };
@@ -2714,11 +2746,9 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
             {renderAdviceInstruction()}
             {/* {renderFollowUpView()} */}
             {renderReferral()}
-
             <View style={{ zIndex: -1 }}>
               {/* {renderOtherInstructionsView()} */}
               <View style={styles.underlineend} />
-
               <View style={styles.inputBorderView}>
                 <View style={{ margin: 16 }}>
                   <Text style={styles.notes}>{strings.case_sheet.personal_note}</Text>
@@ -2736,10 +2766,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                 </View>
               </View>
             </View>
-
             {showPopUp && CallPopUp()}
-            {ShowAddTestPopup && renderAddTestPopup()}
-
             <View style={{ height: 80 }} />
           </ScrollView>
         </KeyboardAwareScrollView>

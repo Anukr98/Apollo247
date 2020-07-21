@@ -351,7 +351,9 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const [healthWalletArrayData, setHealthWalletArrayData] = useState<
     (GetCaseSheet_getCaseSheet_caseSheetDetails_patientDetails_healthVault | null)[] | null
   >([]);
-  const [tests, setTests] = useState<{ itemname: string; isSelected: boolean }[]>([]);
+  const [tests, setTests] = useState<
+    { itemname: string; testInstruction?: string; isSelected: boolean }[]
+  >([]);
   const [addedAdvices, setAddedAdvices] = useState<DataPair[]>([]);
   const [juniordoctornotes, setJuniorDoctorNotes] = useState<string | null>('');
   const [diagnosisData, setDiagnosisData] = useState<
@@ -476,9 +478,13 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         )
         .map((i) => {
           if (i) {
-            return { itemname: i.itemname || '', isSelected: true };
+            return {
+              itemname: i.itemname || '',
+              testInstruction: i.testInstruction || '',
+              isSelected: true,
+            };
           } else {
-            return { itemname: '', isSelected: false };
+            return { itemname: '', testInstruction: '', isSelected: false };
           }
         })
         .filter((i) => i.isSelected)
@@ -745,7 +751,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           ? tests
               .filter((i) => i.isSelected)
               .map((i) => {
-                return { itemname: i.itemname || '' };
+                return { itemname: i.itemname || '', testInstruction: i.testInstruction || '' };
               })
           : null,
       status: g(caseSheet, 'caseSheetDetails', 'status'),

@@ -193,6 +193,7 @@ export const GET_DOCTOR_APPOINTMENTS = gql`
           }
           diagnosticPrescription {
             itemname
+            testInstruction
           }
           followUp
           followUpDate
@@ -416,6 +417,7 @@ export const MODIFY_CASESHEET = gql`
       }
       diagnosticPrescription {
         itemname
+        testInstruction
       }
       doctorId
       doctorType
@@ -609,6 +611,7 @@ export const GET_JUNIOR_DOCTOR_CASESHEET = gql`
         }
         diagnosticPrescription {
           itemname
+          testInstruction
         }
         followUp
         followUpDate
@@ -826,6 +829,7 @@ export const GET_CASESHEET = gql`
         }
         diagnosticPrescription {
           itemname
+          testInstruction
         }
         followUp
         followUpDate
@@ -856,6 +860,7 @@ export const GET_CASESHEET = gql`
           }
           diagnosticPrescription {
             itemname
+            testInstruction
           }
           symptoms {
             symptom
@@ -950,6 +955,7 @@ export const CREATE_CASESHEET_FOR_SRD = gql`
       }
       diagnosticPrescription {
         itemname
+        testInstruction
       }
       doctorId
       doctorType

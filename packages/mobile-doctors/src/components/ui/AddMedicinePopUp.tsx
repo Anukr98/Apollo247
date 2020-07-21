@@ -1047,6 +1047,7 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
           multiline={true}
           value={instructions}
           onChange={(text) => setInstructions(text.nativeEvent.text)}
+          selectionColor={theme.colors.INPUT_CURSOR_COLOR}
         />
       </View>
     );

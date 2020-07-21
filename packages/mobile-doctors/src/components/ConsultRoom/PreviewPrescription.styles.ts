@@ -39,6 +39,10 @@ export const PreviewPrescriptionStyles = StyleSheet.create({
   description2Text: {
     ...theme.viewStyles.text('S', 11, theme.colors.blackColor(0.8)),
   },
+  description3Text: {
+    marginLeft: 14,
+    ...theme.viewStyles.text('S', 11, theme.colors.blackColor(0.6)),
+  },
   vitalsDescription: {
     ...theme.viewStyles.text('S', 11, theme.colors.blackColor(0.8)),
   },

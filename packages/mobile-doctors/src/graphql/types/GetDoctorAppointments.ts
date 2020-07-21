@@ -73,6 +73,7 @@ export interface GetDoctorAppointments_getDoctorAppointments_appointmentsHistory
 export interface GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_caseSheet_diagnosticPrescription {
   __typename: "DiagnosticPrescription";
   itemname: string | null;
+  testInstruction: string | null;
 }
 
 export interface GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_caseSheet {
