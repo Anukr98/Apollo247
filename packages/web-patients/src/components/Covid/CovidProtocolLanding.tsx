@@ -279,7 +279,7 @@ export const covidProtocolLanding: React.FC = (props: any) => {
                           }}
                         >
                           <img src={item.iconImage} />
-                          <Typography className={classes.panelHeading}>{item.category}</Typography>
+                          <Typography className={classes.panelHeading}>{item.title}</Typography>
                         </ExpansionPanelSummary>
                         <ExpansionPanelDetails className={classes.panelDetails}>
                           <div className={classes.detailsContent}>

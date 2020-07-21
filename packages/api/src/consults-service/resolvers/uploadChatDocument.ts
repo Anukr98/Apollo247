@@ -152,7 +152,7 @@ const uploadChatDocumentToPrism: Resolver<
     throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
 
   const patientsRepo = patientsDb.getCustomRepository(PatientRepository);
-  const patientDetails = await patientsRepo.findById(args.patientId);
+  const patientDetails = await patientsRepo.getPatientDetails(args.patientId);
   if (!patientDetails) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
 
   if (!patientDetails.uhid) throw new AphError(AphErrorMessages.INVALID_UHID);

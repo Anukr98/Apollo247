@@ -395,3 +395,21 @@ export enum ApiConstants {
   PRESCRIPTION_UPLOADED_BY_PATIENT = 'Prescription uploaded by Patient',
   ALERT_STORE_REMARKS = 'Customer Name : {name} , Mobile : {mobile} will be reaching Store in 10 mins to pickup order {orderNo} - Please handover Medicines.',
 }
+
+export enum PATIENT_REPO_RELATIONS {
+  LIFESTYLE = 'lifeStyle',
+  HEALTH_VAULT = 'healthVault',
+  FAMILY_HISTORY = 'familyHistory',
+  PATIENT_ADDRESS = 'patientAddress',
+  MEDICINE_ORDERS = 'medicineOrders',
+  PATIENT_DEVICE_TOKENS = 'patientDeviceTokens',
+  PATIENT_NOTIFICATION_SETTINGS = 'patientNotificationSettings',
+  PATIENT_MEDICAL_HISTORY = 'patientMedicalHistory',
+  DIAGNOSTIC_ORDERS = 'diagnosticOrders',
+  MEDICAL_RECORDS = 'medicalRecords',
+  PATIENT_HELP_TICKETS = 'patientHelpTickets',
+  SEARCH_HISTORY = 'searchHistory',
+  REGISTRATION_CODES = 'registrationCodes',
+  PHARMACOLOGIST_CONSULT = 'pharmacologistConsult',
+  PATIENT_FEEDBACK = 'patientfeedback'
+}

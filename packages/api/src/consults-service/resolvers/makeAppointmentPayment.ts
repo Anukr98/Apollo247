@@ -211,7 +211,7 @@ const makeAppointmentPayment: Resolver<
   if (paymentInput.paymentStatus == 'TXN_SUCCESS') {
     if (processingAppointment.couponCode) {
       const patient = patientsDb.getCustomRepository(PatientRepository);
-      const patientDetails = await patient.findByIdWithoutRelations(
+      const patientDetails = await patient.getPatientDetails(
         processingAppointment.patientId
       );
       if (!patientDetails) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
@@ -464,7 +464,7 @@ const sendPatientAcknowledgements = async (
   }
 
   const patient = patientsDb.getCustomRepository(PatientRepository);
-  const patientDetails = await patient.findById(appointmentData.patientId);
+  const patientDetails = await patient.getPatientDetails(appointmentData.patientId);
   if (!patientDetails) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }

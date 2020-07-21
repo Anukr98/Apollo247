@@ -896,11 +896,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           }
           break;
         case 'drugAllergies':
-          data.drugAllergies = item.v[0] || 'No';
+          data.drugAllergies = item.v[0] || '';
           try {
             const text = {
               id: patientId,
-              message: 'Medicine Allergy:\n' + data.drugAllergies,
+              message: 'Medicine Allergy:\n' + (item.v[0] || '-'),
               messageDate: new Date(),
             };
             setMessageText('');
@@ -928,11 +928,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           }
           break;
         case 'dietAllergies':
-          data.dietAllergies = item.v[0] || 'No';
+          data.dietAllergies = item.v[0] || '';
           try {
             const text = {
               id: patientId,
-              message: 'Food Allergy:\n' + data.dietAllergies,
+              message: 'Food Allergy:\n' + (item.v[0] || '-'),
               messageDate: new Date(),
             };
             setMessageText('');
@@ -973,13 +973,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           }
           break;
         case 'familyHistory':
-          data.familyHistory = item.v[0] || 'No';
+          data.familyHistory = item.v[0] || '';
           try {
             const text = {
               id: patientId,
               message:
                 'Family members suffering suffer from — COPD, Cancer, Hypertension or Diabetes:\n' +
-                data.familyHistory,
+                (item.v[0] || '-'),
               messageDate: new Date(),
             };
             setMessageText('');
@@ -993,12 +993,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           data.lifeStyle = data.lifeStyle
             ? data.lifeStyle.includes('Smoke')
               ? data.lifeStyle
-              : 'Smoke: ' + (item.v[0] || 'No') + '\n' + data.lifeStyle
-            : 'Smoke: ' + (item.v[0] || 'No');
+              : 'Smoke: ' + (item.v[0] || '') + '\n' + data.lifeStyle
+            : 'Smoke: ' + (item.v[0] || '');
           try {
             const text = {
               id: patientId,
-              message: 'Smoke:\n' + (item.v[0] || 'No'),
+              message: 'Smoke:\n' + (item.v[0] || '-'),
               messageDate: new Date(),
             };
             setMessageText('');
@@ -1012,12 +1012,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           data.lifeStyle = data.lifeStyle
             ? data.lifeStyle.includes('Drink')
               ? data.lifeStyle
-              : data.lifeStyle + '\nDrink: ' + (item.v[0] || 'No')
-            : 'Drink: ' + (item.v[0] || 'No');
+              : data.lifeStyle + '\nDrink: ' + (item.v[0] || '')
+            : 'Drink: ' + (item.v[0] || '');
           try {
             const text = {
               id: patientId,
-              message: 'Drink: \n' + (item.v[0] || 'No'),
+              message: 'Drink: \n' + (item.v[0] || '-'),
               messageDate: new Date(),
             };
             setMessageText('');

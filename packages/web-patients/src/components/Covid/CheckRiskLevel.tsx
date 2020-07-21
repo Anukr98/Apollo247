@@ -200,13 +200,14 @@ export const CheckRiskLevel: React.FC = (props) => {
               </AphButton>
             )}
           </ProtectedWithLoginPopup>}
-
-          <AphButton className={classes.filledBtn} onClick={() => window.open(covidScannerUrl)}>
-            <span>
-              <img src={require('images/ic_covid-white.svg')} alt="" />
-            </span>
-            <span>Check your Covid-19 risk level</span>
-          </AphButton>
+          <a href={covidScannerUrl} target={'_blank'}>
+            <AphButton className={classes.filledBtn}>
+              <span>
+                <img src={require('images/ic_covid-white.svg')} alt="" />
+              </span>
+              <span>Check your Covid-19 risk level</span>
+            </AphButton>
+          </a>
           <a className={classes.callBtn} href={isDesktopOnly ? '#' : `tel:${customerCareNumber}`}>
             <div
               onClick={() => {
