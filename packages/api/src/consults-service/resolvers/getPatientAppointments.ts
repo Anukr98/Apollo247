@@ -252,7 +252,6 @@ const getPatientPersonalizedAppointments: Resolver<
 > = async (parent, args, { consultsDb, doctorsDb, patientsDb, mobileNumber }) => {
   // Read data from cache
   const appointmentsFromCache = await getPersonalizedAppointmentFromCache(args.patientUhid);
-  console.log(appointmentsFromCache);
   if (appointmentsFromCache !== null) {
     const response: PersonalizedAppointmentResult = JSON.parse(appointmentsFromCache);
     response.appointmentDetails.appointmentDateTime = new Date(
@@ -323,7 +322,6 @@ const getPatientPersonalizedAppointments: Resolver<
           patientId,
           new Date(appt.consultedtime)
         );
-        console.log(apptDetailsBooked);
         if (apptDetailsBooked == 0) {
           const apptDetailsOffline: PersonalizedAppointment = {
             id: appt.id,
