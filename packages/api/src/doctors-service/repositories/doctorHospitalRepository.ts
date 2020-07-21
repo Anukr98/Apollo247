@@ -52,10 +52,7 @@ export class DoctorHospitalRepository extends Repository<DoctorAndHospital> {
 
   getDoctorIdsByMedMantraIds(medMantraIds: string[]) {
     return this.createQueryBuilder('doctorAndHospital')
-      .select([
-        '"doctorAndHospital.doctor.id" as apolloDoctorId',
-        '"doctorAndHospital.doctor.medmantraId" as medmantraId',
-      ])
+      .select(['"doctorId" AS "apolloDocId"', '"medmantraId" AS "medmantraId"'])
       .where('doctorAndHospital.medmantraId IN (:...idArray)', { idArray: medMantraIds })
       .getRawMany();
   }
