@@ -191,7 +191,8 @@ export const Specialties: React.FC<SpecialtiesProps> = (props) => {
                         >
                           <div className={classes.contentBox}>
                             <Avatar
-                              alt={specialityDetails.name || ''}
+                              title={`Online Doctor Consultation - ${specialityDetails.name}`}
+                              alt={`Online Doctor Consultation - ${specialityDetails.name}`}
                               src={specialityDetails.image || ''}
                               className={classes.bigAvatar}
                             />
