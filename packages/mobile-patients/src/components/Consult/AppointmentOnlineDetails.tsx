@@ -37,7 +37,10 @@ import {
   STATUS,
   TRANSFER_INITIATED_TYPE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { getNextAvailableSlots } from '@aph/mobile-patients/src/helpers/clientCalls';
+import {
+  getNextAvailableSlots,
+  getRescheduleAppointmentDetails,
+} from '@aph/mobile-patients/src/helpers/clientCalls';
 import {
   dataSavedUserID,
   g,
@@ -203,6 +206,8 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
   const [nextSlotAvailable, setNextSlotAvailable] = useState<string>('');
   const [bottompopup, setBottompopup] = useState<boolean>(false);
   const [networkStatus, setNetworkStatus] = useState<boolean>(false);
+  const [doctorInitiated, setDoctorInitiated] = useState<boolean>(false);
+
   // const [consultStarted, setConsultStarted] = useState<boolean>(false);
   // const [sucesspopup, setSucessPopup] = useState<boolean>(false);
   const minutes = moment.duration(moment(data.appointmentDateTime).diff(new Date())).asMinutes();
@@ -253,6 +258,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
       .then((status) => {
         if (status) {
           fetchNextDoctorAvailableData();
+          getAppointmentNextSlotInitiatedByDoctor();
         } else {
           setNetworkStatus(true);
           setshowSpinner(false);
@@ -288,6 +294,21 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
       })
       .finally(() => {
         checkIfReschedule();
+      });
+  };
+
+  const getAppointmentNextSlotInitiatedByDoctor = () => {
+    console.log('getAppointmentNextSlotInitiatedByDoctor');
+    getRescheduleAppointmentDetails(client, data.id)
+      .then(({ data }: any) => {
+        console.log('data getAppointmentNextSlotInitiatedByDoctor', data);
+        setDoctorInitiated(true);
+      })
+      .catch((e) => {
+        setshowSpinner(false);
+        setDoctorInitiated(false);
+        const error = JSON.parse(JSON.stringify(e));
+        console.log('Error occured while getAppointmentNextSlotInitiatedByDoctor', error);
       });
   };
 

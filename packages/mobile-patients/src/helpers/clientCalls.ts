@@ -8,18 +8,20 @@ import {
   GET_APPOINTMENT_DATA,
   GET_CALL_DETAILS,
   GET_DEVICE_TOKEN_COUNT,
-  LINK_UHID,
-  UNLINK_UHID,
-  INSERT_MESSAGE,
   GET_PATIENT_APPOINTMENTS,
-  NEXT_AVAILABLE_SLOT,
-  SEND_CHAT_MESSAGE_TO_DOCTOR,
-  UPDATE_WHATSAPP_STATUS,
-  UPDATE_SAVE_EXTERNAL_CONNECT,
-  PAST_APPOINTMENTS_COUNT,
   GET_PERSONALIZED_APPOITNMENTS,
+  INSERT_MESSAGE,
+  LINK_UHID,
+  NEXT_AVAILABLE_SLOT,
+  PAST_APPOINTMENTS_COUNT,
+  SEND_CHAT_MESSAGE_TO_DOCTOR,
+  UNLINK_UHID,
+  UPDATE_SAVE_EXTERNAL_CONNECT,
+  UPDATE_WHATSAPP_STATUS,
+  GET_APPOINTMENT_RESCHEDULE_DETAILS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { GetDoctorNextAvailableSlot } from '@aph/mobile-patients/src/graphql/types/GetDoctorNextAvailableSlot';
+import { linkUhidsVariables } from '@aph/mobile-patients/src/graphql/types/linkUhids';
 import ApolloClient from 'apollo-client';
 import moment from 'moment';
 import { addToConsultQueueVariables } from '../graphql/types/addToConsultQueue';
@@ -39,7 +41,14 @@ import {
   getDeviceCodeCount,
   getDeviceCodeCountVariables,
 } from '../graphql/types/getDeviceCodeCount';
-import { linkUhidsVariables } from '@aph/mobile-patients/src/graphql/types/linkUhids';
+import {
+  getPastAppointmentsCount,
+  getPastAppointmentsCountVariables,
+} from '../graphql/types/getPastAppointmentsCount';
+import {
+  getPatientPersonalizedAppointments,
+  getPatientPersonalizedAppointmentsVariables,
+} from '../graphql/types/getPatientPersonalizedAppointments';
 import { getPatinetAppointments } from '../graphql/types/getPatinetAppointments';
 import {
   ConsultQueueInput,
@@ -52,19 +61,15 @@ import {
   sendChatMessageToDoctor,
   sendChatMessageToDoctorVariables,
 } from '../graphql/types/sendChatMessageToDoctor';
-import { updateWhatsAppStatus } from '../graphql/types/updateWhatsAppStatus';
 import {
   updateSaveExternalConnect,
   updateSaveExternalConnectVariables,
 } from '../graphql/types/updateSaveExternalConnect';
+import { updateWhatsAppStatus } from '../graphql/types/updateWhatsAppStatus';
 import {
-  getPastAppointmentsCount,
-  getPastAppointmentsCountVariables,
-} from '../graphql/types/getPastAppointmentsCount';
-import {
-  getPatientPersonalizedAppointments,
-  getPatientPersonalizedAppointmentsVariables,
-} from '../graphql/types/getPatientPersonalizedAppointments';
+  getAppointmentRescheduleDetails,
+  getAppointmentRescheduleDetailsVariables,
+} from '../graphql/types/getAppointmentRescheduleDetails';
 
 export const getNextAvailableSlots = (
   client: ApolloClient<object>,
@@ -295,7 +300,7 @@ export const sendNotificationToDoctor = (
         res(data.data);
       })
       .catch((e) => {
-        CommonBugFender('clientCalls_getAppointments', e);
+        CommonBugFender('clientCalls_sendNotificationToDoctor', e);
         rej(e);
       });
   });
@@ -318,7 +323,7 @@ export const getAppointmentCallStatus = (
         res({ data });
       })
       .catch((e: any) => {
-        CommonBugFender('clientCalls_getAppointmentDataDetails', e);
+        CommonBugFender('clientCalls_getAppointmentCallStatus', e);
         const error = JSON.parse(JSON.stringify(e));
         rej({ error: e });
       });
@@ -389,7 +394,7 @@ export const deLinkUHIDs = (
         res({ data });
       })
       .catch((e) => {
-        CommonBugFender('clientCalls_linkUHIDs', e);
+        CommonBugFender('clientCalls_deLinkUHIDs', e);
         rej({ error: e });
       });
   });
@@ -407,7 +412,7 @@ export const insertMessage = (client: ApolloClient<object>, messageInput: Messag
         res({ data });
       })
       .catch((e) => {
-        CommonBugFender('clientCalls_addToConsultQueue', e);
+        CommonBugFender('clientCalls_insertMessage', e);
         rej({ error: e });
       });
   });
@@ -437,7 +442,7 @@ export const whatsAppUpdateAPICall = (
         res({ data });
       })
       .catch((e) => {
-        CommonBugFender('clientCalls_addToConsultQueue', e);
+        CommonBugFender('clientCalls_whatsAppUpdateAPICall', e);
         rej({ error: e });
       });
   });
@@ -469,7 +474,7 @@ export const updateExternalConnect = (
         res({ data });
       })
       .catch((e) => {
-        CommonBugFender('clientCalls_addToConsultQueueWithAutomatedQuestions', e);
+        CommonBugFender('clientCalls_updateExternalConnect', e);
         rej({ error: e });
       });
   });
@@ -496,7 +501,7 @@ export const getPastAppoinmentCount = (
         res({ data });
       })
       .catch((e) => {
-        CommonBugFender('clientCalls_addToConsultQueueWithAutomatedQuestions', e);
+        CommonBugFender('clientCalls_getPastAppoinmentCount', e);
         rej({ error: e });
       });
   });
@@ -519,7 +524,30 @@ export const getPatientPersonalizedAppointmentList = (
         res({ data });
       })
       .catch((e) => {
-        CommonBugFender('clientCalls_addToConsultQueueWithAutomatedQuestions', e);
+        CommonBugFender('clientCalls_getPatientPersonalizedAppointmentList', e);
+        rej({ error: e });
+      });
+  });
+};
+
+export const getRescheduleAppointmentDetails = (
+  client: ApolloClient<object>,
+  appointmentId: string
+) => {
+  return new Promise((res, rej) => {
+    client
+      .query<getAppointmentRescheduleDetails, getAppointmentRescheduleDetailsVariables>({
+        query: GET_APPOINTMENT_RESCHEDULE_DETAILS,
+        variables: {
+          appointmentId: appointmentId,
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((data: any) => {
+        res({ data });
+      })
+      .catch((e: any) => {
+        CommonBugFender('clientCalls_getRescheduleAppointmentDetails', e);
         rej({ error: e });
       });
   });
