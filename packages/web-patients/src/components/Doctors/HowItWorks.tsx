@@ -475,10 +475,12 @@ export const HowItWorks: React.FC = (props) => {
       <div className={classes.appDetails}>
         <Typography component="h6">Consultation works only on our mobile app</Typography>
         <Typography>To enjoy enhanced consultation experience download our mobile app</Typography>
-        <div className={classes.appDownload}>
-          <img src={require('images/apollo247.png')} />
-          <AphButton>Download the App</AphButton>
-        </div>
+        <a href={getAppStoreLink()} target={'_blank'}>
+          <div className={classes.appDownload}>
+            <img src={require('images/apollo247.png')} />
+            <AphButton>Download the App</AphButton>
+          </div>
+        </a>
       </div>
       <AphDialog open={chatConsult} maxWidth="sm">
         <AphDialogClose onClick={() => setChatConsult(false)} title={'Close'} />
