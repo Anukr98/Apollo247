@@ -1,10 +1,10 @@
 import gql from 'graphql-tag';
-import _ from 'lodash';
+//import _ from 'lodash';
 import { Resolver } from 'api-gateway';
 import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
 import { Patient, Gender, Relation } from 'profiles-service/entities';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
-import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
+//import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import {
@@ -151,7 +151,7 @@ const getPatientByMobileNumber: Resolver<
   if (!patients) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_DETAILS, undefined, {});
   }
-  const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
+  /*const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
   let appointmentList = [];
 
   for (let i = 0; i < patients.length; i++) {
@@ -176,8 +176,8 @@ const getPatientByMobileNumber: Resolver<
     }
     patientResult.push(objResult);
   }
-
-  return { patients: patientResult };
+  return { patients: patientResult };*/
+  return { patients };
 };
 
 const addNewProfile: Resolver<

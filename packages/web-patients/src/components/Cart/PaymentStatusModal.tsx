@@ -16,7 +16,7 @@ import { useAllCurrentPatients } from 'hooks/authHooks';
 import { OrderStatusContent } from '../OrderStatusContent';
 import { OrderPlaced } from 'components/Cart/OrderPlaced';
 import { getPaymentMethodFullName } from 'helpers/commonHelpers';
-import { paymentStatusTracking } from 'webEngageTracking';
+import { paymentStatusTracking, pharmacyCheckoutTracking } from 'webEngageTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -143,6 +143,7 @@ export const PaymentStatusModal: React.FC<PaymentStatusProps> = (props) => {
   };
   const handleOnClose = () => {
     localStorage.removeItem('selectedPaymentMode');
+    sessionStorage.removeItem('pharmacyCheckoutValues');
     paymentStatusRedirect(clientRoutes.medicines());
   };
   const paymentStatusRedirect = (url: string) => {

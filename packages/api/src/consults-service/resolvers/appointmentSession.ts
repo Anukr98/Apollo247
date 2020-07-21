@@ -582,8 +582,8 @@ const endAppointmentSession: Resolver<
     });
     const ccEmailIds =
       process.env.NODE_ENV == 'dev' ||
-        process.env.NODE_ENV == 'development' ||
-        process.env.NODE_ENV == 'local'
+      process.env.NODE_ENV == 'development' ||
+      process.env.NODE_ENV == 'local'
         ? ApiConstants.PATIENT_APPT_CC_EMAILID
         : ApiConstants.PATIENT_APPT_CC_EMAILID_PRODUCTION;
     let isDoctorNoShow = 0;
@@ -614,7 +614,11 @@ const endAppointmentSession: Resolver<
       });
     }
     await rescheduleRepo.saveReschedule(rescheduleAppointmentAttrs);
-    await apptRepo.updateTransferState(apptDetails.id, APPOINTMENT_STATE.AWAITING_RESCHEDULE, apptDetails);
+    await apptRepo.updateTransferState(
+      apptDetails.id,
+      APPOINTMENT_STATE.AWAITING_RESCHEDULE,
+      apptDetails
+    );
 
     // send notification
     let pushNotificationInput = {

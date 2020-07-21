@@ -13,7 +13,8 @@ import {
   VALUE_TYPE,
   APPOINTMENT_UPDATED_BY,
 } from 'consults-service/entities';
-import { initiateRefund, PaytmResponse } from 'consults-service/helpers/refundHelper';
+import { initiateRefund } from 'consults-service/helpers/refundHelper';
+import { PaytmResponse } from 'types/refundHelperTypes';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
@@ -292,9 +293,9 @@ const makeAppointmentPayment: Resolver<
       .getUTCHours()
       .toString()
       .padStart(2, '0')}:${processingAppointment.appointmentDateTime
-        .getUTCMinutes()
-        .toString()
-        .padStart(2, '0')}:00.000Z`;
+      .getUTCMinutes()
+      .toString()
+      .padStart(2, '0')}:00.000Z`;
     console.log(slotApptDt, apptDt, sl, processingAppointment.doctorId, 'appoint date time');
     apptsRepo.updateDoctorSlotStatusES(
       processingAppointment.doctorId,
@@ -338,7 +339,7 @@ const makeAppointmentPayment: Resolver<
     }
     if (
       timeDifference / 60 <=
-      parseInt(ApiConstants.AUTO_SUBMIT_CASESHEET_TIME_APPOINMENT.toString(), 10) ||
+        parseInt(ApiConstants.AUTO_SUBMIT_CASESHEET_TIME_APPOINMENT.toString(), 10) ||
       submitFlag == 1
     ) {
       const consultQueueRepo = consultsDb.getCustomRepository(ConsultQueueRepository);
@@ -436,10 +437,14 @@ const makeAppointmentPayment: Resolver<
   paymentInfo.paymentStatus = paymentInput.paymentStatus;
   paymentInfo.responseCode = paymentInput.responseCode;
   paymentInfo.responseMessage = paymentInput.responseMessage;
-  await apptsRepo.updateAppointment(processingAppointment.id, {
-    status: appointmentStatus,
-    paymentInfo,
-  }, processingAppointment);
+  await apptsRepo.updateAppointment(
+    processingAppointment.id,
+    {
+      status: appointmentStatus,
+      paymentInfo,
+    },
+    processingAppointment
+  );
   processingAppointment.status = appointmentStatus;
   paymentInfo.appointment = processingAppointment;
   return { appointment: paymentInfo, isRefunded: false };
@@ -538,8 +543,8 @@ const sendPatientAcknowledgements = async (
   const toEmailId = process.env.BOOK_APPT_TO_EMAIL ? process.env.BOOK_APPT_TO_EMAIL : '';
   const ccEmailIds =
     process.env.NODE_ENV == 'dev' ||
-      process.env.NODE_ENV == 'development' ||
-      process.env.NODE_ENV == 'local'
+    process.env.NODE_ENV == 'development' ||
+    process.env.NODE_ENV == 'local'
       ? ApiConstants.PATIENT_APPT_CC_EMAILID
       : ApiConstants.PATIENT_APPT_CC_EMAILID_PRODUCTION;
   const emailContent: EmailMessage = {

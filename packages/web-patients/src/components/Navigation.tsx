@@ -8,6 +8,7 @@ import { useShoppingCart } from 'components/MedicinesCartProvider';
 import { useDiagnosticsCart } from 'components/Tests/DiagnosticsCartProvider';
 import { getAppStoreLink } from 'helpers/dateHelpers';
 import { useParams } from 'hooks/routerHooks';
+import Typography from '@material-ui/core/Typography';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -45,12 +46,15 @@ const useStyles = makeStyles((theme: Theme) => {
       borderBottom: '1px solid #01475b',
       paddingBottom: 3,
       display: 'inline-block',
+      fontSize: '13px !important',
+      lineHeight: '18px !important',
     },
     menuInfo: {
       paddingTop: 3,
-      fontSize: 12,
+      fontSize: '12px !important',
       opacity: 0.6,
       display: 'block',
+      lineHeight: '17px !important',
     },
     menuItemActive: {
       backgroundColor: '#f7f8f5',
@@ -304,11 +308,13 @@ export const Navigation: React.FC<NavigationProps> = (props) => {
             to={clientRoutes.specialityListing()}
             title={'Doctors'}
           >
-            <span className={classes.menuTitle}>Doctors</span>
-            <span className={classes.menuInfo}>
+            <Typography variant="h1" className={classes.menuTitle}>
+              Doctors
+            </Typography>
+            <Typography variant="h1" className={classes.menuInfo}>
               Consult
               <br /> Online
-            </span>
+            </Typography>
           </Link>
           <Link
             to={clientRoutes.medicines()}
@@ -319,10 +325,15 @@ export const Navigation: React.FC<NavigationProps> = (props) => {
             }
             title={'Pharmacy'}
           >
-            <span className={classes.menuTitle}>Pharmacy</span>
-            <span className={classes.menuInfo}>
+            <Typography variant="h1" className={classes.menuTitle}>
+              Pharmacy
+            </Typography>
+            <Typography variant="h1" className={classes.menuInfo}>
               Medicines &<br /> other products
-            </span>
+            </Typography>
+            {/* <span className={classes.menuInfo}>
+                Medicines &<br /> other products
+            </span> */}
           </Link>
           {/* <Link
             to={clientRoutes.tests()}

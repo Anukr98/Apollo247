@@ -340,7 +340,6 @@ const getPatientPrismMedicalRecords: Resolver<
       prescription.fileUrl.length > 0
         ? prescription.fileUrl.replace('{FILE_NAME}', prescription.prescriptionFiles[0].fileName)
         : '';
-
     if (prescription.dateOfPrescription.toString().length < 11) {
       prescription.dateOfPrescription = prescription.dateOfPrescription * 1000;
     }
@@ -382,7 +381,6 @@ const getPatientPrismMedicalRecords: Resolver<
     if (element.labTestDate.toString().length < 11) {
       element.labTestDate = element.labTestDate * 1000;
     }
-
     const labResult = {
       id: element.id,
       labTestName: element.labTestName,

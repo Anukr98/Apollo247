@@ -53,10 +53,14 @@ export class PatientRepository extends Repository<Patient> {
     findOptions: { mobileNumber: Patient['mobileNumber'] },
     createOptions: Partial<Patient>
   ) {
-    return this.findOne({
+    return this.find({
       where: { mobileNumber: findOptions.mobileNumber },
-    }).then((existingPatient) => {
-      return existingPatient || this.create(createOptions).save();
+    }).then(async (existingPatient) => {
+      if (existingPatient.length > 0) {
+        return existingPatient;
+      }
+      const newPatient = await this.create(createOptions).save();
+      return [newPatient];
     });
   }
   findEmpId(empId: string, patientId: string) {
@@ -146,7 +150,7 @@ export class PatientRepository extends Repository<Patient> {
   async setByMobileCache(mobile: string) {
     const patients = await this.find({
       where: { mobileNumber: mobile, isActive: true },
-      relations: [
+      /*relations: [
         'lifeStyle',
         'healthVault',
         'familyHistory',
@@ -154,7 +158,7 @@ export class PatientRepository extends Repository<Patient> {
         'patientDeviceTokens',
         'patientNotificationSettings',
         'patientMedicalHistory',
-      ],
+      ],*/
     });
 
     const patientIds: string[] = await patients.map((patient) => {

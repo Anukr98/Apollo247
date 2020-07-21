@@ -8,6 +8,7 @@ import {
   STATUS,
   REQUEST_ROLES,
   ES_DOCTOR_SLOT_STATUS,
+  RescheduleAppointmentDetails,
 } from 'consults-service/entities';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
@@ -31,7 +32,8 @@ import { addMilliseconds, differenceInDays } from 'date-fns';
 import { BlockedCalendarItemRepository } from 'doctors-service/repositories/blockedCalendarItemRepository';
 import { AdminDoctorMap } from 'doctors-service/repositories/adminDoctorRepository';
 import { rescheduleAppointmentEmailTemplate } from 'helpers/emailTemplates/rescheduleAppointmentEmailTemplate';
-import { initiateRefund, PaytmResponse } from 'consults-service/helpers/refundHelper';
+import { initiateRefund } from 'consults-service/helpers/refundHelper';
+import { PaytmResponse } from 'types/refundHelperTypes';
 import { log } from 'customWinstonLogger';
 
 export const rescheduleAppointmentTypeDefs = gql`
@@ -95,6 +97,15 @@ export const rescheduleAppointmentTypeDefs = gql`
     isFollowUp: Int!
   }
 
+  type RescheduleAppointmentDetails {
+    id: String!
+    rescheduledDateTime: DateTime!
+    rescheduleReason: String!
+    rescheduleInitiatedBy: TRANSFER_INITIATED_TYPE
+    rescheduleInitiatedId: String!
+    rescheduleStatus: TRANSFER_STATUS!
+  }
+
   extend type Mutation {
     initiateRescheduleAppointment(
       RescheduleAppointmentInput: RescheduleAppointmentInput
@@ -109,6 +120,7 @@ export const rescheduleAppointmentTypeDefs = gql`
       existAppointmentId: String!
       rescheduleDate: DateTime!
     ): CheckRescheduleResult!
+    getAppointmentRescheduleDetails(appointmentId: String!): RescheduleAppointmentDetails!
   }
 `;
 
@@ -164,6 +176,47 @@ type BookRescheduleAppointmentInputArgs = {
   bookRescheduleAppointmentInput: BookRescheduleAppointmentInput;
 };
 
+const getAppointmentRescheduleDetails: Resolver<
+  null,
+  { appointmentId: string },
+  ConsultServiceContext,
+  RescheduleAppointmentDetails
+> = async (parent, args, { consultsDb, doctorsDb }) => {
+  const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
+  const apptDetails = await appointmentRepo.findById(args.appointmentId);
+  if (!apptDetails) {
+    throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
+  }
+  const rescheduleRepo = consultsDb.getCustomRepository(RescheduleAppointmentRepository);
+  const rescheduleDetails = await rescheduleRepo.getRescheduleDetailsByAppointment(apptDetails.id);
+  if (!rescheduleDetails) throw new AphError(AphErrorMessages.NO_RESCHEDULE_DETAILS, undefined, {});
+  const apptCount = await appointmentRepo.checkIfAppointmentExist(
+    rescheduleDetails.rescheduleInitiatedId,
+    rescheduleDetails.rescheduledDateTime
+  );
+  if (rescheduleDetails.rescheduledDateTime < new Date() || apptCount > 0) {
+    let nextDate = new Date();
+    let availableSlot;
+    while (true) {
+      const nextSlot = await appointmentRepo.getDoctorNextSlotDate(
+        rescheduleDetails.rescheduleInitiatedId,
+        nextDate,
+        doctorsDb,
+        apptDetails.appointmentType,
+        new Date()
+      );
+      if (nextSlot != '' && nextSlot != undefined) {
+        availableSlot = nextSlot;
+        break;
+      }
+      nextDate = addDays(nextDate, 1);
+    }
+    rescheduleDetails.rescheduledDateTime = new Date(availableSlot);
+  }
+
+  return rescheduleDetails;
+};
+
 const checkIfReschedule: Resolver<
   null,
   { existAppointmentId: string; rescheduleDate: Date },
@@ -201,7 +254,7 @@ const checkIfReschedule: Resolver<
     } else {
       if (
         Math.abs(differenceInDays(apptDetails.appointmentDateTime, args.rescheduleDate)) >
-        ApiConstants.APPOINTMENT_RESCHEDULE_DAYS_LIMIT &&
+          ApiConstants.APPOINTMENT_RESCHEDULE_DAYS_LIMIT &&
         apptDetails.isFollowPaid === false
       ) {
         isPaid = 1;
@@ -372,9 +425,9 @@ const bookRescheduleAppointment: Resolver<
       .getUTCHours()
       .toString()
       .padStart(2, '0')}:${appointmentDateTime
-        .getUTCMinutes()
-        .toString()
-        .padStart(2, '0')}:00.000Z`;
+      .getUTCMinutes()
+      .toString()
+      .padStart(2, '0')}:00.000Z`;
     console.log(slotApptDt, apptDt, sl, appointment.doctorId, 'appoint date time');
     const esDocotrStatusOpen =
       status === 'OPEN' ? ES_DOCTOR_SLOT_STATUS.OPEN : ES_DOCTOR_SLOT_STATUS.BOOKED;
@@ -388,7 +441,6 @@ const bookRescheduleAppointment: Resolver<
   }
 
   if (bookRescheduleAppointmentInput.initiatedBy == TRANSFER_INITIATED_TYPE.PATIENT) {
-
     if (apptDetails.rescheduleCount == ApiConstants.APPOINTMENT_MAX_RESCHEDULE_COUNT_PATIENT) {
       //cancel appt
       await appointmentRepo.cancelAppointment(
@@ -434,7 +486,6 @@ const bookRescheduleAppointment: Resolver<
         }
       }
     } else {
-
       await appointmentRepo.rescheduleAppointment(
         bookRescheduleAppointmentInput.appointmentId,
         bookRescheduleAppointmentInput.newDateTimeslot,
@@ -470,7 +521,6 @@ const bookRescheduleAppointment: Resolver<
     if (
       apptDetails.rescheduleCountByDoctor == ApiConstants.APPOINTMENT_MAX_RESCHEDULE_COUNT_DOCTOR
     ) {
-
       //cancel appt
       await appointmentRepo.cancelAppointment(
         bookRescheduleAppointmentInput.appointmentId,
@@ -593,8 +643,8 @@ const bookRescheduleAppointment: Resolver<
   const toEmailId = process.env.BOOK_APPT_TO_EMAIL ? process.env.BOOK_APPT_TO_EMAIL : '';
   const ccEmailIds =
     process.env.NODE_ENV == 'dev' ||
-      process.env.NODE_ENV == 'development' ||
-      process.env.NODE_ENV == 'local'
+    process.env.NODE_ENV == 'development' ||
+    process.env.NODE_ENV == 'local'
       ? ApiConstants.PATIENT_APPT_CC_EMAILID
       : ApiConstants.PATIENT_APPT_CC_EMAILID_PRODUCTION;
   const emailContent: EmailMessage = {
@@ -690,5 +740,6 @@ export const rescheduleAppointmentResolvers = {
 
   Query: {
     checkIfReschedule,
+    getAppointmentRescheduleDetails,
   },
 };

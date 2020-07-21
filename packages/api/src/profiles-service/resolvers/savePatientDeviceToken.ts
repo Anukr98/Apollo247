@@ -8,11 +8,6 @@ import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 
 export const saveDeviceTokenTypeDefs = gql`
-  enum DEVICE_TYPE {
-    IOS
-    ANDROID
-  }
-
   input SaveDeviceTokenInput {
     deviceType: DEVICE_TYPE!
     deviceToken: String!
