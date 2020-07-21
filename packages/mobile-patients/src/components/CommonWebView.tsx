@@ -12,10 +12,6 @@ export interface CommonWebViewProps extends NavigationScreenProps {}
 export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
   const [loading, setLoading] = useState<boolean>(true);
 
-  const handleResponse = (data: any) => {
-    console.log(data);
-  };
-
   const renderWebView = () => {
     let WebViewRef: any;
     return (
@@ -23,7 +19,6 @@ export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
         ref={(WEBVIEW_REF) => (WebViewRef = WEBVIEW_REF)}
         onLoadEnd={() => setLoading!(false)}
         source={{ uri: props.navigation.getParam('url') }}
-        onNavigationStateChange={(data) => handleResponse(data)}
         renderError={(errorCode) => renderError(WebViewRef)}
       />
     );
