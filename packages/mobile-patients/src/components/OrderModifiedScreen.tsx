@@ -13,6 +13,7 @@ import {
 import { NavigationScreenProps } from 'react-navigation';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
 const styles = StyleSheet.create({
   orderIDViewStyle: {
@@ -389,9 +390,9 @@ export const OrderModifiedScreen: React.FC<OrderModifiedScreenProps> = (props) =
         }}
         activeOpacity={1}
         onPress={() => {
-          Linking.openURL('https://bit.ly/apollo247Medicines').catch((err) =>
-            console.error('An error occurred', err)
-          );
+          Linking.openURL(
+            AppConfig.Configuration.MED_ORDERS_CUSTOMER_CARE_WHATSAPP_LINK
+          ).catch((err) => console.error('An error occurred', err));
         }}
       >
         <Text

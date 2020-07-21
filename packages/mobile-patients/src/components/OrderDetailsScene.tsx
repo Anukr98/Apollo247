@@ -97,6 +97,7 @@ import {
   getPatientAddressById,
   getPatientAddressByIdVariables,
 } from '@aph/mobile-patients/src/graphql/types/getPatientAddressById';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
 const styles = StyleSheet.create({
   headerShadowContainer: {
@@ -625,9 +626,11 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         ],
         [MEDICINE_ORDER_STATUS.DELIVERED]: [
           '',
-          `In case of any concerns or feedback related to your order, please speak with our customer care executives on the official WhatsApp channel (during business hours 9 AM - 8:30 PM)\nhttps://bit.ly/apollo247Medicines`,
+          `In case of any concerns or feedback related to your order, please speak with our customer care executives on the official WhatsApp channel (during business hours 9 AM - 8:30 PM)\n${AppConfig.Configuration.MED_ORDERS_CUSTOMER_CARE_WHATSAPP_LINK}`,
           () => {
-            Linking.openURL('https://bit.ly/apollo247Medicines').catch((err) =>
+            Linking.openURL(
+              AppConfig.Configuration.MED_ORDERS_CUSTOMER_CARE_WHATSAPP_LINK
+            ).catch((err) =>
               CommonBugFender(`${AppRoutes.OrderDetailsScene}_getOrderDescription`, err)
             );
           },
@@ -1465,9 +1468,9 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
                     text: 'CLICK HERE',
                     type: 'orange-link',
                     onPress: () => {
-                      Linking.openURL('https://bit.ly/apollo247Medicines').catch((err) =>
-                        console.error('An error occurred', err)
-                      );
+                      Linking.openURL(
+                        AppConfig.Configuration.MED_ORDERS_CUSTOMER_CARE_WHATSAPP_LINK
+                      ).catch((err) => console.error('An error occurred', err));
                       hideAphAlert!();
                     },
                   },
