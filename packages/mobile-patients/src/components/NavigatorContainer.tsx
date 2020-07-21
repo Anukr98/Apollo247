@@ -306,6 +306,10 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.UploadPrescription]: {
     screen: UploadPrescription,
+    path: 'MedUploadPrescription',
+    navigationOptions: {
+      gesturesEnabled: false,
+    },
   },
   [AppRoutes.ChennaiNonCartOrderForm]: {
     screen: ChennaiNonCartOrderForm,
