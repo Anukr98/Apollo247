@@ -40,7 +40,6 @@ import { Alerts } from 'components/Alerts/Alerts';
 import { gtmTracking, _cbTracking } from '../gtmTracking';
 import { useApolloClient } from 'react-apollo-hooks';
 import { ShowSlots } from './ShowSlots';
-import _lowerCase from 'lodash/lowerCase';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -580,7 +579,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
       <Scrollbars autoHide={true} autoHeight autoHeightMax={isSmallScreen ? '50vh' : '65vh'}>
         <div className={classes.customScrollBar}>
           <div className={classes.consultGroup}>
-            <p>{`Dr. ${doctorName} is ${_lowerCase(availabilityMarkup())}! Would you like to
+            <p>{`Dr. ${doctorName} is ${availabilityMarkup()}! Would you like to
                 consult now or schedule for later?`}</p>
             <div className={classes.actions}>
               <AphButton
