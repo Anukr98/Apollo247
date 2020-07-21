@@ -181,7 +181,7 @@ export const CheckRiskLevel: React.FC = (props) => {
           our experts for advice.
         </p>
         <div className={classes.rightActions}>
-          <ProtectedWithLoginPopup>
+          {window.location.href.includes('covid19') && <ProtectedWithLoginPopup>
             {({ protectWithLoginPopup }) => (
               <AphButton
                 className={classes.filledBtn}
@@ -199,7 +199,7 @@ export const CheckRiskLevel: React.FC = (props) => {
                 </Link>
               </AphButton>
             )}
-          </ProtectedWithLoginPopup>
+          </ProtectedWithLoginPopup>}
 
           <AphButton className={classes.filledBtn} onClick={() => window.open(covidScannerUrl)}>
             <span>
