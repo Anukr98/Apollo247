@@ -773,7 +773,7 @@ export async function sendNotification(
     );
     if (
       differenceInHours(appointment.appointmentDateTime, new Date()) <= 24 &&
-      new Date() < todaysDate
+      appointment.appointmentDateTime < todaysDate
     ) {
       const finalTime = format(istDateTime, 'hh:mm a');
       const doctorWhatsAppMessage = ApiConstants.DOCTOR_BOOK_APPOINTMENT_WHATSAPP.replace(
