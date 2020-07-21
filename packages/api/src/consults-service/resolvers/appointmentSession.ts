@@ -338,7 +338,8 @@ const createAppointmentSession: Resolver<
       currentDate < apptDetails.appointmentDateTime
     ) {
       const patientRepo = patientsDb.getCustomRepository(PatientRepository);
-      const patientData = await patientRepo.findById(apptDetails.patientId);
+      const patientData = await patientRepo.getPatientDetails(apptDetails.patientId);
+
       const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
       const doctorData = await doctorRepository.findDoctorByIdWithoutRelations(
         apptDetails.doctorId
@@ -408,7 +409,8 @@ const createAppointmentSession: Resolver<
     currentDate < apptDetails.appointmentDateTime
   ) {
     const patientRepo = patientsDb.getCustomRepository(PatientRepository);
-    const patientData = await patientRepo.findById(apptDetails.patientId);
+    const patientData = await patientRepo.getPatientDetails(apptDetails.patientId);
+
     const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
     const doctorData = await doctorRepository.findDoctorByIdWithoutRelations(apptDetails.doctorId);
     if (patientData && doctorData) {
