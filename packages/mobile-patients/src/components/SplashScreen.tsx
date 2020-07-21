@@ -183,6 +183,9 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           console.log('Medicine');
           getData('Medicine', data.length === 2 ? linkId : undefined);
           break;
+        case 'UploadPrescription':
+          getData('UploadPrescription', data.length === 2 ? linkId : undefined);
+          break;
         case 'Test':
           console.log('Test');
           getData('Test');
@@ -381,6 +384,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       case 'Medicine':
         console.log('Medicine');
         props.navigation.navigate('MEDICINES');
+        break;
+
+      case 'UploadPrescription':
+        props.navigation.navigate('MEDICINES', { showUploadPrescriptionPopup: true });
         break;
 
       case 'MedicineDetail':

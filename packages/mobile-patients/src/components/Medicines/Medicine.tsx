@@ -148,10 +148,12 @@ const styles = StyleSheet.create({
 export interface MedicineProps
   extends NavigationScreenProps<{
     focusSearch?: boolean;
+    showUploadPrescriptionPopup?: boolean;
   }> {}
 
 export const Medicine: React.FC<MedicineProps> = (props) => {
   const focusSearch = props.navigation.getParam('focusSearch');
+  const showUploadPrescriptionPopup = props.navigation.getParam('showUploadPrescriptionPopup');
   const {
     locationDetails,
     pharmacyLocation,
@@ -161,7 +163,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     medicinePageAPiResponse,
     setMedicinePageAPiResponse,
   } = useAppCommonData();
-  const [ShowPopop, setShowPopop] = useState<boolean>(false);
+  const [ShowPopop, setShowPopop] = useState<boolean>(!!showUploadPrescriptionPopup);
   const [pincodePopupVisible, setPincodePopupVisible] = useState<boolean>(false);
   const [isSelectPrescriptionVisible, setSelectPrescriptionVisible] = useState(false);
   const {
