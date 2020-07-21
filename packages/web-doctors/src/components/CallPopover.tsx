@@ -2183,25 +2183,16 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     }
   };
 
-  const onPrint = () => {
-    var divToPrint = document.getElementById('prescriptionWrapper');
-    var head = document.getElementsByTagName('head')[0].innerHTML;
-
-    var popupWin = window.open('', '_blank');
-    popupWin.document.open();
-
-    const winHtml = `<!DOCTYPE html>
-    <html>
-        <head>
-          ${head}
-        </head>
-        <body onload="window.print()">
-          ${divToPrint.innerHTML}
-        </body>
-    </html>`;
-
-    popupWin.document.write(winHtml);
-    popupWin.document.close();
+  const onDownload = (): void => {
+    fetch(props.prescriptionPdf).then((response) => {
+      response.blob().then((blob) => {
+        let url = window.URL.createObjectURL(blob);
+        let a = document.createElement('a');
+        a.href = url;
+        a.download = `${props.appointmentId}_${patientDetails!.firstName}.pdf`;
+        a.click();
+      });
+    });
   };
 
   const [vitalIgnored, setVitalIgnored] = useState<boolean>(false);
@@ -2637,18 +2628,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               <Button
                 className={classes.consultIcon}
                 aria-describedby={idThreeDots}
-                // disabled={
-                //   props.appointmentStatus === STATUS.COMPLETED ||
-                //   props.appointmentStatus === STATUS.CANCELLED ||
-                //   props.isAppointmentEnded ||
-                //   disableOnCancel ||
-                //   (isPastAppointment() && !consultStart) ||
-                //   (appointmentInfo!.appointmentState !== 'NEW' &&
-                //     appointmentInfo!.appointmentState !== 'TRANSFER' &&
-                //     appointmentInfo!.appointmentState !== 'RESCHEDULE') ||
-                //   (appointmentInfo!.status !== STATUS.IN_PROGRESS &&
-                //     appointmentInfo!.status !== STATUS.PENDING)
-                // }
                 disabled={
                   (props.isNewPrescription && props.isNewprescriptionEditable) ||
                   (!props.isNewPrescription &&
@@ -2692,10 +2671,10 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                             </li>
                             <li
                               onClick={() => {
-                                onPrint();
+                                onDownload();
                               }}
                             >
-                              Print Prescription
+                              {'Download Prescription'}
                             </li>
                             <li
                               onClick={() => {
