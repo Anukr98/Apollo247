@@ -221,10 +221,7 @@ export const Navigation: React.FC<NavigationProps> = (props) => {
     // clientRoutes.payMedicine(params.payType),
   ];
   const location = useLocation();
-  const headTagCondition =
-    location.pathname === '/' ||
-    location.pathname === '/specialties' ||
-    location.pathname === '/medicines';
+  const headTagCondition = location.pathname === '/';
 
   return (
     <div
