@@ -15,17 +15,27 @@ import {
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { format, addDays, differenceInMinutes } from 'date-fns';
+import { getCache, setCache } from 'profiles-service/database/connectRedis';
+import { ApiConstants } from 'ApiConstants';
 
+const REDIS_ORDER_AUTO_ID_KEY_PREFIX: string = 'orderAutoId:';
 @EntityRepository(MedicineOrders)
 export class MedicineOrdersRepository extends Repository<MedicineOrders> {
-  saveMedicineOrder(medicineOrderAttrs: Partial<MedicineOrders>) {
-    return this.create(medicineOrderAttrs)
+  async saveMedicineOrder(medicineOrderAttrs: Partial<MedicineOrders>) {
+    const orderCreated = await this.create(medicineOrderAttrs)
       .save()
       .catch((medicineOrderError) => {
         throw new AphError(AphErrorMessages.SAVE_MEDICINE_ORDER_ERROR, undefined, {
           medicineOrderError,
         });
       });
+    const orderCreatedString = JSON.stringify(orderCreated);
+    setCache(
+      `${REDIS_ORDER_AUTO_ID_KEY_PREFIX}${orderCreated.orderAutoId}`,
+      orderCreatedString,
+      ApiConstants.CACHE_EXPIRATION_900
+    );
+    return orderCreated;
   }
 
   async getOneApolloUser(mobileNumber: string) {
@@ -205,12 +215,16 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
     });
   }
 
-  getMedicineOrderDetailsByOrderId(orderAutoId: number) {
-    return this.findOne({
-      select: ['id', 'currentStatus', 'orderAutoId', 'patientAddressId', 'isOmsOrder', 'patient'],
-      where: { orderAutoId },
-      relations: ['patient'],
-    });
+  async getMedicineOrderDetailsByOrderId(orderAutoId: number) {
+    const orderResponse = await getCache(`${REDIS_ORDER_AUTO_ID_KEY_PREFIX}${orderAutoId}`);
+    if (!orderResponse) {
+      return this.findOne({
+        select: ['id', 'currentStatus', 'orderAutoId', 'patientAddressId', 'isOmsOrder', 'patient'],
+        where: { orderAutoId },
+        relations: ['patient'],
+      });
+    }
+    return JSON.parse(orderResponse) as MedicineOrders;
   }
 
   getMedicineOrderDetailsByAp(apOrderNo: string) {
