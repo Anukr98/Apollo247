@@ -406,33 +406,39 @@ export function g(obj: any, ...props: string[]) {
 /*eslint-enable */
 
 export const permissionHandler = (
-  permission: Permission,
+  permission: Permission | undefined,
   deniedMessage: string,
   doRequest: () => void
 ) => {
-  Permissions.request(permission)
-    .then((message) => {
-      console.log(message, 'sdhu');
-
-      if (message === 'granted') {
-        doRequest();
-      } else if (message === 'denied' || message === 'blocked') {
-        Alert.alert((permission.split('.').pop() || 'permission').toUpperCase(), deniedMessage, [
-          {
-            text: 'Cancel',
-            onPress: () => {},
-          },
-          {
-            text: 'Ok',
-            onPress: () => {
-              Permissions.openSettings();
-              AsyncStorage.setItem('permissionHandler', 'true');
-            },
-          },
-        ]);
-      }
-    })
-    .catch((e) => console.log(e, 'dsvunacimkl'));
+  if (permission) {
+    Permissions.request(permission)
+      .then((message) => {
+        if (message === 'granted') {
+          doRequest();
+        } else if (message === 'denied' || message === 'blocked') {
+          Alert.alert(
+            nameFormater(permission.split('.').pop() || 'permission', 'upper'),
+            deniedMessage,
+            [
+              {
+                text: 'Cancel',
+                onPress: () => {},
+              },
+              {
+                text: 'Ok',
+                onPress: () => {
+                  Permissions.openSettings();
+                  AsyncStorage.setItem('permissionHandler', 'true');
+                },
+              },
+            ]
+          );
+        }
+      })
+      .catch((e) => {});
+  } else {
+    doRequest();
+  }
 };
 
 export const callPermissions = (doRequest?: () => void) => {

@@ -75,13 +75,13 @@ import { GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_caseShe
 import {
   APPOINTMENT_TYPE,
   APPT_CALL_TYPE,
+  BOOKINGSOURCE,
+  DEVICETYPE,
   DOCTOR_CALL_TYPE,
   MEDICINE_FORM_TYPES,
   ModifyCaseSheetInput,
   REQUEST_ROLES,
   STATUS,
-  BOOKINGSOURCE,
-  DEVICETYPE,
 } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
 import {
   initateConferenceTelephoneCall,
@@ -102,15 +102,18 @@ import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
 import {
   callPermissions,
   g,
-  messageCodes,
   getNetStatus,
+  messageCodes,
+  permissionHandler,
 } from '@aph/mobile-doctors/src/helpers/helperFunctions';
+import { mimeType } from '@aph/mobile-doctors/src/helpers/mimeType';
 import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
+import { string } from '@aph/mobile-doctors/src/strings/string';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import AsyncStorage from '@react-native-community/async-storage';
 import { ApolloError } from 'apollo-client';
 import moment from 'moment';
-import Pubnub, { HereNowResponse } from 'pubnub';
+import Pubnub from 'pubnub';
 import React, { useEffect, useRef, useState } from 'react';
 import { useApolloClient, useMutation } from 'react-apollo-hooks';
 import {
@@ -121,16 +124,17 @@ import {
   Dimensions,
   FlatList,
   Keyboard,
+  Platform,
   SafeAreaView,
   Text,
   TouchableOpacity,
   View,
-  Platform,
 } from 'react-native';
 import firebase from 'react-native-firebase';
 import KeepAwake from 'react-native-keep-awake';
+import { PERMISSIONS } from 'react-native-permissions';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import { string } from '@aph/mobile-doctors/src/strings/string';
+import RNFetchBlob from 'rn-fetch-blob';
 
 const { width } = Dimensions.get('window');
 // let joinTimerNoShow: NodeJS.Timeout;  //APP-2812: removed NoShow
@@ -2417,6 +2421,68 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         setCaseSheetEdit(true);
       },
     },
+    {
+      title: 'Download Prescription',
+      onPress: () => {
+        permissionHandler(
+          Platform.OS === 'ios' ? undefined : PERMISSIONS.ANDROID.WRITE_EXTERNAL_STORAGE,
+          'Enable storage permission from settings to save pdf.',
+          () => {
+            const dirs = RNFetchBlob.fs.dirs;
+            const pdfTitle = `${appointmentData.displayId}_${
+              appointmentData.patientInfo
+                ? appointmentData.patientInfo.firstName || 'Patient'
+                : 'Patient'
+            }.pdf`;
+            const downloadPath =
+              Platform.OS === 'ios'
+                ? (dirs.DocumentDir || dirs.MainBundleDir) + '/' + pdfTitle
+                : dirs.DownloadDir + '/' + pdfTitle;
+            setLoading!(true);
+            RNFetchBlob.config({
+              fileCache: true,
+              path: downloadPath,
+              addAndroidDownloads: {
+                title: pdfTitle,
+                mime: mimeType(downloadPath),
+                useDownloadManager: true,
+                notification: true,
+                description: 'File downloaded by download manager.',
+                path: downloadPath,
+              },
+            })
+              .fetch(
+                'GET',
+                `${AppConfig.Configuration.DOCUMENT_BASE_URL}${g(
+                  caseSheet,
+                  'caseSheetDetails',
+                  'blobName'
+                )}`,
+                {
+                  //some headers ..
+                }
+              )
+              .then((res) => {
+                setLoading!(false);
+                showAphAlert!({
+                  title: 'Alert!',
+                  description: 'Downloaded : ' + pdfTitle,
+                  onPressOk: () => {
+                    Platform.OS === 'ios'
+                      ? RNFetchBlob.ios.previewDocument(res.path())
+                      : RNFetchBlob.android.actionViewIntent(res.path(), mimeType(res.path()));
+                    hideAphAlert!();
+                  },
+                });
+              })
+              .catch((err) => {
+                CommonBugFender('downloadPDF', err);
+                setLoading!(false);
+              });
+          }
+        );
+      },
+    },
   ];
 
   const renderDropdown = () => {
@@ -2613,13 +2679,14 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         {showPDF && (
           <RenderPdf
             uri={url}
-            title={
-              url
-                .split('/')
-                .pop()!
-                .split('=')
-                .pop() || 'Document'
-            }
+            title={`${patientDetails ? patientDetails.firstName || 'Patient' : 'Patient'}_${url
+              .split('/')
+              .pop()!
+              .split('.pdf')[0] || 'Appointment_Document'}`}
+            pdfTitle={`${patientDetails ? patientDetails.firstName || 'Patient' : 'Patient'}_${url
+              .split('/')
+              .pop()!
+              .split('.pdf')[0] || 'Appointment_Document'}.pdf`}
             isPopup={true}
             setDisplayPdf={() => {
               setShowPDF(false);
