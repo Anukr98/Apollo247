@@ -968,7 +968,26 @@ const modifyCaseSheet: Resolver<
   //medicalHistory upsert ends
   const caseSheetAttrs: Omit<Partial<CaseSheet>, 'id'> = getCaseSheetData;
   await caseSheetRepo.updateCaseSheet(inputArguments.id, caseSheetAttrs);
-
+  const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
+  const appointmentData = await appointmentRepo.findById(getCaseSheetData.appointment.id);
+  if (appointmentData) {
+    let reason = ApiConstants.CASESHEET_COMPLETED_HISTORY.toString();
+    if (caseSheetAttrs.doctorType == DoctorType.JUNIOR) {
+      reason = ApiConstants.JD_CASESHEET_COMPLETED_HISTORY.toString();
+    }
+    const historyAttrs: Partial<AppointmentUpdateHistory> = {
+      appointment: appointmentData,
+      userType: APPOINTMENT_UPDATED_BY.DOCTOR,
+      fromValue: appointmentData.status,
+      toValue: appointmentData.status,
+      valueType: VALUE_TYPE.STATUS,
+      fromState: appointmentData.appointmentState,
+      toState: appointmentData.appointmentState,
+      userName: caseSheetAttrs.createdDoctorId,
+      reason,
+    };
+    appointmentRepo.saveAppointmentHistory(historyAttrs);
+  }
   return getCaseSheetData;
 };
 
@@ -1185,18 +1204,6 @@ const submitJDCaseSheet: Resolver<
   );
 
   if (juniorDoctorcaseSheet && juniorDoctorcaseSheet.isJdConsultStarted) {
-    const historyAttrs: Partial<AppointmentUpdateHistory> = {
-      appointment: appointmentData,
-      userType: APPOINTMENT_UPDATED_BY.DOCTOR,
-      fromValue: appointmentData.status,
-      toValue: appointmentData.status,
-      valueType: VALUE_TYPE.STATUS,
-      fromState: appointmentData.appointmentState,
-      toState: appointmentData.appointmentState,
-      userName: juniorDoctorcaseSheet.createdDoctorId,
-      reason: ApiConstants.JD_CASESHEET_COMPLETED_HISTORY.toString(),
-    };
-    appointmentRepo.saveAppointmentHistory(historyAttrs);
     return false;
   }
 

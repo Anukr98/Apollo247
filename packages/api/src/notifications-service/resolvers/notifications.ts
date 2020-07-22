@@ -217,7 +217,7 @@ export const sendNotificationWhatsapp = async (
   message: string,
   loginType: number
 ) => {
-  const apiUrl =
+  /*const apiUrl =
     process.env.WHATSAPP_URL +
     '?method=OPT_IN&phone_number=' +
     mobileNumber +
@@ -241,7 +241,8 @@ export const sendNotificationWhatsapp = async (
     .catch((error) => {
       throw new AphError(AphErrorMessages.GET_OTP_ERROR);
     });
-  return whatsAppResponse;
+  return whatsAppResponse;*/
+  return true;
 };
 
 export const sendDoctorNotificationWhatsapp = async (
@@ -765,10 +766,8 @@ export async function sendNotification(
     //sendNotificationWhatsapp(patientDetails.mobileNumber, smsLink);
 
     //send sms to doctor if Appointment DateTime is less than 24 hours
-    //const todaysDate = new Date(format(new Date(), 'yyyy-MM-dd') + 'T18:30:00');
-    //const yesterdaysDate = new Date(format(addDays(new Date(), -1), 'yyyy-MM-dd') + 'T18:30:00');
-
-    const todaysDate = new Date(format(new Date(), 'yyyy-MM-dd') + 'T23:59:00');
+    const todaysDateTime = addMilliseconds(new Date(), 19800000);
+    const todaysDate = new Date(format(todaysDateTime, 'yyyy-MM-dd') + 'T23:59:00');
     console.log(
       'check dates for todays date appt',
       appointment.appointmentDateTime,
@@ -777,10 +776,7 @@ export async function sendNotification(
       todaysDate,
       'todays date'
     );
-    if (
-      differenceInHours(appointment.appointmentDateTime, new Date()) <= 24 &&
-      appointment.appointmentDateTime < todaysDate
-    ) {
+    if (istDateTime <= todaysDate) {
       const finalTime = format(istDateTime, 'hh:mm a');
       const doctorWhatsAppMessage = ApiConstants.DOCTOR_BOOK_APPOINTMENT_WHATSAPP.replace(
         '{0}',
