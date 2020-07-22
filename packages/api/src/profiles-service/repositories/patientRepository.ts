@@ -20,7 +20,6 @@ import {
 } from 'profiles-service/resolvers/prescriptionUpload';
 import { LabResultsInputArgs, uploadLabResults } from 'profiles-service/resolvers/labResultsUpload';
 import { log } from 'customWinstonLogger';
-import { currentLineHeight } from 'pdfkit';
 
 type DeviceCount = {
   mobilenumber: string;
