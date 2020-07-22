@@ -11,37 +11,17 @@ import { Client, RequestParams } from '@elastic/elasticsearch';
 import { differenceInMinutes } from 'date-fns';
 import { debugLog } from 'customWinstonLogger';
 
-export type DoctorSpecialityPartial = {
-  image: string
-  userFriendlyNomenclature: string
-  specialistPluralTerm: string
-  groupName: string
-  specialistSingularTerm: string
-  commonSearchTerm: string
-  name: string
-}
-
 export const searchDoctorAndSpecialtyByNameTypeDefs = gql`
-  type DoctorSpecialityPartial {
-    image: String
-    userFriendlyNomenclature: String
-    specialistPluralTerm: String
-    groupName: String
-    specialistSingularTerm: String
-    commonSearchTerm: String
-    name: String
-  }
-
   type PossibleSearchMatches {
     doctors: [DoctorDetails]
     doctorsNextAvailability: [DoctorSlotAvailability]
-    specialties: [DoctorSpecialityPartial]
+    specialties: [DoctorSpecialty]
   }
 
   type SearchDoctorAndSpecialtyByNameResult {
     doctors: [DoctorDetails]
     doctorsNextAvailability: [DoctorSlotAvailability]
-    specialties: [DoctorSpecialityPartial]
+    specialties: [DoctorSpecialty]
     possibleMatches: PossibleSearchMatches
     otherDoctors: [DoctorDetails]
     otherDoctorsNextAvailability: [DoctorSlotAvailability]
@@ -65,13 +45,13 @@ export const searchDoctorAndSpecialtyByNameTypeDefs = gql`
 
 type PossibleSearchMatches = {
   doctors?: Doctor[];
-  specialties?: DoctorSpecialityPartial[];
+  specialties?: DoctorSpecialty[];
   doctorsNextAvailability?: DoctorSlotAvailability[];
 };
 
 type SearchDoctorAndSpecialtyByNameResult = {
   doctors: Doctor[];
-  specialties: DoctorSpecialityPartial[];
+  specialties: DoctorSpecialty[];
   doctorsNextAvailability: DoctorSlotAvailability[];
   possibleMatches: PossibleSearchMatches;
   otherDoctors?: Doctor[];
@@ -106,7 +86,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
   );
 
   searchLogger('API_CALL___STARTED');
-  let matchedSpecialties: DoctorSpecialityPartial[] = [];
+  let matchedSpecialties: DoctorSpecialty[] = [];
   const searchTextLowerCase = args.searchText.trim().toLowerCase();
   let finalMatchedDoctors = [],
     finalPossibleDoctors = [];
@@ -121,7 +101,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
   const possibleDoctors = [],
     earlyAvailableApolloPossibleDoctors = [],
     earlyAvailableNonApolloPossibleDoctors = [],
-    possibleSpecialties: DoctorSpecialityPartial[] = [],
+    possibleSpecialties: DoctorSpecialty[] = [],
     possibleDoctorsNextAvailability: DoctorSlotAvailability[] = [];
   const otherDoctors: Doctor[] = [],
     otherDoctorsNextAvailability: DoctorSlotAvailability[] = [];
@@ -472,7 +452,6 @@ const SearchDoctorAndSpecialtyByName: Resolver<
   if(specialityBuckets && specialityBuckets.length){
     matchedSpecialtiesES = specialityBuckets.map((speciality: any) => {
       speciality = speciality.matched_specialities_hits.hits.hits[0]["_source"]["specialty"];
-      delete speciality["specialtyId"];
       return speciality;
     })
   }
