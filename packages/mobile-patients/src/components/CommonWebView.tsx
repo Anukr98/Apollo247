@@ -29,7 +29,7 @@ export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
   };
 
   const renderError = (WebViewRef: any) => {
-    WebViewRef && WebViewRef.reload();
+    props.navigation.navigate(AppRoutes.ConsultRoom);
     return <View style={{ flex: 1 }}></View>;
   };
 
