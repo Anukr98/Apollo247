@@ -9,6 +9,7 @@ import { useDiagnosticsCart } from 'components/Tests/DiagnosticsCartProvider';
 import { getAppStoreLink } from 'helpers/dateHelpers';
 import { useParams } from 'hooks/routerHooks';
 import Typography from '@material-ui/core/Typography';
+import { useLocation } from 'react-router';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -219,6 +220,11 @@ export const Navigation: React.FC<NavigationProps> = (props) => {
     clientRoutes.payOnlineClinicConsult(),
     // clientRoutes.payMedicine(params.payType),
   ];
+  const location = useLocation();
+  const headTagCondition =
+    location.pathname === '/' ||
+    location.pathname === '/specialties' ||
+    location.pathname === '/medicines';
 
   return (
     <div
@@ -308,13 +314,23 @@ export const Navigation: React.FC<NavigationProps> = (props) => {
             to={clientRoutes.specialityListing()}
             title={'Doctors'}
           >
-            <Typography variant="h1" className={classes.menuTitle}>
-              Doctors
-            </Typography>
-            <Typography variant="h1" className={classes.menuInfo}>
-              Consult
-              <br /> Online
-            </Typography>
+            {headTagCondition ? (
+              <Typography variant="h1" className={classes.menuTitle}>
+                Doctors
+              </Typography>
+            ) : (
+              <span className={classes.menuTitle}>Doctors</span>
+            )}
+            {headTagCondition ? (
+              <Typography variant="h1" className={classes.menuInfo}>
+                Consult
+                <br /> Online
+              </Typography>
+            ) : (
+              <span className={classes.menuInfo}>
+                Consult <br /> Online
+              </span>
+            )}
           </Link>
           <Link
             to={clientRoutes.medicines()}
@@ -325,15 +341,22 @@ export const Navigation: React.FC<NavigationProps> = (props) => {
             }
             title={'Pharmacy'}
           >
-            <Typography variant="h1" className={classes.menuTitle}>
-              Pharmacy
-            </Typography>
-            <Typography variant="h1" className={classes.menuInfo}>
-              Medicines &<br /> other products
-            </Typography>
-            {/* <span className={classes.menuInfo}>
+            {headTagCondition ? (
+              <Typography variant="h1" className={classes.menuTitle}>
+                Pharmacy
+              </Typography>
+            ) : (
+              <span className={classes.menuTitle}>Pharmacy</span>
+            )}
+            {headTagCondition ? (
+              <Typography variant="h1" className={classes.menuInfo}>
                 Medicines &<br /> other products
-            </span> */}
+              </Typography>
+            ) : (
+              <span className={classes.menuInfo}>
+                Medicines &<br /> other products
+              </span>
+            )}
           </Link>
           {/* <Link
             to={clientRoutes.tests()}

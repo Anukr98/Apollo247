@@ -15,7 +15,7 @@ import { NavigationBottom } from 'components/NavigationBottom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { Banner } from 'components/Covid/Banner';
 import { CheckRiskLevel } from 'components/Covid/CheckRiskLevel';
-import { useAllCurrentPatients } from 'hooks/authHooks';
+import { useAllCurrentPatients, useAuth } from 'hooks/authHooks';
 
 import fetchUtil from 'helpers/fetch';
 
@@ -72,7 +72,7 @@ const useStyles = makeStyles((theme: Theme) => {
       '& p': {
         fontSize: 12,
         fontWeight: 500,
-        color: '#67919d',
+        color: '#02475b',
       },
     },
     panelRoot: {
@@ -101,7 +101,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
       '& p': {
         fontSize: 16,
-        color: '#67919d',
+        color: '#02475b',
         margin: '0 0 20px',
       },
       [theme.breakpoints.down('sm')]: {
@@ -121,7 +121,7 @@ const useStyles = makeStyles((theme: Theme) => {
         '& a': {
           fontSize: 16,
           padding: '5px 0',
-          color: '#67919d',
+          color: '#02475b',
         },
       },
       [theme.breakpoints.down('sm')]: {
@@ -178,7 +178,7 @@ const useStyles = makeStyles((theme: Theme) => {
       transition: '0.5s ease',
       '& li': {
         padding: '5px 0',
-        color: '#67919d',
+        color: '#02475b',
       },
     },
     fontBold: {
@@ -202,11 +202,13 @@ export const covidProtocolLanding: React.FC = (props: any) => {
   const [symptomData, setSymptomData] = React.useState<CovidProtocolData>(null);
   const scrollToRef = useRef<HTMLDivElement>(null);
   const { currentPatient } = useAllCurrentPatients();
+  const { isSignedIn } = useAuth();
 
   useEffect(() => {
     scrollToRef &&
       scrollToRef.current &&
       scrollToRef.current.scrollIntoView({ behavior: 'smooth' });
+    if (!isSignedIn) window.location.href = clientRoutes.covidLanding();
   }, []);
   const covidProtocolUrl =
     process.env.COVID_PROTOCOL_URL || 'https://uatcms.apollo247.com/api/phrcovid-protocol';

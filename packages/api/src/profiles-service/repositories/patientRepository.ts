@@ -744,7 +744,13 @@ export class PatientRepository extends Repository<Patient> {
   async getLinkedPatientIds(patientId: string) {
     const linkedPatient = await this.getPatientDetails(patientId);
     const primaryPatientIds: string[] = [];
-    if (linkedPatient && linkedPatient.uhid != '' && linkedPatient.uhid != null) {
+    if (
+      linkedPatient &&
+      linkedPatient.uhid != '' &&
+      linkedPatient.uhid != null &&
+      linkedPatient.primaryPatientId != null &&
+      linkedPatient.primaryPatientId != ''
+    ) {
       const patientsList = await this.find({
         where: { primaryPatientId: linkedPatient.primaryPatientId },
       });

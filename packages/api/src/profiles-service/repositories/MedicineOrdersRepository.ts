@@ -9,6 +9,7 @@ import {
   MEDICINE_ORDER_TYPE,
   MedicineOrderShipments,
   MedicineOrderCancelReason,
+  MedicineOrderAddress,
 } from 'profiles-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
@@ -282,6 +283,22 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
     });
   }
 
+  getMedicineOrderDetailsWithAddressByOrderId(orderAutoId: number) {
+    return this.findOne({
+      where: { orderAutoId },
+      relations: [
+        'medicineOrderLineItems',
+        'medicineOrderPayments',
+        'medicineOrdersStatus',
+        'medicineOrderShipments',
+        'medicineOrderShipments.medicineOrdersStatus',
+        'medicineOrderShipments.medicineOrderInvoice',
+        'medicineOrderInvoice',
+        'medicineOrderAddress',
+      ],
+    });
+  }
+
   getPaymentMedicineOrders() {
     return this.find({
       where: { currentStatus: MEDICINE_ORDER_STATUS.PAYMENT_SUCCESS },
@@ -537,5 +554,9 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
       })
       .orderBy('medicine_orders."createdDate"', 'DESC')
       .getOne();
+  }
+
+  saveMedicineOrderAddress(orderAddressAttrs: Partial<MedicineOrderAddress>) {
+    return MedicineOrderAddress.create(orderAddressAttrs).save();
   }
 }
