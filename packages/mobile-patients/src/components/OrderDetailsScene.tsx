@@ -1461,7 +1461,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
               showAphAlert!({
                 title: string.common.uhOh,
                 description:
-                  'Your order has already been billed and we will not be able to take the cancellation request on the App. In case you still want to proceed with cancellation, please click on the link below to send the cancellation request through WhatsApp and our live Customer executives will be happy to help you.',
+                  'Your order has already Billed and therefore cannot be cancelled from the App. In case you still wish to Cancel, please click on the link below to chat with out customer care executives for assistance during working hours (9:00 AM to 8:30 PM)',
                 ctaContainerStyle: { justifyContent: 'flex-end' },
                 CTAs: [
                   {
