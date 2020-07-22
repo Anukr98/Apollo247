@@ -221,7 +221,7 @@ const getAppointmentStatus: Resolver<
     );
     if (appointment == null) throw new AphError(AphErrorMessages.APPOINTMENT_ID_NOT_FOUND);
   } catch (invalidGrant) {
-    throw new AphError(AphErrorMessages.INSUFFICIENT_PRIVILEGES, undefined, { invalidGrant });
+    throw new AphError(AphErrorMessages.GET_APPOINTMENT_STATUS_ERROR, undefined, { invalidGrant });
   }
 
   return { status: appointment.status, state: appointment.appointmentState };
