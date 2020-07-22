@@ -8,7 +8,7 @@ import React from 'react';
 import { Text, TextInput, Platform } from 'react-native';
 import Axios from 'axios';
 import codePush, { CodePushOptions } from 'react-native-code-push';
-import { AppConfig } from '../strings/AppConfig';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
 const codePushOptions: CodePushOptions = {
   checkFrequency: codePush.CheckFrequency.ON_APP_RESUME,
