@@ -30,6 +30,11 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
         });
       });
     const orderCreatedString = JSON.stringify(orderCreated);
+
+    /**
+     * Saving order information in redis cache
+     * It will be auto deleted in 15 minutes
+     */
     setCache(
       `${REDIS_ORDER_AUTO_ID_KEY_PREFIX}${orderCreated.orderAutoId}`,
       orderCreatedString,
@@ -216,6 +221,10 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
   }
 
   async getMedicineOrderDetailsByOrderId(orderAutoId: number) {
+    /**
+     * Fetching from redis cache first, the order details were saved in saveMedicineOrdersOMS.ts
+     * If data is not there in cache, then fetch from conventional storage(db)
+     */
     const orderResponse = await getCache(`${REDIS_ORDER_AUTO_ID_KEY_PREFIX}${orderAutoId}`);
     if (!orderResponse) {
       return this.findOne({
