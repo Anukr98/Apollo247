@@ -323,6 +323,11 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
         props.navigation.push(AppRoutes.RenderPdf, {
           uri: `${AppConfig.Configuration.DOCUMENT_BASE_URL}${blobName}`,
           title: 'PRESCRIPTION',
+          pdfTitle: `${appointmentsHistory.displayId}_${
+            appointmentsHistory.patientInfo
+              ? appointmentsHistory.patientInfo.firstName || 'Patient'
+              : 'Patient'
+          }.pdf`,
           menuCTAs: [
             {
               title: 'RESEND PRESCRIPTION',
@@ -412,6 +417,10 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
                       });
                   });
               },
+            },
+            {
+              title: 'Download Prescription',
+              pdfDownload: true,
             },
           ],
           CTAs: [
