@@ -307,6 +307,11 @@ export enum PROFILE_SOURCE {
   MFINE = 'MFINE',
 }
 
+type updateValidationField = {
+  key: keyof Patient,
+  dbValue: string | null
+}
+
 //medicine orders starts
 @Entity()
 export class MedicineOrders extends BaseEntity {
@@ -913,7 +918,7 @@ export class Patient extends BaseEntity {
     return updateAllowed;
   }
 
-  isValidString(input: string): Boolean {
+  isValidString(input: any): Boolean {
     if (input) {
       input = input.trim().toLowerCase();
       const disallowedStrings: Set<string> = new Set(['', ' ', '.', 'null', 'undefined']);
@@ -941,60 +946,33 @@ export class Patient extends BaseEntity {
   }
 
   checkNullsValidation(currentPatientFromDb: Patient) {
-    this.checkNulls_Fname(currentPatientFromDb);
-    this.checkNulls_Lname(currentPatientFromDb);
-    this.checkNulls_PrimaryUhid(currentPatientFromDb);
-    this.checkNulls_Uhid(currentPatientFromDb);
+    const { firstName = null, lastName = null, primaryUhid = null, uhid = null } = currentPatientFromDb
+    const checkNotNullsAgainst: updateValidationField[] = [
+      { key: "firstName", dbValue: firstName },
+      { key: "lastName", dbValue: lastName },
+      { key: "primaryUhid", dbValue: primaryUhid },
+      { key: "uhid", dbValue: uhid }
+    ];
+
+    checkNotNullsAgainst.forEach((property) => {
+      this.checkNullsForProperty(property);
+    })
   }
 
-  checkNulls_Fname(currentPatientFromDb: Patient) {
-    const isValidString: Boolean = this.isValidString(this.firstName);
-    const isUpdateApplicable: Boolean = this.isUpdationAllowedAgainstCurrentValue(currentPatientFromDb.firstName, this.firstName);
+
+  checkNullsForProperty(property: updateValidationField) {
+    const key = property.key;
+    const currentValue = property.dbValue;
+    const incomingValue = this[key];
+
+    const isValidString: Boolean = this.isValidString(incomingValue);
+    const isUpdateApplicable: Boolean = this.isUpdationAllowedAgainstCurrentValue(currentValue, incomingValue);
 
     if (!(isValidString && isUpdateApplicable)) {
-      const error = `Attempt to overwrite Fname: ${currentPatientFromDb.firstName} with Fname: ${this.firstName}
-      isValidString: ${isValidString} isUpdateApplicable: ${isUpdateApplicable}`;
+      const error = `Attempt to overwrite ${key}: ${currentValue} with ${key}: ${incomingValue}
+    isValidString: ${ isValidString} isUpdateApplicable: ${isUpdateApplicable} `;
 
-      log('profileServiceLogger', 'Invalid patient updation attempt', 'index.ts/checkNulls_Fname', 'undefined', error);
-      throw new Error(error);
-    }
-  }
-
-  checkNulls_Lname(currentPatientFromDb: Patient) {
-    const isValidString: Boolean = this.isValidString(this.lastName);
-    const isUpdateApplicable: Boolean = this.isUpdationAllowedAgainstCurrentValue(currentPatientFromDb.lastName, this.lastName);
-
-    if (!(isValidString && isUpdateApplicable)) {
-      const error = `Attempt to overwrite Lname: ${currentPatientFromDb.lastName} with Lname: ${this.lastName}
-      isValidString: ${isValidString} isUpdateApplicable: ${isUpdateApplicable}`;
-
-      log('profileServiceLogger', 'Invalid patient updation attempt', 'index.ts/checkNulls_Lname', 'undefined', error);
-      throw new Error(error);
-    }
-  }
-
-  checkNulls_PrimaryUhid(currentPatientFromDb: Patient) {
-    const isValidString: Boolean = this.isValidString(this.primaryUhid);
-    const isUpdateApplicable: Boolean = this.isUpdationAllowedAgainstCurrentValue(currentPatientFromDb.primaryUhid, this.primaryUhid);
-
-    if (!(isValidString && isUpdateApplicable)) {
-      const error = `Attempt to overwrite PrimaryUhid: ${currentPatientFromDb.primaryUhid} with PrimaryUhid: ${this.primaryUhid}
-      isValidString: ${isValidString} isUpdateApplicable: ${isUpdateApplicable}`;
-
-      log('profileServiceLogger', 'Invalid patient updation attempt', 'index.ts/checkNulls_PrimaryUhid', 'undefined', error);
-      throw new Error(error);
-    }
-  }
-
-  checkNulls_Uhid(currentPatientFromDb: Patient) {
-    const isValidString: Boolean = this.isValidString(this.uhid);
-    const isUpdateApplicable: Boolean = this.isUpdationAllowedAgainstCurrentValue(currentPatientFromDb.uhid, this.uhid);
-
-    if (!(isValidString && isUpdateApplicable)) {
-      const error = `Attempt to overwrite Uhid: ${currentPatientFromDb.uhid} with Uhid: ${this.uhid}
-      isValidString: ${isValidString} isUpdateApplicable: ${isUpdateApplicable}`;
-
-      log('profileServiceLogger', 'Invalid patient updation attempt', 'index.ts/checkNulls_Uhid', 'undefined', error);
+      log('profileServiceLogger', `Invalid patient updation attempt for ${key}`, 'index.ts/checkNullsForProperty ', 'undefined', error);
       throw new Error(error);
     }
   }
