@@ -257,6 +257,7 @@ export enum ApiConstants {
   CACHE_EXPIRATION_900 = 900, //15 mins
   CACHE_EXPIRATION_3600 = 3600, // 1hour
   CACHE_EXPIRATION_14400 = 14400, // 4hour
+  CACHE_EXPIRATION_86400 = 86400, // 24 hour
   //doctor no-photo url
   DOCTOR_DEFAULT_PHOTO_URL = 'https://prodaphstorage.blob.core.windows.net/doctors/no_photo.png',
 

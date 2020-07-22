@@ -32,6 +32,7 @@ import { HowItWorks } from './Doctors/HowItWorks';
 import { ManageProfile } from 'components/ManageProfile';
 import { Relation } from 'graphql/types/globalTypes';
 import { MetaTagsComp } from 'MetaTagsComp';
+import { SchemaMarkup } from 'SchemaMarkup';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -632,6 +633,7 @@ export const SpecialityListing: React.FC = (props) => {
   const [searchLoading, setSearchLoading] = useState<boolean>(false);
   const [faqs, setFaqs] = useState<any | null>(null);
   const [selectedCity, setSelectedCity] = useState<string>('');
+  const [faqSchema, setFaqSchema] = useState(null);
   const onePrimaryUser =
     allCurrentPatients && allCurrentPatients.filter((x) => x.relation === Relation.ME).length === 1;
 
@@ -649,6 +651,28 @@ export const SpecialityListing: React.FC = (props) => {
     /**Gtm code start end */
   }, []);
 
+  const createFaqSchema = (faqData: any) => {
+    const mainEntity: any[] = [];
+    faqData &&
+      faqData.onlineConsultation &&
+      faqData.onlineConsultation.length > 0 &&
+      Object.values(faqData.onlineConsultation).map((faqs: any) => {
+        mainEntity.push({
+          '@type': 'Question',
+          name: faqs.faqQuestion,
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: faqs.faqAnswer,
+          },
+        });
+      });
+    setFaqSchema({
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity,
+    });
+  };
+
   useEffect(() => {
     if (!faqs) {
       scrollToRef &&
@@ -657,6 +681,7 @@ export const SpecialityListing: React.FC = (props) => {
       fetchUtil(process.env.SPECIALTY_LISTING_FAQS, 'GET', {}, '', true).then((res: any) => {
         if (res && res.success === 'true' && res.data && res.data.length > 0) {
           setFaqs(res.data[0]);
+          createFaqSchema(res.data[0]);
         }
       });
     }
@@ -703,9 +728,25 @@ export const SpecialityListing: React.FC = (props) => {
     canonicalLink: window && window.location && window.location.href,
   };
 
+  const breadcrumbJSON = {
+    '@context': 'https://schema.org/',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'HOME', item: 'https://www.apollo247.com/' },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: 'SPECIALTIES',
+        item: 'https://www.apollo247.com/specialties',
+      },
+    ],
+  };
+
   return (
     <div className={classes.slContainer}>
       <MetaTagsComp {...metaTagProps} />
+      <SchemaMarkup structuredJSON={breadcrumbJSON} />
+      {<SchemaMarkup structuredJSON={faqSchema} />}
       <Header />
       <div className={classes.container}>
         <div className={`${classes.slContent} ${currentPatient ? classes.slCotent1 : ''}`}>

@@ -232,6 +232,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const [doctorData, setDoctorData] = useState<DoctorDetailsType | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [structuredJSON, setStructuredJSON] = useState(null);
+  const [breadcrumbJSON, setBreadcrumbJSON] = useState(null);
   const [metaTagProps, setMetaTagProps] = useState(null);
   const [doctorAvailableSlots, setDoctorAvailableSlots] = useState<GetDoctorNextAvailableSlot>();
   const [error, setError] = useState<boolean>(false);
@@ -352,6 +353,40 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
             },
             medicalSpecialty: specialty ? specialty.name : '',
           });
+          setBreadcrumbJSON({
+            '@context': 'https://schema.org/',
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+              {
+                '@type': 'ListItem',
+                position: 1,
+                name: 'HOME',
+                item: 'https://www.apollo247.com/',
+              },
+              {
+                '@type': 'ListItem',
+                position: 2,
+                name: 'SPECIALTIES',
+                item: 'https://www.apollo247.com/specialties',
+              },
+              {
+                '@type': 'ListItem',
+                position: 3,
+                name: specialty ? specialty.name : '',
+                item: `https://www.apollo247.com/specialties/${readableParam(
+                  specialty ? specialty.name : ''
+                )}`,
+              },
+              {
+                '@type': 'ListItem',
+                position: 4,
+                name: fullName ? fullName : `${firstName} ${lastName}`,
+                item: `https://www.apollo247.com/specialties/${readableParam(
+                  specialty ? specialty.name : ''
+                )}/${readableParam(fullName ? fullName : `${firstName} ${lastName}`)}-${id}`,
+              },
+            ],
+          });
           setMetaTagProps({
             title: `${fullName}: ${
               specialty && specialty.name ? specialty.name : ''
@@ -416,6 +451,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           <Header />
         </div>
         {structuredJSON && <SchemaMarkup structuredJSON={structuredJSON} />}
+        {breadcrumbJSON && <SchemaMarkup structuredJSON={breadcrumbJSON} />}
         <div className={classes.container}>
           <div className={classes.doctorDetailsPage}>
             <div className={classes.breadcrumbLinks}>
