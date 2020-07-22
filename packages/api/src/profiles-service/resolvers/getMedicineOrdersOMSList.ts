@@ -192,8 +192,9 @@ export const getMedicineOrdersOMSListTypeDefs = gql`
     updateMedicineDataRedis(limit: Int, offset: Int): getMedicineOrdersListResult
     getLatestMedicineOrder(patientUhid: String!): MedicineOrderOMSDetailsResult!
     getMedicineOrderOMSDetailsWithAddress(
-      patientId: String, 
-      orderAutoId: Int): MedicineOrderOMSDetailsResult!
+      patientId: String
+      orderAutoId: Int
+    ): MedicineOrderOMSDetailsResult!
   }
 `;
 
@@ -806,7 +807,7 @@ const getMedicineOrderOMSDetailsWithAddress: Resolver<
 > = async (parent, args, { profilesDb }) => {
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
   if (args.patientId) {
-    const patientDetails = await patientRepo.findById(args.patientId);
+    const patientDetails = await patientRepo.getPatientDetails(args.patientId);
     if (!patientDetails) {
       throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
     }
