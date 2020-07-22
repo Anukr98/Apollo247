@@ -80,7 +80,7 @@ export const ShowSlots: React.FC<ShowSlotsProps> = (props) => {
         if (slotTime < morningTime && slotTime > morningStartTime) morningSlots.push(slotTime);
         else if (slotTime >= morningTime && slotTime < afternoonTime) afternoonSlots.push(slotTime);
         else if (slotTime >= afternoonTime && slotTime < eveningTime) eveningSlots.push(slotTime);
-        else lateNightSlots.push(slotTime);
+        else if (slotTime >= eveningTime) lateNightSlots.push(slotTime);
       }
     });
 
