@@ -398,6 +398,7 @@ export enum ApiConstants {
   //prescriptions uploaded through medicine, diagnostic orders or from OLD APPS
   PRESCRIPTION_UPLOADED_BY_PATIENT = 'Prescription uploaded by Patient',
   ALERT_STORE_REMARKS = 'Customer Name : {name} , Mobile : {mobile} will be reaching Store in 10 mins to pickup order {orderNo} - Please handover Medicines.',
+
 }
 
 export enum PATIENT_REPO_RELATIONS {
