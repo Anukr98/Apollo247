@@ -48,7 +48,7 @@ import {
   ScrollView,
   StackActions,
 } from 'react-navigation';
-import { AppConfig, AppEnv } from '@aph/mobile-patients/src/strings/AppConfig';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { TabHeader } from '@aph/mobile-patients/src/components/ui/TabHeader';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 
@@ -149,28 +149,6 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
   >(currentPatient);
   const { signOut, getPatientApiCall } = useAuth();
   const { setSavePatientDetails, setAppointmentsPersonalized } = useAppCommonData();
-
-  const buildName = () => {
-    if (AppConfig.APP_ENV == AppEnv.DEV) {
-      return 'DEV';
-    } else if (AppConfig.APP_ENV == AppEnv.QA) {
-      return 'QA';
-    } else if (AppConfig.APP_ENV == AppEnv.QA2) {
-      return 'QA2';
-    } else if (AppConfig.APP_ENV == AppEnv.STAGING) {
-      return 'STAGING';
-    } else if (AppConfig.APP_ENV == AppEnv.VAPT) {
-      return 'VAPT';
-    } else if (AppConfig.APP_ENV == AppEnv.PROD) {
-      return 'PROD';
-    } else if (AppConfig.APP_ENV == AppEnv.PERFORM) {
-      return 'PRF';
-    } else if (AppConfig.APP_ENV == AppEnv.DEVReplica) {
-      return 'DEVReplica';
-    } else {
-      return '';
-    }
-  };
 
   useEffect(() => {
     if (!currentPatient) {
@@ -520,7 +498,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
                 paddingTop: 20,
               }}
             >
-              {`${buildName()} - v ${
+              {`${AppConfig.APP_ENV} - v ${
                 Platform.OS === 'ios'
                   ? AppConfig.Configuration.iOS_Version
                   : AppConfig.Configuration.Android_Version
