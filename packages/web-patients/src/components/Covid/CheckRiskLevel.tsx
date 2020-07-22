@@ -2,12 +2,12 @@ import React, { useState } from 'react';
 import { Theme, useMediaQuery } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { AphDialogTitle, AphDialog, AphDialogClose, AphButton } from '@aph/web-ui-components';
-
 import { ProtectedWithLoginPopup } from '../ProtectedWithLoginPopup';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../hooks/authHooks';
 import { customerCareNumber } from '../../helpers/commonHelpers';
 import { clientRoutes } from '../../helpers/clientRoutes';
+import { useLocation } from 'react-router';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -164,6 +164,7 @@ export const CheckRiskLevel: React.FC = (props) => {
   const isDesktopOnly = useMediaQuery('(min-width:768px)');
   const [iscoronaDialogOpen, setIscoronaDialogOpen] = useState<boolean>(false);
   const { isSignedIn } = useAuth();
+  const location = useLocation();
 
   return (
     <div className={classes.root}>
@@ -181,25 +182,27 @@ export const CheckRiskLevel: React.FC = (props) => {
           our experts for advice.
         </p>
         <div className={classes.rightActions}>
-          {window.location.href.includes('covid19') && <ProtectedWithLoginPopup>
-            {({ protectWithLoginPopup }) => (
-              <AphButton
-                className={classes.filledBtn}
-                onClick={() => {
-                  if (!isSignedIn) {
-                    protectWithLoginPopup();
-                  }
-                }}
-              >
-                <Link to={isSignedIn && clientRoutes.covidProtocol()}>
-                  <span>
-                    <img src={require('images/guide.svg')} alt="" />
-                  </span>
-                  <span>Get your personalized guide</span>
-                </Link>
-              </AphButton>
-            )}
-          </ProtectedWithLoginPopup>}
+          {!location.pathname.includes('medical-condition') && (
+            <ProtectedWithLoginPopup>
+              {({ protectWithLoginPopup }) => (
+                <AphButton
+                  className={classes.filledBtn}
+                  onClick={() => {
+                    if (!isSignedIn) {
+                      protectWithLoginPopup();
+                    }
+                  }}
+                >
+                  <Link to={isSignedIn && clientRoutes.covidProtocol()}>
+                    <span>
+                      <img src={require('images/guide.svg')} alt="" />
+                    </span>
+                    <span>Get your personalized guide</span>
+                  </Link>
+                </AphButton>
+              )}
+            </ProtectedWithLoginPopup>
+          )}
           <a href={covidScannerUrl} target={'_blank'}>
             <AphButton className={classes.filledBtn}>
               <span>
