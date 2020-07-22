@@ -614,4 +614,19 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
       .orderBy('medicine_orders."createdDate"', 'DESC')
       .getOne();
   }
+
+  getMedicineOrder(orderAutoId: number) {
+    return this.findOne({ orderAutoId });
+  }
+
+  getMedicineOrderWithShipments(orderAutoId: number) {
+    return this.findOne({
+      where: { orderAutoId },
+      relations: [
+        'patient',
+        'medicineOrderShipments',
+        'medicineOrderShipments.medicineOrdersStatus',
+      ],
+    });
+  }
 }

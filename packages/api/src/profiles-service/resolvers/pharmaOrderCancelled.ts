@@ -42,7 +42,7 @@ const saveOrderCancelStatus: Resolver<
   OrderCancelResult
 > = async (parent, { orderCancelInput }, { profilesDb }) => {
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
-  const orderDetails = await medicineOrdersRepo.getMedicineOrderDetails(orderCancelInput.orderNo);
+  const orderDetails = await medicineOrdersRepo.getMedicineOrder(orderCancelInput.orderNo);
   if (!orderDetails) {
     throw new AphError(AphErrorMessages.INVALID_MEDICINE_ORDER_ID, undefined, {});
   }

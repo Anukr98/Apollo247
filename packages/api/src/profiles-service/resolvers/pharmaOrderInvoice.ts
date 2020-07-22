@@ -113,7 +113,7 @@ const SaveMedicineOrderInvoice: Resolver<
   SaveMedicineOrderInvoiceResult
 > = async (parent, { medicineOrderInvoiceInput }, { profilesDb }) => {
   const medicineOrderRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
-  const medicineOrders = await medicineOrderRepo.getMedicineOrderDetails(
+  const medicineOrders = await medicineOrderRepo.getMedicineOrder(
     medicineOrderInvoiceInput.orderNo
   );
 
