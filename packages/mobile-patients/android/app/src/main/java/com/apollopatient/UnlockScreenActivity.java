@@ -37,6 +37,7 @@ import java.util.List;
 public class UnlockScreenActivity extends ReactActivity implements UnlockScreenActivityInterface {
 
     private static final String TAG = "MessagingService";
+    private Ringtone ringtone;
 
     @RequiresApi(api = Build.VERSION_CODES.P)
     @Override
@@ -49,33 +50,35 @@ public class UnlockScreenActivity extends ReactActivity implements UnlockScreenA
         setContentView(R.layout.activity_call_incoming);
 
         Intent intent = getIntent();
-        //ringtoneManager start
         String call_type=intent.getStringExtra("MESSAGE_TYPE");
-        Uri incoming_call_notif = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE);
-        Ringtone r = RingtoneManager.getRingtone(getApplicationContext(), incoming_call_notif);
         String incomingCallDisconnect="call_disconnected";
         String incomingCallStart="call_started";
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
         String notifMessageType = sharedPref.getString("NOTIF_MESSAGE_TYPE", "call_started");
-        Log.e("RemoteMessageAct==", String.valueOf(notifMessageType));
+
+        //ringtoneManager start
+        Uri incoming_call_notif = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE);
+        this.ringtone= RingtoneManager.getRingtone(getApplicationContext(), incoming_call_notif);
+        //ringtoneManager end
+
         if(notifMessageType.equals(incomingCallStart)){
-            r.setLooping(true);
-            r.play();
+                ringtone.setLooping(true);
+                ringtone.play();
         }
         else if(notifMessageType.equals(incomingCallDisconnect)){
-            finish();
-            r.stop();
-
+                finish();
+                ringtone.stop();
         }
-        //ringtoneManager end
-//
-
 
         String host_name = intent.getStringExtra("DOCTOR_NAME");
         String appointment_id=intent.getStringExtra("APPOINTMENT_ID");
+        Boolean isAppRuning=intent.getBooleanExtra("APP_STATE",false);
+
         TextView tvName = (TextView)findViewById(R.id.callerName);
         tvName.setText(host_name);
+
         //
+
         final ReactContext reactContext = getReactInstanceManager().getCurrentReactContext();
 
         ImageButton acceptCallBtn = (ImageButton) findViewById(R.id.accept_call_btn);
@@ -85,9 +88,18 @@ public class UnlockScreenActivity extends ReactActivity implements UnlockScreenA
                 WritableMap params = Arguments.createMap();
                 params.putBoolean("done", true);
                 params.putString("appointment_id",appointment_id);
-                sendEvent(reactContext, "accept", params);
-                finish();
-                r.stop();
+
+                if(isAppRuning){
+                    Intent intent = new Intent(UnlockScreenActivity.this, MainActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                    intent.putExtra("APPOINTMENT_ID",appointment_id);
+                    startActivity(intent);
+                    finish();
+                }
+            else{
+                    sendEvent(reactContext, "accept", params);
+                    finish();
+                }
             }
         });
 
@@ -99,7 +111,6 @@ public class UnlockScreenActivity extends ReactActivity implements UnlockScreenA
                 params.putBoolean("done", false);
                 sendEvent(reactContext, "reject", params);
                 finish();
-                r.stop();
             }
         });
 
@@ -117,6 +128,11 @@ public class UnlockScreenActivity extends ReactActivity implements UnlockScreenA
 
     }
 
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        ringtone.stop();
+    }
 
     @Override
     public void onConnected() {

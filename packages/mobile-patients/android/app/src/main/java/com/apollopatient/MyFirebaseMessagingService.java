@@ -12,6 +12,7 @@ import com.facebook.react.ReactInstanceManager;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.ReactMethod;
+import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.webengage.sdk.android.WebEngage;
 import com.google.firebase.messaging.RemoteMessage;
@@ -34,21 +35,18 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 public class MyFirebaseMessagingService
         extends FirebaseMessagingService {
-
+    private static DeviceEventManagerModule.RCTDeviceEventEmitter eventEmitter = null;
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
         try {
             Log.e("RemoteMessage", remoteMessage.getData().toString());
 
-//                ReactInstanceManager mReactInstanceManager = ((ReactApplication) getApplication()).getReactNativeHost().getReactInstanceManager();
-//                ReactContext context = mReactInstanceManager.getCurrentReactContext();
             String notifDataType = remoteMessage.getData().get("type");
             String startCallType="call_started";
             String disconnectCallType="call_disconnected";
             if(startCallType.equals(notifDataType)|| disconnectCallType.equals(notifDataType)) {
-                isAppRunning();
-                showUnlockScreen(remoteMessage);
-                return;
+                    showUnlockScreen(remoteMessage,!isAppRunning());
+                    return;
             }
 
             Map<String, String> data = remoteMessage.getData();
@@ -56,7 +54,6 @@ public class MyFirebaseMessagingService
                 WebEngage.get().receive(data);
             } else {
                 try {
-                    // Log.e("Invertase", remoteMessage.getData().toString());
 
                     if(remoteMessage.getData().get("author") != null){
                         VitaTasksNotificationsManager.INSTANCE.createNotificationTwilio(this, remoteMessage.getData());
@@ -71,15 +68,12 @@ public class MyFirebaseMessagingService
                     Log.e("new io.invertase error", e.getMessage() + "\n" + e.toString());
                 }
             }
-            //start
-
-            //end
         } catch (Exception e) {
             Log.e("onMessageReceived error", e.getMessage() + "\n" + e.toString());
         }
     }
 
-    private void showUnlockScreen(RemoteMessage remoteMessage) {
+    private void showUnlockScreen(RemoteMessage remoteMessage,boolean isAppRunning) {
         String notifDataType = remoteMessage.getData().get("type");
         String startCallType="call_started";
         String disconnectCallType="call_disconnected";
@@ -87,12 +81,12 @@ public class MyFirebaseMessagingService
         SharedPreferences.Editor editor = sharedPref.edit();
         editor.putString("NOTIF_MESSAGE_TYPE", notifDataType);
         editor.commit();
-        Log.e("RemoteMessageUnScreen", String.valueOf(disconnectCallType.equals(notifDataType)));
         if( startCallType.equals(notifDataType)) {
                 Intent i = new Intent(getApplicationContext(), UnlockScreenActivity.class);
                 i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
                 i.putExtra("DOCTOR_NAME", remoteMessage.getData().get("doctor_name"));
                 i.putExtra("APPOINTMENT_ID",remoteMessage.getData().get("appointment_id"));
+                i.putExtra("APP_STATE",isAppRunning);
                 startActivity(i);
         }
         }
@@ -107,10 +101,8 @@ public class MyFirebaseMessagingService
             itr.next();
         }
         if(n==1){ // App is killed
-            Log.e("AppKilled==", String.valueOf("app killed"));
             return false;
         }
-        Log.e("AppRunning==", String.valueOf("app running"));
         return true; // App is in background or foreground
     }
 }
