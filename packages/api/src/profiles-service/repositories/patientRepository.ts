@@ -581,8 +581,8 @@ export class PatientRepository extends Repository<Patient> {
         }
       }
       catch (exception) {
-        log('profileServiceLogger', 'Exception in updateLinkedUhidAccount', 'patientRepository.ts', 'undefined', JSON.stringify(exception));
-        return reject(exception);
+        log('profileServiceLogger', AphErrorMessages.UPDATE_PROFILE_ERROR, 'patientRepository.ts/updateLinkedUhidAccount', 'undefined', JSON.stringify(exception));
+        return reject(AphErrorMessages.UPDATE_PROFILE_ERROR);
       }
     })
   }
