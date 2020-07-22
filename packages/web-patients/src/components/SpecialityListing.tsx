@@ -746,7 +746,7 @@ export const SpecialityListing: React.FC = (props) => {
     <div className={classes.slContainer}>
       <MetaTagsComp {...metaTagProps} />
       <SchemaMarkup structuredJSON={breadcrumbJSON} />
-      {<SchemaMarkup structuredJSON={faqSchema} />}
+      {faqSchema && <SchemaMarkup structuredJSON={faqSchema} />}
       <Header />
       <div className={classes.container}>
         <div className={`${classes.slContent} ${currentPatient ? classes.slCotent1 : ''}`}>
