@@ -108,7 +108,7 @@ import {
   MedicineReOrderOverlayProps,
   MedicineReOrderOverlay,
 } from '@aph/mobile-patients/src/components/Medicines/MedicineReOrderOverlay';
-import { getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails } from '../../graphql/types/getMedicineOrderOMSDetails';
+import { getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails } from '@aph/mobile-patients/src/graphql/types/getMedicineOrderOMSDetails';
 
 const styles = StyleSheet.create({
   hiTextStyle: {
