@@ -258,6 +258,10 @@ const useStyles = makeStyles((theme: Theme) => {
       borderRadius: 10,
       marginTop: '14px',
     },
+    disabled: {
+      opacity: 0.5,
+      cursor: 'not-allowed',
+    },
   });
 });
 interface HowCanConsultProps {
@@ -312,7 +316,9 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
           <li>
             <AphButton
               className={`${classes.button}  ${onlineDirection ? classes.btnActive : null} ${
-                consultMode === ConsultMode.BOTH || consultMode === ConsultMode.ONLINE ? '' : null
+                consultMode === ConsultMode.BOTH || consultMode === ConsultMode.ONLINE
+                  ? ''
+                  : classes.disabled
               }`}
               onClick={() => {
                 setOnlineDirection(true);
