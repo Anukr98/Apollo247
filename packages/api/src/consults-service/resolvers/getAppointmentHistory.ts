@@ -209,7 +209,7 @@ type AppointmentStatusResult = {
 
 const getAppointmentStatus: Resolver<
   null,
-  { consultID: string; },
+  { id: string; },
   ConsultServiceContext,
   AppointmentStatusResult
 > = async (parent, args, { consultsDb, doctorsDb, mobileNumber }) => {
@@ -217,7 +217,7 @@ const getAppointmentStatus: Resolver<
   let appointment;
   try {
     appointment = await appointmentRepo.findOneByAppointmentId(
-      args.consultID
+      args.id
     );
     if (appointment == null) throw new AphError(AphErrorMessages.APPOINTMENT_ID_NOT_FOUND);
   } catch (invalidGrant) {
