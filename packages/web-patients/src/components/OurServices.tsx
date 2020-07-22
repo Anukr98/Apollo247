@@ -111,7 +111,7 @@ export const OurServices: React.FC = (props) => {
   const classes = useStyles({});
   const serviceItems: ServiceItem[] = [
     {
-      title: 'Book Doctor Appointment',
+      title: 'Online Doctor Consultation',
       content: `Let's get you connected with them.`,
       imgUrl: `${require('images/ic-doctor.svg')}`,
       action: { link: clientRoutes.specialityListing(), content: 'Find specialist' },
