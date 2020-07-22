@@ -120,6 +120,18 @@ export const getMedicineOrdersOMSListTypeDefs = gql`
     responseCode: String
     responseMessage: String
     bankTxnId: String
+    healthCreditsRedeemed: Int
+    healthCreditsRedemptionRequest: BlockUserPointsResponse
+  }
+
+  type BlockUserPointsResponse {
+    Success: Boolean
+    Message: String
+    RequestNumber: String
+    AvailablePoints: Int
+    BalancePoints: Int
+    RedeemedPoints: Int
+    PointsValue: Int
   }
 
   type RecommendedProductsListResult {
