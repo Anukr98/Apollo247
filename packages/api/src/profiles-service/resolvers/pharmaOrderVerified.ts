@@ -99,7 +99,7 @@ const saveOrderShipments: Resolver<
   SaveOrderShipmentsResult
 > = async (parent, { saveOrderShipmentsInput }, { profilesDb }) => {
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
-  const orderDetails = await medicineOrdersRepo.getMedicineOrderDetails(
+  const orderDetails = await medicineOrdersRepo.getMedicineOrderWithShipments(
     saveOrderShipmentsInput.orderId
   );
   if (!orderDetails) {
