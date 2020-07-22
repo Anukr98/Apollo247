@@ -11,7 +11,7 @@ import {
   ManyToOne,
   Index,
   UpdateDateColumn,
-  CreateDateColumn
+  CreateDateColumn,
 } from 'typeorm';
 import { Validate, IsDate } from 'class-validator';
 import { DoctorType, ROUTE_OF_ADMINISTRATION } from 'doctors-service/entities';
@@ -379,9 +379,14 @@ export class Appointment extends BaseEntity {
   @OneToMany((type) => AuditHistory, (auditHistory) => auditHistory.appointment)
   auditHistory: AuditHistory[];
 
-  @OneToMany(() => ExotelDetails, (callDetail: ExotelDetails) => { callDetail.appointment }, {onDelete: 'CASCADE', onUpdate: 'CASCADE'})
-  callDetails: Array<ExotelDetails>
-
+  @OneToMany(
+    () => ExotelDetails,
+    (callDetail: ExotelDetails) => {
+      callDetail.appointment;
+    },
+    { onDelete: 'CASCADE', onUpdate: 'CASCADE' }
+  )
+  callDetails: Array<ExotelDetails>;
 }
 //Appointment ends
 
@@ -1787,7 +1792,6 @@ export class NotificationBinArchive extends BaseEntity {
 // ExotelDetails
 @Entity()
 export class ExotelDetails extends BaseEntity {
-
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -1799,9 +1803,14 @@ export class ExotelDetails extends BaseEntity {
   @Column()
   appointmentId: string;
 
-  @ManyToOne(() => Appointment, (appointment: Appointment) => { appointment.callDetails })
-  @JoinColumn({name: 'appointmentId'})
-  appointment: Appointment
+  @ManyToOne(
+    () => Appointment,
+    (appointment: Appointment) => {
+      appointment.callDetails;
+    }
+  )
+  @JoinColumn({ name: 'appointmentId' })
+  appointment: Appointment;
 
   @Index('ExotelDetails_doctorType')
   @Column()
@@ -1858,7 +1867,7 @@ export class ExotelDetails extends BaseEntity {
   @CreateDateColumn()
   createdDate: Date;
 
-  @Column({type: 'timestamp' })
+  @Column({ type: 'timestamp' })
   callStartTime: Date;
 
   @Column({ nullable: true, type: 'timestamp' })
@@ -1866,7 +1875,6 @@ export class ExotelDetails extends BaseEntity {
 
   @Column({ nullable: true })
   totalCallDuration: number;
-
 }
 
 //notification related tables end

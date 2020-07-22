@@ -1,11 +1,12 @@
 const path = require('path');
 const process = require('process');
-//const webpack = require('webpack');
+const webpack = require('webpack');
 const nodeExternals = require('webpack-node-externals');
 const NodemonPlugin = require('nodemon-webpack-plugin');
+const CircularDependencyPlugin = require('circular-dependency-plugin');
+const HardSourceWebpackPlugin = require('hard-source-webpack-plugin');
 const DotenvPlugin = require('dotenv-webpack');
 const dotenv = require('dotenv');
-const forkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 
 module.exports = ({ nodemonPluginArgs, webpackConfigOptions }) => {
   const envFile = path.resolve(__dirname, '../../.env');
@@ -18,25 +19,34 @@ module.exports = ({ nodemonPluginArgs, webpackConfigOptions }) => {
 
   const distDir = path.resolve(__dirname, 'dist');
 
-  const plugins = [new DotenvPlugin({ path: envFile })];
-
+  const plugins = [
+    new DotenvPlugin({ path: envFile }),
+    new CircularDependencyPlugin({
+      exclude: /node_modules/,
+      failOnError: true,
+      allowAsyncCycles: false,
+      cwd: process.cwd(),
+    }),
+  ];
   if (isLocal) {
-    plugins.push(new forkTsCheckerWebpackPlugin(), new NodemonPlugin({ ...nodemonPluginArgs }));
+    plugins.push(
+      new NodemonPlugin({ ...nodemonPluginArgs }),
+      new HardSourceWebpackPlugin(),
+      new HardSourceWebpackPlugin.ExcludeModulePlugin([{ test: /@aph/ }])
+    );
   }
 
   const tsLoader = {
-    loader: 'ts-loader',
+    loader: 'awesome-typescript-loader',
     options: isLocal
       ? {
-        transpileOnly: true,
-      }
+          useCache: true,
+          transpileModule: true,
+          forceIsolatedModules: true,
+        }
       : undefined,
   };
-  const cache = isLocal
-    ? {
-      type: 'memory',
-    }
-    : false;
+
   return {
     target: 'node',
 
