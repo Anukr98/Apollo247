@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { makeStyles, createStyles } from '@material-ui/styles';
 import { Theme, CircularProgress, Modal } from '@material-ui/core';
 import { AphButton } from '@aph/web-ui-components';
@@ -275,9 +275,9 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const [popupLoading, setPopupLoading] = useState<boolean>(false);
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
-  const [physicalDirection, setPhysicalDirection] = useState<boolean>(false);
-  const [onlineDirection, setOnlineDirection] = useState<boolean>(true);
   const { doctorDetails, doctorAvailablePhysicalSlots, doctorAvailableOnlineSlot } = props;
+  const [onlineDirection, setOnlineDirection] = useState<boolean>(false);
+  const [physicalDirection, setPhysicalDirection] = useState<boolean>(false);
   const doctorName = doctorDetails && doctorDetails.fullName;
   const physcalFee = doctorDetails && doctorDetails.physicalConsultationFees;
   const onlineFee = doctorDetails && doctorDetails.onlineConsultationFees;
@@ -308,6 +308,12 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
     );
   };
 
+  useEffect(() => {
+    if (consultMode) {
+      setOnlineDirection(consultMode === ConsultMode.BOTH || consultMode === ConsultMode.ONLINE);
+      setPhysicalDirection(consultMode === ConsultMode.PHYSICAL);
+    }
+  }, [consultMode]);
   return (
     <div className={classes.root}>
       <div className={classes.headerGroup}>
@@ -320,6 +326,7 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
                   ? ''
                   : classes.disabled
               }`}
+              disabled={consultMode === ConsultMode.PHYSICAL}
               onClick={() => {
                 setOnlineDirection(true);
                 setPhysicalDirection(false);
@@ -342,6 +349,7 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
               className={`${classes.button} ${physicalDirection ? classes.btnActive : null} ${
                 consultMode === ConsultMode.BOTH || consultMode === ConsultMode.PHYSICAL ? '' : null
               }`}
+              disabled={consultMode === ConsultMode.ONLINE}
               id="btnActive"
               onClick={() => {
                 setPhysicalDirection(true);
