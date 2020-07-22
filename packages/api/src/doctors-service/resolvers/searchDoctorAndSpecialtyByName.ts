@@ -11,6 +11,14 @@ import { Client, RequestParams } from '@elastic/elasticsearch';
 import { differenceInMinutes } from 'date-fns';
 import { debugLog } from 'customWinstonLogger';
 
+const ES_FIELDS_PRIORITY_IN_REDIS = {
+  doctor_fullName: 5,
+  speciality_name: 4,
+  speciality_groupName: 3,
+  speciality_commonSearchTerm: 2,
+  speciality_userFriendlyNomenclature: 1,
+}
+
 export const searchDoctorAndSpecialtyByNameTypeDefs = gql`
   type PossibleSearchMatches {
     doctors: [DoctorDetails]
@@ -123,11 +131,11 @@ const SearchDoctorAndSpecialtyByName: Resolver<
             {
               multi_match: {
                 fields: [
-                  `fullName^${5}`,
-                  `specialty.name^${4}`,
-                  `specialty.groupName^${3}`,
-                  `specialty.commonSearchTerm^${2}`,
-                  `specialty.userFriendlyNomenclature^${1}`,
+                  `fullName^${ES_FIELDS_PRIORITY_IN_REDIS.doctor_fullName}`,
+                  `specialty.name^${ES_FIELDS_PRIORITY_IN_REDIS.speciality_name}`,
+                  `specialty.groupName^${ES_FIELDS_PRIORITY_IN_REDIS.speciality_groupName}`,
+                  `specialty.commonSearchTerm^${ES_FIELDS_PRIORITY_IN_REDIS.speciality_commonSearchTerm}`,
+                  `specialty.userFriendlyNomenclature^${ES_FIELDS_PRIORITY_IN_REDIS.speciality_userFriendlyNomenclature}`,
                 ],
                 type: 'phrase_prefix',
                 query: searchTextLowerCase,
@@ -153,11 +161,11 @@ const SearchDoctorAndSpecialtyByName: Resolver<
               {
                 multi_match: {
                   fields: [
-                    `fullName^${5}`,
-                    `specialty.name^${4}`,
-                    `specialty.groupName^${3}`,
-                    `specialty.commonSearchTerm^${2}`,
-                    `specialty.userFriendlyNomenclature^${1}`,
+                    `fullName^${ES_FIELDS_PRIORITY_IN_REDIS.doctor_fullName}`,
+                    `specialty.name^${ES_FIELDS_PRIORITY_IN_REDIS.speciality_name}`,
+                    `specialty.groupName^${ES_FIELDS_PRIORITY_IN_REDIS.speciality_groupName}`,
+                    `specialty.commonSearchTerm^${ES_FIELDS_PRIORITY_IN_REDIS.speciality_commonSearchTerm}`,
+                    `specialty.userFriendlyNomenclature^${ES_FIELDS_PRIORITY_IN_REDIS.speciality_userFriendlyNomenclature}`,
                   ],
                   type: 'phrase_prefix',
                   query: searchTextLowerCase,
@@ -286,11 +294,11 @@ const SearchDoctorAndSpecialtyByName: Resolver<
             {
               multi_match: {
                 fields: [
-                  `fullName^${5}`,
-                  `specialty.name^${4}`,
-                  `specialty.groupName^${3}`,
-                  `specialty.commonSearchTerm^${2}`,
-                  `specialty.userFriendlyNomenclature^${1}`,
+                  `fullName^${ES_FIELDS_PRIORITY_IN_REDIS.doctor_fullName}`,
+                  `specialty.name^${ES_FIELDS_PRIORITY_IN_REDIS.speciality_name}`,
+                  `specialty.groupName^${ES_FIELDS_PRIORITY_IN_REDIS.speciality_groupName}`,
+                  `specialty.commonSearchTerm^${ES_FIELDS_PRIORITY_IN_REDIS.speciality_commonSearchTerm}`,
+                  `specialty.userFriendlyNomenclature^${ES_FIELDS_PRIORITY_IN_REDIS.speciality_userFriendlyNomenclature}`,
                 ],
                 fuzziness: 'AUTO',
                 query: searchTextLowerCase,
