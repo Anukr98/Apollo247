@@ -347,7 +347,9 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
             {' '}
             <AphButton
               className={`${classes.button} ${physicalDirection ? classes.btnActive : null} ${
-                consultMode === ConsultMode.BOTH || consultMode === ConsultMode.PHYSICAL ? '' : null
+                consultMode === ConsultMode.BOTH || consultMode === ConsultMode.PHYSICAL
+                  ? ''
+                  : classes.disabled
               }`}
               disabled={consultMode === ConsultMode.ONLINE}
               id="btnActive"
