@@ -309,50 +309,50 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
       <div className={classes.headerGroup}>
         <h3>How can I consult with {doctorName}:</h3>
         <ul className={classes.tabButtons}>
-          {(consultMode === ConsultMode.BOTH || consultMode === ConsultMode.PHYSICAL) && (
-            <li>
-              {' '}
-              <AphButton
-                className={`${classes.button} ${physicalDirection ? classes.btnActive : ''}`}
-                id="btnActive"
-                onClick={() => {
-                  setPhysicalDirection(true);
-                  setOnlineDirection(false);
-                }}
+          <li>
+            <AphButton
+              className={`${classes.button}  ${onlineDirection ? classes.btnActive : null} ${
+                consultMode === ConsultMode.BOTH || consultMode === ConsultMode.ONLINE ? '' : null
+              }`}
+              onClick={() => {
+                setOnlineDirection(true);
+                setPhysicalDirection(false);
+              }}
+            >
+              <span>Chat/Audio/Video</span>
+              <span className={classes.price}>Rs. {onlineFee}</span>
+              <span
+                className={`${classes.availability} ${
+                  differenceInOnlineMinutes < 15 ? classes.availableNow : null
+                }`}
               >
-                <span>Meet in Person</span>
-                <span className={classes.price}>Rs. {physcalFee}</span>
-                <span
-                  className={`${classes.availability} ${
-                    differenceInPhysicalMinutes < 15 ? classes.availableNow : null
-                  }`}
-                >
-                  {availabilityMarkup('physical')}
-                </span>
-              </AphButton>
-            </li>
-          )}
-          {(consultMode === ConsultMode.BOTH || consultMode === ConsultMode.ONLINE) && (
-            <li>
-              <AphButton
-                className={`${classes.button}  ${onlineDirection ? classes.btnActive : ''}`}
-                onClick={() => {
-                  setOnlineDirection(true);
-                  setPhysicalDirection(false);
-                }}
+                {availabilityMarkup('online')}
+              </span>
+            </AphButton>
+          </li>
+          <li>
+            {' '}
+            <AphButton
+              className={`${classes.button} ${physicalDirection ? classes.btnActive : null} ${
+                consultMode === ConsultMode.BOTH || consultMode === ConsultMode.PHYSICAL ? '' : null
+              }`}
+              id="btnActive"
+              onClick={() => {
+                setPhysicalDirection(true);
+                setOnlineDirection(false);
+              }}
+            >
+              <span>Meet in Person</span>
+              <span className={classes.price}>Rs. {physcalFee}</span>
+              <span
+                className={`${classes.availability} ${
+                  differenceInPhysicalMinutes < 15 ? classes.availableNow : null
+                }`}
               >
-                <span>Chat/Audio/Video</span>
-                <span className={classes.price}>Rs. {onlineFee}</span>
-                <span
-                  className={`${classes.availability} ${
-                    differenceInOnlineMinutes < 15 ? classes.availableNow : null
-                  }`}
-                >
-                  {availabilityMarkup('online')}
-                </span>
-              </AphButton>
-            </li>
-          )}
+                {availabilityMarkup('physical')}
+              </span>
+            </AphButton>
+          </li>
         </ul>
       </div>
       <div className={classes.consultGroup}>
