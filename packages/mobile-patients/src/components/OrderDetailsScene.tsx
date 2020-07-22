@@ -1460,8 +1460,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
             if (cannotCancelOrder) {
               showAphAlert!({
                 title: string.common.uhOh,
-                description:
-                  'Your order has already been billed and we will not be able to take the cancellation request on the App. In case you still want to proceed with cancellation, please click on the link below to send the cancellation request through WhatsApp and our live Customer executives will be happy to help you.',
+                description: string.OrderSummery.orderCancellationAfterBillingAlert,
                 ctaContainerStyle: { justifyContent: 'flex-end' },
                 CTAs: [
                   {
