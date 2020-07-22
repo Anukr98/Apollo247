@@ -63,6 +63,7 @@ export const getMedicineOrdersOMSListTypeDefs = gql`
     medicineOrderPayments: [MedicineOrderOMSPayments]
     medicineOrdersStatus: [MedicineOrdersOMSStatus]
     medicineOrderShipments: [MedicineOrderOMSShipment]
+    medicineOrderAddress: MedicineOrderOMSAddress
     patient: Patient
     customerComment: String
     alertStore: Boolean
@@ -134,6 +135,23 @@ export const getMedicineOrdersOMSListTypeDefs = gql`
     PointsValue: Int
   }
 
+  type MedicineOrderOMSAddress {
+    id: ID
+    name: String
+    mobileNumber: String
+    addressLine1: String
+    addressLine2: String
+    addressType: PATIENT_ADDRESS_TYPE
+    city: String
+    otherAddressType: String
+    state: String
+    zipcode: String
+    landmark: String
+    latitude: Float
+    longitude: Float
+    statecode: String
+  }
+
   type RecommendedProductsListResult {
     recommendedProducts: [RecommendedProducts]
   }
@@ -173,6 +191,9 @@ export const getMedicineOrdersOMSListTypeDefs = gql`
     checkIfProductsOnline(productSkus: [String]): ProductAvailabilityResult!
     updateMedicineDataRedis(limit: Int, offset: Int): getMedicineOrdersListResult
     getLatestMedicineOrder(patientUhid: String!): MedicineOrderOMSDetailsResult!
+    getMedicineOrderOMSDetailsWithAddress(
+      patientId: String, 
+      orderAutoId: Int): MedicineOrderOMSDetailsResult!
   }
 `;
 
@@ -777,6 +798,31 @@ const getLatestMedicineOrder: Resolver<
   return { medicineOrderDetails: offlineList };
 };
 
+const getMedicineOrderOMSDetailsWithAddress: Resolver<
+  null,
+  { patientId: string; orderAutoId: number },
+  ProfilesServiceContext,
+  MedicineOrderOMSDetailsResult
+> = async (parent, args, { profilesDb }) => {
+  const patientRepo = profilesDb.getCustomRepository(PatientRepository);
+  if (args.patientId) {
+    const patientDetails = await patientRepo.findById(args.patientId);
+    if (!patientDetails) {
+      throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
+    }
+  }
+  const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
+  let medicineOrderDetails;
+  medicineOrderDetails = await medicineOrdersRepo.getMedicineOrderDetailsWithAddressByOrderId(
+    args.orderAutoId
+  );
+
+  if (!medicineOrderDetails) {
+    throw new AphError(AphErrorMessages.INVALID_MEDICINE_ORDER_ID, undefined, {});
+  }
+  return { medicineOrderDetails };
+};
+
 export const getMedicineOrdersOMSListResolvers = {
   Query: {
     getMedicineOrdersOMSList,
@@ -786,5 +832,6 @@ export const getMedicineOrdersOMSListResolvers = {
     checkIfProductsOnline,
     updateMedicineDataRedis,
     getLatestMedicineOrder,
+    getMedicineOrderOMSDetailsWithAddress,
   },
 };
