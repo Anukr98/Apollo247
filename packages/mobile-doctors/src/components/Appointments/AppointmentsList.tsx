@@ -41,6 +41,10 @@ import {
   CREATE_CASESHEET_FOR_SRD,
 } from '@aph/mobile-doctors/src/graphql/profiles';
 import AsyncStorage from '@react-native-community/async-storage';
+import {
+  SubmitJdCasesheetVariables,
+  SubmitJdCasesheet,
+} from '@aph/mobile-doctors/src/graphql/types/SubmitJdCasesheet';
 
 const styles = AppointmentsListStyles;
 
@@ -160,11 +164,25 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
         onPress: () => {
           setLoading && setLoading(true);
           client
-            .mutate({ mutation: SUBMIT_JD_CASESHEET, variables: { appointmentId: appId } })
-            .then(() => {
+            .mutate<SubmitJdCasesheet, SubmitJdCasesheetVariables>({
+              mutation: SUBMIT_JD_CASESHEET,
+              variables: { appointmentId: appId },
+            })
+            .then((data) => {
               hideAphAlert!();
               setLoading && setLoading(false);
-              navigateToConsultRoom(doctorId, patientId, appId, apointmentData, prevCaseSheet);
+              if (g(data, 'data', 'submitJDCaseSheet')) {
+                navigateToConsultRoom(doctorId, patientId, appId, apointmentData, prevCaseSheet);
+              } else {
+                showAphAlert &&
+                  showAphAlert({
+                    title: `Hi ${
+                      doctorDetails ? doctorDetails.displayName || 'Doctor' : 'Doctor'
+                    } :)`,
+                    description:
+                      'The Junior Doctor consultation is currently in progress for this appointment. You will be able to start this consult shortly..',
+                  });
+              }
             })
             .catch(() => {
               hideAphAlert!();

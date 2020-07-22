@@ -299,7 +299,7 @@ export const AddTestPopup: React.FC<AddTestPopupProps> = (props) => {
                 containerStyle={{ marginRight: 10 }}
                 title={item.itemName || ''}
                 onPress={() => {
-                  settempTestArray(tempTestArray.slice(1));
+                  settempTestArray(tempTestArray.filter((i) => i.itemName !== item.itemName));
                   setsearchTestVal('');
                   setisSearchTestListVisible(false);
                 }}
