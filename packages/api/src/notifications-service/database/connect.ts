@@ -89,6 +89,7 @@ import {
   CouponPharmaRules,
   MedicineOrderCancelReason,
   PharmacologistConsult,
+  MedicineOrderAddress,
 } from 'profiles-service/entities';
 
 export const connect = async () => {
@@ -208,6 +209,7 @@ export const connect = async () => {
         ReferalCouponMapping,
         MedicineOrderCancelReason,
         PharmacologistConsult,
+        MedicineOrderAddress,
       ],
       type: 'postgres',
       host: process.env.PROFILES_DB_HOST,

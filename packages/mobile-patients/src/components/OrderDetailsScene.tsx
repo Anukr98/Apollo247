@@ -102,6 +102,7 @@ import {
   GetPatientFeedback,
   GetPatientFeedbackVariables,
 } from '@aph/mobile-patients/src/graphql/types/GetPatientFeedback';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
 const styles = StyleSheet.create({
   headerShadowContainer: {
@@ -662,6 +663,17 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           '',
           `Your order is ready for pickup at your selected ${addressData}`,
         ],
+        [MEDICINE_ORDER_STATUS.DELIVERED]: [
+          '',
+          `In case of any concerns or feedback related to your order, please speak with our customer care executives on the official WhatsApp channel (during business hours 9 AM - 8:30 PM)\n${AppConfig.Configuration.MED_ORDERS_CUSTOMER_CARE_WHATSAPP_LINK}`,
+          () => {
+            Linking.openURL(
+              AppConfig.Configuration.MED_ORDERS_CUSTOMER_CARE_WHATSAPP_LINK
+            ).catch((err) =>
+              CommonBugFender(`${AppRoutes.OrderDetailsScene}_getOrderDescription`, err)
+            );
+          },
+        ],
         [MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY]: [
           '',
           `Your order has been picked up from our store!`,
@@ -678,6 +690,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         ? {
             heading: g(orderStatusDescMapping, status as any, '0'),
             description: g(orderStatusDescMapping, status as any, '1'),
+            onPress: g(orderStatusDescMapping, status as any, '2'),
           }
         : null;
     };
@@ -1486,16 +1499,17 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
             if (cannotCancelOrder) {
               showAphAlert!({
                 title: string.common.uhOh,
-                description:
-                  'Your order has already been billed and we will not be able to take the cancellation request on the App. In case you still want to proceed with cancellation, please click on the link below to send the cancellation request through WhatsApp and our live Customer executives will be happy to help you.',
+                description: string.OrderSummery.orderCancellationAfterBillingAlert,
                 ctaContainerStyle: { justifyContent: 'flex-end' },
                 CTAs: [
                   {
                     text: 'CLICK HERE',
                     type: 'orange-link',
                     onPress: () => {
-                      Linking.openURL('https://bit.ly/apollo247Medicines').catch((err) =>
-                        console.error('An error occurred', err)
+                      Linking.openURL(
+                        AppConfig.Configuration.MED_ORDERS_CUSTOMER_CARE_WHATSAPP_LINK
+                      ).catch((err) =>
+                        CommonBugFender(`${AppRoutes.OrderDetailsScene}_Linking.openURL`, err)
                       );
                       hideAphAlert!();
                     },
