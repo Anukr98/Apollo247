@@ -72,7 +72,7 @@ const updateDelegateNumber: Resolver<
 
   await doctorRepository.updateDelegateNumber(doctorData.id, args.delegateNumber);
 
-  const updatedDoctorDetails = await doctorRepository.getDoctorProfileData(doctorData.id, RELATIONS.GET_PROFILE_DATA.ALL);
+  const updatedDoctorDetails = await doctorRepository.getDoctorProfileData(doctorData.id);
   if (updatedDoctorDetails == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
   return updatedDoctorDetails;
 };
@@ -91,7 +91,7 @@ const removeDelegateNumber: Resolver<null, {}, DoctorsServiceContext, Doctor> = 
 
   const updatedDoctorDetails =
     doctorData.delegateNumber != null
-      ? await doctorRepository.getDoctorProfileData(doctorData.id, RELATIONS.GET_PROFILE_DATA.ALL)
+      ? await doctorRepository.getDoctorProfileData(doctorData.id)
       : doctorData;
   if (updatedDoctorDetails == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
   return updatedDoctorDetails;
