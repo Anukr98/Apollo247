@@ -66,11 +66,13 @@ export interface UploadPrescriptionProps
   extends NavigationScreenProps<{
     phyPrescriptionsProp: PhysicalPrescription[];
     ePrescriptionsProp: EPrescription[];
+    type?: string;
   }> {}
 
 export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => {
   const phyPrescriptionsProp = props.navigation.getParam('phyPrescriptionsProp') || [];
   const ePrescriptionsProp = props.navigation.getParam('ePrescriptionsProp') || [];
+  const type = props.navigation.getParam('type') || '';
   const [PhysicalPrescriptions, setPhysicalPrescriptions] = useState<PhysicalPrescription[]>(
     phyPrescriptionsProp
   );
@@ -99,8 +101,25 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
     },
   ];
   const [selectedMedicineOption, setSelectedMedicineOption] = useState<string>('');
+  const [numberOfPrescriptionClicked, setNumberOfPrescriptionClicked] =
+    useState<number>(type === 'Camera' ? 1 : 0);
+  const [numberOfPrescriptionUploaded, setNumberOfPrescriptionUploaded] =
+    useState<number>(type === 'Gallery' ? 1 : 0);
+  const [numberOfEPrescriptions, setNumberOfEPrescriptions] =
+    useState<number>(type === 'E-Prescription' ? 1 : 0);
+  const [medicineOptionSelected, setMedicineOptionSelected] = useState<string>('');
 
   const onSubmitOrder = async () => {
+    const eventAttribute: WebEngageEvents[WebEngageEventName.UPLOAD_PRESCRIPTION_SUBMIT_CLICKED] = {
+      OptionSelected: medicineOptionSelected,
+      NumberOfPrescriptionClicked: numberOfPrescriptionClicked,
+      NumberOfPrescriptionUploaded: numberOfPrescriptionUploaded,
+      NumberOfEPrescriptions: numberOfEPrescriptions,
+    };
+    postWebEngageEvent(
+      WebEngageEventName.UPLOAD_PRESCRIPTION_SUBMIT_CLICKED,
+      eventAttribute
+    );
     CommonLogEvent(
       AppRoutes.UploadPrescription,
       'Graph ql call for save prescription medicine order'
@@ -324,6 +343,8 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
                     WebEngageEventName.UPLOAD_PRESCRIPTION_OPTION_SELECTED,
                     eventAttribute
                   );
+
+                  setMedicineOptionSelected(optionSelected);
                 }}
                 containerStyle={{
                   ...theme.fonts.IBMPlexSansMedium(16),
@@ -575,11 +596,16 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
           prescription: 'SELECT FROM\nE-PRESCRIPTION',
         }}
         onClickClose={() => setShowPopop(false)}
-        onResponse={(selectedType, response) => {
+        onResponse={(selectedType, response, type) => {
           setShowPopop(false);
           if (selectedType == 'CAMERA_AND_GALLERY') {
+            if (type !== undefined) {
+              if (type === 'Camera') setNumberOfPrescriptionClicked(numberOfPrescriptionClicked + 1);
+              if (type === 'Gallery') setNumberOfPrescriptionUploaded(numberOfPrescriptionUploaded + 1);
+            }
             setPhysicalPrescriptions([...PhysicalPrescriptions, ...response]);
           } else {
+            setNumberOfEPrescriptions(numberOfEPrescriptions + 1);
             setSelectPrescriptionVisible(true);
           }
         }}

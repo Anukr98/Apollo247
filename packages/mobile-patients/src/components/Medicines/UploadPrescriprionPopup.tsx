@@ -103,7 +103,7 @@ export interface UploadPrescriprionPopupProps {
   instructions?: string[];
   hideTAndCs?: boolean;
   onClickClose: () => void;
-  onResponse: (selectedType: EPrescriptionDisableOption, response: PhysicalPrescription[]) => void;
+  onResponse: (selectedType: EPrescriptionDisableOption, response: PhysicalPrescription[], type?: 'Camera' | 'Gallery') => void;
   isProfileImage?: boolean;
 }
 
@@ -182,7 +182,8 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
           setshowSpinner(false);
           props.onResponse(
             'CAMERA_AND_GALLERY',
-            formatResponse([response] as ImageCropPickerResponse[])
+            formatResponse([response] as ImageCropPickerResponse[]),
+            'Camera',
           );
         })
         .catch((e: Error) => {
@@ -257,7 +258,8 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
         setshowSpinner(false);
         props.onResponse(
           'CAMERA_AND_GALLERY',
-          formatResponse(response as ImageCropPickerResponse[])
+          formatResponse(response as ImageCropPickerResponse[]),
+          'Gallery',
         );
       })
       .catch((e: Error) => {

@@ -32,6 +32,7 @@ import {
   InitiateAppsFlyer,
   APPStateInActive,
   APPStateActive,
+  postWebEngageEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
@@ -39,6 +40,7 @@ import {
   getAppointmentDataVariables,
 } from '@aph/mobile-patients/src/graphql/types/getAppointmentData';
 import { GET_APPOINTMENT_DATA } from '@aph/mobile-patients/src/graphql/profiles';
+import { WebEngageEvents, WebEngageEventName } from '../helpers/webEngageEvents';
 // The moment we import from sdk @praktice/navigator-react-native-sdk,
 // finally not working on all promises.
 
@@ -225,6 +227,11 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           break;
         default:
           getData('ConsultRoom', undefined, true);
+          // webengage event
+          const eventAttributes: WebEngageEvents[WebEngageEventName.DEEPLINK_CONSULTROOM_SCREEN] = {
+            source: 'Deeplink',
+          };
+          postWebEngageEvent(WebEngageEventName.DEEPLINK_CONSULTROOM_SCREEN, eventAttributes);
           break;
       }
       console.log('route', route);
@@ -387,6 +394,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         console.log('MedicineDetail');
         props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
           sku: id,
+          movedFrom: 'deeplink',
         });
         break;
 
@@ -428,6 +436,14 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         if (id) {
           const [itemId, name] = id.split(',');
           console.log(itemId, name);
+
+          // webengage event
+          const eventAttributes: WebEngageEvents[WebEngageEventName.DEEPLINK_CATEGORY_SCREEN] = {
+            source: 'Deeplink',
+            CategoryId: itemId,
+            CategoryName: name,
+          };
+          postWebEngageEvent(WebEngageEventName.DEEPLINK_CATEGORY_SCREEN, eventAttributes);
 
           props.navigation.navigate(AppRoutes.SearchByBrand, {
             category_id: itemId,
