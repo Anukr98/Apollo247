@@ -72,7 +72,7 @@ const useStyles = makeStyles((theme: Theme) => {
       '& p': {
         fontSize: 12,
         fontWeight: 500,
-        color: '#67919d',
+        color: '#02475b',
       },
     },
     panelRoot: {
@@ -101,7 +101,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
       '& p': {
         fontSize: 16,
-        color: '#67919d',
+        color: '#02475b',
         margin: '0 0 20px',
       },
       [theme.breakpoints.down('sm')]: {
@@ -121,7 +121,7 @@ const useStyles = makeStyles((theme: Theme) => {
         '& a': {
           fontSize: 16,
           padding: '5px 0',
-          color: '#67919d',
+          color: '#02475b',
         },
       },
       [theme.breakpoints.down('sm')]: {
@@ -178,7 +178,7 @@ const useStyles = makeStyles((theme: Theme) => {
       transition: '0.5s ease',
       '& li': {
         padding: '5px 0',
-        color: '#67919d',
+        color: '#02475b',
       },
     },
     fontBold: {
