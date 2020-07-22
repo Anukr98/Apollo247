@@ -282,7 +282,8 @@ export const CovidArticleDetails: React.FC = (props: any) => {
             setMetaTagProps({
               title: alt,
               description: metaDescription,
-              canonicalLink: window && window.location && window.location.href,
+              canonicalLink:
+                typeof window !== 'undefined' && window.location && window.location.href,
             });
           const schemaJSON =
             title && thumbnailWeb && createdAt && updatedAt
