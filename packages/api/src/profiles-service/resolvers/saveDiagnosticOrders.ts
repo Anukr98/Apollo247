@@ -357,7 +357,7 @@ const SaveDiagnosticOrder: Resolver<
     if (patientDetails.uhid != '' && patientDetails.uhid != null) {
       patientId = patientDetails.uhid;
     } else {
-      patientId = await patientRepo.createNewUhid(patientDetails.id);
+      patientId = await patientRepo.createNewUhid(patientDetails);
       if (patientId == '') {
         patientId = '0';
       }

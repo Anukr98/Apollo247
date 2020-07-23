@@ -4,9 +4,7 @@ import { ApiConstants } from 'ApiConstants';
 import { UhidCreateResult } from 'types/uhidCreateTypes';
 import { getCache, setCache, delCache } from 'profiles-service/database/connectRedis';
 import { PrismSignUpUserData } from 'types/prism';
-
 import { UploadDocumentInput } from 'profiles-service/resolvers/uploadDocumentToPrism';
-
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { format, getUnixTime } from 'date-fns';
@@ -63,10 +61,11 @@ export class PatientRepository extends Repository<Patient> {
       return [newPatient];
     });
   }
-  findEmpId(empId: string, patientId: string) {
+  findEmpId(empId: string, patientId: string, partnerId: string) {
     return this.findOne({
       where: {
         employeeId: empId,
+        partnerId,
         id: Not(patientId),
       },
     });
@@ -315,7 +314,7 @@ export class PatientRepository extends Repository<Patient> {
     return authTokenResult !== null ? authTokenResult.response : null;
   }*/
 
-  async validateAndGetUHID(id: string, prismUsersList: PrismSignUpUserData[]) {
+  /*async validateAndGetUHID(id: string, prismUsersList: PrismSignUpUserData[]) {
     const reqStartTime = new Date();
     const patientData = await this.findOne({ where: { id } }).catch((error) => {
       throw new AphError(AphErrorMessages.GET_PROFILE_ERROR, undefined, {
@@ -331,7 +330,7 @@ export class PatientRepository extends Repository<Patient> {
 
     let uhid;
     if (patientData.uhid === null || patientData.uhid === '') {
-      uhid = await this.createNewUhid(patientData.id);
+      uhid = await this.createNewUhid(patientData);
     } else {
       const matchedUser = prismUsersList.filter((user) => user.UHID == patientData.uhid);
       dLogger(
@@ -350,7 +349,7 @@ export class PatientRepository extends Repository<Patient> {
     }
 
     return uhid;
-  }
+  }*/
 
   //utility method to get prism user details
   /* async getPrismUsersDetails(uhid: string, authToken: string) {
@@ -565,16 +564,10 @@ export class PatientRepository extends Repository<Patient> {
     return await patient.save();
   }
 
-  async createNewUhid(id: string) {
-    await this.dropPatientCache(`${REDIS_PATIENT_ID_KEY_PREFIX}${id}`);
-    const patientDetails = await this.getPatientDetails(id);
-    if (!patientDetails) {
-      throw new AphError(AphErrorMessages.GET_PROFILE_ERROR, undefined, {
-        error: 'Invalid PatientId',
-      });
-    }
-
+  async createNewUhid(patientDetails: Patient) {
+    await this.dropPatientCache(`${REDIS_PATIENT_ID_KEY_PREFIX}${patientDetails.id}`);
     //setting mandatory fields to create uhid in medmantra
+
     if (patientDetails.firstName === null || patientDetails.firstName === '') {
       patientDetails.firstName = 'New';
     }
@@ -681,11 +674,22 @@ export class PatientRepository extends Repository<Patient> {
     const uhidResp: UhidCreateResult = JSON.parse(textProcessRes);
     let newUhid = '';
     if (uhidResp.retcode == '0') {
-      await this.updateUhid(id, uhidResp.result.toString());
-      createPrismUser(patientDetails, uhidResp.result.toString());
       newUhid = uhidResp.result;
+      //const { id, ...updateAttrs } = patientDetails;
+      patientDetails.uhid = newUhid;
+      patientDetails.primaryUhid = newUhid;
+      patientDetails.uhidCreatedDate = new Date();
+      await this.save(patientDetails);
+      //await this.updateEntity<Patient>(Patient, id, updateAttrs);
+      //await this.updateUhid(patientDetails.id, uhidResp.result.toString());
+      createPrismUser(patientDetails, uhidResp.result.toString());
     }
     return newUhid;
+  }
+
+  async updatePatientDetails(patientDetails: Patient) {
+    const resp = await this.save(patientDetails);
+    console.log(resp, 'update response');
   }
 
   async createAthsToken(id: string) {
