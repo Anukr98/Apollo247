@@ -253,14 +253,15 @@ export const covidProtocolLanding: React.FC = (props: any) => {
   }, []);
 
   const [isWebView, setIsWebView] = useState<boolean>(false);
+  const subtitle = symptomData && symptomData['covidProtocolData'][0].category || '';
   return (
     <div className={classes.cdLanding} ref={scrollToRef}>
       <Header />
       <div className={classes.container}>
         <div className={classes.cdContent}>
           <Banner
-            title={'Coronavirus guide'}
-            subtitle={'Your personalized guide'}
+            title={'Coronavirus (COVID-19) Guide'}
+            subtitle={subtitle}
             isWebView={isWebView}
             backLocation={clientRoutes.covidLanding()}
           />
