@@ -327,8 +327,9 @@ const getDoctorDetailsById: Resolver<null, { id: string }, DoctorsServiceContext
   args,
   { doctorsDb }
 ) => {
-
   const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
+  const result = await doctorRepository.getDoctorProfileData(args.id);
+  return result;
 };
 
 type LoggedInUserDetails = {
