@@ -24,6 +24,7 @@ import {
   CANCEL_MEDICINE_ORDER_OMS,
   GET_PATIENT_ADDRESS_BY_ID,
   ALERT_MEDICINE_ORDER_PICKUP,
+  GET_PATIENT_FEEDBACK,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getMedicineOrderOMSDetails,
@@ -49,7 +50,7 @@ import {
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import { FeedbackPopup } from './FeedbackPopup';
+import { FeedbackPopup } from '@aph/mobile-patients/src/components/FeedbackPopup';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient, useQuery } from 'react-apollo-hooks';
@@ -79,15 +80,15 @@ import {
 import {
   CancelMedicineOrderOMS,
   CancelMedicineOrderOMSVariables,
-} from '../graphql/types/CancelMedicineOrderOMS';
+} from '@aph/mobile-patients/src/graphql/types/CancelMedicineOrderOMS';
 import {
   alertMedicineOrderPickup,
   alertMedicineOrderPickupVariables,
-} from '../graphql/types/alertMedicineOrderPickup';
+} from '@aph/mobile-patients/src/graphql/types/alertMedicineOrderPickup';
 import {
   GetMedicineOrderCancelReasons,
   GetMedicineOrderCancelReasons_getMedicineOrderCancelReasons_cancellationReasons,
-} from '../graphql/types/GetMedicineOrderCancelReasons';
+} from '@aph/mobile-patients/src/graphql/types/GetMedicineOrderCancelReasons';
 import { savePatientAddress_savePatientAddress_patientAddress } from '../graphql/types/savePatientAddress';
 import {
   MedicineReOrderOverlay,
@@ -97,6 +98,10 @@ import {
   getPatientAddressById,
   getPatientAddressByIdVariables,
 } from '@aph/mobile-patients/src/graphql/types/getPatientAddressById';
+import {
+  GetPatientFeedback,
+  GetPatientFeedbackVariables,
+} from '@aph/mobile-patients/src/graphql/types/GetPatientFeedback';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
 const styles = StyleSheet.create({
@@ -198,7 +203,6 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   const orderCancel = (g(order, 'medicineOrdersStatus') || []).find(
     (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.CANCELLED
   );
-  // console.log({ order }, currentPatient.id);
   const orderDetails = ((!loading && order) ||
     {}) as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails;
   const orderStatusList = ((!loading && order && order.medicineOrdersStatus) || []).filter(
@@ -207,6 +211,41 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   const offlineOrderBillNumber = loading
     ? 0
     : g(data, 'getMedicineOrderOMSDetails', 'medicineOrderDetails', 'billNumber');
+
+  const [showRateDeliveryBtn, setShowRateDeliveryBtn] = useState(false);
+
+  useEffect(() => {
+    updateRateDeliveryBtnVisibility();
+  }, [orderDetails]);
+
+  const updateRateDeliveryBtnVisibility = async () => {
+    try {
+      if (!showRateDeliveryBtn && isOrderDeliveredToHome()) {
+        const response = await client.query<GetPatientFeedback, GetPatientFeedbackVariables>({
+          query: GET_PATIENT_FEEDBACK,
+          variables: {
+            patientId: g(currentPatient, 'id') || '',
+            transactionId: `${orderDetails.id}`,
+          },
+          fetchPolicy: 'no-cache',
+        });
+        const feedback = g(response, 'data', 'getPatientFeedback', 'feedback', 'length');
+        if (!feedback) {
+          setShowRateDeliveryBtn(true);
+        }
+      }
+    } catch (error) {
+      CommonBugFender(`${AppRoutes.OrderDetailsScene}_updateRateDeliveryBtnVisibility`, error);
+    }
+  };
+
+  const isOrderDeliveredToHome = () => {
+    const isHomeDelivery = g(orderDetails, 'deliveryType') == MEDICINE_DELIVERY_TYPE.HOME_DELIVERY;
+    const isDeliveredToHome = (g(orderDetails, 'medicineOrdersStatus') || []).find(
+      (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.DELIVERED
+    );
+    return !!isHomeDelivery && !!isDeliveredToHome;
+  };
 
   const getAddressDatails = async () => {
     try {
@@ -948,7 +987,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
             >
               {'Thank You for choosing Apollo 24|7'}
             </Text>
-            {orderDetails.deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP ? null : (
+            {!!showRateDeliveryBtn && (
               <Button
                 style={{ flex: 1, width: '95%', marginBottom: 20, alignSelf: 'center' }}
                 onPress={() => setShowFeedbackPopup(true)}
