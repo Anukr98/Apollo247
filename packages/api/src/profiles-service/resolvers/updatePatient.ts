@@ -1,9 +1,7 @@
 import gql from 'graphql-tag';
-import { Patient, Relation } from 'profiles-service/entities';
-import { BaseEntity } from 'typeorm';
-import { AphError, AphUserInputError } from 'AphError';
+import { Patient, Relation, Gender } from 'profiles-service/entities';
+import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
-import { validate } from 'class-validator';
 import { Resolver } from 'api-gateway';
 import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
@@ -57,26 +55,6 @@ type UpdatePatientResult = {
   patient: Patient | null;
 };
 
-async function updateEntity<E extends BaseEntity>(
-  Entity: typeof BaseEntity,
-  id: string,
-  attrs: Partial<Omit<E, keyof BaseEntity>>
-): Promise<E> {
-  let entity: E;
-  try {
-    entity = await Entity.findOneOrFail<E>(id);
-    Object.assign(entity, attrs);
-    await Entity.save(entity);
-  } catch (updateProfileError) {
-    throw new AphError(AphErrorMessages.UPDATE_PROFILE_ERROR, undefined, { updateProfileError });
-  }
-  const errors = await validate(entity);
-  if (errors.length > 0) {
-    throw new AphUserInputError(AphErrorMessages.INVALID_ENTITY, { errors });
-  }
-  return entity;
-}
-
 type UpdatePatientArgs = { patientInput: Partial<Patient> & { id: Patient['id'] } };
 const updatePatient: Resolver<
   null,
@@ -86,8 +64,12 @@ const updatePatient: Resolver<
 > = async (parent, { patientInput }, { profilesDb }) => {
   const { id, ...updateAttrs } = patientInput;
   const patientRepo = await profilesDb.getCustomRepository(PatientRepository);
-  if (patientInput.employeeId) {
-    const checkEmployeeId = await patientRepo.findEmpId(patientInput.employeeId, patientInput.id);
+  if (patientInput.employeeId && patientInput.partnerId) {
+    const checkEmployeeId = await patientRepo.findEmpId(
+      patientInput.employeeId,
+      patientInput.id,
+      patientInput.partnerId
+    );
     if (checkEmployeeId) {
       throw new AphError(AphErrorMessages.INVALID_EMPLOYEE_ID, undefined, {});
     }
@@ -100,22 +82,34 @@ const updatePatient: Resolver<
     updateAttrs.referralCode = referralCode;
   }
 
-  //const patientRepo = await profilesDb.getCustomRepository(PatientRepository);
   const patient = await patientRepo.getPatientDetails(patientInput.id);
   if (!patient || patient == null) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
-  const updatePatient = await updateEntity<Patient>(Patient, id, updateAttrs);
-  if (updatePatient) {
-    if (patient.uhid == '' || patient.uhid == null) {
-      console.log('calling createNewUhid');
-      await patientRepo.createNewUhid(updatePatient.id);
-      await delCache(`${REDIS_PATIENT_ID_KEY_PREFIX}${updatePatient.id}`);
-    }
+
+  //const newPatientAttrs: Partial<Patient> = updateAttrs;
+  patient.firstName = updateAttrs.firstName ? updateAttrs.firstName : '';
+  patient.lastName = updateAttrs.lastName ? updateAttrs.lastName : '';
+  patient.gender = updateAttrs.gender ? updateAttrs.gender : Gender.MALE;
+  patient.emailAddress = updateAttrs.emailAddress ? updateAttrs.emailAddress : '';
+  patient.dateOfBirth = updateAttrs.dateOfBirth ? updateAttrs.dateOfBirth : new Date();
+  patient.referralCode = updateAttrs.emailAddress ? updateAttrs.emailAddress : '';
+  patient.relation = updateAttrs.relation ? updateAttrs.relation : Relation.ME;
+  patient.photoUrl = updateAttrs.photoUrl ? updateAttrs.photoUrl : '';
+  patient.deviceCode = updateAttrs.deviceCode ? updateAttrs.deviceCode : '';
+  patient.employeeId = updateAttrs.employeeId ? updateAttrs.employeeId : '';
+  patient.partnerId = updateAttrs.partnerId ? updateAttrs.partnerId : '';
+
+  if (patient.uhid == '' || patient.uhid == null) {
+    console.log('calling createNewUhid');
+    await patientRepo.createNewUhid(patient);
+    await delCache(`${REDIS_PATIENT_ID_KEY_PREFIX}${patient.id}`);
+  } else {
+    await patientRepo.updateEntity<Patient>(Patient, id, updateAttrs);
   }
 
-  const getPatientList = await patientRepo.findByMobileNumber(updatePatient.mobileNumber);
-  if (updatePatient.relation == Relation.ME || getPatientList.length == 1) {
+  const getPatientList = await patientRepo.findByMobileNumber(patient.mobileNumber);
+  if (patient.relation == Relation.ME || getPatientList.length == 1) {
     //send registration success notification here
     // sendPatientRegistrationNotification(updatePatient, profilesDb, regCode);
     if (updateAttrs.referralCode) {
@@ -125,7 +119,7 @@ const updatePatient: Resolver<
       const referralCodeExist = await referralCodesMasterRepo.findByReferralCode(
         updateAttrs.referralCode
       );
-      let smsText = ApiConstants.REFERRAL_CODE_TEXT.replace('{0}', updatePatient.firstName);
+      let smsText = ApiConstants.REFERRAL_CODE_TEXT.replace('{0}', patient.firstName);
       if (referralCodeExist) {
         const referalCouponMappingRepo = await profilesDb.getCustomRepository(
           ReferalCouponMappingRepository
@@ -136,11 +130,11 @@ const updatePatient: Resolver<
         if (mappingData)
           smsText = ApiConstants.REFERRAL_CODE_TEXT_WITH_COUPON.replace(
             '{0}',
-            updatePatient.firstName
+            patient.firstName
           ).replace('{1}', mappingData.coupon.code);
-        sendNotificationSMS(updatePatient.mobileNumber, smsText);
+        sendNotificationSMS(patient.mobileNumber, smsText);
       } else {
-        sendNotificationSMS(updatePatient.mobileNumber, smsText);
+        sendNotificationSMS(patient.mobileNumber, smsText);
       }
     }
   }

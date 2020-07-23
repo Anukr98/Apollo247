@@ -4,10 +4,9 @@ import { ApiConstants } from 'ApiConstants';
 import { UhidCreateResult } from 'types/uhidCreateTypes';
 import { getCache, setCache, delCache } from 'profiles-service/database/connectRedis';
 import { PrismSignUpUserData } from 'types/prism';
-
+import { BaseEntity } from 'typeorm';
 import { UploadDocumentInput } from 'profiles-service/resolvers/uploadDocumentToPrism';
-
-import { AphError } from 'AphError';
+import { AphError, AphUserInputError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { format, getUnixTime } from 'date-fns';
 import { AthsTokenResponse } from 'types/uhidCreateTypes';
@@ -18,6 +17,7 @@ import {
   prescriptionSource,
   uploadPrescriptions,
 } from 'profiles-service/resolvers/prescriptionUpload';
+import { validate } from 'class-validator';
 import { LabResultsInputArgs, uploadLabResults } from 'profiles-service/resolvers/labResultsUpload';
 
 type DeviceCount = {
@@ -63,10 +63,11 @@ export class PatientRepository extends Repository<Patient> {
       return [newPatient];
     });
   }
-  findEmpId(empId: string, patientId: string) {
+  findEmpId(empId: string, patientId: string, partnerId: string) {
     return this.findOne({
       where: {
         employeeId: empId,
+        partnerId,
         id: Not(patientId),
       },
     });
@@ -86,12 +87,12 @@ export class PatientRepository extends Repository<Patient> {
   }
 
   async getDeviceCodeCount(deviceCode: string) {
-    const deviceCodeCount: DeviceCount[] = await this.createQueryBuilder('patient')
+    const deviceCodeCount = await this.createQueryBuilder('patient')
       .select(['"mobileNumber" as mobilenumber', 'count("mobileNumber") as mobilecount'])
       .where('patient."deviceCode" = :deviceCode', { deviceCode })
       .groupBy('patient."mobileNumber"')
-      .getRawMany();
-    return deviceCodeCount.length;
+      .getCount();
+    return deviceCodeCount;
   }
 
   async getPatientDetails(id: string) {
@@ -332,7 +333,7 @@ export class PatientRepository extends Repository<Patient> {
 
     let uhid;
     if (patientData.uhid === null || patientData.uhid === '') {
-      uhid = await this.createNewUhid(patientData.id);
+      uhid = await this.createNewUhid(patientData);
     } else {
       const matchedUser = prismUsersList.filter((user) => user.UHID == patientData.uhid);
       dLogger(
@@ -566,16 +567,17 @@ export class PatientRepository extends Repository<Patient> {
     return await patient.save();
   }
 
-  async createNewUhid(id: string) {
-    await this.dropPatientCache(`${REDIS_PATIENT_ID_KEY_PREFIX}${id}`);
-    const patientDetails = await this.getPatientDetails(id);
-    if (!patientDetails) {
-      throw new AphError(AphErrorMessages.GET_PROFILE_ERROR, undefined, {
-        error: 'Invalid PatientId',
-      });
-    }
+  async createNewUhid(patientDetails: Patient) {
+    await this.dropPatientCache(`${REDIS_PATIENT_ID_KEY_PREFIX}${patientDetails.id}`);
+    // const patientDetails = await this.getPatientDetails(id);
+    // if (!patientDetails) {
+    //   throw new AphError(AphErrorMessages.GET_PROFILE_ERROR, undefined, {
+    //     error: 'Invalid PatientId',
+    //   });
+    // }
 
     //setting mandatory fields to create uhid in medmantra
+
     if (patientDetails.firstName === null || patientDetails.firstName === '') {
       patientDetails.firstName = 'New';
     }
@@ -682,11 +684,36 @@ export class PatientRepository extends Repository<Patient> {
     const uhidResp: UhidCreateResult = JSON.parse(textProcessRes);
     let newUhid = '';
     if (uhidResp.retcode == '0') {
-      await this.updateUhid(id, uhidResp.result.toString());
-      createPrismUser(patientDetails, uhidResp.result.toString());
       newUhid = uhidResp.result;
+      const { id, ...updateAttrs } = patientDetails;
+      updateAttrs.uhid = newUhid;
+      updateAttrs.primaryUhid = newUhid;
+      updateAttrs.uhidCreatedDate = new Date();
+      await this.updateEntity<Patient>(Patient, id, updateAttrs);
+      //await this.updateUhid(patientDetails.id, uhidResp.result.toString());
+      createPrismUser(patientDetails, uhidResp.result.toString());
     }
     return newUhid;
+  }
+
+  async updateEntity<E extends BaseEntity>(
+    Entity: typeof BaseEntity,
+    id: string,
+    attrs: Partial<Omit<E, keyof BaseEntity>>
+  ): Promise<E> {
+    let entity: E;
+    try {
+      entity = await Entity.findOneOrFail<E>(id);
+      Object.assign(entity, attrs);
+      await Entity.save(entity);
+    } catch (updateProfileError) {
+      throw new AphError(AphErrorMessages.UPDATE_PROFILE_ERROR, undefined, { updateProfileError });
+    }
+    const errors = await validate(entity);
+    if (errors.length > 0) {
+      throw new AphUserInputError(AphErrorMessages.INVALID_ENTITY, { errors });
+    }
+    return entity;
   }
 
   async createAthsToken(id: string) {
