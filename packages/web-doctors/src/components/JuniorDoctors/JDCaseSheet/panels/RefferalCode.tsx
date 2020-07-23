@@ -10,6 +10,12 @@ import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
 import ArrowDropUpIcon from '@material-ui/icons/ArrowDropUp';
 import Select, { components } from 'react-select';
 import { isEmpty } from 'lodash';
+import { useParams } from 'hooks/routerHooks';
+import { Params } from 'components/JuniorDoctors/JDCaseSheet/CaseSheet';
+import {
+  getLocalStorageItem,
+  updateLocalStorageItem,
+} from 'components/case-sheet/panels/LocalStorageUtils';
 
 const DropdownIndicator = (props: any) => {
   return (
@@ -67,6 +73,7 @@ const useStyles = makeStyles((theme: Theme) => ({
 
 export const RefferalCode: React.FC = () => {
   const classes = useStyles({});
+  const params = useParams<Params>();
   const [options, setOptions] = useState([]);
   const [inputValue, setInputValue] = useState<string>('');
 
@@ -120,6 +127,18 @@ export const RefferalCode: React.FC = () => {
 
   const buildOption = (option: any) => (isEmpty(option) ? '' : { label: option, value: option });
 
+  const getDefaultValue = (type: string) => {
+    const localStorageItem = getLocalStorageItem(params.appointmentId);
+    switch (type) {
+      case 'referralSpecialtyName':
+        return localStorageItem
+          ? buildOption(localStorageItem.referralSpecialtyName)
+          : buildOption(referralSpecialtyName);
+      case 'referralDescription':
+        return localStorageItem ? localStorageItem.referralDescription : referralDescription;
+    }
+  };
+
   return (
     <div className={classes.mainContainer}>
       <div className={classes.sectionContainer}>
@@ -127,11 +146,21 @@ export const RefferalCode: React.FC = () => {
           Which speciality should the patient consult?
         </Typography>
         <Select
-          value={buildOption(referralSpecialtyName)}
+          value={getDefaultValue('referralSpecialtyName')}
           onChange={(newValue: any) => {
             const updatedValue = newValue ? newValue.value : '';
+            const storageItem = getLocalStorageItem(params.appointmentId);
+            if (storageItem) {
+              storageItem.referralSpecialtyName = updatedValue;
+              updateLocalStorageItem(params.appointmentId, storageItem);
+            }
             setReferralSpecialtyName(updatedValue);
             if (updatedValue === '') {
+              const storageItem = getLocalStorageItem(params.appointmentId);
+              if (storageItem) {
+                storageItem.referralSpecialtyName = updatedValue;
+                updateLocalStorageItem(params.appointmentId, storageItem);
+              }
               setReferralDescription('');
               setReferralError(false);
             }
@@ -245,11 +274,11 @@ export const RefferalCode: React.FC = () => {
           variant="outlined"
           placeholder="Enter reason for referral"
           multiline
-          disabled={!caseSheetEdit || buildOption(referralSpecialtyName) === ''}
+          disabled={!caseSheetEdit || getDefaultValue('referralSpecialtyName') === ''}
           required
           onFocus={(e) => moveCursorToEnd(e.currentTarget)}
           error={referralError}
-          value={referralDescription}
+          value={getDefaultValue('referralDescription')}
           helperText={referralError && 'This field is required'}
           InputProps={{
             classes: {
@@ -262,6 +291,11 @@ export const RefferalCode: React.FC = () => {
             const value = e.target.value.trim();
             if (referralSpecialtyName && !value) setReferralError(true);
             else setReferralError(false);
+            const storageItem = getLocalStorageItem(params.appointmentId);
+            if (storageItem) {
+              storageItem.referralDescription = e.target.value;
+              updateLocalStorageItem(params.appointmentId, storageItem);
+            }
             setReferralDescription(e.target.value);
           }}
           onBlur={(e) => {

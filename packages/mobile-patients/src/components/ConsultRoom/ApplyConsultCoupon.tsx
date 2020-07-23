@@ -169,7 +169,14 @@ export const ApplyConsultCoupon: React.FC<ApplyConsultCouponProps> = (props) => 
     );
   };
 
-  const isCouponTextValid = (couponText: string) => /^[a-zA-Z0-9]{4,15}$/.test(couponText);
+  // const isCouponTextValid = (couponText: string) => /^[a-zA-Z0-9]{4,15}$/.test(couponText);
+  const isCouponTextValid = (couponText: string) => {
+    if (couponText.length > 3 && couponText.length < 21) {
+      return true;
+    } else {
+      return false;
+    }
+  };
 
   const rightIcon = () => {
     return (
@@ -196,7 +203,7 @@ export const ApplyConsultCoupon: React.FC<ApplyConsultCouponProps> = (props) => 
           }}
           textInputprops={{
             ...(!isValidCoupon && couponText.length > 0 ? { selectionColor: '#e50000' } : {}),
-            maxLength: 15,
+            maxLength: 20,
             // autoFocus: true,
             autoCapitalize: 'characters',
           }}

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { makeStyles, createStyles } from '@material-ui/styles';
 import { Theme, Grid, Avatar, CircularProgress } from '@material-ui/core';
 import _uniqueId from 'lodash/uniqueId';
@@ -10,7 +10,7 @@ import { SAVE_PATIENT_SEARCH } from 'graphql/pastsearches';
 import { SEARCH_TYPE } from 'graphql/types/globalTypes';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { clientRoutes } from 'helpers/clientRoutes';
-import { Route } from 'react-router-dom';
+import { Route, Link } from 'react-router-dom';
 import { readableParam } from 'helpers/commonHelpers';
 import { useMutation } from 'react-apollo-hooks';
 import { getSymptoms } from 'helpers/commonHelpers';
@@ -21,6 +21,8 @@ import {
 } from 'graphql/types/GetAllSpecialties';
 import { GET_ALL_SPECIALITIES } from 'graphql/specialities';
 import { useQuery } from 'react-apollo-hooks';
+import { specialtyClickTracking } from 'webEngageTracking';
+import { SchemaMarkup } from 'SchemaMarkup';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -120,10 +122,32 @@ export const Specialties: React.FC<SpecialtiesProps> = (props) => {
   const { selectedCity, setSpecialtyCount } = props;
   const { loading, error, data } = useQuery<GetAllSpecialties>(GET_ALL_SPECIALITIES);
   const allSpecialties = data && data.getAllSpecialties;
+  const [structuredJSON, setStructuredJSON] = useState(null);
+
+  const createSchema = (allSpecialties: any) => {
+    const itemListElement: any[] = [];
+    allSpecialties &&
+      allSpecialties.length > 0 &&
+      Object.values(allSpecialties).map((specialty: any, index: number) => {
+        itemListElement.push({
+          '@type': 'ListItem',
+          position: index + 1,
+          url: `https://www.apollo247.com/specialties/${readableParam(specialty.name)}`,
+          name: specialty.name,
+        });
+      });
+    setStructuredJSON({
+      '@context': 'https://schema.org',
+      '@type': 'ItemList',
+      itemListElement,
+    });
+  };
 
   useEffect(() => {
+    localStorage.removeItem('symptomTracker');
     if (setSpecialtyCount && allSpecialties && allSpecialties.length) {
       setSpecialtyCount && setSpecialtyCount(allSpecialties.length);
+      createSchema(allSpecialties);
     }
   }, [allSpecialties]);
 
@@ -138,6 +162,7 @@ export const Specialties: React.FC<SpecialtiesProps> = (props) => {
   ) : allSpecialties && allSpecialties.length > 0 ? (
     <>
       <div className={classes.root}>
+        {structuredJSON && <SchemaMarkup structuredJSON={structuredJSON} />}
         <div className={classes.searchList}>
           <Grid container spacing={1}>
             {allSpecialties.map(
@@ -153,6 +178,17 @@ export const Specialties: React.FC<SpecialtiesProps> = (props) => {
                         key={specialityDetails.id}
                         title={specialityDetails.name}
                         onClick={(e) => {
+                          const patientAge =
+                            new Date().getFullYear() -
+                            new Date(currentPatient && currentPatient.dateOfBirth).getFullYear();
+                          const eventData = {
+                            patientAge: patientAge,
+                            patientGender: currentPatient && currentPatient.gender,
+                            specialtyId: specialityDetails.id,
+                            specialtyName: e.currentTarget.title,
+                            relation: currentPatient && currentPatient.relation,
+                          };
+                          specialtyClickTracking(eventData);
                           currentPatient &&
                             currentPatient.id &&
                             saveSearchMutation({
@@ -164,40 +200,43 @@ export const Specialties: React.FC<SpecialtiesProps> = (props) => {
                                 },
                               },
                             });
-                          const specialityUpdated = readableParam(`${e.currentTarget.title}`);
-                          history.push(
-                            selectedCity === ''
-                              ? clientRoutes.specialties(specialityUpdated)
-                              : clientRoutes.citySpecialties(
-                                  _lowerCase(selectedCity),
-                                  specialityUpdated
-                                )
-                          );
                         }}
                       >
-                        <div className={classes.contentBox}>
-                          <Avatar
-                            alt={specialityDetails.name || ''}
-                            src={specialityDetails.image || ''}
-                            className={classes.bigAvatar}
-                          />
-                          <div className={classes.spContent}>
-                            <div>{specialityDetails.name}</div>
-                            {specialityDetails.shortDescription && (
-                              <div className={classes.specialityDetails}>
-                                {specialityDetails.shortDescription}
-                              </div>
-                            )}
-                            {specialityDetails.symptoms && (
-                              <div className={classes.symptoms}>
-                                {getSymptoms(specialityDetails.symptoms)}
-                              </div>
-                            )}
-                            <span className={classes.rightArrow}>
-                              <img src={require('images/ic_arrow_right.svg')} />
-                            </span>
+                        <Link
+                          to={
+                            selectedCity === ''
+                              ? clientRoutes.specialties(readableParam(specialityDetails.name))
+                              : clientRoutes.citySpecialties(
+                                  _lowerCase(selectedCity),
+                                  readableParam(specialityDetails.name)
+                                )
+                          }
+                        >
+                          <div className={classes.contentBox}>
+                            <Avatar
+                              title={`Online Doctor Consultation - ${specialityDetails.name}`}
+                              alt={`Online Doctor Consultation - ${specialityDetails.name}`}
+                              src={specialityDetails.image || ''}
+                              className={classes.bigAvatar}
+                            />
+                            <div className={classes.spContent}>
+                              <div>{specialityDetails.name}</div>
+                              {specialityDetails.shortDescription && (
+                                <div className={classes.specialityDetails}>
+                                  {specialityDetails.shortDescription}
+                                </div>
+                              )}
+                              {specialityDetails.symptoms && (
+                                <div className={classes.symptoms}>
+                                  {getSymptoms(specialityDetails.symptoms)}
+                                </div>
+                              )}
+                              <span className={classes.rightArrow}>
+                                <img src={require('images/ic_arrow_right.svg')} />
+                              </span>
+                            </div>
                           </div>
-                        </div>
+                        </Link>
                       </Grid>
                     )}
                   />

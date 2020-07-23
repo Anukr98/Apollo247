@@ -8,6 +8,7 @@ const medicineOrderQuery = (payload) => {
     let params = `orderAutoId: ${payload.ORDERID}, 
     paymentType: CASHLESS, 
     amountPaid: ${payload.TXNAMOUNT},
+    healthCredits: ${payload.HEALTH_CREDITS},
     paymentRefId: "${payload.TXNID}", 
     paymentStatus: "${payload.STATUS}", 
     paymentDateTime: "${txnDate}", 

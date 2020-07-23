@@ -25,3 +25,7 @@ export const getLocalStorageItem = (id: string) => {
 export const updateLocalStorageItem = (id: string, obj: any) => {
   localStorage.setItem(id, JSON.stringify(obj));
 };
+
+export const removeLocalStorageItem = (id: string) => {
+  localStorage.removeItem(id);
+};

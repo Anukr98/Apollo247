@@ -9,15 +9,13 @@ import _isEmpty from 'lodash/isEmpty';
 import { Navigation } from 'components/Navigation';
 import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
 import { clientRoutes } from 'helpers/clientRoutes';
-import { locationRoutesBlackList } from 'helpers/commonHelpers';
-import { useLoginPopupState, useAuth } from 'hooks/authHooks';
-import { LocationSearch } from 'components/LocationSearch';
-import { LocationProvider, LocationContext } from 'components/LocationProvider';
+import { useLoginPopupState, useAuth, useAllCurrentPatients } from 'hooks/authHooks';
 import { MedicinesCartContext } from 'components/MedicinesCartProvider';
 import { getAppStoreLink } from 'helpers/dateHelpers';
 import { MedicineLocationSearch } from 'components/MedicineLocationSearch';
 import { AphButton } from '@aph/web-ui-components';
 import { useParams } from 'hooks/routerHooks';
+import moment from 'moment';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -37,7 +35,7 @@ const useStyles = makeStyles((theme: Theme) => {
     headerSticky: {
       position: 'fixed',
       width: '100%',
-      zIndex: 99,
+      zIndex: 999,
       top: 0,
     },
     container: {
@@ -179,6 +177,9 @@ const useStyles = makeStyles((theme: Theme) => {
       transition: '0.1s ease',
       overflow: 'hidden',
       zIndex: 9,
+      [theme.breakpoints.down('sm')]: {
+        top: 60,
+      },
     },
     userAccountList: {
       padding: 0,
@@ -186,20 +187,28 @@ const useStyles = makeStyles((theme: Theme) => {
       listStyle: 'none',
       textAlign: 'left',
       '& li': {
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
         borderBottom: '1px solid rgba(2, 71, 91, 0.3)',
-        '& >img': {
-          margin: '0 20px 0 0',
-        },
+
         '& a': {
           padding: '10px 20px',
+          fontWeight: 500,
           display: 'flex',
           alignItems: 'center',
-          fontWeight: 500,
-          '& img': {
-            margin: '0 10px 0 0',
+          justifyContent: 'space-between',
+          '& span': {
+            display: 'flex',
+            alignItems: 'center',
+            '& img': {
+              margin: '0 10px 0 0',
+            },
+          },
+        },
+      },
+      [theme.breakpoints.down('sm')]: {
+        '& li': {
+          '& a': {
+            padding: '6px 10px !important',
+            fontSize: 12,
           },
         },
       },
@@ -211,13 +220,20 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 'bold',
       padding: '8px 20px',
       display: 'block',
+      [theme.breakpoints.down('sm')]: {
+        padding: 8,
+      },
     },
     userListActive: {
       width: '300px !important',
+      [theme.breakpoints.down('sm')]: {
+        width: '240px !important',
+      },
     },
     userDetails: {
       padding: '10px 20px',
       textAlign: 'left',
+      cursor: 'auto',
       '& h2': {
         fontSize: 23,
         fontWeight: 700,
@@ -230,6 +246,17 @@ const useStyles = makeStyles((theme: Theme) => {
         fontWeight: 500,
         padding: '10px 0',
         textTransform: 'uppercase',
+      },
+      [theme.breakpoints.down('sm')]: {
+        padding: '5px 10px',
+        '& h2': {
+          fontSize: 16,
+          padding: '0 0 8px',
+        },
+        '& p': {
+          fontSize: 12,
+          padding: '8px 0',
+        },
       },
     },
     userInfo: {
@@ -244,6 +271,9 @@ const useStyles = makeStyles((theme: Theme) => {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'space-between',
+      [theme.breakpoints.down('sm')]: {
+        padding: 10,
+      },
     },
   };
 });
@@ -252,6 +282,7 @@ export const Header: React.FC = (props) => {
   const classes = useStyles({});
   const avatarRef = useRef(null);
   const { isSigningIn, isSignedIn, setVerifyOtpError, signOut } = useAuth();
+  const { allCurrentPatients, currentPatient } = useAllCurrentPatients();
   const { isLoginPopupVisible, setIsLoginPopupVisible } = useLoginPopupState();
   const [profileVisible, setProfileVisible] = React.useState<boolean>(false);
   const [mobileNumber, setMobileNumber] = React.useState('');
@@ -295,13 +326,24 @@ export const Header: React.FC = (props) => {
     clientRoutes.medicineSearch(),
   ];
 
+  const getAge = (dob: string) => {
+    if (dob && dob.length) {
+      return ` | ${moment().diff(dob, 'years')}`;
+    }
+    return null;
+  };
+
   return (
     <div className={classes.headerSticky}>
       <div className={classes.container}>
         <header className={classes.header} data-cypress="Header">
           <div className={classes.logo}>
             <Link to="/">
-              <img src={require('images/ic_logo.png')} title={'Open the home page'} />
+              <img
+                src={require('images/ic_logo.png')}
+                title={'Online Doctor Consultation & Medicines'}
+                alt={'Online Doctor Consultation & Medicines'}
+              />
             </Link>
           </div>
           {/* {checkIfDisabled() && currentPath !== '/' && <LocationSearch />} */}
@@ -320,9 +362,8 @@ export const Header: React.FC = (props) => {
               }`}
             >
               {isSignedIn ? (
-                <Link
+                <div
                   className={`${classes.userCircle} ${isSignedIn ? classes.userActive : ''}`}
-                  to={profileVisible ? clientRoutes.myAccount() : '#'}
                   title={'Control profile'}
                   ref={node}
                   onClick={(e) => {
@@ -342,57 +383,90 @@ export const Header: React.FC = (props) => {
                             profileVisible ? classes.userListActive : ''
                           }`}
                         >
-                          <div className={classes.userDetails}>
-                            <Typography component="h2">Surj Gupta</Typography>
-                            <Typography>UHID : APD1.0010783329</Typography>
-                            <div className={classes.userInfo}>
-                              <Typography>Male | 31</Typography>
-                              <Typography>+91 9769435788</Typography>
+                          {currentPatient && (
+                            <div className={classes.userDetails}>
+                              <Typography component="h2">{currentPatient.firstName}</Typography>
+                              <Typography>UHID : {currentPatient.uhid}</Typography>
+                              <div className={classes.userInfo}>
+                                <Typography>
+                                  {currentPatient.gender}
+                                  {getAge(currentPatient.dateOfBirth)}
+                                </Typography>
+                                <Typography>{currentPatient.mobileNumber}</Typography>
+                              </div>
                             </div>
-                          </div>
+                          )}
                           <ul className={classes.userAccountList}>
                             <li>
                               <Link to={clientRoutes.myAccount()}>
-                                <img src={require('images/ic_manageprofile.svg')} alt="" /> Manage
-                                Profiles
+                                <span>
+                                  <img src={require('images/ic_manageprofile.svg')} alt="" /> Manage
+                                  Profiles
+                                </span>
+                                <img src={require('images/ic_arrow_right.svg')} alt="" />
                               </Link>
-                              <img src={require('images/ic_arrow_right.svg')} alt="" />
                             </li>
+
                             <li>
                               <Link to={clientRoutes.addressBook()}>
-                                <img src={require('images/ic_location.svg')} alt="" /> Address Book
+                                <span>
+                                  <img src={require('images/ic_location.svg')} alt="" /> Address
+                                  Book
+                                </span>
+                                <img src={require('images/ic_arrow_right.svg')} alt="" />
                               </Link>
-                              <img src={require('images/ic_arrow_right.svg')} alt="" />
                             </li>
-                            <li>
-                              <Link to={clientRoutes.addressBook()}>
-                                <img src={require('images/ic_invoice.svg')} alt="" /> My Orders
-                              </Link>
-                              <img src={require('images/ic_arrow_right.svg')} alt="" />
-                            </li>
+
+                            {currentPatient && (
+                              <li>
+                                <Link to={clientRoutes.yourOrders()}>
+                                  <span>
+                                    <img src={require('images/ic_invoice.svg')} alt="" /> My Orders
+                                  </span>
+                                  <img src={require('images/ic_arrow_right.svg')} alt="" />
+                                </Link>
+                              </li>
+                            )}
+
                             <li>
                               <Link to={clientRoutes.myPayments()}>
-                                <img src={require('images/ic_fees.svg')} alt="" /> My Payments
+                                <span>
+                                  <img src={require('images/ic_fees.svg')} alt="" /> My Payments
+                                </span>
+                                <img src={require('images/ic_arrow_right.svg')} alt="" />
                               </Link>
-                              <img src={require('images/ic_arrow_right.svg')} alt="" />
                             </li>
-                            <li>
-                              <Link to={clientRoutes.healthRecords()}>
-                                <img src={require('images/ic_notificaiton_accounts.svg')} alt="" />{' '}
-                                Health Records
-                              </Link>
-                              <img src={require('images/ic_arrow_right.svg')} alt="" />
-                            </li>
+
+                            {currentPatient && (
+                              <li>
+                                <Link to={clientRoutes.healthRecords()}>
+                                  <span>
+                                    <img
+                                      src={require('images/ic_notificaiton_accounts.svg')}
+                                      alt=""
+                                    />{' '}
+                                    Health Records
+                                  </span>
+                                  <img src={require('images/ic_arrow_right.svg')} alt="" />
+                                </Link>
+                              </li>
+                            )}
+
                             <li>
                               <Link to={clientRoutes.needHelp()}>
-                                <img src={require('images/ic_round_live_help.svg')} alt="" /> Need
-                                Help
+                                <span>
+                                  <img src={require('images/ic_round_live_help.svg')} alt="" /> Need
+                                  Help
+                                </span>
+                                <img src={require('images/ic_arrow_right.svg')} alt="" />
                               </Link>
-                              <img src={require('images/ic_arrow_right.svg')} alt="" />
                             </li>
+
                             <li>
                               <a href="javascript:void(0)" onClick={() => signOut()}>
-                                <img src={require('images/ic_logout.svg')} alt="" /> Logout
+                                <span>
+                                  <img src={require('images/ic_logout.svg')} alt="" /> Logout
+                                </span>
                               </a>
                             </li>
                           </ul>
@@ -410,7 +484,7 @@ export const Header: React.FC = (props) => {
                       )}
                     </>
                   )}
-                </Link>
+                </div>
               ) : (
                 <ProtectedWithLoginPopup>
                   {({ protectWithLoginPopup }) => (

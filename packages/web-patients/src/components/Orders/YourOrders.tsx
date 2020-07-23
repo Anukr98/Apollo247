@@ -111,7 +111,11 @@ export const YourOrders: React.FC = (props) => {
 
   return (
     <div className={classes.root}>
-      <div className={`${classes.leftSection} ${isSmallScreen && !showMobileDetails ? '' : classes.overlayOpen}`}>
+      <div
+        className={`${classes.leftSection} ${
+          isSmallScreen && !showMobileDetails ? '' : classes.overlayOpen
+        }`}
+      >
         <div className={classes.sectionHeader}>Your Orders</div>
         <OrderCard
           orderAutoId={orderAutoId}

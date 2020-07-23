@@ -163,18 +163,11 @@ export const FeedbackWidget: React.FC<FeedbackWidgetProps> = (props) => {
     <div className={classes.root}>
       <div className={classes.linkItem} onClick={() => handleLikeButton()}>
         <span>
-        {!articleLiked ?
           <img
-            src={require('images/ic-like.svg')}
-            alt="Likes"
-            onContextMenu={(e) => e.preventDefault()}
-          /> :
-          <img
-            src={require('images/noun-like.svg')}
+            src={!articleLiked ? require('images/ic-like.svg') : require('images/noun-like.svg')}
             alt="Likes"
             onContextMenu={(e) => e.preventDefault()}
           />
-          }
         </span>
         <span>
           {likeCount} {Number(likeCount) === 1 ? 'Like' : 'Likes'}

@@ -334,6 +334,15 @@ export const SignIn: React.FC<signInProps> = (props) => {
   const { sendOtp, sendOtpError, isSendingOtp } = useAuth();
   const { setMobileNumber, setOtp, mobileNumber } = props;
 
+  const isPhoneNumberValid = (number: string) => {
+    const isValidNumber = !/^[6-9]{1}\d{0,9}$/.test(number)
+      ? !/^(234){1}\d{0,9}$/.test(number)
+        ? false
+        : true
+      : true;
+    return isValidNumber;
+  };
+
   return (
     <div data-cypress="SignIn">
       <Formik
@@ -368,7 +377,7 @@ export const SignIn: React.FC<signInProps> = (props) => {
                     //   Boolean(errors.mobileNumber) &&
                     //   (finishedTyping || Number(field.value[0]) < 6);
                     const showValidationError =
-                      mobileNumber.length === 10 && !isMobileNumberValid(mobileNumber);
+                      mobileNumber.length > 0 && !isPhoneNumberValid(mobileNumber);
                     const showSendOtpError = sendOtpError;
                     return (
                       <FormControl fullWidth>
@@ -418,7 +427,7 @@ export const SignIn: React.FC<signInProps> = (props) => {
                     color="primary"
                     aria-label="Sign in"
                     // disabled={Boolean(errors.mobileNumber) || !dirty}
-                    disabled={!isMobileNumberValid(mobileNumber)}
+                    disabled={!isPhoneNumberValid(mobileNumber) || mobileNumber.length < 10}
                     title={'Login'}
                   >
                     {isSendingOtp ? (

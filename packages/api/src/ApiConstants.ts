@@ -89,10 +89,10 @@ export enum ApiConstants {
 
   //medicine order delivered
   ORDER_DELIVERY_TITLE = 'Medicine order is delivered',
-  ORDER_DELIVERY_BODY = 'Greetings from Apollo 24|7 Your order {1} is delivered successfully!',
+  ORDER_DELIVERY_BODY = 'Greetings from Apollo 24|7, Your order {1} is delivered successfully! In case of any issues or feedback related to your delivery, please speak with our customer care executives on the official WhatsApp channel (during business hours 9 AM - 8:30 PM) https://bit.ly/apollo247medicines',
 
   //medicine order cancelled
-  ORDER_CANCEL_BODY = 'Hi {name}, for order {orderId}, {reason}. For any support, please speak with our customer care executives on the official WhatsApp channel (during business hours 9 AM - 6 PM) https://bit.ly/apollo247medicines',
+  ORDER_CANCEL_BODY = 'Dear {name}, for order {orderId}, {reason}',
   ORDER_CANCEL_PREPAID_BODY = 'For Order {orderId} the refund amount of Rs {refund} will be transferred to the source a/c within 7-10 working days.',
 
   //appointment cancellation
@@ -167,6 +167,9 @@ export enum ApiConstants {
   CASESHEET_CREATED_HISTORY = 'casesheet created',
   APPT_SESSION_HISTORY = 'session created',
   APPT_SESSION_COMPLETE_HISTORY = 'session completed',
+  APPT_STATE_CHANGED_1 = 'Appointment state changed to AWAITING_RESCHEDULE',
+  APPT_STATE_CHANGED_2 = 'Appointment state changed to RESCHEDULED',
+  APPT_STATE_CHANGED_3 = 'Appointment cancelled due to max. reschedules',
 
   /*** push-notification messages end here ***/
 
@@ -257,6 +260,7 @@ export enum ApiConstants {
   CACHE_EXPIRATION_900 = 900, //15 mins
   CACHE_EXPIRATION_3600 = 3600, // 1hour
   CACHE_EXPIRATION_14400 = 14400, // 4hour
+  CACHE_EXPIRATION_86400 = 86400, // 24 hour
   //doctor no-photo url
   DOCTOR_DEFAULT_PHOTO_URL = 'https://prodaphstorage.blob.core.windows.net/doctors/no_photo.png',
 
@@ -349,6 +353,10 @@ export enum ApiConstants {
   DOCTOR_CHAT_SMS_TEXT = 'Hi {0}, you have pending chat messages from {1} patient(s). Please login to your doctor portal to reply.',
   DOCTOR_CHAT_SMS_LAST_DAY = 'Hi {0}, you have pending chat messages from {1} patient(s). Please login to your doctor portal to reply. Please note that for {2} patient(s), today is the last day to reply.',
   CASESHEET_PROVISIONAL_HEADING = 'Diagnosis',
+  CASESHEET_WHATSAPP_LABEL = 'WhatsApp',
+  CASESHEET_WHATSAPP_NUMBER = '+91 93550 31397',
+  CASESHEET_EMAIL_LABEL = 'E-mail',
+  CASESHEET_EMAIL = 'Helpdesk@apollo247.com',
   AUTO_SUBMIT_CASESHEET_TIME_APPOINMENT = 10,
   AUTO_SUBMIT_CASESHEET_TIME = 10,
   STAT_LOWECASE = 'stat',
@@ -390,4 +398,23 @@ export enum ApiConstants {
   //prescriptions uploaded through medicine, diagnostic orders or from OLD APPS
   PRESCRIPTION_UPLOADED_BY_PATIENT = 'Prescription uploaded by Patient',
   ALERT_STORE_REMARKS = 'Customer Name : {name} , Mobile : {mobile} will be reaching Store in 10 mins to pickup order {orderNo} - Please handover Medicines.',
+
+}
+
+export enum PATIENT_REPO_RELATIONS {
+  LIFESTYLE = 'lifeStyle',
+  HEALTH_VAULT = 'healthVault',
+  FAMILY_HISTORY = 'familyHistory',
+  PATIENT_ADDRESS = 'patientAddress',
+  MEDICINE_ORDERS = 'medicineOrders',
+  PATIENT_DEVICE_TOKENS = 'patientDeviceTokens',
+  PATIENT_NOTIFICATION_SETTINGS = 'patientNotificationSettings',
+  PATIENT_MEDICAL_HISTORY = 'patientMedicalHistory',
+  DIAGNOSTIC_ORDERS = 'diagnosticOrders',
+  MEDICAL_RECORDS = 'medicalRecords',
+  PATIENT_HELP_TICKETS = 'patientHelpTickets',
+  SEARCH_HISTORY = 'searchHistory',
+  REGISTRATION_CODES = 'registrationCodes',
+  PHARMACOLOGIST_CONSULT = 'pharmacologistConsult',
+  PATIENT_FEEDBACK = 'patientfeedback',
 }

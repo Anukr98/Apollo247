@@ -10,12 +10,13 @@ import {
   MedicineOrders,
   Patient,
   OneApollTransaction,
-  ONE_APOLLO_STORE_CODE,
   BOOKING_SOURCE,
   DEVICE_TYPE,
   TransactionLineItems,
   ONE_APOLLO_PRODUCT_CATEGORY,
 } from 'profiles-service/entities';
+import { ONE_APOLLO_STORE_CODE } from 'types/oneApolloTypes';
+
 import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
@@ -27,6 +28,7 @@ import {
 import { format, addMinutes, parseISO } from 'date-fns';
 import { log } from 'customWinstonLogger';
 import { PharmaItemsResponse } from 'types/medicineOrderTypes';
+import { OneApollo } from 'helpers/oneApollo';
 
 export const updateOrderStatusTypeDefs = gql`
   input OrderStatusInput {
@@ -106,6 +108,14 @@ const updateOrderStatus: Resolver<
   ProfilesServiceContext,
   UpdateOrderStatusResult
 > = async (parent, { updateOrderStatusInput }, { profilesDb }) => {
+  log(
+    'profileServiceLogger',
+    `ORDER_STATUS_CHANGE_${updateOrderStatusInput.status}_FOR_ORDER_ID:${updateOrderStatusInput.orderId}`,
+    `updateOrderStatus call from OMS`,
+    JSON.stringify(updateOrderStatusInput),
+    ''
+  );
+
   let status = MEDICINE_ORDER_STATUS[updateOrderStatusInput.status];
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
   const orderDetails = await medicineOrdersRepo.getMedicineOrderDetails(
@@ -132,13 +142,6 @@ const updateOrderStatus: Resolver<
     addMinutes(parseISO(updateOrderStatusInput.updatedDate), -330),
     "yyyy-MM-dd'T'HH:mm:ss.SSSX"
   );
-  log(
-    'profileServiceLogger',
-    `ORDER_STATUS_CHANGE_${updateOrderStatusInput.status}_FOR_ORDER_ID:${updateOrderStatusInput.orderId}`,
-    `updateOrderStatus call from OMS`,
-    JSON.stringify(updateOrderStatusInput),
-    ''
-  );
   if (!shipmentDetails && status == MEDICINE_ORDER_STATUS.CANCELLED) {
     await medicineOrdersRepo.updateMedicineOrderDetails(
       orderDetails.id,
@@ -153,6 +156,7 @@ const updateOrderStatus: Resolver<
       statusMessage: updateOrderStatusInput.reasonCode,
     };
     await medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, orderDetails.orderAutoId);
+    medicineOrderCancelled(orderDetails, updateOrderStatusInput.reasonCode, profilesDb);
   }
 
   if (
@@ -380,8 +384,9 @@ const createOneApolloTransaction = async (
       JSON.stringify(Transaction),
       ''
     );
-    //if (mobileNumber == '9560923408' || mobileNumber == '7993961498') {
-    const oneApolloResponse = await medicineOrdersRepo.createOneApolloTransaction(Transaction);
+
+    const oneApollo = new OneApollo();
+    const oneApolloResponse = await oneApollo.createOneApolloTransaction(Transaction);
     log(
       'profileServiceLogger',
       `oneApollo Transaction response- ${order.orderAutoId}`,
@@ -389,7 +394,6 @@ const createOneApolloTransaction = async (
       JSON.stringify(oneApolloResponse),
       ''
     );
-    //}
     return true;
   } else {
     throw new AphError(AphErrorMessages.INVALID_RESPONSE_FOR_SKU_PHARMACY, undefined, {});

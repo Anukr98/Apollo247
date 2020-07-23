@@ -187,7 +187,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
                 <input
                   type="file"
                   onChange={async (e) => {
-                    uploadPhotoTracking('Gallery');
+                    uploadPhotoTracking('Choose Gallery');
                     const fileNames = e.target.files;
                     if (fileNames && fileNames.length > 0) {
                       const file = fileNames[0] || null;
