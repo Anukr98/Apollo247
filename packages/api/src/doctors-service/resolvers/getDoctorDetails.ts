@@ -10,7 +10,6 @@ import { AdminUser } from 'doctors-service/repositories/adminRepository';
 import { DashboardData, getJuniorDoctorsDashboard } from 'doctors-service/resolvers/JDAdmin';
 import { SecretaryRepository } from 'doctors-service/repositories/secretaryRepository';
 import { format } from 'date-fns';
-import { RELATIONS } from 'ApiConstants';
 
 export const getDoctorDetailsTypeDefs = gql`
   enum Gender {
