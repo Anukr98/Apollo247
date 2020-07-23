@@ -14,6 +14,7 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState } from 'react';
 import { StyleProp, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
 import { Image } from 'react-native-elements';
+import { getMaxQtyForMedicineItem } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 const styles = StyleSheet.create({
   containerStyle: {
@@ -147,6 +148,7 @@ export interface MedicineCardProps {
   onEditPress: () => void;
   onAddSubscriptionPress: () => void;
   containerStyle?: StyleProp<ViewStyle>;
+  maxQty?: number;
 }
 
 export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
@@ -174,6 +176,7 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
     onChangeSubscription,
     onEditPress,
     onAddSubscriptionPress,
+    maxQty,
   } = props;
 
   const renderTitleAndIcon = () => {
@@ -246,7 +249,9 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
   };
 
   const renderUnitDropdownAndPrice = () => {
-    const opitons = Array.from({ length: 20 }).map((_, i) => {
+    const opitons = Array.from({
+      length: getMaxQtyForMedicineItem(maxQty),
+    }).map((_, i) => {
       return { key: (i + 1).toString(), value: i + 1 };
     });
 

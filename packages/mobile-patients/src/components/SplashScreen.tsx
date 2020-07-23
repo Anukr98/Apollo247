@@ -183,6 +183,9 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           console.log('Medicine');
           getData('Medicine', data.length === 2 ? linkId : undefined);
           break;
+        case 'UploadPrescription':
+          getData('UploadPrescription', data.length === 2 ? linkId : undefined);
+          break;
         case 'Test':
           console.log('Test');
           getData('Test');
@@ -223,6 +226,11 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         case 'MyOrders':
           getData('MyOrders');
           break;
+        case 'webview':
+          if (data.length === 2) {
+            let url = data[1].replace('param=', '');
+            getData('webview', url);
+          }
         default:
           getData('ConsultRoom', undefined, true);
           break;
@@ -383,6 +391,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         props.navigation.navigate('MEDICINES');
         break;
 
+      case 'UploadPrescription':
+        props.navigation.navigate('MEDICINES', { showUploadPrescriptionPopup: true });
+        break;
+
       case 'MedicineDetail':
         console.log('MedicineDetail');
         props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
@@ -458,6 +470,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       case 'MyOrders':
         props.navigation.navigate(AppRoutes.YourOrdersScene);
         break;
+      case 'webview':
+        props.navigation.navigate(AppRoutes.CommonWebView, {
+          url: id,
+        });
       default:
         break;
     }
@@ -581,8 +597,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
               'min_value_to_nudge_users_to_avail_free_delivery',
               'QA_pharmacy_homepage',
               'pharmacy_homepage',
-              'QA_hotsellers_max_quantity',
-              'hotsellers_max_quantity',
             ]);
         })
         .then((snapshot) => {
@@ -663,15 +677,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
             const top6_specailties = snapshot['top6_specailties'].val();
             top6_specailties && updateAppConfig('TOP_SPECIALITIES', JSON.parse(top6_specailties));
           }
-          const qaHotsellersMaxQuantity = snapshot['QA_hotsellers_max_quantity'].val();
-          qaHotsellersMaxQuantity &&
-            AppConfig.APP_ENV != AppEnv.PROD &&
-            updateAppConfig('HOTSELLERS_MAX_QUANTITY', qaHotsellersMaxQuantity);
-
-          const hotsellersMaxQuantity = snapshot['hotsellers_max_quantity'].val();
-          hotsellersMaxQuantity &&
-            AppConfig.APP_ENV == AppEnv.PROD &&
-            updateAppConfig('HOTSELLERS_MAX_QUANTITY', hotsellersMaxQuantity);
 
           const myValye = snapshot;
           let index: number = 0;

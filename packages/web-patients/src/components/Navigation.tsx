@@ -9,6 +9,7 @@ import { useDiagnosticsCart } from 'components/Tests/DiagnosticsCartProvider';
 import { getAppStoreLink } from 'helpers/dateHelpers';
 import { useParams } from 'hooks/routerHooks';
 import Typography from '@material-ui/core/Typography';
+import { useLocation } from 'react-router';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -219,16 +220,18 @@ export const Navigation: React.FC<NavigationProps> = (props) => {
     clientRoutes.payOnlineClinicConsult(),
     // clientRoutes.payMedicine(params.payType),
   ];
+  const location = useLocation();
+  const headTagCondition = location.pathname === '/';
 
   return (
     <div
       className={`${classes.appNavigation} ${isSignedIn ? classes.postLoginNavigation : ''} ${
         currentPath === clientRoutes.welcome() ||
-          clientRoutes.termsConditions() ||
-          clientRoutes.aboutUs()
+        clientRoutes.termsConditions() ||
+        clientRoutes.aboutUs()
           ? classes.homePageNav
           : ''
-        }`}
+      }`}
       data-cypress="Navigation"
     >
       {isSignedIn ? (
@@ -297,45 +300,62 @@ export const Navigation: React.FC<NavigationProps> = (props) => {
           </Link> */}
         </>
       ) : (
-          <>
-            <Link
-              className={
-                doctorRoutes.find((route) => route === currentPath) ||
-                  currentPath.includes('specialties')
-                  ? classes.menuItemActive
-                  : ''
-              }
-              to={clientRoutes.specialityListing()}
-              title={'Doctors'}
-            >
+        <>
+          <Link
+            className={
+              doctorRoutes.find((route) => route === currentPath) ||
+              currentPath.includes('specialties')
+                ? classes.menuItemActive
+                : ''
+            }
+            to={clientRoutes.specialityListing()}
+            title={'Doctors'}
+          >
+            {headTagCondition ? (
               <Typography variant="h1" className={classes.menuTitle}>
                 Doctors
-            </Typography>
+              </Typography>
+            ) : (
+              <span className={classes.menuTitle}>Doctors</span>
+            )}
+            {headTagCondition ? (
               <Typography variant="h1" className={classes.menuInfo}>
                 Consult
-              <br /> Online
-            </Typography>
-            </Link>
-            <Link
-              to={clientRoutes.medicines()}
-              className={
-                props.activeMedicineRoutes.find((route) => route === currentPath)
-                  ? classes.menuItemActive
-                  : ''
-              }
-              title={'Pharmacy'}
-            >
+                <br /> Online
+              </Typography>
+            ) : (
+              <span className={classes.menuInfo}>
+                Consult <br /> Online
+              </span>
+            )}
+          </Link>
+          <Link
+            to={clientRoutes.medicines()}
+            className={
+              props.activeMedicineRoutes.find((route) => route === currentPath)
+                ? classes.menuItemActive
+                : ''
+            }
+            title={'Pharmacy'}
+          >
+            {headTagCondition ? (
               <Typography variant="h1" className={classes.menuTitle}>
                 Pharmacy
-            </Typography>
+              </Typography>
+            ) : (
+              <span className={classes.menuTitle}>Pharmacy</span>
+            )}
+            {headTagCondition ? (
               <Typography variant="h1" className={classes.menuInfo}>
                 Medicines &<br /> other products
-            </Typography>
-              {/* <span className={classes.menuInfo}>
+              </Typography>
+            ) : (
+              <span className={classes.menuInfo}>
                 Medicines &<br /> other products
-            </span> */}
-            </Link>
-            {/* <Link
+              </span>
+            )}
+          </Link>
+          {/* <Link
             to={clientRoutes.tests()}
             className={currentPath === clientRoutes.tests() ? classes.menuItemActive : ''}
             title={'Tests'}
@@ -343,19 +363,19 @@ export const Navigation: React.FC<NavigationProps> = (props) => {
             <span className={classes.menuTitle}>Tests</span>
             <span className={classes.menuInfo}>Health<br/> checks</span>
           </Link> */}
-            <Link
-              to={clientRoutes.covidLanding()}
-              className={currentPath === clientRoutes.covidLanding() ? classes.menuItemActive : ''}
-              title={'Covid-19'}
-            >
-              <span className={classes.menuTitle}>Covid-19</span>
-              <span className={classes.menuInfo}>
-                Latest
+          <Link
+            to={clientRoutes.covidLanding()}
+            className={currentPath === clientRoutes.covidLanding() ? classes.menuItemActive : ''}
+            title={'Covid-19'}
+          >
+            <span className={classes.menuTitle}>Covid-19</span>
+            <span className={classes.menuInfo}>
+              Latest
               <br /> updates
             </span>
-            </Link>
-          </>
-        )}
+          </Link>
+        </>
+      )}
       {/* {currentPath === clientRoutes.welcome() ||
       currentPath === clientRoutes.termsConditions() ||
       currentPath === clientRoutes.aboutUs() ? (
@@ -375,7 +395,7 @@ export const Navigation: React.FC<NavigationProps> = (props) => {
         tabIndex={0}
         className={`${classes.notificationBtn} ${
           currentPath === clientRoutes.medicinesCart() ? classes.menuItemActive : ''
-          }  ${currentPath === clientRoutes.testsCart() ? classes.menuItemActive : ''}`}
+        }  ${currentPath === clientRoutes.testsCart() ? classes.menuItemActive : ''}`}
         title={'cart'}
       >
         <span>

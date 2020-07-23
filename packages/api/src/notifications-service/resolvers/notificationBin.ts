@@ -134,7 +134,7 @@ const insertMessage: Resolver<
 
     //get patient details
     const patientRepo = patientsDb.getCustomRepository(PatientRepository);
-    const patientDetails = await patientRepo.findById(fromId);
+    const patientDetails = await patientRepo.getPatientDetails(fromId);
     if (!patientDetails) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
 
     //get appointment details

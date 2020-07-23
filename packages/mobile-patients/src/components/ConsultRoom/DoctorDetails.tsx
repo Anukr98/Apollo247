@@ -60,7 +60,6 @@ import {
 import { FlatList, NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
 import { AppsFlyerEventName, AppsFlyerEvents } from '../../helpers/AppsFlyerEvents';
 import { useAppCommonData } from '../AppCommonDataProvider';
-import { CommonVideoPlayer } from '../ui/CommonVideoPlayer';
 import { ConsultTypeCard } from '../ui/ConsultTypeCard';
 import {
   ApolloDoctorIcon,
@@ -1215,27 +1214,6 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
             justifyContent: 'center',
           }}
         >
-          {doctorDetails && (
-            <>
-              <CommonVideoPlayer isPlayClicked={!showVideo} />
-              <TouchableOpacity
-                activeOpacity={1}
-                onPress={() => {
-                  console.log('tapped');
-                  setTimeout(() => {
-                    setShowVideo(false);
-                  }, 2000);
-                }}
-                style={{
-                  position: 'absolute',
-                  height: 160,
-                  width: '100%',
-                }}
-              >
-                <View style={{ position: 'absolute', height: 160, width: '100%' }} />
-              </TouchableOpacity>
-            </>
-          )}
           {!showVideo &&
           doctorDetails &&
           doctorDetails &&

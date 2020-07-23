@@ -390,16 +390,14 @@ export const HealthVault: React.FC = () => {
                   if (
                     item &&
                     item.documentPath &&
-                    item.documentPath.substr(-4).toLowerCase() !== '.pdf'
+                    !item.documentPath.toLowerCase().includes('.pdf')
                   ) {
                     setModalOpen(true);
                     setImgPrevUrl(item.documentPath as string);
                   }
                 }}
               >
-                {item &&
-                item.documentPath &&
-                item.documentPath.substr(-4).toLowerCase() !== '.pdf' ? (
+                {item && item.documentPath && !item.documentPath.toLowerCase().includes('.pdf') ? (
                   <Avatar
                     alt={item.documentPath as string}
                     src={item.documentPath as string}

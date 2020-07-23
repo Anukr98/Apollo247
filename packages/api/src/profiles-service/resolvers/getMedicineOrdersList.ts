@@ -118,7 +118,8 @@ const getMedicineOrdersList: Resolver<
   MedicineOrdersListResult
 > = async (parent, args, { profilesDb }) => {
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
-  const patientDetails = await patientRepo.findById(args.patientId);
+
+  const patientDetails = await patientRepo.getPatientDetails(args.patientId);
   if (!patientDetails) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
@@ -138,7 +139,7 @@ const getMedicineOrderDetails: Resolver<
 > = async (parent, args, { profilesDb }) => {
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
   if (args.patientId) {
-    const patientDetails = await patientRepo.findById(args.patientId);
+    const patientDetails = await patientRepo.getPatientDetails(args.patientId);
     if (!patientDetails) {
       throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
     }

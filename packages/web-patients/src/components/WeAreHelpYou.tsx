@@ -216,13 +216,15 @@ export const WeAreHelpYou: React.FC = (props) => {
           <div className={classes.helpSection}>
             <div className={classes.helpSectionHead}>You can also</div>
             <Grid container spacing={2}>
-              <Grid item sm={4} xs={12} onClick={() => window.open(covidScannerUrl)}>
-                <div className={classes.serviceCard}>
-                  <span>
-                    <img src={require('images/ic_covid-white.svg')} alt="" />
-                  </span>
-                  <span>Check your risk level</span>
-                </div>
+              <Grid item sm={4} xs={12}>
+                <a href={covidScannerUrl} target={'_blank'}>
+                  <div className={classes.serviceCard}>
+                    <span>
+                      <img src={require('images/ic_covid-white.svg')} alt="" />
+                    </span>
+                    <span>Check your risk level</span>
+                  </div>
+                </a>
               </Grid>
               {/* <Grid item sm={4} xs={12}>
                 <div className={classes.serviceCard}>

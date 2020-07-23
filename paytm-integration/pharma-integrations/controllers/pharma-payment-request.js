@@ -1,4 +1,5 @@
 const axios = require('axios');
+const { Decimal } = require('decimal.js');
 const logger = require('../../winston-logger')('Pharmacy-logs');
 const { initPayment, singlePaymentAdditionalParams } = require('../helpers/common');
 const {
@@ -16,9 +17,7 @@ module.exports = async (req, res) => {
     amount = amount ? +amount : 0;
     healthCredits = healthCredits ? +healthCredits : 0;
 
-    const effectiveAmount = amount + healthCredits;
-
-    console.log(effectiveAmount);
+    const effectiveAmount = +new Decimal(amount).plus(healthCredits);
 
     // Decide if we need token here or we can use static token
     axios.defaults.headers.common['authorization'] = process.env.API_TOKEN;

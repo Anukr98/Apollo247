@@ -61,19 +61,18 @@ export const PHRCard: React.FC = (props) => {
         </div>
         <div className={classes.fileInfo}>
           <a href="" target="_blank" title="Download Document">
-						IMG_20190726
+            IMG_20190726
           </a>
           <AphLinearProgress
             color="secondary"
             variant="determinate"
-						className={classes.progressRoot}
-						value={10}
+            className={classes.progressRoot}
+            value={10}
           />
         </div>
       </div>
       <div className={classes.closeBtn}>
-        <AphButton
-        >
+        <AphButton>
           <img src={require('images/ic_cross_onorange_small.svg')} alt="Remove Document" />
         </AphButton>
       </div>

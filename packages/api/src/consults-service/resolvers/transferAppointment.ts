@@ -168,7 +168,7 @@ const bookTransferAppointment: Resolver<
 > = async (parent, { BookTransferAppointmentInput }, { consultsDb, doctorsDb, patientsDb }) => {
   //check if patient id is valid
   const patient = patientsDb.getCustomRepository(PatientRepository);
-  const patientDetails = await patient.findById(BookTransferAppointmentInput.patientId);
+  const patientDetails = await patient.getPatientDetails(BookTransferAppointmentInput.patientId);
   if (!patientDetails) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }

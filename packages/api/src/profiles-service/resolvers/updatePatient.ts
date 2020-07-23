@@ -16,7 +16,7 @@ import {
   ReferralCodesMasterRepository,
   ReferalCouponMappingRepository,
 } from 'profiles-service/repositories/couponRepository';
-import { ApiConstants } from 'ApiConstants';
+import { ApiConstants, PATIENT_REPO_RELATIONS } from 'ApiConstants';
 
 export const updatePatientTypeDefs = gql`
   input UpdatePatientInput {
@@ -144,7 +144,15 @@ const updatePatient: Resolver<
       }
     }
   }
-  Object.assign(patient, await patientRepo.getPatientDetails(patientInput.id));
+
+  const patientObjWithRelations = await patientRepo.findByIdWithRelations(patientInput.id, [
+    PATIENT_REPO_RELATIONS.PATIENT_ADDRESS,
+    PATIENT_REPO_RELATIONS.FAMILY_HISTORY,
+    PATIENT_REPO_RELATIONS.LIFESTYLE,
+    PATIENT_REPO_RELATIONS.PATIENT_MEDICAL_HISTORY
+  ]);
+
+  Object.assign(patient, patientObjWithRelations);
   return { patient };
 };
 
@@ -156,7 +164,14 @@ const updatePatientAllergies: Resolver<
 > = async (parent, args, { profilesDb }) => {
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
   await patientRepo.updatePatientAllergies(args.patientId, args.allergies);
-  const patient = await patientRepo.findById(args.patientId);
+
+  const patient = await patientRepo.findByIdWithRelations(args.patientId, [
+    PATIENT_REPO_RELATIONS.PATIENT_ADDRESS,
+    PATIENT_REPO_RELATIONS.FAMILY_HISTORY,
+    PATIENT_REPO_RELATIONS.LIFESTYLE,
+    PATIENT_REPO_RELATIONS.PATIENT_MEDICAL_HISTORY
+  ]);
+
   if (patient == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   return { patient };
 };

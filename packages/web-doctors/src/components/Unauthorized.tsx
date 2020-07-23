@@ -2,6 +2,9 @@ import React from 'react';
 import { Theme, Typography } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { Link } from 'react-router-dom';
+import { useAuth } from 'hooks/authHooks';
+import { clientRoutes } from 'helpers/clientRoutes';
+import { LoggedInUserType } from 'graphql/types/globalTypes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -48,6 +51,9 @@ const useStyles = makeStyles((theme: Theme) => {
     helpSection: {
       borderBottom: '1px solid rgba(2, 71, 91, 0.15)',
       paddingBottom: 5,
+      [theme.breakpoints.down('xs')]: {
+        padding: 15,
+      },
       '&:last-child': {
         borderBottom: 'none',
       },
@@ -61,11 +67,12 @@ const useStyles = makeStyles((theme: Theme) => {
         margin: '10px 0',
       },
       '& h5': {
-        fontSize: 14,
-        lineHeight: '18px',
+        fontSize: 18,
+        lineHeight: '24px',
         color: '#02475b',
-        fontWeight: 500,
-        margin: '3px 0',
+        fontWeight: 'normal',
+        margin: '3px auto',
+        maxWidth: 790,
       },
       '& h6': {
         fontSize: 14,
@@ -77,31 +84,59 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     needHelp: {
-      marginBottom: 20,
+      margin: '30px 0 10px 0',
+      textTransform: 'uppercase',
+      fontSize: 24,
+      fontWeight: 600,
     },
     testCallWrappper: {
       borderBottom: '1px solid rgba(2, 71, 91, 0.15)',
+    },
+    textCenter: {
+      textAlign: 'center',
+      marginTop: 60,
+      '& img': {
+        [theme.breakpoints.down('xs')]: {
+          maxWidth: '90%',
+        },
+      },
+    },
+    backBtn: {
+      fontWeight: 600,
+      color: '#07ae8b',
+      fontSize: 18,
+      marginTop: 20,
+      '& img': {
+        position: 'relative',
+        top: 5,
+        marginRight: 10,
+      },
     },
   };
 });
 
 export const Unauthorized: React.FC = (props) => {
   const classes = useStyles({});
+  const currentUserType = useAuth().currentUserType;
+  const isJuniorDoctor = useAuth() && currentUserType === LoggedInUserType.JUNIOR;
+
   return (
-    <div>
-      <img
-                src={require('images/unauthorized.svg')}
-                alt=""
-              />
+    <div className={classes.textCenter}>
+      <img src={require('images/unauthorized.svg')} alt="" />
       <Typography variant="h2" className={classes.needHelp}>
-      Unauthorized User
+        Unauthorized User
       </Typography>
       <div className={classes.helpSection}>
-        <h5>It appears you are not allowed to access this page. if you think you should be able to access it, please relogin or contact on doctor helpline.</h5>
-        <img
-                src={require('images/backarrow.svg')}
-                alt=""
-              /><Link to="/calendar">GO BACK</Link>
+        <h5>
+          It appears you are not allowed to access this page. If you think you should be able to
+          access it, please relogin or contact on doctor helpline.
+        </h5>
+        <div className={classes.backBtn}>
+          <img src={require('images/backarrow.svg')} alt="" />
+          <Link to={isJuniorDoctor ? clientRoutes.juniorDoctor() : clientRoutes.calendar()}>
+            GO BACK
+          </Link>
+        </div>
       </div>
     </div>
   );

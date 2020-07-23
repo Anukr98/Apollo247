@@ -65,6 +65,7 @@ import {
   MedicineOrderShipments,
   MedicineOrderCancelReason,
   PharmacologistConsult,
+  MedicineOrderAddress,
 } from 'profiles-service/entities';
 import 'reflect-metadata';
 import { createConnections } from 'typeorm';
@@ -91,6 +92,7 @@ import {
   NotificationBin,
   NotificationBinArchive,
   AppointmentUpdateHistory,
+  ExotelDetails,
 } from 'consults-service/entities';
 
 export const connect = async () => {
@@ -136,6 +138,7 @@ export const connect = async () => {
         SearchHistory,
         MedicineOrderCancelReason,
         PharmacologistConsult,
+        MedicineOrderAddress,
       ],
       type: 'postgres',
       host: process.env.PROFILES_DB_HOST,
@@ -213,6 +216,7 @@ export const connect = async () => {
         TransferAppointmentDetails,
         UtilizationCapacity,
         AppointmentUpdateHistory,
+        ExotelDetails,
       ],
       type: 'postgres',
       host: process.env.CONSULTS_DB_HOST,
