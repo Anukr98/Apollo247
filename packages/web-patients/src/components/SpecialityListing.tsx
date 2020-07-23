@@ -722,7 +722,7 @@ export const SpecialityListing: React.FC = (props) => {
   }, [searchKeyword, selectedCity]);
 
   const metaTagProps = {
-    title: 'Online Doctor Consultation within 15 mins - via Video Call / Audio / Chat - Apollo 247',
+    title: 'Online Doctor Consultation via Video Call / Audio / Chat - Apollo 247',
     description:
       'Online doctor consultation in 15 mins with 1000+ Top Specialist Doctors. Video Call or Chat with a Doctor from 100+ Specialties including General Physicians, Pediatricians, Dermatologists, Gynaecologists & more.',
     canonicalLink: window && window.location && window.location.href,
@@ -837,7 +837,9 @@ export const SpecialityListing: React.FC = (props) => {
           </div>
           {faqs && faqs.onlineConsultation && faqs.onlineConsultation.length > 0 && (
             <div className={classes.faq}>
-              <Typography component="h2">Frequently asked questions</Typography>
+              <Typography component="h2">
+                Frequently asked questions about online doctor consultation
+              </Typography>
               {faqs.onlineConsultation.map((que: any) => (
                 <ExpansionPanel
                   key={que.id}
