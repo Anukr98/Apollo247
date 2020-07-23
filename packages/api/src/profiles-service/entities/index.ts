@@ -915,11 +915,15 @@ export class Patient extends BaseEntity {
     this.updatedDate = new Date();
   }
   @AfterInsert()
-  async UpdatePatientMobileCache() {
+  async updatePatientMobileCache() {
     const mobileIdList: string | null = await getCache(`patient:mobile:${this.mobileNumber}`);
     if (mobileIdList) {
       const listOfId = `${mobileIdList},${this.id}`; //value of cache is comma saperated value of ids
-      setCache(`patient:mobile:${this.mobileNumber}`, listOfId, ApiConstants.CACHE_EXPIRATION_3600);
+      await setCache(
+        `patient:mobile:${this.mobileNumber}`,
+        listOfId,
+        ApiConstants.CACHE_EXPIRATION_3600
+      );
     }
   }
 

@@ -77,7 +77,7 @@ export class CouponRepository extends Repository<Coupon> {
   }
 }
 const REDIS_REFERRAL_CODES_MASTER_NAME_KEY_PREFIX: string = 'ReferalCodeMaster:name:';
-const REDIS_REFERRAL_CODES_MASTER_ID_KEY_PREFIX: string = 'ReferalCodeMaster:name:';
+const REDIS_REFERRAL_CODES_MASTER_ID_KEY_PREFIX: string = 'ReferalCodeMaster:id:';
 @EntityRepository(ReferralCodesMaster)
 export class ReferralCodesMasterRepository extends Repository<ReferralCodesMaster> {
   async findByReferralCode(name: string) {
