@@ -753,7 +753,7 @@ export class PatientRepository extends Repository<Patient> {
 
   async getLinkedPatientIds({ patientDetails, patientId }: any) {
     if (!patientDetails) {
-      patientDetails = await this.findOne({ where: { id: patientId } });
+      patientDetails = await this.getPatientDetails(patientId);
     }
     const primaryPatientIds: string[] = [];
     if (
@@ -772,7 +772,7 @@ export class PatientRepository extends Repository<Patient> {
         });
       }
     } else {
-      primaryPatientIds.push(patientId); // DOUBT why is it in else
+      primaryPatientIds.push(patientId);
     }
     return primaryPatientIds;
   }

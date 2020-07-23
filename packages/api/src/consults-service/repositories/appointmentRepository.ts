@@ -685,12 +685,12 @@ export class AppointmentRepository extends Repository<Appointment> {
       .getMany();
   }
 
-  async getPatinetUpcomingAppointments(ids: string[]) {
+  async getPatientUpcomingAppointments(ids: string[]) {
     const weekPastDate = format(addDays(new Date(), -7), 'yyyy-MM-dd');
     const weekPastDateUTC = new Date(weekPastDate + 'T18:30');
     return this.createQueryBuilder('appointment')
       .leftJoinAndSelect('appointment.appointmentPayments', 'appointmentPayments')
-      .where('appointment.appointmentDateTime > :weekPastDate', { weekPastDateUTC })
+      .where('appointment.appointmentDateTime > :weekPastDateUTC', { weekPastDateUTC })
       .andWhere('appointment.patientId IN (:...ids)', { ids })
       .andWhere(
         'appointment.status not in(:status1,:status2,:status3,:status4,:status5,:status6)',
@@ -705,6 +705,28 @@ export class AppointmentRepository extends Repository<Appointment> {
       )
       .orderBy('appointment.appointmentDateTime', 'ASC')
       .getMany();
+  }
+
+  async getPatientUpcomingAppointmentsCount(ids: string[]) {
+    const weekPastDate = format(addDays(new Date(), -7), 'yyyy-MM-dd');
+    const weekPastDateUTC = new Date(weekPastDate + 'T18:30');
+    return this.createQueryBuilder('appointment')
+      .leftJoinAndSelect('appointment.appointmentPayments', 'appointmentPayments')
+      .where('appointment.appointmentDateTime > :weekPastDateUTC', { weekPastDateUTC })
+      .andWhere('appointment.patientId IN (:...ids)', { ids })
+      .andWhere(
+        'appointment.status not in(:status1,:status2,:status3,:status4,:status5,:status6)',
+        {
+          status1: STATUS.CANCELLED,
+          status2: STATUS.PAYMENT_PENDING,
+          status3: STATUS.UNAVAILABLE_MEDMANTRA,
+          status4: STATUS.PAYMENT_FAILED,
+          status5: STATUS.PAYMENT_PENDING_PG,
+          status6: STATUS.PAYMENT_ABORTED,
+        }
+      )
+      .orderBy('appointment.appointmentDateTime', 'ASC')
+      .getCount();
   }
 
   getPatientAndDoctorsAppointments(patientId: string, doctorIds: string[]) {

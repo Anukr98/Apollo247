@@ -101,10 +101,8 @@ const consultOrders: Resolver<
   const apptsRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const docConsultRep = doctorsDb.getCustomRepository(DoctorRepository);
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
-  const primaryPatientIds = await patientRepo.getLinkedPatientIds({ patientId }); // 
-
+  const primaryPatientIds = await patientRepo.getLinkedPatientIds({ patientId });
   const response = await apptsRepo.getAllAppointmentsByPatientId(primaryPatientIds);
-  // console.log('appointments Response', JSON.stringify(response, null, 2))
 
   if (response && response.length > 0) {
     const result = [];
