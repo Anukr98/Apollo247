@@ -16,7 +16,8 @@ import {
 import { Validate, IsOptional } from 'class-validator';
 import { NameValidator, MobileNumberValidator } from 'validators/entityValidators';
 import { ConsultMode } from 'doctors-service/entities';
-import { delCache } from 'profiles-service/database/connectRedis';
+import { getCache, setCache, delCache } from 'profiles-service/database/connectRedis';
+import { ApiConstants } from 'ApiConstants';
 
 export type ONE_APOLLO_USER_REG = {
   FirstName: string;
@@ -883,15 +884,12 @@ export class Patient extends BaseEntity {
   @Column({ nullable: true })
   source: PROFILE_SOURCE;
 
-  @Index('Patient_isActive')
   @Column({ nullable: true, default: true })
   isActive: Boolean;
 
-  @Index('Patient_whatsAppConsult')
   @Column({ default: false })
   whatsAppConsult: Boolean;
 
-  @Index('Patient_whatsAppMedicine')
   @Column({ default: false })
   whatsAppMedicine: Boolean;
 
@@ -917,14 +915,22 @@ export class Patient extends BaseEntity {
     this.updatedDate = new Date();
   }
   @AfterInsert()
-  async dropPatientMobileCache() {
-    await delCache(`patient:mobile:${this.mobileNumber}`);
+  async updatePatientMobileCache() {
+    const mobileIdList: string | null = await getCache(`patient:mobile:${this.mobileNumber}`);
+    if (mobileIdList) {
+      const listOfId = `${mobileIdList},${this.id}`; //value of cache is comma saperated value of ids
+      await setCache(
+        `patient:mobile:${this.mobileNumber}`,
+        listOfId,
+        ApiConstants.CACHE_EXPIRATION_3600
+      );
+    }
   }
 
+  @AfterInsert()
   @AfterUpdate()
-  async dropPatientCache() {
-    console.log('testing drop petient cache');
-    await delCache(`patient:${this.id}`);
+  async setPatientCache() {
+    await setCache(`patient:${this.id}`, JSON.stringify(this), ApiConstants.CACHE_EXPIRATION_3600);
   }
 }
 //patient Ends
