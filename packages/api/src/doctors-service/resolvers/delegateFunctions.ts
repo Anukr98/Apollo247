@@ -14,6 +14,7 @@ import { isMobileNumberValid } from '@aph/universal/dist/aphValidators';
 import { SecretaryRepository } from 'doctors-service/repositories/secretaryRepository';
 import { DoctorSecretaryRepository } from 'doctors-service/repositories/doctorSecretary';
 import { DoctorPatientExternalConnectRepository } from 'doctors-service/repositories/DoctorPatientExternalConnectRepository';
+import { RELATIONS } from 'ApiConstants';
 
 export const delegateFunctionsTypeDefs = gql`
   type DoctorSecretaryData {

@@ -1,7 +1,6 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
 import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext';
-import { Client, RequestParams } from '@elastic/elasticsearch';
 import { Doctor, AdminType, AdminUsers, Secretary, DoctorType } from 'doctors-service/entities/';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
@@ -11,6 +10,7 @@ import { AdminUser } from 'doctors-service/repositories/adminRepository';
 import { DashboardData, getJuniorDoctorsDashboard } from 'doctors-service/resolvers/JDAdmin';
 import { SecretaryRepository } from 'doctors-service/repositories/secretaryRepository';
 import { format } from 'date-fns';
+import { RELATIONS } from 'ApiConstants';
 
 export const getDoctorDetailsTypeDefs = gql`
   enum Gender {
@@ -328,49 +328,8 @@ const getDoctorDetailsById: Resolver<null, { id: string }, DoctorsServiceContext
   args,
   { doctorsDb }
 ) => {
-  const client = new Client({ node: process.env.ELASTIC_CONNECTION_URL });
-  const searchParams: RequestParams.Search = {
-    index: 'doctors',
-    body: {
-      query: {
-        bool: {
-          must: [
-            {
-              match_phrase: {
-                doctorId: args.id,
-              },
-            },
-          ],
-        },
-      },
-    },
-  };
-  const getDetails = await client.search(searchParams);
-  let doctorData, facilities;
 
-  if (getDetails.body.hits.hits && getDetails.body.hits.hits.length > 0) {
-    doctorData = getDetails.body.hits.hits[0]._source;
-    doctorData.id = doctorData.doctorId;
-    doctorData.specialty.id = doctorData.specialty.specialtyId;
-    doctorData.doctorHospital = [];
-    const availableModes: string[] = [];
-    for (const consultHour of doctorData.consultHours) {
-      consultHour['id'] = consultHour['consultHoursId'];
-      if (!availableModes.includes(consultHour['consultMode'])) {
-        availableModes.push(consultHour['consultMode']);
-      }
-    }
-
-    facilities = doctorData.facility;
-    facilities = Array.isArray(facilities) ? facilities : [facilities];
-    for (const facility of facilities) {
-      facility.id = facility.facilityId;
-      doctorData.doctorHospital.push({ facility });
-    }
-    doctorData.availableModes = availableModes;
-  }
-  // console.log(getDetails.body.hits.hits, getDetails.body.hits.hits.length + 1, 'searchhitCount');
-  return doctorData;
+  const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
 };
 
 type LoggedInUserDetails = {
