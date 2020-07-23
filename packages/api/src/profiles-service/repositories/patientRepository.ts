@@ -315,7 +315,7 @@ export class PatientRepository extends Repository<Patient> {
     return authTokenResult !== null ? authTokenResult.response : null;
   }*/
 
-  async validateAndGetUHID(id: string, prismUsersList: PrismSignUpUserData[]) {
+  /*async validateAndGetUHID(id: string, prismUsersList: PrismSignUpUserData[]) {
     const reqStartTime = new Date();
     const patientData = await this.findOne({ where: { id } }).catch((error) => {
       throw new AphError(AphErrorMessages.GET_PROFILE_ERROR, undefined, {
@@ -350,7 +350,7 @@ export class PatientRepository extends Repository<Patient> {
     }
 
     return uhid;
-  }
+  }*/
 
   //utility method to get prism user details
   /* async getPrismUsersDetails(uhid: string, authToken: string) {
