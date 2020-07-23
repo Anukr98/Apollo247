@@ -754,18 +754,20 @@ export class PatientRepository extends Repository<Patient> {
     return await this.findByMobileNumber(mobileNumber);
   }
 
-  async getLinkedPatientIds(patientId: string) {
-    const linkedPatient = await this.findOne({ where: { id: patientId } });
+  async getLinkedPatientIds({ patientDetails, patientId }: any) {
+    if (!patientDetails) {
+      patientDetails = await this.getPatientDetails(patientId);
+    }
     const primaryPatientIds: string[] = [];
     if (
-      linkedPatient &&
-      linkedPatient.uhid != '' &&
-      linkedPatient.uhid != null &&
-      linkedPatient.primaryPatientId != null &&
-      linkedPatient.primaryPatientId != ''
+      patientDetails &&
+      patientDetails.uhid != '' &&
+      patientDetails.uhid != null &&
+      patientDetails.primaryPatientId != null &&
+      patientDetails.primaryPatientId != ''
     ) {
       const patientsList = await this.find({
-        where: { primaryPatientId: linkedPatient.primaryPatientId },
+        where: { primaryPatientId: patientDetails.primaryPatientId },
       });
       if (patientsList.length > 0) {
         patientsList.forEach((patientDetails) => {
