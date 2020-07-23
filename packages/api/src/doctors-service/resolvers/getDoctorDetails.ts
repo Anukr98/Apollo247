@@ -327,9 +327,13 @@ const getDoctorDetailsById: Resolver<null, { id: string }, DoctorsServiceContext
   args,
   { doctorsDb }
 ) => {
-  const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
-  const result = await doctorRepository.getDoctorProfileData(args.id);
-  return result;
+  try {
+    const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
+    return await doctorRepository.getDoctorProfileData(args.id);
+  } catch (error) {
+    throw new AphError(AphErrorMessages.GET_PROFILE_ERROR, undefined, { error });
+  }
+
 };
 
 type LoggedInUserDetails = {
