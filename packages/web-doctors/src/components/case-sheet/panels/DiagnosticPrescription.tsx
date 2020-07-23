@@ -500,7 +500,7 @@ export const DiagnosticPrescription: React.FC = () => {
     suggestions = filterVal;
 
     if (event.nativeEvent.type === 'input' && newValue.length > 2) {
-      setTimeout(() => fetchDignostic(newValue), 300);
+      fetchDignostic(newValue);
     } else if (newValue.length <= 2) setIsSuggestionSelected(false);
     setOtherDiagnostic(newValue);
     setState({
