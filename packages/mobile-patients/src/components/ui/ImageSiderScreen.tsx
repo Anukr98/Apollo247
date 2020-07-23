@@ -18,6 +18,7 @@ const styles = StyleSheet.create({
   heading: {
     textTransform: 'uppercase',
     ...theme.viewStyles.text('SB', 13, '#fff', 1, undefined, 0.5),
+    marginBottom: 4,
   },
   image: { width: '100%', minHeight: height - height * 0.12 },
   sliderDotStyle: {
@@ -77,7 +78,7 @@ export const ImageSliderScreen: React.FC<ImageSliderScreenProps> = (props) => {
           containerStyle={styles.headerContainer}
           leftComponent={
             <TouchableOpacity activeOpacity={1} onPress={() => props.navigation.goBack()}>
-              <Remove />
+              <Remove style={{ tintColor: '#fff' }} />
             </TouchableOpacity>
           }
           centerComponent={{ text: heading, style: styles.heading, numberOfLines: 1 }}
@@ -90,7 +91,7 @@ export const ImageSliderScreen: React.FC<ImageSliderScreenProps> = (props) => {
         sliderWidth={width}
         itemWidth={width}
       />
-      {images.length > 2 && (
+      {images.length > 1 && (
         <View style={styles.dotContainer}>
           {images.map((_, index) => (index == slideIndex ? renderDot(true) : renderDot(false)))}
         </View>
