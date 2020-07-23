@@ -57,7 +57,7 @@ export const useAllCurrentPatients = () => {
     GET_PATIENT_BY_MOBILE_NUMBER,
     {
       variables: {
-        mobileNumber: `+918588867644`,
+        mobileNumber: localStorage.getItem('userMobileNo'),
       },
     }
   );

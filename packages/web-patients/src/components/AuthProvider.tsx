@@ -103,6 +103,7 @@ const buildApolloClient = (authToken: string, handleUnauthenticated: () => void)
   }));
   // const httpLink = createHttpLink({ uri: apiRoutes.graphql() });
   const httpLink = createHttpLink({ uri: process.env.API_HOST_NAME });
+  
   const link = errorLink.concat(authLink).concat(httpLink);
   const cache = apolloClient ? apolloClient.cache : new InMemoryCache();
   return new ApolloClient({ link, cache });
@@ -165,6 +166,7 @@ export const AuthProvider: React.FC = (props) => {
         webengageUserLogoutTracking();
         /*webengage code end */
         localStorage.removeItem('currentUser');
+        localStorage.removeItem('userMobileNo');
         window.location.reload();
       });
 
@@ -179,6 +181,7 @@ export const AuthProvider: React.FC = (props) => {
       })
       .then((loginResult) => {
         setIsSendingOtp(false);
+        localStorage.setItem('userMobileNo', phoneNumber)
         setCustomLoginId(
           loginResult &&
             loginResult.data &&
@@ -368,7 +371,7 @@ export const AuthProvider: React.FC = (props) => {
           .query<GetPatientByMobileNumber>({
             query: GET_PATIENT_BY_MOBILE_NUMBER,
             variables: {
-              mobileNumber: `+918588867644`,
+              mobileNumber: localStorage.getItem('userMobileNo'),
             },
           })
           .then((res) => {
