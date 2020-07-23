@@ -86,12 +86,11 @@ export class PatientRepository extends Repository<Patient> {
   }
 
   async getDeviceCodeCount(deviceCode: string) {
-    const deviceCodeCount: DeviceCount[] = await this.createQueryBuilder('patient')
+    return await this.createQueryBuilder('patient')
       .select(['"mobileNumber" as mobilenumber', 'count("mobileNumber") as mobilecount'])
       .where('patient."deviceCode" = :deviceCode', { deviceCode })
       .groupBy('patient."mobileNumber"')
-      .getRawMany();
-    return deviceCodeCount.length;
+      .getCount();
   }
 
   async getPatientDetails(id: string) {
