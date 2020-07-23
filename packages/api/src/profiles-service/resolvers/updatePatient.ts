@@ -63,7 +63,7 @@ const updatePatient: Resolver<
   UpdatePatientResult
 > = async (parent, { patientInput }, { profilesDb }) => {
   const { id, ...updateAttrs } = patientInput;
-  const patientRepo = await profilesDb.getCustomRepository(PatientRepository);
+  const patientRepo = profilesDb.getCustomRepository(PatientRepository);
   if (patientInput.employeeId && patientInput.partnerId) {
     const checkEmployeeId = await patientRepo.findEmpId(
       patientInput.employeeId,
