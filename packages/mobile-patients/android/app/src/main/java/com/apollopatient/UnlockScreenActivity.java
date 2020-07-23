@@ -3,7 +3,10 @@ package com.apollopatient;
 
 import android.app.Activity;
 import android.app.ActivityManager;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.media.MediaPlayer;
 import android.media.Ringtone;
@@ -21,6 +24,7 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 
 import androidx.annotation.RequiresApi;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.facebook.react.ReactActivity;
 import com.facebook.react.bridge.Arguments;
@@ -38,11 +42,24 @@ public class UnlockScreenActivity extends ReactActivity implements UnlockScreenA
 
     private static final String TAG = "MessagingService";
     private Ringtone ringtone;
-
+    LocalBroadcastManager mLocalBroadcastManager;
+    BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if(intent.getAction().equals("com.unlockscreenactivity.action.close")){
+                finish();
+            }
+        }
+    };
     @RequiresApi(api = Build.VERSION_CODES.P)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        mLocalBroadcastManager = LocalBroadcastManager.getInstance(this);
+        IntentFilter mIntentFilter = new IntentFilter();
+        mIntentFilter.addAction("com.unlockscreenactivity.action.close");
+        mLocalBroadcastManager.registerReceiver(mBroadcastReceiver, mIntentFilter);
 
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON | WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
                 | WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED | WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
@@ -67,7 +84,6 @@ public class UnlockScreenActivity extends ReactActivity implements UnlockScreenA
         }
         else if(notifMessageType.equals(incomingCallDisconnect)){
                 finish();
-                ringtone.stop();
         }
 
         String host_name = intent.getStringExtra("DOCTOR_NAME");
@@ -95,6 +111,7 @@ public class UnlockScreenActivity extends ReactActivity implements UnlockScreenA
                     intent.putExtra("APPOINTMENT_ID",appointment_id);
                     startActivity(intent);
                     finish();
+
                 }
             else{
                     sendEvent(reactContext, "accept", params);
@@ -128,9 +145,11 @@ public class UnlockScreenActivity extends ReactActivity implements UnlockScreenA
 
     }
 
+
     @Override
     public void onDestroy() {
         super.onDestroy();
+        mLocalBroadcastManager.unregisterReceiver(mBroadcastReceiver);
         ringtone.stop();
     }
 

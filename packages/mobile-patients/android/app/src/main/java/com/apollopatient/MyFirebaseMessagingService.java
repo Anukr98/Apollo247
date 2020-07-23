@@ -88,6 +88,11 @@ public class MyFirebaseMessagingService
                 i.putExtra("APPOINTMENT_ID",remoteMessage.getData().get("appointment_id"));
                 i.putExtra("APP_STATE",isAppRunning);
                 startActivity(i);
+        }else if(disconnectCallType.equals((notifDataType))){
+            LocalBroadcastManager localBroadcastManager = LocalBroadcastManager
+                    .getInstance(MyFirebaseMessagingService.this);
+            localBroadcastManager.sendBroadcast(new Intent(
+                    "com.unlockscreenactivity.action.close"));
         }
         }
 
