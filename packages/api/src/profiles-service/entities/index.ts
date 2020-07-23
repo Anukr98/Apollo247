@@ -485,8 +485,81 @@ export class MedicineOrders extends BaseEntity {
     (medicineOrderRefunds) => medicineOrderRefunds.medicineOrders
   )
   medicineOrderRefunds: MedicineOrderRefunds[];
+
+  @OneToOne(
+    (type) => MedicineOrderAddress,
+    (medicineOrderAddress) => medicineOrderAddress.medicineOrders
+  )
+  medicineOrderAddress: MedicineOrderAddress;
 }
 //medicine orders ends
+
+//medicine order address starts
+@Entity()
+export class MedicineOrderAddress extends BaseEntity {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column()
+  name: string;
+
+  @Column()
+  mobileNumber: string;
+
+  @Column({ nullable: true })
+  addressLine1: string;
+
+  @Column({ nullable: true })
+  addressLine2: string;
+
+  @Column({ nullable: true })
+  addressType: PATIENT_ADDRESS_TYPE;
+
+  @Column({ nullable: true })
+  city: string;
+
+  @Column({ nullable: true })
+  otherAddressType: string;
+
+  @Column({ nullable: true })
+  state: string;
+
+  @Column({ nullable: true })
+  zipcode: string;
+
+  @Column({ nullable: true })
+  landmark: string;
+
+  @Column({ type: 'float8', nullable: true })
+  latitude: number;
+
+  @Column({ type: 'float8', nullable: true })
+  longitude: number;
+
+  @Column({ nullable: true })
+  stateCode: string;
+
+  @OneToOne((type) => MedicineOrders, (medicineOrders) => medicineOrders.medicineOrderAddress)
+  @JoinColumn()
+  medicineOrders: MedicineOrders;
+
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
+  @Column({ type: 'timestamp', nullable: true })
+  updatedDate: Date;
+
+  @BeforeInsert()
+  updateDateCreation() {
+    this.createdDate = new Date();
+  }
+
+  @BeforeUpdate()
+  updateDateUpdate() {
+    this.updatedDate = new Date();
+  }
+}
+//medicine order address ends
 
 //Medicine Orders Refunds Start
 @Entity()

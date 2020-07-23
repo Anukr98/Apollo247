@@ -1031,6 +1031,12 @@ export class AppointmentUpdateHistory extends BaseEntity {
   toValue: string;
 
   @Column({ nullable: true })
+  fromState: string;
+
+  @Column({ nullable: true })
+  toState: string;
+
+  @Column({ nullable: true })
   reason: string;
 }
 //AppointmentUpdateHistory ends

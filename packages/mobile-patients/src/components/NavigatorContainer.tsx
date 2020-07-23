@@ -89,6 +89,7 @@ import { ChennaiNonCartOrderForm } from '@aph/mobile-patients/src/components/Med
 import MyPaymentsScreen from '@aph/mobile-patients/src/components/MyPayments/MyPaymentsScreen';
 import PaymentStatusScreen from '@aph/mobile-patients/src/components/MyPayments/PaymentStatus/PaymentStatusScreen';
 import { ConsultTypeScreen } from './ConsultRoom/ConsultTypeScreen';
+import { CommonWebView } from '@aph/mobile-patients/src/components/CommonWebView';
 
 export enum AppRoutes {
   Onboarding = 'Onboarding',
@@ -170,6 +171,7 @@ export enum AppRoutes {
   PaymentStatusScreen = 'PaymentStatusScreen',
   OneApolloMembership = 'OneApolloMembership',
   ConsultTypeScreen = 'ConsultTypeScreen',
+  CommonWebView = 'CommonWebView',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -443,6 +445,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.ConsultTypeScreen]: {
     screen: ConsultTypeScreen,
+  },
+  [AppRoutes.CommonWebView]: {
+    screen: CommonWebView,
   },
 };
 

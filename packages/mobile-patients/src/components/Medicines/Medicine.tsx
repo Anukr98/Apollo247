@@ -38,7 +38,7 @@ import {
   GET_RECOMMENDED_PRODUCTS_LIST,
   GET_LATEST_MEDICINE_ORDER,
 } from '@aph/mobile-patients/src/graphql/profiles';
-import { SEARCH_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { SEARCH_TYPE, MEDICINE_ORDER_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   Brand,
   getMedicinePageProducts,
@@ -108,6 +108,7 @@ import {
   MedicineReOrderOverlayProps,
   MedicineReOrderOverlay,
 } from '@aph/mobile-patients/src/components/Medicines/MedicineReOrderOverlay';
+import { getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails } from '@aph/mobile-patients/src/graphql/types/getMedicineOrderOMSDetails';
 
 const styles = StyleSheet.create({
   hiTextStyle: {
@@ -684,6 +685,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           }
           props.navigation.navigate(AppRoutes.UploadPrescription, {
             ePrescriptionsProp: selectedEPres,
+            type: 'E-Prescription',
           });
         }}
         selectedEprescriptionIds={[]}
@@ -711,12 +713,13 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           prescription: 'SELECT FROM\nE-PRESCRIPTION',
         }}
         onClickClose={() => setShowPopop(false)}
-        onResponse={(selectedType, response) => {
+        onResponse={(selectedType, response, type) => {
           setShowPopop(false);
           if (selectedType == 'CAMERA_AND_GALLERY') {
             if (response.length == 0) return;
             props.navigation.navigate(AppRoutes.UploadPrescription, {
               phyPrescriptionsProp: response,
+              type,
             });
           } else {
             setSelectPrescriptionVisible(true);
@@ -944,6 +947,28 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         currentPatient,
         'Medicine Home'
       );
+
+      const orderDetails = ((!loading && order) ||
+        {}) as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails;
+
+      const eventAttributes: WebEngageEvents[WebEngageEventName.RE_ORDER_MEDICINE] = {
+        orderType: !!g(order, 'billNumber')
+          ? 'Offline'
+          : orderDetails.orderType == MEDICINE_ORDER_TYPE.UPLOAD_PRESCRIPTION
+          ? 'Non Cart'
+          : 'Cart',
+        noOfItemsNotAvailable: unavailableItems.length,
+        source: 'Order Details',
+        'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+        'Patient UHID': g(currentPatient, 'uhid'),
+        Relation: g(currentPatient, 'relation'),
+        'Patient Age': Math.round(moment().diff(currentPatient.dateOfBirth, 'years', true)),
+        'Patient Gender': g(currentPatient, 'gender'),
+        'Mobile Number': g(currentPatient, 'mobileNumber'),
+        'Customer ID': g(currentPatient, 'id'),
+      };
+      postWebEngageEvent(WebEngageEventName.RE_ORDER_MEDICINE, eventAttributes);
+
       items.length && addMultipleCartItems!(items);
       items.length && prescriptions.length && addMultipleEPrescriptions!(prescriptions);
       globalLoading!(false);

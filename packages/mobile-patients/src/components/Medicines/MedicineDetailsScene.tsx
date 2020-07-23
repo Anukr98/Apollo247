@@ -329,10 +329,21 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   const medicineName = medicineDetails.name;
   const scrollViewRef = React.useRef<KeyboardAwareScrollView>(null);
   const cartItemsCount = cartItems.length + diagnosticCartItems.length;
+  const movedFrom = props.navigation.getParam('movedFrom');
 
   useEffect(() => {
     if (!_deliveryError) {
       fetchDeliveryTime();
+    }
+
+    if (movedFrom === 'deeplink') {
+      // webengage event when page is opened from deeplink
+      const eventAttributes: WebEngageEvents[WebEngageEventName.DEEPLINK_PRODUCT_DETAIL_SCREEN] = {
+        source: 'Deeplink',
+        ProductId: sku,
+        ProductName: medicineName,
+      };
+      postWebEngageEvent(WebEngageEventName.DEEPLINK_PRODUCT_DETAIL_SCREEN, eventAttributes);
     }
   }, []);
 

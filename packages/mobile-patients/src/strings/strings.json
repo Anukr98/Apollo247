@@ -282,7 +282,8 @@
     "product_discount": "Product Discount",
     "coupon_discount": "Coupon Discount",
     "delivery_charges": "Delivery Charges",
-    "packaging_charges": "Packaging Charges"
+    "packaging_charges": "Packaging Charges",
+    "orderCancellationAfterBillingAlert": "Your order has already Billed and therefore cannot be cancelled from the App. In case you still wish to Cancel, please click on the link below to chat with out customer care executives for assistance during working hours (9:00 AM to 8:30 PM)"
   },
   "OrderSummaryText": {
     "total_order_billed": "Total Ordered Value",
@@ -361,5 +362,6 @@
     "here_your_schedule": "here’s your schedule for",
     "block_Calendar": "Block Calendar",
     "manage_calendar": "Manage Calendar"
-  }
+  },
+  "ChatRoom_NotRecorded_Value": "Not Recorded"
 }
