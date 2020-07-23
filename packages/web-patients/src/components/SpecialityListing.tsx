@@ -722,7 +722,7 @@ export const SpecialityListing: React.FC = (props) => {
   }, [searchKeyword, selectedCity]);
 
   const metaTagProps = {
-    title: 'Best Specialist Doctors Online - Consult within 15 mins - via Video Call/ Audio / Chat',
+    title: 'Online Doctor Consultation within 15 mins - via Video Call / Audio / Chat - Apollo 247',
     description:
       'Online doctor consultation in 15 mins with 1000+ Top Specialist Doctors. Video Call or Chat with a Doctor from 100+ Specialties including General Physicians, Pediatricians, Dermatologists, Gynaecologists & more.',
     canonicalLink: window && window.location && window.location.href,
