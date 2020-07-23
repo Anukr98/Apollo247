@@ -79,6 +79,7 @@ const useStyles = makeStyles((theme: Theme) => {
         borderRadius: 10,
         marginRight: 20,
         [theme.breakpoints.down('sm')]: {
+          minWidth: 300,
           width: '100%',
           margin: '0 0 10px',
         },

@@ -192,6 +192,10 @@ const useStyles = makeStyles((theme: Theme) => {
       margin: '10px 0 0',
       fontWeight: 'bold',
     },
+    zeroState: {
+      textAlign: 'center',
+      marginTop: 30,
+    },
     conclusionContent: {},
   };
 });
@@ -199,6 +203,7 @@ export const covidProtocolLanding: React.FC = (props: any) => {
   const classes = useStyles({});
   const [seemore, setSeemore] = React.useState<string>('');
   const [isLoading, setIsLoading] = React.useState<boolean>(true);
+  const [zeroState, showZeroState] = React.useState<boolean>(false);
   const [symptomData, setSymptomData] = React.useState<CovidProtocolData>(null);
   const scrollToRef = useRef<HTMLDivElement>(null);
   const { currentPatient } = useAllCurrentPatients();
@@ -214,15 +219,23 @@ export const covidProtocolLanding: React.FC = (props: any) => {
     process.env.COVID_PROTOCOL_URL || 'https://uatcms.apollo247.com/api/phrcovid-protocol';
 
   useEffect(() => {
-    if (isLoading && currentPatient && currentPatient.uhid) {
-      fetchUtil(covidProtocolUrl + '/' + currentPatient.uhid, 'GET', {}, '', true)
+    if (isLoading && currentPatient && currentPatient.mobileNumber) {
+      fetchUtil(
+        covidProtocolUrl + '/' + currentPatient.mobileNumber.substring(3),
+        'GET',
+        {},
+        '',
+        true
+      )
         .then((res: any) => {
           if (res && res.success) {
             setSymptomData(res.data);
           } else {
             setSymptomData(null);
+            showZeroState(true);
           }
         })
+        .catch(() => showZeroState(true))
         .finally(() => {
           setIsLoading(false);
         });
@@ -240,15 +253,27 @@ export const covidProtocolLanding: React.FC = (props: any) => {
   }, []);
 
   const [isWebView, setIsWebView] = useState<boolean>(false);
+  const subtitle = symptomData && symptomData['covidProtocolData'][0].category || '';
   return (
     <div className={classes.cdLanding} ref={scrollToRef}>
       <Header />
       <div className={classes.container}>
         <div className={classes.cdContent}>
-          <Banner isWebView={isWebView} backLocation={clientRoutes.covidLanding()} />
+          <Banner
+            title={'Coronavirus (COVID-19) Guide'}
+            subtitle={subtitle}
+            isWebView={isWebView}
+            backLocation={clientRoutes.covidLanding()}
+          />
           {isLoading && !symptomData ? (
             <div className={classes.loader}>
               <CircularProgress size={22} color="secondary" />
+            </div>
+          ) : zeroState ? (
+            <div className={classes.zeroState}>
+              <img src={require('images/zero-state.png')} alt={'zero state'} />
+              <div>No results found</div>
+              <div>It seems we can’t find any results.</div>
             </div>
           ) : (
             <>
