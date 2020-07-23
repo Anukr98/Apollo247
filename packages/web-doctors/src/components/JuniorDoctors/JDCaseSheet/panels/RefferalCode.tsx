@@ -293,7 +293,7 @@ export const RefferalCode: React.FC = () => {
             else setReferralError(false);
             const storageItem = getLocalStorageItem(params.appointmentId);
             if (storageItem) {
-              storageItem.referralSpecialtyName = e.target.value;
+              storageItem.referralDescription = e.target.value;
               updateLocalStorageItem(params.appointmentId, storageItem);
             }
             setReferralDescription(e.target.value);

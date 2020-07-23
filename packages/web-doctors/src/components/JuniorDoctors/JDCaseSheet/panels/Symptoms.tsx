@@ -196,7 +196,7 @@ interface ErrorObject {
 export const Symptoms: React.FC = (props) => {
   const classes = useStyles({});
   const params = useParams<Params>();
-  const { symptoms, setSymptoms } = useContext(CaseSheetContextJrd);
+  const { symptoms, setSymptoms, caseSheetEdit } = useContext(CaseSheetContextJrd);
   const [isDialogOpen, setIsDialogOpen] = React.useState<boolean>(false);
   const [symptom, setSymptom] = React.useState('');
   const [since, setSince] = React.useState('');
@@ -205,7 +205,6 @@ export const Symptoms: React.FC = (props) => {
   const [idx, setIdx] = React.useState<any>();
   const [severity, setSeverity] = React.useState('');
   const [isUpdate, setIsUpdate] = React.useState(false);
-  const { caseSheetEdit } = useContext(CaseSheetContextJrd);
   const [errorState, setErrorState] = React.useState<ErrorObject>({
     symptomError: false,
     sinceError: false,
@@ -308,12 +307,6 @@ export const Symptoms: React.FC = (props) => {
       clearError();
     }
   };
-
-  // useEffect(() => {
-  //   if (idx >= 0) {
-  //     saveSympotms(symptoms);
-  //   }
-  // }, [symptoms, idx]);
 
   const showSymptom = (idx: number) => {
     if (symptoms && symptoms.length > 0) {

@@ -1400,7 +1400,7 @@ export const MedicinePrescription: React.FC = () => {
     return changedString + char;
   };
 
-  const selectedMedicinesHtml = selectedMedicinesArr!.map(
+  const selectedMedicinesHtml = (selectedMedicinesArr || [])!.map(
     (_medicine: any | null, index: number) => {
       const medicine = _medicine!;
       const forHtml = medicine.medicineConsumptionDurationInDays
