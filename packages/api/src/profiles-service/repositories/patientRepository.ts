@@ -229,93 +229,6 @@ export class PatientRepository extends Repository<Patient> {
     } else return null;
   }
 
-  /*//utility method to get prism auth token
-  async getPrismAuthToken(mobileNumber: string) {
-    const prismHeaders = {
-      method: 'GET',
-      timeOut: ApiConstants.PRISM_TIMEOUT,
-    };
-
-    const url = `${process.env.PRISM_GET_AUTH_TOKEN_API}?mobile=${mobileNumber}`;
-
-    const reqStartTime = new Date();
-    const authTokenResult = await fetch(url, prismHeaders)
-      .then((res) => res.json() as Promise<PrismGetAuthTokenResponse>)
-      .catch((error: PrismGetAuthTokenError) => {
-        dLogger(
-          reqStartTime,
-          'getPrismAuthToken PRISM_GET_AUTHTOKEN_API_CALL___ERROR',
-          `${url} --- ${JSON.stringify(error)}`
-        );
-        throw new AphError(AphErrorMessages.PRISM_AUTH_TOKEN_ERROR);
-      });
-    dLogger(
-      reqStartTime,
-      'getPrismAuthToken PRISM_GET_AUTHTOKEN_API_CALL___END',
-      `${url} --- ${JSON.stringify(authTokenResult)}`
-    );
-
-    return authTokenResult !== null ? authTokenResult.response : null;
-  }
-
-    //utility method to get prism users list
-  async getPrismUsersList(mobileNumber: string, authToken: string) {
-    const prismHeaders = {
-      method: 'GET',
-      timeOut: ApiConstants.PRISM_TIMEOUT,
-    };
-
-    const url = `${process.env.PRISM_GET_USERS_API}?authToken=${authToken}&mobile=${mobileNumber}`;
-
-    const reqStartTime = new Date();
-    const usersResult = await fetch(url, prismHeaders)
-      .then((res) => res.json() as Promise<PrismGetUsersResponse>)
-      .catch((error: PrismGetUsersError) => {
-        dLogger(
-          reqStartTime,
-          'getPrismUsersList PRISM_GET_USERS_API_CALL___ERROR',
-          `${url} --- ${JSON.stringify(error)}`
-        );
-        throw new AphError(AphErrorMessages.PRISM_GET_USERS_ERROR);
-      });
-    dLogger(
-      reqStartTime,
-      'getPrismUsersList PRISM_GET_USERS_API_CALL___END',
-      `${url} --- ${JSON.stringify(usersResult)}`
-    );
-
-    return usersResult && usersResult.response ? usersResult.response.signUpUserData : [];
-  }
-
-  //getPrismAuthTokenByUHID
-  async getPrismAuthTokenByUHID(uhid: string) {
-    const prismHeaders = {
-      method: 'GET',
-      timeOut: ApiConstants.PRISM_TIMEOUT,
-    };
-
-    const url = `${process.env.PRISM_GET_UHID_AUTH_TOKEN_API}?uhid=${uhid}`;
-
-    const reqStartTime = new Date();
-    const authTokenResult = await fetch(url, prismHeaders)
-      .then((res) => res.json() as Promise<PrismGetAuthTokenResponse>)
-      .catch((error: PrismGetAuthTokenError) => {
-        dLogger(
-          reqStartTime,
-          'getPrismAuthTokenByUHID PRISM_GET_UHID_AUTH_TOKEN_API_CALL___ERROR',
-          `${url} --- ${JSON.stringify(error)}`
-        );
-        throw new AphError(AphErrorMessages.PRISM_AUTH_TOKEN_ERROR);
-      });
-    dLogger(
-      reqStartTime,
-      'getPrismAuthTokenByUHID PRISM_GET_UHID_AUTH_TOKEN_API_CALL___END',
-      `${url} --- ${JSON.stringify(authTokenResult)}`
-    );
-
-    return authTokenResult !== null ? authTokenResult.response : null;
-  }*/
-
   async validateAndGetUHID(id: string, prismUsersList: PrismSignUpUserData[]) {
     const reqStartTime = new Date();
     const patientData = await this.findOne({ where: { id } }).catch((error) => {
@@ -352,37 +265,6 @@ export class PatientRepository extends Repository<Patient> {
 
     return uhid;
   }
-
-  //utility method to get prism user details
-  /* async getPrismUsersDetails(uhid: string, authToken: string) {
-    const prismHeaders = {
-      method: 'GET',
-      timeOut: ApiConstants.PRISM_TIMEOUT,
-    };
-
-    const url = `${process.env.PRISM_GET_USER_DETAILS_API}?authToken=${authToken}&uhid=${uhid}`;
-
-    const reqStartTime = new Date();
-    const detailsResult = await fetch(url, prismHeaders)
-      .then((res) => {
-        return res.json();
-      })
-      .catch((error) => {
-        dLogger(
-          reqStartTime,
-          'getPrismUsersDetails PRISM_GET_USER_DETAILS_API_CALL___ERROR',
-          `${url} --- ${JSON.stringify(error)}`
-        );
-        throw new AphError(AphErrorMessages.PRISM_GET_USERS_ERROR);
-      });
-    dLogger(
-      reqStartTime,
-      'getPrismUsersDetails PRISM_GET_USER_DETAILS_API_CALL___END',
-      `${url} --- ${JSON.stringify(detailsResult)}`
-    );
-
-    return detailsResult;
-  }*/
 
   async uploadDocumentToPrism(uhid: string, prismAuthToken: string, docInput: UploadDocumentInput) {
     let category = docInput.category ? docInput.category : PRISM_DOCUMENT_CATEGORY.OpSummary;
@@ -482,9 +364,7 @@ export class PatientRepository extends Repository<Patient> {
   }
 
   updateProfiles(updateAttrs: Partial<Patient>[]) {
-    updateAttrs.forEach((pat) => {
-      this.dropPatientCache(`${REDIS_PATIENT_ID_KEY_PREFIX}${pat.id}`);
-    });
+    updateAttrs.forEach((pat) => {});
     return this.save(updateAttrs).catch((savePatientError) => {
       throw new AphError(AphErrorMessages.SAVE_NEW_PROFILE_ERROR, undefined, {
         savePatientError,
@@ -496,7 +376,6 @@ export class PatientRepository extends Repository<Patient> {
     const patient = await this.getByIdCache(id);
     if (patient) {
       Object.assign(patient, patientAttrs);
-      this.dropPatientCache(`${REDIS_PATIENT_ID_KEY_PREFIX}${id}`);
       return this.save(patient);
     } else return null;
   }
@@ -543,7 +422,6 @@ export class PatientRepository extends Repository<Patient> {
         });
       });
     } else {
-      this.dropPatientCache(`${REDIS_PATIENT_ID_KEY_PREFIX}${primaryPatientId}`);
       return this.createQueryBuilder('patient')
         .update()
         .set({
@@ -567,7 +445,6 @@ export class PatientRepository extends Repository<Patient> {
   }
 
   async createNewUhid(id: string) {
-    await this.dropPatientCache(`${REDIS_PATIENT_ID_KEY_PREFIX}${id}`);
     const patientDetails = await this.getPatientDetails(id);
     if (!patientDetails) {
       throw new AphError(AphErrorMessages.GET_PROFILE_ERROR, undefined, {
