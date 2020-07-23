@@ -688,10 +688,9 @@ export class AppointmentRepository extends Repository<Appointment> {
   async getPatinetUpcomingAppointments(ids: string[]) {
     const weekPastDate = format(addDays(new Date(), -7), 'yyyy-MM-dd');
     const weekPastDateUTC = new Date(weekPastDate + 'T18:30');
-
-    const upcomingAppts = await this.createQueryBuilder('appointment')
+    return this.createQueryBuilder('appointment')
       .leftJoinAndSelect('appointment.appointmentPayments', 'appointmentPayments')
-      .where('appointment.appointmentDateTime > :apptDate', { apptDate: new Date() })
+      .where('appointment.appointmentDateTime > :weekPastDate', { weekPastDateUTC })
       .andWhere('appointment.patientId IN (:...ids)', { ids })
       .andWhere(
         'appointment.status not in(:status1,:status2,:status3,:status4,:status5,:status6)',
@@ -706,29 +705,6 @@ export class AppointmentRepository extends Repository<Appointment> {
       )
       .orderBy('appointment.appointmentDateTime', 'ASC')
       .getMany();
-
-    const weekPastAppts = await this.createQueryBuilder('appointment')
-      .where('(appointment.appointmentDateTime Between :fromDate AND :toDate)', {
-        fromDate: weekPastDateUTC,
-        toDate: new Date(),
-      })
-      .andWhere('appointment.patientId IN (:...ids)', { ids })
-      .andWhere(
-        'appointment.status not in(:status1,:status2,:status3,:status4,:status5,:status6)',
-        {
-          status1: STATUS.CANCELLED,
-          status2: STATUS.PAYMENT_PENDING,
-          status3: STATUS.UNAVAILABLE_MEDMANTRA,
-          status4: STATUS.PAYMENT_FAILED,
-          status5: STATUS.PAYMENT_PENDING_PG,
-          status6: STATUS.PAYMENT_ABORTED,
-        }
-      )
-      .orderBy('appointment.appointmentDateTime', 'DESC')
-      .getMany();
-
-    const consultRoomAppts = upcomingAppts.concat(weekPastAppts);
-    return consultRoomAppts;
   }
 
   getPatientAndDoctorsAppointments(patientId: string, doctorIds: string[]) {
@@ -875,9 +851,9 @@ export class AppointmentRepository extends Repository<Appointment> {
         .getUTCHours()
         .toString()
         .padStart(2, '0')}:${appointmentDate
-        .getUTCMinutes()
-        .toString()
-        .padStart(2, '0')}:00.000Z`;
+          .getUTCMinutes()
+          .toString()
+          .padStart(2, '0')}:00.000Z`;
       console.log(availableSlots, 'availableSlots final list');
       console.log(availableSlots.indexOf(sl), 'indexof');
       console.log(checkStart, checkEnd, 'check start end');
@@ -1035,9 +1011,9 @@ export class AppointmentRepository extends Repository<Appointment> {
             .getUTCHours()
             .toString()
             .padStart(2, '0')}:${doctorAppointment.appointmentDateTime
-            .getUTCMinutes()
-            .toString()
-            .padStart(2, '0')}:00.000Z`;
+              .getUTCMinutes()
+              .toString()
+              .padStart(2, '0')}:00.000Z`;
           if (availableSlots.indexOf(aptSlot) >= 0) {
             availableSlots.splice(availableSlots.indexOf(aptSlot), 1);
           }
@@ -1355,9 +1331,9 @@ export class AppointmentRepository extends Repository<Appointment> {
             .getUTCHours()
             .toString()
             .padStart(2, '0')}:${blockedSlot.start
-            .getUTCMinutes()
-            .toString()
-            .padStart(2, '0')}:00.000Z`;
+              .getUTCMinutes()
+              .toString()
+              .padStart(2, '0')}:00.000Z`;
 
           let blockedSlotsCount =
             (Math.abs(differenceInMinutes(blockedSlot.end, blockedSlot.start)) / 60) * duration;
@@ -1415,9 +1391,9 @@ export class AppointmentRepository extends Repository<Appointment> {
               .getUTCHours()
               .toString()
               .padStart(2, '0')}:${slot
-              .getUTCMinutes()
-              .toString()
-              .padStart(2, '0')}:00.000Z`;
+                .getUTCMinutes()
+                .toString()
+                .padStart(2, '0')}:00.000Z`;
           }
           console.log('start slot', slot);
 
