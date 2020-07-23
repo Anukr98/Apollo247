@@ -645,7 +645,7 @@ export const MedicineLanding: React.FC = (props: any) => {
                               className={classes.serviceType}
                             >
                               <span className={classes.serviceIcon}>
-                                <img src={require('images/ic_tablets.svg')} alt="" />
+                                <img src={require('images/ic_basket.svg')} alt="" />
                               </span>
                               <span className={classes.linkText}>
                                 Huggies + 2 items
