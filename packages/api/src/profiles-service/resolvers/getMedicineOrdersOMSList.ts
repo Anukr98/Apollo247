@@ -813,7 +813,8 @@ const getMedicineOrderOMSDetailsWithAddress: Resolver<
     }
   }
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
-  const medicineOrderDetails = await medicineOrdersRepo.getMedicineOrderDetailsWithAddressByOrderId(
+  let medicineOrderDetails;
+  medicineOrderDetails = await medicineOrdersRepo.getMedicineOrderDetailsWithAddressByOrderId(
     args.orderAutoId
   );
 
