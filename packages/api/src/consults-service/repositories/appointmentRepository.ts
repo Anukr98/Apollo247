@@ -725,7 +725,6 @@ export class AppointmentRepository extends Repository<Appointment> {
           status6: STATUS.PAYMENT_ABORTED,
         }
       )
-      .orderBy('appointment.appointmentDateTime', 'ASC')
       .getCount();
   }
 
