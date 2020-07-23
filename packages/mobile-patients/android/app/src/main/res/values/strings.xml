@@ -5,16 +5,6 @@
     <string name="fb_login_protocol_scheme">fb215389816346094</string>
 
     <!--start-->
-    <string name="name">Name&#8230;</string>
-    <string name="number">Number&#8230;</string>
-    <string name="incoming">Incoming</string>
-    <string name="outgoing">Outgoing</string>
-    <string name="missed">Missed</string>
-    <string name="time">Time</string>
-    <string name="minutes">Minutes</string>
-    <string name="schedule">Schedule</string>
-    <string name="contact_icon">Contact Icon</string>
     <string name="incoming_call">Apollo 247 Incoming Call</string>
-    <string name="unknown">Unknown</string>
     <!--end-->
 </resources>

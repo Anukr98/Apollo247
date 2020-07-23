@@ -5,11 +5,6 @@
         <!-- Customize your theme here. -->
         <item name="android:windowBackground">@drawable/splash_background</item>
         @style/AppEditTextStyle
-        <!--start-->
-        <item name="colorPrimary">@color/colorPrimary</item>
-        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
-        <item name="colorAccent">@color/colorAccent</item>
-        <!--end-->
     </style>
 
     <style name="AppEditTextStyle" parent="@style/Widget.AppCompat.EditText"> @android:colors/transparent </style>
