@@ -119,8 +119,8 @@ const getPatientById: Resolver<
   PatientInfo
 > = async (parent, args, { profilesDb, mobileNumber }) => {
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
-  //const patientData = await patientRepo.checkMobileIdInfo(mobileNumber, '', args.patientId);
-  //if (!patientData) throw new AphError(AphErrorMessages.INVALID_PATIENT_DETAILS);
+  const patientData = await patientRepo.checkMobileIdInfo(mobileNumber, '', args.patientId);
+  if (!patientData) throw new AphError(AphErrorMessages.INVALID_PATIENT_DETAILS);
   const patient = await patientRepo.findById(args.patientId);
   if (!patient) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
