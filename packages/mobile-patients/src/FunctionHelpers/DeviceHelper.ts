@@ -33,6 +33,8 @@ export const DeviceHelper = () => {
   };
 };
 
+export const isIos = () => Platform.OS === 'ios';
+
 export const CommonLogEvent = async (stringName: string, parameterName: string) => {
   if (isReleaseOn) {
     try {

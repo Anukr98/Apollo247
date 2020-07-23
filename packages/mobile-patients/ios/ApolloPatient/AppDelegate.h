@@ -10,8 +10,9 @@
 #import <TwilioChatClient/TwilioChatClient.h>
 @import UserNotifications;
 @import ApolloVitalsFramework;
+#import <PushKit/PushKit.h>
 
-@interface AppDelegate : UIResponder <UIApplicationDelegate, RCTBridgeDelegate, UNUserNotificationCenterDelegate>
+@interface AppDelegate : UIResponder <UIApplicationDelegate, RCTBridgeDelegate, UNUserNotificationCenterDelegate, PKPushRegistryDelegate>
 
 @property (nonatomic, strong) UIWindow *window;
 @property (nonatomic) NSString *bridge;

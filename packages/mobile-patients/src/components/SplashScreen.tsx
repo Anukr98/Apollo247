@@ -25,6 +25,7 @@ import {
   CommonBugFender,
   setBugFenderLog,
   setBugfenderPhoneNumber,
+  isIos,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import {
@@ -39,6 +40,10 @@ import {
   getAppointmentDataVariables,
 } from '@aph/mobile-patients/src/graphql/types/getAppointmentData';
 import { GET_APPOINTMENT_DATA } from '@aph/mobile-patients/src/graphql/profiles';
+import RNCallKeep from 'react-native-callkeep';
+import VoipPushNotification from 'react-native-voip-push-notification';
+import { string } from '../strings/string';
+
 // The moment we import from sdk @praktice/navigator-react-native-sdk,
 // finally not working on all promises.
 
@@ -119,6 +124,42 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   useEffect(() => {
     handleDeepLink();
   }, []);
+  
+  useEffect(() => {
+    if (isIos()) {
+      initializeVoip();
+    }
+  }, [])
+
+  const initializeVoip = () => {
+    const callkeepOptions = {
+      ios: {
+        appName: string.LocalStrings.appName,
+        imageName: 'splashLogo.png'
+      }
+    };
+
+    VoipPushNotification.requestPermissions();
+    VoipPushNotification.registerVoipToken();
+
+    VoipPushNotification.addEventListener('register', (token: String) => {
+      // --- send token to your apn provider server
+      console.log("voip token", token)
+    });
+
+    try {
+      RNCallKeep.setup(callkeepOptions);
+    } catch (err) {
+      CommonBugFender('InitializeCallKeep_Error', err.message);
+    }
+
+    // Add RNCallKeep Events
+    RNCallKeep.addEventListener('answerCall', onAnswerCallAction);
+  }
+
+  const onAnswerCallAction = () => {
+    props.navigation.navigate(AppRoutes.Medicine);
+  }
 
   const handleDeepLink = () => {
     try {

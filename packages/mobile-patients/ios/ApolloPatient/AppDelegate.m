@@ -26,6 +26,9 @@
 #else
 #import "AppsFlyerTracker.h"
 #endif
+#import <PushKit/PushKit.h>
+#import "RNCallKeep.h"
+#import "RNVoipPushNotificationManager.h"
 
 @implementation AppDelegate
 
@@ -73,6 +76,35 @@
                            didFinishLaunchingWithOptions:launchOptions];
   
   return YES;
+}
+
+/* Add PushKit delegate method */
+
+// --- Handle updated push credentials
+- (void)pushRegistry:(PKPushRegistry *)registry didUpdatePushCredentials:(PKPushCredentials *)credentials forType:(PKPushType)type {
+  // Register VoIP push token (a property of PKPushCredentials) with server
+  [RNVoipPushNotificationManager didUpdatePushCredentials:credentials forType:(NSString *)type];
+}
+
+// --- Handle incoming pushes (for ios <= 10)
+- (void)pushRegistry:(PKPushRegistry *)registry didReceiveIncomingPushWithPayload:(PKPushPayload *)payload forType:(PKPushType)type {
+  [RNVoipPushNotificationManager didReceiveIncomingPushWithPayload:payload forType:(NSString *)type];
+}
+
+// --- Handle incoming pushes (for ios >= 11)
+- (void)pushRegistry:(PKPushRegistry *)registry didReceiveIncomingPushWithPayload:(PKPushPayload *)payload forType:(PKPushType)type withCompletionHandler:(void (^)(void))completion {
+    
+  if(payload && payload.dictionaryPayload && payload.dictionaryPayload[@"name"] != nil && payload.dictionaryPayload[@"isVideo"] != nil){
+  
+    NSString *uuid = [[NSUUID UUID] UUIDString];
+    NSString *name = payload.dictionaryPayload[@"name"];
+    BOOL isVideo = [payload.dictionaryPayload[@"isVideo"] boolValue];
+
+    [RNVoipPushNotificationManager didReceiveIncomingPushWithPayload:payload forType:(NSString *)type];
+    [RNCallKeep reportNewIncomingCall:uuid handle:name handleType:@"generic" hasVideo:isVideo localizedCallerName:name fromPushKit: YES payload:nil];
+           
+    completion();
+  }
 }
 
 - (void)application:(UIApplication *)application didReceiveLocalNotification:(UILocalNotification *)notification {
@@ -205,7 +237,7 @@ API_AVAILABLE(ios(10.0)){
             continueUserActivity:userActivity
               restorationHandler:restorationHandler];
   [[AppsFlyerTracker sharedTracker] continueUserActivity:userActivity restorationHandler:restorationHandler];
-  
+  [RNCallKeep application:application continueUserActivity:userActivity restorationHandler:restorationHandler];
   return true;
 }
 

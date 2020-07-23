@@ -93,6 +93,7 @@ import {
   View,
   ViewStyle,
   Platform,
+  Alert,
 } from 'react-native';
 import { Image, Input, ListItem } from 'react-native-elements';
 import { FlatList, NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
@@ -111,6 +112,7 @@ import {
   MedicineReOrderOverlayProps,
   MedicineReOrderOverlay,
 } from '@aph/mobile-patients/src/components/Medicines/MedicineReOrderOverlay';
+import RNCallKeep from 'react-native-callkeep';
 
 const styles = StyleSheet.create({
   hiTextStyle: {
@@ -392,7 +394,12 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   useEffect(() => {
     fetchMedicinePageProducts();
     fetchRecommendedProducts();
+    RNCallKeep.addEventListener('endCall', onDisconnetCallAction);
   }, []);
+
+  const onDisconnetCallAction = () => {
+    Alert.alert('call disconnect')
+  }
 
   useEffect(() => {
     checkLocation();
