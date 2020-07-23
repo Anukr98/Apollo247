@@ -4653,29 +4653,40 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       <View
         style={{
           marginVertical: 20,
-          marginHorizontal: 30,
+          marginHorizontal: 20,
+          paddingHorizontal: 20,
+          paddingBottom: 20,
+          paddingTop: 16,
+          borderRadius: 15,
           justifyContent: 'center',
           alignItems: 'center',
+          backgroundColor: '#f6f6f6',
         }}
       >
         <Text
           style={{
             ...theme.viewStyles.text('M', 13, theme.colors.SHERPA_BLUE),
             textAlign: 'center',
-            marginBottom: 20,
+            marginBottom: 10,
           }}
         >
           {`You can't send message to the doctor. Book appointment for consulting with ${appointmentData.doctorInfo.displayName} again.`}
         </Text>
-        <Button
-          title={'BOOK APPOINTMENT'}
-          style={{ width: '50%' }}
+        <TouchableOpacity
           onPress={() => {
             props.navigation.navigate(AppRoutes.DoctorDetails, {
               doctorId: doctorId,
             });
           }}
-        />
+        >
+          <Text
+            style={{
+              ...theme.viewStyles.text('B', 13, theme.colors.APP_YELLOW),
+            }}
+          >
+            BOOK APPOINTMENT
+          </Text>
+        </TouchableOpacity>
       </View>
     );
   };
