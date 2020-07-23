@@ -4,9 +4,8 @@ import { ApiConstants } from 'ApiConstants';
 import { UhidCreateResult } from 'types/uhidCreateTypes';
 import { getCache, setCache, delCache } from 'profiles-service/database/connectRedis';
 import { PrismSignUpUserData } from 'types/prism';
-import { BaseEntity } from 'typeorm';
 import { UploadDocumentInput } from 'profiles-service/resolvers/uploadDocumentToPrism';
-import { AphError, AphUserInputError } from 'AphError';
+import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { format, getUnixTime } from 'date-fns';
 import { AthsTokenResponse } from 'types/uhidCreateTypes';
@@ -17,7 +16,6 @@ import {
   prescriptionSource,
   uploadPrescriptions,
 } from 'profiles-service/resolvers/prescriptionUpload';
-import { validate } from 'class-validator';
 import { LabResultsInputArgs, uploadLabResults } from 'profiles-service/resolvers/labResultsUpload';
 
 type DeviceCount = {
@@ -678,35 +676,21 @@ export class PatientRepository extends Repository<Patient> {
     let newUhid = '';
     if (uhidResp.retcode == '0') {
       newUhid = uhidResp.result;
-      const { id, ...updateAttrs } = patientDetails;
-      updateAttrs.uhid = newUhid;
-      updateAttrs.primaryUhid = newUhid;
-      updateAttrs.uhidCreatedDate = new Date();
-      await this.updateEntity<Patient>(Patient, id, updateAttrs);
+      //const { id, ...updateAttrs } = patientDetails;
+      patientDetails.uhid = newUhid;
+      patientDetails.primaryUhid = newUhid;
+      patientDetails.uhidCreatedDate = new Date();
+      await this.save(patientDetails);
+      //await this.updateEntity<Patient>(Patient, id, updateAttrs);
       //await this.updateUhid(patientDetails.id, uhidResp.result.toString());
       createPrismUser(patientDetails, uhidResp.result.toString());
     }
     return newUhid;
   }
 
-  async updateEntity<E extends BaseEntity>(
-    Entity: typeof BaseEntity,
-    id: string,
-    attrs: Partial<Omit<E, keyof BaseEntity>>
-  ): Promise<E> {
-    let entity: E;
-    try {
-      entity = await Entity.findOneOrFail<E>(id);
-      Object.assign(entity, attrs);
-      await Entity.save(entity);
-    } catch (updateProfileError) {
-      throw new AphError(AphErrorMessages.UPDATE_PROFILE_ERROR, undefined, { updateProfileError });
-    }
-    const errors = await validate(entity);
-    if (errors.length > 0) {
-      throw new AphUserInputError(AphErrorMessages.INVALID_ENTITY, { errors });
-    }
-    return entity;
+  async updatePatientDetails(patientDetails: Patient) {
+    const resp = await this.save(patientDetails);
+    console.log(resp, 'update response');
   }
 
   async createAthsToken(id: string) {

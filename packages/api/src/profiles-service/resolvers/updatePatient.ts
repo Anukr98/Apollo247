@@ -62,7 +62,7 @@ const updatePatient: Resolver<
   ProfilesServiceContext,
   UpdatePatientResult
 > = async (parent, { patientInput }, { profilesDb }) => {
-  const { id, ...updateAttrs } = patientInput;
+  const { ...updateAttrs } = patientInput;
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
   if (patientInput.employeeId && patientInput.partnerId) {
     const checkEmployeeId = await patientRepo.findEmpId(
@@ -82,30 +82,18 @@ const updatePatient: Resolver<
     updateAttrs.referralCode = referralCode;
   }
 
-  const patient = await patientRepo.getPatientDetails(patientInput.id);
+  const patient = await patientRepo.findByIdWithoutRelations(patientInput.id);
   if (!patient || patient == null) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
 
-  //const newPatientAttrs: Partial<Patient> = updateAttrs;
-  patient.firstName = updateAttrs.firstName ? updateAttrs.firstName : '';
-  patient.lastName = updateAttrs.lastName ? updateAttrs.lastName : '';
-  patient.gender = updateAttrs.gender ? updateAttrs.gender : Gender.MALE;
-  patient.emailAddress = updateAttrs.emailAddress ? updateAttrs.emailAddress : '';
-  patient.dateOfBirth = updateAttrs.dateOfBirth ? updateAttrs.dateOfBirth : new Date();
-  patient.referralCode = updateAttrs.emailAddress ? updateAttrs.emailAddress : '';
-  patient.relation = updateAttrs.relation ? updateAttrs.relation : Relation.ME;
-  patient.photoUrl = updateAttrs.photoUrl ? updateAttrs.photoUrl : '';
-  patient.deviceCode = updateAttrs.deviceCode ? updateAttrs.deviceCode : '';
-  patient.employeeId = updateAttrs.employeeId ? updateAttrs.employeeId : '';
-  patient.partnerId = updateAttrs.partnerId ? updateAttrs.partnerId : '';
-
+  Object.assign(patient, updateAttrs);
   if (patient.uhid == '' || patient.uhid == null) {
     console.log('calling createNewUhid');
     await patientRepo.createNewUhid(patient);
     await delCache(`${REDIS_PATIENT_ID_KEY_PREFIX}${patient.id}`);
   } else {
-    await patientRepo.updateEntity<Patient>(Patient, id, updateAttrs);
+    await patientRepo.updatePatientDetails(patient);
   }
 
   const getPatientList = await patientRepo.findByMobileNumber(patient.mobileNumber);
