@@ -1,5 +1,5 @@
 import gql from 'graphql-tag';
-import { Patient, Relation, Gender } from 'profiles-service/entities';
+import { Patient, Relation } from 'profiles-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { Resolver } from 'api-gateway';
