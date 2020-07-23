@@ -11,8 +11,7 @@ import { ApolloProvider } from 'react-apollo';
 import { ApolloProvider as ApolloHooksProvider } from 'react-apollo-hooks';
 import _isEmpty from 'lodash/isEmpty';
 import _uniqueId from 'lodash/uniqueId';
-import { GetCurrentPatients } from 'graphql/types/GetCurrentPatients';
-import { GET_CURRENT_PATIENTS } from 'graphql/profiles';
+import { GET_PATIENT_BY_MOBILE_NUMBER } from 'graphql/profiles';
 import { Login, LoginVariables } from 'graphql/types/Login';
 import { verifyLoginOtp, verifyLoginOtpVariables } from 'graphql/types/verifyLoginOtp';
 import { LOGIN_TYPE } from 'graphql/types/globalTypes';
@@ -25,6 +24,7 @@ import {
 import { ResendOtp, ResendOtpVariables } from 'graphql/types/ResendOtp';
 import { gtmTracking, _urTracking } from '../gtmTracking';
 import { webengageUserLoginTracking, webengageUserLogoutTracking } from '../webEngageTracking';
+import { GetPatientByMobileNumber } from 'graphql/types/GetPatientByMobileNumber';
 // import { isTest, isFirebaseLoginTest } from 'helpers/testHelpers';
 // import { ResendOtp, ResendOtpVariables } from 'graphql/types/ResendOtp';
 
@@ -365,17 +365,23 @@ export const AuthProvider: React.FC = (props) => {
         apolloClient = buildApolloClient(jwt, () => signOut());
 
         await apolloClient
-          .query<GetCurrentPatients>({ query: GET_CURRENT_PATIENTS })
+          .query<GetPatientByMobileNumber>({
+            query: GET_PATIENT_BY_MOBILE_NUMBER,
+            variables: {
+              mobileNumber: `+918588867644`,
+            },
+          })
           .then((res) => {
             const currentPath = window.location.pathname;
             const userId =
               res.data &&
-              res.data.getCurrentPatients &&
-              res.data.getCurrentPatients.patients &&
-              res.data.getCurrentPatients.patients[0].id;
+              res.data.getPatientByMobileNumber &&
+              res.data.getPatientByMobileNumber.patients &&
+              res.data.getPatientByMobileNumber.patients[0].id;
 
             if (localStorage.getItem('currentUser') && localStorage.getItem('currentUser').length) {
-              const patientIds = res.data.getCurrentPatients.patients.map(patient => patient.id) || [];
+              const patientIds =
+                res.data.getPatientByMobileNumber.patients.map((patient) => patient.id) || [];
               if (!patientIds.includes(localStorage.getItem('currentUser'))) {
                 localStorage.setItem('currentUser', userId);
                 setCurrentPatientId(userId);
