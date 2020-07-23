@@ -71,9 +71,10 @@ const pharmacyOrders: Resolver<
   ProfilesServiceContext,
   PharmacyOrderResult
 > = async (parent, args, { profilesDb }) => {
+  const { patientId } = args;
   const medicineOrderRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
-  const primaryPatientIds = await patientRepo.getLinkedPatientIds(args.patientId);
+  const primaryPatientIds = await patientRepo.getLinkedPatientIds({ patientId });
 
   const medicineOrders = await medicineOrderRepo.getMedicineOrdersListWithPayments(
     primaryPatientIds

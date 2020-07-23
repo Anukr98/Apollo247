@@ -135,7 +135,7 @@ export class DiagnosticOrdersRepository extends Repository<DiagnosticOrders> {
     if (patientDetails.uhid != '' && patientDetails.uhid != null) {
       patientId = patientDetails.uhid;
     } else {
-      patientId = await patientRepo.createNewUhid(patientDetails.id);
+      patientId = await patientRepo.createNewUhid(patientDetails);
       if (patientId == '') {
         patientId = '0';
       }
