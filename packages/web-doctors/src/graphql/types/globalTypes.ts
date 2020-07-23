@@ -501,7 +501,8 @@ export interface Vitals {
 export interface exotelInput {
   from?: string | null;
   to?: string | null;
-  appointmentId?: string | null;
+  appointmentId: string;
+  deviceType?: DEVICETYPE | null;
 }
 
 //==============================================================

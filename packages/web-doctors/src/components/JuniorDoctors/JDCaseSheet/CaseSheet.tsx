@@ -21,6 +21,11 @@ import { Vitals } from 'components/JuniorDoctors/JDCaseSheet/panels/Vitals';
 import { HistoryAndLifeStyle } from 'components/JuniorDoctors/JDCaseSheet/panels/HistoryAndLifeStyle';
 import { CaseSheetContextJrd } from 'context/CaseSheetContextJrd';
 import { AphTextField } from '@aph/web-ui-components';
+import {
+  getLocalStorageItem,
+  updateLocalStorageItem,
+} from 'components/case-sheet/panels/LocalStorageUtils';
+import { useParams } from 'hooks/routerHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -151,76 +156,198 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
+export type Params = {
+  appointmentId: string;
+  patientId: string;
+  isActive: string;
+  queueId: string;
+};
+
 export const CaseSheet: React.FC = () => {
   const classes = useStyles({});
-  const { setCasesheetNotes, notes, caseSheetEdit } = useContext(CaseSheetContextJrd);
+  const params = useParams<Params>();
 
-  const [symptoms, setSymptoms] = useState<boolean>(true);
-  const [healthVault, setHealthVault] = useState<boolean>(true);
-  const [diagnosis, setDiagnosis] = useState<boolean>(true);
-  const [medicinePrescription, setMedicinePrescription] = useState<boolean>(true);
-  const [diagnosticPrescription, setDiagnosticPrescription] = useState<boolean>(true);
-  const [otherInstructions, setOtherInstructions] = useState<boolean>(true);
-  const [patientHistory, setPatientHistory] = useState<boolean>(true);
-  const [vitals, setVitals] = useState<boolean>(true);
+  const {
+    symptoms,
+    setSymptoms,
+    weight,
+    setWeight,
+    height,
+    setHeight,
+    temperature,
+    setTemperature,
+    bp,
+    setBp,
+    notes,
+    setCasesheetNotes,
+    pastMedicalHistory,
+    setPastMedicalHistory,
+    pastSurgicalHistory,
+    setPastSurgicalHistory,
+    drugAllergies,
+    setDrugAllergies,
+    dietAllergies,
+    setDietAllergies,
+    lifeStyle,
+    setLifeStyle,
+    menstrualHistory,
+    setMenstrualHistory,
+    familyHistory,
+    setFamilyHistory,
+    diagnosis,
+    setDiagnosis,
+    medicinePrescription,
+    setMedicinePrescription,
+    followUp,
+    setFollowUp,
+    followUpAfterInDays,
+    setFollowUpAfterInDays,
+    followUpDate,
+    setFollowUpDate,
+    diagnosticPrescription,
+    setDiagnosticPrescription,
+    otherInstructions,
+    setOtherInstructions,
+    caseSheetEdit,
+    referralDescription,
+    referralSpecialtyName,
+    setReferralSpecialtyName,
+    setReferralDescription,
+    medicationHistory,
+    setMedicationHistory,
+    occupationHistory,
+    setOccupationHistory,
+  } = useContext(CaseSheetContextJrd);
+
+  const [symptomsState, setSymptomsState] = useState<boolean>(true);
+  const [healthVaultState, setHealthVaultState] = useState<boolean>(true);
+  const [diagnosisState, setDiagnosisState] = useState<boolean>(true);
+  const [medicinePrescriptionState, setMedicinePrescriptionState] = useState<boolean>(true);
+  const [diagnosticPrescriptionState, setDiagnosticPrescriptionState] = useState<boolean>(true);
+  const [otherInstructionsState, setOtherInstructionsState] = useState<boolean>(true);
+  const [patientHistoryState, setPatientHistoryState] = useState<boolean>(true);
+  const [vitalsState, setVitalsState] = useState<boolean>(true);
   const [refferalState, setRefferalState] = useState<boolean>(true);
+  const [firstTimeLanding, setFirstTimeLanding] = useState<boolean>(true);
 
   useEffect(() => {
     if (caseSheetEdit) {
-      setSymptoms(true);
-      setHealthVault(true);
-      setDiagnosis(true);
-      setMedicinePrescription(true);
-      setDiagnosticPrescription(true);
-      setOtherInstructions(true);
-      setPatientHistory(true);
-      setVitals(true);
+      setSymptomsState(true);
+      setHealthVaultState(true);
+      setDiagnosisState(true);
+      setMedicinePrescriptionState(true);
+      setDiagnosticPrescriptionState(true);
+      setOtherInstructionsState(true);
+      setPatientHistoryState(true);
+      setVitalsState(true);
       setRefferalState(true);
     }
   }, [caseSheetEdit]);
 
+  useEffect(() => {
+    if (firstTimeLanding) {
+      const storageItem = getLocalStorageItem(params.appointmentId);
+      if (!storageItem && caseSheetEdit) {
+        const caseSheetObject = {
+          symptoms: symptoms,
+          weight: weight,
+          height: height,
+          temperature: temperature,
+          bp: bp,
+          pastMedicalHistory: pastMedicalHistory,
+          pastSurgicalHistory: pastSurgicalHistory,
+          drugAllergies: drugAllergies,
+          dietAllergies: dietAllergies,
+          lifeStyle: lifeStyle,
+          menstrualHistory: menstrualHistory,
+          familyHistory: familyHistory,
+          diagnosis: diagnosis,
+          medicinePrescription: medicinePrescription,
+          otherInstructions: otherInstructions,
+          followUp: followUp,
+          followUpAfterInDays: followUpAfterInDays,
+          followUpDate: followUpDate,
+          notes: notes,
+          diagnosticPrescription: diagnosticPrescription,
+          referralSpecialtyName: referralSpecialtyName,
+          referralDescription: referralDescription,
+          medicationHistory: medicationHistory,
+          occupationHistory: occupationHistory,
+        };
+        updateLocalStorageItem(params.appointmentId, caseSheetObject);
+        setFirstTimeLanding(false);
+      } else if (storageItem) {
+        setSymptoms(storageItem.symptoms);
+        setWeight(storageItem.weight);
+        setHeight(storageItem.height);
+        setTemperature(storageItem.temperature);
+        setBp(storageItem.bp);
+        setPastMedicalHistory(storageItem.pastMedicalHistory);
+        setPastSurgicalHistory(storageItem.pastSurgicalHistory);
+        setDrugAllergies(storageItem.drugAllergies);
+        setDietAllergies(storageItem.dietAllergies);
+        setLifeStyle(storageItem.lifeStyle);
+        setMenstrualHistory(storageItem.menstrualHistory);
+        setFamilyHistory(storageItem.familyHistory);
+        setDiagnosis(storageItem.diagnosis);
+        setMedicinePrescription(storageItem.medicinePrescription);
+        setFollowUp(storageItem.followUp);
+        setFollowUpAfterInDays(storageItem.followUpAfterInDays);
+        setFollowUpDate(storageItem.followUpDate);
+        setDiagnosticPrescription(storageItem.diagnosticPrescription);
+        setOtherInstructions(storageItem.otherInstructions);
+        setFirstTimeLanding(false);
+        setCasesheetNotes(storageItem.notes || '');
+        setReferralSpecialtyName(storageItem.referralSpecialtyName || '');
+        setReferralDescription(storageItem.referralDescription || '');
+        setMedicationHistory(storageItem.medicationHistory || '');
+        setOccupationHistory(storageItem.occupationHistory || '');
+      }
+    }
+  }, [firstTimeLanding, caseSheetEdit]);
+
   const items = [
-    { key: 'symptoms', value: 'Chief Complaints', state: symptoms, component: <Symptoms /> },
+    { key: 'symptoms', value: 'Chief Complaints', state: symptomsState, component: <Symptoms /> },
     {
       key: 'patientHistory&Lifestyle',
       value: "Patient's Medical and Family History",
-      state: patientHistory,
+      state: patientHistoryState,
       component: <HistoryAndLifeStyle />,
     },
     {
       key: 'vitals',
       value: 'Vitals',
-      state: vitals,
+      state: vitalsState,
       component: <Vitals />,
     },
     {
       key: 'healthVault',
       value: 'Patient Health Vault',
-      state: healthVault,
+      state: healthVaultState,
       component: <HealthVault />,
     },
     {
       key: 'diagnosis',
       value: 'Diagnosis',
-      state: diagnosis,
+      state: diagnosisState,
       component: <Diagnosis />,
     },
     {
       key: 'medicinePrescription',
       value: 'Medication Prescribed',
-      state: medicinePrescription,
+      state: medicinePrescriptionState,
       component: <MedicinePrescription />,
     },
     {
       key: 'diagnosticPrescription',
       value: 'Tests',
-      state: diagnosticPrescription,
+      state: diagnosticPrescriptionState,
       component: <DiagnosticPrescription />,
     },
     {
       key: 'otherInstructions',
       value: 'Advice/Instructions',
-      state: otherInstructions,
+      state: otherInstructionsState,
       component: <OtherInstructions />,
     },
     {
@@ -237,33 +364,38 @@ export const CaseSheet: React.FC = () => {
   ) => {
     switch (panelName) {
       case 'symptoms':
-        setSymptoms(isExpanded);
+        setSymptomsState(isExpanded);
         break;
       case 'healthVault':
-        setHealthVault(isExpanded);
+        setHealthVaultState(isExpanded);
         break;
       case 'diagnosis':
-        setDiagnosis(isExpanded);
+        setDiagnosisState(isExpanded);
         break;
       case 'medicinePrescription':
-        setMedicinePrescription(isExpanded);
+        setMedicinePrescriptionState(isExpanded);
         break;
       case 'diagnosticPrescription':
-        setDiagnosticPrescription(isExpanded);
+        setDiagnosticPrescriptionState(isExpanded);
         break;
       case 'otherInstructions':
-        setOtherInstructions(isExpanded);
+        setOtherInstructionsState(isExpanded);
         break;
       case 'patientHistory&Lifestyle':
-        setPatientHistory(isExpanded);
+        setPatientHistoryState(isExpanded);
         break;
       case 'vitals':
-        setVitals(isExpanded);
+        setVitalsState(isExpanded);
         break;
       case 'refferal':
         setRefferalState(isExpanded);
         break;
     }
+  };
+
+  const getNotesDefaultValue = () => {
+    const storageItem = getLocalStorageItem(params.appointmentId);
+    return storageItem ? storageItem.notes : notes;
   };
 
   return (
@@ -295,8 +427,14 @@ export const CaseSheet: React.FC = () => {
         <AphTextField
           fullWidth
           placeholder="What you enter here won't be shown to the patient.."
-          defaultValue={notes}
-          onChange={(e) => {
+          defaultValue={getNotesDefaultValue()}
+          disabled={!caseSheetEdit}
+          onBlur={(e) => {
+            const storageItem = getLocalStorageItem(params.appointmentId);
+            if (storageItem) {
+              storageItem.notes = e.target.value;
+              updateLocalStorageItem(params.appointmentId, storageItem);
+            }
             setCasesheetNotes(e.target.value);
           }}
           multiline
