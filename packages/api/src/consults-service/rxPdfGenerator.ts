@@ -27,7 +27,7 @@ import { Patient } from 'profiles-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { UploadDocumentInput } from 'profiles-service/resolvers/uploadDocumentToPrism';
-import { ApiConstants, RELATIONS } from 'ApiConstants';
+import { ApiConstants } from 'ApiConstants';
 import {
   uploadPrescriptions,
   prescriptionSource,
@@ -301,8 +301,7 @@ export const convertCaseSheetToRxPdfData = async (
 
   if (caseSheet.doctorId) {
     const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
-    const relation = RELATIONS.GET_PROFILE_DATA.RX_PDF_GENERATOR;
-    const doctordata = await doctorRepository.getDoctorProfileData(caseSheet.doctorId, relation);
+    const doctordata = await doctorRepository.getDoctorProfileData(caseSheet.doctorId);
 
     const facilityRepo = doctorsDb.getCustomRepository(FacilityRepository);
     let hospitalDetails;
@@ -531,7 +530,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
     //Doctor Details
     const nameLine = `${doctorInfo.salutation.replace('.', '')}. ${doctorInfo.firstName} ${
       doctorInfo.lastName
-    }`;
+      }`;
     const specialty = doctorInfo.specialty;
     const registrationLine = `Reg.No. ${doctorInfo.registrationNumber}`;
 
@@ -983,7 +982,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
       //Doctor Details
       const nameLine = `${doctorInfo.salutation.replace('.', '')}. ${doctorInfo.firstName} ${
         doctorInfo.lastName
-      }`;
+        }`;
       const specialty = doctorInfo.specialty;
       const registrationLine = `Reg.No. ${doctorInfo.registrationNumber}`;
 
