@@ -182,22 +182,20 @@ const getPatinetAppointments: Resolver<
   { patientAppointmentsInput },
   { consultsDb, doctorsDb, patientsDb, mobileNumber }
 ) => {
-  const patientRepo = patientsDb.getCustomRepository(PatientRepository);
-  const patientData = await patientRepo.checkMobileIdInfo(
-    mobileNumber,
-    '',
-    patientAppointmentsInput.patientId
-  );
-  if (!patientData) throw new AphError(AphErrorMessages.INVALID_PATIENT_DETAILS);
-  const appts = consultsDb.getCustomRepository(AppointmentRepository);
-  const primaryPatientIds = await patientRepo.getLinkedPatientIds(
-    patientAppointmentsInput.patientId
-  );
+    const { patientId } = patientAppointmentsInput;
+    const patientRepo = patientsDb.getCustomRepository(PatientRepository);
+    const patientData = await patientRepo.checkMobileIdInfo(
+      mobileNumber,
+      '',
+      patientAppointmentsInput.patientId
+    );
+    if (!patientData) throw new AphError(AphErrorMessages.INVALID_PATIENT_DETAILS);
+    const appts = consultsDb.getCustomRepository(AppointmentRepository);
+    const primaryPatientIds = await patientRepo.getLinkedPatientIds({ patientId });
+    const patinetAppointments = await appts.getPatinetUpcomingAppointments(primaryPatientIds);
 
-  const patinetAppointments = await appts.getPatinetUpcomingAppointments(primaryPatientIds);
-
-  return { patinetAppointments };
-};
+    return { patinetAppointments };
+  };
 
 const getPatientFutureAppointmentCount: Resolver<
   null,
@@ -207,13 +205,13 @@ const getPatientFutureAppointmentCount: Resolver<
 > = async (parent, args, { consultsDb, patientsDb, mobileNumber, doctorsDb }) => {
   //check whether the access is by patient
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
-  const patientData = await patientRepo.getPatientDetails(args.patientId);
-  if (patientData == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
+  const patientDetails = await patientRepo.getPatientDetails(args.patientId);
+  if (patientDetails == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
 
-  if (patientData.mobileNumber !== mobileNumber) throw new AphError(AphErrorMessages.UNAUTHORIZED);
+  if (patientDetails.mobileNumber !== mobileNumber) throw new AphError(AphErrorMessages.UNAUTHORIZED);
 
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
-  const primaryPatientIds = await patientRepo.getLinkedPatientIds(args.patientId);
+  const primaryPatientIds = await patientRepo.getLinkedPatientIds({ patientDetails });
 
   const conultsList = await appointmentRepo.getPatinetUpcomingAppointments(primaryPatientIds);
 
@@ -226,11 +224,12 @@ const getPatientAllAppointments: Resolver<
   ConsultServiceContext,
   PatientAllAppointmentsResult
 > = async (parent, args, { consultsDb, patientsDb, mobileNumber }) => {
+  const { patientId } = args;
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
-  const patientData = await patientRepo.checkMobileIdInfo(mobileNumber, '', args.patientId);
+  const patientData = await patientRepo.checkMobileIdInfo(mobileNumber, '', patientId);
   if (!patientData) throw new AphError(AphErrorMessages.INVALID_PATIENT_DETAILS);
   const appts = consultsDb.getCustomRepository(AppointmentRepository);
-  const primaryPatientIds = await patientRepo.getLinkedPatientIds(args.patientId);
+  const primaryPatientIds = await patientRepo.getLinkedPatientIds({ patientId });
 
   const appointments = await appts.getPatientAllAppointments(
     primaryPatientIds,

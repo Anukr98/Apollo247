@@ -97,11 +97,11 @@ const consultOrders: Resolver<
   ConsultServiceContext,
   AppointmentsResult
 > = async (parent, args, { consultsDb, doctorsDb, patientsDb }) => {
+  const { patientId } = args;
   const apptsRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const docConsultRep = doctorsDb.getCustomRepository(DoctorRepository);
-
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
-  const primaryPatientIds = await patientRepo.getLinkedPatientIds(args.patientId);
+  const primaryPatientIds = await patientRepo.getLinkedPatientIds({ patientId }); // 
 
   const response = await apptsRepo.getAllAppointmentsByPatientId(primaryPatientIds);
   // console.log('appointments Response', JSON.stringify(response, null, 2))

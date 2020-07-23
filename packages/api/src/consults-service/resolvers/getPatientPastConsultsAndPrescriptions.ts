@@ -170,7 +170,7 @@ const getPatientPastConsultsAndPrescriptions: Resolver<
   const apptsRepo = consultsDb.getCustomRepository(AppointmentRepository);
   let patientAppointments: ConsultRecord[] = [];
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
-  const primaryPatientIds = await patientRepo.getLinkedPatientIds(patient);
+  const primaryPatientIds = await patientRepo.getLinkedPatientIds({ patientId: patient });
   if (
     hasFilter(CONSULTS_RX_SEARCH_FILTER.ONLINE, filter) ||
     hasFilter(CONSULTS_RX_SEARCH_FILTER.PHYSICAL, filter)

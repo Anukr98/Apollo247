@@ -582,7 +582,7 @@ const getJuniorDoctorCaseSheet: Resolver<
   const patientDetails = await patientRepo.getPatientDetails(appointmentData.patientId);
   if (patientDetails == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
 
-  const primaryPatientIds = await patientRepo.getLinkedPatientIds(appointmentData.patientId);
+  const primaryPatientIds = await patientRepo.getLinkedPatientIds({ patientDetails });
 
   //get past appointment details
   const pastAppointments = await appointmentRepo.getPastAppointments(
@@ -675,7 +675,7 @@ const getCaseSheet: Resolver<
     throw new AphError(AphErrorMessages.JUNIOR_DOCTOR_CASESHEET_NOT_CREATED);
   juniorDoctorNotes = juniorDoctorCaseSheet.notes;
 
-  const primaryPatientIds = await patientRepo.getLinkedPatientIds(appointmentData.patientId);
+  const primaryPatientIds = await patientRepo.getLinkedPatientIds({ patientDetails });
 
   //get past appointment details
   const pastAppointments = await appointmentRepo.getPastAppointments(
