@@ -174,6 +174,8 @@ const useStyles = makeStyles((theme: Theme) => {
 interface BannerProps {
   isWebView: boolean;
   backLocation?: string;
+  title: string;
+  subtitle: string;
 }
 
 export const Banner: React.FC<BannerProps> = (props) => {
@@ -199,10 +201,8 @@ export const Banner: React.FC<BannerProps> = (props) => {
         </AphButton>
       </div>
       <div className={classes.content}>
-        <h2>
-          Coronavirus <span>(Covid-19)</span>
-        </h2>
-        <p>Learn more about Coronavirus, how to stay safe, and what to do if you have symptoms.</p>
+        <h2>{props.title}</h2>
+        <p>{props.subtitle}</p>
       </div>
       <Popover
         open={openSubscriptionForm}
