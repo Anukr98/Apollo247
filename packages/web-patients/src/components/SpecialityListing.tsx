@@ -210,15 +210,15 @@ const useStyles = makeStyles((theme: Theme) => {
       background: '#ffffff',
       borderRadius: 5,
       width: '66%',
-      '& h2': {
-        fontSize: 16,
-        fontWeight: 'bold',
-        margin: '0 0 20px',
-        color: '#01667c',
-      },
       [theme.breakpoints.down('sm')]: {
         width: '100%',
       },
+    },
+    faqTitle: {
+      fontSize: 16,
+      fontWeight: 'bold',
+      margin: '0 0 20px',
+      color: '#01667c',
     },
     heading: {},
     panelRoot: {
@@ -837,9 +837,7 @@ export const SpecialityListing: React.FC = (props) => {
           </div>
           {faqs && faqs.onlineConsultation && faqs.onlineConsultation.length > 0 && (
             <div className={classes.faq}>
-              <Typography component="h2">
-                Frequently asked questions about online doctor consultation
-              </Typography>
+              <div className={classes.faqTitle}>Frequently asked questions</div>
               {faqs.onlineConsultation.map((que: any) => (
                 <ExpansionPanel
                   key={que.id}
