@@ -105,16 +105,13 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
     useState<number>(type === 'Camera' ? 1 : 0);
   const [numberOfPrescriptionUploaded, setNumberOfPrescriptionUploaded] =
     useState<number>(type === 'Gallery' ? 1 : 0);
-  const [numberOfEPrescriptions, setNumberOfEPrescriptions] =
-    useState<number>(type === 'E-Prescription' ? 1 : 0);
-  const [medicineOptionSelected, setMedicineOptionSelected] = useState<string>('');
 
   const onSubmitOrder = async () => {
     const eventAttribute: WebEngageEvents[WebEngageEventName.UPLOAD_PRESCRIPTION_SUBMIT_CLICKED] = {
-      OptionSelected: medicineOptionSelected,
+      OptionSelected: selectedMedicineOption === 'search' ? 'Search and add' : selectedMedicineOption,
       NumberOfPrescriptionClicked: numberOfPrescriptionClicked,
       NumberOfPrescriptionUploaded: numberOfPrescriptionUploaded,
-      NumberOfEPrescriptions: numberOfEPrescriptions,
+      NumberOfEPrescriptions: EPrescriptions.length,
     };
     postWebEngageEvent(
       WebEngageEventName.UPLOAD_PRESCRIPTION_SUBMIT_CLICKED,
@@ -343,8 +340,6 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
                     WebEngageEventName.UPLOAD_PRESCRIPTION_OPTION_SELECTED,
                     eventAttribute
                   );
-
-                  setMedicineOptionSelected(optionSelected);
                 }}
                 containerStyle={{
                   ...theme.fonts.IBMPlexSansMedium(16),
@@ -605,7 +600,6 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
             }
             setPhysicalPrescriptions([...PhysicalPrescriptions, ...response]);
           } else {
-            setNumberOfEPrescriptions(numberOfEPrescriptions + 1);
             setSelectPrescriptionVisible(true);
           }
         }}
