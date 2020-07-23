@@ -134,11 +134,19 @@ const getCurrentPatients: Resolver<
   ProfilesServiceContext,
   GetCurrentPatientsResult
 > = async (parent, args, { mobileNumber, profilesDb }) => {
+  const patientRepo = profilesDb.getCustomRepository(PatientRepository);
+  let patients = await patientRepo.findByMobileNumber(mobileNumber);
+
+  if (patients.length > 0) return { patients };
+
   const findOrCreatePatient = async (
     findOptions: { uhid?: Patient['uhid']; mobileNumber: Patient['mobileNumber']; isActive: true },
     createOptions: Partial<Patient>
   ): Promise<Patient> => {
-    return Patient.create(createOptions).save();
+    const existingPatient = await Patient.findOne({
+      where: { uhid: findOptions.uhid, mobileNumber: findOptions.mobileNumber, isActive: true },
+    });
+    return existingPatient || Patient.create(createOptions).save();
   };
 
   let patientPromises: Object[] = [];
@@ -186,8 +194,8 @@ const getCurrentPatients: Resolver<
   await Promise.all(patientPromises).catch((findOrCreateErrors) => {
     throw new AphError(AphErrorMessages.UPDATE_PROFILE_ERROR, undefined, { findOrCreateErrors });
   });
-  const patientRepo = profilesDb.getCustomRepository(PatientRepository);
-  const patients = await patientRepo.findByMobileNumberLogin(mobileNumber);
+
+  patients = await patientRepo.findByMobileNumberLogin(mobileNumber);
 
   return { patients };
 };

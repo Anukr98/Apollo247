@@ -87,12 +87,12 @@ export class PatientRepository extends Repository<Patient> {
   }
 
   async getDeviceCodeCount(deviceCode: string) {
-    const deviceCodeCount = await this.createQueryBuilder('patient')
+    const deviceCodeCount: DeviceCount[] = await this.createQueryBuilder('patient')
       .select(['"mobileNumber" as mobilenumber', 'count("mobileNumber") as mobilecount'])
       .where('patient."deviceCode" = :deviceCode', { deviceCode })
       .groupBy('patient."mobileNumber"')
-      .getCount();
-    return deviceCodeCount;
+      .getRawMany();
+    return deviceCodeCount.length;
   }
 
   async getPatientDetails(id: string) {
@@ -569,13 +569,6 @@ export class PatientRepository extends Repository<Patient> {
 
   async createNewUhid(patientDetails: Patient) {
     await this.dropPatientCache(`${REDIS_PATIENT_ID_KEY_PREFIX}${patientDetails.id}`);
-    // const patientDetails = await this.getPatientDetails(id);
-    // if (!patientDetails) {
-    //   throw new AphError(AphErrorMessages.GET_PROFILE_ERROR, undefined, {
-    //     error: 'Invalid PatientId',
-    //   });
-    // }
-
     //setting mandatory fields to create uhid in medmantra
 
     if (patientDetails.firstName === null || patientDetails.firstName === '') {
