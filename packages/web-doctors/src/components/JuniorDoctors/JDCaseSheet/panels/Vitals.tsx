@@ -3,6 +3,12 @@ import { Theme, Grid } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { AphTextField } from '@aph/web-ui-components';
 import { CaseSheetContextJrd } from 'context/CaseSheetContextJrd';
+import { useParams } from 'hooks/routerHooks';
+import { Params } from 'components/JuniorDoctors/JDCaseSheet/CaseSheet';
+import {
+  getLocalStorageItem,
+  updateLocalStorageItem,
+} from 'components/case-sheet/panels/LocalStorageUtils';
 
 const useStyles = makeStyles((theme: Theme) => ({
   root: {
@@ -93,6 +99,7 @@ const useStyles = makeStyles((theme: Theme) => ({
 
 export const Vitals: React.FC = () => {
   const classes = useStyles({});
+  const params = useParams<Params>();
   const {
     height,
     setHeight,
@@ -107,6 +114,31 @@ export const Vitals: React.FC = () => {
     setVitalError,
   } = useContext(CaseSheetContextJrd);
 
+  const moveCursorToEnd = (element: any) => {
+    if (typeof element.selectionStart == 'number') {
+      element.selectionStart = element.selectionEnd = element.value.length;
+    } else if (typeof element.createTextRange != 'undefined') {
+      element.focus();
+      var range = element.createTextRange();
+      range.collapse(false);
+      range.select();
+    }
+  };
+
+  const getDefaultValue = (type: string) => {
+    const localStorageItem = getLocalStorageItem(params.appointmentId);
+    switch (type) {
+      case 'height':
+        return localStorageItem ? localStorageItem.height : height;
+      case 'weight':
+        return localStorageItem ? localStorageItem.weight : weight;
+      case 'bp':
+        return localStorageItem ? localStorageItem.bp : bp;
+      case 'temperature':
+        return localStorageItem ? localStorageItem.temperature : temperature;
+    }
+  };
+
   return (
     <div className={classes.root}>
       <Grid container spacing={2}>
@@ -115,18 +147,20 @@ export const Vitals: React.FC = () => {
             <div className={classes.sectionTitle}>Height</div>
             <div className={`${classes.contentBox} ${caseSheetEdit ? classes.inputFieldEdit : ''}`}>
               <AphTextField
+                onFocus={(e) => moveCursorToEnd(e.currentTarget)}
                 disabled={!caseSheetEdit}
                 fullWidth
-                multiline
                 required
-                value={height}
-                error={height.trim() === '' || height === null || height === undefined}
+                multiline
+                error={
+                  getDefaultValue('height') === '' ||
+                  getDefaultValue('height') === null ||
+                  getDefaultValue('height') === undefined
+                }
                 helperText={vitalError.height}
-                onChange={(e) => {
-                  setHeight(e.target.value);
-                }}
+                defaultValue={getDefaultValue('height')}
                 onBlur={(e) => {
-                  if (e.target.value.trim() !== '')
+                  if (e.target.value !== '' && e.target.value.trim() !== '')
                     setVitalError({
                       ...vitalError,
                       height: '',
@@ -136,6 +170,12 @@ export const Vitals: React.FC = () => {
                       ...vitalError,
                       height: 'This field is required',
                     });
+                  const storageItem = getLocalStorageItem(params.appointmentId);
+                  if (storageItem) {
+                    storageItem.height = e.target.value;
+                    updateLocalStorageItem(params.appointmentId, storageItem);
+                  }
+                  setHeight(e.target.value);
                 }}
               />
             </div>
@@ -146,18 +186,19 @@ export const Vitals: React.FC = () => {
             <div className={classes.sectionTitle}>Weight</div>
             <div className={`${classes.contentBox} ${caseSheetEdit ? classes.inputFieldEdit : ''}`}>
               <AphTextField
-                disabled={!caseSheetEdit}
+                onFocus={(e) => moveCursorToEnd(e.currentTarget)}
                 fullWidth
-                multiline
-                value={weight}
                 required
-                error={weight.trim() === '' || weight === null || weight === undefined}
+                multiline
+                error={
+                  getDefaultValue('weight') === '' ||
+                  getDefaultValue('weight') === null ||
+                  getDefaultValue('weight') === undefined
+                }
                 helperText={vitalError.weight}
-                onChange={(e) => {
-                  setWeight(e.target.value);
-                }}
+                defaultValue={getDefaultValue('weight')}
                 onBlur={(e) => {
-                  if (e.target.value.trim() !== '')
+                  if (e.target.value !== '' && e.target.value.trim() !== '')
                     setVitalError({
                       ...vitalError,
                       weight: '',
@@ -167,7 +208,14 @@ export const Vitals: React.FC = () => {
                       ...vitalError,
                       weight: 'This field is required',
                     });
+                  const storageItem = getLocalStorageItem(params.appointmentId);
+                  if (storageItem) {
+                    storageItem.weight = e.target.value;
+                    updateLocalStorageItem(params.appointmentId, storageItem);
+                  }
+                  setWeight(e.target.value);
                 }}
+                disabled={!caseSheetEdit}
               />
             </div>
           </div>
@@ -177,11 +225,17 @@ export const Vitals: React.FC = () => {
             <div className={classes.sectionTitle}>BP</div>
             <div className={`${classes.contentBox} ${caseSheetEdit ? classes.inputFieldEdit : ''}`}>
               <AphTextField
+                onFocus={(e) => moveCursorToEnd(e.currentTarget)}
                 disabled={!caseSheetEdit}
                 fullWidth
                 multiline
-                value={bp}
-                onChange={(e) => {
+                defaultValue={getDefaultValue('bp')}
+                onBlur={(e) => {
+                  const storageItem = getLocalStorageItem(params.appointmentId);
+                  if (storageItem) {
+                    storageItem.bp = e.target.value;
+                    updateLocalStorageItem(params.appointmentId, storageItem);
+                  }
                   setBp(e.target.value);
                 }}
               />
@@ -194,10 +248,16 @@ export const Vitals: React.FC = () => {
             <div className={`${classes.contentBox} ${caseSheetEdit ? classes.inputFieldEdit : ''}`}>
               <AphTextField
                 disabled={!caseSheetEdit}
+                onFocus={(e) => moveCursorToEnd(e.currentTarget)}
                 fullWidth
                 multiline
-                value={temperature}
-                onChange={(e) => {
+                defaultValue={getDefaultValue('temperature')}
+                onBlur={(e) => {
+                  const storageItem = getLocalStorageItem(params.appointmentId);
+                  if (storageItem) {
+                    storageItem.temperature = e.target.value;
+                    updateLocalStorageItem(params.appointmentId, storageItem);
+                  }
                   setTemperature(e.target.value);
                 }}
               />

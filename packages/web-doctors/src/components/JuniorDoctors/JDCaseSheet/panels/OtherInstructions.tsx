@@ -3,6 +3,12 @@ import { Chip, Theme } from '@material-ui/core';
 import { makeStyles, createStyles } from '@material-ui/styles';
 import { AphButton, AphTextField } from '@aph/web-ui-components';
 import { CaseSheetContextJrd } from 'context/CaseSheetContextJrd';
+import { useParams } from 'hooks/routerHooks';
+import { Params } from 'components/JuniorDoctors/JDCaseSheet/CaseSheet';
+import {
+  getLocalStorageItem,
+  updateLocalStorageItem,
+} from 'components/case-sheet/panels/LocalStorageUtils';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -168,6 +174,7 @@ const useStyles = makeStyles((theme: Theme) =>
 
 export const OtherInstructions: React.FC = () => {
   const classes = useStyles({});
+  const params = useParams<Params>();
   const { otherInstructions: selectedValues, setOtherInstructions: setSelectedValues } = useContext(
     CaseSheetContextJrd
   );
@@ -178,6 +185,11 @@ export const OtherInstructions: React.FC = () => {
   const [showAddInputText, setShowAddInputText] = useState<boolean>(false);
   const handleDelete = (item: any, idx: number) => {
     selectedValues!.splice(idx, 1);
+    const storageItem = getLocalStorageItem(params.appointmentId);
+    if (storageItem) {
+      storageItem.otherInstructions = selectedValues;
+      updateLocalStorageItem(params.appointmentId, storageItem);
+    }
     setSelectedValues(selectedValues);
     const sum = idx + Math.random();
     setIdx(sum);
@@ -218,6 +230,12 @@ export const OtherInstructions: React.FC = () => {
                     instruction: updatedText,
                     __typename: 'OtherInstructions',
                   });
+
+                  const storageItem = getLocalStorageItem(params.appointmentId);
+                  if (storageItem) {
+                    storageItem.otherInstructions = selectedValues;
+                    updateLocalStorageItem(params.appointmentId, storageItem);
+                  }
 
                   setSelectedValues(selectedValues);
                   setTimeout(() => {
@@ -303,6 +321,11 @@ export const OtherInstructions: React.FC = () => {
                     instruction: adviceValue,
                     __typename: 'OtherInstructions',
                   });
+                  const storageItem = getLocalStorageItem(params.appointmentId);
+                  if (storageItem) {
+                    storageItem.otherInstructions = selectedValues;
+                    updateLocalStorageItem(params.appointmentId, storageItem);
+                  }
                   setSelectedValues(selectedValues);
                   setIdx(selectedValues!.length + 1);
                 }

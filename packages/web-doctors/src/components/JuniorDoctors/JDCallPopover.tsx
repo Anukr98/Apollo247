@@ -23,6 +23,7 @@ import { JDConsult } from 'components/JuniorDoctors/JDConsult';
 import { CircularProgress } from '@material-ui/core';
 import { JDConsultRoomParams } from 'helpers/clientRoutes';
 import { TestCall } from '../TestCall';
+import { removeLocalStorageItem } from 'components/case-sheet/panels/LocalStorageUtils';
 
 const ringtoneUrl = require('../../images/phone_ringing.mp3');
 
@@ -1936,7 +1937,9 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
                     setIsCancelPopoverOpen(false);
                     cancelConsultAction();
                     mutationRemoveConsult()
-                      .then(() => {})
+                      .then(() => {
+                        removeLocalStorageItem(params.appointmentId);
+                      })
                       .catch((e: ApolloError) => {
                         const logObject = {
                           api: 'RemoveFromConsultQueue',
