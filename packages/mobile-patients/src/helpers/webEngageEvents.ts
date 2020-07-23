@@ -47,7 +47,8 @@ export enum WebEngageEventName {
   UPLOAD_PRESCRIPTION_CLICKED = 'Pharmacy Upload Prescription Clicked',
   UPLOAD_PRESCRIPTION_IMAGE_UPLOADED = 'Upload Prescription Image Uploaded',
   UPLOAD_PRESCRIPTION_OPTION_SELECTED = 'Upload Prescription Option Selected',
-  PHARMACY_SUBMIT_PRESCRIPTION = 'Pharmacy Submit Prescription',
+  UPLOAD_PRESCRIPTION_SUBMIT_CLICKED = 'Upload Prescription Submit Clicked',
+  PHARMACY_SUBMIT_PRESCRIPTION = 'Upload Prescription Proceed Clicked',
   PHARMACY_CHECKOUT_COMPLETED = 'Pharmacy Checkout completed',
   DIAGNOSTIC_CHECKOUT_COMPLETED = 'Diagnostic Checkout completed',
   DOCTOR_SEARCH = 'Doctor Search',
@@ -146,6 +147,11 @@ export enum WebEngageEventName {
   PAYMENT_INSTRUMENT = 'Payment Instrument',
   PAYMENT_STATUS = 'Payment Status',
   CONSULT_PAYMENT_MODE_SELECTED = 'Consult booking payment mode selected',
+
+  // Deeplink Events
+  DEEPLINK_CONSULTROOM_SCREEN = 'Deeplink open Home Page',
+  DEEPLINK_PRODUCT_DETAIL_SCREEN = 'Deeplink open Product Detail Page',
+  DEEPLINK_CATEGORY_SCREEN = 'Deeplink open Category Page',
 }
 
 export interface PatientInfo {
@@ -197,7 +203,7 @@ export interface ConsultedBefore extends PatientInfo {
 }
 
 export interface ReorderMedicine extends PatientInfo {
-  source: 'Order Details' | 'PHR';
+  source: 'Order Details' | 'PHR' | 'Home';
   orderType: 'Cart' | 'Non Cart' | 'Offline';
   noOfItemsNotAvailable: number;
 }
@@ -474,7 +480,13 @@ export interface WebEngageEvents {
     Source: 'Home' | 'Cart';
   };
   [WebEngageEventName.UPLOAD_PRESCRIPTION_OPTION_SELECTED]: {
-    OptionSelected: 'Search and add' | 'All Medicine' | 'call';
+    OptionSelected: 'Search and add' | 'All Medicine' | 'Call me for details';
+  };
+  [WebEngageEventName.UPLOAD_PRESCRIPTION_SUBMIT_CLICKED]: {
+    OptionSelected: 'Search and add' | 'All Medicine' | 'Call me for details';
+    NumberOfPrescriptionClicked: number;
+    NumberOfPrescriptionUploaded: number;
+    NumberOfEPrescriptions: number;
   };
   [WebEngageEventName.UPLOAD_PRESCRIPTION_IMAGE_UPLOADED]: {
     Source: 'Take a Photo' | 'Choose Gallery' | 'E-Rx';
@@ -1221,4 +1233,17 @@ export interface WebEngageEvents {
     Type: string;
     'Patient Id': string;
   };
+  [WebEngageEventName.DEEPLINK_CONSULTROOM_SCREEN]: {
+    source: string;
+  };
+  [WebEngageEventName.DEEPLINK_PRODUCT_DETAIL_SCREEN]: {
+    source: string;
+    ProductId: string;
+    ProductName: string;
+  };
+  [WebEngageEventName.DEEPLINK_CATEGORY_SCREEN]: {
+    source: string;
+    CategoryId: string;
+    CategoryName: string;
+  }
 }
