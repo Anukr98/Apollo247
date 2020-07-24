@@ -29,7 +29,6 @@ import { apiRoutes } from './apiRoutes';
 import {
   CommonBugFender,
   setBugFenderLog,
-  CommonLogEvent,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { getDiagnosticSlots_getDiagnosticSlots_diagnosticSlot_slotInfo } from '@aph/mobile-patients/src/graphql/types/getDiagnosticSlots';
 import {
@@ -88,7 +87,7 @@ export interface TestSlot {
   slotInfo: getDiagnosticSlots_getDiagnosticSlots_diagnosticSlot_slotInfo;
 }
 
-const isDebugOn = AppConfig.Configuration.LOG_ENVIRONMENT == 'debug';
+const isDebugOn = __DEV__;
 
 export const aphConsole: AphConsole = {
   error: (message?: any, ...optionalParams: any[]) => {
