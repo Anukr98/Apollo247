@@ -16,7 +16,7 @@ import {
   getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus,
 } from '@aph/mobile-patients/src/graphql/types/getMedicineOrderOMSDetails';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
-import { DiscountIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import { DiscountIcon, OneApollo } from '@aph/mobile-patients/src/components/ui/Icons';
 
 const styles = StyleSheet.create({
   horizontalline: {
@@ -103,7 +103,7 @@ const styles = StyleSheet.create({
   },
   boldTotal: { ...theme.fonts.IBMPlexSansBold(14), lineHeight: 24, color: colors.SHERPA_BLUE },
   paymentMethodText: {
-    ...theme.fonts.IBMPlexSansRegular(12),
+    ...theme.fonts.IBMPlexSansMedium(12),
     color: colors.SHERPA_BLUE,
     lineHeight: 24,
   },
@@ -119,6 +119,12 @@ const styles = StyleSheet.create({
     color: colors.SHERPA_BLUE,
     lineHeight: 14,
     letterSpacing: 0.03,
+  },
+  redeemText: {
+    ...theme.fonts.IBMPlexSansRegular(10),
+    color: theme.colors.SKY_BLUE,
+    lineHeight: 24,
+    marginLeft: 3,
   },
 });
 
@@ -191,6 +197,13 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
   const coupon_discount = orderDetails.couponDiscount || 0;
   const packaging_charges = orderDetails.packagingCharges;
   const paymentMethod = g(orderDetails, 'medicineOrderPayments', '0' as any, 'paymentType');
+  const amountPaid = g(orderDetails, 'medicineOrderPayments', '0' as any, 'amountPaid');
+  const healthCreditsRedeemed = g(
+    orderDetails,
+    'medicineOrderPayments',
+    '0' as any,
+    'healthCreditsRedeemed'
+  );
   const paymentMethodToDisplay =
     paymentMethod == MEDICINE_ORDER_PAYMENT_TYPE.COD
       ? 'COD'
@@ -444,7 +457,6 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
             <View>
               <Text style={styles.totalTextStyle}>{string.OrderSummery.paymentMethod}</Text>
               <Text style={[styles.orderDate, { textAlign: 'right' }]}>
-                {' '}
                 {paymentMethodToDisplay}
               </Text>
             </View>
@@ -669,7 +681,28 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
               <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                 <Text style={styles.paymentMethodText}>{string.OrderSummery.paymentMethod}</Text>
                 <Text style={[styles.paymentMethodText, { textAlign: 'right' }]}>
-                  {paymentMethodToDisplay}
+                  {/* {paymentMethodToDisplay} */}
+                </Text>
+              </View>
+            )}
+            {!offlineOrderNumber && healthCreditsRedeemed != 0 && (
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  <OneApollo style={{ height: 17, width: 22, marginRight: 4 }} />
+                  <Text style={styles.paymentLeftText}>Health Credits</Text>
+                  <Text style={styles.redeemText}>(Redeemed)</Text>
+                </View>
+
+                <Text style={[styles.paymentLeftText, { textAlign: 'right' }]}>
+                  Rs. {(healthCreditsRedeemed || 0).toFixed(2)}
+                </Text>
+              </View>
+            )}
+            {!offlineOrderNumber && amountPaid - healthCreditsRedeemed != 0 && (
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                <Text style={styles.paymentLeftText}>{paymentMethod}</Text>
+                <Text style={[styles.paymentLeftText, { textAlign: 'right' }]}>
+                  Rs. {(amountPaid - healthCreditsRedeemed || 0).toFixed(2)}
                 </Text>
               </View>
             )}

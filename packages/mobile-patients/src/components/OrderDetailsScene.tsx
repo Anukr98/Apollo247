@@ -1554,6 +1554,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
               style={styles.tabsContainer}
               tabViewStyle={offlineOrderBillNumber ? { borderBottomColor: 'transparent' } : {}}
               onChange={(title) => {
+                console.log('orderDetails--------------', orderDetails);
                 const isNonCartOrder = orderStatusList.find(
                   (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.PRESCRIPTION_UPLOADED
                 );
@@ -1564,12 +1565,14 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
                     item!.orderStatus == MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY ||
                     item!.orderStatus == MEDICINE_ORDER_STATUS.DELIVERED
                 );
-                const isCartOrder = orderStatusList.find(
-                  (item) =>
-                    item!.orderStatus == MEDICINE_ORDER_STATUS.ORDER_PLACED ||
-                    item!.orderStatus == MEDICINE_ORDER_STATUS.ORDER_VERIFIED ||
-                    item!.orderStatus == MEDICINE_ORDER_STATUS.ORDER_INITIATED
-                );
+                // const isCartOrder = orderStatusList.find(
+                //   (item) =>
+                //     item!.orderStatus == MEDICINE_ORDER_STATUS.ORDER_PLACED ||
+                //     item!.orderStatus == MEDICINE_ORDER_STATUS.ORDER_VERIFIED ||
+                //     item!.orderStatus == MEDICINE_ORDER_STATUS.ORDER_INITIATED ||
+                //     item!.orderStatus == MEDICINE_ORDER_STATUS.PAYMENT_SUCCESS
+                // );
+                const isCartOrder = orderDetails.orderType == MEDICINE_ORDER_TYPE.CART_ORDER;
                 // if (!isNonCartOrder || isNonCartOrderBilledAndReadyAtStore) {
                 //   setSelectedTab(title);
                 // }

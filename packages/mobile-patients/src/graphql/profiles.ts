@@ -1478,6 +1478,7 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS = gql`
           responseCode
           responseMessage
           bankTxnId
+          healthCreditsRedeemed
         }
         medicineOrderShipments {
           id

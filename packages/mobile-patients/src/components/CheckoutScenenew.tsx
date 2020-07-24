@@ -210,7 +210,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       .catch((error) => {
         CommonBugFender('fetchingPaymentOptions', error);
         console.log(error);
-        props.navigation.navigate(AppRoutes.DoctorSearch);
+        props.navigation.navigate(AppRoutes.YourCart);
         renderErrorPopup(`Something went wrong, plaease try again after sometime`);
       });
     return () => {
@@ -884,6 +884,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
             if (isOneApolloSelected) {
               setisOneApolloSelected(false);
               setBurnHC(0);
+              setHCorder(false);
             } else {
               setisOneApolloSelected(true);
               if (availableHC >= grandTotal) {
