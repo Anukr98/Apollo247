@@ -323,12 +323,7 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
           <li>
             {(ConsultMode.BOTH || consultMode === ConsultMode.ONLINE) && (
               <AphButton
-                className={`${classes.button}  ${onlineDirection ? classes.btnActive : null} ${
-                  consultMode === ConsultMode.BOTH || consultMode === ConsultMode.ONLINE
-                    ? ''
-                    : classes.disabled
-                }`}
-                disabled={consultMode === ConsultMode.PHYSICAL}
+                className={`${classes.button}  ${onlineDirection ? classes.btnActive : null}`}
                 onClick={() => {
                   setOnlineDirection(true);
                   setPhysicalDirection(false);
@@ -349,12 +344,7 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
           <li>
             {(consultMode === ConsultMode.BOTH || consultMode === ConsultMode.PHYSICAL) && (
               <AphButton
-                className={`${classes.button} ${physicalDirection ? classes.btnActive : null} ${
-                  consultMode === ConsultMode.BOTH || consultMode === ConsultMode.PHYSICAL
-                    ? ''
-                    : classes.disabled
-                }`}
-                // disabled={consultMode === ConsultMode.ONLINE}
+                className={`${classes.button} ${physicalDirection ? classes.btnActive : null} `}
                 id="btnActive"
                 onClick={() => {
                   setPhysicalDirection(true);

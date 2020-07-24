@@ -156,6 +156,10 @@ const useStyles = makeStyles((theme: Theme) => {
         paddingRight: 16,
       },
     },
+    covidScanner: {
+      display: 'block',
+      width: '100%'
+    }
   };
 });
 
@@ -198,18 +202,18 @@ export const CheckRiskLevel: React.FC = (props) => {
                     <span>
                       <img src={require('images/guide.svg')} alt="" />
                     </span>
-                    <span>Get your personalized guide</span>
+                    <span>Get your personalized COVID-19 guide</span>
                   </Link>
                 </AphButton>
               )}
             </ProtectedWithLoginPopup>
           )}
-          <a href={covidScannerUrl} target={'_blank'}>
+          <a href={covidScannerUrl} target={'_blank'} className={classes.covidScanner}>
             <AphButton className={classes.filledBtn}>
               <span>
                 <img src={require('images/ic_covid-white.svg')} alt="" />
               </span>
-              <span>Check your Covid-19 risk level</span>
+              <span>Check your COVID-19 risk level</span>
             </AphButton>
           </a>
           <a className={classes.callBtn} href={isDesktopOnly ? '#' : `tel:${customerCareNumber}`}>

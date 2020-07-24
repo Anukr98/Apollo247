@@ -73,7 +73,7 @@ const useStyles = makeStyles((theme: Theme) => {
         padding: 40,
         marginTop: -140,
       },
-      '& h2': {
+      '& h1': {
         margin: 0,
         fontSize: 36,
         fontWeight: 600,
@@ -201,7 +201,7 @@ export const Banner: React.FC<BannerProps> = (props) => {
         </AphButton>
       </div>
       <div className={classes.content}>
-        <h2>{props.title}</h2>
+        <h1>{props.title}</h1>
         <p>{props.subtitle}</p>
       </div>
       <Popover
