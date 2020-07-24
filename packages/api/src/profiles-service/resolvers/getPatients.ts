@@ -181,10 +181,24 @@ const addNewProfile: Resolver<
   const pateintDetails = await patientRepo.findByMobileNumber(patientProfileInput.mobileNumber);
   if (pateintDetails == null || pateintDetails.length == 0)
     throw new AphError(AphErrorMessages.INVALID_PATIENT_DETAILS, undefined, {});
-  const savePatient = await patientRepo.saveNewProfile(patientProfileInput);
+  const savePatient = await patientRepo.create(patientProfileInput);
+
   await patientRepo.createNewUhid(savePatient);
+  console.log(await patientRepo.getPatientData(savePatient.id), 'new profile from db ');
+  console.log(await patientRepo.getPatientDetails(savePatient.id), 'new profile from redis ');
+  console.log(savePatient, 'addNewProfile');
+
   patientRepo.createAthsToken(savePatient.id);
+
+  console.log(
+    await patientRepo.getPatientData(savePatient.id),
+    'new auth token from db ',
+    process.env.API_HOST_NAME
+  );
+  console.log(await patientRepo.getPatientDetails(savePatient.id), 'new auth token from redis ');
+
   const patient = await patientRepo.getPatientDetails(savePatient.id);
+
   if (!patient || patient == null) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_DETAILS, undefined, {});
   }
