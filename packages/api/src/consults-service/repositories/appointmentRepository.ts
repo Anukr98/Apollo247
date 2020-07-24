@@ -44,15 +44,30 @@ import { PatientRepository } from 'profiles-service/repositories/patientReposito
 import { log } from 'customWinstonLogger';
 import { ApiConstants } from 'ApiConstants';
 import { Client, RequestParams } from '@elastic/elasticsearch';
+import { getCache, setCache, delCache } from 'consults-service/database/connectRedis';
+
+const REDIS_APPOINTMENT_ID_KEY_PREFIX: string = 'patient:appointment:';
+
+
 
 @EntityRepository(Appointment)
 export class AppointmentRepository extends Repository<Appointment> {
-  findById(id: string) {
-    return this.findOne({ id }).catch((getApptError) => {
+
+  async findById(id: string) {
+    let appointment;
+    const cache = await getCache(`${REDIS_APPOINTMENT_ID_KEY_PREFIX}${id}`);
+    if (cache && typeof cache === 'string') {
+      appointment = JSON.parse(cache);
+      return appointment;
+    }
+    appointment = this.findOne({ id }).catch((getApptError) => {
       throw new AphError(AphErrorMessages.GET_APPOINTMENT_ERROR, undefined, {
         getApptError,
       });
     });
+
+    await setCache(`${REDIS_APPOINTMENT_ID_KEY_PREFIX}${id}`, JSON.stringify(appointment), ApiConstants.CACHE_EXPIRATION_3600);
+    return appointment;
   }
 
   getAppointmentsCount(doctorId: string, patientId: string) {
@@ -75,11 +90,51 @@ export class AppointmentRepository extends Repository<Appointment> {
       .andWhere('appointment.patientId = :patientId', { patientId })
       .getCount();
   }
+  // to do 
+  async getAppointmentsByIds(ids: string[]) {
+    let appointments: Appointment[] = [];
+    let idsNotInCache: string[] = [];
+    // find each of ids from cache
+    // those are there add it to appointment[]
+    console.log('coming ids', ids);
+    for (let i = 0; i < ids.length; i++) {
+      const appointment = await getCache(`${REDIS_APPOINTMENT_ID_KEY_PREFIX}${ids[i]}`);
+      console.log('Getting from cache', appointment);
+      if (appointment && typeof appointment == 'string') {
+        appointments.push(JSON.parse(appointment));
+      } else {
+        idsNotInCache.push(ids[i]);
+      }
+    }
+    console.log('Not in Cache', idsNotInCache);
+    // those are not there fetch fpr those from db 
+    // set into cache 
+    let appointmentsFromDb;
+    if (idsNotInCache && idsNotInCache.length > 0) {
+      appointmentsFromDb = await this.createQueryBuilder('appointment')
+        .where('appointment.id IN (:...idsNotInCache)', { idsNotInCache })
+        .getMany();
 
-  getAppointmentsByIds(ids: string[]) {
-    return this.createQueryBuilder('appointment')
-      .where('appointment.id IN (:...ids)', { ids })
-      .getMany();
+      for (let i = 0; i < appointmentsFromDb.length; i++) {
+        const appointmentFromCache = await getCache(`${REDIS_APPOINTMENT_ID_KEY_PREFIX}${appointmentsFromDb[i].id}`);
+        if (appointmentFromCache && typeof appointmentFromCache == 'string') {
+          appointments.push(JSON.parse(appointmentFromCache));
+        } else {
+          idsNotInCache.push(appointmentsFromDb[i].id);
+        }
+      }
+      appointmentsFromDb.map(async (appointment) => {
+        await setCache(`${REDIS_APPOINTMENT_ID_KEY_PREFIX}${appointment.id}`, JSON.stringify(appointment), ApiConstants.CACHE_EXPIRATION_3600);
+      });
+
+      // concat those with appointment and return
+      console.log('AppointmentFrom DB', appointmentsFromDb);
+      appointments.concat(appointmentsFromDb);
+      console.log('final appointment', appointmentsFromDb);
+    }
+
+    return appointments;
+
   }
 
   getAppointmentsByIdsWithSpecificFields(ids: string[], fields: string[]) {
@@ -89,15 +144,6 @@ export class AppointmentRepository extends Repository<Appointment> {
       .getMany();
   }
 
-  findOneByAppointmentId(id: string) {
-    return this.findOne({
-      where: { id },
-    }).catch((getApptError) => {
-      throw new AphError(AphErrorMessages.GET_APPOINTMENT_ERROR, undefined, {
-        getApptError,
-      });
-    });
-  }
 
   findByAppointmentId(id: string) {
     return this.find({
@@ -362,7 +408,8 @@ export class AppointmentRepository extends Repository<Appointment> {
     });
   }
 
-  updateAppointment(id: string, appointmentInfo: Partial<Appointment>, apptDetails: Appointment) {
+  async updateAppointment(id: string, appointmentInfo: Partial<Appointment>, apptDetails: Appointment) {
+    await delCache(`${REDIS_APPOINTMENT_ID_KEY_PREFIX}${id}`);
     return this.createUpdateAppointment(
       apptDetails,
       {
@@ -885,9 +932,9 @@ export class AppointmentRepository extends Repository<Appointment> {
         .getUTCHours()
         .toString()
         .padStart(2, '0')}:${appointmentDate
-        .getUTCMinutes()
-        .toString()
-        .padStart(2, '0')}:00.000Z`;
+          .getUTCMinutes()
+          .toString()
+          .padStart(2, '0')}:00.000Z`;
       console.log(availableSlots, 'availableSlots final list');
       console.log(availableSlots.indexOf(sl), 'indexof');
       console.log(checkStart, checkEnd, 'check start end');
@@ -1045,9 +1092,9 @@ export class AppointmentRepository extends Repository<Appointment> {
             .getUTCHours()
             .toString()
             .padStart(2, '0')}:${doctorAppointment.appointmentDateTime
-            .getUTCMinutes()
-            .toString()
-            .padStart(2, '0')}:00.000Z`;
+              .getUTCMinutes()
+              .toString()
+              .padStart(2, '0')}:00.000Z`;
           if (availableSlots.indexOf(aptSlot) >= 0) {
             availableSlots.splice(availableSlots.indexOf(aptSlot), 1);
           }
@@ -1365,9 +1412,9 @@ export class AppointmentRepository extends Repository<Appointment> {
             .getUTCHours()
             .toString()
             .padStart(2, '0')}:${blockedSlot.start
-            .getUTCMinutes()
-            .toString()
-            .padStart(2, '0')}:00.000Z`;
+              .getUTCMinutes()
+              .toString()
+              .padStart(2, '0')}:00.000Z`;
 
           let blockedSlotsCount =
             (Math.abs(differenceInMinutes(blockedSlot.end, blockedSlot.start)) / 60) * duration;
@@ -1425,9 +1472,9 @@ export class AppointmentRepository extends Repository<Appointment> {
               .getUTCHours()
               .toString()
               .padStart(2, '0')}:${slot
-              .getUTCMinutes()
-              .toString()
-              .padStart(2, '0')}:00.000Z`;
+                .getUTCMinutes()
+                .toString()
+                .padStart(2, '0')}:00.000Z`;
           }
           console.log('start slot', slot);
 
