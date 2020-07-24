@@ -233,6 +233,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
             let url = data[1].replace('param=', '');
             getData('webview', url);
           }
+          break;
         default:
           getData('ConsultRoom', undefined, true);
           // webengage event
@@ -490,6 +491,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         props.navigation.navigate(AppRoutes.CommonWebView, {
           url: id,
         });
+        break;
       default:
         break;
     }
