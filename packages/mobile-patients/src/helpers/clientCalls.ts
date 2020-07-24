@@ -534,21 +534,11 @@ export const getRescheduleAppointmentDetails = (
   client: ApolloClient<object>,
   appointmentId: string
 ) => {
-  return new Promise((res, rej) => {
-    client
-      .query<getAppointmentRescheduleDetails, getAppointmentRescheduleDetailsVariables>({
-        query: GET_APPOINTMENT_RESCHEDULE_DETAILS,
-        variables: {
-          appointmentId: appointmentId,
-        },
-        fetchPolicy: 'no-cache',
-      })
-      .then((data: any) => {
-        res({ data });
-      })
-      .catch((e: any) => {
-        CommonBugFender('clientCalls_getRescheduleAppointmentDetails', e);
-        rej({ error: e });
-      });
+  return client.query<getAppointmentRescheduleDetails, getAppointmentRescheduleDetailsVariables>({
+    query: GET_APPOINTMENT_RESCHEDULE_DETAILS,
+    variables: {
+      appointmentId: appointmentId,
+    },
+    fetchPolicy: 'no-cache',
   });
 };
