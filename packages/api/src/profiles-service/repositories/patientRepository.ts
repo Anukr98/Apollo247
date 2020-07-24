@@ -428,22 +428,25 @@ export class PatientRepository extends Repository<Patient> {
 
   async createNewUhid(patientDetails: Patient) {
     //setting mandatory fields to create uhid in medmantra
-    if (patientDetails.firstName === null || patientDetails.firstName === '') {
-      patientDetails.firstName = 'New';
-    }
-    if (patientDetails.lastName === null || patientDetails.lastName === '') {
-      patientDetails.lastName = 'User';
-    }
-    if (patientDetails.emailAddress === null) {
-      patientDetails.emailAddress = '';
-    }
-    if (patientDetails.dateOfBirth === null) {
-      patientDetails.dateOfBirth = new Date('1970-01-01');
+    const uhidResp: UhidCreateResult = await this.getNewUhid(patientDetails);
+    if (uhidResp.retcode == '0') {
+      patientDetails.uhid = uhidResp.result;
+      patientDetails.primaryUhid = uhidResp.result;
+      patientDetails.uhidCreatedDate = new Date();
+      patientDetails.save();
+      createPrismUser(patientDetails, uhidResp.result.toString());
     }
 
-    if (patientDetails == null)
-      throw new AphError(AphErrorMessages.SAVE_NEW_PROFILE_ERROR, undefined, {});
-    const newUhidUrl = process.env.CREATE_NEW_UHID_URL ? process.env.CREATE_NEW_UHID_URL : '';
+    return uhidResp.result || '';
+  }
+
+  async getNewUhid(patientDetails: Patient) {
+    patientDetails.firstName = patientDetails.firstName || 'New';
+    patientDetails.lastName = patientDetails.lastName || 'User';
+    patientDetails.emailAddress = patientDetails.emailAddress || '';
+    patientDetails.dateOfBirth = null || new Date('1970-01-01');
+
+    const newUhidUrl = process.env.CREATE_NEW_UHID_URL || '';
     const uhidInput = {
       OnlineAppointmentID: null,
       Title: '1',
@@ -506,7 +509,6 @@ export class PatientRepository extends Repository<Patient> {
         Citizenship: '',
       },
     };
-
     const reqStartTime = new Date();
     const uhidCreateResp = await fetch(newUhidUrl, {
       method: 'POST',
@@ -523,25 +525,14 @@ export class PatientRepository extends Repository<Patient> {
       );
       throw new AphError(AphErrorMessages.PRISM_CREATE_UHID_ERROR);
     });
-
     const textProcessRes = await uhidCreateResp.text();
     dLogger(
       reqStartTime,
       'createNewUhid CREATE_NEW_UHID_URL_API_CALL___END',
       `${newUhidUrl} --- ${JSON.stringify(uhidInput)} --- ${textProcessRes}`
     );
-
     const uhidResp: UhidCreateResult = JSON.parse(textProcessRes);
-    let newUhid = '';
-    if (uhidResp.retcode == '0') {
-      newUhid = uhidResp.result;
-      patientDetails.uhid = newUhid;
-      patientDetails.primaryUhid = newUhid;
-      patientDetails.uhidCreatedDate = new Date();
-      await this.save(patientDetails);
-      createPrismUser(patientDetails, uhidResp.result.toString());
-    }
-    return newUhid;
+    return uhidResp;
   }
 
   async updatePatientDetails(patientDetails: Patient) {
@@ -558,13 +549,7 @@ export class PatientRepository extends Repository<Patient> {
       patientDetails = await this.getPatientDetails(patientId);
     }
     const primaryPatientIds: string[] = [];
-    if (
-      patientDetails &&
-      patientDetails.uhid != '' &&
-      patientDetails.uhid != null &&
-      patientDetails.primaryPatientId != null &&
-      patientDetails.primaryPatientId != ''
-    ) {
+    if (patientDetails && !patientDetails.uhid && !patientDetails.primaryPatientId) {
       const patientsList = await this.find({
         where: { primaryPatientId: patientDetails.primaryPatientId },
       });
