@@ -218,8 +218,7 @@ export const covidProtocolLanding: React.FC = (props: any) => {
     !isSigningIn && !isSignedIn && props.history.push(clientRoutes.covidLanding());
   }, [isSignedIn, isSigningIn]);
 
-  const covidProtocolUrl =
-    process.env.COVID_PROTOCOL_URL || 'https://uatcms.apollo247.com/api/phrcovid-protocol';
+  const covidProtocolUrl = process.env.COVID_PROTOCOL_URL;
 
   useEffect(() => {
     if (isLoading && currentPatient && currentPatient.mobileNumber) {
