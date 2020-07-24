@@ -402,7 +402,6 @@ export class AppointmentRepository extends Repository<Appointment> {
   }
 
   async updateAppointment(id: string, appointmentInfo: Partial<Appointment>, apptDetails: Appointment) {
-    await delCache(`${REDIS_APPOINTMENT_ID_KEY_PREFIX}${id}`);
     return this.createUpdateAppointment(
       apptDetails,
       {
