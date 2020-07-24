@@ -71,7 +71,7 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingTop: 12,
       [theme.breakpoints.up(1220)]: {
         padding: 40,
-        marginTop: -140,
+        marginTop: -68,
       },
       '& h1': {
         margin: 0,

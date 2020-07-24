@@ -158,8 +158,8 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     covidScanner: {
       display: 'contents',
-      width: '100%'
-    }
+      width: '100%',
+    },
   };
 });
 
@@ -202,7 +202,7 @@ export const CheckRiskLevel: React.FC = (props) => {
                     <span>
                       <img src={require('images/guide.svg')} alt="" />
                     </span>
-                    <span>Get your personalized COVID-19 guide</span>
+                    <span>Get your COVID-19 guide</span>
                   </Link>
                 </AphButton>
               )}
