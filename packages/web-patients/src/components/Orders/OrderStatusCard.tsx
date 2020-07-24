@@ -627,41 +627,41 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
             </div>
           ))}
       </div>
-      {/* {orderDetailsData && orderDetailsData.currentStatus === MEDICINE_ORDER_STATUS.DELIVERED && ( */}
-      <div className={classes.bottomNotification}>
-        <div className={classes.reorderBtn}>
-          <AphButton color="primary" onClick={() => setIsDialogOpen(true)}>
-            Re-order
+      {orderDetailsData && orderDetailsData.currentStatus === MEDICINE_ORDER_STATUS.DELIVERED && (
+        <div className={classes.bottomNotification}>
+          <div className={classes.reorderBtn}>
+            <AphButton color="primary" onClick={() => setIsDialogOpen(true)}>
+              Re-order
           </AphButton>
-        </div>
-        <AphDialog open={isDialogOpen} maxWidth="sm">
-          <AphDialogClose onClick={() => setIsDialogOpen(false)} title={'Close'} />
-          <AphDialogTitle className={classes.reorderTitle}>Added to Cart</AphDialogTitle>
-          <div className={classes.cartBody}>
-            <div className={classes.cartItem}>8 out of 10 items have been added to cart.</div>
-            <div className={`${classes.cartItem} ${classes.cartItemSubheading}`}>We couldn't add below items:</div>
-            <ul>
-              <li>Crocin Advance Tab</li>
-              <li>3M Particulate Respirator 8210</li>
-            </ul>
-            <div className={classes.cartItem}>Please continue for purchase.</div>
-            <div className={classes.continueBtn}>
-              <AphButton color="primary" >
-                Continue
-              </AphButton>
-            </div>
           </div>
-        </AphDialog>
-        <p>
-          Your order no.#{orderDetailsData && orderDetailsData.orderAutoId} is successfully
+          <AphDialog open={isDialogOpen} maxWidth="sm">
+            <AphDialogClose onClick={() => setIsDialogOpen(false)} title={'Close'} />
+            <AphDialogTitle className={classes.reorderTitle}>Added to Cart</AphDialogTitle>
+            <div className={classes.cartBody}>
+              <div className={classes.cartItem}>8 out of 10 items have been added to cart.</div>
+              <div className={`${classes.cartItem} ${classes.cartItemSubheading}`}>We couldn't add below items:</div>
+              <ul>
+                <li>Crocin Advance Tab</li>
+                <li>3M Particulate Respirator 8210</li>
+              </ul>
+              <div className={classes.cartItem}>Please continue for purchase.</div>
+              <div className={classes.continueBtn}>
+                <AphButton color="primary" >
+                  Continue
+              </AphButton>
+              </div>
+            </div>
+          </AphDialog>
+          <p>
+            Your order no.#{orderDetailsData && orderDetailsData.orderAutoId} is successfully
             delivered on {getDeliveredDateTime(orderStatusList)}.
           </p>
-        <h4>Thank You for choosing Apollo 24|7</h4>
-        <AphButton color="primary" onClick={() => setIsPopoverOpen(true)}>
-          Rate your delivery experience
+          <h4>Thank You for choosing Apollo 24|7</h4>
+          <AphButton color="primary" onClick={() => setIsPopoverOpen(true)}>
+            Rate your delivery experience
           </AphButton>
-      </div>
-      {/* )} */}
+        </div>
+      )}
       <Popover
         open={isPopoverOpen}
         anchorEl={mascotRef.current}
