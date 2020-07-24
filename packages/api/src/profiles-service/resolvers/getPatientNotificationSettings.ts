@@ -28,7 +28,7 @@ const getPatientNotificationSettings: Resolver<
 > = async (parent, args, { profilesDb, doctorsDb }) => {
   //patientId validation
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
-  const patientDetails = await patientRepo.findById(args.patient);
+  const patientDetails = await patientRepo.getPatientDetails(args.patient);
   if (patientDetails == null) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }

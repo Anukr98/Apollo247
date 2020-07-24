@@ -32,6 +32,7 @@ import { HowItWorks } from './Doctors/HowItWorks';
 import { ManageProfile } from 'components/ManageProfile';
 import { Relation } from 'graphql/types/globalTypes';
 import { MetaTagsComp } from 'MetaTagsComp';
+import { SchemaMarkup } from 'SchemaMarkup';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -209,15 +210,15 @@ const useStyles = makeStyles((theme: Theme) => {
       background: '#ffffff',
       borderRadius: 5,
       width: '66%',
-      '& h2': {
-        fontSize: 16,
-        fontWeight: 'bold',
-        margin: '0 0 20px',
-        color: '#01667c',
-      },
       [theme.breakpoints.down('sm')]: {
         width: '100%',
       },
+    },
+    faqTitle: {
+      fontSize: 16,
+      fontWeight: 'bold',
+      margin: '0 0 20px',
+      color: '#01667c',
     },
     heading: {},
     panelRoot: {
@@ -632,6 +633,7 @@ export const SpecialityListing: React.FC = (props) => {
   const [searchLoading, setSearchLoading] = useState<boolean>(false);
   const [faqs, setFaqs] = useState<any | null>(null);
   const [selectedCity, setSelectedCity] = useState<string>('');
+  const [faqSchema, setFaqSchema] = useState(null);
   const onePrimaryUser =
     allCurrentPatients && allCurrentPatients.filter((x) => x.relation === Relation.ME).length === 1;
 
@@ -649,6 +651,28 @@ export const SpecialityListing: React.FC = (props) => {
     /**Gtm code start end */
   }, []);
 
+  const createFaqSchema = (faqData: any) => {
+    const mainEntity: any[] = [];
+    faqData &&
+      faqData.onlineConsultation &&
+      faqData.onlineConsultation.length > 0 &&
+      Object.values(faqData.onlineConsultation).map((faqs: any) => {
+        mainEntity.push({
+          '@type': 'Question',
+          name: faqs.faqQuestion,
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: faqs.faqAnswer,
+          },
+        });
+      });
+    setFaqSchema({
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity,
+    });
+  };
+
   useEffect(() => {
     if (!faqs) {
       scrollToRef &&
@@ -657,6 +681,7 @@ export const SpecialityListing: React.FC = (props) => {
       fetchUtil(process.env.SPECIALTY_LISTING_FAQS, 'GET', {}, '', true).then((res: any) => {
         if (res && res.success === 'true' && res.data && res.data.length > 0) {
           setFaqs(res.data[0]);
+          createFaqSchema(res.data[0]);
         }
       });
     }
@@ -697,15 +722,31 @@ export const SpecialityListing: React.FC = (props) => {
   }, [searchKeyword, selectedCity]);
 
   const metaTagProps = {
-    title: 'Online Doctor Consultation within 15 mins - via Video Call / Audio / Chat - Apollo 247',
+    title: 'Online Doctor Consultation via Video Call / Audio / Chat - Apollo 247',
     description:
-      'Online doctor consultation within 15 minutes at Apollo 247. Book doctor appointments online in just a few clicks. Consult a doctor via Video Call, Audio or Chat. Get all your need in one place at Apollo 247 your one-stop solution for all medical needs.',
+      'Online doctor consultation in 15 mins with 1000+ Top Specialist Doctors. Video Call or Chat with a Doctor from 100+ Specialties including General Physicians, Pediatricians, Dermatologists, Gynaecologists & more.',
     canonicalLink: window && window.location && window.location.href,
+  };
+
+  const breadcrumbJSON = {
+    '@context': 'https://schema.org/',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'HOME', item: 'https://www.apollo247.com/' },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: 'SPECIALTIES',
+        item: 'https://www.apollo247.com/specialties',
+      },
+    ],
   };
 
   return (
     <div className={classes.slContainer}>
       <MetaTagsComp {...metaTagProps} />
+      <SchemaMarkup structuredJSON={breadcrumbJSON} />
+      {faqSchema && <SchemaMarkup structuredJSON={faqSchema} />}
       <Header />
       <div className={classes.container}>
         <div className={`${classes.slContent} ${currentPatient ? classes.slCotent1 : ''}`}>
@@ -731,7 +772,7 @@ export const SpecialityListing: React.FC = (props) => {
               <Grid item xs={12} md={8}>
                 <div className={classes.specialityContent}>
                   <div className={classes.sHeader}>
-                    <Typography component="h1">Book Doctor Appointments Online</Typography>
+                    <Typography component="h1">Online Doctor Consultation</Typography>
                   </div>
                   <SpecialtySearch
                     setSearchKeyword={setSearchKeyword}
@@ -796,7 +837,7 @@ export const SpecialityListing: React.FC = (props) => {
           </div>
           {faqs && faqs.onlineConsultation && faqs.onlineConsultation.length > 0 && (
             <div className={classes.faq}>
-              <Typography component="h2">Frequently asked questions</Typography>
+              <div className={classes.faqTitle}>Frequently asked questions</div>
               {faqs.onlineConsultation.map((que: any) => (
                 <ExpansionPanel
                   key={que.id}

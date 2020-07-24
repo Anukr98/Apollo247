@@ -25,6 +25,8 @@ import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { DoctorConsultHoursRepository } from 'doctors-service/repositories/doctorConsultHoursRepository';
 import { ApiConstants } from 'ApiConstants';
+import { Client, RequestParams } from '@elastic/elasticsearch';
+
 //import { DoctorNextAvaialbleSlotsRepository } from 'consults-service/repositories/DoctorNextAvaialbleSlotsRepository';
 
 type DoctorSlot = {
@@ -158,9 +160,9 @@ export class DoctorRepository extends Repository<Doctor> {
           .getUTCHours()
           .toString()
           .padStart(2, '0')}:${appt.appointmentDateTime
-          .getUTCMinutes()
-          .toString()
-          .padStart(2, '0')}:00.000Z`;
+            .getUTCMinutes()
+            .toString()
+            .padStart(2, '0')}:00.000Z`;
         if (availableSlots.indexOf(sl) >= 0) {
           doctorSlots[availableSlots.indexOf(sl)].status = ES_DOCTOR_SLOT_STATUS.BOOKED;
           //availableSlots.splice(availableSlots.indexOf(sl), 1);
@@ -184,11 +186,50 @@ export class DoctorRepository extends Repository<Doctor> {
     return doctorSlots;
   }
 
-  getDoctorProfileData(id: string) {
-    return this.findOne({
-      where: [{ id, isActive: true }],
-      relations: ['specialty', 'doctorHospital', 'doctorHospital.facility'],
-    });
+  async getDoctorProfileData(id: string) {
+
+    const client = new Client({ node: process.env.ELASTIC_CONNECTION_URL });
+    const searchParams: RequestParams.Search = {
+      index: 'doctors',
+      body: {
+        query: {
+          bool: {
+            must: [
+              {
+                match_phrase: {
+                  doctorId: id,
+                },
+              },
+            ],
+          },
+        },
+      },
+    };
+    const getDetails = await client.search(searchParams);
+    let doctorData, facilities;
+
+    if (getDetails.body.hits.hits && getDetails.body.hits.hits.length > 0) {
+      doctorData = getDetails.body.hits.hits[0]._source;
+      doctorData.id = doctorData.doctorId;
+      doctorData.specialty.id = doctorData.specialty.specialtyId;
+      doctorData.doctorHospital = [];
+      const availableModes: string[] = [];
+      for (const consultHour of doctorData.consultHours) {
+        consultHour['id'] = consultHour['consultHoursId'];
+        if (!availableModes.includes(consultHour['consultMode'])) {
+          availableModes.push(consultHour['consultMode']);
+        }
+      }
+
+      facilities = doctorData.facility;
+      facilities = Array.isArray(facilities) ? facilities : [facilities];
+      for (const facility of facilities) {
+        facility.id = facility.facilityId;
+        doctorData.doctorHospital.push({ facility });
+      }
+      doctorData.availableModes = availableModes;
+    }
+    return doctorData;
   }
 
   getCityMappingPincode(pincode: string) {
@@ -681,8 +722,8 @@ export class DoctorRepository extends Repository<Doctor> {
                 fee.maximum === -1
                   ? qb.where('doctor.onlineConsultationFees >= ' + fee.minimum)
                   : qb
-                      .where('doctor.onlineConsultationFees >= ' + fee.minimum)
-                      .andWhere('doctor.onlineConsultationFees <= ' + fee.maximum);
+                    .where('doctor.onlineConsultationFees >= ' + fee.minimum)
+                    .andWhere('doctor.onlineConsultationFees <= ' + fee.maximum);
               })
             );
           });
@@ -699,8 +740,8 @@ export class DoctorRepository extends Repository<Doctor> {
                 exp.maximum === -1
                   ? qb.where('doctor.experience >= ' + exp.minimum)
                   : qb
-                      .where('doctor.experience >= ' + exp.minimum)
-                      .andWhere('doctor.experience <= ' + exp.maximum);
+                    .where('doctor.experience >= ' + exp.minimum)
+                    .andWhere('doctor.experience <= ' + exp.maximum);
               })
             );
           });

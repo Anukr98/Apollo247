@@ -20,7 +20,6 @@ import {
   deleteDeviceTokenVariables,
 } from '@aph/mobile-patients/src/graphql/types/deleteDeviceToken';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
-import { apiRoutes } from '@aph/mobile-patients/src/helpers/apiRoutes';
 import { g, getNetStatus, statusBarHeight } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { postMyOrdersClicked } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
@@ -28,7 +27,7 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import AsyncStorage from '@react-native-community/async-storage';
 import Moment from 'moment';
 import React, { useEffect, useState } from 'react';
-import { useApolloClient, useQuery } from 'react-apollo-hooks';
+import { useApolloClient } from 'react-apollo-hooks';
 import {
   Dimensions,
   Image,
@@ -49,9 +48,9 @@ import {
   ScrollView,
   StackActions,
 } from 'react-navigation';
-import { AppConfig } from '../../strings/AppConfig';
-import { TabHeader } from '../ui/TabHeader';
-import { useAppCommonData } from '../AppCommonDataProvider';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import { TabHeader } from '@aph/mobile-patients/src/components/ui/TabHeader';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 
 const { width } = Dimensions.get('window');
 
@@ -150,29 +149,6 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
   >(currentPatient);
   const { signOut, getPatientApiCall } = useAuth();
   const { setSavePatientDetails, setAppointmentsPersonalized } = useAppCommonData();
-
-  const buildName = () => {
-    switch (apiRoutes.graphql()) {
-      case 'https://aph.dev.api.popcornapps.com//graphql':
-        return 'DEV';
-      case 'https://aph.staging.api.popcornapps.com//graphql':
-        return 'QA';
-      case 'https://stagingapi.apollo247.com//graphql':
-        return 'STAGING';
-      case 'https://aph.uat.api.popcornapps.com//graphql':
-        return 'UAT';
-      case 'https://aph.vapt.api.popcornapps.com//graphql':
-        return 'VAPT';
-      case 'https://api.apollo247.com//graphql':
-        return 'PROD';
-      case 'https://asapi.apollo247.com//graphql':
-        return 'PRF';
-      case 'https://devapi.apollo247.com//graphql':
-        return 'DEVReplica';
-      default:
-        return '';
-    }
-  };
 
   useEffect(() => {
     if (!currentPatient) {
@@ -522,7 +498,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
                 paddingTop: 20,
               }}
             >
-              {`${buildName()} - v ${
+              {`${AppConfig.APP_ENV} - v ${
                 Platform.OS === 'ios'
                   ? AppConfig.Configuration.iOS_Version
                   : AppConfig.Configuration.Android_Version

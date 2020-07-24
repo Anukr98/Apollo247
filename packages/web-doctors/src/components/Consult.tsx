@@ -217,6 +217,9 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       props.stopAudioVideoCallpatient();
       props.setIscall(false);
       if (event.reason === 'networkDisconnected') {
+        props.setSessionError({"message": 'Call was disconnected due to Network problems on the patient end.'});
+      }else{
+        props.setSessionError({"message": 'Patient left the call.'});
       }
     },
     error: (error: any) => {
@@ -283,7 +286,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       console.log('Subscribe stream disconnected!', event);
     },
     destroyed: (event: any) => {
-      console.log('Subscribe stream destroyed!', event);
+      console.log('Subscribe destroyed!', event);
       if (event.reason === 'networkDisconnected') {
       }
     },
@@ -305,6 +308,9 @@ export const Consult: React.FC<ConsultProps> = (props) => {
         setDowngradeToAudio(false);
       }
     },
+    streamDestroyed: (event: any) => {
+      console.log('Subscribe stream destroyed!', )
+    }
   };
 
   const checkReconnecting = () => {

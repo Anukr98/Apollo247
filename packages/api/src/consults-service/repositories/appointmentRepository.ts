@@ -89,6 +89,16 @@ export class AppointmentRepository extends Repository<Appointment> {
       .getMany();
   }
 
+  findOneByAppointmentId(id: string) {
+    return this.findOne({
+      where: { id },
+    }).catch((getApptError) => {
+      throw new AphError(AphErrorMessages.GET_APPOINTMENT_ERROR, undefined, {
+        getApptError,
+      });
+    });
+  }
+
   findByAppointmentId(id: string) {
     return this.find({
       where: { id },

@@ -122,7 +122,7 @@ const SavePrescriptionMedicineOrder: Resolver<
     errorMessage = '',
     orderStatus: MEDICINE_ORDER_STATUS = MEDICINE_ORDER_STATUS.QUOTE;
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
-  const patientDetails = await patientRepo.findById(prescriptionMedicineInput.patientId);
+  const patientDetails = await patientRepo.getPatientDetails(prescriptionMedicineInput.patientId);
   if (!patientDetails) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
@@ -155,6 +155,7 @@ const SavePrescriptionMedicineOrder: Resolver<
       statusDate: new Date(),
     };
     await medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, saveOrder.orderAutoId);
+
     let deliveryCity = 'Kakinada',
       deliveryZipcode = '500034',
       deliveryAddress1 = '',
@@ -162,6 +163,7 @@ const SavePrescriptionMedicineOrder: Resolver<
       Landmark = '',
       deliveryAddress = 'Kakinada',
       deliveryState = 'Telangana';
+
     if (saveOrder.patientAddressId != null && saveOrder.patientAddressId != '') {
       const patientAddressRepo = profilesDb.getCustomRepository(PatientAddressRepository);
       const patientAddressDetails = await patientAddressRepo.findById(saveOrder.patientAddressId);

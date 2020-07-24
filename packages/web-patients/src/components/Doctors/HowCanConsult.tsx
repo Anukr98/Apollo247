@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { makeStyles, createStyles } from '@material-ui/styles';
 import { Theme, CircularProgress, Modal } from '@material-ui/core';
 import { AphButton } from '@aph/web-ui-components';
@@ -258,6 +258,10 @@ const useStyles = makeStyles((theme: Theme) => {
       borderRadius: 10,
       marginTop: '14px',
     },
+    disabled: {
+      opacity: 0.5,
+      cursor: 'not-allowed',
+    },
   });
 });
 interface HowCanConsultProps {
@@ -271,9 +275,9 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const [popupLoading, setPopupLoading] = useState<boolean>(false);
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
-  const [physicalDirection, setPhysicalDirection] = useState<boolean>(false);
-  const [onlineDirection, setOnlineDirection] = useState<boolean>(true);
   const { doctorDetails, doctorAvailablePhysicalSlots, doctorAvailableOnlineSlot } = props;
+  const [onlineDirection, setOnlineDirection] = useState<boolean>(false);
+  const [physicalDirection, setPhysicalDirection] = useState<boolean>(false);
   const doctorName = doctorDetails && doctorDetails.fullName;
   const physcalFee = doctorDetails && doctorDetails.physicalConsultationFees;
   const onlineFee = doctorDetails && doctorDetails.onlineConsultationFees;
@@ -304,55 +308,67 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
     );
   };
 
+  useEffect(() => {
+    if (consultMode) {
+      setOnlineDirection(consultMode === ConsultMode.BOTH || consultMode === ConsultMode.ONLINE);
+      setPhysicalDirection(consultMode === ConsultMode.PHYSICAL);
+    }
+  }, [consultMode]);
   return (
     <div className={classes.root}>
       <div className={classes.headerGroup}>
         <h3>How can I consult with {doctorName}:</h3>
         <ul className={classes.tabButtons}>
-          {(consultMode === ConsultMode.BOTH || consultMode === ConsultMode.ONLINE) && (
-            <li>
-              <AphButton
-                className={`${classes.button}  ${onlineDirection ? classes.btnActive : ''}`}
-                onClick={() => {
-                  setOnlineDirection(true);
-                  setPhysicalDirection(false);
-                }}
+          <li>
+            <AphButton
+              className={`${classes.button}  ${onlineDirection ? classes.btnActive : null} ${
+                consultMode === ConsultMode.BOTH || consultMode === ConsultMode.ONLINE
+                  ? ''
+                  : classes.disabled
+              }`}
+              disabled={consultMode === ConsultMode.PHYSICAL}
+              onClick={() => {
+                setOnlineDirection(true);
+                setPhysicalDirection(false);
+              }}
+            >
+              <span>Chat/Audio/Video</span>
+              <span className={classes.price}>Rs. {onlineFee}</span>
+              <span
+                className={`${classes.availability} ${
+                  differenceInOnlineMinutes < 15 ? classes.availableNow : null
+                }`}
               >
-                <span>Chat/Audio/Video</span>
-                <span className={classes.price}>Rs. {onlineFee}</span>
-                <span
-                  className={`${classes.availability} ${
-                    differenceInOnlineMinutes < 15 ? classes.availableNow : null
-                  }`}
-                >
-                  {availabilityMarkup('online')}
-                </span>
-              </AphButton>
-            </li>
-          )}
-          {(consultMode === ConsultMode.BOTH || consultMode === ConsultMode.PHYSICAL) && (
-            <li>
-              {' '}
-              <AphButton
-                className={`${classes.button} ${physicalDirection ? classes.btnActive : ''}`}
-                id="btnActive"
-                onClick={() => {
-                  setPhysicalDirection(true);
-                  setOnlineDirection(false);
-                }}
+                {availabilityMarkup('online')}
+              </span>
+            </AphButton>
+          </li>
+          <li>
+            {' '}
+            <AphButton
+              className={`${classes.button} ${physicalDirection ? classes.btnActive : null} ${
+                consultMode === ConsultMode.BOTH || consultMode === ConsultMode.PHYSICAL
+                  ? ''
+                  : classes.disabled
+              }`}
+              disabled={consultMode === ConsultMode.ONLINE}
+              id="btnActive"
+              onClick={() => {
+                setPhysicalDirection(true);
+                setOnlineDirection(false);
+              }}
+            >
+              <span>Meet in Person</span>
+              <span className={classes.price}>Rs. {physcalFee}</span>
+              <span
+                className={`${classes.availability} ${
+                  differenceInPhysicalMinutes < 15 ? classes.availableNow : null
+                }`}
               >
-                <span>Meet in Person</span>
-                <span className={classes.price}>Rs. {physcalFee}</span>
-                <span
-                  className={`${classes.availability} ${
-                    differenceInPhysicalMinutes < 15 ? classes.availableNow : null
-                  }`}
-                >
-                  {availabilityMarkup('physical')}
-                </span>
-              </AphButton>
-            </li>
-          )}
+                {availabilityMarkup('physical')}
+              </span>
+            </AphButton>
+          </li>
         </ul>
       </div>
       <div className={classes.consultGroup}>
@@ -366,12 +382,8 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
             />
           </span>
           <div className={classes.groupDetails}>
-            <h4>
-              {physicalDirection
-                ? 'How to consult in person'
-                : 'How to consult via chat/audio/video?'}
-            </h4>
-            {isSmallScreen && (
+            <h4>{physicalDirection ? 'Meet in person' : 'How to consult via chat/audio/video?'}</h4>
+            {(physicalDirection || (isSmallScreen && onlineDirection)) && (
               <p
                 className={
                   physicalDirection
@@ -476,15 +488,7 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
               color="primary"
               // className={classes.bottomActions}
             >
-              {popupLoading ? (
-                <CircularProgress size={22} color="secondary" />
-              ) : physicalDirection ? (
-                differenceInPhysicalMinutes > 0 && differenceInPhysicalMinutes <= 120
-              ) : differenceInOnlineMinutes > 0 && differenceInOnlineMinutes <= 120 ? (
-                'CONSULT NOW'
-              ) : (
-                'BOOK APPOINTMENT'
-              )}
+              {popupLoading ? <CircularProgress size={22} color="secondary" /> : 'BOOK APPOINTMENT'}
             </AphButton>
             <p className={classes.noteInfo}>
               Please note that after booking, you will need to download the Apollo 247 app to

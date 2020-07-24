@@ -35,6 +35,12 @@ import axios from 'axios';
 import { CaseSheetContextJrd } from 'context/CaseSheetContextJrd';
 import _uniqueId from 'lodash/uniqueId';
 import Scrollbars from 'react-custom-scrollbars';
+import { useParams } from 'hooks/routerHooks';
+import { Params } from 'components/JuniorDoctors/JDCaseSheet/CaseSheet';
+import {
+  getLocalStorageItem,
+  updateLocalStorageItem,
+} from 'components/case-sheet/panels/LocalStorageUtils';
 
 const apiDetails = {
   url: process.env.PHARMACY_MED_PARTIAL_SEARCH_URL,
@@ -635,6 +641,7 @@ let cancel: any;
 
 export const MedicinePrescription: React.FC = () => {
   const classes = useStyles({});
+  const params = useParams<Params>();
   const customInputRef = useRef(null);
   const defaultInputRef = useRef(null);
   const {
@@ -1193,6 +1200,11 @@ export const MedicinePrescription: React.FC = () => {
     selectedMedicines.splice(idx, 1);
     setSelectedMedicines(selectedMedicines);
     selectedMedicinesArr!.splice(idx, 1);
+    const storageItem = getLocalStorageItem(params.appointmentId);
+    if (storageItem) {
+      storageItem.medicinePrescription = selectedMedicinesArr;
+      updateLocalStorageItem(params.appointmentId, storageItem);
+    }
     setSelectedMedicinesArr(selectedMedicinesArr);
     const sum = idx + Math.random();
     setIdx(sum);
@@ -1388,7 +1400,7 @@ export const MedicinePrescription: React.FC = () => {
     return changedString + char;
   };
 
-  const selectedMedicinesHtml = selectedMedicinesArr!.map(
+  const selectedMedicinesHtml = (selectedMedicinesArr || [])!.map(
     (_medicine: any | null, index: number) => {
       const medicine = _medicine!;
       const forHtml = medicine.medicineConsumptionDurationInDays
@@ -1738,6 +1750,11 @@ export const MedicinePrescription: React.FC = () => {
       if (isUpdate) {
         const medicineArray = selectedMedicinesArr;
         medicineArray!.splice(idx, 1, inputParamsArr);
+        const storageItem = getLocalStorageItem(params.appointmentId);
+        if (storageItem) {
+          storageItem.medicinePrescription = medicineArray;
+          updateLocalStorageItem(params.appointmentId, storageItem);
+        }
         setSelectedMedicinesArr(medicineArray);
         const medicineObj = selectedMedicines;
         medicineObj.splice(idx, 1, inputParams);
@@ -1745,6 +1762,11 @@ export const MedicinePrescription: React.FC = () => {
       } else {
         const medicineArray = selectedMedicinesArr;
         medicineArray!.push(inputParamsArr);
+        const storageItem = getLocalStorageItem(params.appointmentId);
+        if (storageItem) {
+          storageItem.medicinePrescription = medicineArray;
+          updateLocalStorageItem(params.appointmentId, storageItem);
+        }
         setSelectedMedicinesArr(medicineArray);
         const medicineObj = selectedMedicines;
         medicineObj.push(inputParams);
