@@ -6,12 +6,13 @@ import { createHttpLink } from 'apollo-link-http';
 import * as firebase from 'firebase/app';
 import 'firebase/auth';
 import { apiRoutes } from '@aph/universal/dist/aphRoutes';
+
 import React, { useEffect, useState } from 'react';
 import { ApolloProvider } from 'react-apollo';
 import { ApolloProvider as ApolloHooksProvider } from 'react-apollo-hooks';
 import _isEmpty from 'lodash/isEmpty';
 import _uniqueId from 'lodash/uniqueId';
-import { GET_PATIENT_BY_MOBILE_NUMBER } from 'graphql/profiles';
+import { GET_PATIENT_BY_MOBILE_NUMBER, GET_CURRENT_PATIENTS } from 'graphql/profiles';
 import { Login, LoginVariables } from 'graphql/types/Login';
 import { verifyLoginOtp, verifyLoginOtpVariables } from 'graphql/types/verifyLoginOtp';
 import { LOGIN_TYPE } from 'graphql/types/globalTypes';
@@ -25,6 +26,7 @@ import { ResendOtp, ResendOtpVariables } from 'graphql/types/ResendOtp';
 import { gtmTracking, _urTracking } from '../gtmTracking';
 import { webengageUserLoginTracking, webengageUserLogoutTracking } from '../webEngageTracking';
 import { GetPatientByMobileNumber } from 'graphql/types/GetPatientByMobileNumber';
+import { GetCurrentPatients } from 'graphql/types/GetCurrentPatients';
 // import { isTest, isFirebaseLoginTest } from 'helpers/testHelpers';
 // import { ResendOtp, ResendOtpVariables } from 'graphql/types/ResendOtp';
 
@@ -103,7 +105,6 @@ const buildApolloClient = (authToken: string, handleUnauthenticated: () => void)
   }));
   // const httpLink = createHttpLink({ uri: apiRoutes.graphql() });
   const httpLink = createHttpLink({ uri: process.env.API_HOST_NAME });
-  
   const link = errorLink.concat(authLink).concat(httpLink);
   const cache = apolloClient ? apolloClient.cache : new InMemoryCache();
   return new ApolloClient({ link, cache });
@@ -181,7 +182,7 @@ export const AuthProvider: React.FC = (props) => {
       })
       .then((loginResult) => {
         setIsSendingOtp(false);
-        localStorage.setItem('userMobileNo', phoneNumber)
+        localStorage.setItem('userMobileNo', phoneNumber);
         setCustomLoginId(
           loginResult &&
             loginResult.data &&
@@ -375,37 +376,61 @@ export const AuthProvider: React.FC = (props) => {
             },
           })
           .then((res) => {
-            const currentPath = window.location.pathname;
-            const userId =
+            if (
               res.data &&
               res.data.getPatientByMobileNumber &&
               res.data.getPatientByMobileNumber.patients &&
-              res.data.getPatientByMobileNumber.patients[0].id;
-
-            if (localStorage.getItem('currentUser') && localStorage.getItem('currentUser').length) {
-              const patientIds =
-                res.data.getPatientByMobileNumber.patients.map((patient) => patient.id) || [];
-              if (!patientIds.includes(localStorage.getItem('currentUser'))) {
-                localStorage.setItem('currentUser', userId);
-                setCurrentPatientId(userId);
-              } else {
-                setCurrentPatientId(localStorage.getItem('currentUser'));
-              }
-            }
-            /**Gtm code start */
-            if (isNewUser) {
-              gtmTracking({ category: 'Profile', action: 'Register / Login', label: 'Register' });
-              _urTracking({ userId: userId, isApolloCustomer: false, profileFetchedCount: 1 });
+              res.data.getPatientByMobileNumber.patients.length === 0
+            ) {
+              apolloClient
+                .query<GetCurrentPatients>({ query: GET_CURRENT_PATIENTS })
+                .then((res) => {
+                  const userId =
+                    res.data &&
+                    res.data.getCurrentPatients &&
+                    res.data.getCurrentPatients.patients &&
+                    res.data.getCurrentPatients.patients[0].id;
+                  localStorage.setItem('currentUser', userId);
+                  setCurrentPatientId(userId);
+                  gtmTracking({
+                    category: 'Profile',
+                    action: 'Register / Login',
+                    label: 'Register',
+                  });
+                  _urTracking({ userId: userId, isApolloCustomer: false, profileFetchedCount: 1 });
+                  setSignInError(false);
+                  window.location.reload(true);
+                });
             } else {
+              const userId =
+                res.data &&
+                res.data.getPatientByMobileNumber &&
+                res.data.getPatientByMobileNumber.patients &&
+                res.data.getPatientByMobileNumber.patients[0].id;
+              if (
+                localStorage.getItem('currentUser') &&
+                localStorage.getItem('currentUser').length
+              ) {
+                const patientIds =
+                  res.data.getPatientByMobileNumber.patients.map((patient) => patient.id) || [];
+                if (!patientIds.includes(localStorage.getItem('currentUser'))) {
+                  localStorage.setItem('currentUser', userId);
+                  setCurrentPatientId(userId);
+                } else {
+                  setCurrentPatientId(localStorage.getItem('currentUser'));
+                }
+              }
+              /**Gtm code start */
               gtmTracking({ category: 'Profile', action: 'Register / Login', label: 'Login' });
               /* webengage code start */
               webengageUserLoginTracking(user.uid);
               /* webengage code end */
+              setSignInError(false);
             }
-            /**Gtm code start end */
-            setSignInError(false);
           })
-          .catch(() => setSignInError(true));
+          .catch((e) => {
+            setSignInError(true);
+          });
       }
       setIsSigningIn(false);
     });
