@@ -227,6 +227,10 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     elasticMatch.push({ match: { doctorType: args.filterInput.doctorType.join(',') } });
   }
 
+  if (args.filterInput.city && args.filterInput.city.length) {
+    elasticMatch.push({ match: { city: args.filterInput.city.join(',') } });
+  }
+
   elasticMatch.push({ match: { isSearchable: 'true' } });
 
   const searchParams: RequestParams.Search = {
