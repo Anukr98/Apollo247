@@ -52,7 +52,6 @@ const REDIS_APPOINTMENT_ID_KEY_PREFIX: string = 'patient:appointment:';
 
 @EntityRepository(Appointment)
 export class AppointmentRepository extends Repository<Appointment> {
-
   async findById(id: string) {
     let appointment;
     const cache = await getCache(`${REDIS_APPOINTMENT_ID_KEY_PREFIX}${id}`);
@@ -60,12 +59,11 @@ export class AppointmentRepository extends Repository<Appointment> {
       appointment = JSON.parse(cache);
       return appointment;
     }
-    appointment = this.findOne({ id }).catch((getApptError) => {
+    appointment = await this.findOne({ id }).catch((getApptError) => {
       throw new AphError(AphErrorMessages.GET_APPOINTMENT_ERROR, undefined, {
         getApptError,
       });
     });
-
     await setCache(`${REDIS_APPOINTMENT_ID_KEY_PREFIX}${id}`, JSON.stringify(appointment), ApiConstants.CACHE_EXPIRATION_3600);
     return appointment;
   }
@@ -96,17 +94,14 @@ export class AppointmentRepository extends Repository<Appointment> {
     let idsNotInCache: string[] = [];
     // find each of ids from cache
     // those are there add it to appointment[]
-    console.log('coming ids', ids);
     for (let i = 0; i < ids.length; i++) {
       const appointment = await getCache(`${REDIS_APPOINTMENT_ID_KEY_PREFIX}${ids[i]}`);
-      console.log('Getting from cache', appointment);
       if (appointment && typeof appointment == 'string') {
         appointments.push(JSON.parse(appointment));
       } else {
         idsNotInCache.push(ids[i]);
       }
     }
-    console.log('Not in Cache', idsNotInCache);
     // those are not there fetch fpr those from db 
     // set into cache 
     let appointmentsFromDb;
@@ -128,9 +123,7 @@ export class AppointmentRepository extends Repository<Appointment> {
       });
 
       // concat those with appointment and return
-      console.log('AppointmentFrom DB', appointmentsFromDb);
       appointments.concat(appointmentsFromDb);
-      console.log('final appointment', appointmentsFromDb);
     }
 
     return appointments;
