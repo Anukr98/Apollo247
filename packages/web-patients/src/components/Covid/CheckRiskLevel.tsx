@@ -163,6 +163,8 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
+
+
 export const CheckRiskLevel: React.FC = (props) => {
   const classes = useStyles({});
   const covidScannerUrl = process.env.COVID_RISK_CALCULATOR_URL;
@@ -170,7 +172,8 @@ export const CheckRiskLevel: React.FC = (props) => {
   const [iscoronaDialogOpen, setIscoronaDialogOpen] = useState<boolean>(false);
   const { isSignedIn } = useAuth();
   const location = useLocation();
-
+  const isWebView =
+    sessionStorage.getItem('webView') && sessionStorage.getItem('webView').length > 0;
   return (
     <div className={classes.root}>
       <div className={classes.leftIcon}>
@@ -187,7 +190,7 @@ export const CheckRiskLevel: React.FC = (props) => {
           our experts for advice.
         </p>
         <div className={classes.rightActions}>
-          {!location.pathname.includes('medical-condition') && (
+          {!location.pathname.includes('medical-condition') && !isWebView && (
             <ProtectedWithLoginPopup>
               {({ protectWithLoginPopup }) => (
                 <AphButton
