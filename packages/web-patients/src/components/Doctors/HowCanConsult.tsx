@@ -41,6 +41,7 @@ const useStyles = makeStyles((theme: Theme) => {
       listStyle: 'none',
       display: 'flex',
       alignItems: 'center',
+      justifyContent: 'center',
       '& li': {
         padding: '0 6px',
       },
@@ -353,7 +354,7 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
                     ? ''
                     : classes.disabled
                 }`}
-                disabled={consultMode === ConsultMode.ONLINE}
+                // disabled={consultMode === ConsultMode.ONLINE}
                 id="btnActive"
                 onClick={() => {
                   setPhysicalDirection(true);
