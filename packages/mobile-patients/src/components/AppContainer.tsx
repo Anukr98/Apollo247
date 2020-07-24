@@ -12,7 +12,8 @@ import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
 const codePushOptions: CodePushOptions = {
   checkFrequency: codePush.CheckFrequency.ON_APP_RESUME,
-  installMode: codePush.InstallMode.ON_NEXT_RESUME,
+  installMode: codePush.InstallMode.ON_NEXT_RESTART,
+  mandatoryInstallMode: codePush.InstallMode.ON_NEXT_RESTART,
   deploymentKey:
     Platform.OS == 'android'
       ? AppConfig.Configuration.CODE_PUSH_DEPLOYMENT_KEY_ANDROID
