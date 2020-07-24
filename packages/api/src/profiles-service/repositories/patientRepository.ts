@@ -105,7 +105,7 @@ export class PatientRepository extends Repository<Patient> {
     if (cache && typeof cache === 'string') {
       const patient: Patient = JSON.parse(cache);
       patient.dateOfBirth = new Date(patient.dateOfBirth);
-      return patient;
+      return this.create(patient);
     } else {
       return await this.setByIdCache(id);
     }
