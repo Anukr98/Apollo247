@@ -89,12 +89,12 @@ const updatePatient: Resolver<
 
   Object.assign(patient, updateAttrs);
   if (patient.uhid == '' || patient.uhid == null) {
-    console.log('calling createNewUhid');
     await patientRepo.createNewUhid(patient);
-    await delCache(`${REDIS_PATIENT_ID_KEY_PREFIX}${patient.id}`);
   } else {
     await patientRepo.updatePatientDetails(patient);
   }
+
+  //TODO: Refactor to reduce get calls.
 
   const getPatientList = await patientRepo.findByMobileNumber(patient.mobileNumber);
   if (patient.relation == Relation.ME || getPatientList.length == 1) {
