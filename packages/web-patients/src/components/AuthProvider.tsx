@@ -104,7 +104,8 @@ const buildApolloClient = (authToken: string, handleUnauthenticated: () => void)
     headers: { ...headers, Authorization: authToken ? authToken : process.env.AUTH_TOKEN },
   }));
   // const httpLink = createHttpLink({ uri: apiRoutes.graphql() });
-  const httpLink = createHttpLink({ uri: process.env.API_HOST_NAME }); const link = errorLink.concat(authLink).concat(httpLink);
+  const httpLink = createHttpLink({ uri: process.env.API_HOST_NAME });
+  const link = errorLink.concat(authLink).concat(httpLink);
   const cache = apolloClient ? apolloClient.cache : new InMemoryCache();
   return new ApolloClient({ link, cache });
 };
@@ -181,7 +182,7 @@ export const AuthProvider: React.FC = (props) => {
       })
       .then((loginResult) => {
         setIsSendingOtp(false);
-        localStorage.setItem('userMobileNo', phoneNumber)
+        localStorage.setItem('userMobileNo', phoneNumber);
         setCustomLoginId(
           loginResult &&
             loginResult.data &&
@@ -375,12 +376,15 @@ export const AuthProvider: React.FC = (props) => {
             },
           })
           .then((res) => {
-            if (res.data &&
+            if (
+              res.data &&
               res.data.getPatientByMobileNumber &&
               res.data.getPatientByMobileNumber.patients &&
-              res.data.getPatientByMobileNumber.patients.length === 0) {
+              res.data.getPatientByMobileNumber.patients.length === 0
+            ) {
               apolloClient
-                .query<GetCurrentPatients>({ query: GET_CURRENT_PATIENTS }).then((res) => {
+                .query<GetCurrentPatients>({ query: GET_CURRENT_PATIENTS })
+                .then((res) => {
                   const userId =
                     res.data &&
                     res.data.getCurrentPatients &&
@@ -388,18 +392,25 @@ export const AuthProvider: React.FC = (props) => {
                     res.data.getCurrentPatients.patients[0].id;
                   localStorage.setItem('currentUser', userId);
                   setCurrentPatientId(userId);
-                  gtmTracking({ category: 'Profile', action: 'Register / Login', label: 'Register' });
+                  gtmTracking({
+                    category: 'Profile',
+                    action: 'Register / Login',
+                    label: 'Register',
+                  });
                   _urTracking({ userId: userId, isApolloCustomer: false, profileFetchedCount: 1 });
                   setSignInError(false);
                   window.location.reload(true);
-                })
+                });
             } else {
               const userId =
                 res.data &&
                 res.data.getPatientByMobileNumber &&
                 res.data.getPatientByMobileNumber.patients &&
                 res.data.getPatientByMobileNumber.patients[0].id;
-              if (localStorage.getItem('currentUser') && localStorage.getItem('currentUser').length) {
+              if (
+                localStorage.getItem('currentUser') &&
+                localStorage.getItem('currentUser').length
+              ) {
                 const patientIds =
                   res.data.getPatientByMobileNumber.patients.map((patient) => patient.id) || [];
                 if (!patientIds.includes(localStorage.getItem('currentUser'))) {
@@ -418,7 +429,7 @@ export const AuthProvider: React.FC = (props) => {
             }
           })
           .catch((e) => {
-            setSignInError(true)
+            setSignInError(true);
           });
       }
       setIsSigningIn(false);
