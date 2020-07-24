@@ -36,6 +36,25 @@ export const GET_PATIENT_BY_MOBILE_NUMBER = gql`
   }
 `;
 
+export const GET_CURRENT_PATIENTS = gql`
+  query GetCurrentPatients {
+    getCurrentPatients  {
+      patients {
+        id
+        mobileNumber
+        firstName
+        lastName
+        relation
+        gender
+        uhid
+        dateOfBirth
+        emailAddress
+        photoUrl
+      }
+    }
+  }
+`;
+
 export const UPDATE_PATIENT = gql`
   mutation UpdatePatient($patientInput: UpdatePatientInput!) {
     updatePatient(patientInput: $patientInput) {
