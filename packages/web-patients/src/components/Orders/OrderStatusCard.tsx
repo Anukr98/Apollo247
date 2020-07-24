@@ -9,7 +9,7 @@ import {
 import moment from 'moment';
 import { OrderFeedback } from './OrderFeedback';
 import { MEDICINE_ORDER_STATUS } from 'graphql/types/globalTypes';
-import { AphButton } from '@aph/web-ui-components';
+import { AphButton, AphDialog, AphDialogClose, AphDialogTitle } from '@aph/web-ui-components';
 import Popover from '@material-ui/core/Popover';
 import { useShoppingCart } from 'components/MedicinesCartProvider';
 import {
@@ -263,6 +263,43 @@ const useStyles = makeStyles((theme: Theme) => {
         maxWidth: 80,
       },
     },
+    reorderBtn: {
+      marginBottom: 15,
+    },
+    cartBody: {
+      padding: 16,
+      '& ul': {
+        color: '#68919d',
+        marginBottom: 20,
+        '& li': {
+          paddingBottom: 10,
+          fontSize: 12,
+          fontWeight: 500,
+        }
+      },
+    },
+    cartItem: {
+      fontSize: 12,
+      color: '#02475b',
+      fontWeight: 500,
+    },
+    cartItemSubheading: {
+      marginTop: 10,
+    },
+    continueBtn: {
+      marginTop: 35,
+      textAlign: 'center',
+      '& button': {
+        minWidth: 144,
+        borderRadius: 10,
+      }
+    },
+    reorderTitle: {
+      padding: '15px 20px',
+      '& h2': {
+        fontSize: 16,
+      },
+    },
   };
 });
 
@@ -272,6 +309,8 @@ interface OrderStatusCardProps {
 }
 
 export const deliveredOrderDetails = (orderStatusList: StatusDetails[]) => {
+
+
   return (
     orderStatusList &&
     orderStatusList.find(
@@ -396,10 +435,10 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
         );
         const addressData = selectedAddress
           ? `${selectedAddress.addressLine1 ? `${selectedAddress.addressLine1}, ` : ''}${
-              selectedAddress.addressLine2 ? `${selectedAddress.addressLine2}, ` : ''
-            }${selectedAddress.city ? `${selectedAddress.city}, ` : ''}${
-              selectedAddress.state ? `${selectedAddress.state}, ` : ''
-            }${selectedAddress.zipcode || ''}`
+          selectedAddress.addressLine2 ? `${selectedAddress.addressLine2}, ` : ''
+          }${selectedAddress.city ? `${selectedAddress.city}, ` : ''}${
+          selectedAddress.state ? `${selectedAddress.state}, ` : ''
+          }${selectedAddress.zipcode || ''}`
           : '';
         return addressData;
       } else {
@@ -424,12 +463,12 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
         return !prescriptionRequired() ? (
           ''
         ) : (
-          <>
-            <span className={classes.labelStatus}>Verification Pending: </span>
+            <>
+              <span className={classes.labelStatus}>Verification Pending: </span>
             Your order is being verified by our pharmacists. Our pharmacists might be required to
             call you for order verification.
-          </>
-        );
+            </>
+          );
       case MEDICINE_ORDER_STATUS.ORDER_VERIFIED:
         return (
           <>
@@ -501,7 +540,7 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
         return <div className={classes.orderStatus}>Successful</div>;
     }
   };
-
+  const [isDialogOpen, setIsDialogOpen] = React.useState<boolean>(false);
   return (
     <div className={classes.orderStatusGroup}>
       {!isLoading && orderDetailsData && (
@@ -544,38 +583,38 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
             <CircularProgress />
           </div>
         ) : (
-          orderStatusList &&
-          orderStatusList.map(
-            (statusInfo) =>
-              statusInfo && (
-                <div id={statusInfo.id} className={classes.cardGroup}>
-                  <div
-                    className={`${classes.statusCard} ${
-                      statusInfo.orderStatus && statusArray.includes(statusInfo.orderStatus)
-                        ? classes.orderStatusActive
-                        : `${classes.orderStatusActive}${classes.orderStatusCompleted}`
-                    }`}
-                  >
-                    {statusInfo.orderStatus && getStatus(statusInfo.orderStatus)}
-                    <div className={classes.statusInfo}>
-                      <span>{moment(new Date(statusInfo.statusDate)).format('DD MMM YYYY')}</span>
-                      <span>{moment(new Date(statusInfo.statusDate)).format('hh:mm a')}</span>
+            orderStatusList &&
+            orderStatusList.map(
+              (statusInfo) =>
+                statusInfo && (
+                  <div id={statusInfo.id} className={classes.cardGroup}>
+                    <div
+                      className={`${classes.statusCard} ${
+                        statusInfo.orderStatus && statusArray.includes(statusInfo.orderStatus)
+                          ? classes.orderStatusActive
+                          : `${classes.orderStatusActive}${classes.orderStatusCompleted}`
+                        }`}
+                    >
+                      {statusInfo.orderStatus && getStatus(statusInfo.orderStatus)}
+                      <div className={classes.statusInfo}>
+                        <span>{moment(new Date(statusInfo.statusDate)).format('DD MMM YYYY')}</span>
+                        <span>{moment(new Date(statusInfo.statusDate)).format('hh:mm a')}</span>
+                      </div>
                     </div>
+                    {orderDetailsData && statusInfo.orderStatus === orderDetailsData.currentStatus && (
+                      <div className={classes.infoText}>
+                        <span>
+                          {getOrderDescription(
+                            orderDetailsData.currentStatus,
+                            statusInfo.statusMessage
+                          )}
+                        </span>
+                      </div>
+                    )}
                   </div>
-                  {orderDetailsData && statusInfo.orderStatus === orderDetailsData.currentStatus && (
-                    <div className={classes.infoText}>
-                      <span>
-                        {getOrderDescription(
-                          orderDetailsData.currentStatus,
-                          statusInfo.statusMessage
-                        )}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              )
-          )
-        )}
+                )
+            )
+          )}
         {!isLoading &&
           restStatusToShow &&
           restStatusToShow.map((status, idx) => (
@@ -588,18 +627,41 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
             </div>
           ))}
       </div>
-      {orderDetailsData && orderDetailsData.currentStatus === MEDICINE_ORDER_STATUS.DELIVERED && (
-        <div className={classes.bottomNotification}>
-          <p>
-            Your order no.#{orderDetailsData && orderDetailsData.orderAutoId} is successfully
-            delivered on {getDeliveredDateTime(orderStatusList)}.
-          </p>
-          <h4>Thank You for choosing Apollo 24|7</h4>
-          <AphButton color="primary" onClick={() => setIsPopoverOpen(true)}>
-            Rate your delivery experience
+      {/* {orderDetailsData && orderDetailsData.currentStatus === MEDICINE_ORDER_STATUS.DELIVERED && ( */}
+      <div className={classes.bottomNotification}>
+        <div className={classes.reorderBtn}>
+          <AphButton color="primary" onClick={() => setIsDialogOpen(true)}>
+            Re-order
           </AphButton>
         </div>
-      )}
+        <AphDialog open={isDialogOpen} maxWidth="sm">
+          <AphDialogClose onClick={() => setIsDialogOpen(false)} title={'Close'} />
+          <AphDialogTitle className={classes.reorderTitle}>Added to Cart</AphDialogTitle>
+          <div className={classes.cartBody}>
+            <div className={classes.cartItem}>8 out of 10 items have been added to cart.</div>
+            <div className={`${classes.cartItem} ${classes.cartItemSubheading}`}>We couldn't add below items:</div>
+            <ul>
+              <li>Crocin Advance Tab</li>
+              <li>3M Particulate Respirator 8210</li>
+            </ul>
+            <div className={classes.cartItem}>Please continue for purchase.</div>
+            <div className={classes.continueBtn}>
+              <AphButton color="primary" >
+                Continue
+              </AphButton>
+            </div>
+          </div>
+        </AphDialog>
+        <p>
+          Your order no.#{orderDetailsData && orderDetailsData.orderAutoId} is successfully
+            delivered on {getDeliveredDateTime(orderStatusList)}.
+          </p>
+        <h4>Thank You for choosing Apollo 24|7</h4>
+        <AphButton color="primary" onClick={() => setIsPopoverOpen(true)}>
+          Rate your delivery experience
+          </AphButton>
+      </div>
+      {/* )} */}
       <Popover
         open={isPopoverOpen}
         anchorEl={mascotRef.current}
