@@ -462,6 +462,8 @@ const SearchDoctorAndSpecialtyByName: Resolver<
       speciality = speciality.matched_specialities_hits.hits.hits[0]["_source"]["specialty"];
       return speciality;
     })
+  } else {
+    matchedSpecialtiesES = specialityBuckets;
   }
   
   matchedSpecialties = matchedSpecialtiesES;
