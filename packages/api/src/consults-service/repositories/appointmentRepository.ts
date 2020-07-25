@@ -57,6 +57,7 @@ export class AppointmentRepository extends Repository<Appointment> {
     const cache = await getCache(`${REDIS_APPOINTMENT_ID_KEY_PREFIX}${id}`);
     if (cache && typeof cache === 'string') {
       appointment = JSON.parse(cache);
+      console.log("from cache");
       return appointment;
     }
     appointment = await this.findOne({ id }).catch((getApptError) => {
@@ -64,6 +65,7 @@ export class AppointmentRepository extends Repository<Appointment> {
         getApptError,
       });
     });
+    console.log("from db");
     await setCache(`${REDIS_APPOINTMENT_ID_KEY_PREFIX}${id}`, JSON.stringify(appointment), ApiConstants.CACHE_EXPIRATION_3600);
     return appointment;
   }
@@ -88,46 +90,34 @@ export class AppointmentRepository extends Repository<Appointment> {
       .andWhere('appointment.patientId = :patientId', { patientId })
       .getCount();
   }
-  // to do 
+
   async getAppointmentsByIds(ids: string[]) {
-    let appointments: Appointment[] = [];
+    let result: Appointment[] = [];
+
+    return this.handleCachingMultipleItems(ids, REDIS_APPOINTMENT_ID_KEY_PREFIX, result);
+  }
+
+  async handleCachingMultipleItems(ids: string[], redisKeyPrefix: string, result: Appointment[]) {
     let idsNotInCache: string[] = [];
-    // find each of ids from cache
-    // those are there add it to appointment[]
     for (let i = 0; i < ids.length; i++) {
-      const appointment = await getCache(`${REDIS_APPOINTMENT_ID_KEY_PREFIX}${ids[i]}`);
-      if (appointment && typeof appointment == 'string') {
-        appointments.push(JSON.parse(appointment));
+      const item = await getCache(`${redisKeyPrefix}${ids[i]}`);
+      if (item && typeof item == 'string') {
+        result.push(JSON.parse(item));
       } else {
         idsNotInCache.push(ids[i]);
       }
     }
-    // those are not there fetch fpr those from db 
-    // set into cache 
-    let appointmentsFromDb;
+    let itemFromDb: Appointment[];
     if (idsNotInCache && idsNotInCache.length > 0) {
-      appointmentsFromDb = await this.createQueryBuilder('appointment')
+      itemFromDb = await this.createQueryBuilder('appointment')
         .where('appointment.id IN (:...idsNotInCache)', { idsNotInCache })
         .getMany();
-
-      for (let i = 0; i < appointmentsFromDb.length; i++) {
-        const appointmentFromCache = await getCache(`${REDIS_APPOINTMENT_ID_KEY_PREFIX}${appointmentsFromDb[i].id}`);
-        if (appointmentFromCache && typeof appointmentFromCache == 'string') {
-          appointments.push(JSON.parse(appointmentFromCache));
-        } else {
-          idsNotInCache.push(appointmentsFromDb[i].id);
-        }
+      for (let i = 0; i < itemFromDb.length; i++) {
+        await setCache(`${redisKeyPrefix}${itemFromDb[i].id}`, JSON.stringify(itemFromDb[i]), ApiConstants.CACHE_EXPIRATION_3600);
       }
-      appointmentsFromDb.map(async (appointment) => {
-        await setCache(`${REDIS_APPOINTMENT_ID_KEY_PREFIX}${appointment.id}`, JSON.stringify(appointment), ApiConstants.CACHE_EXPIRATION_3600);
-      });
-
-      // concat those with appointment and return
-      appointments.concat(appointmentsFromDb);
+      result = result.concat(itemFromDb);
     }
-
-    return appointments;
-
+    return result;
   }
 
   getAppointmentsByIdsWithSpecificFields(ids: string[], fields: string[]) {
