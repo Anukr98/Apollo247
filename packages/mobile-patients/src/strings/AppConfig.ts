@@ -12,6 +12,7 @@ export type PharmacyHomepageInfo = {
 export enum AppEnv {
   DEV = 'DEV',
   QA = 'QA',
+  QA2 = 'QA2',
   STAGING = 'STAGING',
   PROD = 'PROD',
   PERFORM = 'PERFORM',
@@ -19,7 +20,7 @@ export enum AppEnv {
   DEVReplica = 'DEVReplica',
 }
 
-const APP_ENV: AppEnv = AppEnv.PROD as AppEnv; // For respective API environments in the app.
+const APP_ENV: AppEnv = AppEnv.QA2 as AppEnv; // For respective API environments in the app.
 
 const pharmaToken201 = 'Bearer 2o1kd4bjapqifpb27fy7tnbivu8bqo1d';
 const pharmaTokenYXV = 'YXV0aF91c2VyOnN1cGVyc2VjcmV0X3Rhd';
@@ -319,9 +320,8 @@ const PharmaApiConfig = {
 
 //Development;
 const ConfigurationDev = {
-  LOG_ENVIRONMENT: 'debug',
-  ANALYTICAL_ENIVRONMENT: 'debug',
-  MEDICINE_PAST_SEARCHES_SHOW_COUNT: 5,
+  CODE_PUSH_DEPLOYMENT_KEY_ANDROID: 'ztcR3MB6vWyWtIAzpnsOczanc57pCQeMAIhUS',
+  CODE_PUSH_DEPLOYMENT_KEY_IOS: 't1yzL4Cj0zDKiAUuKVZt_zIYuwHrleGaNVihE',
   PAYMENT_GATEWAY_BASE_URL: 'https://aph.dev.pmt.popcornapps.com',
   PAYMENT_GATEWAY_SUCCESS_PATH: '/mob?',
   PAYMENT_GATEWAY_ERROR_PATH: '/mob-error?',
@@ -346,8 +346,8 @@ const ConfigurationDev = {
   TOP_SPECIALITIES: DEV_top6_specailties,
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
-  iOS_Version: '2.615',
-  Android_Version: '2.615',
+  iOS_Version: '2.631',
+  Android_Version: '2.631',
   CONDITIONAL_MANAGENET_BASE_URL: 'https://aph.staging.pmt.popcornapps.com',
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e', //7839e425f4acbd8e6ff3f907281addca <-- popcornapps key
   COVID_RISK_LEVEL_URL:
@@ -360,9 +360,8 @@ const ConfigurationDev = {
 
 // QA
 const ConfigurationQA = {
-  LOG_ENVIRONMENT: 'release',
-  ANALYTICAL_ENIVRONMENT: 'release',
-  MEDICINE_PAST_SEARCHES_SHOW_COUNT: 5,
+  CODE_PUSH_DEPLOYMENT_KEY_ANDROID: '8njVNeiezjGyi0BjIuIWOWm_N3zo2uVb5Z5_B',
+  CODE_PUSH_DEPLOYMENT_KEY_IOS: 'IwojMQex0fbTUlvY1ydYzMT5l7hrLrbLy0ciH',
   PAYMENT_GATEWAY_BASE_URL: 'https://aph.staging.pmt.popcornapps.com',
   PAYMENT_GATEWAY_SUCCESS_PATH: '/mob?',
   PAYMENT_GATEWAY_ERROR_PATH: '/mob-error?',
@@ -387,23 +386,62 @@ const ConfigurationQA = {
   TOP_SPECIALITIES: QA_top6_specailties,
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
-  iOS_Version: '2.623',
-  Android_Version: '2.623',
+  iOS_Version: '2.631',
+  Android_Version: '2.631',
   CONDITIONAL_MANAGENET_BASE_URL: 'https://aph.staging.pmt.popcornapps.com',
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e',
   COVID_RISK_LEVEL_URL:
     'https://aph.staging.web-patients.popcornapps.com/covid19/cough-scan?utm_source=mobile_app',
   COVID_LATEST_ARTICLES_URL:
     'https://aph.staging.web-patients.popcornapps.com/covid19?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Covid19%20Content',
+  CONSULT_COUPON_BASE_URL: 'https://uatvalidcoupon.apollo247.com',
+  KAVACH_URL: 'https://www.apollo247.com/covid19/kavach?utm_source=mobile_app&utm_medium=Webview',
+};
+
+// QA2
+const ConfigurationQA2 = {
+  CODE_PUSH_DEPLOYMENT_KEY_ANDROID: 'kq-NXsLvHNu_EYzKBlZOuk2vbQKepRdBSndmo',
+  CODE_PUSH_DEPLOYMENT_KEY_IOS: 'h6JJUbQWK4JEItmav-kH852x-3pneo4vcZNkg',
+  PAYMENT_GATEWAY_BASE_URL: 'https://qapmt.apollo247.com',
+  PAYMENT_GATEWAY_SUCCESS_PATH: '/mob?',
+  PAYMENT_GATEWAY_ERROR_PATH: '/mob-error?',
+  CONSULT_PG_BASE_URL: 'https://qapmt.apollo247.com',
+  CONSULT_PG_SUCCESS_PATH: '/consultpg-success?',
+  CONSULT_PG_ERROR_PATH: '/consultpg-error?',
+  CONSULT_PG_PENDING_PATH: '/consultpg-pending',
+  CONSULT_PG_REDIRECT_PATH: '/consultpg-redirect?',
+  DIAGNOSTICS_PG_BASE_URL: 'https://qapmt.apollo247.com',
+  DIAGNOSTICS_PG_SUCCESS_PATH: '/diagnostic-pg-success?',
+  DIAGNOSTICS_PG_ERROR_PATH: '/diagnostic-pg-error?',
+  DIAGNOSTICS_PG_CANCEL_PATH: '/diagnostic-pg-cancel-url',
+  MIN_CART_VALUE_FOR_FREE_DELIVERY: 200,
+  DELIVERY_CHARGES: 25,
+  DIASGNOS_DELIVERY_CHARGES: 0,
+  PRAKTISE_API_KEY: 'AFF2F0D8-5320-4E4D-A673-33626CD1C3F2', //'4A8C9CCC-C5A3-11E9-9A19-8C85900A8328',
+  PRO_TOKBOX_KEY: '46429002',
+  PRO_PUBNUB_PUBLISH: 'pub-c-75e6dc17-2d81-4969-8410-397064dae70e',
+  PRO_PUBNUB_SUBSCRIBER: 'sub-c-9cc337b6-e0f4-11e9-8d21-f2f6e193974b',
+  DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
+  GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
+  TOP_SPECIALITIES: QA_top6_specailties,
+  ...PharmaApiConfig.dev,
+  ...appStaticVariables,
+  iOS_Version: '2.631',
+  Android_Version: '2.631',
+  CONDITIONAL_MANAGENET_BASE_URL: 'https://aph.staging.pmt.popcornapps.com',
+  BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e',
+  COVID_RISK_LEVEL_URL:
+    'https://aph.staging.web-patients.popcornapps.com/covid19/cough-scan?utm_source=mobile_app',
+  COVID_LATEST_ARTICLES_URL:
+    'https://qapatients.apollo247.com/covid19?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Covid19%20Content',
   CONSULT_COUPON_BASE_URL: 'https://validcoupon.apollo247.com',
   KAVACH_URL: 'https://www.apollo247.com/covid19/kavach?utm_source=mobile_app&utm_medium=Webview',
 };
 
 // staging
 const ConfigurationStaging = {
-  LOG_ENVIRONMENT: 'release',
-  ANALYTICAL_ENIVRONMENT: 'release',
-  MEDICINE_PAST_SEARCHES_SHOW_COUNT: 5,
+  CODE_PUSH_DEPLOYMENT_KEY_ANDROID: '8njVNeiezjGyi0BjIuIWOWm_N3zo2uVb5Z5_B',
+  CODE_PUSH_DEPLOYMENT_KEY_IOS: 'IwojMQex0fbTUlvY1ydYzMT5l7hrLrbLy0ciH',
   PAYMENT_GATEWAY_BASE_URL: 'https://stagingpmt.apollo247.com',
   PAYMENT_GATEWAY_SUCCESS_PATH: '/mob?',
   PAYMENT_GATEWAY_ERROR_PATH: '/mob-error?',
@@ -439,9 +477,8 @@ const ConfigurationStaging = {
 };
 //Production
 const ConfigurationProd = {
-  LOG_ENVIRONMENT: 'release',
-  ANALYTICAL_ENIVRONMENT: 'release',
-  MEDICINE_PAST_SEARCHES_SHOW_COUNT: 5,
+  CODE_PUSH_DEPLOYMENT_KEY_ANDROID: 'ncBcxm590r0jEGT4BjQFTAW0_rkHKvF5xYUDX',
+  CODE_PUSH_DEPLOYMENT_KEY_IOS: 'N9LT5oUoB9DUv394XXz05Tywn3LKgHsugfl3i',
   PAYMENT_GATEWAY_BASE_URL: 'https://pmt.apollo247.com', //PRODUCTION
   PAYMENT_GATEWAY_SUCCESS_PATH: '/mob?',
   PAYMENT_GATEWAY_ERROR_PATH: '/mob-error?',
@@ -479,9 +516,8 @@ const ConfigurationProd = {
 
 //PERFORMANCE
 const ConfigurationPERFORM = {
-  LOG_ENVIRONMENT: 'perform',
-  ANALYTICAL_ENIVRONMENT: 'perform',
-  MEDICINE_PAST_SEARCHES_SHOW_COUNT: 5,
+  CODE_PUSH_DEPLOYMENT_KEY_ANDROID: '',
+  CODE_PUSH_DEPLOYMENT_KEY_IOS: '',
   PAYMENT_GATEWAY_BASE_URL: 'https://aspmt.apollo247.com',
   PAYMENT_GATEWAY_SUCCESS_PATH: '/mob?',
   PAYMENT_GATEWAY_ERROR_PATH: '/mob-error?',
@@ -520,9 +556,8 @@ const ConfigurationPERFORM = {
 
 //VAPT
 const ConfigurationVAPT = {
-  LOG_ENVIRONMENT: 'VAPT',
-  ANALYTICAL_ENIVRONMENT: 'VAPT',
-  MEDICINE_PAST_SEARCHES_SHOW_COUNT: 5,
+  CODE_PUSH_DEPLOYMENT_KEY_ANDROID: '',
+  CODE_PUSH_DEPLOYMENT_KEY_IOS: '',
   PAYMENT_GATEWAY_BASE_URL: 'http://aph.vapt.pmt.popcornapps.com',
   PAYMENT_GATEWAY_SUCCESS_PATH: '/mob?',
   PAYMENT_GATEWAY_ERROR_PATH: '/mob-error?',
@@ -561,9 +596,8 @@ const ConfigurationVAPT = {
 
 //DevelopmentReplica
 const ConfigurationDevReplica = {
-  LOG_ENVIRONMENT: 'debug',
-  ANALYTICAL_ENIVRONMENT: 'debug',
-  MEDICINE_PAST_SEARCHES_SHOW_COUNT: 5,
+  CODE_PUSH_DEPLOYMENT_KEY_ANDROID: '',
+  CODE_PUSH_DEPLOYMENT_KEY_IOS: '',
   PAYMENT_GATEWAY_BASE_URL: 'https://devpmt.apollo247.com',
   PAYMENT_GATEWAY_SUCCESS_PATH: '/mob?',
   PAYMENT_GATEWAY_ERROR_PATH: '/mob-error?',
@@ -605,6 +639,8 @@ const Configuration =
     ? ConfigurationProd
     : APP_ENV == AppEnv.QA
     ? ConfigurationQA
+    : APP_ENV == AppEnv.QA2
+    ? ConfigurationQA2
     : APP_ENV == AppEnv.STAGING
     ? ConfigurationStaging
     : APP_ENV == AppEnv.PERFORM
