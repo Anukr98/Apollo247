@@ -11,6 +11,7 @@ import {
   sendNotificationWhatsapp,
 } from 'notifications-service/resolvers/notifications';
 import { ApiConstants } from 'ApiConstants';
+import { createPrismUser } from 'helpers/phrV1Services';
 
 export const getPatientTypeDefs = gql`
   type PatientInfo {
@@ -158,18 +159,17 @@ const addNewProfile: Resolver<
     throw new AphError(AphErrorMessages.INVALID_PATIENT_DETAILS, undefined, {});
   const savePatient = await patientRepo.create(patientProfileInput);
 
-  await patientRepo.createNewUhid(savePatient);
-
-  //patientRepo.createAthsToken(savePatient.id);  // not needed as per new payment integration
-  const patient = await patientRepo.getPatientDetails(savePatient.id);
-
-  if (!patient || patient == null) {
-    throw new AphError(AphErrorMessages.INVALID_PATIENT_DETAILS, undefined, {});
+  const uhidResp = await patientRepo.getNewUhid(savePatient);
+  if (uhidResp.retcode == '0') {
+    savePatient.uhid = uhidResp.result;
+    savePatient.primaryUhid = uhidResp.result;
+    savePatient.uhidCreatedDate = new Date();
   }
-
+  await savePatient.save();
+  createPrismUser(savePatient, uhidResp.result.toString());
   //send registration success notification here
-  sendPatientRegistrationNotification(patient, profilesDb, '');
-  return { patient };
+  sendPatientRegistrationNotification(savePatient, profilesDb, '');
+  return { patient: savePatient };
 };
 
 const editProfile: Resolver<
