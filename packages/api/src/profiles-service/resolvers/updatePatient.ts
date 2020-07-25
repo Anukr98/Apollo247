@@ -14,6 +14,7 @@ import {
   ReferalCouponMappingRepository,
 } from 'profiles-service/repositories/couponRepository';
 import { ApiConstants } from 'ApiConstants';
+import { createPrismUser } from 'helpers/phrV1Services';
 
 export const updatePatientTypeDefs = gql`
   input UpdatePatientInput {
@@ -93,8 +94,10 @@ const updatePatient: Resolver<
       patient.uhid = uhidResp.result;
       patient.primaryUhid = uhidResp.result;
       patient.uhidCreatedDate = new Date();
+      createPrismUser(patient, uhidResp.result.toString());
     }
   }
+  await patient.save();
 
   //Doubt: Do we need to check getPatientList.length == 1 since it is getting called only on first call
 
@@ -127,7 +130,7 @@ const updatePatient: Resolver<
     }
   }
   // Object.assign(patient, await patientRepo.getPatientDetails(patientInput.id));
-  return { patient: await patient.save() };
+  return { patient };
 };
 
 const updatePatientAllergies: Resolver<
