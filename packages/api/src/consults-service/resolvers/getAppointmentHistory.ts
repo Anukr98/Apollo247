@@ -216,7 +216,7 @@ const getAppointmentStatus: Resolver<
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
   let appointment;
   try {
-    appointment = await appointmentRepo.findOneByAppointmentId(
+    appointment = await appointmentRepo.findById(
       args.id
     );
     if (appointment == null) throw new AphError(AphErrorMessages.APPOINTMENT_ID_NOT_FOUND);

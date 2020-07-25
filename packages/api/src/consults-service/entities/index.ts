@@ -11,12 +11,13 @@ import {
   ManyToOne,
   Index,
   UpdateDateColumn,
-  CreateDateColumn
+  CreateDateColumn,
+  AfterUpdate
 } from 'typeorm';
 import { Validate, IsDate } from 'class-validator';
 import { DoctorType, ROUTE_OF_ADMINISTRATION } from 'doctors-service/entities';
 import { NameValidator, MobileNumberValidator, EmailValidator } from 'validators/entityValidators';
-
+import { delCache } from 'consults-service/database/connectRedis';
 import { log } from 'customWinstonLogger';
 
 export enum APPOINTMENT_UPDATED_BY {
@@ -379,8 +380,13 @@ export class Appointment extends BaseEntity {
   @OneToMany((type) => AuditHistory, (auditHistory) => auditHistory.appointment)
   auditHistory: AuditHistory[];
 
-  @OneToMany(() => ExotelDetails, (callDetail: ExotelDetails) => { callDetail.appointment }, {onDelete: 'CASCADE', onUpdate: 'CASCADE'})
+  @OneToMany(() => ExotelDetails, (callDetail: ExotelDetails) => { callDetail.appointment }, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
   callDetails: Array<ExotelDetails>
+
+  @AfterUpdate()
+  async dropAppointmentCache() {
+    await delCache(`patient:appointment:${this.id}`);
+  }
 
 }
 //Appointment ends
@@ -1806,7 +1812,7 @@ export class ExotelDetails extends BaseEntity {
   appointmentId: string;
 
   @ManyToOne(() => Appointment, (appointment: Appointment) => { appointment.callDetails })
-  @JoinColumn({name: 'appointmentId'})
+  @JoinColumn({ name: 'appointmentId' })
   appointment: Appointment
 
   @Index('ExotelDetails_doctorType')
@@ -1864,7 +1870,7 @@ export class ExotelDetails extends BaseEntity {
   @CreateDateColumn()
   createdDate: Date;
 
-  @Column({type: 'timestamp' })
+  @Column({ type: 'timestamp' })
   callStartTime: Date;
 
   @Column({ nullable: true, type: 'timestamp' })
