@@ -1387,7 +1387,7 @@ const generatePrescriptionTemp: Resolver<
   if (getCaseSheetData == null) throw new AphError(AphErrorMessages.INVALID_CASESHEET_ID);
 
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
-  const patientData = await patientRepo.getPatientDetails(getCaseSheetData.patientId);
+  const patientData = await patientRepo.getPatientData(getCaseSheetData.patientId);
   if (patientData == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
 
   let caseSheetAttrs: Partial<CaseSheet> = {
