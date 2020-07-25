@@ -8,7 +8,6 @@ import { PatientRepository } from 'profiles-service/repositories/patientReposito
 import { sendNotificationSMS } from 'notifications-service/resolvers/notifications';
 import { trim } from 'lodash';
 import { isValidReferralCode } from '@aph/universal/dist/aphValidators';
-import { delCache } from 'profiles-service/database/connectRedis';
 
 import {
   ReferralCodesMasterRepository,
@@ -82,34 +81,35 @@ const updatePatient: Resolver<
     updateAttrs.referralCode = referralCode;
   }
 
-  const patient = await patientRepo.findByIdWithoutRelations(patientInput.id);
+  const patient = await patientRepo.getPatientDetails(patientInput.id);
   if (!patient || patient == null) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
 
   Object.assign(patient, updateAttrs);
   if (patient.uhid == '' || patient.uhid == null) {
-    console.log('calling createNewUhid');
-    await patientRepo.createNewUhid(patient);
-    await delCache(`${REDIS_PATIENT_ID_KEY_PREFIX}${patient.id}`);
-  } else {
-    await patientRepo.updatePatientDetails(patient);
+    const uhidResp = await patientRepo.getNewUhid(patient);
+    if (uhidResp.retcode == '0') {
+      patient.uhid = uhidResp.result;
+      patient.primaryUhid = uhidResp.result;
+      patient.uhidCreatedDate = new Date();
+    }
   }
 
-  const getPatientList = await patientRepo.findByMobileNumber(patient.mobileNumber);
-  if (patient.relation == Relation.ME || getPatientList.length == 1) {
+  //Doubt: Do we need to check getPatientList.length == 1 since it is getting called only on first call
+
+  // const getPatientList = await patientRepo.findByMobileNumber(patient.mobileNumber);
+  if (patient.relation == Relation.ME) {
     //send registration success notification here
     // sendPatientRegistrationNotification(updatePatient, profilesDb, regCode);
     if (updateAttrs.referralCode) {
-      const referralCodesMasterRepo = await profilesDb.getCustomRepository(
-        ReferralCodesMasterRepository
-      );
+      const referralCodesMasterRepo = profilesDb.getCustomRepository(ReferralCodesMasterRepository);
       const referralCodeExist = await referralCodesMasterRepo.findByReferralCode(
         updateAttrs.referralCode
       );
       let smsText = ApiConstants.REFERRAL_CODE_TEXT.replace('{0}', patient.firstName);
       if (referralCodeExist) {
-        const referalCouponMappingRepo = await profilesDb.getCustomRepository(
+        const referalCouponMappingRepo = profilesDb.getCustomRepository(
           ReferalCouponMappingRepository
         );
         const mappingData = await referalCouponMappingRepo.findByReferralCodeId(
@@ -126,8 +126,8 @@ const updatePatient: Resolver<
       }
     }
   }
-  Object.assign(patient, await patientRepo.getPatientDetails(patientInput.id));
-  return { patient };
+  // Object.assign(patient, await patientRepo.getPatientDetails(patientInput.id));
+  return { patient: await patient.save() };
 };
 
 const updatePatientAllergies: Resolver<

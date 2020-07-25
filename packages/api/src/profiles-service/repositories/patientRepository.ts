@@ -8,7 +8,6 @@ import { UploadDocumentInput } from 'profiles-service/resolvers/uploadDocumentTo
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { format, getUnixTime } from 'date-fns';
-import { AthsTokenResponse } from 'types/uhidCreateTypes';
 import { debugLog } from 'customWinstonLogger';
 import { createPrismUser } from 'helpers/phrV1Services';
 import {
@@ -191,7 +190,6 @@ export class PatientRepository extends Repository<Patient> {
     if (patientList.length > 1) {
       patientList.map(async (patient) => {
         if (patient.firstName == '' || patient.uhid == '') {
-          console.log(patient.id, 'blank card');
           patient.isActive = false;
           this.save(patient);
         } else if (patient.primaryPatientId == null) {
@@ -380,20 +378,6 @@ export class PatientRepository extends Repository<Patient> {
     } else return null;
   }
 
-  async updateUhid(id: string, uhid: string) {
-    const patient = await this.getByIdCache(id);
-    if (patient) {
-      Object.assign(patient, {
-        id,
-        uhid,
-        uhidCreatedDate: new Date(),
-        primaryUhid: uhid,
-        primaryPatientId: id,
-      });
-      return await this.save(patient);
-    } else return null;
-  }
-
   updateLinkedUhidAccount(
     ids: string[],
     column: string,
@@ -434,36 +418,35 @@ export class PatientRepository extends Repository<Patient> {
     }
   }
 
-  async updateToken(id: string, athsToken: string) {
-    const patient = this.create({ id, athsToken });
-    return await patient.save();
-  }
-
   async deleteProfile(id: string) {
-    const patient = this.create({ id, isActive: false });
-    return await patient.save();
+    const patient = await this.getPatientDetails(id);
+    if (patient) {
+      patient.isActive = false;
+      return await patient.save();
+    }
   }
 
   async createNewUhid(patientDetails: Patient) {
-    await this.dropPatientCache(`${REDIS_PATIENT_ID_KEY_PREFIX}${patientDetails.id}`);
     //setting mandatory fields to create uhid in medmantra
-
-    if (patientDetails.firstName === null || patientDetails.firstName === '') {
-      patientDetails.firstName = 'New';
-    }
-    if (patientDetails.lastName === null || patientDetails.lastName === '') {
-      patientDetails.lastName = 'User';
-    }
-    if (patientDetails.emailAddress === null) {
-      patientDetails.emailAddress = '';
-    }
-    if (patientDetails.dateOfBirth === null) {
-      patientDetails.dateOfBirth = new Date('1970-01-01');
+    const uhidResp: UhidCreateResult = await this.getNewUhid(patientDetails);
+    if (uhidResp.retcode == '0') {
+      patientDetails.uhid = uhidResp.result;
+      patientDetails.primaryUhid = uhidResp.result;
+      patientDetails.uhidCreatedDate = new Date();
+      patientDetails.save();
+      createPrismUser(patientDetails, uhidResp.result.toString());
     }
 
-    if (patientDetails == null)
-      throw new AphError(AphErrorMessages.SAVE_NEW_PROFILE_ERROR, undefined, {});
-    const newUhidUrl = process.env.CREATE_NEW_UHID_URL ? process.env.CREATE_NEW_UHID_URL : '';
+    return uhidResp.result || '';
+  }
+
+  async getNewUhid(patientDetails: Patient) {
+    patientDetails.firstName = patientDetails.firstName || 'New';
+    patientDetails.lastName = patientDetails.lastName || 'User';
+    patientDetails.emailAddress = patientDetails.emailAddress || '';
+    patientDetails.dateOfBirth = null || new Date('1970-01-01');
+
+    const newUhidUrl = process.env.CREATE_NEW_UHID_URL || '';
     const uhidInput = {
       OnlineAppointmentID: null,
       Title: '1',
@@ -526,7 +509,6 @@ export class PatientRepository extends Repository<Patient> {
         Citizenship: '',
       },
     };
-
     const reqStartTime = new Date();
     const uhidCreateResp = await fetch(newUhidUrl, {
       method: 'POST',
@@ -543,109 +525,31 @@ export class PatientRepository extends Repository<Patient> {
       );
       throw new AphError(AphErrorMessages.PRISM_CREATE_UHID_ERROR);
     });
-
     const textProcessRes = await uhidCreateResp.text();
     dLogger(
       reqStartTime,
       'createNewUhid CREATE_NEW_UHID_URL_API_CALL___END',
       `${newUhidUrl} --- ${JSON.stringify(uhidInput)} --- ${textProcessRes}`
     );
-
     const uhidResp: UhidCreateResult = JSON.parse(textProcessRes);
-    let newUhid = '';
-    if (uhidResp.retcode == '0') {
-      newUhid = uhidResp.result;
-      //const { id, ...updateAttrs } = patientDetails;
-      patientDetails.uhid = newUhid;
-      patientDetails.primaryUhid = newUhid;
-      patientDetails.uhidCreatedDate = new Date();
-      await this.save(patientDetails);
-      //await this.updateEntity<Patient>(Patient, id, updateAttrs);
-      //await this.updateUhid(patientDetails.id, uhidResp.result.toString());
-      createPrismUser(patientDetails, uhidResp.result.toString());
-    }
-    return newUhid;
+    return uhidResp;
   }
 
   async updatePatientDetails(patientDetails: Patient) {
-    const resp = await this.save(patientDetails);
-    console.log(resp, 'update response');
-  }
-
-  async createAthsToken(id: string) {
-    const patientDetails = await this.getPatientDetails(id);
-    if (patientDetails == null)
-      throw new AphError(AphErrorMessages.SAVE_NEW_PROFILE_ERROR, undefined, {});
-    let patientDob = new Date('1984-01-01');
-    if (patientDetails.dateOfBirth != null) {
-      patientDob = patientDetails.dateOfBirth;
-    }
-    const athsTokenInput = {
-      AdminId: process.env.ATHS_TOKEN_ADMIN ? process.env.ATHS_TOKEN_ADMIN.toString() : '',
-      AdminPassword: process.env.ATHS_TOKEN_PWD ? process.env.ATHS_TOKEN_PWD.toString() : '',
-      FirstName: patientDetails.firstName,
-      LastName: patientDetails.lastName,
-      countryCode: ApiConstants.COUNTRY_CODE.toString(),
-      PhoneNumber: patientDetails.mobileNumber,
-      DOB: format(patientDob, 'dd/MM/yyyy'),
-      Gender: '1',
-      PartnerUserId: '1012',
-      SourceApp: process.env.ATHS_SOURCE_APP ? process.env.ATHS_SOURCE_APP.toString() : '',
-    };
-    const athsTokenUrl = process.env.ATHS_TOKEN_CREATE ? process.env.ATHS_TOKEN_CREATE : '';
-
-    const reqStartTime = new Date();
-    const tokenResp = await fetch(athsTokenUrl, {
-      method: 'POST',
-      body: JSON.stringify(athsTokenInput),
-      headers: { 'Content-Type': 'application/json' },
-    })
-      .then((res) => {
-        return res.text();
-      })
-      .catch((error) => {
-        dLogger(
-          reqStartTime,
-          'createAthsToken ATHS_TOKEN_CREATE_API_CALL___ERROR',
-          `${athsTokenUrl} --- ${JSON.stringify(athsTokenInput)} --- ${JSON.stringify(error)}`
-        );
-        throw new AphError(AphErrorMessages.PRISM_CREATE_ATHS_TOKEN_ERROR);
-      });
-    dLogger(
-      reqStartTime,
-      'createAthsToken ATHS_TOKEN_CREATE_API_CALL___END',
-      `${athsTokenUrl} --- ${JSON.stringify(athsTokenInput)} --- ${JSON.stringify(tokenResp)}`
-    );
-
-    const tokenResult: AthsTokenResponse = JSON.parse(tokenResp);
-    if (tokenResult.Result && tokenResult.Result != '') {
-      this.updateToken(id, JSON.parse(tokenResult.Result).Token);
-    }
-    console.log(
-      tokenResult,
-      'respp',
-      tokenResult.Result,
-      JSON.parse(tokenResult.Result),
-      JSON.parse(tokenResult.Result).Token
-    );
+    await this.save(patientDetails);
   }
 
   async getIdsByMobileNumber(mobileNumber: string) {
     return await this.findByMobileNumber(mobileNumber);
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async getLinkedPatientIds({ patientDetails, patientId }: any) {
     if (!patientDetails) {
       patientDetails = await this.getPatientDetails(patientId);
     }
     const primaryPatientIds: string[] = [];
-    if (
-      patientDetails &&
-      patientDetails.uhid != '' &&
-      patientDetails.uhid != null &&
-      patientDetails.primaryPatientId != null &&
-      patientDetails.primaryPatientId != ''
-    ) {
+    if (patientDetails && !patientDetails.uhid && !patientDetails.primaryPatientId) {
       const patientsList = await this.find({
         where: { primaryPatientId: patientDetails.primaryPatientId },
       });
