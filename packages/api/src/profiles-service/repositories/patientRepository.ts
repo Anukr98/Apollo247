@@ -544,12 +544,18 @@ export class PatientRepository extends Repository<Patient> {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  async getLinkedPatientIds({ patientDetails, patientId }: any) {
+  async getpatientDetailsIds({ patientDetails, patientId }: any) {
     if (!patientDetails) {
       patientDetails = await this.getPatientDetails(patientId);
     }
     const primaryPatientIds: string[] = [];
-    if (patientDetails && !patientDetails.uhid && !patientDetails.primaryPatientId) {
+    if (
+      patientDetails &&
+      patientDetails.uhid != '' &&
+      patientDetails.uhid != null &&
+      patientDetails.primaryPatientId != null &&
+      patientDetails.primaryPatientId != ''
+    ) {
       const patientsList = await this.find({
         where: { primaryPatientId: patientDetails.primaryPatientId },
       });
