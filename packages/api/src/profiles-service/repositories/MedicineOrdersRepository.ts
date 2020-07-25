@@ -126,8 +126,7 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
   }
 
   findPharamaOrdersByOrderId(orderAutoId: MedicineOrders['orderAutoId']) {
-    return this.createQueryBuilder()
-      .from(MedicineOrders, 'mo')
+    return this.createQueryBuilder('mo')
       .leftJoinAndSelect(
         MedicineOrderPayments,
         'mp',
