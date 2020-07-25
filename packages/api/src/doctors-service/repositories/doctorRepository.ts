@@ -49,7 +49,6 @@ export class DoctorRepository extends Repository<Doctor> {
     previousDate = addDays(availableDate, -1);
     const checkStart = `${previousDate.toDateString()} 18:30:00`;
     const checkEnd = `${availableDate.toDateString()} 18:30:00`;
-    console.log(checkStart, checkEnd, 'check start end');
     let weekDay = format(previousDate, 'EEEE').toUpperCase();
     let timeSlots = await ConsultHours.find({
       where: { doctor: doctorId, weekDay },
@@ -152,38 +151,53 @@ export class DoctorRepository extends Repository<Doctor> {
       });
     }
     const appts = consultsDb.getCustomRepository(AppointmentRepository);
-    const apptSlots = await appts.findByDateDoctorId(doctorId, availableDate);
-    if (apptSlots && apptSlots.length > 0) {
-      apptSlots.map((appt) => {
-        const apptDt = format(appt.appointmentDateTime, 'yyyy-MM-dd');
-        const sl = `${apptDt}T${appt.appointmentDateTime
-          .getUTCHours()
-          .toString()
-          .padStart(2, '0')}:${appt.appointmentDateTime
-            .getUTCMinutes()
-            .toString()
-            .padStart(2, '0')}:00.000Z`;
-        if (availableSlots.indexOf(sl) >= 0) {
-          doctorSlots[availableSlots.indexOf(sl)].status = ES_DOCTOR_SLOT_STATUS.BOOKED;
-          //availableSlots.splice(availableSlots.indexOf(sl), 1);
-        }
-      });
-    }
-    const doctorBblockedSlots = await appts.getDoctorBlockedSlots(
+    const apptSlots = appts.findByDateDoctorId(doctorId, availableDate).catch(error => { return error; });
+    const doctorBblockedSlots = appts.getDoctorBlockedSlots(
       doctorId,
       availableDate,
       doctorsDb,
       availableSlots
-    );
-    if (doctorBblockedSlots.length > 0) {
-      availableSlots = availableSlots.filter((val) => {
-        !doctorBblockedSlots.includes(val);
-        if (doctorBblockedSlots.includes(val)) {
-          doctorSlots[availableSlots.indexOf(val)].status = ES_DOCTOR_SLOT_STATUS.BLOCKED;
+    ).catch(error => { return error; });
+
+    const slots = [apptSlots, doctorBblockedSlots];
+
+    return Promise.all(slots)
+      .then(res => {
+        const apptSlots = res[0];
+        const doctorBblockedSlots = res[1];
+
+        if (apptSlots && apptSlots.length > 0) {
+          apptSlots.map((appt: any) => {
+            const apptDt = format(appt.appointmentDateTime, 'yyyy-MM-dd');
+            const sl = `${apptDt}T${appt.appointmentDateTime
+              .getUTCHours()
+              .toString()
+              .padStart(2, '0')}:${appt.appointmentDateTime
+                .getUTCMinutes()
+                .toString()
+                .padStart(2, '0')}:00.000Z`;
+            if (availableSlots.indexOf(sl) >= 0) {
+              doctorSlots[availableSlots.indexOf(sl)].status = ES_DOCTOR_SLOT_STATUS.BOOKED;
+            }
+          });
         }
+
+
+        if (doctorBblockedSlots.length > 0) {
+          availableSlots = availableSlots.filter((val) => {
+            !doctorBblockedSlots.includes(val);
+            if (doctorBblockedSlots.includes(val)) {
+              doctorSlots[availableSlots.indexOf(val)].status = ES_DOCTOR_SLOT_STATUS.BLOCKED;
+            }
+          });
+        }
+
+        return doctorSlots;
+      }).catch(error => {
+        throw new AphError(AphErrorMessages.GET_DOCTOR_SLOT_ERROR, undefined, {
+          error,
+        });
       });
-    }
-    return doctorSlots;
   }
 
   async getDoctorProfileData(id: string) {
