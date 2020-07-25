@@ -157,19 +157,19 @@ const addNewProfile: Resolver<
 
   if (pateintDetails == null || pateintDetails.length == 0)
     throw new AphError(AphErrorMessages.INVALID_PATIENT_DETAILS, undefined, {});
-  const savePatient = await patientRepo.create(patientProfileInput);
+  const patient = await patientRepo.create(patientProfileInput);
 
-  const uhidResp = await patientRepo.getNewUhid(savePatient);
+  const uhidResp = await patientRepo.getNewUhid(patient);
   if (uhidResp.retcode == '0') {
-    savePatient.uhid = uhidResp.result;
-    savePatient.primaryUhid = uhidResp.result;
-    savePatient.uhidCreatedDate = new Date();
+    patient.uhid = uhidResp.result;
+    patient.primaryUhid = uhidResp.result;
+    patient.uhidCreatedDate = new Date();
   }
-  await savePatient.save();
-  createPrismUser(savePatient, uhidResp.result.toString());
+  await patient.save();
+  createPrismUser(patient, uhidResp.result.toString());
   //send registration success notification here
-  sendPatientRegistrationNotification(savePatient, profilesDb, '');
-  return { patient: savePatient };
+  sendPatientRegistrationNotification(patient, profilesDb, '');
+  return { patient };
 };
 
 const editProfile: Resolver<
