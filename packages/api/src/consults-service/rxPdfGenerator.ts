@@ -64,29 +64,29 @@ export const convertCaseSheetToRxPdfData = async (
       let frequency;
       const plural =
         csRx.medicineUnit == MEDICINE_UNIT.ML ||
-        csRx.medicineUnit == MEDICINE_UNIT.MG ||
-        csRx.medicineUnit == MEDICINE_UNIT.AS_PRESCRIBED
+          csRx.medicineUnit == MEDICINE_UNIT.MG ||
+          csRx.medicineUnit == MEDICINE_UNIT.AS_PRESCRIBED
           ? ''
           : '(s)';
       const customDosage = csRx.medicineCustomDosage
         ? csRx.medicineCustomDosage
-            .split('-')
-            .filter((value) => parseInt(value, 10))
-            .join(
-              ' ' +
-                csRx.medicineUnit
-                  .split('_')
-                  .join(' ')
-                  .toLowerCase() +
-                plural +
-                ' - '
-            ) +
-          ' ' +
-          csRx.medicineUnit
-            .split('_')
-            .join(' ')
-            .toLowerCase() +
-          plural
+          .split('-')
+          .filter((value) => parseInt(value, 10))
+          .join(
+            ' ' +
+            csRx.medicineUnit
+              .split('_')
+              .join(' ')
+              .toLowerCase() +
+            plural +
+            ' - '
+          ) +
+        ' ' +
+        csRx.medicineUnit
+          .split('_')
+          .join(' ')
+          .toLowerCase() +
+        plural
         : '';
       if (csRx.medicineFormTypes != MEDICINE_FORM_TYPES.OTHERS) {
         frequency = 'Apply';
@@ -275,9 +275,9 @@ export const convertCaseSheetToRxPdfData = async (
         patientData.dateOfBirth === null
           ? ''
           : Math.abs(
-              new Date(Date.now()).getUTCFullYear() -
-                new Date(patientData.dateOfBirth).getUTCFullYear()
-            ).toString();
+            new Date(Date.now()).getUTCFullYear() -
+            new Date(patientData.dateOfBirth).getUTCFullYear()
+          ).toString();
       patientInfo = {
         firstName: patientData.firstName,
         lastName: patientData.lastName,
@@ -313,7 +313,7 @@ export const convertCaseSheetToRxPdfData = async (
         hospitalAddress = {
           name: hospitalDetails.name,
           streetLine1: hospitalDetails.streetLine1,
-          streetLine2: hospitalDetails.streetLine2,
+          streetLine2: hospitalDetails.streetLine2 || '',
           city: hospitalDetails.city,
           zipcode: hospitalDetails.zipcode,
           state: hospitalDetails.state,
@@ -330,6 +330,7 @@ export const convertCaseSheetToRxPdfData = async (
         specialty: doctordata.specialty.name,
         signature: doctordata.signature,
       };
+      console.log(doctorInfo);
     }
   }
 
@@ -449,6 +450,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
     if (doc.y > doc.page.height - 150) {
       pageBreak();
     }
+
     if (image.length > 0)
       return (
         doc
@@ -526,7 +528,9 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
       .image(loadAsset('apolloLogo.png'), margin, margin / 2, { width: 87, height: 64 });
 
     //Doctor Details
-    const nameLine = `${doctorInfo.salutation}. ${doctorInfo.firstName} ${doctorInfo.lastName}`;
+    const nameLine = `${doctorInfo.salutation.replace('.', '')}. ${doctorInfo.firstName} ${
+      doctorInfo.lastName
+      }`;
     const specialty = doctorInfo.specialty;
     const registrationLine = `Reg.No. ${doctorInfo.registrationNumber}`;
 
@@ -534,7 +538,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
       .fontSize(11)
       .font(assetsDir + '/fonts/IBMPlexSans-Regular.ttf')
       .fillColor('#02475b')
-      .text(nameLine, 370, margin);
+      .text(nameLine, 320, margin);
 
     if (doctorInfo.qualifications) {
       doc
@@ -554,20 +558,45 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
     //Doctor Address Details
     const addressLastLine = `${hospitalAddress.city}  ${
       hospitalAddress.zipcode ? ' - ' + hospitalAddress.zipcode : ''
-    } | ${hospitalAddress.state}, ${hospitalAddress.country}`;
+      } | ${hospitalAddress.state}, ${hospitalAddress.country}`;
 
     doc
       .moveDown(0.3)
       .fontSize(8)
       .font(assetsDir + '/fonts/IBMPlexSans-Regular.ttf')
-      .fillColor('#000000')
+      .fillColor('#666666')
       .text(hospitalAddress.name);
 
     doc.moveDown(0.2).text(hospitalAddress.streetLine1);
     if (hospitalAddress.streetLine2) doc.moveDown(0.2).text(hospitalAddress.streetLine2);
     doc.moveDown(0.2).text(addressLastLine);
 
-    doc.moveDown(2);
+    doc
+      .moveDown(0.6)
+      .fillColor('#999999')
+      .text(`${ApiConstants.CASESHEET_WHATSAPP_LABEL.toString()}`, { lineBreak: false })
+      .text(`${ApiConstants.CASESHEET_EMAIL_LABEL.toString()}`, 435, doc.y);
+
+    doc
+      .moveDown(0.5)
+      .fillColor('#333333')
+      .image(loadAsset('ic-phone.png'), 320, doc.y, {
+        valign: 'bottom',
+        height: 12,
+        width: 12,
+      })
+      .fontSize(10)
+      .text(`${ApiConstants.CASESHEET_WHATSAPP_NUMBER.toString()}`, 340, doc.y - 12, {
+        lineBreak: false,
+      })
+      .image(loadAsset('ic-email.png'), 435, doc.y, {
+        valign: 'bottom',
+        height: 12,
+        width: 12,
+      })
+      .text(`${ApiConstants.CASESHEET_EMAIL.toString()}`, 455, doc.y - 12);
+
+    doc.moveDown(0.5);
   };
 
   const renderFooter = () => {
@@ -692,11 +721,11 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
           .fillColor('#666666')
           .text(
             `To be ${
-              prescription.medicineFormTypes != MEDICINE_FORM_TYPES.OTHERS ? 'Applied' : 'taken'
+            prescription.medicineFormTypes != MEDICINE_FORM_TYPES.OTHERS ? 'Applied' : 'taken'
             }: ${
-              prescription.routeOfAdministration != ROUTE_OF_ADMINISTRATION.INTRA_ARTICULAR
-                ? prescription.routeOfAdministration.split('_').join(' ')
-                : 'Intra-articular'
+            prescription.routeOfAdministration != ROUTE_OF_ADMINISTRATION.INTRA_ARTICULAR
+              ? prescription.routeOfAdministration.split('_').join(' ')
+              : 'Intra-articular'
             } `,
             margin + 30
           )
@@ -951,7 +980,9 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
       }
 
       //Doctor Details
-      const nameLine = `${doctorInfo.salutation}. ${doctorInfo.firstName} ${doctorInfo.lastName}`;
+      const nameLine = `${doctorInfo.salutation.replace('.', '')}. ${doctorInfo.firstName} ${
+        doctorInfo.lastName
+        }`;
       const specialty = doctorInfo.specialty;
       const registrationLine = `Reg.No. ${doctorInfo.registrationNumber}`;
 
@@ -992,6 +1023,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
   renderHeader(rxPdfData.doctorInfo, rxPdfData.hospitalAddress);
 
   if (!_isEmpty(rxPdfData.patientInfo)) {
+    doc.moveUp(1.5);
     renderpatients(rxPdfData.patientInfo, rxPdfData.appointmentDetails);
     doc.moveDown(1.5);
   }

@@ -175,6 +175,21 @@ const sendCallNotification: Resolver<
       appointmentCallDetails.id
     );
     console.log(notificationResult, 'doctor call appt notification');
+  } else {
+    const pushNotificationInput = {
+      appointmentId: args.appointmentId,
+      notificationType: NotificationType.WHATSAPP_CHAT_NOTIFICATION,
+    };
+    const notificationResult = sendCallsNotification(
+      pushNotificationInput,
+      patientsDb,
+      consultsDb,
+      doctorsDb,
+      args.callType,
+      args.doctorType,
+      appointmentCallDetails.id
+    );
+    console.log(notificationResult, 'doctor call appt notification');
   }
   return { status: true, callDetails: appointmentCallDetails };
 };
@@ -236,7 +251,12 @@ const sendPatientWaitNotification: Resolver<
       .replace('{4}', appointment.appointmentDateTime.toISOString())
       .replace('{5}', devLink);
     //whatsAppMessageBody += applicationLink;
-    await sendDoctorNotificationWhatsapp(doctorDetails.mobileNumber, whatsAppMessageBody, 1);
+    await sendDoctorNotificationWhatsapp(
+      doctorDetails.mobileNumber,
+      whatsAppMessageBody,
+      1,
+      doctorDetails.doctorType
+    );
   }
   return { status: true };
 };

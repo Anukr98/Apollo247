@@ -29,7 +29,6 @@ import { apiRoutes } from './apiRoutes';
 import {
   CommonBugFender,
   setBugFenderLog,
-  CommonLogEvent,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { getDiagnosticSlots_getDiagnosticSlots_diagnosticSlot_slotInfo } from '@aph/mobile-patients/src/graphql/types/getDiagnosticSlots';
 import {
@@ -88,7 +87,7 @@ export interface TestSlot {
   slotInfo: getDiagnosticSlots_getDiagnosticSlots_diagnosticSlot_slotInfo;
 }
 
-const isDebugOn = AppConfig.Configuration.LOG_ENVIRONMENT == 'debug';
+const isDebugOn = __DEV__;
 
 export const aphConsole: AphConsole = {
   error: (message?: any, ...optionalParams: any[]) => {
@@ -667,6 +666,7 @@ export const reOrderMedicines = async (
         isMedicine: (item.type_id || '').toLowerCase() == 'pharma',
         thumbnail: item.thumbnail || item.image,
         isInStock: item.is_in_stock == 1,
+        maxOrderQty: item.MaxOrderQty,
       } as ShoppingCartItem)
   );
   const unavailableItems = billedLineItems
@@ -1234,6 +1234,10 @@ export const isDeliveryDateWithInXDays = (deliveryDate: string) => {
     moment(deliveryDate, 'D-MMM-YYYY HH:mm a').diff(moment(), 'days') <=
     AppConfig.Configuration.TAT_UNSERVICEABLE_DAY_COUNT
   );
+};
+
+export const getMaxQtyForMedicineItem = (qty?: number | string) => {
+  return qty ? Number(qty) : AppConfig.Configuration.CART_ITEM_MAX_QUANTITY;
 };
 
 export const addPharmaItemToCart = (

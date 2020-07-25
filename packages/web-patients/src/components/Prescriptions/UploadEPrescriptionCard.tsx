@@ -177,8 +177,12 @@ export const UploadEPrescriptionCard: React.FC<EPrescriptionCardProps> = (props)
 
   const sortByDate = (array: EPrescription[]) => {
     return array.sort((data1, data2) => {
-      let date1 = moment(data1.date).toDate().getTime();
-      let date2 = moment(data2.date).toDate().getTime();
+      let date1 = moment(data1.date)
+        .toDate()
+        .getTime();
+      let date2 = moment(data2.date)
+        .toDate()
+        .getTime();
       return date1 > date2 ? -1 : date1 < date2 ? 1 : 0;
     });
   };
@@ -338,8 +342,12 @@ export const UploadEPrescriptionCard: React.FC<EPrescriptionCardProps> = (props)
       .filter((item: any) => item && !!item.uploadedUrl)
       .sort(
         (a: any, b: any) =>
-          moment(b.date, DATE_FORMAT).toDate().getTime() -
-          moment(a.date, DATE_FORMAT).toDate().getTime()
+          moment(b.date, DATE_FORMAT)
+            .toDate()
+            .getTime() -
+          moment(a.date, DATE_FORMAT)
+            .toDate()
+            .getTime()
       );
 
   const PRESCRIPTION_VALIDITY_IN_DAYS = 180;

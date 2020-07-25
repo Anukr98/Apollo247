@@ -21,7 +21,11 @@ import { NavigationBottom } from 'components/NavigationBottom';
 import { UploadPrescription } from 'components/Prescriptions/UploadPrescription';
 import { UploadEPrescriptionCard } from 'components/Prescriptions/UploadEPrescriptionCard';
 import { useAllCurrentPatients, useCurrentPatient } from 'hooks/authHooks';
-import { uploadPrescriptionTracking } from '../../webEngageTracking';
+import {
+  uploadPrescriptionTracking,
+  pharmacyUploadPresClickTracking,
+  uploadPhotoTracking,
+} from '../../webEngageTracking';
 import moment from 'moment';
 import { useShoppingCart } from 'components/MedicinesCartProvider';
 import { ManageProfile } from 'components/ManageProfile';
@@ -47,7 +51,7 @@ const useStyles = makeStyles((theme: Theme) => {
     doctorListingPage: {
       backgroundColor: '#f7f8f5',
       [theme.breakpoints.down('xs')]: {
-        marginTop: 82,
+        marginTop: 96,
       },
     },
     pageTopHeader: {
@@ -538,6 +542,7 @@ export const MedicineLanding: React.FC = (props: any) => {
 
   const handleUploadPrescription = () => {
     uploadPrescriptionTracking({ ...patient, age });
+    pharmacyUploadPresClickTracking('Home');
     setIsUploadPreDialogOpen(true);
   };
   const metaTagProps = {
@@ -755,7 +760,13 @@ export const MedicineLanding: React.FC = (props: any) => {
         />
       </AphDialog>
       <AphDialog open={isEPrescriptionOpen} maxWidth="sm">
-        <AphDialogClose onClick={() => setIsEPrescriptionOpen(false)} title={'Close'} />
+        <AphDialogClose
+          onClick={() => {
+            setIsEPrescriptionOpen(false);
+            uploadPhotoTracking('E-Rx');
+          }}
+          title={'Close'}
+        />
         <AphDialogTitle className={classes.ePrescriptionTitle}>E Prescription</AphDialogTitle>
         <UploadEPrescriptionCard
           setIsEPrescriptionOpen={setIsEPrescriptionOpen}

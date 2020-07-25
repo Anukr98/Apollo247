@@ -39,24 +39,28 @@ export class PatientRepository extends Repository<Patient> {
   async dropPatientCache(id: string) {
     delCache(id);
   }
-  async findById(id: string) {
-    return await this.getByIdCache(id);
-  }
 
-  async findByIdWithoutRelations(id: string) {
-    return this.findOne({
+  async findByIdWithRelations(id: string, relations: string[]) {
+    const findClause = {
       where: { id, isActive: true },
-    });
+      relations: relations,
+    };
+
+    return this.findOne(findClause);
   }
 
   async findOrCreatePatient(
     findOptions: { mobileNumber: Patient['mobileNumber'] },
     createOptions: Partial<Patient>
   ) {
-    return this.findOne({
+    return this.find({
       where: { mobileNumber: findOptions.mobileNumber },
-    }).then((existingPatient) => {
-      return existingPatient || this.create(createOptions).save();
+    }).then(async (existingPatient) => {
+      if (existingPatient.length > 0) {
+        return existingPatient;
+      }
+      const newPatient = await this.create(createOptions).save();
+      return [newPatient];
     });
   }
   findEmpId(empId: string, patientId: string) {
@@ -110,19 +114,9 @@ export class PatientRepository extends Repository<Patient> {
   }
 
   async getPatientData(id: string | number) {
-    const relations = [
-      'lifeStyle',
-      'healthVault',
-      'familyHistory',
-      'patientAddress',
-      'patientDeviceTokens',
-      'patientNotificationSettings',
-      'patientMedicalHistory',
-    ];
     return this.findOne({
-      where: { id, isActive: true },
-      relations: relations,
-    });
+      where: { id, isActive: true }
+    })
   }
 
   async setByIdCache(id: string | number) {
@@ -156,7 +150,7 @@ export class PatientRepository extends Repository<Patient> {
   async setByMobileCache(mobile: string) {
     const patients = await this.find({
       where: { mobileNumber: mobile, isActive: true },
-      relations: [
+      /*relations: [
         'lifeStyle',
         'healthVault',
         'familyHistory',
@@ -164,7 +158,7 @@ export class PatientRepository extends Repository<Patient> {
         'patientDeviceTokens',
         'patientNotificationSettings',
         'patientMedicalHistory',
-      ],
+      ],*/
     });
 
     const patientIds: string[] = await patients.map((patient) => {
@@ -748,9 +742,15 @@ export class PatientRepository extends Repository<Patient> {
   }
 
   async getLinkedPatientIds(patientId: string) {
-    const linkedPatient = await this.findOne({ where: { id: patientId } });
+    const linkedPatient = await this.getPatientDetails(patientId);
     const primaryPatientIds: string[] = [];
-    if (linkedPatient && linkedPatient.uhid != '' && linkedPatient.uhid != null) {
+    if (
+      linkedPatient &&
+      linkedPatient.uhid != '' &&
+      linkedPatient.uhid != null &&
+      linkedPatient.primaryPatientId != null &&
+      linkedPatient.primaryPatientId != ''
+    ) {
       const patientsList = await this.find({
         where: { primaryPatientId: linkedPatient.primaryPatientId },
       });
@@ -766,7 +766,7 @@ export class PatientRepository extends Repository<Patient> {
   }
 
   async updateWhatsAppStatus(id: string, whatsAppConsult: Boolean, whatsAppMedicine: Boolean) {
-    const patient = await this.getByIdCache(id);
+    const patient = await this.getPatientDetails(id);
     if (patient) {
       patient.whatsAppConsult = whatsAppConsult;
       patient.whatsAppMedicine = whatsAppMedicine;

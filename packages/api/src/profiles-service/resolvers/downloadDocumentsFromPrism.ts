@@ -38,7 +38,7 @@ export const downloadDocuments: Resolver<
   DownloadDocumentsResult
 > = async (parent, { downloadDocumentsInput }, { mobileNumber, profilesDb }) => {
   const patientsRepo = profilesDb.getCustomRepository(PatientRepository);
-  const patientDetails = await patientsRepo.findById(downloadDocumentsInput.patientId);
+  const patientDetails = await patientsRepo.getPatientDetails(downloadDocumentsInput.patientId);
   if (patientDetails == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
 
   const getToken = await getAuthToken(patientDetails.uhid);

@@ -282,7 +282,8 @@ const getPatientPrismMedicalRecords: Resolver<
   PrismMedicalRecordsResult
 > = async (parent, args, { mobileNumber, profilesDb }) => {
   const patientsRepo = profilesDb.getCustomRepository(PatientRepository);
-  const patientDetails = await patientsRepo.findById(args.patientId);
+  const patientDetails = await patientsRepo.getPatientDetails(args.patientId);
+
   if (!patientDetails) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
 
   if (!patientDetails.uhid) throw new AphError(AphErrorMessages.INVALID_UHID);
@@ -339,7 +340,6 @@ const getPatientPrismMedicalRecords: Resolver<
       prescription.fileUrl.length > 0
         ? prescription.fileUrl.replace('{FILE_NAME}', prescription.prescriptionFiles[0].fileName)
         : '';
-
     if (prescription.dateOfPrescription.toString().length < 11) {
       prescription.dateOfPrescription = prescription.dateOfPrescription * 1000;
     }
@@ -381,7 +381,6 @@ const getPatientPrismMedicalRecords: Resolver<
     if (element.labTestDate.toString().length < 11) {
       element.labTestDate = element.labTestDate * 1000;
     }
-
     const labResult = {
       id: element.id,
       labTestName: element.labTestName,

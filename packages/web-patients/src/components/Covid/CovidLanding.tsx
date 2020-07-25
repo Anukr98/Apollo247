@@ -17,6 +17,7 @@ import useMediaQuery from '@material-ui/core/useMediaQuery';
 import fetchUtil from 'helpers/fetch';
 import { NavigationBottom } from 'components/NavigationBottom';
 import { BottomLinks } from 'components/BottomLinks';
+import { useAllCurrentPatients } from 'hooks/authHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -255,9 +256,11 @@ export const CovidLanding: React.FC = (props: any) => {
   const [isWebView, setIsWebView] = useState<boolean>(false);
   const [expandedImage, setExpandedImage] = useState<string>('');
   const [expandedTitle, setExpandedTitle] = useState<string>('');
+  const [covidCategory, setCovidCategory] = useState<string>('');
   const [expandedSourceUrl, setExpandedSourceUrl] = useState<string>('');
   const [modalOpen, setModalOpen] = useState<boolean>(false);
   const scrollToRef = useRef<HTMLDivElement>(null);
+  const { currentPatient } = useAllCurrentPatients();
 
   const didMount = useRef(false);
   const covidArticleBaseUrl =
@@ -328,7 +331,13 @@ export const CovidLanding: React.FC = (props: any) => {
       </div>
       <div className={classes.container}>
         <div className={classes.pageContainer} ref={scrollToRef}>
-          <Banner isWebView={isWebView} />
+          <Banner
+            title={'Coronavirus (Covid-19)'}
+            subtitle={
+              'Learn more about Coronavirus, how to stay safe, and what to do if you have symptoms.'
+            }
+            isWebView={isWebView}
+          />
           <div className={classes.sectionGroup}>
             <div className={classes.panelsGroup}>
               {headingArr.map((parentCat) => (

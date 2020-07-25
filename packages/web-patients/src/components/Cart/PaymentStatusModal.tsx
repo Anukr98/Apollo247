@@ -16,7 +16,7 @@ import { useAllCurrentPatients } from 'hooks/authHooks';
 import { OrderStatusContent } from '../OrderStatusContent';
 import { OrderPlaced } from 'components/Cart/OrderPlaced';
 import { getPaymentMethodFullName } from 'helpers/commonHelpers';
-import { paymentStatusTracking } from 'webEngageTracking';
+import { paymentStatusTracking, pharmacyCheckoutTracking } from 'webEngageTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -143,6 +143,7 @@ export const PaymentStatusModal: React.FC<PaymentStatusProps> = (props) => {
   };
   const handleOnClose = () => {
     localStorage.removeItem('selectedPaymentMode');
+    sessionStorage.removeItem('pharmacyCheckoutValues');
     paymentStatusRedirect(clientRoutes.medicines());
   };
   const paymentStatusRedirect = (url: string) => {
@@ -150,7 +151,7 @@ export const PaymentStatusModal: React.FC<PaymentStatusProps> = (props) => {
   };
 
   useEffect(() => {
-    if (params.orderAutoId) {
+    if (params.orderAutoId && currentPatient && currentPatient.id) {
       orderDetails({
         variables: {
           patientId: currentPatient && currentPatient.id,
@@ -204,7 +205,7 @@ export const PaymentStatusModal: React.FC<PaymentStatusProps> = (props) => {
           paymentStatusRedirect(clientRoutes.yourOrders());
         });
     }
-  }, []);
+  }, [currentPatient, params.orderAutoId]);
 
   const paymentStatus = getPaymentStatus();
   const paymentDetail =

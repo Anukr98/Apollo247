@@ -95,6 +95,7 @@ import { FirebaseEvents, FirebaseEventName } from '../../helpers/firebaseEvents'
 import { validateConsultCoupon } from '@aph/mobile-patients/src/helpers/apiCalls';
 import firebase from 'react-native-firebase';
 import { NotificationPermissionAlert } from '@aph/mobile-patients/src/components/ui/NotificationPermissionAlert';
+import AsyncStorage from '@react-native-community/async-storage';
 
 const { width, height } = Dimensions.get('window');
 
@@ -112,6 +113,7 @@ export interface ConsultOverlayProps extends NavigationScreenProps {
   consultModeSelected: ConsultMode;
   externalConnect: boolean | null;
   availableMode: string;
+  consultedWithDoctorBefore: boolean;
 }
 export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   const client = useApolloClient();
@@ -235,7 +237,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   const getConsultationBookedEventAttributes = (time: string, id: string) => {
     const localTimeSlot = moment(new Date(time));
     let date = new Date(time);
-    date = new Date(date.getTime() + 5.5 * 60 * 60 * 1000);
+    // date = new Date(date.getTime() + 5.5 * 60 * 60 * 1000);
     const doctorClinics = (g(props.doctor, 'doctorHospital') || []).filter((item) => {
       if (item && item.facility && item.facility.facilityType)
         return item.facility.facilityType === 'HOSPITAL';
@@ -348,6 +350,20 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       .finally(() => setshowSpinner(false));
   };
 
+  const storeAppointmentId = async (appointmentId: string) => {
+    if (!appointmentId) return;
+    try {
+      const ids = await AsyncStorage.getItem('APPOINTMENTS_CONSULTED_WITH_DOCTOR_BEFORE');
+      const appointmentIds: string[] = ids ? JSON.parse(ids || '[]') : [];
+      AsyncStorage.setItem(
+        'APPOINTMENTS_CONSULTED_WITH_DOCTOR_BEFORE',
+        JSON.stringify([...appointmentIds, appointmentId])
+      );
+    } catch (error) {
+      console.log({ error });
+    }
+  };
+
   const onSubmitBookAppointment = async () => {
     CommonLogEvent(AppRoutes.DoctorDetails, 'ConsultOverlay onSubmitBookAppointment clicked');
     setshowSpinner(true);
@@ -424,6 +440,9 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
         })
         .then((data) => {
           const apptmt = g(data, 'data', 'bookAppointment', 'appointment');
+          if (props.consultedWithDoctorBefore) {
+            storeAppointmentId(g(apptmt, 'id')!);
+          }
           console.log('apptmt', apptmt);
           // If amount is zero don't redirect to PG
           makePayment(
@@ -484,6 +503,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
         price: coupon ? doctorDiscountedFees : Number(doctorFees),
         appointmentInput: appointmentInput,
         couponApplied: coupon == '' ? false : true,
+        consultedWithDoctorBefore: props.consultedWithDoctorBefore,
       });
     }
   };

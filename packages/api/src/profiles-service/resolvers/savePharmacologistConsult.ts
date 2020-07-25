@@ -58,7 +58,7 @@ const savePharmacologistConsult: Resolver<
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
-  const patientDetails = await patientRepo.findById(savePharmacologistConsultInput.patientId);
+  const patientDetails = await patientRepo.getPatientDetails(savePharmacologistConsultInput.patientId);
   if (patientDetails == null) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }

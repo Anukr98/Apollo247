@@ -180,35 +180,6 @@ export const YourCartUploadPrescriptions: React.FC<YourCartUploadPrescriptionPro
     };
   }, []);
 
-  useEffect(() => {
-    if (cartItems.length) {
-      const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_CART_VIEWED] = {
-        'Total items in cart': cartItems.length,
-        'Sub Total': cartTotal,
-        'Delivery charge': deliveryCharges,
-        'Total Discount': Number((couponDiscount + productDiscount).toFixed(2)),
-        'Net after discount': grandTotal,
-        'Prescription Needed?': uploadPrescriptionRequired,
-        'Cart Items': cartItems.map(
-          (item) =>
-            ({
-              id: item.id,
-              name: item.name,
-              quantity: item.quantity,
-              price: item.price,
-              specialPrice: item.specialPrice,
-            } as ShoppingCartItem)
-        ),
-        'Service Area': 'Pharmacy',
-        // 'Cart ID': '', // since we don't have cartId before placing order
-      };
-      if (coupon) {
-        eventAttributes['Coupon code used'] = coupon.code;
-      }
-      postWebEngageEvent(WebEngageEventName.PHARMACY_CART_VIEWED, eventAttributes);
-    }
-  }, []);
-
   const renderHeader = () => {
     return (
       <Header
@@ -265,13 +236,13 @@ export const YourCartUploadPrescriptions: React.FC<YourCartUploadPrescriptionPro
     );
   };
 
-  const postwebEngageSubmitPrescriptionEvent = (orderId: number) => {
+  const postwebEngageSubmitPrescriptionEvent = (orderAutoId: string) => {
     const deliveryAddress = addresses.find((item) => item.id == deliveryAddressId);
     const deliveryAddressLine = (deliveryAddress && formatAddress(deliveryAddress)) || '';
     const storeAddress = storeId && stores.find((item) => item.storeid == storeId);
     const storeAddressLine = storeAddress && `${storeAddress.storename}, ${storeAddress.address}`;
     const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_SUBMIT_PRESCRIPTION] = {
-      'Order ID': `${orderId}`,
+      'Order ID': `${orderAutoId}`,
       'Delivery type': deliveryAddressId ? 'home' : 'store pickup',
       StoreId: storeId, // incase of store delivery
       'Delivery address': deliveryAddressId ? deliveryAddressLine : storeAddressLine,
@@ -401,7 +372,7 @@ export const YourCartUploadPrescriptions: React.FC<YourCartUploadPrescriptionPro
           medicineDeliveryType: deliveryAddressId
             ? MEDICINE_DELIVERY_TYPE.HOME_DELIVERY
             : MEDICINE_DELIVERY_TYPE.STORE_PICKUP,
-          shopId: storeId || '0',
+          ...(storeId? {shopId: storeId}: {}),
           appointmentId: '',
           patinetAddressId: deliveryAddressId || '',
           prescriptionImageUrl: [...phyPresUrls, ...ePresUrls].join(','),

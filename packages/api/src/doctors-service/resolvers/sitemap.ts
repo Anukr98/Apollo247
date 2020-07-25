@@ -79,7 +79,6 @@ const generateSitemap: Resolver<null, {}, DoctorsServiceContext, string> = async
   if (process.env.NODE_ENV != 'local') {
     assetsDir = path.resolve(<string>process.env.ASSETS_DIRECTORY);
   }
-
   let cmsUrls = '\n<!--CMS url-->\n';
   const listResp = await fetch(
     process.env.CMS_ARTICLES_SLUG_LIST_URL ? process.env.CMS_ARTICLES_SLUG_LIST_URL : '',
@@ -92,8 +91,13 @@ const generateSitemap: Resolver<null, {}, DoctorsServiceContext, string> = async
   const cmsUrlsList = JSON.parse(textRes);
 
   if (cmsUrlsList && cmsUrlsList.data.length > 0) {
-    cmsUrlsList.data.forEach((link: string) => {
-      const url = process.env.SITEMAP_BASE_URL + 'covid19/article' + link;
+    cmsUrlsList.data.forEach((link: any) => {
+      let url = process.env.SITEMAP_BASE_URL + 'covid19/';
+      if (link.type == 'ARTICLE') {
+        url += 'article' + link.slug;
+      } else {
+        url += 'report' + link.slug;
+      }
       cmsUrls += '<url>\n<loc>' + url + '</loc>\n<lastmod>' + modifiedDate + '</lastmod>\n</url>\n';
     });
   }

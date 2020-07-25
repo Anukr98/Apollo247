@@ -99,28 +99,19 @@ export const ShareWidget: React.FC<ShareWidgetProps> = (props) => {
         </span>
         <span>WhatsApp</span>
       </WhatsappShareButton>
-      <FacebookShareButton
-        className={classes.shareButton}
-        url={props.url} title={props.title}
-      >
+      <FacebookShareButton className={classes.shareButton} url={props.url} title={props.title}>
         <span>
           <FacebookIcon size={32} round />
         </span>
         <span>Faceboook</span>
       </FacebookShareButton>
-      <TelegramShareButton
-        className={classes.shareButton}
-        url={props.url} title={props.title}
-      >
+      <TelegramShareButton className={classes.shareButton} url={props.url} title={props.title}>
         <span>
           <TelegramIcon size={32} round />
         </span>
         <span>Telegram</span>
       </TelegramShareButton>
-      <LinkedinShareButton
-        className={classes.shareButton}
-        url={props.url} title={props.title}
-      >
+      <LinkedinShareButton className={classes.shareButton} url={props.url} title={props.title}>
         <span>
           <LinkedinIcon size={32} round />
         </span>

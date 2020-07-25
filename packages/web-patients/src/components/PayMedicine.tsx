@@ -13,7 +13,11 @@ import { Link } from 'react-router-dom';
 import { useShoppingCart, MedicineCartItem } from 'components/MedicinesCartProvider';
 import { useParams } from 'hooks/routerHooks';
 import { gtmTracking, _obTracking, _cbTracking } from 'gtmTracking';
-import { paymentInstrumentClickTracking } from 'webEngageTracking';
+import {
+  paymentInstrumentClickTracking,
+  consultPayInitiateTracking,
+  pharmacyPaymentInitiateTracking,
+} from 'webEngageTracking';
 import { useMutation } from 'react-apollo-hooks';
 import { getDeviceType } from 'helpers/commonHelpers';
 import { CouponCodeConsult } from 'components/Coupon/CouponCodeConsult';
@@ -486,7 +490,6 @@ export const PayMedicine: React.FC = (props) => {
 
   useEffect(() => {
     if (validateConsultCouponResult && validateConsultCouponResult.valid) {
-      console.log('validateConsultCouponResult', validateConsultCouponResult);
       setRevisedAmount(
         validateConsultCouponResult.billAmount - validateConsultCouponResult.discount
       );
@@ -632,6 +635,20 @@ export const PayMedicine: React.FC = (props) => {
       value: totalWithCouponDiscount,
     });
     /**Gtm code End  */
+    pharmacyPaymentInitiateTracking({
+      amount: totalWithCouponDiscount,
+      serviceArea: 'pharmacy',
+      payMode: value,
+    });
+    sessionStorage.setItem(
+      'pharmacyCheckoutValues',
+      JSON.stringify({
+        grandTotal: mrpTotal,
+        discountAmount:
+          (productDiscount && productDiscount.toFixed(2)) ||
+          (couponValue && couponValue.toFixed(2)),
+      })
+    );
     setMutationLoading(true);
     paymentMutation()
       .then((res) => {
@@ -722,8 +739,23 @@ export const PayMedicine: React.FC = (props) => {
 
   const onClickConsultPay = (value: string) => {
     setShowZeroPaymentButton(false);
-
     setIsLoading(true);
+    const eventData = {
+      actualPrice: Number(amount),
+      consultDateTime: appointmentDateTime,
+      consultType: appointmentType,
+      discountAmount:
+        validateConsultCouponResult && validateConsultCouponResult.valid
+          ? Number(validateConsultCouponResult.amount - validateConsultCouponResult.discount)
+          : Number(revisedAmount),
+      discountCoupon: consultCouponCode,
+      doctorCity: '',
+      doctorName,
+      specialty: speciality,
+      netAmount: Number(amount),
+      patientGender: currentPatient && currentPatient.gender,
+    };
+    consultPayInitiateTracking(eventData);
     paymentMutationConsult({
       variables: {
         bookAppointment: {

@@ -1528,6 +1528,16 @@ export const UPLOAD_FILE = gql`
   }
 `;
 
+export const GET_PATIENT_FEEDBACK = gql`
+  query GetPatientFeedback($patientId: String, $transactionId: String) {
+    getPatientFeedback(patientId: $patientId, transactionId: $transactionId) {
+      feedback {
+        rating
+      }
+    }
+  }
+`;
+
 export const SAVE_PRESCRIPTION_MEDICINE_ORDER_OMS = gql`
   mutation savePrescriptionMedicineOrderOMS(
     $prescriptionMedicineOMSInput: PrescriptionMedicineOrderOMSInput

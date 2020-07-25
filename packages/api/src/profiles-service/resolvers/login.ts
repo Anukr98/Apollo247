@@ -310,7 +310,7 @@ const sendMessage = async (args: any) => {
   //let smsResult;
   if (loginType == LOGIN_TYPE.DOCTOR) {
     const message = ApiConstants.DOCTOR_WHATSAPP_OTP.replace('{0}', otp);
-    const promiseSendNotification = sendDoctorNotificationWhatsapp(mobileNumber, message, 1);
+    const promiseSendNotification = sendDoctorNotificationWhatsapp(mobileNumber, message, 1, '');
     const promiseSendSMS = sendSMS(mobileNumber, otp, hashCode);
     await Promise.all([
       promiseSendNotification.catch((err) => {

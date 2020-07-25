@@ -1,6 +1,8 @@
+import 'react-native-gesture-handler';
+
 import { AppRegistry, YellowBox } from 'react-native';
 import { name as appName } from './app.json';
-import { AppContainer } from '@aph/mobile-patients/src/components/AppContainer';
+import AppContainer from '@aph/mobile-patients/src/components/AppContainer';
 import { Client, Configuration } from 'bugsnag-react-native';
 
 if (__DEV__) {
