@@ -57,7 +57,6 @@ export class AppointmentRepository extends Repository<Appointment> {
     const cache = await getCache(`${REDIS_APPOINTMENT_ID_KEY_PREFIX}${id}`);
     if (cache && typeof cache === 'string') {
       appointment = JSON.parse(cache);
-      console.log("from cache");
       return appointment;
     }
     appointment = await this.findOne({ id }).catch((getApptError) => {
@@ -65,7 +64,6 @@ export class AppointmentRepository extends Repository<Appointment> {
         getApptError,
       });
     });
-    console.log("from db");
     await setCache(`${REDIS_APPOINTMENT_ID_KEY_PREFIX}${id}`, JSON.stringify(appointment), ApiConstants.CACHE_EXPIRATION_3600);
     return appointment;
   }
@@ -107,9 +105,8 @@ export class AppointmentRepository extends Repository<Appointment> {
         idsNotInCache.push(ids[i]);
       }
     }
-    let itemFromDb: Appointment[];
     if (idsNotInCache && idsNotInCache.length > 0) {
-      itemFromDb = await this.createQueryBuilder('appointment')
+      const itemFromDb = await this.createQueryBuilder('appointment')
         .where('appointment.id IN (:...idsNotInCache)', { idsNotInCache })
         .getMany();
       for (let i = 0; i < itemFromDb.length; i++) {
