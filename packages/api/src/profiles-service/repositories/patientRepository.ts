@@ -544,7 +544,7 @@ export class PatientRepository extends Repository<Patient> {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  async getpatientDetailsIds({ patientDetails, patientId }: any) {
+  async getLinkedPatientIds({ patientDetails, patientId }: any) {
     if (!patientDetails) {
       patientDetails = await this.getPatientDetails(patientId);
     }
