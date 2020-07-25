@@ -164,9 +164,10 @@ const addNewProfile: Resolver<
     patient.uhid = uhidResp.result;
     patient.primaryUhid = uhidResp.result;
     patient.uhidCreatedDate = new Date();
+    createPrismUser(patient, uhidResp.result.toString());
   }
   await patient.save();
-  createPrismUser(patient, uhidResp.result.toString());
+
   //send registration success notification here
   sendPatientRegistrationNotification(patient, profilesDb, '');
   return { patient };

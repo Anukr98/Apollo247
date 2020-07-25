@@ -94,8 +94,8 @@ const updatePatient: Resolver<
       patient.uhid = uhidResp.result;
       patient.primaryUhid = uhidResp.result;
       patient.uhidCreatedDate = new Date();
+      createPrismUser(patient, uhidResp.result.toString());
     }
-    createPrismUser(patient, uhidResp.result.toString());
   }
   await patient.save();
 
