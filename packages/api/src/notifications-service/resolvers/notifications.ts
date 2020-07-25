@@ -762,7 +762,8 @@ export async function sendNotification(
     //const todaysDate = new Date(format(new Date(), 'yyyy-MM-dd') + 'T18:30:00');
     //const yesterdaysDate = new Date(format(addDays(new Date(), -1), 'yyyy-MM-dd') + 'T18:30:00');
 
-    const todaysDate = new Date(format(new Date(), 'yyyy-MM-dd') + 'T23:59:00');
+    const todaysDateTime = addMilliseconds(new Date(), 19800000);
+    const todaysDate = new Date(format(todaysDateTime, 'yyyy-MM-dd') + 'T23:59:00');
     console.log(
       'check dates for todays date appt',
       appointment.appointmentDateTime,
@@ -771,10 +772,11 @@ export async function sendNotification(
       todaysDate,
       'todays date'
     );
-    if (
+    /*if (
       differenceInHours(appointment.appointmentDateTime, new Date()) <= 24 &&
-      new Date() < todaysDate
-    ) {
+      appointment.appointmentDateTime < todaysDate
+    )*/
+    if (istDateTime <= todaysDate) {
       const finalTime = format(istDateTime, 'hh:mm a');
       const doctorWhatsAppMessage = ApiConstants.DOCTOR_BOOK_APPOINTMENT_WHATSAPP.replace(
         '{0}',
