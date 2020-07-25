@@ -444,7 +444,7 @@ export class PatientRepository extends Repository<Patient> {
     patientDetails.firstName = patientDetails.firstName || 'New';
     patientDetails.lastName = patientDetails.lastName || 'User';
     patientDetails.emailAddress = patientDetails.emailAddress || '';
-    patientDetails.dateOfBirth = null || new Date('1970-01-01');
+    patientDetails.dateOfBirth = patientDetails.dateOfBirth || new Date('1970-01-01');
 
     const newUhidUrl = process.env.CREATE_NEW_UHID_URL || '';
     const uhidInput = {
