@@ -63,10 +63,12 @@ export async function hgetAllCache(key: string) {
 
 export async function setCache(key: string, value: string, expiry: number) {
   try {
-    const set = client.set(key, value);
-    client.expire(key, expiry);
-    dLogger(new Date(), 'Redis Cache write', `Cache hit ${key}`);
-    return set;
+    if (key && value) {
+      const set = client.set(key, value);
+      client.expire(key, expiry);
+      dLogger(new Date(), 'Redis Cache write', `Cache hit ${key}`);
+      return set;
+    }
   } catch (e) {
     dLogger(new Date(), 'Redis Cache write error', `Cache hit ${key} ${JSON.stringify(e)}`);
     return false;
@@ -74,9 +76,11 @@ export async function setCache(key: string, value: string, expiry: number) {
 }
 export async function hmsetCache(key: string, value: { [index: string]: string }) {
   try {
-    const set = client.hmset(key, value);
-    dLogger(new Date(), 'Redis Cache write hashmap', `Cache hit ${key}`);
-    return set;
+    if (key && value) {
+      const set = client.hmset(key, value);
+      dLogger(new Date(), 'Redis Cache write hashmap', `Cache hit ${key}`);
+      return set;
+    }
   } catch (e) {
     dLogger(new Date(), 'Redis Cache write hashmap error', `Cache hit ${key} ${JSON.stringify(e)}`);
     return false;
