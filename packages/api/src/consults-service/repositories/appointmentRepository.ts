@@ -708,13 +708,13 @@ export class AppointmentRepository extends Repository<Appointment> {
   }
 
   async getPatientUpcomingAppointmentsCount(ids: string[]) {
-    const weekPastDate = format(addDays(new Date(), -1000), 'yyyy-MM-dd');
+    const weekPastDate = format(addDays(new Date(), -7), 'yyyy-MM-dd');
     const weekPastDateUTC = new Date(weekPastDate + 'T18:30');
     return this.createQueryBuilder('appointment')
       .where('appointment.appointmentDateTime > :weekPastDateUTC', { weekPastDateUTC })
       .andWhere('appointment.patientId IN (:...ids)', { ids })
       .andWhere(
-        'appointment.status not in (:status1,:status2,:status3,:status4,:status5,:status6)',
+        'appointment.status not in(:status1,:status2,:status3,:status4,:status5,:status6)',
         {
           status1: STATUS.CANCELLED,
           status2: STATUS.PAYMENT_PENDING,
