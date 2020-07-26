@@ -102,7 +102,9 @@ export class ReferralCodesMasterRepository extends Repository<ReferralCodesMaste
 @EntityRepository(ReferalCouponMapping)
 export class ReferalCouponMappingRepository extends Repository<ReferalCouponMapping> {
   async findByReferralCodeId(referralcodeid: string) {
-    const referalCode = await getCache(`${REDIS_REFERRAL_CODES_MASTER_ID_KEY_PREFIX}${name}`);
+    const referalCode = await getCache(
+      `${REDIS_REFERRAL_CODES_MASTER_ID_KEY_PREFIX}${referralcodeid}`
+    );
     if (referalCode) {
       return JSON.parse(referalCode);
     } else {
@@ -113,7 +115,7 @@ export class ReferalCouponMappingRepository extends Repository<ReferalCouponMapp
         relations: ['coupon'],
       });
       setCache(
-        `${REDIS_REFERRAL_CODES_MASTER_ID_KEY_PREFIX}${name}`,
+        `${REDIS_REFERRAL_CODES_MASTER_ID_KEY_PREFIX}${referralcodeid}`,
         JSON.stringify(referalCodefromDb),
         ApiConstants.CACHE_EXPIRATION_14400
       );
