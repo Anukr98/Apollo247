@@ -228,8 +228,11 @@ export const ReschedulePopUp: React.FC<ReschedulePopUpProps> = (props) => {
                       paddingHorizontal: 16,
                     }}
                   >
-                    {`Next ${isAwaitingReschedule ? 'suggested ' : ''}slot for ${props.doctor &&
-                      props.doctor.fullName} is available on —`}
+                    {isAwaitingReschedule
+                      ? `${(props.doctor && props.doctor.fullName) ||
+                          'Dr.'} has suggested the below slot for rescheduling this appointment —`
+                      : `Next slot for ${(props.doctor && props.doctor.fullName) ||
+                          'Dr.'} is available on —`}
                   </Text>
                   {props.reschduleDateTime ? (
                     <Text
