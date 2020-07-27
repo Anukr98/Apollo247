@@ -119,11 +119,10 @@ export type Resolver<Parent, Args, Context, Result> = (
     cors: { origin: corsOrigins },
     schema,
     executor,
-    /* engine: {
-      apiKey: process.env.ENGINE_API_KEY,
+    engine: {
       schemaTag: process.env.NODE_ENV,
       debugPrintReports: true,
-    }, */
+    },
     context: async ({ req }) => {
       // console.log(req);
       //log('apiGatewayLogger', '', req.body, '', '');
@@ -261,60 +260,3 @@ export type Resolver<Parent, Args, Context, Result> = (
       throw error;
     });
 })();
-
-/*(async () => {
-  console.log('------------------------STORAGE TEST----------------------------');
-  const client = new AphStorageClient(
-    process.env.AZURE_STORAGE_CONNECTION_STRING_API,
-    process.env.AZURE_STORAGE_CONTAINER_NAME
-  );
-
-  if (process.env.NODE_ENV === 'local' || process.env.NODE_ENV === 'development') {
-    console.log('deleting container...');
-    await client
-      .deleteContainer()
-      .then((res) => console.log(res))
-      .catch((error) => console.log('error deleting', error));
-
-    console.log('setting service properties...');
-    await client
-      .setServiceProperties()
-      .then((res) => console.log(res))
-      .catch((error) => console.log('error setting service properties', error));
-
-    console.log('creating container...');
-    await client
-      .createContainer()
-      .then((res) => console.log('Storage test succeeded!', res))
-      .catch((error) => console.log('error creating', error));
-  }
-
-  console.log('testing storage connection...');
-  await client
-    .testStorageConnection()
-    .then((res) => console.log(res))
-    .catch((error) => console.log('error testing', error));
-})();*/
-
-// (async () => {
-//   console.log('------------------------MESSAGE QUEUE TEST----------------------------');
-
-//   AphMqClient.connect();
-
-//   type TestMessage = AphMqMessage<AphMqMessageTypes.TEST, { time: Date }>;
-//   const testMessage: TestMessage = {
-//     type: AphMqMessageTypes.TEST,
-//     payload: {
-//       time: new Date(),
-//     },
-//   };
-
-//   console.log('sending message', testMessage);
-//   AphMqClient.send(testMessage);
-
-//   AphMqClient.onReceive<TestMessage>(AphMqMessageTypes.TEST, (receivedMessage) => {
-//     console.log('received message!', receivedMessage.message);
-//     console.log('accepting message');
-//     receivedMessage.accept();
-//   });
-// })();
