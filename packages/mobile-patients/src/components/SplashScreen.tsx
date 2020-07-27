@@ -341,7 +341,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           }
           SplashScreenView.hide();
         },
-        timeout ? 2000 : 0
+        // timeout ? 2000 : 0
+        0
       );
     }
     fetchData();
