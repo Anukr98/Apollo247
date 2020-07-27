@@ -9,6 +9,7 @@ import {
   SmartPrescription,
   UserPlaceHolder,
   Link,
+  Logout,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
 import { GetDoctorDetails_getDoctorDetails } from '@aph/mobile-doctors/src/graphql/types/GetDoctorDetails';
@@ -25,13 +26,28 @@ import {
   View,
   Platform,
   Dimensions,
+  Alert,
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { NavigationScreenProps, ScrollView } from 'react-navigation';
+import {
+  NavigationScreenProps,
+  ScrollView,
+  StackActions,
+  NavigationActions,
+} from 'react-navigation';
 import { apiRoutes } from '@aph/mobile-doctors/src/helpers/apiRoutes';
 import { AppConfig } from '@aph/mobile-doctors/src/helpers/AppConfig';
 import { getBuildEnvironment } from '@aph/mobile-doctors/src/helpers/helperFunctions';
 import { string } from '@aph/mobile-doctors/src/strings/string';
+import AsyncStorage from '@react-native-community/async-storage';
+import { useUIElements } from '@aph/mobile-doctors/src/components/ui/UIElementsProvider';
+import { useApolloClient } from 'react-apollo-hooks';
+import {
+  deleteDoctorDeviceToken,
+  deleteDoctorDeviceTokenVariables,
+} from '@aph/mobile-doctors/src/graphql/types/deleteDoctorDeviceToken';
+import { DELETE_DOCTOR_DEVICE_TOKEN } from '@aph/mobile-doctors/src/graphql/profiles';
+import { clearUserData } from '@aph/mobile-doctors/src/helpers/localStorage';
 
 const { width } = Dimensions.get('window');
 const styles = BasicAccountStyles;
@@ -39,23 +55,33 @@ const styles = BasicAccountStyles;
 export interface MyAccountProps extends NavigationScreenProps {}
 
 export const BasicAccount: React.FC<MyAccountProps> = (props) => {
-  const [loading, setLoading] = useState<boolean>(false);
   const scrollViewRef = useRef<KeyboardAwareScrollView | null>();
-  const { doctorDetails, getDoctorDetailsApi } = useAuth();
+  const { doctorDetails, getDoctorDetailsApi, clearFirebaseUser } = useAuth();
+  const client = useApolloClient();
+  const { setLoading } = useUIElements();
 
   useEffect(() => {
     if (!doctorDetails) {
       getDoctorDetailsApi &&
         getDoctorDetailsApi()
-          .then((res) => setLoading(false))
+          .then((res) => setLoading && setLoading(false))
           .catch((error) => {
-            setLoading(false);
+            setLoading && setLoading(false);
             CommonBugFender('Get_Doctor_DetailsApi', error);
           });
     }
   }, [doctorDetails, getDoctorDetailsApi]);
 
-  const arrayData = [
+  const arrayData: {
+    label: string;
+    navigation?: AppRoutes;
+    icon: JSX.Element;
+    navigationParams: {
+      ProfileData: GetDoctorDetails_getDoctorDetails | null;
+    };
+    isDataDependent: boolean;
+    onPress?: () => void;
+  }[] = [
     // {
     //   label: strings.account.my_stats,
     //   navigation: AppRoutes.MyStats,
@@ -97,8 +123,50 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
       navigationParams: { ProfileData: doctorDetails },
       isDataDependent: false,
     },
+    {
+      label: strings.account.logout,
+      onPress: () => {
+        deleteDeviceToken();
+      },
+      icon: <Logout />,
+      navigationParams: { ProfileData: doctorDetails },
+      isDataDependent: false,
+    },
   ];
-
+  const deleteDeviceToken = async () => {
+    const deviceToken = JSON.parse((await AsyncStorage.getItem('deviceToken')) || '');
+    setLoading && setLoading(true);
+    client
+      .mutate<deleteDoctorDeviceToken, deleteDoctorDeviceTokenVariables>({
+        mutation: DELETE_DOCTOR_DEVICE_TOKEN,
+        variables: {
+          doctorId: doctorDetails && doctorDetails.id,
+          deviceToken: deviceToken,
+        },
+      })
+      .then((data) => {
+        Promise.all([clearFirebaseUser && clearFirebaseUser(), clearUserData()])
+          .then(() => {
+            setLoading && setLoading(false);
+            props.navigation.dispatch(
+              StackActions.reset({
+                index: 0,
+                key: null,
+                actions: [NavigationActions.navigate({ routeName: AppRoutes.Login })],
+              })
+            );
+          })
+          .catch((e) => {
+            setLoading && setLoading(false);
+            console.log(e);
+            Alert.alert(strings.common.error, strings.login.signout_error);
+          });
+      })
+      .catch((error) => {
+        setLoading && setLoading(false);
+        Alert.alert(strings.common.error, strings.login.signout_error);
+      });
+  };
   const renderProfileData = (getDoctorDetails: GetDoctorDetails_getDoctorDetails | null) => {
     if ((getDoctorDetails && !getDoctorDetails.firstName) || getDoctorDetails === null) return null;
     return (
@@ -131,7 +199,11 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
                 if (item.isDataDependent && doctorDetails === null) {
                   return;
                 }
-                props.navigation.navigate(item.navigation, item.navigationParams);
+                if (item.navigation) {
+                  props.navigation.navigate(item.navigation, item.navigationParams);
+                } else if (item.onPress) {
+                  item.onPress();
+                }
               }}
             >
               <View style={styles.iconview}>
@@ -169,43 +241,39 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
     <View style={theme.viewStyles.container}>
       <ScrollView style={theme.viewStyles.container} bounces={false}>
         <SafeAreaView style={theme.viewStyles.container}>
-          {loading ? (
-            <Spinner />
-          ) : (
-            <View style={{ flex: 1 }}>
-              {doctorDetails && doctorDetails.photoUrl ? (
-                <Image
-                  style={styles.imageStyle}
-                  source={{
-                    uri: doctorDetails.photoUrl,
-                  }}
-                />
-              ) : (
-                <UserPlaceHolder style={styles.imageStyle} />
-              )}
-              <View style={styles.shadow}>
-                {renderProfileData(doctorDetails)}
-                {renderMciNumberData(doctorDetails)}
-                {renderShareLink()}
-              </View>
-              {renderData()}
-              <View style={{ marginVertical: 20 }}>
-                <Text
-                  style={{
-                    ...theme.fonts.IBMPlexSansBold(13),
-                    color: '#00b38e',
-                    textAlign: 'center',
-                  }}
-                >
-                  {`${getBuildEnvironment()} - v ${
-                    Platform.OS === 'ios'
-                      ? AppConfig.Configuration.iOS_Version
-                      : AppConfig.Configuration.Android_Version
-                  }`}
-                </Text>
-              </View>
+          <View style={{ flex: 1 }}>
+            {doctorDetails && doctorDetails.photoUrl ? (
+              <Image
+                style={styles.imageStyle}
+                source={{
+                  uri: doctorDetails.photoUrl,
+                }}
+              />
+            ) : (
+              <UserPlaceHolder style={styles.imageStyle} />
+            )}
+            <View style={styles.shadow}>
+              {renderProfileData(doctorDetails)}
+              {renderMciNumberData(doctorDetails)}
+              {renderShareLink()}
             </View>
-          )}
+            {renderData()}
+            <View style={{ marginVertical: 20 }}>
+              <Text
+                style={{
+                  ...theme.fonts.IBMPlexSansBold(13),
+                  color: '#00b38e',
+                  textAlign: 'center',
+                }}
+              >
+                {`${getBuildEnvironment()} - v ${
+                  Platform.OS === 'ios'
+                    ? AppConfig.Configuration.iOS_Version
+                    : AppConfig.Configuration.Android_Version
+                }`}
+              </Text>
+            </View>
+          </View>
         </SafeAreaView>
       </ScrollView>
     </View>

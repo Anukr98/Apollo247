@@ -3,11 +3,11 @@ import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
 import { clearUserData } from '@aph/mobile-doctors/src/helpers/localStorage';
 import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
-import React from 'react';
+import React, { useState } from 'react';
 import { Alert, View, SafeAreaView } from 'react-native';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
 import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
-import { BackArrow } from '@aph/mobile-doctors/src/components/ui/Icons';
+import { BackArrow, RoundIcon } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import { useApolloClient } from 'react-apollo-hooks';
 import AsyncStorage from '@react-native-community/async-storage';
@@ -17,6 +17,7 @@ import {
   deleteDoctorDeviceTokenVariables,
 } from '@aph/mobile-doctors/src/graphql/types/deleteDoctorDeviceToken';
 import { useUIElements } from '@aph/mobile-doctors/src/components/ui/UIElementsProvider';
+import { NeedHelpCard } from '@aph/mobile-doctors/src/components/ui/NeedHelpCard';
 
 export interface MyAccountProps extends NavigationScreenProps {}
 
@@ -24,6 +25,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
   const { clearFirebaseUser, doctorDetails } = useAuth();
   const client = useApolloClient();
   const { setLoading } = useUIElements();
+  const [showHelpModel, setshowHelpModel] = useState(false);
 
   const deleteDeviceToken = async () => {
     const deviceToken = JSON.parse((await AsyncStorage.getItem('deviceToken')) || '');
@@ -59,20 +61,35 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
         Alert.alert(strings.common.error, strings.login.signout_error);
       });
   };
+  const renderNeedHelpModal = () => {
+    return showHelpModel ? <NeedHelpCard onPress={() => setshowHelpModel(false)} /> : null;
+  };
+
+  const renderHeader = () => {
+    return (
+      <Header
+        containerStyle={{ height: 50 }}
+        leftIcons={[
+          {
+            icon: <BackArrow />,
+            onPress: () => props.navigation.pop(),
+          },
+        ]}
+        headerText={strings.account.settings.toUpperCase()}
+        rightIcons={[
+          {
+            icon: <RoundIcon />,
+            onPress: () => setshowHelpModel(true),
+          },
+        ]}
+      />
+    );
+  };
 
   return (
     <View style={theme.viewStyles.container}>
       <SafeAreaView style={theme.viewStyles.container}>
-        <Header
-          containerStyle={{ height: 50 }}
-          leftIcons={[
-            {
-              icon: <BackArrow />,
-              onPress: () => props.navigation.pop(),
-            },
-          ]}
-          headerText={strings.account.settings}
-        />
+        {renderHeader()}
         <View
           style={{
             flex: 1,
@@ -90,6 +107,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
           />
         </View>
       </SafeAreaView>
+      {renderNeedHelpModal()}
     </View>
   );
 };
