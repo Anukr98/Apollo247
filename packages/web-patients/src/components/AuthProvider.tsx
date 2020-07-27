@@ -105,7 +105,6 @@ const buildApolloClient = (authToken: string, handleUnauthenticated: () => void)
   }));
   // const httpLink = createHttpLink({ uri: apiRoutes.graphql() });
   const httpLink = createHttpLink({ uri: process.env.API_HOST_NAME });
-
   const link = errorLink.concat(authLink).concat(httpLink);
   const cache = apolloClient ? apolloClient.cache : new InMemoryCache();
   return new ApolloClient({ link, cache });
