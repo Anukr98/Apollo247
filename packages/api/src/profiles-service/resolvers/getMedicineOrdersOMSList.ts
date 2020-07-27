@@ -259,7 +259,7 @@ const getMedicineOrdersOMSList: Resolver<
   if (mobileNumber != patientDetails.mobileNumber) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_DETAILS, undefined, {});
   }
-  const primaryPatientIds = await patientRepo.getLinkedPatientIds(args.patientId);
+  const primaryPatientIds = await patientRepo.getLinkedPatientIds({ patientDetails });
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
   const medicineOrdersList: any = await medicineOrdersRepo.getMedicineOrdersListWithoutAbortedStatus(
     primaryPatientIds

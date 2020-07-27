@@ -79,6 +79,7 @@ const useStyles = makeStyles((theme: Theme) => {
         borderRadius: 10,
         marginRight: 20,
         [theme.breakpoints.down('sm')]: {
+          minWidth: 300,
           width: '100%',
           margin: '0 0 10px',
         },
@@ -155,6 +156,10 @@ const useStyles = makeStyles((theme: Theme) => {
         paddingRight: 16,
       },
     },
+    covidScanner: {
+      display: 'contents',
+      width: '100%',
+    },
   };
 });
 
@@ -165,7 +170,8 @@ export const CheckRiskLevel: React.FC = (props) => {
   const [iscoronaDialogOpen, setIscoronaDialogOpen] = useState<boolean>(false);
   const { isSignedIn } = useAuth();
   const location = useLocation();
-
+  const isWebView =
+    sessionStorage.getItem('webView') && sessionStorage.getItem('webView').length > 0;
   return (
     <div className={classes.root}>
       <div className={classes.leftIcon}>
@@ -182,7 +188,7 @@ export const CheckRiskLevel: React.FC = (props) => {
           our experts for advice.
         </p>
         <div className={classes.rightActions}>
-          {!location.pathname.includes('medical-condition') && (
+          {!location.pathname.includes('medical-condition') && !isWebView && (
             <ProtectedWithLoginPopup>
               {({ protectWithLoginPopup }) => (
                 <AphButton
@@ -197,18 +203,18 @@ export const CheckRiskLevel: React.FC = (props) => {
                     <span>
                       <img src={require('images/guide.svg')} alt="" />
                     </span>
-                    <span>Get your personalized guide</span>
+                    <span>Get your COVID-19 guide</span>
                   </Link>
                 </AphButton>
               )}
             </ProtectedWithLoginPopup>
           )}
-          <a href={covidScannerUrl} target={'_blank'}>
+          <a href={covidScannerUrl} target={'_blank'} className={classes.covidScanner}>
             <AphButton className={classes.filledBtn}>
               <span>
                 <img src={require('images/ic_covid-white.svg')} alt="" />
               </span>
-              <span>Check your Covid-19 risk level</span>
+              <span>Check your COVID-19 risk level</span>
             </AphButton>
           </a>
           <a className={classes.callBtn} href={isDesktopOnly ? '#' : `tel:${customerCareNumber}`}>

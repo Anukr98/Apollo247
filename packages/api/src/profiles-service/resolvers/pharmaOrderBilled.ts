@@ -136,7 +136,7 @@ const saveOrderShipmentInvoice: Resolver<
   SaveOrderShipmentInvoiceResult
 > = async (parent, { saveOrderShipmentInvoiceInput }, { profilesDb }) => {
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
-  const orderDetails = await medicineOrdersRepo.getMedicineOrderDetails(
+  const orderDetails = await medicineOrdersRepo.getMedicineOrderWithShipments(
     saveOrderShipmentInvoiceInput.orderId
   );
   if (!orderDetails) {

@@ -33,7 +33,7 @@ const updateMedicineOrderStatus: Resolver<
     status = 'Accepted';
 
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
-  const orderDetails = await medicineOrdersRepo.getMedicineOrderDetails(args.orderId);
+  const orderDetails = await medicineOrdersRepo.getMedicineOrder(args.orderId);
   //const saveOrder = await medicineOrdersRepo.saveMedicineOrder(medicineOrderattrs);
   if (orderDetails) {
     //save in order status table

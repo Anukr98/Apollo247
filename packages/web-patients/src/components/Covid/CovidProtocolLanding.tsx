@@ -16,16 +16,14 @@ import { clientRoutes } from 'helpers/clientRoutes';
 import { Banner } from 'components/Covid/Banner';
 import { CheckRiskLevel } from 'components/Covid/CheckRiskLevel';
 import { useAllCurrentPatients, useAuth } from 'hooks/authHooks';
-
 import fetchUtil from 'helpers/fetch';
-
+import { ManageProfile } from 'components/ManageProfile';
+import { Relation } from 'graphql/types/globalTypes';
 interface CovidProtocolData {
   introductionBody: string;
   introductionTitle: string;
-
   [index: string]: any;
 }
-
 const useStyles = makeStyles((theme: Theme) => {
   return {
     cdLanding: {},
@@ -192,63 +190,85 @@ const useStyles = makeStyles((theme: Theme) => {
       margin: '10px 0 0',
       fontWeight: 'bold',
     },
+    zeroState: {
+      textAlign: 'center',
+      marginTop: 30,
+    },
     conclusionContent: {},
   };
 });
+
 export const covidProtocolLanding: React.FC = (props: any) => {
   const classes = useStyles({});
   const [seemore, setSeemore] = React.useState<string>('');
   const [isLoading, setIsLoading] = React.useState<boolean>(true);
+  const [zeroState, showZeroState] = React.useState<boolean>(false);
   const [symptomData, setSymptomData] = React.useState<CovidProtocolData>(null);
   const scrollToRef = useRef<HTMLDivElement>(null);
   const { currentPatient } = useAllCurrentPatients();
-  const { isSignedIn } = useAuth();
+  const { isSignedIn, isSigningIn } = useAuth();
+  const { allCurrentPatients } = useAllCurrentPatients();
+  const onePrimaryUser =
+    allCurrentPatients && allCurrentPatients.filter((x) => x.relation === Relation.ME).length === 1;
 
   useEffect(() => {
     scrollToRef &&
       scrollToRef.current &&
       scrollToRef.current.scrollIntoView({ behavior: 'smooth' });
-    if (!isSignedIn) window.location.href = clientRoutes.covidLanding();
   }, []);
-  const covidProtocolUrl =
-    process.env.COVID_PROTOCOL_URL || 'https://uatcms.apollo247.com/api/phrcovid-protocol';
 
   useEffect(() => {
-    if (isLoading && currentPatient && currentPatient.uhid) {
-      fetchUtil(covidProtocolUrl + '/' + currentPatient.uhid, 'GET', {}, '', true)
+    !isSigningIn && !isSignedIn && props.history.push(clientRoutes.covidLanding());
+  }, [isSignedIn, isSigningIn]);
+
+  const covidProtocolUrl = process.env.COVID_PROTOCOL_URL;
+
+  useEffect(() => {
+    if (isLoading && currentPatient && currentPatient.mobileNumber) {
+      fetchUtil(
+        covidProtocolUrl + '/' + currentPatient.mobileNumber.substring(3),
+        'GET',
+        {},
+        '',
+        true
+      )
         .then((res: any) => {
           if (res && res.success) {
             setSymptomData(res.data);
           } else {
             setSymptomData(null);
+            showZeroState(true);
           }
         })
+        .catch(() => showZeroState(true))
         .finally(() => {
           setIsLoading(false);
         });
     }
   }, [currentPatient]);
-
-  useEffect(() => {
-    if (props && props.location && props.location.search && props.location.search.length) {
-      const qParamsArr = props.location.search.split('=');
-      if (qParamsArr && qParamsArr.length) {
-        const isWebView = qParamsArr.some((param: string) => param.includes('mobile_app'));
-        setIsWebView(isWebView);
-      }
-    }
-  }, []);
-
-  const [isWebView, setIsWebView] = useState<boolean>(false);
+  const isWebView =
+    sessionStorage.getItem('webView') && sessionStorage.getItem('webView').length > 0;
+  const subtitle = (symptomData && symptomData['covidProtocolData'][0].category) || '';
   return (
     <div className={classes.cdLanding} ref={scrollToRef}>
-      <Header />
+      {!isWebView && <Header />}
       <div className={classes.container}>
         <div className={classes.cdContent}>
-          <Banner isWebView={isWebView} backLocation={clientRoutes.covidLanding()} />
+          <Banner
+            title={'Personalized Coronavirus (COVID-19) guide'}
+            subtitle={subtitle}
+            isWebView={false}
+            backLocation={clientRoutes.covidLanding()}
+          />
           {isLoading && !symptomData ? (
             <div className={classes.loader}>
               <CircularProgress size={22} color="secondary" />
+            </div>
+          ) : zeroState ? (
+            <div className={classes.zeroState}>
+              <img src={require('images/zero-state.png')} alt={'zero state'} />
+              <div>No results found</div>
+              <div>It seems we can’t find any results.</div>
             </div>
           ) : (
             <>
@@ -317,7 +337,7 @@ export const covidProtocolLanding: React.FC = (props: any) => {
           <CheckRiskLevel />
         </div>
       </div>
-      {/*{!onePrimaryUser && <ManageProfile />}*/}
+      {!onePrimaryUser && <ManageProfile />}
       <BottomLinks />
       {!isWebView && <NavigationBottom />}
     </div>
