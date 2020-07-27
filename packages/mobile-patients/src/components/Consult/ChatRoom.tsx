@@ -399,6 +399,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     zIndex: 1005,
   });
 
+  const disAllowReschedule =
+    g(appointmentData, 'appointmentState') != APPOINTMENT_STATE.AWAITING_RESCHEDULE;
+
   const [remainingTime, setRemainingTime] = useState<number>(900);
   const [consultStarted, setConsultStarted] = useState<boolean>(true);
   const [callTimer, setCallTimer] = useState<number>(0);
@@ -3195,6 +3198,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             >
               <Button
                 title={'CHANGE SLOT'}
+                disabled={disAllowReschedule}
+                disabledStyle={{
+                  backgroundColor: '#0087ba',
+                  opacity: 0.8,
+                }}
                 style={{
                   flex: 0.6,
                   marginLeft: 16,
@@ -3223,6 +3231,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               />
               <Button
                 title={'ACCEPT'}
+                disabled={disAllowReschedule}
                 style={{
                   flex: 0.4,
                   marginRight: 16,
