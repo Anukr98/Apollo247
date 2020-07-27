@@ -15,11 +15,31 @@ import { differenceInMinutes } from 'date-fns';
 import { ApiConstants } from 'ApiConstants';
 import { debugLog } from 'customWinstonLogger';
 import { distanceBetweenTwoLatLongInMeters } from 'helpers/distanceCalculator';
+import { endOfDay, addDays } from 'date-fns';
 
 export const getDoctorsBySpecialtyAndFiltersTypeDefs = gql`
   enum SpecialtySearchType {
     ID
     NAME
+  }
+
+  type commonType {
+    name: String
+  }
+
+  type cityType {
+    state: String
+    data: [String]
+  }
+
+  type filtersObj {
+    city: [cityType]
+    brands: [commonType]
+    language: [commonType]
+    experience: [commonType]
+    availability: [commonType]
+    fees: [commonType]
+    gender: [commonType]
   }
 
   type FilterDoctorsResult {
@@ -29,6 +49,7 @@ export const getDoctorsBySpecialtyAndFiltersTypeDefs = gql`
     specialty: DoctorSpecialty
     doctorType: DoctorType
     sort: String
+    filters: filtersObj
   }
   type DoctorSlotAvailability {
     doctorId: String
@@ -70,6 +91,25 @@ export const getDoctorsBySpecialtyAndFiltersTypeDefs = gql`
   }
 `;
 
+type commonType = {
+  name: string
+}
+
+type cityType = {
+  state: string
+  data: [string]
+}
+
+type filtersObj = {
+  city: [cityType]
+  brands: [commonType]
+  language: [commonType]
+  experience: [commonType]
+  availability: [commonType]
+  fees: [commonType]
+  gender: [commonType]
+}
+
 type FilterDoctorsResult = {
   doctors: Doctor[];
   doctorsNextAvailability: DoctorSlotAvailability[];
@@ -77,6 +117,7 @@ type FilterDoctorsResult = {
   specialty?: DoctorSpecialty;
   doctorType?: DoctorType[];
   sort: string;
+  filters: filtersObj;
 };
 
 export type DoctorConsultModeAvailability = {
@@ -482,6 +523,91 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
       )
       .concat(docs);
   }
+
+  function keyExists(arr: any[], key: string, value: string){
+    if(arr.length){
+      arr = arr.filter((elem: any) => {
+        return elem[key] === value
+      });
+      if(arr.length){
+        return arr[0];
+      }
+      return {};
+    } else {
+      return {};
+    }
+  }
+
+
+  let filtersObj: any = {city: [], brands: [], language: [], experience: [], availability: [], fee: [], gender: []};
+  let cityObj: {state: string, data: string[]};
+  
+  for(let doctor of doctors){
+    for(let hospital of doctor.doctorHospital){
+      cityObj = { state: '', data: [] };
+      if(filtersObj.city.length){
+        cityObj = keyExists(filtersObj.city, 'state', hospital.facility.state);
+      }
+      if(cityObj && cityObj.state){
+        if(!cityObj.data.includes(hospital.facility.city)){
+          cityObj.data.push(hospital.facility.city);
+        }
+      } else {
+        cityObj.state = hospital.facility.state;
+        cityObj.data = [];
+        cityObj.data.push(hospital.facility.city);
+        filtersObj.city.push(cityObj);
+      }
+    }
+    
+    if(!("name" in keyExists(filtersObj.brands, 'name', doctor.doctorType))){
+      filtersObj.brands.push({'name': doctor.doctorType});
+    }
+
+    for(let language of doctor.languages){
+      if(!("name" in keyExists(filtersObj.language, 'name', language))){
+        filtersObj.language.push({'name': language});
+      }
+    }
+
+    if(!("name" in keyExists(filtersObj.experience, 'name', doctor.experience_range))){
+      filtersObj.experience.push({'name': doctor.experience_range});
+    }
+    
+    if(!("name" in keyExists(filtersObj.fee, 'name', doctor.fees_range))){
+      filtersObj.fee.push({'name': doctor.fees_range});
+    }
+
+    if(!("name" in keyExists(filtersObj.gender, 'name', doctor.gender))){
+      filtersObj.gender.push({'name': doctor.gender});
+    }
+
+  }
+
+  let dayEndMinutes = endOfDay(new Date()).getTime() - (new Date()).getTime();
+  let twoDaysEndMinutes = addDays(new Date(), 1).getTime() - (new Date()).getTime(); 
+  for(let availablity of finalDoctorNextAvailSlots){
+    //
+    if(30 > availablity.availableInMinutes){
+      if(!("name" in keyExists(filtersObj.availability, 'name', 'Now'))){
+        filtersObj.availability.push({'name': 'Now'});
+      }
+    }
+    if(dayEndMinutes > availablity.availableInMinutes) {
+      if(!("name" in keyExists(filtersObj.availability, 'name', 'Today'))){
+        filtersObj.availability.push({'name': 'Today'});
+      }
+    } else if(twoDaysEndMinutes > availablity.availableInMinutes){
+      if(!("name" in keyExists(filtersObj.availability, 'name', 'Tomorrow'))){
+        filtersObj.availability.push({'name': 'Tomorrow'});
+      }
+    } else {
+      if(!("name" in keyExists(filtersObj.availability, 'name', 'Next 3 Days'))){
+        filtersObj.availability.push({'name': 'Next 3 Days'});
+      }
+    }
+  }
+
   searchLogger(`API_CALL___END`);
   return {
     doctors: doctors,
@@ -489,6 +615,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     doctorsAvailability: finalDoctorsConsultModeAvailability,
     specialty: finalSpecialtyDetails,
     sort: args.filterInput.sort,
+    filters: filtersObj,
   };
 };
 
