@@ -66,11 +66,13 @@ export interface UploadPrescriptionProps
   extends NavigationScreenProps<{
     phyPrescriptionsProp: PhysicalPrescription[];
     ePrescriptionsProp: EPrescription[];
+    type?: string;
   }> {}
 
 export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => {
   const phyPrescriptionsProp = props.navigation.getParam('phyPrescriptionsProp') || [];
   const ePrescriptionsProp = props.navigation.getParam('ePrescriptionsProp') || [];
+  const type = props.navigation.getParam('type') || '';
   const [PhysicalPrescriptions, setPhysicalPrescriptions] = useState<PhysicalPrescription[]>(
     phyPrescriptionsProp
   );
@@ -99,8 +101,22 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
     },
   ];
   const [selectedMedicineOption, setSelectedMedicineOption] = useState<string>('');
+  const [numberOfPrescriptionClicked, setNumberOfPrescriptionClicked] =
+    useState<number>(type === 'Camera' ? 1 : 0);
+  const [numberOfPrescriptionUploaded, setNumberOfPrescriptionUploaded] =
+    useState<number>(type === 'Gallery' ? 1 : 0);
 
   const onSubmitOrder = async () => {
+    const eventAttribute: WebEngageEvents[WebEngageEventName.UPLOAD_PRESCRIPTION_SUBMIT_CLICKED] = {
+      OptionSelected: selectedMedicineOption === 'search' ? 'Search and add' : selectedMedicineOption,
+      NumberOfPrescriptionClicked: numberOfPrescriptionClicked,
+      NumberOfPrescriptionUploaded: numberOfPrescriptionUploaded,
+      NumberOfEPrescriptions: EPrescriptions.length,
+    };
+    postWebEngageEvent(
+      WebEngageEventName.UPLOAD_PRESCRIPTION_SUBMIT_CLICKED,
+      eventAttribute
+    );
     CommonLogEvent(
       AppRoutes.UploadPrescription,
       'Graph ql call for save prescription medicine order'
@@ -575,9 +591,13 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
           prescription: 'SELECT FROM\nE-PRESCRIPTION',
         }}
         onClickClose={() => setShowPopop(false)}
-        onResponse={(selectedType, response) => {
+        onResponse={(selectedType, response, type) => {
           setShowPopop(false);
           if (selectedType == 'CAMERA_AND_GALLERY') {
+            if (type !== undefined) {
+              if (type === 'Camera') setNumberOfPrescriptionClicked(numberOfPrescriptionClicked + 1);
+              if (type === 'Gallery') setNumberOfPrescriptionUploaded(numberOfPrescriptionUploaded + 1);
+            }
             setPhysicalPrescriptions([...PhysicalPrescriptions, ...response]);
           } else {
             setSelectPrescriptionVisible(true);

@@ -12,11 +12,12 @@ import {
   Index,
   UpdateDateColumn,
   CreateDateColumn,
+  AfterUpdate
 } from 'typeorm';
 import { Validate, IsDate } from 'class-validator';
 import { DoctorType, ROUTE_OF_ADMINISTRATION } from 'doctors-service/entities';
 import { NameValidator, MobileNumberValidator, EmailValidator } from 'validators/entityValidators';
-
+import { delCache } from 'consults-service/database/connectRedis';
 import { log } from 'customWinstonLogger';
 
 export enum APPOINTMENT_UPDATED_BY {
@@ -379,14 +380,14 @@ export class Appointment extends BaseEntity {
   @OneToMany((type) => AuditHistory, (auditHistory) => auditHistory.appointment)
   auditHistory: AuditHistory[];
 
-  @OneToMany(
-    () => ExotelDetails,
-    (callDetail: ExotelDetails) => {
-      callDetail.appointment;
-    },
-    { onDelete: 'CASCADE', onUpdate: 'CASCADE' }
-  )
-  callDetails: Array<ExotelDetails>;
+  @OneToMany(() => ExotelDetails, (callDetail: ExotelDetails) => { callDetail.appointment }, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
+  callDetails: Array<ExotelDetails>
+
+  @AfterUpdate()
+  async dropAppointmentCache() {
+    await delCache(`patient:appointment:${this.id}`);
+  }
+
 }
 //Appointment ends
 
@@ -1037,6 +1038,12 @@ export class AppointmentUpdateHistory extends BaseEntity {
 
   @Column({ nullable: true })
   toValue: string;
+
+  @Column({ nullable: true })
+  fromState: string;
+
+  @Column({ nullable: true })
+  toState: string;
 
   @Column({ nullable: true })
   reason: string;
@@ -1806,14 +1813,9 @@ export class ExotelDetails extends BaseEntity {
   @Column()
   appointmentId: string;
 
-  @ManyToOne(
-    () => Appointment,
-    (appointment: Appointment) => {
-      appointment.callDetails;
-    }
-  )
+  @ManyToOne(() => Appointment, (appointment: Appointment) => { appointment.callDetails })
   @JoinColumn({ name: 'appointmentId' })
-  appointment: Appointment;
+  appointment: Appointment
 
   @Index('ExotelDetails_doctorType')
   @Column()

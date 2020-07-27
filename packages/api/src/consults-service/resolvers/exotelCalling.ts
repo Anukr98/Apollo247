@@ -65,7 +65,7 @@ export const exotelTypeDefs = gql`
     updateCallStatusBySid(callStatusInput: callStatusInput): callStatusResult
   }
 `;
-  
+
 type exotelInput = {
   from?: string;
   to?: string;
@@ -110,8 +110,8 @@ async function exotelCalling(callInputs: callInputs): Promise<ExotelCalling> {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
   })
-  .then(res => res.json())
-  .then((res) => {
+    .then(res => res.json())
+    .then((res) => {
 
       log(
         'consultServiceLogger',
@@ -174,32 +174,32 @@ const initateConferenceTelephoneCall: Resolver<
   const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
 
   // if (!exotelInput.from && !exotelInput.to) {
-    
-    // exotelInput.appointmentId made mandatory later on.
-    if (!exotelInput.appointmentId) {
-      throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
-    }
 
-    appt = await apptsRepo.findById(exotelInput.appointmentId);
+  // exotelInput.appointmentId made mandatory later on.
+  if (!exotelInput.appointmentId) {
+    throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
+  }
 
-    if (!appt) {
-      throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
-    }
+  appt = await apptsRepo.findById(exotelInput.appointmentId);
 
-    patient = await patientRepo.findById(appt.patientId);
+  if (!appt) {
+    throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
+  }
 
-    if (!patient) {
-      throw new AphError(AphErrorMessages.GET_PATIENTS_ERROR, undefined, {});
-    }
+  // lookup with patientId
+  patient = await patientRepo.getPatientDetails(appt.patientId);
+  if (!patient) {
+    throw new AphError(AphErrorMessages.GET_PATIENTS_ERROR, undefined, {});
+  }
 
-    doctor = await doctorRepo.findById(appt.doctorId);
+  doctor = await doctorRepo.findById(appt.doctorId);
 
-    if (!doctor) {
-      throw new AphError(AphErrorMessages.GET_DOCTORS_ERROR, undefined, {});
-    }
+  if (!doctor) {
+    throw new AphError(AphErrorMessages.GET_DOCTORS_ERROR, undefined, {});
+  }
 
-    fromMobileNumber = doctor.mobileNumber;
-    toMobileNumber = patient.mobileNumber;
+  fromMobileNumber = doctor.mobileNumber;
+  toMobileNumber = patient.mobileNumber;
   // }
 
   // if (exotelInput.from && !exotelInput.to) {
@@ -236,13 +236,13 @@ const initateConferenceTelephoneCall: Resolver<
     doctorId: doctor.id,
   }
 
-  if(exotelInput.deviceType){
-    createObj = Object.assign(createObj, {deviceType: exotelInput.deviceType})
+  if (exotelInput.deviceType) {
+    createObj = Object.assign(createObj, { deviceType: exotelInput.deviceType })
   }
 
   try {
     await exotelRepo.saveExotelCallDetails(createObj);
-  } catch(err){
+  } catch (err) {
     console.error("error in saving exotel details > ", err);
   }
 
@@ -265,76 +265,76 @@ type callStatusInputArgs = { callStatusInput: callStatusInput };
 
 // bulkUpdateInProgressCalls by a cron-job (after half an hour)
 const updateCallStatusBySid: Resolver<null, callStatusInputArgs, ConsultServiceContext, callStatusResult>
-= async (parent, { callStatusInput }, { consultsDb }) => {
+  = async (parent, { callStatusInput }, { consultsDb }) => {
 
-  const exotelRepo = consultsDb.getCustomRepository(ExotelDetailsRepository);
+    const exotelRepo = consultsDb.getCustomRepository(ExotelDetailsRepository);
 
-  const inProgressCalls = await exotelRepo.getAllCallDetailsByStatus(callStatusInput.status);
+    const inProgressCalls = await exotelRepo.getAllCallDetailsByStatus(callStatusInput.status);
 
-  let exotel_url = `https://${process.env.EXOTEL_API_KEY}:${process.env.EXOTEL_API_TOKEN}@${process.env.EXOTEL_SUB_DOMAIN}${process.env.EXOTEL_URI}`;
+    let exotel_url = `https://${process.env.EXOTEL_API_KEY}:${process.env.EXOTEL_API_TOKEN}@${process.env.EXOTEL_SUB_DOMAIN}${process.env.EXOTEL_URI}`;
 
 
-  let updatedCallSidArray: string[] = [];
-  let errorArray: any[] = [];
-  
-  for(let each of inProgressCalls){
+    let updatedCallSidArray: string[] = [];
+    let errorArray: any[] = [];
 
-    await fetch(exotel_url + '/'  + each.callSid + '.json', {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
-    })
-    .then(res => res.json())
-    .then(async (res) => {
+    for (let each of inProgressCalls) {
 
-      let updateObj = {
-        status: res['Call']['Status'],
-        callEndTime: res['Call']['EndTime'],
-        totalCallDuration: res['Call']['Duration'],
-        price: res['Call']['Price'],
-        patientPickedUp: res['Call']['Status'] === 'completed' ? true : false,
-        doctorPickedUp: res['Call']['Status'] === 'completed' ? true : false,
-      }
+      await fetch(exotel_url + '/' + each.callSid + '.json', {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      })
+        .then(res => res.json())
+        .then(async (res) => {
 
-      if(res['Call']['RecordingUrl']){
-        await fetch(res['Call']['RecordingUrl'], {
-          method: 'GET',
-        })
-        .then((response) => response.arrayBuffer())
-        .then(async (resp) => {
-
-          let uploadDocumentInput = {
-            fileType: "MPEG",
-            base64FileInput: Buffer.from(resp).toString('base64')
+          let updateObj = {
+            status: res['Call']['Status'],
+            callEndTime: res['Call']['EndTime'],
+            totalCallDuration: res['Call']['Duration'],
+            price: res['Call']['Price'],
+            patientPickedUp: res['Call']['Status'] === 'completed' ? true : false,
+            doctorPickedUp: res['Call']['Status'] === 'completed' ? true : false,
           }
 
-          //upload file to blob storage
-          const blobUrl = await uploadFileToBlobStorage(
-            uploadDocumentInput.fileType,
-            uploadDocumentInput.base64FileInput
-          );
+          if (res['Call']['RecordingUrl']) {
+            await fetch(res['Call']['RecordingUrl'], {
+              method: 'GET',
+            })
+              .then((response) => response.arrayBuffer())
+              .then(async (resp) => {
 
-          updateObj = Object.assign(updateObj, { recordingUrl: blobUrl })
+                let uploadDocumentInput = {
+                  fileType: "MPEG",
+                  base64FileInput: Buffer.from(resp).toString('base64')
+                }
 
-          await exotelRepo.updateCallDetails(each.id, updateObj);
+                //upload file to blob storage
+                const blobUrl = await uploadFileToBlobStorage(
+                  uploadDocumentInput.fileType,
+                  uploadDocumentInput.base64FileInput
+                );
+
+                updateObj = Object.assign(updateObj, { recordingUrl: blobUrl })
+
+                await exotelRepo.updateCallDetails(each.id, updateObj);
+
+              })
+          } else {
+            await exotelRepo.updateCallDetails(each.id, updateObj);
+          }
+
+          updatedCallSidArray.push(each.callSid)
 
         })
-      } else {
-        await exotelRepo.updateCallDetails(each.id, updateObj);
-      }
+        .catch((error) => {
+          console.error('exotelError in update: ', error);
+          errorArray.push(error);
+        })
 
-      updatedCallSidArray.push(each.callSid)
+    }
 
-    })
-    .catch((error) => {
-      console.error('exotelError in update: ', error);
-      errorArray.push(error);
-    })
+    return { updatedCallSidArray, errorArray: JSON.stringify(errorArray) };
 
   }
-
-  return { updatedCallSidArray, errorArray: JSON.stringify(errorArray) };
-
-}
 
 
 type appointment = {
@@ -371,13 +371,13 @@ const getCallDetailsByAppintment: Resolver<
   const exotelRepo = consultsDb.getCustomRepository(ExotelDetailsRepository);
 
   let calls = await exotelRepo.findAllByAppointmentId(appointment.id)
-  
+
   if (!calls.length) {
     throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
   }
 
   let callsArray: any[] = [];
-  for(let call of calls){
+  for (let call of calls) {
 
     let newCallObj = {
       callSid: call.callSid,

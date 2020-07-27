@@ -17,7 +17,7 @@ import _toLower from 'lodash/toLower';
 import { Mutation } from 'react-apollo';
 import { SaveSearch, SaveSearchVariables } from 'graphql/types/SaveSearch';
 import { SAVE_PATIENT_SEARCH } from 'graphql/pastsearches';
-import { SEARCH_TYPE } from 'graphql/types/globalTypes';
+import { SEARCH_TYPE, ConsultMode } from 'graphql/types/globalTypes';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { BookConsult } from 'components/BookConsult';
 import moment from 'moment';
@@ -157,9 +157,26 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
 
   const clinics: any = [];
 
-  const params = useParams<{
-    specialty: string;
-  }>();
+  const consultModeOnline: any = [];
+  const consultModePhysical: any = [];
+  doctorDetails &&
+    doctorDetails.consultHours &&
+    doctorDetails.consultHours.map((item: any) => {
+      if (item.consultMode === 'PHYSICAL' || item.consultMode === 'BOTH') {
+        consultModePhysical.push(item.consultMode);
+      }
+      if (item.consultMode === 'ONLINE' || item.consultMode === 'BOTH') {
+        consultModeOnline.push(item.consultMode);
+      }
+    });
+  const consultMode =
+    consultModeOnline.length > 0 && consultModePhysical.length > 0
+      ? ConsultMode.BOTH
+      : consultModeOnline.length > 0
+      ? ConsultMode.ONLINE
+      : consultModePhysical.length > 0
+      ? ConsultMode.PHYSICAL
+      : null;
 
   const differenceInMinutes = getDiffInMinutes(nextAvailability);
   const availabilityMarkup = () => {
@@ -388,7 +405,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
         disableEscapeKeyDown
       >
         <BookConsult
-          physicalDirection={false}
+          consultMode={consultMode}
           doctorId={doctorDetails.id}
           doctorAvailableIn={differenceInMinutes}
           setIsPopoverOpen={setIsPopoverOpen}
