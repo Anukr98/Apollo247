@@ -51,6 +51,7 @@ import {
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { TabHeader } from '@aph/mobile-patients/src/components/ui/TabHeader';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import codePush from 'react-native-code-push';
 
 const { width } = Dimensions.get('window');
 
@@ -142,6 +143,7 @@ const Appointments: Appointments[] = [
 export interface MyAccountProps extends NavigationScreenProps {}
 export const MyAccount: React.FC<MyAccountProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
+  const [codePushVersion, setCodePushVersion] = useState<string>('');
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
   const [networkStatus, setNetworkStatus] = useState<boolean>(false);
   const [profileDetails, setprofileDetails] = useState<
@@ -149,6 +151,19 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
   >(currentPatient);
   const { signOut, getPatientApiCall } = useAuth();
   const { setSavePatientDetails, setAppointmentsPersonalized } = useAppCommonData();
+
+  useEffect(() => {
+    updateCodePushVersioninUi();
+  }, []);
+
+  const updateCodePushVersioninUi = async () => {
+    try {
+      const version = (await codePush.getUpdateMetadata())!.label;
+      setCodePushVersion(version.replace('v', 'H'));
+    } catch (error) {
+      CommonBugFender(`${AppRoutes.MyAccount}_codePush.getUpdateMetadata`, error);
+    }
+  };
 
   useEffect(() => {
     if (!currentPatient) {
@@ -502,7 +517,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
                 Platform.OS === 'ios'
                   ? AppConfig.Configuration.iOS_Version
                   : AppConfig.Configuration.Android_Version
-              }`}
+              }${codePushVersion ? `.${codePushVersion}` : ''}`}
             </Text>
           </View>
         </ScrollView>
