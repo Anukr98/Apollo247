@@ -407,7 +407,6 @@ export const DiagnosticPrescription: React.FC = () => {
       });
   }, []);
   const fetchDignostic = async (value: string) => {
-    let found = false;
     client
       .query<SearchDiagnostics, any>({
         query: SEARCH_DIAGNOSTICS,
@@ -419,7 +418,6 @@ export const DiagnosticPrescription: React.FC = () => {
       })
       .then((_data: any) => {
         const filterVal: any = _data!.data!.searchDiagnostics!.diagnostics;
-        filterVal.length > 0 && filterVal[0].id === '' && filterVal.splice(0, 1);
 
         filterVal.forEach((val: any, index: any) => {
           val.id = val.itemId;
@@ -428,21 +426,10 @@ export const DiagnosticPrescription: React.FC = () => {
               filterVal.splice(index, 1);
             }
           });
-          if (
-            val.itemName.toLowerCase() === value.toLowerCase() &&
-            val.itemName.length === value.length
-          ) {
-            found = true;
-          }
         });
 
-        (!found || filterVal.length === 0) &&
-          filterVal.unshift({ itemName: value, id: '', __typename: 'Diagnostics' });
-
         suggestions = filterVal;
-
         setLengthOfSuggestions(suggestions.length);
-        setSearchInput(value);
       })
       .catch((e) => {
         console.log('Error occured while searching for tests', e);
@@ -506,6 +493,12 @@ export const DiagnosticPrescription: React.FC = () => {
     event: React.ChangeEvent<{}>,
     { newValue }: Autosuggest.ChangeEvent
   ) => {
+    let filterVal: any = suggestions.filter(
+      (x: any) => x.id !== undefined && x.id !== '' && x.id !== -1
+    );
+    filterVal.unshift({ itemName: newValue, itemId: -1, id: -1, __typename: 'Diagnostics' });
+    suggestions = filterVal;
+
     if (event.nativeEvent.type === 'input' && newValue.length > 2) {
       fetchDignostic(newValue);
     } else if (newValue.length <= 2) setIsSuggestionSelected(false);
@@ -525,11 +518,11 @@ export const DiagnosticPrescription: React.FC = () => {
     return (
       otherDiagnostic.length > 2 && (
         <AphTooltip open={isHighlighted} title={suggestion.itemName}>
-          {suggestion.id !== '' ? (
+          {suggestion.id !== -1 ? (
             <div>
-              {parts.map((part) => (
+              {parts.map((part, index) => (
                 <span
-                  key={part.text}
+                  key={part.text + ' ' + index}
                   style={{
                     fontWeight: part.highlight ? 500 : 400,
                     whiteSpace: 'pre',
@@ -542,14 +535,14 @@ export const DiagnosticPrescription: React.FC = () => {
             </div>
           ) : (
             <div>
-              <span>Add</span>
+              <span>Add&nbsp;</span>
               <span
                 style={{
                   fontWeight: 400,
                   whiteSpace: 'pre',
                 }}
               >
-                {` "${suggestion.itemName}"`}
+                {suggestion.itemName}
               </span>
               <img src={require('images/ic_dark_plus.svg')} alt="" />
             </div>

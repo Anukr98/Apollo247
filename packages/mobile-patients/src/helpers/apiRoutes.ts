@@ -5,6 +5,8 @@ export const apiBaseUrl =
     ? 'https://api.apollo247.com/'
     : AppConfig.APP_ENV == AppEnv.QA
     ? 'https://aph.staging.api.popcornapps.com/'
+    : AppConfig.APP_ENV == AppEnv.QA2
+    ? 'https://qaapi.apollo247.com/'
     : AppConfig.APP_ENV == AppEnv.STAGING
     ? 'https://stagingapi.apollo247.com/'
     : AppConfig.APP_ENV == AppEnv.PERFORM

@@ -8,11 +8,6 @@ import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 
 export const saveDeviceTokenTypeDefs = gql`
-  enum DEVICE_TYPE {
-    IOS
-    ANDROID
-  }
-
   input SaveDeviceTokenInput {
     deviceType: DEVICE_TYPE!
     deviceToken: String!
@@ -73,8 +68,9 @@ const saveDeviceToken: Resolver<
     deviceToken = devToken;
     return { deviceToken };
   }
+
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
-  const patientDetails = await patientRepo.findById(SaveDeviceTokenInput.patientId);
+  const patientDetails = await patientRepo.getPatientDetails(SaveDeviceTokenInput.patientId);
   if (!patientDetails) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }

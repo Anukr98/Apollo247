@@ -11,7 +11,11 @@ export const getMedicineOrdersListTypeDefs = gql`
   type MedicineOrdersListResult {
     MedicineOrdersList: [MedicineOrders]
   }
-
+  enum DEVICE_TYPE {
+    IOS
+    ANDROID
+    DESKTOP
+  }
   type MedicineOrderDetailsResult {
     MedicineOrderDetails: MedicineOrders
   }
@@ -35,6 +39,7 @@ export const getMedicineOrdersListTypeDefs = gql`
     deliveryType: MEDICINE_DELIVERY_TYPE!
     patientAddressId: ID
     devliveryCharges: Float
+    deviceType: DEVICE_TYPE
     prescriptionImageUrl: String
     prismPrescriptionFileId: String
     pharmaRequest: String
@@ -113,7 +118,8 @@ const getMedicineOrdersList: Resolver<
   MedicineOrdersListResult
 > = async (parent, args, { profilesDb }) => {
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
-  const patientDetails = await patientRepo.findById(args.patientId);
+
+  const patientDetails = await patientRepo.getPatientDetails(args.patientId);
   if (!patientDetails) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
@@ -133,7 +139,7 @@ const getMedicineOrderDetails: Resolver<
 > = async (parent, args, { profilesDb }) => {
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
   if (args.patientId) {
-    const patientDetails = await patientRepo.findById(args.patientId);
+    const patientDetails = await patientRepo.getPatientDetails(args.patientId);
     if (!patientDetails) {
       throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
     }

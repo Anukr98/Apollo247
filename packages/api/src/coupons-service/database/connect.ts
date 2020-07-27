@@ -69,6 +69,7 @@ import {
   MedicalRecords,
   MedicineOrderInvoice,
   MedicineOrderLineItems,
+  MedicineOrderRefunds,
   MedicineOrderPayments,
   MedicineOrders,
   MedicineOrdersStatus,
@@ -90,6 +91,7 @@ import {
   CouponPharmaRules,
   MedicineOrderCancelReason,
   PharmacologistConsult,
+  MedicineOrderAddress,
 } from 'profiles-service/entities';
 
 export const connect = async () => {
@@ -190,6 +192,7 @@ export const connect = async () => {
         MedicalRecords,
         MedicineOrderInvoice,
         MedicineOrderLineItems,
+        MedicineOrderRefunds,
         MedicineOrderPayments,
         MedicineOrders,
         MedicineOrdersStatus,
@@ -210,6 +213,7 @@ export const connect = async () => {
         ReferalCouponMapping,
         MedicineOrderCancelReason,
         PharmacologistConsult,
+        MedicineOrderAddress,
       ],
       type: 'postgres',
       host: process.env.PROFILES_DB_HOST,

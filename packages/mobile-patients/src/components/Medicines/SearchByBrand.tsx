@@ -50,6 +50,7 @@ import {
   postAppsFlyerAddToCartEvent,
   addPharmaItemToCart,
   g,
+  getMaxQtyForMedicineItem,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEvents,
@@ -186,6 +187,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
       is_prescription_required,
       thumbnail,
       type_id,
+      MaxOrderQty,
     } = item;
     suggestionItem && setItemsLoading({ ...itemsLoading, [sku]: true });
     addPharmaItemToCart(
@@ -204,6 +206,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
         quantity: 1,
         thumbnail,
         isInStock: true,
+        maxOrderQty: MaxOrderQty,
       },
       pharmacyPincode!,
       addCartItem,
@@ -342,7 +345,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
         }}
         onPressAdd={() => {
           const q = getItemQuantity(item.sku);
-          if (q == 20) return;
+          if (q == getMaxQtyForMedicineItem(item.MaxOrderQty)) return;
           onUpdateCartItem(item, getItemQuantity(item.sku) + 1);
         }}
         onPressSubstract={() => {
@@ -529,7 +532,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
           onNotifyMeClick(medicine.name);
         }}
         onPressAddQuantity={() =>
-          getItemQuantity(medicine.sku) == 20
+          getItemQuantity(medicine.sku) == getMaxQtyForMedicineItem(medicine.MaxOrderQty)
             ? null
             : onUpdateCartItem(medicine, getItemQuantity(medicine.sku) + 1)
         }

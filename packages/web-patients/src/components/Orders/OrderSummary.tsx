@@ -7,7 +7,7 @@ import {
   getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrderPayments as Payments,
 } from 'graphql/types/getMedicineOrderOMSDetails';
 import { CircularProgress } from '@material-ui/core';
-import { AphButton } from '@aph/web-ui-components';
+import { AphButton, AphDialog, AphDialogClose, AphDialogTitle } from '@aph/web-ui-components';
 import {
   MEDICINE_ORDER_PAYMENT_TYPE,
   MEDICINE_ORDER_STATUS,
@@ -262,6 +262,47 @@ const useStyles = makeStyles((theme: Theme) => {
         margin: 0,
       },
     },
+    reorderBtn: {
+      marginBottom: 8,
+      marginLeft: 10,
+      '& button': {
+        width: '100%',
+      }
+    },
+    cartBody: {
+      padding: 16,
+      '& ul': {
+        color: '#68919d',
+        marginBottom: 20,
+        '& li': {
+          paddingBottom: 10,
+          fontSize: 12,
+          fontWeight: 500,
+        }
+      },
+    },
+    cartItem: {
+      fontSize: 12,
+      color: '#02475b',
+      fontWeight: 500,
+    },
+    cartItemSubheading: {
+      marginTop: 10,
+    },
+    continueBtn: {
+      marginTop: 35,
+      textAlign: 'center',
+      '& button': {
+        minWidth: 144,
+        borderRadius: 10,
+      }
+    },
+    reorderTitle: {
+      padding: '15px 20px',
+      '& h2': {
+        fontSize: 16,
+      },
+    },
   };
 });
 
@@ -287,8 +328,8 @@ export const OrdersSummary: React.FC<OrdersSummaryProps> = (props) => {
   const client = useApolloClient();
   const orderStatusList =
     orderDetailsData &&
-    orderDetailsData.medicineOrdersStatus &&
-    orderDetailsData.medicineOrdersStatus.length > 0
+      orderDetailsData.medicineOrdersStatus &&
+      orderDetailsData.medicineOrdersStatus.length > 0
       ? orderDetailsData.medicineOrdersStatus
       : [];
   const orderItems = (orderDetailsData && orderDetailsData.medicineOrderLineItems) || [];
@@ -299,8 +340,8 @@ export const OrdersSummary: React.FC<OrdersSummaryProps> = (props) => {
     orderDetailsData.medicineOrderPayments[0];
   const shipmentInvoiceDetails =
     orderDetailsData &&
-    orderDetailsData.medicineOrderShipments &&
-    orderDetailsData.medicineOrderShipments.length > 0
+      orderDetailsData.medicineOrderShipments &&
+      orderDetailsData.medicineOrderShipments.length > 0
       ? orderDetailsData.medicineOrderShipments[0].medicineOrderInvoice
       : [];
 
@@ -346,8 +387,8 @@ export const OrdersSummary: React.FC<OrdersSummaryProps> = (props) => {
     (orderPayment.paymentType == MEDICINE_ORDER_PAYMENT_TYPE.COD
       ? 'COD'
       : orderPayment.paymentType == MEDICINE_ORDER_PAYMENT_TYPE.CASHLESS
-      ? 'Prepaid'
-      : 'No Payment');
+        ? 'Prepaid'
+        : 'No Payment');
 
   const getAddressDetails = (deliveryAddressId: string, id: string) => {
     client
@@ -385,10 +426,10 @@ export const OrdersSummary: React.FC<OrdersSummaryProps> = (props) => {
       );
       const addressData = selectedAddress
         ? `${selectedAddress.addressLine1 ? `${selectedAddress.addressLine1}, ` : ''}${
-            selectedAddress.addressLine2 ? `${selectedAddress.addressLine2}, ` : ''
-          }${selectedAddress.city ? `${selectedAddress.city}, ` : ''}${
-            selectedAddress.state ? `${selectedAddress.state}, ` : ''
-          }${selectedAddress.zipcode || ''}`
+        selectedAddress.addressLine2 ? `${selectedAddress.addressLine2}, ` : ''
+        }${selectedAddress.city ? `${selectedAddress.city}, ` : ''}${
+        selectedAddress.state ? `${selectedAddress.state}, ` : ''
+        }${selectedAddress.zipcode || ''}`
         : '';
       return addressData;
     } else {
@@ -412,9 +453,9 @@ export const OrdersSummary: React.FC<OrdersSummaryProps> = (props) => {
 
   const billedMRPValue = billedItemDetails
     ? billedItemDetails.reduce(
-        (sum: number, itemDetails: ItemObject) => sum + itemDetails.mrp * itemDetails.issuedQty,
-        0
-      )
+      (sum: number, itemDetails: ItemObject) => sum + itemDetails.mrp * itemDetails.issuedQty,
+      0
+    )
     : 0;
 
   // check for supporting old orders
@@ -461,7 +502,7 @@ export const OrdersSummary: React.FC<OrdersSummaryProps> = (props) => {
     noDiscountFound &&
     orderDetailsData &&
     Math.round(orderDetailsData.productDiscount + orderDetailsData.couponDiscount) <
-      Math.round(billedPaymentDetails && billedPaymentDetails.discountValue);
+    Math.round(billedPaymentDetails && billedPaymentDetails.discountValue);
 
   useEffect(() => {
     if (orderDetailsData) {
@@ -484,7 +525,7 @@ export const OrdersSummary: React.FC<OrdersSummaryProps> = (props) => {
       pharmacyOrderSummaryTracking(data);
     }
   }, []);
-
+  const [isDialogOpen, setIsDialogOpen] = React.useState<boolean>(false);
   return isLoading ? (
     <div className={classes.loader}>
       <CircularProgress />
@@ -560,29 +601,29 @@ export const OrdersSummary: React.FC<OrdersSummaryProps> = (props) => {
               </div>
               {isOrderBilled
                 ? billedItemDetails.map(
-                    (item: ItemObject, idx: number) =>
-                      item && (
-                        <div key={item.itemId} className={classes.tableRow}>
-                          <div className={classes.medicineName}>{getItemName(item, idx)}</div>
-                          <div>{Math.ceil(item.issuedQty).toFixed(1)}</div>
-                          <div>Rs.{item.mrp * item.issuedQty}</div>
-                        </div>
-                      )
-                  )
+                  (item: ItemObject, idx: number) =>
+                    item && (
+                      <div key={item.itemId} className={classes.tableRow}>
+                        <div className={classes.medicineName}>{getItemName(item, idx)}</div>
+                        <div>{Math.ceil(item.issuedQty).toFixed(1)}</div>
+                        <div>Rs.{item.mrp * item.issuedQty}</div>
+                      </div>
+                    )
+                )
                 : orderItems &&
-                  orderItems.length > 0 &&
-                  orderItems.map(
-                    (item) =>
-                      item && (
-                        <div key={item.medicineSKU} className={classes.tableRow}>
-                          <div className={classes.medicineName}>
-                            {getMedicineName(item.medicineName, item.mou)}
-                          </div>
-                          <div>{item.quantity.toFixed(2)}</div>
-                          <div>Rs.{item.price}</div>
+                orderItems.length > 0 &&
+                orderItems.map(
+                  (item) =>
+                    item && (
+                      <div key={item.medicineSKU} className={classes.tableRow}>
+                        <div className={classes.medicineName}>
+                          {getMedicineName(item.medicineName, item.mou)}
                         </div>
-                      )
-                  )}
+                        <div>{item.quantity.toFixed(2)}</div>
+                        <div>Rs.{item.price}</div>
+                      </div>
+                    )
+                )}
             </>
           </div>
         </div>
@@ -629,29 +670,29 @@ export const OrdersSummary: React.FC<OrdersSummaryProps> = (props) => {
               </div>
             </>
           ) : (
-            <>
-              <div className={classes.priceRow}>
-                <span>MRP Total</span>
-                <span>Rs. {mrpTotal.toFixed(2)}</span>
-              </div>
-              <div className={classes.priceRow}>
-                <span>Product Discount</span>
-                <span>- Rs. {discount.toFixed(2)}</span>
-              </div>
-              <div className={classes.priceRow}>
-                <span>Delivery Charges</span>
-                <span>+ Rs. {(orderDetailsData.devliveryCharges || 0).toFixed(2)}</span>
-              </div>
-              <div className={classes.priceRow}>
-                <span>Packaging Charges</span>
-                <span>+ Rs. 0.00</span>
-              </div>
-              <div className={`${classes.priceRow} ${classes.totalPaid}`}>
-                <span>Total</span>
-                <span>Rs.{(orderDetailsData.estimatedAmount || 0).toFixed(2)}</span>
-              </div>
-            </>
-          )}
+              <>
+                <div className={classes.priceRow}>
+                  <span>MRP Total</span>
+                  <span>Rs. {mrpTotal.toFixed(2)}</span>
+                </div>
+                <div className={classes.priceRow}>
+                  <span>Product Discount</span>
+                  <span>- Rs. {discount.toFixed(2)}</span>
+                </div>
+                <div className={classes.priceRow}>
+                  <span>Delivery Charges</span>
+                  <span>+ Rs. {(orderDetailsData.devliveryCharges || 0).toFixed(2)}</span>
+                </div>
+                <div className={classes.priceRow}>
+                  <span>Packaging Charges</span>
+                  <span>+ Rs. 0.00</span>
+                </div>
+                <div className={`${classes.priceRow} ${classes.totalPaid}`}>
+                  <span>Total</span>
+                  <span>Rs.{(orderDetailsData.estimatedAmount || 0).toFixed(2)}</span>
+                </div>
+              </>
+            )}
 
           {orderPayment && (
             <div className={`${classes.priceRow} ${classes.lastRow}`}>
@@ -677,18 +718,18 @@ export const OrdersSummary: React.FC<OrdersSummaryProps> = (props) => {
                     {billedPaymentDetails.invoiceValue > orderDetailsData.estimatedAmount
                       ? ORDER_BILLING_STATUS_STRINGS.AMOUNT_TO_BE_PAID_ON_DELIVERY
                       : paymentMethodToDisplay === 'COD'
-                      ? ORDER_BILLING_STATUS_STRINGS.COD_AMOUNT_TO_PAY
-                      : ORDER_BILLING_STATUS_STRINGS.REFUND_TO_BE_INITIATED}
+                        ? ORDER_BILLING_STATUS_STRINGS.COD_AMOUNT_TO_PAY
+                        : ORDER_BILLING_STATUS_STRINGS.REFUND_TO_BE_INITIATED}
                   </span>
                   <span>
                     Rs.
                     {paymentMethodToDisplay === 'COD'
                       ? billedPaymentDetails.invoiceValue.toFixed(2)
                       : billedPaymentDetails.invoiceValue > orderDetailsData.estimatedAmount
-                      ? (
+                        ? (
                           billedPaymentDetails.invoiceValue - orderDetailsData.estimatedAmount
                         ).toFixed(2)
-                      : (
+                        : (
                           orderDetailsData.estimatedAmount - billedPaymentDetails.invoiceValue
                         ).toFixed(2)}
                   </span>
@@ -712,16 +753,38 @@ export const OrdersSummary: React.FC<OrdersSummaryProps> = (props) => {
           </div>
         </div>
       )}
-
       {!props.isShipmentListHasBilledState() && (
         <div className={classes.disclaimerText}>
           <b>Disclaimer:</b> <span>Price may vary when the actual bill is generated.</span>
         </div>
       )}
+      <div className={classes.reorderBtn}>
+        <AphButton color="primary" onClick={() => setIsDialogOpen(true)}>
+          Re-order
+          </AphButton>
+      </div>
       {/* <div className={classes.bottomActions}>
         <AphButton>Download</AphButton>
         <AphButton>Share</AphButton>
       </div> */}
+      <AphDialog open={isDialogOpen} maxWidth="sm">
+        <AphDialogClose onClick={() => setIsDialogOpen(false)} title={'Close'} />
+        <AphDialogTitle className={classes.reorderTitle}>Added to Cart</AphDialogTitle>
+        <div className={classes.cartBody}>
+          <div className={classes.cartItem}>8 out of 10 items have been added to cart.</div>
+          <div className={`${classes.cartItem} ${classes.cartItemSubheading}`}>We couldn't add below items:</div>
+          <ul>
+            <li>Crocin Advance Tab</li>
+            <li>3M Particulate Respirator 8210</li>
+          </ul>
+          <div className={classes.cartItem}>Please continue for purchase.</div>
+          <div className={classes.continueBtn}>
+            <AphButton color="primary" >
+              Continue
+              </AphButton>
+          </div>
+        </div>
+      </AphDialog>
     </>
   ) : null;
 };

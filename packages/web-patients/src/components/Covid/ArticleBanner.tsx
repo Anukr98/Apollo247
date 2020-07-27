@@ -359,9 +359,7 @@ export const ArticleBanner: React.FC<ArticleBannerProps> = (props) => {
                 closeShareWidget={() => {
                   setShowShareWidget(false);
                 }}
-                url={`${window.location.protocol
-                  }//${window.location.hostname}/covid19/article/${props.slug}`}
-
+                url={`${window.location.protocol}//${window.location.hostname}/covid19/article/${props.slug}`}
               />
             )}
           </div>
