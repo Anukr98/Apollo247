@@ -9,7 +9,7 @@ import { useApolloClient } from 'react-apollo-hooks';
 import { clientRoutes } from 'helpers/clientRoutes';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import moment from 'moment';
-import { useAuth } from 'hooks/authHooks';
+import { useAuth, useAllCurrentPatients } from 'hooks/authHooks';
 import { BottomLinks } from 'components/BottomLinks';
 import { CouponCodeConsult } from 'components/Coupon/CouponCodeConsult';
 import { AppointmentType } from 'graphql/types/globalTypes';
@@ -20,6 +20,7 @@ import {
 import { GET_DOCTOR_DETAILS_BY_ID } from 'graphql/doctors';
 import { ValidateConsultCoupon_validateConsultCoupon } from 'graphql/types/ValidateConsultCoupon';
 import { Route } from 'react-router-dom';
+import { consultPayButtonClickTracking } from 'webEngageTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -356,6 +357,7 @@ const useStyles = makeStyles((theme: Theme) => {
 
 export const OnlineCheckout: React.FC = () => {
   const classes = useStyles({});
+  const { currentPatient } = useAllCurrentPatients();
   const { isSignedIn } = useAuth();
   const [data, setData] = useState<any>();
   const [loading, setLoading] = useState<boolean>(false);
@@ -375,6 +377,8 @@ export const OnlineCheckout: React.FC = () => {
     doctorId,
     appointmentDateTime,
     amount,
+    appointmentType,
+    doctorName,
   } = pageData;
   let newAppointmentDateTime = moment(appointmentDateTime)
     .format('DD MMMM[,] LT')
@@ -625,6 +629,24 @@ export const OnlineCheckout: React.FC = () => {
                           // };
                           // localStorage.setItem('consultBookDetails', JSON.stringify(updatedValues));
                           history.push(clientRoutes.payMedicine('consults'));
+                          const eventData = {
+                            actualPrice: Number(amount),
+                            consultDateTime: appointmentDateTime,
+                            consultType: appointmentType,
+                            discountAmount:
+                              validateCouponResult && validateCouponResult.valid
+                                ? Number(
+                                    validateCouponResult.amount - validateCouponResult.discount
+                                  )
+                                : Number(revisedAmount),
+                            discountCoupon: couponCode,
+                            doctorCity: '',
+                            doctorName,
+                            specialty: speciality,
+                            netAmount: Number(amount),
+                            patientGender: currentPatient && currentPatient.gender,
+                          };
+                          consultPayButtonClickTracking(eventData);
                         }}
                       >
                         Pay Rs.{' '}

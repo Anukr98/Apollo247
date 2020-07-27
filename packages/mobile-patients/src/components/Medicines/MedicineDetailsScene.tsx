@@ -37,6 +37,7 @@ import {
   postAppsFlyerAddToCartEvent,
   g,
   isDeliveryDateWithInXDays,
+  getMaxQtyForMedicineItem,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -328,10 +329,21 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   const medicineName = medicineDetails.name;
   const scrollViewRef = React.useRef<KeyboardAwareScrollView>(null);
   const cartItemsCount = cartItems.length + diagnosticCartItems.length;
+  const movedFrom = props.navigation.getParam('movedFrom');
 
   useEffect(() => {
     if (!_deliveryError) {
       fetchDeliveryTime();
+    }
+
+    if (movedFrom === 'deeplink') {
+      // webengage event when page is opened from deeplink
+      const eventAttributes: WebEngageEvents[WebEngageEventName.DEEPLINK_PRODUCT_DETAIL_SCREEN] = {
+        source: 'Deeplink',
+        ProductId: sku,
+        ProductName: medicineName,
+      };
+      postWebEngageEvent(WebEngageEventName.DEEPLINK_PRODUCT_DETAIL_SCREEN, eventAttributes);
     }
   }, []);
 
@@ -387,6 +399,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       is_prescription_required,
       type_id,
       thumbnail,
+      MaxOrderQty,
     } = item;
     addCartItem!({
       id: sku,
@@ -403,6 +416,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       quantity: Number(selectedQuantity),
       thumbnail: thumbnail,
       isInStock: true,
+      maxOrderQty: MaxOrderQty,
     });
     postwebEngageAddToCartEvent(item, 'Pharmacy PDP');
     let id = currentPatient && currentPatient.id ? currentPatient.id : '';
@@ -524,11 +538,11 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   };
 
   const renderBottomButtons = () => {
-    const opitons = Array.from({ length: AppConfig.Configuration.CART_ITEM_MAX_QUANTITY }).map(
-      (_, i) => {
-        return { key: (i + 1).toString(), value: i + 1 };
-      }
-    );
+    const opitons = Array.from({
+      length: getMaxQtyForMedicineItem(medicineDetails.MaxOrderQty),
+    }).map((_, i) => {
+      return { key: (i + 1).toString(), value: i + 1 };
+    });
 
     return (
       <StickyBottomComponent style={{ height: 'auto' }} defaultBG>
@@ -699,6 +713,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   };
 
   const renderTopView = () => {
+    const imagesListLength = g(medicineDetails, 'image', 'length');
     return (
       <View style={styles.mainView}>
         <View
@@ -715,20 +730,21 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
             <TouchableOpacity
               activeOpacity={1}
               style={styles.imageView}
-              onPress={() =>
-                !!medicineDetails.image
-                  ? props.navigation.navigate(AppRoutes.ImageSliderScreen, {
-                      images: [AppConfig.Configuration.IMAGES_BASE_URL[0] + medicineDetails.image],
-                      heading: medicineDetails.name,
-                    })
-                  : {}
-              }
+              onPress={() => {
+                if (imagesListLength) {
+                  props.navigation.navigate(AppRoutes.ImageSliderScreen, {
+                    images: (g(medicineDetails, 'image') || [])
+                      .map((imgPath) => `${AppConfig.Configuration.IMAGES_BASE_URL[0]}${imgPath}`),
+                    heading: medicineDetails.name,
+                  });
+                }
+              }}
             >
-              {!!medicineDetails.image ? (
+              {!!imagesListLength ? (
                 <Image
                   placeholderStyle={theme.viewStyles.imagePlaceholderStyle}
                   source={{
-                    uri: AppConfig.Configuration.IMAGES_BASE_URL[0] + medicineDetails.image,
+                    uri: `${AppConfig.Configuration.IMAGES_BASE_URL[0]}${medicineDetails.image[0]}`,
                   }}
                   style={styles.doctorImage}
                 />
@@ -736,7 +752,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
                 renderIconOrImage(medicineDetails)
               )}
             </TouchableOpacity>
-            {!!medicineDetails.image && (
+            {!!imagesListLength && (
               <View style={{ alignItems: 'center' }}>
                 <Text
                   style={[
@@ -744,7 +760,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
                     { paddingTop: 8, marginLeft: 20 },
                   ]}
                 >
-                  1 PHOTO
+                  {`${imagesListLength} PHOTO${imagesListLength > 1 ? 'S' : ''}`}
                 </Text>
               </View>
             )}

@@ -98,7 +98,8 @@ type CustomNotificationType =
   | 'PRESCRIPTION_READY'
   | 'doctor_Noshow_Reschedule_Appointment'
   | 'Appointment_Canceled_Refund'
-  | 'Appointment_Payment_Pending_Failure';
+  | 'Appointment_Payment_Pending_Failure'
+  | 'webview';
 
 export interface NotificationListenerProps extends NavigationScreenProps {}
 
@@ -696,6 +697,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
                         prescriptionRequired: medicineDetails.is_prescription_required == '1',
                         isMedicine: (medicineDetails.type_id || '').toLowerCase() == 'pharma',
                         thumbnail: medicineDetails.thumbnail || medicineDetails.image,
+                        maxOrderQty: medicineDetails.MaxOrderQty,
                       } as ShoppingCartItem;
                     })
                     .filter((item) => item) as ShoppingCartItem[];
@@ -839,7 +841,13 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
           showConsultDetailsRoomAlert(data, 'PRESCRIPTION_READY', 'true');
         }
         break;
-
+      case 'webview':
+        if (data.url) {
+          props.navigation.navigate(AppRoutes.CommonWebView, {
+            url: data.url,
+          });
+        }
+        break;
       default:
         break;
     }

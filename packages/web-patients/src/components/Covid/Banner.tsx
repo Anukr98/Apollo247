@@ -73,7 +73,7 @@ const useStyles = makeStyles((theme: Theme) => {
         padding: 40,
         marginTop: -140,
       },
-      '& h2': {
+      '& h1': {
         margin: 0,
         fontSize: 36,
         fontWeight: 600,
@@ -173,6 +173,9 @@ const useStyles = makeStyles((theme: Theme) => {
 
 interface BannerProps {
   isWebView: boolean;
+  backLocation?: string;
+  title: string;
+  subtitle: string;
 }
 
 export const Banner: React.FC<BannerProps> = (props) => {
@@ -186,7 +189,7 @@ export const Banner: React.FC<BannerProps> = (props) => {
     >
       <div className={classes.bannerTop}>
         {!props.isWebView && (
-          <Link to={clientRoutes.welcome()}>
+          <Link to={props.backLocation || clientRoutes.welcome()}>
             <div className={classes.backArrow}>
               <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
             </div>
@@ -198,8 +201,8 @@ export const Banner: React.FC<BannerProps> = (props) => {
         </AphButton>
       </div>
       <div className={classes.content}>
-        <h2>Coronavirus <span>(Covid-19)</span></h2>
-        <p>Learn more about Coronavirus, how to stay safe, and what to do if you have symptoms.</p>
+        <h1>{props.title}</h1>
+        <p>{props.subtitle}</p>
       </div>
       <Popover
         open={openSubscriptionForm}

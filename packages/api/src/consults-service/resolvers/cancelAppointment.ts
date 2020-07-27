@@ -24,8 +24,9 @@ import { CaseSheetRepository } from 'consults-service/repositories/caseSheetRepo
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { FacilityRepository } from 'doctors-service/repositories/facilityRepository';
 import { AdminDoctorMap } from 'doctors-service/repositories/adminDoctorRepository';
-import { initiateRefund, PaytmResponse } from 'consults-service/helpers/refundHelper';
+import { initiateRefund } from 'consults-service/helpers/refundHelper';
 import { log } from 'customWinstonLogger';
+import { PaytmResponse } from 'types/refundHelperTypes';
 
 export const cancelAppointmentTypeDefs = gql`
   input CancelAppointmentInput {
@@ -114,7 +115,6 @@ const cancelAppointment: Resolver<
     appointment
   );
 
-
   if (
     appointment.appointmentPayments.length &&
     appointment.appointmentPayments[0].amountPaid >= 1
@@ -163,9 +163,9 @@ const cancelAppointment: Resolver<
     .getUTCHours()
     .toString()
     .padStart(2, '0')}:${appointment.appointmentDateTime
-      .getUTCMinutes()
-      .toString()
-      .padStart(2, '0')}:00.000Z`;
+    .getUTCMinutes()
+    .toString()
+    .padStart(2, '0')}:00.000Z`;
   console.log(slotApptDt, apptDt, sl, appointment.doctorId, 'appoint date time');
   appointmentRepo.updateDoctorSlotStatusES(
     appointment.doctorId,
@@ -188,6 +188,8 @@ const cancelAppointment: Resolver<
       cancelAppointmentInput.cancelledBy == 'PATIENT'
         ? appointment.patientId
         : appointment.doctorId,
+    fromState: appointment.appointmentState,
+    toState: appointment.appointmentState,
     reason: cancelAppointmentInput.cancelReason,
   };
   appointmentRepo.saveAppointmentHistory(historyAttrs);
@@ -259,14 +261,14 @@ const cancelAppointment: Resolver<
   const toEmailId = process.env.BOOK_APPT_TO_EMAIL ? process.env.BOOK_APPT_TO_EMAIL : '';
   const ccEmailIds =
     process.env.NODE_ENV == 'dev' ||
-      process.env.NODE_ENV == 'development' ||
-      process.env.NODE_ENV == 'local'
+    process.env.NODE_ENV == 'development' ||
+    process.env.NODE_ENV == 'local'
       ? ApiConstants.PATIENT_APPT_CC_EMAILID
       : ApiConstants.PATIENT_APPT_CC_EMAILID_PRODUCTION;
   const ccTriggerEmailIds =
     process.env.NODE_ENV == 'dev' ||
-      process.env.NODE_ENV == 'development' ||
-      process.env.NODE_ENV == 'local'
+    process.env.NODE_ENV == 'development' ||
+    process.env.NODE_ENV == 'local'
       ? ApiConstants.PATIENT_APPT_CC_EMAILID_TRIGGER
       : ApiConstants.PATIENT_APPT_CC_EMAILID_PRODUCTION;
   const emailContent: EmailMessage = {

@@ -324,7 +324,7 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#01475b',
       fontSize: 12,
       fontWeight: 500,
-    }
+    },
   });
 });
 
@@ -441,7 +441,9 @@ export const HowItWorks: React.FC = (props) => {
           <TabPanel value={value} index={1}>
             <div className={classes.tabHead}>
               <img src={require('images/ic-specialist.svg')} />
-              <Typography component="h6">How to consult <br /> in person </Typography>
+              <Typography component="h6">
+                How to consult <br /> in person{' '}
+              </Typography>
             </div>
             <div className={classes.tabBody}>
               <ul className={classes.tabList}>
@@ -471,12 +473,14 @@ export const HowItWorks: React.FC = (props) => {
         </div>
       </div>
       <div className={classes.appDetails}>
-        <Typography component="h6">Consultancy works only on our mobile app</Typography>
+        <Typography component="h6">Consultation works only on our mobile app</Typography>
         <Typography>To enjoy enhanced consultation experience download our mobile app</Typography>
-        <div className={classes.appDownload}>
-          <img src={require('images/apollo247.png')} />
-          <AphButton>Download the App</AphButton>
-        </div>
+        <a href={getAppStoreLink()} target={'_blank'}>
+          <div className={classes.appDownload}>
+            <img src={require('images/apollo247.png')} />
+            <AphButton>Download the App</AphButton>
+          </div>
+        </a>
       </div>
       <AphDialog open={chatConsult} maxWidth="sm">
         <AphDialogClose onClick={() => setChatConsult(false)} title={'Close'} />
@@ -514,7 +518,7 @@ export const HowItWorks: React.FC = (props) => {
             </li>
           </ul>
           <div className={`${classes.appDetails} ${classes.appDetailsMobile}`}>
-            <Typography component="h6">Consultancy works only on our mobile app</Typography>
+            <Typography component="h6">Consultation works only on our mobile app</Typography>
             <Typography>
               To enjoy enhanced consultation experience download our mobile app
             </Typography>

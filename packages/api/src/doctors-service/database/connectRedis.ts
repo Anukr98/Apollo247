@@ -1,6 +1,7 @@
 import { createClient } from 'redis';
 import { debugLog } from 'customWinstonLogger';
 import { promisify } from 'util';
+
 const dLogger = debugLog(
   'DoctorServiceLogger',
   'RedisConnect',
@@ -10,7 +11,8 @@ const client = createClient({
   port: 6379,
   host: process.env.REDIS_HOST,
   password: process.env.REDIS_PASSWORD,
-  retry_strategy: function(options) {
+  db: process.env.REDIS_DB || 0,
+  retry_strategy: function (options) {
     if (options.error) {
       dLogger(
         new Date(),

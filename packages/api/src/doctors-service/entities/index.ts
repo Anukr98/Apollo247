@@ -198,6 +198,7 @@ export class AdminAuditLogs extends BaseEntity {
   @Column({ nullable: true, type: 'text' })
   previousDetails: string;
 
+  @Index('AdminAuditLogs_doctorId')
   @Column({ nullable: true })
   doctorId: string;
 
@@ -216,9 +217,11 @@ export class ConsultHours extends BaseEntity {
   @Column({ default: 10 })
   consultBuffer: number;
 
+  @Index('ConsultHours_consultMode')
   @Column()
   consultMode: ConsultMode;
 
+  @Index('ConsultHours_consultType')
   @Column()
   consultType: ConsultType;
 
@@ -241,6 +244,7 @@ export class ConsultHours extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Index('ConsultHours_isActive')
   @Column({ default: true })
   isActive: Boolean;
 
@@ -257,6 +261,7 @@ export class ConsultHours extends BaseEntity {
   @Column()
   weekDay: WeekDay;
 
+  @Index('ConsultHours_actualDay')
   @Column({ nullable: true })
   actualDay: WeekDay;
 
@@ -278,6 +283,9 @@ export class Doctor extends BaseEntity {
 
   @Column({ default: true })
   isJdAllowed: Boolean;
+
+  @Column({ default: true })
+  isWhitelisted: Boolean;
 
   @Column({ default: true })
   isApolloJdRequired: Boolean;
@@ -309,6 +317,7 @@ export class Doctor extends BaseEntity {
   @OneToMany((type) => DoctorDeviceTokens, (doctorDeviceTokens) => doctorDeviceTokens.doctor)
   doctorDeviceTokens: DoctorDeviceTokens[];
 
+  @Index('Doctor_country')
   @Column({ nullable: true })
   country: string;
 
@@ -338,10 +347,12 @@ export class Doctor extends BaseEntity {
   @Column({ nullable: true })
   delegateNumber: string;
 
+  @Index('Doctor_emailAddress')
   @Column({ nullable: true, type: 'text' })
   @Validate(EmailValidator)
   emailAddress: string;
 
+  @Index('Doctor_externalId')
   @Column({ nullable: true })
   externalId: string;
 
@@ -484,6 +495,7 @@ export class DoctorAndHospital extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Index('DoctorAndHospital_medmantraId')
   @Column({ nullable: true })
   medmantraId: string;
 
@@ -561,6 +573,7 @@ export class DoctorSpecialty extends BaseEntity {
   @Column({ nullable: true })
   displayOrder: Number;
 
+  @Index('DoctorSpecialty_externalId')
   @Column({ nullable: true })
   externalId: string;
 
@@ -621,6 +634,7 @@ export class Facility extends BaseEntity {
   @OneToMany((type) => DoctorAndHospital, (doctorHospital) => doctorHospital.doctor)
   doctorHospital: DoctorAndHospital[];
 
+  @Index('Facility_facilityType')
   @Column()
   facilityType: FacilityType;
 
@@ -655,6 +669,7 @@ export class Facility extends BaseEntity {
   @Column({ nullable: true })
   updatedDate: Date;
 
+  @Index('Facility_zipcode')
   @Column({ nullable: true })
   zipcode: string;
 
@@ -706,6 +721,7 @@ export class StarTeam extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Index('StarTeam_isActive')
   @Column({ default: false })
   isActive: Boolean;
 
@@ -776,6 +792,7 @@ export class AdminUsers extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Index('AdminUsers_isActive')
   @Column({ default: true })
   isActive: Boolean;
 
@@ -785,6 +802,7 @@ export class AdminUsers extends BaseEntity {
   @Column({ default: true })
   password: string;
 
+  @Index('AdminUsers_email')
   @Column({ nullable: true })
   email: string;
 
@@ -828,6 +846,7 @@ export class Secretary extends BaseEntity {
   @Validate(MobileNumberValidator)
   mobileNumber: string;
 
+  @Index('Secretary_isActive')
   @Column({ default: true })
   isActive: Boolean;
   @Column({ nullable: true })
@@ -853,6 +872,7 @@ export class DoctorSecretary extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Index('DoctorSecretary_isActive')
   @Column({ default: true })
   isActive: Boolean;
 
@@ -1015,6 +1035,7 @@ export class DoctorLoginSessionHistory extends BaseEntity {
   @Column({ nullable: true })
   updatedDate: Date;
 
+  @Index('DoctorLoginSessionHistory_onlineStatus')
   @Column()
   onlineStatus: DOCTOR_ONLINE_STATUS;
 
@@ -1043,6 +1064,7 @@ export class Auditor extends BaseEntity {
   @Column()
   displayName: string;
 
+  @Index('Auditor_auditorType')
   @Column()
   auditorType: string;
 
@@ -1055,9 +1077,11 @@ export class Auditor extends BaseEntity {
   @Column()
   lastName: string;
 
+  @Index('Auditor_emailAddress')
   @Column()
   emailAddress: string;
 
+  @Index('Auditor_mobileNumber')
   @Column()
   mobileNumber: string;
 
@@ -1073,6 +1097,7 @@ export class Auditor extends BaseEntity {
   @Column()
   password: string;
 
+  @Index('Auditor_isActive')
   @Column({ default: true })
   isActive: Boolean;
 
@@ -1136,6 +1161,7 @@ export class CityPincodeMapper extends BaseEntity {
   @Column({ nullable: true })
   facilityId: string;
 
+  @Index('CityPincodeMapper_pincode')
   @Column()
   pincode: string;
 
@@ -1180,18 +1206,22 @@ export class Deeplink extends BaseEntity {
   @Column({ type: 'timestamp' })
   linkRefreshDate: Date;
 
+  @Index('Deeplink_partnerId')
   @Column({ nullable: true })
   partnerId: string;
 
   @Column({ nullable: true })
   referralCode: string;
 
+  @Index('Deeplink_shortId')
   @Column({ nullable: true })
   shortId: string;
 
+  @Index('Deeplink_templateId')
   @Column({ nullable: true })
   templateId: string;
 
+  @Index('Deeplink_type')
   @Column({ nullable: true })
   type: DeepLinkType;
 
@@ -1220,9 +1250,11 @@ export class DoctorPatientExternalConnect extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Index('DoctorPatientExternalConnect_patientId')
   @Column({ nullable: true })
   patientId: string;
 
+  @Index('DoctorPatientExternalConnect_appointmentId')
   @Column({ nullable: true })
   appointmentId: string;
 }

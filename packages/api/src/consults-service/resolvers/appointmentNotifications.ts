@@ -139,7 +139,7 @@ const autoSubmitJDCasesheet: Resolver<null, {}, ConsultServiceContext, String> =
       caseSheetRepo.updateMultipleCaseSheets(pendingCasesheetIds, casesheetAttrsToUpdate);
 
       //updating appointments
-      await apptRepo.updateJdQuestionStatusbyIds(unAttendedAppointmentIds);
+      apptRepo.updateJdQuestionStatusbyIds(unAttendedAppointmentIds);
     }
   }
 
@@ -166,14 +166,21 @@ const sendApptReminderNotification: Resolver<
         doctorNotification: true,
       };
       if (args.inNextMin != 1) {
-        if (appt.isConsultStarted) {
-          if (args.inNextMin == 15) {
-            pushNotificationInput.notificationType = NotificationType.VIRTUAL_REMINDER_15;
-          }
-        } else {
-          pushNotificationInput.notificationType =
-            NotificationType.APPOINTMENT_CASESHEET_REMINDER_15_VIRTUAL;
+        if (args.inNextMin == 15) {
+          pushNotificationInput.notificationType = NotificationType.VIRTUAL_REMINDER_15;
         }
+        // if (!appt.isConsultStarted) {
+        //   pushNotificationInput.notificationType =
+        //        NotificationType.APPOINTMENT_CASESHEET_REMINDER_15_VIRTUAL;
+        // }
+        // if (appt.isConsultStarted) {
+        //   if (args.inNextMin == 15) {
+        //     pushNotificationInput.notificationType = NotificationType.VIRTUAL_REMINDER_15;
+        //   }
+        // } else {
+        //   pushNotificationInput.notificationType =
+        //     NotificationType.APPOINTMENT_CASESHEET_REMINDER_15_VIRTUAL;
+        // }
         if (args.inNextMin == 5) {
           pushNotificationInput.doctorNotification = false;
         }
