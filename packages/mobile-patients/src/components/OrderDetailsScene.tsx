@@ -24,6 +24,7 @@ import {
   CANCEL_MEDICINE_ORDER_OMS,
   GET_PATIENT_ADDRESS_BY_ID,
   ALERT_MEDICINE_ORDER_PICKUP,
+  GET_PATIENT_FEEDBACK,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getMedicineOrderOMSDetails,
@@ -49,7 +50,7 @@ import {
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import { FeedbackPopup } from './FeedbackPopup';
+import { FeedbackPopup } from '@aph/mobile-patients/src/components/FeedbackPopup';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient, useQuery } from 'react-apollo-hooks';
@@ -79,15 +80,15 @@ import {
 import {
   CancelMedicineOrderOMS,
   CancelMedicineOrderOMSVariables,
-} from '../graphql/types/CancelMedicineOrderOMS';
+} from '@aph/mobile-patients/src/graphql/types/CancelMedicineOrderOMS';
 import {
   alertMedicineOrderPickup,
   alertMedicineOrderPickupVariables,
-} from '../graphql/types/alertMedicineOrderPickup';
+} from '@aph/mobile-patients/src/graphql/types/alertMedicineOrderPickup';
 import {
   GetMedicineOrderCancelReasons,
   GetMedicineOrderCancelReasons_getMedicineOrderCancelReasons_cancellationReasons,
-} from '../graphql/types/GetMedicineOrderCancelReasons';
+} from '@aph/mobile-patients/src/graphql/types/GetMedicineOrderCancelReasons';
 import { savePatientAddress_savePatientAddress_patientAddress } from '../graphql/types/savePatientAddress';
 import {
   MedicineReOrderOverlay,
@@ -97,6 +98,11 @@ import {
   getPatientAddressById,
   getPatientAddressByIdVariables,
 } from '@aph/mobile-patients/src/graphql/types/getPatientAddressById';
+import {
+  GetPatientFeedback,
+  GetPatientFeedbackVariables,
+} from '@aph/mobile-patients/src/graphql/types/GetPatientFeedback';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
 const styles = StyleSheet.create({
   headerShadowContainer: {
@@ -197,7 +203,6 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   const orderCancel = (g(order, 'medicineOrdersStatus') || []).find(
     (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.CANCELLED
   );
-  // console.log({ order }, currentPatient.id);
   const orderDetails = ((!loading && order) ||
     {}) as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails;
   const orderStatusList = ((!loading && order && order.medicineOrdersStatus) || []).filter(
@@ -206,6 +211,41 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   const offlineOrderBillNumber = loading
     ? 0
     : g(data, 'getMedicineOrderOMSDetails', 'medicineOrderDetails', 'billNumber');
+
+  const [showRateDeliveryBtn, setShowRateDeliveryBtn] = useState(false);
+
+  useEffect(() => {
+    updateRateDeliveryBtnVisibility();
+  }, [orderDetails]);
+
+  const updateRateDeliveryBtnVisibility = async () => {
+    try {
+      if (!showRateDeliveryBtn && isOrderDeliveredToHome()) {
+        const response = await client.query<GetPatientFeedback, GetPatientFeedbackVariables>({
+          query: GET_PATIENT_FEEDBACK,
+          variables: {
+            patientId: g(currentPatient, 'id') || '',
+            transactionId: `${orderDetails.id}`,
+          },
+          fetchPolicy: 'no-cache',
+        });
+        const feedback = g(response, 'data', 'getPatientFeedback', 'feedback', 'length');
+        if (!feedback) {
+          setShowRateDeliveryBtn(true);
+        }
+      }
+    } catch (error) {
+      CommonBugFender(`${AppRoutes.OrderDetailsScene}_updateRateDeliveryBtnVisibility`, error);
+    }
+  };
+
+  const isOrderDeliveredToHome = () => {
+    const isHomeDelivery = g(orderDetails, 'deliveryType') == MEDICINE_DELIVERY_TYPE.HOME_DELIVERY;
+    const isDeliveredToHome = (g(orderDetails, 'medicineOrdersStatus') || []).find(
+      (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.DELIVERED
+    );
+    return !!isHomeDelivery && !!isDeliveredToHome;
+  };
 
   const getAddressDatails = async () => {
     try {
@@ -623,6 +663,17 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           '',
           `Your order is ready for pickup at your selected ${addressData}`,
         ],
+        [MEDICINE_ORDER_STATUS.DELIVERED]: [
+          '',
+          `In case of any concerns or feedback related to your order, please speak with our customer care executives on the official WhatsApp channel (during business hours 9 AM - 8:30 PM)\n${AppConfig.Configuration.MED_ORDERS_CUSTOMER_CARE_WHATSAPP_LINK}`,
+          () => {
+            Linking.openURL(
+              AppConfig.Configuration.MED_ORDERS_CUSTOMER_CARE_WHATSAPP_LINK
+            ).catch((err) =>
+              CommonBugFender(`${AppRoutes.OrderDetailsScene}_getOrderDescription`, err)
+            );
+          },
+        ],
         [MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY]: [
           '',
           `Your order has been picked up from our store!`,
@@ -639,6 +690,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         ? {
             heading: g(orderStatusDescMapping, status as any, '0'),
             description: g(orderStatusDescMapping, status as any, '1'),
+            onPress: g(orderStatusDescMapping, status as any, '2'),
           }
         : null;
     };
@@ -935,7 +987,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
             >
               {'Thank You for choosing Apollo 24|7'}
             </Text>
-            {orderDetails.deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP ? null : (
+            {!!showRateDeliveryBtn && (
               <Button
                 style={{ flex: 1, width: '95%', marginBottom: 20, alignSelf: 'center' }}
                 onPress={() => setShowFeedbackPopup(true)}
@@ -1447,16 +1499,17 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
             if (cannotCancelOrder) {
               showAphAlert!({
                 title: string.common.uhOh,
-                description:
-                  'Your order has already been billed and we will not be able to take the cancellation request on the App. In case you still want to proceed with cancellation, please click on the link below to send the cancellation request through WhatsApp and our live Customer executives will be happy to help you.',
+                description: string.OrderSummery.orderCancellationAfterBillingAlert,
                 ctaContainerStyle: { justifyContent: 'flex-end' },
                 CTAs: [
                   {
                     text: 'CLICK HERE',
                     type: 'orange-link',
                     onPress: () => {
-                      Linking.openURL('https://bit.ly/apollo247Medicines').catch((err) =>
-                        console.error('An error occurred', err)
+                      Linking.openURL(
+                        AppConfig.Configuration.MED_ORDERS_CUSTOMER_CARE_WHATSAPP_LINK
+                      ).catch((err) =>
+                        CommonBugFender(`${AppRoutes.OrderDetailsScene}_Linking.openURL`, err)
                       );
                       hideAphAlert!();
                     },
@@ -1564,7 +1617,20 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
                     item!.orderStatus == MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY ||
                     item!.orderStatus == MEDICINE_ORDER_STATUS.DELIVERED
                 );
-                if (!isNonCartOrder || isNonCartOrderBilledAndReadyAtStore) {
+                const isCartOrder = orderStatusList.find(
+                  (item) =>
+                    item!.orderStatus == MEDICINE_ORDER_STATUS.ORDER_PLACED ||
+                    item!.orderStatus == MEDICINE_ORDER_STATUS.ORDER_VERIFIED ||
+                    item!.orderStatus == MEDICINE_ORDER_STATUS.ORDER_INITIATED
+                );
+                // if (!isNonCartOrder || isNonCartOrderBilledAndReadyAtStore) {
+                //   setSelectedTab(title);
+                // }
+                if (
+                  (orderDetails.orderType == MEDICINE_ORDER_TYPE.UPLOAD_PRESCRIPTION &&
+                    isNonCartOrderBilledAndReadyAtStore) ||
+                  (orderDetails.orderType != MEDICINE_ORDER_TYPE.UPLOAD_PRESCRIPTION && isCartOrder)
+                ) {
                   setSelectedTab(title);
                 }
               }}

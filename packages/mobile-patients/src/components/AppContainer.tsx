@@ -5,8 +5,21 @@ import { NavigatorContainer } from '@aph/mobile-patients/src/components/Navigato
 import { ShoppingCartProvider } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { UIElementsProvider } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import React from 'react';
-import { Text, TextInput } from 'react-native';
+import { Text, TextInput, Platform } from 'react-native';
 import Axios from 'axios';
+import codePush, { CodePushOptions } from 'react-native-code-push';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+
+const codePushOptions: CodePushOptions = {
+  checkFrequency: codePush.CheckFrequency.ON_APP_RESUME,
+  installMode: codePush.InstallMode.ON_NEXT_RESTART,
+  mandatoryInstallMode: codePush.InstallMode.ON_NEXT_RESTART,
+  deploymentKey:
+    Platform.OS == 'android'
+      ? AppConfig.Configuration.CODE_PUSH_DEPLOYMENT_KEY_ANDROID
+      : AppConfig.Configuration.CODE_PUSH_DEPLOYMENT_KEY_IOS,
+  updateDialog: {},
+};
 
 if (__DEV__) {
   Axios.interceptors.request.use((request) => {
@@ -32,7 +45,7 @@ if (__DEV__) {
 }
 interface AppContainerTypes {}
 
-export class AppContainer extends React.Component<AppContainerTypes> {
+class AppContainer extends React.Component<AppContainerTypes> {
   constructor(props: AppContainerTypes) {
     super(props);
     (Text as any).defaultProps = (Text as any).defaultProps || {};
@@ -57,3 +70,5 @@ export class AppContainer extends React.Component<AppContainerTypes> {
     );
   }
 }
+
+export default codePush(codePushOptions)(AppContainer);

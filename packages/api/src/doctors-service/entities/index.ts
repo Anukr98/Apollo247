@@ -285,6 +285,9 @@ export class Doctor extends BaseEntity {
   isJdAllowed: Boolean;
 
   @Column({ default: true })
+  isWhitelisted: Boolean;
+
+  @Column({ default: true })
   isApolloJdRequired: Boolean;
 
   @Column({ nullable: true, type: 'text' })
@@ -665,7 +668,6 @@ export class Facility extends BaseEntity {
 
   @Column({ nullable: true })
   updatedDate: Date;
-
 
   @Index('Facility_zipcode')
   @Column({ nullable: true })

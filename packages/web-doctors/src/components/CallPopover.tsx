@@ -1007,6 +1007,17 @@ const useStyles = makeStyles((theme: Theme) => {
       clip: 'rect(0,0,0,0)',
       border: 0,
     },
+    toastMessage: {
+      width: '482px',
+      height: '40px',
+      borderRadius: '10px',
+      boxShadow: '0 1px 13px 0 rgba(0, 0, 0, 0.16)',
+      backgroundColor: '#00b38e',
+      position: 'relative',
+      top: '37px',
+      right: '529px',
+      marginBottom: '5px',
+    },
   };
 });
 const ringtoneUrl = require('../images/phone_ringing.mp3');
@@ -1020,6 +1031,7 @@ interface errorObjectReshedule {
   otherError: boolean;
 }
 interface CallPopoverProps {
+  setShowToastMessage: (flag: boolean) => void;
   setStartConsultAction(isVideo: boolean): void;
   createSessionAction: () => void;
   saveCasesheetAction: (onlySave: boolean, sendToPatientFlag: boolean) => void;
@@ -2183,25 +2195,16 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     }
   };
 
-  const onPrint = () => {
-    var divToPrint = document.getElementById('prescriptionWrapper');
-    var head = document.getElementsByTagName('head')[0].innerHTML;
-
-    var popupWin = window.open('', '_blank');
-    popupWin.document.open();
-
-    const winHtml = `<!DOCTYPE html>
-    <html>
-        <head>
-          ${head}
-        </head>
-        <body onload="window.print()">
-          ${divToPrint.innerHTML}
-        </body>
-    </html>`;
-
-    popupWin.document.write(winHtml);
-    popupWin.document.close();
+  const onDownload = (): void => {
+    fetch(props.prescriptionPdf).then((response) => {
+      response.blob().then((blob) => {
+        let url = window.URL.createObjectURL(blob);
+        let a = document.createElement('a');
+        a.href = url;
+        a.download = `${props.appointmentId}_${patientDetails!.firstName}.pdf`;
+        a.click();
+      });
+    });
   };
 
   const [vitalIgnored, setVitalIgnored] = useState<boolean>(false);
@@ -2637,18 +2640,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               <Button
                 className={classes.consultIcon}
                 aria-describedby={idThreeDots}
-                // disabled={
-                //   props.appointmentStatus === STATUS.COMPLETED ||
-                //   props.appointmentStatus === STATUS.CANCELLED ||
-                //   props.isAppointmentEnded ||
-                //   disableOnCancel ||
-                //   (isPastAppointment() && !consultStart) ||
-                //   (appointmentInfo!.appointmentState !== 'NEW' &&
-                //     appointmentInfo!.appointmentState !== 'TRANSFER' &&
-                //     appointmentInfo!.appointmentState !== 'RESCHEDULE') ||
-                //   (appointmentInfo!.status !== STATUS.IN_PROGRESS &&
-                //     appointmentInfo!.status !== STATUS.PENDING)
-                // }
                 disabled={
                   (props.isNewPrescription && props.isNewprescriptionEditable) ||
                   (!props.isNewPrescription &&
@@ -2692,10 +2683,10 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                             </li>
                             <li
                               onClick={() => {
-                                onPrint();
+                                onDownload();
                               }}
                             >
-                              Print Prescription
+                              {'Download Prescription'}
                             </li>
                             <li
                               onClick={() => {
@@ -2733,6 +2724,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
             </Popover>
           </span>
         </div>
+
         <Modal
           className={classes.modalPopup}
           open={connectCall}
@@ -2809,6 +2801,9 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                         },
                         fetchPolicy: 'no-cache',
                       });
+                      props.setShowToastMessage(true);
+                      // clearTimeout(5000);
+                      // setTimeout(() => props.setShowToastMessage(false), 5000);
                     }}
                   >
                     {'PROCEED TO CONNECT'}

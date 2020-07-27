@@ -148,6 +148,12 @@ const styles = StyleSheet.create({
     color: theme.colors.SHERPA_BLUE,
     lineHeight: 18,
   },
+  topSpecialityNameiOS: {
+    ...theme.fonts.IBMPlexSansMedium(14),
+    marginHorizontal: 8,
+    textAlign: 'center',
+    color: theme.colors.SHERPA_BLUE,
+  },
   topSpecialityDescription: {
     ...theme.fonts.IBMPlexSansMedium(12),
     marginHorizontal: 20,
@@ -209,30 +215,33 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     paddingRight: 1,
   },
+  descriptionCont: {
+    borderBottomWidth: 0.4,
+    borderBottomColor: theme.colors.BORDER_BOTTOM_COLOR,
+    marginLeft: 16,
+    marginBottom: 7,
+  },
   rowDescriptionSpecialistStyles: {
     ...theme.fonts.IBMPlexSansMedium(12),
-    marginLeft: 16,
     color: theme.colors.LIGHT_BLUE,
     textAlign: 'left',
     width: width - 168,
     opacity: 0.6,
     lineHeight: 20,
-    height: 24,
     letterSpacing: 0.04,
     paddingRight: 1,
-    borderBottomWidth: 0.4,
-    borderBottomColor: theme.colors.BORDER_BOTTOM_COLOR,
+    marginBottom: 8,
   },
   rowUserFriendlySpecialistStyles: {
     ...theme.fonts.IBMPlexSansMedium(10),
     marginLeft: 16,
     color: theme.colors.LIGHT_BLUE,
     textAlign: 'left',
-    height: 24,
     width: width - 168,
-    lineHeight: 20,
+    lineHeight: 13,
     letterSpacing: 0.04,
     paddingRight: 1,
+    marginBottom: 13,
   },
   helpView: {
     marginTop: 40,
@@ -1072,13 +1081,20 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
                       <View
                         style={{
                           alignItems: 'center',
-                          borderBottomWidth: 0.2,
+                          borderBottomWidth: 0.4,
                           borderBottomColor: theme.colors.BORDER_BOTTOM_COLOR,
                           height: 50,
                           justifyContent: 'center',
                         }}
                       >
-                        <Text numberOfLines={2} style={styles.topSpecialityName}>
+                        <Text
+                          numberOfLines={2}
+                          style={
+                            Platform.OS === 'ios'
+                              ? styles.topSpecialityNameiOS
+                              : styles.topSpecialityName
+                          }
+                        >
                           {item.name}
                         </Text>
                       </View>
@@ -1369,9 +1385,11 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
                   <Text numberOfLines={1} style={styles.rowSpecialistStyles}>
                     {rowData.name}
                   </Text>
-                  <Text numberOfLines={2} style={styles.rowDescriptionSpecialistStyles}>
-                    {rowData.shortDescription}
-                  </Text>
+                  <View style={styles.descriptionCont}>
+                    <Text numberOfLines={2} style={styles.rowDescriptionSpecialistStyles}>
+                      {rowData.shortDescription}
+                    </Text>
+                  </View>
                   <Text numberOfLines={1} style={styles.rowUserFriendlySpecialistStyles}>
                     {symptom}
                   </Text>
