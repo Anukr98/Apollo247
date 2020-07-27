@@ -197,6 +197,12 @@ android {
     packagingOptions {
         pickFirst '**/libc++_shared.so'
     }
+
+    configurations.all {
+        resolutionStrategy {
+            force "com.facebook.soloader:soloader:0.8.0" // to fix crash on app bundle file
+        }
+    }
 }
 
 dependencies {
