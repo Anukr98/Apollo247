@@ -761,9 +761,9 @@ export async function sendNotification(
     //send sms to doctor if Appointment DateTime is less than 24 hours
     //const todaysDate = new Date(format(new Date(), 'yyyy-MM-dd') + 'T18:30:00');
     //const yesterdaysDate = new Date(format(addDays(new Date(), -1), 'yyyy-MM-dd') + 'T18:30:00');
-
     const todaysDateTime = addMilliseconds(new Date(), 19800000);
     const todaysDate = new Date(format(todaysDateTime, 'yyyy-MM-dd') + 'T23:59:00');
+
     console.log(
       'check dates for todays date appt',
       appointment.appointmentDateTime,

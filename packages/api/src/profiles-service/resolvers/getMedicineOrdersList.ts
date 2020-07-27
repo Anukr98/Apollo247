@@ -117,7 +117,7 @@ const getMedicineOrdersList: Resolver<
   if (!patientDetails) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
-  const primaryPatientIds = await patientRepo.getLinkedPatientIds(args.patientId);
+  const primaryPatientIds = await patientRepo.getLinkedPatientIds({ patientDetails });
 
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
   const MedicineOrdersList = await medicineOrdersRepo.getMedicineOrdersList(primaryPatientIds);

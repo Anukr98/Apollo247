@@ -55,7 +55,7 @@ const cancelMedicineOrderOMS: Resolver<
   MedicineOrderCancelOMSResult
 > = async (parent, { medicineOrderCancelOMSInput }, { profilesDb }) => {
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
-  const orderDetails = await medicineOrdersRepo.getMedicineOrderDetails(
+  const orderDetails = await medicineOrdersRepo.getMedicineOrderWithShipments(
     medicineOrderCancelOMSInput.orderNo
   );
   if (!orderDetails) {

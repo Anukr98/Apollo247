@@ -4,7 +4,6 @@ import { Resolver } from 'api-gateway';
 import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
 import { Patient, Gender, Relation } from 'profiles-service/entities';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
-import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import {
@@ -12,6 +11,7 @@ import {
   sendNotificationWhatsapp,
 } from 'notifications-service/resolvers/notifications';
 import { ApiConstants } from 'ApiConstants';
+import { createPrismUser } from 'helpers/phrV1Services';
 
 export const getPatientTypeDefs = gql`
   type PatientInfo {
@@ -139,36 +139,11 @@ const getPatientByMobileNumber: Resolver<
   }
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
   const patients = await patientRepo.findByMobileNumber(args.mobileNumber);
+
   if (!patients) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_DETAILS, undefined, {});
   }
-  const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
-  let appointmentList = [];
-
-  for (let i = 0; i < patients.length; i++) {
-    const appointmentCount = await appointmentRepo.getPatientAppointmentCountByPatientIds(
-      patients[i].id
-    );
-    const patientObj = {
-      appointmentCount: appointmentCount,
-      patientId: patients[i].id,
-    };
-    appointmentList.push(patientObj);
-  }
-
-  appointmentList = _.sortBy(appointmentList, 'appointmentCount').reverse();
-  const patientResult = [];
-
-  for (let i = 0; i < appointmentList.length; i++) {
-    const id = appointmentList[i].patientId;
-    const objResult = patients.find((x) => x.id == id);
-    if (!objResult) {
-      continue;
-    }
-    patientResult.push(objResult);
-  }
-
-  return { patients: patientResult };
+  return { patients };
 };
 
 const addNewProfile: Resolver<
@@ -179,19 +154,22 @@ const addNewProfile: Resolver<
 > = async (parent, { patientProfileInput }, { mobileNumber, profilesDb }) => {
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
   const pateintDetails = await patientRepo.findByMobileNumber(patientProfileInput.mobileNumber);
+
   if (pateintDetails == null || pateintDetails.length == 0)
     throw new AphError(AphErrorMessages.INVALID_PATIENT_DETAILS, undefined, {});
-  const savePatient = await patientRepo.saveNewProfile(patientProfileInput);
-  await patientRepo.createNewUhid(savePatient.id);
-  patientRepo.createAthsToken(savePatient.id);
-  const patient = await patientRepo.getPatientDetails(savePatient.id);
-  if (!patient || patient == null) {
-    throw new AphError(AphErrorMessages.INVALID_PATIENT_DETAILS, undefined, {});
+  const patient = await patientRepo.create(patientProfileInput);
+
+  const uhidResp = await patientRepo.getNewUhid(patient);
+  if (uhidResp.retcode == '0') {
+    patient.uhid = uhidResp.result;
+    patient.primaryUhid = uhidResp.result;
+    patient.uhidCreatedDate = new Date();
+    createPrismUser(patient, uhidResp.result.toString());
   }
+  await patient.save();
 
   //send registration success notification here
   sendPatientRegistrationNotification(patient, profilesDb, '');
-
   return { patient };
 };
 
@@ -258,7 +236,7 @@ const updateWhatsAppStatus: Resolver<
       userId: mobileNumber,
       whatsappOptIn: true,
     };
-    console.log('APIInput=============>', JSON.stringify(details));
+
     const saveResponse = await fetch(process.env.WEB_ENGAGE_URL ? process.env.WEB_ENGAGE_URL : '', {
       method: 'POST',
       headers: {
@@ -269,14 +247,11 @@ const updateWhatsAppStatus: Resolver<
       body: JSON.stringify(details),
     });
     await saveResponse.text();
-
-    if (saveResponse.status !== 200 && saveResponse.status !== 201 && saveResponse.status !== 204) {
-      console.error(`Invalid response status ${saveResponse.status}.`);
-    }
   }
   return { status: true };
 };
 
+//TODO : Remove this
 const getAthsToken: Resolver<
   null,
   { patientId: string },
@@ -284,13 +259,6 @@ const getAthsToken: Resolver<
   PatientInfo
 > = async (parent, args, { profilesDb }) => {
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
-  const patientDetails = await patientRepo.findById(args.patientId);
-  if (!patientDetails) {
-    throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
-  }
-  if (patientDetails.athsToken == '' || patientDetails.athsToken == null) {
-    await patientRepo.createAthsToken(patientDetails.id);
-  }
   const patient = await patientRepo.findById(args.patientId);
   if (!patient) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});

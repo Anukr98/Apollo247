@@ -57,7 +57,7 @@ const alertMedicineOrderPickup: Resolver<
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
-  const orderDetails = await medicineOrdersRepo.getMedicineOrderDetails(
+  const orderDetails = await medicineOrdersRepo.getMedicineOrderWithShipments(
     alertMedicineOrderPickupInput.orderId
   );
   if (!orderDetails) {
