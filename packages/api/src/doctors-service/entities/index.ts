@@ -303,9 +303,6 @@ export class Doctor extends BaseEntity {
   isJdAllowed: Boolean;
 
   @Column({ default: true })
-  isWhitelisted: Boolean;
-
-  @Column({ default: true })
   isApolloJdRequired: Boolean;
 
   @Column({ nullable: true, type: 'text' })
