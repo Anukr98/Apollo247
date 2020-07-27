@@ -555,7 +555,7 @@ export interface WebEngageEvents {
     Servicable: boolean;
   };
   [WebEngageEventName.PHARMACY_CATEGORY_SECTION_PRODUCT_CLICK]: {
-    SectionName: string;
+    'Section Name': string;
     ProductId: string;
     ProductName: string;
   };
