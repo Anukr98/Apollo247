@@ -193,12 +193,7 @@ const getConsultQueue: Resolver<
   await checkAuth(docRepo, mobileNumber, doctorId);
   let result: GetConsultQueueResult = { consultQueue: [] };
   let consultQueueItems: ConsultQueueItem[] = [];
-  if (isActive) {
-    consultQueueItems = await cqRepo.getActiveConsultQueue(doctorId);
-  } else {
-    consultQueueItems = await cqRepo.getInactiveConsultQueue(doctorId, isActive);
-
-  }
+  consultQueueItems = await cqRepo.getConsultQueue(doctorId, isActive);
   const patientIds = consultQueueItems.map(item => item.appointment.patientId);
   let patients: Patient[] = [];
   if (patientIds && patientIds.length > 0) {
