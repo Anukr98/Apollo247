@@ -6,10 +6,6 @@ import { CouponCategoryApplicable } from 'graphql/types/globalTypes';
 import _lowerCase from 'lodash/lowerCase';
 import _upperFirst from 'lodash/upperFirst';
 import { MEDICINE_ORDER_STATUS } from 'graphql/types/globalTypes';
-import { getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails as OrderDetails } from 'graphql/types/getMedicineOrderOMSDetails';
-import axios, { AxiosResponse } from 'axios';
-import { MedicineProduct } from './MedicineApiCalls';
-import { MedicineCartItem, EPrescription } from 'components/MedicinesCartProvider';
 
 declare global {
   interface Window {
@@ -24,19 +20,6 @@ interface paymentMethodInterface {
 
 interface PharmaStateCodeMappingType {
   [key: string]: string;
-}
-
-interface MedicineOrderBilledItem {
-  itemId: string;
-  itemName: string;
-  batchId: string;
-  issuedQty: number;
-  mou: number;
-  mrp: number;
-}
-
-interface MedCartItemsDetailsResponse {
-  productdp: MedicineProduct[];
 }
 
 const paymentMethodStrings: paymentMethodInterface = {
@@ -392,110 +375,8 @@ const getAvailability = (nextAvailability: string, differenceInMinutes: number, 
   }
 };
 
-const medCartItemsDetailsApi = (
-  itemIds: string[]
-): Promise<AxiosResponse<MedCartItemsDetailsResponse>> => {
-  return axios.post(
-    'https://uat.apollopharmacy.in/popcscrchcart_api.php',
-    {
-      params: itemIds.toString(),
-    },
-    {
-      headers: {
-        Authorization: 'Bearer 2o1kd4bjapqifpb27fy7tnbivu8bqo1d',
-      },
-    }
-  );
-};
-
-const reOrderItems = async (orderDetails: OrderDetails, type: string) => {
-  // postReorderMedicines(source, currentPatient);
-  // use billedItems for delivered orders
-  if (orderDetails) {
-    const billedItems =
-      orderDetails.medicineOrderShipments &&
-      orderDetails.medicineOrderShipments[0] &&
-      orderDetails.medicineOrderShipments[0].itemDetails;
-    const billedLineItems = billedItems
-      ? (JSON.parse(billedItems) as MedicineOrderBilledItem[])
-      : null;
-    // const isOfflineOrder = orderDetails.bi
-    const lineItems = orderDetails.medicineOrderLineItems || [];
-    const lineItemsSkus = billedLineItems
-      ? billedLineItems
-          .filter((item: MedicineOrderBilledItem) => item.itemId)
-          .map((item) => item.itemId)
-      : lineItems.filter((item) => item.medicineSKU).map((item) => item.medicineSKU!);
-
-    const lineItemsDetails = (await medCartItemsDetailsApi(lineItemsSkus)).data.productdp.filter(
-      (lineItem) => lineItem.sku && lineItem.name
-    );
-    const availableLineItemsSkus = lineItemsDetails.map((lineItem) => lineItem.sku);
-    const cartItemsToAdd = lineItemsDetails.map(
-      (item, index) =>
-        item.sku &&
-        ({
-          ...item,
-          description: '',
-          image: '',
-          quantity: Math.ceil(
-            (billedLineItems
-              ? billedLineItems[index].issuedQty
-              : false
-              ? Math.ceil(
-                  lineItems[index].price! / lineItems[index].mrp! / lineItems[index].quantity!
-                )
-              : lineItems[index].quantity) || 1
-          ),
-          isShippable: true,
-        } as MedicineCartItem)
-    );
-    const unAvailableItems =
-      availableLineItemsSkus && billedLineItems
-        ? billedLineItems
-            .filter((item) => !availableLineItemsSkus.includes(item.itemId))
-            .map((item) => item.itemName)
-        : lineItems
-            .filter((item) => !availableLineItemsSkus.includes(item.medicineSKU!))
-            .map((item) => item.medicineName!);
-
-    // Prescriptions
-    const prescriptionUrls = (orderDetails.prescriptionImageUrl || '')
-      .split(',')
-      .map((item) => item.trim())
-      .filter((v) => v);
-    const medicineNames = (billedLineItems
-      ? billedLineItems.filter((item) => item.itemName).map((item) => item.itemName)
-      : lineItems.filter((item) => item.medicineName).map((item) => item.medicineName!)
-    ).join(',');
-    const prescriptionsToAdd = prescriptionUrls.map(
-      (item) =>
-        ({
-          id: item,
-          date: moment().format('DD MMM YYYY'),
-          doctorName: `Meds Rx ${
-            (orderDetails.id && orderDetails.id.substring(0, orderDetails.id.indexOf('-'))) || ''
-          }`,
-          forPatient: orderDetails.patient.firstName,
-          medicines: medicineNames,
-          uploadedUrl: item,
-        } as EPrescription)
-    );
-
-    return {
-      items: cartItemsToAdd || [],
-      unAvailableItems,
-      prescriptions: prescriptionsToAdd || [],
-      totalItemsCount: lineItems.length,
-      unavailableItemsCount: unAvailableItems.length,
-    };
-  }
-};
-
 export {
   getAvailability,
-  MedicineOrderBilledItem,
-  reOrderItems,
   isRejectedStatus,
   getStatus,
   getSymptoms,

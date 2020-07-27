@@ -7,7 +7,6 @@ import {
   getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrderPayments as Payments,
 } from 'graphql/types/getMedicineOrderOMSDetails';
 import { CircularProgress } from '@material-ui/core';
-import { AphButton, AphDialog, AphDialogClose, AphDialogTitle } from '@aph/web-ui-components';
 import {
   MEDICINE_ORDER_PAYMENT_TYPE,
   MEDICINE_ORDER_STATUS,
@@ -22,7 +21,8 @@ import {
 } from 'graphql/types/GetPatientAddressList';
 import { GET_PATIENT_ADDRESSES_LIST } from 'graphql/address';
 import { deliveredOrderDetails } from './OrderStatusCard';
-import { ORDER_BILLING_STATUS_STRINGS, MedicineOrderBilledItem } from 'helpers/commonHelpers';
+import { ORDER_BILLING_STATUS_STRINGS } from 'helpers/commonHelpers';
+import { MedicineOrderBilledItem } from 'helpers/MedicineApiCalls';
 import { pharmacyOrderSummaryTracking } from 'webEngageTracking';
 import { ReOrder } from './ReOrder';
 

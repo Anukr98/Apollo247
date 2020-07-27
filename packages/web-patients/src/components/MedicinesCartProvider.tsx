@@ -406,11 +406,7 @@ export const MedicinesCartProvider: React.FC = (props) => {
   const updateEprescriptions: MedicineCartContextProps['updateEprescriptions'] = (
     eprescriptionsToAdd
   ) => {
-    const existingEprescriptions = ePrescriptionData.filter(
-      (existingEPrescription) =>
-        !eprescriptionsToAdd.find((ePrescription) => ePrescription.id === existingEPrescription.id)
-    );
-    const updatedEprescriptionData = [...existingEprescriptions, ...eprescriptionsToAdd];
+    const updatedEprescriptionData = _uniq([...ePrescriptionData, ...eprescriptionsToAdd]);
     setEPrescriptionData(updatedEprescriptionData);
     setUploadedEPrescription(true);
   };

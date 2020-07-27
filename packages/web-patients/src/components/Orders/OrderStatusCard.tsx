@@ -398,12 +398,12 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
         const selectedAddress = deliveryAddresses.find(
           (address: AddressDetails) => address.id == orderDetailsData.patientAddressId
         );
+        const address1 = selectedAddress.addressLine1 ? `${selectedAddress.addressLine1}, ` : '';
+        const address2 = selectedAddress.addressLine2 ? `${selectedAddress.addressLine2}, ` : '';
+        const city = selectedAddress.city ? `${selectedAddress.city}, ` : '';
+        const state = selectedAddress.state ? `${selectedAddress.state}, ` : '';
         const addressData = selectedAddress
-          ? `${selectedAddress.addressLine1 ? `${selectedAddress.addressLine1}, ` : ''}${
-              selectedAddress.addressLine2 ? `${selectedAddress.addressLine2}, ` : ''
-            }${selectedAddress.city ? `${selectedAddress.city}, ` : ''}${
-              selectedAddress.state ? `${selectedAddress.state}, ` : ''
-            }${selectedAddress.zipcode || ''}`
+          ? `${address1}${address2}${city}${state}${selectedAddress.zipcode || ''}`
           : '';
         return addressData;
       } else {
