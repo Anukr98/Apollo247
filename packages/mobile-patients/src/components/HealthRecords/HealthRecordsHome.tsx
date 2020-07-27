@@ -66,6 +66,7 @@ import {
   View,
   ViewStyle,
   Platform,
+  Dimensions,
 } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
@@ -95,6 +96,8 @@ import {
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import WebEngage from 'react-native-webengage';
+
+const { width } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   filterViewStyle: {
@@ -139,7 +142,7 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansSemiBold(11),
     color: '#0087BA',
     fontWeight: '500',
-    width: 285,
+    width: width - 80,
   },
 });
 
