@@ -17,7 +17,7 @@ window.webengage = window.webengage || {};
 
 export const webengageUserDetailTracking = (userDetailData: UserDetail) => {
   const { emailAddress, dateOfBirth, mobileNumber, gender, firstName, lastName } = userDetailData;
-  if (window && window.webengage) {
+  if (typeof window !== 'undefined') {
     try {
       window.webengage.user.setAttribute('we_email', emailAddress);
       window.webengage.user.setAttribute('we_birth_date', dateOfBirth);
@@ -31,7 +31,7 @@ export const webengageUserDetailTracking = (userDetailData: UserDetail) => {
   }
 };
 export const webengageUserLoginTracking = (id: string) => {
-  if (window && window.webengage) {
+  if (typeof window !== 'undefined') {
     try {
       window.webengage.user.login(id);
     } catch (err) {
@@ -41,7 +41,7 @@ export const webengageUserLoginTracking = (id: string) => {
 };
 
 export const webengageUserLogoutTracking = () => {
-  if (window && window.webengage) {
+  if (typeof window !== 'undefined') {
     try {
       window.webengage.user.logout();
     } catch (err) {
@@ -51,7 +51,7 @@ export const webengageUserLogoutTracking = () => {
 };
 
 export const phrConsultTabClickTracking = (userData: any) => {
-  if (window && window.webengage) {
+  if (typeof window !== 'undefined') {
     const { id, mobileNumber, firstName, relation, gender, age, uhid } = userData;
     try {
       window.webengage.track('PHR Consult & RX - web', {
@@ -140,7 +140,7 @@ export const itemsClickedTracking = (data: any) => {
 };
 //PHR Consult Card click
 export const phrConsultCardClickTracking = (data: any) => {
-  if (window && window.webengage) {
+  if (typeof window !== 'undefined') {
     const { id, mobileNumber, firstName, relation, gender, uhid, age, consultId } = data;
     try {
       window.webengage.track('PHR Consult Card click - web', {
@@ -166,7 +166,7 @@ interface PaymentDetail {
   orderId: string;
 }
 export const paymentInstrumentClickTracking = (data: PaymentDetail) => {
-  if (window && window.webengage) {
+  if (typeof window !== 'undefined') {
     const { paymentMode, type, orderAutoId, orderId = null } = data;
     try {
       window.webengage.track('Payment Instrument - web', {
@@ -188,7 +188,7 @@ interface PaymentStatusData {
   orderId: string;
 }
 export const paymentStatusTracking = (data: PaymentStatusData) => {
-  if (window && window.webengage) {
+  if (typeof window !== 'undefined') {
     const { paymentStatus, type, orderAutoId, orderId = null } = data;
     try {
       window.webengage.track('Payment Status - web', {
@@ -210,7 +210,7 @@ interface MedicineDetails {
 }
 
 export const notifyMeTracking = (data: MedicineDetails) => {
-  if (window && window.webengage) {
+  if (typeof window !== 'undefined') {
     const { sku, name, category_id } = data;
     try {
       window.webengage.track('Notify Me - web', {
@@ -225,7 +225,7 @@ export const notifyMeTracking = (data: MedicineDetails) => {
 };
 
 export const pharmacySearchEnterTracking = (results: number) => {
-  if (window && window.webengage) {
+  if (typeof window !== 'undefined') {
     try {
       window.webengage.track('Pharmacy Search enter clicked - web', {
         'No. of results': results,
@@ -237,7 +237,7 @@ export const pharmacySearchEnterTracking = (results: number) => {
 };
 
 export const pharmacyOrderSummaryTracking = (data: any) => {
-  if (window && window.webengage) {
+  if (typeof window !== 'undefined') {
     const {
       orderId,
       orderDate,
@@ -264,7 +264,7 @@ export const pharmacyOrderSummaryTracking = (data: any) => {
 };
 
 export const pharmacyFilterTracking = (data: any) => {
-  if (window && window.webengage) {
+  if (typeof window !== 'undefined') {
     const { categoryName, categoryId } = data;
     try {
       window.webengage.track('Filter apply option clicked - web', {
@@ -278,7 +278,7 @@ export const pharmacyFilterTracking = (data: any) => {
 };
 
 export const pharmacyPdpPincodeTracking = (data: any) => {
-  if (window && window.webengage) {
+  if (typeof window !== 'undefined') {
     const { productName, productId, customerId, pinCode } = data;
     try {
       window.webengage.track('Pharmacy PDP Pin code checked - web', {
@@ -294,7 +294,7 @@ export const pharmacyPdpPincodeTracking = (data: any) => {
 };
 
 export const pharmacyPdpOverviewTracking = (result: string) => {
-  if (window && window.webengage) {
+  if (typeof window !== 'undefined') {
     try {
       window.webengage.track('Pharmacy PDP Pharma overview clicked - web', {
         'Type of information': result,
@@ -306,7 +306,7 @@ export const pharmacyPdpOverviewTracking = (result: string) => {
 };
 
 export const pharmacyPdpSubstituteTracking = (data: any) => {
-  if (window && window.webengage) {
+  if (typeof window !== 'undefined') {
     const { productName, productId } = data;
     try {
       window.webengage.track('Pharmacy PDP substitute clicked - web', {
@@ -320,7 +320,7 @@ export const pharmacyPdpSubstituteTracking = (data: any) => {
 };
 
 export const pharmacyConfigSectionTracking = (data: any) => {
-  if (window && window.webengage) {
+  if (typeof window !== 'undefined') {
     const { productName, productId, sectionName } = data;
     try {
       window.webengage.track('Pharmacy Configurable section clicked - web', {
@@ -335,7 +335,7 @@ export const pharmacyConfigSectionTracking = (data: any) => {
 };
 
 export const pharmacyHomeBannerTracking = (result: number) => {
-  if (window && window.webengage) {
+  if (typeof window !== 'undefined') {
     try {
       window.webengage.track('Pharmacy Home page banner - web', {
         'Banner position': result,
@@ -347,7 +347,7 @@ export const pharmacyHomeBannerTracking = (result: number) => {
 };
 
 export const pharmacyPrescriptionTracking = (result: string) => {
-  if (window && window.webengage) {
+  if (typeof window !== 'undefined') {
     try {
       window.webengage.track('Pharmacy prescription proceed - web', {
         'Option selected': result,
@@ -359,7 +359,7 @@ export const pharmacyPrescriptionTracking = (result: string) => {
 };
 
 export const consultNowClickTracking = (data: any) => {
-  if (window && window.webengage) {
+  if (typeof window !== 'undefined') {
     const { availableInMins, docCategory, exp, hospital, name, specialty, listingType } = data;
     try {
       window.webengage.track('Consult Now clicked - web', {
@@ -378,7 +378,7 @@ export const consultNowClickTracking = (data: any) => {
 };
 
 export const pharmacyCartViewTracking = (result: any) => {
-  if (window && window.webengage) {
+  if (typeof window !== 'undefined') {
     try {
       window.webengage.track('Cart Viewed - web', {
         'Cart Items': result,
@@ -390,7 +390,7 @@ export const pharmacyCartViewTracking = (result: any) => {
 };
 
 export const specialtyClickTracking = (data: any) => {
-  if (window && window.webengage) {
+  if (typeof window !== 'undefined') {
     const { patientAge, patientGender, specialtyId, specialtyName, relation } = data;
     try {
       window.webengage.track('Speciality Clicked - web', {
@@ -407,7 +407,7 @@ export const specialtyClickTracking = (data: any) => {
 };
 
 export const consultationBookTracking = (data: any) => {
-  if (window && window.webengage) {
+  if (typeof window !== 'undefined') {
     const {
       category,
       consultDateTime,
@@ -442,7 +442,7 @@ export const consultationBookTracking = (data: any) => {
 };
 
 export const doctorProfileViewTracking = (data: any) => {
-  if (window && window.webengage) {
+  if (typeof window !== 'undefined') {
     const { availableInMins, docCategory, exp, name, specialty } = data;
     try {
       window.webengage.track('Doctor Profile Viewed - web', {
@@ -459,7 +459,7 @@ export const doctorProfileViewTracking = (data: any) => {
 };
 
 export const consultPayButtonClickTracking = (data: any) => {
-  if (window && window.webengage) {
+  if (typeof window !== 'undefined') {
     const {
       actualPrice,
       consultDateTime,
@@ -492,7 +492,7 @@ export const consultPayButtonClickTracking = (data: any) => {
 };
 
 export const consultPayInitiateTracking = (data: any) => {
-  if (window && window.webengage) {
+  if (typeof window !== 'undefined') {
     const {
       actualPrice,
       consultDateTime,
@@ -525,7 +525,7 @@ export const consultPayInitiateTracking = (data: any) => {
 };
 
 export const pharmacyCheckoutTracking = (data: any) => {
-  if (window && window.webengage) {
+  if (typeof window !== 'undefined') {
     const {
       serviceArea,
       orderId,
@@ -555,7 +555,7 @@ export const pharmacyCheckoutTracking = (data: any) => {
 };
 
 export const pharmacyPaymentInitiateTracking = (data: any) => {
-  if (window && window.webengage) {
+  if (typeof window !== 'undefined') {
     const { amount, serviceArea, payMode } = data;
     try {
       window.webengage.track('Pharmacy Payment Initiated - web', {
@@ -570,7 +570,7 @@ export const pharmacyPaymentInitiateTracking = (data: any) => {
 };
 
 export const pharmacySearchTracking = (data: any) => {
-  if (window && window.webengage) {
+  if (typeof window !== 'undefined') {
     const { keyword, source, results } = data;
     try {
       window.webengage.track('Pharmacy Search - web', {
@@ -585,7 +585,7 @@ export const pharmacySearchTracking = (data: any) => {
 };
 
 export const pharmacyProductClickTracking = (data: any) => {
-  if (window && window.webengage) {
+  if (typeof window !== 'undefined') {
     const {
       productName,
       source,
@@ -614,7 +614,7 @@ export const pharmacyProductClickTracking = (data: any) => {
 };
 
 export const pharmacyCategoryClickTracking = (data: any) => {
-  if (window && window.webengage) {
+  if (typeof window !== 'undefined') {
     const { source, categoryName, categoryId, sectionName } = data;
     try {
       window.webengage.track('Pharmacy Category Clicked - web', {
@@ -630,7 +630,7 @@ export const pharmacyCategoryClickTracking = (data: any) => {
 };
 
 export const addToCartTracking = (data: any) => {
-  if (window && window.webengage) {
+  if (typeof window !== 'undefined') {
     const {
       productName,
       source,
@@ -663,7 +663,7 @@ export const addToCartTracking = (data: any) => {
 };
 
 export const removeFromCartTracking = (data: any) => {
-  if (window && window.webengage) {
+  if (typeof window !== 'undefined') {
     const {
       productName,
       cartSize,
@@ -696,7 +696,7 @@ export const removeFromCartTracking = (data: any) => {
 };
 
 export const buyNowTracking = (data: any) => {
-  if (window && window.webengage) {
+  if (typeof window !== 'undefined') {
     const {
       productName,
       serviceArea,
@@ -729,7 +729,7 @@ export const buyNowTracking = (data: any) => {
 };
 
 export const pharmacyProceedToPayTracking = (data: any) => {
-  if (window && window.webengage) {
+  if (typeof window !== 'undefined') {
     const {
       totalItems,
       serviceArea,
@@ -762,7 +762,7 @@ export const pharmacyProceedToPayTracking = (data: any) => {
 };
 
 export const pharmacySubmitPrescTracking = (data: any) => {
-  if (window && window.webengage) {
+  if (typeof window !== 'undefined') {
     const { orderId, deliveryType, storeId, deliverAdd, pincode } = data;
     try {
       window.webengage.track('Pharmacy Submit Prescription - web', {
@@ -779,7 +779,7 @@ export const pharmacySubmitPrescTracking = (data: any) => {
 };
 
 export const pincodeAutoSelectTracking = (data: any) => {
-  if (window && window.webengage) {
+  if (typeof window !== 'undefined') {
     const { pincode, serviceability } = data;
     try {
       window.webengage.track('PIN Code autoselection clicked - web', {
@@ -793,7 +793,7 @@ export const pincodeAutoSelectTracking = (data: any) => {
 };
 
 export const pincodeManualSelectTracking = (data: any) => {
-  if (window && window.webengage) {
+  if (typeof window !== 'undefined') {
     const { pincode, serviceability, source } = data;
     try {
       window.webengage.track('Pharmacy Enter Delivery Pincode Submitted - web', {
@@ -808,11 +808,21 @@ export const pincodeManualSelectTracking = (data: any) => {
 };
 
 export const pharmacyUploadPresClickTracking = (result: string) => {
-  if (window && window.webengage) {
+  if (typeof window !== 'undefined') {
     try {
       window.webengage.track('Pharmacy Upload Prescription Clicked - web', {
         Source: result,
       });
+    } catch (err) {
+      console.log('WebEngage Err: ', err);
+    }
+  }
+};
+
+export const pageViewTracking = (eventName: string) => {
+  if (typeof window !== 'undefined') {
+    try {
+      window.webengage.track(eventName);
     } catch (err) {
       console.log('WebEngage Err: ', err);
     }

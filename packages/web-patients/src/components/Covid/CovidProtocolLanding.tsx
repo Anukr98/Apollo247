@@ -19,6 +19,8 @@ import { useAllCurrentPatients, useAuth } from 'hooks/authHooks';
 import fetchUtil from 'helpers/fetch';
 import { ManageProfile } from 'components/ManageProfile';
 import { Relation } from 'graphql/types/globalTypes';
+import { pageViewTracking } from '../../webEngageTracking';
+
 interface CovidProtocolData {
   introductionBody: string;
   introductionTitle: string;
@@ -234,6 +236,7 @@ export const covidProtocolLanding: React.FC = (props: any) => {
       )
         .then((res: any) => {
           if (res && res.success) {
+            pageViewTracking('Covid Guide Clicked');
             setSymptomData(res.data);
           } else {
             setSymptomData(null);
