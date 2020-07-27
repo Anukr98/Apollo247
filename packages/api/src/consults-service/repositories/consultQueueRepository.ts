@@ -100,7 +100,7 @@ export class ConsultQueueRepository extends Repository<ConsultQueueItem> {
       .getMany();
   }
 
-  getConsultQueue(doctorId: string, isActive: boolean) {
+  async getConsultQueue(doctorId: string, isActive: boolean) {
     let limit = parseInt(
       process.env.INACTIVE_CONSULT_QUEUE_LIMT ? process.env.INACTIVE_CONSULT_QUEUE_LIMT : '1',
       10
@@ -108,8 +108,13 @@ export class ConsultQueueRepository extends Repository<ConsultQueueItem> {
     if (isActive) {
       limit = 1000;
     }
-    return this.createQueryBuilder('consultQueueItem')
-      .select(['consultQueueItem.id', 'consultQueueItem.doctorId', 'consultQueueItem.isActive', 'appointment'])
+    return await this.createQueryBuilder('consultQueueItem')
+      .select([
+        'consultQueueItem.id',
+        'consultQueueItem.doctorId',
+        'consultQueueItem.isActive',
+        'appointment',
+      ])
       .innerJoinAndMapOne(
         'consultQueueItem.appointment',
         Appointment,
@@ -123,7 +128,6 @@ export class ConsultQueueRepository extends Repository<ConsultQueueItem> {
       })
       .orderBy('consultQueueItem.id')
       .limit(limit)
-      .getMany()
+      .getMany();
   }
-
 }
