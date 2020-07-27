@@ -574,13 +574,9 @@ export async function sendNotification(
     doctorSMS = doctorSMS.replace('{1}', appointment.displayId.toString());
     doctorSMS = doctorSMS.replace('{2}', patientDetails.firstName);
     doctorSMS = doctorSMS.replace('{3}', apptDate.toString());
-    if (process.env.NODE_ENV != 'production') {
-      if (doctorDetails.isWhitelisted == true) {
-        sendNotificationSMS(doctorDetails.mobileNumber, doctorSMS);
-      }
-    } else {
-      sendNotificationSMS(doctorDetails.mobileNumber, doctorSMS);
-    }
+
+    sendNotificationSMS(doctorDetails.mobileNumber, doctorSMS);
+
     sendBrowserNotitication(doctorDetails.id, doctorSMS);
   }
 
@@ -802,13 +798,7 @@ export async function sendNotification(
     doctorSMS = doctorSMS
       .replace('{3}', apptDate.toString())
       .replace('{4}', doctorDetails.salutation);
-    if (process.env.NODE_ENV != 'production') {
-      if (doctorDetails.isWhitelisted == true) {
-        sendNotificationSMS(doctorDetails.mobileNumber, doctorSMS);
-      }
-    } else {
-      sendNotificationSMS(doctorDetails.mobileNumber, doctorSMS);
-    }
+    sendNotificationSMS(doctorDetails.mobileNumber, doctorSMS);
   }
 
   //payment pending success
@@ -920,13 +910,8 @@ export async function sendNotification(
     const istDateTime = addMilliseconds(appointment.appointmentDateTime, 19800000);
     notificationBody = notificationBody.replace('{3}', format(istDateTime, 'yyyy-MM-dd hh:mm'));
     //sendNotificationSMS(doctorDetails.mobileNumber, notificationBody);
-    if (process.env.NODE_ENV != 'production') {
-      if (doctorDetails.isWhitelisted == true) {
-        sendNotificationSMS(doctorDetails.mobileNumber, notificationBody);
-      }
-    } else {
-      sendNotificationSMS(doctorDetails.mobileNumber, notificationBody);
-    }
+
+    sendNotificationSMS(doctorDetails.mobileNumber, notificationBody);
     //Send Browser Notification
     sendBrowserNotitication(doctorDetails.id, notificationBody);
   } else if (pushNotificationInput.notificationType == NotificationType.PRESCRIPTION_READY) {
@@ -1307,13 +1292,8 @@ export async function sendReminderNotification(
       '{0}',
       doctorDetails.firstName
     ).replace('{1}', patientDetails.firstName);
-    if (process.env.NODE_ENV != 'production') {
-      if (doctorDetails.isWhitelisted == true) {
-        sendNotificationSMS(doctorDetails.mobileNumber, doctorSMS);
-      }
-    } else {
-      sendNotificationSMS(doctorDetails.mobileNumber, doctorSMS);
-    }
+
+    sendNotificationSMS(doctorDetails.mobileNumber, doctorSMS);
 
     //Send Browser Notification
     sendBrowserNotitication(doctorDetails.id, doctorSMS);
@@ -1463,13 +1443,8 @@ export async function sendReminderNotification(
       doctorSMS = doctorSMS.replace('{1}', patientDetails.firstName);
     }
     console.log('doctorSMS=======================', doctorSMS);
-    if (process.env.NODE_ENV != 'production') {
-      if (doctorDetails.isWhitelisted == true) {
-        sendNotificationSMS(doctorDetails.mobileNumber, doctorSMS);
-      }
-    } else {
-      sendNotificationSMS(doctorDetails.mobileNumber, doctorSMS);
-    }
+
+    sendNotificationSMS(doctorDetails.mobileNumber, doctorSMS);
     //send doctor sms ends
     //Send Browser Notification
     sendBrowserNotitication(doctorDetails.id, doctorSMS);
@@ -1524,13 +1499,8 @@ export async function sendReminderNotification(
         '{0}',
         patientDetails.firstName
       );
-      if (process.env.NODE_ENV != 'production') {
-        if (doctorDetails.isWhitelisted == true) {
-          sendNotificationSMS(doctorDetails.mobileNumber, doctorSMS);
-        }
-      } else {
-        sendNotificationSMS(doctorDetails.mobileNumber, doctorSMS);
-      }
+
+      sendNotificationSMS(doctorDetails.mobileNumber, doctorSMS);
       sendBrowserNotitication(doctorDetails.id, doctorSMS);
     }
   } else if (pushNotificationInput.notificationType == NotificationType.VIRTUAL_REMINDER_15) {
@@ -1557,13 +1527,8 @@ export async function sendReminderNotification(
         '{0}',
         patientDetails.firstName
       );
-      if (process.env.NODE_ENV != 'production') {
-        if (doctorDetails.isWhitelisted == true) {
-          sendNotificationSMS(doctorDetails.mobileNumber, doctorSMS);
-        }
-      } else {
-        sendNotificationSMS(doctorDetails.mobileNumber, doctorSMS);
-      }
+      sendNotificationSMS(doctorDetails.mobileNumber, doctorSMS);
+
       sendBrowserNotitication(doctorDetails.id, doctorSMS);
       let whatsappMsg = ApiConstants.WHATSAPP_SD_CONSULT_REMINDER_15_MIN.replace(
         '{0}',
@@ -1650,7 +1615,7 @@ export async function sendReminderNotification(
   if (
     pushNotificationInput.notificationType == NotificationType.APPOINTMENT_CASESHEET_REMINDER_15 ||
     pushNotificationInput.notificationType ==
-      NotificationType.APPOINTMENT_CASESHEET_REMINDER_15_VIRTUAL
+    NotificationType.APPOINTMENT_CASESHEET_REMINDER_15_VIRTUAL
   ) {
     if (!(appointment && appointment.id)) {
       throw new AphError(AphErrorMessages.APPOINTMENT_ID_NOT_FOUND);
@@ -2238,7 +2203,7 @@ const testPushNotification: Resolver<
   { deviceToken: String },
   NotificationsServiceContext,
   PushNotificationSuccessMessage | undefined
-> = async (parent, args, {}) => {
+> = async (parent, args, { }) => {
   //initialize firebaseadmin
   const config = {
     credential: firebaseAdmin.credential.applicationDefault(),
@@ -2339,13 +2304,9 @@ const sendDailyAppointmentSummary: Resolver<
         whatsAppMessageBody +=
           onlineAppointmentsText + '' + physicalAppointmentsText + whatsAppLink;
         sendBrowserNotitication(doctor.id, messageBody);
-        if (process.env.NODE_ENV != 'production') {
-          if (doctor.isWhitelisted == true) {
-            sendNotificationSMS(doctor.mobileNumber, messageBody);
-          }
-        } else {
-          sendNotificationSMS(doctor.mobileNumber, messageBody);
-        }
+
+        sendNotificationSMS(doctor.mobileNumber, messageBody);
+
         sendDoctorNotificationWhatsapp(
           doctor.mobileNumber,
           whatsAppMessageBody,
@@ -2434,13 +2395,7 @@ export async function sendChatMessageNotification(
     '{0}',
     doctorDetails.firstName
   ).replace('{1}', patientDetails.firstName);
-  if (process.env.NODE_ENV != 'production') {
-    if (doctorDetails.isWhitelisted == true) {
-      await sendNotificationSMS(doctorDetails.mobileNumber, messageBody);
-    }
-  } else {
-    await sendNotificationSMS(doctorDetails.mobileNumber, messageBody);
-  }
+  await sendNotificationSMS(doctorDetails.mobileNumber, messageBody);
   //sendNotificationWhatsapp(doctorDetails.mobileNumber, messageBody);
   const doctorTokenRepo = doctorsDb.getCustomRepository(DoctorDeviceTokenRepository);
   const deviceTokensList = await doctorTokenRepo.getDeviceTokens(doctorDetails.id);
@@ -2570,13 +2525,8 @@ const sendChatMessageToDoctor: Resolver<
     doctorDetails.firstName
   ).replace('{1}', patientDetails.firstName);
   //await sendNotificationSMS(doctorDetails.mobileNumber, messageBody);
-  if (process.env.NODE_ENV != 'production') {
-    if (doctorDetails.isWhitelisted == true) {
-      await sendNotificationSMS(doctorDetails.mobileNumber, messageBody);
-    }
-  } else {
-    await sendNotificationSMS(doctorDetails.mobileNumber, messageBody);
-  }
+
+  await sendNotificationSMS(doctorDetails.mobileNumber, messageBody);
   //sendNotificationWhatsapp(doctorDetails.mobileNumber, messageBody);
   const doctorTokenRepo = doctorsDb.getCustomRepository(DoctorDeviceTokenRepository);
   const deviceTokensList = await doctorTokenRepo.getDeviceTokens(appointment.doctorId);
