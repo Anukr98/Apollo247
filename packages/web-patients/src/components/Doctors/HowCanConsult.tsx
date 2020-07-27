@@ -41,6 +41,7 @@ const useStyles = makeStyles((theme: Theme) => {
       listStyle: 'none',
       display: 'flex',
       alignItems: 'center',
+      justifyContent: 'center',
       '& li': {
         padding: '0 6px',
       },
