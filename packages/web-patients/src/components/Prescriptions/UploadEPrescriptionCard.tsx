@@ -142,6 +142,7 @@ interface EPrescriptionCardProps {
   isNonCartFlow: boolean;
   isPresReview?: boolean;
   setEPrescriptionForReview?: any;
+  pharmaCologistPres?: Array<EPrescription>;
 }
 
 export const UploadEPrescriptionCard: React.FC<EPrescriptionCardProps> = (props) => {
@@ -155,7 +156,11 @@ export const UploadEPrescriptionCard: React.FC<EPrescriptionCardProps> = (props)
   const [loading, setLoading] = useState<boolean>(false);
   const [isRecordChecked, setIsRecordChecked] = useState<boolean>(false);
   const [selectedEPrescriptions, setSelectedEPrescriptions] = useState<EPrescription[]>(
-    props.isPresReview ? [] : ePrescriptionData || []
+    props.isPresReview
+      ? props.pharmaCologistPres
+        ? props.pharmaCologistPres
+        : []
+      : ePrescriptionData || []
   );
   const [mutationLoading, setMutationLoading] = useState<boolean>(false);
   const [alertMessage, setAlertMessage] = React.useState<string>('');
