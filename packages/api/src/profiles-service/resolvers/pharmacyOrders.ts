@@ -33,6 +33,7 @@ export const pharmaOrdersTypeDefs = gql`
     bankTxnId: String
     amountPaid: Float
     paymentDateTime: DateTime
+    healthCreditsRedeemed: Float
   }
   extend type Query {
     pharmacyOrders(patientId: String): PharmacyOrderResult
@@ -63,6 +64,7 @@ type PharmacyPayment = {
   bankTxnId: string;
   amountPaid: number;
   paymentDateTime: Date;
+  healthCreditsRedeemed: number;
 };
 
 const pharmacyOrders: Resolver<
@@ -71,9 +73,10 @@ const pharmacyOrders: Resolver<
   ProfilesServiceContext,
   PharmacyOrderResult
 > = async (parent, args, { profilesDb }) => {
+  const { patientId } = args;
   const medicineOrderRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
-  const primaryPatientIds = await patientRepo.getLinkedPatientIds(args.patientId);
+  const primaryPatientIds = await patientRepo.getLinkedPatientIds({ patientId });
 
   const medicineOrders = await medicineOrderRepo.getMedicineOrdersListWithPayments(
     primaryPatientIds

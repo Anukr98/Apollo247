@@ -2,6 +2,9 @@ import React from 'react';
 import { Theme, Typography } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { Link } from 'react-router-dom';
+import { useAuth } from 'hooks/authHooks';
+import { clientRoutes } from 'helpers/clientRoutes';
+import { LoggedInUserType } from 'graphql/types/globalTypes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -85,7 +88,6 @@ const useStyles = makeStyles((theme: Theme) => {
       textTransform: 'uppercase',
       fontSize: 24,
       fontWeight: 600,
-
     },
     testCallWrappper: {
       borderBottom: '1px solid rgba(2, 71, 91, 0.15)',
@@ -108,29 +110,32 @@ const useStyles = makeStyles((theme: Theme) => {
         position: 'relative',
         top: 5,
         marginRight: 10,
-      }
-    }
+      },
+    },
   };
 });
 
 export const Unauthorized: React.FC = (props) => {
   const classes = useStyles({});
+  const currentUserType = useAuth().currentUserType;
+  const isJuniorDoctor = useAuth() && currentUserType === LoggedInUserType.JUNIOR;
+
   return (
     <div className={classes.textCenter}>
-      <img
-        src={require('images/unauthorized.svg')}
-        alt=""
-      />
+      <img src={require('images/unauthorized.svg')} alt="" />
       <Typography variant="h2" className={classes.needHelp}>
         Unauthorized User
       </Typography>
       <div className={classes.helpSection}>
-        <h5>It appears you are not allowed to access this page. if you think you should be able to access it, please relogin or contact on doctor helpline.</h5>
+        <h5>
+          It appears you are not allowed to access this page. If you think you should be able to
+          access it, please relogin or contact on doctor helpline.
+        </h5>
         <div className={classes.backBtn}>
-          <img
-            src={require('images/backarrow.svg')}
-            alt=""
-          /><Link to="/calendar">GO BACK</Link>
+          <img src={require('images/backarrow.svg')} alt="" />
+          <Link to={isJuniorDoctor ? clientRoutes.juniorDoctor() : clientRoutes.calendar()}>
+            GO BACK
+          </Link>
         </div>
       </div>
     </div>

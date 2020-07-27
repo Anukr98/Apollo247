@@ -9,6 +9,9 @@ import {
   REQUEST_ROLES,
   ES_DOCTOR_SLOT_STATUS,
   RescheduleAppointmentDetails,
+  AppointmentUpdateHistory,
+  VALUE_TYPE,
+  APPOINTMENT_UPDATED_BY,
 } from 'consults-service/entities';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
@@ -332,6 +335,18 @@ const initiateRescheduleAppointment: Resolver<
     doctorsDb
   );
   console.log(notificationResult, 'notificationResult');
+  const historyAttrs: Partial<AppointmentUpdateHistory> = {
+    appointment,
+    userType: APPOINTMENT_UPDATED_BY.DOCTOR,
+    fromValue: appointment.status,
+    toValue: appointment.status,
+    valueType: VALUE_TYPE.STATUS,
+    fromState: appointment.appointmentState,
+    toState: APPOINTMENT_STATE.AWAITING_RESCHEDULE,
+    userName: RescheduleAppointmentInput.rescheduleInitiatedId,
+    reason: ApiConstants.APPT_STATE_CHANGED_1.toString(),
+  };
+  appointmentRepo.saveAppointmentHistory(historyAttrs);
 
   return {
     rescheduleAppointment,
@@ -408,10 +423,11 @@ const bookRescheduleAppointment: Resolver<
 
   //check details
   const patient = patientsDb.getCustomRepository(PatientRepository);
-  const patientDetails = await patient.findById(bookRescheduleAppointmentInput.patientId);
+  const patientDetails = await patient.getPatientDetails(bookRescheduleAppointmentInput.patientId);
   if (!patientDetails) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
+
   //eslint-disable-next-line @typescript-eslint/no-explicit-any
   async function updateSlotsInEs(appointment: any, appointmentDateTime: any, status: string) {
     const slotApptDt = format(appointmentDateTime, 'yyyy-MM-dd') + ' 18:30:00';
@@ -449,6 +465,18 @@ const bookRescheduleAppointment: Resolver<
         'MAX_RESCHEDULES_EXCEEDED',
         apptDetails
       );
+      const historyAttrs: Partial<AppointmentUpdateHistory> = {
+        appointment: apptDetails,
+        userType: APPOINTMENT_UPDATED_BY.PATIENT,
+        fromValue: apptDetails.status,
+        toValue: STATUS.CANCELLED,
+        valueType: VALUE_TYPE.STATUS,
+        fromState: apptDetails.appointmentState,
+        toState: apptDetails.appointmentState,
+        userName: bookRescheduleAppointmentInput.patientId,
+        reason: ApiConstants.APPT_STATE_CHANGED_3.toString(),
+      };
+      appointmentRepo.saveAppointmentHistory(historyAttrs);
 
       const appointmentPayment = await appointmentRepo.findAppointmentPayment(apptDetails.id);
       if (appointmentPayment) {
@@ -498,6 +526,18 @@ const bookRescheduleAppointment: Resolver<
       // book new slot
       await updateSlotsInEs(apptDetails, bookRescheduleAppointmentInput.newDateTimeslot, 'BOOKED');
       //ends
+      const historyAttrs: Partial<AppointmentUpdateHistory> = {
+        appointment: apptDetails,
+        userType: APPOINTMENT_UPDATED_BY.PATIENT,
+        fromValue: apptDetails.status,
+        toValue: apptDetails.status,
+        valueType: VALUE_TYPE.STATUS,
+        fromState: apptDetails.appointmentState,
+        toState: APPOINTMENT_STATE.RESCHEDULE,
+        userName: apptDetails.patientId,
+        reason: ApiConstants.APPT_STATE_CHANGED_2.toString(),
+      };
+      appointmentRepo.saveAppointmentHistory(historyAttrs);
     }
 
     const notificationType = NotificationType.PATIENT_APPOINTMENT_RESCHEDULE;
@@ -528,6 +568,18 @@ const bookRescheduleAppointment: Resolver<
         'MAX_RESCHEDULES_EXCEEDED',
         apptDetails
       );
+      const historyAttrs: Partial<AppointmentUpdateHistory> = {
+        appointment: apptDetails,
+        userType: APPOINTMENT_UPDATED_BY.DOCTOR,
+        fromValue: apptDetails.status,
+        toValue: STATUS.CANCELLED,
+        valueType: VALUE_TYPE.STATUS,
+        fromState: apptDetails.appointmentState,
+        toState: apptDetails.appointmentState,
+        userName: bookRescheduleAppointmentInput.doctorId,
+        reason: ApiConstants.APPT_STATE_CHANGED_3.toString(),
+      };
+      appointmentRepo.saveAppointmentHistory(historyAttrs);
 
       const appointmentPayment = await appointmentRepo.findAppointmentPayment(apptDetails.id);
       if (appointmentPayment) {
@@ -571,12 +623,25 @@ const bookRescheduleAppointment: Resolver<
         APPOINTMENT_STATE.RESCHEDULE,
         apptDetails
       );
+
       // update on ES, should update new slot to booked and previous slot to open
       //open old slot
       await updateSlotsInEs(apptDetails, apptDetails.appointmentDateTime, 'OPEN');
       // book new slot
       await updateSlotsInEs(apptDetails, bookRescheduleAppointmentInput.newDateTimeslot, 'BOOKED');
       //ends
+      const historyAttrs: Partial<AppointmentUpdateHistory> = {
+        appointment: apptDetails,
+        userType: APPOINTMENT_UPDATED_BY.PATIENT,
+        fromValue: apptDetails.status,
+        toValue: apptDetails.status,
+        valueType: VALUE_TYPE.STATUS,
+        fromState: apptDetails.appointmentState,
+        toState: APPOINTMENT_STATE.RESCHEDULE,
+        userName: bookRescheduleAppointmentInput.patientId,
+        reason: ApiConstants.APPT_STATE_CHANGED_2.toString(),
+      };
+      appointmentRepo.saveAppointmentHistory(historyAttrs);
     }
   }
 

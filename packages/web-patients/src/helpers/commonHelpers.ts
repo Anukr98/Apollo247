@@ -354,20 +354,22 @@ const getAvailability = (nextAvailability: string, differenceInMinutes: number, 
     diffInHoursForTomorrowAvailabilty > 0 && diffInHoursForTomorrowAvailabilty < 1440;
   const isAvailableAfterTomorrow = diffInHoursForTomorrowAvailabilty >= 1440;
   const isAvailableAfterMonth = nextAvailabilityMoment.diff(moment(), 'days') > 30;
-  const message = type === 'doctorInfo' ? 'Consult' : 'Available';
+  const message = type === 'doctorInfo' ? 'consult' : 'available';
   if (differenceInMinutes > 0 && differenceInMinutes < 120) {
     return `${message} in ${differenceInMinutes} ${differenceInMinutes === 1 ? 'min' : 'mins'}`;
   } else if (isAvailableAfterMonth && type === 'consultType') {
     // only applies for consultType
     return `Available after a month`;
   } else if (isAvailableTomorrow) {
-    return `${message} tomorrow at ${nextAvailabilityMoment.format('hh:mm a')}`;
+    return type === 'doctorInfo' || type === 'markup'
+      ? `${message} tomorrow`
+      : `${message} tomorrow at ${nextAvailabilityMoment.format('hh:mm A')}`;
   } else if (isAvailableAfterTomorrow) {
     return `${message} in ${
       nextAvailabilityMoment.diff(tomorrowAvailabilityTime, 'days') + 1 // intentionally added + 1 as we need to consider 6 am as next day
     } days`;
   } else if (!isAvailableTomorrow && differenceInMinutes >= 120) {
-    return `${message} at ${nextAvailabilityMoment.format('hh:mm a')}.`;
+    return `${message} at ${nextAvailabilityMoment.format('hh:mm A')}`;
   } else {
     return type === 'doctorInfo' ? 'Book Consult' : 'Available';
   }

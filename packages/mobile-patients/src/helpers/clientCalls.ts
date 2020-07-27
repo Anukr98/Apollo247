@@ -24,52 +24,55 @@ import { GetDoctorNextAvailableSlot } from '@aph/mobile-patients/src/graphql/typ
 import { linkUhidsVariables } from '@aph/mobile-patients/src/graphql/types/linkUhids';
 import ApolloClient from 'apollo-client';
 import moment from 'moment';
-import { addToConsultQueueVariables } from '../graphql/types/addToConsultQueue';
-import { addToConsultQueueWithAutomatedQuestionsVariables } from '../graphql/types/addToConsultQueueWithAutomatedQuestions';
-import { checkIfRescheduleVariables } from '../graphql/types/checkIfReschedule';
-import { downloadDocuments } from '../graphql/types/downloadDocuments';
+import { addToConsultQueueVariables } from '@aph/mobile-patients/src/graphql/types/addToConsultQueue';
+import { addToConsultQueueWithAutomatedQuestionsVariables } from '@aph/mobile-patients/src/graphql/types/addToConsultQueueWithAutomatedQuestions';
+import { checkIfRescheduleVariables } from '@aph/mobile-patients/src/graphql/types/checkIfReschedule';
+import { downloadDocuments } from '@aph/mobile-patients/src/graphql/types/downloadDocuments';
 import {
   EndAppointmentSession,
   EndAppointmentSessionVariables,
-} from '../graphql/types/EndAppointmentSession';
+} from '@aph/mobile-patients/src/graphql/types/EndAppointmentSession';
 import {
   getAppointmentData,
   getAppointmentDataVariables,
-} from '../graphql/types/getAppointmentData';
-import { getCallDetails, getCallDetailsVariables } from '../graphql/types/getCallDetails';
+} from '@aph/mobile-patients/src/graphql/types/getAppointmentData';
+import {
+  getCallDetails,
+  getCallDetailsVariables,
+} from '@aph/mobile-patients/src/graphql/types/getCallDetails';
 import {
   getDeviceCodeCount,
   getDeviceCodeCountVariables,
-} from '../graphql/types/getDeviceCodeCount';
+} from '@aph/mobile-patients/src/graphql/types/getDeviceCodeCount';
 import {
   getPastAppointmentsCount,
   getPastAppointmentsCountVariables,
-} from '../graphql/types/getPastAppointmentsCount';
+} from '@aph/mobile-patients/src/graphql/types/getPastAppointmentsCount';
 import {
   getPatientPersonalizedAppointments,
   getPatientPersonalizedAppointmentsVariables,
-} from '../graphql/types/getPatientPersonalizedAppointments';
-import { getPatinetAppointments } from '../graphql/types/getPatinetAppointments';
+} from '@aph/mobile-patients/src/graphql/types/getPatientPersonalizedAppointments';
+import { getPatinetAppointments } from '@aph/mobile-patients/src/graphql/types/getPatinetAppointments';
 import {
   ConsultQueueInput,
   MessageInput,
   REQUEST_ROLES,
   STATUS,
-} from '../graphql/types/globalTypes';
-import { insertMessageVariables } from '../graphql/types/insertMessage';
+} from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { insertMessageVariables } from '@aph/mobile-patients/src/graphql/types/insertMessage';
 import {
   sendChatMessageToDoctor,
   sendChatMessageToDoctorVariables,
-} from '../graphql/types/sendChatMessageToDoctor';
+} from '@aph/mobile-patients/src/graphql/types/sendChatMessageToDoctor';
 import {
   updateSaveExternalConnect,
   updateSaveExternalConnectVariables,
-} from '../graphql/types/updateSaveExternalConnect';
-import { updateWhatsAppStatus } from '../graphql/types/updateWhatsAppStatus';
+} from '@aph/mobile-patients/src/graphql/types/updateSaveExternalConnect';
+import { updateWhatsAppStatus } from '@aph/mobile-patients/src/graphql/types/updateWhatsAppStatus';
 import {
   getAppointmentRescheduleDetails,
   getAppointmentRescheduleDetailsVariables,
-} from '../graphql/types/getAppointmentRescheduleDetails';
+} from '@aph/mobile-patients/src/graphql/types/getAppointmentRescheduleDetails';
 
 export const getNextAvailableSlots = (
   client: ApolloClient<object>,
@@ -534,21 +537,11 @@ export const getRescheduleAppointmentDetails = (
   client: ApolloClient<object>,
   appointmentId: string
 ) => {
-  return new Promise((res, rej) => {
-    client
-      .query<getAppointmentRescheduleDetails, getAppointmentRescheduleDetailsVariables>({
-        query: GET_APPOINTMENT_RESCHEDULE_DETAILS,
-        variables: {
-          appointmentId: appointmentId,
-        },
-        fetchPolicy: 'no-cache',
-      })
-      .then((data: any) => {
-        res({ data });
-      })
-      .catch((e: any) => {
-        CommonBugFender('clientCalls_getRescheduleAppointmentDetails', e);
-        rej({ error: e });
-      });
+  return client.query<getAppointmentRescheduleDetails, getAppointmentRescheduleDetailsVariables>({
+    query: GET_APPOINTMENT_RESCHEDULE_DETAILS,
+    variables: {
+      appointmentId: appointmentId,
+    },
+    fetchPolicy: 'no-cache',
   });
 };

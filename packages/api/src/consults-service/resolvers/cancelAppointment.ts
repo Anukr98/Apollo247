@@ -188,6 +188,8 @@ const cancelAppointment: Resolver<
       cancelAppointmentInput.cancelledBy == 'PATIENT'
         ? appointment.patientId
         : appointment.doctorId,
+    fromState: appointment.appointmentState,
+    toState: appointment.appointmentState,
     reason: cancelAppointmentInput.cancelReason,
   };
   appointmentRepo.saveAppointmentHistory(historyAttrs);

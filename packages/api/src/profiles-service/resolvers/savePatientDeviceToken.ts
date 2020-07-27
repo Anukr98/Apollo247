@@ -68,8 +68,9 @@ const saveDeviceToken: Resolver<
     deviceToken = devToken;
     return { deviceToken };
   }
+
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
-  const patientDetails = await patientRepo.findById(SaveDeviceTokenInput.patientId);
+  const patientDetails = await patientRepo.getPatientDetails(SaveDeviceTokenInput.patientId);
   if (!patientDetails) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }

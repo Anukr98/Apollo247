@@ -278,6 +278,7 @@ export const CovidLanding: React.FC = (props: any) => {
       const qParamsArr = props.location.search.split('=');
       if (qParamsArr && qParamsArr.length) {
         const isWebView = qParamsArr.some((param: string) => param.includes('mobile_app'));
+        sessionStorage.setItem('webView', 'true');
         setIsWebView(isWebView);
       }
     }
@@ -331,7 +332,13 @@ export const CovidLanding: React.FC = (props: any) => {
       </div>
       <div className={classes.container}>
         <div className={classes.pageContainer} ref={scrollToRef}>
-          <Banner isWebView={isWebView} />
+          <Banner
+            title={'Coronavirus (Covid-19)'}
+            subtitle={
+              'Learn more about Coronavirus, how to stay safe, and what to do if you have symptoms.'
+            }
+            isWebView={isWebView}
+          />
           <div className={classes.sectionGroup}>
             <div className={classes.panelsGroup}>
               {headingArr.map((parentCat) => (
