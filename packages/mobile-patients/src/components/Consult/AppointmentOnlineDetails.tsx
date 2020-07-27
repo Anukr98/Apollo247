@@ -299,6 +299,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
       setshowSpinner(false);
       checkIfReschedule();
     } catch (error) {
+      setNextSlotAvailable('');
       setshowSpinner(false);
       checkIfReschedule();
     }
