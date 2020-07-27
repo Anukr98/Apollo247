@@ -44,4 +44,5 @@ export interface GetConsultQueue {
 
 export interface GetConsultQueueVariables {
   doctorId: string;
+  isActive: boolean;
 }

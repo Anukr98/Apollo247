@@ -1577,7 +1577,7 @@ export const JDConsultRoom: React.FC = () => {
                 <div className={classes.pageHeader}>
                   <div className={classes.backArrowSection}>
                     <div className={classes.backArrow}>
-                      <a href={clientRoutes.juniorDoctor()}>
+                      <a href={clientRoutes.juniorDoctorActive()}>
                         <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
                         <img
                           className={classes.whiteArrow}
