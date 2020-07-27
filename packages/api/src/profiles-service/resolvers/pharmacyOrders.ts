@@ -33,6 +33,7 @@ export const pharmaOrdersTypeDefs = gql`
     bankTxnId: String
     amountPaid: Float
     paymentDateTime: DateTime
+    healthCreditsRedeemed: Float
   }
   extend type Query {
     pharmacyOrders(patientId: String): PharmacyOrderResult
@@ -63,6 +64,7 @@ type PharmacyPayment = {
   bankTxnId: string;
   amountPaid: number;
   paymentDateTime: Date;
+  healthCreditsRedeemed: number;
 };
 
 const pharmacyOrders: Resolver<
