@@ -2746,3 +2746,16 @@ export const GET_PERSONALIZED_APPOITNMENTS = gql`
     }
   }
 `;
+
+export const GET_APPOINTMENT_RESCHEDULE_DETAILS = gql`
+  query getAppointmentRescheduleDetails($appointmentId: String!) {
+    getAppointmentRescheduleDetails(appointmentId: $appointmentId) {
+      id
+      rescheduledDateTime
+      rescheduleReason
+      rescheduleInitiatedBy
+      rescheduleInitiatedId
+      rescheduleStatus
+    }
+  }
+`;
