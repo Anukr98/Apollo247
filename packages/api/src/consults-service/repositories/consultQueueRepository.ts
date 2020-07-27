@@ -99,4 +99,31 @@ export class ConsultQueueRepository extends Repository<ConsultQueueItem> {
       .andWhere('consultQueueItem.isActive = :isactive', { isactive: true })
       .getMany();
   }
+
+  getConsultQueue(doctorId: string, isActive: boolean) {
+    let limit = parseInt(
+      process.env.INACTIVE_CONSULT_QUEUE_LIMT ? process.env.INACTIVE_CONSULT_QUEUE_LIMT : '1',
+      10
+    );
+    if (isActive) {
+      limit = 1000;
+    }
+    return this.createQueryBuilder('consultQueueItem')
+      .select(['consultQueueItem.id', 'consultQueueItem.doctorId', 'consultQueueItem.isActive', 'appointment'])
+      .innerJoinAndMapOne(
+        'consultQueueItem.appointment',
+        Appointment,
+        'appointment',
+        'consultQueueItem.appointmentId = appointment.id::VARCHAR'
+      )
+      .where('consultQueueItem.doctorId = :doctorId', { doctorId })
+      .andWhere('consultQueueItem.isActive = :isActive', { isActive })
+      .andWhere('appointment.appointmentState NOT IN (:...appointmentStates)', {
+        appointmentStates: [APPOINTMENT_STATE.AWAITING_RESCHEDULE],
+      })
+      .orderBy('consultQueueItem.id')
+      .limit(limit)
+      .getMany()
+  }
+
 }
