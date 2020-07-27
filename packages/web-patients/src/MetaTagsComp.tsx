@@ -14,9 +14,9 @@ export const MetaTagsComp: React.FC<MetaTagProps> = (props) => {
     <Helmet>
       <title>{title}</title>
       <meta name="description" content={description} />
-      <meta name="keywords" content={keywords} />
+      {keywords && <meta name="keywords" content={keywords} />}
       <link rel="canonical" href={canonicalLink} />
-      <script src={src} type="text/javascript" />
+      {src && <script src={src} type="text/javascript" />}
     </Helmet>
   );
 };

@@ -12,6 +12,15 @@ import { specialtyClickTracking } from 'webEngageTracking';
 const useStyles = makeStyles((theme: Theme) => {
   return {
     topSpeciality: {},
+    startHead: {
+      color: '#00a7b9',
+      margin: '10px 0',
+      fontSize: '16px !important',
+      fontWeight: 'bold',
+      [theme.breakpoints.down('sm')]: {
+        margin: '20px 0 10px',
+      },
+    },
     sectionHeader: {
       padding: '10px 0',
       borderBottom: '0.5px solid rgba(2,71,91,0.3)',
@@ -427,7 +436,7 @@ export const SpecialtyDivision: React.FC<SpecialtyDivisionProps> = (props) => {
 
   return (
     <>
-      <Typography component="h2">
+      <Typography component="h3" className={classes.startHead}>
         Start your care now by choosing from {doctorsCount ? `${doctorsCount} doctors and ` : ''}
         {specialtyCount} specialities
       </Typography>

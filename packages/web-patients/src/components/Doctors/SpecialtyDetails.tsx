@@ -45,6 +45,7 @@ import { useAuth } from 'hooks/authHooks';
 import axios from 'axios';
 import { gtmTracking } from 'gtmTracking';
 import { SpecialtySearch } from 'components/SpecialtySearch';
+import { SchemaMarkup } from 'SchemaMarkup';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -387,6 +388,7 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
   const apolloClient = useApolloClient();
   const [data, setData] = useState<GetDoctorsBySpecialtyAndFilters | null>(null);
   const [structuredJSON, setStructuredJSON] = useState(null);
+  const [breadcrumbJSON, setBreadcrumbJSON] = useState(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [filter, setFilter] = useState<SearchObject>(searchObject);
   const [filteredDoctorData, setFilteredDoctorData] = useState<any>(null);
@@ -588,6 +590,30 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
               target: potentialActionSchema,
             },
           });
+          setBreadcrumbJSON({
+            '@context': 'https://schema.org/',
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+              {
+                '@type': 'ListItem',
+                position: 1,
+                name: 'HOME',
+                item: 'https://www.apollo247.com/',
+              },
+              {
+                '@type': 'ListItem',
+                position: 2,
+                name: 'SPECIALTIES',
+                item: 'https://www.apollo247.com/specialties',
+              },
+              {
+                '@type': 'ListItem',
+                position: 3,
+                name: specialtyName,
+                item: `https://www.apollo247.com/specialties/${readableParam(specialtyName)}`,
+              },
+            ],
+          });
           if (
             response &&
             response.data &&
@@ -702,6 +728,8 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
   return (
     <div className={classes.root}>
       <MetaTagsComp {...metaTagProps} />
+      {structuredJSON && <SchemaMarkup structuredJSON={structuredJSON} />}
+      {breadcrumbJSON && <SchemaMarkup structuredJSON={breadcrumbJSON} />}
       <div className={classes.mHide}>
         <Header />
       </div>
@@ -717,7 +745,7 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
             <div className={classes.breadcrumbLinks}>
               <Link to={clientRoutes.welcome()}>Home</Link>
               <img src={require('images/triangle.svg')} alt="" />
-              <Link to={clientRoutes.specialityListing()}>Specialty</Link>
+              <Link to={clientRoutes.specialityListing()}>Specialties</Link>
               <img src={require('images/triangle.svg')} alt="" />
               <span>{specialtyName}</span>
             </div>

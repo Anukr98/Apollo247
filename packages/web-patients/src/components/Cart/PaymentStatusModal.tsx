@@ -151,7 +151,7 @@ export const PaymentStatusModal: React.FC<PaymentStatusProps> = (props) => {
   };
 
   useEffect(() => {
-    if (params.orderAutoId) {
+    if (params.orderAutoId && currentPatient && currentPatient.id) {
       orderDetails({
         variables: {
           patientId: currentPatient && currentPatient.id,
@@ -205,7 +205,7 @@ export const PaymentStatusModal: React.FC<PaymentStatusProps> = (props) => {
           paymentStatusRedirect(clientRoutes.yourOrders());
         });
     }
-  }, []);
+  }, [currentPatient, params.orderAutoId]);
 
   const paymentStatus = getPaymentStatus();
   const paymentDetail =

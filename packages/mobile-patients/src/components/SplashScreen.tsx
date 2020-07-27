@@ -32,6 +32,7 @@ import {
   InitiateAppsFlyer,
   APPStateInActive,
   APPStateActive,
+  postWebEngageEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
@@ -39,6 +40,11 @@ import {
   getAppointmentDataVariables,
 } from '@aph/mobile-patients/src/graphql/types/getAppointmentData';
 import { GET_APPOINTMENT_DATA } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  WebEngageEvents,
+  WebEngageEventName,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
+
 // The moment we import from sdk @praktice/navigator-react-native-sdk,
 // finally not working on all promises.
 
@@ -231,8 +237,14 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
             let url = data[1].replace('param=', '');
             getData('webview', url);
           }
+          break;
         default:
           getData('ConsultRoom', undefined, true);
+          // webengage event
+          const eventAttributes: WebEngageEvents[WebEngageEventName.DEEPLINK_CONSULTROOM_SCREEN] = {
+            source: 'Deeplink',
+          };
+          postWebEngageEvent(WebEngageEventName.DEEPLINK_CONSULTROOM_SCREEN, eventAttributes);
           break;
       }
       console.log('route', route);
@@ -399,6 +411,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         console.log('MedicineDetail');
         props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
           sku: id,
+          movedFrom: 'deeplink',
         });
         break;
 
@@ -441,6 +454,14 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           const [itemId, name] = id.split(',');
           console.log(itemId, name);
 
+          // webengage event
+          const eventAttributes: WebEngageEvents[WebEngageEventName.DEEPLINK_CATEGORY_SCREEN] = {
+            source: 'Deeplink',
+            CategoryId: itemId,
+            CategoryName: name,
+          };
+          postWebEngageEvent(WebEngageEventName.DEEPLINK_CATEGORY_SCREEN, eventAttributes);
+
           props.navigation.navigate(AppRoutes.SearchByBrand, {
             category_id: itemId,
             title: `${name ? name : 'Products'}`.toUpperCase(),
@@ -474,6 +495,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         props.navigation.navigate(AppRoutes.CommonWebView, {
           url: id,
         });
+        break;
       default:
         break;
     }
@@ -665,11 +687,11 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           homeScreenEmergencyBannerNumber &&
             updateAppConfig('HOME_SCREEN_EMERGENCY_BANNER_NUMBER', homeScreenEmergencyBannerNumber);
 
-          if (buildName() === 'DEV') {
+          if (AppConfig.APP_ENV === 'DEV') {
             const DEV_top6_specailties = snapshot['DEV_top6_specailties'].val();
             DEV_top6_specailties &&
               updateAppConfig('TOP_SPECIALITIES', JSON.parse(DEV_top6_specailties));
-          } else if (buildName() === 'QA') {
+          } else if (AppConfig.APP_ENV === 'QA' || AppConfig.APP_ENV === 'QA2') {
             const QA_top6_specailties = snapshot['QA_top6_specailties'].val();
             QA_top6_specailties &&
               updateAppConfig('TOP_SPECIALITIES', JSON.parse(QA_top6_specailties));

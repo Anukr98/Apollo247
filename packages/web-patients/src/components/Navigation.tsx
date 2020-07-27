@@ -221,10 +221,7 @@ export const Navigation: React.FC<NavigationProps> = (props) => {
     // clientRoutes.payMedicine(params.payType),
   ];
   const location = useLocation();
-  const headTagCondition =
-    location.pathname === '/' ||
-    location.pathname === '/specialties' ||
-    location.pathname === '/medicines';
+  // const headTagCondition = location.pathname === '/';
 
   return (
     <div
@@ -314,23 +311,10 @@ export const Navigation: React.FC<NavigationProps> = (props) => {
             to={clientRoutes.specialityListing()}
             title={'Doctors'}
           >
-            {headTagCondition ? (
-              <Typography variant="h1" className={classes.menuTitle}>
-                Doctors
-              </Typography>
-            ) : (
-              <span className={classes.menuTitle}>Doctors</span>
-            )}
-            {headTagCondition ? (
-              <Typography variant="h1" className={classes.menuInfo}>
-                Consult
-                <br /> Online
-              </Typography>
-            ) : (
-              <span className={classes.menuInfo}>
-                Consult <br /> Online
-              </span>
-            )}
+            <span className={classes.menuTitle}>Doctors</span>
+            <span className={classes.menuInfo}>
+              Consult <br /> Online
+            </span>
           </Link>
           <Link
             to={clientRoutes.medicines()}
@@ -341,22 +325,10 @@ export const Navigation: React.FC<NavigationProps> = (props) => {
             }
             title={'Pharmacy'}
           >
-            {headTagCondition ? (
-              <Typography variant="h1" className={classes.menuTitle}>
-                Pharmacy
-              </Typography>
-            ) : (
-              <span className={classes.menuTitle}>Pharmacy</span>
-            )}
-            {headTagCondition ? (
-              <Typography variant="h1" className={classes.menuInfo}>
-                Medicines &<br /> other products
-              </Typography>
-            ) : (
-              <span className={classes.menuInfo}>
-                Medicines &<br /> other products
-              </span>
-            )}
+            <span className={classes.menuTitle}>Pharmacy</span>
+            <span className={classes.menuInfo}>
+              Medicines &<br /> other products
+            </span>
           </Link>
           {/* <Link
             to={clientRoutes.tests()}

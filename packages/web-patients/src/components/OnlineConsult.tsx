@@ -358,7 +358,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
 
   // get available slots.
   useEffect(() => {
-    if (nextAvailability && nextAvailability.length && !availableSlots) {
+    if (nextAvailability && nextAvailability.length && (!availableSlots || dateSelected)) {
       const availableTimeSlot =
         dateSelected === ''
           ? moment(nextAvailability).format('YYYY-MM-DD')
@@ -389,7 +389,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
           setAvailableSlotsLoading(false);
         });
     }
-  }, [nextAvailability, availableSlots]);
+  }, [nextAvailability, dateSelected]);
 
   if (availableSlotsLoading || loading) {
     return (
