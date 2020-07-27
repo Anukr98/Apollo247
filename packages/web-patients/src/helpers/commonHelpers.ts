@@ -428,9 +428,9 @@ const reOrderItems = async (orderDetails: OrderDetails, type: string) => {
       : lineItems.filter((item) => item.medicineSKU).map((item) => item.medicineSKU!);
 
     const lineItemsDetails = (await medCartItemsDetailsApi(lineItemsSkus)).data.productdp.filter(
-      (m) => m.sku && m.name
+      (lineItem) => lineItem.sku && lineItem.name
     );
-    const availableLineItemsSkus = lineItemsDetails.map((v) => v.sku);
+    const availableLineItemsSkus = lineItemsDetails.map((lineItem) => lineItem.sku);
     const cartItemsToAdd = lineItemsDetails.map(
       (item, index) =>
         item.sku &&
