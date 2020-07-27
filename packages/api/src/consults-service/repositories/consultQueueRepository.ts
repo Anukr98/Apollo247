@@ -119,7 +119,7 @@ export class ConsultQueueRepository extends Repository<ConsultQueueItem> {
         'consultQueueItem.appointment',
         Appointment,
         'appointment',
-        'consultQueueItem.appointmentId = appointment.id::VARCHAR'
+        'consultQueueItem.appointmentId = appointment.id'
       )
       .where('consultQueueItem.doctorId = :doctorId', { doctorId })
       .andWhere('consultQueueItem.isActive = :isActive', { isActive })
