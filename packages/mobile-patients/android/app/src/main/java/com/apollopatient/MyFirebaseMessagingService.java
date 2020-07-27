@@ -77,10 +77,6 @@ public class MyFirebaseMessagingService
         String notifDataType = remoteMessage.getData().get("type");
         String startCallType="call_started";
         String disconnectCallType="call_disconnected";
-        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
-        SharedPreferences.Editor editor = sharedPref.edit();
-        editor.putString("NOTIF_MESSAGE_TYPE", notifDataType);
-        editor.commit();
         if( startCallType.equals(notifDataType)) {
                 Intent i = new Intent(getApplicationContext(), UnlockScreenActivity.class);
                 i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
