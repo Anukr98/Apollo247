@@ -784,6 +784,7 @@ export const AudioVideoProvider: React.FC = (props) => {
                 subscribeToAudio: true,
                 subscribeToVideo: isVideo ? true : false,
                 audioVolume: 100,
+                resolution: '640x480' // setting this resolution to avoid over heating of device
               }}
             />
           </OTSession>
