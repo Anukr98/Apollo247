@@ -23,7 +23,7 @@ export const getDoctorsBySpecialtyAndFiltersTypeDefs = gql`
     NAME
   }
 
-  type commonType {
+  type brandType {
     name: String
   }
 
@@ -34,12 +34,12 @@ export const getDoctorsBySpecialtyAndFiltersTypeDefs = gql`
 
   type filtersObj {
     city: [cityType]
-    brands: [commonType]
-    language: [commonType]
-    experience: [commonType]
-    availability: [commonType]
-    fees: [commonType]
-    gender: [commonType]
+    brands: [brandType]
+    language: [brandType]
+    experience: [brandType]
+    availability: [brandType]
+    fees: [brandType]
+    gender: [brandType]
   }
 
   type FilterDoctorsResult {
@@ -91,7 +91,7 @@ export const getDoctorsBySpecialtyAndFiltersTypeDefs = gql`
   }
 `;
 
-type commonType = {
+type brandType = {
   name: string
 }
 
@@ -102,12 +102,12 @@ type cityType = {
 
 type filtersObj = {
   city: [cityType]
-  brands: [commonType]
-  language: [commonType]
-  experience: [commonType]
-  availability: [commonType]
-  fees: [commonType]
-  gender: [commonType]
+  brands: [brandType]
+  language: [brandType]
+  experience: [brandType]
+  availability: [brandType]
+  fees: [brandType]
+  gender: [brandType]
 }
 
 type FilterDoctorsResult = {
@@ -524,11 +524,12 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
       .concat(docs);
   }
 
-  function keyExists(arr: any[], key: string, value: string){
+  function ifKeyExist(arr: any[], key: string, value: string){
     if(arr.length){
       arr = arr.filter((elem: any) => {
         return elem[key] === value
       });
+      // if filter returned a non-empty array
       if(arr.length){
         return arr[0];
       }
@@ -542,11 +543,12 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
   let filtersObj: any = {city: [], brands: [], language: [], experience: [], availability: [], fee: [], gender: []};
   let cityObj: {state: string, data: string[]};
   
+  // making filtersObj
   for(let doctor of doctors){
     for(let hospital of doctor.doctorHospital){
       cityObj = { state: '', data: [] };
       if(filtersObj.city.length){
-        cityObj = keyExists(filtersObj.city, 'state', hospital.facility.state);
+        cityObj = ifKeyExist(filtersObj.city, 'state', hospital.facility.state);
       }
       if(cityObj && cityObj.state){
         if(!cityObj.data.includes(hospital.facility.city)){
@@ -560,49 +562,50 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
       }
     }
     
-    if(!("name" in keyExists(filtersObj.brands, 'name', doctor.doctorType))){
+    if(doctor.doctorType && !("name" in ifKeyExist(filtersObj.brands, 'name', doctor.doctorType))){
       filtersObj.brands.push({'name': doctor.doctorType});
     }
 
-    for(let language of doctor.languages){
-      if(!("name" in keyExists(filtersObj.language, 'name', language))){
-        filtersObj.language.push({'name': language});
+    if(doctor.languages instanceof Array){
+      for(let language of doctor.languages){
+        if(!("name" in ifKeyExist(filtersObj.language, 'name', language))){
+          filtersObj.language.push({'name': language});
+        }
       }
     }
 
-    if(!("name" in keyExists(filtersObj.experience, 'name', doctor.experience_range))){
+    if(doctor.experience_range && !("name" in ifKeyExist(filtersObj.experience, 'name', doctor.experience_range))){
       filtersObj.experience.push({'name': doctor.experience_range});
     }
     
-    if(!("name" in keyExists(filtersObj.fee, 'name', doctor.fees_range))){
+    if(doctor.fees_range && !("name" in ifKeyExist(filtersObj.fee, 'name', doctor.fees_range))){
       filtersObj.fee.push({'name': doctor.fees_range});
     }
 
-    if(!("name" in keyExists(filtersObj.gender, 'name', doctor.gender))){
+    if(doctor.gender && !("name" in ifKeyExist(filtersObj.gender, 'name', doctor.gender))){
       filtersObj.gender.push({'name': doctor.gender});
     }
 
   }
 
-  let dayEndMinutes = endOfDay(new Date()).getTime() - (new Date()).getTime();
-  let twoDaysEndMinutes = addDays(new Date(), 1).getTime() - (new Date()).getTime(); 
+  let dayEndMinutes = endOfDay(new Date()).getMinutes() - (new Date()).getMinutes();
+  let twoDaysEndMinutes = addDays(new Date(), 1).getMinutes() - (new Date()).getMinutes();
   for(let availablity of finalDoctorNextAvailSlots){
-    //
-    if(30 > availablity.availableInMinutes){
-      if(!("name" in keyExists(filtersObj.availability, 'name', 'Now'))){
+    if(241 > availablity.availableInMinutes){
+      if(!("name" in ifKeyExist(filtersObj.availability, 'name', 'Now'))){
         filtersObj.availability.push({'name': 'Now'});
       }
     }
-    if(dayEndMinutes > availablity.availableInMinutes) {
-      if(!("name" in keyExists(filtersObj.availability, 'name', 'Today'))){
+    if(dayEndMinutes > availablity.availableInMinutes && availablity.availableInMinutes > 240) {
+      if(!("name" in ifKeyExist(filtersObj.availability, 'name', 'Today'))){
         filtersObj.availability.push({'name': 'Today'});
       }
     } else if(twoDaysEndMinutes > availablity.availableInMinutes){
-      if(!("name" in keyExists(filtersObj.availability, 'name', 'Tomorrow'))){
+      if(!("name" in ifKeyExist(filtersObj.availability, 'name', 'Tomorrow'))){
         filtersObj.availability.push({'name': 'Tomorrow'});
       }
-    } else {
-      if(!("name" in keyExists(filtersObj.availability, 'name', 'Next 3 Days'))){
+    } else if (availablity.availableInMinutes > twoDaysEndMinutes) {
+      if(!("name" in ifKeyExist(filtersObj.availability, 'name', 'Next 3 Days'))){
         filtersObj.availability.push({'name': 'Next 3 Days'});
       }
     }

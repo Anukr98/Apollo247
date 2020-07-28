@@ -14602,7 +14602,7 @@
               "name": null,
               "ofType": {
                 "kind": "OBJECT",
-                "name": "commonType",
+                "name": "brandType",
                 "ofType": null
               }
             },
@@ -14618,7 +14618,7 @@
               "name": null,
               "ofType": {
                 "kind": "OBJECT",
-                "name": "commonType",
+                "name": "brandType",
                 "ofType": null
               }
             },
@@ -14634,7 +14634,7 @@
               "name": null,
               "ofType": {
                 "kind": "OBJECT",
-                "name": "commonType",
+                "name": "brandType",
                 "ofType": null
               }
             },
@@ -14650,7 +14650,7 @@
               "name": null,
               "ofType": {
                 "kind": "OBJECT",
-                "name": "commonType",
+                "name": "brandType",
                 "ofType": null
               }
             },
@@ -14666,7 +14666,7 @@
               "name": null,
               "ofType": {
                 "kind": "OBJECT",
-                "name": "commonType",
+                "name": "brandType",
                 "ofType": null
               }
             },
@@ -14682,7 +14682,7 @@
               "name": null,
               "ofType": {
                 "kind": "OBJECT",
-                "name": "commonType",
+                "name": "brandType",
                 "ofType": null
               }
             },
@@ -14736,7 +14736,7 @@
       },
       {
         "kind": "OBJECT",
-        "name": "commonType",
+        "name": "brandType",
         "description": null,
         "fields": [
           {
