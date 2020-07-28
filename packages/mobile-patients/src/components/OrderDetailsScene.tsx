@@ -1607,30 +1607,22 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
               style={styles.tabsContainer}
               tabViewStyle={offlineOrderBillNumber ? { borderBottomColor: 'transparent' } : {}}
               onChange={(title) => {
-                const isNonCartOrder = orderStatusList.find(
-                  (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.PRESCRIPTION_UPLOADED
-                );
-                const isNonCartOrderBilledAndReadyAtStore = orderStatusList.find(
+                const isNonCartOrderBilled = orderStatusList.find(
                   (item) =>
-                    item!.orderStatus == MEDICINE_ORDER_STATUS.READY_AT_STORE ||
                     item!.orderStatus == MEDICINE_ORDER_STATUS.ORDER_BILLED ||
+                    item!.orderStatus == MEDICINE_ORDER_STATUS.READY_AT_STORE ||
                     item!.orderStatus == MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY ||
                     item!.orderStatus == MEDICINE_ORDER_STATUS.DELIVERED
                 );
-                const isCartOrder = orderStatusList.find(
-                  (item) =>
-                    item!.orderStatus == MEDICINE_ORDER_STATUS.ORDER_PLACED ||
-                    item!.orderStatus == MEDICINE_ORDER_STATUS.ORDER_VERIFIED ||
-                    item!.orderStatus == MEDICINE_ORDER_STATUS.ORDER_INITIATED
-                );
-                // if (!isNonCartOrder || isNonCartOrderBilledAndReadyAtStore) {
-                //   setSelectedTab(title);
-                // }
-                if (
-                  (orderDetails.orderType == MEDICINE_ORDER_TYPE.UPLOAD_PRESCRIPTION &&
-                    isNonCartOrderBilledAndReadyAtStore) ||
-                  (orderDetails.orderType != MEDICINE_ORDER_TYPE.UPLOAD_PRESCRIPTION && isCartOrder)
-                ) {
+
+                const enableOrderSummary =
+                  orderDetails.orderType == MEDICINE_ORDER_TYPE.CART_ORDER
+                    ? true
+                    : orderDetails.orderType == MEDICINE_ORDER_TYPE.UPLOAD_PRESCRIPTION
+                    ? isNonCartOrderBilled
+                    : true;
+
+                if (enableOrderSummary) {
                   setSelectedTab(title);
                 }
               }}
