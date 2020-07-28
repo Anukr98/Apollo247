@@ -65,11 +65,11 @@ const styles = StyleSheet.create({
     paddingTop: 2,
   },
   itemsRemovedTextStyle: {
-    ...theme.viewStyles.text('M', 11, '#02475b'),
+    ...theme.viewStyles.text('M', 12, '#02475b'),
     marginTop: 5,
   },
   itemNameTextStyle: {
-    ...theme.viewStyles.text('M', 10, '#0087ba'),
+    ...theme.viewStyles.text('M', 12, '#0087ba'),
     flex: 1,
   },
   itemBlueCircleViewStyle: {
