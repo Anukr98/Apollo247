@@ -391,27 +391,6 @@ const useStyles = makeStyles((theme: Theme) => {
       right: 12,
       top: 12,
     },
-    toastMessage: {
-      width: '482px',
-      height: '40px',
-      borderRadius: '10px',
-      boxShadow: '0 1px 13px 0 rgba(0, 0, 0, 0.16)',
-      backgroundColor: '#00b38e',
-      position: 'relative',
-      top: '27px',
-      left: '201px',
-    },
-    toastMessageText: {
-      fontSize: '14px',
-      fontWeight: 500,
-      fontStretch: 'normal',
-      fontStyle: 'normal',
-      lineHeight: 1.43,
-      letterSpacing: 'normal',
-      color: '#ffffff',
-      position: 'relative',
-      top: 6,
-    },
   };
 });
 
@@ -442,7 +421,6 @@ export const JDConsultRoom: React.FC = () => {
     assignedDoctorPhoto: '',
   });
 
-  const [showToastMessage, setShowToastMessage] = useState<boolean>(false);
   const { currentPatient: currentDoctor, isSignedIn, sessionClient } = useAuth();
   const doctorId = currentDoctor!.id;
 
@@ -713,8 +691,10 @@ export const JDConsultRoom: React.FC = () => {
           );
 
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.diagnosis !== null
-            ? setDiagnosis((_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
-                .diagnosis as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_diagnosis[])
+            ? setDiagnosis(
+                (_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+                  .diagnosis as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_diagnosis[]
+              )
             : setDiagnosis(
                 storageItem && storageItem.diagnosis && storageItem.diagnosis.length > 0
                   ? storageItem.diagnosis
@@ -722,8 +702,10 @@ export const JDConsultRoom: React.FC = () => {
               );
 
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.symptoms
-            ? setSymptoms((_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
-                .symptoms as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_symptoms[])
+            ? setSymptoms(
+                (_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+                  .symptoms as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_symptoms[]
+              )
             : setSymptoms(
                 storageItem && storageItem.symptoms && storageItem.symptoms.length > 0
                   ? storageItem.symptoms
@@ -731,8 +713,10 @@ export const JDConsultRoom: React.FC = () => {
               );
 
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.otherInstructions
-            ? setOtherInstructions((_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
-                .otherInstructions as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_otherInstructions[])
+            ? setOtherInstructions(
+                (_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+                  .otherInstructions as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_otherInstructions[]
+              )
             : setOtherInstructions(
                 storageItem &&
                   storageItem.otherInstructions &&
@@ -742,8 +726,10 @@ export const JDConsultRoom: React.FC = () => {
               );
 
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.diagnosticPrescription
-            ? setDiagnosticPrescription((_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
-                .diagnosticPrescription as unknown) as any[])
+            ? setDiagnosticPrescription(
+                (_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+                  .diagnosticPrescription as unknown) as any[]
+              )
             : setDiagnosticPrescription(
                 storageItem &&
                   storageItem.diagnosticPrescription &&
@@ -753,8 +739,10 @@ export const JDConsultRoom: React.FC = () => {
               );
 
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.medicinePrescription
-            ? setMedicinePrescription((_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
-                .medicinePrescription as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_medicinePrescription[])
+            ? setMedicinePrescription(
+                (_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+                  .medicinePrescription as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_medicinePrescription[]
+              )
             : setMedicinePrescription(
                 storageItem &&
                   storageItem.medicinePrescription &&
@@ -764,13 +752,16 @@ export const JDConsultRoom: React.FC = () => {
               );
 
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.notes
-            ? setNotes((_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
-                .notes as unknown) as string)
+            ? setNotes(
+                (_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+                  .notes as unknown) as string
+              )
             : setNotes(storageItem && storageItem.notes !== '' ? storageItem.notes : '');
 
           _data!.data!.getJuniorDoctorCaseSheet!.juniorDoctorNotes
-            ? setJuniorDoctorNotes((_data!.data!.getJuniorDoctorCaseSheet!
-                .juniorDoctorNotes as unknown) as string)
+            ? setJuniorDoctorNotes(
+                (_data!.data!.getJuniorDoctorCaseSheet!.juniorDoctorNotes as unknown) as string
+              )
             : setJuniorDoctorNotes('');
 
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.consultType
@@ -1468,29 +1459,6 @@ export const JDConsultRoom: React.FC = () => {
         )}
       <div className={classes.headerSticky}>
         <Header />
-        {showToastMessage && (
-          <div className={classes.toastMessage}>
-            <span className={classes.toastMessageText}>
-              <img
-                src={require('images/ic_cancel_green.svg')}
-                alt=""
-                style={{
-                  height: 18,
-                  width: 18,
-                  position: 'relative',
-                  top: 4,
-                  marginLeft: 12,
-                  marginRight: 20,
-                  cursor: 'pointer',
-                }}
-                onClick={() => {
-                  setShowToastMessage(false);
-                }}
-              />
-              You will get a call from {process.env.EXOTEL_CALLER_ID}. Please pick up the call !
-            </span>
-          </div>
-        )}
       </div>
       {error && error !== '' && <Typography className={classes.tabRoot}>{error}</Typography>}
       {loaded && error === '' && (
@@ -1656,7 +1624,6 @@ export const JDConsultRoom: React.FC = () => {
 
                 {!disableChat() && (
                   <JDCallPopover
-                    setShowToastMessage={setShowToastMessage}
                     setStartConsultAction={(flag: boolean) => setStartConsultAction(flag)}
                     createSessionAction={createSessionAction}
                     saveCasesheetAction={(flag: boolean, endConsult: boolean) =>
