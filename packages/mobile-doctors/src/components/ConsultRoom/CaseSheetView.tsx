@@ -125,7 +125,7 @@ interface DataPair {
 export interface CaseSheetViewProps extends NavigationScreenProps {
   caseSheetVersion: number;
   inCall: boolean;
-  onStartConsult: () => void;
+  onStartConsult: (successCallback?: () => void) => void;
   onEndConsult: () => void;
   onStopConsult: () => void;
   startConsult: boolean;
@@ -575,8 +575,9 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                   <Start style={{ right: 10, opacity: enableConsultButton ? 1 : 0.25 }} />
                 }
                 onPress={() => {
-                  setShowButtons(true);
-                  props.onStartConsult();
+                  props.onStartConsult(() => {
+                    setShowButtons(true);
+                  });
                 }}
               />
             </View>

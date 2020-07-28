@@ -1898,9 +1898,10 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     );
   };
 
-  const onStartConsult = () => {
+  const onStartConsult = (successCallback?: () => void) => {
     getNetStatus().then((connected) => {
       if (connected) {
+        setShowLoading(true);
         client
           .mutate<CreateAppointmentSession, CreateAppointmentSessionVariables>({
             mutation: CREATEAPPOINTMENTSESSION,
@@ -1966,9 +1967,17 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                 // startInterval(timer);
               }
             );
+            successCallback && successCallback();
+            setShowLoading(false);
           })
           .catch((e: any) => {
             console.log('Error occured while adding Doctor', e);
+            showAphAlert &&
+              showAphAlert({
+                title: string.common.alert,
+                description: 'Error in starting consult. Please try again!',
+              });
+            setShowLoading(false);
           });
       } else {
         showAphAlert &&
