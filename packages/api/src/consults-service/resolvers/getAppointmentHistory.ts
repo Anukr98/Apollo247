@@ -11,7 +11,7 @@ import {
 } from 'consults-service/entities';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
-import { AphError } from 'AphError';
+import { AphError, AphUserInputError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { NotificationBinRepository } from 'notifications-service/repositories/notificationBinRepository';
@@ -218,7 +218,7 @@ const getAppointmentStatus: Resolver<
 
   try {
     const appointment: Appointment | undefined = await appointmentRepo.findById(args.id);
-    if (appointment == null) throw new AphError(AphErrorMessages.APPOINTMENT_ID_NOT_FOUND);
+    if (appointment == null) throw new AphUserInputError(AphErrorMessages.APPOINTMENT_ID_NOT_FOUND);
     return { status: appointment.status, state: appointment.appointmentState };
   } catch (invalidGrant) {
     throw new AphError(AphErrorMessages.GET_APPOINTMENT_STATUS_ERROR, undefined, { invalidGrant });
