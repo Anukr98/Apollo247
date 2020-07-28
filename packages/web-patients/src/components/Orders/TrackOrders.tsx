@@ -7,6 +7,7 @@ import { OrderStatusCard } from 'components/Orders/OrderStatusCard';
 import { CancelOrder } from 'components/Orders/CancelOrder';
 import { ReturnOrder } from 'components/Orders/ReturnOrder';
 import { OrdersSummary } from 'components/Orders/OrderSummary';
+import { OrdersStorePickupSummary } from 'components/Orders/OrdersStorePickupSummary';
 import { useMutation } from 'react-apollo-hooks';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { GET_MEDICINE_ORDER_OMS_DETAILS } from 'graphql/medicines';
@@ -180,11 +181,13 @@ const TabContainer: React.FC = (props) => {
 
 type TrackOrdersProps = {
   orderAutoId: number;
+  billNumber: string;
   setShowMobileDetails?: (showMobileDetails: boolean) => void;
 };
 
 export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
   const classes = useStyles({});
+  const { orderAutoId, billNumber } = props;
   const { currentPatient } = useAllCurrentPatients();
   const urlParams = new URLSearchParams(window.location.search);
   const [tabValue, setTabValue] = useState<number>(
@@ -211,13 +214,13 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
   const orderDetails = useMutation(GET_MEDICINE_ORDER_OMS_DETAILS);
 
   useEffect(() => {
-    if (props.orderAutoId) {
+    if (orderAutoId || billNumber) {
       setIsLoading(true);
       orderDetails({
         variables: {
           patientId: currentPatient && currentPatient.id,
-          orderAutoId:
-            typeof props.orderAutoId == 'string' ? parseInt(props.orderAutoId) : props.orderAutoId,
+          orderAutoId: typeof orderAutoId == 'string' ? parseInt(orderAutoId) : orderAutoId,
+          billNumber,
         },
       })
         .then(({ data }: any) => {
@@ -241,7 +244,9 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
           console.log(e);
         });
     }
-  }, [props.orderAutoId]);
+  }, [orderAutoId, billNumber]);
+
+  console.log(orderDetailsData);
 
   const orderPayment =
     orderDetailsData &&
@@ -297,19 +302,19 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
                 <img src={require('images/ic_back.svg')} />
               </AphButton>
             </div>
-            {props.orderAutoId !== 0 && props.orderAutoId > 0 && (
+            {orderAutoId !== 0 && orderAutoId > 0 && (
               <>
                 {(orderPayment && orderPayment.paymentType === 'COD') ||
                 (orderPayment && orderPayment.paymentType === 'CASHLESS') ? (
                   <div className={classes.orderId}>
-                    <span>ORDER #{props.orderAutoId}</span>
+                    <span>ORDER #{orderAutoId}</span>
                   </div>
                 ) : (
                   ''
                 )}
                 <div className={classes.headerActions}>
                   <AphButton
-                    disabled={!props.orderAutoId || disableCancel}
+                    disabled={!orderAutoId || disableCancel}
                     onClick={handleClick}
                     className={classes.moreBtn}
                   >
@@ -355,14 +360,16 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
                 setTabValue(newValue);
               }}
             >
-              <Tab
-                classes={{
-                  root: classes.tabRoot,
-                  selected: classes.tabSelected,
-                }}
-                label="Track Order"
-                title={'Open track orders'}
-              />
+              {orderAutoId && (
+                <Tab
+                  classes={{
+                    root: classes.tabRoot,
+                    selected: classes.tabSelected,
+                  }}
+                  label="Track Order"
+                  title={'Open track orders'}
+                />
+              )}
               {((isNonCartOrder && isOrderBilled) || !isNonCartOrder) && (
                 <Tab
                   classes={{
@@ -374,42 +381,57 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
                 />
               )}
             </Tabs>
-            {tabValue === 0 && (
-              <TabContainer>
-                <Scrollbars
-                  autoHide={true}
-                  autoHeight
-                  autoHeightMax={isSmallScreen ? 'calc(100vh - 96px)' : 'auto'}
-                >
-                  {noOrderDetails ? (
-                    'No Order is Found'
-                  ) : (
-                    <OrderStatusCard orderDetailsData={orderDetailsData} isLoading={isLoading} />
+            {/*  */}
+
+            <TabContainer>
+              {noOrderDetails
+                ? 'No Order is Found'
+                : tabValue === 0 &&
+                  orderAutoId && (
+                    <Scrollbars
+                      autoHide={true}
+                      autoHeight
+                      autoHeightMax={isSmallScreen ? 'calc(100vh - 96px)' : 'auto'}
+                    >
+                      <OrderStatusCard orderDetailsData={orderDetailsData} isLoading={isLoading} />
+                    </Scrollbars>
                   )}
-                </Scrollbars>
-              </TabContainer>
-            )}
-            {((isNonCartOrder && isOrderBilled) || !isNonCartOrder) && tabValue === 1 && (
-              <TabContainer>
-                <Scrollbars
-                  autoHide={true}
-                  autoHeight
-                  autoHeightMax={isSmallScreen ? 'calc(100vh - 96px)' : 'auto'}
-                >
-                  <div className={classes.customScroll}>
-                    {noOrderDetails ? (
-                      'No Order is Found'
-                    ) : (
-                      <OrdersSummary
-                        orderDetailsData={orderDetailsData}
-                        isShipmentListHasBilledState={isShipmentListHasBilledState}
-                        isLoading={isLoading}
-                      />
-                    )}
-                  </div>
-                </Scrollbars>
-              </TabContainer>
-            )}
+            </TabContainer>
+            <TabContainer>
+              {noOrderDetails
+                ? 'No Order is Found'
+                : orderAutoId
+                ? ((isNonCartOrder && isOrderBilled) || !isNonCartOrder) &&
+                  tabValue === 1 && (
+                    <Scrollbars
+                      autoHide={true}
+                      autoHeight
+                      autoHeightMax={isSmallScreen ? 'calc(100vh - 96px)' : 'auto'}
+                    >
+                      <div className={classes.customScroll}>
+                        <OrdersSummary
+                          orderDetailsData={orderDetailsData}
+                          isShipmentListHasBilledState={isShipmentListHasBilledState}
+                          isLoading={isLoading}
+                        />
+                      </div>
+                    </Scrollbars>
+                  )
+                : billNumber && (
+                    <Scrollbars
+                      autoHide={true}
+                      autoHeight
+                      autoHeightMax={isSmallScreen ? 'calc(100vh - 96px)' : 'auto'}
+                    >
+                      <div className={classes.customScroll}>
+                        <OrdersStorePickupSummary
+                          orderDetailsData={orderDetailsData}
+                          isLoading={isLoading}
+                        />
+                      </div>
+                    </Scrollbars>
+                  )}
+            </TabContainer>
           </div>
         </>
       )}

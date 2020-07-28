@@ -3,7 +3,7 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-import { MEDICINE_ORDER_TYPE, MEDICINE_ORDER_STATUS, MEDICINE_ORDER_PAYMENT_TYPE } from "./globalTypes";
+import { MEDICINE_ORDER_TYPE, MEDICINE_DELIVERY_TYPE, MEDICINE_ORDER_STATUS, MEDICINE_ORDER_PAYMENT_TYPE } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: getMedicineOrderOMSDetails
@@ -98,18 +98,25 @@ export interface getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineO
 export interface getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails {
   __typename: "MedicineOrdersOMS";
   id: string;
+  createdDate: any | null;
   orderAutoId: number | null;
-  estimatedAmount: number | null;
-  patientAddressId: string | null;
+  billNumber: string | null;
   coupon: string | null;
   devliveryCharges: number | null;
-  prescriptionImageUrl: string | null;
   prismPrescriptionFileId: string | null;
-  orderTat: string | null;
   couponDiscount: number | null;
   productDiscount: number | null;
+  redeemedAmount: number | null;
+  estimatedAmount: number | null;
+  prescriptionImageUrl: string | null;
+  orderTat: string | null;
   orderType: MEDICINE_ORDER_TYPE | null;
+  shopAddress: string | null;
+  packagingCharges: number | null;
+  deliveryType: MEDICINE_DELIVERY_TYPE;
   currentStatus: MEDICINE_ORDER_STATUS | null;
+  patientAddressId: string | null;
+  alertStore: boolean | null;
   medicineOrderLineItems: (getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrderLineItems | null)[] | null;
   medicineOrderPayments: (getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrderPayments | null)[] | null;
   medicineOrdersStatus: (getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus | null)[] | null;

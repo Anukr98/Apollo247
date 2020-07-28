@@ -194,18 +194,25 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS = gql`
     ) {
       medicineOrderDetails {
         id
+        createdDate
         orderAutoId
-        estimatedAmount
-        patientAddressId
+        billNumber
         coupon
         devliveryCharges
-        prescriptionImageUrl
         prismPrescriptionFileId
-        orderTat
         couponDiscount
         productDiscount
+        redeemedAmount
+        estimatedAmount
+        prescriptionImageUrl
+        orderTat
         orderType
+        shopAddress
+        packagingCharges
+        deliveryType
         currentStatus
+        patientAddressId
+        alertStore
         medicineOrderLineItems {
           medicineSKU
           medicineName

@@ -375,7 +375,13 @@ const getAvailability = (nextAvailability: string, differenceInMinutes: number, 
   }
 };
 
+const getStoreName = (storeAddress: string) => {
+  const store = JSON.parse(storeAddress);
+  return store && store.storename ? _upperFirst(_lowerCase(store.storename)) : '';
+};
+
 export {
+  getStoreName,
   getAvailability,
   isRejectedStatus,
   getStatus,
