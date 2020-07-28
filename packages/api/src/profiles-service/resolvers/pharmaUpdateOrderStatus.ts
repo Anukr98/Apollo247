@@ -244,8 +244,8 @@ const updateOrderStatus: Resolver<
           eventData: {
             orderId: orderDetails.orderAutoId,
             statusDateTime: format(new Date(), "yyyy-MM-dd'T'HH:mm:ss'+0530'"),
-            DSP: '',
-            AWBNumber: '',
+            DSP: orderShipmentsAttrs.trackingProvider,
+            AWBNumber: orderShipmentsAttrs.trackingNo,
           },
         };
         postEvent(postBody);
