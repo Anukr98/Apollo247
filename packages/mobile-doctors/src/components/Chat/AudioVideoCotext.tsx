@@ -748,7 +748,6 @@ export const AudioVideoProvider: React.FC = (props) => {
                 audioTrack: audioEnabled,
                 audioVolume: 100,
                 name: name,
-                // resolution: '640x480',
               }}
               eventHandlers={publisherEventHandlers}
             />
