@@ -14658,7 +14658,7 @@
             "deprecationReason": null
           },
           {
-            "name": "fees",
+            "name": "fee",
             "description": null,
             "args": [],
             "type": {

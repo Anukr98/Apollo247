@@ -38,7 +38,7 @@ export const getDoctorsBySpecialtyAndFiltersTypeDefs = gql`
     language: [brandType]
     experience: [brandType]
     availability: [brandType]
-    fees: [brandType]
+    fee: [brandType]
     gender: [brandType]
   }
 
@@ -106,7 +106,7 @@ type filtersObj = {
   language: [brandType]
   experience: [brandType]
   availability: [brandType]
-  fees: [brandType]
+  fee: [brandType]
   gender: [brandType]
 }
 
