@@ -546,7 +546,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
 
     return (
       <StickyBottomComponent style={{ height: 'auto' }} defaultBG>
-        {!deliveryTime || deliveryError || isOutOfStock ? (
+        {!showDeliverySpinner && !deliveryTime || deliveryError || isOutOfStock ? (
           <View
             style={{
               paddingTop: 8,
