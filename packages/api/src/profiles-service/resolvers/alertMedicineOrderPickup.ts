@@ -58,7 +58,7 @@ const alertMedicineOrderPickup: Resolver<
   }
 
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
-  const orderDetails = await medicineOrdersRepo.getMedicineOrderDetails(
+  const orderDetails = await medicineOrdersRepo.getMedicineOrderWithShipments(
     alertMedicineOrderPickupInput.orderId
   );
   if (!orderDetails) {

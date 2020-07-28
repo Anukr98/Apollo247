@@ -44,7 +44,7 @@ const saveOrderPlacedStatus: Resolver<
   OrderPlacedResult
 > = async (parent, { orderPlacedInput }, { profilesDb }) => {
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
-  const orderDetails = await medicineOrdersRepo.getMedicineOrderDetails(
+  const orderDetails = await medicineOrdersRepo.getMedicineOrderWithShipments(
     orderPlacedInput.orderAutoId
   );
   if (!orderDetails) {

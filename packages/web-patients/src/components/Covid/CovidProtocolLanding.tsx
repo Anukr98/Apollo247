@@ -21,7 +21,6 @@ import fetchUtil from 'helpers/fetch';
 interface CovidProtocolData {
   introductionBody: string;
   introductionTitle: string;
-
   [index: string]: any;
 }
 
@@ -219,8 +218,7 @@ export const covidProtocolLanding: React.FC = (props: any) => {
     !isSigningIn && !isSignedIn && props.history.push(clientRoutes.covidLanding());
   }, [isSignedIn, isSigningIn]);
 
-  const covidProtocolUrl =
-    process.env.COVID_PROTOCOL_URL || 'https://uatcms.apollo247.com/api/phrcovid-protocol';
+  const covidProtocolUrl = process.env.COVID_PROTOCOL_URL;
 
   useEffect(() => {
     if (isLoading && currentPatient && currentPatient.mobileNumber) {
@@ -245,28 +243,18 @@ export const covidProtocolLanding: React.FC = (props: any) => {
         });
     }
   }, [currentPatient]);
-
-  useEffect(() => {
-    if (props && props.location && props.location.search && props.location.search.length) {
-      const qParamsArr = props.location.search.split('=');
-      if (qParamsArr && qParamsArr.length) {
-        const isWebView = qParamsArr.some((param: string) => param.includes('mobile_app'));
-        setIsWebView(isWebView);
-      }
-    }
-  }, []);
-
-  const [isWebView, setIsWebView] = useState<boolean>(false);
+  const isWebView =
+    sessionStorage.getItem('webView') && sessionStorage.getItem('webView').length > 0;
   const subtitle = (symptomData && symptomData['covidProtocolData'][0].category) || '';
   return (
     <div className={classes.cdLanding} ref={scrollToRef}>
-      <Header />
+      {!isWebView && <Header />}
       <div className={classes.container}>
         <div className={classes.cdContent}>
           <Banner
-            title={'Coronavirus (COVID-19) Guide'}
+            title={'Personalized Coronavirus (COVID-19) guide'}
             subtitle={subtitle}
-            isWebView={isWebView}
+            isWebView={false}
             backLocation={clientRoutes.covidLanding()}
           />
           {isLoading && !symptomData ? (
@@ -346,7 +334,6 @@ export const covidProtocolLanding: React.FC = (props: any) => {
           <CheckRiskLevel />
         </div>
       </div>
-      {/*{!onePrimaryUser && <ManageProfile />}*/}
       <BottomLinks />
       {!isWebView && <NavigationBottom />}
     </div>

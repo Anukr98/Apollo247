@@ -171,10 +171,10 @@ const getAppointmentHistory: Resolver<
   ConsultServiceContext,
   AppointmentResult
 > = async (parent, { appointmentHistoryInput }, { consultsDb, doctorsDb, patientsDb }) => {
+  const { patientId } = appointmentHistoryInput;
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
-  const primaryPatientIds = await patientRepo.getLinkedPatientIds(
-    appointmentHistoryInput.patientId
+  const primaryPatientIds = await patientRepo.getLinkedPatientIds({ patientId }
   );
 
   const appointmentsHistory = await appointmentRepo.getPatientAppointments(
