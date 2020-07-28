@@ -370,6 +370,37 @@ async function addDoctorElastic(allDocsInfo: Doctor) {
     };
   }
   //console.log(allDocsInfo.doctorSecretary.id, 'specialty dets');
+
+  function defineExperienceRange(experience: Number){
+    let experience_range: string = "";
+    if(experience >=  16){
+      experience_range = "16+"
+    } else if (experience > 10 && experience < 16){
+      experience_range = "11-16"
+    } else if (experience > 5 && experience <11) {
+      experience_range = "6-10"
+    } else {
+      experience_range = "0-5"
+    }
+    return experience_range;
+  }
+
+  function defineFeeRange(fees: Number){
+    let fees_range: string = "";
+    if(fees >=  1000){
+      fees_range = "1000+"
+    } else if (fees > 500 && fees < 1000){
+      fees_range = "500-1000"
+    } else {
+      fees_range = "100-500"
+    }
+    return fees_range;
+  }
+
+  function pushLanguagesInArray(cslanguages: string){
+    return cslanguages.split(',').map(elem => elem.trim());
+  }
+
   const doctorData = {
     doctorId: allDocsInfo.id,
     firstName: allDocsInfo.firstName,
@@ -391,12 +422,9 @@ async function addDoctorElastic(allDocsInfo: Doctor) {
     physicalConsultationFees: allDocsInfo.physicalConsultationFees,
     onlineConsultationFees: allDocsInfo.onlineConsultationFees,
     age: "",
-    experience_range: allDocsInfo.experience >=  16 ? "16+" : 
-    (allDocsInfo.experience > 10 && allDocsInfo.experience < 16 ? '11-16': 
-    (allDocsInfo.experience > 5 && allDocsInfo.experience <11 ? '6-10' : '0-5')),
-    fee_range: allDocsInfo.onlineConsultationFees >=  1000 ? "1000+" : 
-    (allDocsInfo.onlineConsultationFees > 500 && allDocsInfo.onlineConsultationFees < 1000 ? '500-1000': '100-500'),
-    languages: allDocsInfo.languages && allDocsInfo.languages.split(',').map(elem => elem.trim()),
+    experience_range: defineExperienceRange(allDocsInfo.experience),
+    fee_range: defineFeeRange(allDocsInfo.onlineConsultationFees),
+    languages: pushLanguagesInArray(allDocsInfo.languages),
     gender: allDocsInfo.gender,
     
     isActive: allDocsInfo.isActive,

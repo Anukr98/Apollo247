@@ -12238,7 +12238,7 @@
             "args": [],
             "type": {
               "kind": "OBJECT",
-              "name": "filtersObj",
+              "name": "filters",
               "ofType": null
             },
             "isDeprecated": false,
@@ -14574,7 +14574,7 @@
       },
       {
         "kind": "OBJECT",
-        "name": "filtersObj",
+        "name": "filters",
         "description": null,
         "fields": [
           {
@@ -14602,7 +14602,7 @@
               "name": null,
               "ofType": {
                 "kind": "OBJECT",
-                "name": "brandType",
+                "name": "DefaultfilterType",
                 "ofType": null
               }
             },
@@ -14618,7 +14618,7 @@
               "name": null,
               "ofType": {
                 "kind": "OBJECT",
-                "name": "brandType",
+                "name": "DefaultfilterType",
                 "ofType": null
               }
             },
@@ -14634,7 +14634,7 @@
               "name": null,
               "ofType": {
                 "kind": "OBJECT",
-                "name": "brandType",
+                "name": "DefaultfilterType",
                 "ofType": null
               }
             },
@@ -14650,7 +14650,7 @@
               "name": null,
               "ofType": {
                 "kind": "OBJECT",
-                "name": "brandType",
+                "name": "DefaultfilterType",
                 "ofType": null
               }
             },
@@ -14666,7 +14666,7 @@
               "name": null,
               "ofType": {
                 "kind": "OBJECT",
-                "name": "brandType",
+                "name": "DefaultfilterType",
                 "ofType": null
               }
             },
@@ -14682,7 +14682,7 @@
               "name": null,
               "ofType": {
                 "kind": "OBJECT",
-                "name": "brandType",
+                "name": "DefaultfilterType",
                 "ofType": null
               }
             },
@@ -14736,7 +14736,7 @@
       },
       {
         "kind": "OBJECT",
-        "name": "brandType",
+        "name": "DefaultfilterType",
         "description": null,
         "fields": [
           {

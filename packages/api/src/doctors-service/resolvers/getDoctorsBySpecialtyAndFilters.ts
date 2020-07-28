@@ -23,7 +23,7 @@ export const getDoctorsBySpecialtyAndFiltersTypeDefs = gql`
     NAME
   }
 
-  type brandType {
+  type DefaultfilterType {
     name: String
   }
 
@@ -32,14 +32,14 @@ export const getDoctorsBySpecialtyAndFiltersTypeDefs = gql`
     data: [String]
   }
 
-  type filtersObj {
+  type filters {
     city: [cityType]
-    brands: [brandType]
-    language: [brandType]
-    experience: [brandType]
-    availability: [brandType]
-    fee: [brandType]
-    gender: [brandType]
+    brands: [DefaultfilterType]
+    language: [DefaultfilterType]
+    experience: [DefaultfilterType]
+    availability: [DefaultfilterType]
+    fee: [DefaultfilterType]
+    gender: [DefaultfilterType]
   }
 
   type FilterDoctorsResult {
@@ -49,7 +49,7 @@ export const getDoctorsBySpecialtyAndFiltersTypeDefs = gql`
     specialty: DoctorSpecialty
     doctorType: DoctorType
     sort: String
-    filters: filtersObj
+    filters: filters
   }
   type DoctorSlotAvailability {
     doctorId: String
@@ -91,7 +91,7 @@ export const getDoctorsBySpecialtyAndFiltersTypeDefs = gql`
   }
 `;
 
-type brandType = {
+type DefaultfilterType = {
   name: string
 }
 
@@ -100,14 +100,14 @@ type cityType = {
   data: [string]
 }
 
-type filtersObj = {
+type filters = {
   city: [cityType]
-  brands: [brandType]
-  language: [brandType]
-  experience: [brandType]
-  availability: [brandType]
-  fee: [brandType]
-  gender: [brandType]
+  brands: [DefaultfilterType]
+  language: [DefaultfilterType]
+  experience: [DefaultfilterType]
+  availability: [DefaultfilterType]
+  fee: [DefaultfilterType]
+  gender: [DefaultfilterType]
 }
 
 type FilterDoctorsResult = {
@@ -117,7 +117,7 @@ type FilterDoctorsResult = {
   specialty?: DoctorSpecialty;
   doctorType?: DoctorType[];
   sort: string;
-  filters: filtersObj;
+  filters: filters;
 };
 
 export type DoctorConsultModeAvailability = {
@@ -540,15 +540,15 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
   }
 
 
-  let filtersObj: any = {city: [], brands: [], language: [], experience: [], availability: [], fee: [], gender: []};
+  let filters: any = {city: [], brands: [], language: [], experience: [], availability: [], fee: [], gender: []};
   let cityObj: {state: string, data: string[]};
   
-  // making filtersObj
+  // making filters
   for(let doctor of doctors){
     for(let hospital of doctor.doctorHospital){
       cityObj = { state: '', data: [] };
-      if(filtersObj.city.length){
-        cityObj = ifKeyExist(filtersObj.city, 'state', hospital.facility.state);
+      if(filters.city.length){
+        cityObj = ifKeyExist(filters.city, 'state', hospital.facility.state);
       }
       if(cityObj && cityObj.state){
         if(!cityObj.data.includes(hospital.facility.city)){
@@ -558,32 +558,32 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
         cityObj.state = hospital.facility.state;
         cityObj.data = [];
         cityObj.data.push(hospital.facility.city);
-        filtersObj.city.push(cityObj);
+        filters.city.push(cityObj);
       }
     }
     
-    if(doctor.doctorType && !("name" in ifKeyExist(filtersObj.brands, 'name', doctor.doctorType))){
-      filtersObj.brands.push({'name': doctor.doctorType});
+    if(doctor.doctorType && !("name" in ifKeyExist(filters.brands, 'name', doctor.doctorType))){
+      filters.brands.push({'name': doctor.doctorType});
     }
 
     if(doctor.languages instanceof Array){
       for(let language of doctor.languages){
-        if(!("name" in ifKeyExist(filtersObj.language, 'name', language))){
-          filtersObj.language.push({'name': language});
+        if(!("name" in ifKeyExist(filters.language, 'name', language))){
+          filters.language.push({'name': language});
         }
       }
     }
 
-    if(doctor.experience_range && !("name" in ifKeyExist(filtersObj.experience, 'name', doctor.experience_range))){
-      filtersObj.experience.push({'name': doctor.experience_range});
+    if(doctor.experience_range && !("name" in ifKeyExist(filters.experience, 'name', doctor.experience_range))){
+      filters.experience.push({'name': doctor.experience_range});
     }
     
-    if(doctor.fees_range && !("name" in ifKeyExist(filtersObj.fee, 'name', doctor.fees_range))){
-      filtersObj.fee.push({'name': doctor.fees_range});
+    if(doctor.fees_range && !("name" in ifKeyExist(filters.fee, 'name', doctor.fees_range))){
+      filters.fee.push({'name': doctor.fees_range});
     }
 
-    if(doctor.gender && !("name" in ifKeyExist(filtersObj.gender, 'name', doctor.gender))){
-      filtersObj.gender.push({'name': doctor.gender});
+    if(doctor.gender && !("name" in ifKeyExist(filters.gender, 'name', doctor.gender))){
+      filters.gender.push({'name': doctor.gender});
     }
 
   }
@@ -592,21 +592,21 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
   let twoDaysEndMinutes = differenceInMinutes(endOfDay(addDays(new Date(), 1)), (new Date()));
   for(let availablity of finalDoctorNextAvailSlots){
     if(241 > availablity.availableInMinutes){
-      if(!("name" in ifKeyExist(filtersObj.availability, 'name', 'Now'))){
-        filtersObj.availability.push({'name': 'Now'});
+      if(!("name" in ifKeyExist(filters.availability, 'name', 'Now'))){
+        filters.availability.push({'name': 'Now'});
       }
     }
     if(dayEndMinutes > availablity.availableInMinutes && availablity.availableInMinutes > 240) {
-      if(!("name" in ifKeyExist(filtersObj.availability, 'name', 'Today'))){
-        filtersObj.availability.push({'name': 'Today'});
+      if(!("name" in ifKeyExist(filters.availability, 'name', 'Today'))){
+        filters.availability.push({'name': 'Today'});
       }
     } else if(twoDaysEndMinutes > availablity.availableInMinutes){
-      if(!("name" in ifKeyExist(filtersObj.availability, 'name', 'Tomorrow'))){
-        filtersObj.availability.push({'name': 'Tomorrow'});
+      if(!("name" in ifKeyExist(filters.availability, 'name', 'Tomorrow'))){
+        filters.availability.push({'name': 'Tomorrow'});
       }
     } else if (availablity.availableInMinutes > twoDaysEndMinutes) {
-      if(!("name" in ifKeyExist(filtersObj.availability, 'name', 'Next 3 Days'))){
-        filtersObj.availability.push({'name': 'Next 3 Days'});
+      if(!("name" in ifKeyExist(filters.availability, 'name', 'Next 3 Days'))){
+        filters.availability.push({'name': 'Next 3 Days'});
       }
     }
   }
@@ -618,7 +618,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     doctorsAvailability: finalDoctorsConsultModeAvailability,
     specialty: finalSpecialtyDetails,
     sort: args.filterInput.sort,
-    filters: filtersObj,
+    filters: filters,
   };
 };
 
