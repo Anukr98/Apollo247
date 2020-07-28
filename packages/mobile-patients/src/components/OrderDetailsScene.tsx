@@ -1607,12 +1607,14 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
               style={styles.tabsContainer}
               tabViewStyle={offlineOrderBillNumber ? { borderBottomColor: 'transparent' } : {}}
               onChange={(title) => {
+                const nonCartOrderBilledStatusArray = [
+                  MEDICINE_ORDER_STATUS.ORDER_BILLED,
+                  MEDICINE_ORDER_STATUS.READY_AT_STORE,
+                  MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY,
+                  MEDICINE_ORDER_STATUS.DELIVERED,
+                ];
                 const isNonCartOrderBilled = orderStatusList.find(
-                  (item) =>
-                    item!.orderStatus == MEDICINE_ORDER_STATUS.ORDER_BILLED ||
-                    item!.orderStatus == MEDICINE_ORDER_STATUS.READY_AT_STORE ||
-                    item!.orderStatus == MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY ||
-                    item!.orderStatus == MEDICINE_ORDER_STATUS.DELIVERED
+                  (item) => nonCartOrderBilledStatusArray.indexOf(g(item, 'orderStatus')!) !== -1
                 );
 
                 const enableOrderSummary =
