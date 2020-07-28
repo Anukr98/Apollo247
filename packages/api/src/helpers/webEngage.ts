@@ -3,7 +3,7 @@ import { debugLog } from 'customWinstonLogger';
 import fetch from 'node-fetch';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
-import { format } from 'date-fns';
+import { format, addMinutes } from 'date-fns';
 
 const webEngageTimeoutMillSeconds = Number(process.env.WEBENGAGE_TIMEOUT_IN_MILLISECONDS);
 
@@ -49,7 +49,7 @@ export async function postEvent(uploadParams: Partial<WebEngageInput>): Promise<
   let apiUrl = process.env.WEB_ENGAGE_URL_API.toString();
   apiUrl = apiUrl.replace('{LICENSE_CODE}', process.env.WEB_ENGAGE_LICENSE_CODE);
 
-  uploadParams.eventTime = format(new Date(), "yyyy-MM-dd'T'HH:mm:ss'+0530'");
+  uploadParams.eventTime = format(addMinutes(new Date(), +330), "yyyy-MM-dd'T'HH:mm:ss'+0530'");
 
   const reqStartTime = new Date();
   const controller = new AbortController();
