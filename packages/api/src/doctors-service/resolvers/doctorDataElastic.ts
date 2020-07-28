@@ -358,6 +358,15 @@ async function addDoctorElastic(allDocsInfo: Doctor) {
       groupName: allDocsInfo.specialty.groupName,
       commonSearchTerm: allDocsInfo.specialty.commonSearchTerm,
       userFriendlyNomenclature: allDocsInfo.specialty.userFriendlyNomenclature,
+      slugName: allDocsInfo.specialty.slugName,
+      updatedDate: allDocsInfo.specialty.updatedDate,
+      createdDate: allDocsInfo.specialty.createdDate,
+      shortDescription: allDocsInfo.specialty.shortDescription,
+      symptoms: allDocsInfo.specialty.symptoms,
+      commonSearchWords: allDocsInfo.specialty.commonSearchWords,
+      displayOrder: allDocsInfo.specialty.displayOrder,
+      externalId: allDocsInfo.specialty.externalId,
+      id: allDocsInfo.specialty.id,
     };
   }
   //console.log(allDocsInfo.doctorSecretary.id, 'specialty dets');
@@ -396,6 +405,7 @@ async function addDoctorElastic(allDocsInfo: Doctor) {
     streetLine3: allDocsInfo.streetLine3,
     thumbnailUrl: allDocsInfo.thumbnailUrl,
     zip: allDocsInfo.zip,
+    isSearchable: allDocsInfo.isSearchable,
     specialty,
     facility,
     consultHours,

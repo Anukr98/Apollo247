@@ -50,6 +50,7 @@ import _toLower from 'lodash/toLower';
 import { gtmTracking } from '../../gtmTracking';
 import { OrderStatusContent } from 'components/OrderStatusContent';
 import { readableParam } from 'helpers/commonHelpers';
+import { consultationBookTracking } from 'webEngageTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -465,7 +466,7 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
       appointmentDetail.data.getAppointmentData &&
       appointmentDetail.data.getAppointmentData.appointmentsHistory[0];
     if (!_isEmpty(appointmentData) && !_isEmpty(paymentData)) {
-      const { appointmentDateTime, appointmentType, doctorInfo, doctorId } = appointmentData;
+      const { appointmentDateTime, appointmentType, doctorInfo, doctorId, id } = appointmentData;
       const { paymentStatus, paymentRefId, displayId, amountPaid } = paymentData;
       setAppointmentDateTime(appointmentDateTime);
       setAppointmentType(appointmentType);
@@ -478,6 +479,19 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
       setAmountPaid(amountPaid);
       setIsLoading(false);
       localStorage.setItem('consultBookDetails', '');
+      const eventData = {
+        category: doctorInfo.doctorType,
+        consultDateTime: appointmentDateTime,
+        consultId: id,
+        consultMode: appointmentType,
+        displayId: displayId,
+        doctorName: doctorInfo.fullName,
+        hospitalName: doctorInfo.doctorHospital[0].facility.name,
+        patientGender: currentPatient && currentPatient.gender,
+        specialisation: doctorInfo.specialty.name,
+        relation: currentPatient && currentPatient.relation,
+      };
+      consultationBookTracking(eventData);
     }
   }, [getPaymentData, appointmentDetail]);
 
@@ -541,6 +555,16 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
       },
     },
     PAYMENT_FAILED: {
+      ctaText: 'TRY AGAIN',
+      info:
+        'In case your account has been debited, you should get the refund in 10-14 working days.',
+      callbackFunction: () => {
+        props &&
+          props.history &&
+          props.history.push(clientRoutes.doctorDetails(readableDoctorname, doctorId));
+      },
+    },
+    PAYMENT_ABORTED: {
       ctaText: 'TRY AGAIN',
       info:
         'In case your account has been debited, you should get the refund in 10-14 working days.',
@@ -909,6 +933,8 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
                     ? 'failed'
                     : paymentStatus === 'PAYMENT_PENDING'
                     ? 'pending'
+                    : paymentStatus === 'PAYMENT_ABORTED'
+                    ? 'aborted'
                     : 'success'
                 }
                 paymentInfo={statusActions[paymentStatus].info}

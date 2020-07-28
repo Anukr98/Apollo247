@@ -1,10 +1,11 @@
 import { useContext, useEffect } from 'react';
 import { AuthContext, AuthContextProps } from 'components/AuthProvider';
-import { GetCurrentPatients } from 'graphql/types/GetCurrentPatients';
-import { GET_CURRENT_PATIENTS } from 'graphql/profiles';
+import { GetPatientByMobileNumber_getPatientByMobileNumber_patients } from 'graphql/types/GetPatientByMobileNumber';
+import { GET_PATIENT_BY_MOBILE_NUMBER } from 'graphql/profiles';
 import { Relation } from 'graphql/types/globalTypes';
 import { useQueryWithSkip } from 'hooks/apolloHooks';
 import { MedicineCartItem } from '../components/MedicinesCartProvider';
+import { GetPatientByMobileNumber } from 'graphql/types/GetPatientByMobileNumber';
 
 const useAuthContext = () => useContext<AuthContextProps>(AuthContext);
 
@@ -52,14 +53,21 @@ export const useAuth = () => {
 export const useCurrentPatient = () => useAllCurrentPatients().currentPatient;
 
 export const useAllCurrentPatients = () => {
-  const { loading, data, error } = useQueryWithSkip<GetCurrentPatients>(GET_CURRENT_PATIENTS);
+  const { loading, data, error } = useQueryWithSkip<GetPatientByMobileNumber>(
+    GET_PATIENT_BY_MOBILE_NUMBER,
+    {
+      variables: {
+        mobileNumber: localStorage.getItem('userMobileNo'),
+      },
+    }
+  );
   const setCurrentPatientId = useAuthContext().setCurrentPatientId!;
   const currentPatientId = useAuthContext().currentPatientId;
   if (currentPatientId) {
     localStorage.setItem('currentUser', currentPatientId);
   }
   const allCurrentPatients =
-    data && data.getCurrentPatients ? data.getCurrentPatients.patients : null;
+    data && data.getPatientByMobileNumber ? data.getPatientByMobileNumber.patients : null;
   const currentPatient = allCurrentPatients
     ? allCurrentPatients.find((patient) => patient.id === currentPatientId)
     : null;
@@ -103,8 +111,6 @@ export const useAllCurrentPatients = () => {
         }
         setCurrentPatientId(currentUserId);
       }
-    } else {
-      setCurrentPatientId(localStorage.getItem('currentUser'));
     }
   }, [allCurrentPatients, currentPatientId, setCurrentPatientId]);
 

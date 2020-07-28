@@ -18,6 +18,7 @@ import { CheckRiskLevel } from 'components/Covid/CheckRiskLevel';
 import { BottomLinks } from 'components/BottomLinks';
 import moment from 'moment';
 import { SchemaMarkup } from 'SchemaMarkup';
+import { MetaTagsComp } from 'MetaTagsComp';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -240,6 +241,7 @@ export const CovidArticleDetails: React.FC = (props: any) => {
   const [totalLike, setTotalLike] = useState('');
   const [totalDislike, setTotalDislike] = useState('');
   const [structuredJSON, setStructuredJSON] = useState(null);
+  const [metaTagProps, setMetaTagProps] = useState(null);
 
   const covidArticleDetailUrl = process.env.COVID_ARTICLE_DETAIL_URL;
   const articleSlug = props && props.location.pathname && props.location.pathname.split('/').pop();
@@ -272,7 +274,17 @@ export const CovidArticleDetails: React.FC = (props: any) => {
             totalDislike,
             createdAt,
             updatedAt,
+            alt,
+            metaDescription,
           } = postData;
+          alt &&
+            metaDescription &&
+            setMetaTagProps({
+              title: alt,
+              description: metaDescription,
+              canonicalLink:
+                typeof window !== 'undefined' && window.location && window.location.href,
+            });
           const schemaJSON =
             title && thumbnailWeb && createdAt && updatedAt
               ? {
@@ -330,6 +342,7 @@ export const CovidArticleDetails: React.FC = (props: any) => {
   return (
     <div className={classes.root}>
       {isDesktopOnly ? <Header /> : ''}
+      {metaTagProps && <MetaTagsComp {...metaTagProps} />}
       {structuredJSON && <SchemaMarkup structuredJSON={structuredJSON} />}
       <div className={classes.container}>
         <div className={classes.pageContainer}>
@@ -340,7 +353,13 @@ export const CovidArticleDetails: React.FC = (props: any) => {
           ) : (
             <>
               <div className={classes.bannerGroup}>
-                <ArticleBanner title={title} source={source} type={type} isWebView={isWebView} />
+                <ArticleBanner
+                  slug={articleSlug}
+                  title={title}
+                  source={source}
+                  type={type}
+                  isWebView={isWebView}
+                />
                 <div className={classes.imageBanner}>
                   <img className={classes.mobileBanner} src={thumbnailMobile} alt="" />
                   <img className={classes.desktopBanner} src={thumbnailWeb} alt="" />

@@ -12,6 +12,12 @@ import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { format, addMinutes, parseISO } from 'date-fns';
 import { log } from 'customWinstonLogger';
+import {
+  NotificationType,
+  sendMedicineOrderStatusNotification,
+} from 'notifications-service/resolvers/notifications';
+import { WebEngageInput, postEvent } from 'helpers/webEngage';
+import { ApiConstants } from 'ApiConstants';
 
 export const saveOrderShipmentInvoiceTypeDefs = gql`
   input SaveOrderShipmentInvoiceInput {
@@ -92,7 +98,7 @@ type SaveOrderShipmentInvoiceInput = {
 type BillingDetails = {
   invoiceTime: string;
   invoiceNo: string;
-  invoiceValue: string;
+  invoiceValue: number;
   cashValue: number;
   prepaidValue: number;
   discountValue: number;
@@ -132,7 +138,7 @@ const saveOrderShipmentInvoice: Resolver<
   SaveOrderShipmentInvoiceResult
 > = async (parent, { saveOrderShipmentInvoiceInput }, { profilesDb }) => {
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
-  const orderDetails = await medicineOrdersRepo.getMedicineOrderDetails(
+  const orderDetails = await medicineOrdersRepo.getMedicineOrderWithShipments(
     saveOrderShipmentInvoiceInput.orderId
   );
   if (!orderDetails) {
@@ -237,7 +243,29 @@ const saveOrderShipmentInvoice: Resolver<
       new Date(statusDate),
       currentStatus
     );
+    if (
+      billDetails.invoiceValue - orderDetails.estimatedAmount > 1 &&
+      orderDetails.deliveryType == MEDICINE_DELIVERY_TYPE.HOME_DELIVERY
+    ) {
+      sendMedicineOrderStatusNotification(
+        NotificationType.MEDICINE_ORDER_BILL_CHANGED,
+        orderDetails,
+        profilesDb
+      );
+    }
   }
+
+  //post order billed and packed event event to webEngage
+  const postBody: Partial<WebEngageInput> = {
+    userId: orderDetails.patient.mobileNumber,
+    eventName: ApiConstants.MEDICINE_ORDER_BILLED_AND_PACKED_EVENT_NAME.toString(),
+    eventData: {
+      orderId: orderDetails.orderAutoId,
+      statusDateTime: format(new Date(), "yyyy-MM-dd'T'HH:mm:ss'+0530'"),
+      billedAmount: billDetails.invoiceValue ? billDetails.invoiceValue.toString() : '',
+    },
+  };
+  postEvent(postBody);
 
   return {
     status: MEDICINE_ORDER_STATUS.ORDER_BILLED,

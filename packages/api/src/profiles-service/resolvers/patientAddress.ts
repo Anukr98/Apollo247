@@ -171,11 +171,11 @@ const updatePatientAddress: Resolver<
   const updatePatientAddressAttrs: Omit<UpdatePatientAddressInput, 'id'> = {
     ...UpdatePatientAddressInput,
   };
-  await patientAddressRepo.updatePatientAddress(
+  const patientAddress = await patientAddressRepo.updatePatientAddress(
     UpdatePatientAddressInput.id,
     updatePatientAddressAttrs
   );
-  const patientAddress = await patientAddressRepo.findById(UpdatePatientAddressInput.id);
+
   if (!patientAddress) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
@@ -203,10 +203,11 @@ const savePatientAddress: Resolver<
   AddPatientAddressResult
 > = async (parent, { PatientAddressInput }, { profilesDb }) => {
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
-  const patientDetails = await patientRepo.findById(PatientAddressInput.patientId);
+  const patientDetails = await patientRepo.getPatientDetails(PatientAddressInput.patientId);
   if (!patientDetails) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
+
   const savePatientaddressAttrs: Partial<PatientAddress> = {
     ...PatientAddressInput,
     patient: patientDetails,

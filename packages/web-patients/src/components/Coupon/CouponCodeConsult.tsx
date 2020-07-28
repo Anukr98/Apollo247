@@ -190,7 +190,7 @@ export const CouponCodeConsult: React.FC<ApplyCouponProps> = (props) => {
   }, []);
 
   const validateCouponBody = {
-    mobile: currentPatient.mobileNumber,
+    mobile: currentPatient && currentPatient.mobileNumber,
     billAmount: Number(props.cartValue),
     coupon: selectCouponCode,
     pinCode: currentPincode ? currentPincode : localStorage.getItem('currentPincode') || '',
@@ -219,7 +219,6 @@ export const CouponCodeConsult: React.FC<ApplyCouponProps> = (props) => {
               props.setCouponCode(selectCouponCode);
               props.close(false);
               props.setValidateCouponResult(couponValidateResult);
-              setMuationLoading(false);
               /*GTM TRACKING START */
               gtmTracking({
                 category: 'Consultations',
@@ -227,24 +226,21 @@ export const CouponCodeConsult: React.FC<ApplyCouponProps> = (props) => {
                 label: `Coupon Applied - ${selectCouponCode}`,
                 value:
                   couponValidateResult && couponValidateResult.valid
-                    ? Number(
-                        (props.cartValue - parseFloat(couponValidateResult.discount)).toFixed(2)
-                      )
+                    ? Number(parseFloat(couponValidateResult.discount).toFixed(2))
                     : null,
               });
               /*GTM TRACKING END */
             } else {
-              setMuationLoading(false);
               setErrorMessage(couponValidateResult.reason);
             }
           } else if (data && data.errorMsg && data.errorMsg.length > 0) {
-            setMuationLoading(false);
             setErrorMessage(data.errorMsg);
           }
         })
         .catch((e) => {
           console.log(e);
-        });
+        })
+        .finally(() => setMuationLoading(false));
     }
   };
   const disableCoupon =
@@ -270,7 +266,7 @@ export const CouponCodeConsult: React.FC<ApplyCouponProps> = (props) => {
                       onChange={(e: any) => {
                         setErrorMessage('');
                         props.setValidityStatus(false);
-                        const value = e.target.value.replace(/[^a-z0-9]/gi, '');
+                        const value = e.target.value.replace(/\s/g, '');
                         setSelectCouponCode(value);
                       }}
                       placeholder="Enter coupon code"
@@ -313,10 +309,7 @@ export const CouponCodeConsult: React.FC<ApplyCouponProps> = (props) => {
                               value={couponDetails.coupon}
                               control={<AphRadio color="primary" />}
                               label={
-                                <span className={classes.couponCode}>
-                                  {couponDetails.coupon}
-                                  {<span>{couponDetails.message}</span>}
-                                </span>
+                                <span className={classes.couponCode}>{couponDetails.coupon}</span>
                               }
                               onChange={() => {
                                 setErrorMessage('');

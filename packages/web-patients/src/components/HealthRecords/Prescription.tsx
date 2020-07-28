@@ -156,6 +156,7 @@ export const Prescription: React.FC<PrescriptionProps> = (props) => {
           const qty = Math.ceil(_qty / parseInt(data.productdp[0].mou || '1'));
           if (index === -1) {
             const cartItem: MedicineCartItem = {
+              MaxOrderQty: data.productdp[0].MaxOrderQty,
               url_key: data.productdp[0].url_key,
               description: data.productdp[0].description,
               id: data.productdp[0].id,

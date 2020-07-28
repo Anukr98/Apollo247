@@ -10,9 +10,15 @@ import {
   OneToMany,
   ManyToOne,
   Index,
+  UpdateDateColumn,
+  CreateDateColumn,
+  AfterUpdate
 } from 'typeorm';
-import { IsDate } from 'class-validator';
+import { Validate, IsDate } from 'class-validator';
 import { DoctorType, ROUTE_OF_ADMINISTRATION } from 'doctors-service/entities';
+import { NameValidator, MobileNumberValidator, EmailValidator } from 'validators/entityValidators';
+import { delCache } from 'consults-service/database/connectRedis';
+import { log } from 'customWinstonLogger';
 
 export enum APPOINTMENT_UPDATED_BY {
   DOCTOR = 'DOCTOR',
@@ -73,6 +79,7 @@ export enum PAYTM_STATUS {
   TXN_FAILURE = 'TXN_FAILURE',
   PENDING = 'PENDING',
   TXN_SUCCESS = 'TXN_SUCCESS',
+  PAYMENT_ABORTED = 'PAYMENT_ABORTED',
 }
 
 export enum APPOINTMENT_STATE {
@@ -303,6 +310,43 @@ export class Appointment extends BaseEntity {
     this.updatedDate = new Date();
   }
 
+  @BeforeUpdate()
+  async appointMentStatusConstraintCheck() {
+    try {
+      //fetch latest state
+      const currentAppointmentInDb = await Appointment.findOne(this.id);
+
+      if (currentAppointmentInDb) {
+        const isFinalStatus: boolean =
+          currentAppointmentInDb.status == STATUS.COMPLETED ||
+          currentAppointmentInDb.status == STATUS.CANCELLED;
+
+        if (isFinalStatus) {
+          const haveSameStatus: boolean = currentAppointmentInDb.status == this.status;
+          const haveSameAppointmentState: boolean =
+            currentAppointmentInDb.appointmentState == this.appointmentState;
+
+          if (!haveSameStatus || !haveSameAppointmentState) {
+            const logMessage = `Attempting to update status: ${currentAppointmentInDb.status}, state: ${currentAppointmentInDb.appointmentState}
+            to status: ${this.status} and state: ${this.appointmentState}`;
+
+            log('consultServiceLogger', logMessage, 'index.ts', '', logMessage);
+            throw new Error(logMessage);
+          }
+        }
+      }
+    } catch (ex) {
+      log(
+        'consultServiceLogger',
+        'Unhandled exception occured whilte saving/updating appointment',
+        'index.ts',
+        '',
+        `${JSON.stringify(ex)}`
+      );
+      throw ex;
+    }
+  }
+
   @OneToMany(
     (type) => TransferAppointmentDetails,
     (transferAppointmentDetails) => transferAppointmentDetails.appointment
@@ -335,6 +379,15 @@ export class Appointment extends BaseEntity {
 
   @OneToMany((type) => AuditHistory, (auditHistory) => auditHistory.appointment)
   auditHistory: AuditHistory[];
+
+  @OneToMany(() => ExotelDetails, (callDetail: ExotelDetails) => { callDetail.appointment }, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
+  callDetails: Array<ExotelDetails>
+
+  @AfterUpdate()
+  async dropAppointmentCache() {
+    await delCache(`patient:appointment:${this.id}`);
+  }
+
 }
 //Appointment ends
 
@@ -557,6 +610,9 @@ export class AppointmentCallDetails extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Column({ default: null })
+  appVersion: string;
+
   @Column()
   callType: string;
 
@@ -773,6 +829,7 @@ export class CaseSheet extends BaseEntity {
   @Column({ nullable: true, type: 'text' })
   prismFileId: string;
 
+  @Index('CaseSheet_consultType')
   @Column()
   consultType: APPOINTMENT_TYPE;
 
@@ -783,7 +840,8 @@ export class CaseSheet extends BaseEntity {
   @Column({ nullable: true })
   createdDoctorId: string;
 
-  @Column({ default: DoctorType.JUNIOR })
+  @Index('CaseSheet_doctorType')
+  @Column('enum', { default: DoctorType.JUNIOR, enum: DoctorType })
   doctorType: DoctorType;
 
   @Column({ nullable: true, type: 'json' })
@@ -882,6 +940,9 @@ export class ConsultQueueItem extends BaseEntity {
   @Column()
   appointmentId: string;
 
+  @ManyToOne((type) => Appointment, (appointment) => appointment.transferAppointmentDetails)
+  appointment: Appointment;
+
   @Column()
   createdDate: Date;
 
@@ -979,6 +1040,12 @@ export class AppointmentUpdateHistory extends BaseEntity {
   toValue: string;
 
   @Column({ nullable: true })
+  fromState: string;
+
+  @Column({ nullable: true })
+  toState: string;
+
+  @Column({ nullable: true })
   reason: string;
 }
 //AppointmentUpdateHistory ends
@@ -1034,6 +1101,7 @@ export class DoctorNextAvaialbleSlots extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Index('DoctorNextAvaialbleSlots_doctorId')
   @Column({ nullable: true })
   doctorId: string;
 
@@ -1203,15 +1271,18 @@ export class JdDashboardSummary extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Index('JdDashboardSummary_doctorId')
   @Column()
   doctorId: string;
 
+  @Index('JdDashboardSummary_isActive')
   @Column({ default: true })
   isActive: boolean;
 
   @Column()
   doctorName: string;
 
+  @Index('JdDashboardSummary_adminIds')
   @Column({ default: '' })
   adminIds: string;
 
@@ -1313,15 +1384,18 @@ export class SdDashboardSummary extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Index('SdDashboardSummary_doctorId')
   @Column()
   doctorId: string;
 
+  @Index('SdDashboardSummary_isActive')
   @Column({ default: true })
   isActive: boolean;
 
   @Column()
   doctorName: string;
 
+  @Index('SdDashboardSummary_adminIds')
   @Column({ default: '' })
   adminIds: string;
 
@@ -1385,9 +1459,11 @@ export class SdDashboardSummary extends BaseEntity {
   @Column({ default: 0 })
   unPaidFollowUp: number;
 
+  @Index('SdDashboardSummary_noOfAwayDoctors')
   @Column({ default: 0 })
   noOfAwayDoctors: number;
 
+  @Index('SdDashboardSummary_noOfOnlineDoctors')
   @Column({ default: 0 })
   noOfOnlineDoctors: number;
 
@@ -1442,15 +1518,18 @@ export class DoctorFeeSummary extends BaseEntity {
   @Column()
   appointmentDateTime: Date;
 
+  @Index('DoctorFeeSummary_doctorId')
   @Column()
   doctorId: string;
 
+  @Index('DoctorFeeSummary_isActive')
   @Column()
   isActive: boolean;
 
   @Column({ default: '' })
   doctorName: string;
 
+  @Index('DoctorFeeSummary_specialtiyId')
   @Column({ default: '' })
   specialtiyId: string;
 
@@ -1497,6 +1576,7 @@ export class PlannedDoctors extends BaseEntity {
   @Column()
   speciality: string;
 
+  @Index('PlannedDoctors_specialityId')
   @Column()
   specialityId: string;
 
@@ -1551,12 +1631,14 @@ export class AuditHistory extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Index('AuditHistory_doctorType')
   @Column({ nullable: true })
   doctorType: string;
 
   @ManyToOne((type) => Appointment, (appointment) => appointment.auditHistory)
   appointment: Appointment;
 
+  @Index('AuditHistory_auditorId')
   @Column()
   auditorId: string;
 
@@ -1578,6 +1660,7 @@ export class CurrentAvailabilityStatus extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Index('CurrentAvailabilityStatus_specialityId')
   @Column({ nullable: true })
   specialityId: string;
 
@@ -1602,6 +1685,7 @@ export class UtilizationCapacity extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Index('UtilizationCapacity_specialityId')
   @Column({ nullable: true })
   specialityId: string;
 
@@ -1713,6 +1797,89 @@ export class NotificationBinArchive extends BaseEntity {
 
   @Column({ nullable: true })
   updatedDate: Date;
+}
+
+// ExotelDetails
+@Entity()
+export class ExotelDetails extends BaseEntity {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Index('ExotelDetails_doctorId')
+  @Column()
+  doctorId: string;
+
+  @Index('ExotelDetails_appointmentId')
+  @Column()
+  appointmentId: string;
+
+  @ManyToOne(() => Appointment, (appointment: Appointment) => { appointment.callDetails })
+  @JoinColumn({ name: 'appointmentId' })
+  appointment: Appointment
+
+  @Index('ExotelDetails_doctorType')
+  @Column()
+  doctorType: string;
+
+  @Index('ExotelDetails_callStatus')
+  @Column()
+  status: string;
+
+  @Index('ExotelDetails_callSid')
+  @Column()
+  callSid: string;
+
+  @Column()
+  accountSid: string;
+
+  // PhoneNumberSid
+  @Column()
+  callerId: string;
+
+  @Column({ nullable: true })
+  recordingUrl: string;
+
+  @Column({ nullable: true })
+  direction: string;
+
+  @Column({ nullable: true })
+  price: string;
+
+  @Column({ nullable: true, default: false })
+  doctorPickedUp: Boolean;
+
+  @Column({ nullable: true, default: false })
+  patientPickedUp: Boolean;
+
+  // from
+  @Index('Doctor_mobileNumber')
+  @Column()
+  @Validate(MobileNumberValidator)
+  doctorMobileNumber: string;
+
+  // to
+  @Index('Patient_mobileNumber')
+  @Column()
+  @Validate(MobileNumberValidator)
+  patientMobileNumber: string;
+
+  @Column({ nullable: true })
+  deviceType: DEVICETYPE;
+
+  @UpdateDateColumn()
+  updatedDate: Date;
+
+  @CreateDateColumn()
+  createdDate: Date;
+
+  @Column({ type: 'timestamp' })
+  callStartTime: Date;
+
+  @Column({ nullable: true, type: 'timestamp' })
+  callEndTime: Date;
+
+  @Column({ nullable: true })
+  totalCallDuration: number;
 }
 
 //notification related tables end

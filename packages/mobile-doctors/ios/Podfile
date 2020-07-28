@@ -78,4 +78,6 @@ target 'ApolloDoctor' do
 
   pod 'RCTSystemSetting', :path => '../node_modules/react-native-system-setting'
 
+  pod 'ReactNativeIncallManager', :path => '../node_modules/react-native-incall-manager'
+
 end

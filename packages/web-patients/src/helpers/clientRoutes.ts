@@ -9,13 +9,14 @@ export const clientRoutes = {
   doctorDetails: (doctorName: string, doctorId: string) => `/doctors/${doctorName}-${doctorId}`,
   specialtyDoctorDetails: (specialty: string, doctorName: string, doctorId: string) =>
     `/specialties/${specialty}/${doctorName}-${doctorId}`,
-  doctorsLanding: () => '/doctors',
-  // specialties: (specialty: string) => `/specialties/${specialty}`,
+  doctorsLanding: () => '/track-symptoms/doctors',
   specialties: (specialty: string) => `/specialties/${specialty}`,
+  citySpecialties: (city: string, specialty: string) => `/${city}/specialties/${specialty}`,
   appointments: () => '/appointments',
   appointmentSuccess: () => `/appointments/${status}`,
   testsAndMedicine: () => '/tests-medicines',
   medicines: () => `/medicines`,
+  medicineSearch: () => `/medicine-search`,
   medicinesLandingViewCart: () => `/medicines/added-to-cart`,
   medicinesCartInfo: (orderAutoId: string, orderStatus: string) =>
     `/medicines/${orderAutoId}/${orderStatus}`,
@@ -63,8 +64,9 @@ export const clientRoutes = {
   payOnlineConsult: () => '/pay-online-consult',
   payOnlineClinicConsult: () => '/pay-clinic-visit',
   prescriptionReview: () => '/prescription-review',
-  specialityListing: () => '/specialities',
+  specialityListing: () => '/specialties',
   medicinePrescription: () => '/medicine-prescription',
+  covidProtocol: () => '/medical-condition',
 };
 
 export const clientBaseUrl = () => webPatientsBaseUrl();

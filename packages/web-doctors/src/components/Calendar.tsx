@@ -239,7 +239,7 @@ export const Calendar: React.FC = () => {
   if (currentUserId) {
     localStorage.setItem('currentUserId', currentUserId ? currentUserId : '');
   }
-  const pageRefreshTimeInSeconds = 30;
+  const pageRefreshTimeInSeconds = 300;
   const [range, setRange] = useState<{
     start: string | Date;
     end: string | Date;

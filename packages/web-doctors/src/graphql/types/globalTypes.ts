@@ -62,16 +62,17 @@ export enum DOCTOR_ONLINE_STATUS {
 
 export enum DoctorType {
   APOLLO = "APOLLO",
+  APOLLO_HOMECARE = "APOLLO_HOMECARE",
   CLINIC = "CLINIC",
   CRADLE = "CRADLE",
   DOCTOR_CONNECT = "DOCTOR_CONNECT",
   FERTILITY = "FERTILITY",
-  HOMECARE = "HOMECARE",
   JUNIOR = "JUNIOR",
   PAYROLL = "PAYROLL",
   SPECTRA = "SPECTRA",
   STAR_APOLLO = "STAR_APOLLO",
   SUGAR = "SUGAR",
+  WHITE_DENTAL = "WHITE_DENTAL",
 }
 
 export enum Gender {
@@ -227,18 +228,12 @@ export enum STATUS {
   JUNIOR_DOCTOR_ENDED = "JUNIOR_DOCTOR_ENDED",
   JUNIOR_DOCTOR_STARTED = "JUNIOR_DOCTOR_STARTED",
   NO_SHOW = "NO_SHOW",
+  PAYMENT_ABORTED = "PAYMENT_ABORTED",
   PAYMENT_FAILED = "PAYMENT_FAILED",
   PAYMENT_PENDING = "PAYMENT_PENDING",
   PAYMENT_PENDING_PG = "PAYMENT_PENDING_PG",
   PENDING = "PENDING",
   UNAVAILABLE_MEDMANTRA = "UNAVAILABLE_MEDMANTRA",
-}
-
-export enum Salutation {
-  DR = "DR",
-  MR = "MR",
-  MRS = "MRS",
-  MS = "MS",
 }
 
 export enum TRANSFER_INITIATED_TYPE {
@@ -345,6 +340,7 @@ export interface EndAppointmentSessionInput {
   deviceType?: DEVICETYPE | null;
   callSource?: BOOKINGSOURCE | null;
   callType?: APPT_CALL_TYPE | null;
+  appVersion?: string | null;
 }
 
 export interface MedicinePrescriptionInput {
@@ -492,6 +488,7 @@ export interface UpdatePatientInput {
   photoUrl?: string | null;
   deviceCode?: string | null;
   employeeId?: string | null;
+  partnerId?: string | null;
 }
 
 export interface Vitals {
@@ -504,7 +501,8 @@ export interface Vitals {
 export interface exotelInput {
   from?: string | null;
   to?: string | null;
-  appointmentId?: string | null;
+  appointmentId: string;
+  deviceType?: DEVICETYPE | null;
 }
 
 //==============================================================

@@ -24,6 +24,7 @@ import {
   CANCEL_MEDICINE_ORDER_OMS,
   GET_PATIENT_ADDRESS_BY_ID,
   ALERT_MEDICINE_ORDER_PICKUP,
+  GET_PATIENT_FEEDBACK,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getMedicineOrderOMSDetails,
@@ -40,7 +41,7 @@ import {
 import {
   aphConsole,
   g,
-  getNewOrderStatusText,
+  getOrderStatusText,
   handleGraphQlError,
   postWebEngageEvent,
   reOrderMedicines,
@@ -49,7 +50,7 @@ import {
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import { FeedbackPopup } from './FeedbackPopup';
+import { FeedbackPopup } from '@aph/mobile-patients/src/components/FeedbackPopup';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient, useQuery } from 'react-apollo-hooks';
@@ -79,15 +80,15 @@ import {
 import {
   CancelMedicineOrderOMS,
   CancelMedicineOrderOMSVariables,
-} from '../graphql/types/CancelMedicineOrderOMS';
+} from '@aph/mobile-patients/src/graphql/types/CancelMedicineOrderOMS';
 import {
   alertMedicineOrderPickup,
   alertMedicineOrderPickupVariables,
-} from '../graphql/types/alertMedicineOrderPickup';
+} from '@aph/mobile-patients/src/graphql/types/alertMedicineOrderPickup';
 import {
   GetMedicineOrderCancelReasons,
   GetMedicineOrderCancelReasons_getMedicineOrderCancelReasons_cancellationReasons,
-} from '../graphql/types/GetMedicineOrderCancelReasons';
+} from '@aph/mobile-patients/src/graphql/types/GetMedicineOrderCancelReasons';
 import { savePatientAddress_savePatientAddress_patientAddress } from '../graphql/types/savePatientAddress';
 import {
   MedicineReOrderOverlay,
@@ -97,6 +98,11 @@ import {
   getPatientAddressById,
   getPatientAddressByIdVariables,
 } from '@aph/mobile-patients/src/graphql/types/getPatientAddressById';
+import {
+  GetPatientFeedback,
+  GetPatientFeedbackVariables,
+} from '@aph/mobile-patients/src/graphql/types/GetPatientFeedback';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
 const styles = StyleSheet.create({
   headerShadowContainer: {
@@ -197,7 +203,6 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   const orderCancel = (g(order, 'medicineOrdersStatus') || []).find(
     (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.CANCELLED
   );
-  // console.log({ order }, currentPatient.id);
   const orderDetails = ((!loading && order) ||
     {}) as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails;
   const orderStatusList = ((!loading && order && order.medicineOrdersStatus) || []).filter(
@@ -206,6 +211,41 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   const offlineOrderBillNumber = loading
     ? 0
     : g(data, 'getMedicineOrderOMSDetails', 'medicineOrderDetails', 'billNumber');
+
+  const [showRateDeliveryBtn, setShowRateDeliveryBtn] = useState(false);
+
+  useEffect(() => {
+    updateRateDeliveryBtnVisibility();
+  }, [orderDetails]);
+
+  const updateRateDeliveryBtnVisibility = async () => {
+    try {
+      if (!showRateDeliveryBtn && isOrderDeliveredToHome()) {
+        const response = await client.query<GetPatientFeedback, GetPatientFeedbackVariables>({
+          query: GET_PATIENT_FEEDBACK,
+          variables: {
+            patientId: g(currentPatient, 'id') || '',
+            transactionId: `${orderDetails.id}`,
+          },
+          fetchPolicy: 'no-cache',
+        });
+        const feedback = g(response, 'data', 'getPatientFeedback', 'feedback', 'length');
+        if (!feedback) {
+          setShowRateDeliveryBtn(true);
+        }
+      }
+    } catch (error) {
+      CommonBugFender(`${AppRoutes.OrderDetailsScene}_updateRateDeliveryBtnVisibility`, error);
+    }
+  };
+
+  const isOrderDeliveredToHome = () => {
+    const isHomeDelivery = g(orderDetails, 'deliveryType') == MEDICINE_DELIVERY_TYPE.HOME_DELIVERY;
+    const isDeliveredToHome = (g(orderDetails, 'medicineOrdersStatus') || []).find(
+      (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.DELIVERED
+    );
+    return !!isHomeDelivery && !!isDeliveredToHome;
+  };
 
   const getAddressDatails = async () => {
     try {
@@ -334,8 +374,28 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       setLoading!(true);
       const { items, prescriptions, totalItemsCount, unavailableItems } = await reOrderMedicines(
         orderDetails,
-        currentPatient
+        currentPatient,
+        'Order Details'
       );
+
+      const eventAttributes: WebEngageEvents[WebEngageEventName.RE_ORDER_MEDICINE] = {
+        orderType: !!g(order, 'billNumber')
+          ? 'Offline'
+          : orderDetails.orderType == MEDICINE_ORDER_TYPE.UPLOAD_PRESCRIPTION
+          ? 'Non Cart'
+          : 'Cart',
+        noOfItemsNotAvailable: unavailableItems.length,
+        source: 'Order Details',
+        'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+        'Patient UHID': g(currentPatient, 'uhid'),
+        Relation: g(currentPatient, 'relation'),
+        'Patient Age': Math.round(moment().diff(currentPatient.dateOfBirth, 'years', true)),
+        'Patient Gender': g(currentPatient, 'gender'),
+        'Mobile Number': g(currentPatient, 'mobileNumber'),
+        'Customer ID': g(currentPatient, 'id'),
+      };
+      postWebEngageEvent(WebEngageEventName.RE_ORDER_MEDICINE, eventAttributes);
+
       items.length && addMultipleCartItems!(items);
       items.length && prescriptions.length && addMultipleEPrescriptions!(prescriptions);
       setLoading!(false);
@@ -433,11 +493,12 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         <View
           style={{
             alignSelf: 'flex-end',
+            justifyContent: 'center',
+            alignItems: 'center',
             backgroundColor: backgroundColor ? backgroundColor : 'rgba(0, 179, 142, 0.2)',
             borderRadius: 16,
             paddingHorizontal: 15,
-            paddingTop: 4,
-            paddingBottom: 3,
+            paddingVertical: 5,
           }}
         >
           <Text style={{ ...theme.viewStyles.text('M', 11, textColor) }}>{capsuleText}</Text>
@@ -449,12 +510,10 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       <View>
         <View
           style={{
-            borderBottomColor: 'rgba(2,71,91,0.3)',
-            borderBottomWidth: 0.5,
             paddingTop: 16,
             paddingBottom: 6,
             paddingHorizontal: 20,
-            marginBottom: 13,
+            marginBottom: 8,
           }}
         >
           <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
@@ -604,6 +663,17 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           '',
           `Your order is ready for pickup at your selected ${addressData}`,
         ],
+        [MEDICINE_ORDER_STATUS.DELIVERED]: [
+          '',
+          `In case of any concerns or feedback related to your order, please speak with our customer care executives on the official WhatsApp channel (during business hours 9 AM - 8:30 PM)\n${AppConfig.Configuration.MED_ORDERS_CUSTOMER_CARE_WHATSAPP_LINK}`,
+          () => {
+            Linking.openURL(
+              AppConfig.Configuration.MED_ORDERS_CUSTOMER_CARE_WHATSAPP_LINK
+            ).catch((err) =>
+              CommonBugFender(`${AppRoutes.OrderDetailsScene}_getOrderDescription`, err)
+            );
+          },
+        ],
         [MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY]: [
           '',
           `Your order has been picked up from our store!`,
@@ -620,6 +690,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         ? {
             heading: g(orderStatusDescMapping, status as any, '0'),
             description: g(orderStatusDescMapping, status as any, '1'),
+            onPress: g(orderStatusDescMapping, status as any, '2'),
           }
         : null;
     };
@@ -873,7 +944,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
                   prescriptionRequired,
                   (orderCancel && orderCancel.statusMessage) || ''
                 )}
-                status={getNewOrderStatusText(order!.orderStatus!)}
+                status={getOrderStatusText(order!.orderStatus!)}
                 date={getFormattedDate(order!.statusDate)}
                 time={getFormattedTime(order!.statusDate)}
                 isStatusDone={order!.id != 'idToBeDelivered'}
@@ -916,7 +987,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
             >
               {'Thank You for choosing Apollo 24|7'}
             </Text>
-            {orderDetails.deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP ? null : (
+            {!!showRateDeliveryBtn && (
               <Button
                 style={{ flex: 1, width: '95%', marginBottom: 20, alignSelf: 'center' }}
                 onPress={() => setShowFeedbackPopup(true)}
@@ -1266,8 +1337,11 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.ORDER_SUMMARY_CLICKED] = {
       orderId: orderDetails.id,
       orderDate: getFormattedOrderPlacedDateTime(orderDetails),
-      orderType:
-        orderDetails.orderType == MEDICINE_ORDER_TYPE.UPLOAD_PRESCRIPTION ? 'Non Cart' : 'Cart',
+      orderType: !!g(order, 'billNumber')
+        ? 'Offline'
+        : orderDetails.orderType == MEDICINE_ORDER_TYPE.UPLOAD_PRESCRIPTION
+        ? 'Non Cart'
+        : 'Cart',
       customerId: currentPatient && currentPatient.id,
       deliveryDate: orderDetails.orderTat
         ? moment(orderDetails.orderTat).format('ddd, D MMMM, hh:mm A')
@@ -1278,10 +1352,20 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     postWebEngageEvent(WebEngageEventName.ORDER_SUMMARY_CLICKED, eventAttributes);
     return (
       <View>
-        <OrderSummary orderDetails={orderDetails as any} addressData={addressData} />
+        <OrderSummary
+          orderDetails={orderDetails as any}
+          addressData={addressData}
+          onBillChangesClick={onBillChangesClick}
+        />
         <View style={{ marginTop: 30 }} />
       </View>
     );
+  };
+
+  const onBillChangesClick = () => {
+    props.navigation.navigate(AppRoutes.OrderModifiedScreen, {
+      orderDetails: orderDetails,
+    });
   };
 
   const onPressConfirmCancelOrder = () => {
@@ -1387,11 +1471,16 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         item!.orderStatus == MEDICINE_ORDER_STATUS.ORDER_FAILED ||
         item!.orderStatus == MEDICINE_ORDER_STATUS.PURCHASED_IN_STORE
     );
+    const isBeforeOrderPlacedStatus = !orderStatusList.find(
+      (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.ORDER_PLACED
+    );
     const cannotCancelOrder = orderStatusList.find(
       (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.ORDER_BILLED
       // || item!.orderStatus == MEDICINE_ORDER_STATUS.PRESCRIPTION_CART_READY
     );
-    if (hideMenuIcon || !orderStatusList.length) return <View style={{ width: 24 }} />;
+    if (hideMenuIcon || !orderStatusList.length || isBeforeOrderPlacedStatus) {
+      return <View style={{ width: 24 }} />;
+    }
     return (
       <MaterialMenu
         options={['Cancel Order'].map((item) => ({
@@ -1410,16 +1499,17 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
             if (cannotCancelOrder) {
               showAphAlert!({
                 title: string.common.uhOh,
-                description:
-                  'Your order has already been billed and we will not be able to take the cancellation request on the App. In case you still want to proceed with cancellation, please click on the link below to send the cancellation request through WhatsApp and our live Customer executives will be happy to help you.',
+                description: string.OrderSummery.orderCancellationAfterBillingAlert,
                 ctaContainerStyle: { justifyContent: 'flex-end' },
                 CTAs: [
                   {
                     text: 'CLICK HERE',
                     type: 'orange-link',
                     onPress: () => {
-                      Linking.openURL('https://bit.ly/apollo247Medicines').catch((err) =>
-                        console.error('An error occurred', err)
+                      Linking.openURL(
+                        AppConfig.Configuration.MED_ORDERS_CUSTOMER_CARE_WHATSAPP_LINK
+                      ).catch((err) =>
+                        CommonBugFender(`${AppRoutes.OrderDetailsScene}_Linking.openURL`, err)
                       );
                       hideAphAlert!();
                     },
@@ -1527,7 +1617,20 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
                     item!.orderStatus == MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY ||
                     item!.orderStatus == MEDICINE_ORDER_STATUS.DELIVERED
                 );
-                if (!isNonCartOrder || isNonCartOrderBilledAndReadyAtStore) {
+                const isCartOrder = orderStatusList.find(
+                  (item) =>
+                    item!.orderStatus == MEDICINE_ORDER_STATUS.ORDER_PLACED ||
+                    item!.orderStatus == MEDICINE_ORDER_STATUS.ORDER_VERIFIED ||
+                    item!.orderStatus == MEDICINE_ORDER_STATUS.ORDER_INITIATED
+                );
+                // if (!isNonCartOrder || isNonCartOrderBilledAndReadyAtStore) {
+                //   setSelectedTab(title);
+                // }
+                if (
+                  (orderDetails.orderType == MEDICINE_ORDER_TYPE.UPLOAD_PRESCRIPTION &&
+                    isNonCartOrderBilledAndReadyAtStore) ||
+                  (orderDetails.orderType != MEDICINE_ORDER_TYPE.UPLOAD_PRESCRIPTION && isCartOrder)
+                ) {
                   setSelectedTab(title);
                 }
               }}

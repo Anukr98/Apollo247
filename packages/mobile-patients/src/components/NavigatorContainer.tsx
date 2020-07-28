@@ -25,6 +25,7 @@ import { YourCartUploadPrescriptions } from '@aph/mobile-patients/src/components
 import { MultiSignup } from '@aph/mobile-patients/src/components/MultiSignup';
 import { Onboarding } from '@aph/mobile-patients/src/components/Onboarding';
 import { OrderDetailsScene } from '@aph/mobile-patients/src/components/OrderDetailsScene';
+import { OrderModifiedScreen } from '@aph/mobile-patients/src/components/OrderModifiedScreen';
 import { OTPVerification } from '@aph/mobile-patients/src/components/OTPVerification';
 import { SignUp } from '@aph/mobile-patients/src/components/SignUp';
 import { SplashScreen } from '@aph/mobile-patients/src/components/SplashScreen';
@@ -88,6 +89,7 @@ import { ChennaiNonCartOrderForm } from '@aph/mobile-patients/src/components/Med
 import MyPaymentsScreen from '@aph/mobile-patients/src/components/MyPayments/MyPaymentsScreen';
 import PaymentStatusScreen from '@aph/mobile-patients/src/components/MyPayments/PaymentStatus/PaymentStatusScreen';
 import { ConsultTypeScreen } from './ConsultRoom/ConsultTypeScreen';
+import { CommonWebView } from '@aph/mobile-patients/src/components/CommonWebView';
 
 export enum AppRoutes {
   Onboarding = 'Onboarding',
@@ -119,6 +121,7 @@ export enum AppRoutes {
   ChatRoom = 'ChatRoom',
   YourOrdersScene = 'YourOrdersScene',
   OrderDetailsScene = 'OrderDetailsScene',
+  OrderModifiedScreen = 'OrderModifiedScreen',
   YourCart = 'YourCart',
   YourCartUploadPrescriptions = 'YourCartUploadPrescriptions',
   CheckoutScene = 'CheckoutScene',
@@ -168,6 +171,7 @@ export enum AppRoutes {
   PaymentStatusScreen = 'PaymentStatusScreen',
   OneApolloMembership = 'OneApolloMembership',
   ConsultTypeScreen = 'ConsultTypeScreen',
+  CommonWebView = 'CommonWebView',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -299,8 +303,15 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   [AppRoutes.OrderDetailsScene]: {
     screen: OrderDetailsScene,
   },
+  [AppRoutes.OrderModifiedScreen]: {
+    screen: OrderModifiedScreen,
+  },
   [AppRoutes.UploadPrescription]: {
     screen: UploadPrescription,
+    path: 'MedUploadPrescription',
+    navigationOptions: {
+      gesturesEnabled: false,
+    },
   },
   [AppRoutes.ChennaiNonCartOrderForm]: {
     screen: ChennaiNonCartOrderForm,
@@ -434,6 +445,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.ConsultTypeScreen]: {
     screen: ConsultTypeScreen,
+  },
+  [AppRoutes.CommonWebView]: {
+    screen: CommonWebView,
   },
 };
 

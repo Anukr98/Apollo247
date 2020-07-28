@@ -63,26 +63,30 @@ export const convertCaseSheetToRxPdfData = async (
       const ingredients = [] as string[];
       let frequency;
       const plural =
-        csRx.medicineUnit == MEDICINE_UNIT.ML || csRx.medicineUnit == MEDICINE_UNIT.MG ? '' : '(s)';
+        csRx.medicineUnit == MEDICINE_UNIT.ML ||
+          csRx.medicineUnit == MEDICINE_UNIT.MG ||
+          csRx.medicineUnit == MEDICINE_UNIT.AS_PRESCRIBED
+          ? ''
+          : '(s)';
       const customDosage = csRx.medicineCustomDosage
         ? csRx.medicineCustomDosage
-            .split('-')
-            .filter((value) => value)
-            .join(
-              ' ' +
-                csRx.medicineUnit
-                  .split('_')
-                  .join(' ')
-                  .toLowerCase() +
-                plural +
-                ' - '
-            ) +
-          ' ' +
-          csRx.medicineUnit
-            .split('_')
-            .join(' ')
-            .toLowerCase() +
-          plural
+          .split('-')
+          .filter((value) => parseInt(value, 10))
+          .join(
+            ' ' +
+            csRx.medicineUnit
+              .split('_')
+              .join(' ')
+              .toLowerCase() +
+            plural +
+            ' - '
+          ) +
+        ' ' +
+        csRx.medicineUnit
+          .split('_')
+          .join(' ')
+          .toLowerCase() +
+        plural
         : '';
       if (csRx.medicineFormTypes != MEDICINE_FORM_TYPES.OTHERS) {
         frequency = 'Apply';
@@ -99,10 +103,8 @@ export const convertCaseSheetToRxPdfData = async (
               .join(' ') +
             ')';
         } else if (csRx.medicineUnit) {
-          const medicineUnit =
-            csRx.medicineUnit == MEDICINE_UNIT.AS_PRESCRIBED
-              ? csRx.medicineUnit.split('_').join(' ')
-              : csRx.medicineUnit + plural;
+          const medicineUnit = csRx.medicineUnit.split('_').join(' ') + plural;
+          if (csRx.medicineDosage) frequency = frequency + ' ' + csRx.medicineDosage;
           frequency = frequency + ' ' + medicineUnit;
         }
       } else {
@@ -120,10 +122,7 @@ export const convertCaseSheetToRxPdfData = async (
               .join(' ') +
             ')';
         } else {
-          const medicineUnit =
-            csRx.medicineUnit == MEDICINE_UNIT.AS_PRESCRIBED
-              ? csRx.medicineUnit.split('_').join(' ')
-              : csRx.medicineUnit + plural;
+          const medicineUnit = csRx.medicineUnit.split('_').join(' ') + plural;
           if (csRx.medicineDosage) frequency = frequency + ' ' + csRx.medicineDosage;
           if (csRx.medicineUnit) frequency = frequency + ' ' + medicineUnit;
         }
@@ -148,7 +147,7 @@ export const convertCaseSheetToRxPdfData = async (
       }
 
       if (csRx.medicineConsumptionDurationUnit == MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW) {
-        frequency += csRx.medicineConsumptionDurationUnit.split('_').join(' ');
+        frequency += ' ' + csRx.medicineConsumptionDurationUnit.split('_').join(' ');
       }
 
       if (csRx.medicineToBeTaken)
@@ -170,6 +169,16 @@ export const convertCaseSheetToRxPdfData = async (
           csRx.medicineTimings.length == 1 &&
           csRx.medicineTimings[0] != MEDICINE_TIMINGS.NOT_SPECIFIC
         ) {
+          frequency = frequency + ' in the';
+          frequency =
+            frequency +
+            ' ' +
+            csRx.medicineTimings
+              .join(', ')
+              .replace(/,(?=[^,]*$)/, ' and')
+              .split('_')
+              .join(' ');
+        } else if (csRx.medicineTimings.length > 1) {
           frequency = frequency + ' in the';
           frequency =
             frequency +
@@ -266,9 +275,9 @@ export const convertCaseSheetToRxPdfData = async (
         patientData.dateOfBirth === null
           ? ''
           : Math.abs(
-              new Date(Date.now()).getUTCFullYear() -
-                new Date(patientData.dateOfBirth).getUTCFullYear()
-            ).toString();
+            new Date(Date.now()).getUTCFullYear() -
+            new Date(patientData.dateOfBirth).getUTCFullYear()
+          ).toString();
       patientInfo = {
         firstName: patientData.firstName,
         lastName: patientData.lastName,
@@ -304,7 +313,7 @@ export const convertCaseSheetToRxPdfData = async (
         hospitalAddress = {
           name: hospitalDetails.name,
           streetLine1: hospitalDetails.streetLine1,
-          streetLine2: hospitalDetails.streetLine2,
+          streetLine2: hospitalDetails.streetLine2 || '',
           city: hospitalDetails.city,
           zipcode: hospitalDetails.zipcode,
           state: hospitalDetails.state,
@@ -321,6 +330,7 @@ export const convertCaseSheetToRxPdfData = async (
         specialty: doctordata.specialty.name,
         signature: doctordata.signature,
       };
+      console.log(doctorInfo);
     }
   }
 
@@ -440,6 +450,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
     if (doc.y > doc.page.height - 150) {
       pageBreak();
     }
+
     if (image.length > 0)
       return (
         doc
@@ -517,7 +528,9 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
       .image(loadAsset('apolloLogo.png'), margin, margin / 2, { width: 87, height: 64 });
 
     //Doctor Details
-    const nameLine = `${doctorInfo.salutation}. ${doctorInfo.firstName} ${doctorInfo.lastName}`;
+    const nameLine = `${doctorInfo.salutation.replace('.', '')}. ${doctorInfo.firstName} ${
+      doctorInfo.lastName
+      }`;
     const specialty = doctorInfo.specialty;
     const registrationLine = `Reg.No. ${doctorInfo.registrationNumber}`;
 
@@ -525,7 +538,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
       .fontSize(11)
       .font(assetsDir + '/fonts/IBMPlexSans-Regular.ttf')
       .fillColor('#02475b')
-      .text(nameLine, 370, margin);
+      .text(nameLine, 320, margin);
 
     if (doctorInfo.qualifications) {
       doc
@@ -545,20 +558,45 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
     //Doctor Address Details
     const addressLastLine = `${hospitalAddress.city}  ${
       hospitalAddress.zipcode ? ' - ' + hospitalAddress.zipcode : ''
-    } | ${hospitalAddress.state}, ${hospitalAddress.country}`;
+      } | ${hospitalAddress.state}, ${hospitalAddress.country}`;
 
     doc
       .moveDown(0.3)
       .fontSize(8)
       .font(assetsDir + '/fonts/IBMPlexSans-Regular.ttf')
-      .fillColor('#000000')
+      .fillColor('#666666')
       .text(hospitalAddress.name);
 
     doc.moveDown(0.2).text(hospitalAddress.streetLine1);
     if (hospitalAddress.streetLine2) doc.moveDown(0.2).text(hospitalAddress.streetLine2);
     doc.moveDown(0.2).text(addressLastLine);
 
-    doc.moveDown(2);
+    doc
+      .moveDown(0.6)
+      .fillColor('#999999')
+      .text(`${ApiConstants.CASESHEET_WHATSAPP_LABEL.toString()}`, { lineBreak: false })
+      .text(`${ApiConstants.CASESHEET_EMAIL_LABEL.toString()}`, 435, doc.y);
+
+    doc
+      .moveDown(0.5)
+      .fillColor('#333333')
+      .image(loadAsset('ic-phone.png'), 320, doc.y, {
+        valign: 'bottom',
+        height: 12,
+        width: 12,
+      })
+      .fontSize(10)
+      .text(`${ApiConstants.CASESHEET_WHATSAPP_NUMBER.toString()}`, 340, doc.y - 12, {
+        lineBreak: false,
+      })
+      .image(loadAsset('ic-email.png'), 435, doc.y, {
+        valign: 'bottom',
+        height: 12,
+        width: 12,
+      })
+      .text(`${ApiConstants.CASESHEET_EMAIL.toString()}`, 455, doc.y - 12);
+
+    doc.moveDown(0.5);
   };
 
   const renderFooter = () => {
@@ -591,38 +629,40 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
   ) => {
     renderSectionHeader('Chief Complaints', '', headerEndY + 150);
 
-    prescriptions.forEach((prescription, index) => {
-      const textArray = [];
-      if (prescription.since.length > 0) textArray.push('Since: ' + prescription.since);
-      if (prescription.howOften) textArray.push('How Often: ' + prescription.howOften);
-      if (prescription.severity) textArray.push('Severity: ' + prescription.severity);
+    if (prescriptions)
+      prescriptions.forEach((prescription, index) => {
+        const textArray = [];
+        if (prescription.since.length > 0) textArray.push('Since: ' + prescription.since);
+        if (prescription.howOften) textArray.push('How Often: ' + prescription.howOften);
+        if (prescription.severity) textArray.push('Severity: ' + prescription.severity);
+        if (prescription.details) textArray.push('Details: ' + prescription.details);
 
-      doc
-        .fontSize(12)
-        .font(assetsDir + '/fonts/IBMPlexSans-Regular.ttf')
-        .fillColor('#333333')
-        .text(`${_capitalize(prescription.symptom)}`, margin + 15)
-        .moveDown(0.5);
-      doc
-        .fontSize(11)
-        .font(assetsDir + '/fonts/IBMPlexSans-Regular.ttf')
-        .fillColor('#666666')
-        .text(`${textArray.join('  |  ')}`, margin + 15)
-        .moveDown(0.8);
-
-      if (prescription.details) {
         doc
           .fontSize(12)
           .font(assetsDir + '/fonts/IBMPlexSans-Regular.ttf')
+          .fillColor('#333333')
+          .text(`${_capitalize(prescription.symptom)}`, margin + 15)
+          .moveDown(0.5);
+        doc
+          .fontSize(11)
+          .font(assetsDir + '/fonts/IBMPlexSans-Regular.ttf')
           .fillColor('#666666')
-          .text(`${prescription.details}`, margin + 15)
+          .text(`${textArray.join('  |  ')}`, margin + 15)
           .moveDown(0.8);
-      }
 
-      if (doc.y > doc.page.height - 150) {
-        pageBreak();
-      }
-    });
+        // if (prescription.details) {
+        //   doc
+        //     .fontSize(12)
+        //     .font(assetsDir + '/fonts/IBMPlexSans-Regular.ttf')
+        //     .fillColor('#666666')
+        //     .text(`${prescription.details}`, margin + 15)
+        //     .moveDown(0.8);
+        // }
+
+        if (doc.y > doc.page.height - 150) {
+          pageBreak();
+        }
+      });
 
     const vitalsArray = [];
     if (vitals.weight) vitalsArray.push(`Weight : ${vitals.weight}`);
@@ -681,11 +721,11 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
           .fillColor('#666666')
           .text(
             `To be ${
-              prescription.medicineFormTypes != MEDICINE_FORM_TYPES.OTHERS ? 'Applied' : 'taken'
+            prescription.medicineFormTypes != MEDICINE_FORM_TYPES.OTHERS ? 'Applied' : 'taken'
             }: ${
-              prescription.routeOfAdministration != ROUTE_OF_ADMINISTRATION.INTRA_ARTICULAR
-                ? prescription.routeOfAdministration.split('_').join(' ')
-                : 'Intra-articular'
+            prescription.routeOfAdministration != ROUTE_OF_ADMINISTRATION.INTRA_ARTICULAR
+              ? prescription.routeOfAdministration.split('_').join(' ')
+              : 'Intra-articular'
             } `,
             margin + 30
           )
@@ -940,7 +980,9 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
       }
 
       //Doctor Details
-      const nameLine = `${doctorInfo.salutation}. ${doctorInfo.firstName} ${doctorInfo.lastName}`;
+      const nameLine = `${doctorInfo.salutation.replace('.', '')}. ${doctorInfo.firstName} ${
+        doctorInfo.lastName
+        }`;
       const specialty = doctorInfo.specialty;
       const registrationLine = `Reg.No. ${doctorInfo.registrationNumber}`;
 
@@ -981,11 +1023,12 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
   renderHeader(rxPdfData.doctorInfo, rxPdfData.hospitalAddress);
 
   if (!_isEmpty(rxPdfData.patientInfo)) {
+    doc.moveUp(1.5);
     renderpatients(rxPdfData.patientInfo, rxPdfData.appointmentDetails);
     doc.moveDown(1.5);
   }
 
-  if (!_isEmpty(rxPdfData.caseSheetSymptoms)) {
+  if (!_isEmpty(rxPdfData.caseSheetSymptoms) || !_isEmpty(rxPdfData.vitals)) {
     renderSymptoms(rxPdfData.caseSheetSymptoms, rxPdfData.vitals);
     doc.moveDown(1.5);
   }
@@ -995,7 +1038,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
     doc.moveDown(1.5);
   }
 
-  if (!_isEmpty(rxPdfData.prescriptions)) {
+  if (!_isEmpty(rxPdfData.prescriptions) || !_isEmpty(rxPdfData.removedMedicinesList)) {
     renderPrescriptions(rxPdfData.prescriptions, rxPdfData.removedMedicinesList);
     doc.moveDown(1.5);
   }
@@ -1079,37 +1122,17 @@ export const uploadPdfBase64ToPrism = async (
   doctorData: Doctor,
   caseSheet: CaseSheet
 ) => {
-  /*const patientsRepo = patientsDb.getCustomRepository(PatientRepository);
-  const mobileNumber = patientDetails.mobileNumber;
-
-  //get authtoken for the logged in user mobile number
-  const prismAuthToken = await patientsRepo.getPrismAuthToken(mobileNumber);
-
-  if (!prismAuthToken) return { status: false, fileId: '' };
-
-  //get users list for the mobile number
-  const prismUserList = await patientsRepo.getPrismUsersList(mobileNumber, prismAuthToken);
-
-  //check if current user uhid matches with response uhids
-  const uhid = await patientsRepo.validateAndGetUHID(patientDetails.id, prismUserList);
-
-  if (!uhid) {
-    return { status: false, fileId: '' };
-  }
-
-  //get authtoken for the logged in user mobile number
-  const prismUHIDAuthToken = await patientsRepo.getPrismAuthTokenByUHID(uhid);
-
-  if (!prismUHIDAuthToken) return { status: false, fileId: '' };
-
-  //just call get prism user details with the corresponding uhid
-  await patientsRepo.getPrismUsersDetails(uhid, prismUHIDAuthToken);
-
-  const fileId = await patientsRepo.uploadDocumentToPrism(uhid, prismUHIDAuthToken, uploadDocInput);*/
   const currentTimeStamp = getUnixTime(new Date()) * 1000;
   const randomNumber = Math.floor(Math.random() * 10000);
   const fileFormat = uploadDocInput.fileType.toLowerCase();
   const documentName = `${currentTimeStamp}${randomNumber}.${fileFormat}`;
+
+  const doctorFacilities = doctorData.doctorHospital;
+  const appointmentFacilityId = caseSheet.appointment.hospitalId;
+  const doctorHospital = doctorFacilities.filter(
+    (item) => item.facility.id == appointmentFacilityId
+  );
+  const hospitalDetails = doctorHospital[0].facility;
 
   const prescriptionFiles = [];
   prescriptionFiles.push({
@@ -1119,6 +1142,35 @@ export const uploadPdfBase64ToPrism = async (
     content: uploadDocInput.base64FileInput,
     dateCreated: getUnixTime(new Date()) * 1000,
   });
+
+  const instructions: string[] = [];
+  const generalAdvice = JSON.parse(
+    JSON.stringify(caseSheet.otherInstructions)
+  ) as CaseSheetOtherInstruction[];
+  if (generalAdvice)
+    generalAdvice.forEach((advice) => {
+      instructions.push(advice.instruction);
+    });
+
+  const diagnosticPrescription: string[] = [];
+  const diagnosesTests = JSON.parse(
+    JSON.stringify(caseSheet.diagnosticPrescription)
+  ) as CaseSheetDiagnosisPrescription[];
+
+  if (diagnosesTests)
+    diagnosesTests.forEach((tests) => {
+      diagnosticPrescription.push(tests.itemname);
+    });
+
+  let caseSheetMedicinePrescription: CaseSheetMedicinePrescription[] = [];
+  caseSheetMedicinePrescription = JSON.parse(
+    JSON.stringify(caseSheet.medicinePrescription)
+  ) as CaseSheetMedicinePrescription[];
+
+  if (caseSheetMedicinePrescription)
+    caseSheetMedicinePrescription.forEach((element) => {
+      element.externalId = '';
+    });
 
   const prescriptionInputArgs: PrescriptionInputArgs = {
     prescriptionInput: {
@@ -1131,6 +1183,15 @@ export const uploadPdfBase64ToPrism = async (
       prescriptionSource: prescriptionSource.EPRESCRIPTION,
       prescriptionDetail: [],
       prescriptionFiles: prescriptionFiles,
+      speciality: doctorData.specialty.name,
+      hospital_name: hospitalDetails.name,
+      address: hospitalDetails.streetLine1,
+      city: hospitalDetails.city,
+      pincode: hospitalDetails.zipcode,
+      instructions: instructions,
+      diagnosis: [],
+      diagnosticPrescription: diagnosticPrescription,
+      medicinePrescriptions: caseSheetMedicinePrescription,
     },
     uhid: patientDetails.uhid,
   };
@@ -1138,9 +1199,6 @@ export const uploadPdfBase64ToPrism = async (
   const uploadedResult = (await uploadPrescriptions(null, prescriptionInputArgs, null)) as {
     recordId: string;
   };
-
-  console.log('uploadedResult', uploadedResult);
   const fileId = uploadedResult.recordId;
-
   return fileId ? { status: true, fileId } : { status: false, fileId: '' };
 };

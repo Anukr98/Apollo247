@@ -60,7 +60,6 @@ import {
 import { FlatList, NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
 import { AppsFlyerEventName, AppsFlyerEvents } from '../../helpers/AppsFlyerEvents';
 import { useAppCommonData } from '../AppCommonDataProvider';
-import { CommonVideoPlayer } from '../ui/CommonVideoPlayer';
 import { ConsultTypeCard } from '../ui/ConsultTypeCard';
 import {
   ApolloDoctorIcon,
@@ -174,6 +173,7 @@ const Appointments: Appointments[] = [
 
 export interface DoctorDetailsProps extends NavigationScreenProps {}
 export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
+  const consultedWithDoctorBefore = props.navigation.getParam('consultedWithDoctorBefore');
   const [displayoverlay, setdisplayoverlay] = useState<boolean>(false);
   const [consultMode, setConsultMode] = useState<ConsultMode>(ConsultMode.ONLINE);
   const [onlineSelected, setOnlineSelected] = useState<boolean>(true);
@@ -259,6 +259,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         fetchPolicy: 'no-cache',
       })
       .then(({ data }) => {
+        console.log('appointmentHistory--------', data.getAppointmentHistory.appointmentsHistory);
         try {
           if (
             data &&
@@ -335,10 +336,15 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   };
 
   const fetchDoctorDetails = () => {
+    const input = {
+      id: doctorId,
+    };
+    console.log('input ', input);
+
     client
       .query<getDoctorDetailsById>({
         query: GET_DOCTOR_DETAILS_BY_ID,
-        variables: { id: doctorId },
+        variables: input,
         fetchPolicy: 'no-cache',
       })
       .then(({ data }) => {
@@ -549,10 +555,17 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
               >
                 <View>
                   {!!clinicAddress && (
-                    <Text style={[styles.doctorLocation, { paddingTop: 11 }]}>{clinicAddress}</Text>
+                    <Text style={[styles.doctorLocation, { paddingTop: 11, width: width - 120 }]}>
+                      {clinicAddress}
+                    </Text>
                   )}
                   {doctorDetails.languages ? (
-                    <Text style={[styles.doctorLocation, { paddingBottom: 11, paddingTop: 4 }]}>
+                    <Text
+                      style={[
+                        styles.doctorLocation,
+                        { paddingBottom: 11, paddingTop: 4, width: width - 120 },
+                      ]}
+                    >
                       {doctorDetails.languages.split(',').join(' | ')}
                     </Text>
                   ) : null}
@@ -911,7 +924,12 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   };
 
   const renderAppointmentHistory = () => {
-    const arrayHistory = appointmentHistory ? appointmentHistory : [];
+    let arrayHistory = appointmentHistory ? appointmentHistory : [];
+    arrayHistory = arrayHistory.filter((item) => {
+      return item.status == 'COMPLETED';
+    });
+
+    console.log('arrayHistory-----------', arrayHistory);
     if (arrayHistory.length > 0) {
       return (
         <View style={styles.cardView}>
@@ -929,6 +947,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
             data={arrayHistory}
             renderItem={({ item }) => (
               <TouchableOpacity
+                activeOpacity={1}
                 onPress={() => {
                   console.log('itemdoc', item, doctorDetails);
                   props.navigation.navigate(AppRoutes.ConsultDetails, {
@@ -971,22 +990,38 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                       .local()
                       .format('DD MMMM, hh:mm A')}
                   </Text>
-                  {/* <View style={styles.separatorStyle} />
-                  <View style={{ flexDirection: 'row' }}>
-                    {Appointments[0].symptoms.map((name, index) => (
-                      <CapsuleView
-                        key={index}
-                        title={name}
-                        isActive={false}
-                        style={{ width: 'auto', marginRight: 4, marginTop: 11 }}
-                        titleTextStyle={{ color: theme.colors.SKY_BLUE }}
-                      />
-                    ))}
-                  </View> */}
+                  <View style={styles.separatorStyle} />
+                  {item.caseSheet && renderAppointmentSymptoms(item)}
                 </View>
               </TouchableOpacity>
             )}
           />
+        </View>
+      );
+    }
+  };
+
+  const renderAppointmentSymptoms = (
+    item: getAppointmentHistory_getAppointmentHistory_appointmentsHistory
+  ) => {
+    const symptomsJson = g(item, 'caseSheet');
+    console.log('symptomsJson', symptomsJson);
+    if (symptomsJson && symptomsJson.length != 0) {
+      console.log('symptomsJson-----', symptomsJson);
+      return (
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+          {symptomsJson &&
+            symptomsJson[0] &&
+            symptomsJson[0].symptoms &&
+            symptomsJson[0].symptoms.map((item, index) => (
+              <CapsuleView
+                key={index}
+                title={item && item.symptom}
+                isActive={false}
+                style={{ width: 'auto', marginRight: 4, marginTop: 11 }}
+                titleTextStyle={{ color: theme.colors.SKY_BLUE }}
+              />
+            ))}
         </View>
       );
     }
@@ -1142,6 +1177,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         <ConsultOverlay
           setdisplayoverlay={() => setdisplayoverlay(false)}
           navigation={props.navigation}
+          consultedWithDoctorBefore={consultedWithDoctorBefore}
           doctor={doctorDetails ? doctorDetails : null}
           patientId={currentPatient ? currentPatient.id : ''}
           clinics={doctorDetails.doctorHospital ? doctorDetails.doctorHospital : []}
@@ -1178,27 +1214,6 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
             justifyContent: 'center',
           }}
         >
-          {doctorDetails && (
-            <>
-              <CommonVideoPlayer isPlayClicked={!showVideo} />
-              <TouchableOpacity
-                activeOpacity={1}
-                onPress={() => {
-                  console.log('tapped');
-                  setTimeout(() => {
-                    setShowVideo(false);
-                  }, 2000);
-                }}
-                style={{
-                  position: 'absolute',
-                  height: 160,
-                  width: '100%',
-                }}
-              >
-                <View style={{ position: 'absolute', height: 160, width: '100%' }} />
-              </TouchableOpacity>
-            </>
-          )}
           {!showVideo &&
           doctorDetails &&
           doctorDetails &&
@@ -1212,7 +1227,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                 source={{ uri: doctorDetails.photoUrl }}
                 style={{ top: 0, height: 140, width: 140, opacity: imgOp }}
               />
-              <TouchableOpacity
+              {/* <TouchableOpacity
                 activeOpacity={1}
                 onPress={() => {
                   setShowVideo(true);
@@ -1236,7 +1251,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                 >
                   <VideoPlayIcon style={{ height: 33, width: 33 }} />
                 </View>
-              </TouchableOpacity>
+              </TouchableOpacity> */}
             </>
           ) : (
             !showVideo &&
@@ -1251,7 +1266,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
               >
                 <DoctorPlaceholderImage style={{ top: 0, height: 140, width: 140 }} />
 
-                <TouchableOpacity
+                {/* <TouchableOpacity
                   activeOpacity={1}
                   onPress={() => {
                     setShowVideo(true);
@@ -1275,7 +1290,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                   >
                     <VideoPlayIcon style={{ height: 33, width: 33 }} />
                   </View>
-                </TouchableOpacity>
+                </TouchableOpacity> */}
               </View>
             )
           )}

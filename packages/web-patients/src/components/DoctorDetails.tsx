@@ -14,7 +14,6 @@ import { useApolloClient } from 'react-apollo-hooks';
 import Typography from '@material-ui/core/Typography';
 import { OnlineConsult } from 'components/OnlineConsult';
 import { VisitClinic } from 'components/VisitClinic';
-import { useAllCurrentPatients } from 'hooks/authHooks';
 import { GET_DOCTOR_DETAILS_BY_ID } from 'graphql/doctors';
 import {
   GetDoctorDetailsById,
@@ -40,6 +39,10 @@ import { HowCanConsult } from 'components/Doctors/HowCanConsult';
 import { AppDownload } from 'components/Doctors/AppDownload';
 import { NavigationBottom } from 'components/NavigationBottom';
 import { GetDoctorNextAvailableSlot } from 'graphql/types/GetDoctorNextAvailableSlot';
+import { GetDoctorDetailsById_getDoctorDetailsById as DoctorDetailsType } from 'graphql/types/GetDoctorDetailsById';
+import { doctorProfileViewTracking } from 'webEngageTracking';
+import { getDiffInMinutes } from 'helpers/commonHelpers';
+
 export interface DoctorDetailsProps {
   id: string;
 }
@@ -218,33 +221,50 @@ const TabContainer: React.FC = (props) => {
 export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const { isSignedIn } = useAuth();
   const classes = useStyles({});
-  const params = useParams<{ id: string; specialty: string }>();
-  const doctorId = params.id;
+  const params = useParams<{ id: string; specialty: string; name: string }>();
+  const nameId = params && params.name && params.id && params.name + '-' + params.id;
+  const nameIdLength = nameId && nameId.length;
+  const doctorId = nameIdLength && nameId.slice(nameIdLength - 36);
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
   const [tabValue, setTabValue] = useState<number>(0);
   const [isShownOnce, setIsShownOnce] = useState<boolean>(false);
-  const { currentPatient } = useAllCurrentPatients();
-  const isMediumScreen = useMediaQuery('(min-width:768px) and (max-width:900px)');
-  const isSmallScreen = useMediaQuery('(max-width:767px)');
   const apolloClient = useApolloClient();
-  const [data, setData] = useState<any>();
+  const [doctorData, setDoctorData] = useState<DoctorDetailsType | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [structuredJSON, setStructuredJSON] = useState(null);
+  const [breadcrumbJSON, setBreadcrumbJSON] = useState(null);
   const [metaTagProps, setMetaTagProps] = useState(null);
   const [doctorAvailableSlots, setDoctorAvailableSlots] = useState<GetDoctorNextAvailableSlot>();
-  const currentUserId = currentPatient && currentPatient.id;
+  const [error, setError] = useState<boolean>(false);
+  const isMediumScreen = useMediaQuery('(min-width:768px) and (max-width:900px)');
+  const isSmallScreen = useMediaQuery('(max-width:767px)');
 
-  const doctorPhysicalSlot =
+  const doctorSlots =
     doctorAvailableSlots &&
     doctorAvailableSlots.getDoctorNextAvailableSlot &&
-    doctorAvailableSlots.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0] &&
-    doctorAvailableSlots.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0].physicalAvailableSlot;
+    doctorAvailableSlots.getDoctorNextAvailableSlot.doctorAvailalbeSlots &&
+    doctorAvailableSlots.getDoctorNextAvailableSlot.doctorAvailalbeSlots.length > 0 &&
+    doctorAvailableSlots.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0];
 
-  const doctorAvailableOnlineSlot =
-    doctorAvailableSlots &&
-    doctorAvailableSlots.getDoctorNextAvailableSlot &&
-    doctorAvailableSlots.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0] &&
-    doctorAvailableSlots.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0].availableSlot;
+  useEffect(() => {
+    if (doctorSlots && doctorSlots.availableSlot) {
+      const {
+        doctorType,
+        experience,
+        fullName,
+        specialty: { name },
+      } = doctorData;
+      const eventData = {
+        availableInMins: getDiffInMinutes(doctorSlots.availableSlot),
+        docCategory: doctorType,
+        exp: experience,
+        name: fullName,
+        specialty: name,
+      };
+      doctorProfileViewTracking(eventData);
+    }
+  }, [doctorSlots, doctorData]);
+
   useEffect(() => {
     setLoading(true);
     apolloClient
@@ -252,29 +272,22 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         query: GET_DOCTOR_DETAILS_BY_ID,
         variables: { id: doctorId },
       })
-      .then((response) => {
-        setData(response.data);
-        setLoading(false);
-        if (
-          response.data &&
-          response.data.getDoctorDetailsById &&
-          Object.keys(response.data.getDoctorDetailsById).length
-        ) {
+      .then(({ data }: any) => {
+        if (data && data.getDoctorDetailsById) {
+          setDoctorData(data.getDoctorDetailsById);
           const {
-            getDoctorDetailsById: {
-              id,
-              fullName,
-              photoUrl,
-              firstName,
-              lastName,
-              doctorHospital,
-              specialty,
-              onlineConsultationFees,
-              physicalConsultationFees,
-              consultHours,
-              salutation,
-            },
-          } = response.data;
+            id,
+            fullName,
+            photoUrl,
+            firstName,
+            lastName,
+            doctorHospital,
+            specialty,
+            onlineConsultationFees,
+            physicalConsultationFees,
+            consultHours,
+            salutation,
+          } = data.getDoctorDetailsById;
           const openingHours = consultHours ? getOpeningHrs(consultHours) : '';
           let streetLine1 = '',
             city = '',
@@ -340,6 +353,40 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
             },
             medicalSpecialty: specialty ? specialty.name : '',
           });
+          setBreadcrumbJSON({
+            '@context': 'https://schema.org/',
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+              {
+                '@type': 'ListItem',
+                position: 1,
+                name: 'HOME',
+                item: 'https://www.apollo247.com/',
+              },
+              {
+                '@type': 'ListItem',
+                position: 2,
+                name: 'SPECIALTIES',
+                item: 'https://www.apollo247.com/specialties',
+              },
+              {
+                '@type': 'ListItem',
+                position: 3,
+                name: specialty ? specialty.name : '',
+                item: `https://www.apollo247.com/specialties/${readableParam(
+                  specialty ? specialty.name : ''
+                )}`,
+              },
+              {
+                '@type': 'ListItem',
+                position: 4,
+                name: fullName ? fullName : `${firstName} ${lastName}`,
+                item: `https://www.apollo247.com/specialties/${readableParam(
+                  specialty ? specialty.name : ''
+                )}/${readableParam(fullName ? fullName : `${firstName} ${lastName}`)}-${id}`,
+              },
+            ],
+          });
           setMetaTagProps({
             title: `${fullName}: ${
               specialty && specialty.name ? specialty.name : ''
@@ -353,6 +400,14 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
               `${window.location.origin}/doctors/${readableParam(fullName)}-${id}`,
           });
         }
+        setError(false);
+      })
+      .catch((e) => {
+        console.log(e);
+        setError(true);
+      })
+      .finally(() => {
+        setLoading(false);
       });
   }, []);
 
@@ -360,64 +415,34 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     return <LinearProgress className={classes.loader} />;
   }
 
-  const availableForPhysicalConsultation = true,
-    availableForVirtualConsultation = true;
+  if (error) {
+    return <>Error Loading the data</>;
+  }
 
-  const doctorDetails = data && data.getDoctorDetailsById ? data : null;
-  const doctorTimings =
-    data && data.getDoctorDetailsById && data.getDoctorDetailsById.consultHours
-      ? data && data.getDoctorDetailsById.consultHours
-      : null;
-  const gtmTrackingFunc = () => {
-    /* Gtm code start */
-    const speciality =
-      doctorDetails &&
-      doctorDetails.getDoctorDetailsById &&
-      doctorDetails.getDoctorDetailsById.specialty &&
-      doctorDetails.getDoctorDetailsById.specialty.name
-        ? doctorDetails.getDoctorDetailsById.specialty.name
-        : null;
-    const onlineConsultationFees =
-      doctorDetails &&
-      doctorDetails.getDoctorDetailsById &&
-      doctorDetails.getDoctorDetailsById.onlineConsultationFees
-        ? doctorDetails.getDoctorDetailsById.onlineConsultationFees
-        : null;
-    gtmTracking({
-      category: 'Consultations',
-      action: speciality,
-      label: 'Order Initiated',
-      value: onlineConsultationFees,
-    });
-    /* Gtm code end */
-  };
-
-  if (doctorDetails) {
-    const isStarDoctor =
-      doctorDetails &&
-      doctorDetails.getDoctorDetailsById &&
-      doctorDetails.getDoctorDetailsById.doctorType === DoctorType.STAR_APOLLO
-        ? true
-        : false;
+  if (doctorData) {
+    const doctorTimings = doctorData.consultHours || null;
+    const gtmTrackingFunc = () => {
+      /* Gtm code start */
+      const speciality =
+        doctorData && doctorData.specialty && doctorData.specialty.name
+          ? doctorData.specialty.name
+          : null;
+      const onlineConsultationFees =
+        doctorData && doctorData.onlineConsultationFees ? doctorData.onlineConsultationFees : null;
+      gtmTracking({
+        category: 'Consultations',
+        action: speciality,
+        label: 'Order Initiated',
+        value: onlineConsultationFees,
+      });
+      /* Gtm code end */
+    };
+    const doctorId = doctorData.id || '';
 
     const isPayrollDoctor =
-      doctorDetails &&
-      doctorDetails.getDoctorDetailsById &&
-      doctorDetails.getDoctorDetailsById.doctorType === DoctorType.PAYROLL
-        ? true
-        : false;
+      doctorData.doctorType && doctorData.doctorType === DoctorType.PAYROLL ? true : false;
 
-    const doctorId =
-      doctorDetails && doctorDetails.getDoctorDetailsById
-        ? doctorDetails.getDoctorDetailsById.id
-        : '';
-
-    const hasStarTeam =
-      doctorDetails &&
-      doctorDetails.getDoctorDetailsById &&
-      doctorDetails.getDoctorDetailsById.starTeam
-        ? true
-        : false;
+    const hasStarTeam = doctorData.starTeam ? true : false;
 
     return (
       <div className={classes.root}>
@@ -426,44 +451,60 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           <Header />
         </div>
         {structuredJSON && <SchemaMarkup structuredJSON={structuredJSON} />}
+        {breadcrumbJSON && <SchemaMarkup structuredJSON={breadcrumbJSON} />}
         <div className={classes.container}>
           <div className={classes.doctorDetailsPage}>
             <div className={classes.breadcrumbLinks}>
-              <Link className={classes.backArrow} to={clientRoutes.specialityListing()}>
+              <Link className={classes.backArrow} to={clientRoutes.specialties(params.specialty)}>
                 <img src={require('images/ic_back.svg')} alt="" />
               </Link>
-              <Link to={clientRoutes.specialityListing()}>Doctor</Link>
+              <Link to={clientRoutes.welcome()}>Home</Link>
               <img src={require('images/triangle.svg')} alt="" />
-              <Link to={clientRoutes.specialityListing()}>Specialities</Link>
+              <Link to={clientRoutes.specialityListing()}>Specialties</Link>
               <img src={require('images/triangle.svg')} alt="" />
-              <span>Doctor Details</span>
+              {doctorData && (
+                <>
+                  {doctorData.specialty && doctorData.specialty.name ? (
+                    <>
+                      <Link to={clientRoutes.specialties(params.specialty)}>
+                        {doctorData.specialty.name}
+                      </Link>
+                      <img src={require('images/triangle.svg')} alt="" />
+                    </>
+                  ) : null}
+
+                  <span>{doctorData.fullName || ''}</span>
+                </>
+              )}
             </div>
             <div className={classes.doctorProfileSection}>
               <div className={classes.leftSection}>
                 <div className={classes.doctorProfile}>
                   <DoctorProfile
-                    doctorDetails={doctorDetails}
-                    avaPhy={availableForPhysicalConsultation}
-                    avaOnline={availableForVirtualConsultation}
+                    doctorDetails={doctorData}
+                    avaPhy={true}
+                    avaOnline={true}
                     getDoctorAvailableSlots={(value: GetDoctorNextAvailableSlot) => {
                       setDoctorAvailableSlots(value);
                     }}
                   />
                   {!isPayrollDoctor && (
                     <>
-                      <DoctorClinics doctorDetails={doctorDetails} />
-                      {hasStarTeam && <StarDoctorTeam doctorDetails={doctorDetails} />}
+                      <DoctorClinics doctorDetails={doctorData} />
+                      {hasStarTeam && <StarDoctorTeam doctorDetails={doctorData} />}
                     </>
                   )}
                   <DoctorTimings doctorTimings={doctorTimings} />
                 </div>
-                <AppointmentHistory doctorId={doctorId} patientId={currentUserId || ' '} />
+                <AppointmentHistory doctorId={doctorData.id || ''} />
               </div>
               <div className={classes.rightSideBar}>
                 <HowCanConsult
-                  doctorDetails={doctorDetails}
-                  doctorAvailablePhysicalSlots={doctorPhysicalSlot}
-                  doctorAvailableOnlineSlot={doctorAvailableOnlineSlot}
+                  doctorDetails={doctorData}
+                  doctorAvailablePhysicalSlots={
+                    doctorSlots ? doctorSlots.physicalAvailableSlot : ''
+                  }
+                  doctorAvailableOnlineSlot={doctorSlots ? doctorSlots.availableSlot : ''}
                 />
                 <AppDownload />
                 {/* <ProtectedWithLoginPopup>
@@ -511,18 +552,16 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                 setTabValue(newValue);
               }}
             >
-              {availableForVirtualConsultation && (
-                <Tab
-                  classes={{
-                    root: classes.tabRoot,
-                    selected: classes.tabSelected,
-                  }}
-                  label="Consult Online"
-                  title={'Consult Online'}
-                />
-              )}
+              <Tab
+                classes={{
+                  root: classes.tabRoot,
+                  selected: classes.tabSelected,
+                }}
+                label="Consult Online"
+                title={'Consult Online'}
+              />
 
-              {availableForPhysicalConsultation && !isPayrollDoctor && (
+              {!isPayrollDoctor && (
                 <Tab
                   classes={{
                     root: classes.tabRoot,
@@ -533,13 +572,12 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                 />
               )}
             </Tabs>
-            {tabValue === 0 && availableForVirtualConsultation && (
+            {tabValue === 0 && (
               <TabContainer>
                 <OnlineConsult
                   setIsPopoverOpen={setIsPopoverOpen}
-                  doctorDetails={doctorDetails}
+                  doctorDetails={doctorData}
                   onBookConsult={(popover: boolean) => setIsPopoverOpen(popover)}
-                  isRescheduleConsult={false}
                   tabValue={(tabValue: number) => setTabValue(tabValue)}
                   setIsShownOnce={(isShownOnce: boolean) => setIsShownOnce(isShownOnce)}
                   isShownOnce={isShownOnce}
@@ -547,10 +585,10 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
               </TabContainer>
             )}
 
-            {tabValue === 1 && availableForPhysicalConsultation && !isPayrollDoctor && (
+            {tabValue === 1 && !isPayrollDoctor && (
               <TabContainer>
                 <LocationProvider>
-                  <VisitClinic doctorDetails={doctorDetails} />
+                  <VisitClinic doctorDetails={doctorData} />
                 </LocationProvider>
               </TabContainer>
             )}

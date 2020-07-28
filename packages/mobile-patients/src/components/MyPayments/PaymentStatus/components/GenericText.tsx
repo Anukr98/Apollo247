@@ -22,7 +22,6 @@ export const textComponent = (
         marginHorizontal: needStyle ? 0.1 * windowWidth : undefined,
       }}
       numberOfLines={numOfLines}
-      selectable={true}
     >
       {message}
     </Text>

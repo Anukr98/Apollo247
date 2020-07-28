@@ -80,6 +80,8 @@ import {
   ModifyCaseSheetInput,
   REQUEST_ROLES,
   STATUS,
+  BOOKINGSOURCE,
+  DEVICETYPE,
 } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
 import {
   initateConferenceTelephoneCall,
@@ -119,13 +121,14 @@ import {
   Text,
   TouchableOpacity,
   View,
+  Platform,
 } from 'react-native';
 import firebase from 'react-native-firebase';
 import KeepAwake from 'react-native-keep-awake';
-import { NavigationScreenProps } from 'react-navigation';
+import { NavigationScreenProps, ScrollView } from 'react-navigation';
 
 const { width } = Dimensions.get('window');
-let joinTimerNoShow: NodeJS.Timeout;
+// let joinTimerNoShow: NodeJS.Timeout;  //APP-2812: removed NoShow
 const styles = ConsultRoomScreenStyles;
 
 const timer = 900;
@@ -190,7 +193,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     preselectTabIndex ? tabsData[preselectTabIndex].title : tabsData[0].title
   );
   const flatListRef = useRef<FlatList<never> | undefined | null>();
-
+  const [messageText, setMessageText] = useState<string>('');
   const [messages, setMessages] = useState([]);
   const [displayReSchedulePopUp, setDisplayReSchedulePopUp] = useState<boolean>(false);
 
@@ -202,7 +205,9 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     props.navigation.getParam('caseSheetEnableEdit') || false
   );
   const [showEditPreviewButtons, setShowEditPreviewButtons] = useState<boolean>(false);
-  const [chatFiles, setChatFiles] = useState<{ prismId: string | null; url: string }[]>([]);
+  const [chatFiles, setChatFiles] = useState<
+    { prismId: string | null; url: string; fileType: 'image' | 'pdf' }[]
+  >([]);
   const [symptonsData, setSymptonsData] = useState<
     (GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms | null)[] | null
   >([]);
@@ -257,13 +262,17 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     return () => {
       didFocusSubscription && didFocusSubscription.remove();
       willBlurSubscription && willBlurSubscription.remove();
-      stopNoShow();
+      // stopNoShow();
       callOptions.stopMissedCallTimer();
       stopAutoSaveTimer();
       AsyncStorage.removeItem('editedInputData');
       AsyncStorage.removeItem('prevSavedData');
       AsyncStorage.removeItem('chatFileData');
+      AsyncStorage.removeItem('scrollToEnd');
+      AsyncStorage.removeItem('callDataSend');
       KeepAwake.deactivate();
+      pubnub.unsubscribeAll();
+      pubnub.stop();
     };
   }, []);
 
@@ -274,7 +283,13 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       });
     }
   }, [appointmentData]);
-
+  useEffect(() => {
+    if (startConsult) {
+      AsyncStorage.setItem('showInAppNotification', 'false');
+    } else {
+      AsyncStorage.setItem('showInAppNotification', 'true');
+    }
+  }, [startConsult]);
   const backDataFunctionality = () => {
     try {
       console.log(callhandelBack, 'is back called');
@@ -366,13 +381,18 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   ) => {
     if (familyValues) {
       let familyHistory: string = '';
-      familyValues.forEach((i) => {
-        if (i) {
-          familyHistory += i.relation
-            ? i.relation + ': ' + (i.description || '') + '\n'
-            : (i.description || '') + '\n';
-        }
-      });
+      if (familyValues[0]) {
+        familyHistory += familyValues[0].relation
+          ? familyValues[0].relation + ': ' + (familyValues[0].description || '') + '\n'
+          : (familyValues[0].description || '') + '\n';
+      }
+      // familyValues.forEach((i) => {
+      //   if (i) {
+      //     familyHistory += i.relation
+      //       ? i.relation + ': ' + (i.description || '') + '\n'
+      //       : (i.description || '') + '\n';
+      //   }
+      // });
       return familyHistory.slice(0, -1);
     } else {
       return '';
@@ -803,13 +823,13 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           .filter((i) => i !== '')
           .join('\n')
           .trim(),
-      familyHistory:
-        familyValues &&
-        getFamilyHistoryObject(familyValues)
-          .map((i) => (i ? (i.relation ? i.relation + ': ' + i.description : i.description) : ''))
-          .filter((i) => i !== '')
-          .join('\n')
-          .trim(),
+      familyHistory: familyValues,
+      //  &&
+      // getFamilyHistoryObject(familyValues)
+      //   .map((i) => (i ? (i.relation ? i.relation + ': ' + i.description : i.description) : ''))
+      //   .filter((i) => i !== '')
+      //   .join('\n')
+      //   .trim(),
       dietAllergies: medicalHistory ? medicalHistory.dietAllergies || '' : '',
       drugAllergies: medicalHistory ? medicalHistory.drugAllergies || '' : '',
       height: medicalHistory ? medicalHistory.height || '' : '',
@@ -901,29 +921,26 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     }
   };
 
-  const [remainingTime, setRemainingTime] = useState<number>(900);
-  const [consultStarted, setConsultStarted] = useState<boolean>(false);
+  // const [remainingTime, setRemainingTime] = useState<number>(900);
+  // const [consultStarted, setConsultStarted] = useState<boolean>(false);
+  // let patientJoined = false; //APP-2812: removed NoShow
+  // let abondmentStarted = false;
+  // const timediffInSec = moment(Appintmentdatetime).diff(moment(new Date()), 's');
+  // const startNoShow = (timer: number, callback?: () => void) => {
+  //   stopNoShow();
+  //   joinTimerNoShow = setInterval(() => {
+  //     timer = timer - 1;
+  //     if (timer === 0) {
+  //       stopNoShow();
+  //       callback && callback();
+  //     }
+  //   }, 1000);
+  // };
 
-  let patientJoined = false;
-  let abondmentStarted = false;
-
-  const timediffInSec = moment(Appintmentdatetime).diff(moment(new Date()), 's');
-
-  const startNoShow = (timer: number, callback?: () => void) => {
-    stopNoShow();
-    joinTimerNoShow = setInterval(() => {
-      timer = timer - 1;
-      if (timer === 0) {
-        stopNoShow();
-        callback && callback();
-      }
-    }, 1000);
-  };
-
-  const stopNoShow = () => {
-    console.log('storpvi', joinTimerNoShow);
-    joinTimerNoShow && clearInterval(joinTimerNoShow);
-  };
+  // const stopNoShow = () => {
+  //   console.log('storpvi', joinTimerNoShow);
+  //   joinTimerNoShow && clearInterval(joinTimerNoShow);
+  // };
 
   const startAutoSaveTimer = (timer: number, callback?: () => void) => {
     stopAutoSaveTimer();
@@ -1024,7 +1041,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   };
 
   const endAppointmentApiCall = (status: STATUS) => {
-    stopNoShow();
+    // stopNoShow();
     callOptions.stopMissedCallTimer();
     setShowLoading(true);
     client
@@ -1035,6 +1052,12 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             appointmentId: AppId,
             status: status,
             noShowBy: REQUEST_ROLES.PATIENT,
+            callSource: BOOKINGSOURCE.MOBILE,
+            deviceType: Platform.OS === 'ios' ? DEVICETYPE.IOS : DEVICETYPE.ANDROID,
+            appVersion:
+              Platform.OS === 'ios'
+                ? AppConfig.Configuration.iOS_Version
+                : AppConfig.Configuration.Android_Version,
           },
         },
         fetchPolicy: 'no-cache',
@@ -1107,6 +1130,12 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           appointmentId: AppId,
           callType: callType,
           doctorType: DOCTOR_CALL_TYPE.SENIOR,
+          callSource: BOOKINGSOURCE.MOBILE,
+          deviceType: Platform.OS === 'ios' ? DEVICETYPE.IOS : DEVICETYPE.ANDROID,
+          appVersion:
+            Platform.OS === 'ios'
+              ? AppConfig.Configuration.iOS_Version
+              : AppConfig.Configuration.Android_Version,
         },
       })
       .then((_data) => {
@@ -1133,29 +1162,28 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       .catch((error) => {});
   };
 
-  const startInterval = (timer: number) => {
-    setConsultStarted(true);
-    intervalId = setInterval(() => {
-      timer = timer - 1;
-      stoppedTimer = timer;
-      setRemainingTime(timer);
-      // console.log('descriptionTextStyle remainingTime', timer);
+  // const startInterval = (timer: number) => { //Consult remaning time
+  //   setConsultStarted(true);
+  //   intervalId = setInterval(() => {
+  //     timer = timer - 1;
+  //     stoppedTimer = timer;
+  //     setRemainingTime(timer);
+  //     // console.log('descriptionTextStyle remainingTime', timer);
 
-      if (timer == 0) {
-        // console.log('descriptionTextStyles remainingTime', timer);
-        setRemainingTime(0);
-        clearInterval(intervalId);
-      }
-    }, 1000);
-    console.log('intervalId', intervalId);
-  };
+  //     if (timer == 0) {
+  //       // console.log('descriptionTextStyles remainingTime', timer);
+  //       setRemainingTime(0);
+  //       clearInterval(intervalId);
+  //     }
+  //   }, 1000);
+  //   console.log('intervalId', intervalId);
+  // };
 
-  const stopInterval = () => {
-    const stopTimer = 900 - stoppedTimer;
-
-    setRemainingTime(stopTimer);
-    intervalId && clearInterval(intervalId);
-  };
+  // const stopInterval = () => {
+  //   const stopTimer = 900 - stoppedTimer;
+  //   setRemainingTime(stopTimer);
+  //   intervalId && clearInterval(intervalId);
+  // };
 
   const config: Pubnub.PubnubConfig = {
     subscribeKey: AppConfig.Configuration.PRO_PUBNUB_SUBSCRIBER,
@@ -1166,7 +1194,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     keepAlive: true,
     // autoNetworkDetection: true,
     // listenToBrowserNetworkEvents: true,
-    presenceTimeout: 20,
+    // presenceTimeout: 20, //APP-2812: removed NoShow
     heartbeatInterval: 20,
   };
 
@@ -1185,7 +1213,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   useEffect(() => {
     pubnub.subscribe({
       channels: [channel],
-      withPresence: true,
+      // withPresence: true,//APP-2812: removed NoShow
     });
 
     getHistory(0);
@@ -1213,6 +1241,24 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               callOptions.stopMissedCallTimer();
               break;
             case messageCodes.endCallMsg:
+              const callBack = async () => {
+                const callDataSend = JSON.parse(
+                  (await AsyncStorage.getItem('callDataSend')) || 'false'
+                );
+                if (!callDataSend) {
+                  firebase
+                    .analytics()
+                    .logEvent(
+                      callOptions.isAudio ? 'Doctor_audio_call_end' : 'Doctor_video_call_end',
+                      {
+                        caseSheet: caseSheet,
+                        callDuration: callData.callDuration,
+                      }
+                    );
+                  AsyncStorage.setItem('callDataSend', 'true');
+                }
+              };
+              callBack();
               callOptions.stopCalls(false);
               callOptions.setCallAccepted(false);
               break;
@@ -1261,6 +1307,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               chatFilesRetrived.push({
                 prismId: message.prismId,
                 url: message.url,
+                fileType: message.fileType,
               });
               AsyncStorage.setItem('chatFileData', JSON.stringify(chatFilesRetrived));
               setChatFiles(chatFilesRetrived);
@@ -1273,66 +1320,67 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           CommonBugFender('Chatfile_update', error);
         }
       },
-      presence: (presenceEvent) => {
-        pubnub
-          .hereNow({
-            channels: [channel],
-            includeUUIDs: true,
-          })
-          .then(async (response: HereNowResponse) => {
-            console.log('hereNowresponse', response);
-            const data = response.channels[channel].occupants;
-            const isAudio = JSON.parse((await AsyncStorage.getItem('isAudio')) || 'false');
-            const isVideo = JSON.parse((await AsyncStorage.getItem('isVideo')) || 'false');
-            const callAccepted = JSON.parse(
-              (await AsyncStorage.getItem('callAccepted')) || 'false'
-            );
-            const occupancyPatient = data.filter((obj) => {
-              return obj.uuid === REQUEST_ROLES.PATIENT || obj.uuid.indexOf('PATIENT_') > -1;
-            });
-            console.log('occupancyPatient', occupancyPatient);
-            if (occupancyPatient.length > 0) {
-              stopNoShow();
-              joinTimerNoShow && clearInterval(joinTimerNoShow);
-              abondmentStarted = false;
-              patientJoined = true;
-            }
-            // else if (occupancyPatient.length === 0 && (isAudio || isVideo) && callAccepted) {
-            //   stopAllCalls(isAudio ? 'A' : isVideo ? 'V' : undefined);
-            //   showAphAlert &&
-            //     showAphAlert({
-            //       title: strings.common.alert,
-            //       description: 'Call Disconnected',
-            //     });
-            // }
-            // else {
-            //   console.log(
-            //     'Call ab',
-            //     !abondmentStarted && patientJoined,
-            //     patientJoined,
-            //     abondmentStarted
-            //   );
-            //   if (
-            //     !abondmentStarted &&
-            //     patientJoined &&
-            //     ![STATUS.COMPLETED, STATUS.NO_SHOW, STATUS.CALL_ABANDON, STATUS.CANCELLED].includes(
-            //       (appointmentData || g(caseSheet, 'caseSheetDetails', 'appointment')).status
-            //     )
-            //   ) {
-            //     abondmentStarted = true;
-            //     startNoShow(600, () => {
-            //       callAbandonmentCall();
-            //     });
-            //   }
-            // }
-            // const PatientConsultStartedMessage = insertText.filter((obj: any) => {
-            //   return obj.message === messageCodes.consultPatientStartedMsg;
-            // });
-          })
-          .catch((error) => {
-            console.log(error);
-          });
-      },
+      // presence: (presenceEvent) => {//APP-2812: removed NoShow
+      //   pubnub
+      //     .hereNow({
+      //       channels: [channel],
+      //       includeUUIDs: true,
+      //     })
+      //     .then(async (response: HereNowResponse) => {
+      //       console.log('hereNowresponse', response);
+      //       const data = response.channels[channel].occupants;
+      //       const isAudio = JSON.parse((await AsyncStorage.getItem('isAudio')) || 'false');
+      //       const isVideo = JSON.parse((await AsyncStorage.getItem('isVideo')) || 'false');
+      //       const callAccepted = JSON.parse(
+      //         (await AsyncStorage.getItem('callAccepted')) || 'false'
+      //       );
+      //       const occupancyPatient = data.filter((obj) => {
+      //         return obj.uuid === REQUEST_ROLES.PATIENT || obj.uuid.indexOf('PATIENT_') > -1;
+      //       });
+      //       console.log('occupancyPatient', occupancyPatient);
+      //       if (occupancyPatient.length > 0) {
+      //          stopNoShow();
+      //         joinTimerNoShow && clearInterval(joinTimerNoShow);
+      //         abondmentStarted = false;
+      //         patientJoined = true;
+      //       }
+      // else if (occupancyPatient.length === 0 && (isAudio || isVideo) && callAccepted) {
+      //   stopAllCalls(isAudio ? 'A' : isVideo ? 'V' : undefined);
+      //   showAphAlert &&
+      //     showAphAlert({
+      //       title: strings.common.alert,
+      //       description: 'Call Disconnected',
+      //     });
+      // }
+      //APP-1995: removed call abandonment
+      // else {
+      //   console.log(
+      //     'Call ab',
+      //     !abondmentStarted && patientJoined,
+      //     patientJoined,
+      //     abondmentStarted
+      //   );
+      //   if (
+      //     !abondmentStarted &&
+      //     patientJoined &&
+      //     ![STATUS.COMPLETED, STATUS.NO_SHOW, STATUS.CALL_ABANDON, STATUS.CANCELLED].includes(
+      //       (appointmentData || g(caseSheet, 'caseSheetDetails', 'appointment')).status
+      //     )
+      //   ) {
+      //     abondmentStarted = true;
+      //     startNoShow(600, () => {
+      //       callAbandonmentCall();
+      //     });
+      //   }
+      // }
+      // const PatientConsultStartedMessage = insertText.filter((obj: any) => {
+      //   return obj.message === messageCodes.consultPatientStartedMsg;
+      // });
+      //     })
+      //     .catch((error) => {
+      //       console.log(error);
+      //     });
+      // },
     });
 
     const addMessages = (message: Pubnub.MessageEvent) => {
@@ -1391,11 +1439,15 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             }
             insertText = newmessage;
             setMessages(newmessage as []);
-            const files: { prismId: string | null; url: string }[] = [];
+            const files: { prismId: string | null; url: string; fileType: 'image' | 'pdf' }[] = [];
 
             newmessage.forEach((element, index) => {
               if (element.id === patientId && element.message === messageCodes.imageconsult) {
-                files.push({ prismId: element.prismId, url: element.url });
+                files.push({
+                  prismId: element.prismId,
+                  url: element.url,
+                  fileType: element.fileType,
+                });
               }
             });
             setChatFiles(files);
@@ -1449,6 +1501,13 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       onCallEnd: (consultType, callDuration) => {
         callOptions.stopMissedCallTimer();
         endCallNotificationAPI(true);
+        firebase
+          .analytics()
+          .logEvent(callType == 'A' ? 'Doctor_audio_call_end' : 'Doctor_video_call_end', {
+            caseSheet: caseSheet,
+            callDuration: callDuration,
+          });
+        AsyncStorage.setItem('callDataSend', 'true');
         pubnub.publish(
           {
             message: {
@@ -1473,6 +1532,11 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     setShowPopUp(false);
     sendCallNotificationAPI(callType === 'V' ? APPT_CALL_TYPE.VIDEO : APPT_CALL_TYPE.AUDIO, true);
     Keyboard.dismiss();
+    AsyncStorage.setItem('callDisconnected', 'false');
+    firebase.analytics().logEvent(callType == 'A' ? 'Doctor_audio_call' : 'Doctor_video_call', {
+      caseSheet: caseSheet,
+    });
+    AsyncStorage.setItem('callDataSend', 'false');
     pubnub.publish(
       {
         message: {
@@ -1636,13 +1700,35 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       appointmentData: appointmentData,
     });
   };
+  const SrollRef = useRef<any>();
+  useEffect(() => {
+    if (SrollRef.current) {
+      if (activeTabIndex === tabsData[0].title) {
+        SrollRef.current.scrollTo({ x: 0, y: 0, animated: false });
+      } else {
+        SrollRef.current.scrollToEnd({ animated: false });
+        setTimeout(() => {
+          AsyncStorage.getItem('scrollToEnd').then((data) => {
+            if (JSON.parse(data || 'true')) {
+              flatListRef.current && flatListRef.current.scrollToEnd();
+            }
+            AsyncStorage.setItem('scrollToEnd', 'false');
+          });
+        }, 1000);
+      }
+    }
+  }, [SrollRef, activeTabIndex, tabsData]);
+
   const renderTabPage = () => {
     return (
       <>
         <View style={[styles.shadowview]}>
           <TabsComponent
             data={tabsData}
-            onChange={(index) => setActiveTabIndex(index)}
+            onChange={(index) => {
+              Keyboard.dismiss();
+              setActiveTabIndex(index);
+            }}
             selectedTab={activeTabIndex}
           />
         </View>
@@ -1652,101 +1738,106 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               flex: 1,
             }}
           >
-            {activeTabIndex == tabsData[0].title ? (
-              <CaseSheetView
-                // disableConsultButton={!!PatientConsultTime}
-                caseSheetVersion={caseSheetVersion}
-                overlayDisplay={(component) => {
-                  setOverlayDisplay(component);
-                }}
-                onStartConsult={onStartConsult}
-                onEndConsult={onEndConsult}
-                onStopConsult={onStopConsult}
-                startConsult={startConsult}
-                navigation={props.navigation}
-                messagePublish={(message: any) => {
-                  pubnub.publish(
-                    {
-                      message,
-                      channel: channel,
-                      storeInHistory: true,
-                    },
-                    (status, response) => {}
-                  );
-                }}
-                inCall={callOptions.isVideo || callOptions.isAudio}
-                chatFiles={chatFiles}
-                setUrl={setUrl}
-                setPatientImageshow={setPatientImageshow}
-                setShowPDF={setShowPDF}
-                favList={favList}
-                favMed={favMed}
-                favTest={favTest}
-                caseSheet={caseSheet}
-                getdetails={() => getCaseSheetAPI()}
-                saveDetails={(
-                  showLoading: boolean,
-                  inputdata?: ModifyCaseSheetInput,
-                  callBack?: () => void
-                ) => saveDetails(showLoading, false, inputdata, callBack)}
-                caseSheetEdit={caseSheetEdit}
-                setCaseSheetEdit={setCaseSheetEdit}
-                showEditPreviewButtons={showEditPreviewButtons}
-                setShowEditPreviewButtons={setShowEditPreviewButtons}
-                symptonsData={symptonsData}
-                setSymptonsData={(data) => setSymptonsData(data)}
-                pastList={pastList}
-                setPastList={setPastList}
-                lifeStyleData={lifeStyleData}
-                setLifeStyleData={setLifeStyleData}
-                medicalHistory={medicalHistory}
-                setMedicalHistory={setMedicalHistory}
-                familyValues={familyValues}
-                setFamilyValues={setFamilyValues}
-                patientDetails={patientDetails}
-                setPatientDetails={setPatientDetails}
-                healthWalletArrayData={healthWalletArrayData}
-                setHealthWalletArrayData={setHealthWalletArrayData}
-                tests={tests}
-                setTests={setTests}
-                addedAdvices={addedAdvices}
-                setAddedAdvices={setAddedAdvices}
-                juniordoctornotes={juniordoctornotes}
-                setJuniorDoctorNotes={setJuniorDoctorNotes}
-                diagnosisData={diagnosisData}
-                setDiagnosisData={setDiagnosisData}
-                medicinePrescriptionData={medicinePrescriptionData}
-                setMedicinePrescriptionData={setMedicinePrescriptionData}
-                selectedMedicinesId={selectedMedicinesId}
-                setSelectedMedicinesId={setSelectedMedicinesId}
-                existingMedicineId={existingMedicineId}
-                removedMedicinePrescriptionData={removedMedicinePrescriptionData}
-                setRemovedMedicinePrescriptionData={setRemovedMedicinePrescriptionData}
-                switchValue={switchValue}
-                setSwitchValue={setSwitchValue}
-                followupDays={followupDays}
-                setFollowupDays={setFollowupDays}
-                followUpConsultationType={followUpConsultationType}
-                setFollowUpConsultationType={setFollowUpConsultationType}
-                doctorNotes={doctorNotes}
-                setDoctorNotes={setDoctorNotes}
-                displayId={displayId}
-                setDisplayId={setDisplayId}
-                prescriptionPdf={prescriptionPdf}
-                setPrescriptionPdf={setPrescriptionPdf}
-                selectedReferral={selectedReferral}
-                setSelectedReferral={setSelectedReferral}
-                referralReason={referralReason}
-                setReferralReason={setReferralReason}
-              />
-            ) : (
-              <View
-                style={{
-                  flex: 1,
-                  width: '100%',
-                }}
-              >
+            <ScrollView
+              ref={SrollRef}
+              horizontal
+              scrollEnabled={false}
+              showsHorizontalScrollIndicator={false}
+              keyboardShouldPersistTaps={'always'}
+            >
+              <View style={{ width: width }}>
+                <CaseSheetView
+                  // disableConsultButton={!!PatientConsultTime}
+                  caseSheetVersion={caseSheetVersion}
+                  overlayDisplay={(component) => {
+                    setOverlayDisplay(component);
+                  }}
+                  onStartConsult={onStartConsult}
+                  onEndConsult={onEndConsult}
+                  onStopConsult={onStopConsult}
+                  startConsult={startConsult}
+                  navigation={props.navigation}
+                  messagePublish={(message: any) => {
+                    pubnub.publish(
+                      {
+                        message,
+                        channel: channel,
+                        storeInHistory: true,
+                      },
+                      (status, response) => {}
+                    );
+                  }}
+                  inCall={callOptions.isVideo || callOptions.isAudio}
+                  chatFiles={chatFiles}
+                  setUrl={setUrl}
+                  setPatientImageshow={setPatientImageshow}
+                  setShowPDF={setShowPDF}
+                  favList={favList}
+                  favMed={favMed}
+                  favTest={favTest}
+                  caseSheet={caseSheet}
+                  getdetails={() => getCaseSheetAPI()}
+                  saveDetails={(
+                    showLoading: boolean,
+                    inputdata?: ModifyCaseSheetInput,
+                    callBack?: () => void
+                  ) => saveDetails(showLoading, false, inputdata, callBack)}
+                  caseSheetEdit={caseSheetEdit}
+                  setCaseSheetEdit={setCaseSheetEdit}
+                  showEditPreviewButtons={showEditPreviewButtons}
+                  setShowEditPreviewButtons={setShowEditPreviewButtons}
+                  symptonsData={symptonsData}
+                  setSymptonsData={(data) => setSymptonsData(data)}
+                  pastList={pastList}
+                  setPastList={setPastList}
+                  lifeStyleData={lifeStyleData}
+                  setLifeStyleData={setLifeStyleData}
+                  medicalHistory={medicalHistory}
+                  setMedicalHistory={setMedicalHistory}
+                  familyValues={familyValues}
+                  setFamilyValues={setFamilyValues}
+                  patientDetails={patientDetails}
+                  setPatientDetails={setPatientDetails}
+                  healthWalletArrayData={healthWalletArrayData}
+                  setHealthWalletArrayData={setHealthWalletArrayData}
+                  tests={tests}
+                  setTests={setTests}
+                  addedAdvices={addedAdvices}
+                  setAddedAdvices={setAddedAdvices}
+                  juniordoctornotes={juniordoctornotes}
+                  setJuniorDoctorNotes={setJuniorDoctorNotes}
+                  diagnosisData={diagnosisData}
+                  setDiagnosisData={setDiagnosisData}
+                  medicinePrescriptionData={medicinePrescriptionData}
+                  setMedicinePrescriptionData={setMedicinePrescriptionData}
+                  selectedMedicinesId={selectedMedicinesId}
+                  setSelectedMedicinesId={setSelectedMedicinesId}
+                  existingMedicineId={existingMedicineId}
+                  removedMedicinePrescriptionData={removedMedicinePrescriptionData}
+                  setRemovedMedicinePrescriptionData={setRemovedMedicinePrescriptionData}
+                  switchValue={switchValue}
+                  setSwitchValue={setSwitchValue}
+                  followupDays={followupDays}
+                  setFollowupDays={setFollowupDays}
+                  followUpConsultationType={followUpConsultationType}
+                  setFollowUpConsultationType={setFollowUpConsultationType}
+                  doctorNotes={doctorNotes}
+                  setDoctorNotes={setDoctorNotes}
+                  displayId={displayId}
+                  setDisplayId={setDisplayId}
+                  prescriptionPdf={prescriptionPdf}
+                  setPrescriptionPdf={setPrescriptionPdf}
+                  selectedReferral={selectedReferral}
+                  setSelectedReferral={setSelectedReferral}
+                  referralReason={referralReason}
+                  setReferralReason={setReferralReason}
+                />
+              </View>
+              <View style={{ width: width }}>
                 <ChatRoom
+                  messageText={messageText}
+                  setMessageText={setMessageText}
+                  patientId={patientId}
                   returnToCall={returnToCall}
                   setReturnToCall={setReturnToCall}
                   setChatReceived={setChatReceived}
@@ -1761,12 +1852,12 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                   setDropdownVisible={setDropdownVisible}
                   patientDetails={patientDetails}
                   extendedHeader={
-                    consultStarted ||
+                    startConsult ||
                     g(caseSheet, 'caseSheetDetails', 'appointment', 'status') === STATUS.COMPLETED
                   }
                 />
               </View>
-            )}
+            </ScrollView>
           </View>
         ) : null}
       </>
@@ -1820,23 +1911,23 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           (status, response) => {
             setActiveTabIndex(tabsData[0].title);
             setStartConsult(true);
-            if (timediffInSec > 0) {
-              startNoShow(timediffInSec, () => {
-                console.log('countdown ', joinTimerNoShow);
-                startNoShow(600, () => {
-                  console.log('Trigger no ShowAPi');
-                  console.log(joinTimerNoShow, 'joinTimerNoShow');
+            // if (timediffInSec > 0) { //APP-2812: removed NoShow
+            //   startNoShow(timediffInSec, () => {
+            //     console.log('countdown ', joinTimerNoShow);
+            //     startNoShow(600, () => {
+            //       console.log('Trigger no ShowAPi');
+            //       console.log(joinTimerNoShow, 'joinTimerNoShow');
 
-                  endAppointmentApiCall(STATUS.NO_SHOW);
-                });
-              });
-            } else {
-              startNoShow(600, () => {
-                console.log('Trigger no ShowAPi');
-                endAppointmentApiCall(STATUS.NO_SHOW);
-              });
-            }
-            startInterval(timer);
+            //       endAppointmentApiCall(STATUS.NO_SHOW);
+            //     });
+            //   });
+            // } else {
+            //   startNoShow(600, () => {
+            //     console.log('Trigger no ShowAPi');
+            //     endAppointmentApiCall(STATUS.NO_SHOW);
+            //   });
+            // }
+            // startInterval(timer);
           }
         );
       })
@@ -1861,9 +1952,9 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         },
         (status, response) => {
           setStartConsult(false);
-          stopInterval();
+          // stopInterval();
           callOptions.stopMissedCallTimer();
-          stopNoShow();
+          // stopNoShow();
         }
       );
     }
@@ -2243,7 +2334,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           },
         ]}
         subView={
-          consultStarted ||
+          startConsult ||
           g(caseSheet, 'caseSheetDetails', 'appointment', 'status') === STATUS.COMPLETED
             ? renderexoTEl()
             : null
@@ -2425,13 +2516,14 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const closeviews = () => {
     setPatientImageshow(false);
     setOverlayDisplay(null);
+    setUrl('');
   };
 
   useEffect(() => {
     if (patientImageshow) {
       setOverlayDisplay(<ImageZoom source={{ uri: url }} zoom pan onClose={() => closeviews()} />);
     }
-  }, [patientImageshow]);
+  }, [patientImageshow, url]);
 
   return (
     <View

@@ -43,6 +43,7 @@ const windowHeight = Dimensions.get('window').height;
 export interface ConsultCheckoutProps extends NavigationScreenProps {}
 
 export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
+  const consultedWithDoctorBefore = props.navigation.getParam('consultedWithDoctorBefore');
   const client = useApolloClient();
   const doctor = props.navigation.getParam('doctor');
   const tabs =
@@ -132,7 +133,8 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
   const getConsultationBookedEventAttributes = (time: string, id: string) => {
     const localTimeSlot = moment(new Date(time));
     console.log(localTimeSlot.format('DD MMM YYYY, h:mm A'));
-
+    let date = new Date(time);
+    // date = new Date(date.getTime() + 5.5 * 60 * 60 * 1000);
     const doctorClinics = (g(doctor, 'doctorHospital') || []).filter((item) => {
       if (item && item.facility && item.facility.facilityType)
         return item.facility.facilityType === 'HOSPITAL';
@@ -153,7 +155,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
       'Customer ID': g(currentPatient, 'id'),
       'Consult ID': id,
       'Speciality ID': g(doctor, 'specialty', 'id'),
-      'Consult Date Time': localTimeSlot.format('DD MMM YYYY, h:mm A'),
+      'Consult Date Time': date,
       'Consult Mode': tabs[0].title === selectedTab ? 'Online' : 'Physical',
       'Hospital Name':
         doctorClinics.length > 0 && doctor!.doctorType !== DoctorType.PAYROLL
@@ -257,6 +259,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
 
         !item.bankCode
           ? props.navigation.navigate(AppRoutes.ConsultPaymentnew, {
+              consultedWithDoctorBefore: consultedWithDoctorBefore,
               doctorName: doctorName,
               doctorID: doctor.id,
               doctor: doctor,
@@ -277,6 +280,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
               ),
             })
           : props.navigation.navigate(AppRoutes.ConsultPaymentnew, {
+              consultedWithDoctorBefore: consultedWithDoctorBefore,
               doctorName: doctorName,
               doctorID: doctor.id,
               doctor: doctor,

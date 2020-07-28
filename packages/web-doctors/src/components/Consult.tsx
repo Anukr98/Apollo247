@@ -173,8 +173,10 @@ interface ConsultProps {
   timerMinuts: number;
   timerSeconds: number;
   isCallAccepted: boolean;
+  isCall: boolean;
   isNewMsg: boolean;
   convertCall: () => void;
+  setIscall: (value: boolean) => void;
   setSessionError: (error: any) => void;
   setPublisherError: (error: any) => void;
   setSubscriberError: (error: any) => void;
@@ -196,7 +198,7 @@ function getCookieValue() {
 
 export const Consult: React.FC<ConsultProps> = (props) => {
   const classes = useStyles({});
-  const [isCall, setIscall] = React.useState(true);
+
   const [isPublishAudio, setIsPublishAudio] = React.useState(true);
   const [callerAudio, setCallerAudio] = React.useState<boolean>(true);
   const [callerVideo, setCallerVideo] = React.useState<boolean>(true);
@@ -213,18 +215,27 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       console.log('session connectionDestroyed', event);
       props.toggelChatVideo();
       props.stopAudioVideoCallpatient();
-      setIscall(false);
+      props.setIscall(false);
+      if (event.reason === 'networkDisconnected') {
+        props.setSessionError({"message": 'Call was disconnected due to Network problems on the patient end.'});
+      }else{
+        props.setSessionError({"message": 'Patient left the call.'});
+      }
     },
     error: (error: any) => {
       console.log(`There was an error with the sessionEventHandlers: ${JSON.stringify(error)}`);
       props.setSessionError(error);
     },
-    connectionCreated: (event: string) => {},
+    connectionCreated: (event: string) => {
+      console.log('session stream connectionCreated!', event);
+    },
     sessionConnected: (event: string) => {
       console.log('session stream sessionConnected!', event);
     },
-    sessionDisconnected: (event: string) => {
+    sessionDisconnected: (event: any) => {
       console.log('session stream sessionDisconnected!', event);
+      if (event.reason === 'clientDisconnected') {
+      }
     },
     sessionReconnected: (event: string) => {
       console.log('session stream sessionReconnected!', event);
@@ -237,8 +248,10 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     signal: (event: string) => {
       console.log('session stream signal!', event);
     },
-    streamDestroyed: (event: string) => {
+    streamDestroyed: (event: any) => {
       console.log('session streamDestroyed destroyed!', event); // is called when the doctor network is disconnected
+      if (event.reason === 'networkDisconnected') {
+      }
     },
     streamPropertyChanged: (event: any) => {
       console.log('session streamPropertyChanged destroyed!', event);
@@ -272,18 +285,32 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     disconnected: (event: string) => {
       console.log('Subscribe stream disconnected!', event);
     },
-    videoDisabled: (error: any) => {
-      console.log(`videoDisabled: ${JSON.stringify(error)}`);
-      if (error.reason === 'quality') {
+    destroyed: (event: any) => {
+      console.log('Subscribe destroyed!', event);
+      if (event.reason === 'networkDisconnected') {
+      }
+    },
+    videoDisableWarning: (event: any) => {
+      console.log(`videoDisableWarning: ${JSON.stringify(event)}`);
+    },
+    videoDisableWarningLifted: (event: any) => {
+      console.log(`videoDisableWarningLifted: ${JSON.stringify(event)}`);
+    },
+    videoDisabled: (event: any) => {
+      console.log(`videoDisabled: ${JSON.stringify(event)}`);
+      if (event.reason === 'quality') {
         setDowngradeToAudio(true);
       }
     },
-    videoEnabled: (error: any) => {
-      console.log(`videoDisabled: ${JSON.stringify(error)}`);
-      if (error.reason === 'quality') {
+    videoEnabled: (event: any) => {
+      console.log(`videoDisabled: ${JSON.stringify(event)}`);
+      if (event.reason === 'quality') {
         setDowngradeToAudio(false);
       }
     },
+    streamDestroyed: (event: any) => {
+      console.log('Subscribe stream destroyed!', )
+    }
   };
 
   const checkReconnecting = () => {
@@ -299,9 +326,9 @@ export const Consult: React.FC<ConsultProps> = (props) => {
 
   const isPaused = () => {
     if (!callerAudio && !callerVideo && getCookieValue() === 'videocall')
-      return `Audio & Video are paused`;
-    else if (!callerAudio) return `Audio is paused`;
-    else if (!callerVideo && getCookieValue() === 'videocall') return `Video is paused`;
+      return `Patient’s audio & video are paused`;
+    else if (!callerAudio) return `Patient’s audio is paused`;
+    else if (!callerVideo && getCookieValue() === 'videocall') return `Patient’s video is paused`;
     else return null;
   };
 
@@ -335,13 +362,17 @@ export const Consult: React.FC<ConsultProps> = (props) => {
             </div>
           )}
 
-          {isCall && (
+          {props.isCall && (
             <div className={'sdCall'}>
               <OTSession
                 apiKey={apikey}
                 sessionId={props.sessionId}
                 token={props.token}
                 eventHandlers={sessionHandler}
+                onError={(error: any) => {
+                  console.log('Session Error', error);
+                  props.setSessionError(error);
+                }}
               >
                 <OTPublisher
                   className={
@@ -352,6 +383,18 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                     publishVideo: subscribeToVideo,
                   }}
                   eventHandlers={publisherHandler}
+                  onError={(error: any) => {
+                    console.log('Publisher Error', error, error.name);
+                    if(error.name === 'OT_USER_MEDIA_ACCESS_DENIED'){
+                      props.setPublisherError({"message": 'Audio/Video permissions are not provided'});
+                    }else if(error.name === 'OT_HARDWARE_UNAVAILABLE'){
+                      props.setPublisherError({"message": 'Audio/Video device is not connected.'});
+                    }else if(error.name === 'OT_CHROME_MICROPHONE_ACQUISITION_ERROR'){
+                      props.setPublisherError({"message": 'Audio device is not connected.'});
+                    }else{
+                      props.setPublisherError(error);
+                    }
+                  }}
                 />
 
                 <div
@@ -388,6 +431,10 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                       eventHandlers={subscriberHandler}
                       retry={isRetry}
                       className={!props.showVideoChat ? classes.subscriber : classes.minSubscriber}
+                      onError={(error: any) => {
+                        console.log('Subscriber Error', error);
+                        props.setSubscriberError(error);
+                      }}
                     />
                   </OTStreams>
 
@@ -408,7 +455,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                           src={require('images/ic_stopcall.svg')}
                           className={classes.stopCallIcon}
                           onClick={() => {
-                            setIscall(false);
+                            props.setIscall(false);
                             props.stopAudioVideoCall();
                           }}
                         />
@@ -429,7 +476,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                     <div className={classes.videoButtonContainer}>
                       <Grid container alignItems="flex-start" spacing={0}>
                         <Grid item lg={1} sm={2} xs={2}>
-                          {isCall && (
+                          {props.isCall && (
                             <button
                               className={classes.muteBtn}
                               onClick={() => props.toggelChatVideo()}
@@ -447,7 +494,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                           )}
                         </Grid>
                         <Grid item lg={10} sm={8} xs={8} className={classes.VideoAlignment}>
-                          {isCall && isPublishAudio && (
+                          {props.isCall && isPublishAudio && (
                             <button
                               className={classes.muteBtn}
                               onClick={() => setIsPublishAudio(!isPublishAudio)}
@@ -459,7 +506,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                               />
                             </button>
                           )}
-                          {isCall && !isPublishAudio && (
+                          {props.isCall && !isPublishAudio && (
                             <button
                               className={classes.muteBtn}
                               onClick={() => setIsPublishAudio(!isPublishAudio)}
@@ -471,7 +518,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                               />
                             </button>
                           )}
-                          {isCall && subscribeToVideo && getCookieValue() === 'videocall' && (
+                          {props.isCall && subscribeToVideo && getCookieValue() === 'videocall' && (
                             <button
                               className={classes.muteBtn}
                               onClick={() => {
@@ -486,7 +533,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                               />
                             </button>
                           )}
-                          {isCall && !subscribeToVideo && getCookieValue() === 'videocall' && (
+                          {props.isCall && !subscribeToVideo && getCookieValue() === 'videocall' && (
                             <button
                               className={classes.muteBtn}
                               onClick={() => {
@@ -501,12 +548,12 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                               />
                             </button>
                           )}
-                          {isCall && (
+                          {props.isCall && (
                             <button
                               onClick={() => {
                                 props.toggelChatVideo();
                                 props.stopAudioVideoCall();
-                                setIscall(false);
+                                props.setIscall(false);
                               }}
                             >
                               <img

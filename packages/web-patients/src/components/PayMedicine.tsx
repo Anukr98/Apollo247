@@ -4,7 +4,6 @@ import { Theme, Typography, CircularProgress } from '@material-ui/core';
 import { Header } from 'components/Header';
 import Paper from '@material-ui/core/Paper';
 import { AphButton, AphDialog, AphDialogTitle, AphDialogClose } from '@aph/web-ui-components';
-
 import Grid from '@material-ui/core/Grid';
 import Checkbox from '@material-ui/core/Checkbox';
 import FormGroup from '@material-ui/core/FormGroup';
@@ -14,7 +13,11 @@ import { Link } from 'react-router-dom';
 import { useShoppingCart, MedicineCartItem } from 'components/MedicinesCartProvider';
 import { useParams } from 'hooks/routerHooks';
 import { gtmTracking, _obTracking, _cbTracking } from 'gtmTracking';
-import { paymentInstrumentClickTracking } from 'webEngageTracking';
+import {
+  paymentInstrumentClickTracking,
+  consultPayInitiateTracking,
+  pharmacyPaymentInitiateTracking,
+} from 'webEngageTracking';
 import { useMutation } from 'react-apollo-hooks';
 import { getDeviceType } from 'helpers/commonHelpers';
 import { CouponCodeConsult } from 'components/Coupon/CouponCodeConsult';
@@ -399,6 +402,7 @@ export const PayMedicine: React.FC = (props) => {
     ePrescriptionData,
     cartItems,
   } = useShoppingCart();
+
   const params = useParams<{
     payType: string;
     prDis: string;
@@ -449,8 +453,8 @@ export const PayMedicine: React.FC = (props) => {
     consultCouponCodeInitial,
     consultCouponValue = 0,
     doctorId,
+    doctorName,
     hospitalId,
-    patientId,
     speciality,
   } = consultBookDetails;
 
@@ -486,7 +490,6 @@ export const PayMedicine: React.FC = (props) => {
 
   useEffect(() => {
     if (validateConsultCouponResult && validateConsultCouponResult.valid) {
-      console.log('validateConsultCouponResult', validateConsultCouponResult);
       setRevisedAmount(
         validateConsultCouponResult.billAmount - validateConsultCouponResult.discount
       );
@@ -550,7 +553,6 @@ export const PayMedicine: React.FC = (props) => {
         medicineCartOMSInput: {
           quoteId: '',
           patientId: currentPatient ? currentPatient.id : '',
-          shopId: '',
           patientAddressId: deliveryAddressId,
           medicineDeliveryType: MEDICINE_DELIVERY_TYPE.HOME_DELIVERY,
           bookingSource: BOOKINGSOURCE.WEB,
@@ -633,6 +635,20 @@ export const PayMedicine: React.FC = (props) => {
       value: totalWithCouponDiscount,
     });
     /**Gtm code End  */
+    pharmacyPaymentInitiateTracking({
+      amount: totalWithCouponDiscount,
+      serviceArea: 'pharmacy',
+      payMode: value,
+    });
+    sessionStorage.setItem(
+      'pharmacyCheckoutValues',
+      JSON.stringify({
+        grandTotal: mrpTotal,
+        discountAmount:
+          (productDiscount && productDiscount.toFixed(2)) ||
+          (couponValue && couponValue.toFixed(2)),
+      })
+    );
     setMutationLoading(true);
     paymentMutation()
       .then((res) => {
@@ -652,7 +668,7 @@ export const PayMedicine: React.FC = (props) => {
             // 'item_category_4': '', // for future
             item_variant: 'Default',
             index: key + 1,
-            quantity: items.mou,
+            quantity: items.quantity,
           });
         });
         _obTracking({
@@ -682,7 +698,11 @@ export const PayMedicine: React.FC = (props) => {
           });
           /* Webengage Code End */
           if (orderAutoId && orderAutoId > 0 && value !== 'COD') {
-            const pgUrl = `${process.env.PHARMACY_PG_URL}/paymed?amount=${totalWithCouponDiscount}&oid=${orderAutoId}&token=${authToken}&pid=${currentPatiendId}&source=web&paymentTypeID=${value}&paymentModeOnly=YES`;
+            const pgUrl = `${
+              process.env.PHARMACY_PG_URL
+            }/paymed?amount=${totalWithCouponDiscount.toFixed(
+              2
+            )}&oid=${orderAutoId}&token=${authToken}&pid=${currentPatiendId}&source=web&paymentTypeID=${value}&paymentModeOnly=YES`;
             window.location.href = pgUrl;
           } else if (orderAutoId && orderAutoId > 0 && value === 'COD') {
             placeOrder(orderId, orderAutoId, false, '');
@@ -719,12 +739,27 @@ export const PayMedicine: React.FC = (props) => {
 
   const onClickConsultPay = (value: string) => {
     setShowZeroPaymentButton(false);
-
     setIsLoading(true);
+    const eventData = {
+      actualPrice: Number(amount),
+      consultDateTime: appointmentDateTime,
+      consultType: appointmentType,
+      discountAmount:
+        validateConsultCouponResult && validateConsultCouponResult.valid
+          ? Number(validateConsultCouponResult.amount - validateConsultCouponResult.discount)
+          : Number(revisedAmount),
+      discountCoupon: consultCouponCode,
+      doctorCity: '',
+      doctorName,
+      specialty: speciality,
+      netAmount: Number(amount),
+      patientGender: currentPatient && currentPatient.gender,
+    };
+    consultPayInitiateTracking(eventData);
     paymentMutationConsult({
       variables: {
         bookAppointment: {
-          patientId: patientId,
+          patientId: currentPatient ? currentPatient.id : '',
           doctorId: doctorId,
           appointmentDateTime: moment(appointmentDateTime).utc(),
           bookingSource: BOOKINGSOURCE.WEB,
@@ -748,9 +783,31 @@ export const PayMedicine: React.FC = (props) => {
           specialty: speciality,
           bookingType: appointmentType,
           scheduledDate: `${appointmentDateTime}`,
-          couponCode: couponCode ? couponCode : null,
-          couponValue: couponValue ? couponValue : null,
+          couponCode: consultCouponCode ? consultCouponCode : null,
+          couponValue:
+            validateConsultCouponResult && validateConsultCouponResult.valid
+              ? validateConsultCouponResult.discount
+              : consultCouponValue || null,
           finalBookingValue: revisedAmount,
+          ecommObj: {
+            ecommerce: {
+              items: [
+                {
+                  item_name: doctorName,
+                  item_id: doctorId,
+                  price: revisedAmount,
+                  item_brand: 'Apollo',
+                  item_category: 'Consultations',
+                  item_category_2: speciality,
+                  item_category_3: city || '',
+                  // 'item_category_4': '', // for future
+                  item_variant: appointmentType.toLowerCase() === 'online' ? 'Virtual' : 'Physical',
+                  index: 1,
+                  quantity: 1,
+                },
+              ],
+            },
+          },
         });
         /* Gtm code END */
         if (res && res.data && res.data.bookAppointment && res.data.bookAppointment.appointment) {
@@ -898,9 +955,8 @@ export const PayMedicine: React.FC = (props) => {
                       {mutationLoading ? (
                         <CircularProgress size={22} color="secondary" />
                       ) : (
-                        `Pay Rs.${
-                          totalWithCouponDiscount && totalWithCouponDiscount.toFixed(2)
-                        } on delivery`
+                        `Pay Rs.${totalWithCouponDiscount &&
+                          totalWithCouponDiscount.toFixed(2)} on delivery`
                       )}
                     </AphButton>
                   )}

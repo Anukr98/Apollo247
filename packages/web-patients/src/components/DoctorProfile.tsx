@@ -1,7 +1,7 @@
 import { Theme } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import React, { useState, useEffect } from 'react';
-import { GetDoctorDetailsById as DoctorDetails } from 'graphql/types/GetDoctorDetailsById';
+import { GetDoctorDetailsById_getDoctorDetailsById as DoctorDetails } from 'graphql/types/GetDoctorDetailsById';
 import _forEach from 'lodash/forEach';
 import { GET_DOCTOR_NEXT_AVAILABILITY } from 'graphql/doctors';
 import {
@@ -29,7 +29,8 @@ const useStyles = makeStyles((theme: Theme) => {
     doctorImage: {
       borderRadius: '5px 5px 0 0',
       overflow: 'hidden',
-      textAlign: 'center',
+      display: 'flex',
+      alignItems: 'flex-start',
       [theme.breakpoints.up('sm')]: {
         width: 190,
       },
@@ -39,12 +40,16 @@ const useStyles = makeStyles((theme: Theme) => {
         verticalAlign: 'middle',
       },
     },
+    otherDoctorType: {
+      width: 80,
+    },
     doctorInfo: {
       padding: '15px 20px 0 20px',
       [theme.breakpoints.up('sm')]: {
         width: 'calc(100% - 190px)',
       },
     },
+
     doctorName: {
       display: 'flex',
       alignItems: 'center',
@@ -87,6 +92,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     infoRow: {
       display: 'flex',
+      alignItems: 'flex-start',
       paddingTop: 10,
       [theme.breakpoints.up('sm')]: {
         width: '50%',
@@ -103,11 +109,11 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     details: {
-      fontSize: 10,
+      fontSize: 12,
       fontWeight: 500,
       color: '#02475b',
       paddingLeft: 14,
-      paddingRiht: 10,
+      paddingRight: 10,
       lineHeight: 1.5,
       [theme.breakpoints.down('xs')]: {
         fontSize: 12,
@@ -172,22 +178,15 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
   const [data, setData] = useState<GetDoctorNextAvailableSlot>();
   const [loading, setLoading] = useState<boolean>(false);
 
-  const doctorId =
-    doctorDetails && doctorDetails.getDoctorDetailsById
-      ? doctorDetails.getDoctorDetailsById.id
-      : '';
+  const doctorId = doctorDetails && doctorDetails.id ? doctorDetails.id : '';
 
   useEffect(() => {
     setLoading(true);
     /**Gtm code start start */
     const speciality =
-      (doctorDetails &&
-        doctorDetails.getDoctorDetailsById &&
-        doctorDetails.getDoctorDetailsById.specialty &&
-        doctorDetails.getDoctorDetailsById.specialty.name) ||
-      null;
+      (doctorDetails && doctorDetails.specialty && doctorDetails.specialty.name) || null;
 
-    if (doctorDetails && doctorDetails.getDoctorDetailsById) {
+    if (doctorDetails) {
       const {
         city,
         fullName,
@@ -196,7 +195,7 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
         doctorHospital,
         onlineConsultationFees,
         physicalConsultationFees,
-      } = doctorDetails.getDoctorDetailsById;
+      } = doctorDetails;
       let items = [],
         count = 0;
       onlineConsultationFees &&
@@ -479,32 +478,21 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
 
   // ----------------------------------------------------------------------------
 
-  if (doctorDetails && doctorDetails.getDoctorDetailsById) {
+  if (doctorDetails) {
     let hospitalLocation = '';
     let speciality;
 
-    if (doctorDetails.getDoctorDetailsById.specialty) {
-      speciality = doctorDetails.getDoctorDetailsById.specialty.name;
+    if (doctorDetails.specialty) {
+      speciality = doctorDetails.specialty.name;
     }
-    const education = doctorDetails.getDoctorDetailsById.qualification;
-    const profileImage = doctorDetails.getDoctorDetailsById.photoUrl;
+    const education = doctorDetails.qualification;
+    const profileImage = doctorDetails.photoUrl;
 
-    const {
-      awards,
-      experience,
-      firstName,
-      fullName,
-      languages,
-      lastName,
-      city,
-      onlineConsultationFees,
-      physicalConsultationFees,
-    } = doctorDetails.getDoctorDetailsById;
+    const { awards, experience, firstName, fullName, languages } = doctorDetails;
 
-    const isStarDoctor =
-      doctorDetails.getDoctorDetailsById.doctorType === DoctorType.STAR_APOLLO ? true : false;
+    const isConnectDoctor = doctorDetails.doctorType === DoctorType.DOCTOR_CONNECT;
 
-    _forEach(doctorDetails.getDoctorDetailsById.doctorHospital, (hospitalDetails) => {
+    _forEach(doctorDetails.doctorHospital, (hospitalDetails) => {
       if (hospitalDetails.facility.facilityType === 'HOSPITAL') {
         hospitalLocation = hospitalDetails.facility.name + ',' + hospitalDetails.facility.city;
       }
@@ -520,7 +508,11 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
             <div className={classes.doctorName} title={'Doctor Name'}>
               <h1>{fullName}</h1>
               <span>
-                <img src={require('images/ic_apollo.svg')} alt="" />
+                <img
+                  className={isConnectDoctor ? classes.otherDoctorType : ''}
+                  src={require(isConnectDoctor ? 'images/partner_doc.png' : 'images/ic_apollo.svg')}
+                  alt=""
+                />
               </span>
             </div>
             <div className={classes.specialits}>
@@ -529,50 +521,59 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
               <span title={'Experience'}>{experience} Yrs</span>
             </div>
             <div className={classes.doctorInfoGroup}>
-              <div className={classes.infoRow}>
-                <div className={classes.iconType} title={'Education Details'}>
-                  <img src={require('images/ic-edu.svg')} alt="" />
+              {education && (
+                <div className={classes.infoRow}>
+                  <div className={classes.iconType} title={'Education Details'}>
+                    <img src={require('images/ic-edu.svg')} alt="" />
+                  </div>
+                  <div className={classes.details}>
+                    {education && education.includes(';') ? (
+                      education.split(';').map((edu, idx) => <div key={idx}>{edu}</div>)
+                    ) : (
+                      <div>{education}</div>
+                    )}
+                  </div>
                 </div>
-                <div className={classes.details}>
-                  {education && education.includes(';') ? (
-                    education.split(';').map((edu, idx) => <div key={idx}>{edu}</div>)
-                  ) : (
-                    <div>{education}</div>
-                  )}
+              )}
+              {awards && (
+                <div className={classes.infoRow}>
+                  <div className={classes.iconType} title={'Awards'}>
+                    <img src={require('images/ic-awards.svg')} alt="" />
+                  </div>
+                  <div className={classes.details}>
+                    {awards && awards.replace(/<\/?[^>]+(>|$)/g, '')}
+                  </div>
                 </div>
-              </div>
-              <div className={classes.infoRow}>
-                <div className={classes.iconType} title={'Awards'}>
-                  <img src={require('images/ic-awards.svg')} alt="" />
+              )}
+              {hospitalLocation && (
+                <div className={classes.infoRow}>
+                  <div className={classes.iconType} title={'Location'}>
+                    <img src={require('images/ic-location.svg')} alt="" />
+                  </div>
+                  <div className={classes.details}>{hospitalLocation}</div>
                 </div>
-                <div className={classes.details}>
-                  {awards && awards.replace(/<\/?[^>]+(>|$)/g, '')}
+              )}
+              {languages && (
+                <div className={`${classes.infoRow} ${classes.textCenter}`}>
+                  <div className={classes.iconType} title={'Languages'}>
+                    <img src={require('images/ic-language.svg')} alt="" />
+                  </div>
+                  <div className={classes.details}>{languages}</div>
                 </div>
-              </div>
-              <div className={classes.infoRow}>
-                <div className={classes.iconType} title={'Location'}>
-                  <img src={require('images/ic-location.svg')} alt="" />
-                </div>
-                <div className={classes.details}>{hospitalLocation}</div>
-              </div>
-              <div className={`${classes.infoRow} ${classes.textCenter}`}>
-                <div className={classes.iconType} title={'Languages'}>
-                  <img src={require('images/ic-language.svg')} alt="" />
-                </div>
-                <div className={classes.details}>{languages}</div>
-              </div>
+              )}
             </div>
           </div>
         </div>
+        {/*
         <div className={classes.aboutDoctor}>
           <div className={classes.sectionHeader}>About Dr. {fullName}</div>
-          <div className={classes.sectionBody}>
+           <div className={classes.sectionBody}>
             Insert Bio of the doctor here. Include a summary of work experience, education, and any
             other outstanding achievement as a doctor. Insert Bio of the doctor here. Include a
             summary of work experience, education, and any other outstanding achievement as a
             doctor.
-          </div>
-        </div>
+          </div> 
+        </div>*/}
       </div>
     );
   } else {

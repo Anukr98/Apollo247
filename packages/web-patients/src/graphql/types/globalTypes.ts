@@ -39,7 +39,9 @@ export enum BOOKINGSOURCE {
 }
 
 export enum BOOKING_SOURCE {
+  MFINE = "MFINE",
   MOBILE = "MOBILE",
+  ORDER_PUNCHING_TOOL = "ORDER_PUNCHING_TOOL",
   WEB = "WEB",
 }
 
@@ -78,6 +80,7 @@ export enum DEVICETYPE {
 
 export enum DEVICE_TYPE {
   ANDROID = "ANDROID",
+  DESKTOP = "DESKTOP",
   IOS = "IOS",
 }
 
@@ -197,6 +200,7 @@ export enum MEDICINE_ORDER_STATUS {
   ORDER_PLACED = "ORDER_PLACED",
   ORDER_VERIFIED = "ORDER_VERIFIED",
   OUT_FOR_DELIVERY = "OUT_FOR_DELIVERY",
+  PAYMENT_ABORTED = "PAYMENT_ABORTED",
   PAYMENT_FAILED = "PAYMENT_FAILED",
   PAYMENT_PENDING = "PAYMENT_PENDING",
   PAYMENT_SUCCESS = "PAYMENT_SUCCESS",
@@ -352,6 +356,7 @@ export enum STATUS {
   JUNIOR_DOCTOR_ENDED = "JUNIOR_DOCTOR_ENDED",
   JUNIOR_DOCTOR_STARTED = "JUNIOR_DOCTOR_STARTED",
   NO_SHOW = "NO_SHOW",
+  PAYMENT_ABORTED = "PAYMENT_ABORTED",
   PAYMENT_FAILED = "PAYMENT_FAILED",
   PAYMENT_PENDING = "PAYMENT_PENDING",
   PAYMENT_PENDING_PG = "PAYMENT_PENDING_PG",
@@ -548,7 +553,7 @@ export interface FilterDoctorInput {
   geolocation?: Geolocation | null;
   consultMode?: ConsultMode | null;
   pincode?: string | null;
-  doctorType?: string | null;
+  doctorType?: (string | null)[] | null;
   sort?: string | null;
 }
 
@@ -643,6 +648,7 @@ export interface MedicinePaymentMqInput {
   CODCity?: CODCity | null;
   orderId?: string | null;
   paymentMode?: PAYMENT_METHODS | null;
+  healthCredits?: number | null;
 }
 
 export interface OrderCancelInput {
@@ -814,6 +820,7 @@ export interface UpdatePatientInput {
   photoUrl?: string | null;
   deviceCode?: string | null;
   employeeId?: string | null;
+  partnerId?: string | null;
 }
 
 export interface UploadDocumentInput {

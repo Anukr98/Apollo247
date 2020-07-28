@@ -19,7 +19,12 @@ import {
   getCallDetailsVariables,
 } from '@aph/mobile-patients/src/graphql/types/getCallDetails';
 import { getMedicineDetailsApi } from '@aph/mobile-patients/src/helpers/apiCalls';
-import { dataSavedUserID, aphConsole, g, postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  dataSavedUserID,
+  aphConsole,
+  g,
+  postWebEngageEvent,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
@@ -93,7 +98,8 @@ type CustomNotificationType =
   | 'PRESCRIPTION_READY'
   | 'doctor_Noshow_Reschedule_Appointment'
   | 'Appointment_Canceled_Refund'
-  | 'Appointment_Payment_Pending_Failure';
+  | 'Appointment_Payment_Pending_Failure'
+  | 'webview';
 
 export interface NotificationListenerProps extends NavigationScreenProps {}
 
@@ -163,7 +169,8 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
     aphConsole.log(`CustomNotificationType:: ${type}`);
     showAphAlert!({
       title: `Hi, ${data.firstName}`,
-      description: 'Order status updated. Kindly alert the store 10 minutes before you are about to reach, so that we can keep the items ready!',
+      description:
+        'Order status updated. Kindly alert the store 10 minutes before you are about to reach, so that we can keep the items ready!',
       children: (
         <View
           style={{
@@ -188,9 +195,11 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
                 marginTop: 4,
                 textAlign: 'center',
                 color: theme.colors.WHITE,
-                ...theme.fonts.IBMPlexSansBold(14)
+                ...theme.fonts.IBMPlexSansBold(14),
               }}
-            >ALERT THE STORE</Text>
+            >
+              ALERT THE STORE
+            </Text>
           </TouchableOpacity>
         </View>
       ),
@@ -377,6 +386,19 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
               {
                 text: 'CLAIM REFUND',
                 onPress: () => {
+                  try {
+                    const eventAttributes: WebEngageEvents[WebEngageEventName.DOCTOR_RESCHEDULE_CLAIM_REFUND] = {
+                      'Patient Id': currentPatient.id,
+                      'Appointment ID': data.appointmentId,
+                      Type: data.type,
+                    };
+                    postWebEngageEvent(
+                      WebEngageEventName.DOCTOR_RESCHEDULE_CLAIM_REFUND,
+                      eventAttributes
+                    );
+                    props.navigation.popToTop();
+                  } catch (error) {}
+
                   hideAphAlert && hideAphAlert();
                 },
                 type: 'white-button',
@@ -425,6 +447,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
         {
           showOrderReadyAtStoreAlert(data, 'Order_ready_at_store');
         }
+        break;
       case 'Diagnostic_Order_Success':
         {
           return; // Not showing in app because PN overriding in-app notification
@@ -487,12 +510,19 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
               {
                 text: 'CLAIM REFUND',
                 onPress: () => {
-                  const eventAttributes: WebEngageEvents[WebEngageEventName.DOCTOR_RESCHEDULE_CLAIM_REFUND] = {
-                    'Patient Id': currentPatient.id,
-                    'Appointment ID': data.appointmentId,
-                    'Call Type': data.callType,
-                  };
-                  postWebEngageEvent(WebEngageEventName.DOCTOR_RESCHEDULE_CLAIM_REFUND, eventAttributes);
+                  try {
+                    const eventAttributes: WebEngageEvents[WebEngageEventName.DOCTOR_RESCHEDULE_CLAIM_REFUND] = {
+                      'Patient Id': currentPatient.id,
+                      'Appointment ID': data.appointmentId,
+                      Type: data.type,
+                    };
+                    postWebEngageEvent(
+                      WebEngageEventName.DOCTOR_RESCHEDULE_CLAIM_REFUND,
+                      eventAttributes
+                    );
+                    props.navigation.popToTop();
+                  } catch (error) {}
+
                   hideAphAlert && hideAphAlert();
                 },
                 type: 'white-button',
@@ -520,11 +550,19 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
             showAphAlert!({
               title: ' ',
               description: data.content,
+              unDismissable: true,
               CTAs: [
                 {
                   text: 'DISMISS',
                   onPress: () => {
                     hideAphAlert && hideAphAlert();
+                    props.navigation.dispatch(
+                      StackActions.reset({
+                        index: 0,
+                        key: null,
+                        actions: [NavigationActions.navigate({ routeName: AppRoutes.TabBar })],
+                      })
+                    );
                   },
                   type: 'white-button',
                 },
@@ -558,6 +596,20 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
                 text: 'DISMISS',
                 onPress: () => {
                   hideAphAlert && hideAphAlert();
+                  try {
+                    if (
+                      currentScreenName === AppRoutes.AppointmentDetails ||
+                      currentScreenName === AppRoutes.AppointmentOnlineDetails
+                    ) {
+                      props.navigation.dispatch(
+                        StackActions.reset({
+                          index: 0,
+                          key: null,
+                          actions: [NavigationActions.navigate({ routeName: AppRoutes.TabBar })],
+                        })
+                      );
+                    }
+                  } catch (error) {}
                 },
                 type: 'white-button',
               },
@@ -647,6 +699,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
                         prescriptionRequired: medicineDetails.is_prescription_required == '1',
                         isMedicine: (medicineDetails.type_id || '').toLowerCase() == 'pharma',
                         thumbnail: medicineDetails.thumbnail || medicineDetails.image,
+                        maxOrderQty: medicineDetails.MaxOrderQty,
                       } as ShoppingCartItem;
                     })
                     .filter((item) => item) as ShoppingCartItem[];
@@ -790,7 +843,13 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
           showConsultDetailsRoomAlert(data, 'PRESCRIPTION_READY', 'true');
         }
         break;
-
+      case 'webview':
+        if (data.url) {
+          props.navigation.navigate(AppRoutes.CommonWebView, {
+            url: data.url,
+          });
+        }
+        break;
       default:
         break;
     }
@@ -810,9 +869,11 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
         .setBody(notification.body)
         .setData(notification.data)
         .android.setChannelId('fcm_FirebaseNotifiction_default_channel') // e.g. the id you chose above
-        .android.setSmallIcon('@mipmap/ic_launcher') // create this icon in Android Studio
-        .android.setColor('#000000') // you can set a color here
-        .android.setPriority(firebase.notifications.Android.Priority.Max);
+        .android.setSmallIcon('@drawable/ic_notification_white') // create this icon in Android Studio
+        .android.setColor('#fcb716') // you can set a color here
+        .android.setPriority(firebase.notifications.Android.Priority.Max)
+        .android.setAutoCancel(true)
+        .android.setBigText(notification.body, notification.title);
       firebase
         .notifications()
         .displayNotification(localNotification)

@@ -13,7 +13,7 @@ import { AppointmentRepository } from 'consults-service/repositories/appointment
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 
 import _ from 'lodash';
-import { MedicineOrdersRepository } from 'profiles-service/repositories/MedicineOrdersRepository';
+//import { MedicineOrdersRepository } from 'profiles-service/repositories/MedicineOrdersRepository';
 //import { PatientLabResults, LabTestResults, TestResultFiles } from 'types/labResults';
 
 export const getPatientConsultsAndPrescriptionsTypeDefs = gql`
@@ -56,6 +56,7 @@ export const getPatientConsultsAndPrescriptionsTypeDefs = gql`
     CANCEL_REQUEST
     READY_AT_STORE
     PURCHASED_IN_STORE
+    PAYMENT_ABORTED
   }
 
   input PatientConsultsAndOrdersInput {
@@ -169,7 +170,7 @@ const getPatientPastConsultsAndPrescriptions: Resolver<
   const apptsRepo = consultsDb.getCustomRepository(AppointmentRepository);
   let patientAppointments: ConsultRecord[] = [];
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
-  const primaryPatientIds = await patientRepo.getLinkedPatientIds(patient);
+  const primaryPatientIds = await patientRepo.getLinkedPatientIds({ patientId: patient });
   if (
     hasFilter(CONSULTS_RX_SEARCH_FILTER.ONLINE, filter) ||
     hasFilter(CONSULTS_RX_SEARCH_FILTER.PHYSICAL, filter)
@@ -192,7 +193,7 @@ const getPatientPastConsultsAndPrescriptions: Resolver<
   }
 
   //commented to support backward compatability
-  let patientMedicineOrders: MedicineOrders[] = [];
+  /*let patientMedicineOrders: MedicineOrders[] = [];
   let uniqueMedicineRxOrders: MedicineOrders[] = [];
   const medicineOrdersRepo = patientsDb.getCustomRepository(MedicineOrdersRepository);
   if (hasFilter(CONSULTS_RX_SEARCH_FILTER.PRESCRIPTION, filter)) {
@@ -212,9 +213,9 @@ const getPatientPastConsultsAndPrescriptions: Resolver<
         return true;
       }
     });
-  }
+  } */
 
-  return { consults: patientAppointments, medicineOrders: uniqueMedicineRxOrders };
+  return { consults: patientAppointments, medicineOrders: [] };
 };
 
 const getPatientLabResults: Resolver<

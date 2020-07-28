@@ -214,9 +214,9 @@ export const JDConsult: React.FC<ConsultProps> = (props) => {
 
   const isPaused = () => {
     if (!callerAudio && !callerVideo && getCookieValue() === 'videocall')
-      return `Audio & Video are paused`;
-    else if (!callerAudio) return `Audio is paused`;
-    else if (!callerVideo && getCookieValue() === 'videocall') return `Video is paused`;
+      return `Patient’s audio & video are paused`;
+    else if (!callerAudio) return `Patient’s audio is paused`;
+    else if (!callerVideo && getCookieValue() === 'videocall') return `Patient’s video is paused`;
     else return null;
   };
 
@@ -255,11 +255,20 @@ export const JDConsult: React.FC<ConsultProps> = (props) => {
               apiKey={apikey}
               sessionId={props.sessionId}
               token={props.token}
+              onError={(error: any) => {
+                console.log('Session Error', error);
+                props.setSessionError(error);
+              }}
               eventHandlers={{
                 connectionDestroyed: (event: any) => {
                   props.toggelChatVideo();
                   props.stopAudioVideoCallpatient();
                   setIscall(false);
+                  if (event.reason === 'networkDisconnected') {
+                    props.setSessionError({"message": 'Call was disconnected due to Network problems on the patient end.'});
+                  }else{
+                    props.setSessionError({"message": 'Patient left the call.'});
+                  }
                 },
                 streamPropertyChanged: (event: any) => {
                   const subscribers = event.target.getSubscribersForStream(event.stream);
@@ -291,6 +300,18 @@ export const JDConsult: React.FC<ConsultProps> = (props) => {
                 properties={{
                   publishAudio: isPublishAudio,
                   publishVideo: subscribeToVideo,
+                }}
+                onError={(error: any) => {
+                  console.log('Publisher Error', error, error.name);
+                    if(error.name === 'OT_USER_MEDIA_ACCESS_DENIED'){
+                      props.setPublisherError({"message": 'Audio/Video permissions are not provided'});
+                    }else if(error.name === 'OT_HARDWARE_UNAVAILABLE'){
+                      props.setPublisherError({"message": 'Audio/Video device is not connected.'});
+                    }else if(error.name === 'OT_CHROME_MICROPHONE_ACQUISITION_ERROR'){
+                      props.setPublisherError({"message": 'Audio device is not connected.'});
+                    }else{
+                      props.setPublisherError(error);
+                    }
                 }}
                 eventHandlers={{
                   error: (error: any) => {
@@ -332,16 +353,20 @@ export const JDConsult: React.FC<ConsultProps> = (props) => {
                   <OTSubscriber
                     className={!props.showVideoChat ? classes.subscriber : classes.minSubscriber}
                     retry={isRetry}
+                    onError={(error: any) => {
+                      console.log('Subscriber Error', error);
+                      props.setSubscriberError(error);
+                    }}
                     eventHandlers={{
-                      videoDisabled: (error: any) => {
-                        console.log(`videoDisabled: ${JSON.stringify(error)}`);
-                        if (error.reason === 'quality') {
+                      videoDisabled: (event: any) => {
+                        console.log(`videoDisabled: ${JSON.stringify(event)}`);
+                        if (event.reason === 'quality') {
                           setDowngradeToAudio(true);
                         }
                       },
-                      videoEnabled: (error: any) => {
-                        console.log(`videoDisabled: ${JSON.stringify(error)}`);
-                        if (error.reason === 'quality') {
+                      videoEnabled: (event: any) => {
+                        console.log(`videoDisabled: ${JSON.stringify(event)}`);
+                        if (event.reason === 'quality') {
                           setDowngradeToAudio(false);
                         }
                       },

@@ -45,7 +45,7 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
     fetchPolicy: 'no-cache',
   });
   const orders =
-    loading || error
+    (loading || error) && !data
       ? []
       : ((g(data, 'getMedicineOrdersOMSList', 'medicineOrdersList') as MedOrder[]) || []).filter(
           (item) =>
@@ -69,8 +69,25 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
     const getStore = () => {
       const shopAddress = g(order, 'shopAddress');
       const parsedShopAddress = JSON.parse(shopAddress || '{}');
-      return (parsedShopAddress && parsedShopAddress.address) || 'Store Pickup';
+      return (
+        (parsedShopAddress &&
+          parsedShopAddress.storename &&
+          parsedShopAddress.address &&
+          [
+            g(parsedShopAddress, 'storename'),
+            g(parsedShopAddress, 'city'),
+            g(parsedShopAddress, 'zipcode'),
+          ]
+            .filter((a) => a)
+            .join(', ')) ||
+        ''
+      );
     };
+
+    const offlineOrderNumber = g(order, 'billNumber');
+    if (offlineOrderNumber) {
+      return getStore();
+    }
 
     const type = g(order, 'deliveryType');
     switch (type) {
@@ -78,9 +95,7 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
         return 'Home Delivery';
         break;
       case MEDICINE_DELIVERY_TYPE.STORE_PICKUP:
-        {
-          return getStore() || 'Store Pickup';
-        }
+        return 'Store Pickup';
         break;
       default:
         return 'Unknown';
@@ -178,7 +193,7 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
         description={getDeliverTypeOrDescription(order)}
         statusDesc={getOrderStatusText(order.currentStatus!)}
         status={order.currentStatus!}
-        dateTime={getFormattedTime(g(order.medicineOrdersStatus![0]!, 'statusDate'))}
+        dateTime={getFormattedTime(g(order, 'createdDate'))}
       />
     );
   };

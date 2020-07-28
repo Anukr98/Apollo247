@@ -7,6 +7,7 @@ import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { gtmTracking } from '../../gtmTracking';
 import { validatePharmaCoupon_validatePharmaCoupon } from 'graphql/types/validatePharmaCoupon';
+import { removeFromCartTracking } from 'webEngageTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -199,205 +200,223 @@ type MedicineListingCardProps = {
 export const MedicineListingCard: React.FC<MedicineListingCardProps> = (props) => {
   const classes = useStyles({});
   const { cartItems, removeCartItem, updateCartItemQty } = useShoppingCart();
-  const options = Array.from(Array(20), (_, x) => x + 1);
   const { validateCouponResult } = props;
 
   return (
     <div className={classes.root}>
       {/** medice card normal state */}
       {cartItems &&
-        cartItems.map((item, idx) => (
-          <div
-            key={item.id}
-            className={`${classes.medicineStrip} ${
-              item.is_in_stock ? '' : classes.medicineStripDisabled
-            }`}
-          >
-            <div className={classes.medicineStripWrap}>
-              <Link to={clientRoutes.medicineDetails(item.url_key)}>
-                <div className={classes.medicineInformation}>
-                  <div className={classes.medicineIcon}>
-                    <img
-                      src={
-                        Number(item.is_prescription_required) === 1
-                          ? require('images/ic_tablets_rx.svg')
-                          : `${process.env.PHARMACY_MED_IMAGES_BASE_URL}${item.image}`
-                      }
-                      alt=""
-                    />
-                  </div>
-                  <div className={classes.medicineName}>
-                    {item.name}
-                    <div className={classes.tabInfo}>
-                      {item.is_in_stock && item.isShippable ? (
-                        `Pack Of ${item.mou}`
-                      ) : !item.is_in_stock ? (
-                        'Out Of Stock'
-                      ) : (
-                        <span className={classes.noService}>Not serviceable in your area.</span>
-                      )}
+        cartItems.map((item, idx) => {
+          const options = Array.from(
+            Array(Number(item.MaxOrderQty) || process.env.PHARMACY_MEDICINE_QUANTITY),
+            (_, x) => x + 1
+          );
+          return (
+            <div
+              key={item.id}
+              className={`${classes.medicineStrip} ${
+                item.is_in_stock ? '' : classes.medicineStripDisabled
+              }`}
+            >
+              <div className={classes.medicineStripWrap}>
+                <Link to={clientRoutes.medicineDetails(item.url_key)}>
+                  <div className={classes.medicineInformation}>
+                    <div className={classes.medicineIcon}>
+                      <img
+                        src={
+                          Number(item.is_prescription_required) === 1
+                            ? require('images/ic_tablets_rx.svg')
+                            : `${process.env.PHARMACY_MED_IMAGES_BASE_URL}${item.image}`
+                        }
+                        alt=""
+                      />
+                    </div>
+                    <div className={classes.medicineName}>
+                      {item.name}
+                      <div className={classes.tabInfo}>
+                        {item.is_in_stock && item.isShippable ? (
+                          `Pack Of ${item.mou}`
+                        ) : !item.is_in_stock ? (
+                          'Out Of Stock'
+                        ) : (
+                          <span className={classes.noService}>Not serviceable in your area.</span>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              </Link>
-              {item.is_in_stock && item.isShippable ? (
-                <div className={classes.cartRight}>
-                  <div className={classes.medicinePack}>
-                    <div>QTY :</div>
-                    <AphCustomDropdown
-                      classes={{
-                        selectMenu: classes.selectMenuItem,
-                      }}
-                      value={item.quantity}
-                      onChange={(e: React.ChangeEvent<{ value: any }>) => {
-                        const quantity = parseInt(e.target.value);
-                        /* Gtm code start  */
-                        gtmTracking({
-                          category: 'Pharmacy',
-                          action: quantity > item.quantity ? 'Add to Cart' : 'Remove From Cart',
-                          label: item.name,
-                          value: item.special_price || item.price,
-                          ecommObj: {
-                            event: quantity > item.quantity ? 'add_to_cart' : 'remove_from_cart',
-                            ecommerce: {
-                              items: [
-                                {
-                                  item_name: item.name,
-                                  item_id: item.sku,
-                                  price: item.price,
-                                  item_category: 'Pharmacy',
-                                  item_category_2: item.type_id
-                                    ? item.type_id.toLowerCase() === 'pharma'
-                                      ? 'Drugs'
-                                      : 'FMCG'
-                                    : null,
-                                  // 'item_category_4': '', // future reference
-                                  item_variant: 'Default',
-                                  index: 1,
-                                  quantity:
-                                    quantity > item.quantity
-                                      ? quantity - item.quantity
-                                      : item.quantity - quantity,
-                                },
-                              ],
+                </Link>
+                {item.is_in_stock && item.isShippable ? (
+                  <div className={classes.cartRight}>
+                    <div className={classes.medicinePack}>
+                      <div>QTY :</div>
+                      <AphCustomDropdown
+                        classes={{
+                          selectMenu: classes.selectMenuItem,
+                        }}
+                        value={item.quantity}
+                        onChange={(e: React.ChangeEvent<{ value: any }>) => {
+                          const quantity = parseInt(e.target.value);
+                          /* Gtm code start  */
+                          gtmTracking({
+                            category: 'Pharmacy',
+                            action: quantity > item.quantity ? 'Add to Cart' : 'Remove From Cart',
+                            label: item.name,
+                            value: item.special_price || item.price,
+                            ecommObj: {
+                              event: quantity > item.quantity ? 'add_to_cart' : 'remove_from_cart',
+                              ecommerce: {
+                                items: [
+                                  {
+                                    item_name: item.name,
+                                    item_id: item.sku,
+                                    price: item.special_price || item.price,
+                                    item_category: 'Pharmacy',
+                                    item_category_2: item.type_id
+                                      ? item.type_id.toLowerCase() === 'pharma'
+                                        ? 'Drugs'
+                                        : 'FMCG'
+                                      : null,
+                                    // 'item_category_4': '', // future reference
+                                    item_variant: 'Default',
+                                    index: 1,
+                                    quantity:
+                                      quantity > item.quantity
+                                        ? quantity - item.quantity
+                                        : item.quantity - quantity,
+                                  },
+                                ],
+                              },
                             },
-                          },
-                        });
-                        /* Gtm code end  */
-                        updateCartItemQty &&
-                          updateCartItemQty({
-                            url_key: item.url_key,
-                            description: item.description,
-                            id: item.id,
-                            image: item.image,
-                            is_in_stock: item.is_in_stock,
-                            is_prescription_required: item.is_prescription_required,
-                            name: item.name,
-                            price: item.price,
-                            sku: item.sku,
-                            small_image: item.small_image,
-                            status: item.status,
-                            thumbnail: item.thumbnail,
-                            type_id: item.type_id,
-                            quantity: quantity,
-                            special_price: item.special_price,
-                            mou: item.mou,
-                            isShippable: true,
                           });
-                      }}
-                    >
-                      {options.map((option, index) => (
-                        <MenuItem
-                          key={index}
-                          classes={{
-                            root: classes.menuRoot,
-                            selected: classes.menuSelected,
-                          }}
-                          value={option}
-                        >
-                          {option}
-                        </MenuItem>
-                      ))}
-                    </AphCustomDropdown>
-                  </div>
-                  {validateCouponResult &&
-                  validateCouponResult.pharmaLineItemsWithDiscountedPrice ? (
-                    <>
-                      <div className={`${classes.medicinePrice} ${classes.mrpPrice}`}>
-                        {validateCouponResult.pharmaLineItemsWithDiscountedPrice[idx]
-                          .applicablePrice !==
-                        validateCouponResult.pharmaLineItemsWithDiscountedPrice[idx].mrp ? (
-                          <span className={classes.lineThrough}>
-                            Rs. {validateCouponResult.pharmaLineItemsWithDiscountedPrice[idx].mrp}
-                          </span>
-                        ) : null}
-                        <div className={classes.mrpText}>(MRP)</div>
-                      </div>
-
-                      <div className={classes.medicinePrice}>
-                        Rs.{' '}
-                        {
-                          validateCouponResult.pharmaLineItemsWithDiscountedPrice[idx]
-                            .applicablePrice
-                        }
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <div className={`${classes.medicinePrice} ${classes.mrpPrice}`}>
-                        {item.special_price ? (
-                          <span className={classes.lineThrough}>Rs. {item.price}</span>
-                        ) : null}
-                        <div className={classes.mrpText}>(MRP)</div>
-                      </div>
-
-                      <div className={classes.medicinePrice}>
-                        Rs. {item.special_price || item.price}
-                      </div>
-                    </>
-                  )}
-                </div>
-              ) : null}
-              <div className={classes.addToCart}>
-                <AphButton
-                  onClick={() => {
-                    /**Gtm code start  */
-                    gtmTracking({
-                      category: 'Pharmacy',
-                      action: 'Remove From Cart',
-                      label: item.name,
-                      value: item.special_price || item.price,
-                      ecommObj: {
-                        event: 'remove_from_cart',
-                        ecommerce: {
-                          items: [
-                            {
-                              item_name: item.name,
-                              item_id: item.sku,
+                          /* Gtm code end  */
+                          updateCartItemQty &&
+                            updateCartItemQty({
+                              MaxOrderQty: item.MaxOrderQty,
+                              url_key: item.url_key,
+                              description: item.description,
+                              id: item.id,
+                              image: item.image,
+                              is_in_stock: item.is_in_stock,
+                              is_prescription_required: item.is_prescription_required,
+                              name: item.name,
                               price: item.price,
-                              item_category: 'Pharmacy',
-                              item_variant: 'Default',
-                              index: 1,
-                              quantity: item.quantity,
-                            },
-                          ],
+                              sku: item.sku,
+                              small_image: item.small_image,
+                              status: item.status,
+                              thumbnail: item.thumbnail,
+                              type_id: item.type_id,
+                              quantity: quantity,
+                              special_price: item.special_price,
+                              mou: item.mou,
+                              isShippable: true,
+                            });
+                        }}
+                      >
+                        {options.map((option, index) => (
+                          <MenuItem
+                            key={index}
+                            classes={{
+                              root: classes.menuRoot,
+                              selected: classes.menuSelected,
+                            }}
+                            value={option}
+                          >
+                            {option}
+                          </MenuItem>
+                        ))}
+                      </AphCustomDropdown>
+                    </div>
+                    {validateCouponResult &&
+                    validateCouponResult.pharmaLineItemsWithDiscountedPrice ? (
+                      <>
+                        <div className={`${classes.medicinePrice} ${classes.mrpPrice}`}>
+                          {validateCouponResult.pharmaLineItemsWithDiscountedPrice[idx]
+                            .applicablePrice !==
+                          validateCouponResult.pharmaLineItemsWithDiscountedPrice[idx].mrp ? (
+                            <span className={classes.lineThrough}>
+                              Rs. {validateCouponResult.pharmaLineItemsWithDiscountedPrice[idx].mrp}
+                            </span>
+                          ) : null}
+                          <div className={classes.mrpText}>(MRP)</div>
+                        </div>
+
+                        <div className={classes.medicinePrice}>
+                          Rs.{' '}
+                          {
+                            validateCouponResult.pharmaLineItemsWithDiscountedPrice[idx]
+                              .applicablePrice
+                          }
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className={`${classes.medicinePrice} ${classes.mrpPrice}`}>
+                          {item.special_price ? (
+                            <span className={classes.lineThrough}>Rs. {item.price}</span>
+                          ) : null}
+                          <div className={classes.mrpText}>(MRP)</div>
+                        </div>
+
+                        <div className={classes.medicinePrice}>
+                          Rs. {item.special_price || item.price}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                ) : null}
+                <div className={classes.addToCart}>
+                  <AphButton
+                    onClick={() => {
+                      removeFromCartTracking({
+                        productName: item.name,
+                        cartSize: cartItems.length,
+                        productId: item.sku,
+                        brand: '',
+                        brandId: '',
+                        categoryName: '',
+                        categoryId: '',
+                        discountedPrice: item.special_price,
+                        price: item.price,
+                        quantity: item.quantity,
+                      });
+                      /**Gtm code start  */
+                      gtmTracking({
+                        category: 'Pharmacy',
+                        action: 'Remove From Cart',
+                        label: item.name,
+                        value: item.special_price || item.price,
+                        ecommObj: {
+                          event: 'remove_from_cart',
+                          ecommerce: {
+                            items: [
+                              {
+                                item_name: item.name,
+                                item_id: item.sku,
+                                price: item.special_price || item.price,
+                                item_category: 'Pharmacy',
+                                item_variant: 'Default',
+                                index: 1,
+                                quantity: item.quantity,
+                              },
+                            ],
+                          },
                         },
-                      },
-                    });
-                    /**Gtm code End  */
-                    removeCartItem && removeCartItem(item.id);
-                  }}
-                >
-                  <img
-                    src={require('images/ic_cross_onorange_small.svg')}
-                    alt="Remove Item"
-                    title="Remove item from Cart"
-                  />
-                </AphButton>
+                      });
+                      /**Gtm code End  */
+                      removeCartItem && removeCartItem(item.id);
+                    }}
+                  >
+                    <img
+                      src={require('images/ic_cross_onorange_small.svg')}
+                      alt="Remove Item"
+                      title="Remove item from Cart"
+                    />
+                  </AphButton>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
     </div>
   );
 };

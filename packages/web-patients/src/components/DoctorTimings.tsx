@@ -57,10 +57,17 @@ const useStyles = makeStyles((theme: Theme) => {
         paddingLeft: 6,
       },
     },
-    row: {
-      display: 'flex',
-      '& span:last-child': {
-        marginLeft: 'auto',
+    timingList: {
+      listStyle: 'none',
+      padding: '0 10px',
+      margin: 0,
+      '& li': {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: '2px 0',
+        fontWeight: 500,
+        color: '#0087ba',
       },
     },
   };
@@ -76,37 +83,49 @@ export const DoctorTimings: React.FC<DoctorTimingsProps> = (props) => {
     2,
     '0'
   )}-${new Date().getDate()}`;
+  const consultModeOnline: any = [];
+  const consultModePhysical: any = [];
+  doctorTimings.map((item: any) => {
+    if (item.consultMode === 'PHYSICAL' || item.consultMode === 'BOTH') {
+      consultModePhysical.push(item.consultMode);
+    }
+    if (item.consultMode === 'ONLINE' || item.consultMode === 'BOTH') {
+      consultModeOnline.push(item.consultMode);
+    }
+  });
 
   return (
     <div className={classes.root}>
       <div className={classes.sectionHeader}>Timings</div>
       <div className={classes.content}>
         <div className={classes.timingsRow}>
-          <div className={classes.label}>Online:</div>
+          {consultModeOnline.length > 0 && <div className={classes.label}>Online:</div>}
           <div className={classes.rightGroup}>
-            {doctorTimings.map((item: any) => {
-              const actualDay = item.actualDay;
-              const weeDaysStartTime = moment
-                .utc(`${today} ${item.startTime}`)
-                .local()
-                .format('hh:mm a');
-              const weeDaysEndTime = moment
-                .utc(`${today} ${item.endTime}`)
-                .local()
-                .format('hh:mm a');
-              return (
-                (item.consultMode === 'ONLINE' || item.consultMode === 'BOTH') && (
-                  <div className={classes.row}>
-                    <span>{actualDay}</span>
-                    <span>{`${weeDaysStartTime}-${weeDaysEndTime}`}</span>
-                  </div>
-                )
-              );
-            })}
+            <ul className={classes.timingList}>
+              {doctorTimings.map((item: any) => {
+                const actualDay = item.actualDay;
+                const weeDaysStartTime = moment
+                  .utc(`${today} ${item.startTime}`)
+                  .local()
+                  .format('hh:mm a');
+                const weeDaysEndTime = moment
+                  .utc(`${today} ${item.endTime}`)
+                  .local()
+                  .format('hh:mm a');
+                return (
+                  (item.consultMode === 'ONLINE' || item.consultMode === 'BOTH') && (
+                    <li>
+                      <span>{actualDay}</span>
+                      <span>{`${weeDaysStartTime} - ${weeDaysEndTime}`}</span>
+                    </li>
+                  )
+                );
+              })}
+            </ul>
           </div>
         </div>
         <div className={classes.timingsRow}>
-          <div className={classes.label}>Clinic:</div>
+          {consultModePhysical.length > 0 && <div className={classes.label}>Clinic:</div>}
           <div className={classes.rightGroup}>
             {doctorTimings.map((item: any) => {
               const actualDay = item.actualDay;
@@ -120,10 +139,12 @@ export const DoctorTimings: React.FC<DoctorTimingsProps> = (props) => {
                 .format('hh:mm a');
               return (
                 (item.consultMode === 'PHYSICAL' || item.consultMode === 'BOTH') && (
-                  <div className={classes.row}>
-                    <span>{actualDay}</span>
-                    <span>{`${weeDaysStartTime}-${weeDaysEndTime}`}</span>
-                  </div>
+                  <ul className={classes.timingList}>
+                    <li>
+                      <span>{actualDay}</span>
+                      <span>{`${weeDaysStartTime} - ${weeDaysEndTime}`}</span>
+                    </li>
+                  </ul>
                 )
               );
             })}

@@ -11,6 +11,14 @@ import { Client, RequestParams } from '@elastic/elasticsearch';
 import { differenceInMinutes } from 'date-fns';
 import { debugLog } from 'customWinstonLogger';
 
+const ES_FIELDS_PRIORITY = {
+  doctor_fullName: 5,
+  speciality_name: 4,
+  speciality_groupName: 3,
+  speciality_commonSearchTerm: 2,
+  speciality_userFriendlyNomenclature: 1,
+}
+
 export const searchDoctorAndSpecialtyByNameTypeDefs = gql`
   type PossibleSearchMatches {
     doctors: [DoctorDetails]
@@ -35,6 +43,7 @@ export const searchDoctorAndSpecialtyByNameTypeDefs = gql`
   extend type Query {
     SearchDoctorAndSpecialtyByName(
       searchText: String!
+      city: String
       patientId: ID
       geolocation: Geolocation
       pincode: String
@@ -62,7 +71,13 @@ let identifier: string;
 let callStartTime: Date;
 const SearchDoctorAndSpecialtyByName: Resolver<
   null,
-  { searchText: string; patientId: string; geolocation: Geolocation; pincode: string },
+  {
+    searchText: string;
+    city: string;
+    patientId: string;
+    geolocation: Geolocation;
+    pincode: string;
+  },
   DoctorsServiceContext,
   SearchDoctorAndSpecialtyByNameResult
 > = async (parent, args, { doctorsDb, consultsDb }) => {
@@ -100,11 +115,11 @@ const SearchDoctorAndSpecialtyByName: Resolver<
     otherDoctorsNextAvailability: DoctorSlotAvailability[] = [];
 
   // const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
-  const specialtyRepository = doctorsDb.getCustomRepository(DoctorSpecialtyRepository);
 
+  // const specialtyRepository = doctorsDb.getCustomRepository(DoctorSpecialtyRepository);
   const client = new Client({ node: process.env.ELASTIC_CONNECTION_URL });
   searchLogger(`GET_MATCHED_DOCTORS_AND_SPECIALTIES___START`);
-  const PerfectdocSearchParams: RequestParams.Search = {
+  let PerfectdocSearchParams: RequestParams.Search = {
     index: 'doctors',
     body: {
       size: 1000,
@@ -112,14 +127,15 @@ const SearchDoctorAndSpecialtyByName: Resolver<
         bool: {
           must: [
             { match: { 'doctorSlots.slots.status': 'OPEN' } },
+            { match: { isSearchable: true } },
             {
               multi_match: {
                 fields: [
-                  'fullName',
-                  'specialty.name',
-                  'specialty.groupName',
-                  'specialty.commonSearchTerm',
-                  'specialty.userFriendlyNomenclature',
+                  `fullName^${ES_FIELDS_PRIORITY.doctor_fullName}`,
+                  `specialty.name^${ES_FIELDS_PRIORITY.speciality_name}`,
+                  `specialty.groupName^${ES_FIELDS_PRIORITY.speciality_groupName}`,
+                  `specialty.commonSearchTerm^${ES_FIELDS_PRIORITY.speciality_commonSearchTerm}`,
+                  `specialty.userFriendlyNomenclature^${ES_FIELDS_PRIORITY.speciality_userFriendlyNomenclature}`,
                 ],
                 type: 'phrase_prefix',
                 query: searchTextLowerCase,
@@ -130,8 +146,64 @@ const SearchDoctorAndSpecialtyByName: Resolver<
       },
     },
   };
-  const responsePerfectMatchDoctors = await client.search(PerfectdocSearchParams);
 
+  if (args.city && args.city != '' && args.searchText != '') {
+    PerfectdocSearchParams = {
+      index: 'doctors',
+      body: {
+        size: 1000,
+        query: {
+          bool: {
+            must: [
+              { match: { 'doctorSlots.slots.status': 'OPEN' } },
+              { match: { 'facility.city': args.city } },
+              { match: { isSearchable: true } },
+              {
+                multi_match: {
+                  fields: [
+                    `fullName^${ES_FIELDS_PRIORITY.doctor_fullName}`,
+                    `specialty.name^${ES_FIELDS_PRIORITY.speciality_name}`,
+                    `specialty.groupName^${ES_FIELDS_PRIORITY.speciality_groupName}`,
+                    `specialty.commonSearchTerm^${ES_FIELDS_PRIORITY.speciality_commonSearchTerm}`,
+                    `specialty.userFriendlyNomenclature^${ES_FIELDS_PRIORITY.speciality_userFriendlyNomenclature}`,
+                  ],
+                  type: 'phrase_prefix',
+                  query: searchTextLowerCase,
+                },
+              },
+            ],
+          },
+        },
+      },
+    };
+  }
+
+  if (args.city && args.city != '' && args.searchText == '') {
+    const PerfectdocCitySearchParams: RequestParams.Search = {
+      index: 'doctors',
+      body: {
+        size: 1000,
+        query: {
+          bool: {
+            must: [
+              { match: { 'doctorSlots.slots.status': 'OPEN' } },
+              { match: { isSearchable: true } },
+              {
+                multi_match: {
+                  fields: ['facility.city'],
+                  type: 'phrase_prefix',
+                  query: args.city,
+                },
+              },
+            ],
+          },
+        },
+      },
+    };
+    PerfectdocSearchParams = PerfectdocCitySearchParams;
+  }
+  const responsePerfectMatchDoctors = await client.search(PerfectdocSearchParams);
+  //console.log(responsePerfectMatchDoctors.body.hits.hits, 'city hits');
   for (const doc of responsePerfectMatchDoctors.body.hits.hits) {
     const doctor = doc._source;
     doctor['id'] = doctor.doctorId;
@@ -218,14 +290,15 @@ const SearchDoctorAndSpecialtyByName: Resolver<
         bool: {
           must: [
             { match: { 'doctorSlots.slots.status': 'OPEN' } },
+            { match: { isSearchable: true } },
             {
               multi_match: {
                 fields: [
-                  'fullName',
-                  'specialty.name',
-                  'specialty.groupName',
-                  'specialty.commonSearchTerm',
-                  'specialty.userFriendlyNomenclature',
+                  `fullName^${ES_FIELDS_PRIORITY.doctor_fullName}`,
+                  `specialty.name^${ES_FIELDS_PRIORITY.speciality_name}`,
+                  `specialty.groupName^${ES_FIELDS_PRIORITY.speciality_groupName}`,
+                  `specialty.commonSearchTerm^${ES_FIELDS_PRIORITY.speciality_commonSearchTerm}`,
+                  `specialty.userFriendlyNomenclature^${ES_FIELDS_PRIORITY.speciality_userFriendlyNomenclature}`,
                 ],
                 fuzziness: 'AUTO',
                 query: searchTextLowerCase,
@@ -323,10 +396,78 @@ const SearchDoctorAndSpecialtyByName: Resolver<
       }
     }
   }
-  console.log('earlyAvailableApolloMatchedDoctors', earlyAvailableApolloMatchedDoctors);
-  console.log('earlyAvailableNonApolloMatchedDoctors', earlyAvailableNonApolloMatchedDoctors);
-  console.log('matchedDoctors', matchedDoctors);
-  matchedSpecialties = await specialtyRepository.searchByName(searchTextLowerCase);
+  //console.log('earlyAvailableApolloMatchedDoctors', earlyAvailableApolloMatchedDoctors);
+  //console.log('earlyAvailableNonApolloMatchedDoctors', earlyAvailableNonApolloMatchedDoctors);
+  //console.log('matchedDoctors', matchedDoctors);
+  
+  // matchedSpecialties = await specialtyRepository.searchByName(searchTextLowerCase);
+
+  const specialtiesSearchParams: RequestParams.Search = {
+    "index": 'doctors',
+    "body": {
+      "_source": ["specialty"],
+      "query": {
+        "bool": {
+          "must": [
+            { "match": { 'doctorSlots.slots.status': 'OPEN' } },
+            { "match": { "isSearchable": true } },
+            {
+              "multi_match": {
+                "fields": [
+                  'specialty.name',
+                ],
+                "type": 'phrase_prefix',
+                "query": searchTextLowerCase,
+              },
+            },
+          ],
+        },
+      },
+      "size":0,
+      "aggs": {
+        "matched_specialities": {
+          "terms": {
+            "field": "specialty.name.keyword",
+            "size": 1000
+          },
+          "aggs": {
+            "matched_specialities_hits": {
+              "top_hits": {
+                "sort": [
+                  {
+                    "_score": {
+                      "order": "desc"
+                    }
+                  }
+                ],
+                "_source": ["specialty"],
+                "size": 1
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  if(args.city){
+    specialtiesSearchParams["body"]["query"]["bool"]["must"].push({ "match": { 'facility.city': args.city } });
+  }
+
+  let matchedSpecialtiesES: any = await client.search(specialtiesSearchParams);
+  const specialityBuckets = matchedSpecialtiesES.body.aggregations.matched_specialities.buckets;
+
+  if(specialityBuckets && specialityBuckets.length){
+    matchedSpecialtiesES = specialityBuckets.map((speciality: any) => {
+      speciality = speciality.matched_specialities_hits.hits.hits[0]["_source"]["specialty"];
+      return speciality;
+    })
+  } else {
+    matchedSpecialtiesES = specialityBuckets;
+  }
+  
+  matchedSpecialties = matchedSpecialtiesES;
+
   searchLogger(`GET_MATCHED_DOCTORS_AND_SPECIALTIES___END`);
 
   //fetch possible doctors only if there are not matched doctors and specialties
@@ -349,6 +490,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
                   'doctorSlots.slots.status': 'OPEN',
                 },
               },
+              { match: { isSearchable: true } },
             ],
           },
         },

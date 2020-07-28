@@ -10,23 +10,27 @@ import {
   MedicineOrders,
   Patient,
   OneApollTransaction,
-  ONE_APOLLO_STORE_CODE,
   BOOKING_SOURCE,
   DEVICE_TYPE,
   TransactionLineItems,
   ONE_APOLLO_PRODUCT_CATEGORY,
 } from 'profiles-service/entities';
+import { ONE_APOLLO_STORE_CODE } from 'types/oneApolloTypes';
+
 import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import {
-  sendCartNotification,
   NotificationType,
+  medicineOrderCancelled,
   sendMedicineOrderStatusNotification,
 } from 'notifications-service/resolvers/notifications';
 import { format, addMinutes, parseISO } from 'date-fns';
 import { log } from 'customWinstonLogger';
 import { PharmaItemsResponse } from 'types/medicineOrderTypes';
+import { OneApollo } from 'helpers/oneApollo';
+import { WebEngageInput, postEvent } from 'helpers/webEngage';
+import { ApiConstants } from 'ApiConstants';
 
 export const updateOrderStatusTypeDefs = gql`
   input OrderStatusInput {
@@ -106,9 +110,17 @@ const updateOrderStatus: Resolver<
   ProfilesServiceContext,
   UpdateOrderStatusResult
 > = async (parent, { updateOrderStatusInput }, { profilesDb }) => {
+  log(
+    'profileServiceLogger',
+    `ORDER_STATUS_CHANGE_${updateOrderStatusInput.status}_FOR_ORDER_ID:${updateOrderStatusInput.orderId}`,
+    `updateOrderStatus call from OMS`,
+    JSON.stringify(updateOrderStatusInput),
+    ''
+  );
+
   let status = MEDICINE_ORDER_STATUS[updateOrderStatusInput.status];
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
-  const orderDetails = await medicineOrdersRepo.getMedicineOrderDetails(
+  const orderDetails = await medicineOrdersRepo.getMedicineOrderWithShipments(
     updateOrderStatusInput.orderId
   );
 
@@ -132,13 +144,6 @@ const updateOrderStatus: Resolver<
     addMinutes(parseISO(updateOrderStatusInput.updatedDate), -330),
     "yyyy-MM-dd'T'HH:mm:ss.SSSX"
   );
-  log(
-    'profileServiceLogger',
-    `ORDER_STATUS_CHANGE_${updateOrderStatusInput.status}_FOR_ORDER_ID:${updateOrderStatusInput.orderId}`,
-    `updateOrderStatus call from OMS`,
-    JSON.stringify(updateOrderStatusInput),
-    ''
-  );
   if (!shipmentDetails && status == MEDICINE_ORDER_STATUS.CANCELLED) {
     await medicineOrdersRepo.updateMedicineOrderDetails(
       orderDetails.id,
@@ -153,6 +158,7 @@ const updateOrderStatus: Resolver<
       statusMessage: updateOrderStatusInput.reasonCode,
     };
     await medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, orderDetails.orderAutoId);
+    medicineOrderCancelled(orderDetails, updateOrderStatusInput.reasonCode, profilesDb);
   }
 
   if (
@@ -160,6 +166,17 @@ const updateOrderStatus: Resolver<
     orderDetails.deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP
   ) {
     status = MEDICINE_ORDER_STATUS.PICKEDUP;
+
+    //post order picked up  event to webEngage
+    const postBody: Partial<WebEngageInput> = {
+      userId: orderDetails.patient.mobileNumber,
+      eventName: ApiConstants.MEDICINE_ORDER_KERB_PICKEDUP_EVENT_NAME.toString(),
+      eventData: {
+        orderId: orderDetails.orderAutoId,
+        statusDateTime: statusDate,
+      },
+    };
+    postEvent(postBody);
   }
   if (shipmentDetails) {
     if (shipmentDetails.currentStatus == MEDICINE_ORDER_STATUS.CANCELLED) {
@@ -219,24 +236,57 @@ const updateOrderStatus: Resolver<
           orderDetails,
           profilesDb
         );
+
+        //post order out for delivery event to webEngage
+        const postBody: Partial<WebEngageInput> = {
+          userId: orderDetails.patient.mobileNumber,
+          eventName: ApiConstants.MEDICINE_ORDER_DISPATCHED_EVENT_NAME.toString(),
+          eventData: {
+            orderId: orderDetails.orderAutoId,
+            statusDateTime: format(new Date(), "yyyy-MM-dd'T'HH:mm:ss'+0530'"),
+            DSP: orderShipmentsAttrs.trackingProvider,
+            AWBNumber: orderShipmentsAttrs.trackingNo,
+          },
+        };
+        postEvent(postBody);
       }
       if (status == MEDICINE_ORDER_STATUS.DELIVERED || status == MEDICINE_ORDER_STATUS.PICKEDUP) {
+        const notificationType =
+          status == MEDICINE_ORDER_STATUS.DELIVERED
+            ? NotificationType.MEDICINE_ORDER_DELIVERED
+            : NotificationType.MEDICINE_ORDER_PICKEDUP;
+        sendMedicineOrderStatusNotification(notificationType, orderDetails, profilesDb);
         await createOneApolloTransaction(
           medicineOrdersRepo,
           orderDetails,
           orderDetails.patient,
           mobileNumberIn
         );
-        const pushNotificationInput = {
-          orderAutoId: orderDetails.orderAutoId,
-          notificationType:
-            status == MEDICINE_ORDER_STATUS.DELIVERED
-              ? NotificationType.MEDICINE_ORDER_DELIVERED
-              : NotificationType.MEDICINE_ORDER_PICKEDUP,
+
+        //post order delivered event to webEngage
+        const postBody: Partial<WebEngageInput> = {
+          userId: orderDetails.patient.mobileNumber,
+          eventName: ApiConstants.MEDICINE_ORDER_DELIVERED_EVENT_NAME.toString(),
+          eventData: {
+            orderId: orderDetails.orderAutoId,
+            statusDateTime: format(new Date(), "yyyy-MM-dd'T'HH:mm:ss'+0530'"),
+          },
         };
-        console.log(pushNotificationInput, 'pushNotificationInput');
-        const notificationResult = sendCartNotification(pushNotificationInput, profilesDb);
-        console.log(notificationResult, 'medicine order delivered notification');
+        postEvent(postBody);
+      }
+      if (status == MEDICINE_ORDER_STATUS.CANCELLED) {
+        medicineOrderCancelled(orderDetails, updateOrderStatusInput.reasonCode, profilesDb);
+
+        //post order cancelled event to webEngage
+        const postBody: Partial<WebEngageInput> = {
+          userId: orderDetails.patient.mobileNumber,
+          eventName: ApiConstants.MEDICINE_ORDER_CANCELLED_EVENT_NAME.toString(),
+          eventData: {
+            orderId: orderDetails.orderAutoId,
+            statusDateTime: format(new Date(), "yyyy-MM-dd'T'HH:mm:ss'+0530'"),
+          },
+        };
+        postEvent(postBody);
       }
     }
   }
@@ -320,7 +370,7 @@ const createOneApolloTransaction = async (
     });
     if (val.billDetails) {
       const billDetails: BillDetails = JSON.parse(val.billDetails);
-      Transaction.BillNo = billDetails.billNumber;
+      Transaction.BillNo = `${billDetails.billNumber}_${order.orderAutoId}`;
       Transaction.NetAmount = netAmount;
       Transaction.TransactionDate = billDetails.billDateTime;
       Transaction.GrossAmount = +new Decimal(netAmount).plus(totalDiscount);
@@ -382,8 +432,9 @@ const createOneApolloTransaction = async (
       JSON.stringify(Transaction),
       ''
     );
-    //if (mobileNumber == '9560923408' || mobileNumber == '7993961498') {
-    const oneApolloResponse = await medicineOrdersRepo.createOneApolloTransaction(Transaction);
+
+    const oneApollo = new OneApollo();
+    const oneApolloResponse = await oneApollo.createOneApolloTransaction(Transaction);
     log(
       'profileServiceLogger',
       `oneApollo Transaction response- ${order.orderAutoId}`,
@@ -391,7 +442,6 @@ const createOneApolloTransaction = async (
       JSON.stringify(oneApolloResponse),
       ''
     );
-    //}
     return true;
   } else {
     throw new AphError(AphErrorMessages.INVALID_RESPONSE_FOR_SKU_PHARMACY, undefined, {});

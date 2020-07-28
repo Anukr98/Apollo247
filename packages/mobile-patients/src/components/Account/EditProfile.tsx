@@ -56,6 +56,7 @@ import {
   TouchableOpacity,
   View,
   KeyboardAvoidingView,
+  BackHandler,
 } from 'react-native';
 import { Text } from 'react-native-elements';
 import { NavigationScreenProps } from 'react-navigation';
@@ -323,6 +324,26 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
     relation.key === profileData.relation &&
     email === profileData.emailAddress &&
     photoUrl === profileData.photoUrl;
+
+  useEffect(() => {
+    const _didFocus = props.navigation.addListener('didFocus', (payload) => {
+      BackHandler.addEventListener('hardwareBackPress', handleBack);
+    });
+
+    const _willBlur = props.navigation.addListener('willBlur', (payload) => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBack);
+      return () => {
+        _didFocus && _didFocus.remove();
+        _willBlur && _willBlur.remove();
+      };
+    });
+  }, []);
+
+  const handleBack = async () => {
+    BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    isEdit ? props.navigation.goBack() : props.navigation.navigate(AppRoutes.ConsultRoom, {});
+    return false;
+  };
 
   useEffect(() => {
     if (profileData) {
@@ -594,7 +615,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
           }
           getPatientApiCall();
           props.navigation.goBack();
-          setLoading && setLoading(true);
+          // setLoading && setLoading(true);
           // props.navigation.pop(2);
           // props.navigation.push(AppRoutes.ManageProfile, {
           //   mobileNumber: props.navigation.getParam('mobileNumber'),
@@ -616,7 +637,13 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
       props.navigation.goBack();
     }
   };
-
+  const selectUser = (selectedUser: any) => {
+    try {
+      AsyncStorage.setItem('selectUserId', selectedUser!.id);
+      AsyncStorage.setItem('isNewProfile', 'yes');
+      AsyncStorage.setItem('selectUserUHId', selectedUser!.uhid);
+    } catch (error) {}
+  };
   const newProfile = () => {
     setLoading && setLoading(true);
     client
@@ -639,6 +666,8 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
         setLoading && setLoading(false);
         getPatientApiCall();
         props.navigation.goBack();
+        selectUser(data.data!.addNewProfile.patient);
+        // console.log('addprofiledata==>', data.data!.addNewProfile.patient);
         // if (relation!.key === Relation.ME) {
         //   setCurrentPatientId(data!.data!.addNewProfile!.patient!.id);
         //   AsyncStorage.setItem('selectUserId', profileData!.id);
@@ -664,8 +693,9 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
   };
 
   const renderUploadSelection = () => {
-    return uploadVisible ? (
+    return (
       <UploadPrescriprionPopup
+        isVisible={uploadVisible}
         isProfileImage={true}
         heading="Upload Profile Picture"
         hideTAndCs
@@ -700,7 +730,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
           setUploadVisible(false);
         }}
       />
-    ) : null;
+    );
   };
 
   const renderHeader = () => {
@@ -713,7 +743,9 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
         leftIcon={'backArrow'}
         title={isEdit ? 'EDIT PROFILE' : 'ADD NEW FAMILY MEMBER'}
         rightComponent={null}
-        onPressLeftIcon={() => props.navigation.goBack()}
+        onPressLeftIcon={() =>
+          isEdit ? props.navigation.goBack() : props.navigation.navigate(AppRoutes.ConsultRoom, {})
+        }
       />
     );
   };
@@ -937,7 +969,11 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
       <StickyBottomComponent style={styles.stickyBottomStyle} defaultBG>
         <View style={styles.bottonButtonContainer}>
           <Button
-            onPress={() => props.navigation.goBack()}
+            onPress={() => {
+              isEdit
+                ? props.navigation.goBack()
+                : props.navigation.navigate(AppRoutes.ConsultRoom, {});
+            }}
             title={'CANCEL'}
             style={styles.bottomWhiteButtonStyle}
             titleTextStyle={styles.bottomWhiteButtonTextStyle}

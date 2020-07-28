@@ -13,7 +13,8 @@ import {
   VALUE_TYPE,
   APPOINTMENT_UPDATED_BY,
 } from 'consults-service/entities';
-import { initiateRefund, PaytmResponse } from 'consults-service/helpers/refundHelper';
+import { initiateRefund } from 'consults-service/helpers/refundHelper';
+import { PaytmResponse } from 'types/refundHelperTypes';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
@@ -164,7 +165,7 @@ const makeAppointmentPayment: Resolver<
       throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
     }
   }
-
+  const currentStatus = processingAppointment.status;
   //insert payment details
 
   let paymentInfo = await apptsRepo.findAppointmentPayment(processingAppointment.id);
@@ -187,13 +188,13 @@ const makeAppointmentPayment: Resolver<
       return { appointment: paymentInfo, isRefunded: false };
     }
     const paymentInputUpdates: Partial<AppointmentPaymentInput> = {};
-    paymentInputUpdates.responseCode = paymentInfo.responseCode;
-    paymentInputUpdates.responseMessage = paymentInfo.responseMessage;
-    paymentInputUpdates.bankName = paymentInfo.bankName;
-    paymentInputUpdates.paymentStatus = paymentInfo.paymentStatus;
-    paymentInputUpdates.bankTxnId = paymentInfo.bankTxnId;
-    paymentInputUpdates.paymentDateTime = paymentInfo.paymentDateTime;
-    paymentInputUpdates.orderId = paymentInfo.orderId;
+    paymentInputUpdates.responseCode = paymentInput.responseCode;
+    paymentInputUpdates.responseMessage = paymentInput.responseMessage;
+    paymentInputUpdates.bankName = paymentInput.bankName;
+    paymentInputUpdates.paymentStatus = paymentInput.paymentStatus;
+    paymentInputUpdates.bankTxnId = paymentInput.bankTxnId;
+    paymentInputUpdates.paymentDateTime = paymentInput.paymentDateTime;
+    paymentInputUpdates.orderId = paymentInput.orderId;
     if (paymentMode) paymentInputUpdates.paymentMode = paymentMode as PAYMENT_METHODS_REVERSE;
     await apptsRepo.updateAppointmentPayment(paymentInfo.id, paymentInputUpdates);
   } else {
@@ -204,12 +205,13 @@ const makeAppointmentPayment: Resolver<
     paymentInfo = await apptsRepo.saveAppointmentPayment(apptPaymentAttrs);
   }
   delete paymentInfo.appointment;
+  let appointmentStatus = STATUS.PENDING;
 
   //update appointment status to PENDING
   if (paymentInput.paymentStatus == 'TXN_SUCCESS') {
     if (processingAppointment.couponCode) {
       const patient = patientsDb.getCustomRepository(PatientRepository);
-      const patientDetails = await patient.findByIdWithoutRelations(
+      const patientDetails = await patient.getPatientDetails(
         processingAppointment.patientId
       );
       if (!patientDetails) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
@@ -219,6 +221,7 @@ const makeAppointmentPayment: Resolver<
       };
       await acceptCoupon(payload);
     }
+
     //check if any appointment already exists in this slot before confirming payment
     const apptCount = await apptsRepo.checkIfAppointmentExistWithId(
       processingAppointment.doctorId,
@@ -234,7 +237,7 @@ const makeAppointmentPayment: Resolver<
         `${JSON.stringify(processingAppointment)}`,
         'true'
       );
-      await apptsRepo.systemCancelAppointment(processingAppointment.id);
+      await apptsRepo.systemCancelAppointment(processingAppointment.id, processingAppointment);
       let isRefunded: boolean = false;
       if (paymentInfo.amountPaid && paymentInfo.amountPaid >= 1) {
         let refundResponse = await initiateRefund(
@@ -313,10 +316,6 @@ const makeAppointmentPayment: Resolver<
 
     //update appointment status
     //apptsRepo.updateAppointmentStatusUsingOrderId(paymentInput.orderId, STATUS.PENDING, false);
-    await apptsRepo.updateAppointment(processingAppointment.id, {
-      status: STATUS.PENDING,
-      paymentInfo,
-    });
 
     //autosubmit case sheet code starts
     const currentTime = new Date();
@@ -325,9 +324,23 @@ const makeAppointmentPayment: Resolver<
       currentTime
     );
 
+    //submit casesheet if skipAutoQuestions:false, isJdrequired = false
+    const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
+    const doctorDets = await doctorRepo.findById(processingAppointment.doctorId);
+    let submitFlag = 0;
+
+    let notes = ApiConstants.APPOINTMENT_BOOKED_WITHIN_10_MIN.toString().replace(
+      '{0}',
+      ApiConstants.AUTO_SUBMIT_CASESHEET_TIME_APPOINMENT.toString()
+    );
+    if (doctorDets && doctorDets.skipAutoQuestions == true && doctorDets.isJdAllowed == false) {
+      submitFlag = 1;
+      notes = ApiConstants.APPOINTMENT_BOOKED_SKIP_QUESTIONS.toString();
+    }
     if (
       timeDifference / 60 <=
-      parseInt(ApiConstants.AUTO_SUBMIT_CASESHEET_TIME_APPOINMENT.toString(), 10)
+        parseInt(ApiConstants.AUTO_SUBMIT_CASESHEET_TIME_APPOINMENT.toString(), 10) ||
+      submitFlag == 1
     ) {
       const consultQueueRepo = consultsDb.getCustomRepository(ConsultQueueRepository);
       const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
@@ -353,22 +366,36 @@ const makeAppointmentPayment: Resolver<
         patientId: processingAppointment.patientId,
         appointment: processingAppointment,
         status: CASESHEET_STATUS.COMPLETED,
-        notes: ApiConstants.APPOINTMENT_BOOKED_WITHIN_10_MIN.toString().replace(
-          '{0}',
-          ApiConstants.AUTO_SUBMIT_CASESHEET_TIME_APPOINMENT.toString()
-        ),
+        notes,
         isJdConsultStarted: true,
       };
+
       caseSheetRepo.savecaseSheet(casesheetAttrs);
-      apptsRepo.updateJdQuestionStatusbyIds([processingAppointment.id]);
+      processingAppointment.isConsultStarted = true;
+      processingAppointment.isJdQuestionsComplete = true;
       const historyAttrs: Partial<AppointmentUpdateHistory> = {
         appointment: processingAppointment,
         userType: APPOINTMENT_UPDATED_BY.PATIENT,
-        fromValue: STATUS.PENDING,
+        fromValue: currentStatus,
         toValue: STATUS.PENDING,
+        fromState: processingAppointment.appointmentState,
+        toState: processingAppointment.appointmentState,
         valueType: VALUE_TYPE.STATUS,
         userName: processingAppointment.patientId,
         reason: ApiConstants.APPOINTMENT_AUTO_SUBMIT_HISTORY.toString(),
+      };
+      apptsRepo.saveAppointmentHistory(historyAttrs);
+    } else {
+      const historyAttrs: Partial<AppointmentUpdateHistory> = {
+        appointment: processingAppointment,
+        userType: APPOINTMENT_UPDATED_BY.PATIENT,
+        fromValue: currentStatus,
+        toValue: STATUS.PENDING,
+        valueType: VALUE_TYPE.STATUS,
+        fromState: processingAppointment.appointmentState,
+        toState: processingAppointment.appointmentState,
+        userName: processingAppointment.patientId,
+        reason: ApiConstants.BOOK_APPOINTMENT_HISTORY_REASON.toString(),
       };
       apptsRepo.saveAppointmentHistory(historyAttrs);
     }
@@ -378,20 +405,16 @@ const makeAppointmentPayment: Resolver<
       userType: APPOINTMENT_UPDATED_BY.PATIENT,
       fromValue: STATUS.PAYMENT_PENDING,
       toValue: STATUS.PAYMENT_FAILED,
+      fromState: processingAppointment.appointmentState,
+      toState: processingAppointment.appointmentState,
       valueType: VALUE_TYPE.STATUS,
       userName: processingAppointment.patientId,
     };
     apptsRepo.saveAppointmentHistory(historyAttrs);
     if (paymentInput.responseCode == '141' || paymentInput.responseCode == '810') {
-      await apptsRepo.updateAppointment(processingAppointment.id, {
-        status: STATUS.PAYMENT_ABORTED,
-        paymentInfo,
-      });
+      appointmentStatus = STATUS.PAYMENT_ABORTED;
     } else {
-      await apptsRepo.updateAppointment(processingAppointment.id, {
-        status: STATUS.PAYMENT_FAILED,
-        paymentInfo,
-      });
+      appointmentStatus = STATUS.PAYMENT_FAILED;
 
       if (paymentInfo.paymentStatus === 'PENDING') {
         //NOTIFICATION logic starts here
@@ -409,6 +432,8 @@ const makeAppointmentPayment: Resolver<
           userType: APPOINTMENT_UPDATED_BY.PATIENT,
           fromValue: STATUS.PAYMENT_PENDING,
           toValue: STATUS.PAYMENT_PENDING_PG,
+          fromState: processingAppointment.appointmentState,
+          toState: processingAppointment.appointmentState,
           valueType: VALUE_TYPE.STATUS,
           userName: processingAppointment.patientId,
         };
@@ -416,11 +441,21 @@ const makeAppointmentPayment: Resolver<
       }
     }
   } else if (paymentInput.paymentStatus == 'PENDING') {
-    await apptsRepo.updateAppointment(processingAppointment.id, {
-      status: STATUS.PAYMENT_PENDING_PG,
-      paymentInfo,
-    });
+    appointmentStatus = STATUS.PAYMENT_PENDING_PG;
   }
+
+  paymentInfo.paymentStatus = paymentInput.paymentStatus;
+  paymentInfo.responseCode = paymentInput.responseCode;
+  paymentInfo.responseMessage = paymentInput.responseMessage;
+  await apptsRepo.updateAppointment(
+    processingAppointment.id,
+    {
+      status: appointmentStatus,
+      paymentInfo,
+    },
+    processingAppointment
+  );
+  processingAppointment.status = appointmentStatus;
   paymentInfo.appointment = processingAppointment;
   return { appointment: paymentInfo, isRefunded: false };
 };
@@ -439,7 +474,7 @@ const sendPatientAcknowledgements = async (
   }
 
   const patient = patientsDb.getCustomRepository(PatientRepository);
-  const patientDetails = await patient.findById(appointmentData.patientId);
+  const patientDetails = await patient.getPatientDetails(appointmentData.patientId);
   if (!patientDetails) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }

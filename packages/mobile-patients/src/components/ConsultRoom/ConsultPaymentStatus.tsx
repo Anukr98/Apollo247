@@ -38,7 +38,7 @@ import {
   View,
   Clipboard,
 } from 'react-native';
-import { NavigationScreenProps } from 'react-navigation';
+import { NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
 import RNFetchBlob from 'rn-fetch-blob';
 import {
   getAppointmentData,
@@ -75,7 +75,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
   const fireBaseEventAttributes = props.navigation.getParam('fireBaseEventAttributes');
   const coupon = props.navigation.getParam('coupon');
   const client = useApolloClient();
-  const { success, failure, pending } = Payment;
+  const { success, failure, pending, aborted } = Payment;
   const { showAphAlert } = useUIElements();
   const { currentPatient } = useAllCurrentPatients();
   const [notificationAlert, setNotificationAlert] = useState(false);
@@ -114,6 +114,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
         } catch (error) {}
         console.log(res.data);
         if (res.data.paymentTransactionStatus.appointment.paymentStatus == success) {
+          fireBaseFCM();
           try {
             let eventAttributes = webEngageEventAttributes;
             eventAttributes['Display ID'] = res.data.paymentTransactionStatus.appointment.displayId;
@@ -128,7 +129,6 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
         setdisplayId(res.data.paymentTransactionStatus.appointment.displayId);
         setpaymentRefId(res.data.paymentTransactionStatus.appointment.paymentRefId);
         setLoading(false);
-        fireBaseFCM();
       })
       .catch((error) => {
         CommonBugFender('fetchingTxnStutus', error);
@@ -216,14 +216,24 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
   };
 
   const handleBack = () => {
-    props.navigation.navigate(AppRoutes.ConsultRoom);
+    props.navigation.dispatch(
+      StackActions.reset({
+        index: 0,
+        key: null,
+        actions: [
+          NavigationActions.navigate({
+            routeName: AppRoutes.ConsultRoom,
+          }),
+        ],
+      })
+    );
     return true;
   };
 
   const statusIcon = () => {
     if (status === success) {
       return <Success style={styles.statusIconStyles} />;
-    } else if (status === failure) {
+    } else if (status === failure || status === aborted) {
       return <Failure style={styles.statusIconStyles} />;
     } else {
       return <Pending style={styles.statusIconStyles} />;
@@ -243,7 +253,6 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
           marginHorizontal: needStyle ? 0.1 * windowWidth : undefined,
         }}
         numberOfLines={numOfLines}
-        selectable={true}
       >
         {message}
       </Text>
@@ -253,7 +262,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
   const statusCardColour = () => {
     if (status == success) {
       return colors.SUCCESS;
-    } else if (status == failure) {
+    } else if (status == failure || status == aborted) {
       return colors.FAILURE;
     } else {
       return colors.PENDING;
@@ -268,6 +277,9 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
       textColor = theme.colors.SUCCESS_TEXT;
     } else if (status === failure) {
       message = ' PAYMENT FAILED';
+      textColor = theme.colors.FAILURE_TEXT;
+    } else if (status === aborted) {
+      message = ' PAYMENT ABORTED';
       textColor = theme.colors.FAILURE_TEXT;
     }
     return textComponent(message, undefined, textColor, false);
@@ -395,7 +407,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
             {renderViewInvoice()}
           </View>
           <Snackbar
-            style={{ position: 'absolute' }}
+            style={{ position: 'absolute', zIndex: 1001, bottom: -10 }}
             visible={snackbarState}
             onDismiss={() => {
               setSnackbarState(false);
@@ -466,7 +478,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
     if (status === failure) {
       noteText =
         'Note : In case your account has been debited, you should get the refund in 1-7 working days.';
-    } else if (status != success && status != failure) {
+    } else if (status != success && status != failure && status != aborted) {
       noteText =
         'Note : Your payment is in progress and this may take a couple of minutes to confirm your booking. We’ll intimate you once your bank confirms the payment.';
     }
@@ -476,7 +488,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
   const getButtonText = () => {
     if (status == success) {
       return 'Fill Medical Details';
-    } else if (status == failure) {
+    } else if (status == failure || status == aborted) {
       return 'TRY AGAIN';
     } else {
       return 'GO TO HOME';
@@ -488,14 +500,24 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
     const { navigate } = navigation;
     if (status == success) {
       getAppointmentInfo();
-    } else if (status == failure) {
+    } else if (status == failure || status == aborted) {
       // navigate(AppRoutes.DoctorSearch);
       setLoading(true);
       navigate(AppRoutes.DoctorDetails, {
         doctorId: doctorID,
       });
     } else {
-      navigate(AppRoutes.ConsultRoom);
+      props.navigation.dispatch(
+        StackActions.reset({
+          index: 0,
+          key: null,
+          actions: [
+            NavigationActions.navigate({
+              routeName: AppRoutes.ConsultRoom,
+            }),
+          ],
+        })
+      );
     }
   };
 

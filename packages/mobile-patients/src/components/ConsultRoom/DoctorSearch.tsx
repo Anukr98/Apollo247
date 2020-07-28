@@ -148,6 +148,12 @@ const styles = StyleSheet.create({
     color: theme.colors.SHERPA_BLUE,
     lineHeight: 18,
   },
+  topSpecialityNameiOS: {
+    ...theme.fonts.IBMPlexSansMedium(14),
+    marginHorizontal: 8,
+    textAlign: 'center',
+    color: theme.colors.SHERPA_BLUE,
+  },
   topSpecialityDescription: {
     ...theme.fonts.IBMPlexSansMedium(12),
     marginHorizontal: 20,
@@ -209,30 +215,33 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     paddingRight: 1,
   },
+  descriptionCont: {
+    borderBottomWidth: 0.4,
+    borderBottomColor: theme.colors.BORDER_BOTTOM_COLOR,
+    marginLeft: 16,
+    marginBottom: 7,
+  },
   rowDescriptionSpecialistStyles: {
     ...theme.fonts.IBMPlexSansMedium(12),
-    marginLeft: 16,
     color: theme.colors.LIGHT_BLUE,
     textAlign: 'left',
     width: width - 168,
     opacity: 0.6,
     lineHeight: 20,
-    height: 24,
     letterSpacing: 0.04,
     paddingRight: 1,
-    borderBottomWidth: 0.4,
-    borderBottomColor: theme.colors.BORDER_BOTTOM_COLOR,
+    marginBottom: 8,
   },
   rowUserFriendlySpecialistStyles: {
     ...theme.fonts.IBMPlexSansMedium(10),
     marginLeft: 16,
     color: theme.colors.LIGHT_BLUE,
     textAlign: 'left',
-    height: 24,
     width: width - 168,
-    lineHeight: 20,
+    lineHeight: 13,
     letterSpacing: 0.04,
     paddingRight: 1,
+    marginBottom: 13,
   },
   helpView: {
     marginTop: 40,
@@ -399,6 +408,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   const [paused, setPaused] = useState<boolean>(true);
 
   useEffect(() => {
+    newUserPastSearch();
     if (!currentPatient) {
       console.log('No current patients available');
       getPatientApiCall();
@@ -421,6 +431,12 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
 
   const client = useApolloClient();
 
+  const newUserPastSearch = async () => {
+    const newPatientId = await AsyncStorage.getItem('selectUserId');
+    setTimeout(() => {
+      newPatientId && fetchPastSearches(newPatientId);
+    }, 1500);
+  };
   const handleBack = async () => {
     BackHandler.removeEventListener('hardwareBackPress', handleBack);
     props.navigation.goBack();
@@ -598,6 +614,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
           }
         })
         .catch((e) => {
+          setisSearching(false);
           CommonBugFender('DoctorSearch_fetchSearchData', e);
           console.log('Error occured while searching Doctor', e);
         });
@@ -683,12 +700,12 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     setSpecialities(data);
   };
 
-  const fetchPastSearches = async () => {
+  const fetchPastSearches = async (selectedUser?: any) => {
     setshowPastSearchSpinner(true);
     const userId = await dataSavedUserID('selectedProfileId');
 
     const Input = {
-      patientId: userId ? userId : g(currentPatient, 'id'),
+      patientId: selectedUser ? selectedUser : userId ? userId : g(currentPatient, 'id'),
     };
 
     client
@@ -730,24 +747,25 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
 
   const todayDate = moment(new Date()).format('YYYY-MM-DD');
   const callSpecialityAPI = async () => {
-    let isToday = false;
-    const checkDate: any = await AsyncStorage.getItem('APICalledDate');
-    if (checkDate == null) {
-      AsyncStorage.setItem('APICalledDate', todayDate);
-    }
-    isToday = checkDate ? checkDate === todayDate : false;
-    const specialistData = await AsyncStorage.getItem('SpecialistData');
-    if (isToday && specialistData && specialistData.length) {
-      if (specialistData) {
-        setSpecialities(JSON.parse(specialistData));
-        setLocalData(JSON.parse(specialistData));
-        fetchTopSpecialities(JSON.parse(specialistData));
-        // fetchDoctorData(JSON.parse(specialistData)[0].id);
-      }
-      setshowSpinner(false);
-    } else {
-      fetchSpecialities();
-    }
+    // let isToday = false;
+    // const checkDate: any = await AsyncStorage.getItem('APICalledDate');
+    // if (checkDate == null) {
+    //   AsyncStorage.setItem('APICalledDate', todayDate);
+    // }
+    // isToday = checkDate ? checkDate === todayDate : false;
+    // const specialistData = await AsyncStorage.getItem('SpecialistData');
+    // if (isToday && specialistData && specialistData.length) {
+    //   if (specialistData) {
+    //     setSpecialities(JSON.parse(specialistData));
+    //     setLocalData(JSON.parse(specialistData));
+    //     fetchTopSpecialities(JSON.parse(specialistData));
+    //     // fetchDoctorData(JSON.parse(specialistData)[0].id);
+    //   }
+    //   setshowSpinner(false);
+    // } else {
+    setshowSpinner(false);
+    fetchSpecialities();
+    // }
   };
 
   const setLocalData = (data: any) => {
@@ -879,14 +897,16 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
                   setisSearching(true);
                 } else {
                   setdisplaySpeialist(false);
+                  setisSearching(false);
                 }
               }
             }}
             onFocus={() => {
-              if (searchText.length < 3) {
+              if (searchText === '' || searchText.length < 3) {
                 setPastSearch(false);
                 setNeedHelp(false);
                 setdisplaySpeialist(false);
+                setisSearching(false);
               }
             }}
             onBlur={() => {
@@ -1030,6 +1050,9 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
             style={{ flexDirection: 'row', marginLeft: 20, flexWrap: 'wrap', marginBottom: 20 }}
           >
             {TopSpecialities.map((item, index) => {
+              let itemSymptom = item!.symptoms || '';
+              itemSymptom = itemSymptom.charAt(0).toUpperCase() + itemSymptom.slice(1); // capitalize first character
+              const symptom = itemSymptom.replace(/,\s*([a-z])/g, (d, e) => ', ' + e.toUpperCase()); // capitalize first character after comma (,)
               return (
                 <Mutation<saveSearch> mutation={SAVE_SEARCH}>
                   {(mutate, { loading, data, error }) => (
@@ -1058,13 +1081,20 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
                       <View
                         style={{
                           alignItems: 'center',
-                          borderBottomWidth: 0.2,
+                          borderBottomWidth: 0.4,
                           borderBottomColor: theme.colors.BORDER_BOTTOM_COLOR,
                           height: 50,
                           justifyContent: 'center',
                         }}
                       >
-                        <Text numberOfLines={2} style={styles.topSpecialityName}>
+                        <Text
+                          numberOfLines={2}
+                          style={
+                            Platform.OS === 'ios'
+                              ? styles.topSpecialityNameiOS
+                              : styles.topSpecialityName
+                          }
+                        >
                           {item.name}
                         </Text>
                       </View>
@@ -1081,7 +1111,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
                         </Text>
                       </View>
                       <View style={{ alignItems: 'center', marginVertical: 12 }}>
-                        <Text style={styles.topSpecialityFriendlyname}>{item.symptoms}</Text>
+                        <Text style={styles.topSpecialityFriendlyname}>{symptom}</Text>
                       </View>
                     </TouchableOpacity>
                   )}
@@ -1123,24 +1153,11 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
           />
           <View style={{ flexDirection: 'row' }}>
             <FlatList
-              contentContainerStyle={
-                {
-                  // flexWrap: 'wrap',
-                  // marginHorizontal: 12,
-                }
-              }
               bounces={false}
               data={SpecialitiesList}
               onEndReachedThreshold={0.5}
               renderItem={({ item, index }) =>
-                index == 6
-                  ? renderBookConsultVideo(
-                      item,
-                      index,
-                      SpecialitiesList.length,
-                      searchText.length > 2
-                    )
-                  : renderSpecialistRow(item, index, SpecialitiesList.length, searchText.length > 2)
+                renderSpecialistRow(item, index, SpecialitiesList.length, searchText.length > 2)
               }
               keyExtractor={(_, index) => index.toString()}
               numColumns={1}
@@ -1313,7 +1330,10 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     length: number,
     isSearchResult?: boolean
   ) => {
-    if (rowData)
+    if (rowData) {
+      let itemSymptom = rowData!.symptoms || '';
+      itemSymptom = itemSymptom.charAt(0).toUpperCase() + itemSymptom.slice(1); // capitalize first character
+      const symptom = itemSymptom.replace(/,\s*([a-z])/g, (d, e) => ', ' + e.toUpperCase()); // capitalize first character after comma (,)
       return (
         <Mutation<saveSearch> mutation={SAVE_SEARCH}>
           {(mutate, { loading, data, error }) => (
@@ -1365,11 +1385,13 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
                   <Text numberOfLines={1} style={styles.rowSpecialistStyles}>
                     {rowData.name}
                   </Text>
-                  <Text numberOfLines={2} style={styles.rowDescriptionSpecialistStyles}>
-                    {rowData.shortDescription}
-                  </Text>
+                  <View style={styles.descriptionCont}>
+                    <Text numberOfLines={2} style={styles.rowDescriptionSpecialistStyles}>
+                      {rowData.shortDescription}
+                    </Text>
+                  </View>
                   <Text numberOfLines={1} style={styles.rowUserFriendlySpecialistStyles}>
-                    {rowData.symptoms}
+                    {symptom}
                   </Text>
                 </View>
                 <ArrowRight
@@ -1387,7 +1409,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
           )}
         </Mutation>
       );
-    else return null;
+    } else return null;
   };
   //TODO: setDocFilters that we get from API
   const docFilters = {
@@ -1465,6 +1487,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
             contentContainerStyle={{
               marginTop: 20,
               marginBottom: 8,
+              paddingTop: Platform.OS == 'android' ? 10 : 1,
             }}
             bounces={false}
             data={doctorsList}
@@ -1680,6 +1703,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   const selectUser = (selectedUser: any) => {
     AsyncStorage.setItem('selectUserId', selectedUser!.id);
     AsyncStorage.setItem('selectUserUHId', selectedUser!.uhid);
+    AsyncStorage.setItem('isNewProfile', 'yes');
   };
   const renderCTAs = () => (
     <View style={styles.aphAlertCtaViewStyle}>
@@ -1689,9 +1713,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
           item.firstName !== '+ADD MEMBER' ? (
             <TouchableOpacity
               onPress={() => {
-                setShowProfilePopUp(false);
-                selectUser(item);
-                fetchPastSearches();
+                onSelectedProfile(item);
               }}
               style={[styles.ctaWhiteButtonViewStyle]}
             >
@@ -1720,7 +1742,13 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       </View>
     </View>
   );
-
+  const onSelectedProfile = (item: any) => {
+    selectUser(item);
+    setShowProfilePopUp(false);
+    setTimeout(() => {
+      fetchPastSearches(item.id);
+    }, 1000);
+  };
   const onProfileChange = () => {
     setShowList(false);
 

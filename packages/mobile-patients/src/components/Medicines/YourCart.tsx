@@ -6,6 +6,7 @@ import {
   g,
   postWebEngageEvent,
   postWEGWhatsAppEvent,
+  getMaxQtyForMedicineItem,
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
@@ -23,7 +24,6 @@ import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import {
   ArrowRight,
   CouponIcon,
-  MedicineIcon,
   FreeShippingIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { MedicineCard } from '@aph/mobile-patients/src/components/ui/MedicineCard';
@@ -56,6 +56,8 @@ import {
   Store,
   MedicineProduct,
   GetDeliveryTimeResponse,
+  TatApiInput,
+  getDeliveryTimeHeaderTat,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   postPhamracyCartAddressSelectedFailure,
@@ -68,7 +70,7 @@ import {
   WebEngageEventName,
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
-import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
@@ -219,7 +221,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   const [isPhysicalUploadComplete, setisPhysicalUploadComplete] = useState<boolean>();
   const [isEPrescriptionUploadComplete, setisEPrescriptionUploadComplete] = useState<boolean>();
   const [deliveryTime, setdeliveryTime] = useState<string>('');
-  const [deliveryError, setdeliveryError] = useState<string>('');
+  // const [deliveryError, setdeliveryError] = useState<string>('');
   const [showDeliverySpinner, setshowDeliverySpinner] = useState<boolean>(true);
   const [showDriveWayPopup, setShowDriveWayPopup] = useState<boolean>(false);
   const { locationDetails, pharmacyLocation } = useAppCommonData();
@@ -307,96 +309,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   }, [deliveryAddressId]);
 
   useEffect(() => {
-    const cartItemsReplica =
-      cartItems.map(({ id, quantity }) => id + quantity).toString() + deliveryAddressId;
-    if (lastCartItemsReplica == cartItemsReplica) {
-      setLoading!(false);
-      return;
-    }
-
-    if (deliveryAddressId && cartItems.length > 0) {
-      setLastCartItemsReplica(cartItemsReplica);
-      setdeliveryTime('...');
-      setshowDeliverySpinner(true);
-      setLoading!(true);
-      const lookUp = cartItems.map((item) => {
-        return { sku: item.id, qty: item.quantity };
-      });
-      if (selectedAddress) {
-        getDeliveryTime({
-          postalcode: selectedAddress.zipcode || '',
-          ordertype: getTatOrderType(cartItems),
-          lookup: lookUp,
-        })
-          .then((res) => {
-            setdeliveryTime('');
-            const tatItemsCount = g(res, 'data', 'tat', 'length');
-            if (tatItemsCount) {
-              const tatItems = g(res, 'data', 'tat') || [];
-              // filter out the sku's which has deliverydate > X days from the current date
-              const unserviceableSkus = tatItems
-                .filter(
-                  ({ deliverydate }) =>
-                    moment(deliverydate, 'D-MMM-YYYY HH:mm a').diff(moment(), 'days') >
-                    AppConfig.Configuration.TAT_UNSERVICEABLE_DAY_COUNT
-                )
-                .map(({ artCode }) => artCode);
-
-              // update cart items to unserviceable/serviceable
-              const updatedCartItems = cartItems.map((item) => ({
-                ...item,
-                unserviceable: !!unserviceableSkus.find((sku) => item.id == sku),
-              }));
-              setCartItems!(updatedCartItems);
-
-              if (unserviceableSkus.length) {
-                showUnServiceableItemsAlert(updatedCartItems);
-              }
-
-              const serviceableItems = tatItems.filter(
-                ({ artCode }) => !unserviceableSkus.find((sku) => artCode == sku)
-              );
-              const serviceableTats = serviceableItems.map(({ deliverydate }) => deliverydate);
-
-              if (serviceableTats.length) {
-                const tatDate = serviceableTats.reduce(
-                  (acc, curr) =>
-                    moment(curr, 'D-MMM-YYYY HH:mm a') > moment(acc, 'D-MMM-YYYY HH:mm a')
-                      ? curr
-                      : acc,
-                  serviceableTats[0]
-                );
-                setdeliveryTime(tatDate);
-                postPhamracyCartAddressSelectedSuccess(
-                  selectedAddress.zipcode!,
-                  formatAddress(selectedAddress),
-                  'Yes',
-                  moment(tatDate, 'D-MMM-YYYY HH:mm a').toDate()
-                );
-                // If all the SKUs are serviceable, call getStoreInventoryApi to check cart item prices
-                // if discrepancy, update cart items and show alert
-                if (!unserviceableSkus.length) {
-                  fetchInventoryAndUpdateCartPricesAfterTat(serviceableItems, updatedCartItems);
-                }
-              } else {
-                setdeliveryTime('No items are serviceable.');
-                setLoading!(false);
-              }
-              setshowDeliverySpinner(false);
-            } else {
-              showGenericTatDate(lookUp);
-            }
-          })
-          .catch((err) => {
-            CommonBugFender('YourCart_getDeliveryTime', err);
-            if (!Axios.isCancel(err)) {
-              showGenericTatDate(lookUp, err);
-            }
-          });
-      }
-    } else if (deliveryAddressId && cartItems.length == 0) {
-      setLoading!(false);
-    }
+    updateTatInfo();
   }, [deliveryAddressId, cartItems]);
 
   useEffect(() => {
@@ -456,6 +369,101 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
       title: string.common.uhOh,
       description: message,
     });
+  };
+
+  const updateTatInfo = async () => {
+    const cartItemsReplica =
+      cartItems.map(({ id, quantity }) => id + quantity).toString() + deliveryAddressId;
+    if (lastCartItemsReplica == cartItemsReplica) {
+      setLoading!(false);
+      return;
+    }
+
+    if (deliveryAddressId && cartItems.length > 0 && selectedAddress) {
+      setLastCartItemsReplica(cartItemsReplica);
+      setdeliveryTime('...');
+      setshowDeliverySpinner(true);
+      setLoading!(true);
+      const lookUp = cartItems.map((item) => ({ sku: item.id, qty: item.quantity }));
+      try {
+        const tatApiInput: TatApiInput = {
+          postalcode: selectedAddress.zipcode || '',
+          ordertype: getTatOrderType(cartItems),
+          lookup: lookUp,
+        };
+        const res = await getDeliveryTime(tatApiInput);
+        // setdeliveryTime('');
+        const tatItemsCount = g(res, 'data', 'tat', 'length');
+        if (tatItemsCount) {
+          const tatItems = g(res, 'data', 'tat') || [];
+          // filter out the sku's which has deliverydate > X days from the current date
+          const unserviceableSkus = tatItems
+            .filter(
+              ({ deliverydate }) =>
+                moment(deliverydate, 'D-MMM-YYYY HH:mm a').diff(moment(), 'days') >
+                AppConfig.Configuration.TAT_UNSERVICEABLE_DAY_COUNT
+            )
+            .map(({ artCode }) => artCode);
+
+          // update cart items to unserviceable/serviceable
+          const updatedCartItems = cartItems.map((item) => ({
+            ...item,
+            unserviceable: !!unserviceableSkus.find((sku) => item.id == sku),
+          }));
+          setCartItems!(updatedCartItems);
+
+          if (unserviceableSkus.length) {
+            showUnServiceableItemsAlert(updatedCartItems);
+          }
+
+          const serviceableItems = tatItems.filter(
+            ({ artCode }) => !unserviceableSkus.find((sku) => artCode == sku)
+          );
+          const serviceableTats = serviceableItems.map(({ deliverydate }) => deliverydate);
+
+          // If all the SKUs are serviceable, call getStoreInventoryApi to check cart item prices
+          // if discrepancy, update cart items and show alert
+          // Call getHeaderTAT API to display tatDate
+          if (serviceableTats.length && !unserviceableSkus.length) {
+            fetchInventoryAndUpdateCartPricesAfterTat(serviceableItems, updatedCartItems);
+            updateserviceableItemsTat(tatApiInput);
+          } else {
+            setdeliveryTime('...');
+            setshowDeliverySpinner(false);
+            setLoading!(false);
+          }
+        } else {
+          showGenericTatDate(lookUp);
+        }
+      } catch (err) {
+        CommonBugFender('YourCart_getDeliveryTime', err);
+        if (!Axios.isCancel(err)) {
+          showGenericTatDate(lookUp, err);
+        }
+      }
+    } else if (deliveryAddressId && cartItems.length == 0) {
+      setLoading!(false);
+    }
+  };
+
+  const updateserviceableItemsTat = async (tatApiInput: TatApiInput) => {
+    try {
+      const res = await getDeliveryTimeHeaderTat(tatApiInput);
+      const tatDate = g(res, 'data', 'tat', '0' as any, 'deliverydate');
+      if (tatDate) {
+        setdeliveryTime(tatDate);
+        setshowDeliverySpinner(false);
+        selectedAddress &&
+          postPhamracyCartAddressSelectedSuccess(
+            selectedAddress.zipcode!,
+            formatAddress(selectedAddress),
+            'Yes',
+            moment(tatDate, 'D-MMM-YYYY HH:mm a').toDate()
+          );
+      }
+    } catch (error) {
+      showGenericTatDate(tatApiInput.lookup, error, true);
+    }
   };
 
   const fetchAddresses = async () => {
@@ -543,7 +551,11 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     }
   };
 
-  const showGenericTatDate = (lookUp: { sku: string; qty: number }[], err?: Error) => {
+  const showGenericTatDate = (
+    lookUp: { sku: string; qty: number }[],
+    err?: Error,
+    dontStopLoading?: boolean
+  ) => {
     const genericServiceableDate = moment()
       .add(2, 'days')
       .set('hours', 20)
@@ -551,29 +563,58 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
       .toString();
     setdeliveryTime(genericServiceableDate);
     setshowDeliverySpinner(false);
-    setLoading!(false);
+    dontStopLoading && setLoading!(false);
     postTatResponseFailureEvent(err || {}, g(selectedAddress, 'zipcode')!, lookUp);
+  };
+
+  const postSkuPriceMismatchEvent = (
+    cartItemMrp: number,
+    cartItemPackSize: number,
+    storeMrp: number,
+    skuId: string
+  ) => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.SKU_PRICE_MISMATCH] = {
+      'Mobile Number': g(currentPatient, 'mobileNumber') || '',
+      'Sku Id': skuId,
+      'Magento MRP': cartItemMrp,
+      'Magento Pack Size': cartItemPackSize,
+      'Store API MRP': storeMrp,
+    };
+    postWebEngageEvent(WebEngageEventName.SKU_PRICE_MISMATCH, eventAttributes);
+  };
+
+  const isDiffLessOrGreaterThan25Percent = (num1: number, num2: number) => {
+    const diffP = ((num1 - num2) / num1) * 100;
+    const result = diffP > 25 || diffP < -25;
+    return result;
   };
 
   const getFromattedStoreInventory = (
     storeItem: GetStoreInventoryResponse['itemDetails'][0],
     cartItem: ShoppingCartItem
   ) => {
-    const storeItemPrice = Number((storeItem.mrp * Number(cartItem.mou)).toFixed(2));
+    const storeItemPrice =
+      storeItem.mrp && Number((storeItem.mrp * Number(cartItem.mou || 1)).toFixed(2));
+    const isDiff = storeItemPrice
+      ? isDiffLessOrGreaterThan25Percent(cartItem.price, storeItemPrice)
+      : true;
+    if (isDiff) {
+      postSkuPriceMismatchEvent(cartItem.price, Number(cartItem.mou), storeItemPrice, cartItem.id);
+    }
     const storeItemSP =
-      cartItem.specialPrice && cartItem.price != storeItemPrice
+      !isDiff && cartItem.specialPrice
         ? getSpecialPriceFromRelativePrices(
             cartItem.price,
             cartItem.specialPrice,
-            storeItem.mrp * Number(cartItem.mou)
+            storeItem.mrp * Number(cartItem.mou || 1)
           )
         : cartItem.specialPrice;
     return {
       sku: cartItem.id,
       name: cartItem.name,
       is_in_stock: 1,
-      price: storeItemPrice,
-      special_price: storeItemSP,
+      price: isDiff ? cartItem.price : storeItemPrice,
+      special_price: isDiff ? cartItem.specialPrice : storeItemSP,
     } as MedicineProduct;
   };
 
@@ -679,7 +720,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
       });
   };
 
-  const getTatOrderType = (cartItems: ShoppingCartItem[]) => {
+  const getTatOrderType = (cartItems: ShoppingCartItem[]): 'pharma' | 'fmcg' | 'both' => {
     const isPharma = cartItems.find((item) => item.isMedicine);
     const isFmcg = cartItems.find((item) => !item.isMedicine);
     return isPharma && isFmcg ? 'both' : isPharma ? 'pharma' : 'fmcg';
@@ -824,6 +865,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         ? `${cartItems.length}`
         : `0${cartItems.length}`;
     const FreeShipping =
+      selectedTab == tabs[0].title &&
       AppConfig.Configuration.MIN_VALUE_TO_NUDGE_USERS_TO_AVAIL_FREE_DELIVERY > 0 &&
       cartTotal - couponDiscount - productDiscount >=
         AppConfig.Configuration.MIN_VALUE_TO_NUDGE_USERS_TO_AVAIL_FREE_DELIVERY &&
@@ -863,6 +905,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
 
           return (
             <MedicineCard
+              maxQty={getMaxQtyForMedicineItem(medicine.maxOrderQty)}
               // personName={
               //   currentPatient && currentPatient.firstName ? currentPatient.firstName : ''
               // }
@@ -906,19 +949,12 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         {cartItems.length > 0 && FreeShipping ? (
           <View
             style={{
-              shadowColor: 'rgba(128, 128, 128, 0.3)',
-              shadowOffset: { width: 0, height: 5 },
-              shadowOpacity: 0.4,
-              shadowRadius: 5,
-              elevation: 5,
-              flexDirection: 'row',
-              marginHorizontal: 20,
-              marginBottom: 20,
-              backgroundColor: '#f7f8f5',
-              borderRadius: 10,
-              paddingHorizontal: 17,
-              paddingVertical: 11,
+              ...theme.viewStyles.card(),
+              marginTop: 0,
+              paddingTop: 9,
               paddingBottom: 9,
+              flexDirection: 'row',
+              backgroundColor: '#f7f8f5',
             }}
           >
             <FreeShippingIcon style={{ width: 15, height: 15, marginTop: 3, marginRight: 3 }} />
@@ -944,7 +980,6 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
       return;
     }
     setdeliveryTime('');
-    setdeliveryError('');
     setshowDeliverySpinner(false);
     // setCheckingServicability(true);
     setLoading!(true);
@@ -1029,7 +1064,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             )}
           </View>
         </View>
-        {deliveryAddressId && (deliveryTime || deliveryError) ? (
+        {deliveryAddressId && deliveryTime ? (
           <View>
             <View style={styles.separatorStyle} />
             <View style={styles.deliveryContainerStyle}>
@@ -1041,7 +1076,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
                   <Text style={styles.deliveryTimeStyle}>
                     {moment(deliveryTime).isValid()
                       ? moment(deliveryTime).format('D MMM YYYY  | hh:mm A')
-                      : '...' || deliveryError}
+                      : '...'}
                   </Text>
                 </View>
               )}
@@ -1278,7 +1313,6 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
               // setLastCartItemsReplicaForStorePickup('');
               // delivery time related
               setdeliveryTime('');
-              setdeliveryError('');
               setshowDeliverySpinner(false);
               setLastCartItemsReplica('');
             }}

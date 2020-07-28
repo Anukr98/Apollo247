@@ -138,11 +138,16 @@ export const ADD_NEW_PROFILE = gql`
 // `;
 
 export const PAST_APPOINTMENTS_COUNT = gql`
-  query getPastAppointmentsCount($doctorId: String!, $patientId: String!) {
-    getPastAppointmentsCount(doctorId: $doctorId, patientId: $patientId) {
+  query getPastAppointmentsCount($doctorId: String!, $patientId: String!, $appointmentId: String!) {
+    getPastAppointmentsCount(
+      doctorId: $doctorId
+      patientId: $patientId
+      appointmentId: $appointmentId
+    ) {
       count
       completedCount
       yesCount
+      noCount
     }
   }
 `;
@@ -157,6 +162,7 @@ export const BOOK_APPOINTMENT = gql`
         status
         appointmentType
         patientId
+        displayId
       }
     }
   }
@@ -281,6 +287,12 @@ export const GET_APPOINTMENT_HISTORY = gql`
         status
         bookingDate
         isSeniorConsultStarted
+        caseSheet {
+          symptoms {
+            symptom
+            details
+          }
+        }
       }
     }
   }
@@ -1180,6 +1192,7 @@ export const GET_MEDICINE_ORDERS_OMS__LIST = gql`
     getMedicineOrdersOMSList(patientId: $patientId) {
       medicineOrdersList {
         id
+        createdDate
         orderAutoId
         billNumber
         shopAddress
@@ -1187,13 +1200,43 @@ export const GET_MEDICINE_ORDERS_OMS__LIST = gql`
         currentStatus
         medicineOrdersStatus {
           id
-          statusDate
+          # statusDate
           orderStatus
           hideStatus
         }
         medicineOrderLineItems {
           medicineName
         }
+        medicineOrderShipments {
+          medicineOrderInvoice {
+            itemDetails
+          }
+        }
+      }
+    }
+  }
+`;
+
+export const GET_LATEST_MEDICINE_ORDER = gql`
+  query getLatestMedicineOrder($patientUhid: String!) {
+    getLatestMedicineOrder(patientUhid: $patientUhid) {
+      medicineOrderDetails {
+        id
+        createdDate
+        orderAutoId
+        billNumber
+        shopAddress
+        prescriptionImageUrl
+        medicineOrderLineItems {
+          medicineSKU
+          medicineName
+          price
+          mrp
+          quantity
+        }
+        # medicineOrdersStatus {
+        #   statusDate
+        # }
         medicineOrderShipments {
           medicineOrderInvoice {
             itemDetails
@@ -1391,6 +1434,7 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS = gql`
     ) {
       medicineOrderDetails {
         id
+        createdDate
         orderAutoId
         billNumber
         devliveryCharges
@@ -1406,7 +1450,7 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS = gql`
         deliveryType
         currentStatus
         patientAddressId
-        # alertStore
+        alertStore
         medicineOrdersStatus {
           id
           orderStatus
@@ -1480,6 +1524,16 @@ export const UPLOAD_FILE = gql`
   mutation uploadFile($fileType: String, $base64FileInput: String) {
     uploadFile(fileType: $fileType, base64FileInput: $base64FileInput) {
       filePath
+    }
+  }
+`;
+
+export const GET_PATIENT_FEEDBACK = gql`
+  query GetPatientFeedback($patientId: String, $transactionId: String) {
+    getPatientFeedback(patientId: $patientId, transactionId: $transactionId) {
+      feedback {
+        rating
+      }
     }
   }
 `;
@@ -2174,6 +2228,20 @@ export const UPLOAD_CHAT_FILE = gql`
   }
 `;
 
+export const ADD_CHAT_DOCUMENTS = gql`
+  mutation addChatDocument($appointmentId: ID!, $documentPath: String, $prismFileId: String) {
+    addChatDocument(
+      appointmentId: $appointmentId
+      documentPath: $documentPath
+      prismFileId: $prismFileId
+    ) {
+      id
+      documentPath
+      prismFileId
+    }
+  }
+`;
+
 export const CANCEL_MEDICINE_ORDER_OMS = gql`
   mutation CancelMedicineOrderOMS($medicineOrderCancelOMSInput: MedicineOrderCancelOMSInput) {
     cancelMedicineOrderOMS(medicineOrderCancelOMSInput: $medicineOrderCancelOMSInput) {
@@ -2336,10 +2404,15 @@ export const UPLOAD_CHAT_FILE_PRISM = gql`
 
 export const UPLOAD_MEDIA_DOCUMENT_PRISM = gql`
   mutation uploadMediaDocument(
-    $PrescriptionUploadRequest: PrescriptionUploadRequest
-    $uhid: String
+    $MediaPrescriptionUploadRequest: MediaPrescriptionUploadRequest
+    $uhid: String!
+    $appointmentId: ID!
   ) {
-    uploadMediaDocument(prescriptionInput: $PrescriptionUploadRequest, uhid: $uhid) {
+    uploadMediaDocument(
+      prescriptionInput: $MediaPrescriptionUploadRequest
+      uhid: $uhid
+      appointmentId: $appointmentId
+    ) {
       recordId
       fileUrl
     }
@@ -2635,11 +2708,13 @@ export const UPDATE_SAVE_EXTERNAL_CONNECT = gql`
     $doctorId: String!
     $patientId: String!
     $externalConnect: Boolean
+    $appointmentId: String!
   ) {
     updateSaveExternalConnect(
       doctorId: $doctorId
       patientId: $patientId
       externalConnect: $externalConnect
+      appointmentId: $appointmentId
     ) {
       status
     }
@@ -2668,6 +2743,19 @@ export const GET_PERSONALIZED_APPOITNMENTS = gql`
           }
         }
       }
+    }
+  }
+`;
+
+export const GET_APPOINTMENT_RESCHEDULE_DETAILS = gql`
+  query getAppointmentRescheduleDetails($appointmentId: String!) {
+    getAppointmentRescheduleDetails(appointmentId: $appointmentId) {
+      id
+      rescheduledDateTime
+      rescheduleReason
+      rescheduleInitiatedBy
+      rescheduleInitiatedId
+      rescheduleStatus
     }
   }
 `;

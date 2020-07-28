@@ -1,7 +1,7 @@
 import { setConfig, Config } from 'react-hot-loader';
 import { hot } from 'react-hot-loader/root';
 import React, { useEffect } from 'react';
-import { BrowserRouter, Route, Switch } from 'react-router-dom';
+import { BrowserRouter, Route, Switch, Redirect } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { Welcome } from 'components/Welcome';
 import { AuthProvider } from 'components/AuthProvider';
@@ -12,7 +12,6 @@ import { AphThemeProvider, aphTheme } from '@aph/web-ui-components';
 import { DoctorDetails } from 'components/DoctorDetails';
 import { MuiPickersUtilsProvider } from '@material-ui/pickers';
 import DateFnsUtils from '@date-io/date-fns';
-import { DoctorsLanding } from 'components/DoctorsLanding';
 import { AuthRouted } from 'components/AuthRouted';
 import { PatientsList } from 'components/PatientsList';
 import { CartPoc } from 'components/CartPoc';
@@ -64,6 +63,9 @@ import { PrescriptionReview } from 'components/PrescriptionReview';
 import { SpecialityListing } from 'components/SpecialityListing';
 import { SpecialtyDetails } from 'components/Doctors/SpecialtyDetails';
 import { MedicinePrescriptions } from './Prescriptions/MedicinePrescriptions';
+import { MedicineSearch } from './Medicine/MedicineSearch';
+import { DoctorsLanding } from 'components/DoctorsLanding';
+import { covidProtocolLanding } from 'components/Covid/CovidProtocolLanding';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -96,7 +98,7 @@ const App: React.FC = () => {
   const pageName = window.location.pathname;
 
   useEffect(() => {
-    if (signInError) window.alert('Error signing in :(');
+    if (signInError) console.log('Error signing in :(');
   }, [signInError]);
 
   return (
@@ -133,9 +135,14 @@ const App: React.FC = () => {
             component={DoctorDetails}
           />
           <Route exact path={clientRoutes.doctorsLanding()} component={DoctorsLanding} />
-          {/* <Route exact path={clientRoutes.specialties(':specialty')} component={DoctorsLanding} /> */}
           <Route exact path={clientRoutes.specialties(':specialty')} component={SpecialtyDetails} />
+          <Route
+            exact
+            path={clientRoutes.citySpecialties(':city', ':specialty')}
+            component={SpecialtyDetails}
+          />
           <Route exact path={clientRoutes.medicines()} component={MedicineLanding} />
+          <Route exact path={clientRoutes.medicineSearch()} component={MedicineSearch} />
           <Route exact path={clientRoutes.medicinesLandingViewCart()} component={MedicineLanding} />
           <Route exact path={clientRoutes.payMedicine(':payType')} component={PayMedicine} />
           <AuthRouted
@@ -218,6 +225,7 @@ const App: React.FC = () => {
             path={clientRoutes.medicinePrescription()}
             component={MedicinePrescriptions}
           />
+          <Route exact path={clientRoutes.covidProtocol()} component={covidProtocolLanding} />
         </Switch>
       </div>
     </Scrollbars>

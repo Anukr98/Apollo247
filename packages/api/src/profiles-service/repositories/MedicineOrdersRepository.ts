@@ -9,78 +9,37 @@ import {
   MEDICINE_ORDER_TYPE,
   MedicineOrderShipments,
   MedicineOrderCancelReason,
-  ONE_APOLLO_USER_REG,
-  OneApollTransaction,
+  MedicineOrderAddress,
 } from 'profiles-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { format, addDays, differenceInMinutes } from 'date-fns';
+import { getCache, setCache } from 'profiles-service/database/connectRedis';
+import { ApiConstants } from 'ApiConstants';
 
+const REDIS_ORDER_AUTO_ID_KEY_PREFIX: string = 'orderAutoId:';
 @EntityRepository(MedicineOrders)
 export class MedicineOrdersRepository extends Repository<MedicineOrders> {
-  saveMedicineOrder(medicineOrderAttrs: Partial<MedicineOrders>) {
-    return this.create(medicineOrderAttrs)
+  async saveMedicineOrder(medicineOrderAttrs: Partial<MedicineOrders>) {
+    const orderCreated = await this.create(medicineOrderAttrs)
       .save()
       .catch((medicineOrderError) => {
         throw new AphError(AphErrorMessages.SAVE_MEDICINE_ORDER_ERROR, undefined, {
           medicineOrderError,
         });
       });
-  }
+    const orderCreatedString = JSON.stringify(orderCreated);
 
-  async getOneApolloUser(mobileNumber: string) {
-    try {
-      const response = await fetch(
-        `${process.env.ONEAPOLLO_BASE_URL}/Customer/GetByMobile?mobilenumber=${mobileNumber}&BusinessUnit=${process.env.ONEAPOLLO_BUSINESS_UNIT}`,
-        {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            AccessToken: <string>process.env.ONEAPOLLO_ACCESS_TOKEN,
-            APIKey: <string>process.env.ONEAPOLLO_API_KEY,
-          },
-        }
-      );
-      return response.json();
-    } catch (e) {
-      console.log('error occured in getOneApolloUser()', e);
-      throw new AphError(AphErrorMessages.GET_ONEAPOLLO_USER_ERROR, undefined, { e });
-    }
-  }
-
-  async createOneApolloUser(oneApollUser: ONE_APOLLO_USER_REG) {
-    try {
-      const response = await fetch(process.env.ONEAPOLLO_BASE_URL + '/Customer/Register', {
-        method: 'POST',
-        body: JSON.stringify(oneApollUser),
-        headers: {
-          'Content-Type': 'application/json',
-          AccessToken: <string>process.env.ONEAPOLLO_ACCESS_TOKEN,
-          APIKey: <string>process.env.ONEAPOLLO_API_KEY,
-        },
-      });
-      return response.json();
-    } catch (e) {
-      throw new AphError(AphErrorMessages.CREATE_ONEAPOLLO_USER_ERROR, undefined, { e });
-    }
-  }
-  async createOneApolloTransaction(transaction: Partial<OneApollTransaction>) {
-    try {
-      const response = await fetch(process.env.ONEAPOLLO_BASE_URL + '/transaction/create', {
-        method: 'POST',
-        body: JSON.stringify(transaction),
-        headers: {
-          'Content-Type': 'application/json',
-          AccessToken: <string>process.env.ONEAPOLLO_ACCESS_TOKEN,
-          APIKey: <string>process.env.ONEAPOLLO_API_KEY,
-        },
-      });
-      return response.json();
-    } catch (e) {
-      throw new AphError(AphErrorMessages.CREATE_ONEAPOLLO_USER_TRANSACTION_ERROR, undefined, {
-        e,
-      });
-    }
+    /**
+     * Saving order information in redis cache
+     * It will be auto deleted in 15 minutes
+     */
+    setCache(
+      `${REDIS_ORDER_AUTO_ID_KEY_PREFIX}${orderCreated.orderAutoId}`,
+      orderCreatedString,
+      ApiConstants.CACHE_EXPIRATION_900
+    );
+    return orderCreated;
   }
 
   getInvoiceDetailsByOrderId(orderId: MedicineOrders['orderAutoId']) {
@@ -91,28 +50,8 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
     });
   }
 
-  async getOneApolloUserTransactions(mobileNumber: string) {
-    try {
-      const response = await fetch(
-        `${process.env.ONEAPOLLO_BASE_URL}/Customer/GetAllTransactions?mobilenumber=${mobileNumber}&Count=${process.env.ONEAPOLLO_DEFAULT_TRANSACTIONS_COUNT}`,
-        {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            AccessToken: <string>process.env.ONEAPOLLO_ACCESS_TOKEN,
-            APIKey: <string>process.env.ONEAPOLLO_API_KEY,
-          },
-        }
-      );
-      return response.json();
-    } catch (e) {
-      throw new AphError(AphErrorMessages.GET_ONEAPOLLO_USER_TRANSACTIONS_ERROR, undefined, { e });
-    }
-  }
-
   findPharamaOrdersByOrderId(orderAutoId: MedicineOrders['orderAutoId']) {
-    return this.createQueryBuilder()
-      .from(MedicineOrders, 'mo')
+    return this.createQueryBuilder('mo')
       .leftJoinAndSelect(
         MedicineOrderPayments,
         'mp',
@@ -127,6 +66,7 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
         'mo."orderAutoId"',
         'mo."orderDateTime"',
         'mp."paymentMode"',
+        'mo."currentStatus"',
       ])
       .where('mo.orderAutoId = :orderAutoId', { orderAutoId })
       .getRawOne();
@@ -188,6 +128,7 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
       relations: [
         'patient',
         'medicineOrderLineItems',
+        'medicineOrderPayments',
         'patient.patientAddress',
         'medicineOrdersStatus',
         'medicineOrderShipments',
@@ -203,12 +144,20 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
     });
   }
 
-  getMedicineOrderDetailsByOrderId(orderAutoId: number) {
-    return this.findOne({
-      select: ['id', 'currentStatus', 'orderAutoId', 'patientAddressId', 'isOmsOrder', 'patient'],
-      where: { orderAutoId },
-      relations: ['patient'],
-    });
+  async getMedicineOrderDetailsByOrderId(orderAutoId: number) {
+    /**
+     * Fetching from redis cache first, the order details were saved in saveMedicineOrdersOMS.ts
+     * If data is not there in cache, then fetch from conventional storage(db)
+     */
+    const orderResponse = await getCache(`${REDIS_ORDER_AUTO_ID_KEY_PREFIX}${orderAutoId}`);
+    if (!orderResponse) {
+      return this.findOne({
+        select: ['id', 'currentStatus', 'orderAutoId', 'patientAddressId', 'isOmsOrder', 'patient'],
+        where: { orderAutoId },
+        relations: ['patient'],
+      });
+    }
+    return JSON.parse(orderResponse) as MedicineOrders;
   }
 
   getMedicineOrderDetailsByAp(apOrderNo: string) {
@@ -303,6 +252,19 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
     });
   }
 
+  getMedicineOrdersListWithoutAbortedStatus(patientIds: String[]) {
+    return this.find({
+      where: { patient: In(patientIds), currentStatus: Not(MEDICINE_ORDER_STATUS.PAYMENT_ABORTED) },
+      order: { createdDate: 'DESC' },
+      relations: [
+        'medicineOrderLineItems',
+        'medicineOrdersStatus',
+        'medicineOrderShipments',
+        'medicineOrderShipments.medicineOrderInvoice',
+      ],
+    });
+  }
+
   getMedicineOrdersListWithPayments(patientIds: String[]) {
     return this.find({
       where: { patient: In(patientIds) },
@@ -339,6 +301,22 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
         'medicineOrderShipments.medicineOrderInvoice',
         'medicineOrderInvoice',
         'patient',
+      ],
+    });
+  }
+
+  getMedicineOrderDetailsWithAddressByOrderId(orderAutoId: number) {
+    return this.findOne({
+      where: { orderAutoId },
+      relations: [
+        'medicineOrderLineItems',
+        'medicineOrderPayments',
+        'medicineOrdersStatus',
+        'medicineOrderShipments',
+        'medicineOrderShipments.medicineOrdersStatus',
+        'medicineOrderShipments.medicineOrderInvoice',
+        'medicineOrderInvoice',
+        'medicineOrderAddress',
       ],
     });
   }
@@ -582,6 +560,40 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
       throw new AphError(AphErrorMessages.GET_MEDICINE_ORDER_CANCEL_REASONS_ERROR, undefined, {
         medicineOrderError,
       });
+    });
+  }
+
+  getLatestMedicineOrderDetails(patientId: string) {
+    return MedicineOrders.createQueryBuilder('medicine_orders')
+      .leftJoinAndSelect('medicine_orders.medicineOrderLineItems', 'medicineOrderLineItems')
+      .leftJoinAndSelect('medicine_orders.medicineOrderPayments', 'medicineOrderPayments')
+      .leftJoinAndSelect('medicine_orders.medicineOrdersStatus', 'medicineOrdersStatus')
+      .leftJoinAndSelect('medicine_orders.medicineOrderShipments', 'medicineOrderShipments')
+      .leftJoinAndSelect('medicineOrderShipments.medicineOrderInvoice', 'medicineOrderInvoice')
+      .andWhere('medicine_orders."patientId" = :patientId', { patientId })
+      .andWhere('medicine_orders."currentStatus" in (:status1)', {
+        status1: MEDICINE_ORDER_STATUS.DELIVERED,
+      })
+      .orderBy('medicine_orders."createdDate"', 'DESC')
+      .getOne();
+  }
+
+  saveMedicineOrderAddress(orderAddressAttrs: Partial<MedicineOrderAddress>) {
+    return MedicineOrderAddress.create(orderAddressAttrs).save();
+  }
+
+  getMedicineOrder(orderAutoId: number) {
+    return this.findOne({ orderAutoId });
+  }
+
+  getMedicineOrderWithShipments(orderAutoId: number) {
+    return this.findOne({
+      where: { orderAutoId },
+      relations: [
+        'patient',
+        'medicineOrderShipments',
+        'medicineOrderShipments.medicineOrdersStatus',
+      ],
     });
   }
 }

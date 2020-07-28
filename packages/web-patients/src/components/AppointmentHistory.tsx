@@ -1,16 +1,19 @@
 import { Theme, Grid } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
-import React from 'react';
-import { useQueryWithSkip } from 'hooks/apolloHooks';
+import React, { useEffect, useState } from 'react';
+import { useApolloClient } from 'react-apollo-hooks';
 import { PATIENT_APPOINTMENT_HISTORY } from 'graphql/doctors';
 import {
   getAppointmentHistory as PatientAppointmentHistory,
   getAppointmentHistoryVariables as AppointmentHistoryVariables,
+  getAppointmentHistory_getAppointmentHistory_appointmentsHistory as AppointmentHistoryType,
 } from 'graphql/types/getAppointmentHistory';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import _uniqueId from 'lodash/uniqueId';
 import { getTime } from 'date-fns/esm';
 import { format } from 'date-fns';
+import { useAllCurrentPatients } from 'hooks/authHooks';
+import Slider from 'react-slick';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -18,7 +21,7 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: theme.palette.common.white,
       borderRadius: 10,
       boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
-      marginBottom: 10,
+      margin: 10,
       [theme.breakpoints.down('xs')]: {
         marginBottom: 0,
       },
@@ -122,7 +125,6 @@ const useStyles = makeStyles((theme: Theme) => {
 
 interface AppointmentHistoryProps {
   doctorId: string;
-  patientId: string;
 }
 
 const getTimestamp = (today: Date, slotTime: string) => {
@@ -142,17 +144,89 @@ const getTimestamp = (today: Date, slotTime: string) => {
 
 export const AppointmentHistory: React.FC<AppointmentHistoryProps> = (props) => {
   const classes = useStyles({});
+  const sliderSettings = {
+    infinite: true,
+    speed: 500,
+    slidesToShow: 3,
+    slidesToScroll: 1,
+    nextArrow: <img src={require('images/ic_arrow_right.svg')} alt="" />,
+    prevArrow: <img src={require('images/ic_arrow_left.svg')} alt="" />,
+    responsive: [
+      {
+        breakpoint: 992,
+        settings: {
+          slidesToShow: 1,
+          slidesToScroll: 1,
+          infinite: true,
+          dots: true,
+          centerPadding: '50px',
+        },
+      },
+      {
+        breakpoint: 768,
+        settings: {
+          slidesToShow: 1,
+          slidesToScroll: 1,
+          initialSlide: 2,
+          centerMode: true,
+          nextArrow: <img src={require('images/ic_white_arrow_right.svg')} alt="" />,
+          prevArrow: <img src={require('images/ic_white_arrow_right.svg')} alt="" />,
+        },
+      },
+      {
+        breakpoint: 480,
+        settings: {
+          slidesToShow: 1,
+          slidesToScroll: 1,
+          centerMode: true,
+          nextArrow: <img src={require('images/ic_white_arrow_right.svg')} alt="" />,
+          prevArrow: <img src={require('images/ic_white_arrow_right.svg')} alt="" />,
+        },
+      },
+    ],
+  };
 
-  const { doctorId, patientId } = props;
+  const { doctorId } = props;
+  const { currentPatient } = useAllCurrentPatients();
+  const apolloClient = useApolloClient();
+  const [appointmentHistory, setAppointmentHistory] = useState<AppointmentHistoryType[] | null>(
+    null
+  );
+  const [error, setError] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
 
-  const { data, loading, error } = useQueryWithSkip<
-    PatientAppointmentHistory,
-    AppointmentHistoryVariables
-  >(PATIENT_APPOINTMENT_HISTORY, {
-    variables: {
-      appointmentHistoryInput: { patientId: patientId, doctorId: doctorId },
-    },
-  });
+  useEffect(() => {
+    if (currentPatient && currentPatient.id) {
+      setLoading(true);
+      apolloClient
+        .query<PatientAppointmentHistory, AppointmentHistoryVariables>({
+          query: PATIENT_APPOINTMENT_HISTORY,
+          variables: {
+            appointmentHistoryInput: { patientId: currentPatient.id, doctorId: doctorId },
+          },
+        })
+        .then(({ data }: any) => {
+          if (
+            data &&
+            data.getAppointmentHistory &&
+            data.getAppointmentHistory.appointmentsHistory
+          ) {
+            setAppointmentHistory(data.getAppointmentHistory.appointmentsHistory);
+          } else {
+            setAppointmentHistory([]);
+          }
+          setError(false);
+        })
+        .catch((e) => {
+          console.log(e);
+
+          setError(true);
+        })
+        .finally(() => {
+          setLoading(false);
+        });
+    }
+  }, [currentPatient]);
 
   if (loading) {
     return <LinearProgress />;
@@ -161,56 +235,42 @@ export const AppointmentHistory: React.FC<AppointmentHistoryProps> = (props) => 
     return <></>;
   }
 
-  if (data && data.getAppointmentHistory && data.getAppointmentHistory.appointmentsHistory) {
-    const previousAppointments = data.getAppointmentHistory.appointmentsHistory;
-    const symptoms = ['FEVER', 'COUGH & COLD'];
-    return (
-      <>
-        {previousAppointments.length > 0 ? (
-          <div className={classes.sectionGroup}>
-            <div className={classes.sectionHeader}>
-              <span>{`Appointment History (${(previousAppointments &&
-                previousAppointments.length) ||
-                0})`}</span>
+  return appointmentHistory && appointmentHistory.length > 0 ? (
+    <div className={classes.sectionGroup}>
+      <div className={classes.sectionHeader}>
+        <span>{`Appointment History (${(appointmentHistory && appointmentHistory.length) ||
+          0})`}</span>
+      </div>
+      <Slider {...sliderSettings}>
+        {appointmentHistory.map((appointment) => {
+          const appointmentDate = format(new Date(appointment.appointmentDateTime), 'dd MMM, yyyy');
+          const appointmentTime = format(new Date(appointment.appointmentDateTime), 'h:mm a');
+          const symtomName =
+            appointment && appointment.caseSheet[0] && appointment.caseSheet[0].symptoms;
+          return (
+            <div className={classes.root} key={_uniqueId('aphistory_')}>
+              <div className={classes.appointType}>
+                {appointment.appointmentType === 'ONLINE' ? 'Online Consult' : 'Clinic Visit'}
+              </div>
+              <div className={classes.appointmentInfo}>
+                <div className={classes.timeGroup}>
+                  <div className={classes.appointDate}>{appointmentDate}</div>
+                  <div className={classes.appointTime}>{appointmentTime}</div>
+                </div>
+                {symtomName && (
+                  <div className={classes.appointBooked}>
+                    <ul>
+                      {symtomName.map((sym) => (
+                        <li key={_uniqueId('sym_')}>{sym.symptom}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
             </div>
-            <Grid className={classes.gridContainer} container spacing={2}>
-              {previousAppointments.map((appointment) => {
-                const appointmentDate = format(
-                  new Date(appointment.appointmentDateTime),
-                  'dd MMM, yyyy'
-                );
-                const appointmentTime = format(new Date(appointment.appointmentDateTime), 'h:mm a');
-                return (
-                  <Grid item sm={6} xs={6} md={3} key={_uniqueId('avagr_')}>
-                    <div className={classes.root} key={_uniqueId('aphistory_')}>
-                      <div className={classes.appointType}>
-                        {appointment.appointmentType === 'ONLINE'
-                          ? 'Online Consult'
-                          : 'Clinic Visit'}
-                      </div>
-                      <div className={classes.appointmentInfo}>
-                        <div className={classes.timeGroup}>
-                          <div className={classes.appointDate}>{appointmentDate}</div>
-                          <div className={classes.appointTime}>{appointmentTime}</div>
-                        </div>
-                        <div className={classes.appointBooked}>
-                          <ul>
-                            {symptoms.map((symptom: string) => (
-                              <li key={_uniqueId('symptom_')}>{symptom}</li>
-                            ))}
-                          </ul>
-                        </div>
-                      </div>
-                    </div>
-                  </Grid>
-                );
-              })}
-            </Grid>
-          </div>
-        ) : null}
-      </>
-    );
-  } else {
-    return <></>;
-  }
+          );
+        })}
+      </Slider>
+    </div>
+  ) : null;
 };

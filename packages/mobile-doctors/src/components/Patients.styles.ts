@@ -1,6 +1,6 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Platform, Dimensions } from 'react-native';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
-
+const { width } = Dimensions.get('window');
 export const styles = StyleSheet.create({
   shadowview: {
     height: 44,
@@ -41,7 +41,6 @@ export const styles = StyleSheet.create({
   },
   doctornameContainer: {
     flexDirection: 'row',
-    marginHorizontal: 20,
   },
   doctorname: {
     ...theme.fonts.IBMPlexSansSemiBold(28),
@@ -52,7 +51,7 @@ export const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansSemiBold(28),
     color: '#02475b',
     marginBottom: 2,
-    maxWidth: '75%',
+    maxWidth: width - 190,
   },
   replyChatCta: {
     backgroundColor: theme.colors.APP_YELLOW,
@@ -87,4 +86,62 @@ export const styles = StyleSheet.create({
     right: '18%',
     ...theme.viewStyles.text('SB', 10, theme.colors.APP_YELLOW, 1, 14),
   },
+  textInputStyle: {
+    ...theme.viewStyles.text('M', 13, theme.colors.SHARP_BLUE),
+    padding: 0,
+  },
+  textInputEmptyStyle: {
+    ...theme.viewStyles.text('L', 13, theme.colors.SHARP_BLUE, 1, undefined, 3),
+    padding: 0,
+  },
+  searchTextBodyContainer: {
+    flex: 1,
+    alignItems: 'center',
+    marginTop: 50,
+    justifyContent: 'center',
+    marginHorizontal: 70,
+  },
+  searchTextStyle: {
+    ...theme.viewStyles.text('R', 12, theme.colors.LIGHT_BLUE, 0.7, undefined, 1),
+    textAlign: 'center',
+  },
+  listTextContainer: {
+    flex: 1,
+    alignItems: 'center',
+    marginTop: 50,
+    justifyContent: 'center',
+    marginHorizontal: 20,
+  },
+  noRecordText1: {
+    ...theme.viewStyles.text('R', 12, theme.colors.LIGHT_BLUE, 0.7, undefined, 1),
+    textAlign: 'center',
+  },
+  noRecordText2: theme.viewStyles.text('SB', 12, theme.colors.LIGHT_BLUE, 1, undefined, 1),
+  searchResultTextContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    marginTop: 30,
+    marginHorizontal: 20,
+  },
+  searchResultText: {
+    ...theme.viewStyles.text('R', 12, theme.colors.blackColor(0.6), 0.7, undefined, 1),
+    textAlign: 'left',
+  },
+  doctorGreetingContainer: {
+    backgroundColor: '#ffffff',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingRight: 24,
+    paddingBottom: 16,
+    paddingHorizontal: 20,
+  },
+  textInputContainer: {
+    borderBottomWidth: 1,
+    marginTop: Platform.OS === 'ios' ? 16 : 8,
+    paddingBottom: 6,
+    borderColor: theme.colors.blackColor(0.2),
+    marginRight: 24,
+  },
+  searchBackgroundContainer: { marginTop: 30 },
 });

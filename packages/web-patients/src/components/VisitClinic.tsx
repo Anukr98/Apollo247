@@ -8,7 +8,7 @@ import { DayTimeSlots } from 'components/DayTimeSlots';
 import Scrollbars from 'react-custom-scrollbars';
 import _uniqueId from 'lodash/uniqueId';
 import {
-  GetDoctorDetailsById as DoctorDetails,
+  GetDoctorDetailsById_getDoctorDetailsById as DoctorDetails,
   GetDoctorDetailsById_getDoctorDetailsById_doctorHospital as Facility,
 } from 'graphql/types/GetDoctorDetailsById';
 import {
@@ -229,18 +229,11 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
     VALIDATE_CONSULT_COUPON
   );
   const currentTime = new Date().getTime();
-  const doctorName =
-    doctorDetails &&
-    doctorDetails.getDoctorDetailsById &&
-    doctorDetails.getDoctorDetailsById.firstName
-      ? doctorDetails.getDoctorDetailsById.firstName
-      : '';
+  const doctorName = doctorDetails && doctorDetails.firstName ? doctorDetails.firstName : '';
 
   const physicalConsultationFees =
-    doctorDetails &&
-    doctorDetails.getDoctorDetailsById &&
-    doctorDetails.getDoctorDetailsById.physicalConsultationFees
-      ? doctorDetails.getDoctorDetailsById.physicalConsultationFees
+    doctorDetails && doctorDetails && doctorDetails.physicalConsultationFees
+      ? doctorDetails.physicalConsultationFees
       : '';
   const [revisedAmount, setRevisedAmount] = useState(physicalConsultationFees);
   const [couponCode, setCouponCode] = useState('');
@@ -248,7 +241,10 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
     afternoonSlots: number[] = [],
     eveningSlots: number[] = [],
     lateNightSlots: number[] = [];
-  const doctorAvailableTime = moment().add(props.doctorAvailableIn, 'm').toDate() || new Date();
+  const doctorAvailableTime =
+    moment()
+      .add(props.doctorAvailableIn, 'm')
+      .toDate() || new Date();
   const apiDateFormat =
     dateSelected === ''
       ? moment(doctorAvailableTime).format('YYYY-MM-DD')
@@ -258,14 +254,11 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
   const afternoonTime = getIstTimestamp(new Date(apiDateFormat), '17:01');
   const eveningTime = getIstTimestamp(new Date(apiDateFormat), '21:01');
 
-  const doctorId =
-    doctorDetails && doctorDetails.getDoctorDetailsById && doctorDetails.getDoctorDetailsById.id
-      ? doctorDetails.getDoctorDetailsById.id
-      : '';
+  const doctorId = doctorDetails && doctorDetails.id ? doctorDetails.id : '';
 
   const clinics: Facility[] = [];
-  if (doctorDetails && doctorDetails.getDoctorDetailsById) {
-    _forEach(doctorDetails.getDoctorDetailsById.doctorHospital, (hospitalDetails) => {
+  if (doctorDetails) {
+    _forEach(doctorDetails.doctorHospital, (hospitalDetails) => {
       if (
         hospitalDetails.facility.facilityType === 'CLINIC' ||
         hospitalDetails.facility.facilityType === 'HOSPITAL'
@@ -441,7 +434,6 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
       .then((res: any) => {
         /* Gtm code start */
         const specialty = getSpeciality();
-        const { getDoctorDetailsById } = doctorDetails;
         const couponValue = Number(physicalConsultationFees) - Number(revisedAmount);
         gtmTracking({
           category: 'Consultations',
@@ -457,7 +449,7 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
           doctorType,
           doctorHospital,
           onlineConsultationFees,
-        } = doctorDetails.getDoctorDetailsById;
+        } = doctorDetails;
         let items = [],
           count = 0;
         onlineConsultationFees &&
@@ -563,13 +555,8 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
   const disableCoupon = disableSubmit || mutationLoading || isDialogOpen || !timeSelected;
   const getSpeciality = () => {
     let speciality = '';
-    if (
-      doctorDetails &&
-      doctorDetails.getDoctorDetailsById &&
-      doctorDetails.getDoctorDetailsById.specialty &&
-      doctorDetails.getDoctorDetailsById.specialty.name
-    ) {
-      speciality = doctorDetails.getDoctorDetailsById.specialty.name;
+    if (doctorDetails && doctorDetails.specialty && doctorDetails.specialty.name) {
+      speciality = doctorDetails.specialty.name;
     }
     return speciality;
   };
@@ -708,11 +695,13 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
                 JSON.stringify({
                   patientId: currentPatient ? currentPatient.id : '',
                   doctorId: doctorId,
+                  doctorName,
                   appointmentDateTime: appointmentDateTime,
                   appointmentType: AppointmentType.PHYSICAL,
                   hospitalId: defaultClinicId,
                   couponCode: couponCode ? couponCode : null,
                   amount: revisedAmount,
+                  speciality: getSpeciality(),
                 })
               );
             }}

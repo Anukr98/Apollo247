@@ -169,19 +169,6 @@ export const GET_MEDICINE_ORDERS_OMS_LIST = gql`
           orderStatus
           hideStatus
         }
-        medicineOrderShipments {
-          id
-          siteId
-          siteName
-          apOrderNo
-          currentStatus
-          medicineOrdersStatus {
-            id
-            statusDate
-            hideStatus
-            orderStatus
-          }
-        }
       }
     }
   }

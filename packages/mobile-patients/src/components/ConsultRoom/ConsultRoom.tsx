@@ -29,7 +29,7 @@ import {
   Scan,
   Symptomtracker,
   TestsCartIcon,
-  TestsCartMedicineIcon,
+  MedicineCartIcon,
   TestsIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
@@ -544,8 +544,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     },
     {
       id: 2,
-      title: 'Buy Medicines',
-      image: <TestsCartMedicineIcon style={styles.menuOptionIconStyle} />,
+      title: 'Medicines & Essentials',
+      image: <MedicineCartIcon style={styles.menuOptionIconStyle} />,
       onPress: () => {
         postHomeFireBaseEvent(FirebaseEventName.BUY_MEDICINES, 'Home Screen');
         postHomeWEGEvent(WebEngageEventName.BUY_MEDICINES, 'Home Screen');
@@ -654,7 +654,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
     const params = {
       phone: '91' + storedPhoneNumber,
-      size: 10,
+      size: 40,
     };
     console.log('params', params);
     notifcationsApi(params)
@@ -748,9 +748,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     } else {
       AsyncStorage.setItem('selectedProfileId', JSON.stringify(currentPatient.id));
       if (selectedProfile !== currentPatient.id) {
+        getPersonalizesAppointments();
         setAppointmentLoading(true);
         setSelectedProfile(currentPatient.id);
-        getPersonalizesAppointments(currentPatient);
         client
           .query<getPatientFutureAppointmentCount>({
             query: GET_PATIENT_FUTURE_APPOINTMENT_COUNT,
@@ -939,39 +939,56 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       });
   };
 
-  const getPersonalizesAppointments = async (details: any) => {
-    const uhid = g(details, 'uhid');
+  const getPersonalizesAppointments = async () => {
+    // const uhid = g(details, 'uhid');
+
+    const storedUhid: any = await AsyncStorage.getItem('selectUserUHId');
+
+    const selectedUHID = storedUhid ? storedUhid : g(currentPatient, 'uhid');
 
     const uhidSelected = await AsyncStorage.getItem('UHIDused');
-    console.log('uhidSelected', uhidSelected);
+    // console.log('selectedUHID', selectedUHID);
+    // console.log('selectUserId', selectUserId);
 
     if (uhidSelected !== null) {
-      if (uhidSelected === uhid) {
+      if (uhidSelected === selectedUHID) {
         if (Object.keys(appointmentsPersonalized).length != 0) {
-          console.log('appointmentsPersonalized', appointmentsPersonalized);
+          // console.log('appointmentsPersonalized', appointmentsPersonalized);
 
           setPersonalizedData(appointmentsPersonalized as any);
           setisPersonalizedCard(true);
         }
+      } else {
+        setPersonalizedData([]);
+        setisPersonalizedCard(false);
       }
     }
 
-    getPatientPersonalizedAppointmentList(client, uhid)
+    getPatientPersonalizedAppointmentList(client, selectedUHID)
       .then((data: any) => {
         const appointmentsdata =
           g(data, 'data', 'data', 'getPatientPersonalizedAppointments', 'appointmentDetails') || [];
         console.log('appointmentsdata', appointmentsdata);
-        AsyncStorage.setItem('UHIDused', uhid);
+        AsyncStorage.setItem('UHIDused', selectedUHID);
 
-        setPersonalizedData(appointmentsdata as any);
-        setisPersonalizedCard(true);
-        setAppointmentsPersonalized &&
-          setAppointmentsPersonalized(
-            appointmentsdata as getPatientPersonalizedAppointments_getPatientPersonalizedAppointments_appointmentDetails[]
-          );
+        if (appointmentsdata.doctorId !== null) {
+          console.log('appointmentsdata_if', appointmentsdata);
+          setPersonalizedData(appointmentsdata as any);
+          setisPersonalizedCard(true);
+          setAppointmentsPersonalized &&
+            setAppointmentsPersonalized(
+              appointmentsdata as getPatientPersonalizedAppointments_getPatientPersonalizedAppointments_appointmentDetails[]
+            );
+        } else {
+          setPersonalizedData([]);
+          setisPersonalizedCard(false);
+          setAppointmentsPersonalized && setAppointmentsPersonalized([]);
+          console.log('appointmentsdata_null_else', appointmentsdata);
+        }
       })
       .catch((e) => {
-        CommonBugFender('ConsultRoom_getPatientPersonalizedAppointmentList', e);
+        setPersonalizedData([]);
+        setisPersonalizedCard(false);
       });
   };
 
@@ -1412,9 +1429,24 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   const onPressRiskLevel = () => {
     postHomeWEGEvent(WebEngageEventName.CHECK_YOUR_RISK_LEVEL);
-    props.navigation.navigate(AppRoutes.CovidScan, {
-      covidUrl: AppConfig.Configuration.COVID_RISK_LEVEL_URL,
-    });
+    const urlToOpen = AppConfig.Configuration.COVID_RISK_LEVEL_URL;
+    try {
+      if (Platform.OS === 'ios') {
+        Linking.canOpenURL(urlToOpen).then((supported) => {
+          if (supported) {
+            Linking.openURL(urlToOpen);
+          } else {
+            setBugFenderLog('CONSULT_ROOM_FAILED_OPEN_URL', urlToOpen);
+          }
+        });
+      } else {
+        props.navigation.navigate(AppRoutes.CovidScan, {
+          covidUrl: urlToOpen,
+        });
+      }
+    } catch (e) {
+      setBugFenderLog('CONSULT_ROOM_FAILED_OPEN_URL', urlToOpen);
+    }
   };
 
   const onPressKavach = () => {
@@ -1641,7 +1673,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           onClickButton={() => {
             const { doctorDetails } = personalizedData;
             const eventAttributes: WebEngageEvents[WebEngageEventName.HOMEPAGE_WIDGET_FOLLOWUP_CLICK] = {
-              'Doctor ID': doctorDetails.id,
+              'Doctor ID': personalizedData.doctorId,
               'Speciality ID': doctorDetails.specialty.id,
               'Hospital City': personalizedData.hospitalLocation,
               'Consult Mode': personalizedData.appointmentType,
@@ -1655,8 +1687,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               'Patient UHID': currentPatient.uhid,
             };
             postWebEngageEvent(WebEngageEventName.HOMEPAGE_WIDGET_FOLLOWUP_CLICK, eventAttributes);
+            console.log('personalizedData.doctorDetails.id ', personalizedData.doctorDetails.id);
             props.navigation.navigate(AppRoutes.DoctorDetails, {
               doctorId: personalizedData ? personalizedData.doctorDetails.id : '',
+              showBookAppointment: true,
+              consultedWithDoctorBefore: true,
             });
           }}
         />

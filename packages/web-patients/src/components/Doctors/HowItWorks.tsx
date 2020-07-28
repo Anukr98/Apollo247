@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { makeStyles, createStyles } from '@material-ui/styles';
-import { Theme } from '@material-ui/core';
+import { Theme, Tabs, Tab, Typography } from '@material-ui/core';
 import { AphButton } from '@aph/web-ui-components';
+import { AphDialog, AphDialogClose, AphDialogTitle } from '@aph/web-ui-components';
 import { getAppStoreLink } from 'helpers/dateHelpers';
+import useMediaQuery from '@material-ui/core/useMediaQuery';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -158,117 +160,409 @@ const useStyles = makeStyles((theme: Theme) => {
         backgroundColor: '#fff',
       },
     },
+    card: {
+      background: '#ffffff',
+      borderRadius: 5,
+      padding: 15,
+      margin: '0 0 20px',
+      '& h5': {
+        fontSize: 16,
+        fontWeight: 600,
+        margin: '0 0 10px',
+        lineHeight: '16px',
+      },
+    },
+    tabsContainer: {},
+    tabRoot: {
+      background: '#f7f8f5',
+      padding: 10,
+      boxShadow: ' 0 2px 4px 0 rgba(0, 0, 0, 0.2)',
+      borderRadius: 5,
+      minWidth: 140,
+      opacity: 1,
+      position: 'relative',
+      border: '1px solid transparent',
+      minHeight: 'auto',
+      overflow: 'visible',
+      '&:first-child': {
+        margin: '0 10px 0 0',
+      },
+      '& span': {
+        fontSize: 12,
+        fontWeight: 600,
+        textTransform: 'none',
+        lineHeight: '15px',
+        position: 'relative',
+        zIndex: 5,
+      },
+      '&:before': {
+        content: "''",
+        position: 'absolute',
+        bottom: -34,
+        left: 0,
+        right: 0,
+        zIndex: 2,
+        width: 20,
+        height: '100%',
+        margin: '0 auto',
+        borderRadius: 4,
+        borderTop: '10px solid transparent',
+        borderBottom: '10px solid transparent',
+        borderLeft: ' 40px solid transparent',
+        borderRight: '40px solid transparent',
+      },
+      '&:after': {
+        content: "''",
+        position: 'absolute',
+        bottom: -35,
+        left: 0,
+        right: 0,
+        zIndex: 1,
+        width: 20,
+        height: '100%',
+        margin: '0 auto',
+        borderRadius: 4,
+        borderTop: '10px solid transparent',
+        borderBottom: '10px solid transparent',
+        borderLeft: ' 40px solid transparent',
+        borderRight: '40px solid transparent',
+      },
+      [theme.breakpoints.down('sm')]: {
+        minWidth: 100,
+        '&:first-child': {
+          margin: '0 20px 0 0',
+        },
+      },
+    },
+    tabSelected: {
+      borderColor: '#00b38e',
+      '&:before': {
+        borderTopColor: '#f7f8f5',
+      },
+      '&:after': {
+        borderTopColor: '#00b38e',
+      },
+    },
+    tabsRoot: {
+      '& >div': {
+        '& >div': {
+          padding: '10px 0 30px',
+        },
+      },
+    },
+    tabsIndicator: {
+      display: 'none',
+    },
+    tabContent: {},
+    chatContainer: {},
+    tabHead: {
+      display: 'flex',
+      alignItems: 'center',
+      textAlign: 'left',
+      '& img': {
+        margin: '0 20px 0 0',
+      },
+      '& h6': {
+        color: '#0589bb',
+        fontSize: 14,
+        textTransform: 'uppercase',
+        fontWeight: 600,
+      },
+    },
+    tabBody: {
+      padding: '20px 0',
+      borderTop: '1px solid #eeeeee',
+      borderBottom: '1px solid #eeeeee',
+      margin: '20px 0',
+    },
+    tabList: {
+      padding: 0,
+      margin: 0,
+      listStyle: 'none',
+      '& li': {
+        padding: '5px 0',
+        display: 'flex',
+        alignItems: 'center',
+        '& p': {
+          fontSize: 12,
+          color: 'rgb(2, 71, 91, 0.6)',
+          margin: '0 0 0 15px',
+          fontWeight: 500,
+        },
+      },
+    },
+    highlight: {
+      '& p': {
+        color: '#0589bb !important',
+      },
+    },
+    appDetails: {
+      '& h6': {
+        color: '#0589bb',
+        fontSize: 14,
+        margin: '0 0 5px',
+        fontWeight: 500,
+      },
+      '& p': {
+        fontSize: 12,
+        color: 'rgb(2, 71, 91, 0.6)',
+        lineHeight: '18px',
+      },
+    },
+    consultContainer: {
+      padding: 20,
+    },
+    appDetailsMobile: {
+      padding: '10px 0 ',
+      margin: '10px 0 0',
+      borderTop: '1px solid #eeeeee',
+      '& p': {
+        margin: '0 0 15px',
+      },
+    },
+    inPerson: {
+      color: '#01475b',
+      fontSize: 12,
+      fontWeight: 500,
+    },
   });
 });
 
-export const HowItWorks: React.FC = (props) => {
-  const classes = useStyles({});
-  const [onlineDirection, setOnlineDirection] = useState<boolean>(true);
-  const [physicalDirection, setPhysicalDirection] = useState<boolean>(false);
+interface TabPanelProps {
+  children?: React.ReactNode;
+  index: any;
+  value: any;
+}
+
+const TabPanel = (props: TabPanelProps) => {
+  const { children, value, index, ...other } = props;
 
   return (
-    <div className={classes.root}>
-      <h3>How it works</h3>
-      <div className={classes.tabButtons}>
-        <AphButton
-          className={
-            onlineDirection ? `${classes.button} ${classes.btnActive}` : `${classes.button}`
-          }
-          onClick={() => {
-            setOnlineDirection(true);
-            setPhysicalDirection(false);
+    <div
+      role="tabpanel"
+      hidden={value !== index}
+      id={`simple-tabpanel-${index}`}
+      aria-labelledby={`simple-tab-${index}`}
+      {...other}
+    >
+      {value === index && <div>{children}</div>}
+    </div>
+  );
+};
+
+const a11yProps = (index: any) => {
+  return {
+    id: `simple-tab-${index}`,
+    'aria-controls': `simple-tabpanel-${index}`,
+  };
+};
+
+export const HowItWorks: React.FC = (props) => {
+  const classes = useStyles({});
+  const [chatConsult, setChatConsult] = useState<boolean>(false);
+  const [meetInPerson, setMeetInPerson] = useState<boolean>(false);
+  const [value, setValue] = React.useState(0);
+
+  const isDesktopOnly = useMediaQuery('(min-width:768px)');
+  const handleTabChange = (event: React.ChangeEvent<{}>, newValue: number) => {
+    setValue(newValue);
+  };
+
+  return (
+    <div className={classes.card}>
+      <Typography component="h5">How it works</Typography>
+      <div className={classes.tabsContainer}>
+        <Tabs
+          value={value}
+          onChange={handleTabChange}
+          aria-label="simple tabs example"
+          classes={{
+            root: classes.tabsRoot,
+            indicator: classes.tabsIndicator,
           }}
         >
-          Chat/Audio/Video
-        </AphButton>
-        <AphButton
-          className={
-            physicalDirection ? `${classes.button} ${classes.btnActive}` : `${classes.button}`
-          }
-          onClick={() => {
-            setOnlineDirection(false);
-            setPhysicalDirection(true);
-          }}
-        >
-          Meet in Person
-        </AphButton>
-      </div>
-      <div className={classes.consultGroup}>
-        <div className={classes.groupHead}>
-          <span>
-            <img
-              src={require(onlineDirection
-                ? 'images/video-calling.svg'
-                : 'images/ic-specialist.svg')}
-              alt=""
-            />
-          </span>
-          <h4>
-            {onlineDirection ? 'How to consult via chat/audio/video?' : 'How to consult in person'}
-          </h4>
+          <Tab
+            label="Chat/Audio/Video"
+            {...a11yProps(0)}
+            classes={{
+              root: classes.tabRoot,
+              selected: classes.tabSelected,
+            }}
+            onDoubleClick={() => !isDesktopOnly && setChatConsult(true)}
+          />
+          <Tab
+            label="Meet in Person"
+            {...a11yProps(1)}
+            classes={{
+              root: classes.tabRoot,
+              selected: classes.tabSelected,
+            }}
+            onDoubleClick={() => !isDesktopOnly && setMeetInPerson(true)}
+          />
+        </Tabs>
+
+        <div className={classes.tabContent}>
+          <TabPanel value={value} index={0}>
+            <div className={classes.chatContainer}>
+              <div className={classes.tabHead}>
+                <img src={require('images/video-calling.svg')} />
+                <Typography component="h6">How to consult via chat/audio/video?</Typography>
+              </div>
+              <div className={classes.tabBody}>
+                <ul className={classes.tabList}>
+                  <li>
+                    <img src={require('images/consult-doc.svg')} />
+                    <Typography>Choose the doctor</Typography>
+                  </li>
+                  <li>
+                    <img src={require('images/slot.svg')} />
+                    <Typography>Book a slot</Typography>
+                  </li>
+                  <li>
+                    <img src={require('images/ic-payment.svg')} />
+                    <Typography>Make payment</Typography>
+                  </li>
+                  <li className={classes.highlight}>
+                    <img src={require('images/ic-video.svg')} />
+                    <Typography>Speak to the doctor via video/audio/chat</Typography>
+                  </li>
+                  <li>
+                    <img src={require('images/prescription.svg')} />
+                    <Typography>Receive prescriptions instantly </Typography>
+                  </li>
+                  <li className={classes.highlight}>
+                    <img src={require('images/chat.svg')} />
+                    <Typography>Chat with the doctor for 6 days after your consult</Typography>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </TabPanel>
+          <TabPanel value={value} index={1}>
+            <div className={classes.tabHead}>
+              <img src={require('images/ic-specialist.svg')} />
+              <Typography component="h6">
+                How to consult <br /> in person{' '}
+              </Typography>
+            </div>
+            <div className={classes.tabBody}>
+              <ul className={classes.tabList}>
+                <li>
+                  <img src={require('images/consult-doc.svg')} />
+                  <Typography>Choose the doctor</Typography>
+                </li>
+                <li>
+                  <img src={require('images/slot.svg')} />
+                  <Typography>Book a slot</Typography>
+                </li>
+                <li>
+                  <img src={require('images/ic-payment.svg')} />
+                  <Typography>Make payment</Typography>
+                </li>
+                <li className={classes.highlight}>
+                  <img src={require('images/hospital.svg')} />
+                  <Typography>Visit the doctor at Hospital/Clinic</Typography>
+                </li>
+                <li>
+                  <img src={require('images/prescription.svg')} />
+                  <Typography>Receive prescriptions instantly </Typography>
+                </li>
+              </ul>
+            </div>
+          </TabPanel>
         </div>
-        <div className={classes.groupContent}>
-          <ul>
+      </div>
+      <div className={classes.appDetails}>
+        <Typography component="h6">Consultation works only on our mobile app</Typography>
+        <Typography>To enjoy enhanced consultation experience download our mobile app</Typography>
+        <a href={getAppStoreLink()} target={'_blank'}>
+          <div className={classes.appDownload}>
+            <img src={require('images/apollo247.png')} />
+            <AphButton>Download the App</AphButton>
+          </div>
+        </a>
+      </div>
+      <AphDialog open={chatConsult} maxWidth="sm">
+        <AphDialogClose onClick={() => setChatConsult(false)} title={'Close'} />
+        <AphDialogTitle>
+          <div className={classes.tabHead}>
+            <img src={require('images/video-calling.svg')} />
+            <span>How to consult via chat/audio/video?</span>
+          </div>
+        </AphDialogTitle>
+        <div className={classes.consultContainer}>
+          <ul className={classes.tabList}>
             <li>
-              <span>
-                <img src={require('images/ic_doctor_small.svg')} alt="" />
-              </span>
-              <span>Choose the doctor</span>
-            </li>
-            <li>
-              <span>
-                <img src={require('images/ic_book-slot.svg')} alt="" />
-              </span>
-              <span>Book a slot</span>
-            </li>
-            <li>
-              <span>
-                <img src={require('images/ic-payment.svg')} alt="" />
-              </span>
-              <span>Make payment</span>
-            </li>
-            <li className={classes.blueText}>
-              <span>
-                <img
-                  src={require(onlineDirection
-                    ? 'images/ic_video-blue.svg'
-                    : 'images/ic_hospital.svg')}
-                  alt=""
-                />
-              </span>
-              <span>
-                {onlineDirection
-                  ? 'Speak to the doctor via video/audio/chat'
-                  : 'Visit the doctor at Hospital/Clinic'}
-              </span>
+              <img src={require('images/consult-doc.svg')} />
+              <Typography>Choose the doctor</Typography>
             </li>
             <li>
-              <span>
-                <img src={require('images/ic_prescription-sm.svg')} alt="" />
-              </span>
-              <span>Receive prescriptions instantly</span>
+              <img src={require('images/slot.svg')} />
+              <Typography>Book a slot</Typography>
             </li>
-            {onlineDirection && (
-              <li className={classes.blueText}>
-                <span>
-                  <img src={require('images/ic_chat.svg')} alt="" />
-                </span>
-                <span>Chat with the doctor for 6 days after your consult</span>
-              </li>
-            )}
+            <li>
+              <img src={require('images/ic-payment.svg')} />
+              <Typography>Make payment</Typography>
+            </li>
+            <li className={classes.highlight}>
+              <img src={require('images/ic-video.svg')} />
+              <Typography>Speak to the doctor via video/audio/chat</Typography>
+            </li>
+            <li>
+              <img src={require('images/prescription.svg')} />
+              <Typography>Receive prescriptions instantly </Typography>
+            </li>
+            <li className={classes.highlight}>
+              <img src={require('images/chat.svg')} />
+              <Typography>Chat with the doctor for 6 days after your consult</Typography>
+            </li>
+          </ul>
+          <div className={`${classes.appDetails} ${classes.appDetailsMobile}`}>
+            <Typography component="h6">Consultation works only on our mobile app</Typography>
+            <Typography>
+              To enjoy enhanced consultation experience download our mobile app
+            </Typography>
+            <div className={classes.appDownload}>
+              <img src={require('images/apollo247.png')} />
+              <AphButton onClick={() => window.open(getAppStoreLink())}>Download the App</AphButton>
+            </div>
+          </div>
+        </div>
+      </AphDialog>
+      <AphDialog open={meetInPerson} maxWidth="sm">
+        <AphDialogClose onClick={() => setMeetInPerson(false)} title={'Close'} />
+        <AphDialogTitle>
+          <div className={classes.tabHead}>
+            <img src={require('images/ic-specialist.svg')} />
+            <span>Meet in person </span>
+          </div>
+        </AphDialogTitle>
+        <div className={classes.consultContainer}>
+          <ul className={classes.tabList}>
+            <li>How to consult in Person?</li>
+            <li>
+              <img src={require('images/consult-doc.svg')} />
+              <Typography>Choose the doctor</Typography>
+            </li>
+            <li>
+              <img src={require('images/slot.svg')} />
+              <Typography>Book a slot</Typography>
+            </li>
+            <li>
+              <img src={require('images/ic-payment.svg')} />
+              <Typography>Make payment</Typography>
+            </li>
+            <li className={classes.highlight}>
+              <img src={require('images/hospital.svg')} />
+              <Typography>Visit the doctor at Hospital/Clinic</Typography>
+            </li>
+            <li>
+              <img src={require('images/prescription.svg')} />
+              <Typography>Receive prescriptions instantly </Typography>
+            </li>
           </ul>
         </div>
-      </div>
-      <div className={classes.appDownloadGroup}>
-        <h4>Consultancy works only on our mobile app</h4>
-        <p>To enjoy enhanced consultation experience download our mobile app</p>
-        <div className={classes.appDownload}>
-          <span>
-            <img src={require('images/apollo-logo.jpg')} alt="" />
-          </span>
-          <AphButton onClick={() => window.open(getAppStoreLink())}>Download the App</AphButton>
-        </div>
-      </div>
+      </AphDialog>
     </div>
   );
 };

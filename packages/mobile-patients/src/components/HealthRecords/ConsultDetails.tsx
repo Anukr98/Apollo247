@@ -499,7 +499,8 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
   const getDaysCount = (type: MEDICINE_CONSUMPTION_DURATION | null) => {
     return type == MEDICINE_CONSUMPTION_DURATION.MONTHS
       ? 30
-      : type == MEDICINE_CONSUMPTION_DURATION.WEEKS
+      : type == MEDICINE_CONSUMPTION_DURATION.WEEKS ||
+        type == MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW
       ? 7
       : 1;
   };
@@ -606,6 +607,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
             isMedicine: (medicineDetails.type_id || '').toLowerCase() == 'pharma',
             thumbnail: medicineDetails.thumbnail || medicineDetails.image,
             isInStock: !!medicineDetails.is_in_stock,
+            maxOrderQty: medicineDetails.MaxOrderQty,
           } as ShoppingCartItem;
         });
         const medicines = medicinesAll.filter((item) => !!item);
@@ -714,6 +716,10 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                 }`
               : ''
           }${
+            item.medicineConsumptionDurationUnit
+              ? `${nameFormater(item.medicineConsumptionDurationUnit || '', 'lower')} `
+              : ''
+          }${
             item.medicineToBeTaken && item.medicineToBeTaken.length
               ? item.medicineToBeTaken
                   .map((i: MEDICINE_TO_BE_TAKEN | null) => nameFormater(i || '', 'lower'))
@@ -735,6 +741,10 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                     ? `${item.medicineConsumptionDurationUnit.slice(0, -1).toLowerCase()}(s) `
                     : ``
                 }`
+              : ''
+          }${
+            item.medicineConsumptionDurationUnit
+              ? `${nameFormater(item.medicineConsumptionDurationUnit || '', 'lower')} `
               : ''
           }${
             item.medicineToBeTaken && item.medicineToBeTaken.length

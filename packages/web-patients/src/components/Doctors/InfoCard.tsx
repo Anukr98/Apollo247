@@ -9,9 +9,7 @@ import {
   GetDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors as DoctorDetails,
   GetDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors_doctorHospital,
 } from 'graphql/types/GetDoctorsBySpecialtyAndFilters';
-import { ConsultMode, SEARCH_TYPE } from 'graphql/types/globalTypes';
-import { getDiffInDays, getDiffInMinutes, getDiffInHours } from 'helpers/commonHelpers';
-import moment from 'moment';
+import { SEARCH_TYPE, ConsultMode } from 'graphql/types/globalTypes';
 import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
 import { useAuth } from 'hooks/authHooks';
 import { useMutation } from 'react-apollo-hooks';
@@ -21,18 +19,22 @@ import { useAllCurrentPatients } from 'hooks/authHooks';
 import { BookConsult } from 'components/BookConsult';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
+import { consultNowClickTracking } from 'webEngageTracking';
+import { readableParam, getAvailability } from 'helpers/commonHelpers';
+import { GetDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctorsNextAvailability as NextAvailabilityType } from 'graphql/types/GetDoctorsBySpecialtyAndFilters';
+import moment from 'moment';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
     root: {
-      backgroundColor: theme.palette.common.white,
+      backgroundColor: 'transparent',
       borderRadius: 10,
-      boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
+      boxShadow: 'none',
       height: '100%',
       position: 'relative',
       paddingBottom: 40,
       [theme.breakpoints.down('sm')]: {
-        boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
+        boxShadow: 'none',
       },
     },
     iconGroup: {
@@ -48,6 +50,9 @@ const useStyles = makeStyles((theme: Theme) => {
     doctorAvatar: {
       width: 80,
       height: 80,
+    },
+    otherDoctorType: {
+      width: 80,
     },
     doctorInfo: {
       paddingLeft: 15,
@@ -121,15 +126,28 @@ const useStyles = makeStyles((theme: Theme) => {
       position: 'absolute',
       right: -5,
       top: -8,
+      [theme.breakpoints.down('sm')]: {
+        right: 0,
+        top: 0,
+      },
+      '& img': {
+        width: 80,
+      },
     },
     bottomAction: {
       position: 'absolute',
       width: '100%',
       bottom: 0,
+      '& button': {
+        backgroundColor: '#fff',
+        boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
+        color: '#fc9916',
+        fontWeight: 'bold',
+      },
     },
     button: {
       width: '100%',
-      borderRadius: '0 0 10px 10px',
+      borderRadius: 10,
       boxShadow: 'none',
     },
     cardLoader: {
@@ -154,11 +172,14 @@ const useStyles = makeStyles((theme: Theme) => {
 
 interface InfoCardProps {
   doctorInfo: DoctorDetails;
-  nextAvailability: string;
+  nextAvailability: NextAvailabilityType;
+  doctorType: string;
+  consultMode: ConsultMode;
 }
 
 export const InfoCard: React.FC<InfoCardProps> = (props) => {
-  const { doctorInfo, nextAvailability } = props;
+  const { doctorInfo, nextAvailability, doctorType, consultMode } = props;
+  const differenceInMinutes = nextAvailability ? nextAvailability.availableInMinutes : 0;
   const { isSignedIn } = useAuth();
   const { currentPatient } = useAllCurrentPatients();
   const classes = useStyles({});
@@ -170,48 +191,32 @@ export const InfoCard: React.FC<InfoCardProps> = (props) => {
     doctorInfo.specialty &&
     doctorInfo.specialty.name &&
     doctorInfo.specialty.name.toLowerCase();
-  const consultMode =
-    doctorInfo &&
-    doctorInfo.consultHours &&
-    doctorInfo.consultHours.length > 0 &&
-    doctorInfo.consultHours[0] &&
-    doctorInfo.consultHours[0].consultMode
-      ? doctorInfo.consultHours[0].consultMode
+
+  const availabilityMarkupString = (type: string) =>
+    nextAvailability
+      ? getAvailability(
+          nextAvailability.onlineSlot.length > 0
+            ? nextAvailability.onlineSlot
+            : nextAvailability.physicalSlot,
+          differenceInMinutes,
+          type
+        )
       : '';
 
-  const differenceInMinutes = getDiffInMinutes(nextAvailability);
-  const availabilityMarkup = () => {
-    if (nextAvailability && nextAvailability.length > 0) {
-      if (differenceInMinutes === 0) {
-        return (
-          <div className={`${classes.availability} ${classes.availableNow}`}>AVAILABLE NOW</div>
-        );
-      } else if (differenceInMinutes > 0 && differenceInMinutes <= 15) {
-        return (
-          <div className={`${classes.availability} ${classes.availableNow}`}>
-            AVAILABLE IN {differenceInMinutes} {differenceInMinutes === 1 ? 'MIN' : 'MINS'}
-          </div>
-        );
-      } else if (differenceInMinutes > 15 && differenceInMinutes <= 60) {
-        return (
-          <div className={`${classes.availability}`}>AVAILABLE IN {differenceInMinutes} MINS</div>
-        );
-      } else if (differenceInMinutes >= 60 && differenceInMinutes < 1380) {
-        return (
-          <div className={`${classes.availability}`}>
-            AVAILABLE IN {getDiffInHours(nextAvailability)} HOURS
-          </div>
-        );
-      } else if (differenceInMinutes >= 1380) {
-        return (
-          <div className={`${classes.availability}`}>
-            AVAILABLE IN {getDiffInDays(nextAvailability)} Days
-          </div>
-        );
-      }
-    } else {
-      return null;
-    }
+  const availabilityMarkup = (type: string) => {
+    return nextAvailability ? (
+      type === 'markup' ? (
+        <div
+          className={`${classes.availability} ${
+            differenceInMinutes < 15 ? classes.availableNow : null
+          }`}
+        >
+          {availabilityMarkupString(type)}
+        </div>
+      ) : (
+        availabilityMarkupString(type)
+      )
+    ) : null;
   };
 
   const clinics: GetDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors_doctorHospital[] = [];
@@ -232,8 +237,8 @@ export const InfoCard: React.FC<InfoCardProps> = (props) => {
     <div className={classes.root}>
       <Link
         to={clientRoutes.specialtyDoctorDetails(
-          specialityName.replace(/[/ / /]/g, '-'),
-          doctorValue.replace(/ /g, '-'),
+          readableParam(specialityName),
+          readableParam(doctorValue),
           doctorInfo.id
         )}
       >
@@ -262,11 +267,19 @@ export const InfoCard: React.FC<InfoCardProps> = (props) => {
             </div>
           </div>
           <div className={classes.doctorInfo}>
-            <>{availabilityMarkup()}</>
+            <>{availabilityMarkup('markup')}</>
             <div className={`${classes.apolloLogo}`}>
-              <img src={require('images/ic_apollo.svg')} alt="" />
+              <img
+                className={doctorType.toLowerCase() !== 'apollo' ? classes.otherDoctorType : ''}
+                src={
+                  doctorType.toLowerCase() === 'apollo'
+                    ? require('images/ic_apollo.png')
+                    : require('images/partner_doc.png')
+                }
+                alt=""
+              />
             </div>
-            <div className={classes.doctorName}>{`Dr. ${doctorInfo.fullName}`}</div>
+            <div className={classes.doctorName}>{`${doctorInfo.fullName}`}</div>
             <div className={classes.doctorType}>
               <span title={'Specialty'}>{doctorInfo.specialty.userFriendlyNomenclature}</span>
               <span className={classes.doctorExp} title={'Experiance'}>
@@ -302,6 +315,22 @@ export const InfoCard: React.FC<InfoCardProps> = (props) => {
                 if (!isSignedIn) {
                   protectWithLoginPopup();
                 } else {
+                  const hospitalName =
+                    doctorInfo &&
+                    doctorInfo.doctorHospital &&
+                    doctorInfo.doctorHospital.length &&
+                    doctorInfo.doctorHospital[0].facility &&
+                    doctorInfo.doctorHospital[0].facility.name;
+                  const eventdata = {
+                    availableInMins: differenceInMinutes,
+                    docCategory: doctorType,
+                    exp: doctorInfo.experience,
+                    hospital: hospitalName,
+                    name: doctorInfo.fullName,
+                    specialty: specialityName,
+                    listingType: '',
+                  };
+                  consultNowClickTracking(eventdata);
                   setPopupLoading(true);
                   saveSearchMutation({
                     variables: {
@@ -330,11 +359,8 @@ export const InfoCard: React.FC<InfoCardProps> = (props) => {
             >
               {popupLoading ? (
                 <CircularProgress size={22} color="secondary" />
-              ) : getDiffInMinutes(nextAvailability) > 0 &&
-                getDiffInMinutes(nextAvailability) <= 60 ? (
-                'CONSULT NOW'
               ) : (
-                'BOOK APPOINTMENT'
+                availabilityMarkup('doctorInfo')
               )}
             </AphButton>
           </div>
@@ -347,6 +373,7 @@ export const InfoCard: React.FC<InfoCardProps> = (props) => {
         disableEscapeKeyDown
       >
         <BookConsult
+          consultMode={consultMode}
           doctorId={doctorInfo.id}
           doctorAvailableIn={differenceInMinutes}
           setIsPopoverOpen={setIsPopoverOpen}

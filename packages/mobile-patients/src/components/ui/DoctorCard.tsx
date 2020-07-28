@@ -55,14 +55,8 @@ const styles = StyleSheet.create({
     flex: 1,
     marginHorizontal: 20,
     ...theme.viewStyles.cardViewStyle,
-    marginBottom: 16,
+    marginBottom: 20,
     borderRadius: 10,
-  },
-  buttonView: {
-    height: 44,
-    backgroundColor: theme.colors.BUTTON_BG,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   buttonText: {
     ...theme.fonts.IBMPlexSansBold(14),
@@ -303,7 +297,25 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
       <TouchableOpacity
         key={rowData.id}
         activeOpacity={1}
-        style={[styles.doctorView, props.style]}
+        style={[
+          styles.doctorView,
+          props.style,
+          {
+            backgroundColor:
+              rowData.doctorType !== 'DOCTOR_CONNECT' ? theme.colors.WHITE : 'transparent',
+            shadowColor:
+              rowData.doctorType !== 'DOCTOR_CONNECT'
+                ? theme.colors.SHADOW_GRAY
+                : theme.colors.WHITE,
+            shadowOffset:
+              rowData.doctorType !== 'DOCTOR_CONNECT'
+                ? { width: 0, height: 2 }
+                : { width: 0, height: 0 },
+            shadowOpacity: rowData.doctorType !== 'DOCTOR_CONNECT' ? 0.4 : 0,
+            shadowRadius: rowData.doctorType !== 'DOCTOR_CONNECT' ? 8 : 0,
+            elevation: rowData.doctorType !== 'DOCTOR_CONNECT' ? 4 : 0,
+          },
+        ]}
         onPress={() => {
           try {
             if (rowData.doctorType === DoctorType.PAYROLL) {
@@ -335,7 +347,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
               )}
             </View>
             <View>
-              <TouchableOpacity
+              {/* <TouchableOpacity
                 key={rowData.id}
                 activeOpacity={1}
                 onPress={() => {
@@ -344,32 +356,32 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                     onVideoPressed: true,
                   });
                 }}
-              >
-                <View style={styles.imageView}>
-                  {rowData.thumbnailUrl &&
-                  rowData.thumbnailUrl.match(
-                    /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jpeg|JPEG)/
-                  ) ? (
-                    <Image
-                      style={{
-                        height: 80,
-                        borderRadius: 40,
-                        width: 80,
-                      }}
-                      source={{
-                        uri: rowData.thumbnailUrl,
-                      }}
-                      resizeMode={'contain'}
-                    />
-                  ) : (
-                    <DoctorPlaceholderImage />
-                  )}
-                  <VideoPlayIcon
-                    style={{ height: 19, width: 19, position: 'absolute', top: 58, left: 31 }}
+              > */}
+              <View style={styles.imageView}>
+                {rowData.thumbnailUrl &&
+                rowData.thumbnailUrl.match(
+                  /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jpeg|JPEG)/
+                ) ? (
+                  <Image
+                    style={{
+                      height: 80,
+                      borderRadius: 40,
+                      width: 80,
+                    }}
+                    source={{
+                      uri: rowData.thumbnailUrl,
+                    }}
                     resizeMode={'contain'}
                   />
-                </View>
-              </TouchableOpacity>
+                ) : (
+                  <DoctorPlaceholderImage />
+                )}
+                {/* <VideoPlayIcon
+                    style={{ height: 19, width: 19, position: 'absolute', top: 58, left: 31 }}
+                    resizeMode={'contain'}
+                  /> */}
+              </View>
+              {/* </TouchableOpacity> */}
               <View
                 style={{
                   flexDirection: 'row',
@@ -435,14 +447,34 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
             {props.displayButton && (
               <View
                 style={{
-                  overflow: 'hidden',
+                  overflow: rowData.doctorType !== 'DOCTOR_CONNECT' ? 'hidden' : 'visible',
                   borderBottomLeftRadius: 10,
                   borderBottomRightRadius: 10,
                 }}
               >
                 <TouchableOpacity
                   activeOpacity={1}
-                  style={styles.buttonView}
+                  style={{
+                    backgroundColor:
+                      rowData.doctorType !== 'DOCTOR_CONNECT'
+                        ? theme.colors.BUTTON_BG
+                        : theme.colors.WHITE,
+                    shadowColor:
+                      rowData.doctorType === 'DOCTOR_CONNECT'
+                        ? theme.colors.SHADOW_GRAY
+                        : theme.colors.WHITE,
+                    shadowOffset:
+                      rowData.doctorType === 'DOCTOR_CONNECT'
+                        ? { width: 0, height: 2 }
+                        : { width: 0, height: 0 },
+                    shadowOpacity: rowData.doctorType === 'DOCTOR_CONNECT' ? 0.4 : 0,
+                    shadowRadius: rowData.doctorType === 'DOCTOR_CONNECT' ? 8 : 0,
+                    elevation: rowData.doctorType === 'DOCTOR_CONNECT' ? 4 : 0,
+                    height: 44,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    borderRadius: rowData.doctorType === 'DOCTOR_CONNECT' ? 10 : 0,
+                  }}
                   onPress={() => {
                     try {
                       const eventAttributes: WebEngageEvents[WebEngageEventName.DOCTOR_CARD_CONSULT_CLICK] = {
@@ -482,7 +514,17 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                     });
                   }}
                 >
-                  <Text style={styles.buttonText}>
+                  <Text
+                    style={[
+                      styles.buttonText,
+                      {
+                        color:
+                          rowData.doctorType !== 'DOCTOR_CONNECT'
+                            ? theme.colors.BUTTON_TEXT
+                            : theme.colors.BUTTON_BG,
+                      },
+                    ]}
+                  >
                     {availableTime && moment(availableTime).isValid()
                       ? `Consult in ${mhdMY(availableTime, 'min')}`
                       : string.common.book_apointment}

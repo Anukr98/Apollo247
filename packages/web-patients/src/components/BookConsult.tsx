@@ -6,7 +6,7 @@ import {
   GetDoctorDetailsById,
   GetDoctorDetailsByIdVariables,
 } from 'graphql/types/GetDoctorDetailsById';
-import { DoctorType } from 'graphql/types/globalTypes';
+import { DoctorType, ConsultMode } from 'graphql/types/globalTypes';
 import { useQueryWithSkip } from 'hooks/apolloHooks';
 import Paper from '@material-ui/core/Paper';
 import Tabs from '@material-ui/core/Tabs';
@@ -75,13 +75,14 @@ interface DoctorCardProps {
   doctorId: string;
   setIsPopoverOpen: (popover: boolean) => void;
   doctorAvailableIn: number;
+  consultMode: ConsultMode;
 }
 
 export const BookConsult: React.FC<DoctorCardProps> = (props) => {
   const classes = useStyles({});
 
-  const { doctorId, setIsPopoverOpen } = props;
-  const [tabValue, setTabValue] = useState<number>(0);
+  const { doctorId, setIsPopoverOpen, consultMode } = props;
+  const [tabValue, setTabValue] = useState<number>(consultMode === ConsultMode.PHYSICAL ? 1 : 0);
 
   const { data, loading, error } = useQueryWithSkip<
     GetDoctorDetailsById,
@@ -96,9 +97,6 @@ export const BookConsult: React.FC<DoctorCardProps> = (props) => {
   if (error) {
     return <div>Error....</div>;
   }
-
-  const availableForPhysicalConsultation = true,
-    availableForVirtualConsultation = true;
 
   const doctorDetails = data && data.getDoctorDetailsById ? data : null;
   if (doctorDetails) {
@@ -131,6 +129,11 @@ export const BookConsult: React.FC<DoctorCardProps> = (props) => {
     //   window.gep && window.gep('Consultations', speciality, 'Order Initiated', onlineConsultationFees);
     //   /* Gtm code end */
     // }, [])
+
+    const availableForVirtualConsultation =
+      consultMode === ConsultMode.BOTH || consultMode === ConsultMode.ONLINE;
+    const availableForPhysicalConsultation =
+      consultMode === ConsultMode.BOTH || consultMode == ConsultMode.PHYSICAL;
 
     return (
       <Paper className={classes.modalBox}>
@@ -167,23 +170,22 @@ export const BookConsult: React.FC<DoctorCardProps> = (props) => {
             />
           )}
         </Tabs>
-        {tabValue === 0 && availableForVirtualConsultation && (
+        {availableForVirtualConsultation && tabValue === 0 && (
           <TabContainer>
             <OnlineConsult
               setIsPopoverOpen={setIsPopoverOpen}
-              doctorDetails={doctorDetails}
+              doctorDetails={doctorDetails.getDoctorDetailsById}
               onBookConsult={(popover: boolean) => setIsPopoverOpen(popover)}
-              isRescheduleConsult={false}
               doctorAvailableIn={props.doctorAvailableIn}
             />
           </TabContainer>
         )}
 
-        {tabValue === 1 && availableForPhysicalConsultation && !isPayrollDoctor && (
+        {availableForPhysicalConsultation && !isPayrollDoctor && tabValue === 1 && (
           <TabContainer>
             <LocationProvider>
               <VisitClinic
-                doctorDetails={doctorDetails}
+                doctorDetails={doctorDetails.getDoctorDetailsById}
                 doctorAvailableIn={props.doctorAvailableIn}
               />
             </LocationProvider>

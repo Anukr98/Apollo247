@@ -9,6 +9,7 @@ import {
   SafeAreaView,
   Share,
   Linking,
+  Dimensions,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
@@ -35,20 +36,29 @@ import {
   SendMessageToMobileNumberVariables,
 } from '@aph/mobile-doctors/src/graphql/types/SendMessageToMobileNumber';
 import { useUIElements } from '@aph/mobile-doctors/src/components/ui/UIElementsProvider';
-// import { Browser, BrowserUnselect } from '@aph/mobile-doctors/src/components/ui/Icons';
+import { Remove } from '@aph/mobile-doctors/src/components/ui/Icons';
+import {
+  URLActive,
+  URLInActive,
+  ChatActive,
+  ChatInActive,
+  MailActive,
+  MailInActive,
+} from '@aph/mobile-doctors/src/components/ui/Icons';
 
 const styles = SharingScreenStyles;
-
+const { width } = Dimensions.get('screen');
 export interface SharingScreenProps extends NavigationScreenProps {}
 
 export const SharingScreen: React.FC<SharingScreenProps> = (props) => {
   const tabsData = [
     {
       title: 'URL',
-      // selectedIcon: <Browser />, unselectedIcon: <BrowserUnselect />
+      selectedIcon: <URLActive />,
+      unselectedIcon: <URLInActive />,
     },
-    { title: 'SMS' },
-    { title: 'EMAIL' },
+    { title: 'SMS', selectedIcon: <ChatActive />, unselectedIcon: <ChatInActive /> },
+    // { title: 'EMAIL', selectedIcon: <MailActive />, unselectedIcon: <MailInActive /> },
   ];
   const { doctorDetails } = useAuth();
   const [selectedTab, setSelectedTab] = useState<string>(tabsData[0].title);
@@ -88,7 +98,23 @@ export const SharingScreen: React.FC<SharingScreenProps> = (props) => {
 
   const renderHeader = () => {
     return (
-      <Header headerText={string.account.share_header} containerStyle={styles.headerContainer} />
+      <Header
+        headerText={string.account.share_header}
+        containerStyle={styles.headerContainer}
+        rightComponent={
+          <TouchableOpacity
+            activeOpacity={1}
+            onPress={() => props.navigation.goBack()}
+            style={{
+              height: 35,
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <Remove style={{ height: 24, width: 24 }} />
+          </TouchableOpacity>
+        }
+      />
     );
   };
 
@@ -100,6 +126,7 @@ export const SharingScreen: React.FC<SharingScreenProps> = (props) => {
           selectedTab={selectedTab}
           onChange={setSelectedTab}
           tabViewStyle={{ borderBottomWidth: 2 }}
+          showTextIcons={true}
         />
       </View>
     );
@@ -134,6 +161,19 @@ export const SharingScreen: React.FC<SharingScreenProps> = (props) => {
         <Text style={styles.shareHeadingText}>{title}</Text>
         <View style={styles.textInputView}>
           {prefix ? <Text style={styles.textInputPrefixStyle}>{prefix}</Text> : null}
+          {inputValue === '' ? (
+            <Text
+              style={{
+                position: 'absolute',
+                left: prefix ? 20 + prefix.length * 10.2 : 20,
+                width: width - 124 - (prefix ? 20 + prefix.length * 10.2 : 20),
+                ...theme.viewStyles.text('M', 14, theme.colors.darkBlueColor(0.4)),
+              }}
+              numberOfLines={1}
+            >
+              {placeHolder}
+            </Text>
+          ) : null}
           {disableEdit ? (
             <Text style={styles.disabledtext} numberOfLines={1}>
               {inputValue}
@@ -141,9 +181,7 @@ export const SharingScreen: React.FC<SharingScreenProps> = (props) => {
           ) : (
             <TextInput
               value={inputValue}
-              placeholder={placeHolder}
               style={styles.textInputStyle}
-              placeholderTextColor={theme.colors.darkBlueColor(0.4)}
               onChange={(value) => {
                 onChange(value.nativeEvent.text);
               }}
@@ -247,6 +285,10 @@ export const SharingScreen: React.FC<SharingScreenProps> = (props) => {
                             showAphAlert({
                               title: 'Success',
                               description: `We have sent the app invite to +91${mobile}`,
+                              onPressOk: () => {
+                                hideAphAlert && hideAphAlert();
+                                props.navigation.goBack();
+                              },
                             });
                         } else {
                           showAphAlert &&

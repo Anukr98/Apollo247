@@ -19,6 +19,7 @@ import { Navigation } from 'components/Navigation';
 import { useLoginPopupState, useAuth } from 'hooks/authHooks';
 import { DoctorOnlineStatusButton } from 'components/DoctorOnlineStatusButton';
 import { LoggedInUserType, DOCTOR_ONLINE_STATUS, REQUEST_ROLES } from 'graphql/types/globalTypes';
+import { withRouter } from 'react-router-dom';
 import {
   MarkMessageToUnread,
   MarkMessageToUnreadVariables,
@@ -250,7 +251,7 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const Header: React.FC = (props) => {
+const HeaderComponent: React.FC<any> = (props) => {
   const classes = useStyles({});
   const avatarRef = useRef(null);
   const scrollbarRef = useRef(null);
@@ -351,7 +352,8 @@ export const Header: React.FC = (props) => {
       icon: 'https://bit.ly/2DYqRrh',
     });
   };
-  const pageRefreshTimeInSeconds = 30;
+  const pageRefreshTimeInSeconds = 600;
+  const isCalendarPage = props.location.pathname === '/Calendar';
   const { data, loading } =
     isSignedIn &&
     !isJuniorDoctor &&
@@ -367,7 +369,7 @@ export const Header: React.FC = (props) => {
             // endDate: "2020-05-07"
           },
           fetchPolicy: 'no-cache',
-          pollInterval: pageRefreshTimeInSeconds * 1000,
+          pollInterval: isCalendarPage && pageRefreshTimeInSeconds * 1000,
           notifyOnNetworkStatusChange: true,
         })
       : { data: {}, loading: false };
@@ -860,3 +862,5 @@ export const Header: React.FC = (props) => {
     </header>
   );
 };
+
+export const Header = withRouter(HeaderComponent);

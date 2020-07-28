@@ -7,7 +7,6 @@ import {
   getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrderPayments as Payments,
 } from 'graphql/types/getMedicineOrderOMSDetails';
 import { CircularProgress } from '@material-ui/core';
-import { AphButton } from '@aph/web-ui-components';
 import {
   MEDICINE_ORDER_PAYMENT_TYPE,
   MEDICINE_ORDER_STATUS,
@@ -23,7 +22,9 @@ import {
 import { GET_PATIENT_ADDRESSES_LIST } from 'graphql/address';
 import { deliveredOrderDetails } from './OrderStatusCard';
 import { ORDER_BILLING_STATUS_STRINGS } from 'helpers/commonHelpers';
+import { MedicineOrderBilledItem } from 'helpers/MedicineApiCalls';
 import { pharmacyOrderSummaryTracking } from 'webEngageTracking';
+import { ReOrder } from './ReOrder';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -262,6 +263,47 @@ const useStyles = makeStyles((theme: Theme) => {
         margin: 0,
       },
     },
+    reorderBtn: {
+      marginBottom: 8,
+      marginLeft: 10,
+      '& button': {
+        width: '100%',
+      },
+    },
+    cartBody: {
+      padding: 16,
+      '& ul': {
+        color: '#68919d',
+        marginBottom: 20,
+        '& li': {
+          paddingBottom: 10,
+          fontSize: 12,
+          fontWeight: 500,
+        },
+      },
+    },
+    cartItem: {
+      fontSize: 12,
+      color: '#02475b',
+      fontWeight: 500,
+    },
+    cartItemSubheading: {
+      marginTop: 10,
+    },
+    continueBtn: {
+      marginTop: 35,
+      textAlign: 'center',
+      '& button': {
+        minWidth: 144,
+        borderRadius: 10,
+      },
+    },
+    reorderTitle: {
+      padding: '15px 20px',
+      '& h2': {
+        fontSize: 16,
+      },
+    },
   };
 });
 
@@ -269,15 +311,6 @@ interface OrdersSummaryProps {
   orderDetailsData: OrderDetails | null;
   isShipmentListHasBilledState: () => boolean;
   isLoading: boolean;
-}
-
-interface ItemObject {
-  itemId: string;
-  itemName: string;
-  batchId: string;
-  issuedQty: number;
-  mou: number;
-  mrp: number;
 }
 
 export const OrdersSummary: React.FC<OrdersSummaryProps> = (props) => {
@@ -412,7 +445,8 @@ export const OrdersSummary: React.FC<OrdersSummaryProps> = (props) => {
 
   const billedMRPValue = billedItemDetails
     ? billedItemDetails.reduce(
-        (sum: number, itemDetails: ItemObject) => sum + itemDetails.mrp * itemDetails.issuedQty,
+        (sum: number, itemDetails: MedicineOrderBilledItem) =>
+          sum + itemDetails.mrp * itemDetails.issuedQty,
         0
       )
     : 0;
@@ -441,9 +475,10 @@ export const OrdersSummary: React.FC<OrdersSummaryProps> = (props) => {
         : orderItems.length + ' item(s) ';
   }
 
-  const getItemName = (itemObj: ItemObject, index: number) => {
+  const getItemName = (itemObj: MedicineOrderBilledItem, index: number) => {
     const isRepeatedItem = billedItemDetails.find(
-      (item: ItemObject, idx: number) => index !== idx && item.itemId === itemObj.itemId
+      (item: MedicineOrderBilledItem, idx: number) =>
+        index !== idx && item.itemId === itemObj.itemId
     );
     return isRepeatedItem ? `${itemObj.itemName}-batch:<${itemObj.batchId}>` : itemObj.itemName;
   };
@@ -484,7 +519,7 @@ export const OrdersSummary: React.FC<OrdersSummaryProps> = (props) => {
       pharmacyOrderSummaryTracking(data);
     }
   }, []);
-
+  const [isDialogOpen, setIsDialogOpen] = React.useState<boolean>(false);
   return isLoading ? (
     <div className={classes.loader}>
       <CircularProgress />
@@ -560,7 +595,7 @@ export const OrdersSummary: React.FC<OrdersSummaryProps> = (props) => {
               </div>
               {isOrderBilled
                 ? billedItemDetails.map(
-                    (item: ItemObject, idx: number) =>
+                    (item: MedicineOrderBilledItem, idx: number) =>
                       item && (
                         <div key={item.itemId} className={classes.tableRow}>
                           <div className={classes.medicineName}>{getItemName(item, idx)}</div>
@@ -712,10 +747,14 @@ export const OrdersSummary: React.FC<OrdersSummaryProps> = (props) => {
           </div>
         </div>
       )}
-
       {!props.isShipmentListHasBilledState() && (
         <div className={classes.disclaimerText}>
           <b>Disclaimer:</b> <span>Price may vary when the actual bill is generated.</span>
+        </div>
+      )}
+      {orderDetailsData && orderDetailsData.currentStatus === MEDICINE_ORDER_STATUS.DELIVERED && (
+        <div className={classes.reorderBtn}>
+          <ReOrder orderDetailsData={orderDetailsData} />
         </div>
       )}
       {/* <div className={classes.bottomActions}>

@@ -58,7 +58,7 @@ const savePharmacologistConsult: Resolver<
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
-  const patientDetails = await patientRepo.findById(savePharmacologistConsultInput.patientId);
+  const patientDetails = await patientRepo.getPatientDetails(savePharmacologistConsultInput.patientId);
   if (patientDetails == null) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
@@ -111,22 +111,13 @@ const savePharmacologistConsult: Resolver<
   subjectLine = ApiConstants.PHARMACOLOGIST_CONSULT_TITLE;
   subjectLine = subjectLine.replace('{0}', patientDetails.firstName);
   subjectLine = subjectLine.replace('{1}', date);
-  const subject =
-    process.env.NODE_ENV == 'production'
-      ? subjectLine
-      : subjectLine + ' from ' + process.env.NODE_ENV;
-
-  const toEmailId =
-    process.env.NODE_ENV == 'production'
-      ? ApiConstants.PHARMACOLOGIST_EMAIL_ID
-      : ApiConstants.PHARMACOLOGIST_EMAIL_ID_TEST;
 
   const emailContent: EmailMessage = {
-    subject: subject,
+    subject: subjectLine,
     fromEmail: <string>ApiConstants.PATIENT_HELP_FROM_EMAILID,
     fromName: <string>ApiConstants.PATIENT_HELP_FROM_NAME,
     messageContent: <string>mailContent,
-    toEmail: <string>toEmailId,
+    toEmail: <string>process.env.PHARMACOLOGIST_EMAIL,
     ccEmail: <string>savePharmacologistConsultInput.emailId,
     attachments: attachments,
   };

@@ -2,7 +2,7 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
-import { Salutation, DoctorType, ConsultMode, ConsultType, WeekDay } from "./globalTypes";
+import { DoctorType, ConsultMode, ConsultType, WeekDay } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: GetDoctorDetailsByIdDoctor
@@ -93,7 +93,7 @@ export interface GetDoctorDetailsByIdDoctor_getDoctorDetailsById_consultHours {
 export interface GetDoctorDetailsByIdDoctor_getDoctorDetailsById {
   __typename: "DoctorDetails";
   id: string;
-  salutation: Salutation | null;
+  salutation: string | null;
   firstName: string;
   lastName: string;
   displayName: string | null;

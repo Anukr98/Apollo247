@@ -278,6 +278,7 @@ interface ArticleBannerProps {
   type: string;
   source: string;
   isWebView: boolean;
+  slug: string;
 }
 
 export const ArticleBanner: React.FC<ArticleBannerProps> = (props) => {
@@ -319,7 +320,7 @@ export const ArticleBanner: React.FC<ArticleBannerProps> = (props) => {
                 e.stopPropagation();
                 setShowShareWidget(false);
               }}
-              url={window.location.href}
+              url={`${window.location.protocol}//${window.location.hostname}/covid19/article/${props.slug}`}
             />
           )}
         </div>
@@ -358,7 +359,7 @@ export const ArticleBanner: React.FC<ArticleBannerProps> = (props) => {
                 closeShareWidget={() => {
                   setShowShareWidget(false);
                 }}
-                url={window.location.href}
+                url={`${window.location.protocol}//${window.location.hostname}/covid19/article/${props.slug}`}
               />
             )}
           </div>

@@ -3,14 +3,12 @@ import { Resolver } from 'api-gateway';
 import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
 import { LoginOtp, LOGIN_TYPE, OTP_STATUS } from 'profiles-service/entities';
 import { LoginOtpRepository } from 'profiles-service/repositories/loginOtpRepository';
-import { LoginOtpArchiveRepository } from 'profiles-service/repositories/loginOtpArchiveRepository';
 import { ApiConstants } from 'ApiConstants';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { log } from 'customWinstonLogger';
-import { Connection } from 'typeorm';
 import { debugLog } from 'customWinstonLogger';
-import { sendNotificationWhatsapp } from 'notifications-service/resolvers/notifications';
+import { sendDoctorNotificationWhatsapp } from 'notifications-service/resolvers/notifications';
 
 export const loginTypeDefs = gql`
   enum LOGIN_TYPE {
@@ -70,24 +68,9 @@ const login: Resolver<
   loginLogger('OTP_GENERATION_START');
   let otp = generateOTP();
   loginLogger('OTP_GENERATION_END');
-
-  //if performance environment(as), use the static otp
-  if (
-    (process.env.NODE_ENV === 'as' || process.env.NODE_ENV === 'dev') &&
-    process.env.PERFORMANCE_ENV_STATIC_OTP
-  ) {
-    otp = process.env.PERFORMANCE_ENV_STATIC_OTP.toString();
-  }
-
-  //if production environment, and specific mobileNumber, use the static otp
-  if (
-    process.env.NODE_ENV === 'production' &&
-    process.env.PRODUCTION_ENV_STATIC_APP_STORE_MOBILE_NUMBER &&
-    process.env.PRODUCTION_ENV_STATIC_APP_STORE_OTP &&
-    mobileNumber == process.env.PRODUCTION_ENV_STATIC_APP_STORE_MOBILE_NUMBER
-  ) {
-    otp = process.env.PRODUCTION_ENV_STATIC_APP_STORE_OTP.toString();
-  }
+  // get static otp env specific
+  const staticOTP = getStaticOTP({ mobileNumber });
+  otp = staticOTP ? staticOTP : otp;
 
   loginLogger('OTP_INSERT_START');
   const optAttrs: Partial<LoginOtp> = {
@@ -99,56 +82,19 @@ const login: Resolver<
   const otpSaveResponse = await otpRepo.insertOtp(optAttrs);
   loginLogger('OTP_INSERT_END');
 
-  //if performance environment(as), return the response without sending SMS
-  if (process.env.NODE_ENV === 'as' || process.env.NODE_ENV === 'dev') {
-    loginLogger('STATIC_OTP_API_CALL___END');
-    return {
-      status: true,
-      loginId: otpSaveResponse.id,
-      message: ApiConstants.OTP_SUCCESS_MESSAGE.toString(),
-    };
-  }
-
-  //if production environment, and specific mobileNumber, return the response without sending SMS
-  if (
-    process.env.NODE_ENV === 'production' &&
-    process.env.PRODUCTION_ENV_STATIC_APP_STORE_MOBILE_NUMBER &&
-    process.env.PRODUCTION_ENV_STATIC_APP_STORE_OTP &&
-    mobileNumber == process.env.PRODUCTION_ENV_STATIC_APP_STORE_MOBILE_NUMBER
-  ) {
-    loginLogger('STATIC_OTP_API_CALL___END');
-    return {
-      status: true,
-      loginId: otpSaveResponse.id,
-      message: ApiConstants.OTP_SUCCESS_MESSAGE.toString(),
-    };
-  }
+  // bypass otp env specific
+  const bypassRes = OTPBypass({ otpSaveResponse, logger: loginLogger });
+  if (bypassRes) return bypassRes;
 
   //call sms gateway service to send the OTP here
-  loginLogger('SEND_SMS___START');
-  const smsResult = await sendSMS(mobileNumber, otp, hashCode);
-  if (loginType == LOGIN_TYPE.DOCTOR) {
-    const message = ApiConstants.DOCTOR_WHATSAPP_OTP.replace('{0}', otp);
-    sendNotificationWhatsapp(mobileNumber, message, 1);
-  }
-  loginLogger('SEND_SMS___END');
-
-  console.log(smsResult.status, smsResult);
-  if (smsResult.status != 'OK') {
-    loginLogger('SEND_SMS_FAILED_API_CALL___END');
-    return {
-      status: false,
-      loginId: null,
-      message: ApiConstants.OTP_FAIL_MESSAGE.toString(),
-    };
-  }
-
-  loginLogger('API_CALL___END');
-  return {
-    status: true,
-    loginId: otpSaveResponse.id,
-    message: ApiConstants.OTP_SUCCESS_MESSAGE.toString(),
-  };
+  return sendMessage({
+    loginType,
+    mobileNumber,
+    otp,
+    hashCode,
+    logger: loginLogger,
+    otpSaveResponse,
+  });
 };
 
 const resendOtp: Resolver<
@@ -175,10 +121,10 @@ const resendOtp: Resolver<
 
   //validate resend params
   resendLogger('QUERY___START');
-  const validResendRecord = await otpRepo.getValidOtpRecord(id, mobileNumber);
+  const validResendRecord = await otpRepo.getValidOtpRecord(id);
   resendLogger('QUERY___END');
 
-  if (validResendRecord.length === 0) {
+  if (!validResendRecord) {
     resendLogger('VALIDATION_FAILED_API_CALL___END');
     return {
       status: false,
@@ -208,8 +154,6 @@ const resendOtp: Resolver<
   };
   const otpSaveResponse = await otpRepo.insertOtp(optAttrs);
 
-  //archive the old resend record and then delete it
-  archiveOtpRecord(validResendRecord[0].id, profilesDb);
   resendLogger('UPDATION_END');
 
   //if performance environment(as), return the response without sending SMS
@@ -223,30 +167,14 @@ const resendOtp: Resolver<
   }
 
   //call sms gateway service to send the OTP here
-  resendLogger('SEND_SMS___START');
-  const smsResult = await sendSMS(mobileNumber, otp, hashCode);
-  if (loginType == LOGIN_TYPE.DOCTOR) {
-    const message = ApiConstants.DOCTOR_WHATSAPP_OTP.replace('{0}', otp);
-    sendNotificationWhatsapp(mobileNumber, message, 1);
-  }
-  resendLogger('SEND_SMS___END');
-
-  console.log(smsResult.status, smsResult);
-  if (smsResult.status != 'OK') {
-    resendLogger('SEND_SMS_FAILED_API_CALL___END');
-    return {
-      status: false,
-      loginId: null,
-      message: ApiConstants.OTP_FAIL_MESSAGE.toString(),
-    };
-  }
-
-  resendLogger('API_CALL___END');
-  return {
-    status: true,
-    loginId: otpSaveResponse.id,
-    message: ApiConstants.OTP_SUCCESS_MESSAGE.toString(),
-  };
+  return sendMessage({
+    loginType,
+    mobileNumber,
+    otp,
+    hashCode,
+    logger: resendLogger,
+    otpSaveResponse,
+  });
 };
 type testSMSResult = {
   send: Boolean;
@@ -274,24 +202,6 @@ const testSendSMS: Resolver<
   return {
     send: true,
   };
-};
-
-export const archiveOtpRecord = async (otpRecordId: string, profilesDb: Connection) => {
-  const otpRepo = profilesDb.getCustomRepository(LoginOtpRepository);
-  const otpRecord = await otpRepo.findById(otpRecordId);
-  if (otpRecord) {
-    const recordAttrs = {
-      loginType: otpRecord.loginType,
-      mobileNumber: otpRecord.mobileNumber,
-      otp: otpRecord.otp,
-      status: otpRecord.status,
-      incorrectAttempts: otpRecord.incorrectAttempts,
-    };
-
-    const otpArchiveRepo = profilesDb.getCustomRepository(LoginOtpArchiveRepository);
-    await otpArchiveRepo.archiveOtpRecord(recordAttrs);
-    otpRepo.deleteOtpRecord(otpRecord.id);
-  }
 };
 
 //returns random 6 digit number string
@@ -391,4 +301,103 @@ export const loginResolvers = {
     resendOtp,
     testSendSMS,
   },
+};
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const sendMessage = async (args: any) => {
+  const { loginType, mobileNumber, otp, hashCode, logger, otpSaveResponse } = args;
+  logger('SEND_SMS___START');
+  //let smsResult;
+  if (loginType == LOGIN_TYPE.DOCTOR) {
+    const message = ApiConstants.DOCTOR_WHATSAPP_OTP.replace('{0}', otp);
+    const promiseSendNotification = sendDoctorNotificationWhatsapp(mobileNumber, message, 1, '');
+    const promiseSendSMS = sendSMS(mobileNumber, otp, hashCode);
+    await Promise.all([
+      promiseSendNotification.catch((err) => {
+        log(
+          'smsOtpAPILogger',
+          `API_CALL_ERROR`,
+          'sendDoctorNotificationWhatsapp()->CATCH_BLOCK',
+          '',
+          JSON.stringify(err)
+        );
+        return err;
+      }),
+      promiseSendSMS.catch((err) => {
+        log('smsOtpAPILogger', `API_CALL_ERROR`, 'sendSMS()->CATCH_BLOCK', '', JSON.stringify(err));
+        return err;
+      }),
+    ]);
+  } else {
+    await sendSMS(mobileNumber, otp, hashCode);
+  }
+  logger('SEND_SMS___END');
+
+  logger('API_CALL___END');
+  return {
+    status: true,
+    loginId: otpSaveResponse.id,
+    message: ApiConstants.OTP_SUCCESS_MESSAGE.toString(),
+  };
+};
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const OTPBypass = (args: any) => {
+  const { mobileNumber, otpSaveResponse, logger } = args;
+  //if production environment, and specific mobileNumber, return the response without sending SMS
+  if (
+    process.env.NODE_ENV === 'production' &&
+    process.env.PRODUCTION_ENV_STATIC_APP_STORE_MOBILE_NUMBER &&
+    process.env.PRODUCTION_ENV_STATIC_APP_STORE_OTP &&
+    mobileNumber == process.env.PRODUCTION_ENV_STATIC_APP_STORE_MOBILE_NUMBER
+  ) {
+    logger('STATIC_OTP_API_CALL___END');
+    return {
+      status: true,
+      loginId: otpSaveResponse.id,
+      message: ApiConstants.OTP_SUCCESS_MESSAGE.toString(),
+    };
+  }
+  //if performance environment(as), return the response without sending SMS
+  if (process.env.NODE_ENV === 'as' || process.env.NODE_ENV === 'dev') {
+    logger('STATIC_OTP_API_CALL___END');
+    return {
+      status: true,
+      loginId: otpSaveResponse.id,
+      message: ApiConstants.OTP_SUCCESS_MESSAGE.toString(),
+    };
+  }
+  return null;
+};
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const getStaticOTP = (args: any) => {
+  const { mobileNumber } = args;
+  //if performance environment(as), use the static otp
+  if (
+    (process.env.NODE_ENV === 'as' || process.env.NODE_ENV === 'dev') &&
+    process.env.PERFORMANCE_ENV_STATIC_OTP
+  ) {
+    return process.env.PERFORMANCE_ENV_STATIC_OTP.toString();
+  }
+  //if staging environment, and specific mobileNumber, use the static otp
+  if (
+    process.env.NODE_ENV === 'staging' &&
+    process.env.STAGING_ENV_STATIC_APP_STORE_MOBILE_NUMBER &&
+    process.env.STAGING_ENV_STATIC_APP_STORE_OTP &&
+    mobileNumber == process.env.STAGING_ENV_STATIC_APP_STORE_MOBILE_NUMBER
+  ) {
+    return process.env.STAGING_ENV_STATIC_APP_STORE_OTP.toString();
+  }
+  //if production environment, and specific mobileNumber, use the static otp
+  if (
+    process.env.NODE_ENV === 'production' &&
+    process.env.PRODUCTION_ENV_STATIC_APP_STORE_MOBILE_NUMBER &&
+    process.env.PRODUCTION_ENV_STATIC_APP_STORE_OTP &&
+    mobileNumber == process.env.PRODUCTION_ENV_STATIC_APP_STORE_MOBILE_NUMBER
+  ) {
+    return process.env.PRODUCTION_ENV_STATIC_APP_STORE_OTP.toString();
+  }
+
+  return null;
 };

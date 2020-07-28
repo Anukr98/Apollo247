@@ -1,21 +1,26 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Theme, Grid, CircularProgress, Popover, Typography } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
-import { Specialities } from 'components/Specialities';
+import { Specialties } from 'components/Specialties';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { Link } from 'react-router-dom';
-import {
-  GetAllSpecialties,
-  GetAllSpecialties_getAllSpecialties as SpecialtyType,
-} from 'graphql/types/GetAllSpecialties';
-import { GET_ALL_SPECIALITIES } from 'graphql/specialities';
-import { useQuery } from 'react-apollo-hooks';
-import { getSymptoms } from 'helpers/commonHelpers';
 import { readableParam } from 'helpers/commonHelpers';
+import _lowerCase from 'lodash/lowerCase';
+import { useAllCurrentPatients } from 'hooks/authHooks';
+import { specialtyClickTracking } from 'webEngageTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
     topSpeciality: {},
+    startHead: {
+      color: '#00a7b9',
+      margin: '10px 0',
+      fontSize: '16px !important',
+      fontWeight: 'bold',
+      [theme.breakpoints.down('sm')]: {
+        margin: '20px 0 10px',
+      },
+    },
     sectionHeader: {
       padding: '10px 0',
       borderBottom: '0.5px solid rgba(2,71,91,0.3)',
@@ -51,11 +56,11 @@ const useStyles = makeStyles((theme: Theme) => {
       textAlign: 'center',
       position: 'relative',
       '& a': {
-        height: '100%',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
         flexDirection: 'column',
+        height: '100%',
       },
       '& h3': {
         fontSize: 14,
@@ -84,7 +89,6 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     symptoms: {
       fontSize: '10px !important',
-      margin: '20px 0 0',
       fontWeight: 500,
       color: '#02475b !important',
       padding: '0 !important',
@@ -371,77 +375,130 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: '15px 0 0',
       borderTop: '1px solid rgba(1,71,91,0.5)',
     },
-    circlularProgress: {
-      display: 'flex',
-      padding: 20,
-      justifyContent: 'center',
-    },
   };
 });
 
-export const SpecialtyDivision: React.FC = (props) => {
+interface SpecialtyDivisionProps {
+  selectedCity: string;
+  doctorsCount: number;
+}
+
+interface TopSpecialtyType {
+  specialtyName: string;
+  image: string;
+  description: string;
+  symptoms: string;
+  slugName: string;
+  id: string;
+}
+
+const image_url = process.env.SPECIALTY_IMAGE_SOURCE;
+
+export const SpecialtyDivision: React.FC<SpecialtyDivisionProps> = (props) => {
   const classes = useStyles({});
-  const { loading, error, data } = useQuery<GetAllSpecialties>(GET_ALL_SPECIALITIES);
-
-  const showSpecialty = (specialtyName: string) => {
-    return (
-      specialtyName === 'Paediatrics' ||
-      specialtyName === 'General Physician/ Internal Medicine' ||
-      specialtyName === 'Dermatology' ||
-      specialtyName === 'Obstetrics & Gynaecology'
-    );
-  };
-
-  const allSpecialties = data && data.getAllSpecialties;
+  const { currentPatient } = useAllCurrentPatients();
+  const { selectedCity, doctorsCount } = props;
+  const [specialtyCount, setSpecialtyCount] = useState<number>(0);
+  const topSpecialtyListing = [
+    {
+      specialtyName: 'Paediatrics',
+      image: `${image_url}/ic_paediatrics.png`,
+      description: "For your child's health problems",
+      symptoms: 'Fever, Cough, Diarrhoea',
+      slugName: 'Paediatrics',
+      id: '91cee893-55cf-41fd-9d6b-73157c6518a9',
+    },
+    {
+      specialtyName: 'General Physician',
+      image: `${image_url}/ic_general_medicine.png`,
+      description: 'For any common health issues',
+      symptoms: 'Fever, Headache, Asthma',
+      slugName: 'General Physician/ Internal Medicine',
+      id: '4dc1c5de-e062-4b3b-aec9-090389687865',
+    },
+    {
+      specialtyName: 'Dermatology',
+      image: `${image_url}/ic_dermatology.png`,
+      description: 'For skin & hair problems',
+      symptoms: 'Skin rash, Acne, Skin patch',
+      slugName: 'Dermatology',
+      id: 'fba32e11-eb1c-4e18-8d45-8c25f45d7672',
+    },
+    {
+      specialtyName: 'Gynaecology',
+      image: `${image_url}/ic_obstetrics_and_gynaecology.png`,
+      description: "For women's health",
+      symptoms: 'Irregular periods, Pregnancy',
+      slugName: 'Obstetrics & Gynaecology',
+      id: '3b69e637-684d-4545-aace-91810bc5739d',
+    },
+  ];
 
   return (
     <>
-      <Typography component="h2">
-        Start your care now by choosing from {/*  500 doctors and{' '}  */}
-        {allSpecialties && allSpecialties.length} specialities
+      <Typography component="h3" className={classes.startHead}>
+        Start your care now by choosing from {doctorsCount ? `${doctorsCount} doctors and ` : ''}
+        {specialtyCount} specialities
       </Typography>
       <div className={classes.topSpeciality}>
         <div className={classes.sectionHeader}>
-          <Typography component="h2">Top Specialites</Typography>
+          <Typography component="h2">Top Specialties</Typography>
         </div>
         <div className={classes.tsContent}>
           <Grid container spacing={2}>
-            {allSpecialties &&
-              allSpecialties.length > 0 &&
-              allSpecialties.map(
-                (specialityDetails: SpecialtyType) =>
-                  showSpecialty(specialityDetails.name) && (
-                    <Grid key={specialityDetails.id} item xs={6} md={3}>
-                      <div className={classes.specialityCard}>
-                        <Link to={clientRoutes.specialties(readableParam(specialityDetails.name))}>
-                          <Typography component="h3">{specialityDetails.name}</Typography>
-                          <img src={specialityDetails.image} />
-                          <Typography>{specialityDetails.shortDescription}</Typography>
-                          <Typography className={classes.symptoms}>
-                            {getSymptoms(specialityDetails.symptoms)}
-                          </Typography>
-                        </Link>
-                      </div>
-                    </Grid>
-                  )
-              )}
+            {topSpecialtyListing &&
+              topSpecialtyListing.length > 0 &&
+              topSpecialtyListing.map((specialityDetails: TopSpecialtyType) => (
+                <Grid key={specialityDetails.specialtyName} item xs={6} md={3}>
+                  <div
+                    className={classes.specialityCard}
+                    onClick={() => {
+                      const patientAge =
+                        new Date().getFullYear() -
+                        new Date(currentPatient && currentPatient.dateOfBirth).getFullYear();
+                      const eventData = {
+                        patientAge: patientAge,
+                        patientGender: currentPatient && currentPatient.gender,
+                        specialtyId: specialityDetails.id,
+                        specialtyName: specialityDetails.slugName,
+                        relation: currentPatient && currentPatient.relation,
+                      };
+                      specialtyClickTracking(eventData);
+                    }}
+                  >
+                    <Link
+                      to={
+                        selectedCity === ''
+                          ? clientRoutes.specialties(readableParam(specialityDetails.slugName))
+                          : clientRoutes.citySpecialties(
+                              _lowerCase(selectedCity),
+                              readableParam(specialityDetails.slugName)
+                            )
+                      }
+                    >
+                      <Typography component="h3">{specialityDetails.specialtyName}</Typography>
+                      <img
+                        src={specialityDetails.image}
+                        title={`Online Doctor Consultation - ${specialityDetails.specialtyName}`}
+                        alt={`Online Doctor Consultation - ${specialityDetails.specialtyName}`}
+                      />
+                      <Typography>{specialityDetails.description}</Typography>
+                      <Typography className={classes.symptoms}>
+                        {specialityDetails.symptoms}
+                      </Typography>
+                    </Link>
+                  </div>
+                </Grid>
+              ))}
           </Grid>
         </div>
       </div>
       <div className={classes.otherSpeciality}>
         <div className={classes.sectionHeader}>
-          <Typography component="h2">Other Specialites</Typography>
+          <Typography component="h2">Other Specialties</Typography>
         </div>
         <div className={classes.osContainer}>
-          {loading ? (
-            <div className={classes.circlularProgress}>
-              <CircularProgress color="primary" />
-            </div>
-          ) : error ? (
-            <div>Error! </div>
-          ) : (
-            allSpecialties && <Specialities data={allSpecialties} />
-          )}
+          <Specialties selectedCity={selectedCity} setSpecialtyCount={setSpecialtyCount} />
         </div>
       </div>
     </>

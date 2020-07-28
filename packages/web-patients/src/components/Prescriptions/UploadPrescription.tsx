@@ -187,7 +187,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
                 <input
                   type="file"
                   onChange={async (e) => {
-                    uploadPhotoTracking('Gallery');
+                    uploadPhotoTracking('Choose Gallery');
                     const fileNames = e.target.files;
                     if (fileNames && fileNames.length > 0) {
                       const file = fileNames[0] || null;
@@ -233,9 +233,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
                                     });
                                 });
                                 if (props.isNonCartFlow) {
-                                  setTimeout(() => {
-                                    window.location.href = `${clientRoutes.medicinesCart()}?prescription=true`;
-                                  }, 3000);
+                                  window.location.href = clientRoutes.medicinePrescription();
                                 } else {
                                   props.closeDialog();
                                   setIsUploading(false);

@@ -87,6 +87,7 @@ const useStyles = makeStyles((theme: Theme) => {
 type EPrescriptionCardProps = {
   prescription?: EPrescription;
   removePrescription?: (id: string) => void;
+  readOnly: boolean;
 };
 
 export const EPrescriptionCard: React.FC<EPrescriptionCardProps> = (props) => {
@@ -119,19 +120,21 @@ export const EPrescriptionCard: React.FC<EPrescriptionCardProps> = (props) => {
         </div>
       </div>
       <div className={classes.closeBtn}>
-        <AphButton
-          onClick={() => {
-            props.removePrescription &&
-              props.prescription &&
-              props.removePrescription(props.prescription.id);
-          }}
-        >
-          <img src={require('images/ic_cross_onorange_small.svg')} alt="" />
-        </AphButton>
-        {/* <AphCheckbox color="primary" />
-        <AphButton>
-          <img src={require("images/ic_tickmark.svg")} alt="" />
-        </AphButton> */}
+        {props.readOnly ? (
+          <AphButton>
+            <img src={require('images/ic_tickmark.svg')} alt="" />
+          </AphButton>
+        ) : (
+          <AphButton
+            onClick={() => {
+              props.removePrescription &&
+                props.prescription &&
+                props.removePrescription(props.prescription.id);
+            }}
+          >
+            <img src={require('images/ic_cross_onorange_small.svg')} alt="" />
+          </AphButton>
+        )}
       </div>
     </div>
   ) : null;

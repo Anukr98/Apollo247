@@ -13,9 +13,12 @@ import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import {
   NotificationType,
   sendMedicineOrderStatusNotification,
+  sendCartNotification,
 } from 'notifications-service/resolvers/notifications';
 import { format, addMinutes, parseISO } from 'date-fns';
 import { log } from 'customWinstonLogger';
+import { WebEngageInput, postEvent } from 'helpers/webEngage';
+import { ApiConstants } from 'ApiConstants';
 
 export const saveOrderShipmentsTypeDefs = gql`
   input SaveOrderShipmentsInput {
@@ -98,7 +101,7 @@ const saveOrderShipments: Resolver<
   SaveOrderShipmentsResult
 > = async (parent, { saveOrderShipmentsInput }, { profilesDb }) => {
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
-  const orderDetails = await medicineOrdersRepo.getMedicineOrderDetails(
+  const orderDetails = await medicineOrdersRepo.getMedicineOrderWithShipments(
     saveOrderShipmentsInput.orderId
   );
   if (!orderDetails) {
@@ -217,13 +220,41 @@ const saveOrderShipments: Resolver<
     MEDICINE_ORDER_STATUS.ORDER_VERIFIED
   );
 
-  sendMedicineOrderStatusNotification(
-    orderDetails.deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP
-      ? NotificationType.MEDICINE_ORDER_READY_AT_STORE
-      : NotificationType.MEDICINE_ORDER_CONFIRMED,
-    orderDetails,
-    profilesDb
-  );
+  if (orderDetails.deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP) {
+    sendMedicineOrderStatusNotification(
+      NotificationType.MEDICINE_ORDER_READY_AT_STORE,
+      orderDetails,
+      profilesDb
+    );
+
+    //post order ready at store event to webEngage
+    const postBody: Partial<WebEngageInput> = {
+      userId: orderDetails.patient.mobileNumber,
+      eventName: ApiConstants.MEDICINE_ORDER_KERB_STORE_READY_EVENT_NAME.toString(),
+      eventData: {
+        orderId: orderDetails.orderAutoId,
+        statusDateTime: format(new Date(), "yyyy-MM-dd'T'HH:mm:ss'+0530'"),
+      },
+    };
+    postEvent(postBody);
+  } else {
+    const pushNotificationInput = {
+      orderAutoId: orderDetails.orderAutoId,
+      notificationType: NotificationType.MEDICINE_ORDER_CONFIRMED,
+    };
+    sendCartNotification(pushNotificationInput, profilesDb);
+  }
+
+  //post order verified event to webEngage
+  const postBody: Partial<WebEngageInput> = {
+    userId: orderDetails.patient.mobileNumber,
+    eventName: ApiConstants.MEDICINE_ORDER_VERIFIED_EVENT_NAME.toString(),
+    eventData: {
+      orderId: orderDetails.orderAutoId,
+      statusDateTime: format(new Date(), "yyyy-MM-dd'T'HH:mm:ss'+0530'"),
+    },
+  };
+  postEvent(postBody);
 
   return {
     status: MEDICINE_ORDER_STATUS.ORDER_VERIFIED,

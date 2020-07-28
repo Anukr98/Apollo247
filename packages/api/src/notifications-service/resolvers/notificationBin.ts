@@ -22,6 +22,7 @@ import { sendNotificationSMS } from 'notifications-service/resolvers/notificatio
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
+import { sendChatMessageNotification } from 'notifications-service/resolvers/notifications';
 
 export const notificationBinTypeDefs = gql`
   enum notificationStatus {
@@ -133,7 +134,7 @@ const insertMessage: Resolver<
 
     //get patient details
     const patientRepo = patientsDb.getCustomRepository(PatientRepository);
-    const patientDetails = await patientRepo.findById(fromId);
+    const patientDetails = await patientRepo.getPatientDetails(fromId);
     if (!patientDetails) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
 
     //get appointment details
@@ -156,6 +157,7 @@ const insertMessage: Resolver<
       '{1}',
       patientDetails.firstName
     );
+    sendChatMessageNotification(doctorDetails, patientDetails, appointmentData, doctorsDb, '');
   }
   const notificationBinRepo = consultsDb.getCustomRepository(NotificationBinRepository);
   const notificationInputs: Partial<NotificationBin> = {

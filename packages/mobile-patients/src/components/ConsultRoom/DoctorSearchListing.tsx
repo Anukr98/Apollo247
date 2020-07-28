@@ -18,6 +18,7 @@ import {
   RadioButtonIcon,
   RadioButtonUnselectedIcon,
   SearchIcon,
+  RetryButtonIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
@@ -950,6 +951,19 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     }
   };
 
+  const postTabBarClickWEGEvent = (tab: 'APOLLO' | 'PARTNERS') => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.APOLLO_DOCTOR_TAB_CLICKED] = {
+      'Patient UHID': g(currentPatient, 'uhid'),
+      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Customer ID': g(currentPatient, 'id'),
+    };
+    if (tab == 'APOLLO') {
+      postWebEngageEvent(WebEngageEventName.APOLLO_DOCTOR_TAB_CLICKED, eventAttributes);
+    } else {
+      postWebEngageEvent(WebEngageEventName.DOCTOR_CONNECT_TAB_CLICKED, eventAttributes);
+    }
+  };
+
   const getDoctorAvailableMode = (id: string) => {
     let availableMode: ConsultMode | null = null;
     if (doctorsAvailability) {
@@ -1058,6 +1072,26 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             descriptionTextStyle={{ fontSize: 14 }}
             headingTextStyle={{ fontSize: 14 }}
           />
+          <TouchableOpacity
+            activeOpacity={1}
+            onPress={() => {
+              setshowSpinner(true);
+              getNetStatus()
+                .then((status) => {
+                  if (status) {
+                    fetchSpecialityFilterData(filterMode, FilterData, latlng);
+                  } else {
+                    setshowSpinner(false);
+                    setshowOfflinePopup(true);
+                  }
+                })
+                .catch((e) => {
+                  CommonBugFender('DoctorSearchListing_getNetStatus', e);
+                });
+            }}
+          >
+            <RetryButtonIcon style={{ width: 185, height: 48, marginTop: 30 }} />
+          </TouchableOpacity>
         </View>
       );
     }
@@ -1441,8 +1475,11 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
                 doctorsType == 'APOLLO' ? theme.colors.SEARCH_UNDERLINE_COLOR : '#f7f8f5',
             }}
             onPress={() => {
-              setDoctorsType('APOLLO');
-              filterDoctors(doctorsList, 'APOLLO');
+              if (doctorsType != 'APOLLO') {
+                postTabBarClickWEGEvent('APOLLO');
+                setDoctorsType('APOLLO');
+                filterDoctors(doctorsList, 'APOLLO');
+              }
             }}
           >
             <Text
@@ -1462,8 +1499,11 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
                 doctorsType == 'PARTNERS' ? theme.colors.SEARCH_UNDERLINE_COLOR : '#f7f8f5',
             }}
             onPress={() => {
-              setDoctorsType('PARTNERS');
-              filterDoctors(doctorsList, 'PARTNERS');
+              if (doctorsType != 'PARTNERS') {
+                postTabBarClickWEGEvent('PARTNERS');
+                setDoctorsType('PARTNERS');
+                filterDoctors(doctorsList, 'PARTNERS');
+              }
             }}
           >
             <Text

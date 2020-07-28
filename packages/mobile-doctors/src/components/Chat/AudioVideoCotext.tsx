@@ -10,19 +10,12 @@ import {
   UserPlaceHolder,
   VideoOffIcon,
   VideoOnIcon,
+  CloseWhite,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import {
-  StatusBar,
-  Text,
-  TouchableOpacity,
-  View,
-  AppState,
-  AppStateStatus,
-  Platform,
-} from 'react-native';
+import { StatusBar, Text, TouchableOpacity, View, AppState, AppStateStatus } from 'react-native';
 import { Image } from 'react-native-elements';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import { OTPublisher, OTSession, OTSubscriber } from 'opentok-react-native';
@@ -33,18 +26,30 @@ import RNSound from 'react-native-sound';
 import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
 import SystemSetting from 'react-native-system-setting';
 import AsyncStorage from '@react-native-community/async-storage';
+// import InCallManager from 'react-native-incall-manager';
+import { useUIElements } from '@aph/mobile-doctors/src/components/ui/UIElementsProvider';
 
 export type OpenTokKeys = {
   sessionId: string;
   token: string;
 };
+type OpentokConnect = {
+  connectionId: string;
+  creationTime: string;
+  data: string;
+};
 
+type OpentokError = {
+  code: string;
+  message: string;
+};
+type OpentokArchive = {
+  archiveId: string;
+  name: string;
+  sessionId: string;
+};
 type OpentokStreamObject = {
-  connection: {
-    connectionId: string;
-    creationTime: string;
-    data: string;
-  };
+  connection: OpentokConnect;
   connectionId: string;
   creationTime: string;
   hasAudio: boolean;
@@ -73,13 +78,22 @@ type OpenTokVideoStream = {
   stream: OpentokStreamObject;
 };
 
-type OptntokChangeProp = {
+type OpentokChangeProp = {
   changedProperty: string;
   newValue: string;
   oldValue: boolean;
   stream: OpentokStreamObject;
 };
 
+type OpenTokSessionConnect = {
+  connection: OpentokConnect;
+  streamId: string;
+};
+
+type OpentokVideoWarn = {
+  reason: string;
+  stream: OpentokStreamObject;
+};
 export type CallBackOptions = {
   onCallEnd: (callType: string, callDuration: string) => void;
   onCallMinimize: (callType: string) => void;
@@ -183,17 +197,21 @@ export const AudioVideoProvider: React.FC = (props) => {
   });
   const [missedCallCount, setmMissedCallCount] = useState<number>(0);
 
+  const { showPopup, hidePopup } = useUIElements();
   const { doctorDetails } = useAuth();
   const name = doctorDetails ? doctorDetails.displayName || 'Doctor' : 'Doctor';
   const [callerAudio, setCallerAudio] = useState<boolean>(true);
   const [callerVideo, setCallerVideo] = useState<boolean>(true);
+  const [downgradeToAudio, setDowngradeToAudio] = useState<boolean>(false);
   const [audioEnabled, setAudioEnabled] = useState<boolean>(true);
   const [videoEnabled, setVideoEnabled] = useState<boolean>(true);
+  const [stremConnected, setStremConnected] = useState<boolean>(false);
   const [cameraPosition, setCameraPosition] = useState<'front' | 'back'>('front');
   const otSessionRef = React.createRef();
   const callType = isAudio ? 'Audio' : isVideo ? 'Video' : '';
 
   const setPrevVolume = async () => {
+    // InCallManager.setSpeakerphoneOn(false);
     const mediaVolume = Number((await AsyncStorage.getItem('mediaVolume')) || '-1');
     if (mediaVolume !== -1) {
       SystemSetting.setVolume(mediaVolume);
@@ -201,6 +219,7 @@ export const AudioVideoProvider: React.FC = (props) => {
     }
   };
   const maxVolume = async () => {
+    // InCallManager.setSpeakerphoneOn(true);
     const mediaVolume = Number((await AsyncStorage.getItem('mediaVolume')) || '-1');
     if (mediaVolume === -1) {
       SystemSetting.getVolume().then((volume: number) => {
@@ -234,22 +253,6 @@ export const AudioVideoProvider: React.FC = (props) => {
   useEffect(() => {
     if (isAudio || isVideo) {
       AppState.addEventListener('change', _handleAppStateChange);
-      try {
-        if (audioTrack) {
-          maxVolume();
-          audioTrack.play();
-          audioTrack.setNumberOfLoops(-1);
-        } else {
-          audioTrack = new RNSound('phone_ringing.mp3', RNSound.MAIN_BUNDLE, (error) => {
-            CommonBugFender('Loading_callertune__failed', error);
-          });
-          maxVolume();
-          audioTrack.play();
-          audioTrack.setNumberOfLoops(-1);
-        }
-      } catch (e) {
-        CommonBugFender('playing_callertune__failed', e);
-      }
       callDetector = new CallDetectorManager(
         (
           event: 'Connected' | 'Disconnected' | 'Dialing' | 'Incoming' | 'Offhook' | 'Missed',
@@ -329,7 +332,7 @@ export const AudioVideoProvider: React.FC = (props) => {
       <View
         style={[
           isMinimized ? styles.imageContainerMinimized : styles.imageContainer,
-          !callerVideo || isAudio ? { zIndex: 103 } : {},
+          !callerVideo || isAudio || downgradeToAudio ? { zIndex: 103 } : {},
         ]}
       >
         {patientImage ? (
@@ -385,6 +388,7 @@ export const AudioVideoProvider: React.FC = (props) => {
   };
 
   const callEnd = (withCallBack: boolean) => {
+    AsyncStorage.setItem('callDisconnected', 'true');
     stopTimer();
     setIsVideo(false);
     setIsAudio(false);
@@ -396,6 +400,8 @@ export const AudioVideoProvider: React.FC = (props) => {
     setCallerVideo(true);
     setAudioEnabled(true);
     setVideoEnabled(true);
+    setDowngradeToAudio(false);
+    setStremConnected(false);
     if (audioTrack) {
       setPrevVolume();
       audioTrack.stop();
@@ -495,11 +501,13 @@ export const AudioVideoProvider: React.FC = (props) => {
               : null,
           ]}
         >
-          {callAccepted
-            ? callConnected
-              ? callDuration
-              : strings.consult_room.connecting
-            : strings.consult_room.calling}
+          {stremConnected
+            ? callAccepted
+              ? callConnected
+                ? callDuration
+                : strings.consult_room.connecting
+              : strings.consult_room.calling
+            : strings.consult_room.initialize}
         </Text>
         {isPaused !== '' ? (
           <View style={styles.alertContainer}>
@@ -511,39 +519,112 @@ export const AudioVideoProvider: React.FC = (props) => {
       </View>
     );
   };
+  const errorPopup = (message: string, color: string) => {
+    showPopup({
+      description: message,
+      style: [styles.exoToastContainer, { backgroundColor: color }],
+      mainStyle: { backgroundColor: theme.colors.TRANSPARENT },
+      popUpPointerStyle: { width: 0, height: 0 },
+      descriptionTextStyle: theme.viewStyles.text('M', 12, theme.colors.WHITE, 1, 20),
+      hideOk: true,
+      icon: (
+        <View style={styles.exoCloseContainer}>
+          <CloseWhite style={{ width: 16, height: 16 }} />
+        </View>
+      ),
+      timer: 8,
+    });
+  };
+
   const publisherEventHandlers = {
-    streamCreated: (event: string) => {
+    streamCreated: (event: OpentokStreamObject) => {
       console.log('Publisher stream created!', event);
       setCallConnected(false);
+      setStremConnected(true);
       if (!callAccepted && !callConnected) {
-        if (audioTrack) {
-          audioTrack.stop(() => {
-            if (audioTrack) {
-              maxVolume();
-              audioTrack.play();
-            }
-          });
+        try {
+          if (audioTrack) {
+            maxVolume();
+            audioTrack.play();
+            audioTrack.setNumberOfLoops(-1);
+          } else {
+            audioTrack = new RNSound('phone_ringing.mp3', RNSound.MAIN_BUNDLE, (error) => {
+              CommonBugFender('Loading_callertune__failed', error);
+            });
+            maxVolume();
+            audioTrack.play();
+            audioTrack.setNumberOfLoops(-1);
+          }
+        } catch (e) {
+          CommonBugFender('playing_callertune__failed', e);
         }
       }
     },
-    streamDestroyed: (event: string) => {
+    streamDestroyed: (event: OpentokStreamObject) => {
       console.log('Publisher stream destroyed!', event);
+      setStremConnected(false);
+    },
+    error: (error: OpentokError) => {
+      errorPopup(error.message, theme.colors.APP_RED);
+      AsyncStorage.setItem('callDisconnected', 'true');
+      console.log('Publisher stream error!', error);
+    },
+    otrnError: (event: string) => {
+      errorPopup(strings.toastMessages.error, theme.colors.APP_RED);
+      AsyncStorage.setItem('callDisconnected', 'true');
+      console.log('Publisher stream otrnError!', event);
     },
   };
 
   const subscriberEventHandlers = {
-    error: (error: string) => {
-      console.log(`There was an error with the subscriber: ${error}`);
+    error: (error: OpentokError) => {
+      errorPopup(error.message, theme.colors.APP_RED);
+      console.log('Subscriber stream error!', error);
     },
-    connected: (event: string) => {
+    otrnError: (event: string) => {
+      errorPopup(strings.toastMessages.error, theme.colors.APP_RED);
+      console.log('Subscriber stream otrnError!', event);
+    },
+    connected: () => {
       setCallConnected(true);
       if (audioTrack) {
         setPrevVolume();
         audioTrack.stop(() => {});
       }
+      hidePopup();
+      console.log('Subscriber stream connected!');
     },
-    disconnected: (event: string) => {
-      console.log('Subscribe stream disconnected!', event);
+    disconnected: () => {
+      // errorPopup(strings.toastMessages.error, theme.colors.APP_RED);
+      console.log('Subscriber stream disconnected!');
+    },
+    videoDisabled: (event: OpentokVideoWarn) => {
+      if (event.reason === 'quality') {
+        errorPopup(strings.toastMessages.fallback, theme.colors.APP_YELLOW);
+        setDowngradeToAudio(true);
+        setVideoEnabled(false);
+      }
+      console.log('Subscriber stream videoDisabled!', event);
+    },
+    videoEnabled: (event: OpentokVideoWarn) => {
+      if (event.reason === 'quality') {
+        errorPopup(strings.toastMessages.videoBack, theme.colors.APP_GREEN);
+        setDowngradeToAudio(false);
+        setVideoEnabled(true);
+      }
+      console.log('Subscriber stream videoEnabled!', event);
+    },
+    videoDisableWarning: () => {
+      errorPopup(strings.toastMessages.fallback, theme.colors.APP_YELLOW);
+      setDowngradeToAudio(true);
+      setVideoEnabled(false);
+      console.log('Subscriber stream videoDisableWarning!');
+    },
+    videoDisableWarningLifted: () => {
+      errorPopup(strings.toastMessages.videoBack, theme.colors.APP_GREEN);
+      setDowngradeToAudio(false);
+      setVideoEnabled(true);
+      console.log('Subscriber stream videoDisableWarningLifted!');
     },
     audioNetworkStats: (event: OpenTokAudioStream) => {
       // setCallerAudio(event.stream.hasAudio);
@@ -554,16 +635,34 @@ export const AudioVideoProvider: React.FC = (props) => {
   };
 
   const sessionEventHandlers = {
-    error: (error: string) => {
-      // console.log(`There was an error with the session: ${error}`);
+    error: (error: OpentokError) => {
+      AsyncStorage.setItem('callDisconnected', 'true');
+      errorPopup(error.message, theme.colors.APP_RED);
+      console.log('session stream error!', error);
+    },
+    otrnError: (event: string) => {
+      AsyncStorage.setItem('callDisconnected', 'true');
+      errorPopup(strings.toastMessages.error, theme.colors.APP_RED);
+      console.log('session stream otrnError!', event);
     },
     connectionCreated: (event: string) => {
       connectionCount++;
+      setCallConnected(true);
+      if (audioTrack) {
+        setPrevVolume();
+        audioTrack.stop(() => {});
+      }
+      hidePopup();
       // console.log('otSessionRef', otSessionRef);
       // console.log('Another client connected. ' + connectionCount + ' total.');
-      // console.log('session stream connectionCreated!', event);
+      console.log('session stream connectionCreated!', event);
     },
     connectionDestroyed: (event: string) => {
+      AsyncStorage.getItem('callDisconnected').then((data) => {
+        if (!JSON.parse(data || 'false')) {
+          errorPopup(strings.toastMessages.callDisconnected, theme.colors.APP_RED);
+        }
+      });
       connectionCount--;
       setIsVideo(false);
       setIsAudio(false);
@@ -572,27 +671,48 @@ export const AudioVideoProvider: React.FC = (props) => {
       setCallAccepted(false);
       setCallConnected(false);
       setMessageReceived(false);
-      // console.log('session stream connectionDestroyed!', event);
+      setDowngradeToAudio(false);
+      setStremConnected(false);
+      console.log('session stream connectionDestroyed!', event);
     },
-    sessionConnected: (event: string) => {
-      // console.log('session stream sessionConnected!', event);
+    sessionConnected: (event: OpenTokSessionConnect) => {
+      console.log('session stream sessionConnected!', event);
+      hidePopup();
     },
-    sessionDisconnected: (event: string) => {
-      // console.log('session stream sessionDisconnected!', event);
+    sessionDisconnected: (event: { sessionId: string }) => {
+      console.log('session stream sessionDisconnected!', event);
     },
-    sessionReconnected: (event: string) => {
-      // console.log('session stream sessionReconnected!', event);
+    sessionReconnected: () => {
+      console.log('session stream sessionReconnected!');
+      errorPopup(strings.toastMessages.reconnected, theme.colors.APP_GREEN);
     },
-    sessionReconnecting: (event: string) => {
-      // console.log('session stream sessionReconnecting!', event);
+    sessionReconnecting: () => {
+      console.log('session stream sessionReconnecting!');
+      errorPopup(strings.toastMessages.reconnecting, theme.colors.APP_YELLOW);
     },
     signal: (event: string) => {
-      // console.log('session stream signal!', event);
+      console.log('session stream signal!', event);
     },
-    streamPropertyChanged: (event: OptntokChangeProp) => {
+    streamCreated: (event: OpentokStreamObject) => {
+      console.log('session streamCreated!', event);
+      setCallConnected(true);
+      if (audioTrack) {
+        setPrevVolume();
+        audioTrack.stop(() => {});
+      }
+    },
+    streamDestroyed: (event: string) => {
+      console.log('session streamDestroyed!', event);
+    },
+    streamPropertyChanged: (event: OpentokChangeProp) => {
+      console.log('session streamPropertyChanged!', event);
       if (event.stream.name !== name) {
         setCallerAudio(event.stream.hasAudio);
         setCallerVideo(event.stream.hasVideo);
+      }
+      if (audioTrack) {
+        setPrevVolume();
+        audioTrack.stop(() => {});
       }
     },
   };
@@ -610,7 +730,6 @@ export const AudioVideoProvider: React.FC = (props) => {
             eventHandlers={sessionEventHandlers}
             ref={otSessionRef}
             options={{
-              connectionEventsSuppressed: true, // default is false
               androidZOrder: 'onTop', // Android only - valid options are 'mediaOverlay' or 'onTop'
               androidOnTop: 'publisher', // Android only - valid options are 'publisher' or 'subscriber'
               useTextureViews: true, // Android only - default is false
@@ -635,7 +754,6 @@ export const AudioVideoProvider: React.FC = (props) => {
             <OTSubscriber
               style={isMinimized ? styles.subscriberMinimizedStyle : styles.subscriberStyle}
               eventHandlers={subscriberEventHandlers}
-              subscribeToSelf={true}
               properties={{
                 subscribeToAudio: true,
                 subscribeToVideo: isVideo ? true : false,

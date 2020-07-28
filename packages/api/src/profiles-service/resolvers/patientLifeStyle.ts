@@ -126,10 +126,11 @@ const savePatientLifeStyle: Resolver<
   AddPatientLifeStyleResult
 > = async (parent, { patientLifeStyleInput }, { profilesDb }) => {
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
-  const patientDetails = await patientRepo.findById(patientLifeStyleInput.patientId);
+  const patientDetails = await patientRepo.getPatientDetails(patientLifeStyleInput.patientId);
   if (!patientDetails) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
+
   const savePatientlifestyleAttrs: Partial<PatientLifeStyle> = {
     ...patientLifeStyleInput,
     patient: patientDetails,

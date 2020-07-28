@@ -6,6 +6,7 @@ module.exports = Object.freeze({
   SEND_UNREAD_MESSAGES_NOTIFICATION: `query { sendUnreadMessagesNotification }`,
   ARCHIVE_MESSAGES: `query { archiveMessages }`,
   APPT_REMINDER: `query { sendApptReminderNotification(inNextMin: {0} ){status apptsListCount }}`,
+  DOCTOR_APPT_REMINDER: `query { sendDoctorReminderNotifications(nextMin: {0} ){status apptsListCount }}`,
   FOLLOW_UP_NOTIFICATION: `query { sendFollowUpNotification }`,
   DAILY_APPOINTMENT_SUMMARY: `query { sendDailyAppointmentSummary }`,
   PHYSICAL_APPT_REMINDER: `query { sendPhysicalApptReminderNotification(inNextMin: {0} ){status apptsListCount }}`,

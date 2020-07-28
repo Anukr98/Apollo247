@@ -111,12 +111,22 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     filterGroup: {
       display: 'flex',
+      [theme.breakpoints.down('sm')]: {
+        display: 'block',
+      },
     },
     filterType: {
       paddingLeft: 16,
       paddingRight: 8,
       borderRight: '0.5px solid rgba(2,71,91,0.3)',
       width: '20%',
+      [theme.breakpoints.down('sm')]: {
+        display: 'inline-block',
+        width: '100%',
+        paddingTop: 15,
+        paddingLeft: 0,
+        borderRight: 'none',
+      },
       '& h4': {
         fontSize: 12,
         fontWeight: 500,
@@ -146,6 +156,9 @@ const useStyles = makeStyles((theme: Theme) => {
         margin: '4px 0',
         marginRight: 8,
         minWidth: 'auto',
+        [theme.breakpoints.down('sm')]: {
+          marginRight: 6,
+        },
       },
     },
     filterActive: {
@@ -157,12 +170,22 @@ const useStyles = makeStyles((theme: Theme) => {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'flex-end',
+      [theme.breakpoints.down('sm')]: {
+        display: 'block',
+      },
     },
     resultFound: {
       fontSize: 14,
       fontWeight: 500,
       color: '#02475b',
       opacity: 0.5,
+      [theme.breakpoints.down('sm')]: {
+        display: 'inline-block',
+        width: '100%',
+        textAlign: 'center',
+        fontSize: 12,
+        marginBottom: 9,
+      },
     },
     clearBtn: {
       backgroundColor: 'transparent',
@@ -175,6 +198,10 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: '#fff',
       color: '#fc9916',
       marginLeft: 10,
+      [theme.breakpoints.down('sm')]: {
+        backgroundColor: '#fc9916',
+        color: '#fff',
+      },
     },
   };
 });
@@ -376,37 +403,39 @@ export const Filters: React.FC<FilterProps> = (props) => {
           </div>
           <div className={classes.dialogActions}>
             <span className={classes.resultFound}>{onlyFilteredCount} Doctors found</span>
-            <AphButton
-              className={classes.clearBtn}
-              onClick={() => {
-                const filterInitialValues: SearchObject = {
-                  searchKeyword: '',
-                  cityName: [],
-                  experience: [],
-                  availability: [],
-                  fees: [],
-                  gender: [],
-                  language: [],
-                  dateSelected: '',
-                  specialtyName: '',
-                  prakticeSpecialties: '',
-                };
-                setLocalFilter(filterInitialValues);
-                setFilter(filterInitialValues);
-                setisFilterOpen(false);
-              }}
-            >
-              Clear Filters
-            </AphButton>
-            <AphButton
-              onClick={() => {
-                setFilter(localFilter);
-                setisFilterOpen(false);
-              }}
-              className={classes.applyBtn}
-            >
-              Apply Filters
-            </AphButton>
+            <span>
+              <AphButton
+                className={classes.clearBtn}
+                onClick={() => {
+                  const filterInitialValues: SearchObject = {
+                    searchKeyword: '',
+                    cityName: [],
+                    experience: [],
+                    availability: [],
+                    fees: [],
+                    gender: [],
+                    language: [],
+                    dateSelected: '',
+                    specialtyName: '',
+                    prakticeSpecialties: '',
+                  };
+                  setLocalFilter(filterInitialValues);
+                  setFilter(filterInitialValues);
+                  setisFilterOpen(false);
+                }}
+              >
+                Clear Filters
+              </AphButton>
+              <AphButton
+                onClick={() => {
+                  setFilter(localFilter);
+                  setisFilterOpen(false);
+                }}
+                className={classes.applyBtn}
+              >
+                Apply Filters
+              </AphButton>
+            </span>
           </div>
         </div>
       </Modal>

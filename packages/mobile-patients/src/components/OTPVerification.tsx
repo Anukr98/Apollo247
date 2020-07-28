@@ -889,9 +889,9 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
         <View style={{ padding: 16 }}>
           <Text style={styles.bannerTitle}>Specially for you :)</Text>
           <Text style={styles.bannerDescription}>
-            Use coupon code ‘<Text style={styles.bannerWelcome}>WELCOME</Text>
+            Use coupon code ‘<Text style={styles.bannerWelcome}>CARE247</Text>
             {'’ for\n'}
-            <Text style={styles.bannerBoldText}>Rs. 999 off</Text> on your 1st doctor
+            <Text style={styles.bannerBoldText}>Rs. 149 off</Text> on your 1st doctor
             {'\n'}consultation, <Text style={styles.bannerBoldText}> 10% off</Text> on medicines
           </Text>
         </View>

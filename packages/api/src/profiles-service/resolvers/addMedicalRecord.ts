@@ -6,8 +6,6 @@ import {
   MedicalRecordParameters,
   MedicalRecordType,
   MedicalTestUnit,
-  UPLOAD_FILE_TYPES,
-  PRISM_DOCUMENT_CATEGORY,
 } from 'profiles-service/entities';
 import { MedicalRecordsRepository } from 'profiles-service/repositories/medicalRecordsRepository';
 import { MedicalRecordParametersRepository } from 'profiles-service/repositories/medicalRecordParametersRepository';
@@ -23,7 +21,8 @@ import {
 } from 'profiles-service/resolvers/prescriptionUpload';
 import { ApiConstants } from 'ApiConstants';
 import { LabResultsInputArgs, uploadLabResults } from 'profiles-service/resolvers/labResultsUpload';
-import { uploadFileToBlobStorage } from 'profiles-service/resolvers/uploadDocumentToPrism';
+import { uploadFileToBlobStorage } from 'helpers/uploadFileToBlob';
+import { getFileTypeFromMime } from 'helpers/generalFunctions';
 
 export const addPatientMedicalRecordTypeDefs = gql`
   enum MedicalTestUnit {
@@ -121,7 +120,7 @@ const addPatientMedicalRecord: Resolver<
   AddMedicalRecordResult
 > = async (parent, { addMedicalRecordInput }, { profilesDb }) => {
   const patientsRepo = profilesDb.getCustomRepository(PatientRepository);
-  const patient = await patientsRepo.findById(addMedicalRecordInput.patientId);
+  const patient = await patientsRepo.getPatientDetails(addMedicalRecordInput.patientId);
   if (patient == null) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
@@ -213,6 +212,15 @@ const addPatientMedicalRecord: Resolver<
         prescriptionSource: prescriptionSource.SELF,
         prescriptionDetail: [],
         prescriptionFiles: prescriptionFiles,
+        speciality: '',
+        hospital_name: '',
+        address: '',
+        city: '',
+        pincode: '',
+        instructions: [],
+        diagnosis: [],
+        diagnosticPrescription: [],
+        medicinePrescriptions: [],
       },
       uhid: patient.uhid,
     };
@@ -227,31 +235,12 @@ const addPatientMedicalRecord: Resolver<
     addMedicalRecordInput.testResultFiles.fileName.length > 0
   ) {
     //upload file to blob storage
-    const fileType = addMedicalRecordInput.testResultFiles.mimeType.split('/')[1].toUpperCase();
-    let uploadFileType = UPLOAD_FILE_TYPES.JPG;
+    const uploadFileType = getFileTypeFromMime(addMedicalRecordInput.testResultFiles.mimeType);
 
-    switch (fileType) {
-      case 'JPG':
-        uploadFileType = UPLOAD_FILE_TYPES.JPG;
-        break;
-      case 'PNG':
-        uploadFileType = UPLOAD_FILE_TYPES.PNG;
-        break;
-      case 'JPEG':
-        uploadFileType = UPLOAD_FILE_TYPES.JPEG;
-        break;
-      case 'PDF':
-        uploadFileType = UPLOAD_FILE_TYPES.PDF;
-        break;
-    }
-
-    const uploadDocumentInput = {
-      fileType: uploadFileType,
-      base64FileInput: addMedicalRecordInput.testResultFiles.content,
-      patientId: patient.id,
-      category: PRISM_DOCUMENT_CATEGORY.TestReports, //this is not in use
-    };
-    addMedicalRecordInput.documentURLs = await uploadFileToBlobStorage(uploadDocumentInput);
+    addMedicalRecordInput.documentURLs = await uploadFileToBlobStorage(
+      uploadFileType,
+      addMedicalRecordInput.testResultFiles.content
+    );
   }
 
   const addMedicalRecordAttrs: Partial<MedicalRecords> = {

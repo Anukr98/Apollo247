@@ -46,7 +46,7 @@ export const consultQueueTypeDefs = gql`
   }
 
   extend type Query {
-    getConsultQueue(doctorId: String!): GetConsultQueueResult!
+    getConsultQueue(doctorId: String!, isActive: Boolean!): GetConsultQueueResult!
   }
 
   type JuniorDoctorsList {
@@ -180,6 +180,7 @@ type GetConsultQueueResult = {
 };
 type GetConsultQueueInput = {
   doctorId: string;
+  isActive: boolean;
 };
 
 const getConsultQueue: Resolver<
@@ -187,11 +188,36 @@ const getConsultQueue: Resolver<
   GetConsultQueueInput,
   ConsultServiceContext,
   GetConsultQueueResult
-> = async (parent, { doctorId }, context) => {
-  const { docRepo, mobileNumber } = getRepos(context);
+> = async (parent, { doctorId, isActive }, context) => {
+  const { docRepo, cqRepo, mobileNumber, patRepo } = getRepos(context);
   await checkAuth(docRepo, mobileNumber, doctorId);
-  const consultQueue = await buildGqlConsultQueue(doctorId, context);
-  return { consultQueue };
+  let result: GetConsultQueueResult = { consultQueue: [] };
+  let consultQueueItems: ConsultQueueItem[] = [];
+  consultQueueItems = await cqRepo.getConsultQueue(doctorId, isActive);
+  const patientIds = consultQueueItems.map((item) => item.appointment.patientId);
+  let patients: Patient[] = [];
+  if (patientIds && patientIds.length > 0) {
+    patients = await patRepo.getPatientDetailsByIds(patientIds);
+  }
+  let patient: Patient;
+  consultQueueItems.map((item) => {
+    let res: GqlConsultQueueItem = {
+      id: item.id,
+      isActive: item.isActive,
+      patient,
+      appointment: item.appointment,
+    };
+    result.consultQueue.push(res);
+  });
+
+  patients.map((patient) => {
+    result.consultQueue.map((item) => {
+      if (patient.id == item.appointment.patientId) {
+        item.patient = patient;
+      }
+    });
+  });
+  return result;
 };
 
 type AddToConsultQueueInput = { appointmentId: string };
@@ -217,9 +243,11 @@ const addToConsultQueue: Resolver<
   AddToConsultQueueResult
 > = async (parent, { appointmentId }, context) => {
   const { cqRepo, docRepo, apptRepo, caseSheetRepo } = getRepos(context);
-  await apptRepo.findOneOrFail(appointmentId);
+  const apptDetails = await apptRepo.findOneOrFail(appointmentId);
+
   const jrDocList: JuniorDoctorsList[] = [];
   const juniorDoctorCaseSheet = await caseSheetRepo.getJuniorDoctorCaseSheet(appointmentId);
+
   if (juniorDoctorCaseSheet != null) {
     const queueResult: AddToConsultQueueResult = {
       id: 0,
@@ -245,6 +273,7 @@ const addToConsultQueue: Resolver<
     isActive: true,
   });
   let doctorId: string = '0';
+
   const nextDoctorId = await cqRepo.getNextJuniorDoctor(context.doctorsDb);
   if (nextDoctorId && nextDoctorId != '0') {
     doctorId = nextDoctorId;
@@ -253,7 +282,7 @@ const addToConsultQueue: Resolver<
   }
 
   const { id } = await cqRepo.save(cqRepo.create({ appointmentId, doctorId, isActive: true }));
-  await apptRepo.updateConsultStarted(appointmentId, true);
+  await apptRepo.updateConsultStarted(appointmentId, true, apptDetails);
 
   function getJuniorDocInfo() {
     return new Promise(async (resolve, reject) => {
@@ -537,9 +566,7 @@ const addToConsultQueueWithAutomatedQuestions: Resolver<
     const familyHistoryRepo = context.patientsDb.getCustomRepository(
       PatientFamilyHistoryRepository
     );
-    const familyHistoryRecord = await familyHistoryRepo.getPatientFamilyHistory(
-      appointmentData.patientId
-    );
+    const familyHistoryRecord = patientData.familyHistory[0];
 
     if (familyHistoryRecord == null) {
       //create
@@ -558,7 +585,9 @@ const addToConsultQueueWithAutomatedQuestions: Resolver<
       description: lifeStyle.length > 0 ? lifeStyle : undefined,
     };
     const lifeStyleRepo = context.patientsDb.getCustomRepository(PatientLifeStyleRepository);
-    const lifeStyleRecord = await lifeStyleRepo.getPatientLifeStyle(appointmentData.patientId);
+    const lifeStyleRecord = patientData.lifeStyle
+      ? patientData.lifeStyle[0]
+      : patientData.lifeStyle;
 
     if (lifeStyleRecord == null) {
       //create
@@ -592,9 +621,7 @@ const addToConsultQueueWithAutomatedQuestions: Resolver<
   const medicalHistoryRepo = context.patientsDb.getCustomRepository(
     PatientMedicalHistoryRepository
   );
-  const medicalHistoryRecord = await medicalHistoryRepo.getPatientMedicalHistory(
-    appointmentData.patientId
-  );
+  const medicalHistoryRecord = patientData.patientMedicalHistory;
   if (medicalHistoryRecord == null) {
     //create
     medicalHistoryRepo.savePatientMedicalHistory(medicalHistoryInputs);

@@ -3,7 +3,7 @@ import { makeStyles } from '@material-ui/styles';
 import React from 'react';
 import _uniqueId from 'lodash/uniqueId';
 import {
-  GetDoctorDetailsById as DoctorDetails,
+  GetDoctorDetailsById_getDoctorDetailsById as DoctorDetails,
   GetDoctorDetailsById_getDoctorDetailsById_starTeam as StarTeam,
 } from 'graphql/types/GetDoctorDetailsById';
 import { clientRoutes } from 'helpers/clientRoutes';
@@ -117,16 +117,9 @@ export const StarDoctorTeam: React.FC<StarDoctorTeamProps> = (props) => {
 
   const { doctorDetails } = props;
 
-  if (
-    doctorDetails &&
-    doctorDetails.getDoctorDetailsById &&
-    doctorDetails.getDoctorDetailsById.starTeam
-  ) {
-    const firstName = doctorDetails.getDoctorDetailsById.firstName;
-    const team =
-      doctorDetails.getDoctorDetailsById.starTeam.length > 0
-        ? doctorDetails.getDoctorDetailsById.starTeam
-        : [];
+  if (doctorDetails && doctorDetails.starTeam) {
+    const { firstName } = doctorDetails;
+    const team = doctorDetails.starTeam.length > 0 ? doctorDetails.starTeam : [];
 
     return team.length > 0 ? (
       <div className={classes.sectionGroup}>

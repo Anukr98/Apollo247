@@ -1,5 +1,6 @@
 import AbortController from 'abort-controller';
 import { debugLog } from 'customWinstonLogger';
+import fetch from 'node-fetch';
 import {
   ValidateCouponRequest,
   ValidateCouponResponse,
@@ -30,6 +31,7 @@ export async function validateCoupon(
   const timeout = setTimeout(() => {
     controller.abort();
   }, couponTimeoutMillSeconds);
+
   return await fetch(apiUrl, {
     method: 'POST',
     headers: {
@@ -46,6 +48,7 @@ export async function validateCoupon(
           'VALIDATE_COUPON_API_CALL___END',
           `${apiUrl} --- ${JSON.stringify(payload)} --- ${JSON.stringify(data)}`
         );
+
         if (data.errorCode) throw new AphError(AphErrorMessages.INVALID_COUPON_CODE);
         return data;
       },

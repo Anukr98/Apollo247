@@ -751,24 +751,16 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
                 <div
                   className={classes.imageUpload}
                   onClick={() => {
-                    if (rowData.url.substr(-4).toLowerCase() !== '.pdf') {
+                    if (rowData.fileType !== 'pdf') {
                       setModalOpen(rowData.fileType === 'pdf' ? false : true);
                       setImgPrevUrl(rowData.url);
                     }
                   }}
                 >
-                  {rowData.url.substr(-4).toLowerCase() !== '.pdf' ? (
-                    <>
-                      {rowData.fileType === 'pdf' ? (
-                        <a href={rowData.url} target="_blank">
-                          <img src={require('images/pdf_thumbnail.png')} />
-                        </a>
-                      ) : (
-                        <img src={rowData.url} alt={rowData.url} />
-                      )}
-                    </>
+                  {rowData.fileType !== 'pdf' ? (
+                    <img src={rowData.url} alt={rowData.url} />
                   ) : (
-                    <a href={rowData.url}>
+                    <a href={rowData.url} target="_blank">
                       <img src={require('images/pdf_thumbnail.png')} />
                     </a>
                   )}
@@ -863,14 +855,14 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
               {rowData.message === documentUpload ? (
                 <div
                   onClick={() => {
-                    if (rowData.url.substr(-4).toLowerCase() !== '.pdf') {
+                    if (rowData.fileType !== 'pdf') {
                       setModalOpen(true);
                       setImgPrevUrl(rowData.url);
                     }
                   }}
                   className={classes.imageUpload}
                 >
-                  {rowData.url.substr(-4).toLowerCase() !== '.pdf' ? (
+                  {rowData.fileType !== 'pdf' ? (
                     <img src={rowData.url} alt={rowData.url} />
                   ) : (
                     <a href={rowData.url} target="_blank">

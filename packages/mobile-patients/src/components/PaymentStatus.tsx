@@ -12,7 +12,7 @@ import {
 import { Copy } from '@aph/mobile-patients/src/components/ui/Icons';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import React, { useEffect, useState } from 'react';
-import { NavigationScreenProps } from 'react-navigation';
+import { NavigationScreenProps, NavigationActions, StackActions } from 'react-navigation';
 import { Success, Failure, Pending } from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
@@ -53,7 +53,7 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
   // const fireBaseEventAttributes = props.navigation.getParam('fireBaseEventAttributes');
 
   const client = useApolloClient();
-  const { success, failure, pending } = Payment;
+  const { success, failure, pending, aborted } = Payment;
   const { showAphAlert } = useUIElements();
   const totalAmount = props.navigation.getParam('amount');
   const orderId = props.navigation.getParam('orderId');
@@ -121,7 +121,17 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
       .catch((error) => {
         CommonBugFender('fetchingTxnStutus', error);
         console.log(error);
-        props.navigation.navigate(AppRoutes.ConsultRoom);
+        props.navigation.dispatch(
+          StackActions.reset({
+            index: 0,
+            key: null,
+            actions: [
+              NavigationActions.navigate({
+                routeName: AppRoutes.ConsultRoom,
+              }),
+            ],
+          })
+        );
         renderErrorPopup(`Something went wrong, plaease try again after sometime`);
       });
     BackHandler.addEventListener('hardwareBackPress', handleBack);
@@ -131,14 +141,24 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
   }, []);
 
   const handleBack = () => {
-    props.navigation.navigate(AppRoutes.ConsultRoom);
+    props.navigation.dispatch(
+      StackActions.reset({
+        index: 0,
+        key: null,
+        actions: [
+          NavigationActions.navigate({
+            routeName: AppRoutes.ConsultRoom,
+          }),
+        ],
+      })
+    );
     return true;
   };
 
   const statusIcon = () => {
     if (status === success) {
       return <Success style={styles.statusIconStyles} />;
-    } else if (status === failure) {
+    } else if (status === failure || status === aborted) {
       return <Failure style={styles.statusIconStyles} />;
     } else {
       return <Pending style={styles.statusIconStyles} />;
@@ -158,7 +178,6 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
           marginHorizontal: needStyle ? 0.1 * windowWidth : undefined,
         }}
         numberOfLines={numOfLines}
-        selectable={true}
       >
         {message}
       </Text>
@@ -168,7 +187,7 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
   const statusCardColour = () => {
     if (status == success) {
       return colors.SUCCESS;
-    } else if (status == failure) {
+    } else if (status == failure || status == aborted) {
       return colors.FAILURE;
     } else {
       return colors.PENDING;
@@ -183,6 +202,9 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
       textColor = theme.colors.SUCCESS_TEXT;
     } else if (status === failure) {
       message = ' PAYMENT FAILED';
+      textColor = theme.colors.FAILURE_TEXT;
+    } else if (status === aborted) {
+      message = ' PAYMENT ABORTED';
       textColor = theme.colors.FAILURE_TEXT;
     }
     return textComponent(message, undefined, textColor, false);
@@ -230,7 +252,7 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
           </TouchableOpacity>
         </View>
         <Snackbar
-          style={{ position: 'absolute' }}
+          style={{ position: 'absolute', zIndex: 1001, bottom: -10 }}
           visible={snackbarState}
           onDismiss={() => {
             setSnackbarState(false);
@@ -293,7 +315,7 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
     if (status === failure) {
       noteText =
         'Note : In case your account has been debited, you should get the refund in 1-7 working days.';
-    } else if (status != success && status != failure) {
+    } else if (status != success && status != failure && status != aborted) {
       noteText =
         'Note : Your payment is in progress and this may take a couple of minutes to confirm your booking. We’ll intimate you once your bank confirms the payment.';
     }
@@ -303,7 +325,7 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
   const getButtonText = () => {
     if (status == success) {
       return 'TRSCK ORDER';
-    } else if (status == failure) {
+    } else if (status == failure || status == aborted) {
       return 'TRY AGAIN';
     } else {
       return 'GO TO HOME';
@@ -319,10 +341,20 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
         showOrderSummaryTab: false,
         orderAutoId,
       });
-    } else if (status == failure) {
+    } else if (status == failure || status == aborted) {
       navigate(AppRoutes.YourCart);
     } else {
-      navigate(AppRoutes.ConsultRoom);
+      props.navigation.dispatch(
+        StackActions.reset({
+          index: 0,
+          key: null,
+          actions: [
+            NavigationActions.navigate({
+              routeName: AppRoutes.ConsultRoom,
+            }),
+          ],
+        })
+      );
     }
   };
 

@@ -100,6 +100,18 @@ export type Resolver<Parent, Args, Context, Result> = (
     'https://apollo247.com',
     'https://uatdoctors.apollo247.com',
     'https://uatpatients.apollo247.com',
+    'https://*.apollo247.com',
+    'https://consult-tool.apollo247.com',
+    'https://corporate.apollo247.com',
+    'https://corporate-uat.apollo247.com',
+    'https://uatdoctors.apollo247.com',
+    'https://qadoctors.apollo247.com',
+    'https://qapatients.apollo247.com',
+    'https://qapmt.apollo247.com',
+    'https://stagingpatients.apollo247.com',
+    'https://stagingdoctors.apollo247.com',
+    'https://stagingpmt.apollo247.com',
+    'https://consult-replica.apollo247.com/',
   ];
 
   const logger = winstonLogger.loggers.get('apiGatewayLogger');
@@ -109,7 +121,6 @@ export type Resolver<Parent, Args, Context, Result> = (
     schema,
     executor,
     engine: {
-      apiKey: process.env.ENGINE_API_KEY,
       schemaTag: process.env.NODE_ENV,
       debugPrintReports: true,
     },
@@ -200,14 +211,14 @@ export type Resolver<Parent, Args, Context, Result> = (
           return {
             parsingDidStart(requestContext) {
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              const internalContext = (requestContext.context as any) as GatewayContext;
+              /*const internalContext = (requestContext.context as any) as GatewayContext;
 
-              logger.log({
+             logger.log({
                 message: 'API Gateway Request Started for :' + internalContext.mobileNumber,
                 time: reqStartTimeFormatted,
                 operation: requestContext.request.query,
                 level: 'info',
-              });
+              }); */
             },
             didEncounterErrors(requestContext) {
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -232,7 +243,7 @@ export type Resolver<Parent, Args, Context, Result> = (
               };
               //remove response if there is no error
               if (errorCount === 0) delete responseLog.response;
-              logger.log(responseLog);
+              //logger.log(responseLog);
             },
           };
         },
@@ -250,60 +261,3 @@ export type Resolver<Parent, Args, Context, Result> = (
       throw error;
     });
 })();
-
-/*(async () => {
-  console.log('------------------------STORAGE TEST----------------------------');
-  const client = new AphStorageClient(
-    process.env.AZURE_STORAGE_CONNECTION_STRING_API,
-    process.env.AZURE_STORAGE_CONTAINER_NAME
-  );
-
-  if (process.env.NODE_ENV === 'local' || process.env.NODE_ENV === 'development') {
-    console.log('deleting container...');
-    await client
-      .deleteContainer()
-      .then((res) => console.log(res))
-      .catch((error) => console.log('error deleting', error));
-
-    console.log('setting service properties...');
-    await client
-      .setServiceProperties()
-      .then((res) => console.log(res))
-      .catch((error) => console.log('error setting service properties', error));
-
-    console.log('creating container...');
-    await client
-      .createContainer()
-      .then((res) => console.log('Storage test succeeded!', res))
-      .catch((error) => console.log('error creating', error));
-  }
-
-  console.log('testing storage connection...');
-  await client
-    .testStorageConnection()
-    .then((res) => console.log(res))
-    .catch((error) => console.log('error testing', error));
-})();*/
-
-// (async () => {
-//   console.log('------------------------MESSAGE QUEUE TEST----------------------------');
-
-//   AphMqClient.connect();
-
-//   type TestMessage = AphMqMessage<AphMqMessageTypes.TEST, { time: Date }>;
-//   const testMessage: TestMessage = {
-//     type: AphMqMessageTypes.TEST,
-//     payload: {
-//       time: new Date(),
-//     },
-//   };
-
-//   console.log('sending message', testMessage);
-//   AphMqClient.send(testMessage);
-
-//   AphMqClient.onReceive<TestMessage>(AphMqMessageTypes.TEST, (receivedMessage) => {
-//     console.log('received message!', receivedMessage.message);
-//     console.log('accepting message');
-//     receivedMessage.accept();
-//   });
-// })();

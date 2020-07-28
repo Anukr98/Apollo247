@@ -20,6 +20,15 @@ import { useShoppingCart, EPrescription } from 'components/MedicinesCartProvider
 import { clientRoutes } from 'helpers/clientRoutes';
 import { DoctorType } from 'graphql/types/globalTypes';
 import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
+import { GET_MEDICAL_PRISM_RECORD } from '../../graphql/profiles';
+import {
+  getPatientPrismMedicalRecords,
+  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labResults_response as LabResultsType,
+  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_prescriptions_response as PrescriptionsType,
+} from '../../graphql/types/getPatientPrismMedicalRecords';
+import { useAuth } from 'hooks/authHooks';
+import { useApolloClient } from 'react-apollo-hooks';
+import { Alerts } from 'components/Alerts/Alerts';
 
 const client = new AphStorageClient(
   process.env.AZURE_STORAGE_CONNECTION_STRING_WEB_PATIENTS,
@@ -133,25 +142,27 @@ interface EPrescriptionCardProps {
   isNonCartFlow: boolean;
   isPresReview?: boolean;
   setEPrescriptionForReview?: any;
+  pharmaCologistPres?: Array<EPrescription>;
 }
 
 export const UploadEPrescriptionCard: React.FC<EPrescriptionCardProps> = (props) => {
   const classes = useStyles({});
-  const {
-    ePrescriptionData,
-    setEPrescriptionData,
-    setUploadedEPrescription,
-    uploadedEPrescription,
-  } = useShoppingCart();
+  const { ePrescriptionData, setEPrescriptionData, setUploadedEPrescription } = useShoppingCart();
+  const { isSigningIn } = useAuth();
+  const apolloClient = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
   const [pastPrescriptions, setPastPrescriptions] = useState<any[] | null>(null);
   const [pastMedicalOrders, setPastMedicalOrders] = useState<any[] | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [isRecordChecked, setIsRecordChecked] = useState<boolean>(false);
   const [selectedEPrescriptions, setSelectedEPrescriptions] = useState<EPrescription[]>(
-    props.isPresReview ? [] : ePrescriptionData || []
+    props.isPresReview ? props.pharmaCologistPres || [] : ePrescriptionData || []
   );
   const [mutationLoading, setMutationLoading] = useState<boolean>(false);
+  const [alertMessage, setAlertMessage] = React.useState<string>('');
+  const [isAlertOpen, setIsAlertOpen] = React.useState<boolean>(false);
+  const [medicalLoading, setMedicalLoading] = useState<boolean>(false);
+  const [prismCombinedData, setPrismCombinedData] = useState<any>(null);
 
   const patientPastConsultAndPrescriptionMutation = useMutation<
     getPatientPastConsultsAndPrescriptions,
@@ -164,6 +175,75 @@ export const UploadEPrescriptionCard: React.FC<EPrescriptionCardProps> = (props)
     },
     fetchPolicy: 'no-cache',
   });
+
+  const sortByDate = (array: EPrescription[]) => {
+    return array.sort((data1, data2) => {
+      let date1 = moment(data1.date)
+        .toDate()
+        .getTime();
+      let date2 = moment(data2.date)
+        .toDate()
+        .getTime();
+      return date1 > date2 ? -1 : date1 < date2 ? 1 : 0;
+    });
+  };
+
+  const fetchPrismData = () => {
+    apolloClient
+      .query<getPatientPrismMedicalRecords>({
+        query: GET_MEDICAL_PRISM_RECORD,
+        variables: {
+          patientId: currentPatient && currentPatient.id ? currentPatient.id : '',
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then(({ data }: any) => {
+        if (data && data.getPatientPrismMedicalRecords) {
+          const prismMedicalRecords = data.getPatientPrismMedicalRecords;
+          let mergeArray: EPrescription[] = [];
+          if (prismMedicalRecords.labResults && prismMedicalRecords.labResults.response) {
+            const prismLabResults = prismMedicalRecords.labResults.response;
+            prismLabResults.forEach((item: LabResultsType) => {
+              mergeArray.push({
+                id: `${item.id}-${item.labTestName}`,
+                uploadedUrl: item.fileUrl || '',
+                forPatient: (currentPatient && currentPatient.firstName) || '',
+                date: item.date,
+                medicines: '',
+                doctorName: item.labTestName,
+                prismPrescriptionFileId: '',
+              });
+            });
+          }
+          if (prismMedicalRecords.prescriptions && prismMedicalRecords.prescriptions.response) {
+            const prismPrescriptions = prismMedicalRecords.prescriptions.response;
+            prismPrescriptions.forEach((item: PrescriptionsType) => {
+              mergeArray.push({
+                id: `${item.id}-${item.prescriptionName}`,
+                uploadedUrl: item.fileUrl || '',
+                forPatient: (currentPatient && currentPatient.firstName) || '',
+                date: item.date,
+                medicines: '',
+                doctorName: item.prescriptionName,
+                prismPrescriptionFileId: '',
+              });
+            });
+          }
+          const sortedData = sortByDate(mergeArray);
+          setPrismCombinedData(sortedData);
+        } else {
+          setPrismCombinedData([]);
+        }
+      })
+      .catch((error) => {
+        console.log(error);
+        setIsAlertOpen(true);
+        setAlertMessage('Something went wrong :(');
+      })
+      .finally(() => {
+        setMedicalLoading(false);
+      });
+  };
 
   useEffect(() => {
     if (!pastPrescriptions || !pastMedicalOrders) {
@@ -195,6 +275,13 @@ export const UploadEPrescriptionCard: React.FC<EPrescriptionCardProps> = (props)
         });
     }
   }, [pastPrescriptions, pastMedicalOrders]);
+
+  useEffect(() => {
+    if (!isSigningIn && !prismCombinedData) {
+      setMedicalLoading(true);
+      fetchPrismData();
+    }
+  }, [prismCombinedData, isSigningIn]);
 
   const DATE_FORMAT = 'DD MMM YYYY';
 
@@ -284,7 +371,7 @@ export const UploadEPrescriptionCard: React.FC<EPrescriptionCardProps> = (props)
       return diff <= PRESCRIPTION_VALIDITY_IN_DAYS ? true : false;
     });
 
-  if (loading) {
+  if (loading || medicalLoading) {
     return (
       <div className={classes.circularProgressWrapper}>
         <CircularProgress />
@@ -329,6 +416,48 @@ export const UploadEPrescriptionCard: React.FC<EPrescriptionCardProps> = (props)
                     } else {
                       const selectedRecords = selectedEPrescriptions.filter(
                         (record) => record.id != pastPrescription.id
+                      );
+                      setSelectedEPrescriptions(selectedRecords);
+                    }
+                    setIsRecordChecked(!isRecordChecked);
+                  }}
+                  className={classes.checkbox}
+                  color="primary"
+                />
+              </div>
+            ))}
+          {prismCombinedData &&
+            prismCombinedData.map((prismPrescription: any) => (
+              <div className={classes.prescriptionGroup}>
+                <div className={classes.imgThumb}>
+                  <img src={require('images/ic_prescription.svg')} alt="" />
+                </div>
+                <div>
+                  <div>{prismPrescription.doctorName}</div>
+                  <div className={classes.priscriptionInfo}>
+                    <span className={classes.name}>
+                      {currentPatient && currentPatient.firstName}
+                    </span>
+                    <span className={classes.date}>
+                      {moment(prismPrescription.date).format(DATE_FORMAT)}
+                    </span>
+                  </div>
+                </div>
+                <AphCheckbox
+                  disabled={mutationLoading}
+                  checked={
+                    selectedEPrescriptions.findIndex(
+                      (selectedPrescription) => selectedPrescription.id === prismPrescription.id
+                    ) !== -1
+                  }
+                  onChange={(e) => {
+                    if (e.target.checked) {
+                      const selectedRecords = selectedEPrescriptions;
+                      selectedRecords.push(prismPrescription);
+                      setSelectedEPrescriptions(selectedRecords);
+                    } else {
+                      const selectedRecords = selectedEPrescriptions.filter(
+                        (record) => record.id != prismPrescription.id
                       );
                       setSelectedEPrescriptions(selectedRecords);
                     }
@@ -387,7 +516,9 @@ export const UploadEPrescriptionCard: React.FC<EPrescriptionCardProps> = (props)
           <AphButton
             disabled={
               ((!pastMedicalOrders || (pastMedicalOrders && pastMedicalOrders.length === 0)) &&
-                (!pastPrescriptions || (pastPrescriptions && pastPrescriptions.length === 0))) ||
+                (!pastPrescriptions || (pastPrescriptions && pastPrescriptions.length === 0)) &&
+                prismCombinedData &&
+                prismCombinedData.length === 0) ||
               selectedEPrescriptions.length === 0 ||
               mutationLoading
             }
@@ -406,7 +537,7 @@ export const UploadEPrescriptionCard: React.FC<EPrescriptionCardProps> = (props)
 
               if (props.isNonCartFlow) {
                 setTimeout(() => {
-                  window.location.href = `${clientRoutes.medicinesCart()}?prescription=true`;
+                  window.location.href = clientRoutes.medicinePrescription();
                 }, 3000);
               } else {
                 props.setIsEPrescriptionOpen && props.setIsEPrescriptionOpen(false);
@@ -423,6 +554,12 @@ export const UploadEPrescriptionCard: React.FC<EPrescriptionCardProps> = (props)
           </AphButton>
         </div>
       </div>
+      <Alerts
+        setAlertMessage={setAlertMessage}
+        alertMessage={alertMessage}
+        isAlertOpen={isAlertOpen}
+        setIsAlertOpen={setIsAlertOpen}
+      />
     </div>
   );
 };

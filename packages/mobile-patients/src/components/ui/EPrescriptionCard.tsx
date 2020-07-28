@@ -6,6 +6,7 @@ import {
   CrossYellow,
   PrescriptionIcon,
   UnCheck,
+  GreenTickIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 
 const styles = StyleSheet.create({});
@@ -21,6 +22,7 @@ export interface EPrescriptionCardProps {
   isDisabled?: boolean;
   onRemove?: () => void;
   onSelect?: (isSelected: boolean) => void;
+  showTick?: boolean;
 }
 
 export const EPrescriptionCard: React.FC<EPrescriptionCardProps> = (props) => {
@@ -34,6 +36,7 @@ export const EPrescriptionCard: React.FC<EPrescriptionCardProps> = (props) => {
     actionType,
     isSelected,
     isDisabled,
+    showTick,
   } = props;
   return (
     <View>
@@ -67,7 +70,15 @@ export const EPrescriptionCard: React.FC<EPrescriptionCardProps> = (props) => {
           >
             {doctorName}
           </Text>
-          {!isDisabled && (
+          {
+            showTick && (
+              <GreenTickIcon style={{
+                width: 20,
+                paddingHorizontal: 8,
+              }} />
+            )
+          }
+          {!isDisabled && !showTick && (
             <TouchableOpacity
               onPress={() => {
                 actionType == 'removal' ? onRemove!() : onSelect!(!!!isSelected);

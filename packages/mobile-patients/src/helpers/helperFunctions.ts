@@ -29,7 +29,6 @@ import { apiRoutes } from './apiRoutes';
 import {
   CommonBugFender,
   setBugFenderLog,
-  CommonLogEvent,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { getDiagnosticSlots_getDiagnosticSlots_diagnosticSlot_slotInfo } from '@aph/mobile-patients/src/graphql/types/getDiagnosticSlots';
 import {
@@ -45,6 +44,7 @@ import { SEARCH_DIAGNOSTICS } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   WebEngageEvents,
   WebEngageEventName,
+  ReorderMedicines,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import WebEngage from 'react-native-webengage';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
@@ -62,8 +62,8 @@ import {
 import { UIElementsContextProps } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { NavigationScreenProp, NavigationRoute } from 'react-navigation';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { postReorderMedicines } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
+import { getLatestMedicineOrder_getLatestMedicineOrder_medicineOrderDetails } from '@aph/mobile-patients/src/graphql/types/getLatestMedicineOrder';
 
 const googleApiKey = AppConfig.Configuration.GOOGLE_API_KEY;
 let onInstallConversionDataCanceller: any;
@@ -87,7 +87,7 @@ export interface TestSlot {
   slotInfo: getDiagnosticSlots_getDiagnosticSlots_diagnosticSlot_slotInfo;
 }
 
-const isDebugOn = AppConfig.Configuration.LOG_ENVIRONMENT == 'debug';
+const isDebugOn = __DEV__;
 
 export const aphConsole: AphConsole = {
   error: (message?: any, ...optionalParams: any[]) => {
@@ -148,42 +148,6 @@ export const formatOrderAddress = (
 };
 
 export const getOrderStatusText = (status: MEDICINE_ORDER_STATUS): string => {
-  let statusString = '';
-  switch (status) {
-    case MEDICINE_ORDER_STATUS.CANCELLED:
-      statusString = 'Order Cancelled';
-      break;
-    case MEDICINE_ORDER_STATUS.CANCEL_REQUEST:
-      statusString = 'Cancel Requested';
-      break;
-    case MEDICINE_ORDER_STATUS.DELIVERED:
-      statusString = 'Order Delivered';
-      break;
-    case MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY:
-      statusString = 'Order Shipped';
-      break;
-    case MEDICINE_ORDER_STATUS.PICKEDUP:
-      statusString = 'Order Picked Up';
-      break;
-    case MEDICINE_ORDER_STATUS.RETURN_INITIATED:
-      statusString = 'Return Requested';
-      break;
-    case MEDICINE_ORDER_STATUS.PURCHASED_IN_STORE:
-      statusString = 'Purchased In-store';
-      break;
-    case 'TO_BE_DELIVERED' as any:
-      statusString = 'Expected Order Delivery';
-      break;
-    default:
-      statusString = (status || '')
-        .split('_')
-        .map((item) => `${item.slice(0, 1).toUpperCase()}${item.slice(1).toLowerCase()}`)
-        .join(' ');
-  }
-  return statusString;
-};
-
-export const getNewOrderStatusText = (status: MEDICINE_ORDER_STATUS): string => {
   let statusString = '';
   switch (status) {
     case MEDICINE_ORDER_STATUS.CANCELLED:
@@ -650,10 +614,13 @@ export const isValidName = (value: string) =>
     : false;
 
 export const reOrderMedicines = async (
-  order: getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails,
-  currentPatient: any
+  order:
+    | getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails
+    | getLatestMedicineOrder_getLatestMedicineOrder_medicineOrderDetails,
+  currentPatient: any,
+  source: ReorderMedicines['source']
 ) => {
-  postReorderMedicines('Order Details', currentPatient);
+  postReorderMedicines(source, currentPatient);
   // Medicines
   // use billedItems for delivered orders
   const billedItems = g(
@@ -699,6 +666,7 @@ export const reOrderMedicines = async (
         isMedicine: (item.type_id || '').toLowerCase() == 'pharma',
         thumbnail: item.thumbnail || item.image,
         isInStock: item.is_in_stock == 1,
+        maxOrderQty: item.MaxOrderQty,
       } as ShoppingCartItem)
   );
   const unavailableItems = billedLineItems
@@ -722,9 +690,7 @@ export const reOrderMedicines = async (
     (item) =>
       ({
         id: item,
-        date: moment(g(order, 'medicineOrdersStatus', '0' as any, 'statusDate')).format(
-          'DD MMM YYYY'
-        ),
+        date: moment(g(order, 'createdDate')).format('DD MMM YYYY'),
         doctorName: `Meds Rx ${(order.id && order.id.substring(0, order.id.indexOf('-'))) || ''}`,
         forPatient: g(currentPatient, 'firstName') || '',
         medicines: medicineNames,
@@ -1058,7 +1024,7 @@ export const InitiateAppsFlyer = () => {
   appsFlyer.initSdk(
     {
       devKey: 'pP3MjHNkZGiMCamkJ7YpbH',
-      isDebug: true,
+      isDebug: false,
       appId: Platform.OS === 'ios' ? '1496740273' : '',
     },
     (result) => {
@@ -1270,6 +1236,10 @@ export const isDeliveryDateWithInXDays = (deliveryDate: string) => {
   );
 };
 
+export const getMaxQtyForMedicineItem = (qty?: number | string) => {
+  return qty ? Number(qty) : AppConfig.Configuration.CART_ITEM_MAX_QUANTITY;
+};
+
 export const addPharmaItemToCart = (
   cartItem: ShoppingCartItem,
   pincode: string,
@@ -1297,6 +1267,7 @@ export const addPharmaItemToCart = (
     });
   };
   if (!isLocationServeiceable) {
+    onComplete && onComplete();
     navigate();
     return;
   }

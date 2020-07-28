@@ -59,9 +59,12 @@ type PatientResponse = {
 type DoctorResponse = {
   firstName: string;
   lastName: string;
-  specialization: string;
+  specialty: Specialty;
   salutation: string;
   registrationNumber: string;
+};
+type Specialty = {
+  name: string;
 };
 type AppointmentPayment = {
   amountPaid: number;
@@ -95,7 +98,7 @@ const getOrderInvoice: Resolver<
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
 
-  const patientDetails = await patientsRep.findById(args.patientId);
+  const patientDetails = await patientsRep.getPatientDetails(args.patientId);
 
   const docResponse = await docConsultRep.findDoctorByIdWithoutRelations(
     patientResponse[0].doctorId
@@ -269,13 +272,13 @@ const getOrderInvoice: Resolver<
 
     const nameLine = `${doctorInfo.salutation}. ${doctorInfo.firstName} ${doctorInfo.lastName}`;
 
-    const specialty = doctorInfo.specialization;
+    const specialty = doctorInfo.specialty.name;
     renderFourColumnRow(
       'Doctor Name',
       `${nameLine}`,
       'Doctor Speciality',
       `${specialty}`,
-      doc.y + 20
+      doc.y + 10
     );
 
     const formattedDate = format(
@@ -290,7 +293,7 @@ const getOrderInvoice: Resolver<
       doc.y + 10
     );
 
-    doc.moveDown(4);
+    // doc.moveDown(4);
 
     doc
       .moveTo(margin, doc.y)
@@ -303,7 +306,7 @@ const getOrderInvoice: Resolver<
       .fontSize(12)
       .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
       .fillColor('#01475b')
-      .text('Apollo 24X7 Online Teleconsultation Fees', margin + 150, doc.y, {
+      .text('Apollo 24X7 Online Teleconsultation Fees', margin + 165, doc.y, {
         lineBreak: false,
         align: 'right',
       })
@@ -317,7 +320,7 @@ const getOrderInvoice: Resolver<
       .fontSize(12)
       .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
       .fillColor('#0087ba')
-      .text('Discount Applied', margin + 280, doc.y, {
+      .text('Discount Applied', margin + 300, doc.y, {
         lineBreak: false,
         align: 'right',
       })

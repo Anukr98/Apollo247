@@ -46,6 +46,8 @@ import {
   getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labTests,
   getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_healthChecks,
   getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_hospitalizations,
+  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labResults_response,
+  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_prescriptions_response,
 } from '../../graphql/types/getPatientPrismMedicalRecords';
 import { MedicalRecords } from '../HealthRecords/MedicalRecords';
 import { CheckedIcon, UnCheck } from '../ui/Icons';
@@ -148,6 +150,16 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
     | null
     | undefined
   >([]);
+  const [labResults, setLabResults] = useState<
+    | (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labResults_response | null)[]
+    | null
+    | undefined
+  >([]);
+  const [prescriptions, setPrescriptions] = useState<
+    | (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_prescriptions_response | null)[]
+    | null
+    | undefined
+  >([]);
 
   useEffect(() => {
     console.log(medPrismRecords);
@@ -156,6 +168,12 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
     sethealthChecks(g(medPrismRecords, 'getPatientPrismMedicalRecords', 'healthChecks') || []);
     sethospitalizations(
       g(medPrismRecords, 'getPatientPrismMedicalRecords', 'hospitalizations') || []
+    );
+    setLabResults(
+      g(medPrismRecords, 'getPatientPrismMedicalRecords', 'labResults', 'response') || []
+    );
+    setPrescriptions(
+      g(medPrismRecords, 'getPatientPrismMedicalRecords', 'prescriptions', 'response') || []
     );
   }, [medPrismRecords]);
 
@@ -169,47 +187,68 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
     }
   }, [medPrismerror]);
 
-  useEffect(() => {
-    if (mederror) {
-      CommonBugFender('SelectEPrescriptionModal_mederror', mederror);
-    }
-  }, [mederror]);
+  // useEffect(() => {
+  //   if (mederror) {
+  //     CommonBugFender('SelectEPrescriptionModal_mederror', mederror);
+  //   }
+  // }, [mederror]);
 
   const [combination, setCombination] = useState<
-    { type: 'medical' | 'lab' | 'health' | 'hospital'; data: any }[]
+    { type: 'medical' | 'lab' | 'health' | 'hospital' | 'prescription'; data: any }[]
   >();
   const [selectedHealthRecord, setSelectedHealthRecord] = useState<string[]>([]);
 
   useEffect(() => {
-    let mergeArray: { type: 'medical' | 'lab' | 'health' | 'hospital'; data: any }[] = [];
+    let mergeArray: {
+      type: 'medical' | 'lab' | 'health' | 'hospital' | 'prescription';
+      data: any;
+    }[] = [];
     console.log('combination before', mergeArray);
-    medicalRecords &&
-      medicalRecords.forEach((item) => {
-        mergeArray.push({ type: 'medical', data: item });
-      });
-    labTests &&
-      labTests.forEach((item) => {
+    // medicalRecords &&
+    //   medicalRecords.forEach((item) => {
+    //     mergeArray.push({ type: 'medical', data: item });
+    //   });
+    // labTests &&
+    //   labTests.forEach((item) => {
+    //     mergeArray.push({ type: 'lab', data: item });
+    //   });
+    labResults &&
+      labResults.forEach((item) => {
         mergeArray.push({ type: 'lab', data: item });
       });
-    healthChecks &&
-      healthChecks.forEach((item) => {
-        mergeArray.push({ type: 'health', data: item });
+    prescriptions &&
+      prescriptions.forEach((item) => {
+        mergeArray.push({ type: 'prescription', data: item });
       });
-    hospitalizations &&
-      hospitalizations.forEach((item) => {
-        mergeArray.push({ type: 'hospital', data: item });
-      });
+    // healthChecks &&
+    //   healthChecks.forEach((item) => {
+    //     mergeArray.push({ type: 'health', data: item });
+    //   });
+    // hospitalizations &&
+    //   hospitalizations.forEach((item) => {
+    //     mergeArray.push({ type: 'hospital', data: item });
+    //   });
     console.log('combination after', mergeArray);
     setCombination(sordByDate(mergeArray));
-  }, [medicalRecords, labTests, healthChecks, hospitalizations]);
+  }, [labResults, prescriptions]);
 
-  const sordByDate = (array: { type: 'medical' | 'lab' | 'health' | 'hospital'; data: any }[]) => {
+  const sordByDate = (
+    array: { type: 'medical' | 'lab' | 'health' | 'hospital' | 'prescription'; data: any }[]
+  ) => {
     return array.sort(({ data: data1 }, { data: data2 }) => {
       let date1 = new Date(
-        data1.testDate || data1.labTestDate || data1.appointmentDate || data1.dateOfHospitalization
+        data1.testDate ||
+          data1.labTestDate ||
+          data1.appointmentDate ||
+          data1.dateOfHospitalization ||
+          data1.date
       );
       let date2 = new Date(
-        data2.testDate || data2.labTestDate || data2.appointmentDate || data2.dateOfHospitalization
+        data2.testDate ||
+          data2.labTestDate ||
+          data2.appointmentDate ||
+          data2.dateOfHospitalization ||
+          data2.date
       );
       return date1 > date2 ? -1 : date1 < date2 ? 1 : 0;
     });
@@ -397,7 +436,8 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
                         data.location ||
                         data.diagnosisNotes ||
                         data.healthCheckName ||
-                        data.labTestName}
+                        data.labTestName ||
+                        data.prescriptionName}
                     </Text>
                     {selected ? <CheckedIcon /> : <UnCheck />}
                   </View>
@@ -416,43 +456,41 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
                       }}
                     >
                       {moment(
-                        data.testDate ||
-                          data.labTestDate ||
+                        data.date ||
+                          data.testDate ||
                           data.appointmentDate ||
                           data.dateOfHospitalization
                       ).format('DD MMMM YYYY')}
                     </Text>
-                    {data.sourceName ||
-                      data.source ||
-                      (data.labTestSource && (
-                        <>
-                          <View
-                            style={{
-                              borderRightWidth: 0.5,
-                              // borderBottomColor: 'rgba(2, 71, 91, 0.2)',
-                              borderBottomColor: '#02475b',
-                              opacity: 0.2,
-                              marginHorizontal: 12,
-                            }}
-                          />
-                          <Text
-                            style={{
-                              ...theme.viewStyles.text(
-                                'M',
-                                14,
-                                theme.colors.TEXT_LIGHT_BLUE,
-                                1,
-                                20,
-                                0.04
-                              ),
-                              width: '49%',
-                              textAlign: 'left',
-                            }}
-                          >
-                            {(currentPatient && currentPatient.firstName) || ''}
-                          </Text>
-                        </>
-                      ))}
+                    {data.sourceName || data.source || data.labTestSource ? (
+                      <>
+                        <View
+                          style={{
+                            borderRightWidth: 0.5,
+                            // borderBottomColor: 'rgba(2, 71, 91, 0.2)',
+                            borderBottomColor: '#02475b',
+                            opacity: 0.2,
+                            marginHorizontal: 12,
+                          }}
+                        />
+                        <Text
+                          style={{
+                            ...theme.viewStyles.text(
+                              'M',
+                              14,
+                              theme.colors.TEXT_LIGHT_BLUE,
+                              1,
+                              20,
+                              0.04
+                            ),
+                            width: '49%',
+                            textAlign: 'left',
+                          }}
+                        >
+                          {(currentPatient && currentPatient.firstName) || ''}
+                        </Text>
+                      </>
+                    ) : null}
                   </View>
                 </View>
               </TouchableOpacity>
@@ -496,16 +534,16 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
                 {prescriptionUpto6months.map((item, index, array) => {
                   return renderEPrescription(item, index, array.length);
                 })}
+                {props.displayPrismRecords && renderHealthRecords()}
                 {!!prescriptionOlderThan6months.length && (
                   <SectionHeader
-                    style={{ marginTop: 14 }}
+                    style={{ marginTop: 14, marginBottom: 10 }}
                     leftText="PRESCRIPTIOINS OLDER THAN 6 MONTHS"
                   />
                 )}
                 {prescriptionOlderThan6months.map((item, index, array) => {
                   return renderEPrescription(item, index, array.length, true);
                 })}
-                {props.displayPrismRecords && renderHealthRecords()}
                 <View style={{ height: 12 }} />
               </>
             )}
@@ -533,12 +571,12 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
                       let urls = '';
                       let prismImages = '';
                       if (type === 'lab') {
-                        date = data.labTestDate;
+                        date = data.date;
                         name = data.labTestName || '-';
-                        message = `${data.departmentName} Report\n`;
+                        message = `${data.labTestSource || ''} Report\n`;
                         message += `Test Name: ${name}\n`;
                         message += `UHID: ${(currentPatient && currentPatient.uhid) || '-'}\n`;
-                        message += `Test Date: ${moment(date).format('DD-MMM-YYYY') || '-'}\n`;
+                        message += `Test Date: ${date || '-'}\n`;
                         message += `${
                           data.observation ? `Observation Notes: ${data.observation}\n` : ``
                         }`;
@@ -546,15 +584,15 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
                           data.additionalNotes ? `Additional Notes: ${data.additionalNotes}\n` : ``
                         }`;
                         message += `---------------\n`;
-                        (data.labTestResultParameters || []).forEach((record: any) => {
+                        (data.labTestResults || []).forEach((record: any) => {
                           console.log(record);
                           if (record) {
-                            if (record.setParameterName) {
+                            if (record.parameterName) {
                               message += `${record.parameterName}\n`;
                               message += `${
                                 record.result
                                   ? `Result: ${record.result} ${
-                                      record.setUnit ? record.unit || '' : ''
+                                      record.unit ? record.unit || '' : ''
                                     }\n`
                                   : ``
                               }`;
@@ -564,9 +602,20 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
                           }
                         });
                         message = message.slice(0, -1);
-                        prismImages =
-                          data.testResultPrismFileIds && data.testResultPrismFileIds.join(',');
-                        urls = ''; //prismImages;
+                        prismImages = data.id;
+                        urls = data.fileUrl ? data.fileUrl : ''; //prismImages;
+                      } else if (type === 'prescription') {
+                        date = data.date;
+                        name = data.prescriptionName || '-';
+                        message = `${data.source || ''} Report\n`;
+                        message += `Test Name: ${name}\n`;
+                        message += `UHID: ${(currentPatient && currentPatient.uhid) || '-'}\n`;
+                        message += `Test Date: ${date || '-'}\n`;
+                        message += `${data.notes ? `Additional Notes: ${data.notes}\n` : ``}`;
+                        message += `---------------\n`;
+                        message = message.slice(0, -1);
+                        prismImages = data.id;
+                        urls = data.fileUrl ? data.fileUrl : ''; //prismImages;
                       } else if (type === 'medical') {
                         date = data.testDate;
                         name = data.testName;
@@ -627,7 +676,7 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
                         uploadedUrl: urls,
                         forPatient: (currentPatient && currentPatient.firstName) || '',
                         doctorName: name,
-                        date: date,
+                        date: moment(date).format(DATE_FORMAT),
                         prismPrescriptionFileId: prismImages,
                         message: message,
                         healthRecord: true,

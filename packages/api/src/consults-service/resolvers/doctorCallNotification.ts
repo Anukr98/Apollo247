@@ -7,7 +7,7 @@ import {
   sendCallsNotification,
   DOCTOR_CALL_TYPE,
   APPT_CALL_TYPE,
-  sendNotificationWhatsapp,
+  sendDoctorNotificationWhatsapp,
 } from 'notifications-service/resolvers/notifications';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AphError } from 'AphError';
@@ -17,6 +17,7 @@ import { AppointmentRepository } from 'consults-service/repositories/appointment
 import { AppointmentCallDetailsRepository } from 'consults-service/repositories/appointmentCallDetailsRepository';
 import { format } from 'date-fns';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
+import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 
 export const doctorCallNotificationTypeDefs = gql`
   type AppointmentCallDetails {
@@ -72,6 +73,7 @@ export const doctorCallNotificationTypeDefs = gql`
       doctorName: String
       deviceType: DEVICETYPE
       callSource: BOOKINGSOURCE
+      appVersion: String
     ): NotificationResult!
     endCallNotification(appointmentCallId: String): EndCallResult!
     sendApptNotification: ApptNotificationResult!
@@ -135,6 +137,7 @@ const sendCallNotification: Resolver<
     doctorName: string;
     deviceType: DEVICETYPE;
     callSource: BOOKINGSOURCE;
+    appVersion: string;
   },
   ConsultServiceContext,
   NotificationResult
@@ -152,6 +155,7 @@ const sendCallNotification: Resolver<
     doctorName: args.doctorName,
     deviceType: args.deviceType,
     callSource: args.callSource,
+    appVersion: args.appVersion,
   };
   const appointmentCallDetails = await callDetailsRepo.saveAppointmentCallDetails(
     appointmentCallDetailsAttrs
@@ -160,6 +164,21 @@ const sendCallNotification: Resolver<
     const pushNotificationInput = {
       appointmentId: args.appointmentId,
       notificationType: NotificationType.CALL_APPOINTMENT,
+    };
+    const notificationResult = sendCallsNotification(
+      pushNotificationInput,
+      patientsDb,
+      consultsDb,
+      doctorsDb,
+      args.callType,
+      args.doctorType,
+      appointmentCallDetails.id
+    );
+    console.log(notificationResult, 'doctor call appt notification');
+  } else {
+    const pushNotificationInput = {
+      appointmentId: args.appointmentId,
+      notificationType: NotificationType.WHATSAPP_CHAT_NOTIFICATION,
     };
     const notificationResult = sendCallsNotification(
       pushNotificationInput,
@@ -216,14 +235,28 @@ const sendPatientWaitNotification: Resolver<
   const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
   const doctorDetails = await doctorRepo.findById(appointment.doctorId);
   if (!doctorDetails) throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID, undefined, {});
-  const applicationLink = process.env.WHATSAPP_LINK_BOOK_APOINTMENT + '?' + appointment.id;
+  const patientRepo = patientsDb.getCustomRepository(PatientRepository);
+  const patientDetails = await patientRepo.getPatientDetails(appointment.patientId);
+  if (patientDetails == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
+  //const applicationLink = process.env.WHATSAPP_LINK_BOOK_APOINTMENT + '?' + appointment.id;
+  const devLink = process.env.DOCTOR_DEEP_LINK ? process.env.DOCTOR_DEEP_LINK : '';
   if (appointment) {
-    let whatsAppMessageBody = ApiConstants.SEND_PATIENT_NOTIFICATION.replace(
+    const whatsAppMessageBody = ApiConstants.SEND_PATIENT_NOTIFICATION.replace(
       '{0}',
       doctorDetails.firstName
-    ).replace('{1}', appointment.patientName);
-    whatsAppMessageBody += applicationLink;
-    await sendNotificationWhatsapp(doctorDetails.mobileNumber, whatsAppMessageBody, 1);
+    )
+      .replace('{1}', patientDetails.firstName + ' ' + patientDetails.lastName)
+      .replace('{2}', args.appointmentId)
+      .replace('{3}', doctorDetails.salutation)
+      .replace('{4}', appointment.appointmentDateTime.toISOString())
+      .replace('{5}', devLink);
+    //whatsAppMessageBody += applicationLink;
+    await sendDoctorNotificationWhatsapp(
+      doctorDetails.mobileNumber,
+      whatsAppMessageBody,
+      1,
+      doctorDetails.doctorType
+    );
   }
   return { status: true };
 };

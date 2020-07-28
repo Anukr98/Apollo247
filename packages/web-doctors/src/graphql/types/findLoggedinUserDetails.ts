@@ -2,7 +2,7 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
-import { LoggedInUserType, DoctorType, DOCTOR_ONLINE_STATUS, Salutation } from "./globalTypes";
+import { LoggedInUserType, DoctorType, DOCTOR_ONLINE_STATUS } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: findLoggedinUserDetails
@@ -45,7 +45,7 @@ export interface findLoggedinUserDetails_findLoggedinUserDetails_secretaryDetail
   physicalConsultationFees: string;
   qualification: string | null;
   registrationNumber: string | null;
-  salutation: Salutation | null;
+  salutation: string | null;
   state: string | null;
   streetLine1: string | null;
   streetLine2: string | null;

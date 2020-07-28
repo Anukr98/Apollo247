@@ -262,12 +262,24 @@
       {
         "single": "capsule",
         "multiple": "capsule(s)"
+      },
+      {
+        "single": "sachet",
+        "multiple": "sachet(s)"
+      },
+      {
+        "single": "international unit",
+        "multiple": "international unit(s)"
+      },
+      {
+        "single": "teaspoon",
+        "multiple": "teaspoon(s)"
       }
     ]
   },
   "appointments": {
     "notifications_title": "NOTIFICATIONS",
-    "no_consults_scheduled": "No consults scheduled ",
+    "no_consults_scheduled": "No consults scheduled",
     "up_next": "UP NEXT: ",
     "new": "NEW",
     "appointment_will_reschedule": "This appointment will be rescheduled for",
@@ -283,7 +295,10 @@
     "upload_prescr_descr": " * Our pharmacist will dispense medicines only if the prescription is valid & it meets all government regulations.",
     "here_your_schedule": "here’s your schedule for",
     "block_Calendar": "Block Calendar",
-    "manage_calendar": "Manage Calendar"
+    "manage_calendar": "Manage Calendar",
+    "reload": "reload",
+    "reload_header": "There seemed to be a problem while loading your data. Please Retry by clicking on ",
+    "reload_header_cont": " below"
   },
   "need_help": {
     "need_help_q": "NEED HELP?",
@@ -329,7 +344,7 @@
     "total_revenue": "Total Revenue — Rs.",
     "consult": "Consult",
     "cancel_consult": "Cancel Consult",
-    "end_cancel_consult": "End or Cancel Consult"
+    "end_cancel_consult": "Cancel Consult"
   },
   "transfer_consult": {
     "transfer_consult": "TRANSFER CONSULT",
@@ -393,8 +408,8 @@
     "search": "Search",
     "family_history": "Family History",
     "allergies": "Allergies",
-    "hello_dr": "hello",
-    "here_are_all_patients": "here are all your patients",
+    "hello_dr": "Hello",
+    "here_are_all_patients": "Here are all your patients",
     "sort_by": "SORT BY",
     "symptoms": "Symptoms",
     "patients_medi_family_history": "Patient’s Medical & Family History",
@@ -420,6 +435,7 @@
     "audio_call_ended": "Audio call ended",
     "video_call_ended": "Video call ended",
     "calling": "CALLING",
+    "initialize": "INITIALIZING",
     "how_do_you_talk": "How do you want to talk to the patient?",
     "please_start_consultation": "Please start the consultation",
     "tap_to_return_call": "Tap to return to call",
@@ -449,5 +465,20 @@
     "enter_instruction_here": "Enter instructions here..",
     "instruction_label": "Instructions (if any)",
     "please_select_feilds": "Please select all fields"
+  },
+  "toastMessages": {
+    "error": "Something went wrong!! Trying to connect",
+    "fallback": "Falling back to audio due to bad network",
+    "reconnecting": "There is a problem with network connection. Reconnecting, Please wait...",
+    "videoBack": "Network improved switching back to video",
+    "reconnected": "Reconnected",
+    "callDisconnected": "Call disconnected due to Network issues at the Patient side"
+  },
+  "patientsSearch": {
+    "searchBody": "Search results will be displayed here ...",
+    "noPatientText1": "No patient records could be found for",
+    "noPatientText2": "Please try checking your spelling or use another term.",
+    "searchResult": "Search results with “{0}”",
+    "searchCharLimit": "Enter atleast 3 characters to search."
   }
 }

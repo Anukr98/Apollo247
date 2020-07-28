@@ -889,6 +889,7 @@ export const GET_CASESHEET = gql`
         notes
         version
         prescriptionGeneratedDate
+        updatedDate
       }
       pastAppointments {
         id
@@ -1209,6 +1210,7 @@ export const MODIFY_CASESHEET = gql`
       }
       status
       sentToPatient
+      updatedDate
     }
   }
 `;

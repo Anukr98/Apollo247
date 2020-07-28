@@ -89,4 +89,8 @@ export const viewStyles = {
     color: colors.APP_YELLOW,
     lineHeight: 24,
   },
+  imagePlaceholderStyle: {
+    backgroundColor: '#eee',
+    borderRadius: 5,
+  },
 };

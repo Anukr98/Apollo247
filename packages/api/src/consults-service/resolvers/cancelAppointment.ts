@@ -24,8 +24,9 @@ import { CaseSheetRepository } from 'consults-service/repositories/caseSheetRepo
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { FacilityRepository } from 'doctors-service/repositories/facilityRepository';
 import { AdminDoctorMap } from 'doctors-service/repositories/adminDoctorRepository';
-import { initiateRefund, PaytmResponse } from 'consults-service/helpers/refundHelper';
+import { initiateRefund } from 'consults-service/helpers/refundHelper';
 import { log } from 'customWinstonLogger';
+import { PaytmResponse } from 'types/refundHelperTypes';
 
 export const cancelAppointmentTypeDefs = gql`
   input CancelAppointmentInput {
@@ -110,8 +111,10 @@ const cancelAppointment: Resolver<
     cancelAppointmentInput.appointmentId,
     cancelAppointmentInput.cancelledBy,
     cancelAppointmentInput.cancelledById,
-    cancelAppointmentInput.cancelReason
+    cancelAppointmentInput.cancelReason,
+    appointment
   );
+
   if (
     appointment.appointmentPayments.length &&
     appointment.appointmentPayments[0].amountPaid >= 1
@@ -185,6 +188,8 @@ const cancelAppointment: Resolver<
       cancelAppointmentInput.cancelledBy == 'PATIENT'
         ? appointment.patientId
         : appointment.doctorId,
+    fromState: appointment.appointmentState,
+    toState: appointment.appointmentState,
     reason: cancelAppointmentInput.cancelReason,
   };
   appointmentRepo.saveAppointmentHistory(historyAttrs);

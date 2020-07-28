@@ -2,7 +2,7 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
-import { DoctorType, Gender, DOCTOR_ONLINE_STATUS, Salutation } from "./globalTypes";
+import { DoctorType, Gender, DOCTOR_ONLINE_STATUS } from "./globalTypes";
 
 // ====================================================
 // GraphQL mutation operation: AddSecretary
@@ -55,7 +55,7 @@ export interface AddSecretary_addSecretary_doctor {
   onlineStatus: DOCTOR_ONLINE_STATUS;
   photoUrl: string | null;
   qualification: string | null;
-  salutation: Salutation | null;
+  salutation: string | null;
   state: string | null;
   streetLine1: string | null;
   streetLine2: string | null;

@@ -5,7 +5,7 @@ export interface MedicineProduct {
   description: string;
   id: number;
   category_id: string;
-  image: string | null;
+  image: string[];
   is_in_stock: 0 | 1;
   is_prescription_required: '0' | '1'; //1 for required
   name: string;
@@ -19,6 +19,7 @@ export interface MedicineProduct {
   mou: string; // minimum order unit
   manufacturer: string;
   PharmaOverview: PharmaOverview[];
+  MaxOrderQty: number;
 }
 
 export type Doseform = 'TABLET' | 'INJECTION' | 'SYRUP' | '';
@@ -115,6 +116,12 @@ export interface GetStoreInventoryResponse {
   }[];
 }
 
+export interface TatApiInput {
+  postalcode: string;
+  ordertype: 'pharma' | 'fmcg' | 'both';
+  lookup: { sku: string; qty: number }[];
+}
+
 export interface GetDeliveryTimeResponse {
   tat: {
     artCode: string;
@@ -123,6 +130,15 @@ export interface GetDeliveryTimeResponse {
   }[];
   errorMSG?: string;
 }
+
+export interface GetDeliveryTimeHeaderTatResponse {
+  tat?: {
+    deliverydate: string; // format: 16-Jul-2020 20:00
+    siteId: string;
+  }[];
+  errorMSG?: string;
+}
+
 interface MedCartItemsDetailsResponse {
   productdp: MedicineProduct[];
 }
@@ -506,11 +522,9 @@ export const autoCompletePlaceSearch = (
 
 let cancelGetDeliveryTimeApi: Canceler | undefined;
 
-export const getDeliveryTime = (params: {
-  postalcode: string;
-  ordertype: 'pharma' | 'fmcg' | 'both';
-  lookup: { sku: string; qty: number }[];
-}): Promise<AxiosResponse<GetDeliveryTimeResponse>> => {
+export const getDeliveryTime = (
+  params: TatApiInput
+): Promise<AxiosResponse<GetDeliveryTimeResponse>> => {
   const CancelToken = Axios.CancelToken;
   cancelGetDeliveryTimeApi && cancelGetDeliveryTimeApi();
   return Axios.post(config.GET_DELIVERY_TIME[0], params, {
@@ -521,6 +535,25 @@ export const getDeliveryTime = (params: {
     cancelToken: new CancelToken((c) => {
       // An executor function receives a cancel function as a parameter
       cancelGetDeliveryTimeApi = c;
+    }),
+  });
+};
+
+let cancelDeliveryTimeHeaderTatApi: Canceler | undefined;
+
+export const getDeliveryTimeHeaderTat = (
+  params: TatApiInput
+): Promise<AxiosResponse<GetDeliveryTimeResponse>> => {
+  const CancelToken = Axios.CancelToken;
+  cancelDeliveryTimeHeaderTatApi && cancelDeliveryTimeHeaderTatApi();
+  return Axios.post(config.GET_DELIVERY_TIME_HEADER_TAT[0], params, {
+    headers: {
+      Authentication: config.GET_DELIVERY_TIME_HEADER_TAT[1],
+    },
+    timeout: config.TAT_API_TIMEOUT_IN_SEC * 1000,
+    cancelToken: new CancelToken((c) => {
+      // An executor function receives a cancel function as a parameter
+      cancelDeliveryTimeHeaderTatApi = c;
     }),
   });
 };

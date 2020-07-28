@@ -9,6 +9,7 @@ import { PatientRepository } from 'profiles-service/repositories/patientReposito
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { DoctorPatientExternalConnectRepository } from 'doctors-service/repositories/DoctorPatientExternalConnectRepository';
+import { addHours } from 'date-fns';
 
 export const getAppointmentOverviewTypeDefs = gql`
   type AppointmentList {
@@ -34,13 +35,18 @@ export const getAppointmentOverviewTypeDefs = gql`
     count: Int
     completedCount: Int
     yesCount: Int
+    noCount: Int
   }
   extend type Query {
     getAppointmentOverview(
       appointmentOverviewInput: GetAllDoctorAppointmentsInput
     ): GetAppointmentOverviewResult!
     getAppointmentByPaymentOrderId(orderId: String): AppointmentList
-    getPastAppointmentsCount(doctorId: String!, patientId: String!): PastAppointmentsCountResult!
+    getPastAppointmentsCount(
+      doctorId: String!
+      patientId: String!
+      appointmentId: String
+    ): PastAppointmentsCountResult!
   }
   extend type Mutation {
     updatePaymentOrderId(
@@ -77,6 +83,7 @@ type PastAppointmentsCountResult = {
   count: number;
   completedCount: number;
   yesCount: number;
+  noCount: number;
 };
 
 const getRepos = ({ consultsDb, doctorsDb, patientsDb }: ConsultServiceContext) => ({
@@ -103,30 +110,35 @@ const getAppointmentOverview: Resolver<
     },
     order: { appointmentDateTime: 'DESC' },
   });
-  const completedAppointments = await apptRepo.getCompletedAppointments(
-    doctorId,
-    fromDate,
-    toDate,
-    0
-  );
-  const cannceldAppointments = await apptRepo.getCompletedAppointments(
-    doctorId,
-    fromDate,
-    toDate,
-    1
-  );
-  const doctorAway = await apptRepo.getDoctorAway(doctorId, fromDate, toDate);
-  const inNextHour = await apptRepo.getAppointmentsInNextHour(doctorId);
+  let completedAppointments = 0;
+  let cancelledAppointments = 0;
+  let inNextHour = 0;
+  const doctorAway = allAppointments.length;
 
+  // updating the count for appointments
+  for (let i = 0; i < allAppointments.length; i++) {
+    const { status, appointmentDateTime } = allAppointments[i];
+    const now = new Date();
+    const nextHr = addHours(now, 1);
+    if (status && status == STATUS.COMPLETED) {
+      completedAppointments++;
+    } else if (status && status == STATUS.CANCELLED) {
+      cancelledAppointments++;
+    }
+    if (appointmentDateTime && appointmentDateTime >= now && appointmentDateTime <= nextHr) {
+      inNextHour++;
+    }
+  }
   const appointments = await Promise.all(
-    allAppointments.map(async (appointment) => {
+    allAppointments.map((appointment) => {
       return { appointment };
     })
   );
+
   const appointmentOverviewOutput = {
     appointments,
     completed: completedAppointments,
-    cancelled: cannceldAppointments,
+    cancelled: cancelledAppointments,
     upcoming: inNextHour,
     doctorAway: doctorAway,
   };
@@ -171,10 +183,10 @@ const getAppointmentByPaymentOrderId: Resolver<
 
 const getPastAppointmentsCount: Resolver<
   null,
-  { doctorId: string; patientId: string },
+  { doctorId: string; patientId: string; appointmentId: string },
   ConsultServiceContext,
   PastAppointmentsCountResult
-> = async (parent, { doctorId, patientId }, context) => {
+> = async (parent, { doctorId, patientId, appointmentId }, context) => {
   if (!doctorId) throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID, undefined, {});
   if (!patientId) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   const { apptRepo } = getRepos(context);
@@ -183,8 +195,17 @@ const getPastAppointmentsCount: Resolver<
   const externalConnectRepo = context.doctorsDb.getCustomRepository(
     DoctorPatientExternalConnectRepository
   );
+  let apptId = '';
+  if (appointmentId) {
+    apptId = appointmentId;
+  }
   const yesCount = await externalConnectRepo.findCountDoctorAndPatient(doctorId, patientId);
-  return { count, completedCount, yesCount };
+  const noCount = await externalConnectRepo.findNoCountDoctorAndPatient(
+    doctorId,
+    patientId,
+    apptId
+  );
+  return { count, completedCount, yesCount, noCount };
 };
 
 export const getAppointmentOverviewResolvers = {

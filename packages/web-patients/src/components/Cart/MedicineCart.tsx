@@ -1,9 +1,23 @@
 import React, { useState, useEffect, useContext, useRef } from 'react';
 import { makeStyles } from '@material-ui/styles';
-import { Popover, Theme, Typography, Tabs, Tab, CircularProgress } from '@material-ui/core';
+import {
+  Popover,
+  Theme,
+  Typography,
+  Tabs,
+  Tab,
+  CircularProgress,
+  FormControlLabel,
+} from '@material-ui/core';
 import { PaymentStatusModal } from 'components/Cart/PaymentStatusModal';
 import Scrollbars from 'react-custom-scrollbars';
-import { AphButton, AphDialog, AphDialogTitle, AphDialogClose } from '@aph/web-ui-components';
+import {
+  AphButton,
+  AphDialog,
+  AphDialogTitle,
+  AphDialogClose,
+  AphRadio,
+} from '@aph/web-ui-components';
 import { HomeDelivery } from 'components/Locations/HomeDelivery';
 import { StorePickUp } from 'components/Locations/StorePickUp';
 import { Checkout } from 'components/Cart/Checkout';
@@ -35,7 +49,7 @@ import {
   CODCity,
   PRISM_DOCUMENT_CATEGORY,
 } from 'graphql/types/globalTypes';
-import { useAllCurrentPatients, useAuth, useCurrentPatient } from 'hooks/authHooks';
+import { useAllCurrentPatients, useCurrentPatient } from 'hooks/authHooks';
 import { PrescriptionCard } from 'components/Prescriptions/PrescriptionCard';
 import { useMutation } from 'react-apollo-hooks';
 import { MedicineListingCard } from 'components/Medicine/MedicineListingCard';
@@ -49,7 +63,13 @@ import { savePrescriptionMedicineOrderOMSVariables } from '../../graphql/types/s
 import { SAVE_PRESCRIPTION_MEDICINE_ORDER_OMS } from 'graphql/medicines';
 import moment from 'moment';
 import { Alerts } from 'components/Alerts/Alerts';
-import { uploadPrescriptionTracking } from '../../webEngageTracking';
+import {
+  uploadPrescriptionTracking,
+  pharmacyCartViewTracking,
+  pharmacyProceedToPayTracking,
+  pharmacySubmitPrescTracking,
+  pharmacyUploadPresClickTracking,
+} from '../../webEngageTracking';
 import { ChennaiCheckout, submitFormType } from 'components/Cart/ChennaiCheckout';
 import { OrderPlaced } from 'components/Cart/OrderPlaced';
 import { useParams } from 'hooks/routerHooks';
@@ -548,6 +568,20 @@ const useStyles = makeStyles((theme: Theme) => {
       border: 'solid 1px #890000',
       padding: '4px 10px',
     },
+    radioContainer: {
+      padding: '15px 20px 15px 30px',
+      background: '#fff',
+      boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.2)',
+      borderRadius: 5,
+      '& label': {
+        width: '100%',
+        '& span': {
+          '&:last-child': {
+            fontWeight: 600,
+          },
+        },
+      },
+    },
   };
 });
 
@@ -572,6 +606,10 @@ export const MedicineCart: React.FC = (props) => {
     couponCode,
     setCouponCode,
     updateCartItemPrice,
+    prescriptionOptionSelected,
+    durationDays,
+    prescriptionDuration,
+    clearCartInfo,
   } = useShoppingCart();
 
   const addToCartRef = useRef(null);
@@ -584,7 +622,7 @@ export const MedicineCart: React.FC = (props) => {
   );
 
   const urlParams = new URLSearchParams(window.location.search);
-  const nonCartFlow = urlParams.get('prescription') ? urlParams.get('prescription') : false;
+  const nonCartFlow = urlParams.get('prescription') === 'true';
 
   const [tabValue, setTabValue] = useState<number>(0);
   const [isUploadPreDialogOpen, setIsUploadPreDialogOpen] = React.useState<boolean>(false);
@@ -822,10 +860,14 @@ export const MedicineCart: React.FC = (props) => {
                 setErrorMessage(
                   'Coupon not applicable on your cart item(s) or item(s) with already higher discounts'
                 );
+                localStorage.removeItem('pharmaCoupon');
+                setCouponCode && setCouponCode('');
               }
             } else {
               setValidateCouponResult(null);
               setErrorMessage(couponValidateResult.reasonForInvalidStatus);
+              localStorage.removeItem('pharmaCoupon');
+              setCouponCode && setCouponCode('');
             }
           }
         })
@@ -850,7 +892,7 @@ export const MedicineCart: React.FC = (props) => {
         medicineCartOMSInput: {
           quoteId: '',
           patientId: currentPatient ? currentPatient.id : '',
-          shopId: deliveryMode === 'HOME' ? '' : storeAddressId,
+          ...(storeAddressId && storeAddressId.length && { shopId: storeAddressId }),
           patientAddressId: deliveryMode === 'HOME' ? deliveryAddressId : '',
           medicineDeliveryType:
             deliveryMode === 'HOME'
@@ -949,7 +991,28 @@ export const MedicineCart: React.FC = (props) => {
           data.savePrescriptionMedicineOrderOMS &&
           data.savePrescriptionMedicineOrderOMS.orderAutoId
         ) {
-          window.location.href = clientRoutes.medicinesCartInfo('prescription', 'success');
+          prescriptions &&
+            prescriptions.length > 0 &&
+            pharmacySubmitPrescTracking({
+              orderId: data.savePrescriptionMedicineOrderOMS.orderAutoId,
+              deliveryType: deliveryAddressId
+                ? MEDICINE_DELIVERY_TYPE.HOME_DELIVERY
+                : MEDICINE_DELIVERY_TYPE.STORE_PICKUP,
+              storeId: '',
+              deliverAdd: deliveryAddressId,
+              pincode:
+                storePickupPincode && storePickupPincode.length === 6
+                  ? storePickupPincode
+                  : currentPincode,
+            });
+          if (prescriptionOptionSelected === 'duration') {
+            clearCartInfo();
+            setTimeout(() => {
+              window.location.href = clientRoutes.medicines();
+            }, 3000);
+          } else {
+            window.location.href = clientRoutes.medicinesCartInfo('prescription', 'success');
+          }
         } else {
           setIsAlertOpen(true);
           setAlertMessage('Something went wrong, please try later.');
@@ -1005,20 +1068,26 @@ export const MedicineCart: React.FC = (props) => {
     const ePresPrismIds =
       ePrescriptionData &&
       ePrescriptionData.map((item) => item.prismPrescriptionFileId).filter((i) => i);
+    const updatedPrescriptionOptionSelected =
+      prescriptionOptionSelected === 'specified'
+        ? prescriptionDuration === 'prescription'
+          ? 'Need all medicine and for duration as per prescription'
+          : `Need all medicine as per prescription for ${durationDays} days`
+        : 'Call me for details';
     if (prescriptions && prescriptions.length > 0) {
       uploadMultipleFiles(prescriptions)
         .then((data) => {
           const uploadUrlscheck = data.map(({ data }: any) =>
             data && data.uploadDocument && data.uploadDocument.status ? data.uploadDocument : null
           );
-          const filtered = uploadUrlscheck.filter(function (el) {
+          const filtered = uploadUrlscheck.filter(function(el) {
             return el != null;
           });
           const phyPresUrls = filtered.map((item) => item.filePath).filter((i) => i);
           const phyPresPrismIds = filtered.map((item) => item.fileId).filter((i) => i);
           const prescriptionMedicineOMSInput: savePrescriptionMedicineOrderOMSVariables = {
             prescriptionMedicineOMSInput: {
-              shopId: storeAddressId || '0',
+              ...(storeAddressId && storeAddressId.length && { shopId: storeAddressId }),
               patientId: (currentPatient && currentPatient.id) || '',
               bookingSource: BOOKING_SOURCE.WEB,
               medicineDeliveryType: deliveryAddressId
@@ -1029,6 +1098,8 @@ export const MedicineCart: React.FC = (props) => {
               prismPrescriptionFileId: [...phyPresPrismIds, ...ePresPrismIds].join(','),
               appointmentId: '',
               isEprescription: ePrescriptionData && ePrescriptionData.length ? 1 : 0, // if atleat one prescription is E-Prescription then pass it as one.
+              // durationDays: durationDays,
+              prescriptionOptionSelected: updatedPrescriptionOptionSelected,
               ...(chennaiOrderVariables && chennaiOrderVariables),
             },
           };
@@ -1043,7 +1114,7 @@ export const MedicineCart: React.FC = (props) => {
     } else {
       const prescriptionMedicineOMSInput: savePrescriptionMedicineOrderOMSVariables = {
         prescriptionMedicineOMSInput: {
-          shopId: storeAddressId || '0',
+          ...(storeAddressId && storeAddressId.length && { shopId: storeAddressId }),
           patientId: (currentPatient && currentPatient.id) || '',
           bookingSource: BOOKING_SOURCE.WEB,
           medicineDeliveryType: deliveryAddressId
@@ -1055,8 +1126,14 @@ export const MedicineCart: React.FC = (props) => {
           appointmentId: '',
           isEprescription: ePrescriptionData && ePrescriptionData.length ? 1 : 0, // if atleat one prescription is E-Prescription then pass it as one.
           ...(chennaiOrderVariables && chennaiOrderVariables),
+          prescriptionOptionSelected: updatedPrescriptionOptionSelected,
+          // durationDays:
+          //   prescriptionOptionSelected === 'specified' && prescriptionDuration === 'user'
+          //     ? durationDays
+          //     : null,
         },
       };
+      console.log('prescriptionMedicineOMSInput', prescriptionMedicineOMSInput);
       submitPrescriptionMedicineOrder(prescriptionMedicineOMSInput);
     }
   };
@@ -1069,6 +1146,42 @@ export const MedicineCart: React.FC = (props) => {
     }
     paymentMutation().then(({ data }: any) => {
       if (data && data.saveMedicineOrderOMS) {
+        /**Gtm code start  */
+        let ecommItems: any[] = [];
+        cartItems.map((items, key) => {
+          ecommItems.push({
+            item_name: items.name,
+            item_id: items.sku,
+            price: items.price,
+            item_category: 'Pharmacy',
+            item_category_2: items.type_id
+              ? items.type_id.toLowerCase() === 'pharma'
+                ? 'Drugs'
+                : 'FMCG'
+              : null,
+            // 'item_category_4': '', // for future
+            item_variant: 'Default',
+            index: key + 1,
+            quantity: items.quantity,
+          });
+        });
+        _obTracking({
+          userLocation: localStorage.getItem('pharmaAddress') || '',
+          paymentType: 'COD',
+          itemCount: cartItems ? cartItems.length : 0,
+          couponCode: couponCode ? couponCode : null,
+          couponValue:
+            validateCouponResult && validateCouponResult.discountedTotals
+              ? validateCouponResult.discountedTotals.couponDiscount.toFixed(2)
+              : 0,
+          finalBookingValue: totalWithCouponDiscount,
+          ecommObj: {
+            ecommerce: {
+              items: ecommItems,
+            },
+          },
+        });
+        /**Gtm code end  */
         const { orderId, orderAutoId, errorMessage } = data.saveMedicineOrderOMS;
         if (orderAutoId && orderAutoId > 0) {
           placeOrder(orderId, orderAutoId, true, dataObj.userEmail);
@@ -1092,6 +1205,7 @@ export const MedicineCart: React.FC = (props) => {
 
   const handleUploadPrescription = () => {
     uploadPrescriptionTracking({ ...patient, age });
+    pharmacyUploadPresClickTracking('Cart');
     setIsUploadPreDialogOpen(true);
   };
 
@@ -1103,7 +1217,6 @@ export const MedicineCart: React.FC = (props) => {
       zipCodeInt === 603211
     );
   };
-  const { city } = useLocationDetails();
 
   useEffect(() => {
     /**Gtm code start  */
@@ -1116,6 +1229,9 @@ export const MedicineCart: React.FC = (props) => {
       });
     }
     /**Gtm code  End */
+    if (cartItems && cartItems.length > 0 && !nonCartFlow) {
+      pharmacyCartViewTracking(cartItems.length);
+    }
   }, [cartTotal]);
 
   return (
@@ -1162,7 +1278,7 @@ export const MedicineCart: React.FC = (props) => {
                       <div className={classes.uploadedPreList}>
                         {prescriptions &&
                           prescriptions.length > 0 &&
-                          prescriptions.map((prescriptionDetails, index) => {
+                          prescriptions.map((prescriptionDetails) => {
                             const fileName = prescriptionDetails.name;
                             const imageUrl = prescriptionDetails.imageUrl;
                             return (
@@ -1172,7 +1288,8 @@ export const MedicineCart: React.FC = (props) => {
                                 removePrescription={(fileName: string) =>
                                   removeImagePrescription(fileName)
                                 }
-                                key={index}
+                                key={prescriptionDetails.name}
+                                readOnly={nonCartFlow}
                               />
                             );
                           })}
@@ -1180,18 +1297,22 @@ export const MedicineCart: React.FC = (props) => {
                           ePrescriptionData.length > 0 &&
                           ePrescriptionData.map((prescription: EPrescription) => (
                             <EPrescriptionCard
+                              key={prescription.id}
                               prescription={prescription}
                               removePrescription={removePrescription}
+                              readOnly={nonCartFlow}
                             />
                           ))}
-                        <div className={classes.uploadMore}>
-                          <AphButton
-                            disabled={uploadingFiles || mutationLoading}
-                            onClick={() => handleUploadPrescription()}
-                          >
-                            Upload More
-                          </AphButton>
-                        </div>
+                        {!nonCartFlow && (
+                          <div className={classes.uploadMore}>
+                            <AphButton
+                              disabled={uploadingFiles || mutationLoading}
+                              onClick={() => handleUploadPrescription()}
+                            >
+                              Upload More
+                            </AphButton>
+                          </div>
+                        )}
                       </div>
                     ) : uploadPrescriptionRequired >= 0 ? (
                       <div className={classes.uploadPrescription}>
@@ -1291,6 +1412,22 @@ export const MedicineCart: React.FC = (props) => {
                     )}
                   </div>
                 </div>
+                {nonCartFlow && (
+                  <>
+                    <div className={`${classes.sectionHeader} ${classes.topHeader}`}>
+                      <span>payment option</span>
+                    </div>
+                    <div className={classes.radioContainer}>
+                      <FormControlLabel
+                        checked={true}
+                        value={'CASH_ON_DELIVERY'}
+                        control={<AphRadio color="primary" />}
+                        label={'Cash On Delivery'}
+                        onChange={() => {}}
+                      />
+                    </div>
+                  </>
+                )}
               </>
             )}
             {cartItems && cartItems.length > 0 && !nonCartFlow && currentPatient && (
@@ -1443,6 +1580,9 @@ export const MedicineCart: React.FC = (props) => {
                     const zipCodeInt = parseInt(selectedZip);
 
                     if (cartItems && cartItems.length > 0 && !nonCartFlow) {
+                      if (prescriptions && prescriptions.length > 0) {
+                        uploadMultipleFiles(prescriptions);
+                      }
                       if (
                         checkForCartChanges().then((res) => {
                           if (res) {
@@ -1483,6 +1623,19 @@ export const MedicineCart: React.FC = (props) => {
                       }
                       onPressSubmit();
                     }
+                    pharmacyProceedToPayTracking({
+                      totalItems: cartItems.length,
+                      serviceArea: 'Pharmacy',
+                      subTotal: mrpTotal,
+                      deliveryCharge: deliveryCharges,
+                      netAfterDiscount: totalWithCouponDiscount,
+                      isPrescription:
+                        ePrescriptionData && ePrescriptionData.length > 0 ? true : false,
+                      cartId: '',
+                      deliveryMode,
+                      deliveryDateTime: deliveryTime,
+                      pincode: currentPincode,
+                    });
                   }}
                   color="primary"
                   fullWidth
@@ -1511,7 +1664,7 @@ export const MedicineCart: React.FC = (props) => {
                   ) : uploadingFiles ? (
                     <CircularProgress size={22} color="secondary" />
                   ) : (
-                    'Submit Prescription'
+                    'Place order'
                   )}
                 </AphButton>
               )}

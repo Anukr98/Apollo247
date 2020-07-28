@@ -278,7 +278,6 @@ export const OrderStatusContent: React.FC<OrderStatusDetail> = (props) => {
     ctaText,
     fetchConsultInvoice,
   } = props;
-
   interface statusMap {
     [name: string]: string;
   }
@@ -286,6 +285,7 @@ export const OrderStatusContent: React.FC<OrderStatusDetail> = (props) => {
     success: 'PAYMENT SUCCESSFUL',
     failed: 'PAYMENT FAILED',
     pending: 'PAYMENT PENDING',
+    aborted: 'PAYMENT ABORTED',
   };
 
   const doctorAddressDetail =
@@ -307,7 +307,7 @@ export const OrderStatusContent: React.FC<OrderStatusDetail> = (props) => {
           className={`${classes.statusCard} ${
             paymentStatus == 'pending'
               ? classes.pending
-              : paymentStatus == 'failed'
+              : paymentStatus == 'failed' || paymentStatus === 'aborted'
               ? classes.failed
               : paymentStatus == 'success'
               ? classes.success

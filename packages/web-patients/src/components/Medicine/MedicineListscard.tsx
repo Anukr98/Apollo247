@@ -228,6 +228,7 @@ export const MedicineListscard: React.FC<MedicineListscardProps> = (props) => {
                             onChange={(e: React.ChangeEvent<{ value: any }>) => {
                               updateCartItemQty &&
                                 updateCartItemQty({
+                                  MaxOrderQty: medicine.MaxOrderQty,
                                   url_key: medicine.url_key,
                                   description: medicine.description,
                                   id: medicine.id,
@@ -285,7 +286,7 @@ export const MedicineListscard: React.FC<MedicineListscardProps> = (props) => {
                                         {
                                           item_name: medicine.name,
                                           item_id: medicine.sku,
-                                          price: medicine.price,
+                                          price: medicine.special_price || medicine.price,
                                           item_category: 'Pharmacy',
                                           item_variant: 'Default',
                                           index: 1,
@@ -309,6 +310,7 @@ export const MedicineListscard: React.FC<MedicineListscardProps> = (props) => {
                             src={require('images/ic_plus.svg')}
                             onClick={() => {
                               const cartItem: MedicineCartItem = {
+                                MaxOrderQty: medicine.MaxOrderQty,
                                 url_key: medicine.url_key,
                                 description: medicine.description,
                                 id: medicine.id,
@@ -340,7 +342,7 @@ export const MedicineListscard: React.FC<MedicineListscardProps> = (props) => {
                                       {
                                         item_name: medicine.name,
                                         item_id: medicine.sku,
-                                        price: medicine.price,
+                                        price: medicine.special_price || medicine.price,
                                         item_category: 'Pharmacy',
                                         item_category_2: medicine.type_id
                                           ? medicine.type_id.toLowerCase() === 'pharma'
