@@ -73,6 +73,11 @@ export const getAppointmentHistoryTypeDefs = gql`
     appointmentsHistory: [AppointmentHistory!]
   }
 
+  type AppointmentStatusResult {
+    status: String
+    state: String
+  }
+
   type DoctorAppointmentResult {
     appointmentsHistory: [AppointmentHistory]
     newPatientsList: [String]
@@ -99,6 +104,7 @@ export const getAppointmentHistoryTypeDefs = gql`
 
   extend type Query {
     getAppointmentHistory(appointmentHistoryInput: AppointmentHistoryInput): AppointmentResult!
+    getAppointmentStatus(consultID: String): AppointmentStatusResult
     getDoctorAppointments(startDate: Date, endDate: Date, doctorId: String): DoctorAppointmentResult
     getAppointmentData(appointmentId: String): DoctorAppointmentResult
     getPatientLog(
@@ -165,10 +171,10 @@ const getAppointmentHistory: Resolver<
   ConsultServiceContext,
   AppointmentResult
 > = async (parent, { appointmentHistoryInput }, { consultsDb, doctorsDb, patientsDb }) => {
+  const { patientId } = appointmentHistoryInput;
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
-  const primaryPatientIds = await patientRepo.getLinkedPatientIds(
-    appointmentHistoryInput.patientId
+  const primaryPatientIds = await patientRepo.getLinkedPatientIds({ patientId }
   );
 
   const appointmentsHistory = await appointmentRepo.getPatientAppointments(
@@ -194,6 +200,31 @@ const getAppointmentHistory: Resolver<
   }
 
   return { appointmentsHistory };
+};
+
+type AppointmentStatusResult = {
+  status: string;
+  state: string;
+}
+
+const getAppointmentStatus: Resolver<
+  null,
+  { id: string; },
+  ConsultServiceContext,
+  AppointmentStatusResult
+> = async (parent, args, { consultsDb, doctorsDb, mobileNumber }) => {
+  const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
+  let appointment;
+  try {
+    appointment = await appointmentRepo.findById(
+      args.id
+    );
+    if (appointment == null) throw new AphError(AphErrorMessages.APPOINTMENT_ID_NOT_FOUND);
+  } catch (invalidGrant) {
+    throw new AphError(AphErrorMessages.GET_APPOINTMENT_STATUS_ERROR, undefined, { invalidGrant });
+  }
+
+  return { status: appointment.status, state: appointment.appointmentState };
 };
 
 const getDoctorAppointments: Resolver<
@@ -375,7 +406,6 @@ export const getAppointmentHistoryResolvers = {
       return { __typename: 'Patient', id: appointments.patientId };
     },
   },
-
   PatientLog: {
     patientInfo(appointments: PatientLog) {
       return { __typename: 'Patient', id: appointments.patientid };
@@ -384,6 +414,7 @@ export const getAppointmentHistoryResolvers = {
 
   Query: {
     getAppointmentHistory,
+    getAppointmentStatus,
     getDoctorAppointments,
     getAppointmentData,
     getPatientLog,

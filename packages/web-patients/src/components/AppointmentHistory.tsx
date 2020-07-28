@@ -238,9 +238,8 @@ export const AppointmentHistory: React.FC<AppointmentHistoryProps> = (props) => 
   return appointmentHistory && appointmentHistory.length > 0 ? (
     <div className={classes.sectionGroup}>
       <div className={classes.sectionHeader}>
-        <span>{`Appointment History (${
-          (appointmentHistory && appointmentHistory.length) || 0
-        })`}</span>
+        <span>{`Appointment History (${(appointmentHistory && appointmentHistory.length) ||
+          0})`}</span>
       </div>
       <Slider {...sliderSettings}>
         {appointmentHistory.map((appointment) => {

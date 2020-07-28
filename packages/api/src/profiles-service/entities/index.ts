@@ -12,12 +12,21 @@ import {
   Index,
   AfterUpdate,
   AfterInsert,
+  AfterLoad,
+  EventSubscriber,
+  EntitySubscriberInterface,
+  InsertEvent,
+  UpdateEvent,
+  RemoveEvent
 } from 'typeorm';
 import { Validate, IsOptional } from 'class-validator';
 import { NameValidator, MobileNumberValidator } from 'validators/entityValidators';
 import { ConsultMode } from 'doctors-service/entities';
-import { delCache } from 'profiles-service/database/connectRedis';
-import { log } from 'customWinstonLogger';
+import { BlockUserPointsResponse } from 'types/oneApolloTypes';
+import { getCache, setCache, delCache } from 'profiles-service/database/connectRedis';
+import { ApiConstants } from 'ApiConstants';
+import { log } from 'customWinstonLogger'
+import { LoadEvent } from 'typeorm/subscriber/event/LoadEvent';
 
 export type ONE_APOLLO_USER_REG = {
   FirstName: string;
@@ -27,12 +36,6 @@ export type ONE_APOLLO_USER_REG = {
   BusinessUnit: string;
   StoreCode: string;
 };
-
-export enum ONE_APOLLO_STORE_CODE {
-  ANDCUS = 'ANDCUS',
-  IOSCUS = 'IOSCUS',
-  WEBCUS = 'WEBCUS',
-}
 
 export enum ONE_APOLLO_PRODUCT_CATEGORY {
   PRIVATE_LABEL = 'A247',
@@ -294,6 +297,20 @@ export enum OTP_STATUS {
   EXPIRED = 'EXPIRED',
   BLOCKED = 'BLOCKED',
 }
+// REDUND and PAYTM STATUS also same defined in consults-service
+export enum REFUND_STATUS {
+  REFUND_REQUEST_RAISED = 'REFUND_REQUEST_RAISED',
+  REFUND_FAILED = 'REFUND_FAILED',
+  REFUND_SUCCESSFUL = 'REFUND_SUCCESSFUL',
+  REFUND_REQUEST_NOT_RAISED = 'REFUND_REQUEST_NOT_RAISED',
+}
+
+export enum PAYTM_STATUS {
+  TXN_FAILURE = 'TXN_FAILURE',
+  PENDING = 'PENDING',
+  TXN_SUCCESS = 'TXN_SUCCESS',
+  PAYMENT_ABORTED = 'PAYMENT_ABORTED',
+}
 
 enum customerTypeInCoupons {
   FIRST = 'FIRST',
@@ -312,9 +329,53 @@ type updateValidationField = {
   dbValue: string | null
 }
 
+
+
+@EventSubscriber()
+export class PostSubscriber implements EntitySubscriberInterface<BaseEntity> {
+  afterLoad(entity: ApolloEntity, event?: LoadEvent<BaseEntity>) {
+    console.log(`AfterLoad worked `);
+    entity.setOldRecordReference(entity);
+  }
+
+  // afterUpdate(event: UpdateEvent<BaseEntity>): Promise<any> | void {
+  //   console.log('afterUpdate: removing entity from map');
+  //   const entity: BaseEntity = event.entity;
+  //   const id: string = BaseEntity.getId(entity);
+  //   this.entityMapById.delete(id);
+  // }
+
+  // afterRemove(event: RemoveEvent<BaseEntity>): Promise<any> | void {
+  //   console.log('afterRemove: removing entity from map');
+  //   if (event.entity) {
+  //     const id: string = BaseEntity.getId(event.entity);
+  //     this.entityMapById.delete(id);
+  //   }
+  // }
+
+  // afterInsert?(event: InsertEvent<BaseEntity>): Promise<any> | void {
+  //   console.log('afterInsert: removing entity from map');
+  //   const entity: BaseEntity = event.entity;
+  //   const id: string = BaseEntity.getId(entity);
+  //   this.entityMapById.delete(id);
+  // }
+}
+
+export class ApolloEntity extends BaseEntity {
+  old: BaseEntity;
+  public setOldRecordReference(entity: BaseEntity): void {
+    this.old = entity;
+  }
+
+  public getLoadedRecord(): BaseEntity {
+    return this.old;
+  }
+}
+
+
 //medicine orders starts
 @Entity()
-export class MedicineOrders extends BaseEntity {
+export class MedicineOrders extends ApolloEntity {
   @Index()
   @Column({ nullable: true })
   apOrderNo: string;
@@ -476,12 +537,176 @@ export class MedicineOrders extends BaseEntity {
     (medicineOrderShipments) => medicineOrderShipments.medicineOrders
   )
   medicineOrderShipments: MedicineOrderShipments[];
+
+  @OneToMany(
+    (type) => MedicineOrderRefunds,
+    (medicineOrderRefunds) => medicineOrderRefunds.medicineOrders
+  )
+  medicineOrderRefunds: MedicineOrderRefunds[];
+
+  @OneToOne(
+    (type) => MedicineOrderAddress,
+    (medicineOrderAddress) => medicineOrderAddress.medicineOrders
+  )
+  medicineOrderAddress: MedicineOrderAddress;
 }
 //medicine orders ends
 
+//medicine order address starts
+@Entity()
+export class MedicineOrderAddress extends ApolloEntity {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column()
+  name: string;
+
+  @Column()
+  mobileNumber: string;
+
+  @Column({ nullable: true })
+  addressLine1: string;
+
+  @Column({ nullable: true })
+  addressLine2: string;
+
+  @Column({ nullable: true })
+  addressType: PATIENT_ADDRESS_TYPE;
+
+  @Column({ nullable: true })
+  city: string;
+
+  @Column({ nullable: true })
+  otherAddressType: string;
+
+  @Column({ nullable: true })
+  state: string;
+
+  @Column({ nullable: true })
+  zipcode: string;
+
+  @Column({ nullable: true })
+  landmark: string;
+
+  @Column({ type: 'float8', nullable: true })
+  latitude: number;
+
+  @Column({ type: 'float8', nullable: true })
+  longitude: number;
+
+  @Column({ nullable: true })
+  stateCode: string;
+
+  @OneToOne((type) => MedicineOrders, (medicineOrders) => medicineOrders.medicineOrderAddress)
+  @JoinColumn()
+  medicineOrders: MedicineOrders;
+
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
+  @Column({ type: 'timestamp', nullable: true })
+  updatedDate: Date;
+
+  @BeforeInsert()
+  updateDateCreation() {
+    this.createdDate = new Date();
+  }
+
+  @BeforeUpdate()
+  updateDateUpdate() {
+    this.updatedDate = new Date();
+  }
+}
+//medicine order address ends
+
+//Medicine Orders Refunds Start
+@Entity()
+export class MedicineOrderRefunds extends ApolloEntity {
+  @PrimaryGeneratedColumn('uuid')
+  refId: string;
+
+  @Column({ nullable: false })
+  txnId: string;
+
+  @Column('decimal', { precision: 10, scale: 5, nullable: false })
+  refundAmount: number;
+
+  @Column({ nullable: true })
+  totalRefundAmount: number;
+
+  @Column({ nullable: true, type: 'text' })
+  comments: string;
+
+  @Column('enum', {
+    nullable: false,
+    default: REFUND_STATUS.REFUND_REQUEST_NOT_RAISED,
+    enum: REFUND_STATUS,
+  })
+  refundStatus: REFUND_STATUS;
+
+  @Column('enum', { nullable: true, enum: PAYTM_STATUS })
+  paytmRequestStatus: PAYTM_STATUS;
+
+  @Column({ nullable: true })
+  refundId: string;
+
+  @Column({ nullable: true })
+  txnAmount: number;
+
+  @Column({ nullable: true })
+  txnTimestamp: Date;
+
+  @Column({ nullable: false })
+  orderId: string;
+
+  @Column({ nullable: true })
+  payMethod: string;
+
+  @Column({ nullable: true })
+  acceptRefundTimestamp: Date;
+
+  @Column({ nullable: true })
+  userCreditInitiateTimestamp: Date;
+
+  @Column({ nullable: true })
+  resultCode: string;
+
+  @Column({ type: 'text', nullable: true })
+  resultMsg: string;
+
+  @Column({ nullable: false, default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
+  @Column({ nullable: true, type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  updatedDate: Date;
+
+  @Column({
+    nullable: true,
+    type: 'jsonb',
+    array: false,
+    default: () => "'{}'",
+  })
+  refundDetailInfo: JSON;
+
+  @BeforeUpdate()
+  updateDateUpdate() {
+    this.updatedDate = new Date();
+  }
+
+  @ManyToOne(() => MedicineOrders, (medicineOrders) => medicineOrders.medicineOrderRefunds)
+  medicineOrders: MedicineOrders;
+
+  @ManyToOne(
+    () => MedicineOrderPayments,
+    (medicineOrderPayments) => medicineOrderPayments.medicineOrderRefunds
+  )
+  medicineOrderPayments: MedicineOrderPayments;
+}
+//Medicine Refunds ends
+
 //medicine orders  line items start
 @Entity()
-export class MedicineOrderLineItems extends BaseEntity {
+export class MedicineOrderLineItems extends ApolloEntity {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
 
@@ -545,7 +770,7 @@ export class MedicineOrderLineItems extends BaseEntity {
 
 //medicine orders  payments start
 @Entity()
-export class MedicineOrderPayments extends BaseEntity {
+export class MedicineOrderPayments extends ApolloEntity {
   @Column('decimal', { precision: 10, scale: 2, nullable: true })
   amountPaid: number;
 
@@ -585,9 +810,27 @@ export class MedicineOrderPayments extends BaseEntity {
   @Column({ nullable: true })
   responseMessage: string;
 
+  @Column({
+    nullable: true,
+    type: 'jsonb',
+    array: false,
+    name: 'healthCreditsRedemptionRequest',
+    default: () => "'{}'",
+  })
+  healthCreditsRedemptionRequest: Partial<BlockUserPointsResponse>;
+
+  @Column('decimal', { precision: 10, scale: 2, nullable: false, default: 0 })
+  healthCreditsRedeemed: number;
+
   @Index('MedicineOrderPayments_medicineOrderId')
   @ManyToOne((type) => MedicineOrders, (medicineOrders) => medicineOrders.medicineOrderPayments)
   medicineOrders: MedicineOrders;
+
+  @OneToMany(
+    (type) => MedicineOrderRefunds,
+    (medicineOrderRefunds) => medicineOrderRefunds.medicineOrderPayments
+  )
+  medicineOrderRefunds: MedicineOrderRefunds[];
 
   @Column({ nullable: true, type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   updatedDate: Date;
@@ -606,7 +849,7 @@ export class MedicineOrderPayments extends BaseEntity {
 
 //medicine orders status starts
 @Entity()
-export class MedicineOrdersStatus extends BaseEntity {
+export class MedicineOrdersStatus extends ApolloEntity {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
 
@@ -620,7 +863,6 @@ export class MedicineOrdersStatus extends BaseEntity {
   )
   medicineOrderShipments: MedicineOrderShipments;
 
-  @Index()
   @Column()
   orderStatus: MEDICINE_ORDER_STATUS;
 
@@ -656,7 +898,7 @@ export class MedicineOrdersStatus extends BaseEntity {
 
 //medicine orders invoice starts
 @Entity()
-export class MedicineOrderInvoice extends BaseEntity {
+export class MedicineOrderInvoice extends ApolloEntity {
   @Index()
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
@@ -718,7 +960,7 @@ export class MedicineOrderInvoice extends BaseEntity {
 
 //patient device tokens starts
 @Entity()
-export class PatientDeviceTokens extends BaseEntity {
+export class PatientDeviceTokens extends ApolloEntity {
   @Index('PatientDeviceTokens_PatientId')
   @ManyToOne((type) => Patient, (patient) => patient.patientDeviceTokens)
   patient: Patient;
@@ -756,7 +998,7 @@ export class PatientDeviceTokens extends BaseEntity {
 
 //patient Starts
 @Entity()
-export class Patient extends BaseEntity {
+export class Patient extends ApolloEntity {
   @Index()
   @Column({ default: null, nullable: true })
   deviceCode: string;
@@ -889,15 +1131,12 @@ export class Patient extends BaseEntity {
   @Column({ nullable: true })
   source: PROFILE_SOURCE;
 
-  @Index('Patient_isActive')
   @Column({ nullable: true, default: true })
   isActive: Boolean;
 
-  @Index('Patient_whatsAppConsult')
   @Column({ default: false })
   whatsAppConsult: Boolean;
 
-  @Index('Patient_whatsAppMedicine')
   @Column({ default: false })
   whatsAppMedicine: Boolean;
 
@@ -913,6 +1152,24 @@ export class Patient extends BaseEntity {
   @Column({ nullable: true })
   uhidCreatedDate: Date;
 
+  @BeforeInsert()
+  updateDateCreation() {
+    this.createdDate = new Date();
+  }
+
+  @BeforeUpdate()
+  updateDateUpdate() {
+    this.updatedDate = new Date();
+  }
+
+  //-----------------------------Custom checks for Non-null fields------------------------//
+  @BeforeUpdate()
+  async getCurrentPatientFromDb() {
+    let currentPatientFromDb: any = this.old;
+    console.log(`Old records: ${JSON.stringify(currentPatientFromDb)}`);;
+    this.checkNullsValidation(currentPatientFromDb);
+  }
+
   isUpdationAllowedAgainstCurrentValue(currentValue: any, incomingValue: any): Boolean {
     const updateAllowed: Boolean = currentValue ? Boolean(incomingValue && currentValue) : true;
     return updateAllowed;
@@ -927,22 +1184,6 @@ export class Patient extends BaseEntity {
     else {
       return true;
     }
-  }
-
-  @BeforeInsert()
-  updateDateCreation() {
-    this.createdDate = new Date();
-  }
-
-  @BeforeUpdate()
-  updateDateUpdate() {
-    this.updatedDate = new Date();
-  }
-
-  @BeforeUpdate()
-  async getCurrentPatientFromDb() {
-    let currentPatientFromDb: Patient = await Patient.findOne(this.id) || Patient.create();
-    this.checkNullsValidation(currentPatientFromDb);
   }
 
   checkNullsValidation(currentPatientFromDb: Patient) {
@@ -977,30 +1218,37 @@ export class Patient extends BaseEntity {
     }
   }
 
+  //*----------------------------------------------------------------------------------------------//
   @AfterInsert()
-  async dropPatientMobileCache() {
-    await delCache(`patient:mobile:${this.mobileNumber}`);
+  async updatePatientMobileCache() {
+    const mobileIdList: string | null = await getCache(`patient:mobile:${this.mobileNumber}`);
+    if (mobileIdList) {
+      const listOfId = `${mobileIdList},${this.id}`; //value of cache is comma saperated value of ids
+      await setCache(
+        `patient:mobile:${this.mobileNumber}`,
+        listOfId,
+        ApiConstants.CACHE_EXPIRATION_3600
+      );
+    }
   }
 
+  @AfterInsert()
   @AfterUpdate()
-  async dropPatientCache() {
-    console.log('testing drop petient cache');
-    await delCache(`patient:${this.id}`);
+  async setPatientCache() {
+    await setCache(`patient:${this.id}`, JSON.stringify(this), ApiConstants.CACHE_EXPIRATION_3600);
   }
 }
 //patient Ends
 
 //patient reg codes starts
 @Entity()
-export class RegistrationCodes extends BaseEntity {
+export class RegistrationCodes extends ApolloEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Index('RegistrationCodes_registrationCode')
   @Column()
   registrationCode: string;
 
-  @Index()
   @Column({ default: REGISTRATION_CODES_STATUS.NOT_SENT })
   codeStatus: REGISTRATION_CODES_STATUS;
 
@@ -1028,11 +1276,10 @@ export class RegistrationCodes extends BaseEntity {
 
 //searchHistory Starts
 @Entity()
-export class SearchHistory extends BaseEntity {
+export class SearchHistory extends ApolloEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Index()
   @Column()
   type: SEARCH_TYPE;
 
@@ -1057,7 +1304,7 @@ export class SearchHistory extends BaseEntity {
 
 //patientAddress Starts
 @Entity()
-export class PatientAddress extends BaseEntity {
+export class PatientAddress extends ApolloEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -1125,14 +1372,14 @@ export class PatientAddress extends BaseEntity {
   @AfterUpdate()
   async dropPatientAddressList() {
     await delCache(`address:list:patient:${this.patientId}`);
-    await delCache(`patient:${this.patientId}`);
   }
 }
 //patientAddress Ends
 
 //patient family history starts
+
 @Entity()
-export class PatientFamilyHistory extends BaseEntity {
+export class PatientFamilyHistory extends ApolloEntity {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
 
@@ -1165,17 +1412,13 @@ export class PatientFamilyHistory extends BaseEntity {
   updateDateUpdate() {
     this.updatedDate = new Date();
   }
-  @AfterInsert()
-  @AfterUpdate()
-  async dropPatientAddressList() {
-    await delCache(`patient:${this.patientId}`);
-  }
 }
 //patient family history ends
 
 //patientLifeStyle starts
+
 @Entity()
-export class PatientLifeStyle extends BaseEntity {
+export class PatientLifeStyle extends ApolloEntity {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
 
@@ -1208,18 +1451,12 @@ export class PatientLifeStyle extends BaseEntity {
   updateDateUpdate() {
     this.updatedDate = new Date();
   }
-
-  @AfterInsert()
-  @AfterUpdate()
-  async dropPatientAddressList() {
-    await delCache(`patient:${this.patientId}`);
-  }
 }
 //patientLifestyle ends
 
 //patientHealthVault starts
 @Entity()
-export class PatientHealthVault extends BaseEntity {
+export class PatientHealthVault extends ApolloEntity {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
 
@@ -1253,7 +1490,7 @@ export class PatientHealthVault extends BaseEntity {
 
 //patient notification settings starts
 @Entity()
-export class PatientNotificationSettings extends BaseEntity {
+export class PatientNotificationSettings extends ApolloEntity {
   @Column({ default: false })
   commissionNotification: boolean;
 
@@ -1299,11 +1536,10 @@ export class PatientNotificationSettings extends BaseEntity {
 
 //MedicalRecords starts
 @Entity()
-export class MedicalRecords extends BaseEntity {
+export class MedicalRecords extends ApolloEntity {
   @Column({ nullable: true, type: 'text' })
   additionalNotes: string;
 
-  @Index()
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
 
@@ -1332,7 +1568,6 @@ export class MedicalRecords extends BaseEntity {
   @Column({ nullable: true, type: 'text' })
   observations: string;
 
-  @Index('MedicalRecords_PatientId')
   @ManyToOne((type) => Patient, (patient) => patient.medicalRecords)
   patient: Patient;
 
@@ -1368,7 +1603,7 @@ export class MedicalRecords extends BaseEntity {
 
 //MedicalRecordParameters starts
 @Entity()
-export class MedicalRecordParameters extends BaseEntity {
+export class MedicalRecordParameters extends ApolloEntity {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
 
@@ -1378,7 +1613,6 @@ export class MedicalRecordParameters extends BaseEntity {
   @Column('decimal', { precision: 5, scale: 2 })
   maximum: number;
 
-  @Index('MedicalRecordParameters_MedicalRecordsId')
   @ManyToOne((type) => MedicalRecords, (medicalRecords) => medicalRecords.medicalRecordParameters)
   medicalRecords: MedicalRecords;
 
@@ -1411,7 +1645,7 @@ export class MedicalRecordParameters extends BaseEntity {
 
 //Coupon starts
 @Entity()
-export class Coupon extends BaseEntity {
+export class Coupon extends ApolloEntity {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
 
@@ -1443,11 +1677,9 @@ export class Coupon extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Index('Coupon_isActive')
   @Column({ default: false })
   isActive: Boolean;
 
-  @Index('Coupon_displayStatus')
   @Column({ default: true })
   displayStatus: Boolean;
 
@@ -1463,11 +1695,10 @@ export class Coupon extends BaseEntity {
 
 //Consult Coupon Rules starts
 @Entity()
-export class CouponGenericRules extends BaseEntity {
+export class CouponGenericRules extends ApolloEntity {
   @OneToMany((type) => Coupon, (coupon) => coupon.couponGenericRule)
   coupon: Coupon[];
 
-  @Index()
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
 
@@ -1492,7 +1723,6 @@ export class CouponGenericRules extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Index()
   @Column({ default: false })
   isActive: Boolean;
 
@@ -1523,7 +1753,7 @@ export class CouponGenericRules extends BaseEntity {
 
 //Consult Coupon Rules starts
 @Entity()
-export class CouponConsultRules extends BaseEntity {
+export class CouponConsultRules extends ApolloEntity {
   @OneToMany((type) => Coupon, (coupon) => coupon.couponConsultRule)
   coupon: Coupon[];
 
@@ -1537,7 +1767,6 @@ export class CouponConsultRules extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Index()
   @Column({ default: false })
   isActive: Boolean;
 
@@ -1553,7 +1782,7 @@ export class CouponConsultRules extends BaseEntity {
 
 //Pharma Coupon Rules starts
 @Entity()
-export class CouponPharmaRules extends BaseEntity {
+export class CouponPharmaRules extends ApolloEntity {
   @OneToMany((type) => Coupon, (coupon) => coupon.couponPharmaRule)
   coupon: Coupon[];
 
@@ -1575,7 +1804,6 @@ export class CouponPharmaRules extends BaseEntity {
   @Column({ type: 'text', nullable: true })
   successMessage: string;
 
-  @Index()
   @Column({ default: false })
   isActive: Boolean;
 
@@ -1590,12 +1818,12 @@ export class CouponPharmaRules extends BaseEntity {
 //Pharma Coupon Rules ends
 
 //patientMedicalHistory starts
+
 @Entity()
-export class PatientMedicalHistory extends BaseEntity {
+export class PatientMedicalHistory extends ApolloEntity {
   @Column({ nullable: true })
   bp: string;
 
-  @Index()
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
 
@@ -1648,33 +1876,24 @@ export class PatientMedicalHistory extends BaseEntity {
   updateDateUpdate() {
     this.updatedDate = new Date();
   }
-
-  @AfterInsert()
-  @AfterUpdate()
-  async dropPatientCache() {
-    await delCache(`patient:${this.patientId}`);
-  }
 }
 //patientMedicalHistory ends
 
 // Diagnostics
 @Entity()
-export class Diagnostics extends BaseEntity {
+export class Diagnostics extends ApolloEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column({ nullable: true, default: 0 })
   itemId: number;
 
-  @Index()
   @Column({ nullable: true })
   itemName: string;
 
-  @Index('Diagnostics_itemCode')
   @Column({ nullable: true })
   itemCode: string;
 
-  @Index('Diagnostics_isActive')
   @Column({ default: true })
   isActive: Boolean;
 
@@ -1693,11 +1912,9 @@ export class Diagnostics extends BaseEntity {
   @Column({ nullable: true })
   labName: string;
 
-  @Index('Diagnostics_labcode')
   @Column({ nullable: true })
   labCode: string;
 
-  @Index('Diagostics_labID')
   @Column({ nullable: true })
   labID: number;
 
@@ -1765,7 +1982,7 @@ export class Diagnostics extends BaseEntity {
 
 // Diagnostic orders
 @Entity()
-export class DiagnosticOrders extends BaseEntity {
+export class DiagnosticOrders extends ApolloEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -1815,7 +2032,6 @@ export class DiagnosticOrders extends BaseEntity {
   @Column({ default: DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED })
   orderStatus: DIAGNOSTIC_ORDER_STATUS;
 
-  @Index()
   @Column({ generated: 'increment' })
   displayId: number;
 
@@ -1884,7 +2100,7 @@ export class DiagnosticOrders extends BaseEntity {
 
 //diagnostic orders  payments start
 @Entity()
-export class DiagnosticOrderPayments extends BaseEntity {
+export class DiagnosticOrderPayments extends ApolloEntity {
   @Column('decimal', { precision: 10, scale: 2, nullable: true })
   amountPaid: number;
 
@@ -1942,7 +2158,6 @@ export class DiagnosticOrderPayments extends BaseEntity {
   @Column({ nullable: true })
   updatedDate: Date;
 
-  @Index('DiagnosticOrderPayments_diagnosticOrderId')
   @ManyToOne(
     (type) => DiagnosticOrders,
     (diagnosticOrders) => diagnosticOrders.diagnosticOrderPayments
@@ -1963,7 +2178,7 @@ export class DiagnosticOrderPayments extends BaseEntity {
 
 //diagnostic orders  line items start
 @Entity()
-export class DiagnosticOrderLineItems extends BaseEntity {
+export class DiagnosticOrderLineItems extends ApolloEntity {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
 
@@ -2006,18 +2221,16 @@ export class DiagnosticOrderLineItems extends BaseEntity {
 
 //diagnostic orders status starts
 @Entity()
-export class DiagnosticOrdersStatus extends BaseEntity {
+export class DiagnosticOrdersStatus extends ApolloEntity {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
 
-  @Index('DiagnosticOrdersStatus_DiagnosticOrderId')
   @ManyToOne(
     (type) => DiagnosticOrders,
     (diagnosticOrders) => diagnosticOrders.diagnosticOrdersStatus
   )
   diagnosticOrders: DiagnosticOrders;
 
-  @Index()
   @Column()
   orderStatus: DIAGNOSTIC_ORDER_STATUS;
 
@@ -2049,7 +2262,7 @@ export class DiagnosticOrdersStatus extends BaseEntity {
 //Diagnostic orders status ends
 
 @Entity()
-export class DiagnosticOrgans extends BaseEntity {
+export class DiagnosticOrgans extends ApolloEntity {
   @Index()
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
@@ -2066,17 +2279,15 @@ export class DiagnosticOrgans extends BaseEntity {
   @Column()
   itemId: number;
 
-  @Index('DiagnosticOrgans_isActive')
   @Column({ default: true })
   isActive: Boolean;
 
-  @Index('DiagnosticOrgans_diagnosticId')
   @ManyToOne((type) => Diagnostics, (diagnostics) => diagnostics.diagnosticOrgans)
   diagnostics: Diagnostics;
 }
 
 @Entity()
-export class DiagnosticHotSellers extends BaseEntity {
+export class DiagnosticHotSellers extends ApolloEntity {
   @Index()
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
@@ -2090,7 +2301,6 @@ export class DiagnosticHotSellers extends BaseEntity {
   @Column({ nullable: true })
   packageImage: string;
 
-  @Index()
   @Column({ default: true })
   isActive: Boolean;
 
@@ -2100,13 +2310,12 @@ export class DiagnosticHotSellers extends BaseEntity {
   @Column()
   itemId: number;
 
-  @Index('DiagnosticHotSellers_diagnosticId')
   @ManyToOne((type) => Diagnostics, (diagnostics) => diagnostics.diagnosticHotSellers)
   diagnostics: Diagnostics;
 }
 
 @Entity()
-export class DiagnosticPincodeHubs extends BaseEntity {
+export class DiagnosticPincodeHubs extends ApolloEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -2135,8 +2344,7 @@ export class DiagnosticPincodeHubs extends BaseEntity {
 }
 
 @Entity()
-export class PatientFeedback extends BaseEntity {
-  @Index('PatientFeedback_patientId')
+export class PatientFeedback extends ApolloEntity {
   @ManyToOne((type) => Patient, (patient) => patient.id)
   patient: Patient;
 
@@ -2152,18 +2360,15 @@ export class PatientFeedback extends BaseEntity {
   @Column()
   reason: string;
 
-  @Index('PatientFeedback_feedbackType')
   @Column()
   feedbackType: FEEDBACKTYPE;
 
   @Column({ nullable: true })
   transactionId: string;
 
-  @Index('PatientFeedback_doctorId')
   @Column({ nullable: true })
   doctorId: string;
 
-  @Index()
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
 
@@ -2182,12 +2387,11 @@ export class PatientFeedback extends BaseEntity {
 }
 
 @Entity()
-export class PatientHelpTickets extends BaseEntity {
+export class PatientHelpTickets extends ApolloEntity {
   @Index('PatientHelpTickets_patientId')
   @ManyToOne((type) => Patient, (patient) => patient.id)
   patient: Patient;
 
-  @Index()
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
 
@@ -2197,7 +2401,6 @@ export class PatientHelpTickets extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Index('PatientHelpTickets_category')
   @Column()
   category: string;
 
@@ -2222,37 +2425,7 @@ export class PatientHelpTickets extends BaseEntity {
 }
 
 @Entity()
-export class LoginOtp extends BaseEntity {
-  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
-  createdDate: Date;
-
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
-
-  @Index('LoginOtp_loginType')
-  @Column()
-  loginType: LOGIN_TYPE;
-
-  @Index('LoginOtp_mobileNumber')
-  @Column()
-  mobileNumber: string;
-
-  @Index('LoginOtp_otp')
-  @Column()
-  otp: string;
-
-  @Column({ default: OTP_STATUS.NOT_VERIFIED })
-  status: string;
-
-  @Column({ default: 0 })
-  incorrectAttempts: number;
-
-  @Column({ nullable: true })
-  updatedDate: Date;
-}
-
-@Entity()
-export class LoginOtpArchive extends BaseEntity {
+export class LoginOtp extends ApolloEntity {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
 
@@ -2279,11 +2452,37 @@ export class LoginOtpArchive extends BaseEntity {
 }
 
 @Entity()
-export class ReferralCodesMaster extends BaseEntity {
+export class LoginOtpArchive extends ApolloEntity {
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Index('ReferralCodesMaster_name')
+  @Column()
+  loginType: LOGIN_TYPE;
+
+  @Column()
+  mobileNumber: string;
+
+  @Column()
+  otp: string;
+
+  @Column({ default: OTP_STATUS.NOT_VERIFIED })
+  status: string;
+
+  @Column({ default: 0 })
+  incorrectAttempts: number;
+
+  @Column({ nullable: true })
+  updatedDate: Date;
+}
+
+@Entity()
+export class ReferralCodesMaster extends ApolloEntity {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
   @Column()
   name: string;
 
@@ -2301,7 +2500,7 @@ export class ReferralCodesMaster extends BaseEntity {
 }
 
 @Entity()
-export class ReferalCouponMapping extends BaseEntity {
+export class ReferalCouponMapping extends ApolloEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -2311,7 +2510,6 @@ export class ReferalCouponMapping extends BaseEntity {
   )
   referralCodesMaster: ReferralCodesMaster;
 
-  @Index('ReferalCouponMapping_couponId')
   @ManyToOne((type) => Coupon, (coupon) => coupon.referalCouponMapping)
   coupon: Coupon;
 
@@ -2323,14 +2521,13 @@ export class ReferalCouponMapping extends BaseEntity {
 }
 
 @Entity()
-export class MedicineOrderShipments extends BaseEntity {
+export class MedicineOrderShipments extends ApolloEntity {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
 
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Index()
   @Column({ nullable: true })
   apOrderNo: string;
 
@@ -2352,7 +2549,6 @@ export class MedicineOrderShipments extends BaseEntity {
   @Column({ nullable: true })
   cancelReasonCode: string;
 
-  @Index()
   @Column({ nullable: true })
   currentStatus: MEDICINE_ORDER_STATUS;
 
@@ -2390,7 +2586,7 @@ export class MedicineOrderShipments extends BaseEntity {
 }
 
 @Entity()
-export class MedicineOrderCancelReason extends BaseEntity {
+export class MedicineOrderCancelReason extends ApolloEntity {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
 
@@ -2407,13 +2603,12 @@ export class MedicineOrderCancelReason extends BaseEntity {
   @Column({ nullable: true })
   displayMessage: string;
 
-  @Index('MedicineOrderCancelReason_isUserReason')
   @Column({ nullable: true })
   isUserReason: boolean;
 }
 
 @Entity()
-export class PharmacologistConsult extends BaseEntity {
+export class PharmacologistConsult extends ApolloEntity {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
 
@@ -2423,14 +2618,12 @@ export class PharmacologistConsult extends BaseEntity {
   @Column({ nullable: true })
   prescriptionImageUrl: string;
 
-  @Index('PharmacologistConsult_emailId')
   @Column({ nullable: true })
   emailId: string;
 
   @Column({ nullable: true })
   queries: string;
 
-  @Index('PharmacologistConsult_patientId')
   @ManyToOne((type) => Patient, (patient) => patient.pharmacologistConsult)
   patient: Patient;
 }
