@@ -173,7 +173,7 @@ const updateOrderStatus: Resolver<
       eventName: ApiConstants.MEDICINE_ORDER_KERB_PICKEDUP_EVENT_NAME.toString(),
       eventData: {
         orderId: orderDetails.orderAutoId,
-        statusDateTime: format(new Date(), "yyyy-MM-dd'T'HH:mm:ss'+0530'"),
+        statusDateTime: statusDate,
       },
     };
     postEvent(postBody);
