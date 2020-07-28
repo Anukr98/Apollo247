@@ -399,6 +399,17 @@ export enum ApiConstants {
   PRESCRIPTION_UPLOADED_BY_PATIENT = 'Prescription uploaded by Patient',
   ALERT_STORE_REMARKS = 'Customer Name : {name} , Mobile : {mobile} will be reaching Store in 10 mins to pickup order {orderNo} - Please handover Medicines.',
 
+  //webengage constants
+  MEDICINE_ORDER_PLACED_EVENT_NAME = 'Order Placed',
+  MEDICINE_ORDER_VERIFIED_EVENT_NAME = 'Order Verified',
+  MEDICINE_ORDER_BILLED_AND_PACKED_EVENT_NAME = 'Order Billed and Packed ',
+  MEDICINE_ORDER_DISPATCHED_EVENT_NAME = 'Order Dispatched',
+  MEDICINE_ORDER_DELIVERED_EVENT_NAME = 'Order Delivered',
+  MEDICINE_ORDER_CANCELLED_EVENT_NAME = 'Order Cancelled by Back-end',
+  MEDICINE_ORDER_CANCELLED_FROM_APP_EVENT_NAME = 'Order Cancelled from App',
+  MEDICINE_ORDER_KERB_STORE_READY_EVENT_NAME = 'Kerb side Order Ready at Store',
+  MEDICINE_ORDER_KERB_PICKEDUP_EVENT_NAME = 'Kerb side Order Picked up',
+  MEDICINE_ORDER_KERB_STORE_NOTIFICATION_EVENT_NAME = 'Kerb side Store notification',
 }
 
 export enum PATIENT_REPO_RELATIONS {
