@@ -29,6 +29,8 @@ import { format, addMinutes, parseISO } from 'date-fns';
 import { log } from 'customWinstonLogger';
 import { PharmaItemsResponse } from 'types/medicineOrderTypes';
 import { OneApollo } from 'helpers/oneApollo';
+import { WebEngageInput, postEvent } from 'helpers/webEngage';
+import { ApiConstants } from 'ApiConstants';
 
 export const updateOrderStatusTypeDefs = gql`
   input OrderStatusInput {
@@ -164,6 +166,17 @@ const updateOrderStatus: Resolver<
     orderDetails.deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP
   ) {
     status = MEDICINE_ORDER_STATUS.PICKEDUP;
+
+    //post order picked up  event to webEngage
+    const postBody: Partial<WebEngageInput> = {
+      userId: orderDetails.patient.mobileNumber,
+      eventName: ApiConstants.MEDICINE_ORDER_KERB_PICKEDUP_EVENT_NAME.toString(),
+      eventData: {
+        orderId: orderDetails.orderAutoId,
+        statusDateTime: statusDate,
+      },
+    };
+    postEvent(postBody);
   }
   if (shipmentDetails) {
     if (shipmentDetails.currentStatus == MEDICINE_ORDER_STATUS.CANCELLED) {
@@ -223,6 +236,19 @@ const updateOrderStatus: Resolver<
           orderDetails,
           profilesDb
         );
+
+        //post order out for delivery event to webEngage
+        const postBody: Partial<WebEngageInput> = {
+          userId: orderDetails.patient.mobileNumber,
+          eventName: ApiConstants.MEDICINE_ORDER_DISPATCHED_EVENT_NAME.toString(),
+          eventData: {
+            orderId: orderDetails.orderAutoId,
+            statusDateTime: format(new Date(), "yyyy-MM-dd'T'HH:mm:ss'+0530'"),
+            DSP: orderShipmentsAttrs.trackingProvider,
+            AWBNumber: orderShipmentsAttrs.trackingNo,
+          },
+        };
+        postEvent(postBody);
       }
       if (status == MEDICINE_ORDER_STATUS.DELIVERED || status == MEDICINE_ORDER_STATUS.PICKEDUP) {
         const notificationType =
@@ -236,9 +262,31 @@ const updateOrderStatus: Resolver<
           orderDetails.patient,
           mobileNumberIn
         );
+
+        //post order delivered event to webEngage
+        const postBody: Partial<WebEngageInput> = {
+          userId: orderDetails.patient.mobileNumber,
+          eventName: ApiConstants.MEDICINE_ORDER_DELIVERED_EVENT_NAME.toString(),
+          eventData: {
+            orderId: orderDetails.orderAutoId,
+            statusDateTime: format(new Date(), "yyyy-MM-dd'T'HH:mm:ss'+0530'"),
+          },
+        };
+        postEvent(postBody);
       }
       if (status == MEDICINE_ORDER_STATUS.CANCELLED) {
         medicineOrderCancelled(orderDetails, updateOrderStatusInput.reasonCode, profilesDb);
+
+        //post order cancelled event to webEngage
+        const postBody: Partial<WebEngageInput> = {
+          userId: orderDetails.patient.mobileNumber,
+          eventName: ApiConstants.MEDICINE_ORDER_CANCELLED_EVENT_NAME.toString(),
+          eventData: {
+            orderId: orderDetails.orderAutoId,
+            statusDateTime: format(new Date(), "yyyy-MM-dd'T'HH:mm:ss'+0530'"),
+          },
+        };
+        postEvent(postBody);
       }
     }
   }

@@ -16,6 +16,8 @@ import {
   NotificationType,
   sendMedicineOrderStatusNotification,
 } from 'notifications-service/resolvers/notifications';
+import { WebEngageInput, postEvent } from 'helpers/webEngage';
+import { ApiConstants } from 'ApiConstants';
 
 export const saveOrderShipmentInvoiceTypeDefs = gql`
   input SaveOrderShipmentInvoiceInput {
@@ -252,6 +254,18 @@ const saveOrderShipmentInvoice: Resolver<
       );
     }
   }
+
+  //post order billed and packed event event to webEngage
+  const postBody: Partial<WebEngageInput> = {
+    userId: orderDetails.patient.mobileNumber,
+    eventName: ApiConstants.MEDICINE_ORDER_BILLED_AND_PACKED_EVENT_NAME.toString(),
+    eventData: {
+      orderId: orderDetails.orderAutoId,
+      statusDateTime: format(new Date(), "yyyy-MM-dd'T'HH:mm:ss'+0530'"),
+      billedAmount: billDetails.invoiceValue ? billDetails.invoiceValue.toString() : '',
+    },
+  };
+  postEvent(postBody);
 
   return {
     status: MEDICINE_ORDER_STATUS.ORDER_BILLED,

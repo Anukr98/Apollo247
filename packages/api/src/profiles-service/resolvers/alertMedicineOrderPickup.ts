@@ -10,6 +10,8 @@ import fetch from 'node-fetch';
 import { MEDICINE_ORDER_STATUS } from 'profiles-service/entities';
 import { StoreAlertResp } from 'types/medicineOrderTypes';
 import { ApiConstants } from 'ApiConstants';
+import { WebEngageInput, postEvent } from 'helpers/webEngage';
+import { format } from 'date-fns';
 
 export const alertMedicineOrderPickupTypeDefs = gql`
   input AlertMedicineOrderPickupInput {
@@ -52,7 +54,9 @@ const alertMedicineOrderPickup: Resolver<
   let error = 0,
     errorMessage = '';
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
-  const patientDetails = await patientRepo.getPatientDetails(alertMedicineOrderPickupInput.patientId);
+  const patientDetails = await patientRepo.getPatientDetails(
+    alertMedicineOrderPickupInput.patientId
+  );
   if (!patientDetails) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
@@ -132,6 +136,17 @@ const alertMedicineOrderPickup: Resolver<
       alertStore: true,
     });
   }
+
+  //post order kerb side notification event to webEngage
+  const postBody: Partial<WebEngageInput> = {
+    userId: orderDetails.patient.mobileNumber,
+    eventName: ApiConstants.MEDICINE_ORDER_KERB_STORE_NOTIFICATION_EVENT_NAME.toString(),
+    eventData: {
+      orderId: orderDetails.orderAutoId,
+      statusDateTime: format(new Date(), "yyyy-MM-dd'T'HH:mm:ss'+0530'"),
+    },
+  };
+  postEvent(postBody);
 
   return {
     status: !error,
