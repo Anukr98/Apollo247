@@ -68,7 +68,6 @@ export async function postEvent(uploadParams: Partial<WebEngageInput>): Promise<
     .then((res) => res.json())
     .then(
       (data) => {
-        console.log(data);
         dLogger(
           reqStartTime,
           'postWebEngageEvent POST_WEBENGAGE_API_CALL___END',
@@ -77,7 +76,6 @@ export async function postEvent(uploadParams: Partial<WebEngageInput>): Promise<
         return data;
       },
       (err) => {
-        console.log(err);
         dLogger(
           reqStartTime,
           'postWebEngageEvent POST_WEBENGAGE_API_CALL___ERROR',
