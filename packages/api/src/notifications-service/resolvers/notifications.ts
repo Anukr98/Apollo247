@@ -21,7 +21,14 @@ import { TransferAppointmentRepository } from 'consults-service/repositories/tra
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { MedicineOrdersRepository } from 'profiles-service/repositories/MedicineOrdersRepository';
 import { FacilityRepository } from 'doctors-service/repositories/facilityRepository';
-import { addMilliseconds, format, differenceInMinutes, addDays, differenceInHours } from 'date-fns';
+import {
+  addMilliseconds,
+  format,
+  differenceInMinutes,
+  addDays,
+  differenceInHours,
+  addMinutes,
+} from 'date-fns';
 import path from 'path';
 import fs from 'fs';
 import { log } from 'customWinstonLogger';
@@ -546,9 +553,10 @@ export async function sendNotification(
   let notificationBody: string = '';
   const notificationSound: string = ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString();
   const istDateTime = addMilliseconds(appointment.appointmentDateTime, 19800000);
-  const apptDate = format(istDateTime, 'dd-MM-yyyy HH:mm');
-
-  //Your appointment has been cancelled
+  const apptDate = format(
+    addMinutes(new Date(appointment.appointmentDateTime), +330),
+    "yyyy-MM-dd'T'HH:mm:ss'+0530'"
+  );
   if (pushNotificationInput.notificationType == NotificationType.PATIENT_CANCEL_APPOINTMENT) {
     notificationTitle = ApiConstants.PATIENT_CANCEL_APPT_TITLE;
     notificationBody = ApiConstants.PATIENT_CANCEL_APPT_BODY.replace(
@@ -1204,13 +1212,16 @@ export async function sendNotification(
       notificationResponse = response;
       //if (pushNotificationInput.notificationType == NotificationType.CALL_APPOINTMENT) {
       const fileName =
-        process.env.NODE_ENV + '_callnotification_' + format(new Date(), 'yyyyMMdd') + '.txt';
+        process.env.NODE_ENV +
+        '_callnotification_' +
+        format(addMinutes(new Date(), +330), 'yyyyMMdd') +
+        '.txt';
       let assetsDir = path.resolve('/apollo-hospitals/packages/api/src/assets');
       if (process.env.NODE_ENV != 'local') {
         assetsDir = path.resolve(<string>process.env.ASSETS_DIRECTORY);
       }
       let content =
-        format(new Date(), 'yyyy-MM-dd hh:mm') +
+        format(addMinutes(new Date(), +330), "yyyy-MM-dd'T'HH:mm:ss'+0530'") +
         '\n apptid: ' +
         pushNotificationInput.appointmentId +
         '\n';
@@ -1615,7 +1626,7 @@ export async function sendReminderNotification(
   if (
     pushNotificationInput.notificationType == NotificationType.APPOINTMENT_CASESHEET_REMINDER_15 ||
     pushNotificationInput.notificationType ==
-    NotificationType.APPOINTMENT_CASESHEET_REMINDER_15_VIRTUAL
+      NotificationType.APPOINTMENT_CASESHEET_REMINDER_15_VIRTUAL
   ) {
     if (!(appointment && appointment.id)) {
       throw new AphError(AphErrorMessages.APPOINTMENT_ID_NOT_FOUND);
@@ -2203,7 +2214,7 @@ const testPushNotification: Resolver<
   { deviceToken: String },
   NotificationsServiceContext,
   PushNotificationSuccessMessage | undefined
-> = async (parent, args, { }) => {
+> = async (parent, args, {}) => {
   //initialize firebaseadmin
   const config = {
     credential: firebaseAdmin.credential.applicationDefault(),
