@@ -784,6 +784,10 @@ export const SearchSendIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_send.png')} />
 );
 
+export const WhiteSearchIcon: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/ic_search.png')} />
+);
+
 export const ShieldIcon: React.FC<IconProps> = (props) => (
   <IconBase
     size="sm"

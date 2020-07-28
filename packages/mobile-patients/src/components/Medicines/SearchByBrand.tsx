@@ -59,6 +59,7 @@ import {
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { MedicineSearchSuggestionItem } from '@aph/mobile-patients/src/components/Medicines/MedicineSearchSuggestionItem';
+import { SearchInput } from '@aph/mobile-patients/src/components/ui/SearchInput';
 
 const styles = StyleSheet.create({
   safeAreaViewStyle: {
@@ -114,6 +115,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
   const category_id = props.navigation.getParam('category_id');
   const pageTitle = props.navigation.getParam('title');
   const [searchText, setSearchText] = useState<string>('');
+  const [isSearchFocused, setSearchFocused] = useState(false);
   const [productsList, setProductsList] = useState<MedicineProduct[]>(products || []);
   const [medicineList, setMedicineList] = useState<MedicineProduct[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(products ? false : true);
@@ -421,29 +423,25 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
     return (
       <View
         style={{
-          paddingHorizontal: 10,
+          paddingHorizontal: 0,
           backgroundColor: theme.colors.WHITE,
         }}
       >
-        <Input
-          value={searchText}
-          onSubmitEditing={goToSearchPage}
-          onChangeText={(value) => {
+        <SearchInput
+          _isSearchFocused={isSearchFocused}
+          _searchText={searchText}
+          _onSubmitEditing={() => goToSearchPage}
+          _onChangeText={(value) => {
             onSearchMedicine(value);
           }}
-          autoCorrect={false}
-          rightIcon={rigthIconView}
-          placeholder={'Search medicine and more'}
-          selectionColor="#00b38e"
-          underlineColorAndroid="transparent"
-          placeholderTextColor="rgba(1,48,91, 0.4)"
-          inputStyle={styles.inputStyle}
-          inputContainerStyle={styles.inputContainerStyle}
-          rightIconContainerStyle={styles.rightIconContainerStyle}
-          style={styles.style}
-          containerStyle={styles.containerStyle}
+          _onFocus={() => setSearchFocused(true)}
+          _onBlur={() => {
+            setSearchFocused(false);
+          }}
+          _rigthIconView={rigthIconView}
+          _placeholder="Search meds, brands &amp; more"
+          _itemsNotFound={isNoResultsFound}
         />
-        {renderSorryMessage}
       </View>
     );
   };
