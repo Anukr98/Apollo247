@@ -7,16 +7,8 @@ import {
   getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrderPayments as Payments,
 } from 'graphql/types/getMedicineOrderOMSDetails';
 import { CircularProgress } from '@material-ui/core';
-import {
-  MEDICINE_ORDER_PAYMENT_TYPE,
-  MEDICINE_ORDER_STATUS,
-  MEDICINE_ORDER_TYPE,
-} from 'graphql/types/globalTypes';
-import { useApolloClient } from 'react-apollo-hooks';
-import { useShoppingCart } from 'components/MedicinesCartProvider';
-import { deliveredOrderDetails } from './OrderStatusCard';
-import { ORDER_BILLING_STATUS_STRINGS, getStoreName } from 'helpers/commonHelpers';
-import { MedicineOrderBilledItem } from 'helpers/MedicineApiCalls';
+import { MEDICINE_ORDER_STATUS } from 'graphql/types/globalTypes';
+import { getStoreName } from 'helpers/commonHelpers';
 import { pharmacyOrderSummaryTracking } from 'webEngageTracking';
 import { ReOrder } from './ReOrder';
 
@@ -309,9 +301,6 @@ interface OrdersStorePickupSummaryProps {
 export const OrdersStorePickupSummary: React.FC<OrdersStorePickupSummaryProps> = (props) => {
   const classes = useStyles({});
   const { orderDetailsData, isLoading } = props;
-  console.log(orderDetailsData);
-  const { deliveryAddresses, setDeliveryAddresses } = useShoppingCart();
-  const client = useApolloClient();
   const orderStatusList =
     orderDetailsData &&
     orderDetailsData.medicineOrdersStatus &&
@@ -319,17 +308,6 @@ export const OrdersStorePickupSummary: React.FC<OrdersStorePickupSummaryProps> =
       ? orderDetailsData.medicineOrdersStatus
       : [];
   const orderItems = (orderDetailsData && orderDetailsData.medicineOrderLineItems) || [];
-  const orderPayment =
-    orderDetailsData &&
-    orderDetailsData.medicineOrderPayments &&
-    orderDetailsData.medicineOrderPayments.length > 0 &&
-    orderDetailsData.medicineOrderPayments[0];
-  const shipmentInvoiceDetails =
-    orderDetailsData &&
-    orderDetailsData.medicineOrderShipments &&
-    orderDetailsData.medicineOrderShipments.length > 0
-      ? orderDetailsData.medicineOrderShipments[0].medicineOrderInvoice
-      : [];
 
   const mrpTotal =
     orderItems &&
@@ -340,10 +318,6 @@ export const OrdersStorePickupSummary: React.FC<OrdersStorePickupSummaryProps> =
     orderDetailsData && orderDetailsData.estimatedAmount
       ? deliveryCharges + mrpTotal - orderDetailsData.estimatedAmount
       : 0;
-
-  const getShipmentDetails = (itemDetails: string) => {
-    return JSON.parse(itemDetails);
-  };
 
   const getFormattedDateTime = (field?: string) => {
     const orderPlacedExist =
@@ -360,25 +334,8 @@ export const OrdersStorePickupSummary: React.FC<OrdersStorePickupSummaryProps> =
     return null;
   };
 
-  const getFormattedDate = () => {
-    const deliveredDateDetails = deliveredOrderDetails(orderStatusList);
-    if (deliveredDateDetails) {
-      const statusDate = deliveredDateDetails.statusDate;
-      return moment(statusDate).format('ddd, D MMMM');
-    }
-  };
-
-  const paymentMethodToDisplay =
-    orderPayment &&
-    (orderPayment.paymentType == MEDICINE_ORDER_PAYMENT_TYPE.COD
-      ? 'COD'
-      : orderPayment.paymentType == MEDICINE_ORDER_PAYMENT_TYPE.CASHLESS
-      ? 'Prepaid'
-      : 'No Payment');
-
   const getStoreAddress = (storeAddress: string) => {
     const store = JSON.parse(storeAddress);
-    // const address = store.add
     return store ? store.address : '';
   };
 
@@ -387,91 +344,20 @@ export const OrdersStorePickupSummary: React.FC<OrdersStorePickupSummaryProps> =
     return `${medicineName}${mou! > 1 ? ` (${mou}${isTablet ? ' tabs' : ''})` : ''}`;
   };
 
-  const billedPaymentDetails =
-    shipmentInvoiceDetails && shipmentInvoiceDetails[0] && shipmentInvoiceDetails[0].billDetails
-      ? getShipmentDetails(shipmentInvoiceDetails[0].billDetails)
-      : null;
-  const billedItemDetails =
-    shipmentInvoiceDetails && shipmentInvoiceDetails[0] && shipmentInvoiceDetails[0].itemDetails
-      ? getShipmentDetails(shipmentInvoiceDetails[0].itemDetails)
-      : [];
-
-  const billedMRPValue = billedItemDetails
-    ? billedItemDetails.reduce(
-        (sum: number, itemDetails: MedicineOrderBilledItem) =>
-          sum + itemDetails.mrp * itemDetails.issuedQty,
-        0
-      )
-    : 0;
-
-  // check for supporting old orders
-  const isOrderBilled =
-    shipmentInvoiceDetails &&
-    shipmentInvoiceDetails.length > 0 &&
-    billedPaymentDetails &&
-    (billedPaymentDetails.discountValue ||
-      billedPaymentDetails.deliveryCharges ||
-      billedPaymentDetails.cashValue ||
-      billedPaymentDetails.prepaidValue);
-
-  let item_quantity: string;
-
-  if (!isOrderBilled && orderItems.length == 1) {
-    item_quantity = orderItems.length + ' item ';
-  } else if (isOrderBilled && billedItemDetails && billedItemDetails.length == 1) {
-    item_quantity = billedItemDetails.length + ' item ';
-  } else {
-    item_quantity =
-      isOrderBilled && billedItemDetails
-        ? billedItemDetails.length + ' item(s) '
-        : orderItems.length + ' item(s) ';
-  }
-
-  const getItemName = (itemObj: MedicineOrderBilledItem, index: number) => {
-    const isRepeatedItem = billedItemDetails.find(
-      (item: MedicineOrderBilledItem, idx: number) =>
-        index !== idx && item.itemId === itemObj.itemId
-    );
-    return isRepeatedItem ? `${itemObj.itemName}-batch:<${itemObj.batchId}>` : itemObj.itemName;
-  };
-
-  const isPrescriptionUploadOrder =
-    orderDetailsData && orderDetailsData.orderType === MEDICINE_ORDER_TYPE.UPLOAD_PRESCRIPTION;
-
-  const noDiscountFound =
-    orderDetailsData &&
-    billedPaymentDetails &&
-    Math.round(billedPaymentDetails.invoiceValue) === Math.round(orderDetailsData.estimatedAmount);
-
-  const additionalDisount =
-    isOrderBilled &&
-    noDiscountFound &&
-    orderDetailsData &&
-    Math.round(orderDetailsData.productDiscount + orderDetailsData.couponDiscount) <
-      Math.round(billedPaymentDetails && billedPaymentDetails.discountValue);
-
   useEffect(() => {
     if (orderDetailsData) {
-      const {
-        id,
-        orderTat,
-        orderType,
-        currentStatus,
-        patient: { id: customerId, mobileNumber },
-      } = orderDetailsData;
+      const { id, orderType, currentStatus, patient } = orderDetailsData;
       const data = {
         orderId: id,
         orderDate: getFormattedDateTime('webengage'),
         orderType,
-        customerId,
-        deliveryDate: moment(orderTat).format('DD-MM-YYYY'),
-        mobileNumber,
+        customerId: patient ? patient.id : '',
+        mobileNumber: patient ? patient.mobileNumber : null,
         orderStatus: currentStatus,
       };
       pharmacyOrderSummaryTracking(data);
     }
   }, []);
-  const [isDialogOpen, setIsDialogOpen] = React.useState<boolean>(false);
 
   return isLoading ? (
     <div className={classes.loader}>
@@ -486,11 +372,9 @@ export const OrdersStorePickupSummary: React.FC<OrdersStorePickupSummaryProps> =
               <span className={classes.caps}>BILL</span> # <br />
               {orderDetailsData.billNumber}
             </div>
-            {!isPrescriptionUploadOrder && (
-              <div className={classes.rightGroup}>
-                Total <b>Rs.{(orderDetailsData.estimatedAmount || 0).toFixed(2)}</b>
-              </div>
-            )}
+            <div className={classes.rightGroup}>
+              Total <b>Rs.{(orderDetailsData.estimatedAmount || 0).toFixed(2)}</b>
+            </div>
           </div>
         </div>
         {getFormattedDateTime() && (

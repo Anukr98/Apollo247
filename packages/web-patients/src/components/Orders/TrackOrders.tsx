@@ -246,8 +246,6 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
     }
   }, [orderAutoId, billNumber]);
 
-  console.log(orderDetailsData);
-
   const orderPayment =
     orderDetailsData &&
     orderDetailsData.medicineOrderPayments &&
@@ -281,10 +279,10 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
       : false;
 
   useEffect(() => {
-    if (isNonCartOrder && !isOrderBilled && tabValue === 1) {
+    if (((isNonCartOrder && !isOrderBilled) || billNumber) && tabValue === 1) {
       setTabValue(0);
     }
-  }, [isNonCartOrder, isOrderBilled, tabValue]);
+  }, [isNonCartOrder, isOrderBilled, tabValue, billNumber]);
 
   return (
     <div className={classes.root}>
