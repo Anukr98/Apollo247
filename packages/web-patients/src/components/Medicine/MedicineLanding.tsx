@@ -156,7 +156,6 @@ const useStyles = makeStyles((theme: Theme) => {
     serviceType: {
       backgroundColor: '#f7f8f5',
       borderRadius: 5,
-      padding: 10,
       paddingbottom: 8,
       display: 'flex',
       width: '100%',
@@ -180,11 +179,6 @@ const useStyles = makeStyles((theme: Theme) => {
         boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
       },
     },
-    textVCenter: {
-      alignItems: 'center',
-      minHeight: 54,
-      paddingBottom: 10,
-    },
     serviceIcon: {
       marginRight: 10,
       '& img': {
@@ -194,6 +188,10 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     rightArrow: {
       width: 24,
+      marginLeft: 'auto',
+    },
+    reOrder: {
+      width: 54,
       marginLeft: 'auto',
     },
     linkText: {
@@ -395,6 +393,18 @@ const useStyles = makeStyles((theme: Theme) => {
         marginBottom: 0,
       },
     },
+    medicineReviewReorder: {
+      borderTop: '0.5px solid rgba(2,71,91,0.3)',
+      marginTop: 5,
+      paddingTop: 15,
+      fontSize: 13,
+      '& a': {
+        color: '#fc9916',
+      },
+      '& p': {
+        marginBottom: 0,
+      },
+    },
   };
 });
 
@@ -515,6 +525,7 @@ export const MedicineLanding: React.FC = (props: any) => {
   }, [data]);
 
   const list = data && [
+    { key: 'Recommanded for you', value: <HotSellers data={data.hot_sellers} section="Recommanded" /> },
     {
       key: 'Shop by Health Areas',
       value: <ShopByAreas data={data.healthareas} />,
@@ -608,23 +619,51 @@ export const MedicineLanding: React.FC = (props: any) => {
                   </div>
                   <ProtectedWithLoginPopup>
                     {({ protectWithLoginPopup }) => (
+
                       <div
                         className={`${classes.sectionGroup} ${classes.marginNone}`}
                         onClick={() => !isSignedIn && protectWithLoginPopup()}
                       >
-                        <Link
-                          className={`${classes.serviceType} ${classes.textVCenter}`}
-                          to={isSignedIn && clientRoutes.yourOrders()}
-                          title={'Open your orders'}
-                        >
-                          <span className={classes.serviceIcon}>
-                            <img src={require('images/ic_tablets.svg')} alt="" />
-                          </span>
-                          <span className={classes.linkText}>Your Orders</span>
-                          <span className={classes.rightArrow}>
-                            <img src={require('images/ic_arrow_right.svg')} alt="" />
-                          </span>
-                        </Link>
+                        <div className={classes.preServiceType}>
+                          <div className={classes.prescriptionGroup}>
+                            <Link
+                              className={classes.serviceType}
+                              to={isSignedIn && clientRoutes.yourOrders()}
+                              title={'Open your orders'}
+                            >
+                              <span className={classes.serviceIcon}>
+                                <img src={require('images/ic_tablets.svg')} alt="" />
+                              </span>
+                              <span className={classes.linkText}>Your Orders</span>
+                              <span className={classes.rightArrow}>
+                                <img src={require('images/ic_arrow_right.svg')} alt="" />
+                              </span>
+                            </Link>
+                          </div>
+                          <div className={classes.medicineReviewReorder}>
+                            <div
+                              className={classes.serviceType}
+                            >
+                              <span className={classes.serviceIcon}>
+                                <img src={require('images/ic_basket.svg')} alt="" />
+                              </span>
+                              <span className={classes.linkText}>
+                                Huggies + 2 items
+                              </span>
+                              <span className={classes.reOrder}>
+                                <Link
+                                  to={isSignedIn && clientRoutes.yourOrders()}
+                                >
+                                  Reorder
+                              </Link>
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                        <div>
+                        </div>
+
+
                       </div>
                     )}
                   </ProtectedWithLoginPopup>
@@ -638,7 +677,7 @@ export const MedicineLanding: React.FC = (props: any) => {
                 list.map((item, index) => (
                   <div key={index} className={classes.sliderSection}>
                     <div className={classes.sectionTitle}>
-                      {item.key === 'Shop by Brand' || item.key === 'Monsoon Essentials' ? (
+                      {item.key === 'Recommanded for you' || item.key === 'Shop by Brand' || item.key === 'Monsoon Essentials' ? (
                         <>
                           <span>{item.key}</span>
                           <div className={classes.viewAllLink}>
@@ -647,9 +686,9 @@ export const MedicineLanding: React.FC = (props: any) => {
                                 item.key === 'Shop by Brand'
                                   ? clientRoutes.medicineAllBrands()
                                   : clientRoutes.searchByMedicine(
-                                      'shop-by-category',
-                                      'monsoon-essentials'
-                                    )
+                                    'shop-by-category',
+                                    'monsoon-essentials'
+                                  )
                               }
                             >
                               View All
@@ -657,8 +696,8 @@ export const MedicineLanding: React.FC = (props: any) => {
                           </div>
                         </>
                       ) : (
-                        item.key
-                      )}
+                          item.key
+                        )}
                     </div>
                     {item.value}
                   </div>

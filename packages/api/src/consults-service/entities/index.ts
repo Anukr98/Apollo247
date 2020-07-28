@@ -940,6 +940,9 @@ export class ConsultQueueItem extends BaseEntity {
   @Column()
   appointmentId: string;
 
+  @ManyToOne((type) => Appointment, (appointment) => appointment.transferAppointmentDetails)
+  appointment: Appointment;
+
   @Column()
   createdDate: Date;
 
@@ -1799,7 +1802,6 @@ export class NotificationBinArchive extends BaseEntity {
 // ExotelDetails
 @Entity()
 export class ExotelDetails extends BaseEntity {
-
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -1878,7 +1880,6 @@ export class ExotelDetails extends BaseEntity {
 
   @Column({ nullable: true })
   totalCallDuration: number;
-
 }
 
 //notification related tables end

@@ -339,8 +339,8 @@ export class PatientRepository extends Repository<Patient> {
     return null;
   }
 
-  saveNewProfile(patientAttrs: Partial<Patient>) {
-    return this.create(patientAttrs)
+  async saveNewProfile(patientAttrs: Partial<Patient>) {
+    return await this.create(patientAttrs)
       .save()
       .catch((patientError) => {
         throw new AphError(AphErrorMessages.SAVE_NEW_PROFILE_ERROR, undefined, {

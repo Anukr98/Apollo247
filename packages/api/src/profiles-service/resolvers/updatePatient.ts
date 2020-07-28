@@ -129,7 +129,7 @@ const updatePatient: Resolver<
       }
     }
   }
-
+  
   const patientObjWithRelations = await patientRepo.findByIdWithRelations(patientInput.id, [
     PATIENT_REPO_RELATIONS.PATIENT_ADDRESS,
     PATIENT_REPO_RELATIONS.FAMILY_HISTORY,
