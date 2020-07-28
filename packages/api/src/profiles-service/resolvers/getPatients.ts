@@ -271,12 +271,8 @@ const getAthsToken: Resolver<
   PatientInfo
 > = async (parent, args, { profilesDb }) => {
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
-  const patient = await patientRepo.findByIdWithRelations(args.patientId, [
-    PATIENT_REPO_RELATIONS.PATIENT_ADDRESS,
-    PATIENT_REPO_RELATIONS.FAMILY_HISTORY,
-    PATIENT_REPO_RELATIONS.LIFESTYLE,
-    PATIENT_REPO_RELATIONS.PATIENT_MEDICAL_HISTORY,
-  ]);
+  const patient = await patientRepo.getPatientDetails(args.patientId);
+
   if (!patient) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }

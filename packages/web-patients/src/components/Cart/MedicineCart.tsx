@@ -83,7 +83,6 @@ import { VALIDATE_PHARMA_COUPONS } from 'graphql/medicines';
 import { getItemSpecialPrice } from '../PayMedicine';
 import { getTypeOfProduct } from 'helpers/commonHelpers';
 import _lowerCase from 'lodash/lowerCase';
-import { truncate } from 'fs';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -1147,6 +1146,42 @@ export const MedicineCart: React.FC = (props) => {
     }
     paymentMutation().then(({ data }: any) => {
       if (data && data.saveMedicineOrderOMS) {
+        /**Gtm code start  */
+        let ecommItems: any[] = [];
+        cartItems.map((items, key) => {
+          ecommItems.push({
+            item_name: items.name,
+            item_id: items.sku,
+            price: items.price,
+            item_category: 'Pharmacy',
+            item_category_2: items.type_id
+              ? items.type_id.toLowerCase() === 'pharma'
+                ? 'Drugs'
+                : 'FMCG'
+              : null,
+            // 'item_category_4': '', // for future
+            item_variant: 'Default',
+            index: key + 1,
+            quantity: items.quantity,
+          });
+        });
+        _obTracking({
+          userLocation: localStorage.getItem('pharmaAddress') || '',
+          paymentType: 'COD',
+          itemCount: cartItems ? cartItems.length : 0,
+          couponCode: couponCode ? couponCode : null,
+          couponValue:
+            validateCouponResult && validateCouponResult.discountedTotals
+              ? validateCouponResult.discountedTotals.couponDiscount.toFixed(2)
+              : 0,
+          finalBookingValue: totalWithCouponDiscount,
+          ecommObj: {
+            ecommerce: {
+              items: ecommItems,
+            },
+          },
+        });
+        /**Gtm code end  */
         const { orderId, orderAutoId, errorMessage } = data.saveMedicineOrderOMS;
         if (orderAutoId && orderAutoId > 0) {
           placeOrder(orderId, orderAutoId, true, dataObj.userEmail);

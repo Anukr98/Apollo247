@@ -13,6 +13,12 @@ import {
 import { Validate, IsDate } from 'class-validator';
 import { NameValidator, MobileNumberValidator, EmailValidator } from 'validators/entityValidators';
 
+export enum Apps {
+  DASHBOARD = 'DASHBOARD',
+  DOCTOR_WEB = 'DOCTOR_WEB',
+  DOCTOR_APP = 'DOCTOR_APP',
+}
+
 export enum AccountType {
   CURRENT,
   SAVINGS,
@@ -301,9 +307,6 @@ export class Doctor extends BaseEntity {
 
   @Column({ default: true })
   isJdAllowed: Boolean;
-
-  @Column({ default: true })
-  isWhitelisted: Boolean;
 
   @Column({ default: true })
   isApolloJdRequired: Boolean;
@@ -1368,4 +1371,28 @@ export class DoctorPatientExternalConnect extends BaseEntity {
   @Index('DoctorPatientExternalConnect_appointmentId')
   @Column({ nullable: true })
   appointmentId: string;
+}
+
+@Entity()
+export class DoctorProfileHistory extends BaseEntity {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column({ nullable: true })
+  doctorId: string;
+
+  @Column({ nullable: true, type: 'timestamp' })
+  updatedAt: Date;
+
+  @Column({ nullable: true })
+  updatedBy: string;
+
+  @Column({ nullable: true })
+  application: Apps;
+
+  @Column({ nullable: true })
+  beforeUpdate: string;
+
+  @Column({ nullable: true })
+  afterUpdate: string;
 }
