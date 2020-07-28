@@ -130,6 +130,7 @@ const useStyles = makeStyles((theme: Theme) => {
     addressRow: {
       display: 'flex',
       paddingBottom: 10,
+      wordBreak: 'break-word',
       '& label': {
         fontWeight: 500,
         minWidth: 55,
@@ -142,9 +143,9 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: '0 16px 10px 16px',
       color: '#01475b',
       borderBottom: '0.5px solid rgba(2,71,91,0.3)',
-      '& span:last-child': {
-        marginLeft: 'auto',
-      },
+    },
+    itemDelivered: {
+      marginLeft: 'auto',
     },
     totalItems: {
       paddingBottom: 10,
@@ -250,8 +251,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     reorderBtn: {
-      marginBottom: 8,
-      marginLeft: 10,
+      margin: '17px 0 8px 10px',
       '& button': {
         width: '100%',
       },
@@ -290,6 +290,15 @@ const useStyles = makeStyles((theme: Theme) => {
         fontSize: 16,
       },
     },
+    orderPlaced: {
+      fontSize: 10,
+      fontWeight: 'normal',
+      color: '#01475b',
+      opacity: '1!important',
+    },
+    priceCol: {
+      textAlign: 'right',
+    }
   };
 });
 
@@ -303,8 +312,8 @@ export const OrdersStorePickupSummary: React.FC<OrdersStorePickupSummaryProps> =
   const { orderDetailsData, isLoading } = props;
   const orderStatusList =
     orderDetailsData &&
-    orderDetailsData.medicineOrdersStatus &&
-    orderDetailsData.medicineOrdersStatus.length > 0
+      orderDetailsData.medicineOrdersStatus &&
+      orderDetailsData.medicineOrdersStatus.length > 0
       ? orderDetailsData.medicineOrdersStatus
       : [];
   const orderItems = (orderDetailsData && orderDetailsData.medicineOrderLineItems) || [];
@@ -381,7 +390,7 @@ export const OrdersStorePickupSummary: React.FC<OrdersStorePickupSummaryProps> =
           <div className={`${classes.summaryHeader} ${classes.borderNone}`}>
             <div className={classes.headRow}>
               <div className={classes.leftGroup}>
-                <label>Order Placed</label>
+                <label className={classes.orderPlaced}>Order Placed</label>
                 <span>{getFormattedDateTime() || ''}</span>
               </div>
             </div>
@@ -402,6 +411,7 @@ export const OrdersStorePickupSummary: React.FC<OrdersStorePickupSummaryProps> =
         </div>
         <div className={classes.itemsHeader}>
           <span className={classes.caps}>Item Details</span>
+          <span className={classes.itemDelivered}>{/*Delivered Tue, 27 April*/}</span>
         </div>
         <div className={classes.summaryDetails}>
           <div className={classes.detailsTable}>
@@ -420,8 +430,8 @@ export const OrdersStorePickupSummary: React.FC<OrdersStorePickupSummaryProps> =
                         <div className={classes.medicineName}>
                           {getMedicineName(item.medicineName, item.mou)}
                         </div>
-                        <div>{item.quantity.toFixed(2)}</div>
-                        <div>Rs.{item.price}</div>
+                        <div>{item.quantity.toFixed(0)}</div>
+                        <div className={classes.priceCol}>Rs.{item.price}</div>
                       </div>
                     )
                 )}

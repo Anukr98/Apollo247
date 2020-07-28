@@ -270,7 +270,7 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
   let disableCancel =
     orderDetailsData && orderDetailsData.currentStatus
       ? orderDetailsData.currentStatus !== MEDICINE_ORDER_STATUS.ORDER_PLACED &&
-        orderDetailsData.currentStatus !== MEDICINE_ORDER_STATUS.ORDER_VERIFIED
+      orderDetailsData.currentStatus !== MEDICINE_ORDER_STATUS.ORDER_VERIFIED
       : false;
 
   const isNonCartOrder =
@@ -303,13 +303,13 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
             {orderAutoId !== 0 && orderAutoId > 0 && (
               <>
                 {(orderPayment && orderPayment.paymentType === 'COD') ||
-                (orderPayment && orderPayment.paymentType === 'CASHLESS') ? (
-                  <div className={classes.orderId}>
-                    <span>ORDER #{orderAutoId}</span>
-                  </div>
-                ) : (
-                  ''
-                )}
+                  (orderPayment && orderPayment.paymentType === 'CASHLESS') ? (
+                    <div className={classes.orderId}>
+                      <span>ORDER #{orderAutoId}</span>
+                    </div>
+                  ) : (
+                    ''
+                  )}
                 <div className={classes.headerActions}>
                   <AphButton
                     disabled={!orderAutoId || disableCancel}
@@ -350,6 +350,7 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
           <div className={classes.orderTrackCrads}>
             <Tabs
               value={tabValue}
+              centered
               classes={{
                 root: classes.tabsRoot,
                 indicator: classes.tabsIndicator,
@@ -385,21 +386,21 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
               {noOrderDetails
                 ? 'No Order is Found'
                 : tabValue === 0 &&
-                  orderAutoId && (
-                    <Scrollbars
-                      autoHide={true}
-                      autoHeight
-                      autoHeightMax={isSmallScreen ? 'calc(100vh - 96px)' : 'auto'}
-                    >
-                      <OrderStatusCard orderDetailsData={orderDetailsData} isLoading={isLoading} />
-                    </Scrollbars>
-                  )}
+                orderAutoId && (
+                  <Scrollbars
+                    autoHide={true}
+                    autoHeight
+                    autoHeightMax={isSmallScreen ? 'calc(100vh - 96px)' : 'auto'}
+                  >
+                    <OrderStatusCard orderDetailsData={orderDetailsData} isLoading={isLoading} />
+                  </Scrollbars>
+                )}
             </TabContainer>
             <TabContainer>
               {noOrderDetails
                 ? 'No Order is Found'
                 : orderAutoId
-                ? ((isNonCartOrder && isOrderBilled) || !isNonCartOrder) &&
+                  ? ((isNonCartOrder && isOrderBilled) || !isNonCartOrder) &&
                   tabValue === 1 && (
                     <Scrollbars
                       autoHide={true}
@@ -415,7 +416,7 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
                       </div>
                     </Scrollbars>
                   )
-                : billNumber && (
+                  : billNumber && (
                     <Scrollbars
                       autoHide={true}
                       autoHeight
