@@ -261,7 +261,10 @@ const saveOrderShipmentInvoice: Resolver<
     eventName: ApiConstants.MEDICINE_ORDER_BILLED_AND_PACKED_EVENT_NAME.toString(),
     eventData: {
       orderId: orderDetails.orderAutoId,
-      statusDateTime: format(new Date(), "yyyy-MM-dd'T'HH:mm:ss'+0530'"),
+      statusDateTime: format(
+        parseISO(saveOrderShipmentInvoiceInput.updatedDate),
+        "yyyy-MM-dd'T'HH:mm:ss'+0530'"
+      ),
       billedAmount: billDetails.invoiceValue ? billDetails.invoiceValue.toString() : '',
     },
   };

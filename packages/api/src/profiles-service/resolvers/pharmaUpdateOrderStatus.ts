@@ -173,7 +173,10 @@ const updateOrderStatus: Resolver<
       eventName: ApiConstants.MEDICINE_ORDER_KERB_PICKEDUP_EVENT_NAME.toString(),
       eventData: {
         orderId: orderDetails.orderAutoId,
-        statusDateTime: statusDate,
+        statusDateTime: format(
+          parseISO(updateOrderStatusInput.updatedDate),
+          "yyyy-MM-dd'T'HH:mm:ss'+0530'"
+        ),
       },
     };
     postEvent(postBody);
@@ -243,7 +246,10 @@ const updateOrderStatus: Resolver<
           eventName: ApiConstants.MEDICINE_ORDER_DISPATCHED_EVENT_NAME.toString(),
           eventData: {
             orderId: orderDetails.orderAutoId,
-            statusDateTime: format(new Date(), "yyyy-MM-dd'T'HH:mm:ss'+0530'"),
+            statusDateTime: format(
+              parseISO(updateOrderStatusInput.updatedDate),
+              "yyyy-MM-dd'T'HH:mm:ss'+0530'"
+            ),
             DSP: orderShipmentsAttrs.trackingProvider,
             AWBNumber: orderShipmentsAttrs.trackingNo,
           },
@@ -269,7 +275,10 @@ const updateOrderStatus: Resolver<
           eventName: ApiConstants.MEDICINE_ORDER_DELIVERED_EVENT_NAME.toString(),
           eventData: {
             orderId: orderDetails.orderAutoId,
-            statusDateTime: format(new Date(), "yyyy-MM-dd'T'HH:mm:ss'+0530'"),
+            statusDateTime: format(
+              parseISO(updateOrderStatusInput.updatedDate),
+              "yyyy-MM-dd'T'HH:mm:ss'+0530'"
+            ),
           },
         };
         postEvent(postBody);
@@ -283,7 +292,10 @@ const updateOrderStatus: Resolver<
           eventName: ApiConstants.MEDICINE_ORDER_CANCELLED_EVENT_NAME.toString(),
           eventData: {
             orderId: orderDetails.orderAutoId,
-            statusDateTime: format(new Date(), "yyyy-MM-dd'T'HH:mm:ss'+0530'"),
+            statusDateTime: format(
+              parseISO(updateOrderStatusInput.updatedDate),
+              "yyyy-MM-dd'T'HH:mm:ss'+0530'"
+            ),
           },
         };
         postEvent(postBody);
