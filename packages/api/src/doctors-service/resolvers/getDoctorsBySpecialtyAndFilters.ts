@@ -588,8 +588,8 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
 
   }
 
-  let dayEndMinutes = endOfDay(new Date()).getMinutes() - (new Date()).getMinutes();
-  let twoDaysEndMinutes = addDays(new Date(), 1).getMinutes() - (new Date()).getMinutes();
+  let dayEndMinutes = differenceInMinutes(endOfDay(new Date()), (new Date()));
+  let twoDaysEndMinutes = differenceInMinutes(endOfDay(addDays(new Date(), 1)), (new Date()));
   for(let availablity of finalDoctorNextAvailSlots){
     if(241 > availablity.availableInMinutes){
       if(!("name" in ifKeyExist(filtersObj.availability, 'name', 'Now'))){
