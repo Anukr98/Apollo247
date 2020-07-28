@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { Link } from 'react-router-dom';
-import { clientRoutes } from 'helpers/clientRoutes';
 import { Theme } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
+import fetchUtil from 'helpers/fetch';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -100,8 +100,31 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
+interface FooterUrlInterface {
+  url: string;
+  title: string;
+}
+
 export const BottomLinks: React.FC = (props) => {
   const classes = useStyles({});
+  const [footerData, setFooterData] = useState(null);
+  const [footerKeys, setFooterkeys] = useState<string[]>([]);
+  const footerDataUrl = process.env.FOOTER_DATA_URL;
+  useEffect(() => {
+    if (sessionStorage.getItem('footerData') && sessionStorage.getItem('footerKeys')) {
+      setFooterData(JSON.parse(sessionStorage.getItem('footerData')));
+      setFooterkeys(JSON.parse(sessionStorage.getItem('footerKeys')));
+    } else {
+      fetchUtil(footerDataUrl, 'GET', {}, '', true).then((res: any) => {
+        if (res && res.data) {
+          sessionStorage.setItem('footerData', JSON.stringify(res.data));
+          sessionStorage.setItem('footerKeys', JSON.stringify(Object.keys(res.data)));
+          setFooterData(res.data);
+          setFooterkeys(Object.keys(res.data));
+        }
+      });
+    }
+  }, []);
 
   return (
     <div className={classes.root}>
@@ -117,50 +140,21 @@ export const BottomLinks: React.FC = (props) => {
                 />
               </Link>
             </li>
-            <li>
-              <Link to="#">About Apollo 247</Link>
-              <Link to={clientRoutes.aboutUs()}>About Us</Link>
-              <Link to={clientRoutes.contactUs()}>Contact Us</Link>
-              <Link to={clientRoutes.FAQ()}>FAQs</Link>
-              <Link to={clientRoutes.termsConditions()}>Terms and Conditions</Link>
-              <Link to={clientRoutes.privacy()}>Privacy Policy</Link>
-              <Link to="#">Sitemap</Link>
-            </li>
-            <li>
-              <Link to="#">Services</Link>
-              <Link to="#">Online Doctor Consultation</Link>
-              <Link to="#">Buy Medicines Online</Link>
-              <Link to="#">Project Kavach</Link>
-              <Link to="#">Consult A Pharmacognosist</Link>
-              <Link to="#">Covid-19 Scanner</Link>
-              <Link to="#">Cough Scanner</Link>
-            </li>
-            <li>
-              <Link to="#">Top Specialties</Link>
-              <Link to="#">Apollo Physicians</Link>
-              <Link to="#">Apollo Dermatologists</Link>
-              <Link to="#">Apollo Pediatricians</Link>
-              <Link to="#">Apollo Gynaecologists</Link>
-              <Link to="#">Apollo Gastroenterologists</Link>
-              <Link to="#">Apollo Cardiologists</Link>
-              <Link to="#">Apollo Dietitians</Link>
-              <Link to="#">Apollo ENT Specialists</Link>
-              <Link to="#">Apollo Geriatricians</Link>
-              <Link to="#">Apollo Diabetologists</Link>
-            </li>
-            <li>
-              <Link to="#">Product Categories</Link>
-              <Link to="#">View All Brands</Link>
-              <Link to="#">Health Care</Link>
-              <Link to="#">Personal Care</Link>
-              <Link to="#">Baby Care</Link>
-              <Link to="#">Nutrition</Link>
-              <Link to="#">Healthcare Devices</Link>
-              <Link to="#">Beauty Skin Care</Link>
-              <Link to="#">Cold Immunity</Link>
-              <Link to="#">Coronavirus Prevention</Link>
-              <Link to="#">Diabetic</Link>
-            </li>
+            {footerKeys &&
+              footerKeys.map((currentItem: string) => {
+                return (
+                  <li key={currentItem}>
+                    <a href={'#'}>{currentItem}</a>
+                    {footerData[currentItem].map((currentLink: FooterUrlInterface) => {
+                      return (
+                        <a key={currentLink.title} href={currentLink.url} target="_blank">
+                          {currentLink.title}
+                        </a>
+                      );
+                    })}
+                  </li>
+                );
+              })}
             <li className={classes.LogoXs}>
               <Link to="/" className={classes.logo}>
                 <img
