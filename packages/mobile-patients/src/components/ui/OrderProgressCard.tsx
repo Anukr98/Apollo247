@@ -5,8 +5,7 @@ import {
   OrderPlacedIcon,
   OrderTrackerSmallIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
-import { MEDICINE_ORDER_STATUS } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
+
 const styles = StyleSheet.create({
   containerStyle: {
     ...theme.viewStyles.cardViewStyle,
@@ -15,8 +14,6 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   containerStyle1: {
-    // ...theme.viewStyles.cardViewStyle,
-    // padding: 16,
     marginBottom: 8,
     flex: 1,
   },
@@ -164,7 +161,7 @@ export const OrderProgressCard: React.FC<OrderProgressCardProps> = (props) => {
           props.getOrderDescription.description != '' && (
             <View style={{ paddingHorizontal: 16, flexDirection: 'row' }}>
               <Text
-                style={{ ...theme.viewStyles.text('R', 10, '#00b38e', 1, 13, 0.03) }}
+                style={{ ...theme.viewStyles.text('R', 12, '#00b38e', 1, 13, 0.03) }}
                 {...(props.getOrderDescription.onPress
                   ? { onPress: props.getOrderDescription.onPress }
                   : {})}
@@ -172,11 +169,7 @@ export const OrderProgressCard: React.FC<OrderProgressCardProps> = (props) => {
                 {props.getOrderDescription.heading}
                 <Text
                   style={{
-                    // ...theme.viewStyles.text('R', 10, '#02475b', 1, 13, 0.03),
-                    ...theme.fonts.IBMPlexSansRegular(10),
-                    lineHeight: 13,
-                    color: theme.colors.LIGHT_BLUE,
-                    letterSpacing: 0.03,
+                    ...theme.viewStyles.text('R', 12, '#02475b', 1, 13, 0.03),
                   }}
                 >
                   {props.getOrderDescription.description}
