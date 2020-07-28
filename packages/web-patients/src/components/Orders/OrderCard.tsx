@@ -396,7 +396,6 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
                   orderInfo &&
                   orderInfo.medicineOrdersStatus &&
                   orderInfo.currentStatus !== MEDICINE_ORDER_STATUS.QUOTE &&
-                  orderInfo.currentStatus !== MEDICINE_ORDER_STATUS.PURCHASED_IN_STORE &&
                   getOrderStatus(orderInfo.medicineOrdersStatus) && (
                     <div
                       key={orderInfo.id}
@@ -415,7 +414,11 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
                           <img src={require('images/ic_tablets.svg')} alt="" />
                         </div>
                         <div className={classes.itemSection}>
-                          <div className={classes.itemName}>Medicines</div>
+                          <div className={classes.itemName}>
+                            {orderInfo.deliveryType === MEDICINE_DELIVERY_TYPE.STORE_PICKUP
+                              ? 'store pickup'
+                              : 'Medicines'}
+                          </div>
                           <div className={classes.orderID}>#{orderInfo.orderAutoId}</div>
                           <div className={classes.deliveryType}>
                             <span>

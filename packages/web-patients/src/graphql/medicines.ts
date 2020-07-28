@@ -160,7 +160,10 @@ export const GET_MEDICINE_ORDERS_OMS_LIST = gql`
     getMedicineOrdersOMSList(patientId: $patientId) {
       medicineOrdersList {
         id
+        createdDate
         orderAutoId
+        billNumber
+        shopAddress
         deliveryType
         currentStatus
         medicineOrdersStatus {
@@ -169,14 +172,26 @@ export const GET_MEDICINE_ORDERS_OMS_LIST = gql`
           orderStatus
           hideStatus
         }
+        medicineOrderLineItems {
+          medicineName
+        }
+        medicineOrderShipments {
+          medicineOrderInvoice {
+            itemDetails
+          }
+        }
       }
     }
   }
 `;
 
 export const GET_MEDICINE_ORDER_OMS_DETAILS = gql`
-  query getMedicineOrderOMSDetails($patientId: String, $orderAutoId: Int) {
-    getMedicineOrderOMSDetails(patientId: $patientId, orderAutoId: $orderAutoId) {
+  query getMedicineOrderOMSDetails($patientId: String, $orderAutoId: Int, $billNumber: String) {
+    getMedicineOrderOMSDetails(
+      patientId: $patientId
+      orderAutoId: $orderAutoId
+      billNumber: $billNumber
+    ) {
       medicineOrderDetails {
         id
         orderAutoId

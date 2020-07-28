@@ -283,132 +283,136 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
 
   return (
     <div className={classes.root}>
-      <div className={classes.sectionHeader}>
-        <div className={classes.headerBackArrow}>
-          <AphButton
-            onClick={() => {
-              if (isSmallScreen && props.setShowMobileDetails) {
-                props.setShowMobileDetails(false);
-              }
-            }}
-          >
-            <img src={require('images/ic_back.svg')} />
-          </AphButton>
-        </div>
-        {props.orderAutoId !== 0 && props.orderAutoId > 0 && (
-          <>
-            {(orderPayment && orderPayment.paymentType === 'COD') ||
-            (orderPayment && orderPayment.paymentType === 'CASHLESS') ? (
-              <div className={classes.orderId}>
-                <span>ORDER #{props.orderAutoId}</span>
-              </div>
-            ) : (
-              ''
-            )}
-            <div className={classes.headerActions}>
+      {orderDetailsData && orderDetailsData.currentStatus !== MEDICINE_ORDER_STATUS.QUOTE && (
+        <>
+          <div className={classes.sectionHeader}>
+            <div className={classes.headerBackArrow}>
               <AphButton
-                disabled={!props.orderAutoId || disableCancel}
-                onClick={handleClick}
-                className={classes.moreBtn}
+                onClick={() => {
+                  if (isSmallScreen && props.setShowMobileDetails) {
+                    props.setShowMobileDetails(false);
+                  }
+                }}
               >
-                <img src={require('images/ic_more.svg')} alt="" />
+                <img src={require('images/ic_back.svg')} />
               </AphButton>
-              <Popover
-                anchorEl={moreActionsDialog}
-                keepMounted
-                open={moreActionsopen}
-                onClick={() => setMoreActionsDialog(null)}
-                anchorOrigin={{
-                  vertical: 'top',
-                  horizontal: 'right',
-                }}
-                transformOrigin={{
-                  vertical: 'top',
-                  horizontal: 'right',
-                }}
-                classes={{ paper: classes.menuPopover }}
-              >
-                <div className={classes.menuBtnGroup}>
-                  <AphButton onClick={() => setIsCancelOrderDialogOpen(true)}>
-                    Cancel Order
+            </div>
+            {props.orderAutoId !== 0 && props.orderAutoId > 0 && (
+              <>
+                {(orderPayment && orderPayment.paymentType === 'COD') ||
+                (orderPayment && orderPayment.paymentType === 'CASHLESS') ? (
+                  <div className={classes.orderId}>
+                    <span>ORDER #{props.orderAutoId}</span>
+                  </div>
+                ) : (
+                  ''
+                )}
+                <div className={classes.headerActions}>
+                  <AphButton
+                    disabled={!props.orderAutoId || disableCancel}
+                    onClick={handleClick}
+                    className={classes.moreBtn}
+                  >
+                    <img src={require('images/ic_more.svg')} alt="" />
                   </AphButton>
-                  {/* 
+                  <Popover
+                    anchorEl={moreActionsDialog}
+                    keepMounted
+                    open={moreActionsopen}
+                    onClick={() => setMoreActionsDialog(null)}
+                    anchorOrigin={{
+                      vertical: 'top',
+                      horizontal: 'right',
+                    }}
+                    transformOrigin={{
+                      vertical: 'top',
+                      horizontal: 'right',
+                    }}
+                    classes={{ paper: classes.menuPopover }}
+                  >
+                    <div className={classes.menuBtnGroup}>
+                      <AphButton onClick={() => setIsCancelOrderDialogOpen(true)}>
+                        Cancel Order
+                      </AphButton>
+                      {/* 
                   <AphButton onClick={() => setIsReturnOrderDialogOpen(true)}>
                     Return Order
                   </AphButton> */}
+                    </div>
+                  </Popover>
                 </div>
-              </Popover>
-            </div>
-          </>
-        )}
-      </div>
-      <div className={classes.orderTrackCrads}>
-        <Tabs
-          value={tabValue}
-          classes={{
-            root: classes.tabsRoot,
-            indicator: classes.tabsIndicator,
-          }}
-          onChange={(e, newValue) => {
-            setTabValue(newValue);
-          }}
-        >
-          <Tab
-            classes={{
-              root: classes.tabRoot,
-              selected: classes.tabSelected,
-            }}
-            label="Track Order"
-            title={'Open track orders'}
-          />
-          {((isNonCartOrder && isOrderBilled) || !isNonCartOrder) && (
-            <Tab
+              </>
+            )}
+          </div>
+          <div className={classes.orderTrackCrads}>
+            <Tabs
+              value={tabValue}
               classes={{
-                root: classes.tabRoot,
-                selected: classes.tabSelected,
+                root: classes.tabsRoot,
+                indicator: classes.tabsIndicator,
               }}
-              label="Order Summary"
-              title={'Open order summary'}
-            />
-          )}
-        </Tabs>
-        {tabValue === 0 && (
-          <TabContainer>
-            <Scrollbars
-              autoHide={true}
-              autoHeight
-              autoHeightMax={isSmallScreen ? 'calc(100vh - 96px)' : 'auto'}
+              onChange={(e, newValue) => {
+                setTabValue(newValue);
+              }}
             >
-              {noOrderDetails ? (
-                'No Order is Found'
-              ) : (
-                <OrderStatusCard orderDetailsData={orderDetailsData} isLoading={isLoading} />
+              <Tab
+                classes={{
+                  root: classes.tabRoot,
+                  selected: classes.tabSelected,
+                }}
+                label="Track Order"
+                title={'Open track orders'}
+              />
+              {((isNonCartOrder && isOrderBilled) || !isNonCartOrder) && (
+                <Tab
+                  classes={{
+                    root: classes.tabRoot,
+                    selected: classes.tabSelected,
+                  }}
+                  label="Order Summary"
+                  title={'Open order summary'}
+                />
               )}
-            </Scrollbars>
-          </TabContainer>
-        )}
-        {((isNonCartOrder && isOrderBilled) || !isNonCartOrder) && tabValue === 1 && (
-          <TabContainer>
-            <Scrollbars
-              autoHide={true}
-              autoHeight
-              autoHeightMax={isSmallScreen ? 'calc(100vh - 96px)' : 'auto'}
-            >
-              <div className={classes.customScroll}>
-                {noOrderDetails ? (
-                  'No Order is Found'
-                ) : (
-                  <OrdersSummary
-                    orderDetailsData={orderDetailsData}
-                    isShipmentListHasBilledState={isShipmentListHasBilledState}
-                    isLoading={isLoading}
-                  />
-                )}
-              </div>
-            </Scrollbars>
-          </TabContainer>
-        )}
-      </div>
+            </Tabs>
+            {tabValue === 0 && (
+              <TabContainer>
+                <Scrollbars
+                  autoHide={true}
+                  autoHeight
+                  autoHeightMax={isSmallScreen ? 'calc(100vh - 96px)' : 'auto'}
+                >
+                  {noOrderDetails ? (
+                    'No Order is Found'
+                  ) : (
+                    <OrderStatusCard orderDetailsData={orderDetailsData} isLoading={isLoading} />
+                  )}
+                </Scrollbars>
+              </TabContainer>
+            )}
+            {((isNonCartOrder && isOrderBilled) || !isNonCartOrder) && tabValue === 1 && (
+              <TabContainer>
+                <Scrollbars
+                  autoHide={true}
+                  autoHeight
+                  autoHeightMax={isSmallScreen ? 'calc(100vh - 96px)' : 'auto'}
+                >
+                  <div className={classes.customScroll}>
+                    {noOrderDetails ? (
+                      'No Order is Found'
+                    ) : (
+                      <OrdersSummary
+                        orderDetailsData={orderDetailsData}
+                        isShipmentListHasBilledState={isShipmentListHasBilledState}
+                        isLoading={isLoading}
+                      />
+                    )}
+                  </div>
+                </Scrollbars>
+              </TabContainer>
+            )}
+          </div>
+        </>
+      )}
       <AphDialog open={isCancelOrderDialogOpen} maxWidth="sm">
         <AphDialogClose onClick={() => setIsCancelOrderDialogOpen(false)} title={'Close'} />
         <AphDialogTitle>Cancel Order</AphDialogTitle>
