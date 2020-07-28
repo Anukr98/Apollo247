@@ -665,7 +665,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         ],
         [MEDICINE_ORDER_STATUS.DELIVERED]: [
           '',
-          `In case of any concerns or feedback related to your order, please speak with our customer care executives on the official WhatsApp channel (during business hours 9 AM - 8:30 PM)\n${AppConfig.Configuration.MED_ORDERS_CUSTOMER_CARE_WHATSAPP_LINK}`,
+          `If you have any issues with your delivered order, please talk to us on our official WhatsApp (8:00 am-8.30 pm) ${AppConfig.Configuration.MED_ORDERS_CUSTOMER_CARE_WHATSAPP_LINK}`,
           () => {
             Linking.openURL(
               AppConfig.Configuration.MED_ORDERS_CUSTOMER_CARE_WHATSAPP_LINK
