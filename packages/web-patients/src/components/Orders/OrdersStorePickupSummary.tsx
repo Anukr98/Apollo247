@@ -30,7 +30,6 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 500,
       color: '#02475b',
       '& label': {
-        opacity: 0.6,
         display: 'block',
       },
     },
@@ -294,7 +293,6 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 10,
       fontWeight: 'normal',
       color: '#01475b',
-      opacity: '1!important',
     },
     priceCol: {
       textAlign: 'right',
