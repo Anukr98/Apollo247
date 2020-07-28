@@ -27,6 +27,12 @@ export const getDoctorsBySpecialtyAndFiltersTypeDefs = gql`
     name: String
   }
 
+
+  type brandType {
+    name: String
+    image: String
+  }
+
   type cityType {
     state: String
     data: [String]
@@ -34,7 +40,7 @@ export const getDoctorsBySpecialtyAndFiltersTypeDefs = gql`
 
   type filters {
     city: [cityType]
-    brands: [DefaultfilterType]
+    brands: [brandType]
     language: [DefaultfilterType]
     experience: [DefaultfilterType]
     availability: [DefaultfilterType]
@@ -100,9 +106,14 @@ type cityType = {
   data: [string]
 }
 
+type brandType = {
+  name: string
+  image: string
+}
+
 type filters = {
   city: [cityType]
-  brands: [DefaultfilterType]
+  brands: [brandType]
   language: [DefaultfilterType]
   experience: [DefaultfilterType]
   availability: [DefaultfilterType]
@@ -562,8 +573,9 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
       }
     }
     
+    // "doctor.photoUrl" needs to be replaced with actual brand images-links
     if(doctor.doctorType && !("name" in ifKeyExist(filters.brands, 'name', doctor.doctorType))){
-      filters.brands.push({'name': doctor.doctorType});
+      filters.brands.push({'name': doctor.doctorType, 'image': doctor.photoUrl});
     }
 
     if(doctor.languages instanceof Array){
@@ -572,6 +584,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
           filters.language.push({'name': language});
         }
       }
+      doctor.languages = doctor.languages.join(', ');
     }
 
     if(doctor.experience_range && !("name" in ifKeyExist(filters.experience, 'name', doctor.experience_range))){
