@@ -77,6 +77,7 @@ const getOneApolloUser: Resolver<
         MobileNumber: mobNumberIN,
         Gender: patient.gender,
         StoreCode: storeCode,
+        CustomerId: mobNumberIN,
       });
       if (userCreateResponse.Success) {
         response = await oneApollo.getOneApolloUser(mobNumberIN);

@@ -938,6 +938,19 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     }
   };
 
+  const postTabBarClickWEGEvent = (tab: 'APOLLO' | 'PARTNERS') => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.APOLLO_DOCTOR_TAB_CLICKED] = {
+      'Patient UHID': g(currentPatient, 'uhid'),
+      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Customer ID': g(currentPatient, 'id'),
+    };
+    if (tab == 'APOLLO') {
+      postWebEngageEvent(WebEngageEventName.APOLLO_DOCTOR_TAB_CLICKED, eventAttributes);
+    } else {
+      postWebEngageEvent(WebEngageEventName.DOCTOR_CONNECT_TAB_CLICKED, eventAttributes);
+    }
+  };
+
   const getDoctorAvailableMode = (id: string) => {
     let availableMode: ConsultMode | null = null;
     if (doctorsAvailability) {
@@ -1449,8 +1462,11 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
                 doctorsType == 'APOLLO' ? theme.colors.SEARCH_UNDERLINE_COLOR : '#f7f8f5',
             }}
             onPress={() => {
-              setDoctorsType('APOLLO');
-              filterDoctors(doctorsList, 'APOLLO');
+              if (doctorsType != 'APOLLO') {
+                postTabBarClickWEGEvent('APOLLO');
+                setDoctorsType('APOLLO');
+                filterDoctors(doctorsList, 'APOLLO');
+              }
             }}
           >
             <Text
@@ -1470,8 +1486,11 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
                 doctorsType == 'PARTNERS' ? theme.colors.SEARCH_UNDERLINE_COLOR : '#f7f8f5',
             }}
             onPress={() => {
-              setDoctorsType('PARTNERS');
-              filterDoctors(doctorsList, 'PARTNERS');
+              if (doctorsType != 'PARTNERS') {
+                postTabBarClickWEGEvent('PARTNERS');
+                setDoctorsType('PARTNERS');
+                filterDoctors(doctorsList, 'PARTNERS');
+              }
             }}
           >
             <Text

@@ -553,7 +553,6 @@ const getJuniorDoctorCaseSheet: Resolver<
     allowedDosages: string[];
   }
 > = async (parent, args, { mobileNumber, consultsDb, doctorsDb, patientsDb }) => {
-
   //check appointment id
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const appointmentData = await appointmentRepo.findById(args.appointmentId);
@@ -584,11 +583,11 @@ const getJuniorDoctorCaseSheet: Resolver<
     PATIENT_REPO_RELATIONS.PATIENT_ADDRESS,
     PATIENT_REPO_RELATIONS.FAMILY_HISTORY,
     PATIENT_REPO_RELATIONS.LIFESTYLE,
-    PATIENT_REPO_RELATIONS.PATIENT_MEDICAL_HISTORY
+    PATIENT_REPO_RELATIONS.PATIENT_MEDICAL_HISTORY,
   ]);
   if (patientDetails == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
 
-  const primaryPatientIds = await patientRepo.getLinkedPatientIds(appointmentData.patientId);
+  const primaryPatientIds = await patientRepo.getLinkedPatientIds({ patientDetails });
 
   //get past appointment details
   const pastAppointments = await appointmentRepo.getPastAppointments(
@@ -645,7 +644,6 @@ const getCaseSheet: Resolver<
     allowedDosages: string[];
   }
 > = async (parent, args, { mobileNumber, consultsDb, doctorsDb, patientsDb }) => {
-
   //check appointment id
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const appointmentData = await appointmentRepo.findById(args.appointmentId);
@@ -657,7 +655,7 @@ const getCaseSheet: Resolver<
     PATIENT_REPO_RELATIONS.PATIENT_ADDRESS,
     PATIENT_REPO_RELATIONS.FAMILY_HISTORY,
     PATIENT_REPO_RELATIONS.LIFESTYLE,
-    PATIENT_REPO_RELATIONS.PATIENT_MEDICAL_HISTORY
+    PATIENT_REPO_RELATIONS.PATIENT_MEDICAL_HISTORY,
   ]);
 
   if (patientDetails == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
@@ -688,7 +686,7 @@ const getCaseSheet: Resolver<
     throw new AphError(AphErrorMessages.JUNIOR_DOCTOR_CASESHEET_NOT_CREATED);
   juniorDoctorNotes = juniorDoctorCaseSheet.notes;
 
-  const primaryPatientIds = await patientRepo.getLinkedPatientIds(appointmentData.patientId);
+  const primaryPatientIds = await patientRepo.getLinkedPatientIds({ patientDetails });
 
   //get past appointment details
   const pastAppointments = await appointmentRepo.getPastAppointments(
@@ -781,7 +779,6 @@ const modifyCaseSheet: Resolver<
   ConsultServiceContext,
   CaseSheet
 > = async (parent, { ModifyCaseSheetInput }, { consultsDb, doctorsDb, patientsDb }) => {
-
   const inputArguments = ModifyCaseSheetInput;
 
   //validate casesheetid
@@ -874,7 +871,7 @@ const modifyCaseSheet: Resolver<
     PATIENT_REPO_RELATIONS.PATIENT_ADDRESS,
     PATIENT_REPO_RELATIONS.FAMILY_HISTORY,
     PATIENT_REPO_RELATIONS.LIFESTYLE,
-    PATIENT_REPO_RELATIONS.PATIENT_MEDICAL_HISTORY
+    PATIENT_REPO_RELATIONS.PATIENT_MEDICAL_HISTORY,
   ]);
   if (patientData == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
 
@@ -1071,7 +1068,7 @@ const createJuniorDoctorCaseSheet: Resolver<
   if (appointmentData.symptoms && appointmentData.symptoms.length > 0) {
     const symptoms = appointmentData.symptoms.split(',');
     const symptomList: SymptomsList[] = [];
-    symptoms.map((symptom) => {
+    symptoms.map((symptom: string) => {
       const eachsymptom = {
         symptom: symptom,
         since: null,
@@ -1426,7 +1423,7 @@ const generatePrescriptionTemp: Resolver<
   if (getCaseSheetData == null) throw new AphError(AphErrorMessages.INVALID_CASESHEET_ID);
 
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
-  const patientData = await patientRepo.getPatientDetails(getCaseSheetData.patientId);
+  const patientData = await patientRepo.getPatientData(getCaseSheetData.patientId);
   if (patientData == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
 
   let caseSheetAttrs: Partial<CaseSheet> = {

@@ -44,15 +44,31 @@ import { PatientRepository } from 'profiles-service/repositories/patientReposito
 import { log } from 'customWinstonLogger';
 import { ApiConstants } from 'ApiConstants';
 import { Client, RequestParams } from '@elastic/elasticsearch';
+import { getCache, setCache, delCache } from 'consults-service/database/connectRedis';
+
+const REDIS_APPOINTMENT_ID_KEY_PREFIX: string = 'patient:appointment:';
 
 @EntityRepository(Appointment)
 export class AppointmentRepository extends Repository<Appointment> {
-  findById(id: string) {
-    return this.findOne({ id }).catch((getApptError) => {
+  async findById(id: string) {
+    const cache = await getCache(`${REDIS_APPOINTMENT_ID_KEY_PREFIX}${id}`);
+    if (cache && typeof cache === 'string') {
+      const cacheAppointment: Appointment = JSON.parse(cache);
+      return this.create(cacheAppointment);
+    }
+    const appointment = await this.findOne({ id }).catch((getApptError) => {
       throw new AphError(AphErrorMessages.GET_APPOINTMENT_ERROR, undefined, {
         getApptError,
       });
     });
+    if (appointment) {
+      await setCache(
+        `${REDIS_APPOINTMENT_ID_KEY_PREFIX}${id}`,
+        JSON.stringify(appointment),
+        ApiConstants.CACHE_EXPIRATION_3600
+      );
+    }
+    return appointment;
   }
 
   getAppointmentsCount(doctorId: string, patientId: string) {
@@ -76,10 +92,36 @@ export class AppointmentRepository extends Repository<Appointment> {
       .getCount();
   }
 
-  getAppointmentsByIds(ids: string[]) {
-    return this.createQueryBuilder('appointment')
-      .where('appointment.id IN (:...ids)', { ids })
-      .getMany();
+  async getAppointmentsByIds(ids: string[]) {
+    let result: Appointment[] = [];
+
+    return this.handleCachingMultipleItems(ids, REDIS_APPOINTMENT_ID_KEY_PREFIX, result);
+  }
+
+  async handleCachingMultipleItems(ids: string[], redisKeyPrefix: string, result: Appointment[]) {
+    let idsNotInCache: string[] = [];
+    for (let i = 0; i < ids.length; i++) {
+      const item = await getCache(`${redisKeyPrefix}${ids[i]}`);
+      if (item && typeof item == 'string') {
+        result.push(JSON.parse(item));
+      } else {
+        idsNotInCache.push(ids[i]);
+      }
+    }
+    if (idsNotInCache && idsNotInCache.length > 0) {
+      const itemFromDb = await this.createQueryBuilder('appointment')
+        .where('appointment.id IN (:...idsNotInCache)', { idsNotInCache })
+        .getMany();
+      for (let i = 0; i < itemFromDb.length; i++) {
+        await setCache(
+          `${redisKeyPrefix}${itemFromDb[i].id}`,
+          JSON.stringify(itemFromDb[i]),
+          ApiConstants.CACHE_EXPIRATION_3600
+        );
+      }
+      result = result.concat(itemFromDb);
+    }
+    return result;
   }
 
   getAppointmentsByIdsWithSpecificFields(ids: string[], fields: string[]) {
@@ -87,16 +129,6 @@ export class AppointmentRepository extends Repository<Appointment> {
       .select(fields)
       .where('appointment.id IN (:...ids)', { ids })
       .getMany();
-  }
-
-  findOneByAppointmentId(id: string) {
-    return this.findOne({
-      where: { id },
-    }).catch((getApptError) => {
-      throw new AphError(AphErrorMessages.GET_APPOINTMENT_ERROR, undefined, {
-        getApptError,
-      });
-    });
   }
 
   findByAppointmentId(id: string) {
@@ -362,7 +394,11 @@ export class AppointmentRepository extends Repository<Appointment> {
     });
   }
 
-  updateAppointment(id: string, appointmentInfo: Partial<Appointment>, apptDetails: Appointment) {
+  async updateAppointment(
+    id: string,
+    appointmentInfo: Partial<Appointment>,
+    apptDetails: Appointment
+  ) {
     return this.createUpdateAppointment(
       apptDetails,
       {
@@ -695,13 +731,12 @@ export class AppointmentRepository extends Repository<Appointment> {
       .getMany();
   }
 
-  async getPatinetUpcomingAppointments(ids: string[]) {
+  async getPatientUpcomingAppointments(ids: string[]) {
     const weekPastDate = format(addDays(new Date(), -7), 'yyyy-MM-dd');
     const weekPastDateUTC = new Date(weekPastDate + 'T18:30');
-
-    const upcomingAppts = await this.createQueryBuilder('appointment')
+    return this.createQueryBuilder('appointment')
       .leftJoinAndSelect('appointment.appointmentPayments', 'appointmentPayments')
-      .where('appointment.appointmentDateTime > :apptDate', { apptDate: new Date() })
+      .where('appointment.appointmentDateTime > :weekPastDateUTC', { weekPastDateUTC })
       .andWhere('appointment.patientId IN (:...ids)', { ids })
       .andWhere(
         'appointment.status not in(:status1,:status2,:status3,:status4,:status5,:status6)',
@@ -716,12 +751,13 @@ export class AppointmentRepository extends Repository<Appointment> {
       )
       .orderBy('appointment.appointmentDateTime', 'ASC')
       .getMany();
+  }
 
-    const weekPastAppts = await this.createQueryBuilder('appointment')
-      .where('(appointment.appointmentDateTime Between :fromDate AND :toDate)', {
-        fromDate: weekPastDateUTC,
-        toDate: new Date(),
-      })
+  async getPatientUpcomingAppointmentsCount(ids: string[]) {
+    const weekPastDate = format(addDays(new Date(), -7), 'yyyy-MM-dd');
+    const weekPastDateUTC = new Date(weekPastDate + 'T18:30');
+    return this.createQueryBuilder('appointment')
+      .where('appointment.appointmentDateTime > :weekPastDateUTC', { weekPastDateUTC })
       .andWhere('appointment.patientId IN (:...ids)', { ids })
       .andWhere(
         'appointment.status not in(:status1,:status2,:status3,:status4,:status5,:status6)',
@@ -734,11 +770,7 @@ export class AppointmentRepository extends Repository<Appointment> {
           status6: STATUS.PAYMENT_ABORTED,
         }
       )
-      .orderBy('appointment.appointmentDateTime', 'DESC')
-      .getMany();
-
-    const consultRoomAppts = upcomingAppts.concat(weekPastAppts);
-    return consultRoomAppts;
+      .getCount();
   }
 
   getPatientAndDoctorsAppointments(patientId: string, doctorIds: string[]) {

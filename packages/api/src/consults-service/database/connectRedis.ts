@@ -3,7 +3,7 @@ import { debugLog } from 'customWinstonLogger';
 import { promisify } from 'util';
 
 const dLogger = debugLog(
-  'DoctorServiceLogger',
+  'profileServiceLogger',
   'RedisConnect',
   Math.floor(Math.random() * 100000000)
 );
@@ -35,19 +35,6 @@ const client = createClient({
   },
 });
 
-const keys = promisify(client.keys).bind(client);
-
-export async function keyCache(pattern: string) {
-  try {
-    const allKeys = await keys(pattern);
-    dLogger(new Date(), 'Redis key list', `Cache key pattern ${pattern}`);
-    return allKeys;
-  } catch (e) {
-    dLogger(new Date(), 'Redis key error', `Cache key pattern ${pattern} ${JSON.stringify(e)}`);
-    return null;
-  }
-}
-
 const getAsync = promisify(client.get).bind(client);
 
 export async function getCache(key: string) {
@@ -56,10 +43,11 @@ export async function getCache(key: string) {
     dLogger(new Date(), 'Redis Cache read', `Cache hit ${key}`);
     return cache;
   } catch (e) {
-    dLogger(new Date(), 'Redis read error', `Cache hit ${key} ${JSON.stringify(e)}`);
+    dLogger(new Date(), 'Redis read write error', `Cache hit ${key} ${JSON.stringify(e)}`);
     return null;
   }
 }
+
 const hgetallAsync = promisify(client.hgetall).bind(client);
 
 export async function hgetAllCache(key: string) {
@@ -72,20 +60,28 @@ export async function hgetAllCache(key: string) {
     return null;
   }
 }
+
 export async function setCache(key: string, value: string, expiry: number) {
   try {
-    if (key && value) {
-      const set = client.set(key, value);
-      client.expire(key, expiry);
-      dLogger(new Date(), 'Redis Cache write', `Cache hit ${key}`);
-      return set;
-    }
+    const set = client.set(key, value);
+    client.expire(key, expiry);
+    dLogger(new Date(), 'Redis Cache write', `Cache hit ${key}`);
+    return set;
   } catch (e) {
     dLogger(new Date(), 'Redis Cache write error', `Cache hit ${key} ${JSON.stringify(e)}`);
     return false;
   }
 }
-
+export async function hmsetCache(key: string, value: { [index: string]: string }) {
+  try {
+    const set = client.hmset(key, value);
+    dLogger(new Date(), 'Redis Cache write hashmap', `Cache hit ${key}`);
+    return set;
+  } catch (e) {
+    dLogger(new Date(), 'Redis Cache write hashmap error', `Cache hit ${key} ${JSON.stringify(e)}`);
+    return false;
+  }
+}
 export async function delCache(key: string) {
   try {
     const del = client.del(key);

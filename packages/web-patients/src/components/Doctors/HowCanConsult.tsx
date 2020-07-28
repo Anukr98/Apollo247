@@ -41,6 +41,7 @@ const useStyles = makeStyles((theme: Theme) => {
       listStyle: 'none',
       display: 'flex',
       alignItems: 'center',
+      justifyContent: 'center',
       '& li': {
         padding: '0 6px',
       },
@@ -320,54 +321,47 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
         <h3>How can I consult with {doctorName}:</h3>
         <ul className={classes.tabButtons}>
           <li>
-            <AphButton
-              className={`${classes.button}  ${onlineDirection ? classes.btnActive : null} ${
-                consultMode === ConsultMode.BOTH || consultMode === ConsultMode.ONLINE
-                  ? ''
-                  : classes.disabled
-              }`}
-              disabled={consultMode === ConsultMode.PHYSICAL}
-              onClick={() => {
-                setOnlineDirection(true);
-                setPhysicalDirection(false);
-              }}
-            >
-              <span>Chat/Audio/Video</span>
-              <span className={classes.price}>Rs. {onlineFee}</span>
-              <span
-                className={`${classes.availability} ${
-                  differenceInOnlineMinutes < 15 ? classes.availableNow : null
-                }`}
+            {(consultMode === ConsultMode.BOTH || consultMode === ConsultMode.ONLINE) && (
+              <AphButton
+                className={`${classes.button}  ${onlineDirection ? classes.btnActive : null}`}
+                onClick={() => {
+                  setOnlineDirection(true);
+                  setPhysicalDirection(false);
+                }}
               >
-                {availabilityMarkup('online')}
-              </span>
-            </AphButton>
+                <span>Chat/Audio/Video</span>
+                <span className={classes.price}>Rs. {onlineFee}</span>
+                <span
+                  className={`${classes.availability} ${
+                    differenceInOnlineMinutes < 15 ? classes.availableNow : null
+                  }`}
+                >
+                  {availabilityMarkup('online')}
+                </span>
+              </AphButton>
+            )}
           </li>
           <li>
-            {' '}
-            <AphButton
-              className={`${classes.button} ${physicalDirection ? classes.btnActive : null} ${
-                consultMode === ConsultMode.BOTH || consultMode === ConsultMode.PHYSICAL
-                  ? ''
-                  : classes.disabled
-              }`}
-              disabled={consultMode === ConsultMode.ONLINE}
-              id="btnActive"
-              onClick={() => {
-                setPhysicalDirection(true);
-                setOnlineDirection(false);
-              }}
-            >
-              <span>Meet in Person</span>
-              <span className={classes.price}>Rs. {physcalFee}</span>
-              <span
-                className={`${classes.availability} ${
-                  differenceInPhysicalMinutes < 15 ? classes.availableNow : null
-                }`}
+            {(consultMode === ConsultMode.BOTH || consultMode === ConsultMode.PHYSICAL) && (
+              <AphButton
+                className={`${classes.button} ${physicalDirection ? classes.btnActive : null} `}
+                id="btnActive"
+                onClick={() => {
+                  setPhysicalDirection(true);
+                  setOnlineDirection(false);
+                }}
               >
-                {availabilityMarkup('physical')}
-              </span>
-            </AphButton>
+                <span>Meet in Person</span>
+                <span className={classes.price}>Rs. {physcalFee}</span>
+                <span
+                  className={`${classes.availability} ${
+                    differenceInPhysicalMinutes < 15 ? classes.availableNow : null
+                  }`}
+                >
+                  {availabilityMarkup('physical')}
+                </span>
+              </AphButton>
+            )}
           </li>
         </ul>
       </div>
