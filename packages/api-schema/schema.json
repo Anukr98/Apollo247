@@ -5976,7 +5976,7 @@
             "args": [],
             "type": {
               "kind": "SCALAR",
-              "name": "Int",
+              "name": "Float",
               "ofType": null
             },
             "isDeprecated": false,
@@ -5989,6 +5989,18 @@
             "type": {
               "kind": "OBJECT",
               "name": "BlockUserPointsResponse",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "paymentMode",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "ENUM",
+              "name": "PAYMENT_METHODS_REVERSE",
               "ofType": null
             },
             "isDeprecated": false,
@@ -32592,6 +32604,65 @@
           },
           {
             "name": "PAYTMCC",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "COD",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
+        "possibleTypes": null
+      },
+      {
+        "kind": "ENUM",
+        "name": "PAYMENT_METHODS_REVERSE",
+        "description": null,
+        "fields": null,
+        "inputFields": null,
+        "interfaces": null,
+        "enumValues": [
+          {
+            "name": "DEBIT_CARD",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "CREDIT_CARD",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "NET_BANKING",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "PAYTM_WALLET",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "CREDIT_CARD_EMI",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "UPI",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "PAYTM_POSTPAID",
             "description": null,
             "isDeprecated": false,
             "deprecationReason": null
