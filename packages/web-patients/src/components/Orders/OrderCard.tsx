@@ -186,8 +186,6 @@ interface OrderCardProps {
   setShowMobileDetails: (showMobileDetails: boolean) => void;
   orderAutoId: number | null;
   setOrderAutoId: (orderAutoId: number | null) => void;
-  // orderStatus: string;
-  // sortedList: StatusDetails[];
   setBillNumber: (billNumber: string | null) => void;
   billNumber: string;
 }
@@ -198,8 +196,6 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
     orderInfo,
     setOrderAutoId,
     setShowMobileDetails,
-    // orderStatus,
-    // sortedList,
     setBillNumber,
     billNumber,
     orderAutoId,
@@ -232,25 +228,6 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
       sliderStatus === MEDICINE_ORDER_STATUS.RETURN_ACCEPTED
     );
   };
-
-  // const getOrderStatusDate = (currentStatus: MEDICINE_ORDER_STATUS) => {
-  //   if (sortedList && sortedList.length > 0) {
-  //     const currentStatusData = sortedList.find((status) => status.orderStatus === currentStatus);
-  //     return (
-  //       currentStatusData &&
-  //       moment(new Date(currentStatusData.statusDate)).format('DD MMM YYYY ,hh:mm a')
-  //     );
-  //   }
-  // };
-
-  // const getDeliveryType = (deliveryType: MEDICINE_DELIVERY_TYPE) => {
-  //   switch (deliveryType) {
-  //     case MEDICINE_DELIVERY_TYPE.HOME_DELIVERY:
-  //       return 'Home Delivery';
-  //     case MEDICINE_DELIVERY_TYPE.STORE_PICKUP:
-  //       return 'Store Pickup';
-  //   }
-  // };
 
   const getSlider = (status: MEDICINE_ORDER_STATUS) => {
     switch (status) {
@@ -375,3 +352,22 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
     </div>
   );
 };
+
+// const getOrderStatusDate = (currentStatus: MEDICINE_ORDER_STATUS) => {
+//   if (sortedList && sortedList.length > 0) {
+//     const currentStatusData = sortedList.find((status) => status.orderStatus === currentStatus);
+//     return (
+//       currentStatusData &&
+//       moment(new Date(currentStatusData.statusDate)).format('DD MMM YYYY ,hh:mm a')
+//     );
+//   }
+// };
+
+// const getDeliveryType = (deliveryType: MEDICINE_DELIVERY_TYPE) => {
+//   switch (deliveryType) {
+//     case MEDICINE_DELIVERY_TYPE.HOME_DELIVERY:
+//       return 'Home Delivery';
+//     case MEDICINE_DELIVERY_TYPE.STORE_PICKUP:
+//       return 'Store Pickup';
+//   }
+// };

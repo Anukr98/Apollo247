@@ -317,7 +317,6 @@ interface OrdersSummaryProps {
 export const OrdersSummary: React.FC<OrdersSummaryProps> = (props) => {
   const classes = useStyles({});
   const { orderDetailsData, isLoading } = props;
-  console.log(orderDetailsData);
   const { deliveryAddresses, setDeliveryAddresses } = useShoppingCart();
   const client = useApolloClient();
   const orderStatusList =
