@@ -768,6 +768,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       } else if (item.sku) {
         props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
           sku: item.sku,
+          movedFrom: 'widget',
         });
       }
     };
@@ -958,7 +959,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           ? 'Non Cart'
           : 'Cart',
         noOfItemsNotAvailable: unavailableItems.length,
-        source: 'Order Details',
+        source: 'Home',
         'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
         'Patient UHID': g(currentPatient, 'uhid'),
         Relation: g(currentPatient, 'relation'),
@@ -1406,7 +1407,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           eventAttributes
         );
         postwebEngageProductClickedEvent(data.item, title, 'Home');
-        props.navigation.navigate(AppRoutes.MedicineDetailsScene, { sku });
+        props.navigation.navigate(AppRoutes.MedicineDetailsScene, { sku, movedFrom: 'widget' });
       },
       style: {
         marginHorizontal: 4,
@@ -1441,6 +1442,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                     category_id: categoryId,
                     products: categoryId == -1 ? products : null,
                     title: `${title || 'Products'}`.toUpperCase(),
+                    movedFrom: 'widget',
                   })
               : undefined
           }
@@ -1765,6 +1767,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           savePastSeacrh(`${item.sku}`, item.name).catch((e) => {});
           props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
             sku: item.sku,
+            movedFrom: 'search',
           });
         }}
         onPressAddToCart={() => {
