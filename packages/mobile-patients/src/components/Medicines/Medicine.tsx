@@ -27,6 +27,7 @@ import {
   ShoppingBasketIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
+import { SearchInput } from '@aph/mobile-patients/src/components/ui/SearchInput';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import {
@@ -38,7 +39,10 @@ import {
   GET_RECOMMENDED_PRODUCTS_LIST,
   GET_LATEST_MEDICINE_ORDER,
 } from '@aph/mobile-patients/src/graphql/profiles';
-import { SEARCH_TYPE, MEDICINE_ORDER_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import {
+  SEARCH_TYPE,
+  MEDICINE_ORDER_TYPE,
+} from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   Brand,
   getMedicinePageProducts,
@@ -1621,9 +1625,10 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
     return (
       <>
-        <Input
-          autoFocus={focusSearch}
-          onSubmitEditing={() => {
+        <SearchInput
+          _isSearchFocused={isSearchFocused}
+          _focusSearch={focusSearch!}
+          _onSubmitEditing={() => {
             if (searchText.length > 2) {
               const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_SEARCH_RESULTS] = {
                 keyword: searchText,
@@ -1639,38 +1644,20 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               props.navigation.navigate(AppRoutes.SearchMedicineScene, { searchText });
             }
           }}
-          value={searchText}
-          autoCapitalize="none"
-          spellCheck={false}
-          onFocus={() => setSearchFocused(true)}
-          onBlur={() => {
+          _searchText={searchText}
+          _onFocus={() => setSearchFocused(true)}
+          _onBlur={() => {
             setSearchFocused(false);
             setMedicineList([]);
             setSearchText('');
             setsearchSate('success');
           }}
-          onChangeText={(value) => {
+          _onChangeText={(value) => {
             onSearchMedicine(value);
           }}
-          autoCorrect={false}
-          rightIcon={isSearchFocused ? rigthIconView : <View />}
-          placeholder="Search meds, brands &amp; more"
-          selectionColor={itemsNotFound ? '#02475b' : '#00b38e'}
-          underlineColorAndroid="transparent"
-          placeholderTextColor="rgba(1,48,91, 0.4)"
-          inputStyle={styles.inputStyle}
-          inputContainerStyle={[
-            styles.inputContainerStyle,
-            itemsNotFound ? { borderBottomColor: '#02475b' } : {},
-          ]}
-          rightIconContainerStyle={styles.rightIconContainerStyle}
-          style={styles.style}
-          containerStyle={styles.containerStyle}
-          errorStyle={{
-            ...theme.viewStyles.text('M', 14, '#02475b'),
-            marginHorizontal: 10,
-          }}
-          errorMessage={itemsNotFound ? `Hit enter to search for '${searchText}'` : undefined}
+          _rigthIconView={rigthIconView}
+          _placeholder="Search meds, brands &amp; more"
+          _itemsNotFound={itemsNotFound}
         />
       </>
     );
