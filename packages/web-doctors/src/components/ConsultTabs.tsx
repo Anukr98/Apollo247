@@ -904,6 +904,8 @@ export const ConsultTabs: React.FC = () => {
             //setError('Creating Casesheet. Please wait....');
             createSDCasesheetCall(true);
           }
+          const isUnauthorized = allMessages.includes(AphErrorMessages.UNAUTHORIZED);
+          if (isUnauthorized) setIsUnauthorized(true);
         })
         .finally(() => {
           setLoaded(true);
@@ -1407,7 +1409,7 @@ export const ConsultTabs: React.FC = () => {
 
       const inputVariables = {
         symptoms: symptomsFinal,
-        notes: notes,
+        notes: notes || '',
         diagnosis: diagnosisFinal,
         diagnosticPrescription: diagnosticPrescriptionFinal,
         followUp: followUp[0],
@@ -1424,21 +1426,21 @@ export const ConsultTabs: React.FC = () => {
         medicinePrescription: medicinePrescriptionFinal,
         removedMedicinePrescription: removedMedicinePrescriptionFinal,
         id: caseSheetId,
-        lifeStyle: lifeStyle,
-        familyHistory: familyHistory,
-        dietAllergies: dietAllergies,
-        drugAllergies: drugAllergies,
-        menstrualHistory: menstrualHistory,
-        pastMedicalHistory: pastMedicalHistory,
-        pastSurgicalHistory: pastSurgicalHistory,
-        height: height,
-        temperature: temperature,
-        weight: weight,
-        bp: bp,
-        medicationHistory: medicationHistory,
-        occupationHistory: occupationHistory,
-        referralSpecialtyName: referralSpecialtyName,
-        referralDescription: referralDescription,
+        lifeStyle: lifeStyle || '',
+        familyHistory: familyHistory || '',
+        dietAllergies: dietAllergies || '',
+        drugAllergies: drugAllergies || '',
+        menstrualHistory: menstrualHistory || '',
+        pastMedicalHistory: pastMedicalHistory || '',
+        pastSurgicalHistory: pastSurgicalHistory || '',
+        height: height || '',
+        temperature: temperature || '',
+        weight: weight || '',
+        bp: bp || '',
+        medicationHistory: medicationHistory || '',
+        occupationHistory: occupationHistory || '',
+        referralSpecialtyName: referralSpecialtyName || '',
+        referralDescription: referralDescription || '',
       };
       client
         .mutate<ModifyCaseSheet, ModifyCaseSheetVariables>({
