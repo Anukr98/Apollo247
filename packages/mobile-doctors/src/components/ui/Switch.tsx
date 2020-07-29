@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
-import { Text, View, ViewStyle } from 'react-native';
-import { TouchableOpacity } from 'react-native-gesture-handler';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
+import React from 'react';
+import { View, ViewStyle } from 'react-native';
+import { TouchableOpacity } from 'react-native-gesture-handler';
 
 export interface SwitchProps {
-  value?: boolean;
-  onChange?: (value: boolean) => void;
+  value: boolean;
+  onChange: (value: boolean) => void;
   pathColor?: { left: string; right: string };
   containerStyle?: ViewStyle;
   switchStyle?: ViewStyle;
@@ -13,13 +13,11 @@ export interface SwitchProps {
 
 export const Switch: React.FC<SwitchProps> = (props) => {
   const { value, onChange, pathColor, containerStyle, switchStyle } = props;
-  const [switchValue, setSwitchValue] = useState<boolean>(value || false);
   return (
     <TouchableOpacity
       activeOpacity={1}
       onPress={() => {
-        setSwitchValue(!switchValue);
-        onChange && onChange(!switchValue);
+        onChange && onChange(!value);
       }}
     >
       <View
@@ -27,13 +25,13 @@ export const Switch: React.FC<SwitchProps> = (props) => {
           {
             width: 32,
             height: 17,
-            backgroundColor: switchValue
+            backgroundColor: value
               ? (pathColor && pathColor.right) || theme.colors.APP_YELLOW
               : (pathColor && pathColor.left) || theme.colors.APP_GREEN,
             borderRadius: 100,
             justifyContent: 'center',
             padding: 2,
-            alignItems: switchValue ? 'flex-end' : 'flex-start',
+            alignItems: value ? 'flex-end' : 'flex-start',
           },
           containerStyle,
         ]}
