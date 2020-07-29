@@ -204,59 +204,23 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
     const localStorageItem = getLocalStorageItem(params.appointmentId);
     switch (type) {
       case 'pastMedicalHistory':
-        return localStorageItem && localStorageItem.pastMedicalHistory
-          ? localStorageItem.pastMedicalHistory
-          : pastMedicalHistory
-          ? pastMedicalHistory
-          : '';
+        return localStorageItem ? localStorageItem.pastMedicalHistory : pastMedicalHistory;
       case 'pastSurgicalHistory':
-        return localStorageItem && localStorageItem.pastSurgicalHistory
-          ? localStorageItem.pastSurgicalHistory
-          : pastSurgicalHistory
-          ? pastSurgicalHistory
-          : '';
+        return localStorageItem ? localStorageItem.pastSurgicalHistory : pastSurgicalHistory;
       case 'drugAllergies':
-        return localStorageItem && localStorageItem.drugAllergies
-          ? localStorageItem.drugAllergies
-          : drugAllergies
-          ? drugAllergies
-          : '';
+        return localStorageItem ? localStorageItem.drugAllergies : drugAllergies;
       case 'dietAllergies':
-        return localStorageItem && localStorageItem.dietAllergies
-          ? localStorageItem.dietAllergies
-          : dietAllergies
-          ? dietAllergies
-          : '';
+        return localStorageItem ? localStorageItem.dietAllergies : dietAllergies;
       case 'lifeStyle':
-        return localStorageItem && localStorageItem.lifeStyle
-          ? localStorageItem.lifeStyle
-          : lifeStyle
-          ? lifeStyle
-          : '';
+        return localStorageItem ? localStorageItem.lifeStyle : lifeStyle;
       case 'menstrualHistory':
-        return localStorageItem && localStorageItem.menstrualHistory
-          ? localStorageItem.menstrualHistory
-          : menstrualHistory
-          ? menstrualHistory
-          : '';
+        return localStorageItem ? localStorageItem.menstrualHistory : menstrualHistory;
       case 'familyHistory':
-        return localStorageItem && localStorageItem.familyHistory
-          ? localStorageItem.familyHistory
-          : familyHistory
-          ? familyHistory
-          : '';
+        return localStorageItem ? localStorageItem.familyHistory : familyHistory;
       case 'medicationHistory':
-        return localStorageItem && localStorageItem.medicationHistory
-          ? localStorageItem.medicationHistory
-          : medicationHistory
-          ? medicationHistory
-          : '';
+        return localStorageItem ? localStorageItem.medicationHistory : medicationHistory;
       case 'occupationHistory':
-        return localStorageItem && localStorageItem.occupationHistory
-          ? localStorageItem.occupationHistory
-          : occupationHistory
-          ? occupationHistory
-          : '';
+        return localStorageItem ? localStorageItem.occupationHistory : occupationHistory;
     }
   };
 

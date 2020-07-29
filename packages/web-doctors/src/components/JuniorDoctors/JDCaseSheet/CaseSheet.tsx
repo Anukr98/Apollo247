@@ -395,7 +395,7 @@ export const CaseSheet: React.FC = () => {
 
   const getNotesDefaultValue = () => {
     const storageItem = getLocalStorageItem(params.appointmentId);
-    return storageItem && storageItem.notes ? storageItem.notes : notes ? notes : '';
+    return storageItem ? storageItem.notes : notes;
   };
 
   return (
