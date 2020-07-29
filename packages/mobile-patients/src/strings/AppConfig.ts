@@ -897,6 +897,10 @@ export const NeedHelp = [
       'Wrong report received',
     ],
   },
+  {
+    category: 'Unsubscribe',
+    options: ['Marketing SMSes', 'Marketing Push Notifications', 'Both'],
+  },
 ];
 
 type SpecialitiesType = {
