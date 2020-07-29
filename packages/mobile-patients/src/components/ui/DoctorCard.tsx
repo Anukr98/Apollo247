@@ -123,6 +123,7 @@ export interface DoctorCardProps extends NavigationScreenProps {
     | null;
   numberOfLines?: number;
   availableModes?: ConsultMode | null;
+  callSaveSearch?: string;
 }
 
 export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
@@ -225,6 +226,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
       onlinePrice: rowData && rowData.onlineConsultationFees,
       InpersonPrice: rowData && rowData.physicalConsultationFees,
       ConsultType: props.availableModes,
+      callSaveSearch: props.callSaveSearch,
       params: params,
     });
   };
