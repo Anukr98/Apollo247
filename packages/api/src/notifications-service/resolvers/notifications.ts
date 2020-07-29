@@ -893,8 +893,12 @@ export async function sendNotification(
       '{2}',
       doctorDetails.firstName + ' ' + doctorDetails.lastName
     );
-    const istDateTime = addMilliseconds(appointment.appointmentDateTime, 19800000);
-    notificationBody = notificationBody.replace('{3}', format(istDateTime, 'yyyy-MM-dd hh:mm'));
+    //const istDateTime = addMilliseconds(appointment.appointmentDateTime, 19800000);
+    const apptDate = format(
+      addMinutes(new Date(appointment.appointmentDateTime), +330),
+      "yyyy-MM-dd'T'HH:mm:ss'+0530'"
+    );
+    notificationBody = notificationBody.replace('{3}', apptDate);
 
     /*let smsLink = process.env.SMS_LINK_BOOK_APOINTMENT
       ? ' Reschedule Now ' + process.env.SMS_LINK_BOOK_APOINTMENT
@@ -1570,8 +1574,12 @@ export async function sendReminderNotification(
       '{2}',
       doctorDetails.firstName + ' ' + doctorDetails.lastName
     );
-    const istDateTime = addMilliseconds(appointment.appointmentDateTime, 19800000);
-    notificationBody = notificationBody.replace('{3}', format(istDateTime, 'yyyy-MM-dd hh:mm'));
+    //const istDateTime = addMilliseconds(appointment.appointmentDateTime, 19800000);
+    const apptDate = format(
+      addMinutes(new Date(appointment.appointmentDateTime), +330),
+      "yyyy-MM-dd'T'HH:mm:ss'+0530'"
+    );
+    notificationBody = notificationBody.replace('{3}', apptDate);
     payload = {
       notification: {
         title: notificationTitle,
