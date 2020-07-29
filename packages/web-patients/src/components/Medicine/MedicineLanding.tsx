@@ -703,13 +703,23 @@ export const MedicineLanding: React.FC = (props: any) => {
                                 </span>
                                 <span className={classes.linkText}>
                                   {productsRecommended.length > 1
-                                    ? `${productsRecommended[0].medicineName} + ${
-                                        productsRecommended.length
-                                      } item${productsRecommended.length > 1 ? 's ' : ' '}`
+                                    ? `${
+                                        productsRecommended[0].medicineName
+                                      } + ${productsRecommended.length - 1} item${
+                                        productsRecommended.length > 2 ? 's ' : ' '
+                                      }`
                                     : productsRecommended[0].medicineName}
                                 </span>
                                 <span className={classes.reOrder}>
-                                  <ReOrder orderDetailsData={latestMedicineOrder} />
+                                  <ReOrder
+                                    orderDetailsData={latestMedicineOrder}
+                                    type="Latest Order"
+                                    patientName={
+                                      currentPatient && currentPatient.firstName
+                                        ? currentPatient.firstName
+                                        : ''
+                                    }
+                                  />
                                 </span>
                               </div>
                               <div className={classes.serviceArea}>

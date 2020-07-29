@@ -3,7 +3,6 @@ import { makeStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
 import { AphButton } from '@aph/web-ui-components';
 import Slider from 'react-slick';
-import { MedicineProduct } from '../../../helpers/MedicineApiCalls';
 import { GET_RECOMMENDED_PRODUCTS_LIST } from 'graphql/profiles';
 import { getRecommendedProductsList_getRecommendedProductsList_recommendedProducts as recommendedProductsType } from 'graphql/types/getRecommendedProductsList';
 import { useAllCurrentPatients } from 'hooks/authHooks';
@@ -205,12 +204,12 @@ export const RecomendedProducts: React.FC<RecomendedProductsProps> = (props) => 
   const { currentPatient } = useAllCurrentPatients();
   const [recommendedProductsList, setRecommendedProductsList] = useState<
     recommendedProductsType[] | null
-  >([]);
+  >(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const recommendedProducts = useMutation(GET_RECOMMENDED_PRODUCTS_LIST);
 
   useEffect(() => {
-    if (currentPatient && currentPatient.uhid) {
+    if (currentPatient && currentPatient.uhid && !recommendedProductsList) {
       setIsLoading(true);
       recommendedProducts({
         variables: {
@@ -235,9 +234,7 @@ export const RecomendedProducts: React.FC<RecomendedProductsProps> = (props) => 
           console.log(e);
         });
     }
-  }, [currentPatient]);
-
-  console.log(recommendedProductsList, '**********');
+  }, [currentPatient, recommendedProductsList]);
 
   const itemIndexInCart = (item: recommendedProductsType) => {
     const index = cartItems.findIndex((cartItem) => cartItem.id == Number(item.categoryName));

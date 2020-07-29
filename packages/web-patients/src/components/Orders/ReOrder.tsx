@@ -7,6 +7,7 @@ import { reOrderItems } from 'helpers/MedicineApiCalls';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { Route } from 'react-router-dom';
 import { getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails as OrderDetails } from 'graphql/types/getMedicineOrderOMSDetails';
+import { getLatestMedicineOrder_getLatestMedicineOrder_medicineOrderDetails as LatestOrderDetailsType } from 'graphql/types/getLatestMedicineOrder';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -48,23 +49,26 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 interface ReOrderProps {
-  orderDetailsData: OrderDetails;
+  orderDetailsData: OrderDetails | LatestOrderDetailsType;
+  type: string;
+  patientName: string;
 }
 
 export const ReOrder: React.FC<ReOrderProps> = (props) => {
-  const { orderDetailsData } = props;
+  const { orderDetailsData, type, patientName } = props;
   const { addMultipleCartItems, updateEprescriptions } = useShoppingCart();
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [unavailableMedicineItems, setUnavailableMedicineItems] = useState<string[]>([]);
   const [totalItemsCount, setTotalItemsCount] = useState<number>(0);
   const classes = useStyles({});
+
   return (
     <>
       <Route
         render={({ history }) => (
           <AphButton
-            color="primary"
+            color={type === 'Order Details' ? 'primary' : 'secondary'}
             onClick={async () => {
               setIsLoading(true);
               const {
@@ -72,7 +76,7 @@ export const ReOrder: React.FC<ReOrderProps> = (props) => {
                 prescriptions,
                 totalItemsCount,
                 unAvailableItems,
-              } = await reOrderItems(orderDetailsData, 'Order Details');
+              } = await reOrderItems(orderDetailsData, type, patientName);
               if (unAvailableItems.length > 0) {
                 setUnavailableMedicineItems(unAvailableItems);
                 setTotalItemsCount(totalItemsCount);
