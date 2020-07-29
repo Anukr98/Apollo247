@@ -129,13 +129,25 @@ export const Vitals: React.FC = () => {
     const localStorageItem = getLocalStorageItem(params.appointmentId);
     switch (type) {
       case 'height':
-        return localStorageItem ? localStorageItem.height : height;
+        return localStorageItem && localStorageItem.height
+          ? localStorageItem.height
+          : height
+          ? height
+          : '';
       case 'weight':
-        return localStorageItem ? localStorageItem.weight : weight;
+        return localStorageItem && localStorageItem.weight
+          ? localStorageItem.weight
+          : weight
+          ? weight
+          : '';
       case 'bp':
-        return localStorageItem ? localStorageItem.bp : bp;
+        return localStorageItem && localStorageItem.bp ? localStorageItem.bp : bp ? bp : '';
       case 'temperature':
-        return localStorageItem ? localStorageItem.temperature : temperature;
+        return localStorageItem && localStorageItem.temperature
+          ? localStorageItem.temperature
+          : temperature
+          ? temperature
+          : '';
     }
   };
 

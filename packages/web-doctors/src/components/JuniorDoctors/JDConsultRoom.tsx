@@ -667,7 +667,7 @@ export const JDConsultRoom: React.FC = () => {
               : null;
 
           setFamilyHistory(
-            storageItem && storageItem.familyHistory !== ''
+            storageItem && storageItem.familyHistory
               ? storageItem.familyHistory
               : patientFamilyHistory && patientFamilyHistory!.description
               ? patientFamilyHistory!.description
@@ -675,7 +675,7 @@ export const JDConsultRoom: React.FC = () => {
           );
 
           setLifeStyle(
-            storageItem && storageItem.lifeStyle !== ''
+            storageItem && storageItem.lifeStyle
               ? storageItem.lifeStyle
               : patientLifeStyle && patientLifeStyle!.description
               ? patientLifeStyle!.description
@@ -683,7 +683,7 @@ export const JDConsultRoom: React.FC = () => {
           );
 
           setOccupationHistory(
-            storageItem && storageItem.occupationHistory !== ''
+            storageItem && storageItem.occupationHistory
               ? storageItem.occupationHistory
               : patientLifeStyle && patientLifeStyle!.occupationHistory
               ? patientLifeStyle!.occupationHistory
@@ -691,10 +691,8 @@ export const JDConsultRoom: React.FC = () => {
           );
 
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.diagnosis !== null
-            ? setDiagnosis(
-                (_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
-                  .diagnosis as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_diagnosis[]
-              )
+            ? setDiagnosis((_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+                .diagnosis as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_diagnosis[])
             : setDiagnosis(
                 storageItem && storageItem.diagnosis && storageItem.diagnosis.length > 0
                   ? storageItem.diagnosis
@@ -702,10 +700,8 @@ export const JDConsultRoom: React.FC = () => {
               );
 
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.symptoms
-            ? setSymptoms(
-                (_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
-                  .symptoms as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_symptoms[]
-              )
+            ? setSymptoms((_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+                .symptoms as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_symptoms[])
             : setSymptoms(
                 storageItem && storageItem.symptoms && storageItem.symptoms.length > 0
                   ? storageItem.symptoms
@@ -713,10 +709,8 @@ export const JDConsultRoom: React.FC = () => {
               );
 
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.otherInstructions
-            ? setOtherInstructions(
-                (_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
-                  .otherInstructions as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_otherInstructions[]
-              )
+            ? setOtherInstructions((_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+                .otherInstructions as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_otherInstructions[])
             : setOtherInstructions(
                 storageItem &&
                   storageItem.otherInstructions &&
@@ -726,10 +720,8 @@ export const JDConsultRoom: React.FC = () => {
               );
 
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.diagnosticPrescription
-            ? setDiagnosticPrescription(
-                (_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
-                  .diagnosticPrescription as unknown) as any[]
-              )
+            ? setDiagnosticPrescription((_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+                .diagnosticPrescription as unknown) as any[])
             : setDiagnosticPrescription(
                 storageItem &&
                   storageItem.diagnosticPrescription &&
@@ -739,10 +731,8 @@ export const JDConsultRoom: React.FC = () => {
               );
 
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.medicinePrescription
-            ? setMedicinePrescription(
-                (_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
-                  .medicinePrescription as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_medicinePrescription[]
-              )
+            ? setMedicinePrescription((_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+                .medicinePrescription as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_medicinePrescription[])
             : setMedicinePrescription(
                 storageItem &&
                   storageItem.medicinePrescription &&
@@ -752,16 +742,13 @@ export const JDConsultRoom: React.FC = () => {
               );
 
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.notes
-            ? setNotes(
-                (_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
-                  .notes as unknown) as string
-              )
-            : setNotes(storageItem && storageItem.notes !== '' ? storageItem.notes : '');
+            ? setNotes((_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+                .notes as unknown) as string)
+            : setNotes(storageItem && storageItem.notes ? storageItem.notes : '');
 
           _data!.data!.getJuniorDoctorCaseSheet!.juniorDoctorNotes
-            ? setJuniorDoctorNotes(
-                (_data!.data!.getJuniorDoctorCaseSheet!.juniorDoctorNotes as unknown) as string
-              )
+            ? setJuniorDoctorNotes((_data!.data!.getJuniorDoctorCaseSheet!
+                .juniorDoctorNotes as unknown) as string)
             : setJuniorDoctorNotes('');
 
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.consultType
@@ -914,7 +901,7 @@ export const JDConsultRoom: React.FC = () => {
             _data.data.getJuniorDoctorCaseSheet.caseSheetDetails.referralSpecialtyName
           )
             setReferralSpecialtyName(
-              storageItem && storageItem.referralSpecialtyName !== ''
+              storageItem && storageItem.referralSpecialtyName
                 ? storageItem.referralSpecialtyName
                 : _data.data.getJuniorDoctorCaseSheet.caseSheetDetails.referralSpecialtyName
             );
@@ -927,7 +914,7 @@ export const JDConsultRoom: React.FC = () => {
             _data.data.getJuniorDoctorCaseSheet.caseSheetDetails.referralDescription
           )
             setReferralDescription(
-              storageItem && storageItem.referralDescription !== ''
+              storageItem && storageItem.referralDescription
                 ? storageItem.referralDescription
                 : _data.data.getJuniorDoctorCaseSheet.caseSheetDetails.referralDescription
             );
@@ -941,66 +928,66 @@ export const JDConsultRoom: React.FC = () => {
             _data.data.getJuniorDoctorCaseSheet.patientDetails.patientMedicalHistory
           ) {
             setBp(
-              storageItem && storageItem.bp !== ''
+              storageItem && storageItem.bp
                 ? storageItem.bp
                 : _data.data.getJuniorDoctorCaseSheet.patientDetails.patientMedicalHistory.bp
             );
             setDietAllergies(
-              storageItem && storageItem.dietAllergies !== ''
+              storageItem && storageItem.dietAllergies
                 ? storageItem.dietAllergies
                 : _data.data.getJuniorDoctorCaseSheet.patientDetails.patientMedicalHistory
                     .dietAllergies
             );
             setDrugAllergies(
-              storageItem && storageItem.drugAllergies !== ''
+              storageItem && storageItem.drugAllergies
                 ? storageItem.drugAllergies
                 : _data.data.getJuniorDoctorCaseSheet.patientDetails.patientMedicalHistory
                     .drugAllergies
             );
 
             setHeight(
-              storageItem && storageItem.height !== ''
+              storageItem && storageItem.height
                 ? storageItem.height
                 : _data.data.getJuniorDoctorCaseSheet.patientDetails.patientMedicalHistory.height
             );
 
             setMenstrualHistory(
-              storageItem && storageItem.menstrualHistory !== ''
+              storageItem && storageItem.menstrualHistory
                 ? storageItem.menstrualHistory
                 : _data.data.getJuniorDoctorCaseSheet.patientDetails.patientMedicalHistory
                     .menstrualHistory
             );
 
             setPastMedicalHistory(
-              storageItem && storageItem.pastMedicalHistory !== ''
+              storageItem && storageItem.pastMedicalHistory
                 ? storageItem.pastMedicalHistory
                 : _data.data.getJuniorDoctorCaseSheet.patientDetails.patientMedicalHistory
                     .pastMedicalHistory
             );
 
             setMedicationHistory(
-              storageItem && storageItem.medicationHistory !== ''
+              storageItem && storageItem.medicationHistory
                 ? storageItem.medicationHistory
                 : _data.data.getJuniorDoctorCaseSheet.patientDetails.patientMedicalHistory
                     .medicationHistory
             );
 
             setPastSurgicalHistory(
-              storageItem && storageItem.pastSurgicalHistory !== ''
+              storageItem && storageItem.pastSurgicalHistory
                 ? storageItem.pastSurgicalHistory
                 : _data.data.getJuniorDoctorCaseSheet.patientDetails.patientMedicalHistory
                     .pastSurgicalHistory
             );
 
             setTemperature(
-              storageItem && storageItem.temperature !== ''
+              storageItem && storageItem.temperature
                 ? storageItem.temperature
                 : _data.data.getJuniorDoctorCaseSheet.patientDetails.patientMedicalHistory
                     .temperature
             );
 
             setWeight(
-              storageItem && storageItem.weight !== ''
+              storageItem && storageItem.weight
                 ? storageItem.weight
                 : _data.data.getJuniorDoctorCaseSheet.patientDetails.patientMedicalHistory.weight
             );
@@ -1160,7 +1147,7 @@ export const JDConsultRoom: React.FC = () => {
     }
     const inputVariables = {
       symptoms: symptomsFinal,
-      notes: notesJrd.length > 0 ? notesJrd : null,
+      notes: notesJrd.length > 0 ? notesJrd : '',
       diagnosis: diagnosisFinal,
       diagnosticPrescription: diagnosticPrescriptionFinal,
       followUp: false,
@@ -1169,21 +1156,21 @@ export const JDConsultRoom: React.FC = () => {
       medicinePrescription: medicinePrescriptionFinal,
       id: caseSheetId,
       //status: endConsult ? CASESHEET_STATUS.COMPLETED : CASESHEET_STATUS.PENDING,
-      lifeStyle: lifeStyle,
-      familyHistory: familyHistory,
-      dietAllergies: dietAllergies,
-      drugAllergies: drugAllergies,
-      height: height,
-      menstrualHistory: menstrualHistory,
-      pastMedicalHistory: pastMedicalHistory,
-      pastSurgicalHistory: pastSurgicalHistory,
-      temperature: temperature,
-      weight: weight,
-      bp: bp,
-      medicationHistory: medicationHistory,
-      occupationHistory: occupationHistory,
-      referralSpecialtyName: referralSpecialtyName,
-      referralDescription: referralDescription,
+      lifeStyle: lifeStyle || '',
+      familyHistory: familyHistory || '',
+      dietAllergies: dietAllergies || '',
+      drugAllergies: drugAllergies || '',
+      height: height || '',
+      menstrualHistory: menstrualHistory || '',
+      pastMedicalHistory: pastMedicalHistory || '',
+      pastSurgicalHistory: pastSurgicalHistory || '',
+      temperature: temperature || '',
+      weight: weight || '',
+      bp: bp || '',
+      medicationHistory: medicationHistory || '',
+      occupationHistory: occupationHistory || '',
+      referralSpecialtyName: referralSpecialtyName || '',
+      referralDescription: referralDescription || '',
     };
 
     setSaving(true);
