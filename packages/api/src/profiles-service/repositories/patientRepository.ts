@@ -565,7 +565,7 @@ export class PatientRepository extends Repository<Patient> {
         });
       }
     } else {
-      primaryPatientIds.push(patientId);
+      primaryPatientIds.push(patientDetails.id);
     }
     return primaryPatientIds;
   }
