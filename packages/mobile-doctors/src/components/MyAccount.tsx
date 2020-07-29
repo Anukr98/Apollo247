@@ -4,9 +4,20 @@ import { clearUserData } from '@aph/mobile-doctors/src/helpers/localStorage';
 import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
 import React, { useState } from 'react';
 import { Alert, View, SafeAreaView, Text } from 'react-native';
-import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
+import {
+  NavigationActions,
+  NavigationScreenProps,
+  StackActions,
+  ScrollView,
+} from 'react-navigation';
 import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
-import { BackArrow, RoundIcon, Dropdown, Up } from '@aph/mobile-doctors/src/components/ui/Icons';
+import {
+  BackArrow,
+  RoundIcon,
+  Dropdown,
+  Up,
+  ChekGray,
+} from '@aph/mobile-doctors/src/components/ui/Icons';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import { useApolloClient } from 'react-apollo-hooks';
 import AsyncStorage from '@react-native-community/async-storage';
@@ -22,6 +33,7 @@ import { TouchableOpacity } from 'react-native-gesture-handler';
 import { MaterialMenu, OptionsObject } from '@aph/mobile-doctors/src/components/ui/MaterialMenu';
 import { MyAccountStyles } from '@aph/mobile-doctors/src/components/MyAccount.styles';
 import { string } from '@aph/mobile-doctors/src/strings/string';
+import moment from 'moment';
 
 const styles = MyAccountStyles;
 
@@ -42,8 +54,9 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
     { key: '3', value: '30' },
   ];
 
-  const [showHelpModel, setshowHelpModel] = useState(false);
-  const [ivrSwitch, setIvrSwitch] = useState(false);
+  const [showHelpModel, setshowHelpModel] = useState<boolean>(false);
+  const [showSavedTime, setShowSavedTime] = useState<boolean>(false);
+  const [ivrSwitch, setIvrSwitch] = useState<boolean>(false);
   const [appointmentType, setAppointmentType] = useState<'O' | 'I' | 'B'>('B');
   const [onlineAppointmentTime, setOnlineAppointmentTime] = useState<OptionsObject>(
     tieOptionArray[0]
@@ -213,18 +226,48 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
       </View>
     );
   };
+  const renderButton = () => {
+    return (
+      <View style={styles.buttonContainer}>
+        {showSavedTime ? (
+          <View style={styles.saveTextContainer}>
+            <ChekGray />
+            <Text style={styles.savedTextStyle}>
+              {string.settings.saveText.replace(
+                '{0}',
+                moment().format('DD MMMM, YYYY [at] hh:mm A')
+              )}
+            </Text>
+          </View>
+        ) : (
+          <Button
+            title={'SAVE CHANGES'}
+            onPress={() => {
+              setShowSavedTime(true);
+              setTimeout(() => {
+                setShowSavedTime(false);
+              }, 5000);
+            }}
+          />
+        )}
+      </View>
+    );
+  };
 
   return (
     <View style={styles.mainContainer}>
       <SafeAreaView style={styles.safeAreaStyle}>
         {renderHeader()}
-        <View style={styles.viewMainContainer}>
-          {renderivr()}
-          {ivrSwitch ? renderivrOption() : null}
-          {/* In-Design but not implemented */}
-          {/* {renderNotificationPreference()}
-          {renderFollowupSettings()} */}
-        </View>
+        <ScrollView bounces={false}>
+          <View style={styles.viewMainContainer}>
+            {renderivr()}
+            {ivrSwitch ? renderivrOption() : null}
+            {/* In-Design but not implemented */}
+            {/* {renderNotificationPreference()}
+            {renderFollowupSettings()} */}
+          </View>
+        </ScrollView>
+        {renderButton()}
       </SafeAreaView>
       {renderNeedHelpModal()}
     </View>

@@ -496,6 +496,7 @@
     "ivrInPersonHeading": "Select the time of call before in-person appointment.",
     "inMins": "in mins",
     "notificationHeader": "Set up Notification prefrences",
-    "followupHeader": "Set up your patient follow up days"
+    "followupHeader": "Set up your patient follow up days",
+    "saveText": "The last changes saved on {0}."
   }
 }

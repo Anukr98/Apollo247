@@ -135,4 +135,13 @@ export const MyAccountStyles = StyleSheet.create({
     ...theme.viewStyles.text('R', 10, '#979797', 1, undefined, 0.03),
     marginRight: 10,
   },
+  buttonContainer: { marginHorizontal: 20 },
+  savedTextStyle: {
+    marginLeft: 8,
+    ...theme.viewStyles.text('M', 12, '#788080', 0.5, undefined, 0.03),
+  },
+  saveTextContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
 });

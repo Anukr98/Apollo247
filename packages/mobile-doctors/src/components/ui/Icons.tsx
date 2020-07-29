@@ -903,3 +903,7 @@ export const Mail: React.FC<IconProps> = (props) => (
 export const Whatsapp: React.FC<IconProps> = (props) => (
   <IconBase size="xs" {...props} source={require('../../images/icons/whatsapp.png')} />
 );
+
+export const ChekGray: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('../../images/icons/check_gray.png')} />
+);
