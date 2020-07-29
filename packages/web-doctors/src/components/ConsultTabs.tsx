@@ -904,6 +904,8 @@ export const ConsultTabs: React.FC = () => {
             //setError('Creating Casesheet. Please wait....');
             createSDCasesheetCall(true);
           }
+          const isUnauthorized = allMessages.includes(AphErrorMessages.UNAUTHORIZED);
+          if (isUnauthorized) setIsUnauthorized(true);
         })
         .finally(() => {
           setLoaded(true);
