@@ -16,6 +16,9 @@ import { log } from 'customWinstonLogger';
 import { Connection } from 'typeorm';
 import {} from 'coupons-service/resolvers/validatePharmaCoupon';
 import { medicineOrderCancelled } from 'notifications-service/resolvers/notifications';
+import { WebEngageInput, postEvent } from 'helpers/webEngage';
+import { ApiConstants } from 'ApiConstants';
+import { format, addMinutes } from 'date-fns';
 
 export const medicineOrderCancelOMSTypeDefs = gql`
   input MedicineOrderCancelOMSInput {
@@ -55,7 +58,7 @@ const cancelMedicineOrderOMS: Resolver<
   MedicineOrderCancelOMSResult
 > = async (parent, { medicineOrderCancelOMSInput }, { profilesDb }) => {
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
-  const orderDetails = await medicineOrdersRepo.getMedicineOrderDetails(
+  const orderDetails = await medicineOrdersRepo.getMedicineOrderWithShipments(
     medicineOrderCancelOMSInput.orderNo
   );
   if (!orderDetails) {
@@ -144,6 +147,18 @@ const cancelMedicineOrderOMS: Resolver<
     await updateOrderCancelled(profilesDb, orderDetails, medicineOrderCancelOMSInput);
   }
   medicineOrderCancelled(orderDetails, medicineOrderCancelOMSInput.cancelReasonCode, profilesDb);
+
+  //post order cancelled event to webEngage
+  const postBody: Partial<WebEngageInput> = {
+    userId: orderDetails.patient.mobileNumber,
+    eventName: ApiConstants.MEDICINE_ORDER_CANCELLED_FROM_APP_EVENT_NAME.toString(),
+    eventData: {
+      orderId: orderDetails.orderAutoId,
+      statusDateTime: format(addMinutes(new Date(), +330), "yyyy-MM-dd'T'HH:mm:ss'+0530'"),
+      reasonCode: medicineOrderCancelOMSInput.cancelReasonCode.toString(),
+    },
+  };
+  postEvent(postBody);
 
   return { orderStatus: MEDICINE_ORDER_STATUS.CANCEL_REQUEST };
 };

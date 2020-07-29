@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Theme, Grid } from '@material-ui/core';
+import { Theme, Grid, Typography } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
@@ -19,7 +19,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     mainHead: {
-      fontSize: 17,
+      fontSize: '17px !important',
       fontWeight: 500,
       color: '#0087ba',
       margin: 0,
@@ -98,6 +98,10 @@ const useStyles = makeStyles((theme: Theme) => {
       '& span:first-child': {
         paddingRight: 16,
       },
+      '& h3': {
+        fontSize: 14,
+        fontWeight: 500,
+      },
     },
     helpSection: {
       paddingTop: 16,
@@ -174,7 +178,9 @@ export const WeAreHelpYou: React.FC = (props) => {
 
   return (
     <div className={classes.root}>
-      <div className={classes.mainHead}>Worried about Coronavirus?</div>
+      <Typography variant="h3" className={classes.mainHead}>
+        Worried about Coronavirus?
+      </Typography>
       <div className={classes.helpCard}>
         <div
           className={classes.cardHeader}
@@ -209,20 +215,22 @@ export const WeAreHelpYou: React.FC = (props) => {
                 <span>
                   <img src={require('images/ic_feed.svg')} alt="" />
                 </span>
-                <span>Learn more about Coronavirus</span>
+                <Typography variant="h3">Learn more about Coronavirus</Typography>
               </Link>
             </Grid>
           </Grid>
           <div className={classes.helpSection}>
             <div className={classes.helpSectionHead}>You can also</div>
             <Grid container spacing={2}>
-              <Grid item sm={4} xs={12} onClick={() => window.open(covidScannerUrl)}>
-                <div className={classes.serviceCard}>
-                  <span>
-                    <img src={require('images/ic_covid-white.svg')} alt="" />
-                  </span>
-                  <span>Check your risk level</span>
-                </div>
+              <Grid item sm={4} xs={12}>
+                <a href={covidScannerUrl} target={'_blank'}>
+                  <div className={classes.serviceCard}>
+                    <span>
+                      <img src={require('images/ic_covid-white.svg')} alt="" />
+                    </span>
+                    <span>Check your risk level</span>
+                  </div>
+                </a>
               </Grid>
               {/* <Grid item sm={4} xs={12}>
                 <div className={classes.serviceCard}>

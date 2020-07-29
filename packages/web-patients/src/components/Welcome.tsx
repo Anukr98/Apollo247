@@ -51,9 +51,9 @@ export const Welcome: React.FC = (props) => {
     url: 'https://www.apollo247.com/',
   };
   const metaTagProps = {
-    title: 'Doctor Appointments Online, Order Medicines And Pathological Tests - Apollo 247',
+    title: 'Apollo 247 - Online Doctor Consultation & Online Medicines, Apollo Pharmacies Near Me',
     description:
-      'Find doctors online and book appointments and consult online. Order pathological tests and buy medicines in just a few clicks. Apollo 247 is your one-stop healthcare and medical solution.',
+      'Apollo 24|7 helps you get treated from Apollo certified doctors at any time of the day, wherever you are. The mobile app has features like e-consultation in 15 minutes, online pharmacy to doorstep delivery of medicines, home diagnostic test and digital vault where you can upload all your medical history.',
     canonicalLink: window && window.location && window.location.href,
   };
 

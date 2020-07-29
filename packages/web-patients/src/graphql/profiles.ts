@@ -17,9 +17,28 @@ export const GET_PATIENTS = gql`
   }
 `;
 
+export const GET_PATIENT_BY_MOBILE_NUMBER = gql`
+  query GetPatientByMobileNumber($mobileNumber: String) {
+    getPatientByMobileNumber(mobileNumber: $mobileNumber) {
+      patients {
+        id
+        mobileNumber
+        firstName
+        lastName
+        relation
+        gender
+        uhid
+        dateOfBirth
+        emailAddress
+        photoUrl
+      }
+    }
+  }
+`;
+
 export const GET_CURRENT_PATIENTS = gql`
   query GetCurrentPatients {
-    getCurrentPatients {
+    getCurrentPatients  {
       patients {
         id
         mobileNumber

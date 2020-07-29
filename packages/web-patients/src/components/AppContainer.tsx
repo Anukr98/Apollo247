@@ -98,7 +98,7 @@ const App: React.FC = () => {
   const pageName = window.location.pathname;
 
   useEffect(() => {
-    if (signInError) window.alert('Error signing in :(');
+    if (signInError) console.log('Error signing in :(');
   }, [signInError]);
 
   return (

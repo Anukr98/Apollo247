@@ -1528,6 +1528,16 @@ export const UPLOAD_FILE = gql`
   }
 `;
 
+export const GET_PATIENT_FEEDBACK = gql`
+  query GetPatientFeedback($patientId: String, $transactionId: String) {
+    getPatientFeedback(patientId: $patientId, transactionId: $transactionId) {
+      feedback {
+        rating
+      }
+    }
+  }
+`;
+
 export const SAVE_PRESCRIPTION_MEDICINE_ORDER_OMS = gql`
   mutation savePrescriptionMedicineOrderOMS(
     $prescriptionMedicineOMSInput: PrescriptionMedicineOrderOMSInput
@@ -2733,6 +2743,19 @@ export const GET_PERSONALIZED_APPOITNMENTS = gql`
           }
         }
       }
+    }
+  }
+`;
+
+export const GET_APPOINTMENT_RESCHEDULE_DETAILS = gql`
+  query getAppointmentRescheduleDetails($appointmentId: String!) {
+    getAppointmentRescheduleDetails(appointmentId: $appointmentId) {
+      id
+      rescheduledDateTime
+      rescheduleReason
+      rescheduleInitiatedBy
+      rescheduleInitiatedId
+      rescheduleStatus
     }
   }
 `;

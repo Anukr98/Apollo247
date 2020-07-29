@@ -484,7 +484,10 @@ export const ChatRoom: React.FC = (props) => {
     });
 
   const nextAvailableSlot = (slotDoctorId: string, date: Date) => {
-    const todayDate = moment.utc(date).local().format('YYYY-MM-DD');
+    const todayDate = moment
+      .utc(date)
+      .local()
+      .format('YYYY-MM-DD');
     availableSlot(slotDoctorId, todayDate)
       .then(({ data }: any) => {
         try {
@@ -598,14 +601,14 @@ export const ChatRoom: React.FC = (props) => {
             <div className={classes.modalBoxClose} onClick={() => setIsModalOpen(false)}>
               <img src={require('images/ic_cross_popup.svg')} alt="" />
             </div>
-            <OnlineConsult
+            {/* <OnlineConsult
               setIsPopoverOpen={setIsModalOpen}
               doctorDetails={data.getDoctorDetailsById}
               onBookConsult={(popover: boolean) => setIsModalOpen(popover)}
               isRescheduleConsult={true}
               appointmentId={params.appointmentId}
               rescheduleAPI={rescheduleAPI}
-            />
+            /> */}
           </Paper>
         </Modal>
       )}

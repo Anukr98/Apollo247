@@ -227,6 +227,8 @@ const createJuniorAppointmentSession: Resolver<
     fromValue: STATUS.PENDING,
     toValue: STATUS.PENDING,
     valueType: VALUE_TYPE.STATUS,
+    fromState: apptDetails.appointmentState,
+    toState: apptDetails.appointmentState,
     userName: apptDetails.doctorId,
     reason: 'JD ' + ApiConstants.APPT_SESSION_HISTORY.toString(),
   };
@@ -338,7 +340,8 @@ const createAppointmentSession: Resolver<
       currentDate < apptDetails.appointmentDateTime
     ) {
       const patientRepo = patientsDb.getCustomRepository(PatientRepository);
-      const patientData = await patientRepo.findById(apptDetails.patientId);
+      const patientData = await patientRepo.getPatientDetails(apptDetails.patientId);
+
       const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
       const doctorData = await doctorRepository.findDoctorByIdWithoutRelations(
         apptDetails.doctorId
@@ -408,7 +411,8 @@ const createAppointmentSession: Resolver<
     currentDate < apptDetails.appointmentDateTime
   ) {
     const patientRepo = patientsDb.getCustomRepository(PatientRepository);
-    const patientData = await patientRepo.findById(apptDetails.patientId);
+    const patientData = await patientRepo.getPatientDetails(apptDetails.patientId);
+
     const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
     const doctorData = await doctorRepository.findDoctorByIdWithoutRelations(apptDetails.doctorId);
     if (patientData && doctorData) {
@@ -427,6 +431,8 @@ const createAppointmentSession: Resolver<
     fromValue: STATUS.PENDING,
     toValue: STATUS.IN_PROGRESS,
     valueType: VALUE_TYPE.STATUS,
+    fromState: apptDetails.appointmentState,
+    toState: apptDetails.appointmentState,
     userName: apptDetails.doctorId,
     reason: 'SD ' + ApiConstants.APPT_SESSION_HISTORY.toString(),
   };
@@ -515,6 +521,8 @@ const endAppointmentSession: Resolver<
     fromValue: apptDetails.status,
     toValue: endAppointmentSessionInput.status,
     valueType: VALUE_TYPE.STATUS,
+    fromState: apptDetails.appointmentState,
+    toState: apptDetails.appointmentState,
     userName: apptDetails.doctorId,
     reason: 'SD ' + ApiConstants.APPT_SESSION_COMPLETE_HISTORY.toString(),
   };

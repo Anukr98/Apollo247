@@ -11,6 +11,8 @@ import _camelCase from 'lodash/camelCase';
 import _startCase from 'lodash/startCase';
 import { PharmaPaymentStatus_pharmaPaymentStatus as PharmaPaymentDetails } from 'graphql/types/PharmaPaymentStatus';
 import { PHRAMA_PAYMENT_STATUS } from 'graphql/medicines';
+import { GET_MEDICINE_ORDER_OMS_DETAILS } from 'graphql/medicines';
+import { useAllCurrentPatients } from 'hooks/authHooks';
 import { OrderStatusContent } from '../OrderStatusContent';
 import { OrderPlaced } from 'components/Cart/OrderPlaced';
 import { getPaymentMethodFullName } from 'helpers/commonHelpers';
@@ -67,10 +69,12 @@ export const PaymentStatusModal: React.FC<PaymentStatusProps> = (props) => {
     orderStatus: string;
   }>();
 
+  const { currentPatient } = useAllCurrentPatients();
   const [paymentStatusData, setPaymentStatusData] = useState<PharmaPaymentDetails>(null);
   const [showPaymentStatusModal, setShowPaymentStatusModal] = useState(true);
   const [showOrderPopup, setShowOrderPopup] = useState<boolean>(true);
   const pharmaPayments = useMutation(PHRAMA_PAYMENT_STATUS);
+  const orderDetails = useMutation(GET_MEDICINE_ORDER_OMS_DETAILS);
 
   const getPaymentStatus = () => {
     if (!paymentStatusData) return '';
@@ -147,58 +151,61 @@ export const PaymentStatusModal: React.FC<PaymentStatusProps> = (props) => {
   };
 
   useEffect(() => {
-    if (params.orderAutoId) {
-      pharmaPayments({
+    if (params.orderAutoId && currentPatient && currentPatient.id) {
+      orderDetails({
         variables: {
-          orderId:
+          patientId: currentPatient && currentPatient.id,
+          orderAutoId:
             typeof params.orderAutoId === 'string'
               ? parseInt(params.orderAutoId)
               : params.orderAutoId,
         },
       })
-        .then((resp: any) => {
-          if (resp && resp.data && resp.data.pharmaPaymentStatus) {
-            const { paymentRefId, amountPaid, paymentMode } = resp.data.pharmaPaymentStatus;
-            setPaymentStatusData(resp.data.pharmaPaymentStatus);
-            /* WebEngage Tracking Start*/
-            paymentRefId &&
-              paymentStatusTracking({
-                orderId: paymentRefId,
-                paymentStatus,
-                type: 'Pharmacy',
-                orderAutoId:
-                  typeof params.orderAutoId === 'string'
-                    ? parseInt(params.orderAutoId)
-                    : params.orderAutoId,
-              });
-            const pharmacyCheckoutValues = sessionStorage.getItem('pharmacyCheckoutValues')
-              ? JSON.parse(sessionStorage.getItem('pharmacyCheckoutValues'))
-              : {};
-            resp.data.pharmaPaymentStatus.paymentStatus === 'PAYMENT_SUCCESS' &&
-              pharmacyCheckoutTracking({
+        .then(({ data }: any) => {
+          if (
+            data &&
+            data.getMedicineOrderOMSDetails &&
+            data.getMedicineOrderOMSDetails.medicineOrderDetails
+          ) {
+            pharmaPayments({
+              variables: {
                 orderId:
                   typeof params.orderAutoId === 'string'
                     ? parseInt(params.orderAutoId)
                     : params.orderAutoId,
-                payStatus: 'success',
-                payType: paymentMode,
-                serviceArea: 'pharmacy',
-                shippingInfo: '',
-                grandTotal: pharmacyCheckoutValues && pharmacyCheckoutValues.grandTotal,
-                discountAmount: pharmacyCheckoutValues && pharmacyCheckoutValues.discountAmount,
-                netAfterDiscount: amountPaid,
+              },
+            })
+              .then((resp: any) => {
+                if (resp && resp.data && resp.data.pharmaPaymentStatus) {
+                  const { paymentStatus, paymentRefId } = resp.data.pharmaPaymentStatus;
+                  setPaymentStatusData(resp.data.pharmaPaymentStatus);
+                  /* WebEngage Tracking Start*/
+                  paymentRefId &&
+                    paymentStatusTracking({
+                      orderId: paymentRefId,
+                      paymentStatus,
+                      type: 'Pharmacy',
+                      orderAutoId:
+                        typeof params.orderAutoId === 'string'
+                          ? parseInt(params.orderAutoId)
+                          : params.orderAutoId,
+                    });
+                  /* WebEngage Tracking End*/
+                } else {
+                  // redirect to medicine
+                  paymentStatusRedirect(clientRoutes.medicines());
+                }
+              })
+              .catch(() => {
+                paymentStatusRedirect(clientRoutes.medicines());
               });
-            /* WebEngage Tracking End*/
-          } else {
-            // redirect to medicine
-            paymentStatusRedirect(clientRoutes.medicines());
           }
         })
         .catch(() => {
-          paymentStatusRedirect(clientRoutes.medicines());
+          paymentStatusRedirect(clientRoutes.yourOrders());
         });
     }
-  }, []);
+  }, [currentPatient, params.orderAutoId]);
 
   const paymentStatus = getPaymentStatus();
   const paymentDetail =
