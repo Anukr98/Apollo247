@@ -19,6 +19,7 @@ import {
   UPDATE_SAVE_EXTERNAL_CONNECT,
   UPDATE_WHATSAPP_STATUS,
   GET_APPOINTMENT_RESCHEDULE_DETAILS,
+  SAVE_SEARCH,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { GetDoctorNextAvailableSlot } from '@aph/mobile-patients/src/graphql/types/GetDoctorNextAvailableSlot';
 import { linkUhidsVariables } from '@aph/mobile-patients/src/graphql/types/linkUhids';
@@ -58,6 +59,7 @@ import {
   MessageInput,
   REQUEST_ROLES,
   STATUS,
+  SEARCH_TYPE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { insertMessageVariables } from '@aph/mobile-patients/src/graphql/types/insertMessage';
 import {
@@ -73,6 +75,7 @@ import {
   getAppointmentRescheduleDetails,
   getAppointmentRescheduleDetailsVariables,
 } from '@aph/mobile-patients/src/graphql/types/getAppointmentRescheduleDetails';
+import { saveSearch, saveSearchVariables } from '../graphql/types/saveSearch';
 
 export const getNextAvailableSlots = (
   client: ApolloClient<object>,
@@ -543,5 +546,63 @@ export const getRescheduleAppointmentDetails = (
       appointmentId: appointmentId,
     },
     fetchPolicy: 'no-cache',
+  });
+};
+
+export const saveSearchDoctor = (client: ApolloClient<object>, typeId: any, patientId: string) => {
+  return new Promise((res, rej) => {
+    const searchInput = {
+      type: SEARCH_TYPE.DOCTOR,
+      typeId: typeId,
+      patient: patientId,
+    };
+
+    console.log('searchInput', searchInput);
+    client
+      .mutate<saveSearch, saveSearchVariables>({
+        mutation: SAVE_SEARCH,
+        variables: {
+          saveSearchInput: searchInput,
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((data: any) => {
+        res({ data });
+      })
+      .catch((e) => {
+        CommonBugFender('clientCalls_saveSearchDoctor', e);
+        rej({ error: e });
+      });
+  });
+};
+
+export const saveSearchSpeciality = (
+  client: ApolloClient<object>,
+  typeId: any,
+  patientId: string
+) => {
+  return new Promise((res, rej) => {
+    const searchInput = {
+      type: SEARCH_TYPE.SPECIALTY,
+      typeId: typeId,
+      patient: patientId,
+    };
+
+    console.log('searchInput', searchInput);
+    client
+      .mutate<saveSearch, saveSearchVariables>({
+        mutation: SAVE_SEARCH,
+        variables: {
+          saveSearchInput: searchInput,
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((data: any) => {
+        res({ data });
+      })
+      .catch((e) => {
+        CommonBugFender('clientCalls_saveSearchSpeciality', e);
+        rej({ error: e });
+      });
   });
 };
