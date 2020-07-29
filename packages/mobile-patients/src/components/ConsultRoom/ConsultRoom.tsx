@@ -1424,6 +1424,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     postHomeWEGEvent(WebEngageEventName.LEARN_MORE_ABOUT_CORONAVIRUS);
     props.navigation.navigate(AppRoutes.CovidScan, {
       covidUrl: AppConfig.Configuration.COVID_LATEST_ARTICLES_URL,
+      mobileNumber: currentPatient && g(currentPatient, 'mobileNumber') 
+      ? currentPatient.mobileNumber
+      : ""
     });
   };
 
