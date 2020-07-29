@@ -597,10 +597,10 @@ export const MedicineLanding: React.FC = (props: any) => {
   const latestMedicineOrderDate =
     latestMedicineOrder && moment(latestMedicineOrder.createdDate).format('MMMM D, YYYY');
   const storeAddress = latestMedicineOrder && JSON.parse(latestMedicineOrder.shopAddress);
-  const medicineOrderType =
+  const isOfflineOrder =
     latestMedicineOrder && latestMedicineOrder.currentStatus === 'PURCHASED_IN_STORE';
-  const orderCurrentStatus =
-    medicineOrderType || (latestMedicineOrder && latestMedicineOrder.currentStatus === 'DELIVERED');
+  const orderDelivered =
+    isOfflineOrder || (latestMedicineOrder && latestMedicineOrder.currentStatus === 'DELIVERED');
 
   const onePrimaryUser =
     allCurrentPatients && allCurrentPatients.filter((x) => x.relation === Relation.ME).length === 1;
@@ -695,7 +695,7 @@ export const MedicineLanding: React.FC = (props: any) => {
                               </span>
                             </Link>
                           </div>
-                          {isSignedIn && latestMedicineOrder && orderCurrentStatus ? (
+                          {isSignedIn && latestMedicineOrder && orderDelivered ? (
                             <div className={classes.medicineReviewReorder}>
                               <div className={classes.serviceType}>
                                 <span className={classes.serviceIcon}>
@@ -703,11 +703,9 @@ export const MedicineLanding: React.FC = (props: any) => {
                                 </span>
                                 <span className={classes.linkText}>
                                   {productsRecommended.length > 1
-                                    ? `${
-                                        productsRecommended[0].medicineName
-                                      } + ${productsRecommended.length - 1} item${
-                                        productsRecommended.length > 2 ? 's ' : ' '
-                                      }`
+                                    ? `${productsRecommended[0].medicineName} + ${
+                                        productsRecommended.length - 1
+                                      } item${productsRecommended.length > 2 ? 's ' : ' '}`
                                     : productsRecommended[0].medicineName}
                                 </span>
                                 <span className={classes.reOrder}>
@@ -724,8 +722,8 @@ export const MedicineLanding: React.FC = (props: any) => {
                               </div>
                               <div className={classes.serviceArea}>
                                 <span>
-                                  {medicineOrderType
-                                    ? `Ordered at Apollo Pharmacy ${storeAddress.storename} on ${latestMedicineOrderDate}`
+                                  {isOfflineOrder
+                                    ? `Ordered at ${storeAddress.storename} on ${latestMedicineOrderDate}`
                                     : `Ordered online on ${latestMedicineOrderDate}`}
                                 </span>
                               </div>
