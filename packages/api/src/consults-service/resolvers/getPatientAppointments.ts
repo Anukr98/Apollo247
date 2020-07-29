@@ -185,14 +185,14 @@ const getPatinetAppointments: Resolver<
   { patientAppointmentsInput },
   { consultsDb, doctorsDb, patientsDb, mobileNumber }
 ) => {
-    const { patientId } = patientAppointmentsInput;
-    const patientRepo = patientsDb.getCustomRepository(PatientRepository);
-    const appts = consultsDb.getCustomRepository(AppointmentRepository);
-    const primaryPatientIds = await patientRepo.getLinkedPatientIds({ patientId });
-    const patinetAppointments = await appts.getPatientUpcomingAppointments(primaryPatientIds);
+  const { patientId } = patientAppointmentsInput;
+  const patientRepo = patientsDb.getCustomRepository(PatientRepository);
+  const appts = consultsDb.getCustomRepository(AppointmentRepository);
+  const primaryPatientIds = await patientRepo.getLinkedPatientIds({ patientId });
+  const patinetAppointments = await appts.getPatientUpcomingAppointments(primaryPatientIds);
 
-    return { patinetAppointments };
-  };
+  return { patinetAppointments };
+};
 
 const getPatientFutureAppointmentCount: Resolver<
   null,
@@ -234,16 +234,6 @@ const getPatientPersonalizedAppointments: Resolver<
   ConsultServiceContext,
   PersonalizedAppointmentResult
 > = async (parent, args, { consultsDb, doctorsDb, patientsDb, mobileNumber }) => {
-  // Read data from cache
-  const appointmentsFromCache = await getPersonalizedAppointmentFromCache(args.patientUhid);
-  if (appointmentsFromCache !== null) {
-    const response: PersonalizedAppointmentResult = JSON.parse(appointmentsFromCache);
-    response.appointmentDetails.appointmentDateTime = new Date(
-      response.appointmentDetails.appointmentDateTime
-    );
-    return response;
-  }
-
   // Following code will be executed if data is not found in cache
 
   const MAX_DAYS_PAST_CONSULT: number = 30;
@@ -252,7 +242,6 @@ const getPatientPersonalizedAppointments: Resolver<
   const apptRepo = consultsDb.getCustomRepository(AppointmentRepository);
 
   let uhid = args.patientUhid;
-
   if (uhid == '' || uhid == null) {
     throw new AphError(AphErrorMessages.INVALID_UHID, undefined, {});
   }
@@ -262,6 +251,30 @@ const getPatientPersonalizedAppointments: Resolver<
   }
   if (mobileNumber != patientDetails.mobileNumber) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_DETAILS, undefined, {});
+  }
+
+  // Read data from cache
+  const appointmentsFromCache = await getPersonalizedAppointmentFromCache(args.patientUhid);
+  if (appointmentsFromCache !== null) {
+    let countOfAppointmentBooked = -1;
+    const response: PersonalizedAppointmentResult = JSON.parse(appointmentsFromCache);
+    if (response.appointmentDetails.doctorId && response.appointmentDetails.appointmentDateTime) {
+      response.appointmentDetails.appointmentDateTime = new Date(
+        response.appointmentDetails.appointmentDateTime
+      );
+
+      countOfAppointmentBooked = await validateAppointmentBooked(
+        apptRepo,
+        response.appointmentDetails.doctorId,
+        patientDetails.id,
+        response.appointmentDetails.appointmentDateTime
+      );
+    }
+    if (countOfAppointmentBooked == 0) {
+      return response;
+    }
+    // If appoinment is booked, then cached appointment can't be returned.
+    // We will have perform a fetch of appointmentsfrom PRISM, and return the correct appointment
   }
 
   const offlineApptsResponse = await getOfflineAppointmentsFromPrism(uhid);
@@ -304,13 +317,13 @@ const getPatientPersonalizedAppointments: Resolver<
       const apolloDoctorId = mapMedMantraApolloDoctor.get(appt.doctorid) || '';
       const patientId = patientDetails ? patientDetails.id : '';
       if (mapMedMantraApolloDoctor.has(appt.doctorid)) {
-        let apptDetailsBooked = -1;
-        apptDetailsBooked = await apptRepo.checkIfAppointmentBooked(
+        let apptBooked = await validateAppointmentBooked(
+          apptRepo,
           apolloDoctorId,
           patientId,
           new Date(appt.consultedtime)
         );
-        if (apptDetailsBooked == 0) {
+        if (apptBooked == 0) {
           const apptDetailsOffline: PersonalizedAppointment = {
             id: appt.id,
             hospitalLocation: appt.location_name,
@@ -359,6 +372,21 @@ export const getPatinetAppointmentsResolvers = {
     getPatientPersonalizedAppointments,
   },
 };
+async function validateAppointmentBooked(
+  apptRepo: AppointmentRepository,
+  apolloDoctorId: string,
+  patientId: string,
+  consultedtime: Date
+) {
+  let appointmentBooked = -1;
+  appointmentBooked = await apptRepo.checkIfAppointmentBooked(
+    apolloDoctorId,
+    patientId,
+    consultedtime
+  );
+  return appointmentBooked;
+}
+
 async function getOfflineAppointmentsFromPrism(uhid: string) {
   let offlineApptsList;
   const apptsResp = await fetch(
