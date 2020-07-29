@@ -45,6 +45,8 @@ import { useAuth } from 'hooks/authHooks';
 import axios from 'axios';
 import { gtmTracking } from 'gtmTracking';
 import { SpecialtySearch } from 'components/SpecialtySearch';
+import { ManageProfile } from 'components/ManageProfile';
+import { hasOnePrimaryUser } from 'helpers/onePrimaryUser';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -376,6 +378,7 @@ interface SpecialityProps {
 
 export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
   const classes = useStyles({});
+  const onePrimaryUser = hasOnePrimaryUser();
   const scrollToRef = useRef<HTMLDivElement>(null);
   const { currentPincode, currentLong, currentLat } = useLocationDetails();
   const { currentPatient } = useAllCurrentPatients();
@@ -856,6 +859,7 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
       </div>
       <BottomLinks />
       <NavigationBottom />
+      {!onePrimaryUser && <ManageProfile />}
     </div>
   );
 };
