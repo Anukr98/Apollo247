@@ -8,7 +8,7 @@ import { useShoppingCart } from './MedicinesCartProvider';
 import axios, { AxiosError } from 'axios';
 import { Alerts } from 'components/Alerts/Alerts';
 import { checkServiceAvailability } from 'helpers/MedicineApiCalls';
-import { findAddrComponents } from 'helpers/commonHelpers';
+import { findAddrComponents, isActualUser } from 'helpers/commonHelpers';
 import { pincodeAutoSelectTracking, pincodeManualSelectTracking } from 'webEngageTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -375,6 +375,7 @@ export const MedicineLocationSearch: React.FC = (props) => {
         setMutationLoading(false);
       });
   };
+  const isUser = isActualUser();
 
   return (
     <div className={classes.userLocation}>
@@ -483,7 +484,7 @@ export const MedicineLocationSearch: React.FC = (props) => {
           </div>
         </div>
       </AphDialog>
-      {typeof window !== 'undefined' && window.navigator && (
+      {typeof window !== 'undefined' && window.navigator && isUser && (
         <Popover
           open={isPopoverOpen}
           anchorEl={mascotRef.current}
