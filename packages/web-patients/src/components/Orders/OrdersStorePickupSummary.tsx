@@ -428,7 +428,7 @@ export const OrdersStorePickupSummary: React.FC<OrdersStorePickupSummaryProps> =
                         <div className={classes.medicineName}>
                           {getMedicineName(item.medicineName, item.mou)}
                         </div>
-                        <div>{item.quantity.toFixed(0)}</div>
+                        <div>{item.quantity.toFixed(2)}</div>
                         <div className={classes.priceCol}>Rs.{item.price}</div>
                       </div>
                     )
