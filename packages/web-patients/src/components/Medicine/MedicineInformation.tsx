@@ -773,7 +773,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                         brandId: '',
                         categoryName: params.searchText || '',
                         categoryId: data.category_id,
-                        discountedPrice: data.special_price,
+                        discountedPrice: data.special_price || data.price,
                         price: data.price,
                         quantity: 1,
                       });
