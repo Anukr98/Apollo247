@@ -4,7 +4,7 @@ import { Theme } from '@material-ui/core';
 import moment from 'moment';
 import {
   getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails as OrderDetails,
-  getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrderPayments as Payments,
+  getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus as StatusDetails,
 } from 'graphql/types/getMedicineOrderOMSDetails';
 import { CircularProgress } from '@material-ui/core';
 import { MEDICINE_ORDER_STATUS } from 'graphql/types/globalTypes';
@@ -296,7 +296,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     priceCol: {
       textAlign: 'right',
-    }
+    },
   };
 });
 
@@ -310,8 +310,8 @@ export const OrdersStorePickupSummary: React.FC<OrdersStorePickupSummaryProps> =
   const { orderDetailsData, isLoading } = props;
   const orderStatusList =
     orderDetailsData &&
-      orderDetailsData.medicineOrdersStatus &&
-      orderDetailsData.medicineOrdersStatus.length > 0
+    orderDetailsData.medicineOrdersStatus &&
+    orderDetailsData.medicineOrdersStatus.length > 0
       ? orderDetailsData.medicineOrdersStatus
       : [];
   const orderItems = (orderDetailsData && orderDetailsData.medicineOrderLineItems) || [];
@@ -339,6 +339,17 @@ export const OrdersStorePickupSummary: React.FC<OrdersStorePickupSummaryProps> =
         : moment(statusDate).format('ddd, D MMMM, hh:mm A');
     }
     return null;
+  };
+
+  const getFormattedDate = () => {
+    const deliveredDateDetails = orderStatusList.find(
+      (statusDetails: StatusDetails) =>
+        statusDetails.orderStatus === MEDICINE_ORDER_STATUS.PURCHASED_IN_STORE
+    );
+    if (deliveredDateDetails) {
+      const statusDate = deliveredDateDetails.statusDate;
+      return moment(statusDate).format('ddd, D MMMM');
+    }
   };
 
   const getStoreAddress = (storeAddress: string) => {
@@ -409,7 +420,11 @@ export const OrdersStorePickupSummary: React.FC<OrdersStorePickupSummaryProps> =
         </div>
         <div className={classes.itemsHeader}>
           <span className={classes.caps}>Item Details</span>
-          <span className={classes.itemDelivered}>{/*Delivered Tue, 27 April*/}</span>
+          <span className={classes.itemDelivered}>
+            {orderDetailsData &&
+              orderDetailsData.currentStatus === MEDICINE_ORDER_STATUS.PURCHASED_IN_STORE &&
+              `Delivered ${getFormattedDate()}`}
+          </span>
         </div>
         <div className={classes.summaryDetails}>
           <div className={classes.detailsTable}>
@@ -449,6 +464,10 @@ export const OrdersStorePickupSummary: React.FC<OrdersStorePickupSummaryProps> =
               <span>Product Discount</span>
               <span>- Rs. {discount.toFixed(2)}</span>
             </div>
+            <div className={classes.priceRow}>
+              <span>Redeemed Amount</span>
+              <span>- Rs. {(orderDetailsData.redeemedAmount || 0).toFixed(2)}</span>
+            </div>
             <div className={`${classes.priceRow} ${classes.totalPaid}`}>
               <span>Total</span>
               <span>Rs.{(orderDetailsData.estimatedAmount || 0).toFixed(2)}</span>
@@ -458,7 +477,15 @@ export const OrdersStorePickupSummary: React.FC<OrdersStorePickupSummaryProps> =
       </div>
 
       <div className={classes.reorderBtn}>
-        <ReOrder orderDetailsData={orderDetailsData} />
+        <ReOrder
+          orderDetailsData={orderDetailsData}
+          type="Order Details"
+          patientName={
+            orderDetailsData.patient && orderDetailsData.patient.firstName
+              ? orderDetailsData.patient.firstName
+              : ''
+          }
+        />
       </div>
       {/* <div className={classes.bottomActions}>
           <AphButton>Download</AphButton>
