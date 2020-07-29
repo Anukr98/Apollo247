@@ -161,6 +161,16 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
         setIsLoading(false);
         setListFetching(false);
       });
+
+    const movedFrom = props.navigation.getParam('movedFrom');
+    if (typeof movedFrom !== 'undefined') {
+      const eventAttributes: WebEngageEvents[WebEngageEventName.CATEGORY_PAGE_VIEWED] = {
+        source: movedFrom,
+        CategoryId: category_id,
+        CategoryName: pageTitle,
+      };
+      postWebEngageEvent(WebEngageEventName.CATEGORY_PAGE_VIEWED, eventAttributes);
+    }
   }, []);
 
   const savePastSeacrh = (sku: string, name: string) =>
@@ -331,6 +341,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
         onPress={() => {
           props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
             sku: item.sku,
+            movedFrom: 'search'
           });
           resetSearchState();
         }}
@@ -505,6 +516,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
           props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
             sku: medicine.sku,
             title: medicine.name,
+            movedFrom: 'search',
           });
         }}
         medicineName={medicine.name}

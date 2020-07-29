@@ -228,10 +228,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         default:
           getData('ConsultRoom', undefined, true);
           // webengage event
-          const eventAttributes: WebEngageEvents[WebEngageEventName.DEEPLINK_CONSULTROOM_SCREEN] = {
+          const eventAttributes: WebEngageEvents[WebEngageEventName.HOME_PAGE_VIEWED] = {
             source: 'Deeplink',
           };
-          postWebEngageEvent(WebEngageEventName.DEEPLINK_CONSULTROOM_SCREEN, eventAttributes);
+          postWebEngageEvent(WebEngageEventName.HOME_PAGE_VIEWED, eventAttributes);
           break;
       }
       console.log('route', route);
@@ -437,17 +437,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           const [itemId, name] = id.split(',');
           console.log(itemId, name);
 
-          // webengage event
-          const eventAttributes: WebEngageEvents[WebEngageEventName.DEEPLINK_CATEGORY_SCREEN] = {
-            source: 'Deeplink',
-            CategoryId: itemId,
-            CategoryName: name,
-          };
-          postWebEngageEvent(WebEngageEventName.DEEPLINK_CATEGORY_SCREEN, eventAttributes);
-
           props.navigation.navigate(AppRoutes.SearchByBrand, {
             category_id: itemId,
             title: `${name ? name : 'Products'}`.toUpperCase(),
+            movedFrom: 'deeplink'
           });
         }
         break;

@@ -345,7 +345,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           ? 'Non Cart'
           : 'Cart',
         noOfItemsNotAvailable: unavailableItems.length,
-        source: 'Order Details',
+        source: selectedTab,
         'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
         'Patient UHID': g(currentPatient, 'uhid'),
         Relation: g(currentPatient, 'relation'),

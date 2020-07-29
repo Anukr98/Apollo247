@@ -40,7 +40,6 @@ import {
   CommonBugFender,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { useApolloClient } from 'react-apollo-hooks';
-import { postReorderMedicines } from '../../helpers/webEngageEventHelpers';
 import { DownloadDocumentsInput } from '../../graphql/types/globalTypes';
 import { DOWNLOAD_DOCUMENT } from '../../graphql/profiles';
 import { downloadDocuments } from '../../graphql/types/downloadDocuments';
@@ -221,6 +220,19 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
             prismPrescriptionFileId: prismFile,
           });
         }
+
+        const eventAttributes: WebEngageEvents[WebEngageEventName.RE_ORDER_MEDICINE] = {
+          orderType: 'Cart',
+          source: 'PHR',
+          'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+          'Patient UHID': g(currentPatient, 'uhid'),
+          Relation: g(currentPatient, 'relation'),
+          'Patient Age': Math.round(moment().diff(currentPatient.dateOfBirth, 'years', true)),
+          'Patient Gender': g(currentPatient, 'gender'),
+          'Mobile Number': g(currentPatient, 'mobileNumber'),
+          'Customer ID': g(currentPatient, 'id'),
+        };
+        postWebEngageEvent(WebEngageEventName.RE_ORDER_MEDICINE, eventAttributes);
 
         props.navigation.navigate(AppRoutes.YourCart);
       })
@@ -473,7 +485,6 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
               onPress={() => {
                 addToCart();
                 CommonLogEvent('MEDICINE_CONSULT_DETAILS', 'Add to cart');
-                postReorderMedicines('PHR', currentPatient);
               }}
             />
           </View>
