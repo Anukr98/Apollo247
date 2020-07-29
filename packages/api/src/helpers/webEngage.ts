@@ -36,6 +36,16 @@ export interface WebEngageEventData {
   DSP: string;
   AWBNumber: string;
   reasonCode: string;
+  consultID: string;
+  displayID: string;
+  consultMode: string;
+  doctorName: string;
+}
+
+export enum WebEngageEvent {
+  DOCTOR_IN_CHAT_WINDOW = 'DOCTOR_IN_CHAT_WINDOW',
+  DOCTOR_LEFT_CHAT_WINDOW = 'DOCTOR_LEFT_CHAT_WINDOW',
+  DOCTOR_SENT_MESSAGE = 'DOCTOR_SENT_MESSAGE',
 }
 
 export async function postEvent(uploadParams: Partial<WebEngageInput>): Promise<WebEngageResponse> {
