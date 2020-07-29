@@ -447,6 +447,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
               title: 'Thanks :)',
               description: 'Your feedback has been submitted. Thanks for your time.',
             });
+            setShowRateDeliveryBtn(false);
           }}
         />
       </>
