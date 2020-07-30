@@ -19,3 +19,11 @@ export type BlockUserPointsResponse = {
   RedeemedPoints: number;
   PointsValue: number;
 };
+
+export type UnblockPointsRequest = {
+  BusinessUnit: string;
+  StoreCode: ONE_APOLLO_STORE_CODE;
+  MobileNumber: string;
+  PointsToRelease: string;
+  RedemptionRequestNumber: string;
+};

@@ -28,10 +28,9 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
   }
 
   getInvoiceDetailsByOrderId(orderId: MedicineOrders['orderAutoId']) {
-    const startDateTime = '2020-06-10 15:45:29.453';
     return MedicineOrderInvoice.find({
       select: ['billDetails', 'itemDetails'],
-      where: { orderNo: orderId, createdDate: MoreThan(startDateTime) },
+      where: { orderNo: orderId },
     });
   }
 
@@ -56,6 +55,23 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
       ])
       .where('mo.orderAutoId = :orderAutoId', { orderAutoId })
       .getRawOne();
+  }
+  getRefundsAndPaymentsByOrderId(id: MedicineOrderPayments['medicineOrders']) {
+    try {
+      return (
+        this.createQueryBuilder()
+          .select('medicineOrderPayments')
+          //.addSelect('SUM(medicineOrderRefunds."refundAmount")', 'totalRefundAmount')
+          .where('medicinePayments.medicineOrders = :id', { id })
+          .leftJoinAndSelect('medicineOrderPayments."medicineOrderRefunds"', 'medicineOrderRefunds')
+          .getRawOne()
+      );
+    } catch (getRefundError) {
+      console.log('Error------------------');
+      throw new AphError(AphErrorMessages.GET_REFUND_ERROR, undefined, {
+        getRefundError,
+      });
+    }
   }
 
   saveMedicineOrderLineItem(lineItemAttrs: Partial<MedicineOrderLineItems>) {
@@ -558,5 +574,15 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
 
   saveMedicineOrderAddress(orderAddressAttrs: Partial<MedicineOrderAddress>) {
     return MedicineOrderAddress.create(orderAddressAttrs).save();
+  }
+  getMedicineOrderWithShipments(orderAutoId: number) {
+    return this.findOne({
+      where: { orderAutoId },
+      relations: [
+        'patient',
+        'medicineOrderShipments',
+        'medicineOrderShipments.medicineOrdersStatus',
+      ],
+    });
   }
 }
