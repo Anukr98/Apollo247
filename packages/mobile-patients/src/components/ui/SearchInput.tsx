@@ -46,7 +46,7 @@ export const SearchInput: React.FC<SearchInputProps> = (props) => {
       containerStyle: isFocusedStyle
         ? {
             marginBottom: 20,
-            marginTop: 8,
+            marginTop: 12,
           }
         : {
             marginBottom: 20,

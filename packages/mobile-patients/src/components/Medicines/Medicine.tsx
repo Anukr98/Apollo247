@@ -148,6 +148,20 @@ const styles = StyleSheet.create({
     alignContent: 'center',
     justifyContent: 'center',
   },
+  searchBarSuggestionsViewStyle: {
+    flex: 1,
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    left: 0,
+    top: 76,
+  },
+  searchBarAndSuggestionMainViewStyle: {
+    flex: 1,
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+  },
 });
 
 export interface MedicineProps
@@ -1791,7 +1805,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           </View>
         ) : (
           !!searchText &&
-          searchText.length > 2 && (
+          searchText.length > 2 &&
+          medicineList.length > 0 && (
             <FlatList
               keyboardShouldPersistTaps="always"
               // contentContainerStyle={{ backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR }}
@@ -1945,11 +1960,28 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             isSearchFocused && searchText.length > 2 && medicineList.length > 0 ? { flex: 1 } : {},
           ]}
         >
-          <View style={[isSearchFocused ? { flex: 1 } : { flex: 1 }]}>
-            <View style={{ backgroundColor: 'white' }}>{renderSearchBar()}</View>
-            {renderSearchBarAndSuggestions()}
+          <View
+            style={[isSearchFocused ? styles.searchBarAndSuggestionMainViewStyle : { flex: 1 }]}
+          >
+            <View
+              style={{
+                backgroundColor: 'white',
+                position: isSearchFocused ? 'absolute' : 'relative',
+                width: '100%',
+              }}
+            >
+              {renderSearchBar()}
+            </View>
+            <View style={styles.searchBarSuggestionsViewStyle}>
+              {renderSearchBarAndSuggestions()}
+            </View>
           </View>
-          <View style={[isSearchFocused && searchText.length > 2 ? { height: 0 } : {}]}>
+          <View
+            style={[
+              { marginTop: isSearchFocused ? 76 : 0 },
+              isSearchFocused && searchText.length > 2 ? { height: 0, marginTop: 104 } : {},
+            ]}
+          >
             {renderSections()}
           </View>
         </ScrollView>
