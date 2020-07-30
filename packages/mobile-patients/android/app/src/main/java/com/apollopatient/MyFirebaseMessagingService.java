@@ -42,8 +42,8 @@ public class MyFirebaseMessagingService
             Log.e("RemoteMessage", remoteMessage.getData().toString());
 
             String notifDataType = remoteMessage.getData().get("type");
-            String startCallType="call_started";
-            String disconnectCallType="call_disconnected";
+            String startCallType="call_start";
+            String disconnectCallType="call_disconnect";
             if(startCallType.equals(notifDataType)|| disconnectCallType.equals(notifDataType)) {
                     showUnlockScreen(remoteMessage,!isAppRunning());
                     return;
@@ -75,8 +75,8 @@ public class MyFirebaseMessagingService
 
     private void showUnlockScreen(RemoteMessage remoteMessage,boolean isAppRunning) {
         String notifDataType = remoteMessage.getData().get("type");
-        String startCallType="call_started";
-        String disconnectCallType="call_disconnected";
+        String startCallType="call_start";
+        String disconnectCallType="call_disconnect";
         if( startCallType.equals(notifDataType)) {
                 Intent i = new Intent(getApplicationContext(), UnlockScreenActivity.class);
                 i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);

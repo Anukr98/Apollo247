@@ -128,17 +128,13 @@ public class UnlockScreenActivity extends ReactActivity implements UnlockScreenA
             }
         });
 
-//        Handler handler = new Handler();
-//
-//        handler.postDelayed(new Runnable() {
-//            public void run() {
-//                Uri alarmSound =
-//                        RingtoneManager. getDefaultUri (RingtoneManager. TYPE_NOTIFICATION );
-//                MediaPlayer mp = MediaPlayer. create (getApplicationContext(), alarmSound);
-//                mp.start();
-//                finish();
-//            }
-//        }, 60000);
+        Handler handler = new Handler();
+
+        handler.postDelayed(new Runnable() {
+            public void run() {
+                finish();
+            }
+        }, 45000);
 
     }
 
