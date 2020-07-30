@@ -45,6 +45,18 @@ const useStyles = makeStyles((theme: Theme) => {
     cartItemSubheading: {
       marginTop: 10,
     },
+    reorderBtn: {
+      backgroundColor: 'transparent',
+      padding: 0,
+      fontSize: 12,
+      fontWeight: 500,
+      color: '#fcb716',
+      boxShadow: 'none',
+      '&:hover': {
+        backgroundColor: 'transparent',
+        color: '#fcb716',
+      },
+    },
   };
 });
 
@@ -68,7 +80,8 @@ export const ReOrder: React.FC<ReOrderProps> = (props) => {
       <Route
         render={({ history }) => (
           <AphButton
-            color={type === 'Order Details' ? 'primary' : 'secondary'}
+            color='primary'
+            className={type === 'Order Details' ? '' : classes.reorderBtn}
             onClick={async () => {
               setIsLoading(true);
               const {
@@ -91,7 +104,7 @@ export const ReOrder: React.FC<ReOrderProps> = (props) => {
               }
             }}
           >
-            {isLoading ? <CircularProgress size={22} color="secondary" /> : 'Re-order'}
+            {isLoading ? <CircularProgress size={22} color="secondary" /> : type === 'Order Details' ? 'Re-order' : 'Reorder'}
           </AphButton>
         )}
       />
