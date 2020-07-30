@@ -18,6 +18,8 @@ import fetchUtil from 'helpers/fetch';
 import { NavigationBottom } from 'components/NavigationBottom';
 import { BottomLinks } from 'components/BottomLinks';
 import { useAllCurrentPatients } from 'hooks/authHooks';
+import { ManageProfile } from 'components/ManageProfile';
+import { hasOnePrimaryUser } from 'helpers/onePrimaryUser';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -224,6 +226,7 @@ const useStyles = makeStyles((theme: Theme) => {
 
 export const CovidLanding: React.FC = (props: any) => {
   const classes = useStyles({});
+  const onePrimaryUser = hasOnePrimaryUser();
   const isDesktopOnly = useMediaQuery('(min-width:768px)');
   const headingArr = [
     {
@@ -467,6 +470,7 @@ export const CovidLanding: React.FC = (props: any) => {
       </div>
       <BottomLinks />
       {!isWebView && <NavigationBottom />}
+      {!onePrimaryUser && <ManageProfile />}
     </div>
   );
 };

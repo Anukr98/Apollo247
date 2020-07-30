@@ -11,7 +11,7 @@ import { MEDICINE_ORDER_STATUS } from 'profiles-service/entities';
 import { StoreAlertResp } from 'types/medicineOrderTypes';
 import { ApiConstants } from 'ApiConstants';
 import { WebEngageInput, postEvent } from 'helpers/webEngage';
-import { format } from 'date-fns';
+import { format, addMinutes } from 'date-fns';
 
 export const alertMedicineOrderPickupTypeDefs = gql`
   input AlertMedicineOrderPickupInput {
@@ -143,7 +143,7 @@ const alertMedicineOrderPickup: Resolver<
     eventName: ApiConstants.MEDICINE_ORDER_KERB_STORE_NOTIFICATION_EVENT_NAME.toString(),
     eventData: {
       orderId: orderDetails.orderAutoId,
-      statusDateTime: format(new Date(), "yyyy-MM-dd'T'HH:mm:ss'+0530'"),
+      statusDateTime: format(addMinutes(new Date(), +330), "yyyy-MM-dd'T'HH:mm:ss'+0530'"),
     },
   };
   postEvent(postBody);

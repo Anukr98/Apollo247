@@ -995,11 +995,15 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
           onPress={() => {
             if (rowData.searchType === 'DOCTOR') {
               CommonLogEvent(AppRoutes.DoctorSearch, 'Doctor Search Move clicked');
-              props.navigation.navigate(AppRoutes.DoctorDetails, { doctorId: rowData.typeId });
+              props.navigation.navigate(AppRoutes.DoctorDetails, {
+                doctorId: rowData.typeId,
+                callSaveSearch: 'true',
+              });
             }
             if (rowData.searchType === 'SPECIALTY') {
               CommonLogEvent(AppRoutes.DoctorSearch, 'Doctor Search Move  SPECIALTY clicked');
-              if (rowData.typeId && rowData.name) onClickSearch(rowData.typeId, rowData.name);
+              if (rowData.typeId && rowData.name)
+                onClickSearch(rowData.typeId, rowData.name, 'true');
               // props.navigation.navigate('DoctorSearchListing', { speciality: rowData.name });
             }
           }}
@@ -1062,7 +1066,12 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
                       onPress={() => {
                         CommonLogEvent(AppRoutes.DoctorSearch, item.name);
                         postSpecialityEvent(item.name, item.id);
-                        onClickSearch(item.id, item.name, item.specialistPluralTerm || '');
+                        onClickSearch(
+                          item.id,
+                          item.name,
+                          searchText.length > 2 ? 'true' : 'false',
+                          item.specialistPluralTerm || ''
+                        );
                         const searchInput = {
                           type: SEARCH_TYPE.SPECIALTY,
                           typeId: item.id,
@@ -1343,7 +1352,12 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
               onPress={() => {
                 CommonLogEvent(AppRoutes.DoctorSearch, rowData.name);
                 postSpecialityEvent(rowData.name, rowData.id);
-                onClickSearch(rowData.id, rowData.name, rowData.specialistPluralTerm || '');
+                onClickSearch(
+                  rowData.id,
+                  rowData.name,
+                  isSearchResult ? 'true' : 'false',
+                  rowData.specialistPluralTerm || ''
+                );
                 const searchInput = {
                   type: SEARCH_TYPE.SPECIALTY,
                   typeId: rowData.id,
@@ -1413,10 +1427,16 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     } else return null;
   };
 
-  const onClickSearch = (id: string, name: string, specialistPluralTerm: string) => {
+  const onClickSearch = (
+    id: string,
+    name: string,
+    callSaveSearch: string,
+    specialistPluralTerm?: string
+  ) => {
     props.navigation.navigate('DoctorSearchListing', {
       specialityId: id,
       specialityName: name,
+      callSaveSearch: callSaveSearch,
       specialistPluralTerm,
       filters: filtersList,
     });
@@ -1523,6 +1543,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
                 });
                 props.navigation.navigate(AppRoutes.DoctorDetails, {
                   doctorId: rowData.id,
+                  callSaveSearch: 'true',
                 });
               }}
               onPressConsultNowOrBookAppointment={(type) => {
@@ -1572,6 +1593,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
                 });
                 props.navigation.navigate(AppRoutes.DoctorDetails, {
                   doctorId: rowData.id,
+                  callSaveSearch: 'true',
                 });
               }}
               onPressConsultNowOrBookAppointment={(type) => {

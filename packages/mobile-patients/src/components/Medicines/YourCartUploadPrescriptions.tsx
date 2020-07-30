@@ -407,7 +407,7 @@ export const YourCartUploadPrescriptions: React.FC<YourCartUploadPrescriptionPro
       })
       .then(({ data }) => {
         console.log({ data });
-        const { errorCode, orderAutoId } = g(data, 'SavePrescriptionMedicineOrder') || {};
+        const { errorCode, orderAutoId } = g(data, 'savePrescriptionMedicineOrderOMS') || {};
         postwebEngageSubmitPrescriptionEvent(orderAutoId);
         if (errorCode) {
           renderErrorAlert(`Something went wrong, unable to place order.`);

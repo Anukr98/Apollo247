@@ -11,7 +11,7 @@ import {
 } from 'notifications-service/resolvers/notifications';
 import { ApiConstants } from 'ApiConstants';
 import { postEvent, WebEngageInput } from 'helpers/webEngage';
-import { format } from 'date-fns';
+import { format, addMinutes } from 'date-fns';
 
 export const pharmaOrderPlacedTypeDefs = gql`
   input OrderPlacedInput {
@@ -91,7 +91,7 @@ const saveOrderPlacedStatus: Resolver<
     eventData: {
       orderId: orderDetails.orderAutoId,
       orderType: orderDetails.orderType,
-      statusDateTime: format(new Date(), "yyyy-MM-dd'T'HH:mm:ss'+0530'"),
+      statusDateTime: format(addMinutes(new Date(), +330), "yyyy-MM-dd'T'HH:mm:ss'+0530'"),
       orderAmount: orderDetails.estimatedAmount.toString(),
       orderTAT: orderDetails.orderTat,
     },

@@ -278,6 +278,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     },
   ];
   const [FilterData, setFilterData] = useState<filterDataType[]>([...filterData]);
+  const callSaveSearch = props.navigation.getParam('callSaveSearch');
+
   useEffect(() => {
     setDeepLinkFilter();
     setDeepLinkDoctorTypeFilter();
@@ -993,10 +995,12 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           style={styles}
           numberOfLines={numberOfLines}
           availableModes={getDoctorAvailableMode(rowData.id)}
+          callSaveSearch={callSaveSearch}
           onPress={() => {
             postDoctorClickWEGEvent(rowData, 'List');
             props.navigation.navigate(AppRoutes.DoctorDetails, {
               doctorId: rowData.id,
+              callSaveSearch: callSaveSearch,
             });
           }}
           onPressConsultNowOrBookAppointment={(type) => {
