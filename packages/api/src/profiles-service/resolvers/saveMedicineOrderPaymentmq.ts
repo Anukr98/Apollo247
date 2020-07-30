@@ -30,7 +30,6 @@ import { EmailMessage } from 'types/notificationMessageTypes';
 import { log } from 'customWinstonLogger';
 import { BlockOneApolloPointsRequest, BlockUserPointsResponse } from 'types/oneApolloTypes';
 import { OneApollo } from 'helpers/oneApollo';
-import { initiateRefund } from 'profiles-service/helpers/refundHelper';
 
 export const saveMedicineOrderPaymentMqTypeDefs = gql`
   enum CODCity {

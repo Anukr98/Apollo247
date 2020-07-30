@@ -61,6 +61,7 @@ export class AppointmentRepository extends Repository<Appointment> {
         getApptError,
       });
     });
+
     if (appointment) {
       await setCache(
         `${REDIS_APPOINTMENT_ID_KEY_PREFIX}${id}`,
@@ -68,6 +69,7 @@ export class AppointmentRepository extends Repository<Appointment> {
         ApiConstants.CACHE_EXPIRATION_3600
       );
     }
+
     return appointment;
   }
 
@@ -93,13 +95,13 @@ export class AppointmentRepository extends Repository<Appointment> {
   }
 
   async getAppointmentsByIds(ids: string[]) {
-    let result: Appointment[] = [];
+    const result: Appointment[] = [];
 
     return this.handleCachingMultipleItems(ids, REDIS_APPOINTMENT_ID_KEY_PREFIX, result);
   }
 
   async handleCachingMultipleItems(ids: string[], redisKeyPrefix: string, result: Appointment[]) {
-    let idsNotInCache: string[] = [];
+    const idsNotInCache: string[] = [];
     for (let i = 0; i < ids.length; i++) {
       const item = await getCache(`${redisKeyPrefix}${ids[i]}`);
       if (item && typeof item == 'string') {
@@ -1241,7 +1243,10 @@ export class AppointmentRepository extends Repository<Appointment> {
     );
   }
 
-  updateJdQuestionStatusbyIds(ids: string[]) {
+  async updateJdQuestionStatusbyIds(ids: string[]) {
+    for (let i = 0; i < ids.length; i++) {
+      await delCache(`${REDIS_APPOINTMENT_ID_KEY_PREFIX}${ids[i]}`);
+    }
     return this.update([...ids], {
       isJdQuestionsComplete: true,
       isConsultStarted: true,

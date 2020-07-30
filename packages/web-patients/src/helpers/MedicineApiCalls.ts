@@ -2,6 +2,7 @@ import axios, { AxiosError, AxiosResponse } from 'axios';
 import { getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails as OrderDetails } from 'graphql/types/getMedicineOrderOMSDetails';
 import { MedicineCartItem, EPrescription } from 'components/MedicinesCartProvider';
 import moment from 'moment';
+import { getLatestMedicineOrder_getLatestMedicineOrder_medicineOrderDetails as LatestOrderDetailsType } from 'graphql/types/getLatestMedicineOrder';
 
 const apiDetails = {
   authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
@@ -294,17 +295,25 @@ const medCartItemsDetailsApi = (
   );
 };
 
-export const reOrderItems = async (orderDetails: OrderDetails, type: string) => {
+export const reOrderItems = async (
+  orderDetails: OrderDetails | LatestOrderDetailsType,
+  type: string,
+  patientName: string
+) => {
   // postReorderMedicines(source, currentPatient);
   // use billedItems for delivered orders
   if (orderDetails) {
     const billedItems =
       orderDetails.medicineOrderShipments &&
       orderDetails.medicineOrderShipments[0] &&
-      orderDetails.medicineOrderShipments[0].itemDetails;
+      orderDetails.medicineOrderShipments[0].medicineOrderInvoice &&
+      orderDetails.medicineOrderShipments[0].medicineOrderInvoice[0] &&
+      orderDetails.medicineOrderShipments[0].medicineOrderInvoice[0].itemDetails;
     const billedLineItems = billedItems
       ? (JSON.parse(billedItems) as MedicineOrderBilledItem[])
       : null;
+
+    const isOfflineOrder = orderDetails.billNumber;
 
     const lineItems = orderDetails.medicineOrderLineItems || [];
     const lineItemsSkus = billedLineItems
@@ -324,6 +333,9 @@ export const reOrderItems = async (orderDetails: OrderDetails, type: string) => 
           ...item,
           description: '',
           image: '',
+          mou: isOfflineOrder
+            ? Math.ceil(lineItems[index].price / lineItems[index].mrp / lineItems[index].quantity)
+            : item.mou,
           quantity: Math.ceil(
             (billedLineItems ? billedLineItems[index].issuedQty : lineItems[index].quantity) || 1
           ),
@@ -346,7 +358,7 @@ export const reOrderItems = async (orderDetails: OrderDetails, type: string) => 
       .filter((v) => v);
     const medicineNames = (billedLineItems
       ? billedLineItems.filter((item) => item.itemName).map((item) => item.itemName)
-      : lineItems.filter((item) => item.medicineName).map((item) => item.medicineName!)
+      : lineItems.filter((item) => item.medicineName).map((item) => item.medicineName)
     ).join(',');
     const prescriptionsToAdd = prescriptionUrls.map(
       (item) =>
@@ -356,7 +368,7 @@ export const reOrderItems = async (orderDetails: OrderDetails, type: string) => 
           doctorName: `Meds Rx ${
             (orderDetails.id && orderDetails.id.substring(0, orderDetails.id.indexOf('-'))) || ''
           }`,
-          forPatient: orderDetails.patient.firstName,
+          forPatient: patientName,
           medicines: medicineNames,
           uploadedUrl: item,
         } as EPrescription)

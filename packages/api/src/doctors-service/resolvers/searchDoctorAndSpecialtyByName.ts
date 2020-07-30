@@ -6,7 +6,7 @@ import {
   DoctorSlotAvailability,
   Geolocation,
 } from 'doctors-service/resolvers/getDoctorsBySpecialtyAndFilters';
-import { DoctorSpecialtyRepository } from 'doctors-service/repositories/doctorSpecialtyRepository';
+
 import { Client, RequestParams } from '@elastic/elasticsearch';
 import { differenceInMinutes } from 'date-fns';
 import { debugLog } from 'customWinstonLogger';
@@ -17,7 +17,7 @@ const ES_FIELDS_PRIORITY = {
   speciality_groupName: 3,
   speciality_commonSearchTerm: 2,
   speciality_userFriendlyNomenclature: 1,
-}
+};
 
 export const searchDoctorAndSpecialtyByNameTypeDefs = gql`
   type PossibleSearchMatches {
@@ -405,73 +405,75 @@ const SearchDoctorAndSpecialtyByName: Resolver<
   //console.log('earlyAvailableApolloMatchedDoctors', earlyAvailableApolloMatchedDoctors);
   //console.log('earlyAvailableNonApolloMatchedDoctors', earlyAvailableNonApolloMatchedDoctors);
   //console.log('matchedDoctors', matchedDoctors);
-  
+
   // matchedSpecialties = await specialtyRepository.searchByName(searchTextLowerCase);
 
   const specialtiesSearchParams: RequestParams.Search = {
-    "index": 'doctors',
-    "body": {
-      "_source": ["specialty"],
-      "query": {
-        "bool": {
-          "must": [
-            { "match": { 'doctorSlots.slots.status': 'OPEN' } },
-            { "match": { "isSearchable": true } },
+    index: 'doctors',
+    body: {
+      _source: ['specialty'],
+      query: {
+        bool: {
+          must: [
+            { match: { 'doctorSlots.slots.status': 'OPEN' } },
+            { match: { isSearchable: true } },
             {
-              "multi_match": {
-                "fields": [
-                  'specialty.name',
-                ],
-                "type": 'phrase_prefix',
-                "query": searchTextLowerCase,
+              multi_match: {
+                fields: ['specialty.name'],
+                type: 'phrase_prefix',
+                query: searchTextLowerCase,
               },
             },
           ],
         },
       },
-      "size":0,
-      "aggs": {
-        "matched_specialities": {
-          "terms": {
-            "field": "specialty.name.keyword",
-            "size": 1000
+      size: 0,
+      aggs: {
+        matched_specialities: {
+          terms: {
+            field: 'specialty.name.keyword',
+            size: 1000,
           },
-          "aggs": {
-            "matched_specialities_hits": {
-              "top_hits": {
-                "sort": [
+          aggs: {
+            matched_specialities_hits: {
+              top_hits: {
+                sort: [
                   {
-                    "_score": {
-                      "order": "desc"
-                    }
-                  }
+                    _score: {
+                      order: 'desc',
+                    },
+                  },
                 ],
-                "_source": ["specialty"],
-                "size": 1
-              }
-            }
-          }
-        }
-      }
-    }
+                _source: ['specialty'],
+                size: 1,
+              },
+            },
+          },
+        },
+      },
+    },
+  };
+
+  if (args.city) {
+    specialtiesSearchParams['body']['query']['bool']['must'].push({
+      match: { 'facility.city': args.city },
+    });
   }
 
-  if(args.city){
-    specialtiesSearchParams["body"]["query"]["bool"]["must"].push({ "match": { 'facility.city': args.city } });
-  }
-
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let matchedSpecialtiesES: any = await client.search(specialtiesSearchParams);
   const specialityBuckets = matchedSpecialtiesES.body.aggregations.matched_specialities.buckets;
 
-  if(specialityBuckets && specialityBuckets.length){
+  if (specialityBuckets && specialityBuckets.length) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     matchedSpecialtiesES = specialityBuckets.map((speciality: any) => {
-      speciality = speciality.matched_specialities_hits.hits.hits[0]["_source"]["specialty"];
+      speciality = speciality.matched_specialities_hits.hits.hits[0]['_source']['specialty'];
       return speciality;
-    })
+    });
   } else {
     matchedSpecialtiesES = specialityBuckets;
   }
-  
+
   matchedSpecialties = matchedSpecialtiesES;
 
   searchLogger(`GET_MATCHED_DOCTORS_AND_SPECIALTIES___END`);

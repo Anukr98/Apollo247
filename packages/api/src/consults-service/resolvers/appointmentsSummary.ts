@@ -34,7 +34,6 @@ const appointmentsSummary: Resolver<
   ConsultServiceContext,
   summaryResult
 > = async (parent, args, { consultsDb, doctorsDb, patientsDb }) => {
-
   const fileName =
     process.env.NODE_ENV + '_appointments_' + format(new Date(), 'yyyyMMddhhmmss') + '.xls';
   let assetsDir = path.resolve('/apollo-hospitals/packages/api/src/assets');
