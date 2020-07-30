@@ -132,11 +132,9 @@ const buildGqlConsultQueue = async (doctorId: string, context: ConsultServiceCon
 
   inActiveQueueItems.reverse();
   let dbConsultQueue: ConsultQueueItem[] = [...activeQueueItems, ...inActiveQueueItems];
-
   //Get all the appointments of the queue items
   const appointmentIds = dbConsultQueue.map((queueItem) => queueItem.appointmentId);
-
-  if (appointmentIds.length == 0) { return []; }
+  if (!appointmentIds.length) { return []; }
 
   const appointments = await apptRepo.getAppointmentsByIds(appointmentIds);
 
@@ -192,7 +190,7 @@ const getConsultQueue: Resolver<
   GetConsultQueueResult
 > = async (parent, { doctorId }, context) => {
   const { docRepo, mobileNumber } = getRepos(context);
-  await checkAuth(docRepo, mobileNumber, doctorId);
+  // await checkAuth(docRepo, mobileNumber, doctorId);
   const consultQueue = await buildGqlConsultQueue(doctorId, context);
   return { consultQueue };
 };
