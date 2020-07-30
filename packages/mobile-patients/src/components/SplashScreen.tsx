@@ -242,7 +242,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           getData('ConsultRoom', undefined, true);
           // webengage event
           const eventAttributes: WebEngageEvents[WebEngageEventName.HOME_PAGE_VIEWED] = {
-            source: 'Deeplink',
+            source: 'deeplink',
           };
           postWebEngageEvent(WebEngageEventName.HOME_PAGE_VIEWED, eventAttributes);
           break;
