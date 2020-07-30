@@ -208,6 +208,10 @@ const savePatientAddress: Resolver<
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
 
+  if (PatientAddressInput.addressLine1 == '' || PatientAddressInput.addressLine1 == null) {
+    throw new AphError(AphErrorMessages.INVALID_ADDRESS_DETAILS);
+  }
+
   const savePatientaddressAttrs: Partial<PatientAddress> = {
     ...PatientAddressInput,
     patient: patientDetails,

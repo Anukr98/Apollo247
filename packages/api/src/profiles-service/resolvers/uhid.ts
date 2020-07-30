@@ -25,6 +25,9 @@ const linkUhids: Resolver<
     throw new AphError(AphErrorMessages.INSUFFICIENT_PRIVILEGES, undefined, {});
   }
 
+  if (linkedUhids.includes(primaryUhid))
+    throw new AphError(AphErrorMessages.INVALID_LINKED_UHID, undefined, {});
+
   //Getting all the uhids related to patient
   const patientUhids = patients.map((patient) => patient.uhid);
 
@@ -60,7 +63,6 @@ const linkUhids: Resolver<
       linkedPatientIds.push(patient.id);
     }
   });
-
   //Updating the primary and linked patients
   if (primaryPatientId && linkedPatientIds.length) {
     patientsRepo.updateLinkedUhidAccount([primaryPatientId], 'isUhidPrimary', true);
@@ -83,7 +85,9 @@ const unlinkUhids: Resolver<
   Boolean
 > = async (parent, { primaryUhid, unlinkUhids }, { mobileNumber, profilesDb }) => {
   const patientsRepo = profilesDb.getCustomRepository(PatientRepository);
+
   const patients = await patientsRepo.findByMobileNumber(mobileNumber);
+
   if (patients == null || patients.length == 0) {
     throw new AphError(AphErrorMessages.INSUFFICIENT_PRIVILEGES, undefined, {});
   }
