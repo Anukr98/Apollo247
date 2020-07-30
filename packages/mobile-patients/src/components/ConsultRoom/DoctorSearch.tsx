@@ -354,7 +354,7 @@ export interface DoctorSearchProps
 export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   // const params = props.navigation.state.params ? props.navigation.state.params!.searchText : '';
   // const MoveDoctor = props.navigation.state.params ? props.navigation.state.params!.MoveDoctor : '';
-
+  const [filtersList, setFiltersList] = useState<any>();
   const [searchText, setSearchText] = useState<string>('');
   const [pastSearch, setPastSearch] = useState<boolean>(true);
   const [needHelp, setNeedHelp] = useState<boolean>(true);
@@ -476,6 +476,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       })
       .then(({ data }) => {
         console.log(data, 'dataaaaa');
+        setFiltersList(data.getDoctorsBySpecialtyAndFilters.filters);
         if (speciality === 'General Physician/ Internal Medicine')
           setGeneralPhysicians && setGeneralPhysicians({ id: id, data: data });
         else if (speciality === 'Urology') {
@@ -1411,52 +1412,13 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       );
     } else return null;
   };
-  //TODO: setDocFilters that we get from API
-  const docFilters = {
-    city: [
-      { state: 'Andhra Pradesh', data: ['Vijayawada', 'Guntur', 'Nellore'] },
-      { state: 'Telangana', data: ['Hyderabad', 'Suryapet'] },
-      { state: 'Maharastra', data: ['Mumbai'] },
-    ],
-    brands: [
-      {
-        name: 'apollo abc',
-        image:
-          'https://cdn.zeplin.io/5ee0fe6155171e98f28f7000/assets/DF82202D-C70B-428D-ADDA-EC2CEB169575.svg',
-      },
-      {
-        name: 'apollo xyz',
-        image:
-          'https://cdn.zeplin.io/5ee0fe6155171e98f28f7000/assets/DF82202D-C70B-428D-ADDA-EC2CEB169575.svg',
-      },
-      {
-        name: 'apollo spectra',
-        image:
-          'https://cdn.zeplin.io/5ee0fe6155171e98f28f7000/assets/DF82202D-C70B-428D-ADDA-EC2CEB169575.svg',
-      },
-      {
-        name: 'apollo pharma',
-        image:
-          'https://cdn.zeplin.io/5ee0fe6155171e98f28f7000/assets/DF82202D-C70B-428D-ADDA-EC2CEB169575.svg',
-      },
-    ],
-    experience: [{ name: '0-5' }, { name: '5-10' }, { name: '11 - 15' }, { name: '15+' }],
-    availability: [
-      { name: 'Now' },
-      { name: 'Today' },
-      { name: 'Tomorrow' },
-      { name: 'Next 3 Days' },
-    ],
-    fees: [{ name: '0-500' }, { name: '500-1000' }, { name: '501-1000' }, { name: '1000+' }],
-    gender: [{ name: 'MALE' }, { name: 'FEMALE' }],
-    language: [{ name: 'Hindi' }, { name: 'English' }, { name: 'Telugu' }],
-  };
+
   const onClickSearch = (id: string, name: string, specialistPluralTerm: string) => {
     props.navigation.navigate('DoctorSearchListing', {
       specialityId: id,
       specialityName: name,
       specialistPluralTerm,
-      filters: docFilters,
+      filters: filtersList,
     });
   };
 

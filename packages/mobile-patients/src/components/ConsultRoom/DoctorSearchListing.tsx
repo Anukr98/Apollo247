@@ -187,44 +187,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const docFilters = props.navigation.getParam('filters');
   const typeOfConsult = props.navigation.getParam('typeOfConsult');
   const doctorTypeFilter = props.navigation.getParam('doctorType');
-  const filterData: filterDataType[] = [
-    {
-      label: 'City',
-      options: docFiltersOptions['city'],
-      selectedOptions: [],
-    },
-    {
-      label: 'Brands',
-      options: docFiltersOptions['brands'],
-      selectedOptions: [],
-    },
-    {
-      label: 'In Years',
-      options: getValuesArray(docFiltersOptions['experience']),
-      selectedOptions: [],
-    },
-    {
-      label: 'Availability',
-      options: getValuesArray(docFiltersOptions['availability']),
-      selectedOptions: [],
-    },
-    {
-      label: 'In Rupees',
-      options: getValuesArray(docFiltersOptions['fees']),
-      selectedOptions: [],
-    },
-    {
-      label: '',
-      options: getValuesArray(docFiltersOptions['gender']),
-      selectedOptions: [],
-    },
-    {
-      label: '',
-      options: getValuesArray(docFiltersOptions['language']),
-      selectedOptions: [],
-    },
-  ];
 
+  const [docFiltersOptions, setDocFilterOptions] = useState<any>(docFilters);
   const [showLocationpopup, setshowLocationpopup] = useState<boolean>(false);
   const [displayFilter, setDisplayFilter] = useState<boolean>(false);
   const [currentLocation, setcurrentLocation] = useState<string>('');
@@ -239,7 +203,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const [doctorsType, setDoctorsType] = useState<string>('APOLLO');
   const [apolloDocsNumber, setApolloDocsNumber] = useState<number>(0);
   const [partnerDocsNumber, setPartnerDocsNumber] = useState<number>(0);
-  const [FilterData, setFilterData] = useState<filterDataType[]>([...filterData]);
+
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
   const [locationSearchList, setlocationSearchList] = useState<{ name: string; placeId: string }[]>(
     []
@@ -275,7 +239,45 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const [value, setValue] = useState<boolean>(false);
   const [sortValue, setSortValue] = useState<string>('');
   const [searchIconClicked, setSearchIconClicked] = useState<boolean>(false);
-  const [docFiltersOptions, setDocFilterOptions] = useState<any>({});
+
+  const filterData: filterDataType[] = [
+    {
+      label: 'City',
+      options: docFilters['city'],
+      selectedOptions: [],
+    },
+    {
+      label: 'Brands',
+      options: docFilters['brands'],
+      selectedOptions: [],
+    },
+    {
+      label: 'In Years',
+      options: getValuesArray(docFilters['experience']),
+      selectedOptions: [],
+    },
+    {
+      label: 'Availability',
+      options: getValuesArray(docFilters['availability']),
+      selectedOptions: [],
+    },
+    {
+      label: 'In Rupees',
+      options: getValuesArray(docFilters['fee']),
+      selectedOptions: [],
+    },
+    {
+      label: '',
+      options: getValuesArray(docFilters['gender']),
+      selectedOptions: [],
+    },
+    {
+      label: '',
+      options: getValuesArray(docFilters['language']),
+      selectedOptions: [],
+    },
+  ];
+  const [FilterData, setFilterData] = useState<filterDataType[]>([...filterData]);
   useEffect(() => {
     setDeepLinkFilter();
     setDeepLinkDoctorTypeFilter();
@@ -480,7 +482,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     try {
       const filterGetData =
         data && data.getDoctorsBySpecialtyAndFilters ? data.getDoctorsBySpecialtyAndFilters : null;
-      setDocFilterOptions(filterGetData.filters ? filterGetData.filters : {});
       if (filterGetData) {
         if (filterGetData.doctors) {
           setDoctorsList(filterGetData.doctors);
@@ -602,7 +603,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       specialty: props.navigation.getParam('specialityId') || '',
       // city: SearchData[0].selectedOptions,
       pincode: pinCode || g(locationDetails, 'pincode') || null,
-      brand: SearchData[1].selectedOptions,
+      doctorType: SearchData[1].selectedOptions,
       city: SearchData[0].selectedOptions,
       experience: experienceArray,
       availability: availabilityArray,
