@@ -1237,6 +1237,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     price: number;
     specialPrice?: number;
     isAddedToCart: boolean;
+    numberOfItemsInCart: number;
+    addToCart: () => void;
     onAddOrRemoveCartItem: () => void;
     onPress: () => void;
     style?: ViewStyle;
@@ -1326,9 +1328,10 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               ...theme.viewStyles.text('B', 13, '#fc9916', 1, 24),
               textAlign: 'center',
             }}
-            onPress={data.onAddOrRemoveCartItem}
+            onPress={data.addToCart}
           >
-            {data.isAddedToCart ? 'REMOVE' : 'ADD TO CART'}
+            {data.isAddedToCart ? 'REMOVE' : 'ADD'}
+            {/* {data.numberOfItemsInCart} */}
           </Text>
         </View>
       </TouchableOpacity>
@@ -1349,40 +1352,45 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       MaxOrderQty,
     } = data.item;
 
-    const addToCart = () => {
-      addPharmaItemToCart(
-        {
-          id: sku,
-          mou: mou,
-          name: name,
-          price: price,
-          specialPrice: special_price
-            ? typeof special_price == 'string'
-              ? Number(special_price)
-              : special_price
-            : undefined,
-          prescriptionRequired: is_prescription_required == '1',
-          isMedicine: (type_id || '').toLowerCase() == 'pharma',
-          quantity: 1,
-          thumbnail,
-          isInStock: true,
-          maxOrderQty: MaxOrderQty,
-        },
-        pharmacyPincode!,
-        addCartItem,
-        globalLoading,
-        props.navigation,
-        currentPatient,
-        !!isPharmacyLocationServiceable
-      );
+    const removeFromCart = () => removeCartItem!(sku);
+    const itemInCart = cartItems.find((item) => item.id == sku);
+    const foundMedicineInCart = !!cartItems.find((item) => item.id == sku);
+    const numberOfItemsInCart = foundMedicineInCart && itemInCart ? itemInCart.quantity : 0;
 
+    const addToCart = () => {
+      if (numberOfItemsInCart) {
+        onUpdateCartItem(sku, numberOfItemsInCart+1);
+      } else {
+        addPharmaItemToCart(
+          {
+            id: sku,
+            mou: mou,
+            name: name,
+            price: price,
+            specialPrice: special_price
+              ? typeof special_price == 'string'
+                ? Number(special_price)
+                : special_price
+              : undefined,
+            prescriptionRequired: is_prescription_required == '1',
+            isMedicine: (type_id || '').toLowerCase() == 'pharma',
+            quantity: 1,
+            thumbnail,
+            isInStock: true,
+            maxOrderQty: MaxOrderQty,
+          },
+          pharmacyPincode!,
+          addCartItem,
+          globalLoading,
+          props.navigation,
+          currentPatient,
+          !!isPharmacyLocationServiceable
+        );
+      }
       postwebEngageAddToCartEvent(data.item, 'Pharmacy Home', title);
       let id = currentPatient && currentPatient.id ? currentPatient.id : '';
       postAppsFlyerAddToCartEvent(data.item, id);
     };
-
-    const removeFromCart = () => removeCartItem!(sku);
-    const foundMedicineInCart = !!cartItems.find((item) => item.id == sku);
 
     return hotSellerCard({
       name,
@@ -1394,6 +1402,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           : special_price
         : undefined,
       isAddedToCart: foundMedicineInCart,
+      addToCart,
+      numberOfItemsInCart,
       onAddOrRemoveCartItem: foundMedicineInCart ? removeFromCart : addToCart,
       onPress: () => {
         const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_CATEGORY_SECTION_PRODUCT_CLICK] = {
