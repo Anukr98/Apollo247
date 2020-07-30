@@ -6,7 +6,6 @@ import {
   DoctorSlotAvailability,
   Geolocation,
 } from 'doctors-service/resolvers/getDoctorsBySpecialtyAndFilters';
-
 import { Client, RequestParams } from '@elastic/elasticsearch';
 import { differenceInMinutes } from 'date-fns';
 import { debugLog } from 'customWinstonLogger';
@@ -467,7 +466,10 @@ const SearchDoctorAndSpecialtyByName: Resolver<
   if (specialityBuckets && specialityBuckets.length) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     matchedSpecialtiesES = specialityBuckets.map((speciality: any) => {
-      speciality = speciality.matched_specialities_hits.hits.hits[0]['_source']['specialty'];
+      speciality = speciality.matched_specialities_hits.hits.hits[0]["_source"]["specialty"];
+      if(!speciality["id"]){
+        speciality["id"] = speciality["specialtyId"]; 
+      }
       return speciality;
     });
   } else {
