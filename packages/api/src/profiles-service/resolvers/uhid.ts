@@ -85,9 +85,7 @@ const unlinkUhids: Resolver<
   Boolean
 > = async (parent, { primaryUhid, unlinkUhids }, { mobileNumber, profilesDb }) => {
   const patientsRepo = profilesDb.getCustomRepository(PatientRepository);
-
   const patients = await patientsRepo.findByMobileNumber(mobileNumber);
-
   if (patients == null || patients.length == 0) {
     throw new AphError(AphErrorMessages.INSUFFICIENT_PRIVILEGES, undefined, {});
   }
