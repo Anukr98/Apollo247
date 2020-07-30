@@ -2139,7 +2139,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
               <span className={classes.callSubheader}>
                 {'Please follow the steps to connect to your patient :'}
               </span>
-              <span style={{ display: 'flex', margin: '30px 0px 20px 10px', alignItems: center }}>
+              <span style={{ display: 'flex', margin: '30px 0px 20px 10px', alignItems: 'center', }}>
                 <span className={classes.callOption}>1</span>
                 <span className={classes.callOptionFirst}>
                   Answer the call from {process.env.EXOTEL_CALLER_ID} <br />
