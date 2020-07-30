@@ -49,8 +49,6 @@ export const updatePatientTypeDefs = gql`
   }
 `;
 
-const REDIS_PATIENT_ID_KEY_PREFIX: string = 'patient:';
-
 type UpdatePatientResult = {
   patient: Patient | null;
 };

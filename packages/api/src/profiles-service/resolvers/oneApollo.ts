@@ -5,7 +5,6 @@ import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
 import { OneApollo } from 'helpers/oneApollo';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
-import { DEVICE_TYPE, MEDICINE_ORDER_PAYMENT_TYPE } from 'profiles-service/entities';
 
 import { ONE_APOLLO_STORE_CODE } from 'types/oneApolloTypes';
 
@@ -77,6 +76,7 @@ const getOneApolloUser: Resolver<
         MobileNumber: mobNumberIN,
         Gender: patient.gender,
         StoreCode: storeCode,
+        CustomerId: patient.uhid,
       });
       if (userCreateResponse.Success) {
         response = await oneApollo.getOneApolloUser(mobNumberIN);

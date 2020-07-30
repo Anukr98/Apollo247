@@ -120,6 +120,7 @@ export interface MedicineCartContextProps {
   setDurationDays: (durationDays: number | null) => void | null;
   prescriptionDuration: string | null;
   setPrescriptionDuration: ((prescriptionDuration: string) => void) | null;
+  updateEprescriptions: ((ePrescriptionData: EPrescription[] | null) => void) | null;
 }
 
 export const MedicinesCartContext = createContext<MedicineCartContextProps>({
@@ -171,6 +172,7 @@ export const MedicinesCartContext = createContext<MedicineCartContextProps>({
   setDurationDays: null,
   prescriptionDuration: null,
   setPrescriptionDuration: null,
+  updateEprescriptions: null,
 });
 
 export enum CartTypes {
@@ -401,6 +403,14 @@ export const MedicinesCartProvider: React.FC = (props) => {
     }
   };
 
+  const updateEprescriptions: MedicineCartContextProps['updateEprescriptions'] = (
+    eprescriptionsToAdd
+  ) => {
+    const updatedEprescriptionData = _uniq([...ePrescriptionData, ...eprescriptionsToAdd]);
+    setEPrescriptionData(updatedEprescriptionData);
+    setUploadedEPrescription(true);
+  };
+
   const addMultipleCartItems: MedicineCartContextProps['addMultipleCartItems'] = (itemsToAdd) => {
     const existingCartItems = cartItems;
     const newCartItems = cartItems;
@@ -462,6 +472,7 @@ export const MedicinesCartProvider: React.FC = (props) => {
   return (
     <MedicinesCartContext.Provider
       value={{
+        updateEprescriptions,
         medicineCartType,
         cartItems,
         setCartItems,
@@ -568,4 +579,5 @@ export const useShoppingCart = () => ({
   prescriptionOptionSelected: useShoppingCartContext().prescriptionOptionSelected,
   prescriptionDuration: useShoppingCartContext().prescriptionDuration,
   setPrescriptionDuration: useShoppingCartContext().setPrescriptionDuration,
+  updateEprescriptions: useShoppingCartContext().updateEprescriptions,
 });

@@ -121,8 +121,20 @@ export const getMedicineOrdersOMSListTypeDefs = gql`
     responseCode: String
     responseMessage: String
     bankTxnId: String
-    healthCreditsRedeemed: Int
+    healthCreditsRedeemed: Float
     healthCreditsRedemptionRequest: BlockUserPointsResponse
+    paymentMode: PAYMENT_METHODS_REVERSE
+  }
+
+  enum PAYMENT_METHODS_REVERSE {
+    DEBIT_CARD
+    CREDIT_CARD
+    NET_BANKING
+    PAYTM_WALLET
+    CREDIT_CARD_EMI
+    UPI
+    PAYTM_POSTPAID
+    COD
   }
 
   type BlockUserPointsResponse {
@@ -813,8 +825,8 @@ const getMedicineOrderOMSDetailsWithAddress: Resolver<
     }
   }
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
-  let medicineOrderDetails;
-  medicineOrderDetails = await medicineOrdersRepo.getMedicineOrderDetailsWithAddressByOrderId(
+
+  const medicineOrderDetails = await medicineOrdersRepo.getMedicineOrderDetailsWithAddressByOrderId(
     args.orderAutoId
   );
 

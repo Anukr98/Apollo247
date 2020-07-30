@@ -581,6 +581,7 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
   saveMedicineOrderAddress(orderAddressAttrs: Partial<MedicineOrderAddress>) {
     return MedicineOrderAddress.create(orderAddressAttrs).save();
   }
+
   getMedicineOrder(orderAutoId: number) {
     return this.findOne({ orderAutoId });
   }

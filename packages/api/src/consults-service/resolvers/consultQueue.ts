@@ -46,7 +46,7 @@ export const consultQueueTypeDefs = gql`
   }
 
   extend type Query {
-    getConsultQueue(doctorId: String!): GetConsultQueueResult!
+    getConsultQueue(doctorId: String!, isActive: Boolean!): GetConsultQueueResult!
   }
 
   type JuniorDoctorsList {
@@ -180,6 +180,7 @@ type GetConsultQueueResult = {
 };
 type GetConsultQueueInput = {
   doctorId: string;
+  isActive: boolean;
 };
 
 const getConsultQueue: Resolver<
@@ -187,11 +188,36 @@ const getConsultQueue: Resolver<
   GetConsultQueueInput,
   ConsultServiceContext,
   GetConsultQueueResult
-> = async (parent, { doctorId }, context) => {
-  const { docRepo, mobileNumber } = getRepos(context);
+> = async (parent, { doctorId, isActive }, context) => {
+  const { docRepo, cqRepo, mobileNumber, patRepo } = getRepos(context);
   await checkAuth(docRepo, mobileNumber, doctorId);
-  const consultQueue = await buildGqlConsultQueue(doctorId, context);
-  return { consultQueue };
+  const result: GetConsultQueueResult = { consultQueue: [] };
+  let consultQueueItems: ConsultQueueItem[] = [];
+  consultQueueItems = await cqRepo.getConsultQueue(doctorId, isActive);
+  const patientIds = consultQueueItems.map((item) => item.appointment.patientId);
+  let patients: Patient[] = [];
+  if (patientIds && patientIds.length > 0) {
+    patients = await patRepo.getPatientDetailsByIds(patientIds);
+  }
+  let patient: Patient;
+  consultQueueItems.map((item) => {
+    const res: GqlConsultQueueItem = {
+      id: item.id,
+      isActive: item.isActive,
+      patient,
+      appointment: item.appointment,
+    };
+    result.consultQueue.push(res);
+  });
+
+  patients.map((patient) => {
+    result.consultQueue.map((item) => {
+      if (patient.id == item.appointment.patientId) {
+        item.patient = patient;
+      }
+    });
+  });
+  return result;
 };
 
 type AddToConsultQueueInput = { appointmentId: string };

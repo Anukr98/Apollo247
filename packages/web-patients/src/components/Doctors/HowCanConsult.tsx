@@ -321,7 +321,7 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
         <h3>How can I consult with {doctorName}:</h3>
         <ul className={classes.tabButtons}>
           <li>
-            {(ConsultMode.BOTH || consultMode === ConsultMode.ONLINE) && (
+            {(consultMode === ConsultMode.BOTH || consultMode === ConsultMode.ONLINE) && (
               <AphButton
                 className={`${classes.button}  ${onlineDirection ? classes.btnActive : null}`}
                 onClick={() => {
@@ -457,6 +457,17 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
                   protectWithLoginPopup();
                 } else {
                   setPopupLoading(true);
+                  saveSearchMutation({
+                    variables: {
+                      saveSearchInput: {
+                        type: SEARCH_TYPE.SPECIALTY,
+                        typeId:
+                          doctorDetails && doctorDetails.specialty && doctorDetails.specialty.id,
+                        patient: currentPatient ? currentPatient.id : '',
+                      },
+                    },
+                    fetchPolicy: 'no-cache',
+                  });
                   saveSearchMutation({
                     variables: {
                       saveSearchInput: {

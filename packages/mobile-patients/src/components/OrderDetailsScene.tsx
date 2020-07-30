@@ -46,6 +46,7 @@ import {
   postWebEngageEvent,
   reOrderMedicines,
   formatOrderAddress,
+  extractUrlFromString,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -385,7 +386,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           ? 'Non Cart'
           : 'Cart',
         noOfItemsNotAvailable: unavailableItems.length,
-        source: 'Order Details',
+        source: selectedTab,
         'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
         'Patient UHID': g(currentPatient, 'uhid'),
         Relation: g(currentPatient, 'relation'),
@@ -447,6 +448,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
               title: 'Thanks :)',
               description: 'Your feedback has been submitted. Thanks for your time.',
             });
+            setShowRateDeliveryBtn(false);
           }}
         />
       </>
@@ -658,6 +660,13 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         [MEDICINE_ORDER_STATUS.CANCELLED]: [
           '',
           orderCancelText || `Your order #${orderAutoId} has been cancelled.`,
+          extractUrlFromString(orderCancelText || '')
+            ? () => {
+                Linking.openURL(extractUrlFromString(orderCancelText || '')!).catch((err) =>
+                  CommonBugFender(`${AppRoutes.OrderDetailsScene}_getOrderDescription`, err)
+                );
+              }
+            : null,
         ],
         [MEDICINE_ORDER_STATUS.READY_AT_STORE]: [
           '',
@@ -665,7 +674,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         ],
         [MEDICINE_ORDER_STATUS.DELIVERED]: [
           '',
-          `In case of any concerns or feedback related to your order, please speak with our customer care executives on the official WhatsApp channel (during business hours 9 AM - 8:30 PM)\n${AppConfig.Configuration.MED_ORDERS_CUSTOMER_CARE_WHATSAPP_LINK}`,
+          `If you have any issues with your delivered order, please talk to us on our official WhatsApp (8:00 am-8.30 pm) ${AppConfig.Configuration.MED_ORDERS_CUSTOMER_CARE_WHATSAPP_LINK}`,
           () => {
             Linking.openURL(
               AppConfig.Configuration.MED_ORDERS_CUSTOMER_CARE_WHATSAPP_LINK
@@ -1607,30 +1616,24 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
               style={styles.tabsContainer}
               tabViewStyle={offlineOrderBillNumber ? { borderBottomColor: 'transparent' } : {}}
               onChange={(title) => {
-                const isNonCartOrder = orderStatusList.find(
-                  (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.PRESCRIPTION_UPLOADED
+                const nonCartOrderBilledStatusArray = [
+                  MEDICINE_ORDER_STATUS.ORDER_BILLED,
+                  MEDICINE_ORDER_STATUS.READY_AT_STORE,
+                  MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY,
+                  MEDICINE_ORDER_STATUS.DELIVERED,
+                ];
+                const isNonCartOrderBilled = orderStatusList.find(
+                  (item) => nonCartOrderBilledStatusArray.indexOf(g(item, 'orderStatus')!) !== -1
                 );
-                const isNonCartOrderBilledAndReadyAtStore = orderStatusList.find(
-                  (item) =>
-                    item!.orderStatus == MEDICINE_ORDER_STATUS.READY_AT_STORE ||
-                    item!.orderStatus == MEDICINE_ORDER_STATUS.ORDER_BILLED ||
-                    item!.orderStatus == MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY ||
-                    item!.orderStatus == MEDICINE_ORDER_STATUS.DELIVERED
-                );
-                const isCartOrder = orderStatusList.find(
-                  (item) =>
-                    item!.orderStatus == MEDICINE_ORDER_STATUS.ORDER_PLACED ||
-                    item!.orderStatus == MEDICINE_ORDER_STATUS.ORDER_VERIFIED ||
-                    item!.orderStatus == MEDICINE_ORDER_STATUS.ORDER_INITIATED
-                );
-                // if (!isNonCartOrder || isNonCartOrderBilledAndReadyAtStore) {
-                //   setSelectedTab(title);
-                // }
-                if (
-                  (orderDetails.orderType == MEDICINE_ORDER_TYPE.UPLOAD_PRESCRIPTION &&
-                    isNonCartOrderBilledAndReadyAtStore) ||
-                  (orderDetails.orderType != MEDICINE_ORDER_TYPE.UPLOAD_PRESCRIPTION && isCartOrder)
-                ) {
+
+                const enableOrderSummary =
+                  orderDetails.orderType == MEDICINE_ORDER_TYPE.CART_ORDER
+                    ? true
+                    : orderDetails.orderType == MEDICINE_ORDER_TYPE.UPLOAD_PRESCRIPTION
+                    ? isNonCartOrderBilled
+                    : true;
+
+                if (enableOrderSummary) {
                   setSelectedTab(title);
                 }
               }}
