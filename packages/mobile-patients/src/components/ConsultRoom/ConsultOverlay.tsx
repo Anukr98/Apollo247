@@ -445,7 +445,6 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
           if (props.consultedWithDoctorBefore) {
             storeAppointmentId(g(apptmt, 'id')!);
           }
-          console.log('apptmt', apptmt);
           // If amount is zero don't redirect to PG
 
           try {
