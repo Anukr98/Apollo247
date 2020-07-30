@@ -51,22 +51,25 @@ const REDIS_APPOINTMENT_ID_KEY_PREFIX: string = 'patient:appointment:';
 @EntityRepository(Appointment)
 export class AppointmentRepository extends Repository<Appointment> {
   async findById(id: string) {
-    let appointment;
     const cache = await getCache(`${REDIS_APPOINTMENT_ID_KEY_PREFIX}${id}`);
     if (cache && typeof cache === 'string') {
-      appointment = JSON.parse(cache);
-      return appointment;
+      const cacheAppointment: Appointment = JSON.parse(cache);
+      return this.create(cacheAppointment);
     }
-    appointment = await this.findOne({ id }).catch((getApptError) => {
+    const appointment = await this.findOne({ id }).catch((getApptError) => {
       throw new AphError(AphErrorMessages.GET_APPOINTMENT_ERROR, undefined, {
         getApptError,
       });
     });
-    await setCache(
-      `${REDIS_APPOINTMENT_ID_KEY_PREFIX}${id}`,
-      JSON.stringify(appointment),
-      ApiConstants.CACHE_EXPIRATION_3600
-    );
+ 
+    if (appointment) {
+      await setCache(
+        `${REDIS_APPOINTMENT_ID_KEY_PREFIX}${id}`,
+        JSON.stringify(appointment),
+        ApiConstants.CACHE_EXPIRATION_3600
+      );
+    }
+ 
     return appointment;
   }
 
