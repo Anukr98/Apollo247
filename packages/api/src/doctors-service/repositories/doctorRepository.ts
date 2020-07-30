@@ -151,37 +151,38 @@ export class DoctorRepository extends Repository<Doctor> {
       });
     }
     const appts = consultsDb.getCustomRepository(AppointmentRepository);
-    const apptSlots = appts.findByDateDoctorId(doctorId, availableDate).catch(error => { return error; });
-    const doctorBblockedSlots = appts.getDoctorBlockedSlots(
-      doctorId,
-      availableDate,
-      doctorsDb,
-      availableSlots
-    ).catch(error => { return error; });
+    const apptSlots = appts.findByDateDoctorId(doctorId, availableDate).catch((error) => {
+      return error;
+    });
+    const doctorBblockedSlots = appts
+      .getDoctorBlockedSlots(doctorId, availableDate, doctorsDb, availableSlots)
+      .catch((error) => {
+        return error;
+      });
 
     const slots = [apptSlots, doctorBblockedSlots];
 
     return Promise.all(slots)
-      .then(res => {
+      .then((res) => {
         const apptSlots = res[0];
         const doctorBblockedSlots = res[1];
 
         if (apptSlots && apptSlots.length > 0) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           apptSlots.map((appt: any) => {
             const apptDt = format(appt.appointmentDateTime, 'yyyy-MM-dd');
             const sl = `${apptDt}T${appt.appointmentDateTime
               .getUTCHours()
               .toString()
               .padStart(2, '0')}:${appt.appointmentDateTime
-                .getUTCMinutes()
-                .toString()
-                .padStart(2, '0')}:00.000Z`;
+              .getUTCMinutes()
+              .toString()
+              .padStart(2, '0')}:00.000Z`;
             if (availableSlots.indexOf(sl) >= 0) {
               doctorSlots[availableSlots.indexOf(sl)].status = ES_DOCTOR_SLOT_STATUS.BOOKED;
             }
           });
         }
-
 
         if (doctorBblockedSlots.length > 0) {
           availableSlots = availableSlots.filter((val) => {
@@ -193,7 +194,8 @@ export class DoctorRepository extends Repository<Doctor> {
         }
 
         return doctorSlots;
-      }).catch(error => {
+      })
+      .catch((error) => {
         throw new AphError(AphErrorMessages.GET_DOCTOR_SLOT_ERROR, undefined, {
           error,
         });
@@ -201,7 +203,6 @@ export class DoctorRepository extends Repository<Doctor> {
   }
 
   async getDoctorProfileData(id: string) {
-
     const client = new Client({ node: process.env.ELASTIC_CONNECTION_URL });
     const searchParams: RequestParams.Search = {
       index: 'doctors',
@@ -224,6 +225,9 @@ export class DoctorRepository extends Repository<Doctor> {
 
     if (getDetails.body.hits.hits && getDetails.body.hits.hits.length > 0) {
       doctorData = getDetails.body.hits.hits[0]._source;
+      if(doctorData['languages'] instanceof Array){
+        doctorData['languages'] = doctorData['languages'].join(', ');
+      }
       doctorData.id = doctorData.doctorId;
       doctorData.specialty.id = doctorData.specialty.specialtyId;
       doctorData.doctorHospital = [];
@@ -736,8 +740,8 @@ export class DoctorRepository extends Repository<Doctor> {
                 fee.maximum === -1
                   ? qb.where('doctor.onlineConsultationFees >= ' + fee.minimum)
                   : qb
-                    .where('doctor.onlineConsultationFees >= ' + fee.minimum)
-                    .andWhere('doctor.onlineConsultationFees <= ' + fee.maximum);
+                      .where('doctor.onlineConsultationFees >= ' + fee.minimum)
+                      .andWhere('doctor.onlineConsultationFees <= ' + fee.maximum);
               })
             );
           });
@@ -754,8 +758,8 @@ export class DoctorRepository extends Repository<Doctor> {
                 exp.maximum === -1
                   ? qb.where('doctor.experience >= ' + exp.minimum)
                   : qb
-                    .where('doctor.experience >= ' + exp.minimum)
-                    .andWhere('doctor.experience <= ' + exp.maximum);
+                      .where('doctor.experience >= ' + exp.minimum)
+                      .andWhere('doctor.experience <= ' + exp.maximum);
               })
             );
           });

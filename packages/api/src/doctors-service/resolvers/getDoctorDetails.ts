@@ -333,7 +333,6 @@ const getDoctorDetailsById: Resolver<null, { id: string }, DoctorsServiceContext
   } catch (error) {
     throw new AphError(AphErrorMessages.GET_PROFILE_ERROR, undefined, { error });
   }
-
 };
 
 type LoggedInUserDetails = {

@@ -139,7 +139,9 @@ const savePrescriptionMedicineOrderOMS: Resolver<
     orderStatus: MEDICINE_ORDER_STATUS = MEDICINE_ORDER_STATUS.QUOTE;
 
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
-  const patientDetails = await patientRepo.getPatientDetails(prescriptionMedicineOMSInput.patientId);
+  const patientDetails = await patientRepo.getPatientDetails(
+    prescriptionMedicineOMSInput.patientId
+  );
   if (!patientDetails) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }

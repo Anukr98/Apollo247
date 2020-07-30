@@ -42,6 +42,7 @@ import { GetDoctorNextAvailableSlot } from 'graphql/types/GetDoctorNextAvailable
 import { GetDoctorDetailsById_getDoctorDetailsById as DoctorDetailsType } from 'graphql/types/GetDoctorDetailsById';
 import { doctorProfileViewTracking } from 'webEngageTracking';
 import { getDiffInMinutes } from 'helpers/commonHelpers';
+import { hasOnePrimaryUser } from 'helpers/onePrimaryUser';
 
 export interface DoctorDetailsProps {
   id: string;
@@ -221,6 +222,7 @@ const TabContainer: React.FC = (props) => {
 export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const { isSignedIn } = useAuth();
   const classes = useStyles({});
+  const onePrimaryUser = hasOnePrimaryUser();
   const params = useParams<{ id: string; specialty: string; name: string }>();
   const nameId = params && params.name && params.id && params.name + '-' + params.id;
   const nameIdLength = nameId && nameId.length;
@@ -596,6 +598,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         </Modal>
         <BottomLinks />
         <NavigationBottom />
+        {!onePrimaryUser && <ManageProfile />}
       </div>
     );
   } else {

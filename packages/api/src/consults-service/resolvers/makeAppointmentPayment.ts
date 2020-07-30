@@ -211,9 +211,7 @@ const makeAppointmentPayment: Resolver<
   if (paymentInput.paymentStatus == 'TXN_SUCCESS') {
     if (processingAppointment.couponCode) {
       const patient = patientsDb.getCustomRepository(PatientRepository);
-      const patientDetails = await patient.getPatientDetails(
-        processingAppointment.patientId
-      );
+      const patientDetails = await patient.getPatientDetails(processingAppointment.patientId);
       if (!patientDetails) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
       const payload: AcceptCouponRequest = {
         mobile: patientDetails.mobileNumber.replace('+91', ''),
@@ -369,8 +367,10 @@ const makeAppointmentPayment: Resolver<
         notes,
         isJdConsultStarted: true,
       };
+
       caseSheetRepo.savecaseSheet(casesheetAttrs);
-      apptsRepo.updateJdQuestionStatusbyIds([processingAppointment.id]);
+      processingAppointment.isConsultStarted = true;
+      processingAppointment.isJdQuestionsComplete = true;
       const historyAttrs: Partial<AppointmentUpdateHistory> = {
         appointment: processingAppointment,
         userType: APPOINTMENT_UPDATED_BY.PATIENT,
