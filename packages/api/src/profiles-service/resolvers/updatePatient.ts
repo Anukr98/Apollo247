@@ -49,8 +49,6 @@ export const updatePatientTypeDefs = gql`
   }
 `;
 
-const REDIS_PATIENT_ID_KEY_PREFIX: string = 'patient:';
-
 type UpdatePatientResult = {
   patient: Patient | null;
 };
@@ -129,7 +127,7 @@ const updatePatient: Resolver<
       }
     }
   }
-  
+
   const patientObjWithRelations = await patientRepo.findByIdWithRelations(patientInput.id, [
     PATIENT_REPO_RELATIONS.PATIENT_ADDRESS,
     PATIENT_REPO_RELATIONS.FAMILY_HISTORY,

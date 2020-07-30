@@ -185,14 +185,14 @@ const getPatinetAppointments: Resolver<
   { patientAppointmentsInput },
   { consultsDb, doctorsDb, patientsDb, mobileNumber }
 ) => {
-    const { patientId } = patientAppointmentsInput;
-    const patientRepo = patientsDb.getCustomRepository(PatientRepository);
-    const appts = consultsDb.getCustomRepository(AppointmentRepository);
-    const primaryPatientIds = await patientRepo.getLinkedPatientIds({ patientId });
-    const patinetAppointments = await appts.getPatientUpcomingAppointments(primaryPatientIds);
+  const { patientId } = patientAppointmentsInput;
+  const patientRepo = patientsDb.getCustomRepository(PatientRepository);
+  const appts = consultsDb.getCustomRepository(AppointmentRepository);
+  const primaryPatientIds = await patientRepo.getLinkedPatientIds({ patientId });
+  const patinetAppointments = await appts.getPatientUpcomingAppointments(primaryPatientIds);
 
-    return { patinetAppointments };
-  };
+  return { patinetAppointments };
+};
 
 const getPatientFutureAppointmentCount: Resolver<
   null,
@@ -251,7 +251,7 @@ const getPatientPersonalizedAppointments: Resolver<
   const doctorFacilityRepo = doctorsDb.getCustomRepository(DoctorHospitalRepository);
   const apptRepo = consultsDb.getCustomRepository(AppointmentRepository);
 
-  let uhid = args.patientUhid;
+  const uhid = args.patientUhid;
 
   if (uhid == '' || uhid == null) {
     throw new AphError(AphErrorMessages.INVALID_UHID, undefined, {});
@@ -265,11 +265,12 @@ const getPatientPersonalizedAppointments: Resolver<
   }
 
   const offlineApptsResponse = await getOfflineAppointmentsFromPrism(uhid);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let apptDetails: any = {};
 
   if (offlineApptsResponse.errorCode == 0 && offlineApptsResponse.response.length > 0) {
     const aDateInPast = addDays(new Date(), -1 * MAX_DAYS_PAST_CONSULT);
-    let offlineApptsList = offlineApptsResponse.response;
+    const offlineApptsList = offlineApptsResponse.response;
     /**
      * appointmentsToConsider array contains appointments which
      *  a. has valid consultedtime
@@ -278,7 +279,7 @@ const getPatientPersonalizedAppointments: Resolver<
      * This array is sorted on the basis of consultedtime in descending order
      */
 
-    let appointmentsToConsider = offlineApptsList
+    const appointmentsToConsider = offlineApptsList
       .sort(
         (a: offlineAppointment, b: offlineAppointment) =>
           new Date(b.consultedtime).getTime() - new Date(a.consultedtime).getTime()
@@ -289,18 +290,20 @@ const getPatientPersonalizedAppointments: Resolver<
           new Date(a.consultedtime).getTime() >= aDateInPast.getTime()
       );
 
-    let medMantraIds: string[] = appointmentsToConsider.map((x: offlineAppointment) => x.doctorid);
-    let medmantraApolloDoctors: MedmantraApolloDoctor[] =
+    const medMantraIds: string[] = appointmentsToConsider.map(
+      (x: offlineAppointment) => x.doctorid
+    );
+    const medmantraApolloDoctors: MedmantraApolloDoctor[] =
       medMantraIds.length > 0
         ? await doctorFacilityRepo.getDoctorIdsByMedMantraIds(medMantraIds)
         : [];
 
-    let mapMedMantraApolloDoctor = new Map<string, string>();
+    const mapMedMantraApolloDoctor = new Map<string, string>();
     medmantraApolloDoctors.map((x: MedmantraApolloDoctor) =>
       mapMedMantraApolloDoctor.set(x.medmantraId, x.apolloDocId)
     );
 
-    for (let appt of appointmentsToConsider) {
+    for (const appt of appointmentsToConsider) {
       const apolloDoctorId = mapMedMantraApolloDoctor.get(appt.doctorid) || '';
       const patientId = patientDetails ? patientDetails.id : '';
       if (mapMedMantraApolloDoctor.has(appt.doctorid)) {
@@ -360,7 +363,6 @@ export const getPatinetAppointmentsResolvers = {
   },
 };
 async function getOfflineAppointmentsFromPrism(uhid: string) {
-  let offlineApptsList;
   const apptsResp = await fetch(
     process.env.PRISM_GET_OFFLINE_APPOINTMENTS
       ? process.env.PRISM_GET_OFFLINE_APPOINTMENTS + uhid
@@ -371,7 +373,7 @@ async function getOfflineAppointmentsFromPrism(uhid: string) {
     }
   );
   const textRes = await apptsResp.text();
-  offlineApptsList = JSON.parse(textRes);
+  const offlineApptsList = JSON.parse(textRes);
   return offlineApptsList;
 }
 

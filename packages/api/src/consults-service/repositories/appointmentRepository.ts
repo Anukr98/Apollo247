@@ -44,11 +44,9 @@ import { PatientRepository } from 'profiles-service/repositories/patientReposito
 import { log } from 'customWinstonLogger';
 import { ApiConstants } from 'ApiConstants';
 import { Client, RequestParams } from '@elastic/elasticsearch';
-import { getCache, setCache, delCache } from 'consults-service/database/connectRedis';
+import { getCache, setCache } from 'consults-service/database/connectRedis';
 
 const REDIS_APPOINTMENT_ID_KEY_PREFIX: string = 'patient:appointment:';
-
-
 
 @EntityRepository(Appointment)
 export class AppointmentRepository extends Repository<Appointment> {
@@ -64,7 +62,11 @@ export class AppointmentRepository extends Repository<Appointment> {
         getApptError,
       });
     });
-    await setCache(`${REDIS_APPOINTMENT_ID_KEY_PREFIX}${id}`, JSON.stringify(appointment), ApiConstants.CACHE_EXPIRATION_3600);
+    await setCache(
+      `${REDIS_APPOINTMENT_ID_KEY_PREFIX}${id}`,
+      JSON.stringify(appointment),
+      ApiConstants.CACHE_EXPIRATION_3600
+    );
     return appointment;
   }
 
@@ -90,13 +92,13 @@ export class AppointmentRepository extends Repository<Appointment> {
   }
 
   async getAppointmentsByIds(ids: string[]) {
-    let result: Appointment[] = [];
+    const result: Appointment[] = [];
 
     return this.handleCachingMultipleItems(ids, REDIS_APPOINTMENT_ID_KEY_PREFIX, result);
   }
 
   async handleCachingMultipleItems(ids: string[], redisKeyPrefix: string, result: Appointment[]) {
-    let idsNotInCache: string[] = [];
+    const idsNotInCache: string[] = [];
     for (let i = 0; i < ids.length; i++) {
       const item = await getCache(`${redisKeyPrefix}${ids[i]}`);
       if (item && typeof item == 'string') {
@@ -110,7 +112,11 @@ export class AppointmentRepository extends Repository<Appointment> {
         .where('appointment.id IN (:...idsNotInCache)', { idsNotInCache })
         .getMany();
       for (let i = 0; i < itemFromDb.length; i++) {
-        await setCache(`${redisKeyPrefix}${itemFromDb[i].id}`, JSON.stringify(itemFromDb[i]), ApiConstants.CACHE_EXPIRATION_3600);
+        await setCache(
+          `${redisKeyPrefix}${itemFromDb[i].id}`,
+          JSON.stringify(itemFromDb[i]),
+          ApiConstants.CACHE_EXPIRATION_3600
+        );
       }
       result = result.concat(itemFromDb);
     }
@@ -123,7 +129,6 @@ export class AppointmentRepository extends Repository<Appointment> {
       .where('appointment.id IN (:...ids)', { ids })
       .getMany();
   }
-
 
   findByAppointmentId(id: string) {
     return this.find({
@@ -388,7 +393,11 @@ export class AppointmentRepository extends Repository<Appointment> {
     });
   }
 
-  async updateAppointment(id: string, appointmentInfo: Partial<Appointment>, apptDetails: Appointment) {
+  async updateAppointment(
+    id: string,
+    appointmentInfo: Partial<Appointment>,
+    apptDetails: Appointment
+  ) {
     return this.createUpdateAppointment(
       apptDetails,
       {
