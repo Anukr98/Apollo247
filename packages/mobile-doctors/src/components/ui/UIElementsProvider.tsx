@@ -28,6 +28,8 @@ export interface UIElementsContextProps {
   hidePopup: () => void;
   showNeedHelp: boolean;
   setShowNeedHelp: (show: boolean) => void;
+  setFloatingContainer: (visible: boolean) => void;
+  setFloatingValue: (params: FloatingContainerParams) => void;
 }
 
 export const UIElementsContext = createContext<UIElementsContextProps>({
@@ -40,6 +42,8 @@ export const UIElementsContext = createContext<UIElementsContextProps>({
   hidePopup: () => {},
   showNeedHelp: false,
   setShowNeedHelp: (show) => {},
+  setFloatingContainer: () => {},
+  setFloatingValue: (params) => {},
 });
 
 export type AphAlertCTAs = {
@@ -81,6 +85,12 @@ type PopUpParams = {
   timer?: number;
 };
 
+type FloatingContainerParams = {
+  child?: React.ReactNode;
+  mainContainerStyle?: StyleProp<ViewStyle>;
+  backHandleEnabled?: boolean;
+};
+
 export const UIElementsProvider: React.FC = (props) => {
   const [loading, setLoading] = useState(false);
   const [isAlertVisible, setAlertVisible] = useState(false);
@@ -88,9 +98,11 @@ export const UIElementsProvider: React.FC = (props) => {
   const [showNeedHelp, setShowNeedHelp] = useState<boolean>(false);
   const [isPopUpVisible, setIsPopUpVisible] = useState(false);
   const [popUpData, setPopUpData] = useState<PopUpParams>({});
+  const [floatingContainer, setFloatingContainer] = useState<boolean>(false);
+  const [floatingValue, setFloatingValue] = useState<FloatingContainerParams>({});
 
   useEffect(() => {
-    if (isAlertVisible || loading || isPopUpVisible) {
+    if (isAlertVisible || loading || isPopUpVisible || floatingValue.backHandleEnabled) {
       BackHandler.addEventListener('hardwareBackPress', handleBack);
     } else {
       BackHandler.removeEventListener('hardwareBackPress', handleBack);
@@ -98,7 +110,7 @@ export const UIElementsProvider: React.FC = (props) => {
     return () => {
       BackHandler.removeEventListener('hardwareBackPress', handleBack);
     };
-  }, [isAlertVisible, loading, isPopUpVisible]);
+  }, [isAlertVisible, loading, isPopUpVisible, floatingValue]);
 
   const handleBack = async () => {
     console.log('handleBack Called');
@@ -267,6 +279,13 @@ export const UIElementsProvider: React.FC = (props) => {
     setPopUpData({});
   };
 
+  const renderFloatingContainer = () => {
+    if (floatingContainer) {
+      const { child, mainContainerStyle } = floatingValue;
+      return <View style={mainContainerStyle}>{child}</View>;
+    }
+  };
+
   return (
     <UIElementsContext.Provider
       value={{
@@ -279,6 +298,8 @@ export const UIElementsProvider: React.FC = (props) => {
         hidePopup,
         showNeedHelp,
         setShowNeedHelp,
+        setFloatingContainer,
+        setFloatingValue,
       }}
     >
       <View style={{ flex: 1 }}>
@@ -287,6 +308,7 @@ export const UIElementsProvider: React.FC = (props) => {
           {renderNeedHelp()}
           {renderLoading()}
           {renderPopUp()}
+          {renderFloatingContainer()}
         </View>
         {renderAphAlert()}
       </View>
