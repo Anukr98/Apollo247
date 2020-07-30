@@ -46,6 +46,11 @@ const useStyles = makeStyles((theme: Theme) => {
         fontWeight: 500,
         fontSize: '14px !important',
       },
+      '& h3': {
+        color: '#01475b',
+        fontWeight: 500,
+        fontSize: '14px !important',
+      },
     },
     bigAvatar: {
       width: 40,
@@ -77,6 +82,7 @@ interface ServiceItemProps {
 const ServiceItem: React.FC<ServiceItemProps> = (props) => {
   const classes = useStyles({});
   const { title, imgUrl, content, action } = props.item;
+  const headTagCondition = title === 'Online Doctor Consultation' || title === 'Buy Medicines';
   return (
     <ProtectedWithLoginPopup>
       {({ protectWithLoginPopup }) => (
@@ -93,7 +99,7 @@ const ServiceItem: React.FC<ServiceItemProps> = (props) => {
             >
               <Avatar alt="" src={imgUrl} className={classes.bigAvatar} />
               <div className={classes.serviceInfo}>
-                <Typography variant="h1" title={title}>
+                <Typography variant={headTagCondition ? 'h1' : 'h3'} title={title}>
                   {title}
                 </Typography>
               </div>
@@ -111,7 +117,7 @@ export const OurServices: React.FC = (props) => {
   const classes = useStyles({});
   const serviceItems: ServiceItem[] = [
     {
-      title: 'Book Doctor Appointment',
+      title: 'Online Doctor Consultation',
       content: `Let's get you connected with them.`,
       imgUrl: `${require('images/ic-doctor.svg')}`,
       action: { link: clientRoutes.specialityListing(), content: 'Find specialist' },

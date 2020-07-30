@@ -9,6 +9,9 @@ import {
   NotificationType,
   sendMedicineOrderStatusNotification,
 } from 'notifications-service/resolvers/notifications';
+import { ApiConstants } from 'ApiConstants';
+import { postEvent, WebEngageInput } from 'helpers/webEngage';
+import { format, addMinutes } from 'date-fns';
 
 export const pharmaOrderPlacedTypeDefs = gql`
   input OrderPlacedInput {
@@ -80,6 +83,20 @@ const saveOrderPlacedStatus: Resolver<
     orderDetails,
     profilesDb
   );
+
+  //post order placed event to webEngage
+  const postBody: Partial<WebEngageInput> = {
+    userId: orderDetails.patient.mobileNumber,
+    eventName: ApiConstants.MEDICINE_ORDER_PLACED_EVENT_NAME.toString(),
+    eventData: {
+      orderId: orderDetails.orderAutoId,
+      orderType: orderDetails.orderType,
+      statusDateTime: format(addMinutes(new Date(), +330), "yyyy-MM-dd'T'HH:mm:ss'+0530'"),
+      orderAmount: orderDetails.estimatedAmount.toString(),
+      orderTAT: orderDetails.orderTat,
+    },
+  };
+  postEvent(postBody);
 
   return { message: 'Order placed successfully' };
 };

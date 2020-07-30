@@ -330,6 +330,7 @@ export const convertCaseSheetToRxPdfData = async (
         specialty: doctordata.specialty.name,
         signature: doctordata.signature,
       };
+      console.log(doctorInfo);
     }
   }
 

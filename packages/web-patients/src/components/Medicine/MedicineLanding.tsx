@@ -8,9 +8,15 @@ import { AphButton, AphDialog, AphDialogTitle, AphDialogClose } from '@aph/web-u
 import { ShopByAreas } from 'components/Medicine/Cards/ShopByAreas';
 import { ShopByBrand } from 'components/Medicine/Cards/ShopByBrand';
 import { ShopByCategory } from 'components/Medicine/Cards/ShopByCategory';
+import { RecomendedProducts } from 'components/Medicine/Cards/RecomendedProducts';
 import { DayDeals } from 'components/Medicine/Cards/DayDeals';
 import { HotSellers } from 'components/Medicine/Cards/HotSellers';
 import { MedicineAutoSearch } from 'components/Medicine/MedicineAutoSearch';
+import { reOrderItems } from 'helpers/MedicineApiCalls';
+import { GET_LATEST_MEDICINE_ORDER } from 'graphql/profiles';
+import { ReOrder } from 'components/Orders/ReOrder';
+import { getLatestMedicineOrder_getLatestMedicineOrder_medicineOrderDetails as medicineOrderDetailsType } from 'graphql/types/getLatestMedicineOrder';
+import { useMutation } from 'react-apollo-hooks';
 import { ApolloError } from 'apollo-client';
 import { MedicinePageAPiResponse } from './../../helpers/MedicineApiCalls';
 import axios from 'axios';
@@ -23,7 +29,7 @@ import { UploadEPrescriptionCard } from 'components/Prescriptions/UploadEPrescri
 import { useAllCurrentPatients, useCurrentPatient } from 'hooks/authHooks';
 import {
   uploadPrescriptionTracking,
-  pharmacyUploadPresClickTracking,
+  // pharmacyUploadPresClickTracking,
   uploadPhotoTracking,
 } from '../../webEngageTracking';
 import moment from 'moment';
@@ -156,7 +162,6 @@ const useStyles = makeStyles((theme: Theme) => {
     serviceType: {
       backgroundColor: '#f7f8f5',
       borderRadius: 5,
-      padding: 10,
       paddingbottom: 8,
       display: 'flex',
       width: '100%',
@@ -180,11 +185,6 @@ const useStyles = makeStyles((theme: Theme) => {
         boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
       },
     },
-    textVCenter: {
-      alignItems: 'center',
-      minHeight: 54,
-      paddingBottom: 10,
-    },
     serviceIcon: {
       marginRight: 10,
       '& img': {
@@ -194,6 +194,10 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     rightArrow: {
       width: 24,
+      marginLeft: 'auto',
+    },
+    reOrder: {
+      width: 54,
       marginLeft: 'auto',
     },
     linkText: {
@@ -395,6 +399,29 @@ const useStyles = makeStyles((theme: Theme) => {
         marginBottom: 0,
       },
     },
+    medicineReviewReorder: {
+      borderTop: '0.5px solid rgba(2,71,91,0.3)',
+      marginTop: 5,
+      paddingTop: 15,
+      fontSize: 13,
+      '& a': {
+        color: '#fc9916',
+      },
+      '& p': {
+        marginBottom: 0,
+      },
+    },
+    serviceArea: {
+      fontSize: 11,
+      lineHeight: '15px',
+      color: '#02475b',
+      fontWeight: 'normal',
+      margin: '4px 0 0 30px',
+      '& span': {
+        display: 'inline-block',
+        width: '100%',
+      },
+    },
   };
 });
 
@@ -452,6 +479,9 @@ export const MedicineLanding: React.FC = (props: any) => {
   const [isEPrescriptionOpen, setIsEPrescriptionOpen] = React.useState<boolean>(false);
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
   const mascotRef = useRef(null);
+  const [latestMedicineOrder, setLatestMedicineOrder] = useState<medicineOrderDetailsType | null>();
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const latestOrdereDetails = useMutation(GET_LATEST_MEDICINE_ORDER);
 
   const apiDetails = {
     url: process.env.PHARMACY_MED_PROD_SEARCH_BY_BRAND,
@@ -469,6 +499,34 @@ export const MedicineLanding: React.FC = (props: any) => {
       setIsPopoverOpen(true);
     }
   }, [props]);
+
+  useEffect(() => {
+    if (currentPatient && currentPatient.uhid) {
+      setIsLoading(true);
+      latestOrdereDetails({
+        variables: {
+          patientUhid: currentPatient.uhid,
+        },
+      })
+        .then((res: any) => {
+          if (
+            res &&
+            res.data &&
+            res.data.getLatestMedicineOrder &&
+            res.data.getLatestMedicineOrder.medicineOrderDetails
+          ) {
+            setLatestMedicineOrder(res.data.getLatestMedicineOrder.medicineOrderDetails);
+          } else {
+            setLatestMedicineOrder(null);
+          }
+          setIsLoading(false);
+        })
+        .catch((e) => {
+          setIsLoading(false);
+          console.log(e);
+        });
+    }
+  }, [currentPatient]);
 
   /* Gtm code Start */
   useEffect(() => {
@@ -535,6 +593,15 @@ export const MedicineLanding: React.FC = (props: any) => {
     { key: 'Shop by Brand', value: <ShopByBrand data={data.shop_by_brand} /> },
   ];
 
+  const productsRecommended = latestMedicineOrder && latestMedicineOrder.medicineOrderLineItems;
+  const latestMedicineOrderDate =
+    latestMedicineOrder && moment(latestMedicineOrder.createdDate).format('MMMM D, YYYY');
+  const storeAddress = latestMedicineOrder && JSON.parse(latestMedicineOrder.shopAddress);
+  const isOfflineOrder =
+    latestMedicineOrder && latestMedicineOrder.currentStatus === 'PURCHASED_IN_STORE';
+  const orderDelivered =
+    isOfflineOrder || (latestMedicineOrder && latestMedicineOrder.currentStatus === 'DELIVERED');
+
   const onePrimaryUser =
     allCurrentPatients && allCurrentPatients.filter((x) => x.relation === Relation.ME).length === 1;
   const patient = useCurrentPatient();
@@ -542,7 +609,7 @@ export const MedicineLanding: React.FC = (props: any) => {
 
   const handleUploadPrescription = () => {
     uploadPrescriptionTracking({ ...patient, age });
-    pharmacyUploadPresClickTracking('Home');
+    // pharmacyUploadPresClickTracking('Home');
     setIsUploadPreDialogOpen(true);
   };
   const metaTagProps = {
@@ -612,19 +679,57 @@ export const MedicineLanding: React.FC = (props: any) => {
                         className={`${classes.sectionGroup} ${classes.marginNone}`}
                         onClick={() => !isSignedIn && protectWithLoginPopup()}
                       >
-                        <Link
-                          className={`${classes.serviceType} ${classes.textVCenter}`}
-                          to={isSignedIn && clientRoutes.yourOrders()}
-                          title={'Open your orders'}
-                        >
-                          <span className={classes.serviceIcon}>
-                            <img src={require('images/ic_tablets.svg')} alt="" />
-                          </span>
-                          <span className={classes.linkText}>Your Orders</span>
-                          <span className={classes.rightArrow}>
-                            <img src={require('images/ic_arrow_right.svg')} alt="" />
-                          </span>
-                        </Link>
+                        <div className={classes.preServiceType}>
+                          <div className={classes.prescriptionGroup}>
+                            <Link
+                              className={classes.serviceType}
+                              to={isSignedIn && clientRoutes.yourOrders()}
+                              title={'Open your orders'}
+                            >
+                              <span className={classes.serviceIcon}>
+                                <img src={require('images/ic_tablets.svg')} alt="" />
+                              </span>
+                              <span className={classes.linkText}>Your Orders</span>
+                              <span className={classes.rightArrow}>
+                                <img src={require('images/ic_arrow_right.svg')} alt="" />
+                              </span>
+                            </Link>
+                          </div>
+                          {isSignedIn && latestMedicineOrder && orderDelivered ? (
+                            <div className={classes.medicineReviewReorder}>
+                              <div className={classes.serviceType}>
+                                <span className={classes.serviceIcon}>
+                                  <img src={require('images/ic_basket.svg')} alt="" />
+                                </span>
+                                <span className={classes.linkText}>
+                                  {productsRecommended.length > 1
+                                    ? `${productsRecommended[0].medicineName} + ${
+                                        productsRecommended.length - 1
+                                      } item${productsRecommended.length > 2 ? 's ' : ' '}`
+                                    : productsRecommended[0].medicineName}
+                                </span>
+                                <span className={classes.reOrder}>
+                                  <ReOrder
+                                    orderDetailsData={latestMedicineOrder}
+                                    type="Latest Order"
+                                    patientName={
+                                      currentPatient && currentPatient.firstName
+                                        ? currentPatient.firstName
+                                        : ''
+                                    }
+                                  />
+                                </span>
+                              </div>
+                              <div className={classes.serviceArea}>
+                                <span>
+                                  {isOfflineOrder
+                                    ? `Ordered at ${storeAddress.storename} on ${latestMedicineOrderDate}`
+                                    : `Ordered online on ${latestMedicineOrderDate}`}
+                                </span>
+                              </div>
+                            </div>
+                          ) : null}
+                        </div>
                       </div>
                     )}
                   </ProtectedWithLoginPopup>
@@ -634,6 +739,11 @@ export const MedicineLanding: React.FC = (props: any) => {
           </div>
           {!loading && (
             <div className={classes.allProductsList}>
+              {isSignedIn && (
+                <div className={classes.sliderSection}>
+                  <RecomendedProducts />
+                </div>
+              )}
               {list &&
                 list.map((item, index) => (
                   <div key={index} className={classes.sliderSection}>

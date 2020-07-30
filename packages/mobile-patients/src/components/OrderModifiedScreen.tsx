@@ -13,6 +13,9 @@ import {
 import { NavigationScreenProps } from 'react-navigation';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 
 const styles = StyleSheet.create({
   orderIDViewStyle: {
@@ -62,11 +65,11 @@ const styles = StyleSheet.create({
     paddingTop: 2,
   },
   itemsRemovedTextStyle: {
-    ...theme.viewStyles.text('M', 11, '#02475b'),
+    ...theme.viewStyles.text('M', 12, '#02475b'),
     marginTop: 5,
   },
   itemNameTextStyle: {
-    ...theme.viewStyles.text('M', 10, '#0087ba'),
+    ...theme.viewStyles.text('M', 12, '#0087ba'),
     flex: 1,
   },
   itemBlueCircleViewStyle: {
@@ -389,8 +392,10 @@ export const OrderModifiedScreen: React.FC<OrderModifiedScreenProps> = (props) =
         }}
         activeOpacity={1}
         onPress={() => {
-          Linking.openURL('https://bit.ly/apollo247Medicines').catch((err) =>
-            console.error('An error occurred', err)
+          Linking.openURL(
+            AppConfig.Configuration.MED_ORDERS_CUSTOMER_CARE_WHATSAPP_LINK
+          ).catch((err) =>
+            CommonBugFender(`${AppRoutes.OrderModifiedScreen}_Linking.openURL`, err)
           );
         }}
       >

@@ -2,7 +2,7 @@ import { EntityRepository, Repository } from 'typeorm';
 
 import { AppointmentRefunds, REFUND_STATUS } from 'consults-service/entities';
 
-import { PaytmHeadBody } from 'consults-service/helpers/refundHelper';
+import { PaytmHeadBody } from 'types/refundHelperTypes';
 
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';

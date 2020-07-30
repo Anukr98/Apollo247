@@ -1,5 +1,5 @@
 import gql from 'graphql-tag';
-import _ from 'lodash';
+//import _ from 'lodash';
 import { Resolver } from 'api-gateway';
 import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
 import { Patient, Gender, Relation } from 'profiles-service/entities';
@@ -10,7 +10,7 @@ import {
   sendPatientRegistrationNotification,
   sendNotificationWhatsapp,
 } from 'notifications-service/resolvers/notifications';
-import { ApiConstants } from 'ApiConstants';
+import { ApiConstants, PATIENT_REPO_RELATIONS } from 'ApiConstants';
 import { createPrismUser } from 'helpers/phrV1Services';
 
 export const getPatientTypeDefs = gql`
@@ -53,6 +53,7 @@ export const getPatientTypeDefs = gql`
   type UpdateWhatsAppStatusResult {
     status: Boolean
   }
+
   extend type Query {
     getPatientById(patientId: String): PatientInfo
     getAthsToken(patientId: String): PatientInfo
@@ -121,7 +122,14 @@ const getPatientById: Resolver<
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
   const patientData = await patientRepo.checkMobileIdInfo(mobileNumber, '', args.patientId);
   if (!patientData) throw new AphError(AphErrorMessages.INVALID_PATIENT_DETAILS);
-  const patient = await patientRepo.findById(args.patientId);
+
+  const patient = await patientRepo.findByIdWithRelations(args.patientId, [
+    PATIENT_REPO_RELATIONS.PATIENT_ADDRESS,
+    PATIENT_REPO_RELATIONS.FAMILY_HISTORY,
+    PATIENT_REPO_RELATIONS.LIFESTYLE,
+    PATIENT_REPO_RELATIONS.PATIENT_MEDICAL_HISTORY,
+  ]);
+
   if (!patient) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
@@ -182,8 +190,10 @@ const editProfile: Resolver<
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
   const patientId = editProfileInput.id;
   delete editProfileInput.id;
+
   await patientRepo.updateProfile(patientId, editProfileInput);
-  const patient = await patientRepo.findById(patientId);
+  const patient = await patientRepo.getPatientDetails(patientId);
+
   if (patient == null) throw new AphError(AphErrorMessages.UPDATE_PROFILE_ERROR, undefined, {});
   return { patient };
 };
@@ -195,8 +205,9 @@ const deleteProfile: Resolver<
   DeleteProfileResult
 > = async (parent, args, { profilesDb }) => {
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
-  const patient = await patientRepo.findById(args.patientId);
+  const patient = await patientRepo.getPatientDetails(args.patientId);
   if (patient == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
+
   await patientRepo.deleteProfile(args.patientId);
   return { status: true };
 };
@@ -228,7 +239,8 @@ const updateWhatsAppStatus: Resolver<
     args.whatsAppConsult,
     args.whatsAppMedicine
   );
-  const patientDetails = await patientRepo.findById(args.patientId);
+  const patientDetails = await patientRepo.getPatientDetails(args.patientId);
+
   const mobileNumber = patientDetails ? patientDetails.mobileNumber : '';
   if (args.whatsAppConsult === true || args.whatsAppMedicine === true) {
     sendNotificationWhatsapp(mobileNumber, '', 0);
@@ -259,10 +271,12 @@ const getAthsToken: Resolver<
   PatientInfo
 > = async (parent, args, { profilesDb }) => {
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
-  const patient = await patientRepo.findById(args.patientId);
+  const patient = await patientRepo.getPatientDetails(args.patientId);
+
   if (!patient) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
+
   return { patient };
 };
 

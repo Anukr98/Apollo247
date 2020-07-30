@@ -105,7 +105,7 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
   const { setCoupon, coupon: cartCoupon, cartItems } = useShoppingCart();
   const { setLoading: setGlobalLoading, loading: globalLoading, showAphAlert } = useUIElements();
   const client = useApolloClient();
-  const isEnableApplyBtn = couponText.length >= 5;
+  const isEnableApplyBtn = couponText.length >= 4;
 
   const { data, loading, error } = useQuery<getPharmaCouponList>(GET_PHARMA_COUPON_LIST, {
     fetchPolicy: 'no-cache',

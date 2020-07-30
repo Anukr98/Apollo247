@@ -32,6 +32,7 @@ import {
   InitiateAppsFlyer,
   APPStateInActive,
   APPStateActive,
+  postWebEngageEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
@@ -39,6 +40,11 @@ import {
   getAppointmentDataVariables,
 } from '@aph/mobile-patients/src/graphql/types/getAppointmentData';
 import { GET_APPOINTMENT_DATA } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  WebEngageEvents,
+  WebEngageEventName,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
+
 // The moment we import from sdk @praktice/navigator-react-native-sdk,
 // finally not working on all promises.
 
@@ -183,6 +189,9 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           console.log('Medicine');
           getData('Medicine', data.length === 2 ? linkId : undefined);
           break;
+        case 'UploadPrescription':
+          getData('UploadPrescription', data.length === 2 ? linkId : undefined);
+          break;
         case 'Test':
           console.log('Test');
           getData('Test');
@@ -223,8 +232,19 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         case 'MyOrders':
           getData('MyOrders');
           break;
+        case 'webview':
+          if (data.length === 2) {
+            let url = data[1].replace('param=', '');
+            getData('webview', url);
+          }
+          break;
         default:
           getData('ConsultRoom', undefined, true);
+          // webengage event
+          const eventAttributes: WebEngageEvents[WebEngageEventName.HOME_PAGE_VIEWED] = {
+            source: 'Deeplink',
+          };
+          postWebEngageEvent(WebEngageEventName.HOME_PAGE_VIEWED, eventAttributes);
           break;
       }
       console.log('route', route);
@@ -383,10 +403,15 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         props.navigation.navigate('MEDICINES');
         break;
 
+      case 'UploadPrescription':
+        props.navigation.navigate('MEDICINES', { showUploadPrescriptionPopup: true });
+        break;
+
       case 'MedicineDetail':
         console.log('MedicineDetail');
         props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
           sku: id,
+          movedFrom: 'deeplink',
         });
         break;
 
@@ -432,6 +457,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           props.navigation.navigate(AppRoutes.SearchByBrand, {
             category_id: itemId,
             title: `${name ? name : 'Products'}`.toUpperCase(),
+            movedFrom: 'deeplink'
           });
         }
         break;
@@ -457,6 +483,11 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         break;
       case 'MyOrders':
         props.navigation.navigate(AppRoutes.YourOrdersScene);
+        break;
+      case 'webview':
+        props.navigation.navigate(AppRoutes.CommonWebView, {
+          url: id,
+        });
         break;
       default:
         break;
@@ -581,8 +612,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
               'min_value_to_nudge_users_to_avail_free_delivery',
               'QA_pharmacy_homepage',
               'pharmacy_homepage',
-              'QA_hotsellers_max_quantity',
-              'hotsellers_max_quantity',
             ]);
         })
         .then((snapshot) => {
@@ -651,11 +680,11 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           homeScreenEmergencyBannerNumber &&
             updateAppConfig('HOME_SCREEN_EMERGENCY_BANNER_NUMBER', homeScreenEmergencyBannerNumber);
 
-          if (buildName() === 'DEV') {
+          if (AppConfig.APP_ENV === 'DEV') {
             const DEV_top6_specailties = snapshot['DEV_top6_specailties'].val();
             DEV_top6_specailties &&
               updateAppConfig('TOP_SPECIALITIES', JSON.parse(DEV_top6_specailties));
-          } else if (buildName() === 'QA') {
+          } else if (AppConfig.APP_ENV === 'QA' || AppConfig.APP_ENV === 'QA2') {
             const QA_top6_specailties = snapshot['QA_top6_specailties'].val();
             QA_top6_specailties &&
               updateAppConfig('TOP_SPECIALITIES', JSON.parse(QA_top6_specailties));
@@ -663,15 +692,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
             const top6_specailties = snapshot['top6_specailties'].val();
             top6_specailties && updateAppConfig('TOP_SPECIALITIES', JSON.parse(top6_specailties));
           }
-          const qaHotsellersMaxQuantity = snapshot['QA_hotsellers_max_quantity'].val();
-          qaHotsellersMaxQuantity &&
-            AppConfig.APP_ENV != AppEnv.PROD &&
-            updateAppConfig('HOTSELLERS_MAX_QUANTITY', qaHotsellersMaxQuantity);
-
-          const hotsellersMaxQuantity = snapshot['hotsellers_max_quantity'].val();
-          hotsellersMaxQuantity &&
-            AppConfig.APP_ENV == AppEnv.PROD &&
-            updateAppConfig('HOTSELLERS_MAX_QUANTITY', hotsellersMaxQuantity);
 
           const myValye = snapshot;
           let index: number = 0;

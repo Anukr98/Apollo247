@@ -44,15 +44,33 @@ import { PatientRepository } from 'profiles-service/repositories/patientReposito
 import { log } from 'customWinstonLogger';
 import { ApiConstants } from 'ApiConstants';
 import { Client, RequestParams } from '@elastic/elasticsearch';
+import { getCache, setCache, delCache } from 'consults-service/database/connectRedis';
+
+const REDIS_APPOINTMENT_ID_KEY_PREFIX: string = 'patient:appointment:';
 
 @EntityRepository(Appointment)
 export class AppointmentRepository extends Repository<Appointment> {
-  findById(id: string) {
-    return this.findOne({ id }).catch((getApptError) => {
+  async findById(id: string) {
+    const cache = await getCache(`${REDIS_APPOINTMENT_ID_KEY_PREFIX}${id}`);
+    if (cache && typeof cache === 'string') {
+      const cacheAppointment: Appointment = JSON.parse(cache);
+      return this.create(cacheAppointment);
+    }
+    const appointment = await this.findOne({ id }).catch((getApptError) => {
       throw new AphError(AphErrorMessages.GET_APPOINTMENT_ERROR, undefined, {
         getApptError,
       });
     });
+
+    if (appointment) {
+      await setCache(
+        `${REDIS_APPOINTMENT_ID_KEY_PREFIX}${id}`,
+        JSON.stringify(appointment),
+        ApiConstants.CACHE_EXPIRATION_3600
+      );
+    }
+
+    return appointment;
   }
 
   getAppointmentsCount(doctorId: string, patientId: string) {
@@ -76,10 +94,36 @@ export class AppointmentRepository extends Repository<Appointment> {
       .getCount();
   }
 
-  getAppointmentsByIds(ids: string[]) {
-    return this.createQueryBuilder('appointment')
-      .where('appointment.id IN (:...ids)', { ids })
-      .getMany();
+  async getAppointmentsByIds(ids: string[]) {
+    const result: Appointment[] = [];
+
+    return this.handleCachingMultipleItems(ids, REDIS_APPOINTMENT_ID_KEY_PREFIX, result);
+  }
+
+  async handleCachingMultipleItems(ids: string[], redisKeyPrefix: string, result: Appointment[]) {
+    const idsNotInCache: string[] = [];
+    for (let i = 0; i < ids.length; i++) {
+      const item = await getCache(`${redisKeyPrefix}${ids[i]}`);
+      if (item && typeof item == 'string') {
+        result.push(JSON.parse(item));
+      } else {
+        idsNotInCache.push(ids[i]);
+      }
+    }
+    if (idsNotInCache && idsNotInCache.length > 0) {
+      const itemFromDb = await this.createQueryBuilder('appointment')
+        .where('appointment.id IN (:...idsNotInCache)', { idsNotInCache })
+        .getMany();
+      for (let i = 0; i < itemFromDb.length; i++) {
+        await setCache(
+          `${redisKeyPrefix}${itemFromDb[i].id}`,
+          JSON.stringify(itemFromDb[i]),
+          ApiConstants.CACHE_EXPIRATION_3600
+        );
+      }
+      result = result.concat(itemFromDb);
+    }
+    return result;
   }
 
   getAppointmentsByIdsWithSpecificFields(ids: string[], fields: string[]) {
@@ -352,7 +396,11 @@ export class AppointmentRepository extends Repository<Appointment> {
     });
   }
 
-  updateAppointment(id: string, appointmentInfo: Partial<Appointment>, apptDetails: Appointment) {
+  async updateAppointment(
+    id: string,
+    appointmentInfo: Partial<Appointment>,
+    apptDetails: Appointment
+  ) {
     return this.createUpdateAppointment(
       apptDetails,
       {
@@ -1195,7 +1243,10 @@ export class AppointmentRepository extends Repository<Appointment> {
     );
   }
 
-  updateJdQuestionStatusbyIds(ids: string[]) {
+  async updateJdQuestionStatusbyIds(ids: string[]) {
+    for (let i = 0; i < ids.length; i++) {
+      await delCache(`${REDIS_APPOINTMENT_ID_KEY_PREFIX}${ids[i]}`);
+    }
     return this.update([...ids], {
       isJdQuestionsComplete: true,
       isConsultStarted: true,

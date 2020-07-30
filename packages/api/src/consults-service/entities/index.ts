@@ -10,10 +10,14 @@ import {
   OneToMany,
   ManyToOne,
   Index,
+  UpdateDateColumn,
+  CreateDateColumn,
+  AfterUpdate,
 } from 'typeorm';
-import { IsDate } from 'class-validator';
+import { Validate, IsDate } from 'class-validator';
 import { DoctorType, ROUTE_OF_ADMINISTRATION } from 'doctors-service/entities';
-
+import { MobileNumberValidator } from 'validators/entityValidators';
+import { delCache } from 'consults-service/database/connectRedis';
 import { log } from 'customWinstonLogger';
 
 export enum APPOINTMENT_UPDATED_BY {
@@ -375,6 +379,20 @@ export class Appointment extends BaseEntity {
 
   @OneToMany((type) => AuditHistory, (auditHistory) => auditHistory.appointment)
   auditHistory: AuditHistory[];
+
+  @OneToMany(
+    () => ExotelDetails,
+    (callDetail: ExotelDetails) => {
+      callDetail.appointment;
+    },
+    { onDelete: 'CASCADE', onUpdate: 'CASCADE' }
+  )
+  callDetails: ExotelDetails[];
+
+  @AfterUpdate()
+  async dropAppointmentCache() {
+    await delCache(`patient:appointment:${this.id}`);
+  }
 }
 //Appointment ends
 
@@ -924,8 +942,11 @@ export class CaseSheet extends BaseEntity {
 @Entity()
 export class ConsultQueueItem extends BaseEntity {
   @Index('ConsultQueueItem_appointmentId')
-  @Column()
+  @Column({ nullable: true })
   appointmentId: string;
+
+  @ManyToOne((type) => Appointment, (appointment) => appointment.transferAppointmentDetails)
+  appointment: Appointment;
 
   @Column()
   createdDate: Date;
@@ -1022,6 +1043,12 @@ export class AppointmentUpdateHistory extends BaseEntity {
 
   @Column({ nullable: true })
   toValue: string;
+
+  @Column({ nullable: true })
+  fromState: string;
+
+  @Column({ nullable: true })
+  toState: string;
 
   @Column({ nullable: true })
   reason: string;
@@ -1554,7 +1581,6 @@ export class PlannedDoctors extends BaseEntity {
   @Column()
   speciality: string;
 
-
   @Index('PlannedDoctors_specialityId')
   @Column()
   specialityId: string;
@@ -1776,6 +1802,94 @@ export class NotificationBinArchive extends BaseEntity {
 
   @Column({ nullable: true })
   updatedDate: Date;
+}
+
+// ExotelDetails
+@Entity()
+export class ExotelDetails extends BaseEntity {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Index('ExotelDetails_doctorId')
+  @Column()
+  doctorId: string;
+
+  @Index('ExotelDetails_appointmentId')
+  @Column()
+  appointmentId: string;
+
+  @ManyToOne(
+    () => Appointment,
+    (appointment: Appointment) => {
+      appointment.callDetails;
+    }
+  )
+  @JoinColumn({ name: 'appointmentId' })
+  appointment: Appointment;
+
+  @Index('ExotelDetails_doctorType')
+  @Column()
+  doctorType: string;
+
+  @Index('ExotelDetails_callStatus')
+  @Column()
+  status: string;
+
+  @Index('ExotelDetails_callSid')
+  @Column()
+  callSid: string;
+
+  @Column()
+  accountSid: string;
+
+  // PhoneNumberSid
+  @Column()
+  callerId: string;
+
+  @Column({ nullable: true })
+  recordingUrl: string;
+
+  @Column({ nullable: true })
+  direction: string;
+
+  @Column({ nullable: true })
+  price: string;
+
+  @Column({ nullable: true, default: false })
+  doctorPickedUp: Boolean;
+
+  @Column({ nullable: true, default: false })
+  patientPickedUp: Boolean;
+
+  // from
+  @Index('Doctor_mobileNumber')
+  @Column()
+  @Validate(MobileNumberValidator)
+  doctorMobileNumber: string;
+
+  // to
+  @Index('Patient_mobileNumber')
+  @Column()
+  @Validate(MobileNumberValidator)
+  patientMobileNumber: string;
+
+  @Column({ nullable: true })
+  deviceType: DEVICETYPE;
+
+  @UpdateDateColumn()
+  updatedDate: Date;
+
+  @CreateDateColumn()
+  createdDate: Date;
+
+  @Column({ type: 'timestamp' })
+  callStartTime: Date;
+
+  @Column({ nullable: true, type: 'timestamp' })
+  callEndTime: Date;
+
+  @Column({ nullable: true })
+  totalCallDuration: number;
 }
 
 //notification related tables end

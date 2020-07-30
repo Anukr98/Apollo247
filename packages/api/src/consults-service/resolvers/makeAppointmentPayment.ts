@@ -13,7 +13,8 @@ import {
   VALUE_TYPE,
   APPOINTMENT_UPDATED_BY,
 } from 'consults-service/entities';
-import { initiateRefund, PaytmResponse } from 'consults-service/helpers/refundHelper';
+import { initiateRefund } from 'consults-service/helpers/refundHelper';
+import { PaytmResponse } from 'types/refundHelperTypes';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
@@ -210,9 +211,7 @@ const makeAppointmentPayment: Resolver<
   if (paymentInput.paymentStatus == 'TXN_SUCCESS') {
     if (processingAppointment.couponCode) {
       const patient = patientsDb.getCustomRepository(PatientRepository);
-      const patientDetails = await patient.findByIdWithoutRelations(
-        processingAppointment.patientId
-      );
+      const patientDetails = await patient.getPatientDetails(processingAppointment.patientId);
       if (!patientDetails) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
       const payload: AcceptCouponRequest = {
         mobile: patientDetails.mobileNumber.replace('+91', ''),
@@ -377,6 +376,8 @@ const makeAppointmentPayment: Resolver<
         userType: APPOINTMENT_UPDATED_BY.PATIENT,
         fromValue: currentStatus,
         toValue: STATUS.PENDING,
+        fromState: processingAppointment.appointmentState,
+        toState: processingAppointment.appointmentState,
         valueType: VALUE_TYPE.STATUS,
         userName: processingAppointment.patientId,
         reason: ApiConstants.APPOINTMENT_AUTO_SUBMIT_HISTORY.toString(),
@@ -389,6 +390,8 @@ const makeAppointmentPayment: Resolver<
         fromValue: currentStatus,
         toValue: STATUS.PENDING,
         valueType: VALUE_TYPE.STATUS,
+        fromState: processingAppointment.appointmentState,
+        toState: processingAppointment.appointmentState,
         userName: processingAppointment.patientId,
         reason: ApiConstants.BOOK_APPOINTMENT_HISTORY_REASON.toString(),
       };
@@ -400,6 +403,8 @@ const makeAppointmentPayment: Resolver<
       userType: APPOINTMENT_UPDATED_BY.PATIENT,
       fromValue: STATUS.PAYMENT_PENDING,
       toValue: STATUS.PAYMENT_FAILED,
+      fromState: processingAppointment.appointmentState,
+      toState: processingAppointment.appointmentState,
       valueType: VALUE_TYPE.STATUS,
       userName: processingAppointment.patientId,
     };
@@ -425,6 +430,8 @@ const makeAppointmentPayment: Resolver<
           userType: APPOINTMENT_UPDATED_BY.PATIENT,
           fromValue: STATUS.PAYMENT_PENDING,
           toValue: STATUS.PAYMENT_PENDING_PG,
+          fromState: processingAppointment.appointmentState,
+          toState: processingAppointment.appointmentState,
           valueType: VALUE_TYPE.STATUS,
           userName: processingAppointment.patientId,
         };
@@ -465,7 +472,7 @@ const sendPatientAcknowledgements = async (
   }
 
   const patient = patientsDb.getCustomRepository(PatientRepository);
-  const patientDetails = await patient.findById(appointmentData.patientId);
+  const patientDetails = await patient.getPatientDetails(appointmentData.patientId);
   if (!patientDetails) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }

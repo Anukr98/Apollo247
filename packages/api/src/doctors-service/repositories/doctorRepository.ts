@@ -25,6 +25,8 @@ import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { DoctorConsultHoursRepository } from 'doctors-service/repositories/doctorConsultHoursRepository';
 import { ApiConstants } from 'ApiConstants';
+import { Client, RequestParams } from '@elastic/elasticsearch';
+
 //import { DoctorNextAvaialbleSlotsRepository } from 'consults-service/repositories/DoctorNextAvaialbleSlotsRepository';
 
 type DoctorSlot = {
@@ -47,7 +49,6 @@ export class DoctorRepository extends Repository<Doctor> {
     previousDate = addDays(availableDate, -1);
     const checkStart = `${previousDate.toDateString()} 18:30:00`;
     const checkEnd = `${availableDate.toDateString()} 18:30:00`;
-    console.log(checkStart, checkEnd, 'check start end');
     let weekDay = format(previousDate, 'EEEE').toUpperCase();
     let timeSlots = await ConsultHours.find({
       where: { doctor: doctorId, weekDay },
@@ -150,45 +151,103 @@ export class DoctorRepository extends Repository<Doctor> {
       });
     }
     const appts = consultsDb.getCustomRepository(AppointmentRepository);
-    const apptSlots = await appts.findByDateDoctorId(doctorId, availableDate);
-    if (apptSlots && apptSlots.length > 0) {
-      apptSlots.map((appt) => {
-        const apptDt = format(appt.appointmentDateTime, 'yyyy-MM-dd');
-        const sl = `${apptDt}T${appt.appointmentDateTime
-          .getUTCHours()
-          .toString()
-          .padStart(2, '0')}:${appt.appointmentDateTime
-          .getUTCMinutes()
-          .toString()
-          .padStart(2, '0')}:00.000Z`;
-        if (availableSlots.indexOf(sl) >= 0) {
-          doctorSlots[availableSlots.indexOf(sl)].status = ES_DOCTOR_SLOT_STATUS.BOOKED;
-          //availableSlots.splice(availableSlots.indexOf(sl), 1);
-        }
+    const apptSlots = appts.findByDateDoctorId(doctorId, availableDate).catch((error) => {
+      return error;
+    });
+    const doctorBblockedSlots = appts
+      .getDoctorBlockedSlots(doctorId, availableDate, doctorsDb, availableSlots)
+      .catch((error) => {
+        return error;
       });
-    }
-    const doctorBblockedSlots = await appts.getDoctorBlockedSlots(
-      doctorId,
-      availableDate,
-      doctorsDb,
-      availableSlots
-    );
-    if (doctorBblockedSlots.length > 0) {
-      availableSlots = availableSlots.filter((val) => {
-        !doctorBblockedSlots.includes(val);
-        if (doctorBblockedSlots.includes(val)) {
-          doctorSlots[availableSlots.indexOf(val)].status = ES_DOCTOR_SLOT_STATUS.BLOCKED;
+
+    const slots = [apptSlots, doctorBblockedSlots];
+
+    return Promise.all(slots)
+      .then((res) => {
+        const apptSlots = res[0];
+        const doctorBblockedSlots = res[1];
+
+        if (apptSlots && apptSlots.length > 0) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          apptSlots.map((appt: any) => {
+            const apptDt = format(appt.appointmentDateTime, 'yyyy-MM-dd');
+            const sl = `${apptDt}T${appt.appointmentDateTime
+              .getUTCHours()
+              .toString()
+              .padStart(2, '0')}:${appt.appointmentDateTime
+              .getUTCMinutes()
+              .toString()
+              .padStart(2, '0')}:00.000Z`;
+            if (availableSlots.indexOf(sl) >= 0) {
+              doctorSlots[availableSlots.indexOf(sl)].status = ES_DOCTOR_SLOT_STATUS.BOOKED;
+            }
+          });
         }
+
+        if (doctorBblockedSlots.length > 0) {
+          availableSlots = availableSlots.filter((val) => {
+            !doctorBblockedSlots.includes(val);
+            if (doctorBblockedSlots.includes(val)) {
+              doctorSlots[availableSlots.indexOf(val)].status = ES_DOCTOR_SLOT_STATUS.BLOCKED;
+            }
+          });
+        }
+
+        return doctorSlots;
+      })
+      .catch((error) => {
+        throw new AphError(AphErrorMessages.GET_DOCTOR_SLOT_ERROR, undefined, {
+          error,
+        });
       });
-    }
-    return doctorSlots;
   }
 
-  getDoctorProfileData(id: string) {
-    return this.findOne({
-      where: [{ id, isActive: true }],
-      relations: ['specialty', 'doctorHospital', 'doctorHospital.facility'],
-    });
+  async getDoctorProfileData(id: string) {
+    const client = new Client({ node: process.env.ELASTIC_CONNECTION_URL });
+    const searchParams: RequestParams.Search = {
+      index: 'doctors',
+      body: {
+        query: {
+          bool: {
+            must: [
+              {
+                match_phrase: {
+                  doctorId: id,
+                },
+              },
+            ],
+          },
+        },
+      },
+    };
+    const getDetails = await client.search(searchParams);
+    let doctorData, facilities;
+
+    if (getDetails.body.hits.hits && getDetails.body.hits.hits.length > 0) {
+      doctorData = getDetails.body.hits.hits[0]._source;
+      if(doctorData['languages'] instanceof Array){
+        doctorData['languages'] = doctorData['languages'].join(', ');
+      }
+      doctorData.id = doctorData.doctorId;
+      doctorData.specialty.id = doctorData.specialty.specialtyId;
+      doctorData.doctorHospital = [];
+      const availableModes: string[] = [];
+      for (const consultHour of doctorData.consultHours) {
+        consultHour['id'] = consultHour['consultHoursId'];
+        if (!availableModes.includes(consultHour['consultMode'])) {
+          availableModes.push(consultHour['consultMode']);
+        }
+      }
+
+      facilities = doctorData.facility;
+      facilities = Array.isArray(facilities) ? facilities : [facilities];
+      for (const facility of facilities) {
+        facility.id = facility.facilityId;
+        doctorData.doctorHospital.push({ facility });
+      }
+      doctorData.availableModes = availableModes;
+    }
+    return doctorData;
   }
 
   getCityMappingPincode(pincode: string) {

@@ -80,6 +80,7 @@ export enum DEVICETYPE {
 
 export enum DEVICE_TYPE {
   ANDROID = "ANDROID",
+  DESKTOP = "DESKTOP",
   IOS = "IOS",
 }
 
@@ -647,6 +648,7 @@ export interface MedicinePaymentMqInput {
   CODCity?: CODCity | null;
   orderId?: string | null;
   paymentMode?: PAYMENT_METHODS | null;
+  healthCredits?: number | null;
 }
 
 export interface OrderCancelInput {

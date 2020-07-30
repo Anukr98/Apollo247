@@ -35,6 +35,7 @@ import {
   postAppsFlyerAddToCartEvent,
   addPharmaItemToCart,
   g,
+  getMaxQtyForMedicineItem,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
@@ -320,6 +321,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
       is_prescription_required,
       thumbnail,
       type_id,
+      MaxOrderQty,
     } = item;
     savePastSeacrh(sku, name).catch((e) => {
       aphConsole.log({ e });
@@ -342,6 +344,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         quantity: 1,
         thumbnail,
         isInStock: true,
+        maxOrderQty: MaxOrderQty,
       },
       pharmacyPincode!,
       addCartItem,
@@ -549,6 +552,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
           props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
             sku: pastSeacrh.typeId,
             title: pastSeacrh.name,
+            movedFrom: 'search',
           });
         }}
       >
@@ -634,6 +638,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
           props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
             sku: medicine.sku,
             title: medicine.name,
+            movedFrom: 'search',
           });
         }}
         medicineName={stripHtml(medicine.name)}
@@ -660,7 +665,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
           onNotifyMeClick();
         }}
         onPressAddQuantity={() =>
-          getItemQuantity(medicine.sku) == 20
+          getItemQuantity(medicine.sku) == getMaxQtyForMedicineItem(medicine.MaxOrderQty)
             ? null
             : onUpdateCartItem(medicine, getItemQuantity(medicine.sku) + 1)
         }
@@ -862,6 +867,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         onPress={() => {
           props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
             sku: item.sku,
+            movedFrom: 'search',
           });
           resetSearchState();
         }}
@@ -873,7 +879,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         }}
         onPressAdd={() => {
           const q = getItemQuantity(item.sku);
-          if (q == 20) return;
+          if (q == getMaxQtyForMedicineItem(item.MaxOrderQty)) return;
           onUpdateCartItem(item, getItemQuantity(item.sku) + 1);
         }}
         onPressSubstract={() => {

@@ -36,14 +36,14 @@ export class PatientRepository extends Repository<Patient> {
   async dropPatientCache(id: string) {
     delCache(id);
   }
-  async findById(id: string) {
-    return await this.getByIdCache(id);
-  }
 
-  async findByIdWithoutRelations(id: string) {
-    return this.findOne({
+  async findByIdWithRelations(id: string, relations: string[]) {
+    const findClause = {
       where: { id, isActive: true },
-    });
+      relations: relations,
+    };
+
+    return this.findOne(findClause);
   }
 
   async findOrCreatePatient(
@@ -103,7 +103,10 @@ export class PatientRepository extends Repository<Patient> {
     const cache = await getCache(`${REDIS_PATIENT_ID_KEY_PREFIX}${id}`);
     if (cache && typeof cache === 'string') {
       const patient: Patient = JSON.parse(cache);
-      patient.dateOfBirth = new Date(patient.dateOfBirth);
+      //Only add DOB if it is actually present, or else it will take 1970 date as default when null is passed to constructor
+      if (patient.dateOfBirth) {
+        patient.dateOfBirth = new Date(patient.dateOfBirth);
+      }
       return this.create(patient);
     } else {
       return await this.setByIdCache(id);
@@ -111,18 +114,8 @@ export class PatientRepository extends Repository<Patient> {
   }
 
   async getPatientData(id: string | number) {
-    const relations = [
-      'lifeStyle',
-      'healthVault',
-      'familyHistory',
-      'patientAddress',
-      'patientDeviceTokens',
-      'patientNotificationSettings',
-      'patientMedicalHistory',
-    ];
     return this.findOne({
       where: { id, isActive: true },
-      relations: relations,
     });
   }
 
@@ -349,8 +342,8 @@ export class PatientRepository extends Repository<Patient> {
     return null;
   }
 
-  saveNewProfile(patientAttrs: Partial<Patient>) {
-    return this.create(patientAttrs)
+  async saveNewProfile(patientAttrs: Partial<Patient>) {
+    return await this.create(patientAttrs)
       .save()
       .catch((patientError) => {
         throw new AphError(AphErrorMessages.SAVE_NEW_PROFILE_ERROR, undefined, {
@@ -571,7 +564,7 @@ export class PatientRepository extends Repository<Patient> {
   }
 
   async updateWhatsAppStatus(id: string, whatsAppConsult: Boolean, whatsAppMedicine: Boolean) {
-    const patient = await this.getByIdCache(id);
+    const patient = await this.getPatientDetails(id);
     if (patient) {
       patient.whatsAppConsult = whatsAppConsult;
       patient.whatsAppMedicine = whatsAppMedicine;

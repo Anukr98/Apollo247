@@ -9,8 +9,7 @@ import {
   MEDICINE_ORDER_TYPE,
   MedicineOrderShipments,
   MedicineOrderCancelReason,
-  ONE_APOLLO_USER_REG,
-  OneApollTransaction,
+  MedicineOrderAddress,
 } from 'profiles-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
@@ -43,86 +42,12 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
     return orderCreated;
   }
 
-  async getOneApolloUser(mobileNumber: string) {
-    try {
-      const response = await fetch(
-        `${process.env.ONEAPOLLO_BASE_URL}/Customer/GetByMobile?mobilenumber=${mobileNumber}&BusinessUnit=${process.env.ONEAPOLLO_BUSINESS_UNIT}`,
-        {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            AccessToken: <string>process.env.ONEAPOLLO_ACCESS_TOKEN,
-            APIKey: <string>process.env.ONEAPOLLO_API_KEY,
-          },
-        }
-      );
-      return response.json();
-    } catch (e) {
-      console.log('error occured in getOneApolloUser()', e);
-      throw new AphError(AphErrorMessages.GET_ONEAPOLLO_USER_ERROR, undefined, { e });
-    }
-  }
-
-  async createOneApolloUser(oneApollUser: ONE_APOLLO_USER_REG) {
-    try {
-      const response = await fetch(process.env.ONEAPOLLO_BASE_URL + '/Customer/Register', {
-        method: 'POST',
-        body: JSON.stringify(oneApollUser),
-        headers: {
-          'Content-Type': 'application/json',
-          AccessToken: <string>process.env.ONEAPOLLO_ACCESS_TOKEN,
-          APIKey: <string>process.env.ONEAPOLLO_API_KEY,
-        },
-      });
-      return response.json();
-    } catch (e) {
-      throw new AphError(AphErrorMessages.CREATE_ONEAPOLLO_USER_ERROR, undefined, { e });
-    }
-  }
-  async createOneApolloTransaction(transaction: Partial<OneApollTransaction>) {
-    try {
-      const response = await fetch(process.env.ONEAPOLLO_BASE_URL + '/transaction/create', {
-        method: 'POST',
-        body: JSON.stringify(transaction),
-        headers: {
-          'Content-Type': 'application/json',
-          AccessToken: <string>process.env.ONEAPOLLO_ACCESS_TOKEN,
-          APIKey: <string>process.env.ONEAPOLLO_API_KEY,
-        },
-      });
-      return response.json();
-    } catch (e) {
-      throw new AphError(AphErrorMessages.CREATE_ONEAPOLLO_USER_TRANSACTION_ERROR, undefined, {
-        e,
-      });
-    }
-  }
-
   getInvoiceDetailsByOrderId(orderId: MedicineOrders['orderAutoId']) {
     const startDateTime = '2020-06-10 15:45:29.453';
     return MedicineOrderInvoice.find({
       select: ['billDetails', 'itemDetails'],
       where: { orderNo: orderId, createdDate: MoreThan(startDateTime) },
     });
-  }
-
-  async getOneApolloUserTransactions(mobileNumber: string) {
-    try {
-      const response = await fetch(
-        `${process.env.ONEAPOLLO_BASE_URL}/Customer/GetAllTransactions?mobilenumber=${mobileNumber}&Count=${process.env.ONEAPOLLO_DEFAULT_TRANSACTIONS_COUNT}`,
-        {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            AccessToken: <string>process.env.ONEAPOLLO_ACCESS_TOKEN,
-            APIKey: <string>process.env.ONEAPOLLO_API_KEY,
-          },
-        }
-      );
-      return response.json();
-    } catch (e) {
-      throw new AphError(AphErrorMessages.GET_ONEAPOLLO_USER_TRANSACTIONS_ERROR, undefined, { e });
-    }
   }
 
   findPharamaOrdersByOrderId(orderAutoId: MedicineOrders['orderAutoId']) {
@@ -376,6 +301,22 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
         'medicineOrderShipments.medicineOrderInvoice',
         'medicineOrderInvoice',
         'patient',
+      ],
+    });
+  }
+
+  getMedicineOrderDetailsWithAddressByOrderId(orderAutoId: number) {
+    return this.findOne({
+      where: { orderAutoId },
+      relations: [
+        'medicineOrderLineItems',
+        'medicineOrderPayments',
+        'medicineOrdersStatus',
+        'medicineOrderShipments',
+        'medicineOrderShipments.medicineOrdersStatus',
+        'medicineOrderShipments.medicineOrderInvoice',
+        'medicineOrderInvoice',
+        'medicineOrderAddress',
       ],
     });
   }
@@ -635,6 +576,10 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
       })
       .orderBy('medicine_orders."createdDate"', 'DESC')
       .getOne();
+  }
+
+  saveMedicineOrderAddress(orderAddressAttrs: Partial<MedicineOrderAddress>) {
+    return MedicineOrderAddress.create(orderAddressAttrs).save();
   }
 
   getMedicineOrder(orderAutoId: number) {
