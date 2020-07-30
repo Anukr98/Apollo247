@@ -328,6 +328,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       },
     };
     if (orderType == 'HCorder') {
+      paymentInfo.medicinePaymentMqInput['amountPaid'] = 0;
       paymentInfo.medicinePaymentMqInput['paymentStatus'] = 'TXN_SUCCESS';
       paymentInfo.medicinePaymentMqInput['healthCredits'] = getFormattedAmount(grandTotal);
     }
@@ -838,7 +839,8 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         <View style={styles.subCont}>
           <Text style={styles.SubtotalTxt}>Subtotal</Text>
           <Text style={styles.SubtotalTxt}>
-            Rs. {getFormattedAmount(cartTotal + deliveryCharges + packagingCharges)}
+            Rs.{' '}
+            {getFormattedAmount(cartTotal + deliveryCharges + packagingCharges - productDiscount)}
           </Text>
         </View>
         {couponDiscount != 0 && (
@@ -880,7 +882,6 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         <View style={{ ...styles.border }}></View>
         <TouchableOpacity
           onPress={() => {
-            setisOneApolloSelected(!isOneApolloSelected);
             if (isOneApolloSelected) {
               setisOneApolloSelected(false);
               setBurnHC(0);
@@ -953,8 +954,10 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
           renderItem={({ item }) => (
             <TouchableOpacity
               onPress={() => {
-                setCashOnDelivery(false);
-                initiateOrder(item.paymentMode, '', false, false);
+                if (!HCorder) {
+                  setCashOnDelivery(false);
+                  initiateOrder(item.paymentMode, '', false, false);
+                }
               }}
               style={styles.paymentModeCard}
             >

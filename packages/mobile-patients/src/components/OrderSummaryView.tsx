@@ -17,6 +17,7 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/getMedicineOrderOMSDetails';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { DiscountIcon, OneApollo } from '@aph/mobile-patients/src/components/ui/Icons';
+import { PaymentModes } from '@aph/mobile-patients/src/strings/strings.json';
 
 const styles = StyleSheet.create({
   horizontalline: {
@@ -197,6 +198,7 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
   const coupon_discount = orderDetails.couponDiscount || 0;
   const packaging_charges = orderDetails.packagingCharges;
   const paymentMethod = g(orderDetails, 'medicineOrderPayments', '0' as any, 'paymentType');
+  const paymentMode = g(orderDetails, 'medicineOrderPayments', '0' as any, 'paymentMode');
   const amountPaid = g(orderDetails, 'medicineOrderPayments', '0' as any, 'amountPaid');
   const healthCreditsRedeemed = g(
     orderDetails,
@@ -698,11 +700,11 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
                 </Text>
               </View>
             )}
-            {!offlineOrderNumber && amountPaid - healthCreditsRedeemed != 0 && (
+            {!offlineOrderNumber && amountPaid != 0 && (
               <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                <Text style={styles.paymentLeftText}>{paymentMethod}</Text>
+                <Text style={styles.paymentLeftText}>{PaymentModes[paymentMode]}</Text>
                 <Text style={[styles.paymentLeftText, { textAlign: 'right' }]}>
-                  Rs. {(amountPaid - healthCreditsRedeemed || 0).toFixed(2)}
+                  Rs. {(amountPaid || 0).toFixed(2)}
                 </Text>
               </View>
             )}
