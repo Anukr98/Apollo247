@@ -61,6 +61,7 @@ export class AppointmentRepository extends Repository<Appointment> {
         getApptError,
       });
     });
+
     if (appointment) {
       await setCache(
         `${REDIS_APPOINTMENT_ID_KEY_PREFIX}${id}`,
