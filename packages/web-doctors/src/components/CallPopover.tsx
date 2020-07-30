@@ -2246,7 +2246,14 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                 </span>
               )}
             {showToastMessage && (
-              <div className={classes.toastMessage}>
+              <div
+                className={classes.toastMessage}
+                onLoad={() => {
+                  setTimeout(() => {
+                    setShowToastMessage(false);
+                  }, 10000);
+                }}
+              >
                 <span className={classes.toastMessageText}>
                   <img
                     src={require('images/ic_cancel_green.svg')}
