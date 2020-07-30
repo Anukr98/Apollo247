@@ -8,6 +8,7 @@ import { useApolloClient, useQuery } from 'react-apollo-hooks';
 import { downloadDocuments } from 'graphql/types/downloadDocuments';
 import { CaseSheetContextJrd } from 'context/CaseSheetContextJrd';
 import ReactPanZoom from 'react-image-pan-zoom-rotate';
+import moment from 'moment';
 import { GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_pastAppointments } from 'graphql/types/GetJuniorDoctorCaseSheet';
 import { GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_appointment_appointmentDocuments as appointmentDocumentType } from 'graphql/types/GetJuniorDoctorCaseSheet';
 
@@ -219,10 +220,19 @@ interface PastAppointmentProps {
 
 const PastAppointment: React.FC<PastAppointmentProps> = ({ data, isChild }) => {
   const classes = useStyles({});
+  const sortedConsult = data && data.length > 0 ? data.sort(
+    (a, b) =>
+    moment(b ? b.appointmentDateTime : new Date())
+    .toDate()
+    .getTime() -
+    moment(a ? a.appointmentDateTime : new Date())
+    .toDate()
+    .getTime()
+    ) : [];
   return (
     <List className={isChild ? classes.childListStyle : classes.listStyle}>
-      {data &&
-        data.map((item, idx) => (
+      {sortedConsult &&
+        sortedConsult.map((item, idx) => (
           <ListItem
             key={idx}
             style={{
@@ -380,16 +390,14 @@ export const HealthVault: React.FC = () => {
                   if (
                     item &&
                     item.documentPath &&
-                    item.documentPath.substr(-4).toLowerCase() !== '.pdf'
+                    !item.documentPath.toLowerCase().includes('.pdf')
                   ) {
                     setModalOpen(true);
                     setImgPrevUrl(item.documentPath as string);
                   }
                 }}
               >
-                {item &&
-                item.documentPath &&
-                item.documentPath.substr(-4).toLowerCase() !== '.pdf' ? (
+                {item && item.documentPath && !item.documentPath.toLowerCase().includes('.pdf') ? (
                   <Avatar
                     alt={item.documentPath as string}
                     src={item.documentPath as string}

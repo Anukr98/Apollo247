@@ -10,7 +10,7 @@ import { AppointmentHistory } from 'components/AppointmentHistory';
 import Paper from '@material-ui/core/Paper';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
-import { useApolloClient } from 'react-apollo-hooks';
+import { useApolloClient, useMutation } from 'react-apollo-hooks';
 import Typography from '@material-ui/core/Typography';
 import { OnlineConsult } from 'components/OnlineConsult';
 import { VisitClinic } from 'components/VisitClinic';
@@ -19,7 +19,7 @@ import {
   GetDoctorDetailsById,
   GetDoctorDetailsByIdVariables,
 } from 'graphql/types/GetDoctorDetailsById';
-import { DoctorType } from 'graphql/types/globalTypes';
+import { DoctorType, SEARCH_TYPE } from 'graphql/types/globalTypes';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
@@ -27,7 +27,7 @@ import { LocationProvider } from 'components/LocationProvider';
 import { AphButton } from '@aph/web-ui-components';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
-import { useAuth } from 'hooks/authHooks';
+import { useAuth, useAllCurrentPatients } from 'hooks/authHooks';
 import { ManageProfile } from 'components/ManageProfile';
 import { BottomLinks } from 'components/BottomLinks';
 import { gtmTracking } from 'gtmTracking';
@@ -40,6 +40,10 @@ import { AppDownload } from 'components/Doctors/AppDownload';
 import { NavigationBottom } from 'components/NavigationBottom';
 import { GetDoctorNextAvailableSlot } from 'graphql/types/GetDoctorNextAvailableSlot';
 import { GetDoctorDetailsById_getDoctorDetailsById as DoctorDetailsType } from 'graphql/types/GetDoctorDetailsById';
+import { doctorProfileViewTracking } from 'webEngageTracking';
+import { getDiffInMinutes } from 'helpers/commonHelpers';
+import { hasOnePrimaryUser } from 'helpers/onePrimaryUser';
+import { SAVE_PATIENT_SEARCH } from 'graphql/pastsearches';
 
 export interface DoctorDetailsProps {
   id: string;
@@ -219,6 +223,7 @@ const TabContainer: React.FC = (props) => {
 export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const { isSignedIn } = useAuth();
   const classes = useStyles({});
+  const onePrimaryUser = hasOnePrimaryUser();
   const params = useParams<{ id: string; specialty: string; name: string }>();
   const nameId = params && params.name && params.id && params.name + '-' + params.id;
   const nameIdLength = nameId && nameId.length;
@@ -230,11 +235,14 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const [doctorData, setDoctorData] = useState<DoctorDetailsType | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [structuredJSON, setStructuredJSON] = useState(null);
+  const [breadcrumbJSON, setBreadcrumbJSON] = useState(null);
   const [metaTagProps, setMetaTagProps] = useState(null);
   const [doctorAvailableSlots, setDoctorAvailableSlots] = useState<GetDoctorNextAvailableSlot>();
   const [error, setError] = useState<boolean>(false);
   const isMediumScreen = useMediaQuery('(min-width:768px) and (max-width:900px)');
   const isSmallScreen = useMediaQuery('(max-width:767px)');
+  const { currentPatient } = useAllCurrentPatients();
+  const saveSearchMutation = useMutation(SAVE_PATIENT_SEARCH);
 
   const doctorSlots =
     doctorAvailableSlots &&
@@ -242,6 +250,25 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     doctorAvailableSlots.getDoctorNextAvailableSlot.doctorAvailalbeSlots &&
     doctorAvailableSlots.getDoctorNextAvailableSlot.doctorAvailalbeSlots.length > 0 &&
     doctorAvailableSlots.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0];
+
+  useEffect(() => {
+    if (doctorSlots && doctorSlots.availableSlot) {
+      const {
+        doctorType,
+        experience,
+        fullName,
+        specialty: { name },
+      } = doctorData;
+      const eventData = {
+        availableInMins: getDiffInMinutes(doctorSlots.availableSlot),
+        docCategory: doctorType,
+        exp: experience,
+        name: fullName,
+        specialty: name,
+      };
+      doctorProfileViewTracking(eventData);
+    }
+  }, [doctorSlots, doctorData]);
 
   useEffect(() => {
     setLoading(true);
@@ -266,6 +293,26 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
             consultHours,
             salutation,
           } = data.getDoctorDetailsById;
+          if (currentPatient && currentPatient.id) {
+            saveSearchMutation({
+              variables: {
+                saveSearchInput: {
+                  type: SEARCH_TYPE.SPECIALTY,
+                  typeId: specialty.id,
+                  patient: currentPatient ? currentPatient.id : '',
+                },
+              },
+            });
+            saveSearchMutation({
+              variables: {
+                saveSearchInput: {
+                  type: SEARCH_TYPE.DOCTOR,
+                  typeId: id,
+                  patient: currentPatient ? currentPatient.id : '',
+                },
+              },
+            });
+          }
           const openingHours = consultHours ? getOpeningHrs(consultHours) : '';
           let streetLine1 = '',
             city = '',
@@ -331,13 +378,46 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
             },
             medicalSpecialty: specialty ? specialty.name : '',
           });
+          setBreadcrumbJSON({
+            '@context': 'https://schema.org/',
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+              {
+                '@type': 'ListItem',
+                position: 1,
+                name: 'HOME',
+                item: 'https://www.apollo247.com/',
+              },
+              {
+                '@type': 'ListItem',
+                position: 2,
+                name: 'SPECIALTIES',
+                item: 'https://www.apollo247.com/specialties',
+              },
+              {
+                '@type': 'ListItem',
+                position: 3,
+                name: specialty ? specialty.name : '',
+                item: `https://www.apollo247.com/specialties/${readableParam(
+                  specialty ? specialty.name : ''
+                )}`,
+              },
+              {
+                '@type': 'ListItem',
+                position: 4,
+                name: fullName ? fullName : `${firstName} ${lastName}`,
+                item: `https://www.apollo247.com/specialties/${readableParam(
+                  specialty ? specialty.name : ''
+                )}/${readableParam(fullName ? fullName : `${firstName} ${lastName}`)}-${id}`,
+              },
+            ],
+          });
           setMetaTagProps({
             title: `${fullName}: ${
               specialty && specialty.name ? specialty.name : ''
             } - Online Consultation/Appointment - Apollo 247`,
-            description: `Book an appointment with ${fullName} - ${
-              specialty && specialty.name
-            } and consult online at Apollo 247. Know more about ${fullName} and his work here. Get medical help online in just a few clicks at Apollo 247.`,
+            description: `Book an appointment with ${fullName} - ${specialty &&
+              specialty.name} and consult online at Apollo 247. Know more about ${fullName} and his work here. Get medical help online in just a few clicks at Apollo 247.`,
             canonicalLink:
               window &&
               window.location &&
@@ -396,6 +476,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           <Header />
         </div>
         {structuredJSON && <SchemaMarkup structuredJSON={structuredJSON} />}
+        {breadcrumbJSON && <SchemaMarkup structuredJSON={breadcrumbJSON} />}
         <div className={classes.container}>
           <div className={classes.doctorDetailsPage}>
             <div className={classes.breadcrumbLinks}>
@@ -404,7 +485,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
               </Link>
               <Link to={clientRoutes.welcome()}>Home</Link>
               <img src={require('images/triangle.svg')} alt="" />
-              <Link to={clientRoutes.specialityListing()}>Specialities</Link>
+              <Link to={clientRoutes.specialityListing()}>Specialties</Link>
               <img src={require('images/triangle.svg')} alt="" />
               {doctorData && (
                 <>
@@ -522,7 +603,6 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                   setIsPopoverOpen={setIsPopoverOpen}
                   doctorDetails={doctorData}
                   onBookConsult={(popover: boolean) => setIsPopoverOpen(popover)}
-                  isRescheduleConsult={false}
                   tabValue={(tabValue: number) => setTabValue(tabValue)}
                   setIsShownOnce={(isShownOnce: boolean) => setIsShownOnce(isShownOnce)}
                   isShownOnce={isShownOnce}
@@ -541,6 +621,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         </Modal>
         <BottomLinks />
         <NavigationBottom />
+        {!onePrimaryUser && <ManageProfile />}
       </div>
     );
   } else {

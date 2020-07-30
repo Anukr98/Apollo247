@@ -993,8 +993,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       .catch((e) => {
         setPersonalizedData([]);
         setisPersonalizedCard(false);
-        // console.log('ConsultRoom_getPatientPersonalizedAppointmentList', e);
-        // CommonBugFender('ConsultRoom_getPatientPersonalizedAppointmentList', e);
       });
   };
 

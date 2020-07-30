@@ -120,6 +120,7 @@ export class RescheduleAppointmentRepository extends Repository<RescheduleAppoin
         rescheduleInitiatedBy: TRANSFER_INITIATED_TYPE.DOCTOR,
         rescheduleStatus: TRANSFER_STATUS.INITIATED,
       },
+      order: { createdDate: 'DESC' },
     });
   }
 

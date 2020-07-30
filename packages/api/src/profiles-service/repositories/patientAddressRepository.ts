@@ -3,13 +3,8 @@ import { PatientAddress } from 'profiles-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { getCache, setCache } from 'profiles-service/database/connectRedis';
-import { debugLog } from 'customWinstonLogger';
 import { ApiConstants } from 'ApiConstants';
-const dLogger = debugLog(
-  'profileServiceLogger',
-  'patientRepository',
-  Math.floor(Math.random() * 100000000)
-);
+
 // if changing key please also change the same in entity
 const REDIS_ADDRESS_PATIENT_ID_KEY_PREFIX: string = 'address:list:patient';
 @EntityRepository(PatientAddress)

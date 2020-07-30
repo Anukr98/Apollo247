@@ -23,7 +23,8 @@ module.exports = async (req, res, next) => {
     }
 
     // Source of booking
-    bookingSource = payload.MERC_UNQ_REF;
+    const [bookingSource, healthCredits] = payload.MERC_UNQ_REF.split(':');
+    payload.HEALTH_CREDITS = healthCredits;
     /* make success and failure response */
     switch (payload.STATUS) {
       case 'TXN_FAILURE':

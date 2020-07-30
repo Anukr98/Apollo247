@@ -9,9 +9,7 @@ import {
   GetDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors as DoctorDetails,
   GetDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors_doctorHospital,
 } from 'graphql/types/GetDoctorsBySpecialtyAndFilters';
-import { ConsultMode, SEARCH_TYPE } from 'graphql/types/globalTypes';
-import { getDiffInDays, getDiffInMinutes, getDiffInHours } from 'helpers/commonHelpers';
-import moment from 'moment';
+import { SEARCH_TYPE, ConsultMode } from 'graphql/types/globalTypes';
 import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
 import { useAuth } from 'hooks/authHooks';
 import { useMutation } from 'react-apollo-hooks';
@@ -21,7 +19,9 @@ import { useAllCurrentPatients } from 'hooks/authHooks';
 import { BookConsult } from 'components/BookConsult';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
-import { readableParam } from 'helpers/commonHelpers';
+import { readableParam, getAvailability } from 'helpers/commonHelpers';
+import { GetDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctorsNextAvailability as NextAvailabilityType } from 'graphql/types/GetDoctorsBySpecialtyAndFilters';
+import { consultNowClickTracking } from 'webEngageTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -158,12 +158,14 @@ const useStyles = makeStyles((theme: Theme) => {
 
 interface InfoCardProps {
   doctorInfo: DoctorDetails;
-  nextAvailability: string;
+  nextAvailability: NextAvailabilityType;
   doctorType: string;
+  consultMode: ConsultMode;
 }
 
 export const InfoCardPartner: React.FC<InfoCardProps> = (props) => {
-  const { doctorInfo, nextAvailability, doctorType } = props;
+  const { doctorInfo, nextAvailability, doctorType, consultMode } = props;
+  const differenceInMinutes = nextAvailability ? nextAvailability.availableInMinutes : 0;
   const { isSignedIn } = useAuth();
   const { currentPatient } = useAllCurrentPatients();
   const classes = useStyles({});
@@ -175,59 +177,32 @@ export const InfoCardPartner: React.FC<InfoCardProps> = (props) => {
     doctorInfo.specialty &&
     doctorInfo.specialty.name &&
     doctorInfo.specialty.name.toLowerCase();
-  const consultMode =
-    doctorInfo &&
-      doctorInfo.consultHours &&
-      doctorInfo.consultHours.length > 0 &&
-      doctorInfo.consultHours[0] &&
-      doctorInfo.consultHours[0].consultMode
-      ? doctorInfo.consultHours[0].consultMode
+
+  const availabilityMarkupString = (type: string) =>
+    nextAvailability
+      ? getAvailability(
+          nextAvailability.onlineSlot.length > 0
+            ? nextAvailability.onlineSlot
+            : nextAvailability.physicalSlot,
+          differenceInMinutes,
+          type
+        )
       : '';
-  const consultModeOnline: any = [];
-  const consultModePhysical: any = [];
-  doctorInfo &&
-    doctorInfo.consultHours &&
-    doctorInfo.consultHours.map((item: any) => {
-      if (item.consultMode === 'PHYSICAL' || item.consultMode === 'BOTH') {
-        consultModePhysical.push(item.consultMode);
-      }
-      if (item.consultMode === 'ONLINE' || item.consultMode === 'BOTH') {
-        consultModeOnline.push(item.consultMode);
-      }
-    });
-  const differenceInMinutes = getDiffInMinutes(nextAvailability);
-  const availabilityMarkup = () => {
-    if (nextAvailability && nextAvailability.length > 0) {
-      if (differenceInMinutes === 0) {
-        return (
-          <div className={`${classes.availability} ${classes.availableNow}`}>AVAILABLE NOW</div>
-        );
-      } else if (differenceInMinutes > 0 && differenceInMinutes <= 15) {
-        return (
-          <div className={`${classes.availability} ${classes.availableNow}`}>
-            AVAILABLE IN {differenceInMinutes} {differenceInMinutes === 1 ? 'MIN' : 'MINS'}
-          </div>
-        );
-      } else if (differenceInMinutes > 15 && differenceInMinutes <= 60) {
-        return (
-          <div className={`${classes.availability}`}>AVAILABLE IN {differenceInMinutes} MINS</div>
-        );
-      } else if (differenceInMinutes >= 60 && differenceInMinutes < 1380) {
-        return (
-          <div className={`${classes.availability}`}>
-            AVAILABLE IN {getDiffInHours(nextAvailability)} HOURS
-          </div>
-        );
-      } else if (differenceInMinutes >= 1380) {
-        return (
-          <div className={`${classes.availability}`}>
-            AVAILABLE IN {getDiffInDays(nextAvailability)} Days
-          </div>
-        );
-      }
-    } else {
-      return null;
-    }
+
+  const availabilityMarkup = (type: string) => {
+    return nextAvailability ? (
+      type === 'markup' ? (
+        <div
+          className={`${classes.availability} ${
+            differenceInMinutes < 15 ? classes.availableNow : null
+          }`}
+        >
+          {availabilityMarkupString(type)}
+        </div>
+      ) : (
+        availabilityMarkupString(type)
+      )
+    ) : null;
   };
 
   const clinics: GetDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors_doctorHospital[] = [];
@@ -244,6 +219,7 @@ export const InfoCardPartner: React.FC<InfoCardProps> = (props) => {
     });
 
   const saveSearchMutation = useMutation<SaveSearch, SaveSearchVariables>(SAVE_PATIENT_SEARCH);
+
   return (
     <div className={classes.root}>
       <Link
@@ -261,14 +237,14 @@ export const InfoCardPartner: React.FC<InfoCardProps> = (props) => {
               className={classes.doctorAvatar}
             />
             <div className={classes.consultType}>
-              {consultModeOnline.length > 0 && (
+              {(consultMode === ConsultMode.BOTH || consultMode === ConsultMode.ONLINE) && (
                 <span>
                   <img src={require('images/ic-video.svg')} alt="" />
                   <br />
                   Online
                 </span>
               )}
-              {consultModePhysical.length > 0 && (
+              {(consultMode === ConsultMode.BOTH || consultMode === ConsultMode.PHYSICAL) && (
                 <span>
                   <img src={require('images/fa-solid-hospital.svg')} alt="" />
                   <br />
@@ -278,7 +254,7 @@ export const InfoCardPartner: React.FC<InfoCardProps> = (props) => {
             </div>
           </div>
           <div className={classes.doctorInfo}>
-            <>{availabilityMarkup()}</>
+            <>{availabilityMarkup('markup')}</>
             <div className={`${classes.apolloLogo}`}>
               <img
                 className={doctorType.toLowerCase() !== 'apollo' ? classes.otherDoctorType : ''}
@@ -326,7 +302,33 @@ export const InfoCardPartner: React.FC<InfoCardProps> = (props) => {
                 if (!isSignedIn) {
                   protectWithLoginPopup();
                 } else {
+                  const hospitalName =
+                    doctorInfo &&
+                    doctorInfo.doctorHospital &&
+                    doctorInfo.doctorHospital.length &&
+                    doctorInfo.doctorHospital[0].facility &&
+                    doctorInfo.doctorHospital[0].facility.name;
+                  const eventdata = {
+                    availableInMins: differenceInMinutes,
+                    docCategory: doctorType,
+                    exp: doctorInfo.experience,
+                    hospital: hospitalName,
+                    name: doctorInfo.fullName,
+                    specialty: specialityName,
+                    listingType: '',
+                  };
+                  consultNowClickTracking(eventdata);
                   setPopupLoading(true);
+                  saveSearchMutation({
+                    variables: {
+                      saveSearchInput: {
+                        type: SEARCH_TYPE.SPECIALTY,
+                        typeId: doctorInfo && doctorInfo.specialty && doctorInfo.specialty.id,
+                        patient: currentPatient ? currentPatient.id : '',
+                      },
+                    },
+                    fetchPolicy: 'no-cache',
+                  });
                   saveSearchMutation({
                     variables: {
                       saveSearchInput: {
@@ -354,12 +356,9 @@ export const InfoCardPartner: React.FC<InfoCardProps> = (props) => {
             >
               {popupLoading ? (
                 <CircularProgress size={22} color="secondary" />
-              ) : getDiffInMinutes(nextAvailability) > 0 &&
-                getDiffInMinutes(nextAvailability) <= 60 ? (
-                    'CONSULT NOW'
-                  ) : (
-                    'BOOK APPOINTMENT'
-                  )}
+              ) : (
+                availabilityMarkup('doctorInfo')
+              )}
             </AphButton>
           </div>
         )}
@@ -371,7 +370,7 @@ export const InfoCardPartner: React.FC<InfoCardProps> = (props) => {
         disableEscapeKeyDown
       >
         <BookConsult
-          physicalDirection={false}
+          consultMode={consultMode}
           doctorId={doctorInfo.id}
           doctorAvailableIn={differenceInMinutes}
           setIsPopoverOpen={setIsPopoverOpen}

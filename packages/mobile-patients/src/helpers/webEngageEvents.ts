@@ -133,7 +133,8 @@ export enum WebEngageEventName {
   CONTINUE_CONSULTATION_CLICKED = 'Continue Consultation Clicked', // In appointment details screen
   NO_SLOTS_FOUND = 'No Slots Found', // In appointment details screen
   DOCTOR_RESCHEDULE_CLAIM_REFUND = 'Doctor reschedule and Claim Refund button click',
-
+  DOCTOR_CONNECT_TAB_CLICKED = 'Doctor Connect Tab Clicked',
+  APOLLO_DOCTOR_TAB_CLICKED = 'Apollo Doctor Tab Clicked',
   // Medicine Events
   PHARMACY_AUTO_SELECT_LOCATION_CLICKED = 'Pharmacy Auto Select Location Clicked',
   PHARMACY_ENTER_DELIVERY_PINCODE_CLICKED = 'Pharmacy Enter Delivery Pincode Clicked',
@@ -567,7 +568,8 @@ export interface WebEngageEvents {
   };
 
   // ********** ConsultEvents ********** \\
-
+  [WebEngageEventName.APOLLO_DOCTOR_TAB_CLICKED]: UserInfo;
+  [WebEngageEventName.DOCTOR_CONNECT_TAB_CLICKED]: UserInfo;
   [WebEngageEventName.CONSULT_PAYMENT_MODE_SELECTED]: {
     'Payment Mode': string;
   };
@@ -1242,5 +1244,5 @@ export interface WebEngageEvents {
     source: 'home' | 'deeplink';
     CategoryId: string;
     CategoryName: string;
-  }
+  };
 }
