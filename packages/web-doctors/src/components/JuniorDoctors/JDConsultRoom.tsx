@@ -391,27 +391,6 @@ const useStyles = makeStyles((theme: Theme) => {
       right: 12,
       top: 12,
     },
-    toastMessage: {
-      width: '482px',
-      height: '40px',
-      borderRadius: '10px',
-      boxShadow: '0 1px 13px 0 rgba(0, 0, 0, 0.16)',
-      backgroundColor: '#00b38e',
-      position: 'relative',
-      top: '27px',
-      left: '201px',
-    },
-    toastMessageText: {
-      fontSize: '14px',
-      fontWeight: 500,
-      fontStretch: 'normal',
-      fontStyle: 'normal',
-      lineHeight: 1.43,
-      letterSpacing: 'normal',
-      color: '#ffffff',
-      position: 'relative',
-      top: 6,
-    },
   };
 });
 
@@ -442,7 +421,6 @@ export const JDConsultRoom: React.FC = () => {
     assignedDoctorPhoto: '',
   });
 
-  const [showToastMessage, setShowToastMessage] = useState<boolean>(false);
   const { currentPatient: currentDoctor, isSignedIn, sessionClient } = useAuth();
   const doctorId = currentDoctor!.id;
 
@@ -689,7 +667,7 @@ export const JDConsultRoom: React.FC = () => {
               : null;
 
           setFamilyHistory(
-            storageItem && storageItem.familyHistory !== ''
+            storageItem && storageItem.familyHistory
               ? storageItem.familyHistory
               : patientFamilyHistory && patientFamilyHistory!.description
               ? patientFamilyHistory!.description
@@ -697,7 +675,7 @@ export const JDConsultRoom: React.FC = () => {
           );
 
           setLifeStyle(
-            storageItem && storageItem.lifeStyle !== ''
+            storageItem && storageItem.lifeStyle
               ? storageItem.lifeStyle
               : patientLifeStyle && patientLifeStyle!.description
               ? patientLifeStyle!.description
@@ -705,7 +683,7 @@ export const JDConsultRoom: React.FC = () => {
           );
 
           setOccupationHistory(
-            storageItem && storageItem.occupationHistory !== ''
+            storageItem && storageItem.occupationHistory
               ? storageItem.occupationHistory
               : patientLifeStyle && patientLifeStyle!.occupationHistory
               ? patientLifeStyle!.occupationHistory
@@ -766,7 +744,7 @@ export const JDConsultRoom: React.FC = () => {
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.notes
             ? setNotes((_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
                 .notes as unknown) as string)
-            : setNotes(storageItem && storageItem.notes !== '' ? storageItem.notes : '');
+            : setNotes(storageItem && storageItem.notes ? storageItem.notes : '');
 
           _data!.data!.getJuniorDoctorCaseSheet!.juniorDoctorNotes
             ? setJuniorDoctorNotes((_data!.data!.getJuniorDoctorCaseSheet!
@@ -923,7 +901,7 @@ export const JDConsultRoom: React.FC = () => {
             _data.data.getJuniorDoctorCaseSheet.caseSheetDetails.referralSpecialtyName
           )
             setReferralSpecialtyName(
-              storageItem && storageItem.referralSpecialtyName !== ''
+              storageItem && storageItem.referralSpecialtyName
                 ? storageItem.referralSpecialtyName
                 : _data.data.getJuniorDoctorCaseSheet.caseSheetDetails.referralSpecialtyName
             );
@@ -936,7 +914,7 @@ export const JDConsultRoom: React.FC = () => {
             _data.data.getJuniorDoctorCaseSheet.caseSheetDetails.referralDescription
           )
             setReferralDescription(
-              storageItem && storageItem.referralDescription !== ''
+              storageItem && storageItem.referralDescription
                 ? storageItem.referralDescription
                 : _data.data.getJuniorDoctorCaseSheet.caseSheetDetails.referralDescription
             );
@@ -950,66 +928,66 @@ export const JDConsultRoom: React.FC = () => {
             _data.data.getJuniorDoctorCaseSheet.patientDetails.patientMedicalHistory
           ) {
             setBp(
-              storageItem && storageItem.bp !== ''
+              storageItem && storageItem.bp
                 ? storageItem.bp
                 : _data.data.getJuniorDoctorCaseSheet.patientDetails.patientMedicalHistory.bp
             );
             setDietAllergies(
-              storageItem && storageItem.dietAllergies !== ''
+              storageItem && storageItem.dietAllergies
                 ? storageItem.dietAllergies
                 : _data.data.getJuniorDoctorCaseSheet.patientDetails.patientMedicalHistory
                     .dietAllergies
             );
             setDrugAllergies(
-              storageItem && storageItem.drugAllergies !== ''
+              storageItem && storageItem.drugAllergies
                 ? storageItem.drugAllergies
                 : _data.data.getJuniorDoctorCaseSheet.patientDetails.patientMedicalHistory
                     .drugAllergies
             );
 
             setHeight(
-              storageItem && storageItem.height !== ''
+              storageItem && storageItem.height
                 ? storageItem.height
                 : _data.data.getJuniorDoctorCaseSheet.patientDetails.patientMedicalHistory.height
             );
 
             setMenstrualHistory(
-              storageItem && storageItem.menstrualHistory !== ''
+              storageItem && storageItem.menstrualHistory
                 ? storageItem.menstrualHistory
                 : _data.data.getJuniorDoctorCaseSheet.patientDetails.patientMedicalHistory
                     .menstrualHistory
             );
 
             setPastMedicalHistory(
-              storageItem && storageItem.pastMedicalHistory !== ''
+              storageItem && storageItem.pastMedicalHistory
                 ? storageItem.pastMedicalHistory
                 : _data.data.getJuniorDoctorCaseSheet.patientDetails.patientMedicalHistory
                     .pastMedicalHistory
             );
 
             setMedicationHistory(
-              storageItem && storageItem.medicationHistory !== ''
+              storageItem && storageItem.medicationHistory
                 ? storageItem.medicationHistory
                 : _data.data.getJuniorDoctorCaseSheet.patientDetails.patientMedicalHistory
                     .medicationHistory
             );
 
             setPastSurgicalHistory(
-              storageItem && storageItem.pastSurgicalHistory !== ''
+              storageItem && storageItem.pastSurgicalHistory
                 ? storageItem.pastSurgicalHistory
                 : _data.data.getJuniorDoctorCaseSheet.patientDetails.patientMedicalHistory
                     .pastSurgicalHistory
             );
 
             setTemperature(
-              storageItem && storageItem.temperature !== ''
+              storageItem && storageItem.temperature
                 ? storageItem.temperature
                 : _data.data.getJuniorDoctorCaseSheet.patientDetails.patientMedicalHistory
                     .temperature
             );
 
             setWeight(
-              storageItem && storageItem.weight !== ''
+              storageItem && storageItem.weight
                 ? storageItem.weight
                 : _data.data.getJuniorDoctorCaseSheet.patientDetails.patientMedicalHistory.weight
             );
@@ -1169,7 +1147,7 @@ export const JDConsultRoom: React.FC = () => {
     }
     const inputVariables = {
       symptoms: symptomsFinal,
-      notes: notesJrd.length > 0 ? notesJrd : null,
+      notes: notesJrd.length > 0 ? notesJrd : '',
       diagnosis: diagnosisFinal,
       diagnosticPrescription: diagnosticPrescriptionFinal,
       followUp: false,
@@ -1178,21 +1156,21 @@ export const JDConsultRoom: React.FC = () => {
       medicinePrescription: medicinePrescriptionFinal,
       id: caseSheetId,
       //status: endConsult ? CASESHEET_STATUS.COMPLETED : CASESHEET_STATUS.PENDING,
-      lifeStyle: lifeStyle,
-      familyHistory: familyHistory,
-      dietAllergies: dietAllergies,
-      drugAllergies: drugAllergies,
-      height: height,
-      menstrualHistory: menstrualHistory,
-      pastMedicalHistory: pastMedicalHistory,
-      pastSurgicalHistory: pastSurgicalHistory,
-      temperature: temperature,
-      weight: weight,
-      bp: bp,
-      medicationHistory: medicationHistory,
-      occupationHistory: occupationHistory,
-      referralSpecialtyName: referralSpecialtyName,
-      referralDescription: referralDescription,
+      lifeStyle: lifeStyle || '',
+      familyHistory: familyHistory || '',
+      dietAllergies: dietAllergies || '',
+      drugAllergies: drugAllergies || '',
+      height: height || '',
+      menstrualHistory: menstrualHistory || '',
+      pastMedicalHistory: pastMedicalHistory || '',
+      pastSurgicalHistory: pastSurgicalHistory || '',
+      temperature: temperature || '',
+      weight: weight || '',
+      bp: bp || '',
+      medicationHistory: medicationHistory || '',
+      occupationHistory: occupationHistory || '',
+      referralSpecialtyName: referralSpecialtyName || '',
+      referralDescription: referralDescription || '',
     };
 
     setSaving(true);
@@ -1468,29 +1446,6 @@ export const JDConsultRoom: React.FC = () => {
         )}
       <div className={classes.headerSticky}>
         <Header />
-        {showToastMessage && (
-          <div className={classes.toastMessage}>
-            <span className={classes.toastMessageText}>
-              <img
-                src={require('images/ic_cancel_green.svg')}
-                alt=""
-                style={{
-                  height: 18,
-                  width: 18,
-                  position: 'relative',
-                  top: 4,
-                  marginLeft: 12,
-                  marginRight: 20,
-                  cursor: 'pointer',
-                }}
-                onClick={() => {
-                  setShowToastMessage(false);
-                }}
-              />
-              You will get a call from {process.env.EXOTEL_CALLER_ID}. Please pick up the call !
-            </span>
-          </div>
-        )}
       </div>
       {error && error !== '' && <Typography className={classes.tabRoot}>{error}</Typography>}
       {loaded && error === '' && (
@@ -1656,7 +1611,6 @@ export const JDConsultRoom: React.FC = () => {
 
                 {!disableChat() && (
                   <JDCallPopover
-                    setShowToastMessage={setShowToastMessage}
                     setStartConsultAction={(flag: boolean) => setStartConsultAction(flag)}
                     createSessionAction={createSessionAction}
                     saveCasesheetAction={(flag: boolean, endConsult: boolean) =>

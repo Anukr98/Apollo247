@@ -136,7 +136,7 @@ export const getMedicineOrdersOMSListTypeDefs = gql`
     PAYTM_POSTPAID
     COD
   }
-  
+
   type BlockUserPointsResponse {
     Success: Boolean
     Message: String
@@ -825,8 +825,8 @@ const getMedicineOrderOMSDetailsWithAddress: Resolver<
     }
   }
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
-  let medicineOrderDetails;
-  medicineOrderDetails = await medicineOrdersRepo.getMedicineOrderDetailsWithAddressByOrderId(
+
+  const medicineOrderDetails = await medicineOrdersRepo.getMedicineOrderDetailsWithAddressByOrderId(
     args.orderAutoId
   );
 

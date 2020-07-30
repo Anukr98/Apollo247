@@ -595,7 +595,15 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
       {orderDetailsData && orderDetailsData.currentStatus === MEDICINE_ORDER_STATUS.DELIVERED && (
         <div className={classes.bottomNotification}>
           <div className={classes.reorderBtn}>
-            <ReOrder orderDetailsData={orderDetailsData} />
+            <ReOrder
+              orderDetailsData={orderDetailsData}
+              type="Order Details"
+              patientName={
+                orderDetailsData.patient && orderDetailsData.patient.firstName
+                  ? orderDetailsData.patient.firstName
+                  : ''
+              }
+            />
           </div>
           <p>
             Your order no.#{orderDetailsData && orderDetailsData.orderAutoId} is successfully

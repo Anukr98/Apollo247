@@ -168,6 +168,7 @@ export class DoctorRepository extends Repository<Doctor> {
         const doctorBblockedSlots = res[1];
 
         if (apptSlots && apptSlots.length > 0) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           apptSlots.map((appt: any) => {
             const apptDt = format(appt.appointmentDateTime, 'yyyy-MM-dd');
             const sl = `${apptDt}T${appt.appointmentDateTime
@@ -224,6 +225,9 @@ export class DoctorRepository extends Repository<Doctor> {
 
     if (getDetails.body.hits.hits && getDetails.body.hits.hits.length > 0) {
       doctorData = getDetails.body.hits.hits[0]._source;
+      if(doctorData['languages'] instanceof Array){
+        doctorData['languages'] = doctorData['languages'].join(', ');
+      }
       doctorData.id = doctorData.doctorId;
       doctorData.specialty.id = doctorData.specialty.specialtyId;
       doctorData.doctorHospital = [];

@@ -3,7 +3,7 @@ import { debugLog } from 'customWinstonLogger';
 import fetch from 'node-fetch';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
-import { format } from 'date-fns';
+import { format, addMinutes } from 'date-fns';
 
 const webEngageTimeoutMillSeconds = Number(process.env.WEBENGAGE_TIMEOUT_IN_MILLISECONDS);
 
@@ -36,6 +36,16 @@ export interface WebEngageEventData {
   DSP: string;
   AWBNumber: string;
   reasonCode: string;
+  consultID: string;
+  displayID: string;
+  consultMode: string;
+  doctorName: string;
+}
+
+export enum WebEngageEvent {
+  DOCTOR_IN_CHAT_WINDOW = 'DOCTOR_IN_CHAT_WINDOW',
+  DOCTOR_LEFT_CHAT_WINDOW = 'DOCTOR_LEFT_CHAT_WINDOW',
+  DOCTOR_SENT_MESSAGE = 'DOCTOR_SENT_MESSAGE',
 }
 
 export async function postEvent(uploadParams: Partial<WebEngageInput>): Promise<WebEngageResponse> {
@@ -49,7 +59,7 @@ export async function postEvent(uploadParams: Partial<WebEngageInput>): Promise<
   let apiUrl = process.env.WEB_ENGAGE_URL_API.toString();
   apiUrl = apiUrl.replace('{LICENSE_CODE}', process.env.WEB_ENGAGE_LICENSE_CODE);
 
-  uploadParams.eventTime = format(new Date(), "yyyy-MM-dd'T'HH:mm:ss'+0530'");
+  uploadParams.eventTime = format(addMinutes(new Date(), +330), "yyyy-MM-dd'T'HH:mm:ss'+0530'");
 
   const reqStartTime = new Date();
   const controller = new AbortController();

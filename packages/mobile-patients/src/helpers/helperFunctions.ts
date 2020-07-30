@@ -62,7 +62,6 @@ import {
 import { UIElementsContextProps } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { NavigationScreenProp, NavigationRoute } from 'react-navigation';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import { postReorderMedicines } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import { getLatestMedicineOrder_getLatestMedicineOrder_medicineOrderDetails } from '@aph/mobile-patients/src/graphql/types/getLatestMedicineOrder';
 
 const googleApiKey = AppConfig.Configuration.GOOGLE_API_KEY;
@@ -613,6 +612,11 @@ export const isValidName = (value: string) =>
     ? true
     : false;
 
+export const extractUrlFromString = (text: string): string | undefined => {
+  const urlRegex = /(https?:\/\/[^ ]*)/;
+  return (text.match(urlRegex) || [])[0];
+};
+
 export const reOrderMedicines = async (
   order:
     | getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails
@@ -620,7 +624,6 @@ export const reOrderMedicines = async (
   currentPatient: any,
   source: ReorderMedicines['source']
 ) => {
-  postReorderMedicines(source, currentPatient);
   // Medicines
   // use billedItems for delivered orders
   const billedItems = g(
@@ -676,6 +679,20 @@ export const reOrderMedicines = async (
     : lineItems
         .filter((item) => !availableLineItemsSkus.includes(item.medicineSKU!))
         .map((item) => item.medicineName!);
+
+  const eventAttributes: WebEngageEvents[WebEngageEventName.RE_ORDER_MEDICINE] = {
+    orderType: 'Cart',
+    noOfItemsNotAvailable: unavailableItems.length,
+    source,
+    'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+    'Patient UHID': g(currentPatient, 'uhid'),
+    Relation: g(currentPatient, 'relation'),
+    'Patient Age': Math.round(moment().diff(currentPatient.dateOfBirth, 'years', true)),
+    'Patient Gender': g(currentPatient, 'gender'),
+    'Mobile Number': g(currentPatient, 'mobileNumber'),
+    'Customer ID': g(currentPatient, 'id'),
+  };
+  postWebEngageEvent(WebEngageEventName.RE_ORDER_MEDICINE, eventAttributes);
 
   // Prescriptions
   const prescriptionUrls = (order.prescriptionImageUrl || '')

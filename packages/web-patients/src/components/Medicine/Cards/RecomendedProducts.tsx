@@ -1,9 +1,12 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { makeStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
 import { AphButton } from '@aph/web-ui-components';
 import Slider from 'react-slick';
-import { MedicineProduct } from '../../../helpers/MedicineApiCalls';
+import { GET_RECOMMENDED_PRODUCTS_LIST } from 'graphql/profiles';
+import { getRecommendedProductsList_getRecommendedProductsList_recommendedProducts as recommendedProductsType } from 'graphql/types/getRecommendedProductsList';
+import { useAllCurrentPatients } from 'hooks/authHooks';
+import { useMutation } from 'react-apollo-hooks';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { Link } from 'react-router-dom';
 import { useShoppingCart, MedicineCartItem } from '../../MedicinesCartProvider';
@@ -63,6 +66,30 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingTop: 8,
       textAlign: 'center',
     },
+    sectionTitle: {
+      fontSize: 14,
+      color: '#02475b',
+      fontWeight: 'bold',
+      textTransform: 'uppercase',
+      borderBottom: 'solid 0.5px rgba(2, 71, 91, 0.3)',
+      paddingBottom: 8,
+      marginBottom: 10,
+      display: 'flex',
+      [theme.breakpoints.down('xs')]: {
+        marginLeft: 20,
+      },
+    },
+    viewAllLink: {
+      marginLeft: 'auto',
+      [theme.breakpoints.down('xs')]: {
+        marginRight: 20,
+      },
+      '& a': {
+        fontSize: 13,
+        fontWeight: 'bold',
+        color: '#fc9916',
+      },
+    },
     priceGroup: {
       fontSize: 14,
       fontWeight: 'bold',
@@ -121,12 +148,11 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-interface HotSellerProps {
-  data?: { products: MedicineProduct[] };
+interface RecomendedProductsProps {
   section?: string;
 }
 
-export const HotSellers: React.FC<HotSellerProps> = (props) => {
+export const RecomendedProducts: React.FC<RecomendedProductsProps> = (props) => {
   const classes = useStyles({});
   const sliderSettings = {
     infinite: true,
@@ -175,117 +201,160 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
   };
 
   const { cartItems, addCartItem, updateCartItem, removeCartItem } = useShoppingCart();
+  const { currentPatient } = useAllCurrentPatients();
+  const [recommendedProductsList, setRecommendedProductsList] = useState<
+    recommendedProductsType[] | null
+  >(null);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const recommendedProducts = useMutation(GET_RECOMMENDED_PRODUCTS_LIST);
 
-  const itemIndexInCart = (item: MedicineProduct) => {
-    const index = cartItems.findIndex((cartItem) => cartItem.id == item.id);
+  useEffect(() => {
+    if (currentPatient && currentPatient.uhid && !recommendedProductsList) {
+      setIsLoading(true);
+      recommendedProducts({
+        variables: {
+          patientUhid: currentPatient.uhid,
+        },
+      })
+        .then((res: any) => {
+          if (
+            res &&
+            res.data &&
+            res.data.getRecommendedProductsList &&
+            res.data.getRecommendedProductsList.recommendedProducts
+          ) {
+            setRecommendedProductsList(res.data.getRecommendedProductsList.recommendedProducts);
+          } else {
+            setRecommendedProductsList([]);
+          }
+          setIsLoading(false);
+        })
+        .catch((e) => {
+          setIsLoading(false);
+          console.log(e);
+        });
+    }
+  }, [currentPatient, recommendedProductsList]);
+
+  const itemIndexInCart = (item: recommendedProductsType) => {
+    const index = cartItems.findIndex((cartItem) => cartItem.id == Number(item.categoryName));
     return index;
   };
 
   return (
     <div className={classes.root}>
-      <Slider {...sliderSettings}>
-        {props.data &&
-          props.data.products &&
-          props.data.products.map((hotSeller) =>
-            hotSeller.is_in_stock ? (
-              <div key={hotSeller.sku} className={classes.card}>
+      {recommendedProductsList && recommendedProductsList.length >= 5 ? (
+        <>
+          <div className={classes.sectionTitle}>
+            <span>Recomended Products</span>
+            <div className={classes.viewAllLink}>
+              <Link to={clientRoutes.searchByMedicine('shop-by-category', 'monsoon-essentials')}>
+                View All
+              </Link>
+            </div>
+          </div>
+          <Slider {...sliderSettings}>
+            {recommendedProductsList.map((productList) => (
+              <div key={productList.productSku} className={classes.card}>
                 <div className={classes.cardWrap}>
-                  {!!Number(hotSeller.special_price!) &&
-                    Number(hotSeller.price) !== Number(hotSeller.special_price!) && (
-                      <div className={classes.offerPrice}>
-                        <span>
-                          -
-                          {Math.floor(
-                            ((Number(hotSeller.price) - Number(hotSeller.special_price!)) /
-                              hotSeller.price) *
-                              100
-                          )}
-                          %
-                        </span>
-                      </div>
-                    )}
+                  <div className={classes.offerPrice}>
+                    <span>
+                      -
+                      {Math.floor(
+                        ((Number(productList.productPrice) -
+                          Number(productList.productSpecialPrice!)) /
+                          Number(productList.productPrice)) *
+                          100
+                      )}
+                      %
+                    </span>
+                  </div>
                   <Link
-                    to={clientRoutes.medicineDetails(hotSeller.url_key)}
+                    to={clientRoutes.medicineDetails(productList.productSku)}
                     onClick={() =>
                       pharmacyConfigSectionTracking({
                         sectionName: props.section,
-                        productId: hotSeller.sku,
-                        productName: hotSeller.name,
+                        productId: productList.productSku,
+                        productName: productList.productName,
                       })
                     }
                   >
                     <div className={classes.productIcon}>
-                      <img src={`${apiDetails.url}${hotSeller.small_image}`} alt="" />
+                      <img src={`${apiDetails.url}${productList.productImage}`} alt="" />
                     </div>
-                    <div className={classes.productTitle}>{hotSeller.name}</div>
+                    <div className={classes.productTitle}>{productList.productName}</div>
                   </Link>
                   <div className={classes.bottomSection}>
                     <div className={classes.priceGroup}>
-                      {hotSeller &&
-                      hotSeller.special_price &&
-                      hotSeller.price !== hotSeller.special_price ? (
-                        <span className={classes.regularPrice}>(Rs. {hotSeller.price})</span>
+                      {productList &&
+                      productList.productSpecialPrice &&
+                      productList.productPrice !== productList.productSpecialPrice ? (
+                        <span className={classes.regularPrice}>
+                          (Rs. {productList.productPrice})
+                        </span>
                       ) : (
                         <span className={`${classes.regularPrice} ${classes.emptyBlock}`}></span>
                       )}
-                      <span>Rs. {hotSeller.special_price || hotSeller.price} </span>
+                      <span>
+                        Rs. {productList.productSpecialPrice || productList.productPrice}{' '}
+                      </span>
                     </div>
                     <div className={classes.addToCart}>
-                      {itemIndexInCart(hotSeller) === -1 ? (
+                      {itemIndexInCart(productList) === -1 ? (
                         <AphButton
                           onClick={() => {
                             const cartItem: MedicineCartItem = {
-                              MaxOrderQty: hotSeller.MaxOrderQty,
-                              url_key: hotSeller.url_key,
-                              description: hotSeller.description,
-                              id: hotSeller.id,
-                              image: hotSeller.image,
-                              is_in_stock: hotSeller.is_in_stock,
-                              is_prescription_required: hotSeller.is_prescription_required,
-                              name: hotSeller.name,
-                              price: hotSeller.price,
-                              sku: hotSeller.sku,
-                              special_price: hotSeller.special_price,
-                              small_image: hotSeller.small_image,
-                              status: hotSeller.status,
-                              thumbnail: hotSeller.thumbnail,
-                              type_id: hotSeller.type_id,
-                              mou: hotSeller.mou,
+                              MaxOrderQty: null,
+                              url_key: productList.productSku,
+                              description: null,
+                              id: Number(productList.categoryName),
+                              image: productList.productImage || null,
+                              is_in_stock: true,
+                              is_prescription_required: '1',
+                              name: productList.productName,
+                              price: Number(productList.productPrice),
+                              sku: productList.productSku,
+                              special_price: productList.productSpecialPrice,
+                              small_image: productList.productImage,
+                              status: Number(productList.status),
+                              thumbnail: productList.productImage || '',
+                              type_id: productList.categoryName || '',
+                              mou: productList.mou,
                               quantity: 1,
                               isShippable: true,
                             };
                             addToCartTracking({
-                              productName: hotSeller.name,
+                              productName: productList.productName,
                               source: 'Pharmacy Home',
-                              productId: hotSeller.sku,
+                              productId: productList.productSku,
                               brand: '',
                               brandId: '',
-                              categoryName: '',
-                              categoryId: '',
-                              discountedPrice: hotSeller.special_price,
-                              price: hotSeller.price,
+                              categoryName: productList.categoryName,
+                              categoryId: productList.categoryName || '',
+                              discountedPrice: productList.productSpecialPrice,
+                              productPrice: productList.productPrice,
                               quantity: 1,
                             });
                             /**Gtm code start  */
                             gtmTracking({
                               category: 'Pharmacy',
                               action: 'Add to Cart',
-                              label: hotSeller.name,
-                              value: hotSeller.special_price || hotSeller.price,
+                              label: productList.productName,
+                              value: productList.productSpecialPrice || productList.productPrice,
                               ecommObj: {
                                 event: 'add_to_cart',
                                 ecommerce: {
                                   items: [
                                     {
-                                      item_name: hotSeller.name,
-                                      item_id: hotSeller.sku,
-                                      price: hotSeller.price,
+                                      item_name: productList.productName,
+                                      item_id: productList.productSku,
+                                      productPrice: productList.productPrice,
                                       item_category: 'Pharmacy',
-                                      item_category_2: hotSeller.type_id
-                                        ? hotSeller.type_id.toLowerCase() === 'pharma'
+                                      item_category_2: productList.categoryName
+                                        ? productList.categoryName.toLowerCase() === 'pharma'
                                           ? 'Drugs'
                                           : 'FMCG'
-                                        : null,
+                                        : null || '',
                                       // 'item_category_4': '', // future reference
                                       item_variant: 'Default',
                                       index: 1,
@@ -310,31 +379,32 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
                         <AphButton
                           onClick={() => {
                             removeFromCartTracking({
-                              productName: hotSeller.name,
+                              productName: productList.productName,
                               cartSize: cartItems.length,
-                              productId: hotSeller.sku,
+                              productId: productList.productSku,
                               brand: '',
                               brandId: '',
-                              categoryName: '',
-                              categoryId: '',
-                              discountedPrice: hotSeller.special_price,
-                              price: hotSeller.price,
+                              categoryName: productList.categoryName,
+                              categoryId: productList.categoryName || '',
+                              discountedPrice: productList.productSpecialPrice,
+                              productPrice: productList.productPrice,
                               quantity: 1,
                             });
                             /**Gtm code start  */
                             gtmTracking({
                               category: 'Pharmacy',
                               action: 'Remove From Cart',
-                              label: hotSeller.name,
-                              value: hotSeller.special_price || hotSeller.price,
+                              label: productList.productName,
+                              value: productList.productSpecialPrice || productList.productPrice,
                               ecommObj: {
                                 event: 'remove_from_cart',
                                 ecommerce: {
                                   items: [
                                     {
-                                      item_name: hotSeller.name,
-                                      item_id: hotSeller.sku,
-                                      price: hotSeller.special_price || hotSeller.price,
+                                      item_name: productList.productName,
+                                      item_id: productList.productSku,
+                                      productPrice:
+                                        productList.productSpecialPrice || productList.productPrice,
                                       item_category: 'Pharmacy',
                                       item_variant: 'Default',
                                       index: 1,
@@ -345,7 +415,7 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
                               },
                             });
                             /**Gtm code End  */
-                            removeCartItem && removeCartItem(hotSeller.id);
+                            removeCartItem && removeCartItem(Number(productList.categoryName));
                           }}
                         >
                           Remove
@@ -355,9 +425,10 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
                   </div>
                 </div>
               </div>
-            ) : null
-          )}
-      </Slider>
+            ))}
+          </Slider>
+        </>
+      ) : null}
     </div>
   );
 };

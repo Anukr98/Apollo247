@@ -552,6 +552,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
           props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
             sku: pastSeacrh.typeId,
             title: pastSeacrh.name,
+            movedFrom: 'search',
           });
         }}
       >
@@ -637,6 +638,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
           props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
             sku: medicine.sku,
             title: medicine.name,
+            movedFrom: 'search',
           });
         }}
         medicineName={stripHtml(medicine.name)}
@@ -865,6 +867,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         onPress={() => {
           props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
             sku: item.sku,
+            movedFrom: 'search',
           });
           resetSearchState();
         }}
