@@ -1231,15 +1231,15 @@ export interface WebEngageEvents {
     'Patient Id': string;
   };
   [WebEngageEventName.HOME_PAGE_VIEWED]: {
-    source: string;
+    source: 'deeplink' | 'home';
   };
   [WebEngageEventName.PRODUCT_PAGE_VIEWED]: {
-    source: string;
+    source: 'deeplink' | 'widget' | 'search';
     ProductId: string;
     ProductName: string;
   };
   [WebEngageEventName.CATEGORY_PAGE_VIEWED]: {
-    source: string;
+    source: 'home' | 'deeplink';
     CategoryId: string;
     CategoryName: string;
   }
