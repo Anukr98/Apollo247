@@ -44,7 +44,7 @@ import { PatientRepository } from 'profiles-service/repositories/patientReposito
 import { log } from 'customWinstonLogger';
 import { ApiConstants } from 'ApiConstants';
 import { Client, RequestParams } from '@elastic/elasticsearch';
-import { getCache, setCache } from 'consults-service/database/connectRedis';
+import { getCache, setCache, delCache } from 'consults-service/database/connectRedis';
 
 const REDIS_APPOINTMENT_ID_KEY_PREFIX: string = 'patient:appointment:';
 
@@ -61,7 +61,7 @@ export class AppointmentRepository extends Repository<Appointment> {
         getApptError,
       });
     });
- 
+
     if (appointment) {
       await setCache(
         `${REDIS_APPOINTMENT_ID_KEY_PREFIX}${id}`,
@@ -69,7 +69,7 @@ export class AppointmentRepository extends Repository<Appointment> {
         ApiConstants.CACHE_EXPIRATION_3600
       );
     }
- 
+
     return appointment;
   }
 
@@ -1243,7 +1243,10 @@ export class AppointmentRepository extends Repository<Appointment> {
     );
   }
 
-  updateJdQuestionStatusbyIds(ids: string[]) {
+  async updateJdQuestionStatusbyIds(ids: string[]) {
+    for (let i = 0; i < ids.length; i++) {
+      await delCache(`${REDIS_APPOINTMENT_ID_KEY_PREFIX}${ids[i]}`);
+    }
     return this.update([...ids], {
       isJdQuestionsComplete: true,
       isConsultStarted: true,
