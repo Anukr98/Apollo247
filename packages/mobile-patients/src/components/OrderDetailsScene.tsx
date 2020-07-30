@@ -46,6 +46,7 @@ import {
   postWebEngageEvent,
   reOrderMedicines,
   formatOrderAddress,
+  extractUrlFromString,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -659,6 +660,13 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         [MEDICINE_ORDER_STATUS.CANCELLED]: [
           '',
           orderCancelText || `Your order #${orderAutoId} has been cancelled.`,
+          extractUrlFromString(orderCancelText || '')
+            ? () => {
+                Linking.openURL(extractUrlFromString(orderCancelText || '')!).catch((err) =>
+                  CommonBugFender(`${AppRoutes.OrderDetailsScene}_getOrderDescription`, err)
+                );
+              }
+            : null,
         ],
         [MEDICINE_ORDER_STATUS.READY_AT_STORE]: [
           '',

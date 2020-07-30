@@ -612,6 +612,11 @@ export const isValidName = (value: string) =>
     ? true
     : false;
 
+export const extractUrlFromString = (text: string): string | undefined => {
+  const urlRegex = /(https?:\/\/[^ ]*)/;
+  return (text.match(urlRegex) || [])[0];
+};
+
 export const reOrderMedicines = async (
   order:
     | getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails
