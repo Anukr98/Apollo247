@@ -4,6 +4,9 @@ import { NotificationsServiceContext } from 'notifications-service/Notifications
 import { WebEngageEvent, WebEngageResponse, postEvent, WebEngageInput } from 'helpers/webEngage';
 import { ConsultMode } from 'doctors-service/entities';
 import { ApiConstants } from 'ApiConstants';
+import { isMobileNumberValid } from '@aph/universal/dist/aphValidators';
+import { AphError } from 'AphError';
+import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 
 export const webEngageTypeDefs = gql`
   enum WebEngageEvent {
@@ -21,9 +24,9 @@ export const webEngageTypeDefs = gql`
     mobileNumber: String!
     eventName: WebEngageEvent!
     consultID: ID!
-    displayId: string!
+    displayId: String!
     consultMode: ConsultMode!
-    doctorFullName: string!
+    doctorFullName: String!
   }
 
   type WebEngageResponseData {
@@ -56,15 +59,30 @@ const postDoctorConsultEvent: Resolver<
   NotificationsServiceContext,
   WebEngageResponse
 > = async (parent, { doctorConsultEventInput }) => {
-  //post order billed and packed event event to webEngage
+  if (!isMobileNumberValid(doctorConsultEventInput.mobileNumber))
+    throw new AphError(AphErrorMessages.INVALID_MOBILE_NUMBER);
+
+  let eventName;
+  switch (doctorConsultEventInput.eventName) {
+    case WebEngageEvent.DOCTOR_IN_CHAT_WINDOW:
+      eventName = ApiConstants.DOCTOR_IN_CHAT_WINDOW_EVENT_NAME.toString();
+      break;
+    case WebEngageEvent.DOCTOR_LEFT_CHAT_WINDOW:
+      eventName = ApiConstants.DOCTOR_LEFT_CHAT_WINDOW_EVENT_NAME.toString();
+      break;
+    case WebEngageEvent.DOCTOR_SENT_MESSAGE:
+      eventName = ApiConstants.DOCTOR_SENT_MESSAGE_EVENT_NAME.toString();
+      break;
+  }
+
   const postBody: Partial<WebEngageInput> = {
     userId: doctorConsultEventInput.mobileNumber,
-    eventName: ApiConstants.MEDICINE_ORDER_BILLED_AND_PACKED_EVENT_NAME.toString(),
+    eventName: eventName,
     eventData: {
-      consultID: '',
-      displayID: '',
-      consultMode: '',
-      doctorName: '',
+      consultID: doctorConsultEventInput.consultID,
+      displayID: doctorConsultEventInput.displayId,
+      consultMode: doctorConsultEventInput.consultMode,
+      doctorName: doctorConsultEventInput.doctorFullName,
     },
   };
   return await postEvent(postBody);
