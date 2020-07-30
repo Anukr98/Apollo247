@@ -745,7 +745,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
             .fontSize(11)
             .font(assetsDir + '/fonts/IBMPlexSans-Regular.ttf')
             .fillColor('#666666')
-            .text(`Instructions: ${instruction} `, margin + 30)
+            .text(`${index == 0 ? 'Instructions: ' : ''}${instruction} `, margin + 30)
             .moveDown(0.8);
         });
       }
