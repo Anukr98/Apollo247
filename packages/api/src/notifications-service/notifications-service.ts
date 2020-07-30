@@ -19,6 +19,10 @@ import {
   notificationBinTypeDefs,
   notificationBinResolvers,
 } from 'notifications-service/resolvers/notificationBin';
+import {
+  webEngageTypeDefs,
+  webEngageResolvers,
+} from 'notifications-service/resolvers/webEngageAPI';
 
 (async () => {
   await connect();
@@ -64,6 +68,10 @@ import {
       {
         typeDefs: notificationBinTypeDefs,
         resolvers: notificationBinResolvers,
+      },
+      {
+        typeDefs: webEngageTypeDefs,
+        resolvers: webEngageResolvers,
       },
     ]),
     plugins: [

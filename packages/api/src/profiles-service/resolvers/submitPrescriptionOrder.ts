@@ -101,15 +101,13 @@ const submitPrescriptionOrder: Resolver<
     deliveryAddress = patientAddressDetails.addressLine1 + ' ' + patientAddressDetails.addressLine2;
     if (patientAddressDetails.city == '' || patientAddressDetails.city == null) {
       deliveryCity = 'Kakinada';
-    }
-    else {
+    } else {
       deliveryCity = patientAddressDetails.city;
     }
 
     if (patientAddressDetails.zipcode == '' || patientAddressDetails.zipcode == null) {
       deliveryZipcode = '500045';
-    }
-    else {
+    } else {
       deliveryZipcode = patientAddressDetails.zipcode;
     }
   }
@@ -238,8 +236,7 @@ const submitPrescriptionOrder: Resolver<
     errorCode = -1;
     errorMessage = orderResp.ordersResult.Message;
     orderStatus = MEDICINE_ORDER_STATUS.ORDER_FAILED;
-  }
-  else {
+  } else {
     const orderStatusAttrs: Partial<MedicineOrdersStatus> = {
       orderStatus: MEDICINE_ORDER_STATUS.ORDER_PLACED,
       medicineOrders: orderDetails,
