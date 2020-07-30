@@ -1248,14 +1248,16 @@ export class PatientAddress extends BaseEntity {
   @BeforeInsert()
   updateDateCreation() {
     this.createdDate = new Date();
-    if (this.addressLine1 == '' || this.addressLine1 == null) {
-      throw new AphError(AphErrorMessages.INVALID_ADDRESS_DETAILS);
-    }
   }
 
   @BeforeUpdate()
   updateDateUpdate() {
     this.updatedDate = new Date();
+  }
+
+  @BeforeInsert()
+  @BeforeUpdate()
+  validateAddress() {
     if (this.addressLine1 == '' || this.addressLine1 == null) {
       throw new AphError(AphErrorMessages.INVALID_ADDRESS_DETAILS);
     }
