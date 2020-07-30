@@ -777,7 +777,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
       item.routeOfAdministration
         ? `\nTo be taken: ${nameFormater(item.routeOfAdministration, 'title')}`
         : ''
-    }${item.medicineInstructions ? '\nInstuctions: ' + item.medicineInstructions : ''}`;
+    }${item.medicineInstructions ? '\nInstructions: ' + item.medicineInstructions : ''}`;
   };
 
   const renderPrescriptions = () => {
