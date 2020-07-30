@@ -284,7 +284,7 @@ export class Appointment extends BaseEntity {
   @Column({ nullable: true })
   transferParentId: string;
 
-  @Column({ nullable: true })
+  @UpdateDateColumn({ nullable: true })
   updatedDate: Date;
 
   @Column({ nullable: true, type: 'text' })
@@ -304,11 +304,6 @@ export class Appointment extends BaseEntity {
     default: () => "'{}'",
   })
   paymentInfo: Partial<AppointmentPayments>;
-
-  @BeforeUpdate()
-  updateDateUpdate() {
-    this.updatedDate = new Date();
-  }
 
   @BeforeUpdate()
   async appointMentStatusConstraintCheck() {
@@ -464,13 +459,8 @@ export class AppointmentPayments extends BaseEntity {
   @Column({ type: 'text' })
   responseMessage: string;
 
-  @Column({ nullable: true, type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  @UpdateDateColumn({ nullable: true })
   updatedDate: Date;
-
-  @BeforeUpdate()
-  updateDateUpdate() {
-    this.updatedDate = new Date();
-  }
 
   @ManyToOne((type) => Appointment, (appointment) => appointment.appointmentPayments)
   appointment: Appointment;
