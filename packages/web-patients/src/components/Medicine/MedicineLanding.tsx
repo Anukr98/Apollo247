@@ -437,6 +437,7 @@ export const MedicineLanding: React.FC = (props: any) => {
       localStorage.removeItem('pharmaCoupon');
     }
     sessionStorage.removeItem('cartValues');
+    sessionStorage.removeItem('utm_source');
   }
 
   const [data, setData] = useState<MedicinePageAPiResponse | null>(null);
