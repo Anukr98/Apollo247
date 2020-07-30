@@ -923,7 +923,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
           </View>
           <View style={{ flex: 0.54, marginLeft: 15 }}>
             <Text style={styles.availableHCTxt}>Available Health Credits</Text>
-            <Text style={styles.availableHC}>{availableHC}</Text>
+            <Text style={styles.availableHC}>{(availableHC || 0).toFixed(2)}</Text>
           </View>
           <View></View>
         </TouchableOpacity>
