@@ -991,7 +991,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                       <Spearator style={{ marginBottom: index == array.length - 1 ? 2.5 : 11.5 }} />
                       {item!.testInstruction ? (
                         <Text style={styles.dataTextStyle}>
-                          Instuctions: {item!.testInstruction}
+                          Instructions: {item!.testInstruction}
                         </Text>
                       ) : null}
                     </>
