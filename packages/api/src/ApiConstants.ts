@@ -274,6 +274,7 @@ export enum ApiConstants {
   OTP_SUCCESS_MESSAGE = 'OTP sent to the mobile number successfully',
   OTP_FAIL_MESSAGE = 'OTP sending failed',
   INVALID_RESEND_MESSAGE = 'Invalid resend details',
+  NOTIFICATION_MSG_FOR_DR_CALL = 'Hi {0}, {1} will call you from the number {2}. Please pick up the call to connect with the doctor.',
 
   NOTIFICATION_DEFAULT_SOUND = 'default',
 
@@ -410,6 +411,9 @@ export enum ApiConstants {
   MEDICINE_ORDER_KERB_STORE_READY_EVENT_NAME = 'Kerb side Order Ready at Store',
   MEDICINE_ORDER_KERB_PICKEDUP_EVENT_NAME = 'Kerb side Order Picked up',
   MEDICINE_ORDER_KERB_STORE_NOTIFICATION_EVENT_NAME = 'Kerb side Store notification',
+  DOCTOR_IN_CHAT_WINDOW_EVENT_NAME = 'Doctor is in the consult room',
+  DOCTOR_LEFT_CHAT_WINDOW_EVENT_NAME = 'Doctor left the consult room',
+  DOCTOR_SENT_MESSAGE_EVENT_NAME = 'Doctor sent a message on chat post end Consult',
 }
 
 export enum PATIENT_REPO_RELATIONS {
