@@ -1214,6 +1214,8 @@ export const ConsultTabs: React.FC = () => {
         document.cookie = cookieStr + ';path=/;';
       };
     }
+    console.log('CURRENT  PATIENT', currentPatient);
+    console.log('DOC ID', doctorId);
   }, []);
 
   const sendCallNotificationFn = (callType: APPT_CALL_TYPE, isCall: boolean) => {
