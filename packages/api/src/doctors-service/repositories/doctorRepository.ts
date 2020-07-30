@@ -168,6 +168,7 @@ export class DoctorRepository extends Repository<Doctor> {
         const doctorBblockedSlots = res[1];
 
         if (apptSlots && apptSlots.length > 0) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           apptSlots.map((appt: any) => {
             const apptDt = format(appt.appointmentDateTime, 'yyyy-MM-dd');
             const sl = `${apptDt}T${appt.appointmentDateTime

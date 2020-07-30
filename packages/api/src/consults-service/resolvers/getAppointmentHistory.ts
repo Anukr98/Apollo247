@@ -174,8 +174,7 @@ const getAppointmentHistory: Resolver<
   const { patientId } = appointmentHistoryInput;
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
-  const primaryPatientIds = await patientRepo.getLinkedPatientIds({ patientId }
-  );
+  const primaryPatientIds = await patientRepo.getLinkedPatientIds({ patientId });
 
   const appointmentsHistory = await appointmentRepo.getPatientAppointments(
     appointmentHistoryInput.doctorId,
@@ -205,20 +204,18 @@ const getAppointmentHistory: Resolver<
 type AppointmentStatusResult = {
   status: string;
   state: string;
-}
+};
 
 const getAppointmentStatus: Resolver<
   null,
-  { id: string; },
+  { id: string },
   ConsultServiceContext,
   AppointmentStatusResult
 > = async (parent, args, { consultsDb, doctorsDb, mobileNumber }) => {
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
   let appointment;
   try {
-    appointment = await appointmentRepo.findById(
-      args.id
-    );
+    appointment = await appointmentRepo.findById(args.id);
     if (appointment == null) throw new AphError(AphErrorMessages.APPOINTMENT_ID_NOT_FOUND);
   } catch (invalidGrant) {
     throw new AphError(AphErrorMessages.GET_APPOINTMENT_STATUS_ERROR, undefined, { invalidGrant });

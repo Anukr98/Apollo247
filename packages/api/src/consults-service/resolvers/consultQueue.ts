@@ -191,7 +191,7 @@ const getConsultQueue: Resolver<
 > = async (parent, { doctorId, isActive }, context) => {
   const { docRepo, cqRepo, mobileNumber, patRepo } = getRepos(context);
   await checkAuth(docRepo, mobileNumber, doctorId);
-  let result: GetConsultQueueResult = { consultQueue: [] };
+  const result: GetConsultQueueResult = { consultQueue: [] };
   let consultQueueItems: ConsultQueueItem[] = [];
   consultQueueItems = await cqRepo.getConsultQueue(doctorId, isActive);
   const patientIds = consultQueueItems.map((item) => item.appointment.patientId);
@@ -201,7 +201,7 @@ const getConsultQueue: Resolver<
   }
   let patient: Patient;
   consultQueueItems.map((item) => {
-    let res: GqlConsultQueueItem = {
+    const res: GqlConsultQueueItem = {
       id: item.id,
       isActive: item.isActive,
       patient,
