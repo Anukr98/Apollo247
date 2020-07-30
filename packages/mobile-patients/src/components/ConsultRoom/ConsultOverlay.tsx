@@ -447,15 +447,18 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
           }
           console.log('apptmt', apptmt);
           // If amount is zero don't redirect to PG
-          if (props.callSaveSearch !== 'true') {
-            saveSearchDoctor(client, props.doctor ? props.doctor.id : '', props.patientId);
 
-            saveSearchSpeciality(
-              client,
-              props.doctor && props.doctor.specialty && props.doctor.specialty.id,
-              props.patientId
-            );
-          }
+          try {
+            if (props.callSaveSearch !== 'true') {
+              saveSearchDoctor(client, props.doctor ? props.doctor.id : '', props.patientId);
+
+              saveSearchSpeciality(
+                client,
+                props.doctor && props.doctor.specialty && props.doctor.specialty.id,
+                props.patientId
+              );
+            }
+          } catch (error) {}
 
           makePayment(
             g(apptmt, 'id')!,
