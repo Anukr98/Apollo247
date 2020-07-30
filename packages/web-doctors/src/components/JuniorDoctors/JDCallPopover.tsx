@@ -399,11 +399,11 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: '#00b38e',
       color: '#FFFFFF',
       display: 'inline-block',
-      paddingLeft: 6,
-      paddingTop: 2,
       marginRight: 10,
       fontWeight: 600,
       fontSize: 20,
+      borderRadius: 5,
+      textAlign: 'center',
     },
     callOptionFirst: {
       fontSize: '16px',
@@ -413,6 +413,7 @@ const useStyles = makeStyles((theme: Theme) => {
       lineHeight: 'normal',
       letterSpacing: 'normal',
       color: '#00b38e',
+      width: '50%',
     },
     callNote: {
       fontSize: '14px',
@@ -2138,7 +2139,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
               <span className={classes.callSubheader}>
                 {'Please follow the steps to connect to your patient :'}
               </span>
-              <span style={{ display: 'flex', marginTop: 30, marginBottom: 20 }}>
+              <span style={{ display: 'flex', margin: '30px 0px 20px 10px', alignItems: 'center', }}>
                 <span className={classes.callOption}>1</span>
                 <span className={classes.callOptionFirst}>
                   Answer the call from {process.env.EXOTEL_CALLER_ID} <br />
