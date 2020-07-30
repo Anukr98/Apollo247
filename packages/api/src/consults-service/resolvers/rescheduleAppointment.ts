@@ -18,7 +18,7 @@ import { AppointmentRepository } from 'consults-service/repositories/appointment
 import { AphError } from 'AphError';
 import _ from 'lodash';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
-import { format, addDays } from 'date-fns';
+import { format, addDays, addMinutes } from 'date-fns';
 import { sendMail } from 'notifications-service/resolvers/email';
 import { EmailMessage } from 'types/notificationMessageTypes';
 import { ApiConstants } from 'ApiConstants';
@@ -430,16 +430,20 @@ const bookRescheduleAppointment: Resolver<
 
   //eslint-disable-next-line @typescript-eslint/no-explicit-any
   async function updateSlotsInEs(appointment: any, appointmentDateTime: any, status: string) {
-    const slotApptDt = format(appointmentDateTime, 'yyyy-MM-dd') + ' 18:30:00';
-    const actualApptDt = format(appointmentDateTime, 'yyyy-MM-dd');
-    let apptDt = format(appointmentDateTime, 'yyyy-MM-dd');
+    const slotApptDt =
+      format(addMinutes(new Date(appointmentDateTime), +0), 'yyyy-MM-dd') + ' 18:30:00';
+    //format(appointmentDateTime, 'yyyy-MM-dd') + ' 18:30:00';
+    const actualApptDt = format(addMinutes(new Date(appointmentDateTime), +0), 'yyyy-MM-dd');
+    //format(appointmentDateTime, 'yyyy-MM-dd');
+    let apptDt = format(addMinutes(new Date(appointmentDateTime), +0), 'yyyy-MM-dd');
+    // format(appointmentDateTime, 'yyyy-MM-dd');
     if (appointmentDateTime >= new Date(slotApptDt)) {
       apptDt = format(addDays(new Date(apptDt), 1), 'yyyy-MM-dd');
     }
-    const sl = `${actualApptDt}T${appointmentDateTime
+    const sl = `${actualApptDt}T${new Date(appointmentDateTime)
       .getUTCHours()
       .toString()
-      .padStart(2, '0')}:${appointmentDateTime
+      .padStart(2, '0')}:${new Date(appointmentDateTime)
       .getUTCMinutes()
       .toString()
       .padStart(2, '0')}:00.000Z`;
@@ -580,7 +584,6 @@ const bookRescheduleAppointment: Resolver<
         reason: ApiConstants.APPT_STATE_CHANGED_3.toString(),
       };
       appointmentRepo.saveAppointmentHistory(historyAttrs);
-
       const appointmentPayment = await appointmentRepo.findAppointmentPayment(apptDetails.id);
       if (appointmentPayment) {
         let refundResponse = await initiateRefund(
@@ -680,9 +683,15 @@ const bookRescheduleAppointment: Resolver<
   }
 
   const hospitalCity = docDetails.doctorHospital[0].facility.city;
-  const istDateTime = addMilliseconds(rescheduledapptDetails.appointmentDateTime, 19800000);
-  const apptDate = format(istDateTime, 'dd/MM/yyyy');
-  const apptTime = format(istDateTime, 'hh:mm aa');
+  //const istDateTime = addMilliseconds(rescheduledapptDetails.appointmentDateTime, 19800000);
+  const apptDate = format(
+    addMinutes(new Date(rescheduledapptDetails.appointmentDateTime), +330),
+    'yyyy-MM-dd'
+  ); //format(istDateTime, 'dd/MM/yyyy');
+  const apptTime = format(
+    addMinutes(new Date(rescheduledapptDetails.appointmentDateTime), +330),
+    'hh:mm:aa'
+  ); // format(istDateTime, 'hh:mm aa');
   const mailContent = rescheduleAppointmentEmailTemplate({
     hospitalCity: hospitalCity || 'N/A',
     apptDate,
