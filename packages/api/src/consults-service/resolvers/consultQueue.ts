@@ -190,7 +190,7 @@ const getConsultQueue: Resolver<
   GetConsultQueueResult
 > = async (parent, { doctorId }, context) => {
   const { docRepo, mobileNumber } = getRepos(context);
-  // await checkAuth(docRepo, mobileNumber, doctorId);
+  await checkAuth(docRepo, mobileNumber, doctorId);
   const consultQueue = await buildGqlConsultQueue(doctorId, context);
   return { consultQueue };
 };
