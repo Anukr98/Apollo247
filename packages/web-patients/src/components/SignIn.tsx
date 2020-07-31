@@ -18,7 +18,6 @@ import { isMobileNumberValid } from '@aph/universal/dist/aphValidators';
 import isNumeric from 'validator/lib/isNumeric';
 import { useAuth } from 'hooks/authHooks';
 import { gtmTracking } from '../gtmTracking';
-import { Redirect } from 'react-router-dom';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
