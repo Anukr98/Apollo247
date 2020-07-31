@@ -1010,29 +1010,6 @@ const useStyles = makeStyles((theme: Theme) => {
       clip: 'rect(0,0,0,0)',
       border: 0,
     },
-    toastMessage: {
-      height: 40,
-      position: 'relative',
-      boxShadow: '0 1px 13px 0 rgba(0, 0, 0, 0.16)',
-      borderRadius: 10,
-      marginBottom: 5,
-      backgroundColor: '#00b38e',
-      zIndex: 1,
-      display: 'flex',
-    },
-    toastMessageText: {
-      fontSize: '14px',
-      fontWeight: 500,
-      fontStretch: 'normal',
-      fontStyle: 'normal',
-      lineHeight: 1.43,
-      letterSpacing: 'normal',
-      color: '#ffffff',
-      position: 'relative',
-      top: 6,
-      textTransform: 'none',
-      paddingRight: 10,
-    },
   };
 });
 const ringtoneUrl = require('../images/phone_ringing.mp3');
@@ -1424,7 +1401,9 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
 
   //OT Error state
   const [sessionError, setSessionError] = React.useState<boolean>(null);
-  const [publisherError, setPublisherError] = React.useState<boolean>(null);
+  const [publisherError, setPublisherError] = React.useState<any>({
+    message: 'Error While connecting the call, Please contact support',
+  });
   const [subscriberError, setSubscriberError] = React.useState<boolean>(null);
 
   const toggelChatVideo = () => {
@@ -2246,36 +2225,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                   Connect via phone call
                 </span>
               )}
-            {showToastMessage && (
-              <div
-                className={classes.toastMessage}
-                onLoad={() => {
-                  setTimeout(() => {
-                    setShowToastMessage(false);
-                  }, 10000);
-                }}
-              >
-                <span className={classes.toastMessageText}>
-                  <img
-                    src={require('images/ic_cancel_green.svg')}
-                    alt=""
-                    style={{
-                      height: 18,
-                      width: 18,
-                      position: 'relative',
-                      top: 4,
-                      marginLeft: 12,
-                      marginRight: 20,
-                      cursor: 'pointer',
-                    }}
-                    onClick={() => {
-                      setShowToastMessage(false);
-                    }}
-                  />
-                  {`You will get a call from ${process.env.EXOTEL_CALLER_ID}. Please pick up the call !`}
-                </span>
-              </div>
-            )}
+
             {props.appointmentStatus === STATUS.COMPLETED &&
               currentUserType !== LoggedInUserType.SECRETARY &&
               props.sentToPatient === true && (
@@ -3614,6 +3564,16 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           setSubscriberError(null);
         }}
       />
+      {showToastMessage && (
+        <Alert
+          error={{
+            message: `You will get a call from ${process.env.EXOTEL_CALLER_ID}. Please pick up the call !`,
+          }}
+          onClose={() => {
+            setShowToastMessage(false);
+          }}
+        />
+      )}
       {/* Ot Errors Ends */}
     </div>
   );
