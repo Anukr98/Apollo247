@@ -313,7 +313,7 @@ const OtpInput: React.FC<{ mobileNumber: string; setOtp: (otp: string) => void }
                       setTimeout(() => {
                         window.location.href = redirectURL;
                         setIsLoading(false);
-                      }, 5000);
+                      }, 2000);
                     }
                   }
                 });
