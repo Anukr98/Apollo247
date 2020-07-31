@@ -33,7 +33,7 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingTop: 20,
       margin: 0,
       position: 'absolute',
-      width: '100%',
+      width: '1000px',
       bottom: 0,
       '& button': {
         backgroundColor: 'transparent',
@@ -45,24 +45,25 @@ const useStyles = makeStyles((theme: Theme) => {
     },
 
     videoContainer: {
-      height: 'calc(100vh - 248px)',
+      height: 'calc(100vh - 220px)',
       backgroundColor: '#000',
-      borderRadius: 10,
       margin: 20,
-      marginTop: 68,
+      marginTop: 143,
       overflow: 'hidden',
-      position: 'relative',
+      position: 'absolute',
       textAlign: 'center',
+      left: -310,
+      width: 1063,
     },
     hideVideoContainer: {
-      right: 15,
+      right: 50,
       width: 240,
       height: 197,
       position: 'absolute',
       boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.6)',
       borderRadius: 10,
       overflow: 'hidden',
-      top: 60,
+      top: 143,
       backgroundColor: '#000',
     },
     VideoAlignment: {
@@ -125,12 +126,13 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     timerCls: {
       position: 'absolute',
-      top: 80,
+      top: 160,
       zIndex: 99,
-      left: 40,
+      left: -240,
       fontSize: 12,
       fontWeight: 600,
       color: '#f7f8f5',
+      width: 200,
     },
     patientName: {
       fontSize: 20,
@@ -217,9 +219,11 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       props.stopAudioVideoCallpatient();
       props.setIscall(false);
       if (event.reason === 'networkDisconnected') {
-        props.setSessionError({"message": 'Call was disconnected due to Network problems on the patient end.'});
-      }else{
-        props.setSessionError({"message": 'Patient left the call.'});
+        props.setSessionError({
+          message: 'Call was disconnected due to Network problems on the patient end.',
+        });
+      } else {
+        props.setSessionError({ message: 'Patient left the call.' });
       }
     },
     error: (error: any) => {
@@ -309,8 +313,8 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       }
     },
     streamDestroyed: (event: any) => {
-      console.log('Subscribe stream destroyed!', )
-    }
+      console.log('Subscribe stream destroyed!');
+    },
   };
 
   const checkReconnecting = () => {
@@ -385,13 +389,15 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                   eventHandlers={publisherHandler}
                   onError={(error: any) => {
                     console.log('Publisher Error', error, error.name);
-                    if(error.name === 'OT_USER_MEDIA_ACCESS_DENIED'){
-                      props.setPublisherError({"message": 'Audio/Video permissions are not provided'});
-                    }else if(error.name === 'OT_HARDWARE_UNAVAILABLE'){
-                      props.setPublisherError({"message": 'Audio/Video device is not connected.'});
-                    }else if(error.name === 'OT_CHROME_MICROPHONE_ACQUISITION_ERROR'){
-                      props.setPublisherError({"message": 'Audio device is not connected.'});
-                    }else{
+                    if (error.name === 'OT_USER_MEDIA_ACCESS_DENIED') {
+                      props.setPublisherError({
+                        message: 'Audio/Video permissions are not provided',
+                      });
+                    } else if (error.name === 'OT_HARDWARE_UNAVAILABLE') {
+                      props.setPublisherError({ message: 'Audio/Video device is not connected.' });
+                    } else if (error.name === 'OT_CHROME_MICROPHONE_ACQUISITION_ERROR') {
+                      props.setPublisherError({ message: 'Audio device is not connected.' });
+                    } else {
                       props.setPublisherError(error);
                     }
                   }}
