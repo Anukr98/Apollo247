@@ -257,7 +257,7 @@ const checkIfReschedule: Resolver<
     } else {
       if (
         Math.abs(differenceInDays(apptDetails.appointmentDateTime, args.rescheduleDate)) >
-          ApiConstants.APPOINTMENT_RESCHEDULE_DAYS_LIMIT &&
+        ApiConstants.APPOINTMENT_RESCHEDULE_DAYS_LIMIT &&
         apptDetails.isFollowPaid === false
       ) {
         isPaid = 1;
@@ -444,9 +444,9 @@ const bookRescheduleAppointment: Resolver<
       .getUTCHours()
       .toString()
       .padStart(2, '0')}:${new Date(appointmentDateTime)
-      .getUTCMinutes()
-      .toString()
-      .padStart(2, '0')}:00.000Z`;
+        .getUTCMinutes()
+        .toString()
+        .padStart(2, '0')}:00.000Z`;
     console.log(slotApptDt, apptDt, sl, appointment.doctorId, 'appoint date time');
     const esDocotrStatusOpen =
       status === 'OPEN' ? ES_DOCTOR_SLOT_STATUS.OPEN : ES_DOCTOR_SLOT_STATUS.BOOKED;
@@ -714,14 +714,14 @@ const bookRescheduleAppointment: Resolver<
   });
 
   const toEmailId = process.env.BOOK_APPT_TO_EMAIL ? process.env.BOOK_APPT_TO_EMAIL : '';
-  const ccEmailIds =
-    process.env.NODE_ENV == 'dev' ||
-    process.env.NODE_ENV == 'development' ||
-    process.env.NODE_ENV == 'local'
-      ? ApiConstants.PATIENT_APPT_CC_EMAILID
-      : ApiConstants.PATIENT_APPT_CC_EMAILID_PRODUCTION;
+  // const ccEmailIds =
+  //   process.env.NODE_ENV == 'dev' ||
+  //   process.env.NODE_ENV == 'development' ||
+  //   process.env.NODE_ENV == 'local'
+  //     ? ApiConstants.PATIENT_APPT_CC_EMAILID
+  //     : ApiConstants.PATIENT_APPT_CC_EMAILID_PRODUCTION;
   const emailContent: EmailMessage = {
-    ccEmail: ccEmailIds.toString(),
+    //ccEmail: ccEmailIds.toString(),
     toEmail: toEmailId.toString(),
     subject: mailSubject,
     fromEmail: ApiConstants.PATIENT_HELP_FROM_EMAILID.toString(),
@@ -758,7 +758,7 @@ const bookRescheduleAppointment: Resolver<
     console.log('listOfEmails', listOfEmails);
     listOfEmails.forEach(async (adminemail) => {
       const adminEmailContent: EmailMessage = {
-        ccEmail: ccEmailIds.toString(),
+        //ccEmail: ccEmailIds.toString(),
         toEmail: adminemail.toString(),
         subject: mailSubject.toString(),
         fromEmail: ApiConstants.PATIENT_HELP_FROM_EMAILID.toString(),
