@@ -188,7 +188,7 @@ export const CheckRiskLevel: React.FC = (props) => {
           our experts for advice.
         </p>
         <div className={classes.rightActions}>
-          {!location.pathname.includes('medical-condition') && !isWebView && (
+          {!location.pathname.includes('medical-condition') && (
             <ProtectedWithLoginPopup>
               {({ protectWithLoginPopup }) => (
                 <AphButton
