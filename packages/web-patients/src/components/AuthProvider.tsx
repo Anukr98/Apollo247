@@ -352,6 +352,23 @@ export const AuthProvider: React.FC = (props) => {
   };
 
   useEffect(() => {
+    if (
+      typeof window !== 'undefined' &&
+      window.location &&
+      window.location.search &&
+      window.location.search.length
+    ) {
+      const search = window.location.search;
+      const params = new URLSearchParams(search);
+      const token = params.get('utm_token') || '';
+      const mobileNumber = `+${params.get('utm_mobile_number').trim()}` || '';
+      localStorage.setItem('userMobileNo', mobileNumber);
+      if (token && mobileNumber) {
+        app.auth().signInWithCustomToken(token);
+        setVerifyOtpError(true);
+      }
+    }
+
     app.auth().onAuthStateChanged(async (user) => {
       if (user) {
         /**Gtm code start */
