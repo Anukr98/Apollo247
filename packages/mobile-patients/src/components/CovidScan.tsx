@@ -5,7 +5,6 @@ import { WebView } from 'react-native-webview';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import AsyncStorage from '@react-native-community/async-storage';
 
 export interface CovidScanProps extends NavigationScreenProps {}
 
@@ -28,8 +27,9 @@ export const CovidScan: React.FC<CovidScanProps> = (props) => {
     return (
       <WebView
         ref={(WEBVIEW_REF) => (WebViewRef = WEBVIEW_REF)}
+        // onLoadStart={() => setLoading!(true)}
         onLoadEnd={() => setLoading!(false)}
-        source={{ uri: props.navigation.getParam('covidUrl')}}
+        source={{ uri: props.navigation.getParam('covidUrl') }}
         onNavigationStateChange={(data) => handleResponse(data, WebViewRef)}
         renderError={() => renderError(WebViewRef)}
       />
