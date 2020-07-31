@@ -3198,7 +3198,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             >
               <Button
                 title={'CHANGE SLOT'}
-                disabled={disAllowReschedule}
+                // disabled={disAllowReschedule}
                 disabledStyle={{
                   backgroundColor: '#0087ba',
                   opacity: 0.8,
@@ -3231,7 +3231,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               />
               <Button
                 title={'ACCEPT'}
-                disabled={disAllowReschedule}
+                // disabled={disAllowReschedule}
                 style={{
                   flex: 0.4,
                   marginRight: 16,
@@ -4776,7 +4776,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   audioTrack: isPublishAudio,
                   audioVolume: 100,
                   name: g(currentPatient, 'firstName') || 'patient',
-                  resolution: '640x480' // setting this resolution to avoid over heating of device
+                  resolution: '640x480', // setting this resolution to avoid over heating of device
                 }}
                 eventHandlers={publisherEventHandlers}
               />
