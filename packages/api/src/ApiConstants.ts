@@ -267,8 +267,8 @@ export enum ApiConstants {
   PHARMA_DEFAULT_SHOPID = '16001',
 
   OTP_EXPIRATION_MINUTES = 2,
-  OTP_MESSAGE_TEXT = 'Dear Apollo Customer, Your one time password is {0} and is valid for {1} mins.',
-  DOCTOR_WHATSAPP_OTP = 'Dear Doctor, your one time password is {0}. Please note that this OTP is valid for 2 minutes',
+  DOCTOR_OTP_MESSAGE_TEXT = 'Dear Doctor, Your one time password is {0} and is valid for {1} mins.',
+  PATIENT_OTP_MESSAGE_TEXT = 'Dear Apollo Customer, Your one time password is {0} and is valid for {1} mins.', DOCTOR_WHATSAPP_OTP = 'Dear Doctor, your one time password is {0}. Please note that this OTP is valid for 2 minutes',
   KALEYRA_OTP_SENDER = 'APOLLO',
   KALEYRA_OTP_SMS_METHOD = 'sms',
   OTP_SUCCESS_MESSAGE = 'OTP sent to the mobile number successfully',
