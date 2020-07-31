@@ -666,12 +666,12 @@ const getCaseSheet: Resolver<
   //get loggedin user details
   const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
   const doctorData = await doctorRepository.findByMobileNumber(mobileNumber, true);
-  if ((
+  if (
     doctorData == null &&
     mobileNumber != patientDetails.mobileNumber &&
     secretaryDetails != null &&
     mobileNumber != secretaryDetails.mobileNumber
-  ) || (doctorData != null && appointmentData.doctorId != doctorData.id))
+  )
     throw new AphError(AphErrorMessages.UNAUTHORIZED);
 
   const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
