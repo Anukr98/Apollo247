@@ -25,7 +25,7 @@ const deepRed = '#a30808';
 const lightPaleRed = '#EDC6C2';
 const paleLightGray = '#F1F1F1';
 const platinumGrey = '#525252';
-
+const platinumWhiteGrey = '#E6E6E6';
 const red = '#e50000';
 
 const TabBar = {
@@ -85,6 +85,7 @@ const Header = {
   HEADER_BAR_BUTTON_TEXT: darkColor,
   HEADER_CENTER_TEXT: darkColor,
   HEADER_SEP: darkColor,
+  HEADER_GREY: platinumWhiteGrey
 };
 
 const RefreshControl = {

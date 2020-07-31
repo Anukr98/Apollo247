@@ -114,6 +114,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
     audioTrack,
     setPrevVolume,
     maxVolume,
+    setDoctorJoinedChat
   } = useUIElements();
   const { cartItems, setCartItems, ePrescriptions, setEPrescriptions } = useShoppingCart();
   const client = useApolloClient();
@@ -354,6 +355,9 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
       notificationType === 'doctor_Noshow_Reschedule_Appointment'
       // notificationType === 'Reschedule_Appointment'
     ) {
+      if(notificationType === 'chat_room') {
+        setDoctorJoinedChat!(true); // enabling join button in chat room if in case pubnub events not fired
+      }
       if (currentScreenName === AppRoutes.ChatRoom) return;
     }
 
