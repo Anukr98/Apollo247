@@ -66,6 +66,7 @@ import { MedicinePrescriptions } from './Prescriptions/MedicinePrescriptions';
 import { MedicineSearch } from './Medicine/MedicineSearch';
 import { DoctorsLanding } from 'components/DoctorsLanding';
 import { covidProtocolLanding } from 'components/Covid/CovidProtocolLanding';
+import { Loader } from 'components/Loader';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -243,6 +244,7 @@ const AppContainer: React.FC = () => {
   return (
     <BrowserRouter>
       <AuthProvider>
+        <Loader />
         <AphThemeProvider theme={theme}>
           <MuiPickersUtilsProvider utils={DateFnsUtils}>
             <MedicinesCartProvider>
