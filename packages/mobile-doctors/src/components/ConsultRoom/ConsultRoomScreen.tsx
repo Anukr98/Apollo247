@@ -302,6 +302,9 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const backDataFunctionality = () => {
     try {
       console.log(callhandelBack, 'is back called');
+      if(startConsult){
+        sendDoctorLeavesEvent(); //sending pubnub event if doctor leaves chat room after starting it.
+      }
       if (callhandelBack) {
         saveDetails(true, true, undefined, () => {
           setLoading && setLoading(false);
@@ -315,6 +318,21 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       console.log(error, 'error');
     }
   };
+
+  const sendDoctorLeavesEvent = () => {
+    pubnub.publish(
+      {
+        message: {
+          isTyping: true,
+          message: messageCodes.leaveChatRoom
+        },
+        channel: channel,
+        storeInHistory: false,
+        sendByPost: false
+      },
+      (status: any, response: any) => {}
+    );
+  }
 
   const createCaseSheetSRDAPI = () => {
     setLoading && setLoading(true);
