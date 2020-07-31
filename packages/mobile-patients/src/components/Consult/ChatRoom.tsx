@@ -508,6 +508,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const callAbandonment = '^^#callAbandonment';
   const appointmentComplete = '^^#appointmentComplete';
   const doctorAutoResponse = '^^#doctorAutoResponse';
+  const leaveChatRoom = '^^#leaveChatRoom';
 
   const patientId = appointmentData.patientId;
   const channel = appointmentData.id;
@@ -633,9 +634,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     Platform.OS === 'android' && SoftInputMode.set(SoftInputMode.ADJUST_RESIZE);
     KeepAwake.activate();
     AppState.addEventListener('change', _handleAppStateChange);
-    setTimeout(() => {
-      CheckDoctorPresentInChat(); // checking doctor availability on mount(timeout must)
-    }, 2000);
   }, []);
 
   const playSound = () => {
@@ -675,6 +673,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           callhandelBack = false;
         }
         playSound();
+        setDoctorJoinedChat!(true);
       });
     }
     if (prescription) {
@@ -1142,6 +1141,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               callhandelBack = false;
             }
             playSound();
+            setDoctorJoinedChat!(true);
           } else {
             if (onSubscribe) {
               setOnSubscribe(false);
@@ -2290,12 +2290,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         callhandelBack = false;
         // stopCallAbondmentTimer();
         playSound();
+        setDoctorJoinedChat!(true);
       } else if (message.message.message === videoCallMsg && !patientJoinedCall.current) { // if patient has not joined meeting room
         setOnSubscribe(true);
         callhandelBack = false;
         setIsAudio(false);
         // stopCallAbondmentTimer();
         playSound();
+        setDoctorJoinedChat!(true);
       } else if (message.message.message === startConsultMsg) {
         setjrDoctorJoined(false);
         stopInterval();
@@ -2400,6 +2402,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         setTextChange(false);
         setStatus(STATUS.COMPLETED);
         APIForUpdateAppointmentData(true);
+      } else if (message.message.message === leaveChatRoom) {
+        setDoctorJoinedChat!(false);
+        setDoctorJoined(false);
       }
     } else {
       console.log('succss');
@@ -4917,7 +4922,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             )}
 
             <Text style={timerStyles}>{callAccepted ? callTimerStarted : 'INCOMING'}</Text>
-            {(patientJoinedCall.current && !subscriberConnected.current) && <Text style={styles.centerTxt}>{strings.common.waitForDoctirToJoinCall.replace('doctor_name', doctorName)}</Text>} {// if doctor has not joined call //}
+            {(patientJoinedCall.current && !subscriberConnected.current) && <Text style={styles.centerTxt}>{strings.common.waitForDoctirToJoinCall.replace('doctor_name', doctorName)}</Text>}
             <Snackbar
               style={{ marginBottom: 100, zIndex: 1001 }}
               visible={snackbarState}
@@ -6423,6 +6428,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           onPressLeftIcon={() => {
             if (callhandelBack) {
               // handleCallTheEdSessionAPI();
+              setDoctorJoinedChat!(false);
               props.navigation.dispatch(
                 StackActions.reset({
                   index: 0,
