@@ -1401,9 +1401,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
 
   //OT Error state
   const [sessionError, setSessionError] = React.useState<boolean>(null);
-  const [publisherError, setPublisherError] = React.useState<any>({
-    message: 'Error While connecting the call, Please contact support',
-  });
+  const [publisherError, setPublisherError] = React.useState<boolean>(null);
   const [subscriberError, setSubscriberError] = React.useState<boolean>(null);
 
   const toggelChatVideo = () => {
