@@ -1420,13 +1420,17 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     );
   };
 
-  const onPressReadArticle = () => {
+  const onPressReadArticle = async () => {
+    const deviceToken = (await AsyncStorage.getItem('jwt')) || '';
+    const currentDeviceToken = deviceToken ? JSON.parse(deviceToken) : '';
+    const covidUrlWithPrm = AppConfig.Configuration.COVID_LATEST_ARTICLES_URL
+      .concat('&utm_token=', currentDeviceToken, '&utm_mobile_number=', 
+      currentPatient && g(currentPatient, 'mobileNumber') 
+      ? currentPatient.mobileNumber : "");
+      
     postHomeWEGEvent(WebEngageEventName.LEARN_MORE_ABOUT_CORONAVIRUS);
     props.navigation.navigate(AppRoutes.CovidScan, {
-      covidUrl: AppConfig.Configuration.COVID_LATEST_ARTICLES_URL,
-      mobileNumber: currentPatient && g(currentPatient, 'mobileNumber') 
-      ? currentPatient.mobileNumber
-      : ""
+      covidUrl: covidUrlWithPrm 
     });
   };
 

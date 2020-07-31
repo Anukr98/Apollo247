@@ -28,9 +28,8 @@ export const CovidScan: React.FC<CovidScanProps> = (props) => {
     return (
       <WebView
         ref={(WEBVIEW_REF) => (WebViewRef = WEBVIEW_REF)}
-        onLoadStart={() => postMsgToWebView(WebViewRef)}
         onLoadEnd={() => setLoading!(false)}
-        source={{ uri: props.navigation.getParam('covidUrl') }}
+        source={{ uri: props.navigation.getParam('covidUrl')}}
         onNavigationStateChange={(data) => handleResponse(data, WebViewRef)}
         renderError={() => renderError(WebViewRef)}
       />
@@ -40,17 +39,6 @@ export const CovidScan: React.FC<CovidScanProps> = (props) => {
   const handleBack = async () => {
     props.navigation.goBack();
   };
-
-  const postMsgToWebView = async (WebViewRef:any) => {
-    const deviceToken = (await AsyncStorage.getItem('jwt')) || '';
-    const currentDeviceToken = deviceToken ? JSON.parse(deviceToken) : '';
-    const msg = {
-      event: 'PACovidPHR',
-      'mobileNumber': props.navigation.getParam('mobileNumber'),
-      'authToken': currentDeviceToken.deviceToken
-    }
-    WebViewRef && WebViewRef.postMessage(JSON.stringify(msg)) 
-  }
 
   const renderError = (WebViewRef:any) => {
     WebViewRef && WebViewRef.reload();
