@@ -190,6 +190,12 @@ export enum NotificationPriority {
   normal = 'normal',
 }
 
+type MedicineOrderRefundNotificationInput = {
+  refundAmount: number;
+  healthCreditsRefund: number;
+  healthCreditsRemaining: number;
+};
+
 type PushNotificationInput = {
   notificationType: NotificationType;
   appointmentId: string;
@@ -2964,6 +2970,27 @@ export async function medicineOrderCancelled(
     msgText = msgText.replace('{refund}', paymentInfo.amountPaid.toString());
     await sendNotificationSMS(orderDetails.patient.mobileNumber, msgText);
   }
+}
+
+export async function medicineOrderRefundNotification(
+  orderDetails: MedicineOrders,
+  medicineOrderRefundNotificationInput: MedicineOrderRefundNotificationInput
+) {
+  let notificationBody: string = '';
+  if(medicineOrderRefundNotificationInput.refundAmount > 0){
+    notificationBody = ApiConstants.ORDER_PARTIAL_REFUND_BODY;
+    notificationBody = notificationBody.replace('{name}', orderDetails.patient.firstName);
+    notificationBody = notificationBody.replace('{orderId}', orderDetails.orderAutoId.toString());
+    notificationBody = notificationBody.replace('{refundAmount}', medicineOrderRefundNotificationInput.refundAmount.toString()); 
+    await sendNotificationSMS(orderDetails.patient.mobileNumber, notificationBody);
+  }
+  if(medicineOrderRefundNotificationInput.healthCreditsRefund > 0){
+    notificationBody = ApiConstants.ORDER_HC_PARTIAL_REFUND_BODY;
+    notificationBody = notificationBody.replace('{healthCreditsRefund}',medicineOrderRefundNotificationInput.healthCreditsRefund.toString());
+    notificationBody = notificationBody.replace('{healthCreditsRemaining}',medicineOrderRefundNotificationInput.healthCreditsRemaining.toString());
+    await sendNotificationSMS(orderDetails.patient.mobileNumber, notificationBody);
+  }
+  return;
 }
 
 export const getNotificationsResolvers = {

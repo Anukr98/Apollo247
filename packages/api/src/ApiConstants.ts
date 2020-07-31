@@ -95,6 +95,13 @@ export enum ApiConstants {
   ORDER_CANCEL_BODY = 'Dear {name}, for order {orderId}, {reason}',
   ORDER_CANCEL_PREPAID_BODY = 'For Order {orderId} the refund amount of Rs {refund} will be transferred to the source a/c within 7-10 working days.',
 
+  ORDER_CANCEL_HC_REFUND_BODY = 'Health Credits worth Rs {healthCreditsRefund} will be added back to your personal health credits, your balance now stands at Rs {healthCreditsRemaining}.',
+  // medicine order partial refund
+  ORDER_PARTIAL_REFUND_BODY = '“Dear {name}, The total value of the items billed against the order {orderId} is lower! A refund of Rs {refundAmount} has been processed and will reflect in you’re A/C in 5-7 working days.”',
+
+  //medicine order partial refund health credits
+  ORDER_HC_PARTIAL_REFUND_BODY = 'Apollo Health Credits worth Rs {healthCreditsRefund} have been added back to your personal health credits, and your balance now stands at Rs {healthCreditsRemaining} in Health Credits.',
+
   //appointment cancellation
   CANCEL_APPT_TITLE = 'Your appointment has been cancelled',
   CANCEL_APPT_BODY = 'Hi {0}, we are really sorry. {1} will not be able to make it for this appointment. Any payment that you have made for this consultation would be refunded in 2-4 working days. We request you to please book appointment with any of our other Apollo certified Doctor',
