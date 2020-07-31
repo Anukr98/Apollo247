@@ -112,6 +112,7 @@ const savePharmacologistConsult: Resolver<
   subjectLine = subjectLine.replace('{0}', patientDetails.firstName);
   subjectLine = subjectLine.replace('{1}', date);
 
+  //cc is coming from input, retaining cc
   const emailContent: EmailMessage = {
     subject: subjectLine,
     fromEmail: <string>ApiConstants.PATIENT_HELP_FROM_EMAILID,
