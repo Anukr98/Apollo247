@@ -11,6 +11,10 @@ import {
   RescheduleAppointmentDetails,
   TRANSFER_INITIATED_TYPE,
   TRANSFER_STATUS,
+  Appointment,
+  STATUS,
+  REQUEST_ROLES,
+  AppointmentCallDetails,
 } from 'consults-service/entities';
 import { getConnection } from 'typeorm';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
@@ -103,7 +107,6 @@ export async function trackWebEngageEventForDoctorReschedules(
     rescheduleDetails.rescheduleStatus === TRANSFER_STATUS.INITIATED
   ) {
     const appointmentDetails = rescheduleDetails.appointment;
-
     //get doctor details
     const doctorsDb = getConnection('doctors-db');
     const doctorRepo = doctorsDb.getRepository(Doctor);
@@ -111,7 +114,6 @@ export async function trackWebEngageEventForDoctorReschedules(
       select: ['fullName'],
       where: { id: appointmentDetails.doctorId },
     });
-
     //get patient details
     const patientsDb = getConnection('patients-db');
     const patientRepo = patientsDb.getCustomRepository(PatientRepository);
@@ -119,7 +121,6 @@ export async function trackWebEngageEventForDoctorReschedules(
       appointmentDetails.patientId,
       []
     );
-
     const postBody: Partial<WebEngageInput> = {
       userId: patientDetails ? patientDetails.mobileNumber : '',
       eventName: ApiConstants.DOCTOR_INITATED_RESCHEDULE_EVENT_NAME.toString(),
@@ -130,8 +131,107 @@ export async function trackWebEngageEventForDoctorReschedules(
         doctorName: doctorDetails ? doctorDetails.fullName : '',
       },
     };
-    await postEvent(postBody);
+    return await postEvent(postBody);
   }
+}
+
+export async function trackWebEngageEventForDoctorCancellation(appointmentDetails: Appointment) {
+  if (
+    appointmentDetails.status === STATUS.CANCELLED &&
+    (appointmentDetails.cancelledBy === REQUEST_ROLES.DOCTOR ||
+      appointmentDetails.cancelledBy === REQUEST_ROLES.JUNIOR)
+  ) {
+    //get doctor details
+    const doctorsDb = getConnection('doctors-db');
+    const doctorRepo = doctorsDb.getRepository(Doctor);
+    const doctorDetails = await doctorRepo.findOne({
+      select: ['fullName'],
+      where: { id: appointmentDetails.doctorId },
+    });
+    //get patient details
+    const patientsDb = getConnection('patients-db');
+    const patientRepo = patientsDb.getCustomRepository(PatientRepository);
+    const patientDetails = await patientRepo.findByIdWithRelations(
+      appointmentDetails.patientId,
+      []
+    );
+    const eventName =
+      appointmentDetails.cancelledBy === REQUEST_ROLES.DOCTOR
+        ? ApiConstants.SD_CANCELLED_CONSULT_EVENT_NAME.toString()
+        : ApiConstants.JD_CANCELLED_CONSULT_EVENT_NAME.toString();
+    const postBody: Partial<WebEngageInput> = {
+      userId: patientDetails ? patientDetails.mobileNumber : '',
+      eventName: eventName,
+      eventData: {
+        consultID: appointmentDetails.id,
+        displayID: appointmentDetails.displayId.toString(),
+        consultMode: appointmentDetails.appointmentType.toString(),
+        doctorName: doctorDetails ? doctorDetails.fullName : '',
+      },
+    };
+    return await postEvent(postBody);
+  }
+}
+
+export enum APPT_CALL_TYPE {
+  AUDIO = 'AUDIO',
+  VIDEO = 'VIDEO',
+  CHAT = 'CHAT',
+}
+
+export enum DOCTOR_CALL_TYPE {
+  SENIOR = 'SENIOR',
+  JUNIOR = 'JUNIOR',
+}
+
+export async function trackWebEngageEventForDoctorCallInitiation(
+  appointmentCallData: AppointmentCallDetails
+) {
+  const juniorDoctorType = DOCTOR_CALL_TYPE.JUNIOR.toString();
+  const callType = appointmentCallData.callType;
+  if (
+    appointmentCallData.doctorType == juniorDoctorType ||
+    callType == APPT_CALL_TYPE.CHAT.toString()
+  )
+    return '';
+
+  const appointmentDetails = appointmentCallData.appointment;
+
+  //get doctor details
+  const doctorsDb = getConnection('doctors-db');
+  const doctorRepo = doctorsDb.getRepository(Doctor);
+  const doctorDetails = await doctorRepo.findOne({
+    select: ['fullName'],
+    where: { id: appointmentDetails.doctorId },
+  });
+
+  //get patient details
+  const patientsDb = getConnection('patients-db');
+  const patientRepo = patientsDb.getCustomRepository(PatientRepository);
+  const patientDetails = await patientRepo.findByIdWithRelations(appointmentDetails.patientId, []);
+
+  let eventName = '';
+  switch (callType) {
+    case APPT_CALL_TYPE.AUDIO.toString():
+      eventName = ApiConstants.DOCTOR_INITIATED_AUDIO_CALL_EVENT_NAME.toString();
+      break;
+    case APPT_CALL_TYPE.VIDEO.toString():
+      eventName = ApiConstants.DOCTOR_INITIATED_VIDEO_CALL_EVENT_NAME.toString();
+      break;
+  }
+
+  const postBody: Partial<WebEngageInput> = {
+    userId: patientDetails ? patientDetails.mobileNumber : '',
+    eventName: eventName,
+    eventData: {
+      consultID: appointmentDetails.id,
+      displayID: appointmentDetails.displayId.toString(),
+      consultMode: appointmentDetails.appointmentType.toString(),
+      doctorName: doctorDetails ? doctorDetails.fullName : '',
+    },
+  };
+
+  return await postEvent(postBody);
 }
 
 export const webEngageResolvers = {

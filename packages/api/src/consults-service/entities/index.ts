@@ -20,7 +20,11 @@ import { DoctorType, ROUTE_OF_ADMINISTRATION } from 'doctors-service/entities';
 import { MobileNumberValidator } from 'validators/entityValidators';
 import { delCache } from 'consults-service/database/connectRedis';
 import { log } from 'customWinstonLogger';
-import { trackWebEngageEventForDoctorReschedules } from 'notifications-service/resolvers/webEngageAPI';
+import {
+  trackWebEngageEventForDoctorReschedules,
+  trackWebEngageEventForDoctorCancellation,
+  trackWebEngageEventForDoctorCallInitiation,
+} from 'notifications-service/resolvers/webEngageAPI';
 
 export enum APPOINTMENT_UPDATED_BY {
   DOCTOR = 'DOCTOR',
@@ -395,6 +399,11 @@ export class Appointment extends BaseEntity {
   async dropAppointmentCache() {
     await delCache(`patient:appointment:${this.id}`);
   }
+
+  @AfterUpdate()
+  async trackWebEngageEventForCancellation() {
+    trackWebEngageEventForDoctorCancellation(this);
+  }
 }
 
 //Appointment ends
@@ -665,6 +674,11 @@ export class AppointmentCallDetails extends BaseEntity {
   @BeforeUpdate()
   updateDateUpdate() {
     this.updatedDate = new Date();
+  }
+
+  @AfterInsert()
+  trackWebEngageEventForCallInitiation() {
+    trackWebEngageEventForDoctorCallInitiation(this);
   }
 }
 
