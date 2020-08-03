@@ -1535,10 +1535,7 @@ export class MedicalRecords extends BaseEntity {
   @Column({ nullable: true, type: 'text' })
   observations: string;
 
-  @ManyToOne(
-    (type) => Patient,
-    (patient) => patient.medicalRecords
-  )
+  @ManyToOne((type) => Patient, (patient) => patient.medicalRecords)
   patient: Patient;
 
   @Column()
@@ -1583,10 +1580,7 @@ export class MedicalRecordParameters extends BaseEntity {
   @Column('decimal', { precision: 5, scale: 2 })
   maximum: number;
 
-  @ManyToOne(
-    (type) => MedicalRecords,
-    (medicalRecords) => medicalRecords.medicalRecordParameters
-  )
+  @ManyToOne((type) => MedicalRecords, (medicalRecords) => medicalRecords.medicalRecordParameters)
   medicalRecords: MedicalRecords;
 
   @Column('decimal', { precision: 5, scale: 2 })
@@ -2287,10 +2281,7 @@ export class DiagnosticOrgans extends BaseEntity {
   @Column({ default: true })
   isActive: Boolean;
 
-  @ManyToOne(
-    (type) => Diagnostics,
-    (diagnostics) => diagnostics.diagnosticOrgans
-  )
+  @ManyToOne((type) => Diagnostics, (diagnostics) => diagnostics.diagnosticOrgans)
   diagnostics: Diagnostics;
 }
 
@@ -2317,10 +2308,7 @@ export class DiagnosticHotSellers extends BaseEntity {
   @Column()
   itemId: number;
 
-  @ManyToOne(
-    (type) => Diagnostics,
-    (diagnostics) => diagnostics.diagnosticHotSellers
-  )
+  @ManyToOne((type) => Diagnostics, (diagnostics) => diagnostics.diagnosticHotSellers)
   diagnostics: Diagnostics;
 }
 
@@ -2355,10 +2343,7 @@ export class DiagnosticPincodeHubs extends BaseEntity {
 
 @Entity()
 export class PatientFeedback extends BaseEntity {
-  @ManyToOne(
-    (type) => Patient,
-    (patient) => patient.id
-  )
+  @ManyToOne((type) => Patient, (patient) => patient.id)
   patient: Patient;
 
   @PrimaryGeneratedColumn('uuid')
@@ -2401,10 +2386,7 @@ export class PatientFeedback extends BaseEntity {
 
 @Entity()
 export class PatientHelpTickets extends BaseEntity {
-  @ManyToOne(
-    (type) => Patient,
-    (patient) => patient.id
-  )
+  @ManyToOne((type) => Patient, (patient) => patient.id)
   patient: Patient;
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
@@ -2525,10 +2507,7 @@ export class ReferalCouponMapping extends BaseEntity {
   )
   referralCodesMaster: ReferralCodesMaster;
 
-  @ManyToOne(
-    (type) => Coupon,
-    (coupon) => coupon.referalCouponMapping
-  )
+  @ManyToOne((type) => Coupon, (coupon) => coupon.referalCouponMapping)
   coupon: Coupon;
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
@@ -2645,9 +2624,6 @@ export class PharmacologistConsult extends BaseEntity {
   @Column({ nullable: true })
   queries: string;
 
-  @ManyToOne(
-    (type) => Patient,
-    (patient) => patient.pharmacologistConsult
-  )
+  @ManyToOne((type) => Patient, (patient) => patient.pharmacologistConsult)
   patient: Patient;
 }

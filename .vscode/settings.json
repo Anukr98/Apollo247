@@ -7,6 +7,5 @@
   "eslint.alwaysShowStatus": true,
   "eslint.validate": ["javascript", "javascriptreact", "typescript", "typescriptreact"],
   "typescript.tsdk": "./node_modules/typescript/lib",
-  "typescript.preferences.importModuleSpecifier": "non-relative",
-  "editor.defaultFormatter": "esbenp.prettier-vscode"
+  "typescript.preferences.importModuleSpecifier": "non-relative"
 }
