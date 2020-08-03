@@ -1,25 +1,56 @@
 import Axios, { AxiosResponse, Canceler } from 'axios';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import {
+  getTagalysConfig,
+  tagalysResponseFormatter,
+} from '@aph/mobile-patients/src/helpers/Tagalys';
 
 export interface MedicineProduct {
+  category_id?: string;
   description: string;
   id: number;
-  category_id: string;
-  image: string[];
+  image: string;
   is_in_stock: 0 | 1;
-  is_prescription_required: '0' | '1'; //1 for required
+  is_prescription_required: 0 | 1 | '0' | '1';
+  MaxOrderQty: number;
+  mou: string; // minimum order unit
   name: string;
   price: number;
-  special_price: number | string;
   sku: string;
-  small_image?: string | null;
-  status: number;
-  thumbnail: string | null;
+  small_image: string;
+  special_price?: string | number;
+  status: string | number;
+  thumbnail: string;
   type_id: 'FMCG' | 'Pharma' | 'PL';
-  mou: string; // minimum order unit
+  url_key: string;
+}
+
+export interface MedicineProductDetails extends Omit<MedicineProduct, 'image'> {
+  image: string[];
   manufacturer: string;
-  PharmaOverview: PharmaOverview[];
-  MaxOrderQty: number;
+  PharmaOverview: PharmaOverview;
+}
+
+export interface TagalysProduct {
+  __id: string;
+  __magento_avg_rating_id_1: number;
+  __magento_avg_rating_id_2: number;
+  __magento_avg_rating_id_3: number;
+  __magento_ratings_count: number;
+  __magento_type: string;
+  __new: boolean;
+  discount_amount: number;
+  discount_percentage: number;
+  image_url: string;
+  in_stock: boolean;
+  introduced_at: string;
+  is_prescription_required: boolean;
+  link: string;
+  name: string;
+  price: number;
+  sale_price: number;
+  sell_online: string[];
+  sku: string;
 }
 
 export type Doseform = 'TABLET' | 'INJECTION' | 'SYRUP' | '';
@@ -36,10 +67,6 @@ interface PharmaOverview {
         CaptionDesc: string;
       }[]
     | string;
-}
-
-export interface MedicineProductDetails extends MedicineProduct {
-  PharmaOverview: PharmaOverview[];
 }
 
 export interface MedicineProductDetailsResponse {
@@ -311,26 +338,39 @@ export const getMedicineDetailsApi = (
 
 let cancelSearchMedicineApi: Canceler | undefined;
 
-export const searchMedicineApi = (
-  searchText: string
+export const searchMedicineApi = async (
+  searchText: string,
+  userId: string,
+  recordsPerPage: number = 10,
+  pageIndex: number = 1
 ): Promise<AxiosResponse<MedicineProductsResponse>> => {
   const CancelToken = Axios.CancelToken;
   cancelSearchMedicineApi && cancelSearchMedicineApi();
 
-  return Axios.post(
-    `${config.MED_SEARCH[0]}/popcsrchprd_api.php`,
-    { params: searchText },
-    {
-      headers: {
-        Authorization: config.MED_SEARCH[1],
-        'Content-Type': 'application/json',
-      },
-      cancelToken: new CancelToken((c) => {
-        // An executor function receives a cancel function as a parameter
-        cancelSearchMedicineApi = c;
-      }),
-    }
-  );
+  return Axios({
+    url: config.MED_SEARCH[0],
+    method: 'POST',
+    data: {
+      ...getTagalysConfig(userId),
+      q: searchText,
+      request: ['details'],
+      per_page: recordsPerPage,
+      page: pageIndex,
+    },
+    cancelToken: new CancelToken((c) => {
+      // An executor function receives a cancel function as a parameter
+      cancelSearchMedicineApi = c;
+    }),
+    transformResponse: (data: any) => {
+      const _data = JSON.parse(data);
+      const products = (_data.details || []) as TagalysProduct[];
+      return {
+        ..._data,
+        product_count: _data.total,
+        products: products.map(tagalysResponseFormatter),
+      };
+    },
+  });
 };
 
 export const searchPickupStoresApi = async (
@@ -418,35 +458,37 @@ export const medCartItemsDetailsApi = (
   );
 };
 
-// export const getPopularProductsBasedOnCityApi = (
-//   city: CityOptions
-// ): Promise<AxiosResponse<any>> => {
-//   return Axios.get(`${config.SHOP_BY_CITY[0]}/popularinyourcityapi.php?plc=${city}`);
-// };
-
 let cancelSearchSuggestionsApi: Canceler | undefined;
 
 export const getMedicineSearchSuggestionsApi = (
-  params: string
+  searchText: string,
+  userId: string
 ): Promise<AxiosResponse<MedicineProductsResponse>> => {
   const CancelToken = Axios.CancelToken;
   cancelSearchSuggestionsApi && cancelSearchSuggestionsApi();
 
-  return Axios.post(
-    `${config.MED_SEARCH_SUGGESTION[0]}/popcsrchss_api.php`,
-    {
-      params: params,
+  return Axios({
+    url: config.MED_SEARCH_SUGGESTION[0],
+    method: 'POST',
+    data: {
+      ...getTagalysConfig(userId),
+      q: searchText,
+      products: 10,
     },
-    {
-      headers: {
-        Authorization: config.MED_SEARCH_SUGGESTION[1],
-      },
-      cancelToken: new CancelToken((c) => {
-        // An executor function receives a cancel function as a parameter
-        cancelSearchSuggestionsApi = c;
-      }),
-    }
-  );
+    cancelToken: new CancelToken((c) => {
+      // An executor function receives a cancel function as a parameter
+      cancelSearchSuggestionsApi = c;
+    }),
+    transformResponse: (data: any) => {
+      const _data = JSON.parse(data);
+      const products = (_data.products || []) as TagalysProduct[];
+      return {
+        ..._data,
+        product_count: products.length,
+        products: products.map(tagalysResponseFormatter),
+      };
+    },
+  });
 };
 
 export const getProductsByCategoryApi = (

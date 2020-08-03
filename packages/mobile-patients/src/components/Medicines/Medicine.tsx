@@ -1548,9 +1548,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         return;
       }
       setsearchSate('load');
-      getMedicineSearchSuggestionsApi(_searchText)
+      getMedicineSearchSuggestionsApi(_searchText, g(currentPatient, 'id') || null)
         .then(({ data }) => {
-          // aphConsole.log({ data });
           const products = data.products || [];
           setMedicineList(products);
           setsearchSate('success');
@@ -1563,7 +1562,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         })
         .catch((e) => {
           CommonBugFender('Medicine_onSearchMedicine', e);
-          // aphConsole.log({ e });
           if (!Axios.isCancel(e)) {
             setsearchSate('fail');
           }

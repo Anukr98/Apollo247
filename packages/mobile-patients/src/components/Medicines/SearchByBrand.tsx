@@ -332,7 +332,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
         onPress={() => {
           props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
             sku: item.sku,
-            movedFrom: 'search'
+            movedFrom: 'search',
           });
           resetSearchState();
         }}
@@ -889,9 +889,8 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
       }
 
       setsearchSate('load');
-      getMedicineSearchSuggestionsApi(_searchText)
+      getMedicineSearchSuggestionsApi(_searchText, g(currentPatient, 'id') || null)
         .then(({ data }) => {
-          // aphConsole.log({ data });
           const products = data.products || [];
           setMedicineList(products);
           setsearchSate('success');
@@ -904,7 +903,6 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
         })
         .catch((e) => {
           CommonBugFender('SearchByBrand_onSearchMedicine', e);
-          // aphConsole.log({ e });
           if (!Axios.isCancel(e)) {
             setsearchSate('fail');
           }

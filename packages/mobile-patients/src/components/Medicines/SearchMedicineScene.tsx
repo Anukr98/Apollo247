@@ -253,9 +253,8 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         return;
       }
       setsearchSate('load');
-      getMedicineSearchSuggestionsApi(_searchText)
+      getMedicineSearchSuggestionsApi(_searchText, g(currentPatient, 'id') || null)
         .then(({ data }) => {
-          // aphConsole.log({ data });
           const products = data.products || [];
           setMedicineList(products);
           setsearchSate('success');
@@ -268,7 +267,6 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         })
         .catch((e) => {
           CommonBugFender('SearchByBrand_onSearchMedicine', e);
-          // aphConsole.log({ e });
           if (!Axios.isCancel(e)) {
             setsearchSate('fail');
           }
@@ -285,7 +283,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
       }
       setShowMatchingMedicines(true);
       setProductsIsLoading(true);
-      searchMedicineApi(_searchText)
+      searchMedicineApi(_searchText, g(currentPatient, 'id') || null)
         .then(async ({ data }) => {
           const products = data.products || [];
           setSearchHeading(data.search_heading!);

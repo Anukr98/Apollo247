@@ -1,6 +1,7 @@
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { ChennaiDeliveryPinCodes } from '@aph/mobile-patients/src/strings/ChennaiDeliveryPinCodes';
 import { PharmaStateCodeMapping } from '@aph/mobile-patients/src/strings/PharmaStateCodeMapping';
+import DeviceInfo from 'react-native-device-info';
 
 export type PharmacyHomepageInfo = {
   section_key: string;
@@ -28,6 +29,7 @@ const pharmaTokencTf = 'cTfznn4yhybBR7WSrNJn1g==';
 const pharmaTokendp5 = 'Bearer dp50h14gpxtqf8gi1ggnctqcrr0io6ms';
 const apolloProdBaseUrl = 'https://magento.apollo247.com';
 const apolloUatBaseUrl = 'https://uat.apollopharmacy.in';
+const tagalysBaseUrl = 'https://api-r1.tagalys.com/v1';
 const testApiCredentialsDev = {
   UserName: 'ASKAPOLLO',
   Password: '3HAQbAb9wrsykr8TMLnV',
@@ -40,6 +42,8 @@ const testApiCredentialsProd = {
 };
 
 const appStaticVariables = {
+  iOS_Version: DeviceInfo.getVersion(),
+  Android_Version: DeviceInfo.getVersion(),
   DIAGNOSTIC_SLOTS_LEAD_TIME_IN_MINUTES: 60, // slots visible after this period for current date
   DIAGNOSTIC_SLOTS_MAX_FORWARD_DAYS: 2, // slots can be booked upto this period
   DIAGNOSTIC_MAX_SLOT_TIME: '12:00', // 24 hours format
@@ -242,9 +246,9 @@ export const updateAppConfig = (key: keyof typeof Configuration, value: object) 
 
 const PharmaApiConfig = {
   dev: {
-    MED_SEARCH: [apolloUatBaseUrl, pharmaToken201], //later cahnge to UAT
+    MED_SEARCH: [`${tagalysBaseUrl}/search`],
     MED_DETAIL: [apolloUatBaseUrl, pharmaToken201], // change to PROD
-    MED_SEARCH_SUGGESTION: [apolloUatBaseUrl, pharmaToken201], // change to PROD
+    MED_SEARCH_SUGGESTION: [`${tagalysBaseUrl}/ss`],
     STORES_LIST: [apolloUatBaseUrl, pharmaToken201],
     GET_STORE_INVENTORY: [
       `https://online.apollopharmacy.org/TAT/Apollo/GetStoreInventory`,
@@ -252,7 +256,6 @@ const PharmaApiConfig = {
     ],
     PIN_SERVICEABILITY: [apolloProdBaseUrl, pharmaToken201],
     MED_CART_ITEMS_DETAILS: [`${apolloUatBaseUrl}/popcscrchcart_api.php`, pharmaToken201],
-    SHOP_BY_CITY: [apolloUatBaseUrl],
     IMAGES_BASE_URL: [`https://uat.apollopharmacy.in/pub/media`],
     GET_DELIVERY_TIME: [
       'http://online.apollopharmacy.org:8085/IEngine/webresources/Inventory/getDeliveryTimePartial',
@@ -280,9 +283,9 @@ const PharmaApiConfig = {
     ],
   },
   prod: {
-    MED_SEARCH: [apolloProdBaseUrl, pharmaToken201],
+    MED_SEARCH: [`${tagalysBaseUrl}/search`],
     MED_DETAIL: [apolloProdBaseUrl, pharmaToken201],
-    MED_SEARCH_SUGGESTION: [apolloProdBaseUrl, pharmaToken201],
+    MED_SEARCH_SUGGESTION: [`${tagalysBaseUrl}/ss`],
     STORES_LIST: [apolloProdBaseUrl, pharmaToken201],
     GET_STORE_INVENTORY: [
       `https://online.apollopharmacy.org/TAT/Apollo/GetStoreInventory`,
@@ -290,7 +293,6 @@ const PharmaApiConfig = {
     ],
     PIN_SERVICEABILITY: [apolloProdBaseUrl, pharmaToken201],
     MED_CART_ITEMS_DETAILS: [`${apolloProdBaseUrl}/popcscrchcart_api.php`, pharmaToken201],
-    SHOP_BY_CITY: [apolloProdBaseUrl],
     IMAGES_BASE_URL: [`https://d27zlipt1pllog.cloudfront.net/pub/media`],
     GET_DELIVERY_TIME: [
       'http://online.apollopharmacy.org:8085/IEngine/webresources/Inventory/getDeliveryTimePartial',
@@ -320,6 +322,8 @@ const PharmaApiConfig = {
 
 //Development;
 const ConfigurationDev = {
+  TAGALYS_API_KEY: '050343bfa6dae87212fd64ee7809c2c8',
+  TAGALYS_CLIENT_CODE: 'A029C7273776C78A',
   CODE_PUSH_DEPLOYMENT_KEY_ANDROID: 'ztcR3MB6vWyWtIAzpnsOczanc57pCQeMAIhUS',
   CODE_PUSH_DEPLOYMENT_KEY_IOS: 't1yzL4Cj0zDKiAUuKVZt_zIYuwHrleGaNVihE',
   PAYMENT_GATEWAY_BASE_URL: 'https://aph.dev.pmt.popcornapps.com',
@@ -346,8 +350,6 @@ const ConfigurationDev = {
   TOP_SPECIALITIES: DEV_top6_specailties,
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
-  iOS_Version: '2.631',
-  Android_Version: '2.631',
   CONDITIONAL_MANAGENET_BASE_URL: 'https://aph.staging.pmt.popcornapps.com',
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e', //7839e425f4acbd8e6ff3f907281addca <-- popcornapps key
   COVID_RISK_LEVEL_URL:
@@ -360,6 +362,8 @@ const ConfigurationDev = {
 
 // QA
 const ConfigurationQA = {
+  TAGALYS_API_KEY: '050343bfa6dae87212fd64ee7809c2c8',
+  TAGALYS_CLIENT_CODE: 'A029C7273776C78A',
   CODE_PUSH_DEPLOYMENT_KEY_ANDROID: '8njVNeiezjGyi0BjIuIWOWm_N3zo2uVb5Z5_B',
   CODE_PUSH_DEPLOYMENT_KEY_IOS: 'IwojMQex0fbTUlvY1ydYzMT5l7hrLrbLy0ciH',
   PAYMENT_GATEWAY_BASE_URL: 'https://aph.staging.pmt.popcornapps.com',
@@ -386,8 +390,6 @@ const ConfigurationQA = {
   TOP_SPECIALITIES: QA_top6_specailties,
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
-  iOS_Version: '2.631',
-  Android_Version: '2.631',
   CONDITIONAL_MANAGENET_BASE_URL: 'https://aph.staging.pmt.popcornapps.com',
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e',
   COVID_RISK_LEVEL_URL:
@@ -400,6 +402,8 @@ const ConfigurationQA = {
 
 // QA2
 const ConfigurationQA2 = {
+  TAGALYS_API_KEY: '050343bfa6dae87212fd64ee7809c2c8',
+  TAGALYS_CLIENT_CODE: 'A029C7273776C78A',
   CODE_PUSH_DEPLOYMENT_KEY_ANDROID: 'kq-NXsLvHNu_EYzKBlZOuk2vbQKepRdBSndmo',
   CODE_PUSH_DEPLOYMENT_KEY_IOS: 'h6JJUbQWK4JEItmav-kH852x-3pneo4vcZNkg',
   PAYMENT_GATEWAY_BASE_URL: 'https://qapmt.apollo247.com',
@@ -426,8 +430,6 @@ const ConfigurationQA2 = {
   TOP_SPECIALITIES: QA_top6_specailties,
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
-  iOS_Version: '2.631',
-  Android_Version: '2.631',
   CONDITIONAL_MANAGENET_BASE_URL: 'https://aph.staging.pmt.popcornapps.com',
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e',
   COVID_RISK_LEVEL_URL: 'https://qapatients.apollo247.com/covid19/cough-scan?utm_source=mobile_app',
@@ -439,6 +441,8 @@ const ConfigurationQA2 = {
 
 // staging
 const ConfigurationStaging = {
+  TAGALYS_API_KEY: '050343bfa6dae87212fd64ee7809c2c8',
+  TAGALYS_CLIENT_CODE: 'A029C7273776C78A',
   CODE_PUSH_DEPLOYMENT_KEY_ANDROID: '8njVNeiezjGyi0BjIuIWOWm_N3zo2uVb5Z5_B',
   CODE_PUSH_DEPLOYMENT_KEY_IOS: 'IwojMQex0fbTUlvY1ydYzMT5l7hrLrbLy0ciH',
   PAYMENT_GATEWAY_BASE_URL: 'https://stagingpmt.apollo247.com',
@@ -465,8 +469,6 @@ const ConfigurationStaging = {
   TOP_SPECIALITIES: QA_top6_specailties,
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
-  iOS_Version: '2.613',
-  Android_Version: '2.613',
   CONDITIONAL_MANAGENET_BASE_URL: 'https://stagingpmt.apollo247.com',
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e',
   COVID_RISK_LEVEL_URL: 'https://staging.patients.apollo247.com/covid19/scan?utm_source=mobile_app',
@@ -476,6 +478,8 @@ const ConfigurationStaging = {
 };
 //Production
 const ConfigurationProd = {
+  TAGALYS_API_KEY: 'e961d4cd04dbd2f095d2f4bc76fcea06',
+  TAGALYS_CLIENT_CODE: '93D966E474D9A823',
   CODE_PUSH_DEPLOYMENT_KEY_ANDROID: 'ncBcxm590r0jEGT4BjQFTAW0_rkHKvF5xYUDX',
   CODE_PUSH_DEPLOYMENT_KEY_IOS: 'N9LT5oUoB9DUv394XXz05Tywn3LKgHsugfl3i',
   PAYMENT_GATEWAY_BASE_URL: 'https://pmt.apollo247.com', //PRODUCTION
@@ -502,8 +506,6 @@ const ConfigurationProd = {
   TOP_SPECIALITIES: top6_specailties,
   ...PharmaApiConfig.prod,
   ...appStaticVariables,
-  iOS_Version: '2.63',
-  Android_Version: '2.63',
   CONDITIONAL_MANAGENET_BASE_URL: 'https://pmt.apollo247.com',
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e',
   COVID_RISK_LEVEL_URL: 'https://www.apollo247.com/covid19/cough-scan?utm_source=mobile_app',
@@ -515,6 +517,8 @@ const ConfigurationProd = {
 
 //PERFORMANCE
 const ConfigurationPERFORM = {
+  TAGALYS_API_KEY: '050343bfa6dae87212fd64ee7809c2c8',
+  TAGALYS_CLIENT_CODE: 'A029C7273776C78A',
   CODE_PUSH_DEPLOYMENT_KEY_ANDROID: '',
   CODE_PUSH_DEPLOYMENT_KEY_IOS: '',
   PAYMENT_GATEWAY_BASE_URL: 'https://aspmt.apollo247.com',
@@ -541,8 +545,6 @@ const ConfigurationPERFORM = {
   TOP_SPECIALITIES: DEV_top6_specailties,
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
-  iOS_Version: '1.7',
-  Android_Version: '1.83',
   CONDITIONAL_MANAGENET_BASE_URL: 'https://aph.dev.pmt.popcornapps.com',
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e', //7839e425f4acbd8e6ff3f907281addca <-- popcornapps key
   COVID_RISK_LEVEL_URL:
@@ -555,6 +557,8 @@ const ConfigurationPERFORM = {
 
 //VAPT
 const ConfigurationVAPT = {
+  TAGALYS_API_KEY: '050343bfa6dae87212fd64ee7809c2c8',
+  TAGALYS_CLIENT_CODE: 'A029C7273776C78A',
   CODE_PUSH_DEPLOYMENT_KEY_ANDROID: '',
   CODE_PUSH_DEPLOYMENT_KEY_IOS: '',
   PAYMENT_GATEWAY_BASE_URL: 'http://aph.vapt.pmt.popcornapps.com',
@@ -581,8 +585,6 @@ const ConfigurationVAPT = {
   TOP_SPECIALITIES: DEV_top6_specailties,
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
-  iOS_Version: '2.112',
-  Android_Version: '2.112',
   CONDITIONAL_MANAGENET_BASE_URL: 'http://aph.vapt.pmt.popcornapps.com',
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e', //7839e425f4acbd8e6ff3f907281addca <-- popcornapps key
   COVID_RISK_LEVEL_URL:
@@ -595,6 +597,8 @@ const ConfigurationVAPT = {
 
 //DevelopmentReplica
 const ConfigurationDevReplica = {
+  TAGALYS_API_KEY: '050343bfa6dae87212fd64ee7809c2c8',
+  TAGALYS_CLIENT_CODE: 'A029C7273776C78A',
   CODE_PUSH_DEPLOYMENT_KEY_ANDROID: '',
   CODE_PUSH_DEPLOYMENT_KEY_IOS: '',
   PAYMENT_GATEWAY_BASE_URL: 'https://devpmt.apollo247.com',
@@ -621,8 +625,6 @@ const ConfigurationDevReplica = {
   TOP_SPECIALITIES: QA_top6_specailties,
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
-  iOS_Version: '1.811',
-  Android_Version: '1.913',
   CONDITIONAL_MANAGENET_BASE_URL: 'https://aph.staging.pmt.popcornapps.com',
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e', //7839e425f4acbd8e6ff3f907281addca <-- popcornapps key
   COVID_RISK_LEVEL_URL:
