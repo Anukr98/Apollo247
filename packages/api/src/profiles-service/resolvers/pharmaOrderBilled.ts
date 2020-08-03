@@ -1,4 +1,5 @@
 import gql from 'graphql-tag';
+import { Decimal } from 'decimal.js';
 import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
 import { MedicineOrdersRepository } from 'profiles-service/repositories/MedicineOrdersRepository';
 import {
@@ -20,13 +21,7 @@ import {
   NotificationType,
   sendMedicineOrderStatusNotification,
 } from 'notifications-service/resolvers/notifications';
-import { CurrentAvailStatusRepository } from 'consults-service/repositories/sdDashboardSummaryRepository';
-import { MedicineOrderRefundsRepository } from 'profiles-service/repositories/MedicineOrderRefundsRepository';
-import { Connection } from 'typeorm';
-import { initiateRefund } from 'profiles-service/helpers/refundHelper';
-import { REFUND_STATUS } from 'consults-service/entities';
-import { ONE_APOLLO_STORE_CODE } from 'types/oneApolloTypes';
-import { OneApollo } from 'helpers/oneApollo';
+import { calculateRefund } from 'profiles-service/helpers/refundHelper';
 
 export const saveOrderShipmentInvoiceTypeDefs = gql`
   input SaveOrderShipmentInvoiceInput {
@@ -251,7 +246,7 @@ const saveOrderShipmentInvoice: Resolver<
       (acc: number, curValue: Partial<MedicineOrderInvoice>) => {
         if (curValue.billDetails) {
           const invoiceValue: number = JSON.parse(curValue.billDetails).invoiceValue;
-          return acc + invoiceValue;
+          return +new Decimal(acc).plus(invoiceValue);
         }
         return acc;
       },
@@ -290,81 +285,6 @@ const saveOrderShipmentInvoice: Resolver<
     orderId: orderDetails.orderAutoId,
     apOrderNo: shipmentDetails.apOrderNo,
   };
-};
-
-const calculateRefund = async (
-  orderDetails: MedicineOrders,
-  totalOrderBilling: number,
-  profilesDb: Connection,
-  medOrderRepo: MedicineOrdersRepository
-) => {
-  const paymentInfo = await medOrderRepo.getRefundsAndPaymentsByOrderId(orderDetails);
-  if (!paymentInfo) {
-    throw new AphError(AphErrorMessages.PAYMENT_INFO_NOT_FOUND, undefined, {});
-  }
-  let healthCreditsToRefund = 0;
-  const {
-    amountPaid,
-    healthCreditsRedeemed,
-    paymentRefId: txnId,
-    healthCreditsRedemptionRequest,
-  } = paymentInfo as MedicineOrderPayments;
-  if (
-    paymentInfo.medicineOrderRefunds.status != REFUND_STATUS.REFUND_REQUEST_NOT_RAISED &&
-    paymentInfo.medicineOrderRefunds.status != REFUND_STATUS.REFUND_FAILED
-  ) {
-    const totalRefundAmount = paymentInfo.totalRefundAmount;
-    let refundAmount = 0;
-
-    const totalBillNRefund = totalOrderBilling + totalRefundAmount;
-    if (amountPaid - totalBillNRefund > 1) {
-      refundAmount = amountPaid - totalBillNRefund;
-    } else if (totalBillNRefund - amountPaid) {
-      const totalPaid = amountPaid + healthCreditsRedeemed;
-      healthCreditsToRefund = totalPaid - totalBillNRefund;
-    }
-    if (refundAmount) {
-      await initiateRefund(
-        {
-          refundAmount,
-          txnId,
-          medicineOrderPayments: paymentInfo.medicineOrderPayments,
-          medicineOrders: orderDetails,
-          orderId: '' + orderDetails.orderAutoId,
-        },
-        profilesDb
-      );
-    }
-  }
-
-  if (healthCreditsToRefund) {
-    if (healthCreditsRedemptionRequest && healthCreditsRedemptionRequest.RequestNumber) {
-      let storeCode: ONE_APOLLO_STORE_CODE = ONE_APOLLO_STORE_CODE.WEBCUS;
-      if (orderDetails.deviceType) {
-        storeCode = ONE_APOLLO_STORE_CODE.IOSCUS;
-      }
-      if (orderDetails.deviceType) {
-        storeCode = ONE_APOLLO_STORE_CODE.ANDCUS;
-      }
-      const oneApollo = new OneApollo();
-      await oneApollo.unblockHealthCredits({
-        MobileNumber: orderDetails.patient.mobileNumber.slice(3),
-        PointsToRelease: healthCreditsToRefund.toString(),
-        StoreCode: storeCode,
-        BusinessUnit: process.env.ONEAPOLLO_BUSINESS_UNIT || '',
-        RedemptionRequestNumber: healthCreditsRedemptionRequest.RequestNumber.toString(),
-      });
-    } else {
-      log(
-        'profileServiceLogger',
-        `HEALTH_CREDITS_REDEMPTION_REQUEST_NOT_FOUND}`,
-        `HEALTH CREDITS REFUND FAILED - ${orderDetails.orderAutoId}`,
-        JSON.stringify(paymentInfo),
-        'true'
-      );
-      throw new AphError(AphErrorMessages.HEALTH_CREDITS_REQUEST_NOT_FOUND, undefined, {});
-    }
-  }
 };
 
 export const saveOrderShipmentInvoiceResolvers = {

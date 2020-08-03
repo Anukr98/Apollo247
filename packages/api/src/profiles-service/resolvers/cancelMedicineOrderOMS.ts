@@ -16,6 +16,7 @@ import { log } from 'customWinstonLogger';
 import { Connection } from 'typeorm';
 import {} from 'coupons-service/resolvers/validatePharmaCoupon';
 import { medicineOrderCancelled } from 'notifications-service/resolvers/notifications';
+import { calculateRefund } from 'profiles-service/helpers/refundHelper';
 
 export const medicineOrderCancelOMSTypeDefs = gql`
   input MedicineOrderCancelOMSInput {
@@ -136,12 +137,12 @@ const cancelMedicineOrderOMS: Resolver<
     const orderResp: PharmaCancelResult = JSON.parse(textRes);
 
     if (orderResp.Status) {
-      await updateOrderCancelled(profilesDb, orderDetails, medicineOrderCancelOMSInput);
+      updateOrderCancelled(profilesDb, orderDetails, medicineOrderCancelOMSInput);
     } else {
       throw new AphError(AphErrorMessages.SOMETHING_WENT_WRONG, undefined, orderResp);
     }
   } else {
-    await updateOrderCancelled(profilesDb, orderDetails, medicineOrderCancelOMSInput);
+    updateOrderCancelled(profilesDb, orderDetails, medicineOrderCancelOMSInput);
   }
   medicineOrderCancelled(orderDetails, medicineOrderCancelOMSInput.cancelReasonCode, profilesDb);
 
@@ -162,16 +163,14 @@ const updateOrderCancelled = async (
     statusMessage: medicineOrderCancelOMSInput.cancelReasonCode,
     customReason: medicineOrderCancelOMSInput.cancelReasonText,
   };
-  await medicineOrdersStatusRepo.saveMedicineOrderStatus(
-    orderStatusAttrs,
-    orderDetails.orderAutoId
-  );
-  await medicineOrdersRepo.updateMedicineOrderDetails(
+  medicineOrdersStatusRepo.saveMedicineOrderStatus(orderStatusAttrs, orderDetails.orderAutoId);
+  medicineOrdersRepo.updateMedicineOrderDetails(
     orderDetails.id,
     orderDetails.orderAutoId,
     new Date(),
     MEDICINE_ORDER_STATUS.CANCELLED
   );
+  calculateRefund(orderDetails, 0, profilesDb, medicineOrdersRepo);
 };
 
 export const medicineOrderCancelOMSResolvers = {

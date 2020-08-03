@@ -10,6 +10,7 @@ import {
   MedicineOrderShipments,
   MedicineOrderCancelReason,
   MedicineOrderAddress,
+  MEDICINE_ORDER_PAYMENT_TYPE,
 } from 'profiles-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
@@ -31,6 +32,14 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
     return MedicineOrderInvoice.find({
       select: ['billDetails', 'itemDetails'],
       where: { orderNo: orderId },
+    });
+  }
+
+  getInvoiceWithShipment(id: MedicineOrders['orderAutoId']) {
+    return MedicineOrderInvoice.find({
+      select: ['billDetails', 'itemDetails', 'medicineOrderShipments'],
+      relations: ['medicineOrderShipments'],
+      where: { orderNo: id },
     });
   }
 
@@ -56,22 +65,13 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
       .where('mo.orderAutoId = :orderAutoId', { orderAutoId })
       .getRawOne();
   }
-  getRefundsAndPaymentsByOrderId(id: MedicineOrderPayments['medicineOrders']) {
-    try {
-      return (
-        this.createQueryBuilder()
-          .select('medicineOrderPayments')
-          //.addSelect('SUM(medicineOrderRefunds."refundAmount")', 'totalRefundAmount')
-          .where('medicinePayments.medicineOrders = :id', { id })
-          .leftJoinAndSelect('medicineOrderPayments."medicineOrderRefunds"', 'medicineOrderRefunds')
-          .getRawOne()
-      );
-    } catch (getRefundError) {
-      console.log('Error------------------');
-      throw new AphError(AphErrorMessages.GET_REFUND_ERROR, undefined, {
-        getRefundError,
-      });
-    }
+  getRefundsAndPaymentsByOrderId(id: MedicineOrders['id']) {
+    const paymentType = MEDICINE_ORDER_PAYMENT_TYPE.CASHLESS;
+    return MedicineOrderPayments.createQueryBuilder('medicineOrderPayments')
+      .leftJoinAndSelect('medicineOrderPayments.medicineOrderRefunds', 'medicineOrderRefunds')
+      .where('medicineOrderPayments.medicineOrders = :id', { id })
+      .andWhere('medicineOrderPayments.paymentType = :paymentType', { paymentType })
+      .getOne();
   }
 
   saveMedicineOrderLineItem(lineItemAttrs: Partial<MedicineOrderLineItems>) {
