@@ -413,6 +413,7 @@ export enum ApiConstants {
   DOCTOR_IN_CHAT_WINDOW_EVENT_NAME = 'Doctor is in the consult room',
   DOCTOR_LEFT_CHAT_WINDOW_EVENT_NAME = 'Doctor left the consult room',
   DOCTOR_SENT_MESSAGE_EVENT_NAME = 'Doctor sent a message on chat post end Consult',
+  DOCTOR_INITATED_RESCHEDULE_EVENT_NAME = 'Doctor Rescheduled the consult',
 }
 
 export enum PATIENT_REPO_RELATIONS {

@@ -13,12 +13,14 @@ import {
   UpdateDateColumn,
   CreateDateColumn,
   AfterUpdate,
+  AfterInsert,
 } from 'typeorm';
 import { Validate, IsDate } from 'class-validator';
 import { DoctorType, ROUTE_OF_ADMINISTRATION } from 'doctors-service/entities';
 import { MobileNumberValidator } from 'validators/entityValidators';
 import { delCache } from 'consults-service/database/connectRedis';
 import { log } from 'customWinstonLogger';
+import { trackWebEngageEventForDoctorReschedules } from 'notifications-service/resolvers/webEngageAPI';
 
 export enum APPOINTMENT_UPDATED_BY {
   DOCTOR = 'DOCTOR',
@@ -394,6 +396,7 @@ export class Appointment extends BaseEntity {
     await delCache(`patient:appointment:${this.id}`);
   }
 }
+
 //Appointment ends
 
 //AppointmentDocuments starts
@@ -1088,6 +1091,11 @@ export class RescheduleAppointmentDetails extends BaseEntity {
   @BeforeInsert()
   updateDateCreation() {
     this.createdDate = new Date();
+  }
+
+  @AfterInsert()
+  async trackWebEngageEventForReschedules() {
+    trackWebEngageEventForDoctorReschedules(this);
   }
 
   @BeforeUpdate()
