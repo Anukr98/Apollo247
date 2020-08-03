@@ -47,7 +47,8 @@
       "point4": "Visit the doctor at Hospital/Clinic",
       "point5": "Receive prescriptions instantly",
       "point6": "Chat with the doctor for 7 days after your consult"
-    }
+    },
+    "chatDisabledHeader": "You can't send message to the doctor. Book appointment for consulting with {0} again."
   },
   "login": {
     "hello": "hello!",
@@ -299,6 +300,7 @@
     "order_medicine": "ORDER MEDICINES",
     "order_test": "ORDER TESTS",
     "book_follow_up": "BOOK FOLLOW-UP",
+    "add_note_to_notify_users": "Please note that health records uploaded here will not be automatically visible to the doctor, you would have to upload them in consult chatroom!",
     "tabs": [
       {
         "title": "Consults & Rx",

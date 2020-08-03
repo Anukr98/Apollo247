@@ -60,7 +60,7 @@ const saveOrderConfirmation: Resolver<
   OrderConfirmationResult
 > = async (parent, { orderConfirmationInput }, { profilesDb }) => {
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
-  const orderDetails = await medicineOrdersRepo.getMedicineOrderDetails(
+  const orderDetails = await medicineOrdersRepo.getMedicineOrder(
     orderConfirmationInput.ordersResult.orderNo
   );
   if (!orderDetails) {

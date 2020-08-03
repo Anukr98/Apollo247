@@ -2,6 +2,7 @@ import React from 'react';
 import { Theme } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
+import { BottomLinks } from 'components/BottomLinks';
 import { NavigationBottom } from 'components/NavigationBottom';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -62,6 +63,7 @@ export const ContactUs: React.FC = (props) => {
           </p>
         </div>
       </div>
+      <BottomLinks />
       <NavigationBottom />
     </div>
   );

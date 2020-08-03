@@ -1,11 +1,12 @@
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
-import { StyleProp, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
+import { StyleProp, Text, TouchableOpacity, View, ViewStyle, TextStyle } from 'react-native';
 
 export interface QuantityButtonProps {
   style?: StyleProp<ViewStyle>;
   text: '-' | '+';
   onPress: () => void;
+  textStyle?: StyleProp<TextStyle>;
 }
 
 export const QuantityButton: React.FC<QuantityButtonProps> = (props) => {
@@ -27,10 +28,13 @@ export const QuantityButton: React.FC<QuantityButtonProps> = (props) => {
         ]}
       >
         <Text
-          style={{
-            ...theme.viewStyles.text('SB', 14, '#fc9916', 1, 24, 0),
-            marginTop: -4,
-          }}
+          style={[
+            {
+              ...theme.viewStyles.text('SB', 14, '#fc9916', 1, 24, 0),
+              marginTop: -4,
+            },
+            props.textStyle,
+          ]}
         >
           {props.text}
         </Text>

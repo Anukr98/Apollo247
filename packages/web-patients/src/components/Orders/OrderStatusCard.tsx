@@ -1,6 +1,6 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef } from 'react';
 import { makeStyles } from '@material-ui/styles';
-import { Theme, CircularProgress, Typography, Link } from '@material-ui/core';
+import { Theme, CircularProgress } from '@material-ui/core';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails as OrderDetails,
@@ -9,9 +9,9 @@ import {
 import moment from 'moment';
 import { OrderFeedback } from './OrderFeedback';
 import { MEDICINE_ORDER_STATUS } from 'graphql/types/globalTypes';
-import { AphButton, AphDialog, AphDialogClose, AphDialogTitle } from '@aph/web-ui-components';
+import { AphButton } from '@aph/web-ui-components';
 import Popover from '@material-ui/core/Popover';
-import { useShoppingCart } from 'components/MedicinesCartProvider';
+import { useShoppingCart, MedicineCartItem } from 'components/MedicinesCartProvider';
 import {
   GetPatientAddressList,
   GetPatientAddressListVariables,
@@ -19,6 +19,7 @@ import {
 } from 'graphql/types/GetPatientAddressList';
 import { GET_PATIENT_ADDRESSES_LIST } from 'graphql/address';
 import { getStatus, isRejectedStatus } from 'helpers/commonHelpers';
+import { ReOrder } from './ReOrder';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -266,40 +267,6 @@ const useStyles = makeStyles((theme: Theme) => {
     reorderBtn: {
       marginBottom: 15,
     },
-    cartBody: {
-      padding: 16,
-      '& ul': {
-        color: '#68919d',
-        marginBottom: 20,
-        '& li': {
-          paddingBottom: 10,
-          fontSize: 12,
-          fontWeight: 500,
-        }
-      },
-    },
-    cartItem: {
-      fontSize: 12,
-      color: '#02475b',
-      fontWeight: 500,
-    },
-    cartItemSubheading: {
-      marginTop: 10,
-    },
-    continueBtn: {
-      marginTop: 35,
-      textAlign: 'center',
-      '& button': {
-        minWidth: 144,
-        borderRadius: 10,
-      }
-    },
-    reorderTitle: {
-      padding: '15px 20px',
-      '& h2': {
-        fontSize: 16,
-      },
-    },
   };
 });
 
@@ -309,8 +276,6 @@ interface OrderStatusCardProps {
 }
 
 export const deliveredOrderDetails = (orderStatusList: StatusDetails[]) => {
-
-
   return (
     orderStatusList &&
     orderStatusList.find(
@@ -433,12 +398,12 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
         const selectedAddress = deliveryAddresses.find(
           (address: AddressDetails) => address.id == orderDetailsData.patientAddressId
         );
+        const address1 = selectedAddress.addressLine1 ? `${selectedAddress.addressLine1}, ` : '';
+        const address2 = selectedAddress.addressLine2 ? `${selectedAddress.addressLine2}, ` : '';
+        const city = selectedAddress.city ? `${selectedAddress.city}, ` : '';
+        const state = selectedAddress.state ? `${selectedAddress.state}, ` : '';
         const addressData = selectedAddress
-          ? `${selectedAddress.addressLine1 ? `${selectedAddress.addressLine1}, ` : ''}${
-          selectedAddress.addressLine2 ? `${selectedAddress.addressLine2}, ` : ''
-          }${selectedAddress.city ? `${selectedAddress.city}, ` : ''}${
-          selectedAddress.state ? `${selectedAddress.state}, ` : ''
-          }${selectedAddress.zipcode || ''}`
+          ? `${address1}${address2}${city}${state}${selectedAddress.zipcode || ''}`
           : '';
         return addressData;
       } else {
@@ -463,12 +428,12 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
         return !prescriptionRequired() ? (
           ''
         ) : (
-            <>
-              <span className={classes.labelStatus}>Verification Pending: </span>
+          <>
+            <span className={classes.labelStatus}>Verification Pending: </span>
             Your order is being verified by our pharmacists. Our pharmacists might be required to
             call you for order verification.
-            </>
-          );
+          </>
+        );
       case MEDICINE_ORDER_STATUS.ORDER_VERIFIED:
         return (
           <>
@@ -583,38 +548,38 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
             <CircularProgress />
           </div>
         ) : (
-            orderStatusList &&
-            orderStatusList.map(
-              (statusInfo) =>
-                statusInfo && (
-                  <div id={statusInfo.id} className={classes.cardGroup}>
-                    <div
-                      className={`${classes.statusCard} ${
-                        statusInfo.orderStatus && statusArray.includes(statusInfo.orderStatus)
-                          ? classes.orderStatusActive
-                          : `${classes.orderStatusActive}${classes.orderStatusCompleted}`
-                        }`}
-                    >
-                      {statusInfo.orderStatus && getStatus(statusInfo.orderStatus)}
-                      <div className={classes.statusInfo}>
-                        <span>{moment(new Date(statusInfo.statusDate)).format('DD MMM YYYY')}</span>
-                        <span>{moment(new Date(statusInfo.statusDate)).format('hh:mm a')}</span>
-                      </div>
+          orderStatusList &&
+          orderStatusList.map(
+            (statusInfo) =>
+              statusInfo && (
+                <div id={statusInfo.id} className={classes.cardGroup}>
+                  <div
+                    className={`${classes.statusCard} ${
+                      statusInfo.orderStatus && statusArray.includes(statusInfo.orderStatus)
+                        ? classes.orderStatusActive
+                        : `${classes.orderStatusActive}${classes.orderStatusCompleted}`
+                    }`}
+                  >
+                    {statusInfo.orderStatus && getStatus(statusInfo.orderStatus)}
+                    <div className={classes.statusInfo}>
+                      <span>{moment(new Date(statusInfo.statusDate)).format('DD MMM YYYY')}</span>
+                      <span>{moment(new Date(statusInfo.statusDate)).format('hh:mm a')}</span>
                     </div>
-                    {orderDetailsData && statusInfo.orderStatus === orderDetailsData.currentStatus && (
-                      <div className={classes.infoText}>
-                        <span>
-                          {getOrderDescription(
-                            orderDetailsData.currentStatus,
-                            statusInfo.statusMessage
-                          )}
-                        </span>
-                      </div>
-                    )}
                   </div>
-                )
-            )
-          )}
+                  {orderDetailsData && statusInfo.orderStatus === orderDetailsData.currentStatus && (
+                    <div className={classes.infoText}>
+                      <span>
+                        {getOrderDescription(
+                          orderDetailsData.currentStatus,
+                          statusInfo.statusMessage
+                        )}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )
+          )
+        )}
         {!isLoading &&
           restStatusToShow &&
           restStatusToShow.map((status, idx) => (
@@ -630,28 +595,16 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
       {orderDetailsData && orderDetailsData.currentStatus === MEDICINE_ORDER_STATUS.DELIVERED && (
         <div className={classes.bottomNotification}>
           <div className={classes.reorderBtn}>
-            <AphButton color="primary" onClick={() => setIsDialogOpen(true)}>
-              Re-order
-          </AphButton>
+            <ReOrder
+              orderDetailsData={orderDetailsData}
+              type="Order Details"
+              patientName={
+                orderDetailsData.patient && orderDetailsData.patient.firstName
+                  ? orderDetailsData.patient.firstName
+                  : ''
+              }
+            />
           </div>
-          <AphDialog open={isDialogOpen} maxWidth="sm">
-            <AphDialogClose onClick={() => setIsDialogOpen(false)} title={'Close'} />
-            <AphDialogTitle className={classes.reorderTitle}>Added to Cart</AphDialogTitle>
-            <div className={classes.cartBody}>
-              <div className={classes.cartItem}>8 out of 10 items have been added to cart.</div>
-              <div className={`${classes.cartItem} ${classes.cartItemSubheading}`}>We couldn't add below items:</div>
-              <ul>
-                <li>Crocin Advance Tab</li>
-                <li>3M Particulate Respirator 8210</li>
-              </ul>
-              <div className={classes.cartItem}>Please continue for purchase.</div>
-              <div className={classes.continueBtn}>
-                <AphButton color="primary" >
-                  Continue
-              </AphButton>
-              </div>
-            </div>
-          </AphDialog>
           <p>
             Your order no.#{orderDetailsData && orderDetailsData.orderAutoId} is successfully
             delivered on {getDeliveredDateTime(orderStatusList)}.

@@ -191,31 +191,31 @@ const getConsultQueue: Resolver<
 > = async (parent, { doctorId, isActive }, context) => {
   const { docRepo, cqRepo, mobileNumber, patRepo } = getRepos(context);
   await checkAuth(docRepo, mobileNumber, doctorId);
-  let result: GetConsultQueueResult = { consultQueue: [] };
+  const result: GetConsultQueueResult = { consultQueue: [] };
   let consultQueueItems: ConsultQueueItem[] = [];
   consultQueueItems = await cqRepo.getConsultQueue(doctorId, isActive);
-  const patientIds = consultQueueItems.map(item => item.appointment.patientId);
+  const patientIds = consultQueueItems.map((item) => item.appointment.patientId);
   let patients: Patient[] = [];
   if (patientIds && patientIds.length > 0) {
     patients = await patRepo.getPatientDetailsByIds(patientIds);
   }
   let patient: Patient;
-  consultQueueItems.map(item => {
-    let res: GqlConsultQueueItem = {
+  consultQueueItems.map((item) => {
+    const res: GqlConsultQueueItem = {
       id: item.id,
       isActive: item.isActive,
       patient,
-      appointment: item.appointment
-    }
+      appointment: item.appointment,
+    };
     result.consultQueue.push(res);
   });
 
-  patients.map(patient => {
-    result.consultQueue.map(item => {
+  patients.map((patient) => {
+    result.consultQueue.map((item) => {
       if (patient.id == item.appointment.patientId) {
         item.patient = patient;
       }
-    })
+    });
   });
   return result;
 };
@@ -419,9 +419,9 @@ const addToConsultQueueWithAutomatedQuestions: Resolver<
         isJdAllowed === false
           ? ApiConstants.NOT_APPLICABLE
           : ApiConstants.APPOINTMENT_BOOKED_WITHIN_10_MIN.toString().replace(
-            '{0}',
-            ApiConstants.AUTO_SUBMIT_CASESHEET_TIME_APPOINMENT.toString()
-          ),
+              '{0}',
+              ApiConstants.AUTO_SUBMIT_CASESHEET_TIME_APPOINMENT.toString()
+            ),
       isJdConsultStarted: true,
     };
     caseSheetRepo.savecaseSheet(casesheetAttrs);

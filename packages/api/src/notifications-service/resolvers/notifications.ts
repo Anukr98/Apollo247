@@ -21,7 +21,14 @@ import { TransferAppointmentRepository } from 'consults-service/repositories/tra
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { MedicineOrdersRepository } from 'profiles-service/repositories/MedicineOrdersRepository';
 import { FacilityRepository } from 'doctors-service/repositories/facilityRepository';
-import { addMilliseconds, format, differenceInMinutes, addDays, differenceInHours } from 'date-fns';
+import {
+  addMilliseconds,
+  format,
+  differenceInMinutes,
+  addDays,
+  differenceInHours,
+  addMinutes,
+} from 'date-fns';
 import path from 'path';
 import fs from 'fs';
 import { log } from 'customWinstonLogger';
@@ -546,9 +553,10 @@ export async function sendNotification(
   let notificationBody: string = '';
   const notificationSound: string = ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString();
   const istDateTime = addMilliseconds(appointment.appointmentDateTime, 19800000);
-  const apptDate = format(istDateTime, 'dd-MM-yyyy HH:mm');
-
-  //Your appointment has been cancelled
+  const apptDate = format(
+    addMinutes(new Date(appointment.appointmentDateTime), +330),
+    "yyyy-MM-dd'T'HH:mm:ss'+0530'"
+  );
   if (pushNotificationInput.notificationType == NotificationType.PATIENT_CANCEL_APPOINTMENT) {
     notificationTitle = ApiConstants.PATIENT_CANCEL_APPT_TITLE;
     notificationBody = ApiConstants.PATIENT_CANCEL_APPT_BODY.replace(
@@ -574,13 +582,9 @@ export async function sendNotification(
     doctorSMS = doctorSMS.replace('{1}', appointment.displayId.toString());
     doctorSMS = doctorSMS.replace('{2}', patientDetails.firstName);
     doctorSMS = doctorSMS.replace('{3}', apptDate.toString());
-    if (process.env.NODE_ENV != 'production') {
-      if (doctorDetails.isWhitelisted == true) {
-        sendNotificationSMS(doctorDetails.mobileNumber, doctorSMS);
-      }
-    } else {
-      sendNotificationSMS(doctorDetails.mobileNumber, doctorSMS);
-    }
+
+    sendNotificationSMS(doctorDetails.mobileNumber, doctorSMS);
+
     sendBrowserNotitication(doctorDetails.id, doctorSMS);
   }
 
@@ -802,13 +806,7 @@ export async function sendNotification(
     doctorSMS = doctorSMS
       .replace('{3}', apptDate.toString())
       .replace('{4}', doctorDetails.salutation);
-    if (process.env.NODE_ENV != 'production') {
-      if (doctorDetails.isWhitelisted == true) {
-        sendNotificationSMS(doctorDetails.mobileNumber, doctorSMS);
-      }
-    } else {
-      sendNotificationSMS(doctorDetails.mobileNumber, doctorSMS);
-    }
+    sendNotificationSMS(doctorDetails.mobileNumber, doctorSMS);
   }
 
   //payment pending success
@@ -895,8 +893,12 @@ export async function sendNotification(
       '{2}',
       doctorDetails.firstName + ' ' + doctorDetails.lastName
     );
-    const istDateTime = addMilliseconds(appointment.appointmentDateTime, 19800000);
-    notificationBody = notificationBody.replace('{3}', format(istDateTime, 'yyyy-MM-dd hh:mm'));
+    //const istDateTime = addMilliseconds(appointment.appointmentDateTime, 19800000);
+    const apptDate = format(
+      addMinutes(new Date(appointment.appointmentDateTime), +330),
+      "yyyy-MM-dd'T'HH:mm:ss'+0530'"
+    );
+    notificationBody = notificationBody.replace('{3}', apptDate);
 
     /*let smsLink = process.env.SMS_LINK_BOOK_APOINTMENT
       ? ' Reschedule Now ' + process.env.SMS_LINK_BOOK_APOINTMENT
@@ -920,13 +922,8 @@ export async function sendNotification(
     const istDateTime = addMilliseconds(appointment.appointmentDateTime, 19800000);
     notificationBody = notificationBody.replace('{3}', format(istDateTime, 'yyyy-MM-dd hh:mm'));
     //sendNotificationSMS(doctorDetails.mobileNumber, notificationBody);
-    if (process.env.NODE_ENV != 'production') {
-      if (doctorDetails.isWhitelisted == true) {
-        sendNotificationSMS(doctorDetails.mobileNumber, notificationBody);
-      }
-    } else {
-      sendNotificationSMS(doctorDetails.mobileNumber, notificationBody);
-    }
+
+    sendNotificationSMS(doctorDetails.mobileNumber, notificationBody);
     //Send Browser Notification
     sendBrowserNotitication(doctorDetails.id, notificationBody);
   } else if (pushNotificationInput.notificationType == NotificationType.PRESCRIPTION_READY) {
@@ -1219,13 +1216,16 @@ export async function sendNotification(
       notificationResponse = response;
       //if (pushNotificationInput.notificationType == NotificationType.CALL_APPOINTMENT) {
       const fileName =
-        process.env.NODE_ENV + '_callnotification_' + format(new Date(), 'yyyyMMdd') + '.txt';
+        process.env.NODE_ENV +
+        '_callnotification_' +
+        format(addMinutes(new Date(), +330), 'yyyyMMdd') +
+        '.txt';
       let assetsDir = path.resolve('/apollo-hospitals/packages/api/src/assets');
       if (process.env.NODE_ENV != 'local') {
         assetsDir = path.resolve(<string>process.env.ASSETS_DIRECTORY);
       }
       let content =
-        format(new Date(), 'yyyy-MM-dd hh:mm') +
+        format(addMinutes(new Date(), +330), "yyyy-MM-dd'T'HH:mm:ss'+0530'") +
         '\n apptid: ' +
         pushNotificationInput.appointmentId +
         '\n';
@@ -1307,13 +1307,8 @@ export async function sendReminderNotification(
       '{0}',
       doctorDetails.firstName
     ).replace('{1}', patientDetails.firstName);
-    if (process.env.NODE_ENV != 'production') {
-      if (doctorDetails.isWhitelisted == true) {
-        sendNotificationSMS(doctorDetails.mobileNumber, doctorSMS);
-      }
-    } else {
-      sendNotificationSMS(doctorDetails.mobileNumber, doctorSMS);
-    }
+
+    sendNotificationSMS(doctorDetails.mobileNumber, doctorSMS);
 
     //Send Browser Notification
     sendBrowserNotitication(doctorDetails.id, doctorSMS);
@@ -1463,13 +1458,8 @@ export async function sendReminderNotification(
       doctorSMS = doctorSMS.replace('{1}', patientDetails.firstName);
     }
     console.log('doctorSMS=======================', doctorSMS);
-    if (process.env.NODE_ENV != 'production') {
-      if (doctorDetails.isWhitelisted == true) {
-        sendNotificationSMS(doctorDetails.mobileNumber, doctorSMS);
-      }
-    } else {
-      sendNotificationSMS(doctorDetails.mobileNumber, doctorSMS);
-    }
+
+    sendNotificationSMS(doctorDetails.mobileNumber, doctorSMS);
     //send doctor sms ends
     //Send Browser Notification
     sendBrowserNotitication(doctorDetails.id, doctorSMS);
@@ -1524,13 +1514,8 @@ export async function sendReminderNotification(
         '{0}',
         patientDetails.firstName
       );
-      if (process.env.NODE_ENV != 'production') {
-        if (doctorDetails.isWhitelisted == true) {
-          sendNotificationSMS(doctorDetails.mobileNumber, doctorSMS);
-        }
-      } else {
-        sendNotificationSMS(doctorDetails.mobileNumber, doctorSMS);
-      }
+
+      sendNotificationSMS(doctorDetails.mobileNumber, doctorSMS);
       sendBrowserNotitication(doctorDetails.id, doctorSMS);
     }
   } else if (pushNotificationInput.notificationType == NotificationType.VIRTUAL_REMINDER_15) {
@@ -1557,13 +1542,8 @@ export async function sendReminderNotification(
         '{0}',
         patientDetails.firstName
       );
-      if (process.env.NODE_ENV != 'production') {
-        if (doctorDetails.isWhitelisted == true) {
-          sendNotificationSMS(doctorDetails.mobileNumber, doctorSMS);
-        }
-      } else {
-        sendNotificationSMS(doctorDetails.mobileNumber, doctorSMS);
-      }
+      sendNotificationSMS(doctorDetails.mobileNumber, doctorSMS);
+
       sendBrowserNotitication(doctorDetails.id, doctorSMS);
       let whatsappMsg = ApiConstants.WHATSAPP_SD_CONSULT_REMINDER_15_MIN.replace(
         '{0}',
@@ -1594,8 +1574,12 @@ export async function sendReminderNotification(
       '{2}',
       doctorDetails.firstName + ' ' + doctorDetails.lastName
     );
-    const istDateTime = addMilliseconds(appointment.appointmentDateTime, 19800000);
-    notificationBody = notificationBody.replace('{3}', format(istDateTime, 'yyyy-MM-dd hh:mm'));
+    //const istDateTime = addMilliseconds(appointment.appointmentDateTime, 19800000);
+    const apptDate = format(
+      addMinutes(new Date(appointment.appointmentDateTime), +330),
+      "yyyy-MM-dd'T'HH:mm:ss'+0530'"
+    );
+    notificationBody = notificationBody.replace('{3}', apptDate);
     payload = {
       notification: {
         title: notificationTitle,
@@ -2339,13 +2323,9 @@ const sendDailyAppointmentSummary: Resolver<
         whatsAppMessageBody +=
           onlineAppointmentsText + '' + physicalAppointmentsText + whatsAppLink;
         sendBrowserNotitication(doctor.id, messageBody);
-        if (process.env.NODE_ENV != 'production') {
-          if (doctor.isWhitelisted == true) {
-            sendNotificationSMS(doctor.mobileNumber, messageBody);
-          }
-        } else {
-          sendNotificationSMS(doctor.mobileNumber, messageBody);
-        }
+
+        sendNotificationSMS(doctor.mobileNumber, messageBody);
+
         sendDoctorNotificationWhatsapp(
           doctor.mobileNumber,
           whatsAppMessageBody,
@@ -2434,13 +2414,7 @@ export async function sendChatMessageNotification(
     '{0}',
     doctorDetails.firstName
   ).replace('{1}', patientDetails.firstName);
-  if (process.env.NODE_ENV != 'production') {
-    if (doctorDetails.isWhitelisted == true) {
-      await sendNotificationSMS(doctorDetails.mobileNumber, messageBody);
-    }
-  } else {
-    await sendNotificationSMS(doctorDetails.mobileNumber, messageBody);
-  }
+  await sendNotificationSMS(doctorDetails.mobileNumber, messageBody);
   //sendNotificationWhatsapp(doctorDetails.mobileNumber, messageBody);
   const doctorTokenRepo = doctorsDb.getCustomRepository(DoctorDeviceTokenRepository);
   const deviceTokensList = await doctorTokenRepo.getDeviceTokens(doctorDetails.id);
@@ -2570,13 +2544,8 @@ const sendChatMessageToDoctor: Resolver<
     doctorDetails.firstName
   ).replace('{1}', patientDetails.firstName);
   //await sendNotificationSMS(doctorDetails.mobileNumber, messageBody);
-  if (process.env.NODE_ENV != 'production') {
-    if (doctorDetails.isWhitelisted == true) {
-      await sendNotificationSMS(doctorDetails.mobileNumber, messageBody);
-    }
-  } else {
-    await sendNotificationSMS(doctorDetails.mobileNumber, messageBody);
-  }
+
+  await sendNotificationSMS(doctorDetails.mobileNumber, messageBody);
   //sendNotificationWhatsapp(doctorDetails.mobileNumber, messageBody);
   const doctorTokenRepo = doctorsDb.getCustomRepository(DoctorDeviceTokenRepository);
   const deviceTokensList = await doctorTokenRepo.getDeviceTokens(appointment.doctorId);

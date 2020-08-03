@@ -430,8 +430,7 @@ const ConfigurationQA2 = {
   Android_Version: '2.631',
   CONDITIONAL_MANAGENET_BASE_URL: 'https://aph.staging.pmt.popcornapps.com',
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e',
-  COVID_RISK_LEVEL_URL:
-    'https://aph.staging.web-patients.popcornapps.com/covid19/cough-scan?utm_source=mobile_app',
+  COVID_RISK_LEVEL_URL: 'https://qapatients.apollo247.com/covid19/cough-scan?utm_source=mobile_app',
   COVID_LATEST_ARTICLES_URL:
     'https://qapatients.apollo247.com/covid19?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Covid19%20Content',
   CONSULT_COUPON_BASE_URL: 'https://validcoupon.apollo247.com',
@@ -816,30 +815,31 @@ export const NeedHelp = [
   {
     category: 'Pharmacy',
     options: [
-      'I want to cancel my medicine order with a refund',
-      'The order was successfully placed but medicines not yet delivered',
-      'I was not able to make the payment due to technical errors',
+      'I would like to cancel the order!',
+      'I would like to know the Delivery status of my order.',
+      'I was not able to place the order due to technical errors',
       'My money got deducted but no order confirmation received',
-      'My order got canceled with no prior notice hence, need the refund',
-      'There is a mismatch in the quantity of medicines ordered and delivered',
-      'The medicines delivered are not the ones which were ordered by me',
-      'The app is crashing/ website is working too slow',
-      'The excess amount charged for medicine delivery',
-      'Inappropriate attitude or behaviour of delivery staff',
+      'I need to know why my order was cancelled',
+      'I have issues in order delivered!',
+      'Excess amount was charged to me by Delivery Executive',
+      'Inappropriate attitude & behaviour of Delivery Executive',
+      'I need to know my refund status',
+      'I have prescription related queries (Invalid/ Order cancelled)',
     ],
   },
   {
     category: 'Virtual/Online Consult',
     options: [
-      'My doctor is not listed on the platform',
-      'There is no slot available for the doctor appointment',
+      'I am unable to book an appointment (slot not available/ Doctor not listed) ',
       'The doctor did not start the consultation on time',
-      'The doctor did not start the consultation. Want a refund.',
       'My money got deducted but no confirmation on the doctor appointment',
-      'I faced technical issues during my appointment ',
+      'I faced technical issues during/after booking an appointment',
       'I want to reschedule/cancel my appointment ',
       'I haven’t received the prescription',
-      'Coupon code did not work for booking doctor appointment',
+      'Improper behaviour/attitude of doctor or staff',
+      'I need to know my refund status',
+      'I did not recieve invoice/ receipt of my appointment',
+      'Doctor did not respond to follow-up chats',
     ],
   },
   {
@@ -897,6 +897,10 @@ export const NeedHelp = [
       'Sample pick up staff related',
       'Wrong report received',
     ],
+  },
+  {
+    category: 'Unsubscribe',
+    options: ['Marketing SMSes', 'Marketing Push Notifications', 'Both'],
   },
 ];
 
