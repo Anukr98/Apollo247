@@ -85,6 +85,7 @@ const useStyles = makeStyles((theme: Theme) => {
       marginRight: 20,
       fontSize: 13,
       fontWeight: 600,
+      padding: '35px 20px',
       color: '#02475b',
       textTransform: 'uppercase',
       display: 'flex',
@@ -200,7 +201,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     consultTest: {
       position: 'relative',
-      width: 250,
+      width: '50%',
     },
     timeLeft: {
       fontSize: 12,
@@ -616,8 +617,6 @@ const useStyles = makeStyles((theme: Theme) => {
       zIndex: 1,
       backgroundColor: '#f7f7f7',
       boxShadow: 'inset 0px 0px 10px 0 rgba(128,128,128,0.2)',
-      display: 'flex',
-      height: 94,
     },
     prescriptionSent: {
       position: 'relative',
