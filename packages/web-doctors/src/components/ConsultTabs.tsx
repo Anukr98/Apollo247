@@ -118,7 +118,6 @@ const useStyles = makeStyles((theme: Theme) => {
       boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
       backgroundColor: '#f7f7f7',
       minHeight: 500,
-      paddingBottom: 41,
     },
     tabsRoot: {
       backgroundColor: theme.palette.common.white,
@@ -275,9 +274,9 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 14,
     },
     stickyConsultTabs: {
-      position: 'fixed',
-      width: 1063,
-      zIndex: 1,
+      position: 'sticky',
+      top: 94,
+      zIndex: 2,
     },
   };
 });
@@ -1896,7 +1895,7 @@ export const ConsultTabs: React.FC = () => {
                       />
                     </Tabs>
                   </div>
-                  <div style={{ position: 'relative', top: 40 }}>
+                  <div>
                     <div className={tabValue !== 0 ? classes.none : classes.block}>
                       {casesheetInfo ? <CaseSheet startAppointment={startAppointment} /> : ''}
                     </div>
