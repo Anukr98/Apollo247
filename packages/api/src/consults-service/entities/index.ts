@@ -24,6 +24,9 @@ import {
   trackWebEngageEventForDoctorReschedules,
   trackWebEngageEventForDoctorCancellation,
   trackWebEngageEventForDoctorCallInitiation,
+  trackWebEngageEventForCasesheetUpdate,
+  trackWebEngageEventForCasesheetInsert,
+  trackWebEngageEventForExotelCall,
 } from 'notifications-service/resolvers/webEngageAPI';
 
 export enum APPOINTMENT_UPDATED_BY {
@@ -950,6 +953,16 @@ export class CaseSheet extends BaseEntity {
 
   @Column({ default: AUDIT_STATUS.PENDING })
   auditStatus: AUDIT_STATUS;
+
+  @AfterUpdate()
+  trackWebEngageEventForCasesheetUpdate() {
+    trackWebEngageEventForCasesheetUpdate(this);
+  }
+
+  @AfterInsert()
+  trackWebEngageEventForCasesheetInsert() {
+    trackWebEngageEventForCasesheetInsert(this);
+  }
 }
 //case sheet ends
 
@@ -1912,6 +1925,11 @@ export class ExotelDetails extends BaseEntity {
 
   @Column({ nullable: true })
   totalCallDuration: number;
+
+  @AfterInsert()
+  trackWebEngageEventForExotelCall() {
+    trackWebEngageEventForExotelCall(this);
+  }
 }
 
 //notification related tables end

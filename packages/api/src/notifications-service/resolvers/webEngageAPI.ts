@@ -2,7 +2,7 @@ import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
 import { NotificationsServiceContext } from 'notifications-service/NotificationsServiceContext';
 import { WebEngageEvent, WebEngageResponse, postEvent, WebEngageInput } from 'helpers/webEngage';
-import { ConsultMode, Doctor } from 'doctors-service/entities';
+import { ConsultMode, Doctor, DoctorType } from 'doctors-service/entities';
 import { ApiConstants } from 'ApiConstants';
 import { isMobileNumberValid } from '@aph/universal/dist/aphValidators';
 import { AphError } from 'AphError';
@@ -15,6 +15,9 @@ import {
   STATUS,
   REQUEST_ROLES,
   AppointmentCallDetails,
+  CaseSheet,
+  CASESHEET_STATUS,
+  ExotelDetails,
 } from 'consults-service/entities';
 import { getConnection } from 'typeorm';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
@@ -223,6 +226,134 @@ export async function trackWebEngageEventForDoctorCallInitiation(
   const postBody: Partial<WebEngageInput> = {
     userId: patientDetails ? patientDetails.mobileNumber : '',
     eventName: eventName,
+    eventData: {
+      consultID: appointmentDetails.id,
+      displayID: appointmentDetails.displayId.toString(),
+      consultMode: appointmentDetails.appointmentType.toString(),
+      doctorName: doctorDetails ? doctorDetails.fullName : '',
+    },
+  };
+
+  return await postEvent(postBody);
+}
+
+export async function trackWebEngageEventForCasesheetUpdate(caseSheetDetails: CaseSheet) {
+  if (caseSheetDetails.status !== CASESHEET_STATUS.COMPLETED) return '';
+
+  const appointmentDetails = caseSheetDetails.appointment;
+
+  //get doctor details
+  const doctorsDb = getConnection('doctors-db');
+  const doctorRepo = doctorsDb.getRepository(Doctor);
+  const doctorDetails = await doctorRepo.findOne({
+    select: ['fullName'],
+    where: { id: caseSheetDetails.doctorId },
+  });
+
+  //get patient details
+  const patientsDb = getConnection('patients-db');
+  const patientRepo = patientsDb.getCustomRepository(PatientRepository);
+  const patientDetails = await patientRepo.findByIdWithRelations(caseSheetDetails.patientId, []);
+
+  const eventName =
+    caseSheetDetails.doctorType === DoctorType.JUNIOR
+      ? ApiConstants.JD_CASE_SHEET_COMPLETED_EVENT_NAME.toString()
+      : ApiConstants.PRESCRIPTION_SENT_EVENT_NAME.toString();
+
+  const postBody: Partial<WebEngageInput> = {
+    userId: patientDetails ? patientDetails.mobileNumber : '',
+    eventName: eventName,
+    eventData: {
+      consultID: appointmentDetails.id,
+      displayID: appointmentDetails.displayId.toString(),
+      consultMode: appointmentDetails.appointmentType.toString(),
+      doctorName: doctorDetails ? doctorDetails.fullName : '',
+    },
+  };
+  return await postEvent(postBody);
+}
+
+export async function trackWebEngageEventForCasesheetInsert(caseSheetDetails: CaseSheet) {
+  if (caseSheetDetails.version <= 1 || caseSheetDetails.doctorType === DoctorType.JUNIOR) return '';
+
+  const appointmentDetails = caseSheetDetails.appointment;
+
+  //get doctor details
+  const doctorsDb = getConnection('doctors-db');
+  const doctorRepo = doctorsDb.getRepository(Doctor);
+  const doctorDetails = await doctorRepo.findOne({
+    select: ['fullName'],
+    where: { id: caseSheetDetails.doctorId },
+  });
+
+  //get patient details
+  const patientsDb = getConnection('patients-db');
+  const patientRepo = patientsDb.getCustomRepository(PatientRepository);
+  const patientDetails = await patientRepo.findByIdWithRelations(caseSheetDetails.patientId, []);
+
+  const postBody: Partial<WebEngageInput> = {
+    userId: patientDetails ? patientDetails.mobileNumber : '',
+    eventName: ApiConstants.NEW_VERSION_PRESCRIPTION_SENT_EVENT_NAME.toString(),
+    eventData: {
+      consultID: appointmentDetails.id,
+      displayID: appointmentDetails.displayId.toString(),
+      consultMode: appointmentDetails.appointmentType.toString(),
+      doctorName: doctorDetails ? doctorDetails.fullName : '',
+    },
+  };
+
+  return await postEvent(postBody);
+}
+
+export async function trackWebEngageEventForAppointmentComplete(appointmentDetails: Appointment) {
+  if (appointmentDetails.status !== STATUS.COMPLETED) return '';
+
+  //get doctor details
+  const doctorsDb = getConnection('doctors-db');
+  const doctorRepo = doctorsDb.getRepository(Doctor);
+  const doctorDetails = await doctorRepo.findOne({
+    select: ['fullName'],
+    where: { id: appointmentDetails.doctorId },
+  });
+
+  //get patient details
+  const patientsDb = getConnection('patients-db');
+  const patientRepo = patientsDb.getCustomRepository(PatientRepository);
+  const patientDetails = await patientRepo.findByIdWithRelations(appointmentDetails.patientId, []);
+
+  const postBody: Partial<WebEngageInput> = {
+    userId: patientDetails ? patientDetails.mobileNumber : '',
+    eventName: ApiConstants.DOCTOR_ENDED_CONSULTATION_EVENT_NAME.toString(),
+    eventData: {
+      consultID: appointmentDetails.id,
+      displayID: appointmentDetails.displayId.toString(),
+      consultMode: appointmentDetails.appointmentType.toString(),
+      doctorName: doctorDetails ? doctorDetails.fullName : '',
+    },
+  };
+
+  return await postEvent(postBody);
+}
+
+export async function trackWebEngageEventForExotelCall(exotelCallDetails: ExotelDetails) {
+  const appointmentDetails = exotelCallDetails.appointment;
+
+  //get doctor details
+  const doctorsDb = getConnection('doctors-db');
+  const doctorRepo = doctorsDb.getRepository(Doctor);
+  const doctorDetails = await doctorRepo.findOne({
+    select: ['fullName'],
+    where: { id: appointmentDetails.doctorId },
+  });
+
+  //get patient details
+  const patientsDb = getConnection('patients-db');
+  const patientRepo = patientsDb.getCustomRepository(PatientRepository);
+  const patientDetails = await patientRepo.findByIdWithRelations(appointmentDetails.patientId, []);
+
+  const postBody: Partial<WebEngageInput> = {
+    userId: patientDetails ? patientDetails.mobileNumber : '',
+    eventName: ApiConstants.DOCTOR_INITIATED_EXOTEL_CALL_EVENT_NAME.toString(),
     eventData: {
       consultID: appointmentDetails.id,
       displayID: appointmentDetails.displayId.toString(),
