@@ -303,6 +303,22 @@ const styles = StyleSheet.create({
     height: 80,
     borderRadius: 40,
   },
+  chatDisabledContainer: {
+    marginVertical: 20,
+    marginHorizontal: 20,
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+    paddingTop: 16,
+    borderRadius: 15,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f6f6f6',
+  },
+  chatDisabledHeader: {
+    ...theme.viewStyles.text('M', 13, theme.colors.SHERPA_BLUE),
+    textAlign: 'center',
+    marginBottom: 10,
+  },
 });
 
 export interface ChatRoomProps extends NavigationScreenProps {}
@@ -4684,27 +4700,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   const chatDisabled = () => {
     return (
-      <View
-        style={{
-          marginVertical: 20,
-          marginHorizontal: 20,
-          paddingHorizontal: 20,
-          paddingBottom: 20,
-          paddingTop: 16,
-          borderRadius: 15,
-          justifyContent: 'center',
-          alignItems: 'center',
-          backgroundColor: '#f6f6f6',
-        }}
-      >
-        <Text
-          style={{
-            ...theme.viewStyles.text('M', 13, theme.colors.SHERPA_BLUE),
-            textAlign: 'center',
-            marginBottom: 10,
-          }}
-        >
-          {`You can't send message to the doctor. Book appointment for consulting with ${appointmentData.doctorInfo.displayName} again.`}
+      <View style={styles.chatDisabledContainer}>
+        <Text style={styles.chatDisabledHeader}>
+          {strings.consultType.chatDisabledHeader.replace(
+            '{0}',
+            appointmentData.doctorInfo.displayName
+          )}
         </Text>
         <TouchableOpacity
           onPress={() => {
@@ -4713,12 +4714,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             });
           }}
         >
-          <Text
-            style={{
-              ...theme.viewStyles.text('B', 13, theme.colors.APP_YELLOW),
-            }}
-          >
-            BOOK APPOINTMENT
+          <Text style={theme.viewStyles.text('B', 13, theme.colors.APP_YELLOW)}>
+            {strings.common.book_apointment}
           </Text>
         </TouchableOpacity>
       </View>
@@ -4831,7 +4828,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   audioTrack: isPublishAudio,
                   audioVolume: 100,
                   name: g(currentPatient, 'firstName') || 'patient',
-                  resolution: '640x480' // setting this resolution to avoid over heating of device
+                  resolution: '640x480', // setting this resolution to avoid over heating of device
                 }}
                 eventHandlers={publisherEventHandlers}
               />

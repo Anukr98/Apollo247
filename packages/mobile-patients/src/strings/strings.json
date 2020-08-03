@@ -47,7 +47,8 @@
       "point4": "Visit the doctor at Hospital/Clinic",
       "point5": "Receive prescriptions instantly",
       "point6": "Chat with the doctor for 7 days after your consult"
-    }
+    },
+    "chatDisabledHeader": "You can't send message to the doctor. Book appointment for consulting with {0} again."
   },
   "login": {
     "hello": "hello!",
