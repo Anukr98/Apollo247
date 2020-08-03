@@ -127,7 +127,12 @@ const styles = StyleSheet.create({
 export interface LoginProps extends NavigationScreenProps {}
 
 const isPhoneNumberValid = (number: string) => {
-  const isValidNumber = !/^[6-9]{1}\d{0,9}$/.test(number) ? false : true;
+  // const isValidNumber = !/^[6-9]{1}\d{0,9}$/.test(number) ? false : true;
+  const isValidNumber = !/^[6-9]{1}\d{0,9}$/.test(number)
+    ? !/^(234){1}\d{0,9}$/.test(number)
+      ? false
+      : true
+    : true;
   return isValidNumber;
 };
 

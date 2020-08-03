@@ -153,6 +153,7 @@ import { CustomAlert } from '../ui/CustomAlert';
 import { Snackbar } from 'react-native-paper';
 import BackgroundTimer from 'react-native-background-timer';
 import { UploadPrescriprionPopup } from '../Medicines/UploadPrescriprionPopup';
+import { ChatRoom_NotRecorded_Value } from '@aph/mobile-patients/src/strings/strings.json';
 
 interface OpentokStreamObject {
   connection: {
@@ -402,6 +403,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     letterSpacing: 0.46,
     zIndex: 1005,
   });
+
+  const disAllowReschedule =
+    g(appointmentData, 'appointmentState') != APPOINTMENT_STATE.AWAITING_RESCHEDULE;
 
   const [remainingTime, setRemainingTime] = useState<number>(900);
   const [consultStarted, setConsultStarted] = useState<boolean>(true);
@@ -846,7 +850,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           }
           break;
         case 'height':
-          data.height = item.v[0] !== '' ? item.v.join(' ') : 'No Idea';
+          data.height = item.v[0] !== '' ? item.v.join(' ') : ChatRoom_NotRecorded_Value;
           console.log('data.height:', 'data.height:' + data.height);
           try {
             const text = {
@@ -869,7 +873,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           }
           break;
         case 'weight':
-          data.weight = item.v[0] || 'No Idea';
+          data.weight = item.v[0] || ChatRoom_NotRecorded_Value;
           try {
             const text = {
               id: patientId,
@@ -901,11 +905,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           }
           break;
         case 'drugAllergies':
-          data.drugAllergies = item.v[0] || 'No';
+          data.drugAllergies = item.v[0] || '';
           try {
             const text = {
               id: patientId,
-              message: 'Medicine Allergy:\n' + data.drugAllergies,
+              message: 'Medicine Allergy:\n' + (item.v[0] || '-'),
               messageDate: new Date(),
             };
             setMessageText('');
@@ -933,11 +937,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           }
           break;
         case 'dietAllergies':
-          data.dietAllergies = item.v[0] || 'No';
+          data.dietAllergies = item.v[0] || '';
           try {
             const text = {
               id: patientId,
-              message: 'Food Allergy:\n' + data.dietAllergies,
+              message: 'Food Allergy:\n' + (item.v[0] || '-'),
               messageDate: new Date(),
             };
             setMessageText('');
@@ -948,7 +952,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           }
           break;
         case 'temperature':
-          data.temperature = item.v[0] || 'No Idea';
+          data.temperature = item.v[0] || ChatRoom_NotRecorded_Value;
           try {
             const text = {
               id: patientId,
@@ -963,7 +967,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           }
           break;
         case 'bp':
-          data.bp = item.v[1] || item.v[0] || 'No Idea';
+          data.bp = item.v[1] || item.v[0] || ChatRoom_NotRecorded_Value;
           try {
             const text = {
               id: patientId,
@@ -978,13 +982,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           }
           break;
         case 'familyHistory':
-          data.familyHistory = item.v[0] || 'No';
+          data.familyHistory = item.v[0] || '';
           try {
             const text = {
               id: patientId,
               message:
                 'Family members suffering suffer from — COPD, Cancer, Hypertension or Diabetes:\n' +
-                data.familyHistory,
+                (item.v[0] || '-'),
               messageDate: new Date(),
             };
             setMessageText('');
@@ -998,12 +1002,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           data.lifeStyle = data.lifeStyle
             ? data.lifeStyle.includes('Smoke')
               ? data.lifeStyle
-              : 'Smoke: ' + (item.v[0] || 'No') + '\n' + data.lifeStyle
-            : 'Smoke: ' + (item.v[0] || 'No');
+              : 'Smoke: ' + (item.v[0] || '') + '\n' + data.lifeStyle
+            : 'Smoke: ' + (item.v[0] || '');
           try {
             const text = {
               id: patientId,
-              message: 'Smoke:\n' + (item.v[0] || 'No'),
+              message: 'Smoke:\n' + (item.v[0] || '-'),
               messageDate: new Date(),
             };
             setMessageText('');
@@ -1017,12 +1021,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           data.lifeStyle = data.lifeStyle
             ? data.lifeStyle.includes('Drink')
               ? data.lifeStyle
-              : data.lifeStyle + '\nDrink: ' + (item.v[0] || 'No')
-            : 'Drink: ' + (item.v[0] || 'No');
+              : data.lifeStyle + '\nDrink: ' + (item.v[0] || '')
+            : 'Drink: ' + (item.v[0] || '');
           try {
             const text = {
               id: patientId,
-              message: 'Drink: \n' + (item.v[0] || 'No'),
+              message: 'Drink: \n' + (item.v[0] || '-'),
               messageDate: new Date(),
             };
             setMessageText('');
@@ -1262,16 +1266,18 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
       console.log('input', input);
 
-      setDoctorJoined(true);
+      CheckDoctorPresentInChat();
+
+      // setDoctorJoined(true);
       setTextChange(true);
 
       setTimeout(() => {
         setApiCalled(true);
       }, 1000);
 
-      setTimeout(() => {
-        setDoctorJoined(false);
-      }, 10000);
+      // setTimeout(() => {
+      //   setDoctorJoined(false);
+      // }, 10000);
 
       client
         .mutate<updateAppointmentSession, updateAppointmentSessionVariables>({
@@ -1290,6 +1296,28 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           console.log('Error occured while adding Doctor', e);
         });
     }
+  };
+
+  const CheckDoctorPresentInChat = () => {
+    pubnub
+      .hereNow({
+        channels: [channel],
+        includeUUIDs: true,
+      })
+      .then((response: HereNowResponse) => {
+        console.log('hereNowresponse', response);
+
+        if (response.totalOccupancy >= 2) {
+          setDoctorJoined(true);
+
+          setTimeout(() => {
+            setDoctorJoined(false);
+          }, 10000);
+        }
+      })
+      .catch((error) => {
+        console.log(error);
+      });
   };
 
   const startInterval = (timer: number) => {
@@ -3175,6 +3203,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             >
               <Button
                 title={'CHANGE SLOT'}
+                disabled={disAllowReschedule}
+                disabledStyle={{
+                  backgroundColor: '#0087ba',
+                  opacity: 0.8,
+                }}
                 style={{
                   flex: 0.6,
                   marginLeft: 16,
@@ -3203,6 +3236,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               />
               <Button
                 title={'ACCEPT'}
+                disabled={disAllowReschedule}
                 style={{
                   flex: 0.4,
                   marginRight: 16,
@@ -4797,7 +4831,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   audioTrack: isPublishAudio,
                   audioVolume: 100,
                   name: g(currentPatient, 'firstName') || 'patient',
-                  // resolution: '352x288',
+                  resolution: '640x480' // setting this resolution to avoid over heating of device
                 }}
                 eventHandlers={publisherEventHandlers}
               />

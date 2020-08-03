@@ -12,6 +12,15 @@ import { specialtyClickTracking } from 'webEngageTracking';
 const useStyles = makeStyles((theme: Theme) => {
   return {
     topSpeciality: {},
+    startHead: {
+      color: '#00a7b9',
+      margin: '10px 0',
+      fontSize: '16px !important',
+      fontWeight: 'bold',
+      [theme.breakpoints.down('sm')]: {
+        margin: '20px 0 10px',
+      },
+    },
     sectionHeader: {
       padding: '10px 0',
       borderBottom: '0.5px solid rgba(2,71,91,0.3)',
@@ -427,7 +436,7 @@ export const SpecialtyDivision: React.FC<SpecialtyDivisionProps> = (props) => {
 
   return (
     <>
-      <Typography component="h2">
+      <Typography component="h3" className={classes.startHead}>
         Start your care now by choosing from {doctorsCount ? `${doctorsCount} doctors and ` : ''}
         {specialtyCount} specialities
       </Typography>
@@ -448,11 +457,11 @@ export const SpecialtyDivision: React.FC<SpecialtyDivisionProps> = (props) => {
                         new Date().getFullYear() -
                         new Date(currentPatient && currentPatient.dateOfBirth).getFullYear();
                       const eventData = {
-                        patientAge: patientAge,
-                        patientGender: currentPatient && currentPatient.gender,
+                        patientAge: currentPatient ? patientAge : '',
+                        patientGender: currentPatient ? currentPatient.gender : '',
                         specialtyId: specialityDetails.id,
                         specialtyName: specialityDetails.slugName,
-                        relation: currentPatient && currentPatient.relation,
+                        relation: currentPatient ? currentPatient.relation : '',
                       };
                       specialtyClickTracking(eventData);
                     }}
@@ -468,7 +477,11 @@ export const SpecialtyDivision: React.FC<SpecialtyDivisionProps> = (props) => {
                       }
                     >
                       <Typography component="h3">{specialityDetails.specialtyName}</Typography>
-                      <img src={specialityDetails.image} />
+                      <img
+                        src={specialityDetails.image}
+                        title={`Online Doctor Consultation - ${specialityDetails.specialtyName}`}
+                        alt={`Online Doctor Consultation - ${specialityDetails.specialtyName}`}
+                      />
                       <Typography>{specialityDetails.description}</Typography>
                       <Typography className={classes.symptoms}>
                         {specialityDetails.symptoms}

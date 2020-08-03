@@ -200,6 +200,7 @@ android {
 }
 
 dependencies {
+    implementation project(':react-native-code-push')
     implementation project(':react-native-background-timer')
     implementation project(':react-native-video')
     implementation project(':react-native-sound')
@@ -367,3 +368,4 @@ configurations {
 apply from: file("../../node_modules/@react-native-community/cli-platform-android/native_modules.gradle"); applyNativeModulesAppBuildGradle(project)
 apply plugin: 'com.google.gms.google-services'
 apply plugin: 'io.fabric'
+apply from: "../../node_modules/react-native-code-push/android/codepush.gradle"

@@ -170,7 +170,7 @@ const bookAppointment: Resolver<
 > = async (parent, { appointmentInput }, { consultsDb, doctorsDb, patientsDb }) => {
   //check if patient id is valid
   const patient = patientsDb.getCustomRepository(PatientRepository);
-  const patientDetails = await patient.findById(appointmentInput.patientId);
+  const patientDetails = await patient.getPatientDetails(appointmentInput.patientId);
   if (!patientDetails) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
@@ -387,6 +387,8 @@ const bookAppointment: Resolver<
     userType: APPOINTMENT_UPDATED_BY.PATIENT,
     fromValue: '',
     toValue: STATUS.PAYMENT_PENDING,
+    fromState: '',
+    toState: APPOINTMENT_STATE.NEW,
     valueType: VALUE_TYPE.STATUS,
     userName: appointmentInput.patientId,
     reason: ApiConstants.BOOK_APPOINTMENT_HISTORY_REASON.toString(),

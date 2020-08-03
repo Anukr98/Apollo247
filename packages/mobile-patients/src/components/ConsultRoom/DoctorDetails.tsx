@@ -197,6 +197,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const { VirtualConsultationFee } = useAppCommonData();
   const [consultType, setConsultType] = useState<ConsultMode>(ConsultMode.BOTH);
   const [showVideo, setShowVideo] = useState<boolean>(false);
+  const callSaveSearch = props.navigation.getParam('callSaveSearch');
 
   useEffect(() => {
     if (!currentPatient) {
@@ -1188,7 +1189,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           consultModeSelected={consultMode}
           externalConnect={null}
           availableMode={ConsultMode.BOTH}
-          // availableMode={consultType}
+          callSaveSearch={callSaveSearch}
         />
       )}
       <Animated.View

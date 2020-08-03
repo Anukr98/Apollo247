@@ -42,6 +42,7 @@ import { GetDoctorNextAvailableSlot } from 'graphql/types/GetDoctorNextAvailable
 import { GetDoctorDetailsById_getDoctorDetailsById as DoctorDetailsType } from 'graphql/types/GetDoctorDetailsById';
 import { doctorProfileViewTracking } from 'webEngageTracking';
 import { getDiffInMinutes } from 'helpers/commonHelpers';
+import { hasOnePrimaryUser } from 'helpers/onePrimaryUser';
 
 export interface DoctorDetailsProps {
   id: string;
@@ -221,6 +222,7 @@ const TabContainer: React.FC = (props) => {
 export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const { isSignedIn } = useAuth();
   const classes = useStyles({});
+  const onePrimaryUser = hasOnePrimaryUser();
   const params = useParams<{ id: string; specialty: string; name: string }>();
   const nameId = params && params.name && params.id && params.name + '-' + params.id;
   const nameIdLength = nameId && nameId.length;
@@ -232,6 +234,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const [doctorData, setDoctorData] = useState<DoctorDetailsType | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [structuredJSON, setStructuredJSON] = useState(null);
+  const [breadcrumbJSON, setBreadcrumbJSON] = useState(null);
   const [metaTagProps, setMetaTagProps] = useState(null);
   const [doctorAvailableSlots, setDoctorAvailableSlots] = useState<GetDoctorNextAvailableSlot>();
   const [error, setError] = useState<boolean>(false);
@@ -352,13 +355,46 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
             },
             medicalSpecialty: specialty ? specialty.name : '',
           });
+          setBreadcrumbJSON({
+            '@context': 'https://schema.org/',
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+              {
+                '@type': 'ListItem',
+                position: 1,
+                name: 'HOME',
+                item: 'https://www.apollo247.com/',
+              },
+              {
+                '@type': 'ListItem',
+                position: 2,
+                name: 'SPECIALTIES',
+                item: 'https://www.apollo247.com/specialties',
+              },
+              {
+                '@type': 'ListItem',
+                position: 3,
+                name: specialty ? specialty.name : '',
+                item: `https://www.apollo247.com/specialties/${readableParam(
+                  specialty ? specialty.name : ''
+                )}`,
+              },
+              {
+                '@type': 'ListItem',
+                position: 4,
+                name: fullName ? fullName : `${firstName} ${lastName}`,
+                item: `https://www.apollo247.com/specialties/${readableParam(
+                  specialty ? specialty.name : ''
+                )}/${readableParam(fullName ? fullName : `${firstName} ${lastName}`)}-${id}`,
+              },
+            ],
+          });
           setMetaTagProps({
             title: `${fullName}: ${
               specialty && specialty.name ? specialty.name : ''
             } - Online Consultation/Appointment - Apollo 247`,
-            description: `Book an appointment with ${fullName} - ${
-              specialty && specialty.name
-            } and consult online at Apollo 247. Know more about ${fullName} and his work here. Get medical help online in just a few clicks at Apollo 247.`,
+            description: `Book an appointment with ${fullName} - ${specialty &&
+              specialty.name} and consult online at Apollo 247. Know more about ${fullName} and his work here. Get medical help online in just a few clicks at Apollo 247.`,
             canonicalLink:
               window &&
               window.location &&
@@ -417,6 +453,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           <Header />
         </div>
         {structuredJSON && <SchemaMarkup structuredJSON={structuredJSON} />}
+        {breadcrumbJSON && <SchemaMarkup structuredJSON={breadcrumbJSON} />}
         <div className={classes.container}>
           <div className={classes.doctorDetailsPage}>
             <div className={classes.breadcrumbLinks}>
@@ -543,7 +580,6 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                   setIsPopoverOpen={setIsPopoverOpen}
                   doctorDetails={doctorData}
                   onBookConsult={(popover: boolean) => setIsPopoverOpen(popover)}
-                  isRescheduleConsult={false}
                   tabValue={(tabValue: number) => setTabValue(tabValue)}
                   setIsShownOnce={(isShownOnce: boolean) => setIsShownOnce(isShownOnce)}
                   isShownOnce={isShownOnce}
@@ -562,6 +598,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         </Modal>
         <BottomLinks />
         <NavigationBottom />
+        {!onePrimaryUser && <ManageProfile />}
       </div>
     );
   } else {

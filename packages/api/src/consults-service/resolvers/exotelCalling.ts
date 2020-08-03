@@ -7,9 +7,9 @@ import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
-import { ExotelDetailsRepository } from 'consults-service/repositories/exotelDetailsRepository'
+import { ExotelDetailsRepository } from 'consults-service/repositories/exotelDetailsRepository';
 import { uploadFileToBlobStorage } from 'helpers/uploadFileToBlob';
-import { DEVICETYPE, Appointment } from 'consults-service/entities'
+import { DEVICETYPE, Appointment } from 'consults-service/entities';
 
 export const exotelTypeDefs = gql`
   input exotelInput {
@@ -54,7 +54,7 @@ export const exotelTypeDefs = gql`
   }
 
   type callDetailsResult {
-    calls: [callDetails!]! 
+    calls: [callDetails!]!
   }
 
   extend type Query {
@@ -65,7 +65,7 @@ export const exotelTypeDefs = gql`
     updateCallStatusBySid(callStatusInput: callStatusInput): callStatusResult
   }
 `;
-  
+
 type exotelInput = {
   from?: string;
   to?: string;
@@ -110,9 +110,8 @@ async function exotelCalling(callInputs: callInputs): Promise<ExotelCalling> {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
   })
-  .then(res => res.json())
-  .then((res) => {
-
+    .then((res) => res.json())
+    .then((res) => {
       log(
         'consultServiceLogger',
         'API_CALL_RESPONSE',
@@ -132,7 +131,6 @@ async function exotelCalling(callInputs: callInputs): Promise<ExotelCalling> {
       return exotelResult;
     })
     .catch((error) => {
-
       log(
         'consultServiceLogger',
         'API_CALL_ERROR',
@@ -166,40 +164,38 @@ const initateConferenceTelephoneCall: Resolver<
 
   let fromMobileNumber = undefined;
   let toMobileNumber = undefined;
-  let doctor;
-  let patient;
-  let appt;
+
   const apptsRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
   const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
 
   // if (!exotelInput.from && !exotelInput.to) {
-    
-    // exotelInput.appointmentId made mandatory later on.
-    if (!exotelInput.appointmentId) {
-      throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
-    }
 
-    appt = await apptsRepo.findById(exotelInput.appointmentId);
+  // exotelInput.appointmentId made mandatory later on.
+  if (!exotelInput.appointmentId) {
+    throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
+  }
 
-    if (!appt) {
-      throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
-    }
+  const appt = await apptsRepo.findById(exotelInput.appointmentId);
 
-    patient = await patientRepo.findById(appt.patientId);
+  if (!appt) {
+    throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
+  }
 
-    if (!patient) {
-      throw new AphError(AphErrorMessages.GET_PATIENTS_ERROR, undefined, {});
-    }
+  // lookup with patientId
+  const patient = await patientRepo.getPatientDetails(appt.patientId);
+  if (!patient) {
+    throw new AphError(AphErrorMessages.GET_PATIENTS_ERROR, undefined, {});
+  }
 
-    doctor = await doctorRepo.findById(appt.doctorId);
+  const doctor = await doctorRepo.findById(appt.doctorId);
 
-    if (!doctor) {
-      throw new AphError(AphErrorMessages.GET_DOCTORS_ERROR, undefined, {});
-    }
+  if (!doctor) {
+    throw new AphError(AphErrorMessages.GET_DOCTORS_ERROR, undefined, {});
+  }
 
-    fromMobileNumber = doctor.mobileNumber;
-    toMobileNumber = patient.mobileNumber;
+  fromMobileNumber = doctor.mobileNumber;
+  toMobileNumber = patient.mobileNumber;
   // }
 
   // if (exotelInput.from && !exotelInput.to) {
@@ -221,7 +217,7 @@ const initateConferenceTelephoneCall: Resolver<
   const exotelResult = await exotelCalling({ exotelUrl, exotelRequest });
 
   const exotelRepo = consultsDb.getCustomRepository(ExotelDetailsRepository);
-  const exotelResponse = JSON.parse(exotelResult.response)
+  const exotelResponse = JSON.parse(exotelResult.response);
   let createObj = {
     callSid: exotelResponse['Call']['Sid'],
     accountSid: exotelResponse['Call']['AccountSid'],
@@ -234,132 +230,123 @@ const initateConferenceTelephoneCall: Resolver<
     appointmentId: appt.id,
     doctorType: doctor.doctorType,
     doctorId: doctor.id,
-  }
+  };
 
-  if(exotelInput.deviceType){
-    createObj = Object.assign(createObj, {deviceType: exotelInput.deviceType})
+  if (exotelInput.deviceType) {
+    createObj = Object.assign(createObj, { deviceType: exotelInput.deviceType });
   }
 
   try {
     await exotelRepo.saveExotelCallDetails(createObj);
-  } catch(err){
-    console.error("error in saving exotel details > ", err);
+  } catch (err) {
+    console.error('error in saving exotel details > ', err);
   }
 
   return exotelResult;
-
 };
 
-
 type callStatusInput = {
-  status: string
+  status: string;
 };
 
 type callStatusResult = {
-  updatedCallSidArray: string[]
-  errorArray: string
+  updatedCallSidArray: string[];
+  errorArray: string;
 };
 
 type callStatusInputArgs = { callStatusInput: callStatusInput };
 
-
 // bulkUpdateInProgressCalls by a cron-job (after half an hour)
-const updateCallStatusBySid: Resolver<null, callStatusInputArgs, ConsultServiceContext, callStatusResult>
-= async (parent, { callStatusInput }, { consultsDb }) => {
-
+const updateCallStatusBySid: Resolver<
+  null,
+  callStatusInputArgs,
+  ConsultServiceContext,
+  callStatusResult
+> = async (parent, { callStatusInput }, { consultsDb }) => {
   const exotelRepo = consultsDb.getCustomRepository(ExotelDetailsRepository);
 
   const inProgressCalls = await exotelRepo.getAllCallDetailsByStatus(callStatusInput.status);
 
-  let exotel_url = `https://${process.env.EXOTEL_API_KEY}:${process.env.EXOTEL_API_TOKEN}@${process.env.EXOTEL_SUB_DOMAIN}${process.env.EXOTEL_URI}`;
+  const exotel_url = `https://${process.env.EXOTEL_API_KEY}:${process.env.EXOTEL_API_TOKEN}@${process.env.EXOTEL_SUB_DOMAIN}${process.env.EXOTEL_URI}`;
 
+  const updatedCallSidArray: string[] = [];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const errorArray: any[] = [];
 
-  let updatedCallSidArray: string[] = [];
-  let errorArray: any[] = [];
-  
-  for(let each of inProgressCalls){
-
-    await fetch(exotel_url + '/'  + each.callSid + '.json', {
+  for (const each of inProgressCalls) {
+    await fetch(exotel_url + '/' + each.callSid + '.json', {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' },
     })
-    .then(res => res.json())
-    .then(async (res) => {
+      .then((res) => res.json())
+      .then(async (res) => {
+        let updateObj = {
+          status: res['Call']['Status'],
+          callEndTime: res['Call']['EndTime'],
+          totalCallDuration: res['Call']['Duration'],
+          price: res['Call']['Price'],
+          patientPickedUp: res['Call']['Status'] === 'completed' ? true : false,
+          doctorPickedUp: res['Call']['Status'] === 'completed' ? true : false,
+        };
 
-      let updateObj = {
-        status: res['Call']['Status'],
-        callEndTime: res['Call']['EndTime'],
-        totalCallDuration: res['Call']['Duration'],
-        price: res['Call']['Price'],
-        patientPickedUp: res['Call']['Status'] === 'completed' ? true : false,
-        doctorPickedUp: res['Call']['Status'] === 'completed' ? true : false,
-      }
+        if (res['Call']['RecordingUrl']) {
+          await fetch(res['Call']['RecordingUrl'], {
+            method: 'GET',
+          })
+            .then((response) => response.arrayBuffer())
+            .then(async (resp) => {
+              const uploadDocumentInput = {
+                fileType: 'MPEG',
+                base64FileInput: Buffer.from(resp).toString('base64'),
+              };
 
-      if(res['Call']['RecordingUrl']){
-        await fetch(res['Call']['RecordingUrl'], {
-          method: 'GET',
-        })
-        .then((response) => response.arrayBuffer())
-        .then(async (resp) => {
+              //upload file to blob storage
+              const blobUrl = await uploadFileToBlobStorage(
+                uploadDocumentInput.fileType,
+                uploadDocumentInput.base64FileInput
+              );
 
-          let uploadDocumentInput = {
-            fileType: "MPEG",
-            base64FileInput: Buffer.from(resp).toString('base64')
-          }
+              updateObj = Object.assign(updateObj, { recordingUrl: blobUrl });
 
-          //upload file to blob storage
-          const blobUrl = await uploadFileToBlobStorage(
-            uploadDocumentInput.fileType,
-            uploadDocumentInput.base64FileInput
-          );
-
-          updateObj = Object.assign(updateObj, { recordingUrl: blobUrl })
-
+              await exotelRepo.updateCallDetails(each.id, updateObj);
+            });
+        } else {
           await exotelRepo.updateCallDetails(each.id, updateObj);
+        }
 
-        })
-      } else {
-        await exotelRepo.updateCallDetails(each.id, updateObj);
-      }
-
-      updatedCallSidArray.push(each.callSid)
-
-    })
-    .catch((error) => {
-      console.error('exotelError in update: ', error);
-      errorArray.push(error);
-    })
-
+        updatedCallSidArray.push(each.callSid);
+      })
+      .catch((error) => {
+        console.error('exotelError in update: ', error);
+        errorArray.push(error);
+      });
   }
 
   return { updatedCallSidArray, errorArray: JSON.stringify(errorArray) };
-
-}
-
+};
 
 type appointment = {
-  id: string
+  id: string;
 };
 
 type callDetails = {
-  callSid: string
-  callEndTime: string
-  callStartTime: string
-  patientPickedUp: string
-  doctorPickedUp: string
-  totalCallDuration: string
-  deviceType: string
-  recordingUrl: string
-  appointment: Appointment
-  status: string
+  callSid: string;
+  callEndTime: string;
+  callStartTime: string;
+  patientPickedUp: string;
+  doctorPickedUp: string;
+  totalCallDuration: string;
+  deviceType: string;
+  recordingUrl: string;
+  appointment: Appointment;
+  status: string;
 };
 
 type callDetailsResult = {
-  calls: callDetails[]
-}
+  calls: callDetails[];
+};
 
 type appointmentInputArgs = { appointment: appointment };
-
 
 const getCallDetailsByAppintment: Resolver<
   null,
@@ -367,37 +354,34 @@ const getCallDetailsByAppintment: Resolver<
   ConsultServiceContext,
   callDetailsResult
 > = async (parent, { appointment }, { consultsDb }) => {
-
   const exotelRepo = consultsDb.getCustomRepository(ExotelDetailsRepository);
 
-  let calls = await exotelRepo.findAllByAppointmentId(appointment.id)
-  
+  const calls = await exotelRepo.findAllByAppointmentId(appointment.id);
+
   if (!calls.length) {
     throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
   }
 
-  let callsArray: any[] = [];
-  for(let call of calls){
-
-    let newCallObj = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const callsArray: any[] = [];
+  for (const call of calls) {
+    const newCallObj = {
       callSid: call.callSid,
       callStartTime: call.callStartTime && call.callStartTime.toUTCString(),
-      callEndTime: call.callEndTime ? call.callEndTime.toUTCString() : "",
-      patientPickedUp: (call.patientPickedUp ? "Yes" : "No"),
-      doctorPickedUp: (call.doctorPickedUp ? "Yes" : "No"),
-      totalCallDuration: call.totalCallDuration ? call.totalCallDuration.toString() : "",
+      callEndTime: call.callEndTime ? call.callEndTime.toUTCString() : '',
+      patientPickedUp: call.patientPickedUp ? 'Yes' : 'No',
+      doctorPickedUp: call.doctorPickedUp ? 'Yes' : 'No',
+      totalCallDuration: call.totalCallDuration ? call.totalCallDuration.toString() : '',
       deviceType: call.deviceType,
       recordingUrl: call.recordingUrl,
       appointment: call.appointment,
       status: call.status,
-    }
+    };
 
     callsArray.push(newCallObj);
-
   }
 
   return { calls: callsArray };
-
 };
 
 export const exotelCallingResolvers = {
@@ -407,5 +391,5 @@ export const exotelCallingResolvers = {
   },
   Mutation: {
     updateCallStatusBySid,
-  }
+  },
 };

@@ -6,13 +6,13 @@ import { createHttpLink } from 'apollo-link-http';
 import * as firebase from 'firebase/app';
 import 'firebase/auth';
 import { apiRoutes } from '@aph/universal/dist/aphRoutes';
+
 import React, { useEffect, useState } from 'react';
 import { ApolloProvider } from 'react-apollo';
 import { ApolloProvider as ApolloHooksProvider } from 'react-apollo-hooks';
 import _isEmpty from 'lodash/isEmpty';
 import _uniqueId from 'lodash/uniqueId';
-import { GetCurrentPatients } from 'graphql/types/GetCurrentPatients';
-import { GET_CURRENT_PATIENTS } from 'graphql/profiles';
+import { GET_PATIENT_BY_MOBILE_NUMBER, GET_CURRENT_PATIENTS } from 'graphql/profiles';
 import { Login, LoginVariables } from 'graphql/types/Login';
 import { verifyLoginOtp, verifyLoginOtpVariables } from 'graphql/types/verifyLoginOtp';
 import { LOGIN_TYPE } from 'graphql/types/globalTypes';
@@ -25,6 +25,8 @@ import {
 import { ResendOtp, ResendOtpVariables } from 'graphql/types/ResendOtp';
 import { gtmTracking, _urTracking } from '../gtmTracking';
 import { webengageUserLoginTracking, webengageUserLogoutTracking } from '../webEngageTracking';
+import { GetPatientByMobileNumber } from 'graphql/types/GetPatientByMobileNumber';
+import { GetCurrentPatients } from 'graphql/types/GetCurrentPatients';
 // import { isTest, isFirebaseLoginTest } from 'helpers/testHelpers';
 // import { ResendOtp, ResendOtpVariables } from 'graphql/types/ResendOtp';
 
@@ -165,6 +167,7 @@ export const AuthProvider: React.FC = (props) => {
         webengageUserLogoutTracking();
         /*webengage code end */
         localStorage.removeItem('currentUser');
+        localStorage.removeItem('userMobileNo');
         window.location.reload();
       });
 
@@ -179,6 +182,7 @@ export const AuthProvider: React.FC = (props) => {
       })
       .then((loginResult) => {
         setIsSendingOtp(false);
+        localStorage.setItem('userMobileNo', phoneNumber);
         setCustomLoginId(
           loginResult &&
             loginResult.data &&
@@ -365,38 +369,68 @@ export const AuthProvider: React.FC = (props) => {
         apolloClient = buildApolloClient(jwt, () => signOut());
 
         await apolloClient
-          .query<GetCurrentPatients>({ query: GET_CURRENT_PATIENTS })
+          .query<GetPatientByMobileNumber>({
+            query: GET_PATIENT_BY_MOBILE_NUMBER,
+            variables: {
+              mobileNumber: localStorage.getItem('userMobileNo'),
+            },
+          })
           .then((res) => {
-            const currentPath = window.location.pathname;
-            const userId =
+            if (
               res.data &&
-              res.data.getCurrentPatients &&
-              res.data.getCurrentPatients.patients &&
-              res.data.getCurrentPatients.patients[0].id;
-
-            if (localStorage.getItem('currentUser') && localStorage.getItem('currentUser').length) {
-              const patientIds = res.data.getCurrentPatients.patients.map(patient => patient.id) || [];
-              if (!patientIds.includes(localStorage.getItem('currentUser'))) {
-                localStorage.setItem('currentUser', userId);
-                setCurrentPatientId(userId);
-              } else {
-                setCurrentPatientId(localStorage.getItem('currentUser'));
-              }
-            }
-            /**Gtm code start */
-            if (isNewUser) {
-              gtmTracking({ category: 'Profile', action: 'Register / Login', label: 'Register' });
-              _urTracking({ userId: userId, isApolloCustomer: false, profileFetchedCount: 1 });
+              res.data.getPatientByMobileNumber &&
+              res.data.getPatientByMobileNumber.patients &&
+              res.data.getPatientByMobileNumber.patients.length === 0
+            ) {
+              apolloClient
+                .query<GetCurrentPatients>({ query: GET_CURRENT_PATIENTS })
+                .then((res) => {
+                  const userId =
+                    res.data &&
+                    res.data.getCurrentPatients &&
+                    res.data.getCurrentPatients.patients &&
+                    res.data.getCurrentPatients.patients[0].id;
+                  localStorage.setItem('currentUser', userId);
+                  setCurrentPatientId(userId);
+                  gtmTracking({
+                    category: 'Profile',
+                    action: 'Register / Login',
+                    label: 'Register',
+                  });
+                  _urTracking({ userId: userId, isApolloCustomer: false, profileFetchedCount: 1 });
+                  setSignInError(false);
+                  window.location.reload(true);
+                });
             } else {
+              const userId =
+                res.data &&
+                res.data.getPatientByMobileNumber &&
+                res.data.getPatientByMobileNumber.patients &&
+                res.data.getPatientByMobileNumber.patients[0].id;
+              if (
+                localStorage.getItem('currentUser') &&
+                localStorage.getItem('currentUser').length
+              ) {
+                const patientIds =
+                  res.data.getPatientByMobileNumber.patients.map((patient) => patient.id) || [];
+                if (!patientIds.includes(localStorage.getItem('currentUser'))) {
+                  localStorage.setItem('currentUser', userId);
+                  setCurrentPatientId(userId);
+                } else {
+                  setCurrentPatientId(localStorage.getItem('currentUser'));
+                }
+              }
+              /**Gtm code start */
               gtmTracking({ category: 'Profile', action: 'Register / Login', label: 'Login' });
               /* webengage code start */
               webengageUserLoginTracking(user.uid);
               /* webengage code end */
+              setSignInError(false);
             }
-            /**Gtm code start end */
-            setSignInError(false);
           })
-          .catch(() => setSignInError(true));
+          .catch((e) => {
+            setSignInError(true);
+          });
       }
       setIsSigningIn(false);
     });
@@ -438,140 +472,3 @@ export const AuthProvider: React.FC = (props) => {
     </ApolloProvider>
   );
 };
-
-// const loginApiCall = async (mobileNumber: string) => {
-//   apolloClient
-//     .mutate<Login, LoginVariables>({
-//       variables: {
-//         mobileNumber: mobileNumber,
-//         loginType: LOGIN_TYPE.PATIENT,
-//       },
-//       mutation: CUSTOM_LOGIN,
-//     })
-//     .then((loginResult) => {
-//       setIsSendingOtp(false);
-//       // console.log(
-//       //   'login id is....',
-//       //   loginResult &&
-//       //     loginResult.data &&
-//       //     loginResult.data.login &&
-//       //     loginResult.data.login.loginId
-//       // );
-//       return loginResult &&
-//         loginResult.data &&
-//         loginResult.data.login &&
-//         loginResult.data.login.loginId
-//         ? loginResult.data.login.loginId
-//         : false;
-//     })
-//     .catch();
-
-//   /*
-//   if (
-//     loginResult &&
-//     loginResult.data &&
-//     loginResult.data.login &&
-//     loginResult.data.login.status &&
-//     loginResult.data.login.loginId
-//   ) {
-//
-//     setSendOtpError(false);
-//     return loginResult.data.login.loginId;
-//   } else if (loginError) {
-//     // const logObject = {
-//     //   api: 'Login',
-//     //   inputParam: JSON.stringify({
-//     //     mobileNumber: mobileNumber,
-//     //     loginType: LOGIN_TYPE.PATIENT,
-//     //   }),
-//     //   currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
-//     //   error: JSON.stringify(loginError),
-//     // };
-//     // sessionClient.notify(JSON.stringify(logObject));
-//     setSendOtpError(true);
-//     return false;
-//   } else {
-//     // const logObject = {
-//     //   api: 'Login',
-//     //   inputParam: JSON.stringify({
-//     //     mobileNumber: mobileNumber,
-//     //     loginType: LOGIN_TYPE.PATIENT,
-//     //   }),
-//     //   currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
-//     //   error: JSON.stringify(loginResult),
-//     // };
-//     // sessionClient.notify(JSON.stringify(logObject));
-//     setSendOtpError(true);
-//     return false;
-//   }*/
-// };
-
-// const verifyOtp = async (otp: string) => {
-//   setVerifyOtpError(false);
-//   if (!otpVerifier) {
-//     setSendOtpError(true);
-//     return;
-//   }
-//   setIsVerifyingOtp(true);
-//   const otpAuthResult = await otpVerifier.confirm(otp).catch((error) => {
-//     setVerifyOtpError(true);
-//   });
-//   if (!otpAuthResult || !otpAuthResult.user) setVerifyOtpError(true);
-//   setTimeout(() => {
-//     setIsVerifyingOtp(false);
-//   }, 700);
-// };
-
-// const sendOtp = (phoneNumber: string, captchaPlacement: HTMLElement | null) => {
-//   return new Promise((resolve, reject) => {
-//     setVerifyOtpError(false);
-//     if (!captchaPlacement) {
-//       // TrackJS.track(!captchaPlacement);
-//       setSendOtpError(true);
-//       reject();
-//       return;
-//     }
-//     setIsSendingOtp(true);
-//     // Create a new unique captcha every time because (apparently) captcha.clear() is flaky,
-//     // and can eventually result in a 'recaptcha already assigned to this element' error.
-//     const captchaContainer = document.createElement('div');
-//     captchaContainer.style.display = 'none';
-//     const captchaId = _uniqueId('captcha-container');
-//     captchaContainer.id = captchaId;
-//     captchaPlacement.parentNode!.insertBefore(captchaContainer, captchaPlacement.nextSibling);
-//     const captcha = new firebase.auth.RecaptchaVerifier(captchaId, {
-//       size: 'invisible',
-//       callback: async () => {
-//         const phoneAuthResult = await app
-//           .auth()
-//           .signInWithPhoneNumber(phoneNumber, captcha)
-//           .catch((error) => {
-//             // TrackJS.track(error);
-//             setSendOtpError(true);
-//             reject();
-//             throw error;
-//           });
-//         setIsSendingOtp(false);
-//         // TrackJS.track(phoneAuthResult);
-//         otpVerifier = phoneAuthResult;
-//         setSendOtpError(false);
-//         captcha.clear();
-//         resolve();
-//       },
-//       'expired-callback': () => {
-//         setSendOtpError(true);
-//         captcha.clear();
-//         reject();
-//       },
-//     });
-//     captcha.verify();
-//   }).finally(() => {
-//     setIsSendingOtp(false);
-//   });
-// };
-
-// useEffect(() => {
-//   if (isTest() && !isFirebaseLoginTest()) {
-//     setAuthToken('test');
-//   }
-// }, []);

@@ -17,13 +17,33 @@ export interface getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrder
   hideStatus: boolean | null;
 }
 
+export interface getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrdersList_medicineOrderLineItems {
+  __typename: "MedicineOrderOMSLineItems";
+  medicineName: string | null;
+}
+
+export interface getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrdersList_medicineOrderShipments_medicineOrderInvoice {
+  __typename: "MedicineOrderOMSInvoice";
+  itemDetails: string | null;
+}
+
+export interface getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrdersList_medicineOrderShipments {
+  __typename: "MedicineOrderOMSShipment";
+  medicineOrderInvoice: (getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrdersList_medicineOrderShipments_medicineOrderInvoice | null)[] | null;
+}
+
 export interface getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrdersList {
   __typename: "MedicineOrdersOMS";
   id: string;
+  createdDate: any | null;
   orderAutoId: number | null;
+  billNumber: string | null;
+  shopAddress: string | null;
   deliveryType: MEDICINE_DELIVERY_TYPE;
   currentStatus: MEDICINE_ORDER_STATUS | null;
   medicineOrdersStatus: (getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrdersList_medicineOrdersStatus | null)[] | null;
+  medicineOrderLineItems: (getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrdersList_medicineOrderLineItems | null)[] | null;
+  medicineOrderShipments: (getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrdersList_medicineOrderShipments | null)[] | null;
 }
 
 export interface getMedicineOrdersOMSList_getMedicineOrdersOMSList {

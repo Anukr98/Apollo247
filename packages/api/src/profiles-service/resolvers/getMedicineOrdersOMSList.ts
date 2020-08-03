@@ -63,6 +63,7 @@ export const getMedicineOrdersOMSListTypeDefs = gql`
     medicineOrderPayments: [MedicineOrderOMSPayments]
     medicineOrdersStatus: [MedicineOrdersOMSStatus]
     medicineOrderShipments: [MedicineOrderOMSShipment]
+    medicineOrderAddress: MedicineOrderOMSAddress
     patient: Patient
     customerComment: String
     alertStore: Boolean
@@ -120,6 +121,47 @@ export const getMedicineOrdersOMSListTypeDefs = gql`
     responseCode: String
     responseMessage: String
     bankTxnId: String
+    healthCreditsRedeemed: Float
+    healthCreditsRedemptionRequest: BlockUserPointsResponse
+    paymentMode: PAYMENT_METHODS_REVERSE
+  }
+
+  enum PAYMENT_METHODS_REVERSE {
+    DEBIT_CARD
+    CREDIT_CARD
+    NET_BANKING
+    PAYTM_WALLET
+    CREDIT_CARD_EMI
+    UPI
+    PAYTM_POSTPAID
+    COD
+  }
+
+  type BlockUserPointsResponse {
+    Success: Boolean
+    Message: String
+    RequestNumber: String
+    AvailablePoints: Int
+    BalancePoints: Int
+    RedeemedPoints: Int
+    PointsValue: Int
+  }
+
+  type MedicineOrderOMSAddress {
+    id: ID
+    name: String
+    mobileNumber: String
+    addressLine1: String
+    addressLine2: String
+    addressType: PATIENT_ADDRESS_TYPE
+    city: String
+    otherAddressType: String
+    state: String
+    zipcode: String
+    landmark: String
+    latitude: Float
+    longitude: Float
+    statecode: String
   }
 
   type RecommendedProductsListResult {
@@ -161,6 +203,10 @@ export const getMedicineOrdersOMSListTypeDefs = gql`
     checkIfProductsOnline(productSkus: [String]): ProductAvailabilityResult!
     updateMedicineDataRedis(limit: Int, offset: Int): getMedicineOrdersListResult
     getLatestMedicineOrder(patientUhid: String!): MedicineOrderOMSDetailsResult!
+    getMedicineOrderOMSDetailsWithAddress(
+      patientId: String
+      orderAutoId: Int
+    ): MedicineOrderOMSDetailsResult!
   }
 `;
 
@@ -210,7 +256,7 @@ const getMedicineOrdersOMSList: Resolver<
   MedicineOrdersOMSListResult
 > = async (parent, args, { profilesDb, mobileNumber }) => {
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
-  const patientDetails = await patientRepo.findById(args.patientId);
+  const patientDetails = await patientRepo.getPatientDetails(args.patientId);
   log(
     'profileServiceLogger',
     `getMedicineOrdersOMSList:${mobileNumber}`,
@@ -218,6 +264,7 @@ const getMedicineOrdersOMSList: Resolver<
     JSON.stringify(patientDetails),
     ''
   );
+
   if (!patientDetails) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
@@ -225,7 +272,7 @@ const getMedicineOrdersOMSList: Resolver<
   if (mobileNumber != patientDetails.mobileNumber) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_DETAILS, undefined, {});
   }
-  const primaryPatientIds = await patientRepo.getLinkedPatientIds(args.patientId);
+  const primaryPatientIds = await patientRepo.getLinkedPatientIds({ patientDetails });
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
   const medicineOrdersList: any = await medicineOrdersRepo.getMedicineOrdersListWithoutAbortedStatus(
     primaryPatientIds
@@ -345,9 +392,10 @@ const getMedicineOrderOMSDetails: Resolver<
   let medicineOrderDetails: any = '';
   if (args.billNumber && args.billNumber != '' && args.billNumber != '0' && args.patientId) {
     const patientRepo = profilesDb.getCustomRepository(PatientRepository);
-    const patientDetails = await patientRepo.findById(args.patientId);
+    const patientDetails = await patientRepo.getPatientDetails(args.patientId);
     if (!patientDetails) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
     let uhid = patientDetails.uhid;
+
     if (process.env.NODE_ENV == 'local') uhid = ApiConstants.CURRENT_UHID.toString();
     else if (process.env.NODE_ENV == 'dev') uhid = ApiConstants.CURRENT_UHID.toString();
     const ordersResp = await fetch(
@@ -432,7 +480,7 @@ const getMedicineOrderOMSDetails: Resolver<
   } else {
     const patientRepo = profilesDb.getCustomRepository(PatientRepository);
     if (args.patientId) {
-      const patientDetails = await patientRepo.findById(args.patientId);
+      const patientDetails = await patientRepo.getPatientDetails(args.patientId);
       if (!patientDetails) {
         throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
       }
@@ -763,6 +811,31 @@ const getLatestMedicineOrder: Resolver<
   return { medicineOrderDetails: offlineList };
 };
 
+const getMedicineOrderOMSDetailsWithAddress: Resolver<
+  null,
+  { patientId: string; orderAutoId: number },
+  ProfilesServiceContext,
+  MedicineOrderOMSDetailsResult
+> = async (parent, args, { profilesDb }) => {
+  const patientRepo = profilesDb.getCustomRepository(PatientRepository);
+  if (args.patientId) {
+    const patientDetails = await patientRepo.getPatientDetails(args.patientId);
+    if (!patientDetails) {
+      throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
+    }
+  }
+  const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
+
+  const medicineOrderDetails = await medicineOrdersRepo.getMedicineOrderDetailsWithAddressByOrderId(
+    args.orderAutoId
+  );
+
+  if (!medicineOrderDetails) {
+    throw new AphError(AphErrorMessages.INVALID_MEDICINE_ORDER_ID, undefined, {});
+  }
+  return { medicineOrderDetails };
+};
+
 export const getMedicineOrdersOMSListResolvers = {
   Query: {
     getMedicineOrdersOMSList,
@@ -772,5 +845,6 @@ export const getMedicineOrdersOMSListResolvers = {
     checkIfProductsOnline,
     updateMedicineDataRedis,
     getLatestMedicineOrder,
+    getMedicineOrderOMSDetailsWithAddress,
   },
 };

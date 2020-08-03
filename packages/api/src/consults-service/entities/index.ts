@@ -11,12 +11,13 @@ import {
   ManyToOne,
   Index,
   UpdateDateColumn,
-  CreateDateColumn
+  CreateDateColumn,
+  AfterUpdate,
 } from 'typeorm';
 import { Validate, IsDate } from 'class-validator';
 import { DoctorType, ROUTE_OF_ADMINISTRATION } from 'doctors-service/entities';
-import { NameValidator, MobileNumberValidator, EmailValidator } from 'validators/entityValidators';
-
+import { MobileNumberValidator } from 'validators/entityValidators';
+import { delCache } from 'consults-service/database/connectRedis';
 import { log } from 'customWinstonLogger';
 
 export enum APPOINTMENT_UPDATED_BY {
@@ -283,7 +284,7 @@ export class Appointment extends BaseEntity {
   @Column({ nullable: true })
   transferParentId: string;
 
-  @Column({ nullable: true })
+  @UpdateDateColumn({ nullable: true })
   updatedDate: Date;
 
   @Column({ nullable: true, type: 'text' })
@@ -303,11 +304,6 @@ export class Appointment extends BaseEntity {
     default: () => "'{}'",
   })
   paymentInfo: Partial<AppointmentPayments>;
-
-  @BeforeUpdate()
-  updateDateUpdate() {
-    this.updatedDate = new Date();
-  }
 
   @BeforeUpdate()
   async appointMentStatusConstraintCheck() {
@@ -379,9 +375,19 @@ export class Appointment extends BaseEntity {
   @OneToMany((type) => AuditHistory, (auditHistory) => auditHistory.appointment)
   auditHistory: AuditHistory[];
 
-  @OneToMany(() => ExotelDetails, (callDetail: ExotelDetails) => { callDetail.appointment }, {onDelete: 'CASCADE', onUpdate: 'CASCADE'})
-  callDetails: Array<ExotelDetails>
+  @OneToMany(
+    () => ExotelDetails,
+    (callDetail: ExotelDetails) => {
+      callDetail.appointment;
+    },
+    { onDelete: 'CASCADE', onUpdate: 'CASCADE' }
+  )
+  callDetails: ExotelDetails[];
 
+  @AfterUpdate()
+  async dropAppointmentCache() {
+    await delCache(`patient:appointment:${this.id}`);
+  }
 }
 //Appointment ends
 
@@ -453,13 +459,8 @@ export class AppointmentPayments extends BaseEntity {
   @Column({ type: 'text' })
   responseMessage: string;
 
-  @Column({ nullable: true, type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  @UpdateDateColumn({ nullable: true })
   updatedDate: Date;
-
-  @BeforeUpdate()
-  updateDateUpdate() {
-    this.updatedDate = new Date();
-  }
 
   @ManyToOne((type) => Appointment, (appointment) => appointment.appointmentPayments)
   appointment: Appointment;
@@ -931,8 +932,11 @@ export class CaseSheet extends BaseEntity {
 @Entity()
 export class ConsultQueueItem extends BaseEntity {
   @Index('ConsultQueueItem_appointmentId')
-  @Column()
+  @Column({ nullable: true })
   appointmentId: string;
+
+  @ManyToOne((type) => Appointment, (appointment) => appointment.transferAppointmentDetails)
+  appointment: Appointment;
 
   @Column()
   createdDate: Date;
@@ -1029,6 +1033,12 @@ export class AppointmentUpdateHistory extends BaseEntity {
 
   @Column({ nullable: true })
   toValue: string;
+
+  @Column({ nullable: true })
+  fromState: string;
+
+  @Column({ nullable: true })
+  toState: string;
 
   @Column({ nullable: true })
   reason: string;
@@ -1561,7 +1571,6 @@ export class PlannedDoctors extends BaseEntity {
   @Column()
   speciality: string;
 
-
   @Index('PlannedDoctors_specialityId')
   @Column()
   specialityId: string;
@@ -1788,7 +1797,6 @@ export class NotificationBinArchive extends BaseEntity {
 // ExotelDetails
 @Entity()
 export class ExotelDetails extends BaseEntity {
-
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -1800,9 +1808,14 @@ export class ExotelDetails extends BaseEntity {
   @Column()
   appointmentId: string;
 
-  @ManyToOne(() => Appointment, (appointment: Appointment) => { appointment.callDetails })
-  @JoinColumn({name: 'appointmentId'})
-  appointment: Appointment
+  @ManyToOne(
+    () => Appointment,
+    (appointment: Appointment) => {
+      appointment.callDetails;
+    }
+  )
+  @JoinColumn({ name: 'appointmentId' })
+  appointment: Appointment;
 
   @Index('ExotelDetails_doctorType')
   @Column()
@@ -1859,7 +1872,7 @@ export class ExotelDetails extends BaseEntity {
   @CreateDateColumn()
   createdDate: Date;
 
-  @Column({type: 'timestamp' })
+  @Column({ type: 'timestamp' })
   callStartTime: Date;
 
   @Column({ nullable: true, type: 'timestamp' })
@@ -1867,7 +1880,6 @@ export class ExotelDetails extends BaseEntity {
 
   @Column({ nullable: true })
   totalCallDuration: number;
-
 }
 
 //notification related tables end

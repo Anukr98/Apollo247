@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { makeStyles, createStyles } from '@material-ui/styles';
 import { Theme, Grid, Avatar, CircularProgress } from '@material-ui/core';
 import _uniqueId from 'lodash/uniqueId';
@@ -22,6 +22,7 @@ import {
 import { GET_ALL_SPECIALITIES } from 'graphql/specialities';
 import { useQuery } from 'react-apollo-hooks';
 import { specialtyClickTracking } from 'webEngageTracking';
+import { SchemaMarkup } from 'SchemaMarkup';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -121,11 +122,32 @@ export const Specialties: React.FC<SpecialtiesProps> = (props) => {
   const { selectedCity, setSpecialtyCount } = props;
   const { loading, error, data } = useQuery<GetAllSpecialties>(GET_ALL_SPECIALITIES);
   const allSpecialties = data && data.getAllSpecialties;
+  const [structuredJSON, setStructuredJSON] = useState(null);
+
+  const createSchema = (allSpecialties: any) => {
+    const itemListElement: any[] = [];
+    allSpecialties &&
+      allSpecialties.length > 0 &&
+      Object.values(allSpecialties).map((specialty: any, index: number) => {
+        itemListElement.push({
+          '@type': 'ListItem',
+          position: index + 1,
+          url: `https://www.apollo247.com/specialties/${readableParam(specialty.name)}`,
+          name: specialty.name,
+        });
+      });
+    setStructuredJSON({
+      '@context': 'https://schema.org',
+      '@type': 'ItemList',
+      itemListElement,
+    });
+  };
 
   useEffect(() => {
     localStorage.removeItem('symptomTracker');
     if (setSpecialtyCount && allSpecialties && allSpecialties.length) {
       setSpecialtyCount && setSpecialtyCount(allSpecialties.length);
+      createSchema(allSpecialties);
     }
   }, [allSpecialties]);
 
@@ -140,6 +162,7 @@ export const Specialties: React.FC<SpecialtiesProps> = (props) => {
   ) : allSpecialties && allSpecialties.length > 0 ? (
     <>
       <div className={classes.root}>
+        {structuredJSON && <SchemaMarkup structuredJSON={structuredJSON} />}
         <div className={classes.searchList}>
           <Grid container spacing={1}>
             {allSpecialties.map(
@@ -159,11 +182,11 @@ export const Specialties: React.FC<SpecialtiesProps> = (props) => {
                             new Date().getFullYear() -
                             new Date(currentPatient && currentPatient.dateOfBirth).getFullYear();
                           const eventData = {
-                            patientAge: patientAge,
-                            patientGender: currentPatient && currentPatient.gender,
+                            patientAge: currentPatient ? patientAge : '',
+                            patientGender: currentPatient ? currentPatient.gender : '',
                             specialtyId: specialityDetails.id,
                             specialtyName: e.currentTarget.title,
-                            relation: currentPatient && currentPatient.relation,
+                            relation: currentPatient ? currentPatient.relation : '',
                           };
                           specialtyClickTracking(eventData);
                           currentPatient &&
@@ -191,7 +214,8 @@ export const Specialties: React.FC<SpecialtiesProps> = (props) => {
                         >
                           <div className={classes.contentBox}>
                             <Avatar
-                              alt={specialityDetails.name || ''}
+                              title={`Online Doctor Consultation - ${specialityDetails.name}`}
+                              alt={`Online Doctor Consultation - ${specialityDetails.name}`}
                               src={specialityDetails.image || ''}
                               className={classes.bigAvatar}
                             />

@@ -80,21 +80,24 @@ const submitPrescriptionOrder: Resolver<
   if (!orderDetails) {
     throw new AphError(AphErrorMessages.INVALID_MEDICINE_ORDER_ID, undefined, {});
   }
+
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
-  const patientDetails = await patientRepo.findById(orderDetails.patient.id);
+  const patientDetails = await patientRepo.getPatientDetails(orderDetails.patient.id);
+  if (!patientDetails) {
+    throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
+  }
+
   let deliveryCity = 'Kakinada',
     deliveryZipcode = '500034',
     deliveryAddress = 'Kakinada';
 
-  if (!patientDetails) {
-    throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
-  }
   if (orderDetails.patientAddressId !== '' && orderDetails.patientAddressId !== null) {
     const patientAddressRepo = profilesDb.getCustomRepository(PatientAddressRepository);
     const patientAddressDetails = await patientAddressRepo.findById(orderDetails.patientAddressId);
     if (!patientAddressDetails) {
       throw new AphError(AphErrorMessages.INVALID_PATIENT_ADDRESS_ID, undefined, {});
     }
+
     deliveryAddress = patientAddressDetails.addressLine1 + ' ' + patientAddressDetails.addressLine2;
     if (patientAddressDetails.city == '' || patientAddressDetails.city == null) {
       deliveryCity = 'Kakinada';
@@ -123,6 +126,7 @@ const submitPrescriptionOrder: Resolver<
     };
     orderLineItems.push(lineItem);
   });
+
   const prescriptionImages = orderDetails.prescriptionImageUrl.split(',');
   if (prescriptionImages.length > 0) {
     prescriptionImages.map((imageUrl) => {
@@ -132,14 +136,17 @@ const submitPrescriptionOrder: Resolver<
       orderPrescriptionUrl.push(url);
     });
   }
+
   let selShopId = '15288';
   if (orderDetails.shopId != '' && orderDetails.shopId != null) {
     selShopId = orderDetails.shopId;
   }
+
   let patientAge = 30;
   if (patientDetails.dateOfBirth && patientDetails.dateOfBirth != null) {
     patientAge = Math.abs(differenceInYears(new Date(), patientDetails.dateOfBirth));
   }
+
   const medicineOrderPharma = {
     tpdetails: {
       OrderId: orderDetails.orderAutoId,
@@ -182,6 +189,7 @@ const submitPrescriptionOrder: Resolver<
   const placeOrderUrl = process.env.PHARMACY_MED_PLACE_ORDERS
     ? process.env.PHARMACY_MED_PLACE_ORDERS
     : '';
+
   const placeOrderToken = process.env.PHARMACY_ORDER_TOKEN ? process.env.PHARMACY_ORDER_TOKEN : '';
   if (placeOrderUrl == '' || placeOrderToken == '') {
     throw new AphError(AphErrorMessages.INVALID_PHARMA_ORDER_URL, undefined, {});
@@ -194,6 +202,7 @@ const submitPrescriptionOrder: Resolver<
     JSON.stringify(medicineOrderPharma),
     ''
   );
+
   const pharmaResp = await fetch(placeOrderUrl, {
     method: 'POST',
     body: JSON.stringify(medicineOrderPharma),
@@ -210,6 +219,7 @@ const submitPrescriptionOrder: Resolver<
     );
     throw new AphError(AphErrorMessages.SOMETHING_WENT_WRONG, undefined, {});
   }
+
   const textRes = await pharmaResp.text();
   log(
     'profileServiceLogger',
@@ -218,8 +228,10 @@ const submitPrescriptionOrder: Resolver<
     textRes,
     ''
   );
+
   const orderResp: PharmaResponse = JSON.parse(textRes);
   console.log(orderResp, 'respp', orderResp.ordersResult.Message);
+
   if (orderResp.ordersResult.Status === false) {
     errorCode = -1;
     errorMessage = orderResp.ordersResult.Message;
