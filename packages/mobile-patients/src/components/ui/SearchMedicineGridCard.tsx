@@ -159,7 +159,6 @@ export const SearchMedicineGridCard: React.FC<SearchMedicineGridCardProps> = (pr
   const {
     isTest,
     medicineName,
-    personName,
     specialPrice,
     price,
     imageUrl,
@@ -183,7 +182,6 @@ export const SearchMedicineGridCard: React.FC<SearchMedicineGridCardProps> = (pr
           <Text style={styles.medicineTitle} numberOfLines={3}>
             {medicineName}
           </Text>
-          {/* {renderOutOfStock()} */}
         </View>
       </View>
     );
@@ -212,7 +210,7 @@ export const SearchMedicineGridCard: React.FC<SearchMedicineGridCardProps> = (pr
           onPress={onPressSubtractQuantity}
           textStyle={styles.minusPlusTextStyle}
         />
-        <Text style={theme.viewStyles.text('B', 12, '#fc9916', 1, 24, 0)}>{props.quantity}</Text>
+        <Text style={theme.viewStyles.text('B', 12, '#fc9916', 1, 24, 0)}>{quantity}</Text>
         <QuantityButton
           text={'+'}
           style={styles.plusQtyViewStyle}
@@ -253,17 +251,6 @@ export const SearchMedicineGridCard: React.FC<SearchMedicineGridCardProps> = (pr
     );
   };
 
-  const renderPersonSelectionView = () => {
-    return (
-      !!personName && (
-        <View style={styles.personSelectionView}>
-          <Text style={styles.personNameTextStyle}>{`For ${personName}`}</Text>
-          <DropdownGreen />
-        </View>
-      )
-    );
-  };
-
   const renderSpecialPrice = () => {
     return specialPrice ? (
       <Text style={styles.specialpriceTextStyle}>
@@ -290,7 +277,6 @@ export const SearchMedicineGridCard: React.FC<SearchMedicineGridCardProps> = (pr
       style={[styles.containerStyle, containerStyle, { zIndex: -1 }]}
       onPress={() => onPress()}
     >
-      {renderPersonSelectionView()}
       <View style={styles.medicineIconAndNameViewStyle}>
         {renderMedicineIcon()}
         {renderTitleAndIcon()}
