@@ -200,7 +200,7 @@ export const RecomendedProducts: React.FC<RecomendedProductsProps> = (props) => 
     url: process.env.PHARMACY_MED_IMAGES_BASE_URL,
   };
 
-  const { cartItems, addCartItem, updateCartItem, removeCartItem } = useShoppingCart();
+  const { cartItems, addCartItem, updateCartItem, removeCartItemSku } = useShoppingCart();
   const { currentPatient } = useAllCurrentPatients();
   const [recommendedProductsList, setRecommendedProductsList] = useState<
     recommendedProductsType[] | null
@@ -247,7 +247,7 @@ export const RecomendedProducts: React.FC<RecomendedProductsProps> = (props) => 
   }, [currentPatient, recommendedProductsList]);
 
   const itemIndexInCart = (item: recommendedProductsType) => {
-    const index = cartItems.findIndex((cartItem) => cartItem.id == Number(item.categoryName));
+    const index = cartItems.findIndex((cartItem) => cartItem.sku == item.productSku);
     return index;
   };
 
@@ -420,7 +420,7 @@ export const RecomendedProducts: React.FC<RecomendedProductsProps> = (props) => 
                               },
                             });
                             /**Gtm code End  */
-                            removeCartItem && removeCartItem(Number(productList.productSku));
+                            removeCartItemSku && removeCartItemSku(productList.productSku);
                           }}
                         >
                           Remove
