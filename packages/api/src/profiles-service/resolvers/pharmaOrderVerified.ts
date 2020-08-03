@@ -233,7 +233,10 @@ const saveOrderShipments: Resolver<
       eventName: ApiConstants.MEDICINE_ORDER_KERB_STORE_READY_EVENT_NAME.toString(),
       eventData: {
         orderId: orderDetails.orderAutoId,
-        statusDateTime: format(new Date(), "yyyy-MM-dd'T'HH:mm:ss'+0530'"),
+        statusDateTime: format(
+          parseISO(shipmentsInput[0].updatedDate),
+          "yyyy-MM-dd'T'HH:mm:ss'+0530'"
+        ),
       },
     };
     postEvent(postBody);
@@ -251,7 +254,10 @@ const saveOrderShipments: Resolver<
     eventName: ApiConstants.MEDICINE_ORDER_VERIFIED_EVENT_NAME.toString(),
     eventData: {
       orderId: orderDetails.orderAutoId,
-      statusDateTime: format(new Date(), "yyyy-MM-dd'T'HH:mm:ss'+0530'"),
+      statusDateTime: format(
+        parseISO(shipmentsInput[0].updatedDate),
+        "yyyy-MM-dd'T'HH:mm:ss'+0530'"
+      ),
     },
   };
   postEvent(postBody);

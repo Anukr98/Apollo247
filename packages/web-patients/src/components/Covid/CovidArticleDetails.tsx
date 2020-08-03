@@ -19,6 +19,8 @@ import { BottomLinks } from 'components/BottomLinks';
 import moment from 'moment';
 import { SchemaMarkup } from 'SchemaMarkup';
 import { MetaTagsComp } from 'MetaTagsComp';
+import { ManageProfile } from 'components/ManageProfile';
+import { hasOnePrimaryUser } from 'helpers/onePrimaryUser';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -224,6 +226,7 @@ const useStyles = makeStyles((theme: Theme) => {
 
 export const CovidArticleDetails: React.FC = (props: any) => {
   const classes = useStyles({});
+  const onePrimaryUser = hasOnePrimaryUser();
   const isDesktopOnly = useMediaQuery('(min-width:768px)');
   const [htmlData, setHtmlData] = useState('');
   const [source, setSource] = useState('');
@@ -288,36 +291,36 @@ export const CovidArticleDetails: React.FC = (props: any) => {
           const schemaJSON =
             title && thumbnailWeb && createdAt && updatedAt
               ? {
-                  '@context': 'https://schema.org',
-                  '@type': 'BlogPosting',
-                  mainEntityOfPage: {
-                    '@type': 'WebPage',
-                    '@id': window && window.location ? window.location.href : null,
+                '@context': 'https://schema.org',
+                '@type': 'BlogPosting',
+                mainEntityOfPage: {
+                  '@type': 'WebPage',
+                  '@id': window && window.location ? window.location.href : null,
+                },
+                headline: title,
+                image: thumbnailWeb,
+                author: {
+                  '@type': 'Organization',
+                  name: 'Apollo24|7',
+                },
+                datePublished: moment(Number(createdAt) * 1000)
+                  .utc()
+                  .format(),
+                dateModified: moment(Number(updatedAt) * 1000)
+                  .utc()
+                  .format(),
+                publisher: {
+                  '@type': 'Organization',
+                  name: 'Apollo24|7',
+                  logo: {
+                    '@type': 'ImageObject',
+                    url:
+                      'https://www.apollo247.com/campaign/online-medical-consultation/images/logo.png',
+                    width: 231,
+                    height: 171,
                   },
-                  headline: title,
-                  image: thumbnailWeb,
-                  author: {
-                    '@type': 'Organization',
-                    name: 'Apollo24|7',
-                  },
-                  datePublished: moment(Number(createdAt) * 1000)
-                    .utc()
-                    .format(),
-                  dateModified: moment(Number(updatedAt) * 1000)
-                    .utc()
-                    .format(),
-                  publisher: {
-                    '@type': 'Organization',
-                    name: 'Apollo24|7',
-                    logo: {
-                      '@type': 'ImageObject',
-                      url:
-                        'https://www.apollo247.com/campaign/online-medical-consultation/images/logo.png',
-                      width: 231,
-                      height: 171,
-                    },
-                  },
-                }
+                },
+              }
               : null;
           setHtmlData(htmlData);
           setSource(source);
@@ -351,82 +354,82 @@ export const CovidArticleDetails: React.FC = (props: any) => {
               <CircularProgress size={30} />
             </div>
           ) : (
-            <>
-              <div className={classes.bannerGroup}>
-                <ArticleBanner
-                  slug={articleSlug}
-                  title={title}
-                  source={source}
-                  type={type}
-                  isWebView={isWebView}
-                />
-                <div className={classes.imageBanner}>
-                  <img className={classes.mobileBanner} src={thumbnailMobile} alt="" />
-                  <img className={classes.desktopBanner} src={thumbnailWeb} alt="" />
-                </div>
-              </div>
-              <div className={classes.sectionGroup}>
-                <div className={classes.mainContent}>
-                  <div
-                    className={classes.htmlContent}
-                    dangerouslySetInnerHTML={{ __html: htmlData }}
+              <>
+                <div className={classes.bannerGroup}>
+                  <ArticleBanner
+                    slug={articleSlug}
+                    title={title}
+                    source={source}
+                    type={type}
+                    isWebView={isWebView}
                   />
-                  {sourceUrl && sourceUrl.length && (
-                    <>
-                      <a href={sourceUrl} target="_blank">
-                        <div>SOURCE</div>
-                        <div className={classes.sourceUrl}>{sourceUrl}</div>
-                      </a>
-                    </>
-                  )}
-                </div>
-                <div className={classes.rightSidebar}>
-                  <div className={classes.formCard}>
-                    <div className={classes.sectionHead}>
-                      <div>
-                        <img src={require('images/ic-feed.svg')} alt="" /> {totalComments} Comments
-                      </div>
-                      <FeedbackWidget
-                        totalComments={totalComments}
-                        totalLike={totalLike}
-                        totalDislike={totalDislike}
-                        articleId={titleId}
-                      />
-                    </div>
-
-                    {showCommentForm ? (
-                      <CommentsForm
-                        titleId={titleId}
-                        onCancel={() => {
-                          setShowCommentForm(false);
-                        }}
-                      />
-                    ) : (
-                      <div onClick={() => setShowCommentForm(true)} className={classes.formTrigger}>
-                        Enter your comments here..
-                      </div>
-                    )}
-                    {comments && comments.length ? (
-                      <CommentsList
-                        titleId={titleId}
-                        commentData={comments}
-                        totalComments={totalComments}
-                      />
-                    ) : (
-                      <div className={classes.emptyCommentSection}>
-                        <div className={classes.noComments}>
-                          <img src={require('images/ic-nocomments.svg')} />
-                          <Typography>
-                            There are currently no comments for this. Be the first to comment.
-                          </Typography>
-                        </div>
-                      </div>
-                    )}
+                  <div className={classes.imageBanner}>
+                    <img className={classes.mobileBanner} src={thumbnailMobile} alt="" />
+                    <img className={classes.desktopBanner} src={thumbnailWeb} alt="" />
                   </div>
                 </div>
-              </div>
-            </>
-          )}
+                <div className={classes.sectionGroup}>
+                  <div className={classes.mainContent}>
+                    <div
+                      className={classes.htmlContent}
+                      dangerouslySetInnerHTML={{ __html: htmlData }}
+                    />
+                    {sourceUrl && sourceUrl.length && (
+                      <>
+                        <a href={sourceUrl} target="_blank">
+                          <div>SOURCE</div>
+                          <div className={classes.sourceUrl}>{sourceUrl}</div>
+                        </a>
+                      </>
+                    )}
+                  </div>
+                  <div className={classes.rightSidebar}>
+                    <div className={classes.formCard}>
+                      <div className={classes.sectionHead}>
+                        <div>
+                          <img src={require('images/ic-feed.svg')} alt="" /> {totalComments} Comments
+                      </div>
+                        <FeedbackWidget
+                          totalComments={totalComments}
+                          totalLike={totalLike}
+                          totalDislike={totalDislike}
+                          articleId={titleId}
+                        />
+                      </div>
+
+                      {showCommentForm ? (
+                        <CommentsForm
+                          titleId={titleId}
+                          onCancel={() => {
+                            setShowCommentForm(false);
+                          }}
+                        />
+                      ) : (
+                          <div onClick={() => setShowCommentForm(true)} className={classes.formTrigger}>
+                            Enter your comments here..
+                          </div>
+                        )}
+                      {comments && comments.length ? (
+                        <CommentsList
+                          titleId={titleId}
+                          commentData={comments}
+                          totalComments={totalComments}
+                        />
+                      ) : (
+                          <div className={classes.emptyCommentSection}>
+                            <div className={classes.noComments}>
+                              <img src={require('images/ic-nocomments.svg')} />
+                              <Typography>
+                                There are currently no comments for this. Be the first to comment.
+                          </Typography>
+                            </div>
+                          </div>
+                        )}
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
         </div>
         <div className={classes.riskLevelWrap}>
           <CheckRiskLevel />
@@ -434,6 +437,7 @@ export const CovidArticleDetails: React.FC = (props: any) => {
       </div>
       <BottomLinks />
       <NavigationBottom />
+      {!onePrimaryUser && <ManageProfile />}
     </div>
   );
 };

@@ -7,8 +7,9 @@ import { UIElementsProvider } from '@aph/mobile-patients/src/components/UIElemen
 import React from 'react';
 import { Text, TextInput, Platform } from 'react-native';
 import Axios from 'axios';
-import codePush, { CodePushOptions } from 'react-native-code-push';
+import codePush, { CodePushOptions, DownloadProgress } from 'react-native-code-push';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import { CodePushInfoUi } from '@aph/mobile-patients/src/components/CodePushInfoUi';
 
 const codePushOptions: CodePushOptions = {
   checkFrequency: codePush.CheckFrequency.ON_APP_RESUME,
@@ -43,30 +44,47 @@ if (__DEV__) {
     return response;
   });
 }
-interface AppContainerTypes {}
 
-class AppContainer extends React.Component<AppContainerTypes> {
-  constructor(props: AppContainerTypes) {
+export type CodePushInfo = {
+  syncStatus?: codePush.SyncStatus;
+  downloadProgress?: DownloadProgress;
+};
+
+interface AppContainerProps {}
+interface AppContainerState {
+  codePushInfo: CodePushInfo;
+}
+
+class AppContainer extends React.Component<AppContainerProps, AppContainerState> {
+  constructor(props: AppContainerProps) {
     super(props);
+    this.state = { codePushInfo: {} };
     (Text as any).defaultProps = (Text as any).defaultProps || {};
     (Text as any).defaultProps.allowFontScaling = false;
     (TextInput as any).defaultProps = (TextInput as any).defaultProps || {};
     (TextInput as any).defaultProps.allowFontScaling = false;
   }
 
+  codePushStatusDidChange(status: codePush.SyncStatus) {
+    this.setState({ codePushInfo: { ...this.state.codePushInfo, syncStatus: status } });
+  }
+
   render() {
     return (
-      <AppCommonDataProvider>
-        <AuthProvider>
-          <UIElementsProvider>
-            <ShoppingCartProvider>
-              <DiagnosticsCartProvider>
-                <NavigatorContainer />
-              </DiagnosticsCartProvider>
-            </ShoppingCartProvider>
-          </UIElementsProvider>
-        </AuthProvider>
-      </AppCommonDataProvider>
+      <>
+        <AppCommonDataProvider>
+          <AuthProvider>
+            <UIElementsProvider>
+              <ShoppingCartProvider>
+                <DiagnosticsCartProvider>
+                  <NavigatorContainer />
+                  <CodePushInfoUi codePushInfo={this.state.codePushInfo} />
+                </DiagnosticsCartProvider>
+              </ShoppingCartProvider>
+            </UIElementsProvider>
+          </AuthProvider>
+        </AppCommonDataProvider>
+      </>
     );
   }
 }

@@ -182,11 +182,11 @@ export const Specialties: React.FC<SpecialtiesProps> = (props) => {
                             new Date().getFullYear() -
                             new Date(currentPatient && currentPatient.dateOfBirth).getFullYear();
                           const eventData = {
-                            patientAge: patientAge,
-                            patientGender: currentPatient && currentPatient.gender,
+                            patientAge: currentPatient ? patientAge : '',
+                            patientGender: currentPatient ? currentPatient.gender : '',
                             specialtyId: specialityDetails.id,
                             specialtyName: e.currentTarget.title,
-                            relation: currentPatient && currentPatient.relation,
+                            relation: currentPatient ? currentPatient.relation : '',
                           };
                           specialtyClickTracking(eventData);
                           currentPatient &&
