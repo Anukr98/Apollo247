@@ -29,6 +29,7 @@ import {
   mhdMY,
   nameFormater,
   postWebEngageEvent,
+  nextAvailability,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 // import { Star } from '@aph/mobile-patients/src/components/ui/Icons';
@@ -528,7 +529,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                     ]}
                   >
                     {availableTime && moment(availableTime).isValid()
-                      ? `Consult in ${mhdMY(availableTime, 'min')}`
+                      ? nextAvailability(availableTime, 'Consult')
                       : string.common.book_apointment}
                   </Text>
                 </TouchableOpacity>
