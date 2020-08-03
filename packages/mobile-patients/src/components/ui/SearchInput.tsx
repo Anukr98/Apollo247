@@ -1,26 +1,15 @@
 import { WhiteSearchIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
-import { StyleProp, StyleSheet, View, ViewStyle } from 'react-native';
-import { Input } from 'react-native-elements';
+import { StyleSheet, View } from 'react-native';
+import { Input, InputProps } from 'react-native-elements';
 
-export interface SearchInputProps {
-  _onBlur?: () => void;
+export interface SearchInputProps extends InputProps {
   _onChangeText: (_searchText: string) => void;
-  _onFocus?: () => void;
   _searchText: string;
-  _placeholder: string;
   _isSearchFocused?: boolean;
   _rigthIconView: React.ReactElement;
-  _focusSearch?: boolean;
-  _onSubmitEditing: () => void;
   _itemsNotFound: boolean;
-  _containerStyle?: StyleProp<ViewStyle>;
-  _inputStyle?: StyleProp<ViewStyle>;
-  _inputContainerStyle?: StyleProp<ViewStyle>;
-  _style?: StyleProp<ViewStyle>;
-  _rightIconContainerStyle?: StyleProp<ViewStyle>;
-  _errorStyle?: StyleProp<ViewStyle>;
 }
 
 export const SearchInput: React.FC<SearchInputProps> = (props) => {
@@ -64,35 +53,35 @@ export const SearchInput: React.FC<SearchInputProps> = (props) => {
     return (
       <>
         <Input
-          autoFocus={props._focusSearch}
-          onSubmitEditing={props._onSubmitEditing}
+          autoFocus={props.autoFocus}
+          onSubmitEditing={props.onSubmitEditing}
           value={props._searchText}
           autoCapitalize="none"
           spellCheck={false}
-          onFocus={props._onFocus}
-          onBlur={props._onBlur}
+          onFocus={props.onFocus}
+          onBlur={props.onBlur}
           onChangeText={(value) => props._onChangeText(value)}
           autoCorrect={false}
           rightIcon={props._isSearchFocused ? props._rigthIconView : rightSearchIcon}
-          placeholder={props._placeholder}
+          placeholder={props.placeholder}
           selectionColor={props._itemsNotFound ? '#02475b' : '#00b38e'}
           underlineColorAndroid="transparent"
           placeholderTextColor="rgba(1,48,91, 0.4)"
-          inputStyle={[styles.inputStyle, props._inputStyle]}
+          inputStyle={[styles.inputStyle, props.inputStyle]}
           inputContainerStyle={[
             styles.inputContainerStyle,
             props._itemsNotFound ? { borderBottomColor: '#02475b' } : {},
-            props._inputContainerStyle,
+            props.inputContainerStyle,
           ]}
-          rightIconContainerStyle={[styles.rightIconContainerStyle, props._rightIconContainerStyle]}
-          style={[styles.style, props._style]}
-          containerStyle={[styles.containerStyle, props._containerStyle]}
+          rightIconContainerStyle={[styles.rightIconContainerStyle, props.rightIconContainerStyle]}
+          style={[styles.style, props.style]}
+          containerStyle={[styles.containerStyle, props.containerStyle]}
           errorStyle={[
             {
               ...theme.viewStyles.text('M', 14, '#02475b'),
               marginHorizontal: 10,
             },
-            props._errorStyle,
+            props.errorStyle,
           ]}
           errorMessage={
             props._itemsNotFound ? `Hit enter to search for '${props._searchText}'` : undefined

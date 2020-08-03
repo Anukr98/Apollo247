@@ -497,17 +497,17 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
       >
         <SearchInput
           _searchText={searchText}
-          _onSubmitEditing={startFullSearch}
+          onSubmitEditing={startFullSearch}
           _onChangeText={(value) => {
             onSearchMedicine(value);
           }}
           _isSearchFocused={isSearchFocused}
-          _onFocus={() => setSearchFocused(true)}
-          _onBlur={() => {
+          onFocus={() => setSearchFocused(true)}
+          onBlur={() => {
             setSearchFocused(false);
           }}
           _rigthIconView={rigthIconView}
-          _placeholder="Search meds, brands &amp; more"
+          placeholder="Search meds, brands &amp; more"
           _itemsNotFound={isNoResultsFound}
         />
       </View>

@@ -394,16 +394,16 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
         <SearchInput
           _isSearchFocused={isSearchFocused}
           _searchText={searchText}
-          _onSubmitEditing={goToSearchPage}
+          onSubmitEditing={goToSearchPage}
           _onChangeText={(value) => {
             onSearchMedicine(value);
           }}
-          _onFocus={() => setSearchFocused(true)}
-          _onBlur={() => {
+          onFocus={() => setSearchFocused(true)}
+          onBlur={() => {
             setSearchFocused(false);
           }}
           _rigthIconView={rigthIconView}
-          _placeholder="Search meds, brands &amp; more"
+          placeholder="Search meds, brands &amp; more"
           _itemsNotFound={isNoResultsFound}
         />
       </View>

@@ -1641,8 +1641,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       <>
         <SearchInput
           _isSearchFocused={isSearchFocused}
-          _focusSearch={focusSearch!}
-          _onSubmitEditing={() => {
+          autoFocus={focusSearch!}
+          onSubmitEditing={() => {
             if (searchText.length > 2) {
               const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_SEARCH_RESULTS] = {
                 keyword: searchText,
@@ -1659,8 +1659,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             }
           }}
           _searchText={searchText}
-          _onFocus={() => setSearchFocused(true)}
-          _onBlur={() => {
+          onFocus={() => setSearchFocused(true)}
+          onBlur={() => {
             setSearchFocused(false);
             setMedicineList([]);
             setSearchText('');
@@ -1670,7 +1670,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             onSearchMedicine(value);
           }}
           _rigthIconView={rigthIconView}
-          _placeholder="Search meds, brands &amp; more"
+          placeholder="Search meds, brands &amp; more"
           _itemsNotFound={itemsNotFound}
         />
       </>
