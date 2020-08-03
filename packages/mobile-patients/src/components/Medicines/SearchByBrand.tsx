@@ -393,9 +393,9 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
       >
         <SearchInput
           _isSearchFocused={isSearchFocused}
-          _searchText={searchText}
+          value={searchText}
           onSubmitEditing={goToSearchPage}
-          _onChangeText={(value) => {
+          onChangeText={(value) => {
             onSearchMedicine(value);
           }}
           onFocus={() => setSearchFocused(true)}

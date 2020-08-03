@@ -5,8 +5,6 @@ import { StyleSheet, View } from 'react-native';
 import { Input, InputProps } from 'react-native-elements';
 
 export interface SearchInputProps extends InputProps {
-  _onChangeText: (_searchText: string) => void;
-  _searchText: string;
   _isSearchFocused?: boolean;
   _rigthIconView: React.ReactElement;
   _itemsNotFound: boolean;
@@ -53,17 +51,11 @@ export const SearchInput: React.FC<SearchInputProps> = (props) => {
     return (
       <>
         <Input
-          autoFocus={props.autoFocus}
-          onSubmitEditing={props.onSubmitEditing}
-          value={props._searchText}
+          {...props}
           autoCapitalize="none"
           spellCheck={false}
-          onFocus={props.onFocus}
-          onBlur={props.onBlur}
-          onChangeText={(value) => props._onChangeText(value)}
           autoCorrect={false}
           rightIcon={props._isSearchFocused ? props._rigthIconView : rightSearchIcon}
-          placeholder={props.placeholder}
           selectionColor={props._itemsNotFound ? '#02475b' : '#00b38e'}
           underlineColorAndroid="transparent"
           placeholderTextColor="rgba(1,48,91, 0.4)"
@@ -84,7 +76,7 @@ export const SearchInput: React.FC<SearchInputProps> = (props) => {
             props.errorStyle,
           ]}
           errorMessage={
-            props._itemsNotFound ? `Hit enter to search for '${props._searchText}'` : undefined
+            props._itemsNotFound ? `Hit enter to search for '${props.value}'` : undefined
           }
         />
       </>

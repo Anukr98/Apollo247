@@ -1658,7 +1658,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               props.navigation.navigate(AppRoutes.SearchMedicineScene, { searchText });
             }
           }}
-          _searchText={searchText}
+          value={searchText}
           onFocus={() => setSearchFocused(true)}
           onBlur={() => {
             setSearchFocused(false);
@@ -1666,7 +1666,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             setSearchText('');
             setsearchSate('success');
           }}
-          _onChangeText={(value) => {
+          onChangeText={(value) => {
             onSearchMedicine(value);
           }}
           _rigthIconView={rigthIconView}

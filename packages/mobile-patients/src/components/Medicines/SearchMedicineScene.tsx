@@ -496,9 +496,9 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         }}
       >
         <SearchInput
-          _searchText={searchText}
+          value={searchText}
           onSubmitEditing={startFullSearch}
-          _onChangeText={(value) => {
+          onChangeText={(value) => {
             onSearchMedicine(value);
           }}
           _isSearchFocused={isSearchFocused}
