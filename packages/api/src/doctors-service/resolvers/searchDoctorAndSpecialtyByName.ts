@@ -209,7 +209,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
     if (doctor.specialty) {
       doctor.specialty.id = doctor.specialty.specialtyId;
     }
-    if(doctor['languages'] instanceof Array){
+    if (doctor['languages'] instanceof Array) {
       doctor['languages'] = doctor['languages'].join(', ');
     }
     if (doctor['physicalConsultationFees'] === 0) {
@@ -320,7 +320,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
   for (const doc of responseDoctors.body.hits.hits) {
     const doctor = doc._source;
     doctor['id'] = doctor.doctorId;
-    if(doctor['languages'] instanceof Array){
+    if (doctor['languages'] instanceof Array) {
       doctor['languages'] = doctor['languages'].join(', ');
     }
     if (doctor['physicalConsultationFees'] === 0) {
@@ -401,29 +401,26 @@ const SearchDoctorAndSpecialtyByName: Resolver<
       }
     }
   }
-  //console.log('earlyAvailableApolloMatchedDoctors', earlyAvailableApolloMatchedDoctors);
-  //console.log('earlyAvailableNonApolloMatchedDoctors', earlyAvailableNonApolloMatchedDoctors);
-  //console.log('matchedDoctors', matchedDoctors);
-
-  // matchedSpecialties = await specialtyRepository.searchByName(searchTextLowerCase);
-
+  const elasticMatch = [];
+  elasticMatch.push({ match: { 'doctorSlots.slots.status': 'OPEN' } });
+  elasticMatch.push({ match: { isSearchable: true } });
+  elasticMatch.push({
+    multi_match: {
+      fields: ['specialty.name'],
+      type: 'phrase_prefix',
+      query: searchTextLowerCase,
+    },
+  });
+  if (args.city) {
+    elasticMatch.push({ match: { 'facility.city': args.city } });
+  }
   const specialtiesSearchParams: RequestParams.Search = {
     index: 'doctors',
     body: {
       _source: ['specialty'],
       query: {
         bool: {
-          must: [
-            { match: { 'doctorSlots.slots.status': 'OPEN' } },
-            { match: { isSearchable: true } },
-            {
-              multi_match: {
-                fields: ['specialty.name'],
-                type: 'phrase_prefix',
-                query: searchTextLowerCase,
-              },
-            },
-          ],
+          must: elasticMatch,
         },
       },
       size: 0,
@@ -453,12 +450,6 @@ const SearchDoctorAndSpecialtyByName: Resolver<
     },
   };
 
-  if (args.city) {
-    specialtiesSearchParams['body']['query']['bool']['must'].push({
-      match: { 'facility.city': args.city },
-    });
-  }
-
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let matchedSpecialtiesES: any = await client.search(specialtiesSearchParams);
   const specialityBuckets = matchedSpecialtiesES.body.aggregations.matched_specialities.buckets;
@@ -466,9 +457,9 @@ const SearchDoctorAndSpecialtyByName: Resolver<
   if (specialityBuckets && specialityBuckets.length) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     matchedSpecialtiesES = specialityBuckets.map((speciality: any) => {
-      speciality = speciality.matched_specialities_hits.hits.hits[0]["_source"]["specialty"];
-      if(!speciality["id"]){
-        speciality["id"] = speciality["specialtyId"]; 
+      speciality = speciality.matched_specialities_hits.hits.hits[0]['_source']['specialty'];
+      if (!speciality['id']) {
+        speciality['id'] = speciality['specialtyId'];
       }
       return speciality;
     });
@@ -512,7 +503,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
       doctor['id'] = doctor.doctorId;
       doctor['doctorHospital'] = [];
       doctor['activeSlotCount'] = 0;
-      if(doctor['languages'] instanceof Array){
+      if (doctor['languages'] instanceof Array) {
         doctor['languages'] = doctor['languages'].join(', ');
       }
       if (doctor['physicalConsultationFees'] === 0) {
