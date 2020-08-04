@@ -20,6 +20,7 @@ import {
   NotificationBin,
   NotificationBinArchive,
   AppointmentUpdateHistory,
+  ExotelDetails,
 } from 'consults-service/entities';
 import {
   AdminDoctorMapper,
@@ -46,6 +47,7 @@ import {
   Deeplink,
   DoctorPatientExternalConnect,
   AdminAuditLogs,
+  DoctorProfileHistory,
 } from 'doctors-service/entities';
 import 'reflect-metadata';
 import { createConnections } from 'typeorm';
@@ -67,6 +69,7 @@ import {
   MedicineOrderInvoice,
   MedicineOrderLineItems,
   MedicineOrderPayments,
+  MedicineOrderRefunds,
   MedicineOrders,
   MedicineOrdersStatus,
   MedicineOrderShipments,
@@ -87,6 +90,7 @@ import {
   CouponPharmaRules,
   MedicineOrderCancelReason,
   PharmacologistConsult,
+  MedicineOrderAddress,
 } from 'profiles-service/entities';
 
 export const connect = async () => {
@@ -113,6 +117,7 @@ export const connect = async () => {
         SdDashboardSummary,
         TransferAppointmentDetails,
         AppointmentUpdateHistory,
+        ExotelDetails,
       ],
       type: 'postgres',
       host: process.env.CONSULTS_DB_HOST,
@@ -152,6 +157,7 @@ export const connect = async () => {
         CityPincodeMapper,
         DoctorPatientExternalConnect,
         AdminAuditLogs,
+        DoctorProfileHistory,
       ],
       type: 'postgres',
       host: process.env.DOCTORS_DB_HOST,
@@ -185,6 +191,7 @@ export const connect = async () => {
         MedicineOrderInvoice,
         MedicineOrderLineItems,
         MedicineOrderPayments,
+        MedicineOrderRefunds,
         MedicineOrders,
         MedicineOrdersStatus,
         MedicineOrderShipments,
@@ -204,6 +211,7 @@ export const connect = async () => {
         ReferalCouponMapping,
         MedicineOrderCancelReason,
         PharmacologistConsult,
+        MedicineOrderAddress,
       ],
       type: 'postgres',
       host: process.env.PROFILES_DB_HOST,

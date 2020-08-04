@@ -173,6 +173,8 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
   const { setLoading } = useUIElements();
   const { currentPatientId, currentPatient } = useAllCurrentPatients();
 
+  const callSaveSearch = props.navigation.getParam('callSaveSearch');
+
   // const client = useApolloClient();
 
   // useEffect(() => {
@@ -344,7 +346,7 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
           doctorId: DoctorId,
           consultModeSelected: ConsultMode.ONLINE,
           externalConnect: null,
-          // externalConnect: hideCheckbox ? null : consultedChecked,
+          callSaveSearch: callSaveSearch,
           ...params,
         });
         postWebengaegConsultType('Online');
@@ -380,7 +382,7 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
           doctorId: DoctorId,
           consultModeSelected: ConsultMode.PHYSICAL,
           externalConnect: null,
-          // externalConnect: hideCheckbox ? null : consultedChecked,
+          callSaveSearch: callSaveSearch,
           ...params,
         });
         postWebengaegConsultType('In Person');

@@ -38,7 +38,7 @@ import {
   GET_RECOMMENDED_PRODUCTS_LIST,
   GET_LATEST_MEDICINE_ORDER,
 } from '@aph/mobile-patients/src/graphql/profiles';
-import { SEARCH_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { SEARCH_TYPE, MEDICINE_ORDER_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   Brand,
   getMedicinePageProducts,
@@ -61,6 +61,7 @@ import {
   addPharmaItemToCart,
   productsThumbnailUrl,
   reOrderMedicines,
+  getMaxQtyForMedicineItem,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { postMyOrdersClicked } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import {
@@ -72,7 +73,6 @@ import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { viewStyles } from '@aph/mobile-patients/src/theme/viewStyles';
-import AsyncStorage from '@react-native-community/async-storage';
 import Axios from 'axios';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
@@ -108,6 +108,7 @@ import {
   MedicineReOrderOverlayProps,
   MedicineReOrderOverlay,
 } from '@aph/mobile-patients/src/components/Medicines/MedicineReOrderOverlay';
+import { getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails } from '@aph/mobile-patients/src/graphql/types/getMedicineOrderOMSDetails';
 
 const styles = StyleSheet.create({
   hiTextStyle: {
@@ -148,10 +149,12 @@ const styles = StyleSheet.create({
 export interface MedicineProps
   extends NavigationScreenProps<{
     focusSearch?: boolean;
+    showUploadPrescriptionPopup?: boolean;
   }> {}
 
 export const Medicine: React.FC<MedicineProps> = (props) => {
   const focusSearch = props.navigation.getParam('focusSearch');
+  const showUploadPrescriptionPopup = props.navigation.getParam('showUploadPrescriptionPopup');
   const {
     locationDetails,
     pharmacyLocation,
@@ -161,16 +164,14 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     medicinePageAPiResponse,
     setMedicinePageAPiResponse,
   } = useAppCommonData();
-  const [ShowPopop, setShowPopop] = useState<boolean>(false);
+  const [ShowPopop, setShowPopop] = useState<boolean>(!!showUploadPrescriptionPopup);
   const [pincodePopupVisible, setPincodePopupVisible] = useState<boolean>(false);
   const [isSelectPrescriptionVisible, setSelectPrescriptionVisible] = useState(false);
-  const config = AppConfig.Configuration;
   const {
     cartItems,
     addCartItem,
     removeCartItem,
     updateCartItem,
-    setItemsWithQtyRestriction,
     addMultipleCartItems,
     addMultipleEPrescriptions,
   } = useShoppingCart();
@@ -413,12 +414,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const widget2CategoryId = g(data, 'widget_2', 'category_id') || 0;
   const widget3 = g(data, 'widget_3', 'products') || [];
   const widget3CategoryId = g(data, 'widget_3', 'category_id') || 0;
-
-  useEffect(() => {
-    if (hotSellers.length) {
-      setItemsWithQtyRestriction!(hotSellers.map((v) => v.sku));
-    }
-  }, [hotSellers]);
 
   useEffect(() => {
     if (!loading && !banners.length) {
@@ -690,6 +685,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           }
           props.navigation.navigate(AppRoutes.UploadPrescription, {
             ePrescriptionsProp: selectedEPres,
+            type: 'E-Prescription',
           });
         }}
         selectedEprescriptionIds={[]}
@@ -717,12 +713,13 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           prescription: 'SELECT FROM\nE-PRESCRIPTION',
         }}
         onClickClose={() => setShowPopop(false)}
-        onResponse={(selectedType, response) => {
+        onResponse={(selectedType, response, type) => {
           setShowPopop(false);
           if (selectedType == 'CAMERA_AND_GALLERY') {
             if (response.length == 0) return;
             props.navigation.navigate(AppRoutes.UploadPrescription, {
               phyPrescriptionsProp: response,
+              type,
             });
           } else {
             setSelectPrescriptionVisible(true);
@@ -771,6 +768,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       } else if (item.sku) {
         props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
           sku: item.sku,
+          movedFrom: 'widget',
         });
       }
     };
@@ -804,7 +802,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       );
     } else if (banners.length && !isSelectPrescriptionVisible) {
       return (
-        <View>
+        <View style={{ marginBottom: 10 }}>
           <Carousel
             onSnapToItem={setSlideIndex}
             data={banners}
@@ -870,7 +868,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         style={[
           {
             ...theme.viewStyles.card(),
-            marginTop: 0,
+            marginTop: 10,
             marginBottom: 16,
           },
           medicineList.length > 0 && searchText
@@ -950,6 +948,28 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         currentPatient,
         'Medicine Home'
       );
+
+      const orderDetails = ((!loading && order) ||
+        {}) as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails;
+
+      const eventAttributes: WebEngageEvents[WebEngageEventName.RE_ORDER_MEDICINE] = {
+        orderType: !!g(order, 'billNumber')
+          ? 'Offline'
+          : orderDetails.orderType == MEDICINE_ORDER_TYPE.UPLOAD_PRESCRIPTION
+          ? 'Non Cart'
+          : 'Cart',
+        noOfItemsNotAvailable: unavailableItems.length,
+        source: 'Home',
+        'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+        'Patient UHID': g(currentPatient, 'uhid'),
+        Relation: g(currentPatient, 'relation'),
+        'Patient Age': Math.round(moment().diff(currentPatient.dateOfBirth, 'years', true)),
+        'Patient Gender': g(currentPatient, 'gender'),
+        'Mobile Number': g(currentPatient, 'mobileNumber'),
+        'Customer ID': g(currentPatient, 'id'),
+      };
+      postWebEngageEvent(WebEngageEventName.RE_ORDER_MEDICINE, eventAttributes);
+
       items.length && addMultipleCartItems!(items);
       items.length && prescriptions.length && addMultipleEPrescriptions!(prescriptions);
       globalLoading!(false);
@@ -1022,7 +1042,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
   const renderYourOrders = () => {
     return (
-      <View style={{ ...theme.viewStyles.card(), paddingVertical: 0, marginTop: 5 }}>
+      <View style={{ ...theme.viewStyles.card(), paddingVertical: 0, marginTop: 0 }}>
         <ListItem
           title={'My Orders'}
           leftAvatar={<MedicineIcon />}
@@ -1327,6 +1347,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       image,
       thumbnail,
       type_id,
+      MaxOrderQty,
     } = data.item;
 
     const addToCart = () => {
@@ -1346,6 +1367,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           quantity: 1,
           thumbnail,
           isInStock: true,
+          maxOrderQty: MaxOrderQty,
         },
         pharmacyPincode!,
         addCartItem,
@@ -1385,7 +1407,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           eventAttributes
         );
         postwebEngageProductClickedEvent(data.item, title, 'Home');
-        props.navigation.navigate(AppRoutes.MedicineDetailsScene, { sku });
+        props.navigation.navigate(AppRoutes.MedicineDetailsScene, { sku, movedFrom: 'widget' });
       },
       style: {
         marginHorizontal: 4,
@@ -1420,6 +1442,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                     category_id: categoryId,
                     products: categoryId == -1 ? products : null,
                     title: `${title || 'Products'}`.toUpperCase(),
+                    movedFrom: 'home',
                   })
               : undefined
           }
@@ -1679,6 +1702,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       is_prescription_required,
       type_id,
       thumbnail,
+      MaxOrderQty,
     } = item;
     setItemsLoading({ ...itemsLoading, [sku]: true });
     addPharmaItemToCart(
@@ -1697,6 +1721,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         quantity: Number(1),
         thumbnail: thumbnail,
         isInStock: true,
+        maxOrderQty: MaxOrderQty,
       },
       pharmacyPincode!,
       addCartItem,
@@ -1742,6 +1767,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           savePastSeacrh(`${item.sku}`, item.name).catch((e) => {});
           props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
             sku: item.sku,
+            movedFrom: 'search',
           });
         }}
         onPressAddToCart={() => {
@@ -1752,7 +1778,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         }}
         onPressAdd={() => {
           const q = getItemQuantity(item.sku);
-          if (q == 20) return;
+          if (q == getMaxQtyForMedicineItem(item.MaxOrderQty)) return;
           onUpdateCartItem(item.sku, getItemQuantity(item.sku) + 1);
         }}
         onPressSubstract={() => {
@@ -1830,7 +1856,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     );
   };
 
-  const renderSectionsWithOrdering = () => {
+  const renderRecommendedProducts = () => {
+    return renderHotSellers('RECOMMENDED FOR YOU', recommendedProducts, -1);
+  };
+
+  const renderSections = () => {
     const info = AppConfig.Configuration.PHARMACY_HOMEPAGE_INFO;
     const sectionMapping = {
       healthareas: renderCategories,
@@ -1841,6 +1871,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       monsoon_essentials: renderHotSellers,
       widget_2: renderHotSellers,
       widget_3: renderHotSellers,
+      renderBannerImageToGetAspectRatio: renderBannerImageToGetAspectRatio,
+      banners: renderBanners,
+      orders: renderYourOrders,
+      upload_prescription: renderUploadPrescriptionSection,
+      recommended_products: renderRecommendedProducts,
     };
     const sectionDataMapping = {
       healthareas: [healthAreas, 0],
@@ -1851,8 +1886,22 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       monsoon_essentials: [monsoonEssentials, monsoonEssentialsCategoryId],
       widget_2: [widget2, widget2CategoryId],
       widget_3: [widget3, widget3CategoryId],
+      renderBannerImageToGetAspectRatio: [[], 0],
+      banners: [[], 0],
+      orders: [[], 0],
+      upload_prescription: [[], 0],
+      recommended_products: [[], 0],
     };
-    const sectionsView = info
+    const bannersKey = info.findIndex((i) => i.section_key == 'banners');
+    const sectionsView = [
+      {
+        section_key: 'renderBannerImageToGetAspectRatio',
+        section_name: 'Banners',
+        section_position: bannersKey > -1 ? info[bannersKey].section_position : '0',
+        visible: bannersKey > -1 ? info[bannersKey].visible : false,
+      },
+      ...info,
+    ]
       .filter((item) => item.visible)
       .sort((a, b) => Number(a.section_position) - Number(b.section_position))
       .map((item) => {
@@ -1868,14 +1917,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           : null;
       });
 
-    return sectionsView;
-  };
-
-  const renderRecommendedProducts = () => {
-    return renderHotSellers('RECOMMENDED FOR YOU', recommendedProducts, -1);
-  };
-
-  const renderSections = () => {
     return (
       <TouchableOpacity
         activeOpacity={1}
@@ -1886,12 +1927,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         }}
         style={{ flex: 1 }}
       >
-        {renderBannerImageToGetAspectRatio()}
-        {renderBanners()}
-        {renderYourOrders()}
-        {renderUploadPrescriptionSection()}
-        {renderRecommendedProducts()}
-        {loading ? renderSectionLoader() : !error && renderSectionsWithOrdering()}
+        <View style={{ height: 10 }} />
+        {sectionsView}
         {!error && <View style={{ height: 20 }} />}
       </TouchableOpacity>
     );

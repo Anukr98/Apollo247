@@ -20,6 +20,7 @@
 #import <WebEngage/WebEngage.h>
 @import AppsFlyerLib;
 #import <FBSDKCoreKit/FBSDKCoreKit.h>
+#import <CodePush/CodePush.h>
 
 #if __has_include(<AppsFlyerLib/AppsFlyerTracker.h>) // from Pod
 #import <AppsFlyerLib/AppsFlyerTracker.h>
@@ -211,11 +212,11 @@ API_AVAILABLE(ios(10.0)){
 
 - (NSURL *)sourceURLForBridge:(RCTBridge *)bridge
 {
-#if DEBUG
-  return [[RCTBundleURLProvider sharedSettings] jsBundleURLForBundleRoot:@"index" fallbackResource:nil];
-#else
-  return [[NSBundle mainBundle] URLForResource:@"main" withExtension:@"jsbundle"];
-#endif
+  #if DEBUG
+    return [[RCTBundleURLProvider sharedSettings] jsBundleURLForBundleRoot:@"index" fallbackResource:nil];
+  #else
+    return [CodePush bundleURL];
+  #endif
 }
 
 #pragma mark WebEngage

@@ -58,7 +58,7 @@ const uploadDocument: Resolver<
     uploadDocumentInput.base64FileInput
   );
 
-  const patientDetails = await patientsRepo.getPatientData(uploadDocumentInput.patientId);
+  const patientDetails = await patientsRepo.getPatientDetails(uploadDocumentInput.patientId);
   if (!patientDetails) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
 
   if (!patientDetails.uhid) throw new AphError(AphErrorMessages.INVALID_UHID);
