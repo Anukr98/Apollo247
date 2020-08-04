@@ -367,8 +367,10 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
       .then(({ data }) => {
         try {
           if (data) {
-            if (data.products && data.products.length > 0) {
-              setSubstitutes(data.products);
+            if (data.products && data.products.length > 1) {
+              setSubstitutes(
+                data.products.filter((sub: MedicineProductDetails) => sub.url_key !== params.sku)
+              );
             }
           }
         } catch (error) {
