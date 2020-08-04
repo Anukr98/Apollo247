@@ -122,7 +122,7 @@ const updateOrderStatus: Resolver<
 
   let status = MEDICINE_ORDER_STATUS[updateOrderStatusInput.status];
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
-  const orderDetails = await medicineOrdersRepo.getMedicineOrderWithShipments(
+  const orderDetails = await medicineOrdersRepo.getMedicineOrderWithPaymentAndShipments(
     updateOrderStatusInput.orderId
   );
 
