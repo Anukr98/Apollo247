@@ -61,7 +61,7 @@ export class AppointmentRepository extends Repository<Appointment> {
         getApptError,
       });
     });
- 
+
     if (appointment) {
       await setCache(
         `${REDIS_APPOINTMENT_ID_KEY_PREFIX}${id}`,
@@ -69,7 +69,7 @@ export class AppointmentRepository extends Repository<Appointment> {
         ApiConstants.CACHE_EXPIRATION_3600
       );
     }
- 
+
     return appointment;
   }
 
