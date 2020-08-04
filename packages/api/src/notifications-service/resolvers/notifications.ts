@@ -555,7 +555,7 @@ export async function sendNotification(
   const istDateTime = addMilliseconds(appointment.appointmentDateTime, 19800000);
   const apptDate = format(
     addMinutes(new Date(appointment.appointmentDateTime), +330),
-    "yyyy-MM-dd'T'HH:mm:ss'+0530'"
+    'yyyy-MM-dd HH:mm:ss'
   );
   if (pushNotificationInput.notificationType == NotificationType.PATIENT_CANCEL_APPOINTMENT) {
     notificationTitle = ApiConstants.PATIENT_CANCEL_APPT_TITLE;
@@ -896,7 +896,7 @@ export async function sendNotification(
     //const istDateTime = addMilliseconds(appointment.appointmentDateTime, 19800000);
     const apptDate = format(
       addMinutes(new Date(appointment.appointmentDateTime), +330),
-      "yyyy-MM-dd'T'HH:mm:ss'+0530'"
+      'yyyy-MM-dd HH:mm:ss'
     );
     notificationBody = notificationBody.replace('{3}', apptDate);
 

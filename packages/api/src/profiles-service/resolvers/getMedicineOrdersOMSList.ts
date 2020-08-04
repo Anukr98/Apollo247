@@ -179,6 +179,14 @@ export const getMedicineOrdersOMSListTypeDefs = gql`
     status: String
     mou: String
     imageBaseUrl: String
+    id: String
+    is_in_stock: Boolean
+    small_image: String
+    thumbnail: String
+    type_id: String
+    quantity: String
+    isShippable: String
+    MaxOrderQty: Int
   }
 
   type ProductAvailabilityResult {
@@ -237,6 +245,16 @@ type RecommendedProducts = {
   status: string;
   mou: string;
   imageBaseUrl: string;
+  urlKey: string;
+  description: string;
+  id: string;
+  is_in_stock: boolean;
+  small_image: string;
+  thumbnail: string;
+  type_id: string;
+  quantity: string;
+  isShippable: string;
+  MaxOrderQty: number;
 };
 
 type ProductAvailabilityResult = {
@@ -577,6 +595,16 @@ const getRecommendedProductsList: Resolver<
           status: skuDets.status,
           mou: skuDets.mou,
           imageBaseUrl: ApiConstants.REDIS_IMAGE_URL.toString(),
+          urlKey: skuDets.url_key,
+          description: skuDets.description,
+          id: '',
+          is_in_stock: true,
+          small_image: skuDets.base_image,
+          thumbnail: skuDets.base_image,
+          type_id: '',
+          quantity: skuDets.qty,
+          isShippable: skuDets.sell_online,
+          MaxOrderQty: 0,
         };
         recommendedProductsList.push(recommendedProducts);
       }
