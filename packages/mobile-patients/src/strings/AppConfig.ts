@@ -246,8 +246,9 @@ export const updateAppConfig = (key: keyof typeof Configuration, value: object) 
 
 const PharmaApiConfig = {
   dev: {
+    TRACK_EVENT: [`${tagalysBaseUrl}/analytics/events/track`],
     MED_SEARCH: [`${tagalysBaseUrl}/search`],
-    MED_DETAIL: [apolloUatBaseUrl, pharmaToken201], // change to PROD
+    MED_DETAIL: [apolloUatBaseUrl, pharmaToken201],
     MED_SEARCH_SUGGESTION: [`${tagalysBaseUrl}/ss`],
     STORES_LIST: [apolloUatBaseUrl, pharmaToken201],
     GET_STORE_INVENTORY: [
@@ -283,6 +284,7 @@ const PharmaApiConfig = {
     ],
   },
   prod: {
+    TRACK_EVENT: [`${tagalysBaseUrl}/analytics/events/track`],
     MED_SEARCH: [`${tagalysBaseUrl}/search`],
     MED_DETAIL: [apolloProdBaseUrl, pharmaToken201],
     MED_SEARCH_SUGGESTION: [`${tagalysBaseUrl}/ss`],

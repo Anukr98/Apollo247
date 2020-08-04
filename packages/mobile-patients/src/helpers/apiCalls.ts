@@ -3,6 +3,7 @@ import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import {
   getTagalysConfig,
   tagalysResponseFormatter,
+  Tagalys,
 } from '@aph/mobile-patients/src/helpers/Tagalys';
 
 export interface MedicineProduct {
@@ -29,28 +30,6 @@ export interface MedicineProductDetails extends Omit<MedicineProduct, 'image'> {
   image: string[];
   manufacturer: string;
   PharmaOverview: PharmaOverview;
-}
-
-export interface TagalysProduct {
-  __id: string;
-  __magento_avg_rating_id_1: number;
-  __magento_avg_rating_id_2: number;
-  __magento_avg_rating_id_3: number;
-  __magento_ratings_count: number;
-  __magento_type: string;
-  __new: boolean;
-  discount_amount: number;
-  discount_percentage: number;
-  image_url: string;
-  in_stock: boolean;
-  introduced_at: string;
-  is_prescription_required: boolean;
-  link: string;
-  name: string;
-  price: number;
-  sale_price: number;
-  sell_online: string[];
-  sku: string;
 }
 
 export type Doseform = 'TABLET' | 'INJECTION' | 'SYRUP' | '';
@@ -363,7 +342,7 @@ export const searchMedicineApi = async (
     }),
     transformResponse: (data: any) => {
       const _data = JSON.parse(data);
-      const products = (_data.details || []) as TagalysProduct[];
+      const products = (_data.details || []) as Tagalys.ProductResponse[];
       return {
         ..._data,
         product_count: _data.total,
@@ -458,6 +437,20 @@ export const medCartItemsDetailsApi = (
   );
 };
 
+export const trackTagalysEvent = (
+  params: Tagalys.Event,
+  userId: string
+): Promise<AxiosResponse<any>> => {
+  return Axios({
+    url: config.TRACK_EVENT[0],
+    method: 'POST',
+    data: {
+      ...getTagalysConfig(userId),
+      ...params,
+    },
+  });
+};
+
 let cancelSearchSuggestionsApi: Canceler | undefined;
 
 export const getMedicineSearchSuggestionsApi = (
@@ -481,7 +474,7 @@ export const getMedicineSearchSuggestionsApi = (
     }),
     transformResponse: (data: any) => {
       const _data = JSON.parse(data);
-      const products = (_data.products || []) as TagalysProduct[];
+      const products = (_data.products || []) as Tagalys.ProductResponse[];
       return {
         ..._data,
         product_count: products.length,

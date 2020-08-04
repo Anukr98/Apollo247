@@ -3,10 +3,10 @@ import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import moment from 'moment';
 import { Dimensions, Platform } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
-import { TagalysProduct, MedicineProduct } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { MedicineProduct } from '@aph/mobile-patients/src/helpers/apiCalls';
 
 export const getTagalysConfig = (userId: string) => buildTagalysConfig(userId);
-export const setTagalysConfig = (_tagalysConfig: Tagalys.RootObject | null) => {
+export const setTagalysConfig = (_tagalysConfig: Tagalys.Config | null) => {
   tagalysConfig = _tagalysConfig;
 };
 export const tagalysResponseFormatter = ({
@@ -19,7 +19,7 @@ export const tagalysResponseFormatter = ({
   sale_price,
   sell_online,
   sku,
-}: TagalysProduct): MedicineProduct => ({
+}: Tagalys.ProductResponse): MedicineProduct => ({
   category_id: '', // TODO: Field not present in Tagalys
   description: '',
   id: Number(__id),
@@ -36,10 +36,10 @@ export const tagalysResponseFormatter = ({
   status: (sell_online || []).indexOf('enable') > -1 ? 1 : 0,
   thumbnail: image_url,
   type_id: 'Pharma', // TODO: Field not present in Tagalys
-  url_key: '',
+  url_key: '', // TODO: Field not present in Tagalys (req for merchandised page)
 });
 
-let tagalysConfig: Tagalys.RootObject | null = null;
+let tagalysConfig: Tagalys.Config | null = null;
 let visit_info: { id: string; timestamp: number } | null = null;
 const { width, height } = Dimensions.get('screen');
 const { TAGALYS_API_KEY, TAGALYS_CLIENT_CODE } = AppConfig.Configuration;
@@ -60,7 +60,7 @@ const generateVisitId = (): Tagalys.User['visit_id'] => {
   }
 };
 
-const buildTagalysConfig = (userId: string): Tagalys.RootObject => {
+const buildTagalysConfig = (userId: string): Tagalys.Config => {
   if (tagalysConfig) {
     return tagalysConfig;
   } else {
@@ -90,43 +90,89 @@ const buildTagalysConfig = (userId: string): Tagalys.RootObject => {
   }
 };
 
-declare module Tagalys {
-  export interface Os {
-    name: string;
+export declare module Tagalys {
+  export interface Config {
+    device_info: DeviceInfo;
+    identification: Identification;
   }
 
-  export interface Browser {
-    name: string;
-    version: string;
-  }
-
-  export interface ScreenResolution {
-    width: number;
-    height: number;
-  }
-
-  export interface DeviceInfo {
+  interface DeviceInfo {
     device_type: string;
     os: Os;
     browser: Browser;
     screen_resolution: ScreenResolution;
   }
 
-  export interface User {
-    device_id: string;
-    visit_id: string;
-    user_id: string;
+  interface Os {
+    name: string;
   }
 
-  export interface Identification {
+  interface Browser {
+    name: string;
+    version: string;
+  }
+
+  interface ScreenResolution {
+    width: number;
+    height: number;
+  }
+
+  interface Identification {
     client_code: string;
     api_key: string;
     store_id: string;
     user: User;
   }
 
-  export interface RootObject {
-    device_info: DeviceInfo;
-    identification: Identification;
+  interface User {
+    device_id: string;
+    visit_id: string;
+    user_id: string;
+  }
+
+  export interface Event {
+    event_type: 'product_action' | 'product_list';
+    details: ProductAction | ProductList;
+  }
+
+  interface ProductAction {
+    sku: string;
+    action: 'view' | 'add_to_cart' | 'buy';
+    quantity?: number; // For add_to_cart and buy
+    order_id?: string; // For buy
+  }
+
+  interface ProductList {
+    pl_type: 'search' | 'mpage';
+    pl_details: {
+      q: string;
+      qm: 'and' | 'or';
+    };
+    pl_products: string[]; // SKU List
+    pl_page: number;
+    pl_total: number;
+    pl_sort?: string;
+  }
+
+  export interface ProductResponse {
+    __id: string;
+    __magento_avg_rating_id_1: number;
+    __magento_avg_rating_id_2: number;
+    __magento_avg_rating_id_3: number;
+    __magento_ratings_count: number;
+    __magento_type: string;
+    __new: boolean;
+    discount_amount: number;
+    discount_percentage: number;
+    image_url: string;
+    in_stock: boolean;
+    introduced_at: string;
+    is_prescription_required: boolean;
+    link: string;
+    name: string;
+    price: number;
+    sale_price: number;
+    sell_online: string[];
+    sku: string;
   }
 }
