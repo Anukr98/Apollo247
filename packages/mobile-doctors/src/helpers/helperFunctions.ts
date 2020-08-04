@@ -285,6 +285,7 @@ export const messageCodes = {
   appointmentComplete: '^^#appointmentComplete',
   cancelConsultInitiated: '^^#cancelConsultInitiated',
   autoResponse: '^^#doctorAutoResponse',
+  leaveChatRoom: '^^#leaveChatRoom'
 };
 
 export const formatFloating = (value: string) => {
