@@ -108,7 +108,6 @@ export class ConsultQueueRepository extends Repository<ConsultQueueItem> {
     if (isActive) {
       limit = 1000;
     }
-    console.log(isActive);
     return await this.createQueryBuilder('consultQueueItem')
       .select([
         'consultQueueItem.id',
