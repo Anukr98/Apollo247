@@ -211,9 +211,7 @@ const makeAppointmentPayment: Resolver<
   if (paymentInput.paymentStatus == 'TXN_SUCCESS') {
     if (processingAppointment.couponCode) {
       const patient = patientsDb.getCustomRepository(PatientRepository);
-      const patientDetails = await patient.getPatientDetails(
-        processingAppointment.patientId
-      );
+      const patientDetails = await patient.getPatientDetails(processingAppointment.patientId);
       if (!patientDetails) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
       const payload: AcceptCouponRequest = {
         mobile: patientDetails.mobileNumber.replace('+91', ''),
@@ -237,7 +235,11 @@ const makeAppointmentPayment: Resolver<
         `${JSON.stringify(processingAppointment)}`,
         'true'
       );
-      await apptsRepo.systemCancelAppointment(processingAppointment.id, processingAppointment);
+      await apptsRepo.systemCancelAppointment(
+        processingAppointment.id,
+        { paymentInfo },
+        processingAppointment
+      );
       let isRefunded: boolean = false;
       if (paymentInfo.amountPaid && paymentInfo.amountPaid >= 1) {
         let refundResponse = await initiateRefund(
@@ -551,14 +553,8 @@ const sendPatientAcknowledgements = async (
       : subjectLine + ' from ' + process.env.NODE_ENV;
 
   const toEmailId = process.env.BOOK_APPT_TO_EMAIL ? process.env.BOOK_APPT_TO_EMAIL : '';
-  const ccEmailIds =
-    process.env.NODE_ENV == 'dev' ||
-    process.env.NODE_ENV == 'development' ||
-    process.env.NODE_ENV == 'local'
-      ? ApiConstants.PATIENT_APPT_CC_EMAILID
-      : ApiConstants.PATIENT_APPT_CC_EMAILID_PRODUCTION;
   const emailContent: EmailMessage = {
-    ccEmail: <string>ccEmailIds.toString(),
+    //ccEmail: <string>ccEmailIds.toString(),
     toEmail: <string>toEmailId.toString(),
     subject: subject,
     fromEmail: <string>ApiConstants.PATIENT_HELP_FROM_EMAILID.toString(),

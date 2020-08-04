@@ -396,6 +396,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
                       WebEngageEventName.DOCTOR_RESCHEDULE_CLAIM_REFUND,
                       eventAttributes
                     );
+                    props.navigation.popToTop();
                   } catch (error) {}
 
                   hideAphAlert && hideAphAlert();
@@ -519,6 +520,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
                       WebEngageEventName.DOCTOR_RESCHEDULE_CLAIM_REFUND,
                       eventAttributes
                     );
+                    props.navigation.popToTop();
                   } catch (error) {}
 
                   hideAphAlert && hideAphAlert();

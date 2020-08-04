@@ -25,6 +25,7 @@ import { ORDER_BILLING_STATUS_STRINGS } from 'helpers/commonHelpers';
 import { MedicineOrderBilledItem } from 'helpers/MedicineApiCalls';
 import { pharmacyOrderSummaryTracking } from 'webEngageTracking';
 import { ReOrder } from './ReOrder';
+import { PatientsList } from 'components/PatientsList';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -425,7 +426,10 @@ export const OrdersSummary: React.FC<OrdersSummaryProps> = (props) => {
         : '';
       return addressData;
     } else {
-      getAddressDetails(orderDetailsData.patientAddressId, orderDetailsData.patient.id);
+      orderDetailsData &&
+        orderDetailsData.patient &&
+        orderDetailsData.patient.id &&
+        getAddressDetails(orderDetailsData.patientAddressId, orderDetailsData.patient.id);
     }
   };
 
@@ -500,20 +504,14 @@ export const OrdersSummary: React.FC<OrdersSummaryProps> = (props) => {
 
   useEffect(() => {
     if (orderDetailsData) {
-      const {
-        id,
-        orderTat,
-        orderType,
-        currentStatus,
-        patient: { id: customerId, mobileNumber },
-      } = orderDetailsData;
+      const { id, orderTat, orderType, currentStatus, patient } = orderDetailsData;
       const data = {
         orderId: id,
         orderDate: getFormattedDateTime('webengage'),
         orderType,
-        customerId,
+        customerId: patient ? patient.id : '',
         deliveryDate: moment(orderTat).format('DD-MM-YYYY'),
-        mobileNumber,
+        mobileNumber: patient ? patient.mobileNumber : null,
         orderStatus: currentStatus,
       };
       pharmacyOrderSummaryTracking(data);
@@ -754,7 +752,15 @@ export const OrdersSummary: React.FC<OrdersSummaryProps> = (props) => {
       )}
       {orderDetailsData && orderDetailsData.currentStatus === MEDICINE_ORDER_STATUS.DELIVERED && (
         <div className={classes.reorderBtn}>
-          <ReOrder orderDetailsData={orderDetailsData} />
+          <ReOrder
+            orderDetailsData={orderDetailsData}
+            type="Order Details"
+            patientName={
+              orderDetailsData.patient && orderDetailsData.patient.firstName
+                ? orderDetailsData.patient.firstName
+                : ''
+            }
+          />
         </div>
       )}
       {/* <div className={classes.bottomActions}>

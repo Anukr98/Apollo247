@@ -63,6 +63,7 @@ export interface PaymentSceneProps
     orderAutoId: number;
     token: string;
     amount: number;
+    burnHC: number;
     deliveryTime: string;
     paymentTypeID: string;
     bankCode: any;
@@ -75,6 +76,7 @@ export interface PaymentSceneProps
 export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
   const { clearCartInfo } = useShoppingCart();
   const totalAmount = props.navigation.getParam('amount');
+  const burnHC = props.navigation.getParam('burnHC');
   const orderAutoId = props.navigation.getParam('orderAutoId');
   const orderId = props.navigation.getParam('orderId');
   const authToken = props.navigation.getParam('token');
@@ -365,9 +367,9 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
 
   const renderWebView = () => {
     const baseUrl = AppConfig.Configuration.PAYMENT_GATEWAY_BASE_URL;
-    const url = `${baseUrl}/paymed?amount=${totalAmount}&oid=${orderAutoId}&token=${authToken}&pid=${currentPatiendId}&source=mobile&paymentTypeID=${paymentTypeID}&paymentModeOnly=YES${
-      bankCode ? '&bankCode=' + bankCode : ''
-    }`;
+    const url = `${baseUrl}/paymed?amount=${totalAmount}&oid=${orderAutoId}&pid=${currentPatiendId}&source=mobile&paymentTypeID=${paymentTypeID}&paymentModeOnly=YES${
+      burnHC ? '&hc=' + burnHC : ''
+    }${bankCode ? '&bankCode=' + bankCode : ''}`;
 
     // PATH: /paymed?amount=${totalAmount}&oid=${orderAutoId}&token=${authToken}&pid=${currentPatiendId}&source=mobile
     // SUCCESS_PATH: /mob?tk=<>&status=<>

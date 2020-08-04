@@ -48,23 +48,28 @@ import { getCache, setCache, delCache } from 'consults-service/database/connectR
 
 const REDIS_APPOINTMENT_ID_KEY_PREFIX: string = 'patient:appointment:';
 
-
-
 @EntityRepository(Appointment)
 export class AppointmentRepository extends Repository<Appointment> {
   async findById(id: string) {
-    let appointment;
     const cache = await getCache(`${REDIS_APPOINTMENT_ID_KEY_PREFIX}${id}`);
     if (cache && typeof cache === 'string') {
-      appointment = JSON.parse(cache);
-      return appointment;
+      const cacheAppointment: Appointment = JSON.parse(cache);
+      return this.create(cacheAppointment);
     }
-    appointment = await this.findOne({ id }).catch((getApptError) => {
+    const appointment = await this.findOne({ id }).catch((getApptError) => {
       throw new AphError(AphErrorMessages.GET_APPOINTMENT_ERROR, undefined, {
         getApptError,
       });
     });
-    await setCache(`${REDIS_APPOINTMENT_ID_KEY_PREFIX}${id}`, JSON.stringify(appointment), ApiConstants.CACHE_EXPIRATION_3600);
+
+    if (appointment) {
+      await setCache(
+        `${REDIS_APPOINTMENT_ID_KEY_PREFIX}${id}`,
+        JSON.stringify(appointment),
+        ApiConstants.CACHE_EXPIRATION_3600
+      );
+    }
+
     return appointment;
   }
 
@@ -90,13 +95,13 @@ export class AppointmentRepository extends Repository<Appointment> {
   }
 
   async getAppointmentsByIds(ids: string[]) {
-    let result: Appointment[] = [];
+    const result: Appointment[] = [];
 
     return this.handleCachingMultipleItems(ids, REDIS_APPOINTMENT_ID_KEY_PREFIX, result);
   }
 
   async handleCachingMultipleItems(ids: string[], redisKeyPrefix: string, result: Appointment[]) {
-    let idsNotInCache: string[] = [];
+    const idsNotInCache: string[] = [];
     for (let i = 0; i < ids.length; i++) {
       const item = await getCache(`${redisKeyPrefix}${ids[i]}`);
       if (item && typeof item == 'string') {
@@ -110,7 +115,11 @@ export class AppointmentRepository extends Repository<Appointment> {
         .where('appointment.id IN (:...idsNotInCache)', { idsNotInCache })
         .getMany();
       for (let i = 0; i < itemFromDb.length; i++) {
-        await setCache(`${redisKeyPrefix}${itemFromDb[i].id}`, JSON.stringify(itemFromDb[i]), ApiConstants.CACHE_EXPIRATION_3600);
+        await setCache(
+          `${redisKeyPrefix}${itemFromDb[i].id}`,
+          JSON.stringify(itemFromDb[i]),
+          ApiConstants.CACHE_EXPIRATION_3600
+        );
       }
       result = result.concat(itemFromDb);
     }
@@ -123,7 +132,6 @@ export class AppointmentRepository extends Repository<Appointment> {
       .where('appointment.id IN (:...ids)', { ids })
       .getMany();
   }
-
 
   findByAppointmentId(id: string) {
     return this.find({
@@ -388,7 +396,11 @@ export class AppointmentRepository extends Repository<Appointment> {
     });
   }
 
-  async updateAppointment(id: string, appointmentInfo: Partial<Appointment>, apptDetails: Appointment) {
+  async updateAppointment(
+    id: string,
+    appointmentInfo: Partial<Appointment>,
+    apptDetails: Appointment
+  ) {
     return this.createUpdateAppointment(
       apptDetails,
       {
@@ -1231,7 +1243,10 @@ export class AppointmentRepository extends Repository<Appointment> {
     );
   }
 
-  updateJdQuestionStatusbyIds(ids: string[]) {
+  async updateJdQuestionStatusbyIds(ids: string[]) {
+    for (let i = 0; i < ids.length; i++) {
+      await delCache(`${REDIS_APPOINTMENT_ID_KEY_PREFIX}${ids[i]}`);
+    }
     return this.update([...ids], {
       isJdQuestionsComplete: true,
       isConsultStarted: true,
@@ -1290,7 +1305,11 @@ export class AppointmentRepository extends Repository<Appointment> {
     );
   }
 
-  systemCancelAppointment(id: string, apptDetails: Appointment) {
+  systemCancelAppointment(
+    id: string,
+    appointmentInfo: Partial<Appointment>,
+    apptDetails: Appointment
+  ) {
     return this.createUpdateAppointment(
       apptDetails,
       {
@@ -1298,6 +1317,7 @@ export class AppointmentRepository extends Repository<Appointment> {
         cancelledBy: REQUEST_ROLES.SYSTEM,
         cancelledDate: new Date(),
         status: STATUS.CANCELLED,
+        ...appointmentInfo,
       },
       AphErrorMessages.CANCEL_APPOINTMENT_ERROR
     );

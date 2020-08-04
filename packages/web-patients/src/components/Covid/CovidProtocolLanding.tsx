@@ -15,15 +15,17 @@ import { NavigationBottom } from 'components/NavigationBottom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { Banner } from 'components/Covid/Banner';
 import { CheckRiskLevel } from 'components/Covid/CheckRiskLevel';
-import { useAllCurrentPatients, useAuth } from 'hooks/authHooks';
+import { useAllCurrentPatients, useAuth, useLoginPopupState } from 'hooks/authHooks';
 import fetchUtil from 'helpers/fetch';
+import { ManageProfile } from 'components/ManageProfile';
+import { Relation } from 'graphql/types/globalTypes';
+import { pageViewTracking } from '../../webEngageTracking';
 
 interface CovidProtocolData {
   introductionBody: string;
   introductionTitle: string;
   [index: string]: any;
 }
-
 const useStyles = makeStyles((theme: Theme) => {
   return {
     cdLanding: {},
@@ -207,6 +209,10 @@ export const covidProtocolLanding: React.FC = (props: any) => {
   const scrollToRef = useRef<HTMLDivElement>(null);
   const { currentPatient } = useAllCurrentPatients();
   const { isSignedIn, isSigningIn } = useAuth();
+  const { allCurrentPatients } = useAllCurrentPatients();
+  const { setIsLoginPopupVisible: setLoginPopupVisible } = useLoginPopupState();
+  const onePrimaryUser =
+    allCurrentPatients && allCurrentPatients.filter((x) => x.relation === Relation.ME).length === 1;
 
   useEffect(() => {
     scrollToRef &&
@@ -215,7 +221,14 @@ export const covidProtocolLanding: React.FC = (props: any) => {
   }, []);
 
   useEffect(() => {
-    !isSigningIn && !isSignedIn && props.history.push(clientRoutes.covidLanding());
+    if (!isSigningIn && !isSignedIn) {
+      setLoginPopupVisible(true);
+      const continueURL =
+        typeof window !== 'undefined' &&
+        window.location &&
+        encodeURIComponent(window.location.href);
+      props.history.push(`${clientRoutes.covidLanding()}?continue=${continueURL}`);
+    }
   }, [isSignedIn, isSigningIn]);
 
   const covidProtocolUrl = process.env.COVID_PROTOCOL_URL;
@@ -231,6 +244,7 @@ export const covidProtocolLanding: React.FC = (props: any) => {
       )
         .then((res: any) => {
           if (res && res.success) {
+            pageViewTracking('Covid Guide Clicked');
             setSymptomData(res.data);
           } else {
             setSymptomData(null);
@@ -334,6 +348,7 @@ export const covidProtocolLanding: React.FC = (props: any) => {
           <CheckRiskLevel />
         </div>
       </div>
+      {!onePrimaryUser && <ManageProfile />}
       <BottomLinks />
       {!isWebView && <NavigationBottom />}
     </div>
