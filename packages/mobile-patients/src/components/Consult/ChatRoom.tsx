@@ -303,6 +303,22 @@ const styles = StyleSheet.create({
     height: 80,
     borderRadius: 40,
   },
+  chatDisabledContainer: {
+    marginVertical: 20,
+    marginHorizontal: 20,
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+    paddingTop: 16,
+    borderRadius: 15,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f6f6f6',
+  },
+  chatDisabledHeader: {
+    ...theme.viewStyles.text('M', 13, theme.colors.SHERPA_BLUE),
+    textAlign: 'center',
+    marginBottom: 10,
+  },
 });
 
 export interface ChatRoomProps extends NavigationScreenProps {}
@@ -311,7 +327,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const { isIphoneX } = DeviceHelper();
 
   let appointmentData: any = props.navigation.state.params!.data;
-
+  const disableChat =
+    props.navigation.getParam('disableChat') ||
+    moment(new Date(appointmentData.appointmentDateTime))
+      .add(6, 'days')
+      .startOf('day')
+      .isBefore(moment(new Date()).startOf('day'));
   // console.log('appointmentData', appointmentData);
   const callType = props.navigation.state.params!.callType
     ? props.navigation.state.params!.callType
@@ -4677,6 +4698,30 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   //   );
   // };
 
+  const chatDisabled = () => {
+    return (
+      <View style={styles.chatDisabledContainer}>
+        <Text style={styles.chatDisabledHeader}>
+          {strings.consultType.chatDisabledHeader.replace(
+            '{0}',
+            appointmentData.doctorInfo.displayName
+          )}
+        </Text>
+        <TouchableOpacity
+          onPress={() => {
+            props.navigation.navigate(AppRoutes.DoctorDetails, {
+              doctorId: doctorId,
+            });
+          }}
+        >
+          <Text style={theme.viewStyles.text('B', 13, theme.colors.APP_YELLOW)}>
+            {strings.common.book_apointment}
+          </Text>
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
   const renderChatView = () => {
     return (
       <View style={{ width: width, height: heightList, marginTop: 0, flex: 1 }}>
@@ -4703,6 +4748,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           showsHorizontalScrollIndicator={false}
           showsVerticalScrollIndicator={false}
           initialNumToRender={messages ? messages.length : 0}
+          ListFooterComponent={() => {
+            if (disableChat) {
+              return chatDisabled();
+            } else {
+              return null;
+            }
+          }}
         />
       </View>
     );
@@ -4776,7 +4828,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   audioTrack: isPublishAudio,
                   audioVolume: 100,
                   name: g(currentPatient, 'firstName') || 'patient',
-                  resolution: '640x480' // setting this resolution to avoid over heating of device
+                  resolution: '640x480', // setting this resolution to avoid over heating of device
                 }}
                 eventHandlers={publisherEventHandlers}
               />
@@ -6397,6 +6449,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               backgroundColor: 'white',
               bottom: isIphoneX() ? 36 : 0,
               top: isIphoneX() ? 2 : 0,
+              opacity: disableChat ? 0.5 : 1,
             }}
           >
             <View style={{ flexDirection: 'row', width: width }}>
@@ -6409,11 +6462,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   marginLeft: 5,
                   alignItems: 'center',
                   justifyContent: 'center',
-                  backgroundColor: 'white',
                 }}
                 onPress={async () => {
-                  CommonLogEvent(AppRoutes.ChatRoom, 'Upload document clicked.');
-                  setDropdownVisible(!isDropdownVisible);
+                  if (!disableChat) {
+                    CommonLogEvent(AppRoutes.ChatRoom, 'Upload document clicked.');
+                    setDropdownVisible(!isDropdownVisible);
+                  }
                 }}
               >
                 <UploadHealthRecords
@@ -6452,6 +6506,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   onSubmitEditing={() => {
                     Keyboard.dismiss();
                   }}
+                  editable={!disableChat}
                 />
                 <View
                   style={{
@@ -6472,17 +6527,18 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   marginLeft: 2,
                 }}
                 onPress={async () => {
-                  const textMessage = messageText.trim();
-                  console.log('ChatSend', textMessage);
+                  if (!disableChat) {
+                    const textMessage = messageText.trim();
 
-                  if (textMessage.length == 0) {
-                    Alert.alert('Apollo', 'Please write something to send message.');
-                    CommonLogEvent(AppRoutes.ChatRoom, 'Please write something to send message.');
-                    return;
+                    if (textMessage.length == 0) {
+                      Alert.alert('Apollo', 'Please write something to send message.');
+                      CommonLogEvent(AppRoutes.ChatRoom, 'Please write something to send message.');
+                      return;
+                    }
+                    CommonLogEvent(AppRoutes.ChatRoom, 'Message sent clicked');
+
+                    send(textMessage);
                   }
-                  CommonLogEvent(AppRoutes.ChatRoom, 'Message sent clicked');
-
-                  send(textMessage);
                 }}
               >
                 <ChatSend style={{ width: 24, height: 24, marginTop: 8, marginLeft: 14 }} />
@@ -6510,6 +6566,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               height: 66,
               backgroundColor: 'white',
               bottom: isIphoneX() ? 36 : 0,
+              opacity: disableChat ? 0.5 : 1,
             }}
           >
             <View style={{ flexDirection: 'row', width: width }}>
@@ -6522,11 +6579,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   marginLeft: 5,
                   alignItems: 'center',
                   justifyContent: 'center',
-                  backgroundColor: 'white',
                 }}
                 onPress={async () => {
-                  CommonLogEvent(AppRoutes.ChatRoom, 'Upload document clicked.');
-                  setDropdownVisible(!isDropdownVisible);
+                  if (!disableChat) {
+                    CommonLogEvent(AppRoutes.ChatRoom, 'Upload document clicked.');
+                    setDropdownVisible(!isDropdownVisible);
+                  }
                 }}
               >
                 <UploadHealthRecords
@@ -6565,6 +6623,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   onSubmitEditing={() => {
                     Keyboard.dismiss();
                   }}
+                  editable={!disableChat}
                 />
                 <View
                   style={{
@@ -6585,17 +6644,18 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   marginLeft: 2,
                 }}
                 onPress={async () => {
-                  const textMessage = messageText.trim();
-                  console.log('ChatSend', textMessage);
+                  if (!disableChat) {
+                    const textMessage = messageText.trim();
 
-                  if (textMessage.length == 0) {
-                    Alert.alert('Apollo', 'Please write something to send message.');
-                    CommonLogEvent(AppRoutes.ChatRoom, 'Please write something to send message.');
-                    return;
+                    if (textMessage.length == 0) {
+                      Alert.alert('Apollo', 'Please write something to send message.');
+                      CommonLogEvent(AppRoutes.ChatRoom, 'Please write something to send message.');
+                      return;
+                    }
+                    CommonLogEvent(AppRoutes.ChatRoom, 'Message sent clicked');
+
+                    send(textMessage);
                   }
-                  CommonLogEvent(AppRoutes.ChatRoom, 'Message sent clicked');
-
-                  send(textMessage);
                 }}
               >
                 <ChatSend style={{ width: 24, height: 24, marginTop: 8, marginLeft: 14 }} />
