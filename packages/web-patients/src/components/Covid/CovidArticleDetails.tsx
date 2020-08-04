@@ -280,6 +280,7 @@ export const CovidArticleDetails: React.FC = (props: any) => {
             alt,
             metaDescription,
           } = postData;
+
           alt &&
             metaDescription &&
             setMetaTagProps({
