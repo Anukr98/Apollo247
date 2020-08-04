@@ -98,8 +98,6 @@ const saveOrderPlacedStatus: Resolver<
         : '',
     },
   };
-
-  console.log(postBody);
   postEvent(postBody);
 
   return { message: 'Order placed successfully' };
