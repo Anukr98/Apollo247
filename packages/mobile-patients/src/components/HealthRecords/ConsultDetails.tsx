@@ -1115,7 +1115,6 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                       postWEGEvent('download prescription');
                       let dirs = RNFetchBlob.fs.dirs;
 
-                      console.log('blollb', g(caseSheetDetails, 'blobName'));
                       let fileName: string = getFileName();
 
                       // props.navigation.state.params!.BlobName.substring(
