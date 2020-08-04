@@ -19,6 +19,9 @@ import {
   RoundCallIcon,
   RoundChatIcon,
   RoundVideoIcon,
+  Join,
+  Minimize,
+  JoinWhite,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { ImageZoom } from '@aph/mobile-doctors/src/components/ui/ImageZoom';
 import { OptionsObject } from '@aph/mobile-doctors/src/components/ui/MaterialMenu';
@@ -135,6 +138,8 @@ import KeepAwake from 'react-native-keep-awake';
 import { PERMISSIONS } from 'react-native-permissions';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import RNFetchBlob from 'rn-fetch-blob';
+import { isIphoneX } from 'react-native-iphone-x-helper';
+import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
 
 const { width } = Dimensions.get('window');
 // let joinTimerNoShow: NodeJS.Timeout;  //APP-2812: removed NoShow
@@ -182,7 +187,16 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const [overlayDisplay, setOverlayDisplay] = useState<React.ReactNode>(null);
   const [chatReceived, setChatReceived] = useState(false);
   const client = useApolloClient();
-  const { showAphAlert, hideAphAlert, loading, setLoading, showPopup, hidePopup } = useUIElements();
+  const {
+    showAphAlert,
+    hideAphAlert,
+    loading,
+    setLoading,
+    showPopup,
+    hidePopup,
+    showFloatingCotainer,
+    hideFloatingContainer,
+  } = useUIElements();
   const AppId = props.navigation.getParam('AppId');
   const [Appintmentdatetime, setAppintmentdatetime] = useState(
     props.navigation.getParam('Appintmentdatetime')
@@ -269,6 +283,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     });
 
     return () => {
+      sendDoctorLeavesEvent();
       didFocusSubscription && didFocusSubscription.remove();
       willBlurSubscription && willBlurSubscription.remove();
       // stopNoShow();
@@ -282,8 +297,107 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       KeepAwake.deactivate();
       pubnub.unsubscribeAll();
       pubnub.stop();
+      hideFloatingContainer();
     };
   }, []);
+
+  const renderJoinMinimizedView = () => {
+    return (
+      <TouchableOpacity
+        onPress={() => {
+          connectCall('V', true);
+        }}
+      >
+        <View
+          style={{
+            backgroundColor: theme.colors.APP_YELLOW,
+            width: 80,
+            height: 80,
+            borderRadius: 40,
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
+        >
+          <JoinWhite />
+          <Text
+            style={{
+              marginTop: 7,
+              ...theme.viewStyles.text('SB', 10, theme.colors.WHITE),
+            }}
+          >
+            JOIN
+          </Text>
+        </View>
+      </TouchableOpacity>
+    );
+  };
+
+  const renderJoinView = () => {
+    return (
+      <View
+        style={{
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          backgroundColor: 'white',
+          borderTopLeftRadius: 40,
+          borderTopRightRadius: 40,
+        }}
+      >
+        <View style={{ margin: 20, marginBottom: isIphoneX() ? 40 : 20 }}>
+          <View style={{ alignItems: 'flex-end', margin: 1, marginBottom: 4 }}>
+            <TouchableOpacity
+              onPress={() => {
+                showFloatingCotainer({
+                  child: renderJoinMinimizedView(),
+                  mainContainerStyle: {
+                    position: 'absolute',
+                    right: 26,
+                    bottom: isIphoneX() ? 120 : 90,
+                    zIndex: 5000,
+                    elevation: 5000,
+                  },
+                });
+              }}
+            >
+              <Minimize />
+            </TouchableOpacity>
+          </View>
+          <View
+            style={{
+              flexDirection: 'row',
+              marginBottom: 20,
+              marginRight: 18,
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+          >
+            <Join />
+            <Text
+              style={{
+                flex: 1,
+                marginLeft: 10,
+                ...theme.viewStyles.text('M', 14, theme.colors.SHARP_BLUE),
+              }}
+            >
+              Patient “Seema Singh” is waiting in the consult room. Please click on Proceed to join
+              consultation.
+            </Text>
+          </View>
+          <View style={{ alignSelf: 'flex-end' }}>
+            <TouchableOpacity
+              onPress={() => {
+                connectCall('V', true);
+              }}
+            >
+              <Button title={'PROCEED'} style={{ width: undefined, paddingHorizontal: 21 }} />
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    );
+  };
 
   useEffect(() => {
     if ((appointmentData || {}).appointmentState == 'AWAITING_RESCHEDULE') {
@@ -302,9 +416,6 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const backDataFunctionality = () => {
     try {
       console.log(callhandelBack, 'is back called');
-      if(startConsult){
-        sendDoctorLeavesEvent(); //sending pubnub event if doctor leaves chat room after starting it.
-      }
       if (callhandelBack) {
         saveDetails(true, true, undefined, () => {
           setLoading && setLoading(false);
@@ -324,15 +435,15 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       {
         message: {
           isTyping: true,
-          message: messageCodes.leaveChatRoom
+          message: messageCodes.leaveChatRoom,
         },
         channel: channel,
         storeInHistory: false,
-        sendByPost: false
+        sendByPost: false,
       },
       (status: any, response: any) => {}
     );
-  }
+  };
 
   const createCaseSheetSRDAPI = () => {
     setLoading && setLoading(true);
@@ -1318,6 +1429,22 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             case 'Video call ended':
               audioVideoMethod();
               break;
+            case messageCodes.patientJoined:
+              showFloatingCotainer({
+                child: renderJoinView(),
+                mainContainerStyle: {
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  flex: 1,
+                  backgroundColor: 'rgba(0, 0, 0, 0.4)',
+                  zIndex: 5000,
+                  elevation: 5000,
+                },
+              });
+              break;
             default:
           }
         } else if (
@@ -1333,6 +1460,21 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         ) {
           callData.setMessageReceived(true);
           addMessages(message);
+        } else if (messageCodes.patientJoined === messageText) {
+          showFloatingCotainer({
+            child: renderJoinView(),
+            mainContainerStyle: {
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              flex: 1,
+              backgroundColor: 'rgba(0, 0, 0, 0.4)',
+              zIndex: 5000,
+              elevation: 5000,
+            },
+          });
         } else {
           callData.setMessageReceived(true);
           addMessages(message);
@@ -1526,7 +1668,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     );
   };
 
-  const connectCall = (callType: 'A' | 'V') => {
+  const connectCall = (callType: 'A' | 'V', isJoin?: boolean) => {
     getNetStatus().then((connected) => {
       if (connected) {
         if (!startConsult) {
@@ -1537,7 +1679,10 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         if (callOptions.isAudio || callOptions.isVideo) {
           return;
         }
-
+        if (isJoin) {
+          callOptions.setCallAccepted(true);
+          hideFloatingContainer();
+        }
         callType === 'A' ? callOptions.setIsAudio(true) : callOptions.setIsAudio(false);
         callType === 'V' ? callOptions.setIsVideo(true) : callOptions.setIsVideo(false);
         callOptions.setIsMinimized(false);
@@ -1580,33 +1725,44 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         );
         Keyboard.dismiss();
         AsyncStorage.setItem('callDisconnected', 'false');
-        firebase.analytics().logEvent(callType == 'A' ? 'Doctor_audio_call' : 'Doctor_video_call', {
-          caseSheet: caseSheet,
-        });
-        AsyncStorage.setItem('callDataSend', 'false');
-        pubnub.publish(
-          {
-            message: {
-              isTyping: true,
-              message: callType === 'V' ? messageCodes.videoCallMsg : messageCodes.audioCallMsg,
-              messageDate: new Date(),
-            },
-            channel: channel,
-            storeInHistory: true,
-          },
-          (status, response) => {
-            if (response) {
-              callOptions.startMissedCallTimer(45, (count) => {
-                stopAllCalls(callType);
-                // if (missedCallCounter < 2) {
-
-                // } else {
-                //   callAbandonmentCall();
-                // }
-              });
+        firebase
+          .analytics()
+          .logEvent(
+            !isJoin
+              ? callType == 'A'
+                ? 'Doctor_audio_call'
+                : 'Doctor_video_call'
+              : 'Doctor_Join_Call',
+            {
+              caseSheet: caseSheet,
             }
-          }
-        );
+          );
+        AsyncStorage.setItem('callDataSend', 'false');
+        if (!isJoin) {
+          pubnub.publish(
+            {
+              message: {
+                isTyping: true,
+                message: callType === 'V' ? messageCodes.videoCallMsg : messageCodes.audioCallMsg,
+                messageDate: new Date(),
+              },
+              channel: channel,
+              storeInHistory: true,
+            },
+            (status, response) => {
+              if (response) {
+                callOptions.startMissedCallTimer(45, (count) => {
+                  stopAllCalls(callType);
+                  // if (missedCallCounter < 2) {
+
+                  // } else {
+                  //   callAbandonmentCall();
+                  // }
+                });
+              }
+            }
+          );
+        }
       } else {
         showAphAlert &&
           showAphAlert({ title: string.common.alert, description: string.alerts.no_internet });

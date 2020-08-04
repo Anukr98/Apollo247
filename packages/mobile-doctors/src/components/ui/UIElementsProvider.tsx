@@ -28,8 +28,8 @@ export interface UIElementsContextProps {
   hidePopup: () => void;
   showNeedHelp: boolean;
   setShowNeedHelp: (show: boolean) => void;
-  setFloatingContainer: (visible: boolean) => void;
-  setFloatingValue: (params: FloatingContainerParams) => void;
+  showFloatingCotainer: (params: FloatingContainerParams) => void;
+  hideFloatingContainer: () => void;
 }
 
 export const UIElementsContext = createContext<UIElementsContextProps>({
@@ -42,8 +42,8 @@ export const UIElementsContext = createContext<UIElementsContextProps>({
   hidePopup: () => {},
   showNeedHelp: false,
   setShowNeedHelp: (show) => {},
-  setFloatingContainer: () => {},
-  setFloatingValue: (params) => {},
+  showFloatingCotainer: (params: FloatingContainerParams) => {},
+  hideFloatingContainer: () => {},
 });
 
 export type AphAlertCTAs = {
@@ -89,6 +89,8 @@ type FloatingContainerParams = {
   child?: React.ReactNode;
   mainContainerStyle?: StyleProp<ViewStyle>;
   backHandleEnabled?: boolean;
+  unDismissable?: boolean;
+  customBack?: () => void;
 };
 
 export const UIElementsProvider: React.FC = (props) => {
@@ -120,6 +122,13 @@ export const UIElementsProvider: React.FC = (props) => {
     }
     if (!popUpData.unDismissable) {
       hidePopup();
+    }
+    if (!floatingValue.unDismissable) {
+      if (floatingValue.customBack) {
+        floatingValue.customBack();
+      } else {
+        hideFloatingContainer();
+      }
     }
     return true;
   };
@@ -286,6 +295,16 @@ export const UIElementsProvider: React.FC = (props) => {
     }
   };
 
+  const showFloatingCotainer = (params: FloatingContainerParams) => {
+    setFloatingValue(params);
+    setFloatingContainer(true);
+  };
+
+  const hideFloatingContainer = () => {
+    setFloatingContainer(false);
+    setFloatingValue({});
+  };
+
   return (
     <UIElementsContext.Provider
       value={{
@@ -298,8 +317,8 @@ export const UIElementsProvider: React.FC = (props) => {
         hidePopup,
         showNeedHelp,
         setShowNeedHelp,
-        setFloatingContainer,
-        setFloatingValue,
+        showFloatingCotainer,
+        hideFloatingContainer,
       }}
     >
       <View style={{ flex: 1 }}>

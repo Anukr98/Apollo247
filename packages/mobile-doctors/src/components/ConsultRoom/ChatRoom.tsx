@@ -497,6 +497,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         messageCodes.jdThankyou,
         messageCodes.cancelConsultInitiated,
         messageCodes.autoResponse,
+        messageCodes.leaveChatRoom,
+        messageCodes.patientJoined,
       ].includes(rowData.message)
     ) {
       return null;
