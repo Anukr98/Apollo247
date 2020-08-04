@@ -193,7 +193,6 @@ export enum NotificationPriority {
 type MedicineOrderRefundNotificationInput = {
   refundAmount: number;
   healthCreditsRefund: number;
-  healthCreditsRemaining: number;
 };
 
 type PushNotificationInput = {
@@ -2969,6 +2968,11 @@ export async function medicineOrderCancelled(
     msgText = msgText.replace('{orderId}', orderDetails.orderAutoId.toString());
     msgText = msgText.replace('{refund}', paymentInfo.amountPaid.toString());
     await sendNotificationSMS(orderDetails.patient.mobileNumber, msgText);
+    if(paymentInfo.healthCreditsRedeemed > 0){
+      msgText = ApiConstants.ORDER_CANCEL_HC_REFUND_BODY;
+      msgText = msgText.replace('{healthCreditsRefund}', paymentInfo.healthCreditsRedeemed.toString());
+      await sendNotificationSMS(orderDetails.patient.mobileNumber, msgText);
+    }
   }
 }
 
@@ -2977,19 +2981,22 @@ export async function medicineOrderRefundNotification(
   medicineOrderRefundNotificationInput: MedicineOrderRefundNotificationInput
 ) {
   let notificationBody: string = '';
-  if(medicineOrderRefundNotificationInput.refundAmount > 0){
-    notificationBody = ApiConstants.ORDER_PARTIAL_REFUND_BODY;
-    notificationBody = notificationBody.replace('{name}', orderDetails.patient.firstName);
+  if(medicineOrderRefundNotificationInput.refundAmount > 0 && medicineOrderRefundNotificationInput.healthCreditsRefund > 0){
+    notificationBody = ApiConstants.ORDER_PAYMENT_HC_PARTIAL_REFUND_BODY;
+    notificationBody = notificationBody.replace('{orderId}', orderDetails.orderAutoId.toString());
+    notificationBody = notificationBody.replace('{refundAmount}', medicineOrderRefundNotificationInput.refundAmount.toString());
+    notificationBody = notificationBody.replace('{healthCreditsRefund}',medicineOrderRefundNotificationInput.healthCreditsRefund.toString()); 
+  }else if(medicineOrderRefundNotificationInput.refundAmount > 0){
+    notificationBody = ApiConstants.ORDER_PAYMENT_PARTIAL_REFUND_BODY;
     notificationBody = notificationBody.replace('{orderId}', orderDetails.orderAutoId.toString());
     notificationBody = notificationBody.replace('{refundAmount}', medicineOrderRefundNotificationInput.refundAmount.toString()); 
-    await sendNotificationSMS(orderDetails.patient.mobileNumber, notificationBody);
-  }
-  if(medicineOrderRefundNotificationInput.healthCreditsRefund > 0){
+  }else if(medicineOrderRefundNotificationInput.healthCreditsRefund > 0){
     notificationBody = ApiConstants.ORDER_HC_PARTIAL_REFUND_BODY;
+    notificationBody = notificationBody.replace('{orderId}', orderDetails.orderAutoId.toString());
     notificationBody = notificationBody.replace('{healthCreditsRefund}',medicineOrderRefundNotificationInput.healthCreditsRefund.toString());
-    notificationBody = notificationBody.replace('{healthCreditsRemaining}',medicineOrderRefundNotificationInput.healthCreditsRemaining.toString());
-    await sendNotificationSMS(orderDetails.patient.mobileNumber, notificationBody);
   }
+  //console.log(notificationBody);
+  await sendNotificationSMS(orderDetails.patient.mobileNumber, notificationBody);
   return;
 }
 
