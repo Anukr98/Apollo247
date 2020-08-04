@@ -124,6 +124,7 @@ export const getMedicineOrdersOMSListTypeDefs = gql`
     healthCreditsRedeemed: Float
     healthCreditsRedemptionRequest: BlockUserPointsResponse
     paymentMode: PAYMENT_METHODS_REVERSE
+    refundAmount: Float
   }
 
   enum PAYMENT_METHODS_REVERSE {
