@@ -1,28 +1,27 @@
+import { Header } from '@aph/mobile-patients/src/components/ui/Header';
+import { CreditsIcon, OneApollo } from '@aph/mobile-patients/src/components/ui/Icons';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
+import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { GET_ONEAPOLLO_USER } from '@aph/mobile-patients/src/graphql/profiles';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
-import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import { useApolloClient } from 'react-apollo-hooks';
 import {
   Dimensions,
   ImageBackground,
-  ScrollView,
   SafeAreaView,
+  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
-import { NavigationActions, NavigationScreenProps } from 'react-navigation';
-import { theme } from '@aph/mobile-patients/src/theme/theme';
-import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { OneApollo, CreditsIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import { NavigationScreenProps } from 'react-navigation';
+import { dataSavedUserID, g } from '../../helpers/helperFunctions';
 import { MyMembership } from './MyMembership';
 import { MyTransactions } from './MyTransactions';
-import { useApolloClient } from 'react-apollo-hooks';
-import { GET_ONEAPOLLO_USER } from '@aph/mobile-patients/src/graphql/profiles';
-import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
-import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
-import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import { requiredSubselectionMessage } from 'graphql/validation/rules/ScalarLeafs';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -58,11 +57,17 @@ export const OneApolloMembership: React.FC<OneApolloProps> = (props) => {
   };
 
   useEffect(() => {
+    getOneApolloUserDetails();
+  }, []);
+
+  const getOneApolloUserDetails = async () => {
+    const userId = await dataSavedUserID('selectedProfileId');
+
     client
       .query({
         query: GET_ONEAPOLLO_USER,
         variables: {
-          patientId: currentPatient && currentPatient.id,
+          patientId: userId ? userId : g(currentPatient, 'id'),
         },
         fetchPolicy: 'no-cache',
       })
@@ -83,7 +88,7 @@ export const OneApolloMembership: React.FC<OneApolloProps> = (props) => {
         console.log(error);
         renderErrorPopup(`Something went wrong, plaease try again after sometime`);
       });
-  }, []);
+  };
 
   const renderErrorPopup = (desc: string) =>
     showAphAlert!({

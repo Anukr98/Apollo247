@@ -383,8 +383,38 @@ export const getNetStatus = async () => {
   return status;
 };
 
-export const nextAvailability = (nextSlot: string) => {
-  return `available in ${mhdMY(nextSlot, 'min')}`;
+export const nextAvailability = (nextSlot: string, type: 'Available' | 'Consult' = 'Available') => {
+  const isValidTime = moment(nextSlot).isValid();
+  if (isValidTime) {
+    const current = moment(new Date());
+    const difference = moment.duration(moment(nextSlot).diff(current));
+    const differenceMinute = Math.ceil(difference.asMinutes());
+    const diffDays = Math.ceil(difference.asDays());
+    const isTomorrow = moment(nextSlot).isAfter(
+      current
+        .add(1, 'd')
+        .startOf('d')
+        .set({
+          hour: moment('06:00', 'HH:mm').get('hour'),
+          minute: moment('06:00', 'HH:mm').get('minute'),
+        })
+    );
+    if (differenceMinute < 120) {
+      return `${type} in ${differenceMinute} min${differenceMinute !== 1 ? 's' : ''}`;
+    } else if (differenceMinute >= 120 && !isTomorrow) {
+      return `${type} at ${moment(nextSlot).format('hh:mm A')}`;
+    } else if (isTomorrow && diffDays < 2) {
+      return `${type} Tomorrow${
+        type === 'Available' ? ` at ${moment(nextSlot).format('hh:mm A')}` : ''
+      }`;
+    } else if ((diffDays >= 2 && diffDays <= 30) || type == 'Consult') {
+      return `${type} in ${diffDays} days`;
+    } else {
+      return `${type} after a month`;
+    }
+  } else {
+    return type === 'Available' ? 'Available' : 'Book Consult';
+  }
 };
 
 export const mhdMY = (
@@ -402,7 +432,7 @@ export const mhdMY = (
   const days = Math.ceil(difference.asDays());
   const months = Math.ceil(difference.asMonths());
   const year = Math.ceil(difference.asYears());
-  if (min > 0 && min < 24) {
+  if (min > 0 && min < 60) {
     return `${min} ${mText}${min !== 1 ? 's' : ''}`;
   } else if (hours > 0 && hours < 24) {
     return `${hours} ${hText}${hours !== 1 ? 's' : ''}`;

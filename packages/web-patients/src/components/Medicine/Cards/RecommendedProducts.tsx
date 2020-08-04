@@ -148,11 +148,11 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-interface RecomendedProductsProps {
-  section?: string;
+interface RecommendedProductsProps {
+  section: string;
 }
 
-export const RecomendedProducts: React.FC<RecomendedProductsProps> = (props) => {
+export const RecommendedProducts: React.FC<RecommendedProductsProps> = (props) => {
   const classes = useStyles({});
   const sliderSettings = {
     infinite: true,
@@ -200,18 +200,16 @@ export const RecomendedProducts: React.FC<RecomendedProductsProps> = (props) => 
     url: process.env.PHARMACY_MED_IMAGES_BASE_URL,
   };
 
-  const { cartItems, addCartItem, updateCartItem, removeCartItem } = useShoppingCart();
+  const { cartItems, addCartItem, updateCartItem, removeCartItemSku } = useShoppingCart();
   const { currentPatient } = useAllCurrentPatients();
   const [recommendedProductsList, setRecommendedProductsList] = useState<
     recommendedProductsType[] | null
   >(null);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const recommendedProducts = useMutation(GET_RECOMMENDED_PRODUCTS_LIST);
+  const recommendedProductsMutation = useMutation(GET_RECOMMENDED_PRODUCTS_LIST);
 
   useEffect(() => {
     if (currentPatient && currentPatient.uhid && !recommendedProductsList) {
-      setIsLoading(true);
-      recommendedProducts({
+      recommendedProductsMutation({
         variables: {
           patientUhid: currentPatient.uhid,
         },
@@ -223,22 +221,41 @@ export const RecomendedProducts: React.FC<RecomendedProductsProps> = (props) => 
             res.data.getRecommendedProductsList &&
             res.data.getRecommendedProductsList.recommendedProducts
           ) {
-            setRecommendedProductsList(res.data.getRecommendedProductsList.recommendedProducts);
+            const dataList = res.data.getRecommendedProductsList.recommendedProducts;
+            setRecommendedProductsList(
+              dataList.map((data: recommendedProductsType) => {
+                return {
+                  ...data,
+                  image: data.productImage ? getImageUrl(data.productImage) : null,
+                  special_price: data.productSpecialPrice,
+                  price: data.productPrice,
+                  sku: data.productSku,
+                  name: data.productName,
+                  is_prescription_required: data.isPrescriptionNeeded,
+                  is_in_stock: data.status === 'Enabled',
+                };
+              })
+            );
           } else {
             setRecommendedProductsList([]);
           }
-          setIsLoading(false);
         })
         .catch((e) => {
-          setIsLoading(false);
           console.log(e);
         });
     }
   }, [currentPatient, recommendedProductsList]);
 
   const itemIndexInCart = (item: recommendedProductsType) => {
-    const index = cartItems.findIndex((cartItem) => cartItem.id == Number(item.categoryName));
+    const index = cartItems.findIndex((cartItem) => cartItem.sku == item.productSku);
     return index;
+  };
+
+  const getImageUrl = (fileIds: string) => {
+    return fileIds
+      .split(',')
+      .filter((fileId) => fileId)
+      .map((fileId) => `${apiDetails.url}/catalog/product${fileId}`)[0];
   };
 
   return (
@@ -248,7 +265,7 @@ export const RecomendedProducts: React.FC<RecomendedProductsProps> = (props) => 
           <div className={classes.sectionTitle}>
             <span>Recomended Products</span>
             <div className={classes.viewAllLink}>
-              <Link to={clientRoutes.searchByMedicine('shop-by-category', 'monsoon-essentials')}>
+              <Link to={clientRoutes.searchByMedicine('shop-by-category', 'recommended-products')}>
                 View All
               </Link>
             </div>
@@ -257,18 +274,6 @@ export const RecomendedProducts: React.FC<RecomendedProductsProps> = (props) => 
             {recommendedProductsList.map((productList) => (
               <div key={productList.productSku} className={classes.card}>
                 <div className={classes.cardWrap}>
-                  <div className={classes.offerPrice}>
-                    <span>
-                      -
-                      {Math.floor(
-                        ((Number(productList.productPrice) -
-                          Number(productList.productSpecialPrice!)) /
-                          Number(productList.productPrice)) *
-                          100
-                      )}
-                      %
-                    </span>
-                  </div>
                   <Link
                     to={clientRoutes.medicineDetails(productList.productSku)}
                     onClick={() =>
@@ -280,7 +285,7 @@ export const RecomendedProducts: React.FC<RecomendedProductsProps> = (props) => 
                     }
                   >
                     <div className={classes.productIcon}>
-                      <img src={`${apiDetails.url}${productList.productImage}`} alt="" />
+                      <img src={getImageUrl(productList.productImage)} alt="" />
                     </div>
                     <div className={classes.productTitle}>{productList.productName}</div>
                   </Link>
@@ -415,7 +420,7 @@ export const RecomendedProducts: React.FC<RecomendedProductsProps> = (props) => 
                               },
                             });
                             /**Gtm code End  */
-                            removeCartItem && removeCartItem(Number(productList.categoryName));
+                            removeCartItemSku && removeCartItemSku(productList.productSku);
                           }}
                         >
                           Remove
