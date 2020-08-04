@@ -79,7 +79,8 @@ module.exports = async (req, res) => {
         responseOrderId.toString(),
         amount,
         merc_unq_ref,
-        addParams
+        addParams,
+        req.query.paymentTypeID
       );
       return res.render('paytmRedirect.ejs', {
         resultData: success,

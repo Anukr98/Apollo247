@@ -7,15 +7,24 @@ const logger = require('../../winston-logger')('Consults-logs');
  * @param {*} amount
  * @param {*} bookingSource
  */
-const initPayment = function (patientId, orderAutoId, amount, merc_unq_ref, addParams) {
+const initPayment = function(
+  patientId,
+  orderAutoId,
+  amount,
+  merc_unq_ref,
+  addParams,
+  paymentTypeID
+) {
   return new Promise((resolve, reject) => {
+    let merchantId = process.env.MID_CONSULTS;
+    if (paymentTypeID == 'SBIYONO') merchantId = process.env.SBI_MID_CONSULTS;
     let paymentObj = {
       ORDER_ID: orderAutoId,
       CUST_ID: patientId,
       INDUSTRY_TYPE_ID: process.env.INDUSTRY_TYPE_ID_CONSULTS,
       CHANNEL_ID: process.env.CHANNEL_ID_CONSULTS,
       TXN_AMOUNT: amount.toString(),
-      MID: process.env.MID_CONSULTS,
+      MID: merchantId,
       WEBSITE: process.env.WEBSITE_CONSULTS,
       CALLBACK_URL: process.env.CALLBACK_URL_CONSULTS,
       MERC_UNQ_REF: merc_unq_ref,
@@ -46,7 +55,9 @@ const generatePaymentOrderId = () => {
   let seconds =
     dateObj.getSeconds() < 10 ? '0' + dateObj.getSeconds() : dateObj.getSeconds().toString();
   let date = dateObj.getDate() < 10 ? '0' + dateObj.getDate() : dateObj.getDate().toString();
-  let random4Digits = Math.random().toString().slice(-4);
+  let random4Digits = Math.random()
+    .toString()
+    .slice(-4);
 
   return (
     dateObj.getFullYear().toString() + month + date + hours + minutes + seconds + random4Digits
@@ -55,7 +66,16 @@ const generatePaymentOrderId = () => {
 
 const singlePaymentAdditionalParams = (paymentTypeID, bankCode) => {
   const paymentTypeParams = {};
-  const possiblePaymentTypes = ['CC', 'DC', 'NB', 'PPI', 'EMI', 'UPI', 'PAYTM_DIGITAL_CREDIT'];
+  const possiblePaymentTypes = [
+    'CC',
+    'DC',
+    'NB',
+    'PPI',
+    'EMI',
+    'UPI',
+    'PAYTM_DIGITAL_CREDIT',
+    'SBIYONO',
+  ];
   logger.info(`${paymentTypeID} - paymentTypeID`);
   if (!possiblePaymentTypes.includes(paymentTypeID)) {
     throw new Error('Invalid payment type! Please contact IT department.');
@@ -73,6 +93,7 @@ const singlePaymentAdditionalParams = (paymentTypeID, bankCode) => {
     case 'PPI':
     case 'PAYTM_DIGITAL_CREDIT':
     case 'NB':
+    case 'SBIYONO':
       paymentTypeParams['AUTH_MODE'] = 'USRPWD';
       break;
   }

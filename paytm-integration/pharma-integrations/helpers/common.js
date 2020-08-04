@@ -7,15 +7,24 @@ const { POSSIBLE_PAYMENT_TYPES, INVALID_PAYMENT_TYPE } = require('../../Constant
  * @param {*} amount
  * @param {*} bookingSource
  */
-const initPayment = function (patientId, orderAutoId, amount, merc_unq_ref, addParams) {
+const initPayment = function(
+  patientId,
+  orderAutoId,
+  amount,
+  merc_unq_ref,
+  addParams,
+  paymentTypeID
+) {
   return new Promise((resolve, reject) => {
+    let merchantId = process.env.MID_PHARMACY;
+    if (paymentTypeID == 'SBIYONO') merchantId = process.env.SBI_MID_PHARMACY;
     let paymentObj = {
       ORDER_ID: orderAutoId,
       CUST_ID: patientId,
       INDUSTRY_TYPE_ID: process.env.INDUSTRY_TYPE_ID_PHARMACY,
       CHANNEL_ID: process.env.CHANNEL_ID_PHARMACY,
       TXN_AMOUNT: amount.toString(),
-      MID: process.env.MID_PHARMACY,
+      MID: merchantId,
       WEBSITE: process.env.WEBSITE_PHARMACY,
       CALLBACK_URL: process.env.CALLBACK_URL_PHARMACY,
       MERC_UNQ_REF: merc_unq_ref,
@@ -52,6 +61,7 @@ const singlePaymentAdditionalParams = (paymentTypeID, bankCode) => {
     case 'PPI':
     case 'PAYTM_DIGITAL_CREDIT':
     case 'NB':
+    case 'SBIYONO':
       paymentTypeParams['AUTH_MODE'] = 'USRPWD';
       break;
   }
