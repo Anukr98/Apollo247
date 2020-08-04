@@ -185,13 +185,9 @@ export const GET_MEDICINE_ORDERS_OMS_LIST = gql`
   }
 `;
 
-export const GET_MEDICINE_ORDER_OMS_DETAILS = gql`
-  query getMedicineOrderOMSDetails($patientId: String, $orderAutoId: Int, $billNumber: String) {
-    getMedicineOrderOMSDetails(
-      patientId: $patientId
-      orderAutoId: $orderAutoId
-      billNumber: $billNumber
-    ) {
+export const GET_MEDICINE_ORDER_OMS_DETAILS_WITH_ADDRESS = gql`
+  query getMedicineOrderOMSDetailsWithAddress($patientId: String, $orderAutoId: Int) {
+    getMedicineOrderOMSDetailsWithAddress(patientId: $patientId, orderAutoId: $orderAutoId) {
       medicineOrderDetails {
         id
         createdDate
