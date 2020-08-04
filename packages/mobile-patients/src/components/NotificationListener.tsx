@@ -45,6 +45,7 @@ import {
 } from '../graphql/types/getMedicineOrderOMSDetails';
 import { NotificationIconWhite } from './ui/Icons';
 import { WebEngageEvents, WebEngageEventName } from '../helpers/webEngageEvents';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 
 const styles = StyleSheet.create({
   rescheduleTextStyles: {
@@ -114,10 +115,10 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
     audioTrack,
     setPrevVolume,
     maxVolume,
-    setDoctorJoinedChat
   } = useUIElements();
   const { cartItems, setCartItems, ePrescriptions, setEPrescriptions } = useShoppingCart();
   const client = useApolloClient();
+  const { setDoctorJoinedChat } = useAppCommonData();
 
   const showMedOrderStatusAlert = (
     data:

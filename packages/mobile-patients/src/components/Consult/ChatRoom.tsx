@@ -154,6 +154,7 @@ import { Snackbar } from 'react-native-paper';
 import BackgroundTimer from 'react-native-background-timer';
 import { UploadPrescriprionPopup } from '../Medicines/UploadPrescriprionPopup';
 import { ChatRoom_NotRecorded_Value } from '@aph/mobile-patients/src/strings/strings.json';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 
 interface OpentokStreamObject {
   connection: {
@@ -399,7 +400,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [showPopup, setShowPopup] = useState(false);
   const [showCallAbandmentPopup, setShowCallAbandmentPopup] = useState(false);
   const [showConnectAlertPopup, setShowConnectAlertPopup] = useState(false);
-  const {setDoctorJoinedChat, doctorJoinedChat} = useUIElements(); //setting in context since we are updating this in NotificationListener
+  const { setDoctorJoinedChat, doctorJoinedChat } = useAppCommonData(); //setting in context since we are updating this in NotificationListener
   const [name, setname] = useState<string>('');
   const [talkStyles, setTalkStyles] = useState<object>({
     flex: 1,
