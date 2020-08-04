@@ -127,7 +127,7 @@ export const OneApolloMembership: React.FC<OneApolloProps> = (props) => {
         </View>
         <View style={{ alignItems: 'center', flexDirection: 'row', marginRight: 20 }}>
           <Text style={styles.creditText}>Available HC</Text>
-          <Text style={styles.credits}>{credits}</Text>
+          <Text style={styles.credits}>{(credits || 0).toFixed(2)}</Text>
         </View>
       </View>
     );

@@ -59,7 +59,7 @@ export const MyTransactions: React.FC<MyTransactionsProps> = (props) => {
             Total Earned
           </Text>
           <Text style={{ ...theme.fonts.IBMPlexSansMedium(17), color: '#01475b', marginTop: 5 }}>
-            {earned} Credits
+            {(earned || 0).toFixed(2)} Credits
           </Text>
         </View>
         <View style={styles.containerRight}>
@@ -80,7 +80,7 @@ export const MyTransactions: React.FC<MyTransactionsProps> = (props) => {
               paddingLeft: 0.1 * windowWidth,
             }}
           >
-            {redeemed} Credits
+            {(redeemed || 0).toFixed(2)} Credits
           </Text>
         </View>
       </View>
