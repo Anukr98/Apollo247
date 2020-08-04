@@ -509,6 +509,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const appointmentComplete = '^^#appointmentComplete';
   const doctorAutoResponse = '^^#doctorAutoResponse';
   const leaveChatRoom = '^^#leaveChatRoom';
+  const patientJoinedMeetingRoom = '^^#patientJoinedMeetingRoom';
 
   const patientId = appointmentData.patientId;
   const channel = appointmentData.id;
@@ -5790,7 +5791,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       {
         message: {
           isTyping: true,
-          message: acceptedCallMsg,
+          message: !patientJoinedCall.current ? acceptedCallMsg : patientJoinedMeetingRoom,
           messageDate: new Date(),
         },
         channel: channel,
@@ -5798,7 +5799,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       },
       (status, response) => {}
     );
-    if (isAudio) {
+    if (isAudio && !patientJoinedCall.current) {
       setIsAudioCall(true);
     } else {
       setIsCall(true);
