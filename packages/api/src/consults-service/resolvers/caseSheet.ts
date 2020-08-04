@@ -51,6 +51,7 @@ import { ApiConstants, PATIENT_REPO_RELATIONS } from 'ApiConstants';
 import { sendNotification, NotificationType } from 'notifications-service/resolvers/notifications';
 import { NotificationBinRepository } from 'notifications-service/repositories/notificationBinRepository';
 import { ConsultQueueRepository } from 'consults-service/repositories/consultQueueRepository';
+import { WebEngageInput, postEvent } from 'helpers/webEngage';
 
 export type DiagnosisJson = {
   name: string;
@@ -674,10 +675,6 @@ const getCaseSheet: Resolver<
   )
     throw new AphError(AphErrorMessages.UNAUTHORIZED);
 
-  if (doctorData != null && appointmentData.doctorId != doctorData.id) {
-    throw new AphError(AphErrorMessages.UNAUTHORIZED);
-  }
-
   const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
   let juniorDoctorNotes = '';
 
@@ -1298,6 +1295,24 @@ const submitJDCaseSheet: Resolver<
     reason: 'Virtaul JD ' + ApiConstants.CASESHEET_COMPLETED_HISTORY.toString(),
   };
   appointmentRepo.saveAppointmentHistory(historyAttrs);
+
+  //post event to webengage
+  const patientRepo = patientsDb.getCustomRepository(PatientRepository);
+  const patientDetails = await patientRepo.findByIdWithRelations(appointmentData.patientId, []);
+
+  const postBody: Partial<WebEngageInput> = {
+    userId: patientDetails ? patientDetails.mobileNumber : '',
+    eventName: ApiConstants.SD_SUBMITTED_JD_CASE_SHEET_BEFORE_TIME_EVENT_NAME.toString(),
+    eventData: {
+      consultID: appointmentData.id,
+      displayID: appointmentData.displayId.toString(),
+      consultMode: appointmentData.appointmentType.toString(),
+      doctorName: doctorData.fullName,
+    },
+  };
+  await postEvent(postBody);
+  //web engage event ends
+
   return true;
 };
 

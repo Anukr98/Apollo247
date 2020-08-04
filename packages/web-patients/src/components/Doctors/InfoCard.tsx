@@ -335,6 +335,16 @@ export const InfoCard: React.FC<InfoCardProps> = (props) => {
                   saveSearchMutation({
                     variables: {
                       saveSearchInput: {
+                        type: SEARCH_TYPE.SPECIALTY,
+                        typeId: doctorInfo && doctorInfo.specialty && doctorInfo.specialty.id,
+                        patient: currentPatient ? currentPatient.id : '',
+                      },
+                    },
+                    fetchPolicy: 'no-cache',
+                  });
+                  saveSearchMutation({
+                    variables: {
+                      saveSearchInput: {
                         type: SEARCH_TYPE.DOCTOR,
                         typeId: doctorInfo.id,
                         patient: currentPatient ? currentPatient.id : '',

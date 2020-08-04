@@ -65,7 +65,7 @@ const PaymentCardBody: FC<PaymentCardBodyProps> = (props) => {
         const { paymentStatus, paymentRefId, amountPaid } = medicineOrderPayments[0];
         status = paymentStatus;
         refId = paymentRefId;
-        price = amountPaid;
+        price = estimatedAmount;
       }
       return { status: status, refId: refId, price: price };
     }

@@ -324,6 +324,16 @@
     "failure": "TXN_FAILURE",
     "pending": "PAYMENT_PENDING_PG"
   },
+  "PaymentModes": {
+    "DEBIT_CARD": "Debit Card",
+    "CREDIT_CARD": "Credit Card",
+    "NET_BANKING": "Net Banking",
+    "PAYTM_WALLET": "Paytm Wallet",
+    "EMI": "EMI",
+    "UPI": "UPI",
+    "PAYTM_POSTPAID": "Paytm Postpaid",
+    "COD": "COD"
+  },
   "alerts": {
     "Open_camera_in_video_call": "Image capturing is disabled during a video call. Please switch to the Audio call if you want to send an Image."
   },

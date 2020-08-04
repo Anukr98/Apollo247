@@ -8,11 +8,10 @@ import { AphButton, AphDialog, AphDialogTitle, AphDialogClose } from '@aph/web-u
 import { ShopByAreas } from 'components/Medicine/Cards/ShopByAreas';
 import { ShopByBrand } from 'components/Medicine/Cards/ShopByBrand';
 import { ShopByCategory } from 'components/Medicine/Cards/ShopByCategory';
-import { RecomendedProducts } from 'components/Medicine/Cards/RecomendedProducts';
+import { RecommendedProducts } from 'components/Medicine/Cards/RecommendedProducts';
 import { DayDeals } from 'components/Medicine/Cards/DayDeals';
 import { HotSellers } from 'components/Medicine/Cards/HotSellers';
 import { MedicineAutoSearch } from 'components/Medicine/MedicineAutoSearch';
-import { reOrderItems } from 'helpers/MedicineApiCalls';
 import { GET_LATEST_MEDICINE_ORDER } from 'graphql/profiles';
 import { ReOrder } from 'components/Orders/ReOrder';
 import { getLatestMedicineOrder_getLatestMedicineOrder_medicineOrderDetails as medicineOrderDetailsType } from 'graphql/types/getLatestMedicineOrder';
@@ -20,7 +19,6 @@ import { useMutation } from 'react-apollo-hooks';
 import { ApolloError } from 'apollo-client';
 import { MedicinePageAPiResponse } from './../../helpers/MedicineApiCalls';
 import axios from 'axios';
-import { OrderPlaced } from 'components/Cart/OrderPlaced';
 import { PaymentStatusModal } from 'components/Cart/PaymentStatusModal';
 import { useParams } from 'hooks/routerHooks';
 import { NavigationBottom } from 'components/NavigationBottom';
@@ -464,6 +462,7 @@ export const MedicineLanding: React.FC = (props: any) => {
       localStorage.removeItem('pharmaCoupon');
     }
     sessionStorage.removeItem('cartValues');
+    sessionStorage.removeItem('utm_source');
   }
 
   const [data, setData] = useState<MedicinePageAPiResponse | null>(null);
@@ -519,11 +518,12 @@ export const MedicineLanding: React.FC = (props: any) => {
           } else {
             setLatestMedicineOrder(null);
           }
-          setIsLoading(false);
         })
         .catch((e) => {
-          setIsLoading(false);
           console.log(e);
+        })
+        .finally(() => {
+          setIsLoading(false);
         });
     }
   }, [currentPatient]);
@@ -728,6 +728,8 @@ export const MedicineLanding: React.FC = (props: any) => {
                                 </span>
                               </div>
                             </div>
+                          ) : isLoading ? (
+                            <CircularProgress size={22} color="secondary" />
                           ) : null}
                         </div>
                       </div>
@@ -741,7 +743,7 @@ export const MedicineLanding: React.FC = (props: any) => {
             <div className={classes.allProductsList}>
               {isSignedIn && (
                 <div className={classes.sliderSection}>
-                  <RecomendedProducts />
+                  <RecommendedProducts section="Recommended Products" />
                 </div>
               )}
               {list &&

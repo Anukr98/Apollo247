@@ -23,6 +23,7 @@ import {
 import { MARK_MESSAGE_TO_UNREAD } from 'graphql/profiles';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { ApolloError } from 'apollo-client';
+import moment from 'moment';
 
 const useStyles = makeStyles(() => ({
   vaultContainer: {
@@ -141,10 +142,22 @@ interface PastAppointmentProps {
 const PastAppointment: React.FC<PastAppointmentProps> = ({ data, isChild }) => {
   const classes = useStyles({});
   const ischild: boolean = true;
+  const sortedConsult =
+    data && data.length > 0
+      ? data.sort(
+          (a, b) =>
+            moment(b ? b.appointmentDateTime : new Date())
+              .toDate()
+              .getTime() -
+            moment(a ? a.appointmentDateTime : new Date())
+              .toDate()
+              .getTime()
+        )
+      : [];
   return (
     <List className={isChild ? classes.childListStyle : classes.listStyle}>
-      {data && data.length > 0 ? (
-        data.map((item, idx) => (
+      {sortedConsult ? (
+        sortedConsult.map((item, idx) => (
           <ListItem
             key={idx}
             style={{

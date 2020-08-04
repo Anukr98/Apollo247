@@ -847,6 +847,31 @@ export const DOCTOR_SPECIALITY_BY_FILTERS = gql`
         referenceSlot
       }
       sort
+      filters {
+        city {
+          state
+          data
+        }
+        brands {
+          name
+          image
+        }
+        language {
+          name
+        }
+        experience {
+          name
+        }
+        availability {
+          name
+        }
+        fee {
+          name
+        }
+        gender {
+          name
+        }
+      }
     }
   }
 `;
@@ -1478,6 +1503,8 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS = gql`
           responseCode
           responseMessage
           bankTxnId
+          healthCreditsRedeemed
+          paymentMode
         }
         medicineOrderShipments {
           id
@@ -2638,6 +2665,7 @@ export const PHARMACY_ORDER_PAYMENT_DETAILS = gql`
           paymentDateTime
           paymentMode
           amountPaid
+          healthCreditsRedeemed
         }
       }
     }
