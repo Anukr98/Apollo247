@@ -286,8 +286,12 @@ export const CovidLanding: React.FC = (props: any) => {
           setIsWebView(isWebView);
         }
       }
+    } else {
+      if (sessionStorage.getItem('webView') && sessionStorage.getItem('webView').length > 0) {
+        setIsWebView(true);
+      }
     }
-  });
+  }, []);
   useEffect(() => {
     fetchUtil(covidArticleBaseUrl!, 'GET', {}, '', true).then((res: any) => {
       const body = res.data;
