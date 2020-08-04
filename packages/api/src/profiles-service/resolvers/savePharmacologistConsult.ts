@@ -58,7 +58,9 @@ const savePharmacologistConsult: Resolver<
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
-  const patientDetails = await patientRepo.getPatientDetails(savePharmacologistConsultInput.patientId);
+  const patientDetails = await patientRepo.getPatientDetails(
+    savePharmacologistConsultInput.patientId
+  );
   if (patientDetails == null) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
@@ -112,6 +114,7 @@ const savePharmacologistConsult: Resolver<
   subjectLine = subjectLine.replace('{0}', patientDetails.firstName);
   subjectLine = subjectLine.replace('{1}', date);
 
+  //cc is coming from input, retaining cc
   const emailContent: EmailMessage = {
     subject: subjectLine,
     fromEmail: <string>ApiConstants.PATIENT_HELP_FROM_EMAILID,

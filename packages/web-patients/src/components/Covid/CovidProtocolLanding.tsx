@@ -15,16 +15,17 @@ import { NavigationBottom } from 'components/NavigationBottom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { Banner } from 'components/Covid/Banner';
 import { CheckRiskLevel } from 'components/Covid/CheckRiskLevel';
-import { useAllCurrentPatients, useAuth } from 'hooks/authHooks';
+import { useAllCurrentPatients, useAuth, useLoginPopupState } from 'hooks/authHooks';
 import fetchUtil from 'helpers/fetch';
+import { ManageProfile } from 'components/ManageProfile';
+import { Relation } from 'graphql/types/globalTypes';
+import { pageViewTracking } from '../../webEngageTracking';
 
 interface CovidProtocolData {
   introductionBody: string;
   introductionTitle: string;
-
   [index: string]: any;
 }
-
 const useStyles = makeStyles((theme: Theme) => {
   return {
     cdLanding: {},
@@ -208,6 +209,10 @@ export const covidProtocolLanding: React.FC = (props: any) => {
   const scrollToRef = useRef<HTMLDivElement>(null);
   const { currentPatient } = useAllCurrentPatients();
   const { isSignedIn, isSigningIn } = useAuth();
+  const { allCurrentPatients } = useAllCurrentPatients();
+  const { setIsLoginPopupVisible: setLoginPopupVisible } = useLoginPopupState();
+  const onePrimaryUser =
+    allCurrentPatients && allCurrentPatients.filter((x) => x.relation === Relation.ME).length === 1;
 
   useEffect(() => {
     scrollToRef &&
@@ -216,11 +221,17 @@ export const covidProtocolLanding: React.FC = (props: any) => {
   }, []);
 
   useEffect(() => {
-    !isSigningIn && !isSignedIn && props.history.push(clientRoutes.covidLanding());
+    if (!isSigningIn && !isSignedIn) {
+      setLoginPopupVisible(true);
+      const continueURL =
+        typeof window !== 'undefined' &&
+        window.location &&
+        encodeURIComponent(window.location.href);
+      props.history.push(`${clientRoutes.covidLanding()}?continue=${continueURL}`);
+    }
   }, [isSignedIn, isSigningIn]);
 
-  const covidProtocolUrl =
-    process.env.COVID_PROTOCOL_URL || 'https://uatcms.apollo247.com/api/phrcovid-protocol';
+  const covidProtocolUrl = process.env.COVID_PROTOCOL_URL;
 
   useEffect(() => {
     if (isLoading && currentPatient && currentPatient.mobileNumber) {
@@ -233,6 +244,7 @@ export const covidProtocolLanding: React.FC = (props: any) => {
       )
         .then((res: any) => {
           if (res && res.success) {
+            pageViewTracking('Covid Guide Clicked');
             setSymptomData(res.data);
           } else {
             setSymptomData(null);
@@ -245,28 +257,18 @@ export const covidProtocolLanding: React.FC = (props: any) => {
         });
     }
   }, [currentPatient]);
-
-  useEffect(() => {
-    if (props && props.location && props.location.search && props.location.search.length) {
-      const qParamsArr = props.location.search.split('=');
-      if (qParamsArr && qParamsArr.length) {
-        const isWebView = qParamsArr.some((param: string) => param.includes('mobile_app'));
-        setIsWebView(isWebView);
-      }
-    }
-  }, []);
-
-  const [isWebView, setIsWebView] = useState<boolean>(false);
+  const isWebView =
+    sessionStorage.getItem('webView') && sessionStorage.getItem('webView').length > 0;
   const subtitle = (symptomData && symptomData['covidProtocolData'][0].category) || '';
   return (
     <div className={classes.cdLanding} ref={scrollToRef}>
-      <Header />
+      {!isWebView && <Header />}
       <div className={classes.container}>
         <div className={classes.cdContent}>
           <Banner
-            title={'Coronavirus (COVID-19) Guide'}
+            title={'Personalized Coronavirus (COVID-19) guide'}
             subtitle={subtitle}
-            isWebView={isWebView}
+            isWebView={false}
             backLocation={clientRoutes.covidLanding()}
           />
           {isLoading && !symptomData ? (
@@ -346,7 +348,7 @@ export const covidProtocolLanding: React.FC = (props: any) => {
           <CheckRiskLevel />
         </div>
       </div>
-      {/*{!onePrimaryUser && <ManageProfile />}*/}
+      {!onePrimaryUser && <ManageProfile />}
       <BottomLinks />
       {!isWebView && <NavigationBottom />}
     </div>

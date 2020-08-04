@@ -1,6 +1,6 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef } from 'react';
 import { makeStyles } from '@material-ui/styles';
-import { Theme, CircularProgress, Typography, Link } from '@material-ui/core';
+import { Theme, CircularProgress } from '@material-ui/core';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails as OrderDetails,
@@ -11,7 +11,7 @@ import { OrderFeedback } from './OrderFeedback';
 import { MEDICINE_ORDER_STATUS } from 'graphql/types/globalTypes';
 import { AphButton } from '@aph/web-ui-components';
 import Popover from '@material-ui/core/Popover';
-import { useShoppingCart } from 'components/MedicinesCartProvider';
+import { useShoppingCart, MedicineCartItem } from 'components/MedicinesCartProvider';
 import {
   GetPatientAddressList,
   GetPatientAddressListVariables,
@@ -19,6 +19,7 @@ import {
 } from 'graphql/types/GetPatientAddressList';
 import { GET_PATIENT_ADDRESSES_LIST } from 'graphql/address';
 import { getStatus, isRejectedStatus } from 'helpers/commonHelpers';
+import { ReOrder } from './ReOrder';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -263,6 +264,9 @@ const useStyles = makeStyles((theme: Theme) => {
         maxWidth: 80,
       },
     },
+    reorderBtn: {
+      marginBottom: 15,
+    },
   };
 });
 
@@ -394,12 +398,12 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
         const selectedAddress = deliveryAddresses.find(
           (address: AddressDetails) => address.id == orderDetailsData.patientAddressId
         );
+        const address1 = selectedAddress.addressLine1 ? `${selectedAddress.addressLine1}, ` : '';
+        const address2 = selectedAddress.addressLine2 ? `${selectedAddress.addressLine2}, ` : '';
+        const city = selectedAddress.city ? `${selectedAddress.city}, ` : '';
+        const state = selectedAddress.state ? `${selectedAddress.state}, ` : '';
         const addressData = selectedAddress
-          ? `${selectedAddress.addressLine1 ? `${selectedAddress.addressLine1}, ` : ''}${
-              selectedAddress.addressLine2 ? `${selectedAddress.addressLine2}, ` : ''
-            }${selectedAddress.city ? `${selectedAddress.city}, ` : ''}${
-              selectedAddress.state ? `${selectedAddress.state}, ` : ''
-            }${selectedAddress.zipcode || ''}`
+          ? `${address1}${address2}${city}${state}${selectedAddress.zipcode || ''}`
           : '';
         return addressData;
       } else {
@@ -501,7 +505,7 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
         return <div className={classes.orderStatus}>Successful</div>;
     }
   };
-
+  const [isDialogOpen, setIsDialogOpen] = React.useState<boolean>(false);
   return (
     <div className={classes.orderStatusGroup}>
       {!isLoading && orderDetailsData && (
@@ -590,6 +594,17 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
       </div>
       {orderDetailsData && orderDetailsData.currentStatus === MEDICINE_ORDER_STATUS.DELIVERED && (
         <div className={classes.bottomNotification}>
+          <div className={classes.reorderBtn}>
+            <ReOrder
+              orderDetailsData={orderDetailsData}
+              type="Order Details"
+              patientName={
+                orderDetailsData.patient && orderDetailsData.patient.firstName
+                  ? orderDetailsData.patient.firstName
+                  : ''
+              }
+            />
+          </div>
           <p>
             Your order no.#{orderDetailsData && orderDetailsData.orderAutoId} is successfully
             delivered on {getDeliveredDateTime(orderStatusList)}.

@@ -12,6 +12,7 @@ export type PharmacyHomepageInfo = {
 export enum AppEnv {
   DEV = 'DEV',
   QA = 'QA',
+  QA2 = 'QA2',
   STAGING = 'STAGING',
   PROD = 'PROD',
   PERFORM = 'PERFORM',
@@ -319,9 +320,8 @@ const PharmaApiConfig = {
 
 //Development;
 const ConfigurationDev = {
-  LOG_ENVIRONMENT: 'debug',
-  ANALYTICAL_ENIVRONMENT: 'debug',
-  MEDICINE_PAST_SEARCHES_SHOW_COUNT: 5,
+  CODE_PUSH_DEPLOYMENT_KEY_ANDROID: 'ztcR3MB6vWyWtIAzpnsOczanc57pCQeMAIhUS',
+  CODE_PUSH_DEPLOYMENT_KEY_IOS: 't1yzL4Cj0zDKiAUuKVZt_zIYuwHrleGaNVihE',
   PAYMENT_GATEWAY_BASE_URL: 'https://aph.dev.pmt.popcornapps.com',
   PAYMENT_GATEWAY_SUCCESS_PATH: '/mob?',
   PAYMENT_GATEWAY_ERROR_PATH: '/mob-error?',
@@ -346,8 +346,8 @@ const ConfigurationDev = {
   TOP_SPECIALITIES: DEV_top6_specailties,
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
-  iOS_Version: '2.615',
-  Android_Version: '2.615',
+  iOS_Version: '2.631',
+  Android_Version: '2.631',
   CONDITIONAL_MANAGENET_BASE_URL: 'https://aph.staging.pmt.popcornapps.com',
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e', //7839e425f4acbd8e6ff3f907281addca <-- popcornapps key
   COVID_RISK_LEVEL_URL:
@@ -360,9 +360,8 @@ const ConfigurationDev = {
 
 // QA
 const ConfigurationQA = {
-  LOG_ENVIRONMENT: 'release',
-  ANALYTICAL_ENIVRONMENT: 'release',
-  MEDICINE_PAST_SEARCHES_SHOW_COUNT: 5,
+  CODE_PUSH_DEPLOYMENT_KEY_ANDROID: '8njVNeiezjGyi0BjIuIWOWm_N3zo2uVb5Z5_B',
+  CODE_PUSH_DEPLOYMENT_KEY_IOS: 'IwojMQex0fbTUlvY1ydYzMT5l7hrLrbLy0ciH',
   PAYMENT_GATEWAY_BASE_URL: 'https://aph.staging.pmt.popcornapps.com',
   PAYMENT_GATEWAY_SUCCESS_PATH: '/mob?',
   PAYMENT_GATEWAY_ERROR_PATH: '/mob-error?',
@@ -387,23 +386,61 @@ const ConfigurationQA = {
   TOP_SPECIALITIES: QA_top6_specailties,
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
-  iOS_Version: '2.623',
-  Android_Version: '2.623',
+  iOS_Version: '2.631',
+  Android_Version: '2.631',
   CONDITIONAL_MANAGENET_BASE_URL: 'https://aph.staging.pmt.popcornapps.com',
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e',
   COVID_RISK_LEVEL_URL:
     'https://aph.staging.web-patients.popcornapps.com/covid19/cough-scan?utm_source=mobile_app',
   COVID_LATEST_ARTICLES_URL:
     'https://aph.staging.web-patients.popcornapps.com/covid19?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Covid19%20Content',
+  CONSULT_COUPON_BASE_URL: 'https://uatvalidcoupon.apollo247.com',
+  KAVACH_URL: 'https://www.apollo247.com/covid19/kavach?utm_source=mobile_app&utm_medium=Webview',
+};
+
+// QA2
+const ConfigurationQA2 = {
+  CODE_PUSH_DEPLOYMENT_KEY_ANDROID: 'kq-NXsLvHNu_EYzKBlZOuk2vbQKepRdBSndmo',
+  CODE_PUSH_DEPLOYMENT_KEY_IOS: 'h6JJUbQWK4JEItmav-kH852x-3pneo4vcZNkg',
+  PAYMENT_GATEWAY_BASE_URL: 'https://qapmt.apollo247.com',
+  PAYMENT_GATEWAY_SUCCESS_PATH: '/mob?',
+  PAYMENT_GATEWAY_ERROR_PATH: '/mob-error?',
+  CONSULT_PG_BASE_URL: 'https://qapmt.apollo247.com',
+  CONSULT_PG_SUCCESS_PATH: '/consultpg-success?',
+  CONSULT_PG_ERROR_PATH: '/consultpg-error?',
+  CONSULT_PG_PENDING_PATH: '/consultpg-pending',
+  CONSULT_PG_REDIRECT_PATH: '/consultpg-redirect?',
+  DIAGNOSTICS_PG_BASE_URL: 'https://qapmt.apollo247.com',
+  DIAGNOSTICS_PG_SUCCESS_PATH: '/diagnostic-pg-success?',
+  DIAGNOSTICS_PG_ERROR_PATH: '/diagnostic-pg-error?',
+  DIAGNOSTICS_PG_CANCEL_PATH: '/diagnostic-pg-cancel-url',
+  MIN_CART_VALUE_FOR_FREE_DELIVERY: 200,
+  DELIVERY_CHARGES: 25,
+  DIASGNOS_DELIVERY_CHARGES: 0,
+  PRAKTISE_API_KEY: 'AFF2F0D8-5320-4E4D-A673-33626CD1C3F2', //'4A8C9CCC-C5A3-11E9-9A19-8C85900A8328',
+  PRO_TOKBOX_KEY: '46429002',
+  PRO_PUBNUB_PUBLISH: 'pub-c-75e6dc17-2d81-4969-8410-397064dae70e',
+  PRO_PUBNUB_SUBSCRIBER: 'sub-c-9cc337b6-e0f4-11e9-8d21-f2f6e193974b',
+  DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
+  GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
+  TOP_SPECIALITIES: QA_top6_specailties,
+  ...PharmaApiConfig.dev,
+  ...appStaticVariables,
+  iOS_Version: '2.631',
+  Android_Version: '2.631',
+  CONDITIONAL_MANAGENET_BASE_URL: 'https://aph.staging.pmt.popcornapps.com',
+  BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e',
+  COVID_RISK_LEVEL_URL: 'https://qapatients.apollo247.com/covid19/cough-scan?utm_source=mobile_app',
+  COVID_LATEST_ARTICLES_URL:
+    'https://qapatients.apollo247.com/covid19?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Covid19%20Content',
   CONSULT_COUPON_BASE_URL: 'https://validcoupon.apollo247.com',
   KAVACH_URL: 'https://www.apollo247.com/covid19/kavach?utm_source=mobile_app&utm_medium=Webview',
 };
 
 // staging
 const ConfigurationStaging = {
-  LOG_ENVIRONMENT: 'release',
-  ANALYTICAL_ENIVRONMENT: 'release',
-  MEDICINE_PAST_SEARCHES_SHOW_COUNT: 5,
+  CODE_PUSH_DEPLOYMENT_KEY_ANDROID: '8njVNeiezjGyi0BjIuIWOWm_N3zo2uVb5Z5_B',
+  CODE_PUSH_DEPLOYMENT_KEY_IOS: 'IwojMQex0fbTUlvY1ydYzMT5l7hrLrbLy0ciH',
   PAYMENT_GATEWAY_BASE_URL: 'https://stagingpmt.apollo247.com',
   PAYMENT_GATEWAY_SUCCESS_PATH: '/mob?',
   PAYMENT_GATEWAY_ERROR_PATH: '/mob-error?',
@@ -439,9 +476,8 @@ const ConfigurationStaging = {
 };
 //Production
 const ConfigurationProd = {
-  LOG_ENVIRONMENT: 'release',
-  ANALYTICAL_ENIVRONMENT: 'release',
-  MEDICINE_PAST_SEARCHES_SHOW_COUNT: 5,
+  CODE_PUSH_DEPLOYMENT_KEY_ANDROID: 'ncBcxm590r0jEGT4BjQFTAW0_rkHKvF5xYUDX',
+  CODE_PUSH_DEPLOYMENT_KEY_IOS: 'N9LT5oUoB9DUv394XXz05Tywn3LKgHsugfl3i',
   PAYMENT_GATEWAY_BASE_URL: 'https://pmt.apollo247.com', //PRODUCTION
   PAYMENT_GATEWAY_SUCCESS_PATH: '/mob?',
   PAYMENT_GATEWAY_ERROR_PATH: '/mob-error?',
@@ -466,8 +502,8 @@ const ConfigurationProd = {
   TOP_SPECIALITIES: top6_specailties,
   ...PharmaApiConfig.prod,
   ...appStaticVariables,
-  iOS_Version: '2.63',
-  Android_Version: '2.63',
+  iOS_Version: '3.2.0',
+  Android_Version: '3.2.0',
   CONDITIONAL_MANAGENET_BASE_URL: 'https://pmt.apollo247.com',
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e',
   COVID_RISK_LEVEL_URL: 'https://www.apollo247.com/covid19/cough-scan?utm_source=mobile_app',
@@ -479,9 +515,8 @@ const ConfigurationProd = {
 
 //PERFORMANCE
 const ConfigurationPERFORM = {
-  LOG_ENVIRONMENT: 'perform',
-  ANALYTICAL_ENIVRONMENT: 'perform',
-  MEDICINE_PAST_SEARCHES_SHOW_COUNT: 5,
+  CODE_PUSH_DEPLOYMENT_KEY_ANDROID: '',
+  CODE_PUSH_DEPLOYMENT_KEY_IOS: '',
   PAYMENT_GATEWAY_BASE_URL: 'https://aspmt.apollo247.com',
   PAYMENT_GATEWAY_SUCCESS_PATH: '/mob?',
   PAYMENT_GATEWAY_ERROR_PATH: '/mob-error?',
@@ -520,9 +555,8 @@ const ConfigurationPERFORM = {
 
 //VAPT
 const ConfigurationVAPT = {
-  LOG_ENVIRONMENT: 'VAPT',
-  ANALYTICAL_ENIVRONMENT: 'VAPT',
-  MEDICINE_PAST_SEARCHES_SHOW_COUNT: 5,
+  CODE_PUSH_DEPLOYMENT_KEY_ANDROID: '',
+  CODE_PUSH_DEPLOYMENT_KEY_IOS: '',
   PAYMENT_GATEWAY_BASE_URL: 'http://aph.vapt.pmt.popcornapps.com',
   PAYMENT_GATEWAY_SUCCESS_PATH: '/mob?',
   PAYMENT_GATEWAY_ERROR_PATH: '/mob-error?',
@@ -561,9 +595,8 @@ const ConfigurationVAPT = {
 
 //DevelopmentReplica
 const ConfigurationDevReplica = {
-  LOG_ENVIRONMENT: 'debug',
-  ANALYTICAL_ENIVRONMENT: 'debug',
-  MEDICINE_PAST_SEARCHES_SHOW_COUNT: 5,
+  CODE_PUSH_DEPLOYMENT_KEY_ANDROID: '',
+  CODE_PUSH_DEPLOYMENT_KEY_IOS: '',
   PAYMENT_GATEWAY_BASE_URL: 'https://devpmt.apollo247.com',
   PAYMENT_GATEWAY_SUCCESS_PATH: '/mob?',
   PAYMENT_GATEWAY_ERROR_PATH: '/mob-error?',
@@ -605,6 +638,8 @@ const Configuration =
     ? ConfigurationProd
     : APP_ENV == AppEnv.QA
     ? ConfigurationQA
+    : APP_ENV == AppEnv.QA2
+    ? ConfigurationQA2
     : APP_ENV == AppEnv.STAGING
     ? ConfigurationStaging
     : APP_ENV == AppEnv.PERFORM
@@ -780,30 +815,31 @@ export const NeedHelp = [
   {
     category: 'Pharmacy',
     options: [
-      'I want to cancel my medicine order with a refund',
-      'The order was successfully placed but medicines not yet delivered',
-      'I was not able to make the payment due to technical errors',
+      'I would like to cancel the order!',
+      'I would like to know the Delivery status of my order.',
+      'I was not able to place the order due to technical errors',
       'My money got deducted but no order confirmation received',
-      'My order got canceled with no prior notice hence, need the refund',
-      'There is a mismatch in the quantity of medicines ordered and delivered',
-      'The medicines delivered are not the ones which were ordered by me',
-      'The app is crashing/ website is working too slow',
-      'The excess amount charged for medicine delivery',
-      'Inappropriate attitude or behaviour of delivery staff',
+      'I need to know why my order was cancelled',
+      'I have issues in order delivered!',
+      'Excess amount was charged to me by Delivery Executive',
+      'Inappropriate attitude & behaviour of Delivery Executive',
+      'I need to know my refund status',
+      'I have prescription related queries (Invalid/ Order cancelled)',
     ],
   },
   {
     category: 'Virtual/Online Consult',
     options: [
-      'My doctor is not listed on the platform',
-      'There is no slot available for the doctor appointment',
+      'I am unable to book an appointment (slot not available/ Doctor not listed) ',
       'The doctor did not start the consultation on time',
-      'The doctor did not start the consultation. Want a refund.',
       'My money got deducted but no confirmation on the doctor appointment',
-      'I faced technical issues during my appointment ',
+      'I faced technical issues during/after booking an appointment',
       'I want to reschedule/cancel my appointment ',
       'I haven’t received the prescription',
-      'Coupon code did not work for booking doctor appointment',
+      'Improper behaviour/attitude of doctor or staff',
+      'I need to know my refund status',
+      'I did not recieve invoice/ receipt of my appointment',
+      'Doctor did not respond to follow-up chats',
     ],
   },
   {
@@ -861,6 +897,10 @@ export const NeedHelp = [
       'Sample pick up staff related',
       'Wrong report received',
     ],
+  },
+  {
+    category: 'Unsubscribe',
+    options: ['Marketing SMSes', 'Marketing Push Notifications', 'Both'],
   },
 ];
 

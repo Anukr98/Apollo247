@@ -64,7 +64,9 @@ export const CovidHealthScan: React.FC<IconProps> = (props) => (
 export const CovidExpert: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/covid_ic_family_doctor.png')} />
 );
-
+export const CloseCal: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/closeCal.png')} />
+);
 export const LatestArticle: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/ic_feed.png')} />
 );
@@ -782,6 +784,26 @@ export const InjectionIcon: React.FC<IconProps> = (props) => (
 
 export const SearchSendIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_send.png')} />
+);
+
+export const WhiteSearchIcon: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/ic_search.png')} />
+);
+
+export const WhiteListViewIcon: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/list_view_white.png')} />
+);
+
+export const WhiteGridViewIcon: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/grid_view_white.png')} />
+);
+
+export const BlackGridViewIcon: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/grid_view_black.png')} />
+);
+
+export const BlackListViewIcon: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/list_view_black.png')} />
 );
 
 export const ShieldIcon: React.FC<IconProps> = (props) => (

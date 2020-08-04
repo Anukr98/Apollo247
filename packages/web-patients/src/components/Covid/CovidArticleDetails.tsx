@@ -19,6 +19,8 @@ import { BottomLinks } from 'components/BottomLinks';
 import moment from 'moment';
 import { SchemaMarkup } from 'SchemaMarkup';
 import { MetaTagsComp } from 'MetaTagsComp';
+import { ManageProfile } from 'components/ManageProfile';
+import { hasOnePrimaryUser } from 'helpers/onePrimaryUser';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -224,6 +226,7 @@ const useStyles = makeStyles((theme: Theme) => {
 
 export const CovidArticleDetails: React.FC = (props: any) => {
   const classes = useStyles({});
+  const onePrimaryUser = hasOnePrimaryUser();
   const isDesktopOnly = useMediaQuery('(min-width:768px)');
   const [htmlData, setHtmlData] = useState('');
   const [source, setSource] = useState('');
@@ -277,6 +280,7 @@ export const CovidArticleDetails: React.FC = (props: any) => {
             alt,
             metaDescription,
           } = postData;
+
           alt &&
             metaDescription &&
             setMetaTagProps({
@@ -434,6 +438,7 @@ export const CovidArticleDetails: React.FC = (props: any) => {
       </div>
       <BottomLinks />
       <NavigationBottom />
+      {!onePrimaryUser && <ManageProfile />}
     </div>
   );
 };

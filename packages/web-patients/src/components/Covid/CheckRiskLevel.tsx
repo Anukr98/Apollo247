@@ -26,6 +26,10 @@ const useStyles = makeStyles((theme: Theme) => {
         flexDirection: 'column',
       },
     },
+    covidGuide: {
+      width: '100%',
+      textAlign: 'left',
+    },
     leftIcon: {
       paddingRight: 40,
       [theme.breakpoints.down('xs')]: {
@@ -156,17 +160,22 @@ const useStyles = makeStyles((theme: Theme) => {
         paddingRight: 16,
       },
     },
+    covidScanner: {
+      display: 'contents',
+      width: '100%',
+    },
   };
 });
 
-export const CheckRiskLevel: React.FC = (props) => {
+export const CheckRiskLevel: React.FC = (props: any) => {
   const classes = useStyles({});
   const covidScannerUrl = process.env.COVID_RISK_CALCULATOR_URL;
   const isDesktopOnly = useMediaQuery('(min-width:768px)');
   const [iscoronaDialogOpen, setIscoronaDialogOpen] = useState<boolean>(false);
   const { isSignedIn } = useAuth();
   const location = useLocation();
-
+  const isWebView =
+    sessionStorage.getItem('webView') && sessionStorage.getItem('webView').length > 0;
   return (
     <div className={classes.root}>
       <div className={classes.leftIcon}>
@@ -191,25 +200,32 @@ export const CheckRiskLevel: React.FC = (props) => {
                   onClick={() => {
                     if (!isSignedIn) {
                       protectWithLoginPopup();
+                      const redirectURL = encodeURIComponent(
+                        `${window.location.origin}${clientRoutes.covidProtocol()}`
+                      );
+                      redirectURL && history.replaceState(null, '', `?continue=${redirectURL}`);
                     }
                   }}
                 >
-                  <Link to={isSignedIn && clientRoutes.covidProtocol()}>
+                  <Link
+                    to={isSignedIn && clientRoutes.covidProtocol()}
+                    className={classes.covidGuide}
+                  >
                     <span>
                       <img src={require('images/guide.svg')} alt="" />
                     </span>
-                    <span>Get your personalized guide</span>
+                    <span>Get your COVID-19 guide</span>
                   </Link>
                 </AphButton>
               )}
             </ProtectedWithLoginPopup>
           )}
-          <a href={covidScannerUrl} target={'_blank'}>
+          <a href={covidScannerUrl} target={'_blank'} className={classes.covidScanner}>
             <AphButton className={classes.filledBtn}>
               <span>
                 <img src={require('images/ic_covid-white.svg')} alt="" />
               </span>
-              <span>Check your Covid-19 risk level</span>
+              <span>Check your COVID-19 risk level</span>
             </AphButton>
           </a>
           <a className={classes.callBtn} href={isDesktopOnly ? '#' : `tel:${customerCareNumber}`}>

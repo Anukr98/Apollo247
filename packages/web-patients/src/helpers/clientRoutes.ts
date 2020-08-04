@@ -66,7 +66,7 @@ export const clientRoutes = {
   prescriptionReview: () => '/prescription-review',
   specialityListing: () => '/specialties',
   medicinePrescription: () => '/medicine-prescription',
-  covidProtocol: () => `/medical-condition`,
+  covidProtocol: () => '/medical-condition',
 };
 
 export const clientBaseUrl = () => webPatientsBaseUrl();

@@ -2,7 +2,6 @@ import { EntityRepository, Repository } from 'typeorm';
 import { ExotelDetails } from 'consults-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
-import { differenceInSeconds } from 'date-fns';
 import { DOCTOR_CALL_TYPE } from 'notifications-service/resolvers/notifications';
 
 @EntityRepository(ExotelDetails)
@@ -20,15 +19,15 @@ export class ExotelDetailsRepository extends Repository<ExotelDetails> {
   }
 
   getCallDetailsById(id: string) {
-    return this.findOne({ where: { id }, relations: ['appointment']  });
+    return this.findOne({ where: { id }, relations: ['appointment'] });
   }
 
   getCallDetailsBySid(callSid: string) {
-    return this.findOne({ where: { callSid }, relations: ['appointment']  });
+    return this.findOne({ where: { callSid }, relations: ['appointment'] });
   }
 
   getAllCallDetailsByStatus(status: string) {
-    return this.find({ where: { status }, relations: ['appointment']  });
+    return this.find({ where: { status }, relations: ['appointment'] });
   }
 
   findByAppointmentId(appointmentId: string) {
@@ -42,15 +41,14 @@ export class ExotelDetailsRepository extends Repository<ExotelDetails> {
   findByJuniorAppointments(appointmentId: string) {
     return this.find({
       where: { appointmentId, doctorType: DOCTOR_CALL_TYPE.JUNIOR },
-      relations: ['appointment'] 
+      relations: ['appointment'],
     });
   }
 
   findBySeniorAppointments(appointmentId: string) {
     return this.find({
       where: { appointmentId, doctorType: DOCTOR_CALL_TYPE.SENIOR },
-      relations: ['appointment'] 
+      relations: ['appointment'],
     });
   }
-
 }

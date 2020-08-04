@@ -29,7 +29,6 @@ import { apiRoutes } from './apiRoutes';
 import {
   CommonBugFender,
   setBugFenderLog,
-  CommonLogEvent,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { getDiagnosticSlots_getDiagnosticSlots_diagnosticSlot_slotInfo } from '@aph/mobile-patients/src/graphql/types/getDiagnosticSlots';
 import {
@@ -63,7 +62,6 @@ import {
 import { UIElementsContextProps } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { NavigationScreenProp, NavigationRoute } from 'react-navigation';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import { postReorderMedicines } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import { getLatestMedicineOrder_getLatestMedicineOrder_medicineOrderDetails } from '@aph/mobile-patients/src/graphql/types/getLatestMedicineOrder';
 
 const googleApiKey = AppConfig.Configuration.GOOGLE_API_KEY;
@@ -88,7 +86,7 @@ export interface TestSlot {
   slotInfo: getDiagnosticSlots_getDiagnosticSlots_diagnosticSlot_slotInfo;
 }
 
-const isDebugOn = AppConfig.Configuration.LOG_ENVIRONMENT == 'debug';
+const isDebugOn = __DEV__;
 
 export const aphConsole: AphConsole = {
   error: (message?: any, ...optionalParams: any[]) => {
@@ -385,8 +383,38 @@ export const getNetStatus = async () => {
   return status;
 };
 
-export const nextAvailability = (nextSlot: string) => {
-  return `available in ${mhdMY(nextSlot, 'min')}`;
+export const nextAvailability = (nextSlot: string, type: 'Available' | 'Consult' = 'Available') => {
+  const isValidTime = moment(nextSlot).isValid();
+  if (isValidTime) {
+    const current = moment(new Date());
+    const difference = moment.duration(moment(nextSlot).diff(current));
+    const differenceMinute = Math.ceil(difference.asMinutes());
+    const diffDays = Math.ceil(difference.asDays());
+    const isTomorrow = moment(nextSlot).isAfter(
+      current
+        .add(1, 'd')
+        .startOf('d')
+        .set({
+          hour: moment('06:00', 'HH:mm').get('hour'),
+          minute: moment('06:00', 'HH:mm').get('minute'),
+        })
+    );
+    if (differenceMinute < 120) {
+      return `${type} in ${differenceMinute} min${differenceMinute !== 1 ? 's' : ''}`;
+    } else if (differenceMinute >= 120 && !isTomorrow) {
+      return `${type} at ${moment(nextSlot).format('hh:mm A')}`;
+    } else if (isTomorrow && diffDays < 2) {
+      return `${type} Tomorrow${
+        type === 'Available' ? ` at ${moment(nextSlot).format('hh:mm A')}` : ''
+      }`;
+    } else if ((diffDays >= 2 && diffDays <= 30) || type == 'Consult') {
+      return `${type} in ${diffDays} days`;
+    } else {
+      return `${type} after a month`;
+    }
+  } else {
+    return type === 'Available' ? 'Available' : 'Book Consult';
+  }
 };
 
 export const mhdMY = (
@@ -404,7 +432,7 @@ export const mhdMY = (
   const days = Math.ceil(difference.asDays());
   const months = Math.ceil(difference.asMonths());
   const year = Math.ceil(difference.asYears());
-  if (min > 0 && min < 24) {
+  if (min > 0 && min < 60) {
     return `${min} ${mText}${min !== 1 ? 's' : ''}`;
   } else if (hours > 0 && hours < 24) {
     return `${hours} ${hText}${hours !== 1 ? 's' : ''}`;
@@ -614,6 +642,11 @@ export const isValidName = (value: string) =>
     ? true
     : false;
 
+export const extractUrlFromString = (text: string): string | undefined => {
+  const urlRegex = /(https?:\/\/[^ ]*)/;
+  return (text.match(urlRegex) || [])[0];
+};
+
 export const reOrderMedicines = async (
   order:
     | getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails
@@ -621,7 +654,6 @@ export const reOrderMedicines = async (
   currentPatient: any,
   source: ReorderMedicines['source']
 ) => {
-  postReorderMedicines(source, currentPatient);
   // Medicines
   // use billedItems for delivered orders
   const billedItems = g(
@@ -677,6 +709,20 @@ export const reOrderMedicines = async (
     : lineItems
         .filter((item) => !availableLineItemsSkus.includes(item.medicineSKU!))
         .map((item) => item.medicineName!);
+
+  const eventAttributes: WebEngageEvents[WebEngageEventName.RE_ORDER_MEDICINE] = {
+    orderType: 'Cart',
+    noOfItemsNotAvailable: unavailableItems.length,
+    source,
+    'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+    'Patient UHID': g(currentPatient, 'uhid'),
+    Relation: g(currentPatient, 'relation'),
+    'Patient Age': Math.round(moment().diff(currentPatient.dateOfBirth, 'years', true)),
+    'Patient Gender': g(currentPatient, 'gender'),
+    'Mobile Number': g(currentPatient, 'mobileNumber'),
+    'Customer ID': g(currentPatient, 'id'),
+  };
+  postWebEngageEvent(WebEngageEventName.RE_ORDER_MEDICINE, eventAttributes);
 
   // Prescriptions
   const prescriptionUrls = (order.prescriptionImageUrl || '')

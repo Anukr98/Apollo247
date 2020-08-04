@@ -399,11 +399,11 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: '#00b38e',
       color: '#FFFFFF',
       display: 'inline-block',
-      paddingLeft: 6,
-      paddingTop: 2,
       marginRight: 10,
       fontWeight: 600,
       fontSize: 20,
+      borderRadius: 5,
+      textAlign: 'center',
     },
     callOptionFirst: {
       fontSize: '16px',
@@ -413,6 +413,7 @@ const useStyles = makeStyles((theme: Theme) => {
       lineHeight: 'normal',
       letterSpacing: 'normal',
       color: '#00b38e',
+      width: '50%',
     },
     callNote: {
       fontSize: '14px',
@@ -706,15 +707,26 @@ const useStyles = makeStyles((theme: Theme) => {
       border: 0,
     },
     toastMessage: {
-      width: '482px',
+      width: '520px',
       height: '40px',
       borderRadius: '10px',
       boxShadow: '0 1px 13px 0 rgba(0, 0, 0, 0.16)',
       backgroundColor: '#00b38e',
-      position: 'relative',
-      top: '37px',
-      right: '529px',
-      marginBottom: '5px',
+      position: 'absolute',
+      top: '172px',
+      left: '150px',
+      zIndex: 1,
+    },
+    toastMessageText: {
+      fontSize: '14px',
+      fontWeight: 500,
+      fontStretch: 'normal',
+      fontStyle: 'normal',
+      lineHeight: 1.43,
+      letterSpacing: 'normal',
+      color: '#ffffff',
+      position: 'absolute',
+      top: 6,
     },
   };
 });
@@ -737,7 +749,6 @@ interface assignedDoctorType {
   assignedDoctorPhoto: string;
 }
 interface CallPopoverProps {
-  setShowToastMessage: (flag: boolean) => void;
   setStartConsultAction(isVideo: boolean): void;
   createSessionAction: () => void;
   saveCasesheetAction: (onlySave: boolean, endConsult: boolean) => void;
@@ -815,6 +826,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
   const appointmentComplete = '^^#appointmentComplete';
   const doctorAutoResponse = '^^#doctorAutoResponse';
 
+  const [showToastMessage, setShowToastMessage] = useState<boolean>(false);
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [remainingConsultStartTime, setRemainingConsultStartTime] = React.useState<number>(-1);
   const [startAppointment, setStartAppointment] = React.useState<boolean>(false);
@@ -1505,6 +1517,37 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
             )}
           </div>
 
+          {showToastMessage && (
+            <div
+              className={classes.toastMessage}
+              onLoad={() => {
+                setTimeout(() => {
+                  setShowToastMessage(false);
+                }, 10000);
+              }}
+            >
+              <span className={classes.toastMessageText}>
+                <img
+                  src={require('images/ic_cancel_green.svg')}
+                  alt=""
+                  style={{
+                    height: 18,
+                    width: 18,
+                    position: 'relative',
+                    top: 4,
+                    marginLeft: 12,
+                    marginRight: 20,
+                    cursor: 'pointer',
+                  }}
+                  onClick={() => {
+                    setShowToastMessage(false);
+                  }}
+                />
+                You will get a call from {process.env.EXOTEL_CALLER_ID}. Please pick up the call !
+              </span>
+            </div>
+          )}
+
           {/* code commented as requested by the testing team
           ------------------------------------------------------------
            <div className={`${classes.consultDur} ${classes.consultDurShow}`}>
@@ -2103,7 +2146,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
               <span className={classes.callSubheader}>
                 {'Please follow the steps to connect to your patient :'}
               </span>
-              <span style={{ display: 'flex', marginTop: 30, marginBottom: 20 }}>
+              <span style={{ display: 'flex', margin: '30px 0px 20px 10px', alignItems: 'center' }}>
                 <span className={classes.callOption}>1</span>
                 <span className={classes.callOptionFirst}>
                   Answer the call from {process.env.EXOTEL_CALLER_ID} <br />
@@ -2157,7 +2200,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
                       },
                       fetchPolicy: 'no-cache',
                     });
-                    props.setShowToastMessage(true);
+                    setShowToastMessage(true);
                   }}
                 >
                   {'PROCEED TO CONNECT'}

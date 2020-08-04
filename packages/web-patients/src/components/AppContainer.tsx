@@ -64,8 +64,9 @@ import { SpecialityListing } from 'components/SpecialityListing';
 import { SpecialtyDetails } from 'components/Doctors/SpecialtyDetails';
 import { MedicinePrescriptions } from './Prescriptions/MedicinePrescriptions';
 import { MedicineSearch } from './Medicine/MedicineSearch';
-import { covidProtocolLanding } from 'components/Covid/CovidProtocolLanding';
 import { DoctorsLanding } from 'components/DoctorsLanding';
+import { covidProtocolLanding } from 'components/Covid/CovidProtocolLanding';
+import { Loader } from 'components/Loader';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -98,7 +99,7 @@ const App: React.FC = () => {
   const pageName = window.location.pathname;
 
   useEffect(() => {
-    if (signInError) window.alert('Error signing in :(');
+    if (signInError) console.log('Error signing in :(');
   }, [signInError]);
 
   return (
@@ -243,6 +244,7 @@ const AppContainer: React.FC = () => {
   return (
     <BrowserRouter>
       <AuthProvider>
+        <Loader />
         <AphThemeProvider theme={theme}>
           <MuiPickersUtilsProvider utils={DateFnsUtils}>
             <MedicinesCartProvider>
