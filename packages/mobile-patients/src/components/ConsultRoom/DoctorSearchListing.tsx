@@ -52,7 +52,7 @@ import {
 import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
 import {
   callPermissions,
-  doRequestAndAccessLocation,
+  doRequestAndAccessLocationModified,
   g,
   getNetStatus,
   isValidSearch,
@@ -484,7 +484,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
               onPress={() => {
                 hideAphAlert!();
                 setLoadingContext!(true);
-                doRequestAndAccessLocation()
+                doRequestAndAccessLocationModified()
                   .then((response) => {
                     response && setLocationDetails!(response);
                     response && setcurrentLocation(response.displayName);
