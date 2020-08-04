@@ -48,6 +48,7 @@ export type OneApollTransaction = {
   CalculateHealthCredits: boolean;
   Gender: Gender;
   Discount: number;
+  CreditsRedeemed: number;
   TransactionLineItems: Partial<TransactionLineItems>[];
 };
 
