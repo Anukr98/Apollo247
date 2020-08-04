@@ -607,6 +607,17 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
       where: { orderAutoId },
       relations: [
         'patient',
+        'medicineOrderShipments',
+        'medicineOrderShipments.medicineOrdersStatus',
+      ],
+    });
+  }
+
+  getMedicineOrderWithPaymentAndShipments(orderAutoId: number) {
+    return this.findOne({
+      where: { orderAutoId },
+      relations: [
+        'patient',
         'medicineOrderPayments',
         'medicineOrderShipments',
         'medicineOrderShipments.medicineOrdersStatus',

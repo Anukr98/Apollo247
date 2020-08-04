@@ -2982,22 +2982,24 @@ export async function medicineOrderRefundNotification(
   medicineOrderRefundNotificationInput: MedicineOrderRefundNotificationInput
 ) {
   let notificationBody: string = '';
-  if(medicineOrderRefundNotificationInput.refundAmount > 0 && medicineOrderRefundNotificationInput.healthCreditsRefund > 0){
-    notificationBody = ApiConstants.ORDER_PAYMENT_HC_PARTIAL_REFUND_BODY;
-    notificationBody = notificationBody.replace('{orderId}', orderDetails.orderAutoId.toString());
-    notificationBody = notificationBody.replace('{refundAmount}', medicineOrderRefundNotificationInput.refundAmount.toString());
-    notificationBody = notificationBody.replace('{healthCreditsRefund}',medicineOrderRefundNotificationInput.healthCreditsRefund.toString()); 
-  }else if(medicineOrderRefundNotificationInput.refundAmount > 0){
-    notificationBody = ApiConstants.ORDER_PAYMENT_PARTIAL_REFUND_BODY;
-    notificationBody = notificationBody.replace('{orderId}', orderDetails.orderAutoId.toString());
-    notificationBody = notificationBody.replace('{refundAmount}', medicineOrderRefundNotificationInput.refundAmount.toString()); 
-  }else if(medicineOrderRefundNotificationInput.healthCreditsRefund > 0){
-    notificationBody = ApiConstants.ORDER_HC_PARTIAL_REFUND_BODY;
-    notificationBody = notificationBody.replace('{orderId}', orderDetails.orderAutoId.toString());
-    notificationBody = notificationBody.replace('{healthCreditsRefund}',medicineOrderRefundNotificationInput.healthCreditsRefund.toString());
-  }
+  if(medicineOrderRefundNotificationInput.refundAmount > 0 || medicineOrderRefundNotificationInput.healthCreditsRefund > 0){
+    if(medicineOrderRefundNotificationInput.refundAmount > 0 && medicineOrderRefundNotificationInput.healthCreditsRefund > 0){
+      notificationBody = ApiConstants.ORDER_PAYMENT_HC_PARTIAL_REFUND_BODY;
+      notificationBody = notificationBody.replace('{orderId}', orderDetails.orderAutoId.toString());
+      notificationBody = notificationBody.replace('{refundAmount}', medicineOrderRefundNotificationInput.refundAmount.toString());
+      notificationBody = notificationBody.replace('{healthCreditsRefund}',medicineOrderRefundNotificationInput.healthCreditsRefund.toString()); 
+    }else if(medicineOrderRefundNotificationInput.refundAmount > 0){
+      notificationBody = ApiConstants.ORDER_PAYMENT_PARTIAL_REFUND_BODY;
+      notificationBody = notificationBody.replace('{orderId}', orderDetails.orderAutoId.toString());
+      notificationBody = notificationBody.replace('{refundAmount}', medicineOrderRefundNotificationInput.refundAmount.toString()); 
+    }else if(medicineOrderRefundNotificationInput.healthCreditsRefund > 0){
+      notificationBody = ApiConstants.ORDER_HC_PARTIAL_REFUND_BODY;
+      notificationBody = notificationBody.replace('{orderId}', orderDetails.orderAutoId.toString());
+      notificationBody = notificationBody.replace('{healthCreditsRefund}',medicineOrderRefundNotificationInput.healthCreditsRefund.toString());
+    }
   //console.log(notificationBody);
   await sendNotificationSMS(orderDetails.patient.mobileNumber, notificationBody);
+  }
   return;
 }
 

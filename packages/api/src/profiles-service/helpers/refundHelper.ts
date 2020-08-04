@@ -295,8 +295,10 @@ export const calculateRefund = async (
       throw new AphError(AphErrorMessages.HEALTH_CREDITS_REQUEST_NOT_FOUND, undefined, {});
     }
   }
-  //send refund SMS notification
-  medicineOrderRefundNotification(orderDetails,{refundAmount:refundAmount,healthCreditsRefund:healthCreditsToRefund});
+  //send refund SMS notification for partial refund
+  if(totalOrderBilling > 0){
+    medicineOrderRefundNotification(orderDetails,{refundAmount:refundAmount,healthCreditsRefund:healthCreditsToRefund});
+  }
 };
 
 const genCheckSumPromiseWrapper = (body: PaytmBody, key: string): Promise<string> => {
