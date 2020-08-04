@@ -804,6 +804,7 @@ export class MedicineOrdersStatus extends BaseEntity {
   @ManyToOne((type) => MedicineOrders, (medicineOrders) => medicineOrders.medicineOrdersStatus)
   medicineOrders: MedicineOrders;
 
+  @Index('MedicineOrdersStatus_MedicineOrderShipmentId')
   @ManyToOne(
     (type) => MedicineOrderShipments,
     (medicineOrderShipments) => medicineOrderShipments.medicineOrdersStatus

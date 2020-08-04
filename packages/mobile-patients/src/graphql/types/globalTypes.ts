@@ -320,6 +320,17 @@ export enum PAYMENT_METHODS {
   UPI = "UPI",
 }
 
+export enum PAYMENT_METHODS_REVERSE {
+  COD = "COD",
+  CREDIT_CARD = "CREDIT_CARD",
+  CREDIT_CARD_EMI = "CREDIT_CARD_EMI",
+  DEBIT_CARD = "DEBIT_CARD",
+  NET_BANKING = "NET_BANKING",
+  PAYTM_POSTPAID = "PAYTM_POSTPAID",
+  PAYTM_WALLET = "PAYTM_WALLET",
+  UPI = "UPI",
+}
+
 export enum PRISM_DOCUMENT_CATEGORY {
   HealthChecks = "HealthChecks",
   OpSummary = "OpSummary",

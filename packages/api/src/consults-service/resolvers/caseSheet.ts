@@ -1000,7 +1000,7 @@ const modifyCaseSheet: Resolver<
   delete getCaseSheetData.status;
   //medicalHistory upsert ends
   const caseSheetAttrs: Omit<Partial<CaseSheet>, 'id'> = getCaseSheetData;
-  await caseSheetRepo.updateCaseSheet(inputArguments.id, caseSheetAttrs);
+  await caseSheetRepo.updateCaseSheet(inputArguments.id, caseSheetAttrs, getCaseSheetData);
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const appointmentData = await appointmentRepo.findById(getCaseSheetData.appointment.id);
   if (appointmentData) {
@@ -1267,7 +1267,11 @@ const submitJDCaseSheet: Resolver<
       notes: ApiConstants.AUTO_SUBMIT_BY_SD.toString(),
       isJdConsultStarted: true,
     };
-    await caseSheetRepo.updateCaseSheet(juniorDoctorcaseSheet.id, casesheetAttrsToUpdate);
+    await caseSheetRepo.updateCaseSheet(
+      juniorDoctorcaseSheet.id,
+      casesheetAttrsToUpdate,
+      juniorDoctorcaseSheet
+    );
   } else {
     const casesheetAttrsToAdd = {
       createdDate: createdDate,
@@ -1414,7 +1418,7 @@ const updatePatientPrescriptionSentStatus: Resolver<
     }
   }
 
-  await caseSheetRepo.updateCaseSheet(args.caseSheetId, caseSheetAttrs);
+  await caseSheetRepo.updateCaseSheet(args.caseSheetId, caseSheetAttrs, getCaseSheetData);
   const apptRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const appointment = await apptRepo.findById(getCaseSheetData.appointment.id);
   if (appointment) {
@@ -1509,7 +1513,7 @@ const generatePrescriptionTemp: Resolver<
     };
   }
 
-  await caseSheetRepo.updateCaseSheet(args.caseSheetId, caseSheetAttrs);
+  await caseSheetRepo.updateCaseSheet(args.caseSheetId, caseSheetAttrs, getCaseSheetData);
   return {
     success: true,
     blobName: caseSheetAttrs.blobName || '',

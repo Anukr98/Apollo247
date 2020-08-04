@@ -59,7 +59,7 @@ const cancelMedicineOrderOMS: Resolver<
   MedicineOrderCancelOMSResult
 > = async (parent, { medicineOrderCancelOMSInput }, { profilesDb }) => {
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
-  const orderDetails = await medicineOrdersRepo.getMedicineOrderWithShipments(
+  const orderDetails = await medicineOrdersRepo.getMedicineOrderWithPaymentAndShipments(
     medicineOrderCancelOMSInput.orderNo
   );
   if (!orderDetails) {
