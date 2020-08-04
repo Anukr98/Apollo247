@@ -405,15 +405,15 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   }
 
   useEffect(() => {
-    if (locationDetails && locationDetails.pincode) {
-      isserviceable();
-      if (!isCurrentLocationFetched) {
-        setCurrentLocationFetched!(true);
-        updateLocation(locationDetails);
-      }
-    } else {
-      askLocationPermission();
-    }
+    // if (locationDetails && locationDetails.pincode) {
+    //   isserviceable();
+    //   if (!isCurrentLocationFetched) {
+    //     setCurrentLocationFetched!(true);
+    //     updateLocation(locationDetails);
+    //   }
+    // } else {
+    //   askLocationPermission();
+    // }
   }, []);
 
   useEffect(() => {
@@ -1654,9 +1654,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           <ApolloLogo style={{ width: 57, height: 37 }} resizeMode="contain" />
         </TouchableOpacity>
         <View style={{ flexDirection: 'row' }}>
-          <LocationSearchHeader
+          {/* <LocationSearchHeader
             onLocationProcess={() => setLocationSearchVisible(!isLocationSearchVisible)}
-          />
+          /> */}
           <TouchableOpacity
             activeOpacity={1}
             onPress={() => props.navigation.navigate(AppRoutes.MedAndTestCart)}
