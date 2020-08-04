@@ -25,6 +25,9 @@ import {
   OrangeCallIcon,
   ArrowRight,
   ShoppingBasketIcon,
+  DeleteIconOrange,
+  PlusIconOrange,
+  MinusIconOrange,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
@@ -1238,7 +1241,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     specialPrice?: number;
     isAddedToCart: boolean;
     numberOfItemsInCart: number;
-    addToCart: () => void;
+    addToCart: (action?: string) => void;
+    maxOrderQty: number;
     onAddOrRemoveCartItem: () => void;
     onPress: () => void;
     style?: ViewStyle;
@@ -1280,6 +1284,38 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         marginHorizontal: 4,
         alignItems: 'center',
         ...style,
+      },
+      addRemoveButtonContainer: {
+        backgroundColor: '#f7f8f5',
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexDirection: 'row',
+        borderColor: '#fc9916',
+        paddingRight: 6,
+        paddingLeft: 6,
+      },
+      quantityContainer: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexDirection: 'row',
+        paddingRight: 6,
+        paddingLeft: 6,
+      },
+      addRemoveItemContainer: {
+        display: 'flex',
+        flexDirection: 'row',
+        borderWidth: 1,
+        borderColor: '#fc9916',
+        shadowColor: 'rgba(0,0,0,0.2)',
+        shadowOffset: { width: 0, height: 3 },
+        shadowOpacity: 0.8,
+        shadowRadius: 2,
+        elevation: 3,
+      },
+      iconSize: {
+        resizeMode: 'contain',
+        width: 12,
+        height: 12,
       },
     });
 
@@ -1323,16 +1359,50 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           </View>
           <Spearator style={{ marginBottom: 7.5 }} />
           {renderDiscountedPrice()}
-          <Text
-            style={{
-              ...theme.viewStyles.text('B', 13, '#fc9916', 1, 24),
-              textAlign: 'center',
-            }}
-            onPress={data.addToCart}
-          >
-            {data.isAddedToCart ? 'REMOVE' : 'ADD'}
-            {/* {data.numberOfItemsInCart} */}
-          </Text>
+
+          {/* add remove item container */}
+          <View style={localStyles.addRemoveItemContainer}>
+            {/* minus or delete button */}
+            <TouchableOpacity 
+              style={[
+                localStyles.addRemoveButtonContainer,
+                { borderRightWidth: 1 }
+              ]}
+              onPress={() => {
+                if (data.numberOfItemsInCart > 0) data.addToCart('remove');
+              }}
+            >
+              {
+                data.numberOfItemsInCart === 1 ? 
+                <DeleteIconOrange style={localStyles.iconSize}/> : 
+                // <Text>aaa</Text>
+                <PlusIconOrange style={localStyles.iconSize}/>
+              }
+            </TouchableOpacity>
+
+            {/* quantity */}
+            <View style={localStyles.quantityContainer}>
+              <Text
+                style={{
+                  ...theme.viewStyles.text('B', 13, '#fc9916', 1, 24),
+                  textAlign: 'center',
+                }}
+              >{data.numberOfItemsInCart}</Text>
+            </View>
+
+            {/* add button */}
+            <TouchableOpacity 
+              style={[
+                localStyles.addRemoveButtonContainer,
+                { borderLeftWidth: 1 }
+              ]}
+              onPress={() => {
+                if (data.numberOfItemsInCart !== data.maxOrderQty) data.addToCart('add');
+              }}
+            >
+              <PlusIconOrange style={localStyles.iconSize}/>
+            </TouchableOpacity>
+          </View>
         </View>
       </TouchableOpacity>
     );
@@ -1357,9 +1427,13 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     const foundMedicineInCart = !!cartItems.find((item) => item.id == sku);
     const numberOfItemsInCart = foundMedicineInCart && itemInCart ? itemInCart.quantity : 0;
 
-    const addToCart = () => {
+    const addToCart = (action?: string) => {
       if (numberOfItemsInCart) {
-        onUpdateCartItem(sku, numberOfItemsInCart+1);
+        if (action === 'add') {
+          onUpdateCartItem(sku, numberOfItemsInCart+1);
+        } else {
+          onUpdateCartItem(sku, numberOfItemsInCart-1);
+        }
       } else {
         addPharmaItemToCart(
           {
@@ -1403,6 +1477,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         : undefined,
       isAddedToCart: foundMedicineInCart,
       addToCart,
+      maxOrderQty: MaxOrderQty,
       numberOfItemsInCart,
       onAddOrRemoveCartItem: foundMedicineInCart ? removeFromCart : addToCart,
       onPress: () => {
