@@ -148,11 +148,11 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-interface RecomendedProductsProps {
+interface RecommendedProductsProps {
   section: string;
 }
 
-export const RecomendedProducts: React.FC<RecomendedProductsProps> = (props) => {
+export const RecommendedProducts: React.FC<RecommendedProductsProps> = (props) => {
   const classes = useStyles({});
   const sliderSettings = {
     infinite: true,
@@ -265,7 +265,7 @@ export const RecomendedProducts: React.FC<RecomendedProductsProps> = (props) => 
           <div className={classes.sectionTitle}>
             <span>Recomended Products</span>
             <div className={classes.viewAllLink}>
-              <Link to={clientRoutes.searchByMedicine('shop-by-category', 'recomonded-products')}>
+              <Link to={clientRoutes.searchByMedicine('shop-by-category', 'recommended-products')}>
                 View All
               </Link>
             </div>

@@ -8,7 +8,7 @@ import { AphButton, AphDialog, AphDialogTitle, AphDialogClose } from '@aph/web-u
 import { ShopByAreas } from 'components/Medicine/Cards/ShopByAreas';
 import { ShopByBrand } from 'components/Medicine/Cards/ShopByBrand';
 import { ShopByCategory } from 'components/Medicine/Cards/ShopByCategory';
-import { RecomendedProducts } from 'components/Medicine/Cards/RecomendedProducts';
+import { RecommendedProducts } from 'components/Medicine/Cards/RecommendedProducts';
 import { DayDeals } from 'components/Medicine/Cards/DayDeals';
 import { HotSellers } from 'components/Medicine/Cards/HotSellers';
 import { MedicineAutoSearch } from 'components/Medicine/MedicineAutoSearch';
@@ -742,7 +742,7 @@ export const MedicineLanding: React.FC = (props: any) => {
             <div className={classes.allProductsList}>
               {isSignedIn && (
                 <div className={classes.sliderSection}>
-                  <RecomendedProducts section="Recommended Products" />
+                  <RecommendedProducts section="Recommended Products" />
                 </div>
               )}
               {list &&
