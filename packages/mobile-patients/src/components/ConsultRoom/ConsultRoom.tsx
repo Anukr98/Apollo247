@@ -405,6 +405,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   }
 
   useEffect(() => {
+    /**
+     * No need to ask permission in consult room.
+     */
     // if (locationDetails && locationDetails.pincode) {
     //   isserviceable();
     //   if (!isCurrentLocationFetched) {

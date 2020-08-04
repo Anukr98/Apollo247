@@ -1152,7 +1152,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             bottom: 0,
             alignItems: 'center',
             zIndex: 15,
-            elevation: 15
+            elevation: 15,
           }}
           onPress={() => {setshowLocationpopup(false), !locationDetails && checkLocation()}}
         >
