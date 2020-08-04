@@ -181,7 +181,6 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   }, []);
 
   const loadTestDetails = async (itemId: string) => {
-    console.log('itemId', itemId);
     try {
       const {
         data: { searchDiagnosticsById },

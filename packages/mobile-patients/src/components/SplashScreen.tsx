@@ -260,17 +260,14 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           break;
 
         case 'OneApolloMembership':
-          console.log('OneApolloMembership handleopen');
           getData('OneApolloMembership');
           break;
 
         case 'TestDetails':
-          console.log('TestDetails handleopen');
           getData('TestDetails', data.length === 2 ? linkId : undefined);
           break;
 
         case 'ConsultDetails':
-          console.log('ConsultDetails handleopen');
           getData('ConsultDetails', data.length === 2 ? linkId : undefined);
           break;
 

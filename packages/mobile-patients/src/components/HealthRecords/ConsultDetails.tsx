@@ -88,7 +88,7 @@ import {
 } from 'react-navigation';
 import RNFetchBlob from 'rn-fetch-blob';
 import { mimeType } from '../../helpers/mimeType';
-import { useUIElements } from '../UIElementsProvider';
+import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
