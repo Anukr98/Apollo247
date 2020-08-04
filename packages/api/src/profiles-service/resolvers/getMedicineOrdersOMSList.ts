@@ -187,6 +187,7 @@ export const getMedicineOrdersOMSListTypeDefs = gql`
     quantity: String
     isShippable: String
     MaxOrderQty: Int
+    urlKey: String
   }
 
   type ProductAvailabilityResult {
