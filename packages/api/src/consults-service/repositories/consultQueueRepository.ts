@@ -100,7 +100,7 @@ export class ConsultQueueRepository extends Repository<ConsultQueueItem> {
       .getMany();
   }
 
-  async getConsultQueue(doctorId: string, isActive: boolean) {
+  async getConsultQueue(doctorId: string, isActive: boolean = true) {
     let limit = parseInt(
       process.env.INACTIVE_CONSULT_QUEUE_LIMT ? process.env.INACTIVE_CONSULT_QUEUE_LIMT : '1',
       10
@@ -108,6 +108,7 @@ export class ConsultQueueRepository extends Repository<ConsultQueueItem> {
     if (isActive) {
       limit = 1000;
     }
+    console.log(isActive);
     return await this.createQueryBuilder('consultQueueItem')
       .select([
         'consultQueueItem.id',

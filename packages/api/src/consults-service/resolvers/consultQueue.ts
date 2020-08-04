@@ -46,7 +46,7 @@ export const consultQueueTypeDefs = gql`
   }
 
   extend type Query {
-    getConsultQueue(doctorId: String!, isActive: Boolean!): GetConsultQueueResult!
+    getConsultQueue(doctorId: String!, isActive: Boolean): GetConsultQueueResult!
   }
 
   type JuniorDoctorsList {
@@ -419,9 +419,9 @@ const addToConsultQueueWithAutomatedQuestions: Resolver<
         isJdAllowed === false
           ? ApiConstants.NOT_APPLICABLE
           : ApiConstants.APPOINTMENT_BOOKED_WITHIN_10_MIN.toString().replace(
-              '{0}',
-              ApiConstants.AUTO_SUBMIT_CASESHEET_TIME_APPOINMENT.toString()
-            ),
+            '{0}',
+            ApiConstants.AUTO_SUBMIT_CASESHEET_TIME_APPOINMENT.toString()
+          ),
       isJdConsultStarted: true,
     };
     caseSheetRepo.savecaseSheet(casesheetAttrs);
