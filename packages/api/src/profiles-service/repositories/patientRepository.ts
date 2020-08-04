@@ -34,6 +34,14 @@ const REDIS_PATIENT_MOBILE_KEY_PREFIX: string = 'patient:mobile:';
 // const REDIS_PATIENT_DEVICE_COUNT_KEY_PREFIX: string = 'patient:deviceCodeCount:';
 @EntityRepository(Patient)
 export class PatientRepository extends Repository<Patient> {
+  /**
+   * @param patient 
+   * this method is used to load currently referenced patient record so that when
+   * updates are made, validations could be run against the freshly fetched record
+   * from Db/Cache
+   */
+  loadRecordReference = (patient: Patient | undefined) => { if (patient) { patient.setOldRecordReference(patient) } };
+
   async dropPatientCache(id: string) {
     delCache(id);
   }
@@ -47,6 +55,7 @@ export class PatientRepository extends Repository<Patient> {
     return this.findOne(findClause);
   }
 
+  //naman, check if patient is loaded here
   async findOrCreatePatient(
     findOptions: { mobileNumber: Patient['mobileNumber'] },
     createOptions: Partial<Patient>
@@ -61,6 +70,8 @@ export class PatientRepository extends Repository<Patient> {
       return [newPatient];
     });
   }
+
+  //naman, sorted
   findEmpId(empId: string, patientId: string, partnerId: string) {
     return this.findOne({
       where: {
@@ -71,6 +82,7 @@ export class PatientRepository extends Repository<Patient> {
     });
   }
 
+  //naman, sorted
   findPatientDetailsByIdsAndFields(ids: string[], fields: string[]) {
     return this.createQueryBuilder('patient')
       .select(fields)
@@ -78,12 +90,14 @@ export class PatientRepository extends Repository<Patient> {
       .getMany();
   }
 
+  //naman, sorted
   getPatientDetailsByIds(ids: string[]) {
     return this.createQueryBuilder('patient')
       .where('patient.id IN (:...ids)', { ids })
       .getMany();
   }
 
+  //naman, sorted
   async getDeviceCodeCount(deviceCode: string) {
     return await this.createQueryBuilder('patient')
       .select(['"mobileNumber" as mobilenumber', 'count("mobileNumber") as mobilecount'])
@@ -92,10 +106,22 @@ export class PatientRepository extends Repository<Patient> {
       .getCount();
   }
 
-  async getPatientDetails(id: string) {
-    return await this.getByIdCache(id);
+  //naman, fexed cache to old record
+  getPatientDetails(id: string): Promise<Patient> | undefined {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const patient: Patient | undefined = await this.getByIdCache(id);
+        this.loadRecordReference(patient);
+        return resolve(patient);
+      }
+      catch (ex) {
+        console.log(`getPatientDetails`, ex);
+        return reject(ex);
+      }
+    })
   }
 
+  //naman, fixed
   async findByMobileNumber(mobileNumber: string) {
     return await this.getByMobileCache(mobileNumber);
   }
@@ -108,12 +134,17 @@ export class PatientRepository extends Repository<Patient> {
       if (patient.dateOfBirth) {
         patient.dateOfBirth = new Date(patient.dateOfBirth);
       }
+
+      //cache to old record reference 
+      this.loadRecordReference(patient);
+
       return this.create(patient);
     } else {
       return await this.setByIdCache(id);
     }
   }
 
+  //naman, sorted
   async getPatientData(id: string | number) {
     return this.findOne({
       where: { id, isActive: true },
@@ -132,14 +163,18 @@ export class PatientRepository extends Repository<Patient> {
     }
     return patientDetails;
   }
+
+  //naman, old reference fixed
   async getByMobileCache(mobile: string) {
     const ids = await getCache(`${REDIS_PATIENT_MOBILE_KEY_PREFIX}${mobile}`);
     if (ids && typeof ids === 'string') {
       const patientIds: string[] = ids.split(',');
       const patients: Patient[] = [];
       for (let index = 0; index < patientIds.length; index++) {
-        const patient = await this.getByIdCache(patientIds[index]);
+        const patient = await this.getPatientDetails(patientIds[index]);
         if (patient) {
+          //cache to old record reference 
+          this.loadRecordReference(patient);
           patients.push(patient);
         }
       }
@@ -148,6 +183,8 @@ export class PatientRepository extends Repository<Patient> {
       return await this.setByMobileCache(mobile);
     }
   }
+
+  //naman automatically sets the reference
   async setByMobileCache(mobile: string) {
     const patients = await this.find({
       where: { mobileNumber: mobile, isActive: true },
@@ -170,6 +207,7 @@ export class PatientRepository extends Repository<Patient> {
       );
       return patient.id;
     });
+
     setCache(
       `${REDIS_PATIENT_MOBILE_KEY_PREFIX}${mobile}`,
       patientIds.join(','),
@@ -215,6 +253,10 @@ export class PatientRepository extends Repository<Patient> {
     const patient = await this.getPatientDetails(id);
     if (patient) {
       patient.allergies = allergies;
+      if (patient.old) {
+        console.log(`old found`);
+      }
+      delete patient.old;
       return await this.save(patient);
     } else return null;
   }
@@ -343,6 +385,7 @@ export class PatientRepository extends Repository<Patient> {
     return null;
   }
 
+  //naman, check here if onLoaded is called
   async saveNewProfile(patientAttrs: Partial<Patient>) {
     return await this.create(patientAttrs)
       .save()
@@ -353,6 +396,7 @@ export class PatientRepository extends Repository<Patient> {
       });
   }
 
+  //naman, check here if onLoaded is called
   updateProfiles(updateAttrs: Partial<Patient>[]) {
     updateAttrs.forEach((pat) => {
       this.dropPatientCache(`${REDIS_PATIENT_ID_KEY_PREFIX}${pat.id}`);
@@ -364,6 +408,7 @@ export class PatientRepository extends Repository<Patient> {
     });
   }
 
+  //sorted
   async updateProfile(id: string, patientAttrs: Partial<Patient>) {
     const patient = await this.getByIdCache(id);
     if (patient) {
@@ -372,6 +417,8 @@ export class PatientRepository extends Repository<Patient> {
     } else return null;
   }
 
+
+  //need to checkOnloaded
   updateLinkedUhidAccount(
     ids: string[],
     column: string,
@@ -413,6 +460,7 @@ export class PatientRepository extends Repository<Patient> {
     }
   }
 
+  //naman, sorted
   async deleteProfile(id: string) {
     const patient = await this.getPatientDetails(id);
     if (patient) {
@@ -421,6 +469,7 @@ export class PatientRepository extends Repository<Patient> {
     }
   }
 
+  //naman, no need
   async createNewUhid(patientDetails: Patient) {
     //setting mandatory fields to create uhid in medmantra
     const uhidResp: UhidCreateResult = await this.getNewUhid(patientDetails);
@@ -435,6 +484,7 @@ export class PatientRepository extends Repository<Patient> {
     return uhidResp.result || '';
   }
 
+  //naman, no need
   async getNewUhid(patientDetails: Patient) {
     patientDetails.firstName = patientDetails.firstName || 'New';
     patientDetails.lastName = patientDetails.lastName || 'User';
@@ -530,10 +580,12 @@ export class PatientRepository extends Repository<Patient> {
     return uhidResp;
   }
 
+  // not used anywhere
   async updatePatientDetails(patientDetails: Patient) {
     await this.save(patientDetails);
   }
 
+  //fixed
   async getIdsByMobileNumber(mobileNumber: string) {
     return await this.findByMobileNumber(mobileNumber);
   }
@@ -565,6 +617,7 @@ export class PatientRepository extends Repository<Patient> {
     return primaryPatientIds;
   }
 
+  //naman, sorted
   async updateWhatsAppStatus(id: string, whatsAppConsult: Boolean, whatsAppMedicine: Boolean) {
     const patient = await this.getPatientDetails(id);
     if (patient) {
@@ -574,6 +627,7 @@ export class PatientRepository extends Repository<Patient> {
     } else return null;
   }
 
+  //naman, sorted
   async checkMobileIdInfo(mobileNumber: string, uhid: string, patientId: string) {
     if (uhid != '') {
       const getData = await this.findOne({ where: { uhid, mobileNumber } });
@@ -586,6 +640,7 @@ export class PatientRepository extends Repository<Patient> {
     }
   }
 
+  //naman, sorted
   findByUhid(uhid: string) {
     return this.findOne({ where: { uhid } });
   }

@@ -29,6 +29,7 @@ import { log } from 'customWinstonLogger'
 import { LoadEvent } from 'typeorm/subscriber/event/LoadEvent';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
+import { closestIndexTo } from 'date-fns';
 
 export type ONE_APOLLO_USER_REG = {
   FirstName: string;
@@ -337,9 +338,24 @@ type updateValidationField = {
 
 @EventSubscriber()
 export class PostSubscriber implements EntitySubscriberInterface<BaseEntity> {
-  afterLoad(entity: ApolloEntity, event?: LoadEvent<BaseEntity>) {
-    console.log(`AfterLoad worked `);
-    entity.setOldRecordReference(entity);
+
+
+  // afterLoad(entity: ApolloEntity, event?: LoadEvent<BaseEntity>) {
+  //   console.log(`**************AfterLoad*****************\n`);
+  //   //console.log(entity);
+  //   console.log('****************************************');
+  //   entity.setOldRecordReference(entity);
+  // }
+
+  beforeUpdate(event: UpdateEvent<any>): Promise<any> | void {
+    event.updatedColumns.forEach((column) => {
+      console.log(`columninfo: ${JSON.stringify(column), null, 1}`);
+      let key: string = column.databaseName;
+      let oldValue = event.databaseEntity[column.propertyName];
+      let newValue = event.entity[column.propertyName];
+
+      console.log(`${key} was ${oldValue}, newValue is ${newValue}`);
+    });
   }
 
   // afterUpdate(event: UpdateEvent<BaseEntity>): Promise<any> | void {
@@ -367,8 +383,12 @@ export class PostSubscriber implements EntitySubscriberInterface<BaseEntity> {
 
 export class ApolloEntity extends BaseEntity {
   old: BaseEntity;
-  public setOldRecordReference(entity: BaseEntity): void {
-    this.old = entity;
+  public setOldRecordReference(entity: ApolloEntity): void {
+    console.log(`setOldRecordReference|entity:`, entity);
+    console.log(`setOldRecordReference|this:`, this);
+    delete entity.old;
+    this.old = JSON.parse(JSON.stringify(entity));
+    console.log(`setOldRecordReference|afterall`, this.old);
   }
 
   public getLoadedRecord(): BaseEntity {
@@ -1170,10 +1190,19 @@ export class Patient extends ApolloEntity {
   //-----------------------------Custom checks for Non-null fields------------------------//
   @BeforeUpdate()
   async getCurrentPatientFromDb() {
-    let currentPatientFromDb: any = this.old;
-    console.log(`Old records: ${JSON.stringify(currentPatientFromDb)}`);;
-    this.checkNullsValidation(currentPatientFromDb);
+    try {
+      console.log(`getCurrentPatientFromDb|`, this.old)
+      let loadedPatientRecord: any = this.old;
+      console.log(`******************Old record********************************)}`);
+      //console.log(loadedPatientRecord);
+      console.log(`************************************************************`)
+      this.checkNullsValidation(loadedPatientRecord);
+    }
+    catch (ex) {
+      console.log(`Exception|getCurrentPatientFromDb`, ex);
+    }
   }
+
 
   isUpdationAllowedAgainstCurrentValue(currentValue: any, incomingValue: any): Boolean {
     const updateAllowed: Boolean = currentValue ? Boolean(incomingValue && currentValue) : true;
@@ -1191,8 +1220,8 @@ export class Patient extends ApolloEntity {
     }
   }
 
-  checkNullsValidation(currentPatientFromDb: Patient) {
-    const { firstName = null, lastName = null, primaryUhid = null, uhid = null } = currentPatientFromDb
+  checkNullsValidation(loadedPatientRecord: Patient) {
+    const { firstName = null, lastName = null, primaryUhid = null, uhid = null } = loadedPatientRecord
     const checkNotNullsAgainst: updateValidationField[] = [
       { key: "firstName", dbValue: firstName },
       { key: "lastName", dbValue: lastName },
@@ -1204,7 +1233,6 @@ export class Patient extends ApolloEntity {
       this.checkNullsForProperty(property);
     })
   }
-
 
   checkNullsForProperty(property: updateValidationField) {
     const key = property.key;
@@ -1240,7 +1268,13 @@ export class Patient extends ApolloEntity {
   @AfterInsert()
   @AfterUpdate()
   async setPatientCache() {
-    await setCache(`patient:${this.id}`, JSON.stringify(this), ApiConstants.CACHE_EXPIRATION_3600);
+    try {
+      console.log(`Setting cache`);
+      await setCache(`patient:${this.id}`, JSON.stringify(this), ApiConstants.CACHE_EXPIRATION_3600);
+    }
+    catch (ex) {
+      console.log(`Exception #`, ex);
+    }
   }
 }
 //patient Ends
