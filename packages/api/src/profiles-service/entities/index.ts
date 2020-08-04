@@ -19,6 +19,8 @@ import { ConsultMode } from 'doctors-service/entities';
 import { BlockUserPointsResponse } from 'types/oneApolloTypes';
 import { getCache, setCache, delCache } from 'profiles-service/database/connectRedis';
 import { ApiConstants } from 'ApiConstants';
+import { AphError } from 'AphError';
+import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 
 export type ONE_APOLLO_USER_REG = {
   FirstName: string;
@@ -1252,6 +1254,14 @@ export class PatientAddress extends BaseEntity {
   @BeforeUpdate()
   updateDateUpdate() {
     this.updatedDate = new Date();
+  }
+
+  @BeforeInsert()
+  @BeforeUpdate()
+  validateAddress() {
+    if (this.addressLine1 == '' || this.addressLine1 == null) {
+      throw new AphError(AphErrorMessages.INVALID_ADDRESS_DETAILS);
+    }
   }
 
   @AfterInsert()

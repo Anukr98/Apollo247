@@ -602,12 +602,12 @@ const endAppointmentSession: Resolver<
       DoctorName: docName,
       HospitalName: hospitalName,
     });
-    const ccEmailIds =
-      process.env.NODE_ENV == 'dev' ||
-      process.env.NODE_ENV == 'development' ||
-      process.env.NODE_ENV == 'local'
-        ? ApiConstants.PATIENT_APPT_CC_EMAILID
-        : ApiConstants.PATIENT_APPT_CC_EMAILID_PRODUCTION;
+    // const ccEmailIds =
+    //   process.env.NODE_ENV == 'dev' ||
+    //   process.env.NODE_ENV == 'development' ||
+    //   process.env.NODE_ENV == 'local'
+    //     ? ApiConstants.PATIENT_APPT_CC_EMAILID
+    //     : ApiConstants.PATIENT_APPT_CC_EMAILID_PRODUCTION;
     let isDoctorNoShow = 0;
     if (endAppointmentSessionInput.noShowBy == REQUEST_ROLES.DOCTOR) {
       isDoctorNoShow = 1;
@@ -625,7 +625,7 @@ const endAppointmentSession: Resolver<
       //console.log('listOfEmails', listOfEmails);
       listOfEmails.forEach(async (adminemail) => {
         const adminEmailContent: EmailMessage = {
-          ccEmail: ccEmailIds.toString(),
+          // ccEmail: ccEmailIds.toString(),
           toEmail: adminemail.toString(),
           subject: mailSubject.toString(),
           fromEmail: ApiConstants.PATIENT_HELP_FROM_EMAILID.toString(),
