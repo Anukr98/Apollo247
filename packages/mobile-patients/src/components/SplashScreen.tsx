@@ -195,6 +195,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           getData('UploadPrescription', data.length === 2 ? linkId : undefined);
           break;
 
+        case 'MedicineRecommendedSection':
+          getData('MedicineRecommendedSection');
+          break;
+
         case 'Test':
           console.log('Test');
           getData('Test');
@@ -443,6 +447,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         props.navigation.navigate('MEDICINES', { showUploadPrescriptionPopup: true });
         break;
 
+      case 'MedicineRecommendedSection':
+        props.navigation.navigate('MEDICINES', { showRecommendedSection: true });
+        break;
+
       case 'MedicineDetail':
         console.log('MedicineDetail');
         props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
@@ -521,7 +529,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       case 'Order':
         props.navigation.navigate(AppRoutes.OrderDetailsScene, {
           goToHomeOnBack: true,
-          orderAutoId: id,
+          orderAutoId: isNaN(id) ? '' : id,
+          billNumber: isNaN(id) ? id : '',
         });
         break;
       case 'MyOrders':
