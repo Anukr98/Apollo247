@@ -165,5 +165,3 @@ export const getValuesArray = (arr: any) => {
   const finalArr = arr.map((item: any) => item.name);
   return finalArr;
 };
-
-export const filtersArray = (filters: any) => {};
