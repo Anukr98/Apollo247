@@ -69,6 +69,8 @@ export interface UIElementsContextProps {
   setPrevVolume: () => void;
   maxVolume: () => void;
   audioTrack: RNSound | null;
+  doctorJoinedChat: boolean;
+  setDoctorJoinedChat: ((isJoined: boolean) => void) | null;
 }
 
 export const UIElementsContext = createContext<UIElementsContextProps>({
@@ -80,6 +82,8 @@ export const UIElementsContext = createContext<UIElementsContextProps>({
   setPrevVolume: () => {},
   maxVolume: () => {},
   audioTrack: null,
+  doctorJoinedChat: false,
+  setDoctorJoinedChat: null
 });
 
 type AphAlertCTAs = {
@@ -106,6 +110,7 @@ type AphAlertParams = {
 
 export const UIElementsProvider: React.FC = (props) => {
   const [loading, setLoading] = useState(false);
+  const [doctorJoinedChat, setDoctorJoinedChat] = useState<boolean>(false);
   const [isAlertVisible, setAlertVisible] = useState(false);
   const [alertParams, setAlertParams] = useState<AphAlertParams>({});
   const [medFeedback, setMedFeedback] = useState<MedAndTestFeedbackPopupProps['feedback']>({
@@ -272,6 +277,8 @@ export const UIElementsProvider: React.FC = (props) => {
         setPrevVolume,
         maxVolume,
         audioTrack,
+        doctorJoinedChat,
+        setDoctorJoinedChat
       }}
     >
       <View style={{ flex: 1 }}>
