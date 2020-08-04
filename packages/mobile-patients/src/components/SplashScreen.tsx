@@ -185,25 +185,31 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           console.log('Consult');
           getData('Consult', data.length === 2 ? linkId : undefined);
           break;
+
         case 'Medicine':
           console.log('Medicine');
           getData('Medicine', data.length === 2 ? linkId : undefined);
           break;
+
         case 'UploadPrescription':
           getData('UploadPrescription', data.length === 2 ? linkId : undefined);
           break;
+
         case 'Test':
           console.log('Test');
           getData('Test');
           break;
+
         case 'Speciality':
           console.log('Speciality handleopen');
           if (data.length === 2) getData('Speciality', linkId);
           break;
+
         case 'Doctor':
           console.log('Doctor handleopen');
           if (data.length === 2) getData('Doctor', linkId);
           break;
+
         case 'DoctorSearch':
           console.log('DoctorSearch handleopen');
           getData('DoctorSearch');
@@ -223,15 +229,19 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           console.log('MedicineCart handleopen');
           getData('MedicineCart', data.length === 2 ? linkId : undefined);
           break;
+
         case 'ChatRoom':
           if (data.length === 2) getAppointmentDataAndNavigate(linkId);
           break;
+
         case 'Order':
           if (data.length === 2) getData('Order', linkId);
           break;
+
         case 'MyOrders':
           getData('MyOrders');
           break;
+
         case 'webview':
           if (data.length === 2) {
             let url = data[1].replace('param=', '');
@@ -253,8 +263,15 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           break;
 
         case 'OneApolloMembership':
-          console.log('OneApolloMembership handleopen');
           getData('OneApolloMembership');
+          break;
+
+        case 'TestDetails':
+          getData('TestDetails', data.length === 2 ? linkId : undefined);
+          break;
+
+        case 'ConsultDetails':
+          getData('ConsultDetails', data.length === 2 ? linkId : undefined);
           break;
 
         default:
@@ -526,6 +543,18 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
       case 'OneApolloMembership':
         props.navigation.navigate(AppRoutes.OneApolloMembership);
+        break;
+
+      case 'TestDetails':
+        props.navigation.navigate(AppRoutes.TestDetails, {
+          itemId: id,
+        });
+        break;
+
+      case 'ConsultDetails':
+        props.navigation.navigate(AppRoutes.ConsultDetails, {
+          CaseSheet: id,
+        });
         break;
 
       default:
