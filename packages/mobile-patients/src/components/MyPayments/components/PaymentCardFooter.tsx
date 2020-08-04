@@ -96,8 +96,21 @@ const PaymentCardFooter: FC<PaymentCardFooterProps> = (props) => {
           aptType: aptType,
         };
       } else {
-        const { paymentType, paymentMode } = medicineOrderPayments[0];
-        type = !paymentMode ? paymentType : PaymentModes[paymentMode];
+        const {
+          paymentType,
+          paymentMode,
+          healthCreditsRedeemed,
+          amountPaid,
+        } = medicineOrderPayments[0];
+        if (amountPaid == 0) {
+          type = healthCreditsRedeemed != 0 ? 'HC' : paymentType;
+        } else {
+          type = !paymentMode
+            ? paymentType
+            : healthCreditsRedeemed != 0
+            ? 'HC + ' + PaymentModes[paymentMode]
+            : PaymentModes[paymentMode];
+        }
 
         status = medicineOrderPayments[0].paymentStatus;
         return {

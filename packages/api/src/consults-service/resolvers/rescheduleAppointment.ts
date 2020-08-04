@@ -18,7 +18,7 @@ import { AppointmentRepository } from 'consults-service/repositories/appointment
 import { AphError } from 'AphError';
 import _ from 'lodash';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
-import { format, addDays } from 'date-fns';
+import { format, addDays, addMinutes } from 'date-fns';
 import { sendMail } from 'notifications-service/resolvers/email';
 import { EmailMessage } from 'types/notificationMessageTypes';
 import { ApiConstants } from 'ApiConstants';
@@ -257,7 +257,7 @@ const checkIfReschedule: Resolver<
     } else {
       if (
         Math.abs(differenceInDays(apptDetails.appointmentDateTime, args.rescheduleDate)) >
-          ApiConstants.APPOINTMENT_RESCHEDULE_DAYS_LIMIT &&
+        ApiConstants.APPOINTMENT_RESCHEDULE_DAYS_LIMIT &&
         apptDetails.isFollowPaid === false
       ) {
         isPaid = 1;
@@ -430,19 +430,23 @@ const bookRescheduleAppointment: Resolver<
 
   //eslint-disable-next-line @typescript-eslint/no-explicit-any
   async function updateSlotsInEs(appointment: any, appointmentDateTime: any, status: string) {
-    const slotApptDt = format(appointmentDateTime, 'yyyy-MM-dd') + ' 18:30:00';
-    const actualApptDt = format(appointmentDateTime, 'yyyy-MM-dd');
-    let apptDt = format(appointmentDateTime, 'yyyy-MM-dd');
+    const slotApptDt =
+      format(addMinutes(new Date(appointmentDateTime), +0), 'yyyy-MM-dd') + ' 18:30:00';
+    //format(appointmentDateTime, 'yyyy-MM-dd') + ' 18:30:00';
+    const actualApptDt = format(addMinutes(new Date(appointmentDateTime), +0), 'yyyy-MM-dd');
+    //format(appointmentDateTime, 'yyyy-MM-dd');
+    let apptDt = format(addMinutes(new Date(appointmentDateTime), +0), 'yyyy-MM-dd');
+    // format(appointmentDateTime, 'yyyy-MM-dd');
     if (appointmentDateTime >= new Date(slotApptDt)) {
       apptDt = format(addDays(new Date(apptDt), 1), 'yyyy-MM-dd');
     }
-    const sl = `${actualApptDt}T${appointmentDateTime
+    const sl = `${actualApptDt}T${new Date(appointmentDateTime)
       .getUTCHours()
       .toString()
-      .padStart(2, '0')}:${appointmentDateTime
-      .getUTCMinutes()
-      .toString()
-      .padStart(2, '0')}:00.000Z`;
+      .padStart(2, '0')}:${new Date(appointmentDateTime)
+        .getUTCMinutes()
+        .toString()
+        .padStart(2, '0')}:00.000Z`;
     console.log(slotApptDt, apptDt, sl, appointment.doctorId, 'appoint date time');
     const esDocotrStatusOpen =
       status === 'OPEN' ? ES_DOCTOR_SLOT_STATUS.OPEN : ES_DOCTOR_SLOT_STATUS.BOOKED;
@@ -581,7 +585,6 @@ const bookRescheduleAppointment: Resolver<
         reason: ApiConstants.APPT_STATE_CHANGED_3.toString(),
       };
       appointmentRepo.saveAppointmentHistory(historyAttrs);
-
       const appointmentPayment = await appointmentRepo.findAppointmentPayment(apptDetails.id);
       if (appointmentPayment) {
         let refundResponse = await initiateRefund(
@@ -682,9 +685,15 @@ const bookRescheduleAppointment: Resolver<
   }
 
   const hospitalCity = docDetails.doctorHospital[0].facility.city;
-  const istDateTime = addMilliseconds(rescheduledapptDetails.appointmentDateTime, 19800000);
-  const apptDate = format(istDateTime, 'dd/MM/yyyy');
-  const apptTime = format(istDateTime, 'hh:mm aa');
+  //const istDateTime = addMilliseconds(rescheduledapptDetails.appointmentDateTime, 19800000);
+  const apptDate = format(
+    addMinutes(new Date(rescheduledapptDetails.appointmentDateTime), +330),
+    'yyyy-MM-dd'
+  ); //format(istDateTime, 'dd/MM/yyyy');
+  const apptTime = format(
+    addMinutes(new Date(rescheduledapptDetails.appointmentDateTime), +330),
+    'hh:mm:aa'
+  ); // format(istDateTime, 'hh:mm aa');
   const mailContent = rescheduleAppointmentEmailTemplate({
     hospitalCity: hospitalCity || 'N/A',
     apptDate,
@@ -707,14 +716,14 @@ const bookRescheduleAppointment: Resolver<
   });
 
   const toEmailId = process.env.BOOK_APPT_TO_EMAIL ? process.env.BOOK_APPT_TO_EMAIL : '';
-  const ccEmailIds =
-    process.env.NODE_ENV == 'dev' ||
-    process.env.NODE_ENV == 'development' ||
-    process.env.NODE_ENV == 'local'
-      ? ApiConstants.PATIENT_APPT_CC_EMAILID
-      : ApiConstants.PATIENT_APPT_CC_EMAILID_PRODUCTION;
+  // const ccEmailIds =
+  //   process.env.NODE_ENV == 'dev' ||
+  //   process.env.NODE_ENV == 'development' ||
+  //   process.env.NODE_ENV == 'local'
+  //     ? ApiConstants.PATIENT_APPT_CC_EMAILID
+  //     : ApiConstants.PATIENT_APPT_CC_EMAILID_PRODUCTION;
   const emailContent: EmailMessage = {
-    ccEmail: ccEmailIds.toString(),
+    //ccEmail: ccEmailIds.toString(),
     toEmail: toEmailId.toString(),
     subject: mailSubject,
     fromEmail: ApiConstants.PATIENT_HELP_FROM_EMAILID.toString(),
@@ -751,7 +760,7 @@ const bookRescheduleAppointment: Resolver<
     console.log('listOfEmails', listOfEmails);
     listOfEmails.forEach(async (adminemail) => {
       const adminEmailContent: EmailMessage = {
-        ccEmail: ccEmailIds.toString(),
+        //ccEmail: ccEmailIds.toString(),
         toEmail: adminemail.toString(),
         subject: mailSubject.toString(),
         fromEmail: ApiConstants.PATIENT_HELP_FROM_EMAILID.toString(),

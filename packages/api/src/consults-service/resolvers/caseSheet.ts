@@ -675,10 +675,6 @@ const getCaseSheet: Resolver<
   )
     throw new AphError(AphErrorMessages.UNAUTHORIZED);
 
-  if (doctorData != null && appointmentData.doctorId != doctorData.id) {
-    throw new AphError(AphErrorMessages.UNAUTHORIZED);
-  }
-
   const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
   let juniorDoctorNotes = '';
 

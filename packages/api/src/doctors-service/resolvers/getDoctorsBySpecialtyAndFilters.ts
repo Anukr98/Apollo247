@@ -551,12 +551,12 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
   }
 
 
-  let filters: any = {city: [], brands: [], language: [], experience: [], availability: [], fee: [], gender: []};
+  const filters: any = {city: [], brands: [], language: [], experience: [], availability: [], fee: [], gender: []};
   let cityObj: {state: string, data: string[]};
   
   // making filters
-  for(let doctor of doctors){
-    for(let hospital of doctor.doctorHospital){
+  for(const doctor of doctors){
+    for(const hospital of doctor.doctorHospital){
       cityObj = { state: '', data: [] };
       if(filters.city.length){
         cityObj = ifKeyExist(filters.city, 'state', hospital.facility.state);
@@ -579,7 +579,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     }
 
     if(doctor.languages instanceof Array){
-      for(let language of doctor.languages){
+      for(const language of doctor.languages){
         if(!("name" in ifKeyExist(filters.language, 'name', language))){
           filters.language.push({'name': language});
         }
@@ -601,9 +601,9 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
 
   }
 
-  let dayEndMinutes = differenceInMinutes(endOfDay(new Date()), (new Date()));
-  let twoDaysEndMinutes = differenceInMinutes(endOfDay(addDays(new Date(), 1)), (new Date()));
-  for(let availablity of finalDoctorNextAvailSlots){
+  const dayEndMinutes = differenceInMinutes(endOfDay(new Date()), (new Date()));
+  const twoDaysEndMinutes = differenceInMinutes(endOfDay(addDays(new Date(), 1)), (new Date()));
+  for(const availablity of finalDoctorNextAvailSlots){
     if(241 > availablity.availableInMinutes){
       if(!("name" in ifKeyExist(filters.availability, 'name', 'Now'))){
         filters.availability.push({'name': 'Now'});

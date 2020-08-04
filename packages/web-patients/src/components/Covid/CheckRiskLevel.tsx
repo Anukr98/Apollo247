@@ -163,7 +163,7 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const CheckRiskLevel: React.FC = (props) => {
+export const CheckRiskLevel: React.FC = (props: any) => {
   const classes = useStyles({});
   const covidScannerUrl = process.env.COVID_RISK_CALCULATOR_URL;
   const isDesktopOnly = useMediaQuery('(min-width:768px)');
@@ -188,7 +188,7 @@ export const CheckRiskLevel: React.FC = (props) => {
           our experts for advice.
         </p>
         <div className={classes.rightActions}>
-          {!location.pathname.includes('medical-condition') && !isWebView && (
+          {!location.pathname.includes('medical-condition') && (
             <ProtectedWithLoginPopup>
               {({ protectWithLoginPopup }) => (
                 <AphButton
@@ -196,6 +196,10 @@ export const CheckRiskLevel: React.FC = (props) => {
                   onClick={() => {
                     if (!isSignedIn) {
                       protectWithLoginPopup();
+                      const redirectURL = encodeURIComponent(
+                        `${window.location.origin}${clientRoutes.covidProtocol()}`
+                      );
+                      redirectURL && history.replaceState(null, '', `?continue=${redirectURL}`);
                     }
                   }}
                 >
