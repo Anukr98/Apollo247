@@ -36,6 +36,7 @@ export const OneApolloMembership: React.FC<OneApolloProps> = (props) => {
   const [earned, setEarned] = useState(0);
   const [redeemed, setRedeemed] = useState(0);
   const [loading, setLoading] = useState<boolean>(true);
+  const [fetchFailed, setFetchFailed] = useState<boolean>(false);
   const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
   const { showAphAlert } = useUIElements();
@@ -78,9 +79,11 @@ export const OneApolloMembership: React.FC<OneApolloProps> = (props) => {
         settier(res.data.getOneApolloUser.tier);
         setEarned(res.data.getOneApolloUser.earnedHC);
         setRedeemed(res.data.getOneApolloUser.earnedHC - res.data.getOneApolloUser.availableHC);
+        setFetchFailed(false);
       })
       .catch((error) => {
         setLoading(false);
+        setFetchFailed(true);
         CommonBugFender('fetchingOneApolloUser', error);
         console.log(error);
         renderErrorPopup(`Something went wrong, plaease try again after sometime`);
@@ -127,7 +130,7 @@ export const OneApolloMembership: React.FC<OneApolloProps> = (props) => {
         </View>
         <View style={{ alignItems: 'center', flexDirection: 'row', marginRight: 20 }}>
           <Text style={styles.creditText}>Available HC</Text>
-          <Text style={styles.credits}>{(credits || 0).toFixed(2)}</Text>
+          <Text style={styles.credits}>{!fetchFailed ? (credits || 0).toFixed(2) : '--'}</Text>
         </View>
       </View>
     );
@@ -199,7 +202,7 @@ export const OneApolloMembership: React.FC<OneApolloProps> = (props) => {
         return <MyMembership tier={tier} />;
         break;
       case 'MyTransactions':
-        return <MyTransactions earned={earned} redeemed={redeemed} />;
+        return <MyTransactions earned={earned} redeemed={redeemed} fetchFailed={fetchFailed} />;
         break;
     }
   };
