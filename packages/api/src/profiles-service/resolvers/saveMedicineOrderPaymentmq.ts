@@ -45,6 +45,7 @@ export const saveMedicineOrderPaymentMqTypeDefs = gql`
     UPI
     PAYTMCC
     COD
+    SBIYONO
   }
 
   input MedicinePaymentMqInput {
@@ -196,7 +197,7 @@ const SaveMedicineOrderPaymentMq: Resolver<
       paymentAttrs
     );
     //get above updated details
-    savePaymentDetails = await medicineOrdersRepo.findMedicineOrderPayment(orderDetails.id)
+    savePaymentDetails = await medicineOrdersRepo.findMedicineOrderPayment(orderDetails.id);
   } else {
     savePaymentDetails = await medicineOrdersRepo.saveMedicineOrderPayment(paymentAttrs);
     delete savePaymentDetails.medicineOrders;
@@ -372,15 +373,15 @@ const SaveMedicineOrderPaymentMq: Resolver<
 
       const toEmailId =
         process.env.NODE_ENV == 'dev' ||
-          process.env.NODE_ENV == 'development' ||
-          process.env.NODE_ENV == 'local'
+        process.env.NODE_ENV == 'development' ||
+        process.env.NODE_ENV == 'local'
           ? ApiConstants.MEDICINE_SUPPORT_EMAILID
           : ApiConstants.MEDICINE_SUPPORT_EMAILID_PRODUCTION;
 
       let ccEmailIds =
         process.env.NODE_ENV == 'dev' ||
-          process.env.NODE_ENV == 'development' ||
-          process.env.NODE_ENV == 'local'
+        process.env.NODE_ENV == 'development' ||
+        process.env.NODE_ENV == 'local'
           ? <string>ApiConstants.MEDICINE_SUPPORT_CC_EMAILID
           : <string>ApiConstants.MEDICINE_SUPPORT_CC_EMAILID_PRODUCTION;
 

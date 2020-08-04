@@ -55,6 +55,7 @@ export const makeAppointmentPaymentTypeDefs = gql`
     UPI
     PAYTMCC
     COD
+    SBIYONO
   }
 
   input AppointmentPaymentInput {
@@ -235,7 +236,11 @@ const makeAppointmentPayment: Resolver<
         `${JSON.stringify(processingAppointment)}`,
         'true'
       );
-      await apptsRepo.systemCancelAppointment(processingAppointment.id, { paymentInfo }, processingAppointment);
+      await apptsRepo.systemCancelAppointment(
+        processingAppointment.id,
+        { paymentInfo },
+        processingAppointment
+      );
       let isRefunded: boolean = false;
       if (paymentInfo.amountPaid && paymentInfo.amountPaid >= 1) {
         let refundResponse = await initiateRefund(
@@ -245,6 +250,7 @@ const makeAppointmentPayment: Resolver<
             refundAmount: paymentInfo.amountPaid,
             txnId: paymentInfo.paymentRefId,
             orderId: processingAppointment.paymentOrderId,
+            paymentMode: paymentInfo.paymentMode,
           },
           consultsDb
         );
@@ -291,9 +297,9 @@ const makeAppointmentPayment: Resolver<
       .getUTCHours()
       .toString()
       .padStart(2, '0')}:${processingAppointment.appointmentDateTime
-        .getUTCMinutes()
-        .toString()
-        .padStart(2, '0')}:00.000Z`;
+      .getUTCMinutes()
+      .toString()
+      .padStart(2, '0')}:00.000Z`;
     console.log(slotApptDt, apptDt, sl, processingAppointment.doctorId, 'appoint date time');
     apptsRepo.updateDoctorSlotStatusES(
       processingAppointment.doctorId,
@@ -337,7 +343,7 @@ const makeAppointmentPayment: Resolver<
     }
     if (
       timeDifference / 60 <=
-      parseInt(ApiConstants.AUTO_SUBMIT_CASESHEET_TIME_APPOINMENT.toString(), 10) ||
+        parseInt(ApiConstants.AUTO_SUBMIT_CASESHEET_TIME_APPOINMENT.toString(), 10) ||
       submitFlag == 1
     ) {
       const consultQueueRepo = consultsDb.getCustomRepository(ConsultQueueRepository);
@@ -551,8 +557,8 @@ const sendPatientAcknowledgements = async (
   const toEmailId = process.env.BOOK_APPT_TO_EMAIL ? process.env.BOOK_APPT_TO_EMAIL : '';
   const ccEmailIds =
     process.env.NODE_ENV == 'dev' ||
-      process.env.NODE_ENV == 'development' ||
-      process.env.NODE_ENV == 'local'
+    process.env.NODE_ENV == 'development' ||
+    process.env.NODE_ENV == 'local'
       ? ApiConstants.PATIENT_APPT_CC_EMAILID
       : ApiConstants.PATIENT_APPT_CC_EMAILID_PRODUCTION;
   const emailContent: EmailMessage = {

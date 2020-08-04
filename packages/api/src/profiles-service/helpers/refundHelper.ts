@@ -10,6 +10,7 @@ import {
   MedicineOrderRefunds,
   MedicineOrderPayments,
   MedicineOrders,
+  PAYMENT_METHODS,
 } from 'profiles-service/entities/index';
 
 import { log } from 'customWinstonLogger';
@@ -18,6 +19,7 @@ type RefundInput = {
   refundAmount: number;
   txnId: string;
   orderId: string;
+  paymentMode: string;
   medicineOrderPayments: MedicineOrderPayments;
   medicineOrders: MedicineOrders;
 };
@@ -32,6 +34,7 @@ export type PaytmResponse = {
   resultInfo: ResultInfo;
   orderId: string;
   refId: string;
+  paymentMode: string;
   refundAmount: string;
   refundId: string;
   txnAmount: string;
@@ -69,9 +72,11 @@ export const initiateRefund: refundMethod<RefundInput, Connection, Partial<Paytm
     const saveRefundAttr: Partial<MedicineOrderRefunds> = refundInput;
     saveRefundAttr.refundStatus = REFUND_STATUS.REFUND_REQUEST_NOT_RAISED;
     const response = await medicineOrderRefundRepo.saveRefundInfo(saveRefundAttr);
-
+    let mid = process.env.MID_PHARMACY ? process.env.MID_PHARMACY : '';
+    if (refundInput.paymentMode == PAYMENT_METHODS.SBIYONO)
+      mid = process.env.SBI_MID_PHARMACY ? process.env.SBI_MID_PHARMACY : '';
     const paytmBody: PaytmBody = {
-      mid: process.env.MID_PHARMACY ? process.env.MID_PHARMACY : '',
+      mid,
       refId: response.refId,
       txnType: 'REFUND',
       txnId: refundInput.txnId,

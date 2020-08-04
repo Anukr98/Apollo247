@@ -123,6 +123,7 @@ const cancelAppointment: Resolver<
       {
         orderId: appointment.paymentOrderId,
         txnId: appointment.appointmentPayments[0].paymentRefId,
+        paymentMode: appointment.appointmentPayments[0].paymentMode,
         refundAmount: appointment.appointmentPayments[0].amountPaid,
         appointment: appointment,
         appointmentPayments: appointment.appointmentPayments[0],

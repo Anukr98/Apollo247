@@ -109,6 +109,7 @@ export enum PAYMENT_METHODS {
   UPI = 'UPI',
   PAYTMCC = 'PAYTM_POSTPAID',
   COD = 'COD',
+  SBIYONO = 'SBIYONO',
 }
 
 export enum PAYMENT_METHODS_REVERSE {
@@ -120,6 +121,7 @@ export enum PAYMENT_METHODS_REVERSE {
   UPI = 'UPI',
   PAYTM_POSTPAID = 'PAYTMCC',
   COD = 'COD',
+  SBIYONO = 'SBIYONO',
 }
 
 export enum REQUEST_ROLES {

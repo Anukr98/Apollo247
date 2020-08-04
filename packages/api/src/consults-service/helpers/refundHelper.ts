@@ -8,6 +8,7 @@ import {
   AppointmentRefunds,
   AppointmentPayments,
   Appointment,
+  PAYMENT_METHODS,
 } from 'consults-service/entities/index';
 
 import { log } from 'customWinstonLogger';
@@ -16,6 +17,7 @@ import { genchecksumbystring } from 'lib/paytmLib/checksum.js';
 type RefundInput = {
   refundAmount: number;
   txnId: string;
+  paymentMode: string;
   orderId: string;
   appointment: Appointment;
   appointmentPayments: AppointmentPayments;
@@ -68,9 +70,11 @@ export const initiateRefund: refundMethod<RefundInput, Connection, Partial<Paytm
     const saveRefundAttr: Partial<AppointmentRefunds> = refundInput;
     saveRefundAttr.refundStatus = REFUND_STATUS.REFUND_REQUEST_NOT_RAISED;
     const response = await appointmentRefRepo.saveRefundInfo(saveRefundAttr);
-
+    let mid = process.env.MID_CONSULTS ? process.env.MID_CONSULTS : '';
+    if (refundInput.paymentMode == PAYMENT_METHODS.SBIYONO)
+      mid = process.env.SBI_MID_CONSULTS ? process.env.SBI_MID_CONSULTS : '';
     const paytmBody: PaytmBody = {
-      mid: process.env.MID_CONSULTS ? process.env.MID_CONSULTS : '',
+      mid,
       refId: response.refId,
       txnType: 'REFUND',
       txnId: refundInput.txnId,
