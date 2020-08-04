@@ -28,6 +28,7 @@ import {
   MedicineProduct,
   MedicineProductDetails,
   pinCodeServiceabilityApi,
+  trackTagalysEvent,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   aphConsole,
@@ -70,6 +71,7 @@ import {
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { useAllCurrentPatients } from '../../hooks/authHooks';
+import { Tagalys } from '@aph/mobile-patients/src/helpers/Tagalys';
 
 const { width, height } = Dimensions.get('window');
 
@@ -276,10 +278,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       : `${findDesc('STORAGE')}`;
   };
 
-  const _medicineOverview =
-    medicineDetails!.PharmaOverview &&
-    medicineDetails!.PharmaOverview[0] &&
-    medicineDetails!.PharmaOverview[0].Overview;
+  const _medicineOverview = g(medicineDetails, 'PharmaOverview', '0' as any, 'Overview');
   const medicineOverview =
     typeof _medicineOverview == 'string'
       ? []
@@ -351,9 +350,10 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     setLoading(true);
     getMedicineDetailsApi(sku)
       .then(({ data }) => {
-        aphConsole.log('getMedicineDetailsApi\n', data);
-        if (data && data.productdp) {
-          setmedicineDetails((data && data.productdp[0]) || {});
+        const productDetails = g(data, 'productdp', '0' as any);
+        if (productDetails) {
+          setmedicineDetails(productDetails || {});
+          trackTagalysViewEvent(productDetails);
           if (_deliveryError) {
             setTimeout(() => {
               scrollViewRef.current && scrollViewRef.current.scrollToEnd();
@@ -388,6 +388,23 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       }, 10);
     }
   }, [deliveryTime, deliveryError]);
+
+  const trackTagalysViewEvent = (details: MedicineProductDetails) => {
+    try {
+      trackTagalysEvent(
+        {
+          event_type: 'product_action',
+          details: {
+            sku: details.sku,
+            action: 'view',
+          } as Tagalys.ProductAction,
+        },
+        g(currentPatient, 'id')!
+      );
+    } catch (error) {
+      CommonBugFender(`${AppRoutes.MedicineDetailsScene}_trackTagalysEvent`, error);
+    }
+  };
 
   const onAddCartItem = (item: MedicineProduct) => {
     const {
@@ -546,7 +563,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
 
     return (
       <StickyBottomComponent style={{ height: 'auto' }} defaultBG>
-        {!showDeliverySpinner && !deliveryTime || deliveryError || isOutOfStock ? (
+        {(!showDeliverySpinner && !deliveryTime) || deliveryError || isOutOfStock ? (
           <View
             style={{
               paddingTop: 8,
@@ -733,8 +750,9 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
               onPress={() => {
                 if (imagesListLength) {
                   props.navigation.navigate(AppRoutes.ImageSliderScreen, {
-                    images: (g(medicineDetails, 'image') || [])
-                      .map((imgPath) => `${AppConfig.Configuration.IMAGES_BASE_URL[0]}${imgPath}`),
+                    images: (g(medicineDetails, 'image') || []).map(
+                      (imgPath) => `${AppConfig.Configuration.IMAGES_BASE_URL[0]}${imgPath}`
+                    ),
                     heading: medicineDetails.name,
                   });
                 }

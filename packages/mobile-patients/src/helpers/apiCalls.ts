@@ -29,7 +29,7 @@ export interface MedicineProduct {
 export interface MedicineProductDetails extends Omit<MedicineProduct, 'image'> {
   image: string[];
   manufacturer: string;
-  PharmaOverview: PharmaOverview;
+  PharmaOverview: PharmaOverview[];
 }
 
 export type Doseform = 'TABLET' | 'INJECTION' | 'SYRUP' | '';

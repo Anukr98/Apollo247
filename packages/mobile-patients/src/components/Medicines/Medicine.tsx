@@ -1392,12 +1392,9 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         globalLoading,
         props.navigation,
         currentPatient,
-        !!isPharmacyLocationServiceable
+        !!isPharmacyLocationServiceable,
+        { source: 'Pharmacy Home', section: title }
       );
-
-      postwebEngageAddToCartEvent(data.item, 'Pharmacy Home', title);
-      let id = currentPatient && currentPatient.id ? currentPatient.id : '';
-      postAppsFlyerAddToCartEvent(data.item, id);
     };
 
     const removeFromCart = () => removeCartItem!(sku);
@@ -1728,12 +1725,9 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       props.navigation,
       currentPatient,
       !!isPharmacyLocationServiceable,
+      { source: 'Pharmacy Partial Search' },
       () => setItemsLoading({ ...itemsLoading, [sku]: false })
     );
-    postwebEngageAddToCartEvent(item, 'Pharmacy Partial Search');
-    let id = currentPatient && currentPatient.id ? currentPatient.id : '';
-    console.log(item);
-    postAppsFlyerAddToCartEvent(item, id);
   };
 
   const getItemQuantity = (id: string) => {

@@ -68,7 +68,7 @@ const buildTagalysConfig = (userId: string): Tagalys.Config => {
       identification: {
         client_code: TAGALYS_CLIENT_CODE,
         api_key: TAGALYS_API_KEY,
-        // store_id: '', // TOOD: Get it from the PM
+        store_id: '1',
         user: {
           device_id: DeviceInfo.getUniqueId(),
           visit_id: generateVisitId(),
@@ -146,7 +146,6 @@ export declare module Tagalys {
     pl_type: 'search' | 'mpage';
     pl_details: {
       q: string;
-      qm: 'and' | 'or';
     };
     pl_products: string[]; // SKU List
     pl_page: number;

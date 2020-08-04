@@ -24,6 +24,7 @@ import {
   MedicineProduct,
   searchMedicineApi,
   getMedicineSearchSuggestionsApi,
+  trackTagalysEvent,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   aphConsole,
@@ -295,6 +296,23 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
             resultsdisplayed: products.length,
           };
           postWebEngageEvent(WebEngageEventName.SEARCH, eventAttributes);
+          try {
+            trackTagalysEvent(
+              {
+                event_type: 'product_list',
+                details: {
+                  pl_type: 'search',
+                  pl_details: {
+                    q: _searchText,
+                  },
+                  pl_products: products.map((p) => p.sku),
+                  pl_page: 1, // Need to make dynamic if pagination is integrated
+                  pl_total: data.product_count,
+                },
+              },
+              g(currentPatient, 'id') || null
+            );
+          } catch (error) {}
         })
         .catch((e) => {
           CommonBugFender('SearchMedicineScene_onSearchMedicine', e);
@@ -360,11 +378,9 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
       props.navigation,
       currentPatient,
       !!isPharmacyLocationServiceable,
+      { source: 'Pharmacy Full Search' },
       suggestionItem ? () => setItemsLoading({ ...itemsLoading, [sku]: false }) : undefined
     );
-    postwebEngageAddToCartEvent(item, 'Pharmacy Full Search');
-    let id = currentPatient && currentPatient.id ? currentPatient.id : '';
-    postAppsFlyerAddToCartEvent(item, id);
   };
 
   const onRemoveCartItem = ({ sku }: MedicineProduct) => {

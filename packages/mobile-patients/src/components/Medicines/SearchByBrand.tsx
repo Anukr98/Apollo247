@@ -238,11 +238,9 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
       props.navigation,
       currentPatient,
       !!isPharmacyLocationServiceable,
+      { source: 'Pharmacy List' },
       suggestionItem ? () => setItemsLoading({ ...itemsLoading, [sku]: false }) : undefined
     );
-    postwebEngageAddToCartEvent(item, 'Pharmacy List');
-    let id = currentPatient && currentPatient.id ? currentPatient.id : '';
-    postAppsFlyerAddToCartEvent(item, id);
   };
 
   const onRemoveCartItem = ({ sku }: MedicineProduct) => {
