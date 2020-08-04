@@ -1062,6 +1062,13 @@ export const GET_CASESHEET_DETAILS = gql`
           status
           displayId
           isFollowUp
+          doctorInfo {
+            id
+            fullName
+            gender
+            photoUrl
+            displayName
+          }
         }
         consultType
         diagnosis {

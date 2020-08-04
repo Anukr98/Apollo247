@@ -387,6 +387,7 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.TestDetails]: {
     screen: TestDetails,
+    path: 'TestDetailsPage',
   },
   [AppRoutes.EditProfile]: {
     screen: EditProfile,
