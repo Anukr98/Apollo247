@@ -276,6 +276,13 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS_WITH_ADDRESS = gql`
             zipcode
           }
         }
+        medicineOrderAddress {
+          addressLine1
+          addressLine2
+          city
+          state
+          zipcode
+        }
       }
     }
   }
