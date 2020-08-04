@@ -278,27 +278,6 @@ const useStyles = makeStyles((theme: Theme) => {
       top: 94,
       zIndex: 2,
     },
-    toastMessage: {
-      width: '482px',
-      height: '40px',
-      borderRadius: '10px',
-      boxShadow: '0 1px 13px 0 rgba(0, 0, 0, 0.16)',
-      backgroundColor: '#00b38e',
-      position: 'relative',
-      top: '27px',
-      left: '201px',
-    },
-    toastMessageText: {
-      fontSize: '14px',
-      fontWeight: 500,
-      fontStretch: 'normal',
-      fontStyle: 'normal',
-      lineHeight: 1.43,
-      letterSpacing: 'normal',
-      color: '#ffffff',
-      position: 'relative',
-      top: 6,
-    },
   };
 });
 
@@ -324,7 +303,6 @@ export const ConsultTabs: React.FC = () => {
   const classes = useStyles({});
   const params = useParams<Params>();
   const paramId = params.id;
-  const [showToastMessage, setShowToastMessage] = useState<boolean>(false);
   const { currentPatient, isSignedIn, sessionClient } = useAuth();
 
   const mutationCreateSrdCaseSheet = useMutation<
@@ -608,36 +586,50 @@ export const ConsultTabs: React.FC = () => {
               ? setCaseSheetId(_data!.data!.getCaseSheet!.caseSheetDetails.id)
               : '';
             _data!.data!.getCaseSheet!.caseSheetDetails!.diagnosis !== null
-              ? setDiagnosis((_data!.data!.getCaseSheet!.caseSheetDetails!
-                  .diagnosis as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis[])
+              ? setDiagnosis(
+                  (_data!.data!.getCaseSheet!.caseSheetDetails!
+                    .diagnosis as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis[]
+                )
               : setDiagnosis([]);
             _data!.data!.getCaseSheet!.caseSheetDetails!.symptoms
-              ? setSymptoms((_data!.data!.getCaseSheet!.caseSheetDetails!
-                  .symptoms as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms[])
+              ? setSymptoms(
+                  (_data!.data!.getCaseSheet!.caseSheetDetails!
+                    .symptoms as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms[]
+                )
               : setSymptoms([]);
             _data!.data!.getCaseSheet!.caseSheetDetails!.otherInstructions
-              ? setOtherInstructions((_data!.data!.getCaseSheet!.caseSheetDetails!
-                  .otherInstructions as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_otherInstructions[])
+              ? setOtherInstructions(
+                  (_data!.data!.getCaseSheet!.caseSheetDetails!
+                    .otherInstructions as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_otherInstructions[]
+                )
               : setOtherInstructions([]);
             _data!.data!.getCaseSheet!.caseSheetDetails!.diagnosticPrescription
-              ? setDiagnosticPrescription((_data!.data!.getCaseSheet!.caseSheetDetails!
-                  .diagnosticPrescription as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[])
+              ? setDiagnosticPrescription(
+                  (_data!.data!.getCaseSheet!.caseSheetDetails!
+                    .diagnosticPrescription as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[]
+                )
               : setDiagnosticPrescription([]);
             _data!.data!.getCaseSheet!.caseSheetDetails!.medicinePrescription
-              ? setMedicinePrescription((_data!.data!.getCaseSheet!.caseSheetDetails!
-                  .medicinePrescription as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[])
+              ? setMedicinePrescription(
+                  (_data!.data!.getCaseSheet!.caseSheetDetails!
+                    .medicinePrescription as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[]
+                )
               : setMedicinePrescription([]);
             _data!.data!.getCaseSheet!.caseSheetDetails!.removedMedicinePrescription
-              ? setRemovedMedicinePrescription((_data!.data!.getCaseSheet!.caseSheetDetails!
-                  .removedMedicinePrescription as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[])
+              ? setRemovedMedicinePrescription(
+                  (_data!.data!.getCaseSheet!.caseSheetDetails!
+                    .removedMedicinePrescription as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[]
+                )
               : setRemovedMedicinePrescription([]);
             _data!.data!.getCaseSheet!.caseSheetDetails!.notes
-              ? setSRDNotes((_data!.data!.getCaseSheet!.caseSheetDetails!
-                  .notes as unknown) as string)
+              ? setSRDNotes(
+                  (_data!.data!.getCaseSheet!.caseSheetDetails!.notes as unknown) as string
+                )
               : setSRDNotes('');
             _data!.data!.getCaseSheet!.juniorDoctorNotes
-              ? setJuniorDoctorNotes((_data!.data!.getCaseSheet!
-                  .juniorDoctorNotes as unknown) as string)
+              ? setJuniorDoctorNotes(
+                  (_data!.data!.getCaseSheet!.juniorDoctorNotes as unknown) as string
+                )
               : setJuniorDoctorNotes('');
             _data!.data!.getCaseSheet!.caseSheetDetails!.consultType
               ? setConsultType(([
@@ -960,29 +952,40 @@ export const ConsultTabs: React.FC = () => {
           );
 
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.diagnosis !== null
-            ? setDiagnosis((_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
-                .diagnosis as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_diagnosis[])
+            ? setDiagnosis(
+                (_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+                  .diagnosis as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_diagnosis[]
+              )
             : setDiagnosis([]);
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.symptoms
-            ? setSymptoms((_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
-                .symptoms as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_symptoms[])
+            ? setSymptoms(
+                (_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+                  .symptoms as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_symptoms[]
+              )
             : setSymptoms([]);
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.otherInstructions
-            ? setOtherInstructions((_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
-                .otherInstructions as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_otherInstructions[])
+            ? setOtherInstructions(
+                (_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+                  .otherInstructions as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_otherInstructions[]
+              )
             : setOtherInstructions([]);
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.diagnosticPrescription
-            ? setDiagnosticPrescription((_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
-                .diagnosticPrescription as unknown) as any[])
+            ? setDiagnosticPrescription(
+                (_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+                  .diagnosticPrescription as unknown) as any[]
+              )
             : setDiagnosticPrescription([]);
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.medicinePrescription
-            ? setMedicinePrescription((_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
-                .medicinePrescription as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_medicinePrescription[])
+            ? setMedicinePrescription(
+                (_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+                  .medicinePrescription as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_medicinePrescription[]
+              )
             : setMedicinePrescription([]);
 
           _data!.data!.getJuniorDoctorCaseSheet!.juniorDoctorNotes
-            ? setJuniorDoctorNotes((_data!.data!.getJuniorDoctorCaseSheet!
-                .juniorDoctorNotes as unknown) as string)
+            ? setJuniorDoctorNotes(
+                (_data!.data!.getJuniorDoctorCaseSheet!.juniorDoctorNotes as unknown) as string
+              )
             : setJuniorDoctorNotes('');
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.consultType
             ? setConsultType(([
@@ -1214,6 +1217,8 @@ export const ConsultTabs: React.FC = () => {
         document.cookie = cookieStr + ';path=/;';
       };
     }
+    console.log('CURRENT  PATIENT', currentPatient);
+    console.log('DOC ID', doctorId);
   }, []);
 
   const sendCallNotificationFn = (callType: APPT_CALL_TYPE, isCall: boolean) => {
@@ -1691,29 +1696,6 @@ export const ConsultTabs: React.FC = () => {
     <div className={classes.consultRoom}>
       <div className={classes.headerSticky}>
         <Header />
-        {showToastMessage && (
-          <div className={classes.toastMessage}>
-            <span className={classes.toastMessageText}>
-              <img
-                src={require('images/ic_cancel_green.svg')}
-                alt=""
-                style={{
-                  height: 18,
-                  width: 18,
-                  position: 'relative',
-                  top: 4,
-                  marginLeft: 12,
-                  marginRight: 20,
-                  cursor: 'pointer',
-                }}
-                onClick={() => {
-                  setShowToastMessage(false);
-                }}
-              />
-              {`You will get a call from ${process.env.EXOTEL_CALLER_ID}. Please pick up the call !`}
-            </span>
-          </div>
-        )}
       </div>
       {!loaded && (
         <div>
@@ -1839,7 +1821,6 @@ export const ConsultTabs: React.FC = () => {
           >
             <div className={classes.container}>
               <CallPopover
-                setShowToastMessage={setShowToastMessage}
                 setStartConsultAction={(flag: boolean) => setStartConsultAction(flag)}
                 createSessionAction={createSessionAction}
                 saveCasesheetAction={(flag: boolean, sendToPatientFlag: boolean) =>

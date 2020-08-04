@@ -132,9 +132,10 @@ const buildGqlConsultQueue = async (doctorId: string, context: ConsultServiceCon
 
   inActiveQueueItems.reverse();
   let dbConsultQueue: ConsultQueueItem[] = [...activeQueueItems, ...inActiveQueueItems];
-
   //Get all the appointments of the queue items
   const appointmentIds = dbConsultQueue.map((queueItem) => queueItem.appointmentId);
+  if (!appointmentIds.length) { return []; }
+
   const appointments = await apptRepo.getAppointmentsByIds(appointmentIds);
 
   //Map the appointments with appointment ids
@@ -419,9 +420,9 @@ const addToConsultQueueWithAutomatedQuestions: Resolver<
         isJdAllowed === false
           ? ApiConstants.NOT_APPLICABLE
           : ApiConstants.APPOINTMENT_BOOKED_WITHIN_10_MIN.toString().replace(
-              '{0}',
-              ApiConstants.AUTO_SUBMIT_CASESHEET_TIME_APPOINMENT.toString()
-            ),
+            '{0}',
+            ApiConstants.AUTO_SUBMIT_CASESHEET_TIME_APPOINMENT.toString()
+          ),
       isJdConsultStarted: true,
     };
     caseSheetRepo.savecaseSheet(casesheetAttrs);

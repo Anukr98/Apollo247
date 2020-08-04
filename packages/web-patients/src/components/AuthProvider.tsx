@@ -49,6 +49,8 @@ export interface AuthContextProps {
 
   isLoginPopupVisible: boolean;
   setIsLoginPopupVisible: ((isLoginPopupVisible: boolean) => void) | null;
+  isLoading: boolean;
+  setIsLoading: ((isLoading: boolean) => void) | null;
 
   customLoginId: string;
 
@@ -83,6 +85,8 @@ export const AuthContext = React.createContext<AuthContextProps>({
 
   isLoginPopupVisible: false,
   setIsLoginPopupVisible: null,
+  isLoading: false,
+  setIsLoading: null,
   customLoginId: '',
 });
 
@@ -151,6 +155,8 @@ export const AuthProvider: React.FC = (props) => {
   const [isLoginPopupVisible, setIsLoginPopupVisible] = useState<
     AuthContextProps['isLoginPopupVisible']
   >(false);
+
+  const [isLoading, setIsLoading] = useState<AuthContextProps['isLoading']>(false);
 
   const [customLoginId, setCustomLoginId] = useState<AuthContextProps['customLoginId']>('');
 
@@ -462,6 +468,8 @@ export const AuthProvider: React.FC = (props) => {
 
             isLoginPopupVisible,
             setIsLoginPopupVisible,
+            isLoading,
+            setIsLoading,
 
             customLoginId,
           }}

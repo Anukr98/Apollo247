@@ -149,7 +149,7 @@ export enum WebEngageEventName {
   CONSULT_PAYMENT_MODE_SELECTED = 'Consult booking payment mode selected',
 
   // Deeplink Events
-  HOME_PAGE_VIEWED = 'Home page viewed',
+  HOME_PAGE_VIEWED = 'Pharmacy Home page viewed',
   PRODUCT_PAGE_VIEWED = 'Product page viewed',
   CATEGORY_PAGE_VIEWED = 'Category page viewed',
 }
@@ -1233,15 +1233,15 @@ export interface WebEngageEvents {
     'Patient Id': string;
   };
   [WebEngageEventName.HOME_PAGE_VIEWED]: {
-    source: string;
+    source: 'deeplink' | 'app home';
   };
   [WebEngageEventName.PRODUCT_PAGE_VIEWED]: {
-    source: string;
+    source: 'deeplink' | 'widget' | 'search';
     ProductId: string;
     ProductName: string;
   };
   [WebEngageEventName.CATEGORY_PAGE_VIEWED]: {
-    source: string;
+    source: 'home' | 'deeplink';
     CategoryId: string;
     CategoryName: string;
   };

@@ -2864,13 +2864,14 @@ export async function sendDoctorRescheduleAppointmentNotification(
     timeToLive: 60 * 60 * 24, //wait for one day.. if device is offline
   };
   //building payload
+  const apptDate = format(
+    addMinutes(new Date(appointmentDateTime), +330),
+    "yyyy-MM-dd'T'HH:mm:ss'+0530'"
+  );
   const payload = {
     notification: {
       title: `Appointment has been Rescheduled`,
-      body: `Appointment with ${patientName} has been rescheduled to ${format(
-        addMilliseconds(appointmentDateTime, 19800000),
-        'yyyy-MM-dd HH:mm:ss'
-      )}`,
+      body: `Appointment with ${patientName} has been rescheduled to ${apptDate}`,
       sound: ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString(),
     },
     data: {
@@ -2878,11 +2879,8 @@ export async function sendDoctorRescheduleAppointmentNotification(
       type: 'doctor_booked_appointment_reschedule',
       appointmentId: apptId,
       patientName: patientName,
-      date: format(addMilliseconds(appointmentDateTime, 19800000), 'yyyy-MM-dd HH:mm:ss'),
-      body: `Appointment with ${patientName} has been rescheduled to ${format(
-        addMilliseconds(appointmentDateTime, 19800000),
-        'yyyy-MM-dd HH:mm:ss'
-      )}`,
+      date: apptDate,
+      body: `Appointment with ${patientName} has been rescheduled to ${apptDate}`,
     },
   };
 
