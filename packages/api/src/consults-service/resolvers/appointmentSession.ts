@@ -44,6 +44,7 @@ import { addMilliseconds, format, isAfter } from 'date-fns';
 import { getSessionToken, getExpirationTime } from 'helpers/openTok';
 import { CaseSheetRepository } from 'consults-service/repositories/caseSheetRepository';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
+import { WebEngageInput, postEvent } from 'helpers/webEngage';
 
 export const createAppointmentSessionTypeDefs = gql`
   enum REQUEST_ROLES {
@@ -263,6 +264,12 @@ const createAppointmentSession: Resolver<
   const apptDetails = await apptRepo.findById(createAppointmentSessionInput.appointmentId);
   if (apptDetails == null) throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
 
+  const patientRepo = patientsDb.getCustomRepository(PatientRepository);
+  const patientData = await patientRepo.getPatientDetails(apptDetails.patientId);
+
+  const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
+  const doctorData = await doctorRepository.findDoctorByIdWithoutRelations(apptDetails.doctorId);
+
   const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
 
   if (createAppointmentSessionInput.requestRole == REQUEST_ROLES.JUNIOR) {
@@ -339,13 +346,6 @@ const createAppointmentSession: Resolver<
       createAppointmentSessionInput.requestRole != REQUEST_ROLES.JUNIOR &&
       currentDate < apptDetails.appointmentDateTime
     ) {
-      const patientRepo = patientsDb.getCustomRepository(PatientRepository);
-      const patientData = await patientRepo.getPatientDetails(apptDetails.patientId);
-
-      const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
-      const doctorData = await doctorRepository.findDoctorByIdWithoutRelations(
-        apptDetails.doctorId
-      );
       if (patientData && doctorData) {
         const messageBody = ApiConstants.AUTO_SUBMIT_BY_SD_SMS_TEXT.replace(
           '{0}',
@@ -410,11 +410,6 @@ const createAppointmentSession: Resolver<
     createAppointmentSessionInput.requestRole != REQUEST_ROLES.JUNIOR &&
     currentDate < apptDetails.appointmentDateTime
   ) {
-    const patientRepo = patientsDb.getCustomRepository(PatientRepository);
-    const patientData = await patientRepo.getPatientDetails(apptDetails.patientId);
-
-    const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
-    const doctorData = await doctorRepository.findDoctorByIdWithoutRelations(apptDetails.doctorId);
     if (patientData && doctorData) {
       const messageBody = ApiConstants.AUTO_SUBMIT_BY_SD_SMS_TEXT.replace(
         '{0}',
@@ -437,6 +432,27 @@ const createAppointmentSession: Resolver<
     reason: 'SD ' + ApiConstants.APPT_SESSION_HISTORY.toString(),
   };
   apptRepo.saveAppointmentHistory(historyAttrs);
+
+  //post to webengage starts
+  const eventName =
+    createAppointmentSessionInput.requestRole === REQUEST_ROLES.DOCTOR
+      ? ApiConstants.DOCTOR_STARTED_CONSULTATION_EVENT_NAME.toString()
+      : ApiConstants.JD_CONSULTATION_STARTED_EVENT_NAME.toString();
+
+  const postBody: Partial<WebEngageInput> = {
+    userId: patientData ? patientData.mobileNumber : '',
+    eventName: eventName,
+    eventData: {
+      consultID: apptDetails.id,
+      displayID: apptDetails.displayId.toString(),
+      consultMode: apptDetails.appointmentType.toString(),
+      doctorName: doctorData ? doctorData.fullName : '',
+    },
+  };
+  postEvent(postBody);
+
+  //post to webengage ends
+
   return {
     sessionId: sessionId,
     appointmentToken: token,

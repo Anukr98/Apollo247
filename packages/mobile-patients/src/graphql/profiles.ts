@@ -1478,6 +1478,8 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS = gql`
           responseCode
           responseMessage
           bankTxnId
+          healthCreditsRedeemed
+          paymentMode
         }
         medicineOrderShipments {
           id
@@ -2638,6 +2640,7 @@ export const PHARMACY_ORDER_PAYMENT_DETAILS = gql`
           paymentDateTime
           paymentMode
           amountPaid
+          healthCreditsRedeemed
         }
       }
     }

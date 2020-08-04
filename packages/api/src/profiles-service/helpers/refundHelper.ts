@@ -1,11 +1,13 @@
 import { Connection } from 'typeorm';
+import { Decimal } from 'decimal.js';
+
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { MedicineOrderRefundsRepository } from 'profiles-service/repositories/MedicineOrderRefundsRepository';
 //to avoid code duplication...
 import { genchecksumbystring } from 'lib/paytmLib/checksum.js';
 import { PAYTM_STATUS, REFUND_STATUS } from 'profiles-service/entities';
-
+import { OneApollo } from 'helpers/oneApollo';
 import {
   MedicineOrderRefunds,
   MedicineOrderPayments,
@@ -13,6 +15,8 @@ import {
 } from 'profiles-service/entities/index';
 
 import { log } from 'customWinstonLogger';
+import { MedicineOrdersRepository } from 'profiles-service/repositories/MedicineOrdersRepository';
+import { ONE_APOLLO_STORE_CODE } from 'types/oneApolloTypes';
 
 type RefundInput = {
   refundAmount: number;
@@ -148,6 +152,147 @@ export const initiateRefund: refundMethod<RefundInput, Connection, Partial<Paytm
   } catch (e) {
     log('profileServiceLogger', JSON.stringify(refundInput), 'initiateRefund()', e.stack, 'true');
     throw new AphError(AphErrorMessages.SOMETHING_WENT_WRONG, undefined, {});
+  }
+};
+
+/**
+ * Method for calculating refund amount and health credits
+ * @param orderDetails MedicineOrders object with related objects(patient)
+ * @param totalOrderBilling Total amount billed to the user, 0 in case of cancellation
+ * @param profilesDb Connection to db
+ * @param medOrderRepo MedicineOrdersRepository instance
+ */
+export const calculateRefund = async (
+  orderDetails: MedicineOrders,
+  totalOrderBilling: number,
+  profilesDb: Connection,
+  medOrderRepo: MedicineOrdersRepository
+) => {
+  const paymentInfo = await medOrderRepo.getRefundsAndPaymentsByOrderId(orderDetails.id);
+  if (!paymentInfo) {
+    throw new AphError(AphErrorMessages.PAYMENT_INFO_NOT_FOUND, undefined, {});
+  }
+  const {
+    amountPaid,
+    healthCreditsRedeemed,
+    paymentRefId: txnId,
+    healthCreditsRedemptionRequest,
+  } = paymentInfo as MedicineOrderPayments;
+
+  /**
+   * Multiple refunds are possible so we need to see how much refund is initiated till now.
+   */
+  const totalRefundAmount = paymentInfo.medicineOrderRefunds.reduce((acc, curValue) => {
+    if (
+      curValue.refundStatus != REFUND_STATUS.REFUND_REQUEST_NOT_RAISED &&
+      curValue.refundStatus != REFUND_STATUS.REFUND_FAILED
+    ) {
+      return +new Decimal(acc).plus(curValue.refundAmount);
+    }
+    return acc;
+  }, 0);
+
+  /**
+   * Amount to be refunded for the order
+   */
+  let refundAmount = 0;
+
+  // Health credits to be refunded
+  let healthCreditsToRefund = 0;
+
+  // Maximum possible refund
+  const maxRefundAmountPossible = +new Decimal(amountPaid).minus(totalRefundAmount);
+
+  /**
+   * Preference would be given to health credits consumption
+   * We won't be refunding health credits if equation value is less than equals to 0
+   */
+  healthCreditsToRefund = +new Decimal(healthCreditsRedeemed).minus(totalOrderBilling);
+
+  /**
+   * Refund all the money if health credits blocked are more than the amended order billing
+   * Otherwise, refund the difference.
+   */
+  if (healthCreditsToRefund < 0) {
+    refundAmount = +new Decimal(maxRefundAmountPossible).plus(healthCreditsToRefund);
+  } else {
+    refundAmount = maxRefundAmountPossible;
+  }
+
+  log(
+    'profileServiceLogger',
+    `HEALTH_CREDITS_TO_REFUND_FOR_ORDER - ${orderDetails.orderAutoId} -- ${
+      healthCreditsToRefund > 0 ? healthCreditsToRefund : 0
+    }`,
+    `AMOUNT_TO_BE_REFUNDED_FOR_ORDER - ${orderDetails.orderAutoId} -- ${refundAmount}`,
+    JSON.stringify(paymentInfo),
+    ''
+  );
+
+  /**
+   * We cannot refund less than 1 rs as per Paytm refunds policy
+   */
+  if (refundAmount >= 1) {
+    initiateRefund(
+      {
+        refundAmount,
+        txnId,
+        medicineOrderPayments: paymentInfo,
+        medicineOrders: orderDetails,
+        orderId: '' + orderDetails.orderAutoId,
+      },
+      profilesDb
+    );
+  }
+
+  if (healthCreditsToRefund > 0) {
+    // check if healthCredits were blocked for the order
+    if (healthCreditsRedemptionRequest && healthCreditsRedemptionRequest.RequestNumber) {
+      /**
+       * StoreCode for the OneApollo is decided based on deviceType in order
+       */
+      let storeCode: ONE_APOLLO_STORE_CODE = ONE_APOLLO_STORE_CODE.WEBCUS;
+      if (orderDetails.deviceType) {
+        storeCode = ONE_APOLLO_STORE_CODE.IOSCUS;
+      }
+      if (orderDetails.deviceType) {
+        storeCode = ONE_APOLLO_STORE_CODE.ANDCUS;
+      }
+
+      //Instantiate OneApollo helper class
+      const oneApollo = new OneApollo();
+
+      // Send request for unblock of health credits
+      const oneApollResponse = await oneApollo.unblockHealthCredits({
+        MobileNumber: orderDetails.patient.mobileNumber.slice(3),
+        PointsToRelease: healthCreditsToRefund.toString(),
+        StoreCode: storeCode,
+        BusinessUnit: process.env.ONEAPOLLO_BUSINESS_UNIT || '',
+        RedemptionRequestNumber: healthCreditsRedemptionRequest.RequestNumber.toString(),
+      });
+      log(
+        'profileServiceLogger',
+        `HEALTH_CREDITS_UNBLOCKED - ${JSON.stringify(oneApollResponse)}`,
+        `HEALTH CREDITS UNBLOCKED_FOR_ORDER - ${orderDetails.orderAutoId}`,
+        `${JSON.stringify(oneApollResponse)}`,
+        ''
+      );
+      const blockedHealthCredits = healthCreditsRedeemed - healthCreditsToRefund;
+
+      // update info about the current health credits being used
+      await medOrderRepo.updateMedicineOrderPayment(orderDetails.id, orderDetails.orderAutoId, {
+        healthCreditsRedeemed: blockedHealthCredits,
+      });
+    } else {
+      log(
+        'profileServiceLogger',
+        `HEALTH_CREDITS_REDEMPTION_REQUEST_NOT_FOUND`,
+        `HEALTH CREDITS REFUND FAILED - ${orderDetails.orderAutoId}`,
+        JSON.stringify(paymentInfo),
+        'true'
+      );
+      throw new AphError(AphErrorMessages.HEALTH_CREDITS_REQUEST_NOT_FOUND, undefined, {});
+    }
   }
 };
 

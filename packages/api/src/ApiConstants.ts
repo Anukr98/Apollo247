@@ -421,6 +421,19 @@ export enum ApiConstants {
   DOCTOR_IN_CHAT_WINDOW_EVENT_NAME = 'Doctor is in the consult room',
   DOCTOR_LEFT_CHAT_WINDOW_EVENT_NAME = 'Doctor left the consult room',
   DOCTOR_SENT_MESSAGE_EVENT_NAME = 'Doctor sent a message on chat post end Consult',
+  DOCTOR_INITATED_RESCHEDULE_EVENT_NAME = 'Doctor Rescheduled the consult',
+  SD_CANCELLED_CONSULT_EVENT_NAME = 'Senior Doctor cancelled Consult',
+  JD_CANCELLED_CONSULT_EVENT_NAME = 'Junior Doctor cancelled Consult',
+  SD_SUBMITTED_JD_CASE_SHEET_BEFORE_TIME_EVENT_NAME = 'SD Submitted the JD case sheet before time',
+  DOCTOR_STARTED_CONSULTATION_EVENT_NAME = 'Doctor started consultation',
+  DOCTOR_INITIATED_VIDEO_CALL_EVENT_NAME = 'Doctor initiated a video call',
+  DOCTOR_INITIATED_AUDIO_CALL_EVENT_NAME = 'Doctor initiated a audio call',
+  DOCTOR_INITIATED_EXOTEL_CALL_EVENT_NAME = 'Doctor Initiated an Exotel call',
+  DOCTOR_ENDED_CONSULTATION_EVENT_NAME = 'Doctor Ended the consultation',
+  PRESCRIPTION_SENT_EVENT_NAME = 'Prescription Generated and sent',
+  NEW_VERSION_PRESCRIPTION_SENT_EVENT_NAME = 'New version of the prescription was sent',
+  JD_CASE_SHEET_COMPLETED_EVENT_NAME = 'JD case sheet submitted completed',
+  JD_CONSULTATION_STARTED_EVENT_NAME = 'JD consultation Started',
 }
 
 export enum PATIENT_REPO_RELATIONS {

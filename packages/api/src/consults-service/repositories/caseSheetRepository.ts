@@ -65,9 +65,12 @@ export class CaseSheetRepository extends Repository<CaseSheet> {
   }
 
   updateCaseSheet(id: string, caseSheetAttrs: Partial<CaseSheet>) {
-    return this.update(id, caseSheetAttrs).catch((createErrors) => {
-      throw new AphError(AphErrorMessages.UPDATE_CASESHEET_ERROR, undefined, { createErrors });
-    });
+    caseSheetAttrs.id = id;
+    return this.create(caseSheetAttrs)
+      .save()
+      .catch((createErrors) => {
+        throw new AphError(AphErrorMessages.UPDATE_CASESHEET_ERROR, undefined, { createErrors });
+      });
   }
 
   getCaseSheetById(id: string) {

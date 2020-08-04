@@ -66,6 +66,7 @@ import {
   View,
   ViewStyle,
   Platform,
+  Dimensions,
 } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
@@ -96,6 +97,8 @@ import {
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import WebEngage from 'react-native-webengage';
 
+const { width } = Dimensions.get('window');
+
 const styles = StyleSheet.create({
   filterViewStyle: {
     height: 60,
@@ -104,8 +107,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'flex-end',
-    // justifyContent: 'space-between',
+    justifyContent: 'space-between',
   },
   hiTextStyle: {
     marginLeft: 20,
@@ -135,6 +137,12 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansMedium(17),
     lineHeight: 24,
     paddingHorizontal: 20,
+  },
+  notifyUsersTextStyle: {
+    ...theme.fonts.IBMPlexSansSemiBold(11),
+    color: '#0087BA',
+    fontWeight: '500',
+    width: width - 80,
   },
 });
 
@@ -559,29 +567,9 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   const renderFilter = () => {
     return (
       <View style={styles.filterViewStyle}>
-        {/* <TouchableOpacity JIRA Ticket APP-982
-          activeOpacity={1}
-          onPress={() => {
-            CommonLogEvent('HEALTH_RECORD_HOME', 'Navigate to add record');
-            setdisplayOrderPopup(true);
-
-            const eventAttributes: WebEngageEvents[WebEngageEventName.UPLOAD_PRESCRIPTION] = {
-              'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
-              'Patient UHID': g(currentPatient, 'uhid'),
-              Relation: g(currentPatient, 'relation'),
-              'Patient Age': Math.round(moment().diff(currentPatient.dateOfBirth, 'years', true)),
-              'Patient Gender': g(currentPatient, 'gender'),
-              'Mobile Number': g(currentPatient, 'mobileNumber'),
-              'Customer ID': g(currentPatient, 'id'),
-            };
-            postWebEngageEvent(WebEngageEventName.UPLOAD_PRESCRIPTION, eventAttributes);
-            // props.navigation.navigate(AppRoutes.AddRecord);
-          }}
-        >
-          <Text style={theme.viewStyles.text('B', 12, '#fc9916', 1, 20)}>
-            {'UPLOAD PRESCRIPTION'}
-          </Text>
-        </TouchableOpacity> */}
+        <Text style={styles.notifyUsersTextStyle}>
+          {strings.health_records_home.add_note_to_notify_users}
+        </Text>
         <TouchableOpacity activeOpacity={1} onPress={() => setDisplayFilter(true)}>
           <Filter />
         </TouchableOpacity>
