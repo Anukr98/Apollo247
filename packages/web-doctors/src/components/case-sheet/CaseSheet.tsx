@@ -148,50 +148,6 @@ const useStyles = makeStyles((theme: Theme) => {
     none: {
       display: 'none',
     },
-    callButtonWrapper: {
-      marginLeft: 30,
-    },
-    floatingJoinPrompt: {
-      width: 80,
-      height: 80,
-      borderRadius: '50%',
-      background: '#FC9916',
-      position: 'fixed',
-      top: '80%',
-      right: '7%',
-      color: '#FFF',
-      padding: '15px 25px',
-    },
-    joinPrompt: {
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      background: '#FFF',
-      width: '100%',
-      position: 'fixed',
-      left: 0,
-      bottom: -10,
-      height: 100,
-      zIndex: 2,
-    },
-    joinPromptText: {
-      fontSize: 18,
-      width: 600,
-    },
-    collapse: {
-      fontSize: 16,
-      color: '#FC9916',
-    },
-    fadedBg: {
-      background: '#000',
-      opacity: 0.5,
-      top: 0,
-      left: 0,
-      position: 'fixed',
-      width: '100%',
-      height: '100%',
-      zIndex: 2,
-    },
   };
 });
 
@@ -515,80 +471,6 @@ export const CaseSheet: React.FC<CashSheetProps> = (props) => {
             disabled={!props.startAppointment}
           />
         </Typography>
-      </Box>
-
-      <div className={classes.floatingJoinPrompt}>
-        <img
-          src={require('images/ic_joinPrompt_white.svg')}
-          alt=""
-          style={{
-            height: 30,
-            width: 30,
-          }}
-          onClick={() => {
-            // collapse /hide prompt bar
-          }}
-        />
-        JOIN
-      </div>
-      <div className={classes.fadedBg}></div>
-      <Box boxShadow={5} borderRadius={15} className={classes.joinPrompt}>
-        <img
-          src={require('images/ic_joinPrompt.svg')}
-          alt=""
-          style={{
-            height: 50,
-            width: 50,
-            position: 'relative',
-            marginRight: 30,
-          }}
-          onClick={() => {
-            // collapse /hide prompt bar
-          }}
-        />
-
-        <Typography component="h4" variant="h4" className={classes.joinPromptText}>
-          Patient "{patientName}" is waiting in the consult room. Please click on Proceed to join
-          consultation.
-        </Typography>
-
-        <div className={classes.callButtonWrapper}>
-          <AphButton
-            color="primary"
-            style={{
-              fontSize: 15,
-              borderRadius: 5,
-              boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
-              backgroundColor: '#fc9916',
-            }}
-            onClick={() => {
-              // props.setShowToastMessage(false);
-              //join the call
-            }}
-          >
-            {'PROCEED'}
-          </AphButton>
-
-          <span className={classes.collapse}>
-            <img
-              src={require('images/ic_collapse.svg')}
-              alt=""
-              style={{
-                height: 18,
-                width: 18,
-                position: 'relative',
-                marginLeft: 15,
-                marginRight: 4,
-                verticalAlign: 'middle',
-                cursor: 'pointer',
-              }}
-              onClick={() => {
-                // collapse /hide prompt bar
-              }}
-            />
-            {'COLLAPSE'}
-          </span>
-        </div>
       </Box>
     </div>
   );

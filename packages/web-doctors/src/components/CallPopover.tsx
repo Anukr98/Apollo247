@@ -12,6 +12,7 @@ import {
   Checkbox,
   FormControlLabel,
   Grid,
+  Box,
 } from '@material-ui/core';
 import Scrollbars from 'react-custom-scrollbars';
 import { Prompt, Link } from 'react-router-dom';
@@ -1018,6 +1019,50 @@ const useStyles = makeStyles((theme: Theme) => {
       right: '529px',
       marginBottom: '5px',
     },
+    callButtonWrapperPrompt: {
+      marginLeft: 30,
+    },
+    floatingJoinPrompt: {
+      width: 80,
+      height: 80,
+      borderRadius: '50%',
+      background: '#FC9916',
+      position: 'fixed',
+      top: '80%',
+      right: '7%',
+      color: '#FFF',
+      padding: '15px 25px',
+    },
+    joinPrompt: {
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      background: '#FFF',
+      width: '100%',
+      position: 'fixed',
+      left: 0,
+      bottom: -10,
+      height: 100,
+      zIndex: 2,
+    },
+    joinPromptText: {
+      fontSize: 18,
+      width: 600,
+    },
+    collapse: {
+      fontSize: 16,
+      color: '#FC9916',
+    },
+    fadedBgJoinPromt: {
+      background: '#000',
+      opacity: 0.5,
+      top: 0,
+      left: 0,
+      position: 'fixed',
+      width: '100%',
+      height: '100%',
+      zIndex: 2,
+    },
   };
 });
 const ringtoneUrl = require('../images/phone_ringing.mp3');
@@ -1149,6 +1194,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const callAbandonment = '^^#callAbandonment';
   const appointmentComplete = '^^#appointmentComplete';
   const doctorAutoResponse = '^^#doctorAutoResponse';
+  const patientJoinedMeetingRoom = '^^#patientJoinedMeetingRoom';
 
   const [startConsultDisableReason, setStartConsultDisableReason] = useState<string>('');
   const [iscallAbandonment, setIscallAbandonment] = React.useState<boolean>(false);
@@ -1165,6 +1211,10 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const [doctorNextAvailableSlot, setDoctorNextAvailableSlot] = useState<string>('');
   const [isConfirmationChecked, setIsConfirmationChecked] = React.useState<boolean>(false);
   const [emptyFieldsString, setEmptyFieldsString] = useState<string>('');
+
+  const [floatingJoinPrompt, setFloatingJoinPrompt] = useState<boolean>(false);
+  const [joinPrompt, setJoinPrompt] = useState<boolean>(false);
+  const patientName = patientDetails!.firstName + ' ' + patientDetails!.lastName;
 
   const moveCursorToEnd = (element: any) => {
     if (typeof element.selectionStart == 'number') {
@@ -1791,6 +1841,10 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         setTimeout(() => {
           if (isCall) forcelyDisconnect();
         }, 2000);
+      }
+      if (isConsultStarted && lastMsg.message && lastMsg.message.message === patientJoinedMeetingRoom) {
+        setPlayRingtone(true);
+        setJoinPrompt(true);
       }
     }
   }, [props.lastMsg]);
@@ -3575,6 +3629,106 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         </Paper>
       </Modal>
       {/* referral field required popup end */}
+
+      {floatingJoinPrompt && (
+        <div 
+          className={classes.floatingJoinPrompt} 
+          style={{
+            cursor: 'pointer',
+        }}>
+          <img
+            src={require('images/ic_joinPrompt_white.svg')}
+            alt=""
+            style={{
+              height: 30,
+              width: 30,
+            }}
+            onClick={() => {
+              handleClose();
+              props.setStartConsultAction(true);
+              autoSend(videoCallMsg);
+              setIsVideoCall(true);
+              setDisableOnCancel(true);
+              missedCallIntervalTimer(45);
+              setIscall(true);
+            }}
+          />
+          {'JOIN'}
+        </div>
+      )}
+      {joinPrompt && (
+        <div className={classes.fadedBgJoinPromt}></div>
+        <Box boxShadow={5} borderRadius={15} className={classes.joinPrompt}>
+          <img
+            src={require('images/ic_joinPrompt.svg')}
+            alt=""
+            style={{
+              height: 50,
+              width: 50,
+              position: 'relative',
+              marginRight: 30,
+            }}
+          />
+
+          <Typography component="h4" variant="h4" className={classes.joinPromptText}>
+            Patient "{patientName}" is waiting in the consult room. Please click on Proceed to join
+            consultation.
+          </Typography>
+
+          <div className={classes.callButtonWrapperPrompt}>
+            <AphButton
+              color="primary"
+              style={{
+                fontSize: 15,
+                borderRadius: 5,
+                boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
+                backgroundColor: '#fc9916',
+                cursor: 'pointer',
+              }}
+              onClick={() => {
+                handleClose();
+                props.setStartConsultAction(true);
+                autoSend(videoCallMsg);
+                setIsVideoCall(true);
+                setDisableOnCancel(true);
+                missedCallIntervalTimer(45);
+                setIscall(true);
+                setJoinPrompt(false);
+                setPlayRingtone(false);
+              }}
+            >
+              {'PROCEED'}
+            </AphButton>
+
+            <span
+              className={classes.collapse}
+              style={{
+                cursor: 'pointer',
+              }}
+              onClick={() => {
+                setPlayRingtone(false);
+                setJoinPrompt(false);
+                setFloatingJoinPrompt(true);
+              }}
+            >
+              <img
+                src={require('images/ic_collapse.svg')}
+                alt=""
+                style={{
+                  height: 18,
+                  width: 18,
+                  position: 'relative',
+                  marginLeft: 15,
+                  marginRight: 4,
+                  verticalAlign: 'middle',
+                }}
+              />
+              {'COLLAPSE'}
+            </span>
+          </div>
+        </Box>
+      )}
+
       {/* Ot Errors Start */}
       <Alert
         error={sessionError}
