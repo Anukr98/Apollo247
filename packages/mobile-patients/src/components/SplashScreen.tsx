@@ -238,6 +238,9 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
             getData('webview', url);
           }
           break;
+        case 'FindDoctors':
+          if (data.length === 2) getData('FindDoctors', linkId);
+          break;
 
         case 'HealthRecordsHome':
           console.log('HealthRecordsHome handleopen');
@@ -454,7 +457,14 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         //   specialityId: id ? id : '',
         // });
         break;
-
+      case 'FindDoctors':
+        const cityBrandFilter = id ? id.split('%20') : '';
+        props.navigation.navigate(AppRoutes.DoctorSearchListing, {
+          specialityId: cityBrandFilter[0] ? cityBrandFilter[0] : '',
+          city: cityBrandFilter.length > 1 ? cityBrandFilter[1] : null,
+          brand: cityBrandFilter.length > 2 ? cityBrandFilter[2] : null,
+        });
+        break;
       case 'Doctor':
         props.navigation.navigate(AppRoutes.DoctorDetails, {
           doctorId: id,

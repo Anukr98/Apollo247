@@ -92,6 +92,8 @@ import {
 } from 'react-navigation';
 import { AppsFlyerEventName, AppsFlyerEvents } from '../../helpers/AppsFlyerEvents';
 import { getValuesArray } from '@aph/mobile-patients/src/utils/commonUtils';
+
+const searchFilters = require('@aph/mobile-patients/src/strings/filters');
 const { width: screenWidth } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
@@ -187,7 +189,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const docFilters = props.navigation.getParam('filters');
   const typeOfConsult = props.navigation.getParam('typeOfConsult');
   const doctorTypeFilter = props.navigation.getParam('doctorType');
-
+  const cityFilter = props.navigation.getParam('city');
+  const brandFilter = props.navigation.getParam('brand');
   const [docFiltersOptions, setDocFilterOptions] = useState<any>(docFilters);
   const [showLocationpopup, setshowLocationpopup] = useState<boolean>(false);
   const [displayFilter, setDisplayFilter] = useState<boolean>(false);
@@ -240,40 +243,41 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const [sortValue, setSortValue] = useState<string>('');
   const [searchIconClicked, setSearchIconClicked] = useState<boolean>(false);
 
+  const preFilters = docFilters === undefined ? searchFilters : docFilters;
   const filterData: filterDataType[] = [
     {
       label: 'City',
-      options: docFilters['city'],
+      options: preFilters['city'],
       selectedOptions: [],
     },
     {
       label: 'Brands',
-      options: docFilters['brands'],
+      options: preFilters['brands'],
       selectedOptions: [],
     },
     {
       label: 'In Years',
-      options: getValuesArray(docFilters['experience']),
+      options: getValuesArray(preFilters['experience']),
       selectedOptions: [],
     },
     {
       label: 'Availability',
-      options: getValuesArray(docFilters['availability']),
+      options: getValuesArray(preFilters['availability']),
       selectedOptions: [],
     },
     {
       label: 'In Rupees',
-      options: getValuesArray(docFilters['fee']),
+      options: getValuesArray(preFilters['fee']),
       selectedOptions: [],
     },
     {
       label: '',
-      options: getValuesArray(docFilters['gender']),
+      options: getValuesArray(preFilters['gender']),
       selectedOptions: [],
     },
     {
       label: '',
-      options: getValuesArray(docFilters['language']),
+      options: getValuesArray(preFilters['language']),
       selectedOptions: [],
     },
   ];
@@ -605,8 +609,14 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       specialty: props.navigation.getParam('specialityId') || '',
       // city: SearchData[0].selectedOptions,
       pincode: pinCode || g(locationDetails, 'pincode') || null,
-      doctorType: SearchData[1].selectedOptions,
-      city: SearchData[0].selectedOptions,
+      doctorType:
+        brandFilter === undefined || brandFilter === null
+          ? SearchData[1].selectedOptions
+          : brandFilter,
+      city:
+        cityFilter === undefined || cityFilter === null
+          ? SearchData[0].selectedOptions
+          : cityFilter,
       experience: experienceArray,
       availability: availabilityArray,
       fees: feesArray,
