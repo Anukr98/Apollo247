@@ -44,7 +44,7 @@ import { PatientRepository } from 'profiles-service/repositories/patientReposito
 import { log } from 'customWinstonLogger';
 import { ApiConstants } from 'ApiConstants';
 import { Client, RequestParams } from '@elastic/elasticsearch';
-import { getCache, setCache, delCache } from 'consults-service/database/connectRedis';
+import { getCache, setCache } from 'consults-service/database/connectRedis';
 
 const REDIS_APPOINTMENT_ID_KEY_PREFIX: string = 'patient:appointment:';
 
@@ -1243,10 +1243,7 @@ export class AppointmentRepository extends Repository<Appointment> {
     );
   }
 
-  async updateJdQuestionStatusbyIds(ids: string[]) {
-    for (let i = 0; i < ids.length; i++) {
-      await delCache(`${REDIS_APPOINTMENT_ID_KEY_PREFIX}${ids[i]}`);
-    }
+  updateJdQuestionStatusbyIds(ids: string[]) {
     return this.update([...ids], {
       isJdQuestionsComplete: true,
       isConsultStarted: true,
@@ -1305,7 +1302,11 @@ export class AppointmentRepository extends Repository<Appointment> {
     );
   }
 
-  systemCancelAppointment(id: string, apptDetails: Appointment) {
+  systemCancelAppointment(
+    id: string,
+    appointmentInfo: Partial<Appointment>,
+    apptDetails: Appointment
+  ) {
     return this.createUpdateAppointment(
       apptDetails,
       {
@@ -1313,6 +1314,7 @@ export class AppointmentRepository extends Repository<Appointment> {
         cancelledBy: REQUEST_ROLES.SYSTEM,
         cancelledDate: new Date(),
         status: STATUS.CANCELLED,
+        ...appointmentInfo,
       },
       AphErrorMessages.CANCEL_APPOINTMENT_ERROR
     );
