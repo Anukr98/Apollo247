@@ -2970,6 +2970,7 @@ export async function medicineOrderCancelled(
     await sendNotificationSMS(orderDetails.patient.mobileNumber, msgText);
     if(paymentInfo.healthCreditsRedeemed > 0){
       msgText = ApiConstants.ORDER_CANCEL_HC_REFUND_BODY;
+      msgText = msgText.replace('{orderId}', orderDetails.orderAutoId.toString());
       msgText = msgText.replace('{healthCreditsRefund}', paymentInfo.healthCreditsRedeemed.toString());
       await sendNotificationSMS(orderDetails.patient.mobileNumber, msgText);
     }

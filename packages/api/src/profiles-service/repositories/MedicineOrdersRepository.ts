@@ -607,6 +607,7 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
       where: { orderAutoId },
       relations: [
         'patient',
+        'medicineOrderPayments',
         'medicineOrderShipments',
         'medicineOrderShipments.medicineOrdersStatus',
       ],

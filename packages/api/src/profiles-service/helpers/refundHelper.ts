@@ -13,6 +13,7 @@ import {
   MedicineOrderPayments,
   MedicineOrders,
 } from 'profiles-service/entities/index';
+import { medicineOrderRefundNotification } from 'notifications-service/resolvers/notifications';
 
 import { log } from 'customWinstonLogger';
 import { MedicineOrdersRepository } from 'profiles-service/repositories/MedicineOrdersRepository';
@@ -294,6 +295,8 @@ export const calculateRefund = async (
       throw new AphError(AphErrorMessages.HEALTH_CREDITS_REQUEST_NOT_FOUND, undefined, {});
     }
   }
+  //send refund SMS notification
+  medicineOrderRefundNotification(orderDetails,{refundAmount:refundAmount,healthCreditsRefund:healthCreditsToRefund});
 };
 
 const genCheckSumPromiseWrapper = (body: PaytmBody, key: string): Promise<string> => {
