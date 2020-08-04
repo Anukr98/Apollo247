@@ -182,7 +182,7 @@ export const ConsultTypeCard: React.FC<ConsultTypeCardProps> = (props) => {
           <View style={styles.buttonStyle}>
             <Text style={styles.buttonTextStyle}>{`${
               time && moment(time).isValid()
-                ? `Consult in ${mhdMY(time, 'min')}`
+                ? nextAvailability(time, 'Consult')
                 : string.common.book_apointment
             }`}</Text>
           </View>

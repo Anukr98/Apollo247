@@ -71,6 +71,7 @@ export interface MedicineCartContextProps {
   setCartItems: ((cartItems: MedicineCartItem[]) => void) | null;
   addCartItem: ((item: MedicineCartItem) => void) | null;
   removeCartItem: ((itemId: MedicineCartItem['id']) => void) | null;
+  removeCartItemSku: ((sku: MedicineCartItem['sku']) => void) | null;
   removeCartItems: ((itemId: MedicineCartItem['arrId']) => void) | null;
   updateCartItem:
     | ((itemUpdates: Partial<MedicineCartItem> & { id: MedicineCartItem['id'] }) => void)
@@ -129,6 +130,7 @@ export const MedicinesCartContext = createContext<MedicineCartContextProps>({
   setCartItems: null,
   addCartItem: null,
   removeCartItem: null,
+  removeCartItemSku: null,
   removeCartItems: null,
   updateCartItem: null,
   updateCartItemPrice: null,
@@ -347,8 +349,13 @@ export const MedicinesCartProvider: React.FC = (props) => {
     setIsCartUpdated(true);
   };
 
+  const removeCartItemSku: MedicineCartContextProps['removeCartItemSku'] = (sku: string) => {
+    setCartItems(cartItems.filter((item) => item.sku !== sku));
+    setIsCartUpdated(true);
+  };
+
   const removeCartItems: MedicineCartContextProps['removeCartItems'] = (arrId) => {
-    const items = cartItems.filter((item) => !arrId.includes(item.id));
+    const items = cartItems.filter((item) => !arrId.includes(item.id || Number(item.sku)));
     setCartItems(items);
     setIsCartUpdated(true);
   };
@@ -479,6 +486,7 @@ export const MedicinesCartProvider: React.FC = (props) => {
         itemsStr,
         addCartItem,
         removeCartItem,
+        removeCartItemSku,
         removeCartItems,
         updateCartItem,
         updateCartItemPrice,
@@ -535,6 +543,7 @@ export const useShoppingCart = () => ({
   setCartItems: useShoppingCartContext().setCartItems,
   addCartItem: useShoppingCartContext().addCartItem,
   removeCartItem: useShoppingCartContext().removeCartItem,
+  removeCartItemSku: useShoppingCartContext().removeCartItemSku,
   removeCartItems: useShoppingCartContext().removeCartItems,
   updateCartItem: useShoppingCartContext().updateCartItem,
 

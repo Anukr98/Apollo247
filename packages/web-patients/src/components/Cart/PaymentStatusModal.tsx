@@ -144,6 +144,7 @@ export const PaymentStatusModal: React.FC<PaymentStatusProps> = (props) => {
   const handleOnClose = () => {
     localStorage.removeItem('selectedPaymentMode');
     sessionStorage.removeItem('pharmacyCheckoutValues');
+    sessionStorage.removeItem('utm_source');
     paymentStatusRedirect(clientRoutes.medicines());
   };
   const paymentStatusRedirect = (url: string) => {

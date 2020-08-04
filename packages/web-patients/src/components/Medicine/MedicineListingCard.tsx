@@ -199,7 +199,7 @@ type MedicineListingCardProps = {
 
 export const MedicineListingCard: React.FC<MedicineListingCardProps> = (props) => {
   const classes = useStyles({});
-  const { cartItems, removeCartItem, updateCartItemQty } = useShoppingCart();
+  const { cartItems, removeCartItemSku, updateCartItemQty } = useShoppingCart();
   const { validateCouponResult } = props;
 
   return (
@@ -403,7 +403,7 @@ export const MedicineListingCard: React.FC<MedicineListingCardProps> = (props) =
                         },
                       });
                       /**Gtm code End  */
-                      removeCartItem && removeCartItem(item.id);
+                      removeCartItemSku && removeCartItemSku(item.sku);
                     }}
                   >
                     <img
