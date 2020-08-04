@@ -25,11 +25,12 @@ import {
   NO_SERVICEABLE_MESSAGE,
   getDiffInDays,
   TAT_API_TIMEOUT_IN_MILLI_SEC,
+  OUT_OF_STOCK_MESSAGE,
+  findAddrComponents,
 } from 'helpers/commonHelpers';
 import { checkServiceAvailability } from 'helpers/MedicineApiCalls';
 import moment from 'moment';
 import { Alerts } from 'components/Alerts/Alerts';
-import { findAddrComponents } from 'helpers/commonHelpers';
 import { CartTypes } from 'components/MedicinesCartProvider';
 import _lowerCase from 'lodash/lowerCase';
 import { useAllCurrentPatients } from 'hooks/authHooks';
@@ -483,7 +484,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                 }
               } else {
                 setDeliveryTime('');
-                setErrorMessage(NO_SERVICEABLE_MESSAGE);
+                setErrorMessage(OUT_OF_STOCK_MESSAGE);
               }
             } else if (
               typeof res.data.errorMSG === 'string' ||
