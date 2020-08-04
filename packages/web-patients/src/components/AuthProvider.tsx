@@ -358,6 +358,52 @@ export const AuthProvider: React.FC = (props) => {
   };
 
   useEffect(() => {
+    if (
+      typeof window !== 'undefined' &&
+      window.location &&
+      window.location.search &&
+      window.location.search.length
+    ) {
+      const search = window.location.search;
+      const params = new URLSearchParams(search);
+      const token = params.get('utm_token') || '';
+      const mobileNumber = `+${params.get('utm_mobile_number').trim()}` || '';
+      localStorage.setItem('userMobileNo', mobileNumber);
+      if (token && mobileNumber) {
+        setAuthToken(token);
+        apolloClient = buildApolloClient(token, () => signOut());
+
+        apolloClient
+          .query<GetPatientByMobileNumber>({
+            query: GET_PATIENT_BY_MOBILE_NUMBER,
+            variables: {
+              mobileNumber: localStorage.getItem('userMobileNo'),
+            },
+          })
+          .then((res) => {
+            const userId =
+              res.data &&
+              res.data.getPatientByMobileNumber &&
+              res.data.getPatientByMobileNumber.patients &&
+              res.data.getPatientByMobileNumber.patients[0].id;
+            if (localStorage.getItem('currentUser') && localStorage.getItem('currentUser').length) {
+              const patientIds =
+                res.data.getPatientByMobileNumber.patients.map((patient) => patient.id) || [];
+              if (!patientIds.includes(localStorage.getItem('currentUser'))) {
+                localStorage.setItem('currentUser', userId);
+                setCurrentPatientId(userId);
+              } else {
+                setCurrentPatientId(localStorage.getItem('currentUser'));
+              }
+            }
+            setSignInError(false);
+          })
+          .catch((e) => {
+            setSignInError(true);
+          });
+      }
+    }
+
     app.auth().onAuthStateChanged(async (user) => {
       if (user) {
         /**Gtm code start */
