@@ -85,9 +85,8 @@ export class ConsultQueueRepository extends Repository<ConsultQueueItem> {
 
   getQueueItemsByDoctorIds(ids: string[]) {
     return this.createQueryBuilder('consultQueueItem')
-      .innerJoinAndMapOne(
+      .innerJoinAndSelect(
         'consultQueueItem.appointment',
-        Appointment,
         'appointment',
         'consultQueueItem.appointmentId = appointment.id::VARCHAR'
       )
@@ -115,9 +114,8 @@ export class ConsultQueueRepository extends Repository<ConsultQueueItem> {
         'consultQueueItem.isActive',
         'appointment',
       ])
-      .innerJoinAndMapOne(
+      .innerJoinAndSelect(
         'consultQueueItem.appointment',
-        Appointment,
         'appointment',
         'consultQueueItem.appointmentId = appointment.id'
       )
