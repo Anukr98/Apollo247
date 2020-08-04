@@ -2642,7 +2642,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 </View>
                 {rowData.transferInfo.photoUrl &&
                 rowData.transferInfo.photoUrl.match(
-                  /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jfif)/
+                  /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jfif|jpeg|JPEG)/
                 ) ? (
                   <Image
                     source={{ uri: rowData.transferInfo.photoUrl }}
@@ -3422,11 +3422,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               bottom: 0,
               position: 'absolute',
               left: 0,
+              borderRadius: 16,
+              overflow: 'hidden',
             }}
           >
             {appointmentData.doctorInfo.thumbnailUrl &&
             appointmentData.doctorInfo.thumbnailUrl.match(
-              /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jfif)/
+              /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jfif|jpeg|JPEG)/
             ) ? (
               <Image
                 source={{ uri: appointmentData.doctorInfo.thumbnailUrl }}
@@ -3699,11 +3701,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   bottom: 0,
                   position: 'absolute',
                   left: 0,
+                  borderRadius: 16,
+                  overflow: 'hidden',
                 }}
               >
                 {appointmentData.doctorInfo.thumbnailUrl &&
                 appointmentData.doctorInfo.thumbnailUrl.match(
-                  /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jfif)/
+                  /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jfif|jpeg|JPEG)/
                 ) ? (
                   <Image
                     source={{ uri: appointmentData.doctorInfo.thumbnailUrl }}
@@ -3819,11 +3823,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   bottom: 0,
                   position: 'absolute',
                   left: 0,
+                  borderRadius: 16,
+                  overflow: 'hidden',
                 }}
               >
                 {appointmentData.doctorInfo.thumbnailUrl &&
                 appointmentData.doctorInfo.thumbnailUrl.match(
-                  /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jfif)/
+                  /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jfif|jpeg|JPEG)/
                 ) ? (
                   <Image
                     source={{ uri: appointmentData.doctorInfo.thumbnailUrl }}
@@ -4582,7 +4588,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     }
     return (
       <View style={styles.mainView}>
-        <View style={{ maxWidth: '14%' }}>
+        <View style={{ maxWidth: '40%' }}>
           <Text style={styles.displayId} numberOfLines={1}>
             #{appointmentData.displayId}
           </Text>
@@ -4607,7 +4613,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             <View style={styles.imageContainer}>
               {appointmentData.doctorInfo.thumbnailUrl &&
               appointmentData.doctorInfo.thumbnailUrl.match(
-                /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jfif)/
+                /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jfif|jpeg|JPEG)/
               ) ? (
                 <Image
                   source={{ uri: appointmentData.doctorInfo.thumbnailUrl }}
@@ -5633,7 +5639,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       >
         {appointmentData.doctorInfo.photoUrl &&
         appointmentData.doctorInfo.photoUrl.match(
-          /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jfif)/
+          /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jfif|jpeg|JPEG)/
         ) ? (
           <Image
             source={{ uri: appointmentData.doctorInfo.photoUrl }}
