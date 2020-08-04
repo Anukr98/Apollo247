@@ -24,8 +24,8 @@
     "covidYouCanText": "You can also",
     "Rs": "₹",
     "KavachText": "Explore the Apollo Kavach Program",
-    "joinConsultRoomDescription": `Please click on 'Join' to start the\nconsult with`,
-    "waitForDoctirToJoinCall": `doctor_name is not in the room yet.\nPlease wait for few seconds while doctor joins the call....`
+    "joinConsultRoomDescription": "Please click on 'Join' to start the\nconsult with",
+    "waitForDoctirToJoinCall": "doctor_name is not in the room yet.\nPlease wait for few seconds while doctor joins the call...."
   },
   "consultType": {
     "mainHeading": "How would you like to consult with",
