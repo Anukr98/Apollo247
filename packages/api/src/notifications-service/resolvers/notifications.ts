@@ -2060,7 +2060,7 @@ export async function sendMedicineOrderStatusNotification(
 
   notificationTitle = notificationTitle.toString();
   notificationBody = notificationBody.replace('{0}', userName);
-  notificationBody = notificationBody.replace('{1}', orderNumber);
+  notificationBody = notificationBody.replace(/\{1}/g, orderNumber);
   if (notificationType == NotificationType.MEDICINE_ORDER_READY_AT_STORE) {
     const shopAddress = JSON.parse(orderDetails.shopAddress);
     notificationBody = notificationBody.replace('{2}', shopAddress.storename);
