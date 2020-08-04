@@ -93,9 +93,13 @@ const saveOrderPlacedStatus: Resolver<
       orderType: orderDetails.orderType,
       statusDateTime: format(addMinutes(new Date(), +330), "yyyy-MM-dd'T'HH:mm:ss'+0530'"),
       orderAmount: orderDetails.estimatedAmount.toString(),
-      orderTAT: orderDetails.orderTat,
+      orderTAT: orderDetails.orderTat
+        ? format(new Date(orderDetails.orderTat), "yyyy-MM-dd'T'HH:mm:ss")
+        : '',
     },
   };
+
+  console.log(postBody);
   postEvent(postBody);
 
   return { message: 'Order placed successfully' };
