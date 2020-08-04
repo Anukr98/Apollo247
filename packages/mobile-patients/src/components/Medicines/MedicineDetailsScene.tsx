@@ -440,6 +440,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     };
     postWebEngageEvent(WebEngageEventName.PRODUCT_DETAIL_PINCODE_CHECK, eventAttributes);
     const unServiceableMsg = 'Sorry, not serviceable in your area.';
+    const pincodeServiceableItemOutOfStockMsg = 'Sorry, this item is out of stock in your area.';
     const genericServiceableDate = moment()
       .add(2, 'days')
       .set('hours', 20)
@@ -478,7 +479,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
             setdeliveryTime(deliveryDate);
             setdeliveryError('');
           } else {
-            setdeliveryError(unServiceableMsg);
+            setdeliveryError(pincodeServiceableItemOutOfStockMsg);
             setdeliveryTime('');
           }
         } else {
@@ -733,8 +734,9 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
               onPress={() => {
                 if (imagesListLength) {
                   props.navigation.navigate(AppRoutes.ImageSliderScreen, {
-                    images: (g(medicineDetails, 'image') || [])
-                      .map((imgPath) => `${AppConfig.Configuration.IMAGES_BASE_URL[0]}${imgPath}`),
+                    images: (g(medicineDetails, 'image') || []).map(
+                      (imgPath) => `${AppConfig.Configuration.IMAGES_BASE_URL[0]}${imgPath}`
+                    ),
                     heading: medicineDetails.name,
                   });
                 }
