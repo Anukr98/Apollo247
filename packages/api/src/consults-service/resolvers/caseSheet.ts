@@ -1418,8 +1418,6 @@ const updatePatientPrescriptionSentStatus: Resolver<
     }
   }
 
-  console.log('caseSheetAttrs..........', caseSheetAttrs);
-
   await caseSheetRepo.updateCaseSheet(args.caseSheetId, caseSheetAttrs, getCaseSheetData);
   const apptRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const appointment = await apptRepo.findById(getCaseSheetData.appointment.id);
