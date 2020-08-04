@@ -74,7 +74,7 @@ export enum ApiConstants {
 
   //medicine order items changed
   MEDICINE_ORDER_CHANGED_TITLE = 'Medicine order is changed',
-  MEDICINE_ORDER_CHANGED_BODY = 'Hi {0}, your order {1}  is billed with some modifications, updated details are visible on Apollo 247 in the respective order summary. For any support, please speak with our customer care executives on the official WhatsApp channel (during business hours 9 AM - 6 PM) https://bit.ly/apollo247medicines',
+  MEDICINE_ORDER_CHANGED_BODY = 'Hi {0}, your order {1} is billed with some modifications, updated details are visible on the Apollo 247 App here: https://pmt.apollo247.com/deeplink?url=apollopatients://Order?{1}. For any support, please speak with our customer care executives on the official WhatsApp channel (during business hours 9 AM - 6 PM) https://bit.ly/apollo247medicines',
   //medicine order ready at store
   ORDER_READY_AT_STORE_TITLE = 'Medicine order is ready',
   ORDER_READY_AT_STORE_BODY = 'Hi {0}! items for your order {1} are ready for pickup at your selected store {2}. Store Contact Number: {3}. Kindly alert the store 10 minutes before reaching the store. For any support, please speak with our customer care executives on the official WhatsApp channel (during business hours 9 AM - 6 PM) https://bit.ly/apollo247medicines',
