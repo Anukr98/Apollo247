@@ -241,11 +241,27 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         case 'FindDoctors':
           if (data.length === 2) getData('FindDoctors', linkId);
           break;
+
+        case 'HealthRecordsHome':
+          console.log('HealthRecordsHome handleopen');
+          getData('HealthRecordsHome');
+          break;
+
+        case 'ManageProfile':
+          console.log('ManageProfile handleopen');
+          getData('ManageProfile');
+          break;
+
+        case 'OneApolloMembership':
+          console.log('OneApolloMembership handleopen');
+          getData('OneApolloMembership');
+          break;
+
         default:
           getData('ConsultRoom', undefined, true);
           // webengage event
           const eventAttributes: WebEngageEvents[WebEngageEventName.HOME_PAGE_VIEWED] = {
-            source: 'Deeplink',
+            source: 'deeplink',
           };
           postWebEngageEvent(WebEngageEventName.HOME_PAGE_VIEWED, eventAttributes);
           break;
@@ -499,6 +515,19 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           url: id,
         });
         break;
+
+      case 'HealthRecordsHome':
+        props.navigation.navigate('HEALTH RECORDS');
+        break;
+
+      case 'ManageProfile':
+        props.navigation.navigate(AppRoutes.ManageProfile);
+        break;
+
+      case 'OneApolloMembership':
+        props.navigation.navigate(AppRoutes.OneApolloMembership);
+        break;
+
       default:
         break;
     }

@@ -368,6 +368,12 @@ const useStyles = makeStyles((theme: Theme) => {
     hideButton: {
       display: 'none !important',
     },
+    offerMessage: {
+      color: '#00b38e',
+      fontSize: 12,
+      fontWeight: 300,
+      textTransform: 'none',
+    },
   };
 });
 
@@ -702,7 +708,9 @@ export const PayMedicine: React.FC = (props) => {
               process.env.PHARMACY_PG_URL
             }/paymed?amount=${totalWithCouponDiscount.toFixed(
               2
-            )}&oid=${orderAutoId}&token=${authToken}&pid=${currentPatiendId}&source=web&paymentTypeID=${value}&paymentModeOnly=YES`;
+            )}&oid=${orderAutoId}&token=${authToken}&pid=${currentPatiendId}&source=web&paymentTypeID=${value}&paymentModeOnly=YES${
+              sessionStorage.getItem('utm_source') === 'sbi' ? '&partner=SBIYONO' : ''
+            }`;
             window.location.href = pgUrl;
           } else if (orderAutoId && orderAutoId > 0 && value === 'COD') {
             placeOrder(orderId, orderAutoId, false, '');
@@ -848,7 +856,9 @@ export const PayMedicine: React.FC = (props) => {
               res.data.bookAppointment.appointment.id
             }&patientId=${
               currentPatient ? currentPatient.id : ''
-            }&price=${revisedAmount}&source=WEB&paymentTypeID=${value}&paymentModeOnly=YES`;
+            }&price=${revisedAmount}&source=WEB&paymentTypeID=${value}&paymentModeOnly=YES${
+              sessionStorage.getItem('utm_source') === 'sbi' ? '&partner=SBIYONO' : ''
+            }`;
             window.location.href = pgUrl;
           }
           // setMutationLoading(false);
@@ -911,6 +921,34 @@ export const PayMedicine: React.FC = (props) => {
                     />
                   ) : (
                     <ul className={classes.paymentOptions}>
+                      {sessionStorage.getItem('utm_source') === 'sbi' && (
+                        <li
+                          key={'sbiCashCard'}
+                          onClick={() =>
+                            params.payType === 'pharmacy'
+                              ? onClickPay(
+                                  process.env.SBI_CASHCARD_PAY_TYPE,
+                                  'SBI YONO CASHLESS CARD'
+                                )
+                              : onClickConsultPay(process.env.SBI_CASHCARD_PAY_TYPE)
+                          }
+                          style={{ cursor: 'pointer' }}
+                        >
+                          <img
+                            src={
+                              'https://prodaphstorage.blob.core.windows.net/paymentlogos/sbi.png'
+                            }
+                            alt=""
+                            style={{ height: 30, width: 30 }}
+                          />
+                          <div style={{ paddingLeft: 10 }}>
+                            SBI YONO CASHLESS CARD
+                            <div className={classes.offerMessage}>
+                              You are eligible for ${process.env.SBI_CASHCARD_DISCOUNT}% cashback
+                            </div>
+                          </div>
+                        </li>
+                      )}
                       {paymentOptions.length > 0 &&
                         paymentOptions.map((payType, index) => {
                           return (

@@ -159,6 +159,10 @@ export const SbiLandingPage: React.FC = (props) => {
   // const urlParams = `?utm_source=${utmSource}&utm_medium=${utmMedium}&utm_campaign=${utmCampaign}&utm_content=${utmContent}&tp_ref_code=${tpRefCode}`;
   const tpRefCode = 'SBIYONO';
   const urlParams = `?tp_ref_code=${tpRefCode}`;
+  const url_string = window.location.href;
+  const url = new URL(url_string);
+  const utmSource = url.searchParams.get("utm_source");
+  sessionStorage.setItem('utm_source', utmSource);
   const homePageUrl = clientRoutes.welcome();
   const { currentPatient } = useAllCurrentPatients();
 

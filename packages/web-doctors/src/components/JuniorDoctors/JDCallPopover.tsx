@@ -1518,7 +1518,14 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
           </div>
 
           {showToastMessage && (
-            <div className={classes.toastMessage}>
+            <div
+              className={classes.toastMessage}
+              onLoad={() => {
+                setTimeout(() => {
+                  setShowToastMessage(false);
+                }, 10000);
+              }}
+            >
               <span className={classes.toastMessageText}>
                 <img
                   src={require('images/ic_cancel_green.svg')}
@@ -2139,7 +2146,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
               <span className={classes.callSubheader}>
                 {'Please follow the steps to connect to your patient :'}
               </span>
-              <span style={{ display: 'flex', margin: '30px 0px 20px 10px', alignItems: 'center', }}>
+              <span style={{ display: 'flex', margin: '30px 0px 20px 10px', alignItems: 'center' }}>
                 <span className={classes.callOption}>1</span>
                 <span className={classes.callOptionFirst}>
                   Answer the call from {process.env.EXOTEL_CALLER_ID} <br />

@@ -206,17 +206,17 @@ const sendHelpEmail: Resolver<null, HelpEmailInputArgs, ProfilesServiceContext, 
 
   const toEmailId =
     process.env.NODE_ENV == 'dev' ||
-    process.env.NODE_ENV == 'development' ||
-    process.env.NODE_ENV == 'local'
+      process.env.NODE_ENV == 'development' ||
+      process.env.NODE_ENV == 'local'
       ? ApiConstants.PATIENT_HELP_SUPPORT_EMAILID
       : ApiConstants.PATIENT_HELP_SUPPORT_EMAILID_PRODUCTION;
 
-  const ccEmailIds =
-    process.env.NODE_ENV == 'dev' ||
-    process.env.NODE_ENV == 'development' ||
-    process.env.NODE_ENV == 'local'
-      ? ApiConstants.PATIENT_HELP_SUPPORT_CC_EMAILID
-      : ApiConstants.PATIENT_HELP_SUPPORT_CC_EMAILID_PRODUCTION;
+  // const ccEmailIds =
+  //   process.env.NODE_ENV == 'dev' ||
+  //   process.env.NODE_ENV == 'development' ||
+  //   process.env.NODE_ENV == 'local'
+  //     ? ApiConstants.PATIENT_HELP_SUPPORT_CC_EMAILID
+  //     : ApiConstants.PATIENT_HELP_SUPPORT_CC_EMAILID_PRODUCTION;
 
   const emailContent: EmailMessage = {
     subject: subject,
@@ -224,7 +224,7 @@ const sendHelpEmail: Resolver<null, HelpEmailInputArgs, ProfilesServiceContext, 
     fromName: <string>ApiConstants.PATIENT_HELP_FROM_NAME,
     messageContent: <string>mailContent,
     toEmail: <string>toEmailId,
-    ccEmail: <string>ccEmailIds,
+    //ccEmail: <string>ccEmailIds,
   };
 
   log(

@@ -27,6 +27,8 @@ export const useAuth = () => {
   const isSignedIn = useAllCurrentPatients().allCurrentPatients != null;
   const signOut = useAuthContext().signOut!;
   const customLoginId = useAuthContext().customLoginId;
+  const isLoading = useAuthContext().isLoading;
+  const setIsLoading = useAuthContext().setIsLoading;
 
   return {
     verifyOtp,
@@ -47,6 +49,8 @@ export const useAuth = () => {
     signOut,
 
     customLoginId,
+    isLoading,
+    setIsLoading,
   };
 };
 

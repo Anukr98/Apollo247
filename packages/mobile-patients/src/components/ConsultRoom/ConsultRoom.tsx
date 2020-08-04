@@ -550,6 +550,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         postHomeFireBaseEvent(FirebaseEventName.BUY_MEDICINES, 'Home Screen');
         postHomeWEGEvent(WebEngageEventName.BUY_MEDICINES, 'Home Screen');
         props.navigation.navigate('MEDICINES', { focusSearch: true });
+        const eventAttributes: WebEngageEvents[WebEngageEventName.HOME_PAGE_VIEWED] = {
+          source: 'app home',
+        };
+        postWebEngageEvent(WebEngageEventName.HOME_PAGE_VIEWED, eventAttributes);
       },
     },
     {
@@ -1027,6 +1031,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                   postHomeFireBaseEvent(FirebaseEventName.BUY_MEDICINES, 'Menu');
                   postHomeWEGEvent(WebEngageEventName.BUY_MEDICINES, 'Menu');
                   CommonLogEvent(AppRoutes.ConsultRoom, 'MEDICINES clicked');
+                  const eventAttributes: WebEngageEvents[WebEngageEventName.HOME_PAGE_VIEWED] = {
+                    source: 'app home',
+                  };
+                  postWebEngageEvent(WebEngageEventName.HOME_PAGE_VIEWED, eventAttributes);
                   props.navigation.navigate('MEDICINES');
                 } else if (i == 3) {
                   postHomeFireBaseEvent(FirebaseEventName.ORDER_TESTS, 'Menu');
