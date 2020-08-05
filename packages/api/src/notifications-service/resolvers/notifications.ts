@@ -797,7 +797,7 @@ export async function sendNotification(
         doctorDetails.doctorType
       );
     }
-    let formattedAptDate = format(
+    const formattedAptDate = format(
       addMinutes(new Date(appointment.appointmentDateTime), +330),
       "yyyy-MM-dd hh:mm a"
     );
