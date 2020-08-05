@@ -304,12 +304,21 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       AsyncStorage.removeItem('chatFileData');
       AsyncStorage.removeItem('scrollToEnd');
       AsyncStorage.removeItem('callDataSend');
+      AsyncStorage.removeItem('patientName');
       KeepAwake.deactivate();
       pubnub.unsubscribeAll();
       pubnub.stop();
       hideFloatingContainer();
     };
   }, []);
+
+  const showJoinPopUp = async () => {
+    const patientName = (await AsyncStorage.getItem('patientName')) || '';
+    showFloatingCotainer({
+      child: renderJoinView(patientName),
+      mainContainerStyle: styles.floatingContainerFullScreen,
+    });
+  };
 
   const renderJoinMinimizedView = () => {
     return (
@@ -326,7 +335,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     );
   };
 
-  const renderJoinView = () => {
+  const renderJoinView = (name: string) => {
     return (
       <View style={styles.joinMainContainer}>
         <View style={styles.joinSubContainer}>
@@ -345,12 +354,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           <View style={styles.joinTextContainer}>
             <Join />
             <Text style={styles.joinDisplayTextStyle}>
-              {string.case_sheet.join_heading.replace(
-                '{0}',
-                `${g(patientDetails, 'firstName') ||
-                  g(caseSheet, 'patientDetails', 'firstName')} ${g(patientDetails, 'lastName') ||
-                  g(caseSheet, 'patientDetails', 'lastName')}`
-              )}
+              {string.case_sheet.join_heading.replace('{0}', name)}
             </Text>
           </View>
           <View style={styles.joinButtonContainer}>
@@ -573,6 +577,15 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       )
     );
     setPatientDetails(g(caseSheet, 'caseSheetDetails', 'patientDetails') || null);
+    AsyncStorage.setItem(
+      'patientName',
+      `${g(caseSheet, 'caseSheetDetails', 'patientDetails', 'firstName')} ${g(
+        caseSheet,
+        'caseSheetDetails',
+        'patientDetails',
+        'lastName'
+      )}`
+    );
     setHealthWalletArrayData(
       g(caseSheet, 'caseSheetDetails', 'patientDetails', 'healthVault') || null
     );
@@ -1426,10 +1439,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               audioVideoMethod();
               break;
             case messageCodes.patientJoined:
-              showFloatingCotainer({
-                child: renderJoinView(),
-                mainContainerStyle: styles.floatingContainerFullScreen,
-              });
+              showJoinPopUp();
               break;
             default:
           }
@@ -1447,10 +1457,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           callData.setMessageReceived(true);
           addMessages(message);
         } else if (messageCodes.patientJoined === messageText) {
-          showFloatingCotainer({
-            child: renderJoinView(),
-            mainContainerStyle: styles.floatingContainerFullScreen,
-          });
+          showJoinPopUp();
         } else {
           callData.setMessageReceived(true);
           addMessages(message);
