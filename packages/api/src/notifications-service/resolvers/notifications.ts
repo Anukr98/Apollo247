@@ -799,7 +799,7 @@ export async function sendNotification(
     }
     const formattedAptDate = format(
       addMinutes(new Date(appointment.appointmentDateTime), +330),
-      "yyyy-MM-dd hh:mm a"
+      "hh:mm a, yyyy-MM-dd"
     );
     let doctorSMS = ApiConstants.DOCTOR_BOOK_APPOINTMENT_SMS.replace(
       '{0}',
