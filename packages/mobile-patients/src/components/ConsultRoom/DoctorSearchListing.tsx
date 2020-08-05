@@ -375,7 +375,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       willBlurSubscription && willBlurSubscription.remove();
     };
   }, []);
-  
+
   const checkTime = () => {
     const currentTime = moment().format('HH');
     console.log('currentTime', currentTime);
@@ -454,7 +454,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   };
 
   const checkLocation = () => {
-    if(!locationDetails){
+    if (!locationDetails) {
       showAphAlert!({
         unDismissable: true,
         title: 'Hi! :)',
@@ -519,7 +519,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     } else {
       fetchSpecialityFilterData(filterMode, FilterData, latlng, 'distance');
     }
-  }
+  };
 
   const fetchSpecialityFilterData = (
     filterMode: ConsultMode = ConsultMode.BOTH,
@@ -1154,7 +1154,9 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             zIndex: 15,
             elevation: 15,
           }}
-          onPress={() => {setshowLocationpopup(false), !locationDetails && checkLocation()}}
+          onPress={() => {
+            setshowLocationpopup(false), !locationDetails && checkLocation();
+          }}
         >
           <View
             style={{
@@ -1548,12 +1550,12 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       <SafeAreaView style={theme.viewStyles.container}>
         {renderTopView()}
         {searchIconClicked && renderDoctorSearchBar()}
+        {renderTopTabBar()}
         <ScrollView bounces={false} style={{ flex: 1 }}>
           {showSpinner ? (
             renderSearchLoadingView()
           ) : (
             <View>
-              {renderTopTabBar()}
               <Text style={styles.consultHeadingText}>
                 {string.doctor_search_listing.consultBest.replace(
                   '{0}',
