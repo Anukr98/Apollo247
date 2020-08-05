@@ -132,7 +132,7 @@ export const getMedicineOrdersOMSListTypeDefs = gql`
     refundStatus: REFUND_STATUS
     refundId: String
     orderId: String
-    createdDate: Date
+    createdDate: DateTime
   }
 
   enum REFUND_STATUS {
