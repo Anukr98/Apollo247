@@ -59,7 +59,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     timingList: {
       listStyle: 'none',
-      padding: '0 0 0 10px',
+      padding: '0 10px',
       margin: 0,
       '& li': {
         display: 'flex',
@@ -101,27 +101,27 @@ export const DoctorTimings: React.FC<DoctorTimingsProps> = (props) => {
         <div className={classes.timingsRow}>
           {consultModeOnline.length > 0 && <div className={classes.label}>Online:</div>}
           <div className={classes.rightGroup}>
-            {doctorTimings.map((item: any) => {
-              const actualDay = item.actualDay;
-              const weeDaysStartTime = moment
-                .utc(`${today} ${item.startTime}`)
-                .local()
-                .format('hh:mm a');
-              const weeDaysEndTime = moment
-                .utc(`${today} ${item.endTime}`)
-                .local()
-                .format('hh:mm a');
-              return (
-                (item.consultMode === 'ONLINE' || item.consultMode === 'BOTH') && (
-                  <ul className={classes.timingList}>
+            <ul className={classes.timingList}>
+              {doctorTimings.map((item: any) => {
+                const actualDay = item.actualDay;
+                const weeDaysStartTime = moment
+                  .utc(`${today} ${item.startTime}`)
+                  .local()
+                  .format('hh:mm a');
+                const weeDaysEndTime = moment
+                  .utc(`${today} ${item.endTime}`)
+                  .local()
+                  .format('hh:mm a');
+                return (
+                  (item.consultMode === 'ONLINE' || item.consultMode === 'BOTH') && (
                     <li>
                       <span>{actualDay}</span>
                       <span>{`${weeDaysStartTime} - ${weeDaysEndTime}`}</span>
                     </li>
-                  </ul>
-                )
-              );
-            })}
+                  )
+                );
+              })}
+            </ul>
           </div>
         </div>
         <div className={classes.timingsRow}>

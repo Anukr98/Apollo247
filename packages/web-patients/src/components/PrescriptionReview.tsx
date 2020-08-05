@@ -946,6 +946,7 @@ export const PrescriptionReview: React.FC = (props: any) => {
             isNonCartFlow={false}
             isPresReview={true}
             setEPrescriptionForReview={setEPrescriptionUploaded}
+            pharmaCologistPres={ePrescriptionArr}
           />
         </AphDialog>
       </div>

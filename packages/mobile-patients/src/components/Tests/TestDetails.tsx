@@ -15,7 +15,6 @@ import {
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
 import {
-  Dimensions,
   SafeAreaView,
   ScrollView,
   StyleProp,
@@ -34,10 +33,13 @@ import {
   WebEngageEvents,
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
-import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
-import moment from 'moment';
+import { useApolloClient } from 'react-apollo-hooks';
+import {
+  searchDiagnosticsById,
+  searchDiagnosticsByIdVariables,
+} from '@aph/mobile-patients/src/graphql/types/searchDiagnosticsById';
+import { SEARCH_DIAGNOSTICS_BY_ID } from '@aph/mobile-patients/src/graphql/profiles';
 
-const { height } = Dimensions.get('window');
 const styles = StyleSheet.create({
   testNameStyles: {
     paddingLeft: 0,
@@ -60,14 +62,6 @@ const styles = StyleSheet.create({
   },
   personDetailsView: {
     marginTop: 6,
-  },
-  ageGroupStyles: {
-    ...theme.fonts.IBMPlexSansMedium(12),
-    color: '#02475b',
-    opacity: 0.6,
-    marginBottom: 12,
-    marginTop: 4,
-    letterSpacing: 0.02,
   },
   descriptionStyles: {
     backgroundColor: theme.colors.WHITE,
@@ -148,13 +142,14 @@ export interface TestPackageForDetails extends TestPackage {
 
 export interface TestDetailsProps
   extends NavigationScreenProps<{
-    testDetails: TestPackageForDetails;
+    testDetails?: TestPackageForDetails;
+    itemId?: string;
   }> {}
 
 export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   const [selectedTab, setSelectedTab] = useState<string>(tabs[0].title);
-  const testDetails = props.navigation.getParam('testDetails');
-  console.log({ testDetails });
+  const testDetails = props.navigation.getParam('testDetails', {} as TestPackageForDetails);
+  const itemId = props.navigation.getParam('itemId');
 
   const [testInfo, setTestInfo] = useState<TestPackageForDetails>(testDetails);
   const TestDetailsDiscription = testInfo.PackageInClussion;
@@ -164,22 +159,71 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   const currentItemId = testInfo.ItemID;
   aphConsole.log('currentItemId : ' + currentItemId);
   const [searchSate, setsearchSate] = useState<'load' | 'success' | 'fail' | undefined>();
-  const { currentPatient } = useAllCurrentPatients();
+  const client = useApolloClient();
 
   useEffect(() => {
-    !TestDetailsDiscription &&
-      getPackageData(currentItemId)
-        .then(({ data }) => {
-          setsearchSate('success');
-          aphConsole.log('getPackageData \n', { data });
-          setTestInfo({ ...testInfo, PackageInClussion: data.data || [] });
-        })
-        .catch((e) => {
-          CommonBugFender('TestDetails', e);
-          aphConsole.log('getPackageData Error \n', { e });
-          setsearchSate('fail');
-        });
+    if (itemId) {
+      loadTestDetails(itemId);
+    } else {
+      !TestDetailsDiscription &&
+        getPackageData(currentItemId)
+          .then(({ data }) => {
+            setsearchSate('success');
+            aphConsole.log('getPackageData \n', { data });
+            setTestInfo({ ...testInfo, PackageInClussion: data.data || [] });
+          })
+          .catch((e) => {
+            CommonBugFender('TestDetails', e);
+            aphConsole.log('getPackageData Error \n', { e });
+            setsearchSate('fail');
+          });
+    }
   }, []);
+
+  const loadTestDetails = async (itemId: string) => {
+    try {
+      const {
+        data: { searchDiagnosticsById },
+      } = await client.query<searchDiagnosticsById, searchDiagnosticsByIdVariables>({
+        query: SEARCH_DIAGNOSTICS_BY_ID,
+        variables: {
+          itemIds: itemId,
+        },
+        fetchPolicy: 'no-cache',
+      });
+      const {
+        rate,
+        gender,
+        itemName,
+        collectionType,
+        fromAgeInDays,
+        toAgeInDays,
+        testPreparationData,
+      } = g(searchDiagnosticsById, 'diagnostics', '0' as any)!;
+      const partialTestDetails = {
+        Rate: rate,
+        Gender: gender,
+        ItemID: `${itemId}`,
+        ItemName: itemName,
+        collectionType: collectionType!,
+        FromAgeInDays: fromAgeInDays,
+        ToAgeInDays: toAgeInDays,
+        preparation: testPreparationData,
+      };
+
+      const {
+        data: { data },
+      } = await getPackageData(itemId);
+
+      setTestInfo({
+        ...partialTestDetails,
+        PackageInClussion: data || [],
+      } as TestPackageForDetails);
+      setsearchSate('success');
+    } catch (error) {
+      setsearchSate('fail');
+    }
+  };
 
   const renderBadge = (count: number, containerStyle: StyleProp<ViewStyle>) => {
     return (
@@ -323,13 +367,6 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       Price: price,
       'Discounted Price': discountedPrice,
       Quantity: 1,
-      // 'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
-      // 'Patient UHID': g(currentPatient, 'uhid'),
-      // Relation: g(currentPatient, 'relation'),
-      // 'Patient Age': Math.round(moment().diff(currentPatient.dateOfBirth, 'years', true)),
-      // 'Patient Gender': g(currentPatient, 'gender'),
-      // 'Mobile Number': g(currentPatient, 'mobileNumber'),
-      // 'Customer ID': g(currentPatient, 'id'),
     };
     postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_ADD_TO_CART, eventAttributes);
   };
@@ -341,15 +378,22 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     return <Spinner />;
   } else if (searchSate == 'fail') {
     return (
-      <View style={{ flex: 1, justifyContent: 'center' }}>
-        <Card
-          cardContainer={{ marginTop: 0 }}
-          heading={'Uh oh! :('}
-          description={'Test Details Not Available!'}
-          descriptionTextStyle={{ fontSize: 14 }}
-          headingTextStyle={{ fontSize: 14 }}
-        />
-      </View>
+      <SafeAreaView
+        style={{
+          ...theme.viewStyles.container,
+        }}
+      >
+        {renderHeader()}
+        <View style={{ flex: 1, justifyContent: 'center' }}>
+          <Card
+            cardContainer={{ marginTop: 0 }}
+            heading={'Uh oh! :('}
+            description={'Test Details Not Available!'}
+            descriptionTextStyle={{ fontSize: 14 }}
+            headingTextStyle={{ fontSize: 14 }}
+          />
+        </View>
+      </SafeAreaView>
     );
   } else {
     return (

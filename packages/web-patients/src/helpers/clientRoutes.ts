@@ -13,6 +13,7 @@ export const clientRoutes = {
   specialties: (specialty: string) => `/specialties/${specialty}`,
   citySpecialties: (city: string, specialty: string) => `/${city}/specialties/${specialty}`,
   appointments: () => '/appointments',
+  appointmentsList: () => '/appointmentslist',
   appointmentSuccess: () => `/appointments/${status}`,
   testsAndMedicine: () => '/tests-medicines',
   medicines: () => `/medicines`,
@@ -66,7 +67,7 @@ export const clientRoutes = {
   prescriptionReview: () => '/prescription-review',
   specialityListing: () => '/specialties',
   medicinePrescription: () => '/medicine-prescription',
-  covidDiabetes: () => '/medical-condition/covid-and-diabetes',
+  covidProtocol: () => '/medical-condition',
 };
 
 export const clientBaseUrl = () => webPatientsBaseUrl();

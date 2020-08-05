@@ -217,12 +217,13 @@ const SaveDiagnosticOrder: Resolver<
     throw new AphError(AphErrorMessages.CART_EMPTY_ERROR, undefined, {});
   }
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
-  const patientDetails = await patientRepo.findById(diagnosticOrderInput.patientId);
+  const patientDetails = await patientRepo.getPatientDetails(diagnosticOrderInput.patientId);
   let patientAddress = '',
     addressZipcode = '';
   if (!patientDetails) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
+
   if (
     diagnosticOrderInput.patientAddressId != '' &&
     diagnosticOrderInput.patientAddressId != null
@@ -357,7 +358,7 @@ const SaveDiagnosticOrder: Resolver<
     if (patientDetails.uhid != '' && patientDetails.uhid != null) {
       patientId = patientDetails.uhid;
     } else {
-      patientId = await patientRepo.createNewUhid(patientDetails.id);
+      patientId = await patientRepo.createNewUhid(patientDetails);
       if (patientId == '') {
         patientId = '0';
       }
@@ -683,11 +684,11 @@ const getDiagnosticOrdersList: Resolver<
   ProfilesServiceContext,
   DiagnosticOrdersResult
 > = async (parent, args, { profilesDb }) => {
+  const { patientId } = args;
   const diagnosticsRepo = profilesDb.getCustomRepository(DiagnosticOrdersRepository);
 
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
-  const primaryPatientIds = await patientRepo.getLinkedPatientIds(args.patientId);
-
+  const primaryPatientIds = await patientRepo.getLinkedPatientIds({ patientId });
   const ordersList = await diagnosticsRepo.getListOfOrders(primaryPatientIds);
   return { ordersList };
 };

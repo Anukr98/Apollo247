@@ -159,9 +159,7 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
 
   let item = (g(props, 'PastData', 'caseSheet') || []).find((obj: any) => {
     return (
-      obj!.doctorType === 'STAR_APOLLO' ||
-      obj!.doctorType === 'APOLLO' ||
-      obj!.doctorType === 'PAYROLL'
+      obj!.doctorType !== 'JUNIOR'
     );
   });
 

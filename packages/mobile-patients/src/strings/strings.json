@@ -23,7 +23,9 @@
     "covidMessageText": "Apollo 247 has curated fact-based information from reputed sources on Coronavirus. Now you can get reliable answers to common questions at one place.",
     "covidYouCanText": "You can also",
     "Rs": "₹",
-    "KavachText": "Explore the Apollo Kavach Program"
+    "KavachText": "Explore the Apollo Kavach Program",
+    "joinConsultRoomDescription": "Please click on 'Join' to start the\nconsult with",
+    "waitForDoctirToJoinCall": "doctor_name is not in the room yet.\nPlease wait for few seconds while doctor joins the call...."
   },
   "consultType": {
     "mainHeading": "How would you like to consult with",
@@ -47,7 +49,8 @@
       "point4": "Visit the doctor at Hospital/Clinic",
       "point5": "Receive prescriptions instantly",
       "point6": "Chat with the doctor for 7 days after your consult"
-    }
+    },
+    "chatDisabledHeader": "You can't send message to the doctor. Book appointment for consulting with {0} again."
   },
   "login": {
     "hello": "hello!",
@@ -235,7 +238,9 @@
       }
     ]
   },
-  "medicine": {},
+  "medicine": {
+    "recommendedForYou": "RECOMMENDED FOR YOU"
+  },
   "medicine_cart": {
     "tatUnServiceableAlertTitle": "We’re sorry!",
     "tatUnServiceableAlertDesc": "Some items in your order are not deliverable to the selected address.\n\nYou may either change the address or delete the item from your cart.\n\nYou can also call 1860 500 0101 for Apollo Pharmacy retail customer care.",
@@ -282,7 +287,8 @@
     "product_discount": "Product Discount",
     "coupon_discount": "Coupon Discount",
     "delivery_charges": "Delivery Charges",
-    "packaging_charges": "Packaging Charges"
+    "packaging_charges": "Packaging Charges",
+    "orderCancellationAfterBillingAlert": "Your order has already Billed and therefore cannot be cancelled from the App. In case you still wish to Cancel, please click on the link below to chat with out customer care executives for assistance during working hours (9:00 AM to 8:30 PM)"
   },
   "OrderSummaryText": {
     "total_order_billed": "Total Ordered Value",
@@ -298,6 +304,7 @@
     "order_medicine": "ORDER MEDICINES",
     "order_test": "ORDER TESTS",
     "book_follow_up": "BOOK FOLLOW-UP",
+    "add_note_to_notify_users": "Please note that health records uploaded here will not be automatically visible to the doctor, you would have to upload them in consult chatroom!",
     "tabs": [
       {
         "title": "Consults & Rx",
@@ -320,6 +327,16 @@
     "success": "TXN_SUCCESS",
     "failure": "TXN_FAILURE",
     "pending": "PAYMENT_PENDING_PG"
+  },
+  "PaymentModes": {
+    "DEBIT_CARD": "Debit Card",
+    "CREDIT_CARD": "Credit Card",
+    "NET_BANKING": "Net Banking",
+    "PAYTM_WALLET": "Paytm Wallet",
+    "EMI": "EMI",
+    "UPI": "UPI",
+    "PAYTM_POSTPAID": "Paytm Postpaid",
+    "COD": "COD"
   },
   "alerts": {
     "Open_camera_in_video_call": "Image capturing is disabled during a video call. Please switch to the Audio call if you want to send an Image."
@@ -361,5 +378,6 @@
     "here_your_schedule": "here’s your schedule for",
     "block_Calendar": "Block Calendar",
     "manage_calendar": "Manage Calendar"
-  }
+  },
+  "ChatRoom_NotRecorded_Value": "Not Recorded"
 }

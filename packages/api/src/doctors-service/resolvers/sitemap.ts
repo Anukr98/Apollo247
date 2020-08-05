@@ -79,7 +79,6 @@ const generateSitemap: Resolver<null, {}, DoctorsServiceContext, string> = async
   if (process.env.NODE_ENV != 'local') {
     assetsDir = path.resolve(<string>process.env.ASSETS_DIRECTORY);
   }
-
   let cmsUrls = '\n<!--CMS url-->\n';
   const listResp = await fetch(
     process.env.CMS_ARTICLES_SLUG_LIST_URL ? process.env.CMS_ARTICLES_SLUG_LIST_URL : '',
@@ -92,7 +91,7 @@ const generateSitemap: Resolver<null, {}, DoctorsServiceContext, string> = async
   const cmsUrlsList = JSON.parse(textRes);
 
   if (cmsUrlsList && cmsUrlsList.data.length > 0) {
-    console.log(cmsUrlsList.data, 'cmsUrlsList.data');
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     cmsUrlsList.data.forEach((link: any) => {
       let url = process.env.SITEMAP_BASE_URL + 'covid19/';
       if (link.type == 'ARTICLE') {
@@ -130,6 +129,7 @@ const generateSitemap: Resolver<null, {}, DoctorsServiceContext, string> = async
   const healthAreasUrlsList = JSON.parse(healthAreaTextRes);
   let healthAreaUrls = '\n<!--Health Area links-->\n';
   if (healthAreasUrlsList.healthareas && healthAreasUrlsList.healthareas.length > 0) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     healthAreasUrlsList.healthareas.forEach((link: any) => {
       const url = process.env.SITEMAP_BASE_URL + 'medicine/healthareas/' + link.url_key;
       healthAreaUrls +=
@@ -138,6 +138,7 @@ const generateSitemap: Resolver<null, {}, DoctorsServiceContext, string> = async
   }
   let ShopByCategory = '\n<!--Shop By Category links-->\n';
   if (healthAreasUrlsList.shop_by_category && healthAreasUrlsList.shop_by_category.length > 0) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     healthAreasUrlsList.shop_by_category.forEach((link: any) => {
       const url = process.env.SITEMAP_BASE_URL + 'medicine/shop-by-category/' + link.url_key;
       ShopByCategory +=

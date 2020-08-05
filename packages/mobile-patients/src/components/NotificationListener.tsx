@@ -45,6 +45,7 @@ import {
 } from '../graphql/types/getMedicineOrderOMSDetails';
 import { NotificationIconWhite } from './ui/Icons';
 import { WebEngageEvents, WebEngageEventName } from '../helpers/webEngageEvents';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 
 const styles = StyleSheet.create({
   rescheduleTextStyles: {
@@ -98,7 +99,8 @@ type CustomNotificationType =
   | 'PRESCRIPTION_READY'
   | 'doctor_Noshow_Reschedule_Appointment'
   | 'Appointment_Canceled_Refund'
-  | 'Appointment_Payment_Pending_Failure';
+  | 'Appointment_Payment_Pending_Failure'
+  | 'webview';
 
 export interface NotificationListenerProps extends NavigationScreenProps {}
 
@@ -116,6 +118,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
   } = useUIElements();
   const { cartItems, setCartItems, ePrescriptions, setEPrescriptions } = useShoppingCart();
   const client = useApolloClient();
+  const { setDoctorJoinedChat } = useAppCommonData();
 
   const showMedOrderStatusAlert = (
     data:
@@ -353,6 +356,9 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
       notificationType === 'doctor_Noshow_Reschedule_Appointment'
       // notificationType === 'Reschedule_Appointment'
     ) {
+      if(notificationType === 'chat_room' || notificationType === 'call_started') {
+        setDoctorJoinedChat && setDoctorJoinedChat(true); // enabling join button in chat room if in case pubnub events not fired
+      }
       if (currentScreenName === AppRoutes.ChatRoom) return;
     }
 
@@ -395,6 +401,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
                       WebEngageEventName.DOCTOR_RESCHEDULE_CLAIM_REFUND,
                       eventAttributes
                     );
+                    props.navigation.popToTop();
                   } catch (error) {}
 
                   hideAphAlert && hideAphAlert();
@@ -518,6 +525,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
                       WebEngageEventName.DOCTOR_RESCHEDULE_CLAIM_REFUND,
                       eventAttributes
                     );
+                    props.navigation.popToTop();
                   } catch (error) {}
 
                   hideAphAlert && hideAphAlert();
@@ -840,7 +848,13 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
           showConsultDetailsRoomAlert(data, 'PRESCRIPTION_READY', 'true');
         }
         break;
-
+      case 'webview':
+        if (data.url) {
+          props.navigation.navigate(AppRoutes.CommonWebView, {
+            url: data.url,
+          });
+        }
+        break;
       default:
         break;
     }

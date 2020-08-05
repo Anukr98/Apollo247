@@ -7,6 +7,7 @@ import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { gtmTracking } from '../../gtmTracking';
 import { validatePharmaCoupon_validatePharmaCoupon } from 'graphql/types/validatePharmaCoupon';
+import { removeFromCartTracking } from 'webEngageTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -198,7 +199,7 @@ type MedicineListingCardProps = {
 
 export const MedicineListingCard: React.FC<MedicineListingCardProps> = (props) => {
   const classes = useStyles({});
-  const { cartItems, removeCartItem, updateCartItemQty } = useShoppingCart();
+  const { cartItems, removeCartItemSku, updateCartItemQty } = useShoppingCart();
   const { validateCouponResult } = props;
 
   return (
@@ -206,7 +207,10 @@ export const MedicineListingCard: React.FC<MedicineListingCardProps> = (props) =
       {/** medice card normal state */}
       {cartItems &&
         cartItems.map((item, idx) => {
-          const options = Array.from(Array(item.MaxOrderQty || 20), (_, x) => x + 1);
+          const options = Array.from(
+            Array(Number(item.MaxOrderQty) || process.env.PHARMACY_MEDICINE_QUANTITY),
+            (_, x) => x + 1
+          );
           return (
             <div
               key={item.id}
@@ -363,6 +367,18 @@ export const MedicineListingCard: React.FC<MedicineListingCardProps> = (props) =
                 <div className={classes.addToCart}>
                   <AphButton
                     onClick={() => {
+                      removeFromCartTracking({
+                        productName: item.name,
+                        cartSize: cartItems.length,
+                        productId: item.sku,
+                        brand: '',
+                        brandId: '',
+                        categoryName: '',
+                        categoryId: '',
+                        discountedPrice: item.special_price,
+                        price: item.price,
+                        quantity: item.quantity,
+                      });
                       /**Gtm code start  */
                       gtmTracking({
                         category: 'Pharmacy',
@@ -387,7 +403,7 @@ export const MedicineListingCard: React.FC<MedicineListingCardProps> = (props) =
                         },
                       });
                       /**Gtm code End  */
-                      removeCartItem && removeCartItem(item.id);
+                      removeCartItemSku && removeCartItemSku(item.sku);
                     }}
                   >
                     <img

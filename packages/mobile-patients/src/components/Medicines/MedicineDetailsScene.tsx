@@ -329,10 +329,21 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   const medicineName = medicineDetails.name;
   const scrollViewRef = React.useRef<KeyboardAwareScrollView>(null);
   const cartItemsCount = cartItems.length + diagnosticCartItems.length;
+  const movedFrom = props.navigation.getParam('movedFrom');
 
   useEffect(() => {
     if (!_deliveryError) {
       fetchDeliveryTime();
+    }
+
+    if (typeof movedFrom !== 'undefined') {
+      // webengage event when page is opened from different sources
+      const eventAttributes: WebEngageEvents[WebEngageEventName.PRODUCT_PAGE_VIEWED] = {
+        source: movedFrom,
+        ProductId: sku,
+        ProductName: medicineName,
+      };
+      postWebEngageEvent(WebEngageEventName.PRODUCT_PAGE_VIEWED, eventAttributes);
     }
   }, []);
 
@@ -429,6 +440,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     };
     postWebEngageEvent(WebEngageEventName.PRODUCT_DETAIL_PINCODE_CHECK, eventAttributes);
     const unServiceableMsg = 'Sorry, not serviceable in your area.';
+    const pincodeServiceableItemOutOfStockMsg = 'Sorry, this item is out of stock in your area.';
     const genericServiceableDate = moment()
       .add(2, 'days')
       .set('hours', 20)
@@ -467,7 +479,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
             setdeliveryTime(deliveryDate);
             setdeliveryError('');
           } else {
-            setdeliveryError(unServiceableMsg);
+            setdeliveryError(pincodeServiceableItemOutOfStockMsg);
             setdeliveryTime('');
           }
         } else {
@@ -535,7 +547,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
 
     return (
       <StickyBottomComponent style={{ height: 'auto' }} defaultBG>
-        {!deliveryTime || deliveryError || isOutOfStock ? (
+        {!showDeliverySpinner && !deliveryTime || deliveryError || isOutOfStock ? (
           <View
             style={{
               paddingTop: 8,
@@ -702,6 +714,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   };
 
   const renderTopView = () => {
+    const imagesListLength = g(medicineDetails, 'image', 'length');
     return (
       <View style={styles.mainView}>
         <View
@@ -718,20 +731,22 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
             <TouchableOpacity
               activeOpacity={1}
               style={styles.imageView}
-              onPress={() =>
-                !!medicineDetails.image
-                  ? props.navigation.navigate(AppRoutes.ImageSliderScreen, {
-                      images: [AppConfig.Configuration.IMAGES_BASE_URL[0] + medicineDetails.image],
-                      heading: medicineDetails.name,
-                    })
-                  : {}
-              }
+              onPress={() => {
+                if (imagesListLength) {
+                  props.navigation.navigate(AppRoutes.ImageSliderScreen, {
+                    images: (g(medicineDetails, 'image') || []).map(
+                      (imgPath) => `${AppConfig.Configuration.IMAGES_BASE_URL[0]}${imgPath}`
+                    ),
+                    heading: medicineDetails.name,
+                  });
+                }
+              }}
             >
-              {!!medicineDetails.image ? (
+              {!!imagesListLength ? (
                 <Image
                   placeholderStyle={theme.viewStyles.imagePlaceholderStyle}
                   source={{
-                    uri: AppConfig.Configuration.IMAGES_BASE_URL[0] + medicineDetails.image,
+                    uri: `${AppConfig.Configuration.IMAGES_BASE_URL[0]}${medicineDetails.image[0]}`,
                   }}
                   style={styles.doctorImage}
                 />
@@ -739,7 +754,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
                 renderIconOrImage(medicineDetails)
               )}
             </TouchableOpacity>
-            {!!medicineDetails.image && (
+            {!!imagesListLength && (
               <View style={{ alignItems: 'center' }}>
                 <Text
                   style={[
@@ -747,7 +762,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
                     { paddingTop: 8, marginLeft: 20 },
                   ]}
                 >
-                  1 PHOTO
+                  {`${imagesListLength} PHOTO${imagesListLength > 1 ? 'S' : ''}`}
                 </Text>
               </View>
             )}

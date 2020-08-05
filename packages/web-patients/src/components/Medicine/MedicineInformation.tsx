@@ -5,7 +5,12 @@ import { AphButton, AphTextField, AphCustomDropdown } from '@aph/web-ui-componen
 import Scrollbars from 'react-custom-scrollbars';
 
 import { NotifyMeNotification } from './NotifyMeNotification';
-import { notifyMeTracking, pharmacyPdpPincodeTracking } from 'webEngageTracking';
+import {
+  notifyMeTracking,
+  pharmacyPdpPincodeTracking,
+  addToCartTracking,
+  buyNowTracking,
+} from 'webEngageTracking';
 import { SubstituteDrugsList } from 'components/Medicine/SubstituteDrugsList';
 import { MedicineProductDetails, MedicineProduct } from '../../helpers/MedicineApiCalls';
 import { useParams } from 'hooks/routerHooks';
@@ -20,11 +25,12 @@ import {
   NO_SERVICEABLE_MESSAGE,
   getDiffInDays,
   TAT_API_TIMEOUT_IN_MILLI_SEC,
+  OUT_OF_STOCK_MESSAGE,
+  findAddrComponents,
 } from 'helpers/commonHelpers';
 import { checkServiceAvailability } from 'helpers/MedicineApiCalls';
 import moment from 'moment';
 import { Alerts } from 'components/Alerts/Alerts';
-import { findAddrComponents } from 'helpers/commonHelpers';
 import { CartTypes } from 'components/MedicinesCartProvider';
 import _lowerCase from 'lodash/lowerCase';
 import { useAllCurrentPatients } from 'hooks/authHooks';
@@ -326,7 +332,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
   const [isSubDrugsPopoverOpen, setIsSubDrugsPopoverOpen] = React.useState<boolean>(false);
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
   const [substitutes, setSubstitutes] = React.useState<MedicineProductDetails[] | null>(null);
-  const params = useParams<{ sku: string }>();
+  const params = useParams<{ sku: string; searchText: string }>();
   const [pinCode, setPinCode] = React.useState<string>('');
   const [deliveryTime, setDeliveryTime] = React.useState<string>('');
   const [updateMutationLoading, setUpdateMutationLoading] = useState<boolean>(false);
@@ -361,8 +367,10 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
       .then(({ data }) => {
         try {
           if (data) {
-            if (data.products && data.products.length > 0) {
-              setSubstitutes(data.products);
+            if (data.products && data.products.length > 1) {
+              setSubstitutes(
+                data.products.filter((sub: MedicineProductDetails) => sub.url_key !== params.sku)
+              );
             }
           }
         } catch (error) {
@@ -478,7 +486,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                 }
               } else {
                 setDeliveryTime('');
-                setErrorMessage(NO_SERVICEABLE_MESSAGE);
+                setErrorMessage(OUT_OF_STOCK_MESSAGE);
               }
             } else if (
               typeof res.data.errorMSG === 'string' ||
@@ -537,7 +545,10 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
   };
   const isSmallScreen = useMediaQuery('(max-width:767px)');
 
-  const options = Array.from(Array(data.MaxOrderQty || 20), (_, x) => x + 1);
+  const options = Array.from(
+    Array(Number(data.MaxOrderQty) || process.env.PHARMACY_MEDICINE_QUANTITY),
+    (_, x) => x + 1
+  );
   return (
     <div className={classes.root}>
       <div className={`${classes.medicineSection}`}>
@@ -757,6 +768,18 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                         quantity: medicineQty,
                         isShippable: true,
                       };
+                      addToCartTracking({
+                        productName: data.name,
+                        source: 'Pharmacy PDP',
+                        productId: data.sku,
+                        brand: '',
+                        brandId: '',
+                        categoryName: params.searchText || '',
+                        categoryId: data.category_id,
+                        discountedPrice: data.special_price || data.price,
+                        price: data.price,
+                        quantity: 1,
+                      });
                       /**Gtm code start  */
                       gtmTracking({
                         category: 'Pharmacy',
@@ -829,6 +852,18 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                       setTimeout(() => {
                         window.location.href = clientRoutes.medicinesCart();
                       }, 3000);
+                      buyNowTracking({
+                        productName: data.name,
+                        serviceArea: pinCode,
+                        productId: data.sku,
+                        brand: '',
+                        brandId: '',
+                        categoryName: params.searchText || '',
+                        categoryId: data.category_id,
+                        discountedPrice: data.special_price,
+                        price: data.price,
+                        quantity: medicineQty,
+                      });
                     }}
                   >
                     {updateMutationLoading ? (

@@ -2,6 +2,8 @@ import { EntityRepository, Repository, Raw, IsNull, Not } from 'typeorm';
 import { Coupon, ReferralCodesMaster, ReferalCouponMapping } from 'profiles-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
+import { getCache, setCache } from 'profiles-service/database/connectRedis';
+import { ApiConstants } from 'ApiConstants';
 
 @EntityRepository(Coupon)
 export class CouponRepository extends Repository<Coupon> {
@@ -74,35 +76,50 @@ export class CouponRepository extends Repository<Coupon> {
     });
   }
 }
-
+const REDIS_REFERRAL_CODES_MASTER_NAME_KEY_PREFIX: string = 'ReferalCodeMaster:name:';
+const REDIS_REFERRAL_CODES_MASTER_ID_KEY_PREFIX: string = 'ReferalCodeMaster:id:';
 @EntityRepository(ReferralCodesMaster)
 export class ReferralCodesMasterRepository extends Repository<ReferralCodesMaster> {
-  findByReferralCode(name: string) {
-    return this.findOne({
-      where: {
-        name,
-      },
-      relations: ['referalCouponMapping'],
-    }).catch((getCouponsError) => {
-      throw new AphError(AphErrorMessages.GET_REFERRAL_CODE_ERROR, undefined, {
-        getCouponsError,
+  async findByReferralCode(name: string) {
+    const referalCode = await getCache(`${REDIS_REFERRAL_CODES_MASTER_NAME_KEY_PREFIX}${name}`);
+    if (referalCode) {
+      return JSON.parse(referalCode);
+    } else {
+      const referalCodefromDb = await this.findOne({
+        where: { name },
+        relations: ['referalCouponMapping'],
       });
-    });
+      setCache(
+        `${REDIS_REFERRAL_CODES_MASTER_NAME_KEY_PREFIX}${name}`,
+        JSON.stringify(referalCodefromDb),
+        ApiConstants.CACHE_EXPIRATION_14400
+      );
+      return referalCodefromDb;
+    }
   }
 }
 
 @EntityRepository(ReferalCouponMapping)
 export class ReferalCouponMappingRepository extends Repository<ReferalCouponMapping> {
-  findByReferralCodeId(referralcodeid: string) {
-    return this.findOne({
-      where: {
-        referralcodeid,
-      },
-      relations: ['coupon'],
-    }).catch((getCouponsError) => {
-      throw new AphError(AphErrorMessages.GET_REFERRAL_CODE_MAPPING_ERROR, undefined, {
-        getCouponsError,
+  async findByReferralCodeId(referralcodeid: string) {
+    const referalCode = await getCache(
+      `${REDIS_REFERRAL_CODES_MASTER_ID_KEY_PREFIX}${referralcodeid}`
+    );
+    if (referalCode) {
+      return JSON.parse(referalCode);
+    } else {
+      const referalCodefromDb = await this.findOne({
+        where: {
+          referralcodeid,
+        },
+        relations: ['coupon'],
       });
-    });
+      setCache(
+        `${REDIS_REFERRAL_CODES_MASTER_ID_KEY_PREFIX}${referralcodeid}`,
+        JSON.stringify(referalCodefromDb),
+        ApiConstants.CACHE_EXPIRATION_14400
+      );
+      return referalCodefromDb;
+    }
   }
 }

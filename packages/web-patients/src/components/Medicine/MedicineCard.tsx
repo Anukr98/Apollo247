@@ -7,7 +7,7 @@ import { clientRoutes } from 'helpers/clientRoutes';
 import { Link } from 'react-router-dom';
 import { MedicineProduct } from './../../helpers/MedicineApiCalls';
 import { gtmTracking } from '../../gtmTracking';
-import { notifyMeTracking } from '../../webEngageTracking';
+import { notifyMeTracking, addToCartTracking } from '../../webEngageTracking';
 import { NotifyMeNotification } from './NotifyMeNotification';
 import { useParams } from 'hooks/routerHooks';
 import _replace from 'lodash/replace';
@@ -244,6 +244,18 @@ export const MedicineCard: React.FC<MedicineInformationProps> = (props) => {
                             quantity: 1,
                             isShippable: true,
                           };
+                          addToCartTracking({
+                            productName: product.name,
+                            source: 'Pharmacy List',
+                            productId: product.sku,
+                            brand: '',
+                            brandId: '',
+                            categoryName: params.searchText,
+                            categoryId: product.category_id,
+                            discountedPrice: product.special_price,
+                            price: product.price,
+                            quantity: 1,
+                          });
                           /**Gtm code start  */
                           gtmTracking({
                             category: 'Pharmacy',
@@ -377,7 +389,10 @@ export const MedicineCard: React.FC<MedicineInformationProps> = (props) => {
                     <AphButton
                       onClick={() => {
                         const medicineQtyInCart = getQuantity(product);
-                        if (medicineQtyInCart < (product.MaxOrderQty || 20)) {
+                        if (
+                          medicineQtyInCart <
+                          (product.MaxOrderQty || process.env.PHARMACY_MEDICINE_QUANTITY)
+                        ) {
                           const cartItem: MedicineCartItem = {
                             MaxOrderQty: product.MaxOrderQty,
                             url_key: product.url_key,
