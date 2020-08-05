@@ -46,6 +46,7 @@ const appStaticVariables = {
   TAT_UNSERVICEABLE_DAY_COUNT: 10, // no. of days upto which cart item is considered as serviceable
   TAT_API_TIMEOUT_IN_SEC: 10,
   PACKAGING_CHARGES: 0,
+  DOCTOR_PARTNER_TEXT: 'Doctor Partners',
   MIN_VALUE_TO_NUDGE_USERS_TO_AVAIL_FREE_DELIVERY: 0,
   EXOTEL_CALL_API_URL:
     'https://157e9636faf8c1b7296a749deb8789fa84314b27598eb7a9:82ac24fd451cbf85373a4ea90f083c9d321040ee9c3d26ed@api.exotel.com/v1/Accounts/apollo2471/Calls/connect.json',
