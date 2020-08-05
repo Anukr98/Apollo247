@@ -17,6 +17,11 @@ import { format, addDays, differenceInMinutes } from 'date-fns';
 import { getCache, setCache } from 'profiles-service/database/connectRedis';
 import { ApiConstants } from 'ApiConstants';
 
+interface PaginateParams {
+  take?: number,
+  skip?: number
+}
+
 const REDIS_ORDER_AUTO_ID_KEY_PREFIX: string = 'orderAutoId:';
 @EntityRepository(MedicineOrders)
 export class MedicineOrdersRepository extends Repository<MedicineOrders> {
@@ -235,8 +240,9 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
     });
   }
 
-  getMedicineOrdersList(patientIds: String[]) {
-    return this.find({
+  getMedicineOrdersList(patientIds: String[], paginate: PaginateParams) {
+    // returns [result , total]
+    return this.findAndCount({
       where: { patient: In(patientIds) },
       order: { createdDate: 'DESC' },
       relations: [
@@ -249,11 +255,14 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
         'medicineOrderInvoice',
         'patient',
       ],
+      //extra params...
+      ...paginate
     });
   }
 
-  getMedicineOrdersListWithoutAbortedStatus(patientIds: String[]) {
-    return this.find({
+  getMedicineOrdersListWithoutAbortedStatus(patientIds: String[], paginate: PaginateParams) {
+    // returns [result , total]
+    return this.findAndCount({
       where: { patient: In(patientIds), currentStatus: Not(MEDICINE_ORDER_STATUS.PAYMENT_ABORTED) },
       order: { createdDate: 'DESC' },
       relations: [
@@ -262,7 +271,9 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
         'medicineOrderShipments',
         'medicineOrderShipments.medicineOrderInvoice',
       ],
-    });
+      //extra params...
+      ...paginate
+    })
   }
 
   getMedicineOrdersListWithPayments(patientIds: String[]) {
@@ -321,8 +332,9 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
     });
   }
 
-  getPaymentMedicineOrders() {
-    return this.find({
+  getPaymentMedicineOrders(paginate: PaginateParams) {
+    // returns [result , total]
+    return this.findAndCount({
       where: { currentStatus: MEDICINE_ORDER_STATUS.PAYMENT_SUCCESS },
       relations: [
         'medicineOrderLineItems',
@@ -334,6 +346,8 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
         'medicineOrderInvoice',
         'patient',
       ],
+      //extra params...
+      ...paginate
     });
   }
 
