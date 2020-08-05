@@ -354,7 +354,7 @@ export interface DoctorSearchProps
 export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   // const params = props.navigation.state.params ? props.navigation.state.params!.searchText : '';
   // const MoveDoctor = props.navigation.state.params ? props.navigation.state.params!.MoveDoctor : '';
-
+  const [filtersList, setFiltersList] = useState<any>();
   const [searchText, setSearchText] = useState<string>('');
   const [pastSearch, setPastSearch] = useState<boolean>(true);
   const [needHelp, setNeedHelp] = useState<boolean>(true);
@@ -476,6 +476,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       })
       .then(({ data }) => {
         console.log(data, 'dataaaaa');
+        setFiltersList(data.getDoctorsBySpecialtyAndFilters.filters);
         if (speciality === 'General Physician/ Internal Medicine')
           setGeneralPhysicians && setGeneralPhysicians({ id: id, data: data });
         else if (speciality === 'Urology') {
@@ -1437,6 +1438,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       specialityName: name,
       callSaveSearch: callSaveSearch,
       specialistPluralTerm,
+      filters: filtersList,
     });
   };
 

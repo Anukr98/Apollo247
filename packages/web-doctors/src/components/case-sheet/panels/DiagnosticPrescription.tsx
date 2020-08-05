@@ -623,6 +623,15 @@ export const DiagnosticPrescription: React.FC = () => {
     getSuggestionValue,
     renderSuggestion,
   };
+  const compare = (a: any, b: any) => {
+    if (a.itemname.toLowerCase() < b.itemname.toLowerCase()) {
+      return -1;
+    }
+    if (a.itemname.toLowerCase() > b.itemname.toLowerCase()) {
+      return 1;
+    }
+    return 0;
+  };
   return (
     <Typography component="div" className={classes.contentContainer}>
       <Grid container spacing={1}>
@@ -695,7 +704,7 @@ export const DiagnosticPrescription: React.FC = () => {
               Favorite Tests
             </Typography>
             <div className={classes.favTestContainer}>
-              {favTests.map((favTest: any, id: any) => {
+              {favTests.sort(compare).map((favTest: any, id: any) => {
                 return (
                   <Typography component="div" className={classes.listContainer} key={id}>
                     <Chip

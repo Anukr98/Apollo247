@@ -11,12 +11,19 @@ import {
   MedicineOrderCancelReason,
   MedicineOrderAddress,
   MEDICINE_ORDER_PAYMENT_TYPE,
+  MEDICINE_DELIVERY_TYPE,
 } from 'profiles-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
-import { format, addDays, differenceInMinutes } from 'date-fns';
+import { format, addDays, differenceInMinutes, getUnixTime } from 'date-fns';
 import { getCache, setCache } from 'profiles-service/database/connectRedis';
 import { ApiConstants } from 'ApiConstants';
+import { log } from 'customWinstonLogger';
+
+interface PaginateParams {
+  take?: number,
+  skip?: number
+}
 
 const REDIS_ORDER_AUTO_ID_KEY_PREFIX: string = 'orderAutoId:';
 @EntityRepository(MedicineOrders)
@@ -251,8 +258,9 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
     });
   }
 
-  getMedicineOrdersList(patientIds: String[]) {
-    return this.find({
+  getMedicineOrdersList(patientIds: String[], paginate: PaginateParams) {
+    // returns [result , total]
+    return this.findAndCount({
       where: { patient: In(patientIds) },
       order: { createdDate: 'DESC' },
       relations: [
@@ -265,11 +273,14 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
         'medicineOrderInvoice',
         'patient',
       ],
+      //extra params...
+      ...paginate
     });
   }
 
-  getMedicineOrdersListWithoutAbortedStatus(patientIds: String[]) {
-    return this.find({
+  getMedicineOrdersListWithoutAbortedStatus(patientIds: String[], paginate: PaginateParams) {
+    // returns [result , total]
+    return this.findAndCount({
       where: { patient: In(patientIds), currentStatus: Not(MEDICINE_ORDER_STATUS.PAYMENT_ABORTED) },
       order: { createdDate: 'DESC' },
       relations: [
@@ -278,7 +289,9 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
         'medicineOrderShipments',
         'medicineOrderShipments.medicineOrderInvoice',
       ],
-    });
+      //extra params...
+      ...paginate
+    })
   }
 
   getMedicineOrdersListWithPayments(patientIds: String[]) {
@@ -337,8 +350,9 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
     });
   }
 
-  getPaymentMedicineOrders() {
-    return this.find({
+  getPaymentMedicineOrders(paginate: PaginateParams) {
+    // returns [result , total]
+    return this.findAndCount({
       where: { currentStatus: MEDICINE_ORDER_STATUS.PAYMENT_SUCCESS },
       relations: [
         'medicineOrderLineItems',
@@ -350,6 +364,8 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
         'medicineOrderInvoice',
         'patient',
       ],
+      //extra params...
+      ...paginate
     });
   }
 
@@ -612,4 +628,109 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
       ],
     });
   }
+
+  getMedicineOrderWithPaymentAndShipments(orderAutoId: number) {
+    return this.findOne({
+      where: { orderAutoId },
+      relations: [
+        'patient',
+        'medicineOrderPayments',
+        'medicineOrderShipments',
+        'medicineOrderShipments.medicineOrdersStatus',
+      ],
+    });
+  }
+  
+  async getOfflineOrderDetails(patientId: string, uhid: string, billNumber: string) {
+    if (!uhid) {
+      throw new AphError(AphErrorMessages.INVALID_UHID, undefined, {});
+    }
+    let medicineOrderDetails: any = '';
+    if (process.env.NODE_ENV == 'local') uhid = ApiConstants.CURRENT_UHID.toString();
+    else if (process.env.NODE_ENV == 'dev') uhid = ApiConstants.CURRENT_UHID.toString();
+    const ordersResp = await fetch(
+      process.env.PRISM_GET_OFFLINE_ORDERS ? process.env.PRISM_GET_OFFLINE_ORDERS + uhid : '',
+      {
+        method: 'GET',
+        headers: {},
+      }
+    );
+    const textRes = await ordersResp.text();
+    const offlineOrdersList = JSON.parse(textRes);
+    //console.log(offlineOrdersList.response, offlineOrdersList.response.length, 'offlineOrdersList');
+    log(
+      'profileServiceLogger',
+      `PRISM_GET_OFFLINE_ORDERS_RESP:${uhid}`,
+      'getMedicineOrderOMSDetailsWithAddress',
+      JSON.stringify(offlineOrdersList),
+      ''
+    );
+    if (offlineOrdersList.errorCode == 0) {
+      //const orderDate = fromUnixTime(offlineOrdersList.response[0].billDateTime)
+      offlineOrdersList.response.forEach((order: any) => {
+        if (order.billNo == billNumber) {
+          const lineItems: any[] = [];
+          if (order.lineItems) {
+            order.lineItems.forEach((item: any) => {
+              const itemDets = {
+                isMedicine: 1,
+                medicineSKU: item.itemId,
+                medicineName: item.itemName,
+                mrp: item.mrp,
+                mou: 1,
+                price: item.totalMrp,
+                quantity: item.saleQty,
+                isPrescriptionNeeded: 0,
+              };
+              lineItems.push(itemDets);
+            });
+          }
+          const offlineShopAddress = {
+            storename: order.siteName,
+            address: order.address,
+            workinghrs: '24 Hrs',
+            phone: order.mobileNo,
+            city: order.city,
+            state: order.state,
+            zipcode: '500033',
+            stateCode: 'TS',
+          };
+          const offlineList: any = {
+            id: ApiConstants.OFFLINE_ORDERID,
+            orderAutoId: order.id,
+            shopAddress: JSON.stringify(offlineShopAddress),
+            createdDate:
+              format(getUnixTime(order.billDateTime) * 1000, 'yyyy-MM-dd') +
+              'T' +
+              format(getUnixTime(order.billDateTime) * 1000, 'hh:mm:ss') +
+              '.000Z',
+            billNumber: order.billNo,
+            medicineOrderLineItems: lineItems,
+            currentStatus: MEDICINE_ORDER_STATUS.PURCHASED_IN_STORE,
+            orderType: MEDICINE_ORDER_TYPE.CART_ORDER,
+            patientId: patientId,
+            deliveryType: MEDICINE_DELIVERY_TYPE.STORE_PICKUP,
+            estimatedAmount: order.mrpTotal,
+            productDiscount: order.discountTotal,
+            redeemedAmount: order.giftTotal,
+            medicineOrdersStatus: [
+              {
+                id: ApiConstants.OFFLINE_ORDERID,
+                statusDate:
+                  format(getUnixTime(order.billDateTime) * 1000, 'yyyy-MM-dd') +
+                  'T' +
+                  format(getUnixTime(order.billDateTime) * 1000, 'hh:mm:ss') +
+                  '.000Z',
+                orderStatus: MEDICINE_ORDER_STATUS.PURCHASED_IN_STORE,
+                hideStatus: true,
+              },
+            ],
+            medicineOrderShipments: [],
+          };
+          medicineOrderDetails = offlineList;
+        }
+      });
+    }
+    return medicineOrderDetails;
+  };
 }

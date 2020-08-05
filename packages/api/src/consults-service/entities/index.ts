@@ -381,6 +381,12 @@ export class Appointment extends BaseEntity {
   )
   appointmentDocuments: AppointmentDocuments[];
 
+  @OneToMany(
+    (type) => ConsultQueueItem,
+    (consultQueueItem) => consultQueueItem.appointment
+  )
+  consultQueueItem: ConsultQueueItem[];
+
   @OneToMany((type) => AuditHistory, (auditHistory) => auditHistory.appointment)
   auditHistory: AuditHistory[];
 
@@ -965,7 +971,7 @@ export class ConsultQueueItem extends BaseEntity {
   @Column()
   appointmentId: string;
 
-  @ManyToOne((type) => Appointment, (appointment) => appointment.transferAppointmentDetails)
+  @ManyToOne((type) => Appointment, (appointment) => appointment.consultQueueItem)
   appointment: Appointment;
 
   @Column()

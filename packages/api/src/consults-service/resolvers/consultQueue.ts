@@ -46,7 +46,7 @@ export const consultQueueTypeDefs = gql`
   }
 
   extend type Query {
-    getConsultQueue(doctorId: String!, isActive: Boolean!): GetConsultQueueResult!
+    getConsultQueue(doctorId: String!, isActive: Boolean): GetConsultQueueResult!
   }
 
   type JuniorDoctorsList {
