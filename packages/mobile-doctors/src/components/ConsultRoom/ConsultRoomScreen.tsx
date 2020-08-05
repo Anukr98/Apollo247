@@ -455,10 +455,16 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         variables: {
           doctorConsultEventInput: {
             consultID: channel,
-            consultMode: g(caseSheet, 'caseSheetDetails', 'consultType') as ConsultMode,
+            consultMode: (appointmentData.appointmentType ||
+              g(caseSheet, 'caseSheetDetails', 'appointment', 'appointmentType') ||
+              ConsultMode.BOTH) as ConsultMode,
             displayId:
-              g(caseSheet, 'caseSheetDetails', 'appointment', 'displayId') ||
-              appointmentData.displayId ||
+              (
+                appointmentData.displayId ||
+                g(caseSheet, 'caseSheetDetails', 'appointment', 'displayId') ||
+                ''
+              ).toString() ||
+              appointmentData.displayId.toString() ||
               '',
             doctorFullName:
               g(doctorDetails, 'fullName') ||
