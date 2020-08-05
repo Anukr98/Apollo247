@@ -737,6 +737,25 @@ export const GET_CASESHEET = gql`
           appointmentType
           displayId
           doctorId
+          doctorInfo {
+            id
+            fullName
+            doctorType
+            mobileNumber
+            onlineStatus
+            onlineConsultationFees
+            physicalConsultationFees
+            doctorHospital {
+              facility {
+                id
+                facilityType
+              }
+            }
+            specialty {
+              id
+              name
+            }
+          }
           hospitalId
           patientId
           parentId
@@ -1649,6 +1668,16 @@ export const EXO_TEL_CALL = gql`
       to
       response
       errorMessage
+    }
+  }
+`;
+
+export const POST_WEB_ENGAGE = gql`
+  mutation postDoctorConsultEvent($doctorConsultEventInput: DoctorConsultEventInput) {
+    postDoctorConsultEvent(doctorConsultEventInput: $doctorConsultEventInput) {
+      response {
+        status
+      }
     }
   }
 `;
