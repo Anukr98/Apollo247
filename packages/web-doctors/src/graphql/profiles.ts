@@ -16,6 +16,15 @@ export const GET_PATIENTS = gql`
     }
   }
 `;
+export const POST_WEB_ENGAGE = gql`
+  mutation PostDoctorConsultEvent($doctorConsultEventInput: DoctorConsultEventInput) {
+    postDoctorConsultEvent(doctorConsultEventInput: $doctorConsultEventInput) {
+      response {
+        status
+      }
+    }
+  }
+`;
 export const GET_ALL_SPECIALTIES = gql`
   query GetAllSpecialties {
     getAllSpecialties {
@@ -124,6 +133,7 @@ export const GET_DOCTOR_DETAILS = gql`
       experience
       firebaseToken
       firstName
+      fullName
       isActive
       id
       languages

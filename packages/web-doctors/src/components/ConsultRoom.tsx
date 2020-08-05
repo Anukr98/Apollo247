@@ -15,7 +15,7 @@ import DialogContentText from '@material-ui/core/DialogContentText';
 import { AddChatDocument, AddChatDocumentVariables } from 'graphql/types/AddChatDocument';
 import { ADD_CHAT_DOCUMENT } from 'graphql/profiles';
 import { useApolloClient } from 'react-apollo-hooks';
-import { REQUEST_ROLES } from 'graphql/types/globalTypes';
+import { REQUEST_ROLES, WebEngageEvent } from 'graphql/types/globalTypes';
 import { GetCaseSheet_getCaseSheet_caseSheetDetails_appointment_appointmentDocuments as appointmentDocument } from 'graphql/types/GetCaseSheet';
 import { useAuth } from 'hooks/authHooks';
 import ReactPanZoom from 'react-image-pan-zoom-rotate';
@@ -370,6 +370,8 @@ interface ConsultRoomProps {
   sessionClient: any;
   lastMsg: any;
   messages: MessagesObjectProps[];
+  postDoctorConsultEventAction: (eventType: WebEngageEvent) => void;
+  appointmentStatus: string;
 }
 
 let timerIntervalId: any;
@@ -514,6 +516,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       (status: any, response: any) => {
         setMessageText('');
         srollToBottomAction();
+        if(props.appointmentStatus === 'COMPLETED'){
+          props.postDoctorConsultEventAction(WebEngageEvent.DOCTOR_SENT_MESSAGE);
+        }
       }
     );
   };
@@ -607,6 +612,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       },
       (status: any, response: any) => {
         resetMessagesAction();
+        if(props.appointmentStatus === 'COMPLETED'){
+          props.postDoctorConsultEventAction(WebEngageEvent.DOCTOR_SENT_MESSAGE);
+        }
       }
     );
   };

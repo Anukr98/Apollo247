@@ -26,6 +26,9 @@ import {
   STATUS,
   DEVICETYPE,
   BOOKINGSOURCE,
+  WebEngageEvent,
+  ConsultMode,
+  DoctorConsultEventInput
 } from 'graphql/types/globalTypes';
 import {
   GetJuniorDoctorCaseSheet,
@@ -64,8 +67,10 @@ import {
   CREATE_CASESHEET_FOR_SRD,
   MODIFY_CASESHEET,
   UPDATE_PATIENT_PRESCRIPTIONSENTSTATUS,
+  POST_WEB_ENGAGE
 } from 'graphql/profiles';
 import { ModifyCaseSheet, ModifyCaseSheetVariables } from 'graphql/types/ModifyCaseSheet';
+import { PostDoctorConsultEvent, PostDoctorConsultEventVariables } from 'graphql/types/PostDoctorConsultEvent';
 import { CircularProgress } from '@material-ui/core';
 import {
   GetCaseSheet,
@@ -304,7 +309,6 @@ export const ConsultTabs: React.FC = () => {
   const params = useParams<Params>();
   const paramId = params.id;
   const { currentPatient, isSignedIn, sessionClient } = useAuth();
-
   const mutationCreateSrdCaseSheet = useMutation<
     CreateSeniorDoctorCaseSheet,
     CreateSeniorDoctorCaseSheetVariables
@@ -485,6 +489,59 @@ export const ConsultTabs: React.FC = () => {
       pubnub.unsubscribe({ channels: [appointmentId] });
     };
   }, []);
+  const postDoctorConsultEventAction = (eventType: WebEngageEvent) =>{
+    let consultTypeMode: ConsultMode = ConsultMode.BOTH;
+    if(consultType.includes(ConsultMode.ONLINE)){
+      consultTypeMode = ConsultMode.ONLINE;
+    }else if(consultType.includes(ConsultMode.PHYSICAL)){
+      consultTypeMode = ConsultMode.PHYSICAL;
+    }
+    const displayId = isSecretary
+    ? casesheetInfo!.getJuniorDoctorCaseSheet!.caseSheetDetails!.appointment!.displayId
+    : casesheetInfo!.getCaseSheet!.caseSheetDetails!.appointment!.displayId;
+    
+    const inputParam: DoctorConsultEventInput = {
+      mobileNumber: currentPatient && currentPatient.mobileNumber ? currentPatient.mobileNumber : '',
+      eventName: eventType,
+      consultID: appointmentId,
+      displayId: displayId,
+      consultMode: consultTypeMode,
+      doctorFullName: currentPatient && currentPatient.mobileNumber ? currentPatient.fullName : '',
+    };
+    client
+      .mutate<PostDoctorConsultEvent, PostDoctorConsultEventVariables>({
+        mutation: POST_WEB_ENGAGE,
+        variables: {
+          doctorConsultEventInput: inputParam
+        },
+      })
+      .then((_data: any) => {
+        console.log(`${eventType} webengage event registerd.`)
+      })
+      .catch((e: any) => {
+        console.log(`${eventType} webengage event registration failed.`)
+        const patientName =
+          casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.firstName +
+          ' ' +
+          casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.lastName;
+        const logObject = {
+          api: 'PostDoctorConsultEvent',
+          inputParam: JSON.stringify(inputParam),
+          appointmentId: appointmentId,
+          doctorId: currentPatient!.id,
+          doctorDisplayName: currentPatient!.displayName,
+          patientId: params.patientId,
+          patientName: patientName,
+          currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
+          appointmentDateTime: moment(new Date(appointmentDateTime)).format(
+            'MMMM DD YYYY h:mm:ss a'
+          ),
+          error: JSON.stringify(error),
+        };
+
+        sessionClient.notify(JSON.stringify(logObject));
+      });
+  }
   const getPrismUrls = (client: ApolloClient<object>, patientId: string, fileIds: string[]) => {
     return new Promise((res, rej) => {
       client
@@ -1588,7 +1645,7 @@ export const ConsultTabs: React.FC = () => {
         alert(errorMessage);
       });
   };
-
+  
   const createSessionAction = () => {
     setSaving(true);
     client
@@ -1876,6 +1933,9 @@ export const ConsultTabs: React.FC = () => {
                         indicator: classes.tabsIndicator,
                       }}
                       onChange={(e, newValue) => {
+                        if(tabValue !== newValue){
+                          postDoctorConsultEventAction(newValue === 0 ? WebEngageEvent.DOCTOR_LEFT_CHAT_WINDOW : WebEngageEvent.DOCTOR_IN_CHAT_WINDOW);
+                        }
                         setTabValue(newValue);
                       }}
                     >
@@ -1915,6 +1975,8 @@ export const ConsultTabs: React.FC = () => {
                           sessionClient={sessionClient}
                           lastMsg={lastMsg}
                           messages={messages}
+                          appointmentStatus={appointmentStatus}
+                          postDoctorConsultEventAction={(eventType: WebEngageEvent) => postDoctorConsultEventAction(eventType)}
                         />
                       </div>
                     </div>
