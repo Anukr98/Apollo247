@@ -128,23 +128,11 @@ export const getMedicineOrdersOMSListTypeDefs = gql`
   }
 
   type MedicineOrderOMSRefunds {
-    refId: String
-    txnId: String
     refundAmount: Float
-    totalRefundAmount: Float
-    comments: String
     refundStatus: REFUND_STATUS
-    paytmRequestStatus: PAYTM_STATUS
     refundId: String
-    txnAmount: Float
-    txnTimestamp: Date
     orderId: String
-    payMethod: String
-    acceptRefundTimestamp: Date
-    userCreditInitiateTimestamp: Date
-    resultCode: String
-    resultMsg: String
-    createdDate: Date 
+    createdDate: Date
   }
 
   enum REFUND_STATUS {
@@ -154,13 +142,6 @@ export const getMedicineOrdersOMSListTypeDefs = gql`
     REFUND_REQUEST_NOT_RAISED
   }
 
-  enum PAYTM_STATUS {
-    TXN_FAILURE
-    PENDING
-    TXN_SUCCESS
-    PAYMENT_ABORTED
-  }
-  
   enum PAYMENT_METHODS_REVERSE {
     DEBIT_CARD
     CREDIT_CARD
