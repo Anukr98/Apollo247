@@ -6,7 +6,7 @@ import {
   // GetPatientAppointments,
   GetPatientAppointments_getPatinetAppointments_patinetAppointments as appointmentDetails,
 } from 'graphql/types/GetPatientAppointments';
-import { DoctorType, APPOINTMENT_STATE } from 'graphql/types/globalTypes';
+import { DoctorType, APPOINTMENT_STATE, APPOINTMENT_TYPE } from 'graphql/types/globalTypes';
 import _isNull from 'lodash/isNull';
 // import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
@@ -94,7 +94,7 @@ const useStyles = makeStyles((theme: Theme) => {
       '& span:last-child': {
         marginLeft: 'auto',
         cursor: 'pointer',
-        display: 'none',
+        display: 'flex',
       },
     },
     appointBooked: {
@@ -295,60 +295,38 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
         <Grid container spacing={2}>
           {props.appointments.map((appointmentDetails, index) => {
             const appointmentId = appointmentDetails.id;
-            const { appointmentState, status } = appointmentDetails;
-
-            // console.log(appointmentDetails);
-            // const firstName =
-            //   appointmentDetails.doctorInfo && appointmentDetails.doctorInfo.firstName
-            //     ? appointmentDetails.doctorInfo.firstName
-            //     : '';
-            // const lastName =
-            //   appointmentDetails.doctorInfo && appointmentDetails.doctorInfo.lastName
-            //     ? appointmentDetails.doctorInfo.lastName
-            //     : '';
-            const fullName =
-              appointmentDetails.doctorInfo && appointmentDetails.doctorInfo.fullName
-                ? appointmentDetails.doctorInfo.fullName
-                : '';
-            const doctorImage =
-              appointmentDetails.doctorInfo && appointmentDetails.doctorInfo.photoUrl
-                ? appointmentDetails.doctorInfo.photoUrl
-                : require('images/no_photo.png');
-            const experience =
-              appointmentDetails.doctorInfo && appointmentDetails.doctorInfo.experience
-                ? appointmentDetails.doctorInfo.experience
-                : '';
+            const {
+              appointmentState,
+              status,
+              appointmentDateTime,
+              doctorId,
+              isConsultStarted,
+            } = appointmentDetails;
+            const {
+              fullName,
+              photoUrl,
+              experience,
+              specialty,
+              doctorHospital,
+            } = appointmentDetails.doctorInfo;
+            const doctorImage = photoUrl || require('images/no_photo.png');
             const specialization =
-              appointmentDetails.doctorInfo &&
-                appointmentDetails.doctorInfo.specialty &&
-                !_isNull(appointmentDetails.doctorInfo.specialty.name)
-                ? appointmentDetails.doctorInfo.specialty.specialistSingularTerm
-                : '';
+              specialty && !_isNull(specialty.name) ? specialty.specialistSingularTerm : '';
             const currentTime = new Date().getTime();
-            const appointmentTime = new Date(appointmentDetails.appointmentDateTime).getTime();
+            const appointmentTime = new Date(appointmentDateTime).getTime();
             const difference = Math.round((appointmentTime - currentTime) / 60000);
             shouldRefreshComponent(difference);
-            const doctorId =
-              appointmentDetails.doctorInfo && appointmentDetails.doctorId
-                ? appointmentDetails.doctorId
-                : '';
-            const isConsultStarted = appointmentDetails.isConsultStarted;
             const day1 = moment(appointmentDetails.appointmentDateTime).add(7, 'days');
             const day2 = moment(new Date());
-            day1.diff(day2, 'days'); // 1
+            // day1.diff(day2, 'days'); // 1
             const comparingDays = () => {
               return day1.diff(day2, 'days') == 0
                 ? 'Today'
                 : day1.diff(day2, 'days') +
-                ' more ' +
-                (day1.diff(day2, 'days') == 1 ? 'day' : 'days');
+                    ' more ' +
+                    (day1.diff(day2, 'days') == 1 ? 'day' : 'days');
             };
-            const clinicList =
-              appointmentDetails &&
-                appointmentDetails.doctorInfo &&
-                appointmentDetails.doctorInfo.doctorHospital
-                ? appointmentDetails.doctorInfo.doctorHospital
-                : [];
+            const clinicList = doctorHospital || [];
             let facilityName = '',
               streetName = '';
             if (
@@ -364,12 +342,6 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                   ? clinicList[0].facility.streetLine1
                   : '';
             }
-            // console.log(facilityName, streetName, 'facility name.....');
-            // console.log(
-            //   'appointment time....',
-            //   appointmentTime,
-            //   new Date(appointmentDetails.appointmentDateTime)
-            // );
             return (
               <Grid item sm={4} xs={12} key={index}>
                 <div
@@ -409,7 +381,7 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                       <div
                         className={`${classes.availability} ${
                           difference <= 15 && difference > 0 ? classes.availableNow : ''
-                          }`}
+                        }`}
                       >
                         {appointmentDetails.appointmentType === 'ONLINE'
                           ? difference <= 15 && difference > 0
@@ -428,29 +400,19 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                       </div>
                       <div className={classes.consultaitonType}>
                         <span>
-                          {appointmentDetails.appointmentType === 'ONLINE'
+                          {appointmentDetails.appointmentType === APPOINTMENT_TYPE.ONLINE
                             ? 'Online Consultation'
                             : `${facilityName}, ${streetName}`}
                         </span>
                         <span>
-                          {appointmentDetails.appointmentType === 'ONLINE' ? (
-                            <img src={require('images/ic_onlineconsult.svg')} alt="" />
+                          {appointmentDetails.appointmentType === APPOINTMENT_TYPE.ONLINE ? (
+                            <img src={require('images/ic-video.svg')} alt="" />
                           ) : (
-                              <img src={require('images/ic_clinicvisit.svg')} alt="" />
-                            )}
+                            <img src={require('images/fa-solid-hospital.svg')} alt="" />
+                          )}
                         </span>
                       </div>
-
-
-                      {/* <div className={classes.consultaitonType}>
-                        <span>
-                          {appointmentDetails.appointmentType !== 'ONLINE'
-                            ? `${facilityName}, ${streetName}`
-                            : ''}
-                        </span>
-                      </div> */}
                     </div>
-
                   </div>
                   <div className={classes.consultChat}>
                     <h3>GO TO CONSULT CHAT ROOM</h3>
@@ -467,23 +429,23 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                         } else {
                           isConsultStarted
                             ? (window.location.href = clientRoutes.chatRoom(
-                              appointmentId,
-                              doctorId
-                            ))
-                            : addConsultToQueue({
-                              variables: {
                                 appointmentId,
-                              },
-                            })
-                              .then((res) => {
-                                window.location.href = clientRoutes.chatRoom(
+                                doctorId
+                              ))
+                            : addConsultToQueue({
+                                variables: {
                                   appointmentId,
-                                  doctorId
-                                );
+                                },
                               })
-                              .catch((e: ApolloError) => {
-                                alert(e);
-                              });
+                                .then((res) => {
+                                  window.location.href = clientRoutes.chatRoom(
+                                    appointmentId,
+                                    doctorId
+                                  );
+                                })
+                                .catch((e: ApolloError) => {
+                                  alert(e);
+                                });
                         }
                       }}
                     >
@@ -496,8 +458,8 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                         You can chat with the doctor for {comparingDays()}
                       </div>
                     ) : (
-                        ''
-                      )}
+                      ''
+                    )}
                   </div>
                 </div>
               </Grid>
