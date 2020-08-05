@@ -1842,7 +1842,11 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           if (isCall) forcelyDisconnect();
         }, 2000);
       }
-      if (isConsultStarted && lastMsg.message && lastMsg.message.message === patientJoinedMeetingRoom) {
+      if (
+        isConsultStarted &&
+        lastMsg.message &&
+        lastMsg.message.message === patientJoinedMeetingRoom
+      ) {
         setPlayRingtone(true);
         setJoinPrompt(true);
       }
@@ -3631,11 +3635,12 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       {/* referral field required popup end */}
 
       {floatingJoinPrompt && (
-        <div 
-          className={classes.floatingJoinPrompt} 
+        <div
+          className={classes.floatingJoinPrompt}
           style={{
             cursor: 'pointer',
-        }}>
+          }}
+        >
           <img
             src={require('images/ic_joinPrompt_white.svg')}
             alt=""
@@ -3656,8 +3661,10 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           {'JOIN'}
         </div>
       )}
+
+      {joinPrompt && <div className={classes.fadedBgJoinPromt}></div>}
+
       {joinPrompt && (
-        <div className={classes.fadedBgJoinPromt}></div>
         <Box boxShadow={5} borderRadius={15} className={classes.joinPrompt}>
           <img
             src={require('images/ic_joinPrompt.svg')}
