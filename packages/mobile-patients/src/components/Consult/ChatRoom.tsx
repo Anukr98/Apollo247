@@ -649,6 +649,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     getAppointmentCount();
     // requestToJrDoctor();
     // updateSessionAPI();
+    setTimeout(() => {
+      CheckDoctorPresentInChat();
+    }, 2000);
   }, []);
 
   useEffect(() => {
