@@ -797,6 +797,10 @@ export async function sendNotification(
         doctorDetails.doctorType
       );
     }
+    let formattedAptDate = format(
+      addMinutes(new Date(appointment.appointmentDateTime), +330),
+      "yyyy-MM-dd hh:mm a"
+    );
     let doctorSMS = ApiConstants.DOCTOR_BOOK_APPOINTMENT_SMS.replace(
       '{0}',
       doctorDetails.firstName
@@ -804,7 +808,7 @@ export async function sendNotification(
     doctorSMS = doctorSMS.replace('{1}', appointment.displayId.toString());
     doctorSMS = doctorSMS.replace('{2}', patientDetails.firstName);
     doctorSMS = doctorSMS
-      .replace('{3}', apptDate.toString())
+      .replace('{3}', formattedAptDate)
       .replace('{4}', doctorDetails.salutation);
     sendNotificationSMS(doctorDetails.mobileNumber, doctorSMS);
   }
@@ -1634,7 +1638,7 @@ export async function sendReminderNotification(
   if (
     pushNotificationInput.notificationType == NotificationType.APPOINTMENT_CASESHEET_REMINDER_15 ||
     pushNotificationInput.notificationType ==
-      NotificationType.APPOINTMENT_CASESHEET_REMINDER_15_VIRTUAL
+    NotificationType.APPOINTMENT_CASESHEET_REMINDER_15_VIRTUAL
   ) {
     if (!(appointment && appointment.id)) {
       throw new AphError(AphErrorMessages.APPOINTMENT_ID_NOT_FOUND);
@@ -2222,7 +2226,7 @@ const testPushNotification: Resolver<
   { deviceToken: String },
   NotificationsServiceContext,
   PushNotificationSuccessMessage | undefined
-> = async (parent, args, {}) => {
+> = async (parent, args, { }) => {
   //initialize firebaseadmin
   const config = {
     credential: firebaseAdmin.credential.applicationDefault(),
