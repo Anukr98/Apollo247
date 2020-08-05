@@ -15,7 +15,7 @@ import { NavigationBottom } from 'components/NavigationBottom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { Banner } from 'components/Covid/Banner';
 import { CheckRiskLevel } from 'components/Covid/CheckRiskLevel';
-import { useAllCurrentPatients, useAuth } from 'hooks/authHooks';
+import { useAllCurrentPatients, useAuth, useLoginPopupState } from 'hooks/authHooks';
 import fetchUtil from 'helpers/fetch';
 import { ManageProfile } from 'components/ManageProfile';
 import { Relation } from 'graphql/types/globalTypes';
@@ -210,6 +210,7 @@ export const covidProtocolLanding: React.FC = (props: any) => {
   const { currentPatient } = useAllCurrentPatients();
   const { isSignedIn, isSigningIn } = useAuth();
   const { allCurrentPatients } = useAllCurrentPatients();
+  const { setIsLoginPopupVisible: setLoginPopupVisible } = useLoginPopupState();
   const onePrimaryUser =
     allCurrentPatients && allCurrentPatients.filter((x) => x.relation === Relation.ME).length === 1;
 
@@ -220,7 +221,14 @@ export const covidProtocolLanding: React.FC = (props: any) => {
   }, []);
 
   useEffect(() => {
-    !isSigningIn && !isSignedIn && props.history.push(clientRoutes.covidLanding());
+    if (!isSigningIn && !isSignedIn) {
+      setLoginPopupVisible(true);
+      const continueURL =
+        typeof window !== 'undefined' &&
+        window.location &&
+        encodeURIComponent(window.location.href);
+      props.history.push(`${clientRoutes.covidLanding()}?continue=${continueURL}`);
+    }
   }, [isSignedIn, isSigningIn]);
 
   const covidProtocolUrl = process.env.COVID_PROTOCOL_URL;

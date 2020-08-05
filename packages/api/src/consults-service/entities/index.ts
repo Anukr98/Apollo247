@@ -13,12 +13,21 @@ import {
   UpdateDateColumn,
   CreateDateColumn,
   AfterUpdate,
+  AfterInsert,
 } from 'typeorm';
 import { Validate, IsDate } from 'class-validator';
 import { DoctorType, ROUTE_OF_ADMINISTRATION } from 'doctors-service/entities';
 import { MobileNumberValidator } from 'validators/entityValidators';
 import { delCache } from 'consults-service/database/connectRedis';
 import { log } from 'customWinstonLogger';
+import {
+  trackWebEngageEventForDoctorReschedules,
+  trackWebEngageEventForDoctorCancellation,
+  trackWebEngageEventForDoctorCallInitiation,
+  trackWebEngageEventForCasesheetUpdate,
+  trackWebEngageEventForCasesheetInsert,
+  trackWebEngageEventForExotelCall,
+} from 'notifications-service/resolvers/webEngageAPI';
 
 export enum APPOINTMENT_UPDATED_BY {
   DOCTOR = 'DOCTOR',
@@ -372,6 +381,12 @@ export class Appointment extends BaseEntity {
   )
   appointmentDocuments: AppointmentDocuments[];
 
+  @OneToMany(
+    (type) => ConsultQueueItem,
+    (consultQueueItem) => consultQueueItem.appointment
+  )
+  consultQueueItem: ConsultQueueItem[];
+
   @OneToMany((type) => AuditHistory, (auditHistory) => auditHistory.appointment)
   auditHistory: AuditHistory[];
 
@@ -388,7 +403,13 @@ export class Appointment extends BaseEntity {
   async dropAppointmentCache() {
     await delCache(`patient:appointment:${this.id}`);
   }
+
+  @AfterUpdate()
+  async trackWebEngageEventForCancellation() {
+    trackWebEngageEventForDoctorCancellation(this);
+  }
 }
+
 //Appointment ends
 
 //AppointmentDocuments starts
@@ -652,6 +673,11 @@ export class AppointmentCallDetails extends BaseEntity {
   @BeforeUpdate()
   updateDateUpdate() {
     this.updatedDate = new Date();
+  }
+
+  @AfterInsert()
+  trackWebEngageEventForCallInitiation() {
+    trackWebEngageEventForDoctorCallInitiation(this);
   }
 }
 
@@ -923,6 +949,16 @@ export class CaseSheet extends BaseEntity {
 
   @Column({ default: AUDIT_STATUS.PENDING })
   auditStatus: AUDIT_STATUS;
+
+  @AfterUpdate()
+  trackWebEngageEventForCasesheetUpdate() {
+    trackWebEngageEventForCasesheetUpdate(this);
+  }
+
+  @AfterInsert()
+  trackWebEngageEventForCasesheetInsert() {
+    trackWebEngageEventForCasesheetInsert(this);
+  }
 }
 //case sheet ends
 
@@ -932,10 +968,10 @@ export class CaseSheet extends BaseEntity {
 @Entity()
 export class ConsultQueueItem extends BaseEntity {
   @Index('ConsultQueueItem_appointmentId')
-  @Column({ nullable: true })
+  @Column()
   appointmentId: string;
 
-  @ManyToOne((type) => Appointment, (appointment) => appointment.transferAppointmentDetails)
+  @ManyToOne((type) => Appointment, (appointment) => appointment.consultQueueItem)
   appointment: Appointment;
 
   @Column()
@@ -1078,6 +1114,11 @@ export class RescheduleAppointmentDetails extends BaseEntity {
   @BeforeInsert()
   updateDateCreation() {
     this.createdDate = new Date();
+  }
+
+  @AfterInsert()
+  async trackWebEngageEventForReschedules() {
+    trackWebEngageEventForDoctorReschedules(this);
   }
 
   @BeforeUpdate()
@@ -1880,6 +1921,11 @@ export class ExotelDetails extends BaseEntity {
 
   @Column({ nullable: true })
   totalCallDuration: number;
+
+  @AfterInsert()
+  trackWebEngageEventForExotelCall() {
+    trackWebEngageEventForExotelCall(this);
+  }
 }
 
 //notification related tables end

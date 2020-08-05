@@ -550,6 +550,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         postHomeFireBaseEvent(FirebaseEventName.BUY_MEDICINES, 'Home Screen');
         postHomeWEGEvent(WebEngageEventName.BUY_MEDICINES, 'Home Screen');
         props.navigation.navigate('MEDICINES', { focusSearch: true });
+        const eventAttributes: WebEngageEvents[WebEngageEventName.HOME_PAGE_VIEWED] = {
+          source: 'app home',
+        };
+        postWebEngageEvent(WebEngageEventName.HOME_PAGE_VIEWED, eventAttributes);
       },
     },
     {
@@ -1027,6 +1031,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                   postHomeFireBaseEvent(FirebaseEventName.BUY_MEDICINES, 'Menu');
                   postHomeWEGEvent(WebEngageEventName.BUY_MEDICINES, 'Menu');
                   CommonLogEvent(AppRoutes.ConsultRoom, 'MEDICINES clicked');
+                  const eventAttributes: WebEngageEvents[WebEngageEventName.HOME_PAGE_VIEWED] = {
+                    source: 'app home',
+                  };
+                  postWebEngageEvent(WebEngageEventName.HOME_PAGE_VIEWED, eventAttributes);
                   props.navigation.navigate('MEDICINES');
                 } else if (i == 3) {
                   postHomeFireBaseEvent(FirebaseEventName.ORDER_TESTS, 'Menu');
@@ -1420,10 +1428,17 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     );
   };
 
-  const onPressReadArticle = () => {
+  const onPressReadArticle = async () => {
+    const deviceToken = (await AsyncStorage.getItem('jwt')) || '';
+    const currentDeviceToken = deviceToken ? JSON.parse(deviceToken) : '';
+    const covidUrlWithPrm = AppConfig.Configuration.COVID_LATEST_ARTICLES_URL
+      .concat('&utm_token=', currentDeviceToken, '&utm_mobile_number=', 
+      currentPatient && g(currentPatient, 'mobileNumber') 
+      ? currentPatient.mobileNumber : "");
+      
     postHomeWEGEvent(WebEngageEventName.LEARN_MORE_ABOUT_CORONAVIRUS);
     props.navigation.navigate(AppRoutes.CovidScan, {
-      covidUrl: AppConfig.Configuration.COVID_LATEST_ARTICLES_URL,
+      covidUrl: covidUrlWithPrm 
     });
   };
 

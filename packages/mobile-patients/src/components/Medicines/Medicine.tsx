@@ -27,6 +27,7 @@ import {
   ShoppingBasketIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
+import { SearchInput } from '@aph/mobile-patients/src/components/ui/SearchInput';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import {
@@ -38,7 +39,10 @@ import {
   GET_RECOMMENDED_PRODUCTS_LIST,
   GET_LATEST_MEDICINE_ORDER,
 } from '@aph/mobile-patients/src/graphql/profiles';
-import { SEARCH_TYPE, MEDICINE_ORDER_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import {
+  SEARCH_TYPE,
+  MEDICINE_ORDER_TYPE,
+} from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   Brand,
   getMedicinePageProducts,
@@ -144,17 +148,33 @@ const styles = StyleSheet.create({
     alignContent: 'center',
     justifyContent: 'center',
   },
+  searchBarSuggestionsViewStyle: {
+    flex: 1,
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    left: 0,
+    top: 76,
+  },
+  searchBarAndSuggestionMainViewStyle: {
+    flex: 1,
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+  },
 });
 
 export interface MedicineProps
   extends NavigationScreenProps<{
     focusSearch?: boolean;
-    showUploadPrescriptionPopup?: boolean;
+    showUploadPrescriptionPopup?: boolean; // using for deeplink
+    showRecommendedSection?: boolean; // using for deeplink
   }> {}
 
 export const Medicine: React.FC<MedicineProps> = (props) => {
   const focusSearch = props.navigation.getParam('focusSearch');
   const showUploadPrescriptionPopup = props.navigation.getParam('showUploadPrescriptionPopup');
+  const showRecommendedSection = props.navigation.getParam('showRecommendedSection');
   const {
     locationDetails,
     pharmacyLocation,
@@ -476,15 +496,24 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               is_prescription_required: item!.isPrescriptionNeeded!,
               name: item!.productName!,
               price: Number(item!.productPrice!),
-              special_price: item!.productSpecialPrice || '',
+              special_price:
+                item!.productSpecialPrice == item!.productPrice! ? '' : item!.productSpecialPrice,
               sku: item!.productSku!,
               type_id:
                 (item!.categoryName || '').toLowerCase().indexOf('pharma') > -1 ? 'Pharma' : 'FMCG',
               mou: item!.mou!,
             } as MedicineProduct)
         );
-      formattedRecommendedProducts.length >= 5 &&
+      if (formattedRecommendedProducts.length >= 5) {
         setRecommendedProducts(formattedRecommendedProducts);
+        showRecommendedSection &&
+          props.navigation.navigate(AppRoutes.SearchByBrand, {
+            category_id: -1,
+            products: formattedRecommendedProducts,
+            title: string.medicine.recommendedForYou,
+            movedFrom: 'home',
+          });
+      }
     } catch (e) {
       CommonBugFender(`${AppRoutes.Medicine}_fetchRecommendedProducts`, e);
     }
@@ -1442,7 +1471,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                     category_id: categoryId,
                     products: categoryId == -1 ? products : null,
                     title: `${title || 'Products'}`.toUpperCase(),
-                    movedFrom: 'widget',
+                    movedFrom: 'home',
                   })
               : undefined
           }
@@ -1623,8 +1652,9 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
     return (
       <>
-        <Input
-          autoFocus={focusSearch}
+        <SearchInput
+          _isSearchFocused={isSearchFocused}
+          autoFocus={focusSearch!}
           onSubmitEditing={() => {
             if (searchText.length > 2) {
               const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_SEARCH_RESULTS] = {
@@ -1642,8 +1672,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             }
           }}
           value={searchText}
-          autoCapitalize="none"
-          spellCheck={false}
           onFocus={() => setSearchFocused(true)}
           onBlur={() => {
             setSearchFocused(false);
@@ -1654,25 +1682,9 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           onChangeText={(value) => {
             onSearchMedicine(value);
           }}
-          autoCorrect={false}
-          rightIcon={isSearchFocused ? rigthIconView : <View />}
+          _rigthIconView={rigthIconView}
           placeholder="Search meds, brands &amp; more"
-          selectionColor={itemsNotFound ? '#02475b' : '#00b38e'}
-          underlineColorAndroid="transparent"
-          placeholderTextColor="rgba(1,48,91, 0.4)"
-          inputStyle={styles.inputStyle}
-          inputContainerStyle={[
-            styles.inputContainerStyle,
-            itemsNotFound ? { borderBottomColor: '#02475b' } : {},
-          ]}
-          rightIconContainerStyle={styles.rightIconContainerStyle}
-          style={styles.style}
-          containerStyle={styles.containerStyle}
-          errorStyle={{
-            ...theme.viewStyles.text('M', 14, '#02475b'),
-            marginHorizontal: 10,
-          }}
-          errorMessage={itemsNotFound ? `Hit enter to search for '${searchText}'` : undefined}
+          _itemsNotFound={itemsNotFound}
         />
       </>
     );
@@ -1807,7 +1819,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           </View>
         ) : (
           !!searchText &&
-          searchText.length > 2 && (
+          searchText.length > 2 &&
+          medicineList.length > 0 && (
             <FlatList
               keyboardShouldPersistTaps="always"
               // contentContainerStyle={{ backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR }}
@@ -1857,7 +1870,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   };
 
   const renderRecommendedProducts = () => {
-    return renderHotSellers('RECOMMENDED FOR YOU', recommendedProducts, -1);
+    return renderHotSellers(string.medicine.recommendedForYou, recommendedProducts, -1);
   };
 
   const renderSections = () => {
@@ -1961,11 +1974,28 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             isSearchFocused && searchText.length > 2 && medicineList.length > 0 ? { flex: 1 } : {},
           ]}
         >
-          <View style={[isSearchFocused ? { flex: 1 } : { flex: 1 }]}>
-            <View style={{ backgroundColor: 'white' }}>{renderSearchBar()}</View>
-            {renderSearchBarAndSuggestions()}
+          <View
+            style={[isSearchFocused ? styles.searchBarAndSuggestionMainViewStyle : { flex: 1 }]}
+          >
+            <View
+              style={{
+                backgroundColor: 'white',
+                position: isSearchFocused ? 'absolute' : 'relative',
+                width: '100%',
+              }}
+            >
+              {renderSearchBar()}
+            </View>
+            <View style={styles.searchBarSuggestionsViewStyle}>
+              {renderSearchBarAndSuggestions()}
+            </View>
           </View>
-          <View style={[isSearchFocused && searchText.length > 2 ? { height: 0 } : {}]}>
+          <View
+            style={[
+              { marginTop: isSearchFocused ? 76 : 0 },
+              isSearchFocused && searchText.length > 2 ? { height: 0, marginTop: 104 } : {},
+            ]}
+          >
             {renderSections()}
           </View>
         </ScrollView>

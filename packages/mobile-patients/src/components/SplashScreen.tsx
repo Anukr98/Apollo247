@@ -185,25 +185,35 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           console.log('Consult');
           getData('Consult', data.length === 2 ? linkId : undefined);
           break;
+
         case 'Medicine':
           console.log('Medicine');
           getData('Medicine', data.length === 2 ? linkId : undefined);
           break;
+
         case 'UploadPrescription':
           getData('UploadPrescription', data.length === 2 ? linkId : undefined);
           break;
+
+        case 'MedicineRecommendedSection':
+          getData('MedicineRecommendedSection');
+          break;
+
         case 'Test':
           console.log('Test');
           getData('Test');
           break;
+
         case 'Speciality':
           console.log('Speciality handleopen');
           if (data.length === 2) getData('Speciality', linkId);
           break;
+
         case 'Doctor':
           console.log('Doctor handleopen');
           if (data.length === 2) getData('Doctor', linkId);
           break;
+
         case 'DoctorSearch':
           console.log('DoctorSearch handleopen');
           getData('DoctorSearch');
@@ -223,26 +233,56 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           console.log('MedicineCart handleopen');
           getData('MedicineCart', data.length === 2 ? linkId : undefined);
           break;
+
         case 'ChatRoom':
           if (data.length === 2) getAppointmentDataAndNavigate(linkId);
           break;
+
         case 'Order':
           if (data.length === 2) getData('Order', linkId);
           break;
+
         case 'MyOrders':
           getData('MyOrders');
           break;
+
         case 'webview':
           if (data.length === 2) {
             let url = data[1].replace('param=', '');
             getData('webview', url);
           }
           break;
+        case 'FindDoctors':
+          if (data.length === 2) getData('FindDoctors', linkId);
+          break;
+
+        case 'HealthRecordsHome':
+          console.log('HealthRecordsHome handleopen');
+          getData('HealthRecordsHome');
+          break;
+
+        case 'ManageProfile':
+          console.log('ManageProfile handleopen');
+          getData('ManageProfile');
+          break;
+
+        case 'OneApolloMembership':
+          getData('OneApolloMembership');
+          break;
+
+        case 'TestDetails':
+          getData('TestDetails', data.length === 2 ? linkId : undefined);
+          break;
+
+        case 'ConsultDetails':
+          getData('ConsultDetails', data.length === 2 ? linkId : undefined);
+          break;
+
         default:
           getData('ConsultRoom', undefined, true);
           // webengage event
           const eventAttributes: WebEngageEvents[WebEngageEventName.HOME_PAGE_VIEWED] = {
-            source: 'Deeplink',
+            source: 'deeplink',
           };
           postWebEngageEvent(WebEngageEventName.HOME_PAGE_VIEWED, eventAttributes);
           break;
@@ -407,6 +447,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         props.navigation.navigate('MEDICINES', { showUploadPrescriptionPopup: true });
         break;
 
+      case 'MedicineRecommendedSection':
+        props.navigation.navigate('MEDICINES', { showRecommendedSection: true });
+        break;
+
       case 'MedicineDetail':
         console.log('MedicineDetail');
         props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
@@ -438,7 +482,14 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         //   specialityId: id ? id : '',
         // });
         break;
-
+      case 'FindDoctors':
+        const cityBrandFilter = id ? id.split('%20') : '';
+        props.navigation.navigate(AppRoutes.DoctorSearchListing, {
+          specialityId: cityBrandFilter[0] ? cityBrandFilter[0] : '',
+          city: cityBrandFilter.length > 1 ? cityBrandFilter[1] : null,
+          brand: cityBrandFilter.length > 2 ? cityBrandFilter[2] : null,
+        });
+        break;
       case 'Doctor':
         props.navigation.navigate(AppRoutes.DoctorDetails, {
           doctorId: id,
@@ -457,7 +508,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           props.navigation.navigate(AppRoutes.SearchByBrand, {
             category_id: itemId,
             title: `${name ? name : 'Products'}`.toUpperCase(),
-            movedFrom: 'deeplink'
+            movedFrom: 'deeplink',
           });
         }
         break;
@@ -478,7 +529,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       case 'Order':
         props.navigation.navigate(AppRoutes.OrderDetailsScene, {
           goToHomeOnBack: true,
-          orderAutoId: id,
+          orderAutoId: isNaN(id) ? '' : id,
+          billNumber: isNaN(id) ? id : '',
         });
         break;
       case 'MyOrders':
@@ -489,6 +541,31 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           url: id,
         });
         break;
+
+      case 'HealthRecordsHome':
+        props.navigation.navigate('HEALTH RECORDS');
+        break;
+
+      case 'ManageProfile':
+        props.navigation.navigate(AppRoutes.ManageProfile);
+        break;
+
+      case 'OneApolloMembership':
+        props.navigation.navigate(AppRoutes.OneApolloMembership);
+        break;
+
+      case 'TestDetails':
+        props.navigation.navigate(AppRoutes.TestDetails, {
+          itemId: id,
+        });
+        break;
+
+      case 'ConsultDetails':
+        props.navigation.navigate(AppRoutes.ConsultDetails, {
+          CaseSheet: id,
+        });
+        break;
+
       default:
         break;
     }

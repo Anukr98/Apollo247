@@ -201,6 +201,7 @@ const INVALID_FILE_SIZE_ERROR = 'Invalid File Size. File size must be less than 
 const INVALID_FILE_TYPE_ERROR =
   'Invalid File Extension. Only files with .jpg, .png or .pdf extensions are allowed.';
 const NO_SERVICEABLE_MESSAGE = 'Sorry, not serviceable in your area';
+const OUT_OF_STOCK_MESSAGE = 'Sorry, this item is out of stock in your area';
 const TAT_API_TIMEOUT_IN_MILLI_SEC = 10000; // in milli sec
 
 const findAddrComponents = (
@@ -382,7 +383,8 @@ const isActualUser = () => {
   const re = new RegExp(botPattern, 'i');
   const userAgent = navigator.userAgent;
   return !re.test(userAgent);
-}
+};
+
 const getStoreName = (storeAddress: string) => {
   const store = JSON.parse(storeAddress);
   return store && store.storename ? _upperFirst(_lowerCase(store.storename)) : '';
@@ -405,6 +407,7 @@ export {
   getDiffInMinutes,
   getDiffInHours,
   NO_SERVICEABLE_MESSAGE,
+  OUT_OF_STOCK_MESSAGE,
   sortByProperty,
   locationRoutesBlackList,
   getDeviceType,
