@@ -90,17 +90,12 @@ export interface AppsFlyerEvents {
   [AppsFlyerEventName.OTP_ENTERED]: YesOrNo;
   [AppsFlyerEventName.PRE_APOLLO_CUSTOMER]: YesOrNo;
   [AppsFlyerEventName.REGISTRATION_DONE]: {
-    'Customer ID': string;
-    'Customer First Name': string;
-    'Customer Last Name': string;
-    'Date of Birth': string;
-    'Patient Gender': string;
-    Email: string;
-    'Referral Code'?: string;
+    'customer id': string;
+    'referral code'?: string;
   };
   [AppsFlyerEventName.NUMBER_OF_PROFILES_FETCHED]: { count: number };
   [AppsFlyerEventName.OTP_VERIFICATION_SUCCESS]: {
-    'Mobile Number': string;
+    'customer id': string;
   };
   // ********** Home Screen Events ********** \\
 
@@ -138,25 +133,12 @@ export interface AppsFlyerEvents {
     'Section Name': string;
   };
   [AppsFlyerEventName.PHARMACY_ADD_TO_CART]: {
-    'product name': string;
-    'product id': string; // (SKUID)
-    Price: number;
-    'Discounted Price': number;
-    Quantity: number;
-    Source: 'Pharmacy Home' | 'Pharmacy PDP' | 'Pharmacy List' | 'Diagnostic';
-    Brand?: string;
-    'Brand ID'?: string;
-    'category name'?: string;
-    'category ID'?: string;
+    'customer id': string;
     af_revenue: number;
     af_currency: string;
-    // 'Patient Name': string;
-    // 'Patient UHID': string;
-    // Relation: string;
-    // 'Patient Age': number;
-    // 'Patient Gender': string;
-    // 'Mobile Number': string;
-    // 'Customer ID': string;
+    item_type: string;
+    brand: string;
+    sku: string;
   };
   [AppsFlyerEventName.DIAGNOSTIC_ADD_TO_CART]: {
     'product name': string;
@@ -261,23 +243,12 @@ export interface AppsFlyerEvents {
     Pincode: string | number;
   };
   [AppsFlyerEventName.PHARMACY_CHECKOUT_COMPLETED]: {
-    'Order ID': string | number;
-    'Order Type': 'Cart' | 'Non Cart';
-    'Prescription Required': boolean;
-    'Prescription Added': boolean;
-    'Shipping information': string; // (Home/Store address)
-    'Total items in cart'?: number; // Optional
-    'Grand Total'?: number; // Optional
-    'Total Discount %'?: number; // Optional
-    'Discount Amount'?: number; // Optional
-    'Delivery charge'?: number; // Optional
-    'Net after discount'?: number; // Optional
-    'Payment status'?: number; // Optional
-    'Payment Type'?: 'COD' | 'Prepaid'; // Optional
-    'Cart ID'?: string | number; // Optional
-    'Service Area': 'Pharmacy' | 'Diagnostic';
+    'customer id': string;
+    'cart size': number;
     af_revenue: number;
     af_currency: string;
+    'order id': string;
+    'coupon applied': boolean;
   };
   [AppsFlyerEventName.DIAGNOSTIC_CHECKOUT_COMPLETED]: {
     'Order ID': string | number;
@@ -311,38 +282,17 @@ export interface AppsFlyerEvents {
   };
   [AppsFlyerEventName.SPECIALITY_CLICKED]: SpecialityClickedEvent;
   [AppsFlyerEventName.BOOK_APPOINTMENT]: {
-    'Doctor Name': string;
-    'Doctor City': string;
-    'Type of Doctor': string;
-    'Doctor Specialty': string;
-    'Patient Name': string;
-    'Patient UHID': string;
-    Relation: string;
-    'Patient Age': number;
-    'Patient Gender': string;
-    'Mobile Number': string;
-    'Customer ID': string;
+    'customer id': string;
   };
   [AppsFlyerEventName.DOCTOR_CLICKED]: {
-    'Doctor Name': string;
-    Source: 'List' | 'Search';
+    'customer id': string;
+    'doctor id': string;
+    'specialty id': string;
   };
   [AppsFlyerEventName.CONSULT_NOW_CLICKED]: {
-    name: string;
-    specialisation: string;
-    experience: number;
-    'language known': string; // Comma separated values
-    Hospital: string;
-    'Available in': string;
-    Source: 'List' | 'Profile'; // List/Profile
-    'Patient Name': string;
-    'Patient UHID': string;
-    Relation: string;
-    'Patient Age': number;
-    'Patient Gender': string;
-    'Mobile Number': number;
-    'Customer ID': string;
-    slot: string;
+    'customer id': string;
+    'doctor id': string;
+    'specialty id': string;
   };
   // confirm the type of data for the below
   [AppsFlyerEventName.CONSULT_SCHEDULE_FOR_LATER_CLICKED]: {
@@ -397,23 +347,14 @@ export interface AppsFlyerEvents {
     consultType: 'clinic' | 'online';
   };
   [AppsFlyerEventName.CONSULTATION_BOOKED]: {
-    'Consult ID': string;
-    name: string;
-    specialisation: string;
-    category: string;
-    time: Date | string;
-    consultType: 'online' | 'clinic';
-    'clinic name': string;
-    'clinic address': string; // whole address
-    'Patient Name': string;
-    'Patient UHID': string;
-    Relation: string;
-    'Patient Age': number;
-    'Patient Gender': string;
-    'Mobile Number': number;
-    'Customer ID': string;
+    'customer id': string;
+    'doctor id': string;
+    'specialty id': string;
+    'consult type': 'online' | 'clinic';
     af_revenue: number;
     af_currency: string;
+    'consult id': string;
+    'coupon applied': boolean;
   };
 
   [AppsFlyerEventName.FEATURED_TEST_CLICKED]: {

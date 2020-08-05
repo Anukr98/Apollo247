@@ -103,7 +103,6 @@ export const ClinicSelection: React.FC<ClinicSelectionProps> = (props) => {
           setStorePickUpLoading(true);
           getPlaceInfoByPincode(key)
             .then((data) => {
-              console.log('locaion data', data);
               const city = (
                 (data.data.results[0].address_components || []).find(
                   (item: any) => item.types.indexOf('locality') > -1
@@ -115,7 +114,6 @@ export const ClinicSelection: React.FC<ClinicSelectionProps> = (props) => {
                 (filterArray = clinics.filter((item) =>
                   item.City.toLowerCase().includes(city.toLowerCase())
                 ));
-              console.log('cityName data', filterArray);
 
               setClinicDetails(filterArray || []);
             })

@@ -1,6 +1,4 @@
-import {
-  DoctorType,
-} from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { DoctorType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 
 type YesOrNo = { value: 'Yes' | 'No' };
 
@@ -74,26 +72,28 @@ export enum FirebaseEventName {
   ONLINE_CONSULTS_CLICKED = 'ONLINE_CONSULTS_CLICKED',
   CLINIC_VISIT_CLICKED = 'CLINIC_VISIT_CLICKED',
 
-    // Payments Events
-    PAYMENT_INSTRUMENT = 'PAYMENT_INSTRUMENT',
-    PAYMENT_STATUS = 'PAYMENT_STATUS',
+  // Payments Events
+  PAYMENT_INSTRUMENT = 'PAYMENT_INSTRUMENT',
+  PAYMENT_STATUS = 'PAYMENT_STATUS',
+
+  PURCHASE = 'purchase',
 }
 
 export interface PatientInfo {
-  'PatientName': string;
-  'PatientUHID': string;
+  PatientName: string;
+  PatientUHID: string;
   Relation: string;
-  'PatientAge': number;
-  'PatientGender': string;
-  'MobileNumber': string;
-  'CustomerID': string;
+  PatientAge: number;
+  PatientGender: string;
+  MobileNumber: string;
+  CustomerID: string;
 }
 
 export interface defaultinfo {
-  'PatientName': string;
-  'PatientUHID': string;
+  PatientName: string;
+  PatientUHID: string;
   Relation: string;
-  'MobileNumber': string;
+  MobileNumber: string;
 }
 
 export interface PatientInfoWithSource extends PatientInfo {
@@ -101,13 +101,13 @@ export interface PatientInfoWithSource extends PatientInfo {
 }
 
 export interface PatientInfoFirebase {
-  'PatientName': string;
-  'PatientUHID': string;
+  PatientName: string;
+  PatientUHID: string;
   Relation: string;
-  'PatientAge': number;
-  'PatientGender': string;
-  'MobileNumber': string;
-  'CustomerID': string;
+  PatientAge: number;
+  PatientGender: string;
+  MobileNumber: string;
+  CustomerID: string;
 }
 
 export interface PatientInfoWithSourceFirebase extends PatientInfoFirebase {
@@ -121,8 +121,8 @@ export interface PatientInfoWithNeedHelp extends PatientInfo {
 }
 
 export interface SpecialityClickedEvent extends PatientInfoFirebase {
-  'SpecialityName': string;
-  'SpecialityID': string;
+  SpecialityName: string;
+  SpecialityID: string;
 }
 
 export interface FirebaseEvents {
@@ -169,41 +169,41 @@ export interface FirebaseEvents {
     Source: 'Pharmacy Home' | 'Pharmacy List';
   };
   [FirebaseEventName.PHARMACY_PRODUCT_CLICKED]: {
-    'productname': string;
-    'productid': string; // (SKUID)
+    productname: string;
+    productid: string; // (SKUID)
     Brand: string;
-    'BrandID': string;
-    'categoryname': string;
-    'categoryID': string;
+    BrandID: string;
+    categoryname: string;
+    categoryID: string;
     Source: 'Home' | 'List' | 'Search';
-    'SectionName': string;
+    SectionName: string;
   };
   [FirebaseEventName.NOTIFY_ME]: {
-    'productname': string;
-    'productid': string; // (SKUID)
+    productname: string;
+    productid: string; // (SKUID)
     Brand: string;
-    'BrandID': string;
-    'categoryname': string;
-    'categoryID': string;
+    BrandID: string;
+    categoryname: string;
+    categoryID: string;
   };
 
   [FirebaseEventName.CATEGORY_CLICKED]: {
-    'categoryname': string;
-    'categoryID': string;
+    categoryname: string;
+    categoryID: string;
     Source: 'Home'; // Home
-    'SectionName': string;
+    SectionName: string;
   };
   [FirebaseEventName.PHARMACY_ADD_TO_CART]: {
-    'productname': string;
-    'productid': string; // (SKUID)
+    productname: string;
+    productid: string; // (SKUID)
     Price: number;
-    'DiscountedPrice': number;
+    DiscountedPrice: number;
     Quantity: number;
     Source: 'Pharmacy Home' | 'Pharmacy PDP' | 'Pharmacy List' | 'Diagnostic';
     Brand?: string;
-    'BrandID'?: string;
-    'categoryname'?: string;
-    'categoryID'?: string;
+    BrandID?: string;
+    categoryname?: string;
+    categoryID?: string;
     // 'Patient Name': string;
     // 'Patient UHID': string;
     // Relation: string;
@@ -213,16 +213,16 @@ export interface FirebaseEvents {
     // 'Customer ID': string;
   };
   [FirebaseEventName.DIAGNOSTIC_ADD_TO_CART]: {
-    'productname': string;
-    'productid': string; // (SKUID)
+    productname: string;
+    productid: string; // (SKUID)
     Price: number;
-    'DiscountedPrice': number;
+    DiscountedPrice: number;
     Quantity: number;
     Source: 'Pharmacy Home' | 'Pharmacy PDP' | 'Pharmacy List' | 'Diagnostic';
     Brand?: string;
-    'BrandID'?: string;
-    'categoryname'?: string;
-    'categoryID'?: string;
+    BrandID?: string;
+    categoryname?: string;
+    categoryID?: string;
     // 'Patient Name': string;
     // 'Patient UHID': string;
     // Relation: string;
@@ -232,74 +232,74 @@ export interface FirebaseEvents {
     // 'Customer ID': string;
   };
   [FirebaseEventName.BUY_NOW]: {
-    'productname': string;
-    'productid': string; // (SKUID)
+    productname: string;
+    productid: string; // (SKUID)
     Brand: string;
-    'BrandID': string;
-    'categoryname': string;
-    'categoryID': string;
+    BrandID: string;
+    categoryname: string;
+    categoryID: string;
     Price: number;
-    'DiscountedPrice': number;
+    DiscountedPrice: number;
     Quantity: number;
-    'ServiceArea': 'Pharmacy' | 'Diagnostic';
+    ServiceArea: 'Pharmacy' | 'Diagnostic';
   };
   [FirebaseEventName.PHARMACY_CART_VIEWED]: {
-    'TotalItemsInCart': number;
-    'SubTotal': number;
-    'Deliverycharge': number;
-    'CouponCodeUsed'?: string;
-    'TotalDiscount': number;
-    'NetAfterDiscount': number;
+    TotalItemsInCart: number;
+    SubTotal: number;
+    Deliverycharge: number;
+    CouponCodeUsed?: string;
+    TotalDiscount: number;
+    NetAfterDiscount: number;
     'PrescriptionNeeded?': boolean;
-    'CartID'?: string;
-    'CartItems': object[];
-    'ServiceArea': 'Pharmacy' | 'Diagnostic';
+    CartID?: string;
+    CartItems: object[];
+    ServiceArea: 'Pharmacy' | 'Diagnostic';
   };
   [FirebaseEventName.DIAGNOSTIC_CART_VIEWED]: {
-    'TotalItemsInCart': number;
-    'SubTotal': number;
-    'Deliverycharge': number;
-    'CouponCodeUsed'?: string;
-    'TotalDiscount': number;
-    'NetAfterDiscount': number;
+    TotalItemsInCart: number;
+    SubTotal: number;
+    Deliverycharge: number;
+    CouponCodeUsed?: string;
+    TotalDiscount: number;
+    NetAfterDiscount: number;
     'PrescriptionNeeded?': boolean;
-    'CartID'?: string;
-    'CartItems': object[];
-    'ServiceArea': 'Pharmacy' | 'Diagnostic';
+    CartID?: string;
+    CartItems: object[];
+    ServiceArea: 'Pharmacy' | 'Diagnostic';
   };
   [FirebaseEventName.PHARMACY_PROCEED_TO_PAY_CLICKED]: {
-    'TotalItemsInCart': number;
-    'SubTotal': number;
-    'Deliverycharge': number;
-    'NetAfterDiscount': number;
+    TotalItemsInCart: number;
+    SubTotal: number;
+    Deliverycharge: number;
+    NetAfterDiscount: number;
     'PrescriptionNeeded?': boolean;
-    'CartID'?: string; // we don't have cartId before placing order
-    'ModeOfDelivery': 'Home' | 'Pickup' | 'Home Visit' | 'Clinic Visit';
-    'DeliveryDateTime'?: string; // Optional (only if Home)
-    'PinCode': string | number;
-    'ServiceArea': 'Pharmacy' | 'Diagnostic';
+    CartID?: string; // we don't have cartId before placing order
+    ModeOfDelivery: 'Home' | 'Pickup' | 'Home Visit' | 'Clinic Visit';
+    DeliveryDateTime?: string; // Optional (only if Home)
+    PinCode: string | number;
+    ServiceArea: 'Pharmacy' | 'Diagnostic';
   };
   [FirebaseEventName.DIAGNOSTIC_PROCEED_TO_PAY_CLICKED]: {
-    'TotalItemsInCart': number;
-    'SubTotal': number;
-    'Deliverycharge': number;
-    'NetAfterDiscount': number;
+    TotalItemsInCart: number;
+    SubTotal: number;
+    Deliverycharge: number;
+    NetAfterDiscount: number;
     'PrescriptionNeeded?': boolean;
-    'CartID'?: string; // we don't have cartId before placing order
-    'ModeOfSampleCollection': 'Home' | 'Pickup' | 'Home Visit' | 'Clinic Visit';
-    'DeliveryDateTime'?: string; // Optional (only if Home)
-    'PinCode': string | number;
-    'ServiceArea': 'Pharmacy' | 'Diagnostic';
+    CartID?: string; // we don't have cartId before placing order
+    ModeOfSampleCollection: 'Home' | 'Pickup' | 'Home Visit' | 'Clinic Visit';
+    DeliveryDateTime?: string; // Optional (only if Home)
+    PinCode: string | number;
+    ServiceArea: 'Pharmacy' | 'Diagnostic';
   };
   [FirebaseEventName.PHARMACY_PAYMENT_INITIATED]: {
-    'PaymentMode': 'Online' | 'COD';
+    PaymentMode: 'Online' | 'COD';
     Amount: number;
-    'ServiceArea': 'Pharmacy' | 'Diagnostic';
+    ServiceArea: 'Pharmacy' | 'Diagnostic';
   };
   [FirebaseEventName.DIAGNOSTIC_PAYMENT_INITIATED]: {
-    'PaymentMode': 'Online' | 'COD';
+    PaymentMode: 'Online' | 'COD';
     Amount: number;
-    'ServiceArea': 'Pharmacy' | 'Diagnostic';
+    ServiceArea: 'Pharmacy' | 'Diagnostic';
   };
   [FirebaseEventName.UPLOAD_PRESCRIPTION_CLICKED]: {
     Source: 'Home' | 'Cart';
@@ -352,54 +352,54 @@ export interface FirebaseEvents {
   // ********** ConsultEvents ********** \\
 
   [FirebaseEventName.DOCTOR_SEARCH]: {
-    'SearchText': string;
-    'PatientName': string;
-    'PatientUHID': string;
+    SearchText: string;
+    PatientName: string;
+    PatientUHID: string;
     Relation: string;
-    'PatientAge': number;
-    'PatientGender': string;
-    'MobileNumber': string;
-    'CustomerID': string;
+    PatientAge: number;
+    PatientGender: string;
+    MobileNumber: string;
+    CustomerID: string;
   };
   [FirebaseEventName.SPECIALITY_CLICKED]: SpecialityClickedEvent;
   [FirebaseEventName.BOOK_APPOINTMENT]: {
-    'DoctorName': string;
-    'DoctorCity': string;
-    'TypeOfDoctor': string;
-    'DoctorSpecialty': string;
-    'PatientName': string;
-    'PatientUHID': string;
+    DoctorName: string;
+    DoctorCity: string;
+    TypeOfDoctor: string;
+    DoctorSpecialty: string;
+    PatientName: string;
+    PatientUHID: string;
     Relation: string;
     Age: number;
     Gender: string;
-    'MobileNumber': string;
-    'CustomerID': string;
+    MobileNumber: string;
+    CustomerID: string;
   };
   [FirebaseEventName.DOCTOR_CLICKED]: {
-    'DoctorName': string;
+    DoctorName: string;
     Source: 'List' | 'Search';
-    'DoctorID': string;
-    'SpecialityID': string;
-    'DoctorCategory': DoctorType;
-    'OnlinePrice': number;
-    'PhysicalPrice': number;
-    'DoctorSpeciality': string;
+    DoctorID: string;
+    SpecialityID: string;
+    DoctorCategory: DoctorType;
+    OnlinePrice: number;
+    PhysicalPrice: number;
+    DoctorSpeciality: string;
   };
   [FirebaseEventName.CONSULT_NOW_CLICKED]: {
     name: string;
     specialisation: string;
     experience: number;
-    'LanguageKnown': string; // Comma separated values
+    LanguageKnown: string; // Comma separated values
     Hospital: string;
-    'AvailableIn': string;
+    AvailableIn: string;
     Source: 'List' | 'Profile'; // List/Profile
-    'PatientName': string;
-    'PatientUHID': string;
+    PatientName: string;
+    PatientUHID: string;
     Relation: string;
     Age: number;
     Gender: string;
-    'MobileNumber': number;
-    'CustomerID': string;
+    MobileNumber: number;
+    CustomerID: string;
     slot: string;
   };
   // confirm the type of data for the below
@@ -407,16 +407,16 @@ export interface FirebaseEvents {
     name: string;
     specialisation: string;
     experience: number;
-    'LanguageKnown': string; // Comma separated values
+    LanguageKnown: string; // Comma separated values
     Hospital: string;
     Source: 'List' | 'Profile'; // List/Profile
-    'PatientName': string;
-    'PatientUHID': string;
+    PatientName: string;
+    PatientUHID: string;
     Relation: string;
     Age: number;
     Gender: string;
-    'MobileNumber': number;
-    'CustomerID': string;
+    MobileNumber: number;
+    CustomerID: string;
     slot: string;
   };
   [FirebaseEventName.CONSULT_SLOT_SELECTED]: {
@@ -424,34 +424,34 @@ export interface FirebaseEvents {
     doctorName: string;
     specialisation: string;
     experience: number;
-    'LanguageKnown': string; // Comma separated values
+    LanguageKnown: string; // Comma separated values
     hospital: string;
     consultType: 'clinic' | 'online';
   };
   [FirebaseEventName.CONSULT_COUPON_APPLIED]: {
     CouponCode: string;
-    'NetAmount'?: number;
-    'DiscountAmount'?: number;
-    'CouponApplied': boolean;
+    NetAmount?: number;
+    DiscountAmount?: number;
+    CouponApplied: boolean;
   };
   [FirebaseEventName.PAY_BUTTON_CLICKED]: {
     Amount: number;
-    'DoctorName': string;
-    'DoctorCity': string;
-    'TypeOfDoctor': string;
-    'DoctorSpecialty': string;
-    'AppointmentDate': string;
-    'AppointmentTime': string;
-    'ActualPrice': number;
+    DoctorName: string;
+    DoctorCity: string;
+    TypeOfDoctor: string;
+    DoctorSpecialty: string;
+    AppointmentDate: string;
+    AppointmentTime: string;
+    ActualPrice: number;
     'Discountused ?': boolean;
-    'Discountcoupon'?: string;
-    'DiscountAmount': number;
-    'NetAmount': number;
-    'CustomerID': string;
-    'PatientName': string;
-    'PatientAge': number;
-    'PatientGender': string;
-    'PatientUHID': string;
+    Discountcoupon?: string;
+    DiscountAmount: number;
+    NetAmount: number;
+    CustomerID: string;
+    PatientName: string;
+    PatientAge: number;
+    PatientGender: string;
+    PatientUHID: string;
     consultType: 'clinic' | 'online';
   };
   [FirebaseEventName.CONSULTATION_BOOKED]: {
@@ -474,58 +474,58 @@ export interface FirebaseEvents {
     af_currency: string;
   };
   [FirebaseEventName.RATING_GIVEN]: {
-    'PatientUHID': string;
+    PatientUHID: string;
     Type: 'Consult' | 'Medicine' | 'Diagnostics';
-    'RatingValue': string;
-    'RatingReason': string;
+    RatingValue: string;
+    RatingReason: string;
   };
 
   [FirebaseEventName.FEATURED_TEST_CLICKED]: {
-    'ProductName': string;
-    'ProductIdSKUID': string;
+    ProductName: string;
+    ProductIdSKUID: string;
     Source: 'Home' | 'List';
-    'PatientName': string;
-    'PatientUHID': string;
+    PatientName: string;
+    PatientUHID: string;
     Relation: string;
     Age: number;
     Gender: string;
-    'MobileNumber': string;
-    'CustomerID': string;
+    MobileNumber: string;
+    CustomerID: string;
   };
 
   [FirebaseEventName.BROWSE_PACKAGE]: {
-    'PackageName': string;
+    PackageName: string;
     // Category: string; we don't have category for test
     Source: 'Home' | 'List';
-    'PatientName': string;
-    'PatientUHID': string;
+    PatientName: string;
+    PatientUHID: string;
     Relation: string;
     Age: number;
     Gender: string;
-    'MobileNumber': string;
-    'CustomerID': string;
+    MobileNumber: string;
+    CustomerID: string;
   };
 
   // ********** Health Records ********** \\
 
   [FirebaseEventName.CONSULT_RX]: {
-    'PatientName': string;
-    'PatientUHID': string;
+    PatientName: string;
+    PatientUHID: string;
     Relation: string;
     Age: number;
     Gender: string;
-    'MobileNumber': string;
-    'CustomerID': string;
+    MobileNumber: string;
+    CustomerID: string;
   };
 
   [FirebaseEventName.MEDICAL_RECORDS]: {
-    'PatientName': string;
-    'PatientUHID': string;
+    PatientName: string;
+    PatientUHID: string;
     Relation: string;
     Age: number;
     Gender: string;
-    'MobileNumber': string;
-    'CustomerID': string;
+    MobileNumber: string;
+    CustomerID: string;
   };
 
   [FirebaseEventName.ADD_RECORD]: {
@@ -533,13 +533,13 @@ export interface FirebaseEvents {
   };
 
   [FirebaseEventName.UPLOAD_PRESCRIPTION]: {
-    'PatientName': string;
-    'PatientUHID': string;
+    PatientName: string;
+    PatientUHID: string;
     Relation: string;
     Age: number;
     Gender: string;
-    'MobileNumber': string;
-    'CustomerID': string;
+    MobileNumber: string;
+    CustomerID: string;
   };
 
   [FirebaseEventName.UPLOAD_PHOTO]: {
@@ -552,16 +552,24 @@ export interface FirebaseEvents {
   };
 
   [FirebaseEventName.REORDER_MEDICINES]: {
-    'PatientName': string;
-    'PatientUHID': string;
+    PatientName: string;
+    PatientUHID: string;
     Relation: string;
     Age: number;
     Gender: string;
-    'MobileNumber': string;
-    'CustomerID': string;
+    MobileNumber: string;
+    CustomerID: string;
   };
 
   [FirebaseEventName.IN_APP_PURCHASE]: {
     type: string;
+  };
+
+  [FirebaseEventName.PURCHASE]: {
+    coupon?: string;
+    currency: string;
+    items: any;
+    transaction_id: string;
+    value: number;
   };
 }

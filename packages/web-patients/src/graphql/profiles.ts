@@ -17,6 +17,25 @@ export const GET_PATIENTS = gql`
   }
 `;
 
+export const GET_PATIENT_BY_MOBILE_NUMBER = gql`
+  query GetPatientByMobileNumber($mobileNumber: String) {
+    getPatientByMobileNumber(mobileNumber: $mobileNumber) {
+      patients {
+        id
+        mobileNumber
+        firstName
+        lastName
+        relation
+        gender
+        uhid
+        dateOfBirth
+        emailAddress
+        photoUrl
+      }
+    }
+  }
+`;
+
 export const GET_CURRENT_PATIENTS = gql`
   query GetCurrentPatients {
     getCurrentPatients {
@@ -428,6 +447,61 @@ export const GET_MEDICAL_PRISM_RECORD = gql`
         errorCode
         errorMsg
         errorType
+      }
+    }
+  }
+`;
+export const GET_RECOMMENDED_PRODUCTS_LIST = gql`
+  query getRecommendedProductsList($patientUhid: String!) {
+    getRecommendedProductsList(patientUhid: $patientUhid) {
+      recommendedProducts {
+        productSku
+        productName
+        productImage
+        productPrice
+        productSpecialPrice
+        isPrescriptionNeeded
+        categoryName
+        status
+        mou
+        imageBaseUrl
+        id
+        is_in_stock
+        small_image
+        thumbnail
+        type_id
+        quantity
+        isShippable
+        MaxOrderQty
+        urlKey
+      }
+    }
+  }
+`;
+
+export const GET_LATEST_MEDICINE_ORDER = gql`
+  query getLatestMedicineOrder($patientUhid: String!) {
+    getLatestMedicineOrder(patientUhid: $patientUhid) {
+      medicineOrderDetails {
+        id
+        createdDate
+        orderAutoId
+        billNumber
+        shopAddress
+        prescriptionImageUrl
+        medicineOrderLineItems {
+          medicineSKU
+          medicineName
+          price
+          mrp
+          quantity
+        }
+        currentStatus
+        medicineOrderShipments {
+          medicineOrderInvoice {
+            itemDetails
+          }
+        }
       }
     }
   }

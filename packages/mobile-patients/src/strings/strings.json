@@ -14,7 +14,7 @@
     "prepareForConsult": "GET STARTED",
     "continueConsult": "CONTINUE CONSULT",
     "DisclaimerText": "By proceeding, I agree that I have read and understood the Terms & Conditions of usage of 247 and consent to the same. I am voluntarily availing of the services provided on this platform. I am fully aware that I will not be undergoing a physical examination by a physician prior to a physician recommending  medical tests and/or treatment and/or the prescribing of OTC drugs. I am also aware that  the consultation on 247 Application does not preclude my rights to visit a physician and opt for a physical examination at any point in time and I am free at any time during the consultation to request for the same.",
-    "emergencyBannerText": "Coronavirus? Talk to expert",
+    "emergencyBannerText": "Call our experts",
     "covidContactText": "Contact our Coronavirus Helpline",
     "covidScanBannerText": "Take the Coronavirus Risk Scan",
     "covidHeading": "Worried about Coronavirus?",
@@ -23,7 +23,7 @@
     "covidMessageText": "Apollo 247 has curated fact-based information from reputed sources on Coronavirus. Now you can get reliable answers to common questions at one place.",
     "covidYouCanText": "You can also",
     "Rs": "₹",
-    "KavachText": "Apollo Kavach Program"
+    "KavachText": "Explore the Apollo Kavach Program"
   },
   "consultType": {
     "mainHeading": "How would you like to consult with",
@@ -36,7 +36,7 @@
       "point3": "Make payment",
       "point4": "Speak to the doctor via video/audio/chat",
       "point5": "Receive prescriptions instantly",
-      "point6": "Chat with the doctor for 6 days after your consult"
+      "point6": "Chat with the doctor for 7 days after your consult"
     },
     "inperson": {
       "heading": "MEET IN PERSON",
@@ -46,8 +46,9 @@
       "point3": "Make payment",
       "point4": "Visit the doctor at Hospital/Clinic",
       "point5": "Receive prescriptions instantly",
-      "point6": "Chat with the doctor for 6 days after your consult"
-    }
+      "point6": "Chat with the doctor for 7 days after your consult"
+    },
+    "chatDisabledHeader": "You can't send message to the doctor. Book appointment for consulting with {0} again."
   },
   "login": {
     "hello": "hello!",
@@ -235,13 +236,17 @@
       }
     ]
   },
-  "medicine": {},
+  "medicine": {
+    "recommendedForYou": "RECOMMENDED FOR YOU"
+  },
   "medicine_cart": {
     "tatUnServiceableAlertTitle": "We’re sorry!",
     "tatUnServiceableAlertDesc": "Some items in your order are not deliverable to the selected address.\n\nYou may either change the address or delete the item from your cart.\n\nYou can also call 1860 500 0101 for Apollo Pharmacy retail customer care.",
     "tatUnServiceableAlertRemoveCTA": "REMOVE ITEMS",
     "tatUnServiceableAlertChangeCTA": "CHANGE THE ADDRESS",
     "pharmaAddressUnServiceableAlert": "Sorry! We’re working hard to get to this area! In the meantime, you can either pick up from a nearby store, or change the pincode.\nYou can also call 1860 500 0101 for Apollo Pharmacy retail customer care.",
+    "pharmaAddressServiceabilityFailure": "Sorry! We’re unable to check serviceability. In the meantime, you can either pick up from a nearby store, or call 1860 500 0101 for Apollo Pharmacy retail customer care.",
+    "cartUpdatedAfterPriceCheckMsg": "Your Cart has been updated! MRP of some items may have changed or some items may be removed due to unavailability.",
     "addItemsForStoresAlert": "Please add items to your cart to view the list of stores available.",
     "storeItemsAvailabilityApiFailMsg": "Sorry! We’re unable to check availability of cart items for the selected store. Please try later or opt for Home Delivery.",
     "cartItemsNotAvailableInStore": "The item(s) you have selected are not available in the nearby stores. Kindly opt for Home Delivery and we will deliver them to you directly at your doorstep."
@@ -266,18 +271,22 @@
   "OrderSummery": {
     "total": "Total",
     "order": "ORDER",
+    "bill": "BILL",
     "orderPlaced": "Order Placed",
     "paymentMethod": "Payment Method",
-    "shipping_address": "SHIPPING ADDRESS",
+    "shipping_address_heading": "SHIPPING ADDRESS",
+    "store_address_heading": "STORE ADDRESS",
     "name": "Name - ",
     "address": "Address - ",
     "store_address": "Store Address - ",
     "paymentDetails": "PAYMENT DETAILS",
     "mrp_total": "MRP Total",
+    "redeemed_amount": "Redeemed Amount",
     "product_discount": "Product Discount",
     "coupon_discount": "Coupon Discount",
     "delivery_charges": "Delivery Charges",
-    "packaging_charges": "Packaging Charges"
+    "packaging_charges": "Packaging Charges",
+    "orderCancellationAfterBillingAlert": "Your order has already Billed and therefore cannot be cancelled from the App. In case you still wish to Cancel, please click on the link below to chat with out customer care executives for assistance during working hours (9:00 AM to 8:30 PM)"
   },
   "OrderSummaryText": {
     "total_order_billed": "Total Ordered Value",
@@ -293,6 +302,7 @@
     "order_medicine": "ORDER MEDICINES",
     "order_test": "ORDER TESTS",
     "book_follow_up": "BOOK FOLLOW-UP",
+    "add_note_to_notify_users": "Please note that health records uploaded here will not be automatically visible to the doctor, you would have to upload them in consult chatroom!",
     "tabs": [
       {
         "title": "Consults & Rx",
@@ -308,12 +318,26 @@
     "success": "PAYMENT_SUCCESS",
     "failure": "PAYMENT_FAILED",
     "pending": "PAYMENT_PENDING_PG",
-    "refund": "PAYMENT_REFUND"
+    "refund": "PAYMENT_REFUND",
+    "aborted": "PAYMENT_ABORTED"
   },
   "PharmaPayment": {
     "success": "TXN_SUCCESS",
     "failure": "TXN_FAILURE",
     "pending": "PAYMENT_PENDING_PG"
+  },
+  "PaymentModes": {
+    "DEBIT_CARD": "Debit Card",
+    "CREDIT_CARD": "Credit Card",
+    "NET_BANKING": "Net Banking",
+    "PAYTM_WALLET": "Paytm Wallet",
+    "EMI": "EMI",
+    "UPI": "UPI",
+    "PAYTM_POSTPAID": "Paytm Postpaid",
+    "COD": "COD"
+  },
+  "alerts": {
+    "Open_camera_in_video_call": "Image capturing is disabled during a video call. Please switch to the Audio call if you want to send an Image."
   },
   "muiltdosages": [
     {
@@ -332,5 +356,26 @@
       "single": "spray",
       "multiple": "spray(s)"
     }
-  ]
+  ],
+  "appointments": {
+    "notifications_title": "NOTIFICATIONS",
+    "no_consults_scheduled": "No consults scheduled ",
+    "up_next": "UP NEXT: ",
+    "new": "NEW",
+    "appointment_will_reschedule": "This appointment will be rescheduled for",
+    "date": "Date",
+    "time": "Time",
+    "pick_another_slot": "PICK ANOTHER SLOT",
+    "why_do_you_want_reschedule": "Why do you want to reschedule?",
+    "appointment_is_not_available": "Appointment is not available in the ",
+    "slot": "slot :(",
+    "order_medicine_steps": " Order medicines in 2 simple steps —",
+    "upload_prescr": "UPLOAD\nYOUR PRESCRIPTION",
+    "order_through_customercare": "ORDER THROUGH OUR\nCUSTOMER CARE",
+    "upload_prescr_descr": " * Our pharmacist will dispense medicines only if the prescription is valid & it meets all government regulations.",
+    "here_your_schedule": "here’s your schedule for",
+    "block_Calendar": "Block Calendar",
+    "manage_calendar": "Manage Calendar"
+  },
+  "ChatRoom_NotRecorded_Value": "Not Recorded"
 }

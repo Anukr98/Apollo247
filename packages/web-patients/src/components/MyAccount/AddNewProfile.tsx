@@ -203,7 +203,7 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
   const [alertMessage, setAlertMessage] = React.useState<string>('');
   const [isAlertOpen, setIsAlertOpen] = React.useState<boolean>(false);
 
-  const { allCurrentPatients, currentPatient, setCurrentPatientId } = useAllCurrentPatients();
+  const { allCurrentPatients, setCurrentPatientId } = useAllCurrentPatients();
 
   // console.log(currentPatient, 'current patient......');
 
@@ -572,6 +572,9 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
             color="primary"
             onClick={() => {
               setMutationLoading(true);
+              const selectedPatientDetails = _find(allCurrentPatients, (currentPatientDetails) => {
+                return currentPatientDetails.relation === 'ME';
+              });
               const userObject = {
                 firstName: firstName,
                 lastName: lastName,
@@ -582,7 +585,9 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
                 photoUrl: photoUrl,
                 id: selectedPatientId,
                 mobileNumber:
-                  currentPatient && currentPatient.mobileNumber ? currentPatient.mobileNumber : '',
+                  selectedPatientDetails && selectedPatientDetails.mobileNumber
+                    ? selectedPatientDetails.mobileNumber
+                    : '',
               };
               if (selectedPatientId.length > 0) {
                 delete userObject.mobileNumber;

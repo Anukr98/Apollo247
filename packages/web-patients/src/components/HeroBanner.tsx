@@ -181,6 +181,14 @@ const useStyles = makeStyles((theme: Theme) => {
         marginTop: 20,
       },
     },
+    mainHead: {
+      display: 'flex',
+      fontSize: 56,
+      fontWeight: 600,
+      [theme.breakpoints.down('xs')]: {
+        fontSize: 36,
+      },
+    },
   };
 });
 
@@ -203,9 +211,13 @@ export const HeroBanner: React.FC = () => {
         <img
           className={classes.mobileBanner}
           src={require('images/img_doctors_xxhdpi.png')}
-          alt=""
+          alt="Online Doctor Consultation & Medicines"
         />
-        <img className={classes.desktopBanner} src={require('images/img-doctors@1x.png')} alt="" />
+        <img
+          className={classes.desktopBanner}
+          src={require('images/img-doctors@1x.png')}
+          alt="Online Doctor Consultation & Medicines"
+        />
       </div>
       <div className={classes.bannerInfo}>
         {allCurrentPatients && currentPatient && !_isEmpty(currentPatient.firstName) ? (
@@ -234,7 +246,8 @@ export const HeroBanner: React.FC = () => {
                 );
               })}
               <MenuItem classes={{ selected: classes.menuSelected }}>
-                <AphButton
+                {/* @TODO: Uncomment this after fixing */}
+                {/* <AphButton
                   color="primary"
                   classes={{ root: classes.addMemberBtn }}
                   onClick={() => {
@@ -243,12 +256,12 @@ export const HeroBanner: React.FC = () => {
                   title={'Add Member'}
                 >
                   Add Member
-                </AphButton>
+                </AphButton> */}
               </MenuItem>
             </AphSelect>
           </Typography>
         ) : (
-          <Typography variant="h1">hello there!</Typography>
+          <span className={classes.mainHead}>hello there!</span>
         )}
         <p>How can we help you today? :)</p>
         <OurServices />
@@ -261,7 +274,7 @@ export const HeroBanner: React.FC = () => {
             setIsAddNewProfileDialogOpen(isAddNewProfileDialogOpen)
           }
           isMeClicked={isMeClicked}
-          selectedPatientId=""
+          selectedPatientId={''}
           successHandler={(isPopoverOpen: boolean) => setIsPopoverOpen(isPopoverOpen)}
           isProfileDelete={false}
         />

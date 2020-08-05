@@ -8,23 +8,18 @@ import {
   ManageProfileIcon,
   NeedHelpIcon,
   OneApollo,
-  PrimaryIcon,
   LinkedUhidIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import {
-  DELETE_DEVICE_TOKEN,
-  GET_MEDICINE_ORDERS_OMS__LIST,
-} from '@aph/mobile-patients/src/graphql/profiles';
+import { DELETE_DEVICE_TOKEN } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   deleteDeviceToken,
   deleteDeviceTokenVariables,
 } from '@aph/mobile-patients/src/graphql/types/deleteDeviceToken';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
-import { apiRoutes } from '@aph/mobile-patients/src/helpers/apiRoutes';
 import { g, getNetStatus, statusBarHeight } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { postMyOrdersClicked } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
@@ -32,7 +27,7 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import AsyncStorage from '@react-native-community/async-storage';
 import Moment from 'moment';
 import React, { useEffect, useState } from 'react';
-import { useApolloClient, useQuery } from 'react-apollo-hooks';
+import { useApolloClient } from 'react-apollo-hooks';
 import {
   Dimensions,
   Image,
@@ -53,18 +48,15 @@ import {
   ScrollView,
   StackActions,
 } from 'react-navigation';
-import {
-  getMedicineOrdersOMSList,
-  getMedicineOrdersOMSListVariables,
-} from '../../graphql/types/getMedicineOrdersOMSList';
-import { AppConfig } from '../../strings/AppConfig';
-import { TabHeader } from '../ui/TabHeader';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import { TabHeader } from '@aph/mobile-patients/src/components/ui/TabHeader';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import codePush from 'react-native-code-push';
 
 const { width } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   topView: {
-    backgroundColor: theme.colors.WHITE,
     marginBottom: 8,
     ...theme.viewStyles.cardViewStyle,
     borderRadius: 0,
@@ -151,48 +143,27 @@ const Appointments: Appointments[] = [
 export interface MyAccountProps extends NavigationScreenProps {}
 export const MyAccount: React.FC<MyAccountProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
+  const [codePushVersion, setCodePushVersion] = useState<string>('');
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
   const [networkStatus, setNetworkStatus] = useState<boolean>(false);
   const [profileDetails, setprofileDetails] = useState<
     GetCurrentPatients_getCurrentPatients_patients | null | undefined
   >(currentPatient);
   const { signOut, getPatientApiCall } = useAuth();
+  const { setSavePatientDetails, setAppointmentsPersonalized } = useAppCommonData();
 
-  const buildName = () => {
-    switch (apiRoutes.graphql()) {
-      case 'https://aph.dev.api.popcornapps.com//graphql':
-        return 'DEV';
-      case 'https://aph.staging.api.popcornapps.com//graphql':
-        return 'QA';
-      case 'https://stagingapi.apollo247.com//graphql':
-        return 'STAGING';
-      case 'https://aph.uat.api.popcornapps.com//graphql':
-        return 'UAT';
-      case 'https://aph.vapt.api.popcornapps.com//graphql':
-        return 'VAPT';
-      case 'https://api.apollo247.com//graphql':
-        return 'PROD';
-      case 'https://asapi.apollo247.com//graphql':
-        return 'PRF';
-      case 'https://devapi.apollo247.com//graphql':
-        return 'DEVReplica';
-      default:
-        return '';
+  useEffect(() => {
+    updateCodePushVersioninUi();
+  }, []);
+
+  const updateCodePushVersioninUi = async () => {
+    try {
+      const version = (await codePush.getUpdateMetadata())!.label;
+      setCodePushVersion(version.replace('v', 'H'));
+    } catch (error) {
+      CommonBugFender(`${AppRoutes.MyAccount}_codePush.getUpdateMetadata`, error);
     }
   };
-
-  const {
-    data: orders,
-    error: ordersError,
-    loading: ordersLoading,
-    refetch: ordersRefetch,
-  } = useQuery<getMedicineOrdersOMSList, getMedicineOrdersOMSListVariables>(
-    GET_MEDICINE_ORDERS_OMS__LIST,
-    {
-      variables: { patientId: currentPatient && currentPatient.id },
-      fetchPolicy: 'cache-first',
-    }
-  );
 
   useEffect(() => {
     if (!currentPatient) {
@@ -288,15 +259,18 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
     try {
       const webengage = new WebEngage();
       webengage.user.logout();
-      signOut();
       AsyncStorage.setItem('userLoggedIn', 'false');
       AsyncStorage.setItem('multiSignUp', 'false');
       AsyncStorage.setItem('signUp', 'false');
       AsyncStorage.setItem('selectUserId', '');
+      AsyncStorage.setItem('selectUserUHId', '');
       AsyncStorage.removeItem('phoneNumber');
       AsyncStorage.setItem('logginHappened', 'false');
       AsyncStorage.removeItem('deeplink');
       AsyncStorage.removeItem('deeplinkReferalCode');
+      setSavePatientDetails && setSavePatientDetails('');
+      setAppointmentsPersonalized && setAppointmentsPersonalized([]);
+      signOut();
 
       props.navigation.dispatch(
         StackActions.reset({
@@ -461,37 +435,14 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
           leftIcon={<Invoice />}
           onPress={() => {
             postMyOrdersClicked('My Account', currentPatient);
-            props.navigation.navigate(AppRoutes.YourOrdersScene, {
-              orders: (g(orders, 'getMedicineOrdersOMSList', 'medicineOrdersList') || []).filter(
-                (item) =>
-                  !(
-                    (item!.medicineOrdersStatus || []).length == 1 &&
-                    (item!.medicineOrdersStatus || []).find((item) => !item!.hideStatus)
-                  )
-              ),
-              header: 'MY ORDERS',
-              refetch: ordersRefetch,
-              error: ordersError,
-              loading: ordersLoading,
-            });
+            props.navigation.navigate(AppRoutes.YourOrdersScene);
           }}
         />
         <ListCard
           title={'My Payments'}
           leftIcon={<CurrencyIcon />}
           onPress={() => {
-            // postMyOrdersClicked('My Account', currentPatient);
             props.navigation.navigate(AppRoutes.MyPaymentsScreen, {
-              // orders: (g(orders, 'getMedicineOrdersList', 'MedicineOrdersList') || []).filter(
-              //   (item) =>
-              //     !(
-              //       (item!.medicineOrdersStatus || []).length == 1 &&
-              //       (item!.medicineOrdersStatus || []).find((item) => !item!.hideStatus)
-              //     )
-              // ),
-              // refetch: ordersRefetch,
-              // error: ordersError,
-              // loading: ordersLoading,
               patientId: currentPatient.id,
               fromNotification: false,
             });
@@ -562,11 +513,11 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
                 paddingTop: 20,
               }}
             >
-              {`${buildName()} - v ${
+              {`${AppConfig.APP_ENV} - v ${
                 Platform.OS === 'ios'
                   ? AppConfig.Configuration.iOS_Version
                   : AppConfig.Configuration.Android_Version
-              }`}
+              }${codePushVersion ? `.${codePushVersion}` : ''}`}
             </Text>
           </View>
         </ScrollView>

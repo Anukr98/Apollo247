@@ -228,6 +228,7 @@ export const MedicineListscard: React.FC<MedicineListscardProps> = (props) => {
                             onChange={(e: React.ChangeEvent<{ value: any }>) => {
                               updateCartItemQty &&
                                 updateCartItemQty({
+                                  MaxOrderQty: medicine.MaxOrderQty,
                                   url_key: medicine.url_key,
                                   description: medicine.description,
                                   id: medicine.id,
@@ -309,6 +310,7 @@ export const MedicineListscard: React.FC<MedicineListscardProps> = (props) => {
                             src={require('images/ic_plus.svg')}
                             onClick={() => {
                               const cartItem: MedicineCartItem = {
+                                MaxOrderQty: medicine.MaxOrderQty,
                                 url_key: medicine.url_key,
                                 description: medicine.description,
                                 id: medicine.id,

@@ -21,6 +21,7 @@ import {
 import { postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import string from '@aph/mobile-patients/src/strings/strings.json';
+import { postShowPrescriptionAtStoreSelected } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -198,6 +199,7 @@ export const MedicineUploadPrescriptionView: React.FC<MedicineUploadPrescription
   const renderPrescriptionModal = () => {
     return (
       <SelectEPrescriptionModal
+        displayPrismRecords={true}
         navigation={props.navigation}
         onSubmit={(selectedEPres) => {
           setSelectPrescriptionVisible(false);
@@ -306,10 +308,14 @@ export const MedicineUploadPrescriptionView: React.FC<MedicineUploadPrescription
           style={{ marginTop: 9, flexDirection: 'row' }}
           onPress={() => {
             if (props.selectedTab == 'Home Delivery' || deliveryAddressId) {
+              postShowPrescriptionAtStoreSelected({ value: !showPrescriptionAtStore });
               setShowPrescriptionAtStore!(!showPrescriptionAtStore);
               setDeliveryAddressId!('');
               props.setSelectedTab && props.setSelectedTab('Store Pick Up');
             } else {
+              postShowPrescriptionAtStoreSelected({
+                value: !showPrescriptionAtStore,
+              });
               setShowPrescriptionAtStore!(!showPrescriptionAtStore);
             }
           }}

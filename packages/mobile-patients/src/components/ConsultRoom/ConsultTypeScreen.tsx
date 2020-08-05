@@ -173,33 +173,35 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
   const { setLoading } = useUIElements();
   const { currentPatientId, currentPatient } = useAllCurrentPatients();
 
-  const client = useApolloClient();
+  const callSaveSearch = props.navigation.getParam('callSaveSearch');
 
-  useEffect(() => {
-    if (DoctorId && currentPatientId) {
-      setLoading && setLoading(true);
-      client
-        .query<getPastAppointmentsCount, getPastAppointmentsCountVariables>({
-          query: PAST_APPOINTMENTS_COUNT,
-          variables: {
-            doctorId: DoctorId,
-            patientId: currentPatientId || '',
-          },
-          fetchPolicy: 'no-cache',
-        })
-        .then((data) => {
-          const count = g(data, 'data', 'getPastAppointmentsCount', 'count');
-          console.log('getPastAppointmentsCount', data);
-          if (count && count > 0) {
-            setHideCheckbox(true);
-          }
-          setLoading && setLoading(false);
-        })
-        .catch((e) => {
-          CommonBugFender('ConsultTypeScreen_getCount', e);
-        });
-    }
-  }, [DoctorId, client, currentPatientId, setLoading]);
+  // const client = useApolloClient();
+
+  // useEffect(() => {
+  //   if (DoctorId && currentPatientId) {
+  //     setLoading && setLoading(true);
+  //     client
+  //       .query<getPastAppointmentsCount, getPastAppointmentsCountVariables>({
+  //         query: PAST_APPOINTMENTS_COUNT,
+  //         variables: {
+  //           doctorId: DoctorId,
+  //           patientId: currentPatientId || '',
+  //         },
+  //         fetchPolicy: 'no-cache',
+  //       })
+  //       .then((data) => {
+  //         const count = g(data, 'data', 'getPastAppointmentsCount', 'count');
+  //         console.log('getPastAppointmentsCount', data);
+  //         if (count && count > 0) {
+  //           setHideCheckbox(true);
+  //         }
+  //         setLoading && setLoading(false);
+  //       })
+  //       .catch((e) => {
+  //         CommonBugFender('ConsultTypeScreen_getCount', e);
+  //       });
+  //   }
+  // }, [DoctorId, client, currentPatientId, setLoading]);
 
   const renderHeader = () => {
     return (
@@ -295,7 +297,7 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
           <View style={styles.buttonStyle}>
             <Text style={styles.buttonTextStyle}>{`${
               time && moment(time).isValid()
-                ? `Consult in ${mhdMY(time, 'min')}`
+                ? nextAvailability(time, 'Consult')
                 : string.common.book_apointment
             }`}</Text>
           </View>
@@ -343,7 +345,8 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
         props.navigation.navigate(AppRoutes.DoctorDetails, {
           doctorId: DoctorId,
           consultModeSelected: ConsultMode.ONLINE,
-          externalConnect: hideCheckbox ? null : consultedChecked,
+          externalConnect: null,
+          callSaveSearch: callSaveSearch,
           ...params,
         });
         postWebengaegConsultType('Online');
@@ -378,7 +381,8 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
         props.navigation.navigate(AppRoutes.DoctorDetails, {
           doctorId: DoctorId,
           consultModeSelected: ConsultMode.PHYSICAL,
-          externalConnect: hideCheckbox ? null : consultedChecked,
+          externalConnect: null,
+          callSaveSearch: callSaveSearch,
           ...params,
         });
         postWebengaegConsultType('In Person');
@@ -401,7 +405,7 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
           //   console.log('event', event.nativeEvent.contentOffset.y);
           // }}
         >
-          {hideCheckbox ? null : renderCheckbox()}
+          {/* {hideCheckbox ? null : renderCheckbox()} */}
           {[ConsultMode.ONLINE, ConsultMode.BOTH].includes(ConsultType) ? renderOnlineCard() : null}
           {[ConsultMode.PHYSICAL, ConsultMode.BOTH].includes(ConsultType)
             ? renderInPersonCard()

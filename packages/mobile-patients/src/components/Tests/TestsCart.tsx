@@ -17,7 +17,10 @@ import {
 import { MedicineUploadPrescriptionView } from '@aph/mobile-patients/src/components/Medicines/MedicineUploadPrescriptionView';
 import { RadioSelectionItem } from '@aph/mobile-patients/src/components/Medicines/RadioSelectionItem';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import { PhysicalPrescription } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import {
+  PhysicalPrescription,
+  useShoppingCart,
+} from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { TestPackageForDetails } from '@aph/mobile-patients/src/components/Tests/TestDetails';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
@@ -165,6 +168,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     deliveryCharges,
     coupon,
   } = useDiagnosticsCart();
+  const { setAddresses: setMedAddresses } = useShoppingCart();
 
   const clinicHours: clinicHoursData[] = [
     {
@@ -195,7 +199,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const [profile, setProfile] = useState<GetCurrentPatients_getCurrentPatients_patients>({
     ...((currentPatient || {}) as any),
   });
-  const [displayAddProfile, setDisplayAddProfile] = useState<boolean>(false);
   const [displaySchedule, setDisplaySchedule] = useState<boolean>(false);
   const [date, setDate] = useState<Date>(new Date());
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
@@ -204,6 +207,10 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const [storePickUpLoading, setStorePickUpLoading] = useState<boolean>(false);
   const [testCentresLoaded, setTestCentresLoaded] = useState<boolean>(false);
   const isValidPinCode = (text: string): boolean => /^(\s*|[1-9][0-9]*)$/.test(text);
+
+  useEffect(() => {
+    fetchAddresses();
+  }, [currentPatient]);
 
   useEffect(() => {
     if (cartItems.length) {
@@ -330,6 +337,40 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       }
     }
   }, [testCentresLoaded]);
+
+  const renderAlert = (message: string) => {
+    showAphAlert!({
+      title: string.common.uhOh,
+      description: message,
+    });
+  };
+
+  const fetchAddresses = async () => {
+    try {
+      if (addresses.length) {
+        return;
+      }
+      setLoading!(true);
+      const userId = g(currentPatient, 'id');
+      const addressApiCall = await client.query<
+        getPatientAddressList,
+        getPatientAddressListVariables
+      >({
+        query: GET_PATIENT_ADDRESS_LIST,
+        variables: { patientId: userId },
+        fetchPolicy: 'no-cache',
+      });
+      const addressList =
+        (addressApiCall.data.getPatientAddressList
+          .addressList as savePatientAddress_savePatientAddress_patientAddress[]) || [];
+      setAddresses!(addressList);
+      setMedAddresses!(addressList);
+      setLoading!(false);
+    } catch (error) {
+      setLoading!(false);
+      renderAlert(`Something went wrong, unable to fetch addresses.`);
+    }
+  };
 
   const onRemoveCartItem = ({ id }: DiagnosticsCartItem) => {
     removeCartItem && removeCartItem(id);
@@ -755,7 +796,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           !hideLoader && setStorePickUpLoading(true);
           getPlaceInfoByPincode(key)
             .then((data) => {
-              aphConsole.log('locaion data', data);
               const city = (
                 (data.data.results[0].address_components || []).find(
                   (item: any) => item.types.indexOf('locality') > -1
@@ -767,7 +807,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                 (filterArray = clinics.filter((item) =>
                   item.City.toLowerCase().includes(city.toLowerCase())
                 ));
-              aphConsole.log('cityName data', filterArray);
 
               setClinicDetails(filterArray || []);
               setSlicedStoreList((filterArray || []).slice(0, 2));
@@ -1216,14 +1255,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   };
 
   const onFinishUpload = () => {
-    console.log(
-      physicalPrescriptions,
-      ePrescriptions,
-      isEPrescriptionUploadComplete,
-      isPhysicalUploadComplete,
-      'hhruso'
-    );
-
     if (
       physicalPrescriptions.length > 0 &&
       ePrescriptions.length == 0 &&
@@ -1514,7 +1545,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             defaultText={'Select who are these tests for'}
             saveUserChange={true}
             selectedProfile={profile}
-            setDisplayAddProfile={(val) => setDisplayAddProfile(val)}
             navigation={props.navigation}
           ></ProfileList>
           <Text

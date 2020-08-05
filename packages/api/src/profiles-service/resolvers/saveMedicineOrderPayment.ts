@@ -116,7 +116,8 @@ const SaveMedicineOrderPayment: Resolver<
   }
 
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
-  const patientDetails = await patientRepo.findById(orderDetails.patient.id);
+  const patientDetails = await patientRepo.getPatientDetails(orderDetails.patient.id);
+
   let deliveryCity = 'Kakinada',
     deliveryZipcode = '500045',
     deliveryAddress = 'Kakinada';

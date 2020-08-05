@@ -15,11 +15,37 @@ import { differenceInMinutes } from 'date-fns';
 import { ApiConstants } from 'ApiConstants';
 import { debugLog } from 'customWinstonLogger';
 import { distanceBetweenTwoLatLongInMeters } from 'helpers/distanceCalculator';
+import { endOfDay, addDays } from 'date-fns';
 
 export const getDoctorsBySpecialtyAndFiltersTypeDefs = gql`
   enum SpecialtySearchType {
     ID
     NAME
+  }
+
+  type DefaultfilterType {
+    name: String
+  }
+
+
+  type brandType {
+    name: String
+    image: String
+  }
+
+  type cityType {
+    state: String
+    data: [String]
+  }
+
+  type filters {
+    city: [cityType]
+    brands: [brandType]
+    language: [DefaultfilterType]
+    experience: [DefaultfilterType]
+    availability: [DefaultfilterType]
+    fee: [DefaultfilterType]
+    gender: [DefaultfilterType]
   }
 
   type FilterDoctorsResult {
@@ -29,6 +55,7 @@ export const getDoctorsBySpecialtyAndFiltersTypeDefs = gql`
     specialty: DoctorSpecialty
     doctorType: DoctorType
     sort: String
+    filters: filters
   }
   type DoctorSlotAvailability {
     doctorId: String
@@ -70,6 +97,30 @@ export const getDoctorsBySpecialtyAndFiltersTypeDefs = gql`
   }
 `;
 
+type DefaultfilterType = {
+  name: string
+}
+
+type cityType = {
+  state: string
+  data: [string]
+}
+
+type brandType = {
+  name: string
+  image: string
+}
+
+type filters = {
+  city: [cityType]
+  brands: [brandType]
+  language: [DefaultfilterType]
+  experience: [DefaultfilterType]
+  availability: [DefaultfilterType]
+  fee: [DefaultfilterType]
+  gender: [DefaultfilterType]
+}
+
 type FilterDoctorsResult = {
   doctors: Doctor[];
   doctorsNextAvailability: DoctorSlotAvailability[];
@@ -77,6 +128,7 @@ type FilterDoctorsResult = {
   specialty?: DoctorSpecialty;
   doctorType?: DoctorType[];
   sort: string;
+  filters: filters;
 };
 
 export type DoctorConsultModeAvailability = {
@@ -222,12 +274,16 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
       elasticMatch.push({ match: { languages: language } });
     });
   }
-  
+
   if (args.filterInput.doctorType && args.filterInput.doctorType.length > 0) {
     elasticMatch.push({ match: { doctorType: args.filterInput.doctorType.join(',') } });
   }
 
-  elasticMatch.push({ match: { 'isSearchable': 'true' } });
+  if (args.filterInput.city && args.filterInput.city.length) {
+    elasticMatch.push({ match: { city: args.filterInput.city.join(',') } });
+  }
+
+  elasticMatch.push({ match: { isSearchable: 'true' } });
 
   const searchParams: RequestParams.Search = {
     index: 'doctors',
@@ -478,6 +534,96 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
       )
       .concat(docs);
   }
+
+  function ifKeyExist(arr: any[], key: string, value: string){
+    if(arr.length){
+      arr = arr.filter((elem: any) => {
+        return elem[key] === value
+      });
+      // if filter returned a non-empty array
+      if(arr.length){
+        return arr[0];
+      }
+      return {};
+    } else {
+      return {};
+    }
+  }
+
+
+  const filters: any = {city: [], brands: [], language: [], experience: [], availability: [], fee: [], gender: []};
+  let cityObj: {state: string, data: string[]};
+  
+  // making filters
+  for(const doctor of doctors){
+    for(const hospital of doctor.doctorHospital){
+      cityObj = { state: '', data: [] };
+      if(filters.city.length){
+        cityObj = ifKeyExist(filters.city, 'state', hospital.facility.state);
+      }
+      if(cityObj && cityObj.state){
+        if(!cityObj.data.includes(hospital.facility.city)){
+          cityObj.data.push(hospital.facility.city);
+        }
+      } else {
+        cityObj.state = hospital.facility.state;
+        cityObj.data = [];
+        cityObj.data.push(hospital.facility.city);
+        filters.city.push(cityObj);
+      }
+    }
+    
+    // "doctor.photoUrl" needs to be replaced with actual brand images-links
+    if(doctor.doctorType && !("name" in ifKeyExist(filters.brands, 'name', doctor.doctorType))){
+      filters.brands.push({'name': doctor.doctorType, 'image': doctor.photoUrl});
+    }
+
+    if(doctor.languages instanceof Array){
+      for(const language of doctor.languages){
+        if(!("name" in ifKeyExist(filters.language, 'name', language))){
+          filters.language.push({'name': language});
+        }
+      }
+      doctor.languages = doctor.languages.join(', ');
+    }
+
+    if(doctor.experience_range && !("name" in ifKeyExist(filters.experience, 'name', doctor.experience_range))){
+      filters.experience.push({'name': doctor.experience_range});
+    }
+    
+    if(doctor.fees_range && !("name" in ifKeyExist(filters.fee, 'name', doctor.fees_range))){
+      filters.fee.push({'name': doctor.fees_range});
+    }
+
+    if(doctor.gender && !("name" in ifKeyExist(filters.gender, 'name', doctor.gender))){
+      filters.gender.push({'name': doctor.gender});
+    }
+
+  }
+
+  const dayEndMinutes = differenceInMinutes(endOfDay(new Date()), (new Date()));
+  const twoDaysEndMinutes = differenceInMinutes(endOfDay(addDays(new Date(), 1)), (new Date()));
+  for(const availablity of finalDoctorNextAvailSlots){
+    if(241 > availablity.availableInMinutes){
+      if(!("name" in ifKeyExist(filters.availability, 'name', 'Now'))){
+        filters.availability.push({'name': 'Now'});
+      }
+    }
+    if(dayEndMinutes > availablity.availableInMinutes && availablity.availableInMinutes > 240) {
+      if(!("name" in ifKeyExist(filters.availability, 'name', 'Today'))){
+        filters.availability.push({'name': 'Today'});
+      }
+    } else if(twoDaysEndMinutes > availablity.availableInMinutes){
+      if(!("name" in ifKeyExist(filters.availability, 'name', 'Tomorrow'))){
+        filters.availability.push({'name': 'Tomorrow'});
+      }
+    } else if (availablity.availableInMinutes > twoDaysEndMinutes) {
+      if(!("name" in ifKeyExist(filters.availability, 'name', 'Next 3 Days'))){
+        filters.availability.push({'name': 'Next 3 Days'});
+      }
+    }
+  }
+
   searchLogger(`API_CALL___END`);
   return {
     doctors: doctors,
@@ -485,6 +631,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     doctorsAvailability: finalDoctorsConsultModeAvailability,
     specialty: finalSpecialtyDetails,
     sort: args.filterInput.sort,
+    filters: filters,
   };
 };
 

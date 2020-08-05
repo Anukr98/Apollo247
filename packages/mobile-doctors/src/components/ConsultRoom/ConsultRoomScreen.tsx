@@ -42,6 +42,7 @@ import {
   MODIFY_CASESHEET,
   SEND_CALL_NOTIFICATION,
   UPLOAD_CHAT_FILE,
+  POST_WEB_ENGAGE,
 } from '@aph/mobile-doctors/src/graphql/profiles';
 import {
   cancelAppointment,
@@ -85,6 +86,9 @@ import {
   ModifyCaseSheetInput,
   REQUEST_ROLES,
   STATUS,
+  exotelInput,
+  ConsultMode,
+  WebEngageEvent,
 } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
 import {
   initateConferenceTelephoneCall,
@@ -140,6 +144,10 @@ import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import RNFetchBlob from 'rn-fetch-blob';
 import { isIphoneX } from 'react-native-iphone-x-helper';
 import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
+import {
+  postDoctorConsultEventVariables,
+  postDoctorConsultEvent,
+} from '@aph/mobile-doctors/src/graphql/types/postDoctorConsultEvent';
 
 const { width } = Dimensions.get('window');
 // let joinTimerNoShow: NodeJS.Timeout;  //APP-2812: removed NoShow
@@ -263,6 +271,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const { setOpenTokKeys, setCallBacks, callData, callOptions } = useAudioVideo();
   useEffect(() => {
     getSpecialties();
+    postBackendWebEngage(WebEngageEvent.DOCTOR_IN_CHAT_WINDOW);
     console.log(appointmentData, 'appointmentData');
     // callAbandonmentCall();
     console.log('PatientConsultTime', PatientConsultTime);
@@ -284,6 +293,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
 
     return () => {
       sendDoctorLeavesEvent();
+      postBackendWebEngage(WebEngageEvent.DOCTOR_LEFT_CHAT_WINDOW);
       didFocusSubscription && didFocusSubscription.remove();
       willBlurSubscription && willBlurSubscription.remove();
       // stopNoShow();
@@ -443,6 +453,34 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       },
       (status: any, response: any) => {}
     );
+  };
+
+  const postBackendWebEngage = (eventType: WebEngageEvent) => {
+    client
+      .mutate<postDoctorConsultEvent, postDoctorConsultEventVariables>({
+        mutation: POST_WEB_ENGAGE,
+        variables: {
+          doctorConsultEventInput: {
+            consultID: channel,
+            consultMode: g(caseSheet, 'caseSheetDetails', 'consultType') as ConsultMode,
+            displayId:
+              g(caseSheet, 'caseSheetDetails', 'appointment', 'displayId') ||
+              appointmentData.displayId ||
+              '',
+            doctorFullName:
+              g(doctorDetails, 'fullName') ||
+              g(caseSheet, 'caseSheetDetails', 'appointment', 'doctorInfo', 'fullName') ||
+              '',
+            eventName: eventType,
+            mobileNumber:
+              g(doctorDetails, 'mobileNumber') ||
+              g(caseSheet, 'caseSheetDetails', 'appointment', 'doctorInfo', 'mobileNumber') ||
+              '',
+          },
+        },
+      })
+      .then((data) => {})
+      .catch((error) => {});
   };
 
   const createCaseSheetSRDAPI = () => {
@@ -1663,6 +1701,9 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         sendByPost: true,
       },
       (status, response) => {
+        if (g(caseSheet, 'caseSheetDetails', 'appointment', 'status') === STATUS.COMPLETED) {
+          postBackendWebEngage(WebEngageEvent.DOCTOR_SENT_MESSAGE);
+        }
         console.log(response, 'response');
       }
     );
@@ -2346,20 +2387,27 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   };
   const makeCall = () => {
     setShowExoPopup(false);
-    if (g(doctorDetails, 'mobileNumber') && g(patientDetails, 'mobileNumber')) {
+    if (
+      (g(doctorDetails, 'mobileNumber') ||
+        g(caseSheet, 'caseSheetDetails', 'appointment', 'doctorInfo', 'mobileNumber')) &&
+      (g(patientDetails, 'mobileNumber') || g(caseSheet, 'patientDetails', 'mobileNumber'))
+    ) {
       setShowLoading(true);
-      const exotelInput = {
+      const exotelInputData: exotelInput = {
         appointmentId: g(caseSheet, 'caseSheetDetails', 'appointment', 'id') || AppId,
-        from: g(doctorDetails, 'mobileNumber'),
-        to: g(patientDetails, 'mobileNumber'),
+        from:
+          g(doctorDetails, 'mobileNumber') ||
+          g(caseSheet, 'caseSheetDetails', 'appointment', 'doctorInfo', 'mobileNumber'),
+        to: g(patientDetails, 'mobileNumber') || g(caseSheet, 'patientDetails', 'mobileNumber'),
+        deviceType: Platform.OS === 'ios' ? DEVICETYPE.IOS : DEVICETYPE.ANDROID,
       };
-      firebase.analytics().logEvent('DOCTOR_CALL_EXOTEL', { callBy: exotelInput });
+      firebase.analytics().logEvent('DOCTOR_CALL_EXOTEL', { callBy: exotelInputData });
       client
         .query<initateConferenceTelephoneCall, initateConferenceTelephoneCallVariables>({
           query: EXO_TEL_CALL,
           fetchPolicy: 'no-cache',
           variables: {
-            exotelInput: exotelInput,
+            exotelInput: exotelInputData,
           },
         })
         .then((data) => {
@@ -2396,8 +2444,9 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         showAphAlert({
           title: string.common.alert,
           description: `${
-            g(doctorDetails, 'mobileNumber')
-              ? g(patientDetails, 'mobileNumber')
+            g(doctorDetails, 'mobileNumber') ||
+            g(caseSheet, 'caseSheetDetails', 'appointment', 'doctorInfo', 'mobileNumber')
+              ? g(patientDetails, 'mobileNumber') || g(caseSheet, 'patientDetails', 'mobileNumber')
                 ? ''
                 : "Patient's"
               : "Doctor's"

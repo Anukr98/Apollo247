@@ -75,6 +75,11 @@ export enum DOCTOR_DEVICE_TYPE {
   IOS = "IOS",
 }
 
+export enum DOCTOR_ONLINE_STATUS {
+  AWAY = "AWAY",
+  ONLINE = "ONLINE",
+}
+
 export enum DoctorType {
   APOLLO = "APOLLO",
   APOLLO_HOMECARE = "APOLLO_HOMECARE",
@@ -272,6 +277,12 @@ export enum TRANSFER_STATUS {
   REJECTED = "REJECTED",
 }
 
+export enum WebEngageEvent {
+  DOCTOR_IN_CHAT_WINDOW = "DOCTOR_IN_CHAT_WINDOW",
+  DOCTOR_LEFT_CHAT_WINDOW = "DOCTOR_LEFT_CHAT_WINDOW",
+  DOCTOR_SENT_MESSAGE = "DOCTOR_SENT_MESSAGE",
+}
+
 export enum WeekDay {
   FRIDAY = "FRIDAY",
   MONDAY = "MONDAY",
@@ -344,6 +355,15 @@ export interface DiagnosticPrescriptionInput {
 export interface DoctorAvailabilityInput {
   availableDate: any;
   doctorId: string;
+}
+
+export interface DoctorConsultEventInput {
+  mobileNumber: string;
+  eventName: WebEngageEvent;
+  consultID: string;
+  displayId: string;
+  consultMode: ConsultMode;
+  doctorFullName: string;
 }
 
 export interface DoctorNextAvailableSlotInput {
@@ -519,12 +539,14 @@ export interface UpdatePatientInput {
   photoUrl?: string | null;
   deviceCode?: string | null;
   employeeId?: string | null;
+  partnerId?: string | null;
 }
 
 export interface exotelInput {
   from?: string | null;
   to?: string | null;
-  appointmentId?: string | null;
+  appointmentId: string;
+  deviceType?: DEVICETYPE | null;
 }
 
 //==============================================================

@@ -44,6 +44,7 @@ import { addMilliseconds, format, isAfter } from 'date-fns';
 import { getSessionToken, getExpirationTime } from 'helpers/openTok';
 import { CaseSheetRepository } from 'consults-service/repositories/caseSheetRepository';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
+import { WebEngageInput, postEvent } from 'helpers/webEngage';
 
 export const createAppointmentSessionTypeDefs = gql`
   enum REQUEST_ROLES {
@@ -227,6 +228,8 @@ const createJuniorAppointmentSession: Resolver<
     fromValue: STATUS.PENDING,
     toValue: STATUS.PENDING,
     valueType: VALUE_TYPE.STATUS,
+    fromState: apptDetails.appointmentState,
+    toState: apptDetails.appointmentState,
     userName: apptDetails.doctorId,
     reason: 'JD ' + ApiConstants.APPT_SESSION_HISTORY.toString(),
   };
@@ -257,8 +260,15 @@ const createAppointmentSession: Resolver<
   ) {
     throw new AphError(AphErrorMessages.INVALID_REQUEST_ROLE);
   }
+
   const apptDetails = await apptRepo.findById(createAppointmentSessionInput.appointmentId);
   if (apptDetails == null) throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
+
+  const patientRepo = patientsDb.getCustomRepository(PatientRepository);
+  const patientData = await patientRepo.getPatientDetails(apptDetails.patientId);
+
+  const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
+  const doctorData = await doctorRepository.findDoctorByIdWithoutRelations(apptDetails.doctorId);
 
   const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
 
@@ -311,7 +321,8 @@ const createAppointmentSession: Resolver<
         createAppointmentSessionInput.appointmentId,
         STATUS.IN_PROGRESS,
         true,
-        new Date()
+        new Date(),
+        apptDetails
       );
     }
 
@@ -335,12 +346,6 @@ const createAppointmentSession: Resolver<
       createAppointmentSessionInput.requestRole != REQUEST_ROLES.JUNIOR &&
       currentDate < apptDetails.appointmentDateTime
     ) {
-      const patientRepo = patientsDb.getCustomRepository(PatientRepository);
-      const patientData = await patientRepo.findById(apptDetails.patientId);
-      const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
-      const doctorData = await doctorRepository.findDoctorByIdWithoutRelations(
-        apptDetails.doctorId
-      );
       if (patientData && doctorData) {
         const messageBody = ApiConstants.AUTO_SUBMIT_BY_SD_SMS_TEXT.replace(
           '{0}',
@@ -379,7 +384,8 @@ const createAppointmentSession: Resolver<
       createAppointmentSessionInput.appointmentId,
       STATUS.IN_PROGRESS,
       true,
-      new Date()
+      new Date(),
+      apptDetails
     );
   }
 
@@ -404,10 +410,6 @@ const createAppointmentSession: Resolver<
     createAppointmentSessionInput.requestRole != REQUEST_ROLES.JUNIOR &&
     currentDate < apptDetails.appointmentDateTime
   ) {
-    const patientRepo = patientsDb.getCustomRepository(PatientRepository);
-    const patientData = await patientRepo.findById(apptDetails.patientId);
-    const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
-    const doctorData = await doctorRepository.findDoctorByIdWithoutRelations(apptDetails.doctorId);
     if (patientData && doctorData) {
       const messageBody = ApiConstants.AUTO_SUBMIT_BY_SD_SMS_TEXT.replace(
         '{0}',
@@ -424,10 +426,33 @@ const createAppointmentSession: Resolver<
     fromValue: STATUS.PENDING,
     toValue: STATUS.IN_PROGRESS,
     valueType: VALUE_TYPE.STATUS,
+    fromState: apptDetails.appointmentState,
+    toState: apptDetails.appointmentState,
     userName: apptDetails.doctorId,
     reason: 'SD ' + ApiConstants.APPT_SESSION_HISTORY.toString(),
   };
   apptRepo.saveAppointmentHistory(historyAttrs);
+
+  //post to webengage starts
+  const eventName =
+    createAppointmentSessionInput.requestRole === REQUEST_ROLES.DOCTOR
+      ? ApiConstants.DOCTOR_STARTED_CONSULTATION_EVENT_NAME.toString()
+      : ApiConstants.JD_CONSULTATION_STARTED_EVENT_NAME.toString();
+
+  const postBody: Partial<WebEngageInput> = {
+    userId: patientData ? patientData.mobileNumber : '',
+    eventName: eventName,
+    eventData: {
+      consultID: apptDetails.id,
+      displayID: apptDetails.displayId.toString(),
+      consultMode: apptDetails.appointmentType.toString(),
+      doctorName: doctorData ? doctorData.fullName : '',
+    },
+  };
+  postEvent(postBody);
+
+  //post to webengage ends
+
   return {
     sessionId: sessionId,
     appointmentToken: token,
@@ -473,12 +498,16 @@ const endAppointmentSession: Resolver<
   const apptRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const apptDetails = await apptRepo.findById(endAppointmentSessionInput.appointmentId);
   if (apptDetails == null) throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
+
   const callDetailsRepo = consultsDb.getCustomRepository(AppointmentCallDetailsRepository);
+
   await apptRepo.updateAppointmentStatus(
     endAppointmentSessionInput.appointmentId,
     endAppointmentSessionInput.status,
-    true
+    true,
+    apptDetails
   );
+
   const apptSessionRepo = consultsDb.getCustomRepository(AppointmentsSessionRepository);
   const apptSession = await apptSessionRepo.getAppointmentSession(
     endAppointmentSessionInput.appointmentId
@@ -508,6 +537,8 @@ const endAppointmentSession: Resolver<
     fromValue: apptDetails.status,
     toValue: endAppointmentSessionInput.status,
     valueType: VALUE_TYPE.STATUS,
+    fromState: apptDetails.appointmentState,
+    toState: apptDetails.appointmentState,
     userName: apptDetails.doctorId,
     reason: 'SD ' + ApiConstants.APPT_SESSION_COMPLETE_HISTORY.toString(),
   };
@@ -571,12 +602,12 @@ const endAppointmentSession: Resolver<
       DoctorName: docName,
       HospitalName: hospitalName,
     });
-    const ccEmailIds =
-      process.env.NODE_ENV == 'dev' ||
-      process.env.NODE_ENV == 'development' ||
-      process.env.NODE_ENV == 'local'
-        ? ApiConstants.PATIENT_APPT_CC_EMAILID
-        : ApiConstants.PATIENT_APPT_CC_EMAILID_PRODUCTION;
+    // const ccEmailIds =
+    //   process.env.NODE_ENV == 'dev' ||
+    //   process.env.NODE_ENV == 'development' ||
+    //   process.env.NODE_ENV == 'local'
+    //     ? ApiConstants.PATIENT_APPT_CC_EMAILID
+    //     : ApiConstants.PATIENT_APPT_CC_EMAILID_PRODUCTION;
     let isDoctorNoShow = 0;
     if (endAppointmentSessionInput.noShowBy == REQUEST_ROLES.DOCTOR) {
       isDoctorNoShow = 1;
@@ -584,17 +615,17 @@ const endAppointmentSession: Resolver<
       rescheduleAppointmentAttrs.rescheduleInitiatedId = apptDetails.doctorId;
       const adminRepo = doctorsDb.getCustomRepository(AdminDoctorMap);
       const adminDetails = await adminRepo.findByadminId(apptDetails.doctorId);
-      console.log(adminDetails, 'adminDetails');
+      //console.log(adminDetails, 'adminDetails');
       if (adminDetails == null) throw new AphError(AphErrorMessages.GET_ADMIN_USER_ERROR);
 
       const listOfEmails: string[] = [];
 
       adminDetails.length > 0 &&
         adminDetails.map((value) => listOfEmails.push(value.adminuser.email));
-      console.log('listOfEmails', listOfEmails);
+      //console.log('listOfEmails', listOfEmails);
       listOfEmails.forEach(async (adminemail) => {
         const adminEmailContent: EmailMessage = {
-          ccEmail: ccEmailIds.toString(),
+          // ccEmail: ccEmailIds.toString(),
           toEmail: adminemail.toString(),
           subject: mailSubject.toString(),
           fromEmail: ApiConstants.PATIENT_HELP_FROM_EMAILID.toString(),
@@ -605,7 +636,12 @@ const endAppointmentSession: Resolver<
       });
     }
     await rescheduleRepo.saveReschedule(rescheduleAppointmentAttrs);
-    await apptRepo.updateTransferState(apptDetails.id, APPOINTMENT_STATE.AWAITING_RESCHEDULE);
+    await apptRepo.updateTransferState(
+      apptDetails.id,
+      APPOINTMENT_STATE.AWAITING_RESCHEDULE,
+      apptDetails
+    );
+
     // send notification
     let pushNotificationInput = {
       appointmentId: apptDetails.id,

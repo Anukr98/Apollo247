@@ -13,6 +13,8 @@ import {
   getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labTests,
   getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_healthChecks,
   getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_hospitalizations,
+  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labResults_response,
+  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_prescriptions_response,
 } from '../../graphql/types/getPatientPrismMedicalRecords';
 import { postWebEngageEvent } from '../../helpers/helperFunctions';
 import { WebEngageEvents, WebEngageEventName } from '../../helpers/webEngageEvents';
@@ -47,6 +49,14 @@ export interface MedicalRecordsProps extends NavigationScreenProps {
     | (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_hospitalizations | null)[]
     | null
     | undefined;
+  labResultsData:
+    | (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labResults_response | null)[]
+    | null
+    | undefined;
+  prescriptionsData:
+    | (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_prescriptions_response | null)[]
+    | null
+    | undefined;
   renderDeleteMedicalOrder: (id: string) => void;
 }
 
@@ -54,36 +64,45 @@ export const MedicalRecords: React.FC<MedicalRecordsProps> = (props) => {
   const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
-  const { MedicalRecordData, labTestsData, healthChecksData, hospitalizationsData } = props;
+  const {
+    MedicalRecordData,
+    labTestsData,
+    healthChecksData,
+    hospitalizationsData,
+    labResultsData,
+    prescriptionsData,
+  } = props;
   const [combination, setCombination] = useState<{ type: string; data: any }[]>();
 
   useEffect(() => {
     let mergeArray: { type: string; data: any }[] = [];
     console.log('combination before', mergeArray);
-    MedicalRecordData!.forEach((item) => {
-      mergeArray.push({ type: 'medical', data: item });
-    });
-    labTestsData!.forEach((item) => {
+    // MedicalRecordData!.forEach((item) => {
+    //   mergeArray.push({ type: 'medical', data: item });
+    // });
+    // labTestsData!.forEach((item) => {
+    //   mergeArray.push({ type: 'lab', data: item });
+    // });
+    // healthChecksData!.forEach((item) => {
+    //   mergeArray.push({ type: 'health', data: item });
+    // });
+    // hospitalizationsData!.forEach((item) => {
+    //   mergeArray.push({ type: 'hospital', data: item });
+    // });
+    labResultsData!.forEach((item) => {
       mergeArray.push({ type: 'lab', data: item });
     });
-    healthChecksData!.forEach((item) => {
-      mergeArray.push({ type: 'health', data: item });
-    });
-    hospitalizationsData!.forEach((item) => {
-      mergeArray.push({ type: 'hospital', data: item });
-    });
+    // prescriptionsData!.forEach((item) => {
+    //   mergeArray.push({ type: 'prescription', data: item });
+    // });
     console.log('combination after', mergeArray);
-    setCombination(sordByDate(mergeArray));
-  }, [MedicalRecordData, labTestsData, healthChecksData, hospitalizationsData]);
+    setCombination(sortByDate(mergeArray));
+  }, [labResultsData]);
 
-  const sordByDate = (array: { type: string; data: any }[]) => {
+  const sortByDate = (array: { type: string; data: any }[]) => {
     return array.sort(({ data: data1 }, { data: data2 }) => {
-      let date1 = new Date(
-        data1.testDate || data1.labTestDate || data1.appointmentDate || data1.dateOfHospitalization
-      );
-      let date2 = new Date(
-        data2.testDate || data2.labTestDate || data2.appointmentDate || data2.dateOfHospitalization
-      );
+      let date1 = new Date(data1.date);
+      let date2 = new Date(data2.date);
       return date1 > date2 ? -1 : date1 < date2 ? 1 : 0;
     });
   };
@@ -118,14 +137,10 @@ export const MedicalRecords: React.FC<MedicalRecordsProps> = (props) => {
   const renderCards = () => {
     return (
       <View>
-        {props.MedicalRecordData &&
-        props.MedicalRecordData.length == 0 &&
-        labTestsData &&
-        labTestsData.length == 0 &&
-        healthChecksData &&
-        healthChecksData.length == 0 &&
-        hospitalizationsData &&
-        hospitalizationsData.length == 0 ? (
+        {labResultsData &&
+        labResultsData.length == 0 &&
+        prescriptionsData &&
+        prescriptionsData.length == 0 ? (
           <View style={{ justifyContent: 'center', flexDirection: 'column' }}>
             <View
               style={{
@@ -173,14 +188,10 @@ export const MedicalRecords: React.FC<MedicalRecordsProps> = (props) => {
               removeClippedSubviews={false}
               renderItem={({ item, index }) => {
                 let data;
-                if (item.type === 'medical') {
-                  data = { data: item.data };
-                } else if (item.type === 'lab') {
+                if (item.type === 'lab') {
                   data = { datalab: item.data, disableDelete: true };
-                } else if (item.type === 'hospital') {
-                  data = { datahospitalization: item.data, disableDelete: true };
-                } else if (item.type === 'health') {
-                  data = { datahealth: item.data, disableDelete: true };
+                } else if (item.type === 'prescription') {
+                  data = { dataprescription: item.data, disableDelete: true };
                 }
                 return (
                   <HealthMedicineCard
@@ -202,10 +213,8 @@ export const MedicalRecords: React.FC<MedicalRecordsProps> = (props) => {
   };
   return (
     <View>
-      {((props.MedicalRecordData && props.MedicalRecordData.length > 0) ||
-        (labTestsData && labTestsData.length > 0) ||
-        (healthChecksData && healthChecksData.length > 0) ||
-        (hospitalizationsData && hospitalizationsData.length > 0)) &&
+      {((labResultsData && labResultsData.length > 0) ||
+        (prescriptionsData && prescriptionsData.length > 0)) &&
         renderFilter()}
       {renderCards()}
     </View>

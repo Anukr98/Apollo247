@@ -8,7 +8,8 @@ import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { ApiConstants } from 'ApiConstants';
 import { DoctorHospitalRepository } from 'doctors-service/repositories/doctorHospitalRepository';
-import { differenceInDays } from 'date-fns';
+import { addDays } from 'date-fns';
+import { getCache, setCache } from 'profiles-service/database/connectRedis';
 
 export const getPatinetAppointmentsTypeDefs = gql`
   type PatinetAppointments {
@@ -88,6 +89,8 @@ export const getPatinetAppointmentsTypeDefs = gql`
   }
 `;
 
+const REDIS_PATIENT_PASTCONSULT_BY_UHID_PREFIX: string = 'patient:pastconsult:';
+
 type PatientAppointmentsResult = {
   patinetAppointments: PatinetAppointments[] | null;
 };
@@ -138,7 +141,7 @@ type AppointmentPayment = {
 };
 
 type PersonalizedAppointmentResult = {
-  appointmentDetails: PersonalizedAppointment | '';
+  appointmentDetails: PersonalizedAppointment;
 };
 
 type offlineAppointment = {
@@ -165,9 +168,9 @@ type PersonalizedAppointment = {
   doctorId: string;
 };
 
-type Doctor = {
-  id: string;
-  doctorName: string;
+type MedmantraApolloDoctor = {
+  apolloDocId: string;
+  medmantraId: string;
 };
 
 type AppointmentInputArgs = { patientAppointmentsInput: PatientAppointmentsInput };
@@ -182,19 +185,11 @@ const getPatinetAppointments: Resolver<
   { patientAppointmentsInput },
   { consultsDb, doctorsDb, patientsDb, mobileNumber }
 ) => {
+  const { patientId } = patientAppointmentsInput;
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
-  const patientData = await patientRepo.checkMobileIdInfo(
-    mobileNumber,
-    '',
-    patientAppointmentsInput.patientId
-  );
-  if (!patientData) throw new AphError(AphErrorMessages.INVALID_PATIENT_DETAILS);
   const appts = consultsDb.getCustomRepository(AppointmentRepository);
-  const primaryPatientIds = await patientRepo.getLinkedPatientIds(
-    patientAppointmentsInput.patientId
-  );
-
-  const patinetAppointments = await appts.getPatinetUpcomingAppointments(primaryPatientIds);
+  const primaryPatientIds = await patientRepo.getLinkedPatientIds({ patientId });
+  const patinetAppointments = await appts.getPatientUpcomingAppointments(primaryPatientIds);
 
   return { patinetAppointments };
 };
@@ -205,19 +200,12 @@ const getPatientFutureAppointmentCount: Resolver<
   ConsultServiceContext,
   { consultsCount: number }
 > = async (parent, args, { consultsDb, patientsDb, mobileNumber, doctorsDb }) => {
-  //check whether the access is by patient
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
-  const patientData = await patientRepo.getPatientDetails(args.patientId);
-  if (patientData == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
-
-  if (patientData.mobileNumber !== mobileNumber) throw new AphError(AphErrorMessages.UNAUTHORIZED);
-
+  const { patientId } = args;
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
-  const primaryPatientIds = await patientRepo.getLinkedPatientIds(args.patientId);
-
-  const conultsList = await appointmentRepo.getPatinetUpcomingAppointments(primaryPatientIds);
-
-  return { consultsCount: conultsList.length };
+  const primaryPatientIds = await patientRepo.getLinkedPatientIds({ patientId });
+  const conultsList = await appointmentRepo.getPatientUpcomingAppointmentsCount(primaryPatientIds);
+  return { consultsCount: conultsList };
 };
 
 const getPatientAllAppointments: Resolver<
@@ -226,11 +214,10 @@ const getPatientAllAppointments: Resolver<
   ConsultServiceContext,
   PatientAllAppointmentsResult
 > = async (parent, args, { consultsDb, patientsDb, mobileNumber }) => {
+  const { patientId } = args;
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
-  const patientData = await patientRepo.checkMobileIdInfo(mobileNumber, '', args.patientId);
-  if (!patientData) throw new AphError(AphErrorMessages.INVALID_PATIENT_DETAILS);
   const appts = consultsDb.getCustomRepository(AppointmentRepository);
-  const primaryPatientIds = await patientRepo.getLinkedPatientIds(args.patientId);
+  const primaryPatientIds = await patientRepo.getLinkedPatientIds({ patientId });
 
   const appointments = await appts.getPatientAllAppointments(
     primaryPatientIds,
@@ -247,7 +234,17 @@ const getPatientPersonalizedAppointments: Resolver<
   ConsultServiceContext,
   PersonalizedAppointmentResult
 > = async (parent, args, { consultsDb, doctorsDb, patientsDb, mobileNumber }) => {
+  // Following code will be executed if data is not found in cache
+
+  const MAX_DAYS_PAST_CONSULT: number = 30;
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
+  const doctorFacilityRepo = doctorsDb.getCustomRepository(DoctorHospitalRepository);
+  const apptRepo = consultsDb.getCustomRepository(AppointmentRepository); 
+  const uhid = args.patientUhid;
+ 
+  if (uhid == '' || uhid == null) {
+    throw new AphError(AphErrorMessages.INVALID_UHID, undefined, {});
+  }
   const patientDetails = await patientRepo.findByUhid(args.patientUhid);
   if (!patientDetails) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
@@ -255,73 +252,104 @@ const getPatientPersonalizedAppointments: Resolver<
   if (mobileNumber != patientDetails.mobileNumber) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_DETAILS, undefined, {});
   }
-  let uhid = args.patientUhid;
-  if (process.env.NODE_ENV == 'local') uhid = ApiConstants.CURRENT_UHID.toString();
-  else if (process.env.NODE_ENV == 'dev') uhid = ApiConstants.CURRENT_UHID.toString();
-  const apptsResp = await fetch(
-    process.env.PRISM_GET_OFFLINE_APPOINTMENTS
-      ? process.env.PRISM_GET_OFFLINE_APPOINTMENTS + uhid
-      : '',
-    {
-      method: 'GET',
-      headers: {},
+
+  // Read data from cache
+  const appointmentsFromCache = await getPersonalizedAppointmentFromCache(args.patientUhid);
+  if (appointmentsFromCache !== null) {
+    let countOfAppointmentBooked = -1;
+    const response: PersonalizedAppointmentResult = JSON.parse(appointmentsFromCache);
+    if (response.appointmentDetails.doctorId && response.appointmentDetails.appointmentDateTime) {
+      response.appointmentDetails.appointmentDateTime = new Date(
+        response.appointmentDetails.appointmentDateTime
+      );
+
+      countOfAppointmentBooked = await validateAppointmentBooked(
+        apptRepo,
+        response.appointmentDetails.doctorId,
+        patientDetails.id,
+        response.appointmentDetails.appointmentDateTime
+      );
     }
-  );
-  const textRes = await apptsResp.text();
-  const offlineApptsList = JSON.parse(textRes);
-  let doctorFlag = 1;
-  function getApptDetails() {
-    return new Promise<PersonalizedAppointment>(async (resolve) => {
-      const doctorRepo = doctorsDb.getCustomRepository(DoctorHospitalRepository);
-      offlineApptsList.response.forEach(async (appt: offlineAppointment) => {
-        if (Math.abs(differenceInDays(new Date(), new Date(appt.consultedtime))) <= 30) {
-          const doctorDets = await doctorRepo.getDoctorIdByMedmantraId(appt.doctorid);
-          if (doctorDets) {
-            const apptRepo = consultsDb.getCustomRepository(AppointmentRepository);
-            const apptDetailsBooked = await apptRepo.checkIfAppointmentBooked(
-              doctorDets.doctor.id,
-              patientDetails ? patientDetails.id : '',
-              new Date(appt.consultedtime)
-            );
-            console.log(apptDetailsBooked, 'apptDetailsBooked');
-            if (apptDetailsBooked == 0) {
-              const apptDetailsOffline: PersonalizedAppointment = {
-                id: appt.appointmentid,
-                hospitalLocation: appt.location_name,
-                appointmentDateTime: new Date(appt.consultedtime),
-                appointmentType:
-                  appt.appointmenttype == 'WALKIN'
-                    ? APPOINTMENT_TYPE.PHYSICAL
-                    : APPOINTMENT_TYPE.ONLINE,
-                doctorId: doctorDets.doctor.id,
-              };
-              apptDetails = apptDetailsOffline;
-              doctorFlag = 1;
-            }
-          } else {
-            doctorFlag = 0;
-            resolve(apptDetails);
-          }
-        }
-        console.log(apptDetails, 'appt details inside');
-        resolve(apptDetails);
-      });
-    });
-  }
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let apptDetails: any;
-  if (offlineApptsList.errorCode == 0) {
-    //console.log(offlineApptsList.response, offlineApptsList.response.length);
-    await getApptDetails();
-  } else {
-    console.log(offlineApptsList.errorMsg, offlineApptsList.errorCode, 'offline consults error');
-    throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
+    if (countOfAppointmentBooked == 0) {
+      return response;
+    }
+    // If appoinment is booked, then cached appointment can't be returned.
+    // We will have perform a fetch of appointmentsfrom PRISM, and return the correct appointment
   }
 
-  if (doctorFlag == 0) throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID);
-  console.log(apptDetails, 'apptDetails');
-  if (apptDetails == null) throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
-  return { appointmentDetails: apptDetails };
+  const offlineApptsResponse = await getOfflineAppointmentsFromPrism(uhid);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let apptDetails: any = {};
+
+  if (offlineApptsResponse.errorCode == 0 && offlineApptsResponse.response.length > 0) {
+    const aDateInPast = addDays(new Date(), -1 * MAX_DAYS_PAST_CONSULT);
+    const offlineApptsList = offlineApptsResponse.response;
+    /**
+     * appointmentsToConsider array contains appointments which
+     *  a. has valid consultedtime
+     *  b. are after "aDateInPast"
+     *
+     * This array is sorted on the basis of consultedtime in descending order
+     */
+
+    const appointmentsToConsider = offlineApptsList
+      .sort(
+        (a: offlineAppointment, b: offlineAppointment) =>
+          new Date(b.consultedtime).getTime() - new Date(a.consultedtime).getTime()
+      )
+      .filter(
+        (a: offlineAppointment) =>
+          !isNaN(new Date(a.consultedtime).getTime()) &&
+          new Date(a.consultedtime).getTime() >= aDateInPast.getTime()
+      );
+
+    const medMantraIds: string[] = appointmentsToConsider.map(
+      (x: offlineAppointment) => x.doctorid
+    );
+    const medmantraApolloDoctors: MedmantraApolloDoctor[] =
+      medMantraIds.length > 0
+        ? await doctorFacilityRepo.getDoctorIdsByMedMantraIds(medMantraIds)
+        : [];
+
+    const mapMedMantraApolloDoctor = new Map<string, string>();
+    medmantraApolloDoctors.map((x: MedmantraApolloDoctor) =>
+      mapMedMantraApolloDoctor.set(x.medmantraId, x.apolloDocId)
+    );
+
+    for (const appt of appointmentsToConsider) {
+      const apolloDoctorId = mapMedMantraApolloDoctor.get(appt.doctorid) || '';
+      const patientId = patientDetails ? patientDetails.id : '';
+      if (mapMedMantraApolloDoctor.has(appt.doctorid)) {
+        let apptBooked = await validateAppointmentBooked(
+          apptRepo,
+          apolloDoctorId,
+          patientId,
+          new Date(appt.consultedtime)
+        );
+        if (apptBooked == 0) {
+          const apptDetailsOffline: PersonalizedAppointment = {
+            id: appt.id,
+            hospitalLocation: appt.location_name,
+            appointmentDateTime: new Date(appt.consultedtime),
+            appointmentType:
+              appt.appointmenttype == 'WALKIN'
+                ? APPOINTMENT_TYPE.PHYSICAL
+                : APPOINTMENT_TYPE.ONLINE,
+            doctorId: apolloDoctorId,
+          };
+          apptDetails = apptDetailsOffline;
+          break;
+        }
+      }
+    }
+  }
+  const response: PersonalizedAppointmentResult = { appointmentDetails: apptDetails };
+  await setCache(
+    `${REDIS_PATIENT_PASTCONSULT_BY_UHID_PREFIX}${uhid}`,
+    JSON.stringify(response),
+    ApiConstants.CACHE_EXPIRATION_86400
+  );
+  return response;
 };
 
 export const getPatinetAppointmentsResolvers = {
@@ -333,7 +361,10 @@ export const getPatinetAppointmentsResolvers = {
 
   PersonalizedAppointment: {
     doctorDetails(appointment: PersonalizedAppointment) {
-      return { __typename: 'DoctorDetailsWithStatusExclude', id: appointment.doctorId };
+      return {
+        __typename: 'DoctorDetailsWithStatusExclude',
+        id: appointment.doctorId ? appointment.doctorId : '',
+      };
     },
   },
 
@@ -344,3 +375,41 @@ export const getPatinetAppointmentsResolvers = {
     getPatientPersonalizedAppointments,
   },
 };
+async function validateAppointmentBooked(
+  apptRepo: AppointmentRepository,
+  apolloDoctorId: string,
+  patientId: string,
+  consultedtime: Date
+) {
+  let appointmentBooked = -1;
+  appointmentBooked = await apptRepo.checkIfAppointmentBooked(
+    apolloDoctorId,
+    patientId,
+    consultedtime
+  );
+  return appointmentBooked;
+}
+
+async function getOfflineAppointmentsFromPrism(uhid: string) {
+  const apptsResp = await fetch(
+    process.env.PRISM_GET_OFFLINE_APPOINTMENTS
+      ? process.env.PRISM_GET_OFFLINE_APPOINTMENTS + uhid
+      : '',
+    {
+      method: 'GET',
+      headers: {},
+    }
+  );
+  const textRes = await apptsResp.text();
+  const offlineApptsList = JSON.parse(textRes);
+  return offlineApptsList;
+}
+
+async function getPersonalizedAppointmentFromCache(uhid: string) {
+  const pastConsultFromCache = await getCache(`${REDIS_PATIENT_PASTCONSULT_BY_UHID_PREFIX}${uhid}`);
+  if (pastConsultFromCache && typeof pastConsultFromCache === 'string') {
+    return pastConsultFromCache;
+  } else {
+    return null;
+  }
+}

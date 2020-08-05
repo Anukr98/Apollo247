@@ -264,6 +264,11 @@ export const JDConsult: React.FC<ConsultProps> = (props) => {
                   props.toggelChatVideo();
                   props.stopAudioVideoCallpatient();
                   setIscall(false);
+                  if (event.reason === 'networkDisconnected') {
+                    props.setSessionError({"message": 'Call was disconnected due to Network problems on the patient end.'});
+                  }else{
+                    props.setSessionError({"message": 'Patient left the call.'});
+                  }
                 },
                 streamPropertyChanged: (event: any) => {
                   const subscribers = event.target.getSubscribersForStream(event.stream);
@@ -297,8 +302,16 @@ export const JDConsult: React.FC<ConsultProps> = (props) => {
                   publishVideo: subscribeToVideo,
                 }}
                 onError={(error: any) => {
-                  console.log('Publisher Error', error);
-                  props.setPublisherError(error);
+                  console.log('Publisher Error', error, error.name);
+                    if(error.name === 'OT_USER_MEDIA_ACCESS_DENIED'){
+                      props.setPublisherError({"message": 'Audio/Video permissions are not provided'});
+                    }else if(error.name === 'OT_HARDWARE_UNAVAILABLE'){
+                      props.setPublisherError({"message": 'Audio/Video device is not connected.'});
+                    }else if(error.name === 'OT_CHROME_MICROPHONE_ACQUISITION_ERROR'){
+                      props.setPublisherError({"message": 'Audio device is not connected.'});
+                    }else{
+                      props.setPublisherError(error);
+                    }
                 }}
                 eventHandlers={{
                   error: (error: any) => {

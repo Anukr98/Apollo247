@@ -23,6 +23,7 @@ import { Button } from '../ui/Button';
 import { MaterialMenu } from '../ui/MaterialMenu';
 import { TextInputComponent } from '../ui/TextInputComponent';
 import { useUIElements } from '../UIElementsProvider';
+import { ChatRoom_NotRecorded_Value } from '@aph/mobile-patients/src/strings/strings.json';
 
 const { height, width } = Dimensions.get('window');
 
@@ -260,7 +261,7 @@ const slides: Slide[] = [
     key: 'temperature',
     index: 10,
     title: 'What is your body temperature right now (in °F) ?',
-    buttonText: ['99-100', '100-101', '102+', 'No Idea'],
+    buttonText: ['99-100', '100-101', '102+', ChatRoom_NotRecorded_Value],
     inputData: ['value'],
   },
   {
@@ -268,7 +269,7 @@ const slides: Slide[] = [
     index: 11,
     title: 'What is your blood pressure right now?',
     inputPlacerholder: '---/---',
-    buttonText: ['No Idea'],
+    buttonText: [ChatRoom_NotRecorded_Value],
     inputData: ['value', 'value'],
     keyboardType: 'numbers-and-punctuation',
     validation: /^\d{0,3}(\/|\\){0,1}\d{0,3}$/,
@@ -368,7 +369,7 @@ export const ChatQuestions: React.FC<ChatQuestionsProps> = (props) => {
             (v.find((i) => i.k === 'gender')!.v = [currentPatient.patientMedicalHistory.gender]));
       currentPatient.patientMedicalHistory.bp &&
         (v.find((i) => i.k === 'bp')!.v = [
-          currentPatient.patientMedicalHistory.bp !== 'No Idea'
+          currentPatient.patientMedicalHistory.bp !== ChatRoom_NotRecorded_Value
             ? (currentPatient.patientMedicalHistory.bp.match(/^\d{0,3}(\/|\\){0,1}\d{0,3}$/) || [
                 '',
               ])[0] || ''
@@ -393,7 +394,7 @@ export const ChatQuestions: React.FC<ChatQuestionsProps> = (props) => {
       v.find((i) => i.k === 'height')!.v = height;
       currentPatient.patientMedicalHistory.weight &&
         (v.find((i) => i.k === 'weight')!.v = [
-          currentPatient.patientMedicalHistory.weight !== 'No Idea'
+          currentPatient.patientMedicalHistory.weight !== ChatRoom_NotRecorded_Value
             ? (currentPatient.patientMedicalHistory.weight.match(/^[0-9]+\.{0,1}[0-9]{0,3}$/) || [
                 '',
               ])[0] || ''
@@ -446,6 +447,8 @@ export const ChatQuestions: React.FC<ChatQuestionsProps> = (props) => {
       values &&
       values[index - 1].v[0] !== slides[index].dependentValue
     ) {
+      const v = values!;
+      v[index].v[0] = v[index - 1].v[0];
       setcurrentIndex(index + 1);
       appIntroSliderRef.current.goToSlide(index + 1);
     }
@@ -548,10 +551,12 @@ export const ChatQuestions: React.FC<ChatQuestionsProps> = (props) => {
                   const v = values!;
                   if (item.validation) {
                     if (item.validation.test(text) || text === '') {
+                      v[item.index].v[item.buttonText ? 1 : 0] = '';
                       v[item.index].v[0] = text;
                       setValues(v);
                     }
                   } else {
+                    v[item.index].v[item.buttonText ? 1 : 0] = '';
                     v[item.index].v[0] = text;
                     setValues(v);
                   }
@@ -661,6 +666,7 @@ export const ChatQuestions: React.FC<ChatQuestionsProps> = (props) => {
                 onPress={() => {
                   const v = values!;
                   v[item.index].v[item.inputPlacerholder || item.dropDown ? 1 : 0] = text;
+                  v[item.index].v[item.inputPlacerholder || item.dropDown ? 0 : 1] = '';
                   setValues(v);
                   setRefresh(!refresh);
                 }}

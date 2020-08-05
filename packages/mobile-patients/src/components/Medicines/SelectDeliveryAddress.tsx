@@ -14,7 +14,7 @@ import {
 import { pinCodeServiceabilityApi } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState } from 'react';
-import { Alert, SafeAreaView, StyleSheet, View } from 'react-native';
+import { SafeAreaView, StyleSheet, View } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { formatAddress } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -33,8 +33,6 @@ export interface SelectDeliveryAddressProps extends NavigationScreenProps {
   selectedAddress: string;
   isChanged: (val: boolean, id?: string) => void;
 }
-{
-}
 
 export const SelectDeliveryAddress: React.FC<SelectDeliveryAddressProps> = (props) => {
   const isTest = props.navigation.getParam('isTest');
@@ -45,11 +43,19 @@ export const SelectDeliveryAddress: React.FC<SelectDeliveryAddressProps> = (prop
     addresses: addressList,
     deliveryAddressId: selectedAddressId,
     setDeliveryAddressId: setSelectedAddressId,
+    setAddresses,
   } = isTest ? useDiagnosticsCart() : useShoppingCart();
   const [selectedId, setselectedId] = useState<string>(selectedAddressId || selectedAddress);
   const [selectedPinCode, setselectedPinCode] = useState<string>(selectedAddressId);
   const [loading, setLoading] = useState<boolean>(false);
   const { showAphAlert } = useUIElements();
+
+  const reArrangeAddresses = () => {
+    setAddresses!([
+      addressList.find((a) => a.id == selectedId)!,
+      ...addressList.filter((a) => a.id != selectedId),
+    ]);
+  };
 
   const renderBottomButtons = () => {
     return (
@@ -61,18 +67,20 @@ export const SelectDeliveryAddress: React.FC<SelectDeliveryAddressProps> = (prop
           onPress={() => {
             setLoading(true);
             if (isTest) {
+              reArrangeAddresses();
               isChanged(true, selectedId);
               props.navigation.goBack();
             } else {
               pinCodeServiceabilityApi(selectedPinCode)
                 .then(({ data: { Availability } }) => {
                   if (Availability) {
+                    reArrangeAddresses();
                     setSelectedAddressId && setSelectedAddressId(selectedId);
                     props.navigation.goBack();
                     CommonLogEvent(AppRoutes.SelectDeliveryAddress, 'Address selected');
                   } else {
                     showAphAlert!({
-                      title: 'Uh oh.. :(',
+                      title: string.common.uhOh,
                       description: string.medicine_cart.pharmaAddressUnServiceableAlert,
                     });
                     CommonLogEvent(AppRoutes.SelectDeliveryAddress, 'Pincode unserviceable.');
@@ -81,7 +89,10 @@ export const SelectDeliveryAddress: React.FC<SelectDeliveryAddressProps> = (prop
                 })
                 .catch((e) => {
                   CommonBugFender('SelectDeliveryAddress_pinCodeServiceabilityApi', e);
-                  Alert.alert('Alert', 'Unable to check if the address is serviceable or not.');
+                  showAphAlert!({
+                    title: string.common.uhOh,
+                    description: string.medicine_cart.pharmaAddressServiceabilityFailure,
+                  });
                 })
                 .finally(() => {
                   setLoading(false);

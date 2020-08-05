@@ -228,9 +228,13 @@ export const PHRLanding: React.FC<LandingProps> = (props) => {
   const sortByDate = (array: { type: string; data: any }[], type: string) => {
     if (type === 'medRecords') {
       return array.sort(({ data: data1 }, { data: data2 }) => {
-        let date1 = moment(data1.date).toDate().getTime();
-        let date2 = moment(data2.date).toDate().getTime();
-        return date1 > date2 ? -1 : date1 < date2 ? 1 : 0;
+        let date1 = moment(data1.date)
+          .toDate()
+          .getTime();
+        let date2 = moment(data2.date)
+          .toDate()
+          .getTime();
+        return date1 > date2 ? -1 : date1 < date2 ? 1 : data2.id - data1.id;
       });
     } else {
       return array.sort((a: any, b: any) => {
@@ -240,7 +244,7 @@ export const PHRLanding: React.FC<LandingProps> = (props) => {
         let date2 = moment(b.bookingDate || b.date || b.quoteDateTime)
           .toDate()
           .getTime();
-        return date1 > date2 ? -1 : date1 < date2 ? 1 : 0;
+        return date1 > date2 ? -1 : date1 < date2 ? 1 : a.id - b.id;
       });
     }
   };

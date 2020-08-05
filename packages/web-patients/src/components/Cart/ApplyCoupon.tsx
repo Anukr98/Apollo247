@@ -263,11 +263,13 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
                   'Coupon not applicable on your cart item(s) or item(s) with already higher discounts'
                 );
                 setCouponCode && setCouponCode('');
+                localStorage.removeItem('pharmaCoupon');
               }
               setMuationLoading(false);
             } else {
               setMuationLoading(false);
               setErrorMessage(couponValidateResult.reasonForInvalidStatus);
+              localStorage.removeItem('pharmaCoupon');
             }
           }
         })
@@ -279,7 +281,7 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
   const disableCoupon =
     !selectCouponCode ||
     selectCouponCode.length < 5 ||
-    selectCouponCode.length > 10 ||
+    selectCouponCode.length > 20 ||
     errorMessage.length > 0;
 
   return (
@@ -293,13 +295,13 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
                   <div className={classes.pinSearch}>
                     <AphTextField
                       inputProps={{
-                        maxLength: 10,
+                        maxLength: 20,
                       }}
                       value={selectCouponCode}
                       onChange={(e) => {
                         setErrorMessage('');
                         props.setValidityStatus(false);
-                        const value = e.target.value.replace(/[^a-z0-9]/gi, '');
+                        const value = e.target.value.replace(/\s/g, '');
                         setSelectCouponCode(value);
                       }}
                       placeholder="Enter coupon code"

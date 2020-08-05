@@ -774,6 +774,9 @@ export const AudioVideoProvider: React.FC = (props) => {
                 audioTrack: audioEnabled,
                 audioVolume: 100,
                 name: name,
+                resolution: '640x480',
+                audioBitrate: 30000,
+                frameRate: 15
               }}
               eventHandlers={publisherEventHandlers}
             />

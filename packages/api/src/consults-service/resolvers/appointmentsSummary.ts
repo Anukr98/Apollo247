@@ -60,10 +60,11 @@ const appointmentsSummary: Resolver<
       console.log(apptsList, serialNo, 'list----------');
       await apptsList.map(async (appt) => {
         // console.log('appt=', appt);
-        const patientDetails = await patientRepo.findById(appt.patientId);
+        const patientDetails = await patientRepo.getPatientDetails(appt.patientId);
         if (!patientDetails) {
           throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
         }
+
         const doctorDetails = await doctorRepo.findById(appt.doctorId);
         if (!doctorDetails) {
           console.log(11111);

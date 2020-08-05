@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { makeStyles, createStyles } from '@material-ui/styles';
 import { Theme, Grid, Avatar, CircularProgress } from '@material-ui/core';
 import _uniqueId from 'lodash/uniqueId';
@@ -6,16 +6,20 @@ import _map from 'lodash/map';
 import _filter from 'lodash/filter';
 import _startsWith from 'lodash/startsWith';
 import _toLower from 'lodash/toLower';
-import { SAVE_PATIENT_SEARCH } from 'graphql/pastsearches';
-import { SEARCH_TYPE } from 'graphql/types/globalTypes';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { clientRoutes } from 'helpers/clientRoutes';
-import { Route } from 'react-router-dom';
+import { Route, Link } from 'react-router-dom';
 import { readableParam } from 'helpers/commonHelpers';
-import { useMutation } from 'react-apollo-hooks';
-import { GetAllSpecialties_getAllSpecialties as SpecialtyType } from 'graphql/types/GetAllSpecialties';
 import { getSymptoms } from 'helpers/commonHelpers';
 import _lowerCase from 'lodash/lowerCase';
+import {
+  GetAllSpecialties,
+  GetAllSpecialties_getAllSpecialties as SpecialtyType,
+} from 'graphql/types/GetAllSpecialties';
+import { GET_ALL_SPECIALITIES } from 'graphql/specialities';
+import { useQuery } from 'react-apollo-hooks';
+import { specialtyClickTracking } from 'webEngageTracking';
+import { SchemaMarkup } from 'SchemaMarkup';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -96,27 +100,67 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: '0 10px 0 0',
       position: 'relative',
     },
+    circlularProgress: {
+      display: 'flex',
+      padding: 20,
+      justifyContent: 'center',
+    },
   });
 });
 
 interface SpecialtiesProps {
-  data: SpecialtyType[];
   selectedCity: string;
+  setSpecialtyCount?: (specialtyCount: number) => void;
 }
 
 export const Specialties: React.FC<SpecialtiesProps> = (props) => {
   const classes = useStyles({});
   const { currentPatient } = useAllCurrentPatients();
-  const { data, selectedCity } = props;
+  const { selectedCity, setSpecialtyCount } = props;
+  const { loading, error, data } = useQuery<GetAllSpecialties>(GET_ALL_SPECIALITIES);
+  const allSpecialties = data && data.getAllSpecialties;
+  const [structuredJSON, setStructuredJSON] = useState(null);
 
-  const saveSearchMutation = useMutation(SAVE_PATIENT_SEARCH);
+  const createSchema = (allSpecialties: any) => {
+    const itemListElement: any[] = [];
+    allSpecialties &&
+      allSpecialties.length > 0 &&
+      Object.values(allSpecialties).map((specialty: any, index: number) => {
+        itemListElement.push({
+          '@type': 'ListItem',
+          position: index + 1,
+          url: `https://www.apollo247.com/specialties/${readableParam(specialty.name)}`,
+          name: specialty.name,
+        });
+      });
+    setStructuredJSON({
+      '@context': 'https://schema.org',
+      '@type': 'ItemList',
+      itemListElement,
+    });
+  };
 
-  return data.length > 0 ? (
+  useEffect(() => {
+    localStorage.removeItem('symptomTracker');
+    if (setSpecialtyCount && allSpecialties && allSpecialties.length) {
+      setSpecialtyCount && setSpecialtyCount(allSpecialties.length);
+      createSchema(allSpecialties);
+    }
+  }, [allSpecialties]);
+
+  return loading ? (
+    <div className={classes.circlularProgress}>
+      <CircularProgress color="primary" />
+    </div>
+  ) : error ? (
+    <div>Error! </div>
+  ) : allSpecialties && allSpecialties.length > 0 ? (
     <>
       <div className={classes.root}>
+        {structuredJSON && <SchemaMarkup structuredJSON={structuredJSON} />}
         <div className={classes.searchList}>
           <Grid container spacing={1}>
-            {data.map(
+            {allSpecialties.map(
               (specialityDetails: SpecialtyType) =>
                 specialityDetails && (
                   <Route
@@ -129,51 +173,54 @@ export const Specialties: React.FC<SpecialtiesProps> = (props) => {
                         key={specialityDetails.id}
                         title={specialityDetails.name}
                         onClick={(e) => {
-                          currentPatient &&
-                            currentPatient.id &&
-                            saveSearchMutation({
-                              variables: {
-                                saveSearchInput: {
-                                  type: SEARCH_TYPE.SPECIALTY,
-                                  typeId: specialityDetails.id,
-                                  patient: currentPatient ? currentPatient.id : '',
-                                },
-                              },
-                            });
-                          const specialityUpdated = readableParam(`${e.currentTarget.title}`);
-                          history.push(
-                            selectedCity === ''
-                              ? clientRoutes.specialties(specialityUpdated)
-                              : clientRoutes.citySpecialties(
-                                  _lowerCase(selectedCity),
-                                  specialityUpdated
-                                )
-                          );
+                          const patientAge =
+                            new Date().getFullYear() -
+                            new Date(currentPatient && currentPatient.dateOfBirth).getFullYear();
+                          const eventData = {
+                            patientAge: currentPatient ? patientAge : '',
+                            patientGender: currentPatient ? currentPatient.gender : '',
+                            specialtyId: specialityDetails.id,
+                            specialtyName: e.currentTarget.title,
+                            relation: currentPatient ? currentPatient.relation : '',
+                          };
+                          specialtyClickTracking(eventData);
                         }}
                       >
-                        <div className={classes.contentBox}>
-                          <Avatar
-                            alt={specialityDetails.name || ''}
-                            src={specialityDetails.image || ''}
-                            className={classes.bigAvatar}
-                          />
-                          <div className={classes.spContent}>
-                            <div>{specialityDetails.name}</div>
-                            {specialityDetails.shortDescription && (
-                              <div className={classes.specialityDetails}>
-                                {specialityDetails.shortDescription}
-                              </div>
-                            )}
-                            {specialityDetails.symptoms && (
-                              <div className={classes.symptoms}>
-                                {getSymptoms(specialityDetails.symptoms)}
-                              </div>
-                            )}
-                            <span className={classes.rightArrow}>
-                              <img src={require('images/ic_arrow_right.svg')} />
-                            </span>
+                        <Link
+                          to={
+                            selectedCity === ''
+                              ? clientRoutes.specialties(readableParam(specialityDetails.name))
+                              : clientRoutes.citySpecialties(
+                                  _lowerCase(selectedCity),
+                                  readableParam(specialityDetails.name)
+                                )
+                          }
+                        >
+                          <div className={classes.contentBox}>
+                            <Avatar
+                              title={`Online Doctor Consultation - ${specialityDetails.name}`}
+                              alt={`Online Doctor Consultation - ${specialityDetails.name}`}
+                              src={specialityDetails.image || ''}
+                              className={classes.bigAvatar}
+                            />
+                            <div className={classes.spContent}>
+                              <div>{specialityDetails.name}</div>
+                              {specialityDetails.shortDescription && (
+                                <div className={classes.specialityDetails}>
+                                  {specialityDetails.shortDescription}
+                                </div>
+                              )}
+                              {specialityDetails.symptoms && (
+                                <div className={classes.symptoms}>
+                                  {getSymptoms(specialityDetails.symptoms)}
+                                </div>
+                              )}
+                              <span className={classes.rightArrow}>
+                                <img src={require('images/ic_arrow_right.svg')} />
+                              </span>
+                            </div>
                           </div>
-                        </div>
+                        </Link>
                       </Grid>
                     )}
                   />

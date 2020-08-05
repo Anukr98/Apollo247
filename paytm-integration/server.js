@@ -64,6 +64,14 @@ app.get(
     android_package_name: 'com.apollo.patientapp',
   })
 );
+app.get(
+  '/doctordeeplink',
+  deeplink({
+    fallback: 'https://doctors.apollo247.com/',
+    android_package_name: 'com.apollo.doctorapp',
+    ios_store_link: 'https://apps.apple.com/in/app/apollo-doctor-247/id1507758016',
+  })
+);
 
 app.get('/refreshDoctorDeepLinks', cronTabs.refreshDoctorDeepLinks);
 app.get('/generateDeeplinkForNewDoctors', cronTabs.generateDeeplinkForNewDoctors);
@@ -131,7 +139,7 @@ app.get('/invokeDashboardSummaries', (req, res) => {
         '\nupdateUtilizationCapacity Response\n' +
         JSON.stringify(response.data.data.updateUtilizationCapacity) +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function(err) {
+      fs.appendFile(fileName, content, function (err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -152,7 +160,7 @@ app.get('/invokeDashboardSummaries', (req, res) => {
         '\nupdatePhrDocSummary Response\n' +
         JSON.stringify(response.data.data.updatePhrDocSummary) +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function(err) {
+      fs.appendFile(fileName, content, function (err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -174,7 +182,7 @@ app.get('/invokeDashboardSummaries', (req, res) => {
         '\ngetAvailableDoctorsCount Response\n' +
         JSON.stringify(response.data.data.getAvailableDoctorsCount) +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function(err) {
+      fs.appendFile(fileName, content, function (err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -196,7 +204,7 @@ app.get('/invokeDashboardSummaries', (req, res) => {
         '\nupdateConsultRating Response\n' +
         JSON.stringify(response.data.data.updateConsultRating) +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function(err) {
+      fs.appendFile(fileName, content, function (err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -231,7 +239,7 @@ app.get('/updateSpecialtyCount', (req, res) => {
         '\nupdateSpecialtyCount Response\n' +
         JSON.stringify(response.data.data.updateSpecialtyCount) +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function(err) {
+      fs.appendFile(fileName, content, function (err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -270,7 +278,7 @@ app.get('/updateDoctorsAwayAndOnlineCount', (req, res) => {
         '\nupdateDoctorsAwayAndOnlineCount Response\n' +
         JSON.stringify(response.data.data.updateDoctorsAwayAndOnlineCount) +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function(err) {
+      fs.appendFile(fileName, content, function (err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -402,10 +410,7 @@ app.get('/diagnosticpayment', (req, res) => {
             req.query.price
           )}|APOLLO247|${firstName}|${emailAddress}|||||||||||eCwWELxi`;
 
-          const hash = crypto
-            .createHash('sha512')
-            .update(code)
-            .digest('hex');
+          const hash = crypto.createHash('sha512').update(code).digest('hex');
 
           console.log('paymentCode==>', code);
           console.log('paymentHash==>', hash);
@@ -843,7 +848,7 @@ app.get('/processOrders', (req, res) => {
                   '\n---------------------------\n' +
                   JSON.stringify(pharmaInput) +
                   '\n-------------------\n';
-                fs.appendFile(fileName, content, function(err) {
+                fs.appendFile(fileName, content, function (err) {
                   if (err) throw err;
                   console.log('Updated!');
                 });
@@ -863,7 +868,7 @@ app.get('/processOrders', (req, res) => {
                     console.log('pharma resp', resp, resp.data.ordersResult);
                     //const orderData = JSON.parse(resp.data);
                     content = resp.data.ordersResult + '\n==================================\n';
-                    fs.appendFile(fileName, content, function(err) {
+                    fs.appendFile(fileName, content, function (err) {
                       if (err) throw err;
                       console.log('Updated!');
                     });
@@ -1011,7 +1016,7 @@ app.get('/processOmsOrders', (req, res) => {
                     deliveryZipcode = patientAddressDetails.zipcode || deliveryZipcode;
                   }
                 }
-                if (parseInt(orderDetails.shopId, 10)) {
+                if (orderDetails.shopId && orderDetails.shopId !== '0') {
                   if (!orderDetails.shopAddress) {
                     logger.error(
                       `store address details not present for store pick ${orderDetails.orderAutoId}`
@@ -1024,6 +1029,8 @@ app.get('/processOmsOrders', (req, res) => {
                   deliveryZipcode = shopAddress.zipcode;
                   deliveryAddress = shopAddress.address || '';
                   deliveryStateCode = shopAddress.stateCode;
+                } else {
+                  orderDetails.shopId = '';
                 }
                 const orderLineItems = [];
                 let requestType = 'NONCART';
@@ -1100,6 +1107,27 @@ app.get('/processOmsOrders', (req, res) => {
                 if (orderDetails.orderTat && orderDetails.orderTat.length > 20) {
                   orderTat = addMinutes(orderTat, 330);
                 }
+                const paymentDetailsOptions = [];
+                if (paymentDetails.paymentType === 'CASHLESS') {
+                  if (paymentDetails.amountPaid) {
+                    paymentDetailsOptions.push({
+                      paymentsource: 'paytm',
+                      transactionstatus: 'TRUE',
+                      paymenttransactionid: paymentDetails.paymentRefId,
+                      amount: paymentDetails.amountPaid,
+                    });
+                  }
+                  if (paymentDetails.healthCreditsRedeemed) {
+                    paymentDetailsOptions.push({
+                      paymentsource: 'oneapollo',
+                      transactionstatus: 'TRUE',
+                      paymenttransactionid:
+                        paymentDetails.healthCreditsRedemptionRequest &&
+                        paymentDetails.healthCreditsRedemptionRequest.RequestNumber,
+                      amount: paymentDetails.healthCreditsRedeemed,
+                    });
+                  }
+                }
                 const medicineOrderPharma = {
                   orderid: orderDetails.orderAutoId,
                   orderdate: format(
@@ -1144,17 +1172,7 @@ app.get('/processOmsOrders', (req, res) => {
                     latitude: lat,
                     longitude: long,
                   },
-                  paymentdetails:
-                    paymentDetails.paymentType === 'CASHLESS'
-                      ? [
-                          {
-                            paymentsource: 'paytm',
-                            transactionstatus: 'TRUE',
-                            paymenttransactionid: paymentDetails.paymentRefId,
-                            amount: paymentDetails.amountPaid,
-                          },
-                        ]
-                      : [],
+                  paymentdetails: paymentDetailsOptions,
                   itemdetails: orderLineItems || [],
                   imageurl: orderPrescriptionUrl,
                 };
@@ -1565,7 +1583,7 @@ app.get('/processOrderById', (req, res) => {
             '\n---------------------------\n' +
             JSON.stringify(pharmaInput) +
             '\n-------------------\n';
-          fs.appendFile(fileName, content, function(err) {
+          fs.appendFile(fileName, content, function (err) {
             if (err) throw err;
             console.log('Updated!');
           });
@@ -1580,7 +1598,7 @@ app.get('/processOrderById', (req, res) => {
               console.log('pharma resp', resp, resp.data.ordersResult);
               //const orderData = JSON.parse(resp.data);
               content = resp.data.ordersResult + '\n==================================\n';
-              fs.appendFile(fileName, content, function(err) {
+              fs.appendFile(fileName, content, function (err) {
                 if (err) throw err;
                 console.log('Updated!');
               });

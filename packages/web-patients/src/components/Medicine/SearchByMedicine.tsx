@@ -18,13 +18,21 @@ import { ManageProfile } from 'components/ManageProfile';
 import { hasOnePrimaryUser } from '../../helpers/onePrimaryUser';
 import { BottomLinks } from 'components/BottomLinks';
 import { MedicineAutoSearch } from 'components/Medicine/MedicineAutoSearch';
-import { uploadPrescriptionTracking, pharmacySearchEnterTracking } from 'webEngageTracking';
+import {
+  uploadPrescriptionTracking,
+  pharmacySearchEnterTracking,
+  pharmacyCategoryClickTracking,
+} from 'webEngageTracking';
 import { UploadPrescription } from 'components/Prescriptions/UploadPrescription';
 import { UploadEPrescriptionCard } from 'components/Prescriptions/UploadEPrescriptionCard';
 import { useCurrentPatient } from 'hooks/authHooks';
 import moment from 'moment';
 import { gtmTracking } from 'gtmTracking';
 import { MetaTagsComp } from 'MetaTagsComp';
+import { GET_RECOMMENDED_PRODUCTS_LIST } from 'graphql/profiles';
+import { useMutation } from 'react-apollo-hooks';
+
+import { getRecommendedProductsList_getRecommendedProductsList_recommendedProducts as recommendedProductsType } from 'graphql/types/getRecommendedProductsList';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -225,6 +233,7 @@ type DiscountFilter = { fromDiscount: string; toDiscount: string };
 
 export const SearchByMedicine: React.FC = (props) => {
   const classes = useStyles({});
+  const recommendedProductsMutation = useMutation(GET_RECOMMENDED_PRODUCTS_LIST);
   const [priceFilter, setPriceFilter] = useState<PriceFilter | null>(null);
   const [discountFilter, setDiscountFilter] = useState<DiscountFilter | null>(null);
   const [filterData, setFilterData] = useState([]);
@@ -284,83 +293,185 @@ export const SearchByMedicine: React.FC = (props) => {
       });
   };
 
+  const getCategoryProducts = () => {
+    axios
+      .post(
+        apiDetails.skuUrl || '',
+        { params: paramSearchText, level: 'category' },
+        {
+          headers: {
+            Authorization: apiDetails.authToken,
+          },
+        }
+      )
+      .then((res) => {
+        setCategoryId(res.data.category_id || paramSearchText);
+        axios
+          .post(
+            apiDetails.url || '',
+            {
+              category_id: res.data.category_id || paramSearchText,
+              page_id: 1,
+            },
+            {
+              headers: {
+                Authorization: apiDetails.authToken,
+                Accept: '*/*',
+              },
+            }
+          )
+          .then(({ data }) => {
+            if (data && data.products) {
+              setMedicineList(data.products);
+              setHeading('');
+              setIsLoading(false);
+              pharmacyCategoryClickTracking({
+                source: 'Home',
+                categoryName: paramSearchText,
+                categoryId: res.data.category_id,
+                sectionName: paramSearchType,
+              });
+              /** gtm code start */
+              let gtmItems: any[] = [];
+              if (data.products.length) {
+                data.products.map((prod: MedicineProduct, key: number) => {
+                  const { name, sku, price, type_id, special_price } = prod;
+                  gtmItems.push({
+                    item_name: name,
+                    item_id: sku,
+                    price: special_price || price,
+                    item_category: 'Pharmacy',
+                    item_category_2: type_id
+                      ? type_id.toLowerCase() === 'pharma'
+                        ? 'Drugs'
+                        : 'FMCG'
+                      : null,
+                    // 'item_category_4': '',             // park for future use
+                    item_variant: 'Default',
+                    index: key + 1,
+                    quantity: 1,
+                  });
+                });
+              }
+              gtmTracking({
+                category: 'Pharmacy',
+                action: 'List Views',
+                label: '',
+                value: null,
+                ecommObj: {
+                  event: 'view_item_list',
+                  ecommerce: { items: gtmItems },
+                },
+              });
+              /** gtm code end */
+            }
+          })
+          .catch((e) => {
+            setHeading('');
+          });
+      })
+      .catch((e) => {
+        console.log(e);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+  };
+
+  const getImageUrl = (fileIds: string) => {
+    return fileIds
+      .split(',')
+      .filter((fileId) => fileId)
+      .map((fileId) => `/catalog/product${fileId}`)[0];
+  };
+
+  const getUrlKey = (name: string) => {
+    const formattedName = name
+      ? name.replace(/[`~!@#$%^&*()_|+\-=?;:'",.<>\{\}\[\]\\\/]/gi, '-')
+      : '';
+    return formattedName.replace(/\s+/g, '-');
+  };
+
+  const getRecommendedProducts = () => {
+    recommendedProductsMutation({
+      variables: {
+        patientUhid: patient && patient.uhid ? patient.uhid : '',
+      },
+    })
+      .then((res: any) => {
+        if (
+          res &&
+          res.data &&
+          res.data.getRecommendedProductsList &&
+          res.data.getRecommendedProductsList.recommendedProducts
+        ) {
+          const dataList = res.data.getRecommendedProductsList.recommendedProducts;
+          setMedicineList(
+            dataList.map((data: recommendedProductsType) => {
+              const {
+                productSku,
+                productName,
+                productImage,
+                productPrice,
+                productSpecialPrice,
+                isPrescriptionNeeded,
+                categoryName,
+                status,
+                mou,
+                imageBaseUrl,
+                id,
+                is_in_stock,
+                small_image,
+                thumbnail,
+                type_id,
+                quantity,
+                isShippable,
+                MaxOrderQty,
+                urlKey,
+              } = data;
+              return {
+                id,
+                image: productImage ? getImageUrl(productImage) : null,
+                is_in_stock,
+                is_prescription_required: isPrescriptionNeeded,
+                name: productName,
+                price: productPrice,
+                special_price: productSpecialPrice,
+                sku: productSku,
+                small_image,
+                status,
+                categoryName,
+                thumbnail,
+                type_id,
+                quantity,
+                mou,
+                isShippable,
+                MaxOrderQty,
+                imageBaseUrl,
+                url_key: urlKey && urlKey !== '' ? urlKey : getUrlKey(productName),
+              };
+            })
+          );
+        } else {
+          setMedicineList([]);
+        }
+      })
+      .catch((e) => {
+        console.log(e);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+  };
+
   useEffect(() => {
     if (!medicineList && paramSearchType !== 'search-medicines') {
       setIsLoading(true);
-      axios
-        .post(
-          apiDetails.skuUrl || '',
-          { params: paramSearchText, level: 'category' },
-          {
-            headers: {
-              Authorization: apiDetails.authToken,
-            },
-          }
-        )
-        .then(({ data }) => {
-          setCategoryId(data.category_id || paramSearchText);
-          axios
-            .post(
-              apiDetails.url || '',
-              {
-                category_id: data.category_id || paramSearchText,
-                page_id: 1,
-              },
-              {
-                headers: {
-                  Authorization: apiDetails.authToken,
-                  Accept: '*/*',
-                },
-              }
-            )
-            .then(({ data }) => {
-              if (data && data.products) {
-                setMedicineList(data.products);
-                setHeading('');
-                setIsLoading(false);
-                /** gtm code start */
-                let gtmItems: any[] = [];
-                if (data.products.length) {
-                  data.products.map((prod: MedicineProduct, key: number) => {
-                    const { name, sku, price, type_id, special_price } = prod;
-                    gtmItems.push({
-                      item_name: name,
-                      item_id: sku,
-                      price: special_price || price,
-                      item_category: 'Pharmacy',
-                      item_category_2: type_id
-                        ? type_id.toLowerCase() === 'pharma'
-                          ? 'Drugs'
-                          : 'FMCG'
-                        : null,
-                      // 'item_category_4': '',             // park for future use
-                      item_variant: 'Default',
-                      index: key + 1,
-                      quantity: 1,
-                    });
-                  });
-                }
-                gtmTracking({
-                  category: 'Pharmacy',
-                  action: 'List Views',
-                  label: '',
-                  value: null,
-                  ecommObj: {
-                    event: 'view_item_list',
-                    ecommerce: { items: gtmItems },
-                  },
-                });
-                /** gtm code end */
-              }
-            })
-            .catch((e) => {
-              setIsLoading(false);
-              setHeading('');
-            });
-        })
-        .catch((e) => {
-          console.log(e);
-        });
+      if (paramSearchText === 'recomonded-products') {
+        getRecommendedProducts();
+      } else {
+        getCategoryProducts();
+      }
     } else if (!medicineList && paramSearchText.length > 0) {
       onSearchMedicine();
     } else {

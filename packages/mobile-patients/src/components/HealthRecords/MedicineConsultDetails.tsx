@@ -208,6 +208,7 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
           prescriptionRequired: medicineDetails.is_prescription_required == '1',
           isMedicine: (medicineDetails.type_id || '').toLowerCase() == 'pharma',
           isInStock: true,
+          maxOrderQty: medicineDetails.MaxOrderQty,
         } as ShoppingCartItem);
         if (medicineDetails.is_prescription_required == '1') {
           addEPrescription!({
@@ -220,6 +221,19 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
             prismPrescriptionFileId: prismFile,
           });
         }
+
+        const eventAttributes: WebEngageEvents[WebEngageEventName.RE_ORDER_MEDICINE] = {
+          orderType: 'Cart',
+          source: 'PHR',
+          'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+          'Patient UHID': g(currentPatient, 'uhid'),
+          Relation: g(currentPatient, 'relation'),
+          'Patient Age': Math.round(moment().diff(currentPatient.dateOfBirth, 'years', true)),
+          'Patient Gender': g(currentPatient, 'gender'),
+          'Mobile Number': g(currentPatient, 'mobileNumber'),
+          'Customer ID': g(currentPatient, 'id'),
+        };
+        postWebEngageEvent(WebEngageEventName.RE_ORDER_MEDICINE, eventAttributes);
 
         props.navigation.navigate(AppRoutes.YourCart);
       })
@@ -472,22 +486,6 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
               onPress={() => {
                 addToCart();
                 CommonLogEvent('MEDICINE_CONSULT_DETAILS', 'Add to cart');
-
-                const eventAttributes: WebEngageEvents[WebEngageEventName.REORDER_MEDICINES] = {
-                  'Patient Name': `${g(currentPatient, 'firstName')} ${g(
-                    currentPatient,
-                    'lastName'
-                  )}`,
-                  'Patient UHID': g(currentPatient, 'uhid'),
-                  Relation: g(currentPatient, 'relation'),
-                  'Patient Age': Math.round(
-                    moment().diff(currentPatient.dateOfBirth, 'years', true)
-                  ),
-                  'Patient Gender': g(currentPatient, 'gender'),
-                  'Mobile Number': g(currentPatient, 'mobileNumber'),
-                  'Customer ID': g(currentPatient, 'id'),
-                };
-                postWebEngageEvent(WebEngageEventName.REORDER_MEDICINES, eventAttributes);
               }}
             />
           </View>

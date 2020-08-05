@@ -62,7 +62,7 @@ import {
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import AsyncStorage from '@react-native-community/async-storage';
-import { AppsFlyerEventName } from '../helpers/AppsFlyerEvents';
+import { AppsFlyerEventName, AppsFlyerEvents } from '../helpers/AppsFlyerEvents';
 import moment from 'moment';
 import DeviceInfo from 'react-native-device-info';
 import { FirebaseEventName, FirebaseEvents } from '../helpers/firebaseEvents';
@@ -459,7 +459,15 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
       }
 
       postWebEngageEvent(WebEngageEventName.REGISTRATION_DONE, eventAttributes);
-      postAppsFlyerEvent(AppsFlyerEventName.REGISTRATION_DONE, eventAttributes);
+
+      const appsflyereventAttributes: AppsFlyerEvents[AppsFlyerEventName.REGISTRATION_DONE] = {
+        'customer id': currentPatient ? currentPatient.id : '',
+      };
+      if (referral) {
+        // only send if referral has a value
+        appsflyereventAttributes['referral code'] = referral;
+      }
+      postAppsFlyerEvent(AppsFlyerEventName.REGISTRATION_DONE, appsflyereventAttributes);
       postFirebaseEvent(FirebaseEventName.SIGN_UP, eventFirebaseAttributes);
       setSignupEventFired(true);
     } catch (error) {

@@ -12,8 +12,9 @@ import {
   Patient,
   BOOKING_SOURCE,
   DEVICE_TYPE,
-  ONE_APOLLO_STORE_CODE,
 } from 'profiles-service/entities';
+import { ONE_APOLLO_STORE_CODE } from 'types/oneApolloTypes';
+
 import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
@@ -23,6 +24,7 @@ import {
   sendMedicineOrderStatusNotification,
 } from 'notifications-service/resolvers/notifications';
 import { log } from 'customWinstonLogger';
+import { OneApollo } from 'helpers/oneApollo';
 
 export const pharmaOrderDeliveredTypeDefs = gql`
   input OrderDeliveryInput {
@@ -247,7 +249,7 @@ const createOneApolloTransaction = async (
     });
     if (val.billDetails) {
       const billDetails: BillDetails = JSON.parse(val.billDetails);
-      Transaction.BillNo = billDetails.billNumber;
+      Transaction.BillNo = `${billDetails.billNumber}_${order.orderAutoId}`;
       Transaction.NetAmount = netAmount;
       Transaction.TransactionDate = billDetails.billDateTime;
       Transaction.GrossAmount = +new Decimal(netAmount).plus(totalDiscount);
@@ -309,8 +311,9 @@ const createOneApolloTransaction = async (
       JSON.stringify(Transaction),
       ''
     );
-    //if (mobileNumber == '9560923408' || mobileNumber == '7993961498') {
-    const oneApolloResponse = await medicineOrdersRepo.createOneApolloTransaction(Transaction);
+
+    const oneApollo = new OneApollo();
+    const oneApolloResponse = await oneApollo.createOneApolloTransaction(Transaction);
     log(
       'profileServiceLogger',
       `oneApollo Transaction response- ${order.orderAutoId}`,
@@ -318,7 +321,6 @@ const createOneApolloTransaction = async (
       JSON.stringify(oneApolloResponse),
       ''
     );
-    //}
     return true;
   } else {
     throw new AphError(AphErrorMessages.INVALID_RESPONSE_FOR_SKU_PHARMACY, undefined, {});

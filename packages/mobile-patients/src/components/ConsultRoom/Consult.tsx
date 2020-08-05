@@ -232,7 +232,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       }
     }
     fetchData();
-    callPermissions();
+    // callPermissions();
     try {
       setNewAppointmentTime(
         props.navigation.getParam('Data')
@@ -516,11 +516,12 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           const isActive = minutes > 0 && minutes <= 15 ? true : false;
           const dateIsAfterconsult = moment(appointmentDateTime).isAfter(moment(new Date()));
 
-          var day1 = moment(appointmentDateTime)
-            .set('hour', 0)
-            .set('minute', 0)
-            .add(7 - 1, 'days'); // since we're calculating as EOD
-          var day2 = moment(new Date());
+          const day1 = moment(appointmentDateTime)
+            // .set('hour', 0)
+            // .set('minute', 0)
+            .startOf('day')
+            .add(8, 'days'); // since we're calculating as EOD
+          const day2 = moment(new Date());
           day1.diff(day2, 'days'); // 1
 
           return (
@@ -564,7 +565,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                       {item.doctorInfo &&
                       item.doctorInfo.thumbnailUrl &&
                       item.doctorInfo.thumbnailUrl.match(
-                        /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG)/
+                        /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jpeg|JPEG)/
                       ) ? (
                         <Image
                           style={{
@@ -702,7 +703,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                       </View>
                     </View>
                   ) : item.status == STATUS.PENDING ||
-                    dateIsAfterconsult ||
+                    // dateIsAfterconsult ||
                     item.status == STATUS.IN_PROGRESS ||
                     item.appointmentState == APPOINTMENT_STATE.AWAITING_RESCHEDULE ||
                     item.status == STATUS.NO_SHOW ||
@@ -804,13 +805,12 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                         onPress={() => {
                           postConsultCardEvents('Chat with Doctor', item);
                           CommonLogEvent(AppRoutes.Consult, 'Prepare for Consult clicked');
-                          if (item.doctorInfo && selectedTab === tabs[0].title) {
-                            props.navigation.navigate(AppRoutes.ChatRoom, {
-                              data: item,
-                              callType: '',
-                              prescription: '',
-                            });
-                          }
+                          props.navigation.navigate(AppRoutes.ChatRoom, {
+                            data: item,
+                            callType: '',
+                            prescription: '',
+                            disableChat: item.doctorInfo && selectedTab === tabs[1].title,
+                          });
                         }}
                       >
                         <Text
@@ -818,13 +818,14 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                             styles.prepareForConsult,
                             {
                               paddingBottom: -16,
-                              opacity: selectedTab === tabs[0].title ? 1 : 0.5,
                             },
                           ]}
                         >
-                          CHAT WITH DOCTOR
+                          {item.doctorInfo && selectedTab === tabs[1].title
+                            ? 'VIEW CHAT'
+                            : 'CHAT WITH DOCTOR'}
                         </Text>
-                        {day1.diff(day2, 'days') > -1 ? (
+                        {day1.diff(day2, 'days') > 0 ? (
                           <View
                             style={{
                               flexDirection: 'row',
@@ -858,7 +859,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                                 paddingLeft: 3,
                               }}
                             >
-                              {day1.diff(day2, 'days') == 0
+                              {day1.diff(day2, 'days') == 1
                                 ? 'Today'
                                 : day1.diff(day2, 'days') +
                                   ' more ' +

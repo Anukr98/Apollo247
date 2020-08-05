@@ -5,9 +5,25 @@ import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextI
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React, { useState } from 'react';
-import { SafeAreaView, StyleSheet, Text, View, KeyboardAvoidingView, Platform } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import {
+  SafeAreaView,
+  TouchableOpacity,
+  StyleSheet,
+  Text,
+  View,
+  KeyboardAvoidingView,
+  Platform,
+} from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
+import {
+  RadioButtonIcon,
+  RadioButtonUnselectedIcon,
+  SearchSendIcon,
+} from '@aph/mobile-patients/src/components/ui/Icons';
+import { fetchConsultCoupons } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 
 const styles = StyleSheet.create({
   bottonButtonContainer: {
@@ -35,7 +51,51 @@ const styles = StyleSheet.create({
     paddingTop: 8,
     letterSpacing: 0.04,
   },
+  separator: {
+    height: 1,
+    opacity: 0.1,
+    backgroundColor: theme.colors.LIGHT_BLUE,
+  },
+  heading: {
+    ...theme.fonts.IBMPlexSansMedium(14),
+    color: theme.colors.LIGHT_BLUE,
+    marginBottom: 8,
+  },
+  noCoupons: {
+    color: theme.colors.FILTER_CARD_LABEL,
+    ...theme.fonts.IBMPlexSansMedium(13),
+    margin: 20,
+    textAlign: 'center',
+    opacity: 0.3,
+  },
+  radioButtonContainer: {
+    flexDirection: 'row',
+    marginTop: 16,
+  },
+  radioButtonTitleDescContainer: {
+    flex: 1,
+    marginLeft: 16,
+  },
+  radioButtonTitle: {
+    ...theme.fonts.IBMPlexSansMedium(16),
+    lineHeight: 24,
+    color: theme.colors.SHERPA_BLUE,
+    marginBottom: 4,
+  },
+  radioButtonDesc: {
+    ...theme.fonts.IBMPlexSansMedium(12),
+    lineHeight: 16,
+    letterSpacing: 0.04,
+    color: theme.colors.LIGHT_BLUE,
+    opacity: 0.6,
+    marginBottom: 7.5,
+  },
 });
+
+export interface consult_coupon {
+  coupon: string;
+  message: string;
+}
 
 export interface ApplyConsultCouponProps
   extends NavigationScreenProps<{
@@ -49,10 +109,34 @@ export const ApplyConsultCoupon: React.FC<ApplyConsultCouponProps> = (props) => 
   const [couponText, setCouponText] = useState<string>(coupon || '');
   const [isValidCoupon, setValidCoupon] = useState<boolean>(true);
   const [couponInvalidReason, setCouponInvalidReason] = useState<string>('');
-  const { setLoading } = useUIElements();
+  const [couponList, setcouponList] = useState<consult_coupon[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [validating, setValidating] = useState<boolean>(false);
+  const { showAphAlert } = useUIElements();
+
+  const renderErrorPopup = (desc: string) =>
+    showAphAlert!({
+      title: 'Uh oh.. :(',
+      description: `${desc || ''}`.trim(),
+    });
+
+  useEffect(() => {
+    fetchConsultCoupons()
+      .then((res: any) => {
+        console.log(JSON.stringify(res.data), 'objobj');
+        setcouponList(res.data.response);
+        setLoading(false);
+      })
+      .catch((error) => {
+        CommonBugFender('fetchingConsultCoupons', error);
+        console.log(error);
+        props.navigation.goBack();
+        renderErrorPopup(`Something went wrong, plaease try again after sometime`);
+      });
+  }, []);
 
   const applyCoupon = (coupon: string) => {
-    setLoading!(true);
+    setValidating!(true);
     // calling the passed function from prev. screen to validate coupon
     onApplyCoupon(coupon)
       .then(() => {
@@ -66,7 +150,7 @@ export const ApplyConsultCoupon: React.FC<ApplyConsultCouponProps> = (props) => 
             : 'Oops! seems like we are having an issue. Please try again.'
         );
       })
-      .finally(() => setLoading!(false));
+      .finally(() => setValidating!(false));
   };
 
   const renderBottomButtons = () => {
@@ -85,11 +169,32 @@ export const ApplyConsultCoupon: React.FC<ApplyConsultCouponProps> = (props) => 
     );
   };
 
-  const isCouponTextValid = (couponText: string) => /^[a-zA-Z0-9]{5,15}$/.test(couponText);
+  // const isCouponTextValid = (couponText: string) => /^[a-zA-Z0-9]{4,15}$/.test(couponText);
+  const isCouponTextValid = (couponText: string) => {
+    if (couponText.length > 3 && couponText.length < 21) {
+      return true;
+    } else {
+      return false;
+    }
+  };
+
+  const rightIcon = () => {
+    return (
+      <View style={{ opacity: isCouponTextValid(couponText) ? 1 : 0.5 }}>
+        <TouchableOpacity
+          activeOpacity={1}
+          disabled={!isCouponTextValid(couponText)}
+          onPress={() => applyCoupon(couponText)}
+        >
+          <SearchSendIcon />
+        </TouchableOpacity>
+      </View>
+    );
+  };
 
   const renderInputWithValidation = () => {
     return (
-      <View>
+      <View style={{ paddingBottom: 24 }}>
         <TextInputComponent
           value={couponText}
           onChangeText={(text) => {
@@ -98,8 +203,8 @@ export const ApplyConsultCoupon: React.FC<ApplyConsultCouponProps> = (props) => 
           }}
           textInputprops={{
             ...(!isValidCoupon && couponText.length > 0 ? { selectionColor: '#e50000' } : {}),
-            maxLength: 15,
-            autoFocus: true,
+            maxLength: 20,
+            // autoFocus: true,
             autoCapitalize: 'characters',
           }}
           inputStyle={[
@@ -108,6 +213,7 @@ export const ApplyConsultCoupon: React.FC<ApplyConsultCouponProps> = (props) => 
           ]}
           conatinerstyles={{ paddingBottom: 0 }}
           placeholder={'Enter coupon code'}
+          icon={rightIcon()}
         />
         {!isValidCoupon && couponText.length > 0 ? (
           <Text style={styles.inputValidationStyle}>
@@ -118,8 +224,52 @@ export const ApplyConsultCoupon: React.FC<ApplyConsultCouponProps> = (props) => 
     );
   };
 
+  const renderCardTitle = () => {
+    return (
+      <>
+        <Text style={styles.heading}>{'Coupons For You'}</Text>
+        <View style={styles.separator} />
+        {loading ? (
+          <View style={{ marginVertical: 50 }}>
+            <Spinner style={{ backgroundColor: 'rgba(0,0,0, 0)' }} />
+          </View>
+        ) : (
+          couponList.length == 0 && <Text style={styles.noCoupons}>No coupons available</Text>
+        )}
+      </>
+    );
+  };
+
+  const renderRadioButtonList = () => {
+    return (
+      <View>
+        {couponList.map((coupon, i) => (
+          <TouchableOpacity
+            activeOpacity={1}
+            style={styles.radioButtonContainer}
+            key={i}
+            onPress={() => setCouponText(coupon!.coupon == couponText ? '' : coupon!.coupon!)}
+          >
+            {coupon!.coupon == couponText ? <RadioButtonIcon /> : <RadioButtonUnselectedIcon />}
+            <View style={styles.radioButtonTitleDescContainer}>
+              <Text style={styles.radioButtonTitle}>{coupon!.coupon}</Text>
+              <Text style={styles.radioButtonDesc}>{coupon!.message}</Text>
+              <View style={styles.separator} />
+            </View>
+          </TouchableOpacity>
+        ))}
+      </View>
+    );
+  };
+
   const renderCouponCard = () => {
-    return <View style={styles.cardStyle}>{renderInputWithValidation()}</View>;
+    return (
+      <View style={styles.cardStyle}>
+        {renderInputWithValidation()}
+        {renderCardTitle()}
+        {renderRadioButtonList()}
+      </View>
+    );
   };
 
   const keyboardVerticalOffset = Platform.OS === 'android' ? { keyboardVerticalOffset: 20 } : {};
@@ -133,17 +283,18 @@ export const ApplyConsultCoupon: React.FC<ApplyConsultCouponProps> = (props) => 
           container={{ borderBottomWidth: 0 }}
           onPressLeftIcon={() => props.navigation.goBack()}
         />
-        <KeyboardAvoidingView
+        {/* <KeyboardAvoidingView
           behavior={'padding'}
           style={{ flex: 1 }}
           {...keyboardVerticalOffset}
           enabled
-        >
-          <View style={{ flex: 1 }}>
-            <ScrollView bounces={false}>{renderCouponCard()}</ScrollView>
-            {renderBottomButtons()}
-          </View>
-        </KeyboardAvoidingView>
+        > */}
+        <View style={{ flex: 1 }}>
+          <ScrollView bounces={false}>{renderCouponCard()}</ScrollView>
+          {renderBottomButtons()}
+        </View>
+        {validating && <Spinner style={{ backgroundColor: 'rgba(0,0,0, 0)' }} />}
+        {/* </KeyboardAvoidingView> */}
       </SafeAreaView>
     </View>
   );

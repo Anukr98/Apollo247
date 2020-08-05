@@ -3,4 +3,6 @@
     <string name="default_notification_channel_id" translatable="false">fcm_FirebaseNotifiction_default_channel</string>
     <string name="facebook_app_id">215389816346094</string>
     <string name="fb_login_protocol_scheme">fb215389816346094</string>
+    <string moduleConfig="true" name="CodePushDeploymentKey">ncBcxm590r0jEGT4BjQFTAW0_rkHKvF5xYUDX</string>
+    <string name="default_notification_channel_name">fcm_FirebaseNotifiction_default_channel_name</string>
 </resources>

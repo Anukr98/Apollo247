@@ -1,10 +1,15 @@
 import { ConsultOverlay } from '@aph/mobile-patients/src/components/ConsultRoom/ConsultOverlay';
-import { Button } from '@aph/mobile-patients/src/components/ui/Button';
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import { AvailabilityCapsule } from '@aph/mobile-patients/src/components/ui/AvailabilityCapsule';
 import { CapsuleView } from '@aph/mobile-patients/src/components/ui/CapsuleView';
 import { DoctorCard } from '@aph/mobile-patients/src/components/ui/DoctorCard';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
+import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
+import {
+  CommonBugFender,
+  CommonLogEvent,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
   GET_APPOINTMENT_HISTORY,
   GET_DOCTOR_DETAILS_BY_ID,
@@ -19,16 +24,21 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
 import { ConsultMode, DoctorType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { getNextAvailableSlots } from '@aph/mobile-patients/src/helpers/clientCalls';
+import { FirebaseEventName } from '@aph/mobile-patients/src/helpers/firebaseEvents';
 import {
-  g,
-  timeDiffFromNow,
-  getNetStatus,
-  statusBarHeight,
-  postWebEngageEvent,
   callPermissions,
+  g,
+  getNetStatus,
   postAppsFlyerEvent,
-  postFirebaseEvent
+  postFirebaseEvent,
+  postWebEngageEvent,
+  statusBarHeight,
+  timeDiffFromNow,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  WebEngageEventName,
+  WebEngageEvents,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import Moment from 'moment';
@@ -38,42 +48,36 @@ import {
   Animated,
   Dimensions,
   Image,
-  Platform,
   SafeAreaView,
   ScrollView,
   Share,
   StyleSheet,
   Text,
-  View,
   TouchableOpacity,
+  View,
+  Platform,
 } from 'react-native';
-import { FlatList, NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
-import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
-import { AvailabilityCapsule } from '@aph/mobile-patients/src/components/ui/AvailabilityCapsule';
-import {
-  CommonLogEvent,
-  CommonScreenLog,
-  CommonBugFender,
-} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { FlatList, NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
+import { AppsFlyerEventName, AppsFlyerEvents } from '../../helpers/AppsFlyerEvents';
 import { useAppCommonData } from '../AppCommonDataProvider';
+import { ConsultTypeCard } from '../ui/ConsultTypeCard';
 import {
-  WebEngageEvents,
-  WebEngageEventName,
-} from '@aph/mobile-patients/src/helpers/webEngageEvents';
-import { FirebaseEvents, FirebaseEventName } from '@aph/mobile-patients/src/helpers/firebaseEvents';
-import moment from 'moment';
-import { AppsFlyerEventName } from '../../helpers/AppsFlyerEvents';
+  ApolloDoctorIcon,
+  ApolloPartnerIcon,
+  DoctorPlaceholderImage,
+  RectangularIcon,
+  VideoPlayIcon,
+} from '../ui/Icons';
 // import { NotificationListener } from '../NotificationListener';
 
 const { height, width } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   topView: {
-    backgroundColor: theme.colors.WHITE,
     marginBottom: 8,
     ...theme.viewStyles.cardViewStyle,
     borderRadius: 0,
+    backgroundColor: theme.colors.WHITE,
   },
   detailsViewStyle: {
     margin: 20,
@@ -108,11 +112,6 @@ const styles = StyleSheet.create({
     borderBottomWidth: 0.5,
     borderBottomColor: theme.colors.SEPARATOR_LINE,
   },
-  horizontalSeparatorStyle: {
-    borderRightWidth: 0.5,
-    borderRightColor: theme.colors.SEPARATOR_LINE,
-    marginHorizontal: 13,
-  },
   cardView: {
     width: '100%',
     marginVertical: 8,
@@ -129,11 +128,10 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansMedium(15),
   },
   onlineConsultView: {
-    backgroundColor: theme.colors.CARD_BG,
+    backgroundColor: theme.colors.WHITE,
     flexDirection: 'row',
-    marginTop: 12,
     borderRadius: 10,
-    padding: 12,
+    paddingTop: 12,
   },
   onlineConsultLabel: {
     ...theme.fonts.IBMPlexSansSemiBold(12),
@@ -144,6 +142,14 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansSemiBold(16),
     color: theme.colors.LIGHT_BLUE,
     paddingBottom: 16,
+  },
+  consultViewStyles: {
+    flex: 1,
+    backgroundColor: theme.colors.CARD_BG,
+    borderRadius: 5,
+    padding: 12,
+    ...theme.viewStyles.shadowStyle,
+    height: Platform.OS == 'android' ? 115 : 110,
   },
 });
 type Appointments = {
@@ -167,7 +173,10 @@ const Appointments: Appointments[] = [
 
 export interface DoctorDetailsProps extends NavigationScreenProps {}
 export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
+  const consultedWithDoctorBefore = props.navigation.getParam('consultedWithDoctorBefore');
   const [displayoverlay, setdisplayoverlay] = useState<boolean>(false);
+  const [consultMode, setConsultMode] = useState<ConsultMode>(ConsultMode.ONLINE);
+  const [onlineSelected, setOnlineSelected] = useState<boolean>(true);
   const [doctorDetails, setDoctorDetails] = useState<getDoctorDetailsById_getDoctorDetailsById>();
   const [appointmentHistory, setAppointmentHistory] = useState<
     getAppointmentHistory_getAppointmentHistory_appointmentsHistory[] | null
@@ -186,6 +195,9 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
   const { getPatientApiCall } = useAuth();
   const { VirtualConsultationFee } = useAppCommonData();
+  const [consultType, setConsultType] = useState<ConsultMode>(ConsultMode.BOTH);
+  const [showVideo, setShowVideo] = useState<boolean>(false);
+  const callSaveSearch = props.navigation.getParam('callSaveSearch');
 
   useEffect(() => {
     if (!currentPatient) {
@@ -223,7 +235,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       .catch((e) => {
         CommonBugFender('DoctorDetails_getNetStatus', e);
       });
-    callPermissions();
+    // callPermissions();
   }, []);
 
   useEffect(() => {
@@ -231,6 +243,8 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       ? props.navigation.state.params.showBookAppointment || false
       : false;
     setdisplayoverlay(display);
+    setConsultMode(props.navigation.getParam('consultModeSelected'));
+    setShowVideo(props.navigation.getParam('onVideoPressed'));
   }, [props.navigation.state.params]);
 
   const fetchAppointmentHistory = () => {
@@ -246,6 +260,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         fetchPolicy: 'no-cache',
       })
       .then(({ data }) => {
+        console.log('appointmentHistory--------', data.getAppointmentHistory.appointmentsHistory);
         try {
           if (
             data &&
@@ -322,10 +337,15 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   };
 
   const fetchDoctorDetails = () => {
+    const input = {
+      id: doctorId,
+    };
+    console.log('input ', input);
+
     client
       .query<getDoctorDetailsById>({
         query: GET_DOCTOR_DETAILS_BY_ID,
-        variables: { id: doctorId },
+        variables: input,
         fetchPolicy: 'no-cache',
       })
       .then(({ data }) => {
@@ -337,6 +357,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
             setDoctorId(data.getDoctorDetailsById.id);
             setshowSpinner(false);
             fetchNextAvailableSlots([data.getDoctorDetailsById.id]);
+            setAvailableModes(data.getDoctorDetailsById);
           } else {
             setTimeout(() => {
               setshowSpinner(false);
@@ -353,6 +374,27 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         setshowSpinner(false);
         console.log('Error occured', e);
       });
+  };
+
+  const setAvailableModes = (availabilityMode: any) => {
+    console.log(availabilityMode, 'availabilityMode');
+
+    const modeOfConsult = availabilityMode.availableModes;
+
+    try {
+      if (modeOfConsult.includes(ConsultMode.BOTH)) {
+        setConsultType(ConsultMode.BOTH);
+        setOnlineSelected(true);
+      } else if (modeOfConsult.includes(ConsultMode.ONLINE)) {
+        setConsultType(ConsultMode.ONLINE);
+        setOnlineSelected(true);
+      } else if (modeOfConsult.includes(ConsultMode.PHYSICAL)) {
+        setConsultType(ConsultMode.PHYSICAL);
+        setOnlineSelected(false);
+      } else {
+        setConsultType(ConsultMode.BOTH);
+      }
+    } catch (error) {}
   };
 
   const navigateToSpecialitySearch = () => {
@@ -437,6 +479,41 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     return Moment(new Date(time), 'HH:mm:ss.SSSz').format('hh:mm A');
   };
 
+  const renderConsultType = () => {
+    return (
+      <ConsultTypeCard
+        isOnlineSelected={onlineSelected}
+        onPhysicalPress={() => {
+          openConsultPopup(ConsultMode.PHYSICAL);
+        }}
+        onOnlinePress={() => {
+          openConsultPopup(ConsultMode.ONLINE);
+        }}
+        DoctorId={doctorId}
+        DoctorName={doctorDetails ? doctorDetails.fullName : ''}
+        nextAppointemntOnlineTime={availableTime}
+        nextAppointemntInPresonTime={physicalAvailableTime}
+      />
+    );
+  };
+
+  const openConsultPopup = (consultType: ConsultMode) => {
+    postBookAppointmentWEGEvent();
+    // callPermissions();
+    getNetStatus()
+      .then((status) => {
+        if (status) {
+          setdisplayoverlay(true);
+          setConsultMode(consultType);
+        } else {
+          setshowOfflinePopup(true);
+        }
+      })
+      .catch((e) => {
+        CommonBugFender('DoctorDetails_getNetStatus', e);
+      });
+  };
+
   const renderDoctorDetails = () => {
     if (doctorDetails && doctorDetails.doctorHospital && doctorDetails.doctorHospital.length > 0) {
       const doctorClinics = doctorDetails.doctorHospital.filter((item) => {
@@ -470,51 +547,179 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                   : ''}
               </Text>
               <View style={styles.separatorStyle} />
-              {!!clinicAddress && (
-                <Text style={[styles.doctorLocation, { paddingTop: 11 }]}>{clinicAddress}</Text>
-              )}
-              {doctorDetails.languages ? (
-                <Text style={[styles.doctorLocation, { paddingBottom: 11, paddingTop: 4 }]}>
-                  {doctorDetails.languages.split(',').join(' | ')}
-                </Text>
-              ) : null}
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'flex-start',
+                  justifyContent: 'space-between',
+                }}
+              >
+                <View>
+                  {!!clinicAddress && (
+                    <Text style={[styles.doctorLocation, { paddingTop: 11, width: width - 120 }]}>
+                      {clinicAddress}
+                    </Text>
+                  )}
+                  {doctorDetails.languages ? (
+                    <Text
+                      style={[
+                        styles.doctorLocation,
+                        { paddingBottom: 11, paddingTop: 4, width: width - 120 },
+                      ]}
+                    >
+                      {doctorDetails.languages.split(',').join(' | ')}
+                    </Text>
+                  ) : null}
+                </View>
+                {doctorDetails.doctorType !== 'DOCTOR_CONNECT' ? (
+                  <ApolloDoctorIcon style={{ marginVertical: 12, width: 80, height: 32 }} />
+                ) : (
+                  <ApolloPartnerIcon style={{ marginVertical: 12, width: 80, height: 32 }} />
+                )}
+              </View>
               <View style={styles.separatorStyle} />
               <View style={styles.onlineConsultView}>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.onlineConsultLabel}>Online Consult</Text>
-                  <Text style={styles.onlineConsultAmount}>
-                    {Number(VirtualConsultationFee) <= 0 ||
-                    VirtualConsultationFee === doctorDetails.onlineConsultationFees ? (
-                      <Text>{`Rs. ${doctorDetails.onlineConsultationFees}`}</Text>
-                    ) : (
-                      <>
-                        <Text
-                          style={{
-                            textDecorationLine: 'line-through',
-                            textDecorationStyle: 'solid',
-                          }}
-                        >
-                          {`(Rs. ${doctorDetails.onlineConsultationFees})`}
-                        </Text>
-                        <Text> Rs. {VirtualConsultationFee}</Text>
-                      </>
-                    )}
-                  </Text>
-                  <AvailabilityCapsule availableTime={availableTime} />
-                </View>
-                {doctorDetails.doctorType !== DoctorType.PAYROLL && (
-                  <View style={styles.horizontalSeparatorStyle} />
-                )}
-                <View style={{ flex: 1 }}>
-                  {doctorDetails.doctorType !== DoctorType.PAYROLL && (
-                    <>
-                      <Text style={styles.onlineConsultLabel}>Clinic Visit</Text>
-                      <Text style={styles.onlineConsultAmount}>
-                        Rs. {doctorDetails.physicalConsultationFees}
-                      </Text>
-                      <AvailabilityCapsule availableTime={physicalAvailableTime} />
-                    </>
+                <View
+                  style={[
+                    styles.consultViewStyles,
+                    {
+                      marginRight: 6,
+                    },
+                  ]}
+                >
+                  {onlineSelected && (
+                    <RectangularIcon
+                      resizeMode={'stretch'}
+                      style={{
+                        position: 'absolute',
+                        width: (width - 42) / 2,
+                        height: Platform.OS == 'android' ? 134 : 129,
+                        flex: 2,
+                        left: -3,
+                        top: -2,
+                      }}
+                    />
                   )}
+                  <TouchableOpacity
+                    activeOpacity={1}
+                    onPress={() => {
+                      setOnlineSelected(true);
+                      const eventAttributes: WebEngageEvents[WebEngageEventName.TYPE_OF_CONSULT_SELECTED] = {
+                        'Doctor Speciality': g(doctorDetails, 'specialty', 'name')!,
+                        'Patient Name': `${g(currentPatient, 'firstName')} ${g(
+                          currentPatient,
+                          'lastName'
+                        )}`,
+                        'Patient UHID': g(currentPatient, 'uhid'),
+                        Relation: g(currentPatient, 'relation'),
+                        'Patient Age': Math.round(
+                          Moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+                        ),
+                        'Patient Gender': g(currentPatient, 'gender'),
+                        'Customer ID': g(currentPatient, 'id'),
+                        'Doctor ID': g(doctorDetails, 'id')!,
+                        'Speciality ID': g(doctorDetails, 'specialty', 'id')!,
+                        'Consultation Type': 'online',
+                      };
+                      postWebEngageEvent(
+                        WebEngageEventName.TYPE_OF_CONSULT_SELECTED,
+                        eventAttributes
+                      );
+                    }}
+                  >
+                    <View>
+                      <Text style={styles.onlineConsultLabel}>Chat/Audio/Video</Text>
+                      <Text style={styles.onlineConsultAmount}>
+                        {Number(VirtualConsultationFee) <= 0 ||
+                        VirtualConsultationFee === doctorDetails.onlineConsultationFees ? (
+                          <Text>{`Rs. ${doctorDetails.onlineConsultationFees}`}</Text>
+                        ) : (
+                          <>
+                            <Text
+                              style={{
+                                textDecorationLine: 'line-through',
+                                textDecorationStyle: 'solid',
+                              }}
+                            >
+                              {`(Rs. ${doctorDetails.onlineConsultationFees})`}
+                            </Text>
+                            <Text> Rs. {VirtualConsultationFee}</Text>
+                          </>
+                        )}
+                      </Text>
+                      <AvailabilityCapsule
+                        titleTextStyle={{ paddingHorizontal: 7 }}
+                        availableTime={availableTime}
+                      />
+                    </View>
+                  </TouchableOpacity>
+                </View>
+
+                <View
+                  style={[
+                    styles.consultViewStyles,
+                    {
+                      marginLeft: 6,
+                    },
+                  ]}
+                >
+                  {!onlineSelected && (
+                    <RectangularIcon
+                      resizeMode={'stretch'}
+                      style={{
+                        position: 'absolute',
+                        width: (width - 42) / 2,
+                        height: Platform.OS == 'android' ? 134 : 129,
+                        flex: 2,
+                        left: -3,
+                        top: -2,
+                      }}
+                    />
+                  )}
+                  <TouchableOpacity
+                    activeOpacity={1}
+                    onPress={() => {
+                      {
+                        const eventAttributes: WebEngageEvents[WebEngageEventName.TYPE_OF_CONSULT_SELECTED] = {
+                          'Doctor Speciality': g(doctorDetails, 'specialty', 'name')!,
+                          'Patient Name': `${g(currentPatient, 'firstName')} ${g(
+                            currentPatient,
+                            'lastName'
+                          )}`,
+                          'Patient UHID': g(currentPatient, 'uhid'),
+                          Relation: g(currentPatient, 'relation'),
+                          'Patient Age': Math.round(
+                            Moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+                          ),
+                          'Patient Gender': g(currentPatient, 'gender'),
+                          'Customer ID': g(currentPatient, 'id'),
+                          'Doctor ID': g(doctorDetails, 'id')!,
+                          'Speciality ID': g(doctorDetails, 'specialty', 'id')!,
+                          'Consultation Type': 'physical',
+                        };
+                        postWebEngageEvent(
+                          WebEngageEventName.TYPE_OF_CONSULT_SELECTED,
+                          eventAttributes
+                        );
+                        doctorDetails.doctorType !== DoctorType.PAYROLL && setOnlineSelected(false);
+                      }
+                    }}
+                  >
+                    <View>
+                      {doctorDetails.doctorType !== DoctorType.PAYROLL && (
+                        <>
+                          <Text style={styles.onlineConsultLabel}>Meet in Person</Text>
+                          <Text style={styles.onlineConsultAmount}>
+                            Rs. {doctorDetails.physicalConsultationFees}
+                          </Text>
+                          <AvailabilityCapsule
+                            titleTextStyle={{ paddingHorizontal: 7 }}
+                            availableTime={physicalAvailableTime}
+                          />
+                        </>
+                      )}
+                    </View>
+                  </TouchableOpacity>
                 </View>
               </View>
             </View>
@@ -720,7 +925,12 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   };
 
   const renderAppointmentHistory = () => {
-    const arrayHistory = appointmentHistory ? appointmentHistory : [];
+    let arrayHistory = appointmentHistory ? appointmentHistory : [];
+    arrayHistory = arrayHistory.filter((item) => {
+      return item.status == 'COMPLETED';
+    });
+
+    console.log('arrayHistory-----------', arrayHistory);
     if (arrayHistory.length > 0) {
       return (
         <View style={styles.cardView}>
@@ -738,6 +948,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
             data={arrayHistory}
             renderItem={({ item }) => (
               <TouchableOpacity
+                activeOpacity={1}
                 onPress={() => {
                   console.log('itemdoc', item, doctorDetails);
                   props.navigation.navigate(AppRoutes.ConsultDetails, {
@@ -781,21 +992,37 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                       .format('DD MMMM, hh:mm A')}
                   </Text>
                   <View style={styles.separatorStyle} />
-                  <View style={{ flexDirection: 'row' }}>
-                    {Appointments[0].symptoms.map((name, index) => (
-                      <CapsuleView
-                        key={index}
-                        title={name}
-                        isActive={false}
-                        style={{ width: 'auto', marginRight: 4, marginTop: 11 }}
-                        titleTextStyle={{ color: theme.colors.SKY_BLUE }}
-                      />
-                    ))}
-                  </View>
+                  {item.caseSheet && renderAppointmentSymptoms(item)}
                 </View>
               </TouchableOpacity>
             )}
           />
+        </View>
+      );
+    }
+  };
+
+  const renderAppointmentSymptoms = (
+    item: getAppointmentHistory_getAppointmentHistory_appointmentsHistory
+  ) => {
+    const symptomsJson = g(item, 'caseSheet');
+    console.log('symptomsJson', symptomsJson);
+    if (symptomsJson && symptomsJson.length != 0) {
+      console.log('symptomsJson-----', symptomsJson);
+      return (
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+          {symptomsJson &&
+            symptomsJson[0] &&
+            symptomsJson[0].symptoms &&
+            symptomsJson[0].symptoms.map((item, index) => (
+              <CapsuleView
+                key={index}
+                title={item && item.symptom}
+                isActive={false}
+                style={{ width: 'auto', marginRight: 4, marginTop: 11 }}
+                titleTextStyle={{ color: theme.colors.SKY_BLUE }}
+              />
+            ))}
         </View>
       );
     }
@@ -827,7 +1054,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   };
 
   const postBookAppointmentWEGEvent = () => {
-    const doctorClinics = (doctorDetails?.doctorHospital || []).filter((item) => {
+    const doctorClinics = ((doctorDetails && doctorDetails.doctorHospital) || []).filter((item) => {
       if (item && item.facility && item.facility.facilityType)
         return item.facility.facilityType === 'HOSPITAL';
     });
@@ -842,7 +1069,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       'Patient UHID': g(currentPatient, 'uhid'),
       Relation: g(currentPatient, 'relation'),
       'Patient Age': Math.round(
-        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+        Moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
       ),
       'Patient Gender': g(currentPatient, 'gender'),
       'Mobile Number': g(currentPatient, 'mobileNumber'),
@@ -860,9 +1087,11 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           : '',
     };
     postWebEngageEvent(WebEngageEventName.BOOK_APPOINTMENT, eventAttributes);
-    postAppsFlyerEvent(AppsFlyerEventName.BOOK_APPOINTMENT, eventAttributes);
+    const appsflyereventAttributes: AppsFlyerEvents[AppsFlyerEventName.BOOK_APPOINTMENT] = {
+      'customer id': currentPatient ? currentPatient.id : '',
+    };
+    postAppsFlyerEvent(AppsFlyerEventName.BOOK_APPOINTMENT, appsflyereventAttributes);
     postFirebaseEvent(FirebaseEventName.BOOK_APPOINTMENT, eventAttributes);
-
   };
 
   const moveBack = () => {
@@ -912,6 +1141,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         >
           {/* <ScrollView style={{ flex: 1 }} bounces={false}> */}
           {doctorDetails && renderDoctorDetails()}
+          {doctorDetails && renderConsultType()}
           {doctorDetails && renderDoctorClinic()}
           {doctorDetails && renderDoctorTeam()}
           {appointmentHistory && renderAppointmentHistory()}
@@ -919,13 +1149,13 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           {/* </ScrollView> */}
         </Animated.ScrollView>
 
-        {showSpinner ? null : (
+        {/* {showSpinner ? null : (
           <StickyBottomComponent defaultBG>
             <Button
               title={'BOOK APPOINTMENT'}
               onPress={() => {
                 postBookAppointmentWEGEvent();
-                callPermissions();
+                // callPermissions();
                 getNetStatus()
                   .then((status) => {
                     if (status) {
@@ -941,13 +1171,14 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
               style={{ marginHorizontal: 60, flex: 1 }}
             />
           </StickyBottomComponent>
-        )}
+        )} */}
       </SafeAreaView>
 
       {displayoverlay && doctorDetails && (
         <ConsultOverlay
           setdisplayoverlay={() => setdisplayoverlay(false)}
           navigation={props.navigation}
+          consultedWithDoctorBefore={consultedWithDoctorBefore}
           doctor={doctorDetails ? doctorDetails : null}
           patientId={currentPatient ? currentPatient.id : ''}
           clinics={doctorDetails.doctorHospital ? doctorDetails.doctorHospital : []}
@@ -955,9 +1186,10 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           FollowUp={props.navigation.state.params!.FollowUp}
           appointmentType={props.navigation.state.params!.appointmentType}
           appointmentId={props.navigation.state.params!.appointmentId}
-          consultModeSelected={props.navigation.getParam('consultModeSelected')}
-          externalConnect={props.navigation.getParam('externalConnect')}
-          // availableSlots={availableSlots}
+          consultModeSelected={consultMode}
+          externalConnect={null}
+          availableMode={ConsultMode.BOTH}
+          callSaveSearch={callSaveSearch}
         />
       )}
       <Animated.View
@@ -979,20 +1211,90 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         <View
           style={{
             height: 160,
-            // backgroundColor: 'red',
             alignItems: 'center',
             justifyContent: 'center',
           }}
         >
-          {doctorDetails &&
+          {!showVideo &&
+          doctorDetails &&
           doctorDetails &&
           doctorDetails.photoUrl &&
-          doctorDetails.photoUrl.match(/(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG)/) ? (
-            <Animated.Image
-              source={{ uri: doctorDetails.photoUrl }}
-              style={{ top: 10, height: 140, width: 140, opacity: imgOp }}
-            />
-          ) : null}
+          doctorDetails.photoUrl.match(
+            /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jpeg|JPEG)/
+          ) ? (
+            <>
+              <View style={{ height: 20, width: '100%' }} />
+              <Animated.Image
+                source={{ uri: doctorDetails.photoUrl }}
+                style={{ top: 0, height: 140, width: 140, opacity: imgOp }}
+              />
+              {/* <TouchableOpacity
+                activeOpacity={1}
+                onPress={() => {
+                  setShowVideo(true);
+                }}
+                style={{
+                  position: 'absolute',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  height: 40,
+                  width: 40,
+                }}
+              >
+                <View
+                  style={{
+                    position: 'absolute',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    height: 40,
+                    width: 40,
+                  }}
+                >
+                  <VideoPlayIcon style={{ height: 33, width: 33 }} />
+                </View>
+              </TouchableOpacity> */}
+            </>
+          ) : (
+            !showVideo &&
+            doctorDetails && (
+              <View
+                style={{
+                  height: 160,
+                  width: '100%',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <DoctorPlaceholderImage style={{ top: 0, height: 140, width: 140 }} />
+
+                {/* <TouchableOpacity
+                  activeOpacity={1}
+                  onPress={() => {
+                    setShowVideo(true);
+                  }}
+                  style={{
+                    position: 'absolute',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    height: 40,
+                    width: 40,
+                  }}
+                >
+                  <View
+                    style={{
+                      position: 'absolute',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      height: 40,
+                      width: 40,
+                    }}
+                  >
+                    <VideoPlayIcon style={{ height: 33, width: 33 }} />
+                  </View>
+                </TouchableOpacity> */}
+              </View>
+            )
+          )}
         </View>
       </Animated.View>
       <Header

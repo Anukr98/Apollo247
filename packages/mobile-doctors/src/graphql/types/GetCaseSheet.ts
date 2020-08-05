@@ -2,7 +2,7 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
-import { Gender, Relation, PATIENT_ADDRESS_TYPE, APPOINTMENT_TYPE, STATUS, DoctorType, MEDICINE_TO_BE_TAKEN, MEDICINE_TIMINGS, MEDICINE_UNIT, MEDICINE_FORM_TYPES, MEDICINE_FREQUENCY, MEDICINE_CONSUMPTION_DURATION, ROUTE_OF_ADMINISTRATION } from "./globalTypes";
+import { Gender, Relation, PATIENT_ADDRESS_TYPE, APPOINTMENT_TYPE, DoctorType, DOCTOR_ONLINE_STATUS, STATUS, MEDICINE_TO_BE_TAKEN, MEDICINE_TIMINGS, MEDICINE_UNIT, MEDICINE_FORM_TYPES, MEDICINE_FREQUENCY, MEDICINE_CONSUMPTION_DURATION, ROUTE_OF_ADMINISTRATION } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: GetCaseSheet
@@ -139,6 +139,36 @@ export interface GetCaseSheet_getCaseSheet_caseSheetDetails_appointment_appointm
   prismFileId: string | null;
 }
 
+export interface GetCaseSheet_getCaseSheet_caseSheetDetails_appointment_doctorInfo_doctorHospital_facility {
+  __typename: "Facility";
+  id: string;
+  facilityType: string;
+}
+
+export interface GetCaseSheet_getCaseSheet_caseSheetDetails_appointment_doctorInfo_doctorHospital {
+  __typename: "DoctorHospital";
+  facility: GetCaseSheet_getCaseSheet_caseSheetDetails_appointment_doctorInfo_doctorHospital_facility;
+}
+
+export interface GetCaseSheet_getCaseSheet_caseSheetDetails_appointment_doctorInfo_specialty {
+  __typename: "DoctorSpecialties";
+  id: string;
+  name: string;
+}
+
+export interface GetCaseSheet_getCaseSheet_caseSheetDetails_appointment_doctorInfo {
+  __typename: "Profile";
+  id: string;
+  fullName: string | null;
+  doctorType: DoctorType;
+  mobileNumber: string;
+  onlineStatus: DOCTOR_ONLINE_STATUS;
+  onlineConsultationFees: string;
+  physicalConsultationFees: string;
+  doctorHospital: GetCaseSheet_getCaseSheet_caseSheetDetails_appointment_doctorInfo_doctorHospital[];
+  specialty: GetCaseSheet_getCaseSheet_caseSheetDetails_appointment_doctorInfo_specialty;
+}
+
 export interface GetCaseSheet_getCaseSheet_caseSheetDetails_appointment {
   __typename: "Appointment";
   id: string;
@@ -148,6 +178,7 @@ export interface GetCaseSheet_getCaseSheet_caseSheetDetails_appointment {
   appointmentType: APPOINTMENT_TYPE;
   displayId: string;
   doctorId: string;
+  doctorInfo: GetCaseSheet_getCaseSheet_caseSheetDetails_appointment_doctorInfo | null;
   hospitalId: string | null;
   patientId: string;
   parentId: string | null;

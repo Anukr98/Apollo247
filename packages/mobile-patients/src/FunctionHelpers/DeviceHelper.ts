@@ -6,17 +6,15 @@
 
 import { Dimensions, Platform } from 'react-native';
 import firebase from 'react-native-firebase';
-import { aphConsole } from '../helpers/helperFunctions';
-import { AppConfig } from '../strings/AppConfig';
+import { aphConsole } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { AppConfig, AppEnv } from '@aph/mobile-patients/src/strings/AppConfig';
 import { Client } from 'bugsnag-react-native';
-import { DEVICE_TYPE } from '../graphql/types/globalTypes';
 import AsyncStorage from '@react-native-community/async-storage';
 import Bugfender from '@bugfender/rn-bugfender';
 
 const { height, width } = Dimensions.get('window');
 const bugsnag = new Client();
-const isReleaseOn = AppConfig.Configuration.ANALYTICAL_ENIVRONMENT == 'release';
-const isEnvironment = AppConfig.Configuration.LOG_ENVIRONMENT;
+const isReleaseOn = AppConfig.APP_ENV == AppEnv.PROD;
 
 Bugfender.init('brmAJ2pHunypOwF6EpcWyOf5mffsl2Ea');
 
@@ -62,19 +60,24 @@ export const CommonScreenLog = (stringName: string, parameterName: string) => {
 
 export const CommonBugFender = async (stringName: string, errorValue: Error) => {
   try {
-    const storedPhoneNumber = await AsyncStorage.getItem('phoneNumber');
-    bugsnag.notify(errorValue, function(report) {
-      report.metadata = {
-        stringName: {
-          viewSource:
-            Platform.OS === 'ios'
-              ? DEVICE_TYPE.IOS + ' ' + isEnvironment + ' ' + stringName
-              : DEVICE_TYPE.ANDROID + ' ' + isEnvironment + ' ' + stringName,
-          errorValue: errorValue as any,
-          phoneNumber: storedPhoneNumber as string,
-        },
-      };
-    });
+    // const storedPhoneNumber = await AsyncStorage.getItem('phoneNumber');
+    // bugsnag.notify(errorValue, function(report) {
+    //   report.metadata = {
+    //     stringName: {
+    //       viewSource:
+    //         Platform.OS === 'ios'
+    //           ? DEVICE_TYPE.IOS + ' ' + isEnvironment + ' ' + stringName
+    //           : DEVICE_TYPE.ANDROID + ' ' + isEnvironment + ' ' + stringName,
+    //       errorValue: errorValue as any,
+    //       phoneNumber: storedPhoneNumber as string,
+    //     },
+    //   };
+    // });
+    const phoneNumber = await AsyncStorage.getItem('phoneNumber');
+    const devicePlatform = Platform.OS === 'ios' ? 'iOS' : 'android';
+    const error = JSON.stringify(errorValue);
+    console.log('setBugFenderLog', error);
+    Bugfender.d(`${stringName} ${phoneNumber}`, `${devicePlatform} ${error}`);
   } catch (error) {
     aphConsole.log('CommonBugFender error', error);
   }

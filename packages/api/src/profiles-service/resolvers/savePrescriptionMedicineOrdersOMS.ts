@@ -10,6 +10,7 @@ import {
   MEDICINE_ORDER_PAYMENT_TYPE,
   BOOKING_SOURCE,
   DEVICE_TYPE,
+  MedicineOrdersStatus,
 } from 'profiles-service/entities';
 import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
@@ -136,8 +137,11 @@ const savePrescriptionMedicineOrderOMS: Resolver<
   const errorCode = 0,
     errorMessage = '',
     orderStatus: MEDICINE_ORDER_STATUS = MEDICINE_ORDER_STATUS.QUOTE;
+
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
-  const patientDetails = await patientRepo.findById(prescriptionMedicineOMSInput.patientId);
+  const patientDetails = await patientRepo.getPatientDetails(
+    prescriptionMedicineOMSInput.patientId
+  );
   if (!patientDetails) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
@@ -145,6 +149,7 @@ const savePrescriptionMedicineOrderOMS: Resolver<
   if (!prescriptionMedicineOMSInput.patinetAddressId && !prescriptionMedicineOMSInput.shopId) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ADDRESS_ID, undefined, {});
   }
+
   let patientAddressDetails;
   if (prescriptionMedicineOMSInput.patinetAddressId) {
     const patientAddressRepo = profilesDb.getCustomRepository(PatientAddressRepository);
@@ -155,16 +160,20 @@ const savePrescriptionMedicineOrderOMS: Resolver<
       throw new AphError(AphErrorMessages.INVALID_PATIENT_ADDRESS_ID, undefined, {});
     }
   }
+
   const customerComments = [];
   if (prescriptionMedicineOMSInput.customerComment) {
     customerComments.push(prescriptionMedicineOMSInput.customerComment);
   }
+
   if (prescriptionMedicineOMSInput.prescriptionOptionSelected) {
     customerComments.push(prescriptionMedicineOMSInput.prescriptionOptionSelected);
   }
+
   if (prescriptionMedicineOMSInput.durationDays) {
     customerComments.push(prescriptionMedicineOMSInput.durationDays);
   }
+
   const medicineOrderattrs: Partial<MedicineOrders> = {
     patient: patientDetails,
     orderType: MEDICINE_ORDER_TYPE.UPLOAD_PRESCRIPTION,
@@ -189,6 +198,15 @@ const savePrescriptionMedicineOrderOMS: Resolver<
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
   const saveOrder = await medicineOrdersRepo.saveMedicineOrder(medicineOrderattrs);
 
+  if (saveOrder) {
+    const orderStatusAttrs: Partial<MedicineOrdersStatus> = {
+      orderStatus: MEDICINE_ORDER_STATUS.PRESCRIPTION_UPLOADED,
+      medicineOrders: saveOrder,
+      statusDate: new Date(),
+    };
+    await medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, saveOrder.orderAutoId);
+  }
+
   const serviceBusConnectionString = process.env.AZURE_SERVICE_BUS_CONNECTION_STRING;
   const azureServiceBus = new ServiceBusService(serviceBusConnectionString);
   const queueName = process.env.AZURE_SERVICE_BUS_OMS_QUEUE_NAME || '';
@@ -204,6 +222,7 @@ const savePrescriptionMedicineOrderOMS: Resolver<
       console.log('topic create error', topicError);
     }
     console.log('connected to topic', queueName);
+
     const message = 'MEDICINE_ORDER:' + saveOrder.orderAutoId + ':' + patientDetails.id;
     azureServiceBus.sendTopicMessage(queueName, message, (sendMsgError) => {
       if (sendMsgError) {
@@ -219,6 +238,7 @@ const savePrescriptionMedicineOrderOMS: Resolver<
       console.log('message sent to topic');
     });
   });
+
   if (
     prescriptionMedicineOMSInput.NonCartOrderCity &&
     prescriptionMedicineOMSInput.NonCartOrderCity.length > 0 &&
@@ -244,22 +264,23 @@ const savePrescriptionMedicineOrderOMS: Resolver<
 
     const toEmailId =
       process.env.NODE_ENV == 'dev' ||
-      process.env.NODE_ENV == 'development' ||
-      process.env.NODE_ENV == 'local'
+        process.env.NODE_ENV == 'development' ||
+        process.env.NODE_ENV == 'local'
         ? ApiConstants.MEDICINE_SUPPORT_EMAILID
         : ApiConstants.MEDICINE_SUPPORT_EMAILID_PRODUCTION;
 
     let ccEmailIds =
       process.env.NODE_ENV == 'dev' ||
-      process.env.NODE_ENV == 'development' ||
-      process.env.NODE_ENV == 'local'
-        ? <string>ApiConstants.MEDICINE_SUPPORT_CC_EMAILID
+        process.env.NODE_ENV == 'development' ||
+        process.env.NODE_ENV == 'local'
+        ? ''
         : <string>ApiConstants.MEDICINE_SUPPORT_CC_EMAILID_PRODUCTION;
 
     if (prescriptionMedicineOMSInput.email && prescriptionMedicineOMSInput.email.length > 0) {
       ccEmailIds = ccEmailIds.concat(prescriptionMedicineOMSInput.email);
     }
 
+    //retaining cc as input is being concatenated with cc
     const emailContent: EmailMessage = {
       subject: subject,
       fromEmail: <string>ApiConstants.PATIENT_HELP_FROM_EMAILID,

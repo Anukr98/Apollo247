@@ -4,6 +4,13 @@ import android.app.Application;
 import android.content.Context;
 import com.facebook.react.PackageList;
 import com.facebook.react.ReactApplication;
+import com.microsoft.codepush.react.CodePush;
+import com.ocetnik.timer.BackgroundTimerPackage;
+import com.brentvatne.react.ReactVideoPackage;
+import com.zmxv.RNSound.RNSoundPackage;
+import com.ninty.system.setting.SystemSettingPackage;
+import com.zxcpoiu.incallmanager.InCallManagerPackage;
+import com.opentokreactnative.OTPackage;
 import me.furtado.smsretriever.RNSmsRetrieverPackage;
 import com.bugfender.react.RNBugfenderPackage;
 import com.facebook.reactnative.androidsdk.FBSDKPackage;
@@ -14,8 +21,6 @@ import com.webengage.sdk.android.WebEngageActivityLifeCycleCallbacks;
 import com.reactnativecommunity.asyncstorage.AsyncStoragePackage;
 import com.masteratul.exceptionhandler.ReactNativeExceptionHandlerPackage;
 import com.imagepicker.ImagePickerPackage;
-import com.opentokreactnative.OTPackage;
-import com.zxcpoiu.incallmanager.InCallManagerPackage;
 import com.learnium.RNDeviceInfo.RNDeviceInfo;
 import com.reactnativecommunity.webview.RNCWebViewPackage;
 import com.bugsnag.BugsnagReactNative;
@@ -75,6 +80,11 @@ public class MainApplication extends Application implements ReactApplication {
 
     private final ReactNativeHost mReactNativeHost =
             new ReactNativeHost(this) {
+                @Override
+                protected String getJSBundleFile() {
+                    return CodePush.getJSBundleFile();
+                }
+
                 @Override
                 public boolean getUseDeveloperSupport() {
                     return BuildConfig.DEBUG;

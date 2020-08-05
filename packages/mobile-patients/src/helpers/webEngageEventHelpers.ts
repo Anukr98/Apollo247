@@ -4,6 +4,8 @@ import {
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import { postWebEngageEvent, g } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { Store } from '@aph/mobile-patients/src/helpers/apiCalls';
+import moment from 'moment';
 
 type MyOrdersClicked = WebEngageEvents[WebEngageEventName.MY_ORDERS_CLICKED];
 
@@ -97,4 +99,34 @@ export const postPhamracyCartAddressSelectedFailure = (
     Pincode: pincode,
   };
   postWebEngageEvent(WebEngageEventName.PHARMACY_CART_ADDRESS_SELECTED_FAILURE, eventAttributes);
+};
+
+type ShowPrescriptionAtStoreSelected = WebEngageEvents[WebEngageEventName.SHOW_PRESCRIPTION_AT_STORE_SELECTED];
+
+export const postShowPrescriptionAtStoreSelected = (
+  eventAttributes: ShowPrescriptionAtStoreSelected
+) => {
+  postWebEngageEvent(WebEngageEventName.SHOW_PRESCRIPTION_AT_STORE_SELECTED, eventAttributes);
+};
+
+type PharmacyStorePickupViewed = WebEngageEvents[WebEngageEventName.PHARMACY_STORE_PICKUP_VIEWED];
+
+export const postPharmacyStorePickupViewed = (eventAttributes: PharmacyStorePickupViewed) => {
+  postWebEngageEvent(WebEngageEventName.PHARMACY_STORE_PICKUP_VIEWED, eventAttributes);
+};
+
+type PharmacyStoreSelectedSuccess = WebEngageEvents[WebEngageEventName.PHARMACY_STORE_SELECTED_SUCCESS];
+
+export const postPharmacyStoreSelectedSuccess = (
+  pincode: PharmacyStoreSelectedSuccess['Pincode'],
+  store: Store
+) => {
+  const eventAttributes: PharmacyStoreSelectedSuccess = {
+    Pincode: pincode,
+    'Store Id': store.storeid,
+    'Store Name': store.storename,
+    'Store Number': store.phone,
+    'Store Address': store.address,
+  };
+  postWebEngageEvent(WebEngageEventName.PHARMACY_STORE_SELECTED_SUCCESS, eventAttributes);
 };

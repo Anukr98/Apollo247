@@ -22,7 +22,11 @@ import { MedicineAutoSearch } from 'components/Medicine/MedicineAutoSearch';
 import { AphButton, AphDialog, AphDialogTitle, AphDialogClose } from '@aph/web-ui-components';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { useCurrentPatient } from 'hooks/authHooks';
-import { uploadPrescriptionTracking, pharmacyPdpOverviewTracking } from 'webEngageTracking';
+import {
+  uploadPrescriptionTracking,
+  pharmacyPdpOverviewTracking,
+  pharmacyProductClickTracking,
+} from 'webEngageTracking';
 import { UploadPrescription } from 'components/Prescriptions/UploadPrescription';
 import { UploadEPrescriptionCard } from 'components/Prescriptions/UploadEPrescriptionCard';
 import { MetaTagsComp } from 'MetaTagsComp';
@@ -495,9 +499,19 @@ export const MedicineDetails: React.FC = (props) => {
               PharmaOverview,
               url_key,
               mou,
-            } = data.productdp[0];
+              category_id,
+            } = data && data.productdp && data.productdp.length && data.productdp[0];
             let { description } = data.productdp[0];
-            window.history.replaceState(null, '', url_key);
+            pharmacyProductClickTracking({
+              productName: name,
+              source: '',
+              productId: sku,
+              brand: '',
+              brandId: '',
+              categoryName: '',
+              categoryId: category_id,
+              sectionName: '',
+            });
             if (
               type_id &&
               type_id.toLowerCase() === 'pharma' &&

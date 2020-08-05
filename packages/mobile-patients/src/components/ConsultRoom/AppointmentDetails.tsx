@@ -41,7 +41,10 @@ import {
   STATUS,
   TRANSFER_INITIATED_TYPE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { getNextAvailableSlots } from '@aph/mobile-patients/src/helpers/clientCalls';
+import {
+  getNextAvailableSlots,
+  getRescheduleAppointmentDetails,
+} from '@aph/mobile-patients/src/helpers/clientCalls';
 import {
   dataSavedUserID,
   g,
@@ -182,7 +185,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
     }
 
     if (movedFrom === 'notification') {
-      NextAvailableSlotAPI();
+      NextAvailableSlotAPI(g(data, 'appointmentState') == APPOINTMENT_STATE.AWAITING_RESCHEDULE);
     }
 
     if (movedFrom === 'cancel') {
@@ -192,13 +195,16 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
 
   const client = useApolloClient();
 
-  const NextAvailableSlotAPI = () => {
+  const NextAvailableSlotAPI = (isAwaitingReschedule?: boolean) => {
     getNetStatus()
       .then((status) => {
         if (status) {
           console.log('nextAvailableSlot called');
-
-          nextAvailableSlot();
+          if (isAwaitingReschedule) {
+            getAppointmentNextSlotInitiatedByDoctor();
+          } else {
+            nextAvailableSlot();
+          }
         } else {
           setNetworkStatus(true);
           setshowSpinner(false);
@@ -256,6 +262,21 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
       .finally(() => {
         checkIfReschedule();
       });
+  };
+
+  const getAppointmentNextSlotInitiatedByDoctor = async () => {
+    try {
+      setshowSpinner(true);
+      const response = await getRescheduleAppointmentDetails(client, data.id);
+      const slot = g(response, 'data', 'getAppointmentRescheduleDetails', 'rescheduledDateTime');
+      setAvailability(slot || '');
+      setshowSpinner(false);
+      checkIfReschedule();
+    } catch (error) {
+      setAvailability('');
+      setshowSpinner(false);
+      checkIfReschedule();
+    }
   };
 
   const checkIfReschedule = () => {
@@ -477,6 +498,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
     showAphAlert!({
       title: `Hi ${g(currentPatient, 'firstName') || ''}!`,
       description: `As per your request, your appointment #${appointmentNum} with ${doctorName} scheduled for ${appointmentTime} has been cancelled.`,
+      unDismissable: true,
       onPressOk: () => {
         hideAphAlert!();
         props.navigation.dispatch(
@@ -592,7 +614,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
               <View style={styles.imageView}>
                 {data.doctorInfo.thumbnailUrl &&
                 data.doctorInfo.thumbnailUrl.match(
-                  /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG)/
+                  /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jpeg|JPEG)/
                 ) ? (
                   <Image
                     source={{ uri: data.doctorInfo.thumbnailUrl }}
@@ -641,7 +663,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
                     isAwaitingReschedule ||
                     dateIsAfter ||
                     (data.status == STATUS.PENDING && minutes <= -30)
-                      ? NextAvailableSlotAPI()
+                      ? NextAvailableSlotAPI(isAwaitingReschedule)
                       : null;
                   } catch (error) {
                     CommonBugFender('AppointmentDetails_NextAvailableSlotAPI_try', error);
@@ -784,7 +806,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
                   onPress={() => {
                     postAppointmentWEGEvents(WebEngageEventName.RESCHEDULE_CLICKED);
                     setShowCancelPopup(false);
-                    NextAvailableSlotAPI();
+                    NextAvailableSlotAPI(isAwaitingReschedule);
                   }}
                 >
                   <Text style={styles.gotItTextStyles}>{'RESCHEDULE INSTEAD'}</Text>
