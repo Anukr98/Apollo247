@@ -295,6 +295,7 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
       relations: [
         'medicineOrderLineItems',
         'medicineOrderPayments',
+        'medicineOrderRefunds',
         'medicineOrdersStatus',
         'medicineOrderShipments',
         'medicineOrderShipments.medicineOrdersStatus',
@@ -311,6 +312,7 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
       relations: [
         'medicineOrderLineItems',
         'medicineOrderPayments',
+        'medicineOrderRefunds',
         'medicineOrdersStatus',
         'medicineOrderShipments',
         'medicineOrderShipments.medicineOrdersStatus',

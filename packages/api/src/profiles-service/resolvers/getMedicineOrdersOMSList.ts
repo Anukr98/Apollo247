@@ -61,6 +61,7 @@ export const getMedicineOrdersOMSListTypeDefs = gql`
     bookingSource: BOOKING_SOURCE
     medicineOrderLineItems: [MedicineOrderOMSLineItems]
     medicineOrderPayments: [MedicineOrderOMSPayments]
+    medicineOrderRefunds:[MedicineOrderOMSRefunds]
     medicineOrdersStatus: [MedicineOrdersOMSStatus]
     medicineOrderShipments: [MedicineOrderOMSShipment]
     medicineOrderAddress: MedicineOrderOMSAddress
@@ -126,6 +127,40 @@ export const getMedicineOrdersOMSListTypeDefs = gql`
     paymentMode: PAYMENT_METHODS_REVERSE
   }
 
+  type MedicineOrderOMSRefunds {
+    refId: String
+    txnId: String
+    refundAmount: Float
+    totalRefundAmount: Float
+    comments: String
+    refundStatus: REFUND_STATUS
+    paytmRequestStatus: PAYTM_STATUS
+    refundId: String
+    txnAmount: Float
+    txnTimestamp: Date
+    orderId: String
+    payMethod: String
+    acceptRefundTimestamp: Date
+    userCreditInitiateTimestamp: Date
+    resultCode: String
+    resultMsg: String
+    createdDate: Date 
+  }
+
+  enum REFUND_STATUS {
+    REFUND_REQUEST_RAISED
+    REFUND_FAILED
+    REFUND_SUCCESSFUL
+    REFUND_REQUEST_NOT_RAISED
+  }
+
+  enum PAYTM_STATUS {
+    TXN_FAILURE
+    PENDING
+    TXN_SUCCESS
+    PAYMENT_ABORTED
+  }
+  
   enum PAYMENT_METHODS_REVERSE {
     DEBIT_CARD
     CREDIT_CARD
