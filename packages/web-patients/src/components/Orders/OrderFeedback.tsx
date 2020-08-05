@@ -150,12 +150,14 @@ type Props = {
   children?: React.ReactNode;
   setIsPopoverOpen: (active: boolean) => void;
   orderDetailsData: OrderDetails | null;
+  setShowDeliveryRateBtn: (showDeliveryRateBtn: boolean) => void;
 };
 
 export const OrderFeedback: React.FC<Props> = (props) => {
   const classes = useStyles({});
   const {
     setIsPopoverOpen,
+    setShowDeliveryRateBtn,
     orderDetailsData: {
       orderAutoId,
       orderTat,
@@ -268,7 +270,13 @@ export const OrderFeedback: React.FC<Props> = (props) => {
             Your feedback has been submitted. Thanks for your time.
           </Typography>
           <div className={classes.flex}>
-            <Link href="javascript:void(0);" onClick={() => setIsPopoverOpen(false)}>
+            <Link
+              href="javascript:void(0);"
+              onClick={() => {
+                setIsPopoverOpen(false);
+                setShowDeliveryRateBtn(false);
+              }}
+            >
               Ok, Got It
             </Link>
           </div>
