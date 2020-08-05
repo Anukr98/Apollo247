@@ -160,3 +160,8 @@ export const pushTheView = (navigationProps: any, routeName: String, id?: String
       break;
   }
 };
+
+export const getValuesArray = (arr: any) => {
+  const finalArr = arr.map((item: any) => item.name);
+  return finalArr;
+};

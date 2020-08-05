@@ -460,6 +460,17 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
                   saveSearchMutation({
                     variables: {
                       saveSearchInput: {
+                        type: SEARCH_TYPE.SPECIALTY,
+                        typeId:
+                          doctorDetails && doctorDetails.specialty && doctorDetails.specialty.id,
+                        patient: currentPatient ? currentPatient.id : '',
+                      },
+                    },
+                    fetchPolicy: 'no-cache',
+                  });
+                  saveSearchMutation({
+                    variables: {
+                      saveSearchInput: {
                         type: SEARCH_TYPE.DOCTOR,
                         typeId: doctorDetails && doctorDetails.id,
                         patient: currentPatient ? currentPatient.id : '',

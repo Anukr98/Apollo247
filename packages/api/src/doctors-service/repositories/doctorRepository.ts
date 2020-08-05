@@ -225,7 +225,7 @@ export class DoctorRepository extends Repository<Doctor> {
 
     if (getDetails.body.hits.hits && getDetails.body.hits.hits.length > 0) {
       doctorData = getDetails.body.hits.hits[0]._source;
-      if(doctorData['languages'] instanceof Array){
+      if (doctorData['languages'] instanceof Array) {
         doctorData['languages'] = doctorData['languages'].join(', ');
       }
       doctorData.id = doctorData.doctorId;

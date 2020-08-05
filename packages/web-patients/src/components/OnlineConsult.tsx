@@ -597,7 +597,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
                       : ''
                     : classes.disabledButton
                 }`}
-                disabled={!(consultNow && slotAvailableNext !== '') || !consultNowAvailable}
+                disabled={!(consultNow && slotAvailableNext === '') || !consultNowAvailable}
                 title={' Consult Now'}
               >
                 Consult Now

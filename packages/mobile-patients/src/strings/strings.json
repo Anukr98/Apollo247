@@ -236,7 +236,9 @@
       }
     ]
   },
-  "medicine": {},
+  "medicine": {
+    "recommendedForYou": "RECOMMENDED FOR YOU"
+  },
   "medicine_cart": {
     "tatUnServiceableAlertTitle": "We’re sorry!",
     "tatUnServiceableAlertDesc": "Some items in your order are not deliverable to the selected address.\n\nYou may either change the address or delete the item from your cart.\n\nYou can also call 1860 500 0101 for Apollo Pharmacy retail customer care.",
@@ -323,6 +325,16 @@
     "success": "TXN_SUCCESS",
     "failure": "TXN_FAILURE",
     "pending": "PAYMENT_PENDING_PG"
+  },
+  "PaymentModes": {
+    "DEBIT_CARD": "Debit Card",
+    "CREDIT_CARD": "Credit Card",
+    "NET_BANKING": "Net Banking",
+    "PAYTM_WALLET": "Paytm Wallet",
+    "EMI": "EMI",
+    "UPI": "UPI",
+    "PAYTM_POSTPAID": "Paytm Postpaid",
+    "COD": "COD"
   },
   "alerts": {
     "Open_camera_in_video_call": "Image capturing is disabled during a video call. Please switch to the Audio call if you want to send an Image."

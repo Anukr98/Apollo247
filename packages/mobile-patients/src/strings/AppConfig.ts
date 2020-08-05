@@ -20,7 +20,7 @@ export enum AppEnv {
   DEVReplica = 'DEVReplica',
 }
 
-const APP_ENV: AppEnv = AppEnv.QA2 as AppEnv; // For respective API environments in the app.
+const APP_ENV: AppEnv = AppEnv.PROD as AppEnv; // For respective API environments in the app.
 
 const pharmaToken201 = 'Bearer 2o1kd4bjapqifpb27fy7tnbivu8bqo1d';
 const pharmaTokenYXV = 'YXV0aF91c2VyOnN1cGVyc2VjcmV0X3Rhd';
@@ -139,32 +139,32 @@ const appStaticVariables = {
 
 const DEV_top6_specailties = [
   {
-    speciality_id: '4dc1c5de-e062-4b3b-aec9-090389687865',
+    speciality_id: '4145727e-e3a4-4219-814b-d0f10df9b2f1',
     speciality_order: '1',
     speciality_name: 'General Physician/ Internal Medicine',
   },
   {
-    speciality_id: 'dfe0b6a4-d0d4-4f54-a4b0-9f5c9bd7b39c',
+    speciality_id: 'bf0cc02f-1422-45e6-86ee-4ab2b35ffc02',
     speciality_order: '5',
     speciality_name: 'Cardiology',
   },
   {
-    speciality_id: '4fc00d0f-95d9-4040-a1d4-41515a2aaa0e',
+    speciality_id: '3ea4faf5-05b2-4c58-8e00-f6ee71f4eb7d',
     speciality_order: '6',
     speciality_name: 'Gastroenterology/ GI Medicine',
   },
   {
-    speciality_id: 'fba32e11-eb1c-4e18-8d45-8c25f45d7672',
+    speciality_id: 'e3ede210-b0bb-4100-919d-2086afdbe89e',
     speciality_order: '3',
     speciality_name: 'Dermatology',
   },
   {
-    speciality_id: '3b69e637-684d-4545-aace-91810bc5739d',
+    speciality_id: '22bd8220-327c-433f-a112-2a2f89216859',
     speciality_order: '2',
     speciality_name: 'Obstetrics & Gynaecology',
   },
   {
-    speciality_id: '91cee893-55cf-41fd-9d6b-73157c6518a9',
+    speciality_id: '0735146e-bd51-4b7c-b7a1-234efc1b259d',
     speciality_order: '4',
     speciality_name: 'Paediatrics',
   },
@@ -346,8 +346,8 @@ const ConfigurationDev = {
   TOP_SPECIALITIES: DEV_top6_specailties,
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
-  iOS_Version: '2.631',
-  Android_Version: '2.631',
+  iOS_Version: '4.0.0',
+  Android_Version: '4.0.0',
   CONDITIONAL_MANAGENET_BASE_URL: 'https://aph.staging.pmt.popcornapps.com',
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e', //7839e425f4acbd8e6ff3f907281addca <-- popcornapps key
   COVID_RISK_LEVEL_URL:
@@ -502,8 +502,8 @@ const ConfigurationProd = {
   TOP_SPECIALITIES: top6_specailties,
   ...PharmaApiConfig.prod,
   ...appStaticVariables,
-  iOS_Version: '2.63',
-  Android_Version: '2.63',
+  iOS_Version: '3.2.0',
+  Android_Version: '3.2.0',
   CONDITIONAL_MANAGENET_BASE_URL: 'https://pmt.apollo247.com',
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e',
   COVID_RISK_LEVEL_URL: 'https://www.apollo247.com/covid19/cough-scan?utm_source=mobile_app',

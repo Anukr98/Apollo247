@@ -281,11 +281,17 @@ export const CovidLanding: React.FC = (props: any) => {
       const qParamsArr = props.location.search.split('=');
       if (qParamsArr && qParamsArr.length) {
         const isWebView = qParamsArr.some((param: string) => param.includes('mobile_app'));
-        sessionStorage.setItem('webView', 'true');
-        setIsWebView(isWebView);
+        if (isWebView) {
+          sessionStorage.setItem('webView', 'true');
+          setIsWebView(isWebView);
+        }
+      }
+    } else {
+      if (sessionStorage.getItem('webView') && sessionStorage.getItem('webView').length > 0) {
+        setIsWebView(true);
       }
     }
-  });
+  }, []);
   useEffect(() => {
     fetchUtil(covidArticleBaseUrl!, 'GET', {}, '', true).then((res: any) => {
       const body = res.data;
