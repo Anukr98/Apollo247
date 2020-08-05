@@ -424,7 +424,8 @@
     "whatsapp": "WhatsApp",
     "whatsapp_number": "+91 9355031397",
     "email": "E-mail",
-    "help_desk_email": "Helpdesk@apollo247.com"
+    "help_desk_email": "Helpdesk@apollo247.com",
+    "join_heading": "Patient “{0}” is waiting in the consult room. Please click on Proceed to join consultation."
   },
   "consult_room": {
     "patient_is_not_acitve_descr": "We are sorry, but it seems your patient is no longer active on the application. You may wish to reschedule this consult.",

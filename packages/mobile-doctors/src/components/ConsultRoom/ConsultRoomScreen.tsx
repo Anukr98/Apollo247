@@ -318,25 +318,9 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           connectCall('V', true);
         }}
       >
-        <View
-          style={{
-            backgroundColor: theme.colors.APP_YELLOW,
-            width: 80,
-            height: 80,
-            borderRadius: 40,
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}
-        >
+        <View style={styles.joinFloatingButtonContainer}>
           <JoinWhite />
-          <Text
-            style={{
-              marginTop: 7,
-              ...theme.viewStyles.text('SB', 10, theme.colors.WHITE),
-            }}
-          >
-            JOIN
-          </Text>
+          <Text style={styles.joinFloatingText}>JOIN</Text>
         </View>
       </TouchableOpacity>
     );
@@ -344,64 +328,38 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
 
   const renderJoinView = () => {
     return (
-      <View
-        style={{
-          position: 'absolute',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          backgroundColor: 'white',
-          borderTopLeftRadius: 40,
-          borderTopRightRadius: 40,
-        }}
-      >
-        <View style={{ margin: 20, marginBottom: isIphoneX() ? 40 : 20 }}>
-          <View style={{ alignItems: 'flex-end', margin: 1, marginBottom: 4 }}>
+      <View style={styles.joinMainContainer}>
+        <View style={styles.joinSubContainer}>
+          <View style={styles.joinMinimizeIconContainer}>
             <TouchableOpacity
               onPress={() => {
                 showFloatingCotainer({
                   child: renderJoinMinimizedView(),
-                  mainContainerStyle: {
-                    position: 'absolute',
-                    right: 26,
-                    bottom: isIphoneX() ? 120 : 90,
-                    zIndex: 5000,
-                    elevation: 5000,
-                  },
+                  mainContainerStyle: styles.floatingContainerButton,
                 });
               }}
             >
               <Minimize />
             </TouchableOpacity>
           </View>
-          <View
-            style={{
-              flexDirection: 'row',
-              marginBottom: 20,
-              marginRight: 18,
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}
-          >
+          <View style={styles.joinTextContainer}>
             <Join />
-            <Text
-              style={{
-                flex: 1,
-                marginLeft: 10,
-                ...theme.viewStyles.text('M', 14, theme.colors.SHARP_BLUE),
-              }}
-            >
-              Patient “Seema Singh” is waiting in the consult room. Please click on Proceed to join
-              consultation.
+            <Text style={styles.joinDisplayTextStyle}>
+              {string.case_sheet.join_heading.replace(
+                '{0}',
+                `${g(patientDetails, 'firstName') ||
+                  g(caseSheet, 'patientDetails', 'firstName')} ${g(patientDetails, 'lastName') ||
+                  g(caseSheet, 'patientDetails', 'lastName')}`
+              )}
             </Text>
           </View>
-          <View style={{ alignSelf: 'flex-end' }}>
+          <View style={styles.joinButtonContainer}>
             <Button
               onPress={() => {
                 connectCall('V', true);
               }}
               title={'PROCEED'}
-              style={{ width: undefined, paddingHorizontal: 21 }}
+              style={styles.joinButtonStyle}
             />
           </View>
         </View>
@@ -1470,17 +1428,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             case messageCodes.patientJoined:
               showFloatingCotainer({
                 child: renderJoinView(),
-                mainContainerStyle: {
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  flex: 1,
-                  backgroundColor: 'rgba(0, 0, 0, 0.4)',
-                  zIndex: 5000,
-                  elevation: 5000,
-                },
+                mainContainerStyle: styles.floatingContainerFullScreen,
               });
               break;
             default:
@@ -1501,17 +1449,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         } else if (messageCodes.patientJoined === messageText) {
           showFloatingCotainer({
             child: renderJoinView(),
-            mainContainerStyle: {
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              flex: 1,
-              backgroundColor: 'rgba(0, 0, 0, 0.4)',
-              zIndex: 5000,
-              elevation: 5000,
-            },
+            mainContainerStyle: styles.floatingContainerFullScreen,
           });
         } else {
           callData.setMessageReceived(true);

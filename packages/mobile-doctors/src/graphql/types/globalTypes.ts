@@ -75,11 +75,6 @@ export enum DOCTOR_DEVICE_TYPE {
   IOS = "IOS",
 }
 
-export enum DOCTOR_ONLINE_STATUS {
-  AWAY = "AWAY",
-  ONLINE = "ONLINE",
-}
-
 export enum DoctorType {
   APOLLO = "APOLLO",
   APOLLO_HOMECARE = "APOLLO_HOMECARE",

@@ -2,7 +2,7 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
-import { Gender, Relation, PATIENT_ADDRESS_TYPE, APPOINTMENT_TYPE, DoctorType, DOCTOR_ONLINE_STATUS, STATUS, MEDICINE_TO_BE_TAKEN, MEDICINE_TIMINGS, MEDICINE_UNIT, MEDICINE_FORM_TYPES, MEDICINE_FREQUENCY, MEDICINE_CONSUMPTION_DURATION, ROUTE_OF_ADMINISTRATION } from "./globalTypes";
+import { Gender, Relation, PATIENT_ADDRESS_TYPE, APPOINTMENT_TYPE, DoctorType, STATUS, MEDICINE_TO_BE_TAKEN, MEDICINE_TIMINGS, MEDICINE_UNIT, MEDICINE_FORM_TYPES, MEDICINE_FREQUENCY, MEDICINE_CONSUMPTION_DURATION, ROUTE_OF_ADMINISTRATION } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: GetCaseSheet
@@ -162,7 +162,6 @@ export interface GetCaseSheet_getCaseSheet_caseSheetDetails_appointment_doctorIn
   fullName: string | null;
   doctorType: DoctorType;
   mobileNumber: string;
-  onlineStatus: DOCTOR_ONLINE_STATUS;
   onlineConsultationFees: string;
   physicalConsultationFees: string;
   doctorHospital: GetCaseSheet_getCaseSheet_caseSheetDetails_appointment_doctorInfo_doctorHospital[];
