@@ -10,6 +10,7 @@ import {
   MedicineOrderShipments,
   MedicineOrderCancelReason,
   MedicineOrderAddress,
+  MEDICINE_ORDER_PAYMENT_TYPE,
 } from 'profiles-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
@@ -43,10 +44,17 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
   }
 
   getInvoiceDetailsByOrderId(orderId: MedicineOrders['orderAutoId']) {
-    const startDateTime = '2020-06-10 15:45:29.453';
     return MedicineOrderInvoice.find({
       select: ['billDetails', 'itemDetails'],
-      where: { orderNo: orderId, createdDate: MoreThan(startDateTime) },
+      where: { orderNo: orderId },
+    });
+  }
+
+  getInvoiceWithShipment(id: MedicineOrders['orderAutoId']) {
+    return MedicineOrderInvoice.find({
+      select: ['billDetails', 'itemDetails', 'medicineOrderShipments'],
+      relations: ['medicineOrderShipments'],
+      where: { orderNo: id },
     });
   }
 
@@ -70,6 +78,14 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
       ])
       .where('mo.orderAutoId = :orderAutoId', { orderAutoId })
       .getRawOne();
+  }
+  getRefundsAndPaymentsByOrderId(id: MedicineOrders['id']) {
+    const paymentType = MEDICINE_ORDER_PAYMENT_TYPE.CASHLESS;
+    return MedicineOrderPayments.createQueryBuilder('medicineOrderPayments')
+      .leftJoinAndSelect('medicineOrderPayments.medicineOrderRefunds', 'medicineOrderRefunds')
+      .where('medicineOrderPayments.medicineOrders = :id', { id })
+      .andWhere('medicineOrderPayments.paymentType = :paymentType', { paymentType })
+      .getOne();
   }
 
   saveMedicineOrderLineItem(lineItemAttrs: Partial<MedicineOrderLineItems>) {
@@ -591,6 +607,18 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
       where: { orderAutoId },
       relations: [
         'patient',
+        'medicineOrderShipments',
+        'medicineOrderShipments.medicineOrdersStatus',
+      ],
+    });
+  }
+
+  getMedicineOrderWithPaymentAndShipments(orderAutoId: number) {
+    return this.findOne({
+      where: { orderAutoId },
+      relations: [
+        'patient',
+        'medicineOrderPayments',
         'medicineOrderShipments',
         'medicineOrderShipments.medicineOrdersStatus',
       ],

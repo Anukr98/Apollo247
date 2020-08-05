@@ -195,6 +195,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           getData('UploadPrescription', data.length === 2 ? linkId : undefined);
           break;
 
+        case 'MedicineRecommendedSection':
+          getData('MedicineRecommendedSection');
+          break;
+
         case 'Test':
           console.log('Test');
           getData('Test');
@@ -248,6 +252,9 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
             getData('webview', url);
           }
           break;
+        case 'FindDoctors':
+          if (data.length === 2) getData('FindDoctors', linkId);
+          break;
 
         case 'HealthRecordsHome':
           console.log('HealthRecordsHome handleopen');
@@ -260,17 +267,14 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           break;
 
         case 'OneApolloMembership':
-          console.log('OneApolloMembership handleopen');
           getData('OneApolloMembership');
           break;
 
         case 'TestDetails':
-          console.log('TestDetails handleopen');
           getData('TestDetails', data.length === 2 ? linkId : undefined);
           break;
 
         case 'ConsultDetails':
-          console.log('ConsultDetails handleopen');
           getData('ConsultDetails', data.length === 2 ? linkId : undefined);
           break;
 
@@ -278,7 +282,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           getData('ConsultRoom', undefined, true);
           // webengage event
           const eventAttributes: WebEngageEvents[WebEngageEventName.HOME_PAGE_VIEWED] = {
-            source: 'Deeplink',
+            source: 'deeplink',
           };
           postWebEngageEvent(WebEngageEventName.HOME_PAGE_VIEWED, eventAttributes);
           break;
@@ -443,6 +447,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         props.navigation.navigate('MEDICINES', { showUploadPrescriptionPopup: true });
         break;
 
+      case 'MedicineRecommendedSection':
+        props.navigation.navigate('MEDICINES', { showRecommendedSection: true });
+        break;
+
       case 'MedicineDetail':
         console.log('MedicineDetail');
         props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
@@ -474,7 +482,14 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         //   specialityId: id ? id : '',
         // });
         break;
-
+      case 'FindDoctors':
+        const cityBrandFilter = id ? id.split('%20') : '';
+        props.navigation.navigate(AppRoutes.DoctorSearchListing, {
+          specialityId: cityBrandFilter[0] ? cityBrandFilter[0] : '',
+          city: cityBrandFilter.length > 1 ? cityBrandFilter[1] : null,
+          brand: cityBrandFilter.length > 2 ? cityBrandFilter[2] : null,
+        });
+        break;
       case 'Doctor':
         props.navigation.navigate(AppRoutes.DoctorDetails, {
           doctorId: id,
@@ -514,7 +529,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       case 'Order':
         props.navigation.navigate(AppRoutes.OrderDetailsScene, {
           goToHomeOnBack: true,
-          orderAutoId: id,
+          orderAutoId: isNaN(id) ? '' : id,
+          billNumber: isNaN(id) ? id : '',
         });
         break;
       case 'MyOrders':

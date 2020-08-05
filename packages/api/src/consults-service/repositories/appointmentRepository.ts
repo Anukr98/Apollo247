@@ -44,7 +44,7 @@ import { PatientRepository } from 'profiles-service/repositories/patientReposito
 import { log } from 'customWinstonLogger';
 import { ApiConstants } from 'ApiConstants';
 import { Client, RequestParams } from '@elastic/elasticsearch';
-import { getCache, setCache } from 'consults-service/database/connectRedis';
+import { getCache, setCache, delCache } from 'consults-service/database/connectRedis';
 
 const REDIS_APPOINTMENT_ID_KEY_PREFIX: string = 'patient:appointment:';
 
@@ -61,7 +61,7 @@ export class AppointmentRepository extends Repository<Appointment> {
         getApptError,
       });
     });
- 
+
     if (appointment) {
       await setCache(
         `${REDIS_APPOINTMENT_ID_KEY_PREFIX}${id}`,
@@ -69,7 +69,7 @@ export class AppointmentRepository extends Repository<Appointment> {
         ApiConstants.CACHE_EXPIRATION_3600
       );
     }
- 
+
     return appointment;
   }
 
@@ -919,9 +919,9 @@ export class AppointmentRepository extends Repository<Appointment> {
         .getUTCHours()
         .toString()
         .padStart(2, '0')}:${appointmentDate
-          .getUTCMinutes()
-          .toString()
-          .padStart(2, '0')}:00.000Z`;
+        .getUTCMinutes()
+        .toString()
+        .padStart(2, '0')}:00.000Z`;
       console.log(availableSlots, 'availableSlots final list');
       console.log(availableSlots.indexOf(sl), 'indexof');
       console.log(checkStart, checkEnd, 'check start end');
@@ -1079,9 +1079,9 @@ export class AppointmentRepository extends Repository<Appointment> {
             .getUTCHours()
             .toString()
             .padStart(2, '0')}:${doctorAppointment.appointmentDateTime
-              .getUTCMinutes()
-              .toString()
-              .padStart(2, '0')}:00.000Z`;
+            .getUTCMinutes()
+            .toString()
+            .padStart(2, '0')}:00.000Z`;
           if (availableSlots.indexOf(aptSlot) >= 0) {
             availableSlots.splice(availableSlots.indexOf(aptSlot), 1);
           }
@@ -1243,7 +1243,10 @@ export class AppointmentRepository extends Repository<Appointment> {
     );
   }
 
-  updateJdQuestionStatusbyIds(ids: string[]) {
+  async updateJdQuestionStatusbyIds(ids: string[]) {
+    for (let i = 0; i < ids.length; i++) {
+      await delCache(`${REDIS_APPOINTMENT_ID_KEY_PREFIX}${ids[i]}`);
+    }
     return this.update([...ids], {
       isJdQuestionsComplete: true,
       isConsultStarted: true,
@@ -1302,7 +1305,11 @@ export class AppointmentRepository extends Repository<Appointment> {
     );
   }
 
-  systemCancelAppointment(id: string, appointmentInfo: Partial<Appointment>, apptDetails: Appointment) {
+  systemCancelAppointment(
+    id: string,
+    appointmentInfo: Partial<Appointment>,
+    apptDetails: Appointment
+  ) {
     return this.createUpdateAppointment(
       apptDetails,
       {
@@ -1310,7 +1317,7 @@ export class AppointmentRepository extends Repository<Appointment> {
         cancelledBy: REQUEST_ROLES.SYSTEM,
         cancelledDate: new Date(),
         status: STATUS.CANCELLED,
-        ...appointmentInfo
+        ...appointmentInfo,
       },
       AphErrorMessages.CANCEL_APPOINTMENT_ERROR
     );
@@ -1400,9 +1407,9 @@ export class AppointmentRepository extends Repository<Appointment> {
             .getUTCHours()
             .toString()
             .padStart(2, '0')}:${blockedSlot.start
-              .getUTCMinutes()
-              .toString()
-              .padStart(2, '0')}:00.000Z`;
+            .getUTCMinutes()
+            .toString()
+            .padStart(2, '0')}:00.000Z`;
 
           let blockedSlotsCount =
             (Math.abs(differenceInMinutes(blockedSlot.end, blockedSlot.start)) / 60) * duration;
@@ -1460,9 +1467,9 @@ export class AppointmentRepository extends Repository<Appointment> {
               .getUTCHours()
               .toString()
               .padStart(2, '0')}:${slot
-                .getUTCMinutes()
-                .toString()
-                .padStart(2, '0')}:00.000Z`;
+              .getUTCMinutes()
+              .toString()
+              .padStart(2, '0')}:00.000Z`;
           }
           console.log('start slot', slot);
 

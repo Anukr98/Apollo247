@@ -3219,7 +3219,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             >
               <Button
                 title={'CHANGE SLOT'}
-                disabled={disAllowReschedule}
+                // disabled={disAllowReschedule}
                 disabledStyle={{
                   backgroundColor: '#0087ba',
                   opacity: 0.8,
@@ -3252,7 +3252,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               />
               <Button
                 title={'ACCEPT'}
-                disabled={disAllowReschedule}
+                // disabled={disAllowReschedule}
                 style={{
                   flex: 0.4,
                   marginRight: 16,

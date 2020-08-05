@@ -88,7 +88,7 @@ import {
 } from 'react-navigation';
 import RNFetchBlob from 'rn-fetch-blob';
 import { mimeType } from '../../helpers/mimeType';
-import { useUIElements } from '../UIElementsProvider';
+import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -774,7 +774,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
       item.routeOfAdministration
         ? `\nTo be taken: ${nameFormater(item.routeOfAdministration, 'title')}`
         : ''
-    }${item.medicineInstructions ? '\nInstuctions: ' + item.medicineInstructions : ''}`;
+    }${item.medicineInstructions ? '\nInstructions: ' + item.medicineInstructions : ''}`;
   };
 
   const renderPrescriptions = () => {
@@ -988,7 +988,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                       <Spearator style={{ marginBottom: index == array.length - 1 ? 2.5 : 11.5 }} />
                       {item!.testInstruction ? (
                         <Text style={styles.dataTextStyle}>
-                          Instuctions: {item!.testInstruction}
+                          Instructions: {item!.testInstruction}
                         </Text>
                       ) : null}
                     </>
@@ -1115,7 +1115,6 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                       postWEGEvent('download prescription');
                       let dirs = RNFetchBlob.fs.dirs;
 
-                      console.log('blollb', g(caseSheetDetails, 'blobName'));
                       let fileName: string = getFileName();
 
                       // props.navigation.state.params!.BlobName.substring(
