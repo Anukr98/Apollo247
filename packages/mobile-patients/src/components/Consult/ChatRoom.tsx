@@ -4766,7 +4766,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   audioTrack: isPublishAudio,
                   audioVolume: 100,
                   name: g(currentPatient, 'firstName') || 'patient',
-                  resolution: '640x480' // setting this resolution to avoid over heating of device
+                  resolution: '640x480', // setting this resolution to avoid over heating of device
+                  audioBitrate: 30000,
+                  frameRate: 15
                 }}
                 eventHandlers={publisherEventHandlers}
               />
