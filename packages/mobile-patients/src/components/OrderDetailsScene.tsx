@@ -104,6 +104,7 @@ import {
   GetPatientFeedbackVariables,
 } from '@aph/mobile-patients/src/graphql/types/GetPatientFeedback';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import { RefundDetails } from '@aph/mobile-patients/src/components/RefundDetails';
 
 const styles = StyleSheet.create({
   headerShadowContainer: {
@@ -968,6 +969,14 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
             );
           })}
         </View>
+        {
+          <RefundDetails
+            orderAutoId={orderAutoId}
+            refunds={[20, 30]}
+            orderDate={getFormattedDate(orderDetails.createdDate)}
+            navigaitonProps={props.navigation}
+          />
+        }
         {isDelivered ? (
           <View
             style={{
