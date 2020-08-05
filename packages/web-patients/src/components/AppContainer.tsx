@@ -20,8 +20,7 @@ import { TestsCartLanding } from 'components/Tests/Cart/TestsCartLanding';
 import { MedicineLanding } from 'components/Medicine/MedicineLanding';
 import { ViewAllBrands } from 'components/Medicine/ViewAllBrands';
 import { SearchByBrand } from 'components/Medicine/SearchByBrand';
-import { Appointments } from 'components/ConsultRoom/Appointments';
-import { AppointmentsList } from 'components/Consult/V2/AppointmentsList';
+import { Appointments } from 'components/Consult/V2/Appointments';
 import { ChatRoom } from 'components/ChatRoom/ChatRoom';
 import { PrescriptionsLanding } from 'components/Prescriptions/PrescriptionsLanding';
 import { MyAccount } from 'components/MyAccount/MyAccount';
@@ -181,7 +180,6 @@ const App: React.FC = () => {
             component={PrescriptionsLanding}
           />
           <AuthRouted exact path={clientRoutes.appointments()} component={Appointments} />
-          <AuthRouted exact path={clientRoutes.appointmentsList()} component={AppointmentsList} />
           <AuthRouted exact path={clientRoutes.appointmentSuccess()} component={Appointments} />
           <AuthRouted
             exact

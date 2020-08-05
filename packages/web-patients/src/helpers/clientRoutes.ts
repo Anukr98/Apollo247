@@ -13,7 +13,6 @@ export const clientRoutes = {
   specialties: (specialty: string) => `/specialties/${specialty}`,
   citySpecialties: (city: string, specialty: string) => `/${city}/specialties/${specialty}`,
   appointments: () => '/appointments',
-  appointmentsList: () => '/appointmentslist',
   appointmentSuccess: () => `/appointments/${status}`,
   testsAndMedicine: () => '/tests-medicines',
   medicines: () => `/medicines`,
