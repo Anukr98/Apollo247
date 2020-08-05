@@ -205,7 +205,6 @@ export const connect = async () => {
         AppointmentPayments,
         AppointmentSessions,
         AuditHistory,
-        ConsultQueueItem,
         CaseSheet,
         CurrentAvailabilityStatus,
         DoctorNextAvaialbleSlots,
