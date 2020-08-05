@@ -96,7 +96,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   // const { setVirtualConsultationFee } = useAppCommonData();
 
   useEffect(() => {
-    getData('ConsultRoom', undefined, true);
+    getData('ConsultRoom', undefined, false); // no need to set timeout on didMount
     InitiateAppsFlyer();
     setBugfenderPhoneNumber();
     AppState.addEventListener('change', _handleAppStateChange);
@@ -341,8 +341,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           }
           SplashScreenView.hide();
         },
-        // timeout ? 2000 : 0
-        0
+        timeout ? 2000 : 0
       );
     }
     fetchData();
@@ -359,7 +358,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       .then((_data) => {
         const appointmentData: any = _data.data.getAppointmentData!.appointmentsHistory;
         if (appointmentData[0]!.doctorInfo !== null) {
-          getData('ChatRoom', appointmentData[0]);
+          getData('ChatRoom', appointmentData[0], true);
         }
       })
       .catch((error) => {
