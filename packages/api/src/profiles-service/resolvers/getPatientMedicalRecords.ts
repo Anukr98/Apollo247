@@ -118,6 +118,7 @@ export const getPatientMedicalRecordsTypeDefs = gql`
     additionalNotes: String
     consultId: String
     tag: String
+    siteDisplayName: String
     labTestResults: [LabTestFileParameters]
     fileUrl: String!
     date: Date!

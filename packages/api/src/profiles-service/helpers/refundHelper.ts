@@ -14,6 +14,7 @@ import {
   MedicineOrders,
   PAYMENT_METHODS,
 } from 'profiles-service/entities/index';
+import { medicineOrderRefundNotification } from 'notifications-service/resolvers/notifications';
 
 import { log } from 'customWinstonLogger';
 import { MedicineOrdersRepository } from 'profiles-service/repositories/MedicineOrdersRepository';
@@ -233,12 +234,13 @@ export const calculateRefund = async (
     JSON.stringify(paymentInfo),
     ''
   );
+  const updatePaymentRequest: Partial<MedicineOrderPayments> = {};
 
   /**
    * We cannot refund less than 1 rs as per Paytm refunds policy
    */
   if (refundAmount >= 1) {
-    initiateRefund(
+    let refundResp = await initiateRefund(
       {
         refundAmount,
         txnId,
@@ -248,6 +250,19 @@ export const calculateRefund = async (
       },
       profilesDb
     );
+    refundResp = refundResp as PaytmResponse;
+    if(refundResp.refundId){
+      const totalAmountRefunded = +new Decimal(refundAmount).plus(totalRefundAmount);
+      updatePaymentRequest.refundAmount = totalAmountRefunded;
+    } else {
+      log(
+        'profileServiceLogger',
+        `REFUND_REQUEST_FAILED - ${JSON.stringify(paymentInfo)}`,
+        `HEALTH CREDITS UNBLOCKED_FOR_ORDER - ${orderDetails.orderAutoId}`,
+        `${JSON.stringify(orderDetails)}`,
+        'true'
+      );
+    }
   }
 
   if (healthCreditsToRefund > 0) {
@@ -282,12 +297,9 @@ export const calculateRefund = async (
         `${JSON.stringify(oneApollResponse)}`,
         ''
       );
-      const blockedHealthCredits = healthCreditsRedeemed - healthCreditsToRefund;
+      const blockedHealthCredits = +new Decimal(healthCreditsRedeemed).minus(healthCreditsToRefund);
 
-      // update info about the current health credits being used
-      await medOrderRepo.updateMedicineOrderPayment(orderDetails.id, orderDetails.orderAutoId, {
-        healthCreditsRedeemed: blockedHealthCredits,
-      });
+      updatePaymentRequest.healthCreditsRedeemed = blockedHealthCredits;
     } else {
       log(
         'profileServiceLogger',
@@ -298,6 +310,21 @@ export const calculateRefund = async (
       );
       throw new AphError(AphErrorMessages.HEALTH_CREDITS_REQUEST_NOT_FOUND, undefined, {});
     }
+    if (Object.keys(updatePaymentRequest).length) {
+      medOrderRepo.updateMedicineOrderPayment(
+        orderDetails.id,
+        orderDetails.orderAutoId,
+        updatePaymentRequest
+      );
+    }
+  }
+
+  //send refund SMS notification for partial refund
+  if (totalOrderBilling > 0) {
+    medicineOrderRefundNotification(orderDetails, {
+      refundAmount: refundAmount,
+      healthCreditsRefund: healthCreditsToRefund,
+    });
   }
 };
 
