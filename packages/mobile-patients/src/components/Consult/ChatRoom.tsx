@@ -696,7 +696,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           callhandelBack = false;
         }
         playSound();
-        setDoctorJoinedChat!(true);
+        setDoctorJoinedChat && setDoctorJoinedChat(true);
       });
     }
     if (prescription) {
@@ -1164,7 +1164,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               callhandelBack = false;
             }
             playSound();
-            setDoctorJoinedChat!(true);
+            setDoctorJoinedChat && setDoctorJoinedChat(true);
           } else {
             if (onSubscribe) {
               setOnSubscribe(false);
@@ -1363,7 +1363,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
         if (response.totalOccupancy >= 2) {
           setDoctorJoined(true);
-          setDoctorJoinedChat!(true);
+          setDoctorJoinedChat && setDoctorJoinedChat(true);
           setTimeout(() => {
             setDoctorJoined(false);
           }, 10000);
@@ -2313,14 +2313,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         callhandelBack = false;
         // stopCallAbondmentTimer();
         playSound();
-        setDoctorJoinedChat!(true);
+        setDoctorJoinedChat && setDoctorJoinedChat(true);
       } else if (message.message.message === videoCallMsg && !patientJoinedCall.current) { // if patient has not joined meeting room
         setOnSubscribe(true);
         callhandelBack = false;
         setIsAudio(false);
         // stopCallAbondmentTimer();
         playSound();
-        setDoctorJoinedChat!(true);
+        setDoctorJoinedChat && setDoctorJoinedChat(true);
       } else if (message.message.message === startConsultMsg) {
         setjrDoctorJoined(false);
         stopInterval();
@@ -2426,7 +2426,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         setStatus(STATUS.COMPLETED);
         APIForUpdateAppointmentData(true);
       } else if (message.message.message === leaveChatRoom) {
-        setDoctorJoinedChat!(false);
+        setDoctorJoinedChat && setDoctorJoinedChat(false);
         setDoctorJoined(false);
       }
     } else {
@@ -6482,7 +6482,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           onPressLeftIcon={() => {
             if (callhandelBack) {
               // handleCallTheEdSessionAPI();
-              setDoctorJoinedChat!(false);
+              setDoctorJoinedChat && setDoctorJoinedChat(false);
               props.navigation.dispatch(
                 StackActions.reset({
                   index: 0,

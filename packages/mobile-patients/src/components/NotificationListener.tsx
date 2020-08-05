@@ -357,7 +357,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
       // notificationType === 'Reschedule_Appointment'
     ) {
       if(notificationType === 'chat_room' || notificationType === 'call_started') {
-        setDoctorJoinedChat!(true); // enabling join button in chat room if in case pubnub events not fired
+        setDoctorJoinedChat && setDoctorJoinedChat(true); // enabling join button in chat room if in case pubnub events not fired
       }
       if (currentScreenName === AppRoutes.ChatRoom) return;
     }
