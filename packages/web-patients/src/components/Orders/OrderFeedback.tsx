@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { makeStyles } from '@material-ui/styles';
 import { Theme, Grid, CircularProgress, Typography, Link } from '@material-ui/core';
 import { AphButton, AphInput } from '@aph/web-ui-components';
-import { getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails as OrderDetails } from 'graphql/types/getMedicineOrderOMSDetails';
+import { getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails as OrderDetails } from 'graphql/types/getMedicineOrderOMSDetailsWithAddress';
 import { ADD_PATIENT_FEEDBACK } from 'graphql/medicines';
 import { useMutation } from 'react-apollo-hooks';
 import { addPatientFeedback, addPatientFeedbackVariables } from 'graphql/types/addPatientFeedback';

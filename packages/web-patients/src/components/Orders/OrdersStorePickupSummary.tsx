@@ -3,9 +3,9 @@ import { makeStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
 import moment from 'moment';
 import {
-  getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails as OrderDetails,
-  getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus as StatusDetails,
-} from 'graphql/types/getMedicineOrderOMSDetails';
+  getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails as OrderDetails,
+  getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_medicineOrdersStatus as StatusDetails,
+} from 'graphql/types/getMedicineOrderOMSDetailsWithAddress';
 import { CircularProgress } from '@material-ui/core';
 import { MEDICINE_ORDER_STATUS } from 'graphql/types/globalTypes';
 import { getStoreName } from 'helpers/commonHelpers';
