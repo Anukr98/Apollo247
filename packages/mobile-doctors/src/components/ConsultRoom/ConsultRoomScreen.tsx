@@ -317,6 +317,37 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     showFloatingCotainer({
       child: renderJoinView(patientName),
       mainContainerStyle: styles.floatingContainerFullScreen,
+      backHandleEnabled: true,
+      customBack: () => {
+        showFloatingCotainer({
+          child: renderJoinMinimizedView(),
+          mainContainerStyle: styles.floatingContainerButton,
+          backHandleEnabled: true,
+          customBack: () => {
+            showAphAlert &&
+              showAphAlert({
+                title: string.common.alert,
+                description: 'Patient has joined consult room, Do you want to leave?',
+                CTAs: [
+                  {
+                    text: 'YES',
+                    onPress: () => {
+                      hideAphAlert && hideAphAlert();
+                      backDataFunctionality();
+                    },
+                  },
+                  {
+                    text: 'NO',
+                    type: 'white-button',
+                    onPress: () => {
+                      hideAphAlert && hideAphAlert();
+                    },
+                  },
+                ],
+              });
+          },
+        });
+      },
     });
   };
 
