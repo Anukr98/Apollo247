@@ -386,13 +386,13 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             </Text>
           </View>
           <View style={{ alignSelf: 'flex-end' }}>
-            <TouchableOpacity
+            <Button
               onPress={() => {
                 connectCall('V', true);
               }}
-            >
-              <Button title={'PROCEED'} style={{ width: undefined, paddingHorizontal: 21 }} />
-            </TouchableOpacity>
+              title={'PROCEED'}
+              style={{ width: undefined, paddingHorizontal: 21 }}
+            />
           </View>
         </View>
       </View>
@@ -1669,9 +1669,13 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   };
 
   const connectCall = (callType: 'A' | 'V', isJoin?: boolean) => {
-    getNetStatus().then((connected) => {
+    getNetStatus().then(async (connected) => {
       if (connected) {
-        if (!startConsult) {
+        const startConsultStorage = JSON.parse(
+          (await AsyncStorage.getItem('showInAppNotification')) || 'false'
+        );
+
+        if (!startConsult && startConsultStorage) {
           Alert.alert(string.common.apollo, string.consult_room.please_start_consultation);
           return;
         }
