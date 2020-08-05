@@ -516,7 +516,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       (status: any, response: any) => {
         setMessageText('');
         srollToBottomAction();
-        if(props.appointmentStatus === 'COMPLETED'){
+        if (props.appointmentStatus === 'COMPLETED') {
           props.postDoctorConsultEventAction(WebEngageEvent.DOCTOR_SENT_MESSAGE);
         }
       }
@@ -612,7 +612,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       },
       (status: any, response: any) => {
         resetMessagesAction();
-        if(props.appointmentStatus === 'COMPLETED'){
+        if (props.appointmentStatus === 'COMPLETED') {
           props.postDoctorConsultEventAction(WebEngageEvent.DOCTOR_SENT_MESSAGE);
         }
       }
