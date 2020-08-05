@@ -321,6 +321,8 @@ const styles = StyleSheet.create({
   },
 });
 
+const urlRegEx = /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jfif|jpeg|JPEG)/;
+
 export interface ChatRoomProps extends NavigationScreenProps {}
 export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [loading, setLoading] = useState<boolean>(false);
@@ -2640,10 +2642,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     </Text>
                   </TouchableOpacity>
                 </View>
-                {rowData.transferInfo.photoUrl &&
-                rowData.transferInfo.photoUrl.match(
-                  /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jfif)/
-                ) ? (
+                {rowData.transferInfo.photoUrl && rowData.transferInfo.photoUrl.match(urlRegEx) ? (
                   <Image
                     source={{ uri: rowData.transferInfo.photoUrl }}
                     style={{
@@ -3422,12 +3421,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               bottom: 0,
               position: 'absolute',
               left: 0,
+              borderRadius: 16,
+              overflow: 'hidden',
             }}
           >
             {appointmentData.doctorInfo.thumbnailUrl &&
-            appointmentData.doctorInfo.thumbnailUrl.match(
-              /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jfif)/
-            ) ? (
+            appointmentData.doctorInfo.thumbnailUrl.match(urlRegEx) ? (
               <Image
                 source={{ uri: appointmentData.doctorInfo.thumbnailUrl }}
                 resizeMode={'contain'}
@@ -3699,12 +3698,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   bottom: 0,
                   position: 'absolute',
                   left: 0,
+                  borderRadius: 16,
+                  overflow: 'hidden',
                 }}
               >
                 {appointmentData.doctorInfo.thumbnailUrl &&
-                appointmentData.doctorInfo.thumbnailUrl.match(
-                  /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jfif)/
-                ) ? (
+                appointmentData.doctorInfo.thumbnailUrl.match(urlRegEx) ? (
                   <Image
                     source={{ uri: appointmentData.doctorInfo.thumbnailUrl }}
                     resizeMode={'contain'}
@@ -3819,12 +3818,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   bottom: 0,
                   position: 'absolute',
                   left: 0,
+                  borderRadius: 16,
+                  overflow: 'hidden',
                 }}
               >
                 {appointmentData.doctorInfo.thumbnailUrl &&
-                appointmentData.doctorInfo.thumbnailUrl.match(
-                  /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jfif)/
-                ) ? (
+                appointmentData.doctorInfo.thumbnailUrl.match(urlRegEx) ? (
                   <Image
                     source={{ uri: appointmentData.doctorInfo.thumbnailUrl }}
                     resizeMode={'contain'}
@@ -4582,7 +4581,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     }
     return (
       <View style={styles.mainView}>
-        <View style={{ maxWidth: '14%' }}>
+        <View style={{ maxWidth: '40%' }}>
           <Text style={styles.displayId} numberOfLines={1}>
             #{appointmentData.displayId}
           </Text>
@@ -4606,9 +4605,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           <View style={styles.imageView}>
             <View style={styles.imageContainer}>
               {appointmentData.doctorInfo.thumbnailUrl &&
-              appointmentData.doctorInfo.thumbnailUrl.match(
-                /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jfif)/
-              ) ? (
+              appointmentData.doctorInfo.thumbnailUrl.match(urlRegEx) ? (
                 <Image
                   source={{ uri: appointmentData.doctorInfo.thumbnailUrl }}
                   resizeMode={'contain'}
@@ -5632,9 +5629,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         }}
       >
         {appointmentData.doctorInfo.photoUrl &&
-        appointmentData.doctorInfo.photoUrl.match(
-          /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jfif)/
-        ) ? (
+        appointmentData.doctorInfo.photoUrl.match(urlRegEx) ? (
           <Image
             source={{ uri: appointmentData.doctorInfo.photoUrl }}
             resizeMode={'contain'}
