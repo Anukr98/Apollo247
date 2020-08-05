@@ -21,7 +21,7 @@ import {
 } from 'graphql/types/GetDoctorDetailsById';
 import { DoctorType, SEARCH_TYPE } from 'graphql/types/globalTypes';
 import LinearProgress from '@material-ui/core/LinearProgress';
-import { Link, Redirect } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { LocationProvider } from 'components/LocationProvider';
 import { AphButton } from '@aph/web-ui-components';
