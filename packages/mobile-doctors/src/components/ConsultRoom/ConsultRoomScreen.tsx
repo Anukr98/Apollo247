@@ -2209,12 +2209,18 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   };
   const makeCall = () => {
     setShowExoPopup(false);
-    if (g(doctorDetails, 'mobileNumber') && g(patientDetails, 'mobileNumber')) {
+    if (
+      (g(doctorDetails, 'mobileNumber') ||
+        g(caseSheet, 'caseSheetDetails', 'appointment', 'doctorInfo', 'mobileNumber')) &&
+      (g(patientDetails, 'mobileNumber') || g(caseSheet, 'patientDetails', 'mobileNumber'))
+    ) {
       setShowLoading(true);
       const exotelInputData: exotelInput = {
         appointmentId: g(caseSheet, 'caseSheetDetails', 'appointment', 'id') || AppId,
-        from: g(doctorDetails, 'mobileNumber'),
-        to: g(patientDetails, 'mobileNumber'),
+        from:
+          g(doctorDetails, 'mobileNumber') ||
+          g(caseSheet, 'caseSheetDetails', 'appointment', 'doctorInfo', 'mobileNumber'),
+        to: g(patientDetails, 'mobileNumber') || g(caseSheet, 'patientDetails', 'mobileNumber'),
         deviceType: Platform.OS === 'ios' ? DEVICETYPE.IOS : DEVICETYPE.ANDROID,
       };
       firebase.analytics().logEvent('DOCTOR_CALL_EXOTEL', { callBy: exotelInputData });
@@ -2260,8 +2266,9 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         showAphAlert({
           title: string.common.alert,
           description: `${
-            g(doctorDetails, 'mobileNumber')
-              ? g(patientDetails, 'mobileNumber')
+            g(doctorDetails, 'mobileNumber') ||
+            g(caseSheet, 'caseSheetDetails', 'appointment', 'doctorInfo', 'mobileNumber')
+              ? g(patientDetails, 'mobileNumber') || g(caseSheet, 'patientDetails', 'mobileNumber')
                 ? ''
                 : "Patient's"
               : "Doctor's"
