@@ -21,7 +21,7 @@ import {
 } from 'graphql/types/GetDoctorDetailsById';
 import { DoctorType, SEARCH_TYPE } from 'graphql/types/globalTypes';
 import LinearProgress from '@material-ui/core/LinearProgress';
-import { Link } from 'react-router-dom';
+import { Link, Redirect } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { LocationProvider } from 'components/LocationProvider';
 import { AphButton } from '@aph/web-ui-components';
@@ -44,6 +44,7 @@ import { doctorProfileViewTracking } from 'webEngageTracking';
 import { getDiffInMinutes } from 'helpers/commonHelpers';
 import { hasOnePrimaryUser } from 'helpers/onePrimaryUser';
 import { SAVE_PATIENT_SEARCH } from 'graphql/pastsearches';
+import { useHistory, useLocation } from 'react-router';
 
 export interface DoctorDetailsProps {
   id: string;
@@ -269,8 +270,13 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       doctorProfileViewTracking(eventData);
     }
   }, [doctorSlots, doctorData]);
+  const history = useHistory();
+  const location = useLocation();
 
   useEffect(() => {
+    if (location.pathname.includes('/specialties')) {
+      history.push(clientRoutes.doctorDetails(params.name, params.id));
+    }
     setLoading(true);
     apolloClient
       .query<GetDoctorDetailsById, GetDoctorDetailsByIdVariables>({
@@ -491,7 +497,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                 <>
                   {doctorData.specialty && doctorData.specialty.name ? (
                     <>
-                      <Link to={clientRoutes.specialties(params.specialty)}>
+                      <Link to={clientRoutes.specialties(readableParam(doctorData.specialty.name))}>
                         {doctorData.specialty.name}
                       </Link>
                       <img src={require('images/triangle.svg')} alt="" />
