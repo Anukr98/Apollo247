@@ -350,7 +350,8 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           },
         },
       })
-      .then((response) => {});
+      .then((data) => {})
+      .catch((error) => {});
   };
 
   const createCaseSheetSRDAPI = () => {
