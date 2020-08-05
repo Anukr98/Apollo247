@@ -95,7 +95,9 @@ const useStyles = makeStyles((theme: Theme) => {
 const mobileNumberPrefix = '+91';
 const numOtpDigits = 6;
 
-const OtpInput: React.FC<{ mobileNumber: string; setOtp: (otp: string) => void }> = (props) => {
+const OtpInput: React.FC<{ mobileNumber: string; setOtp: (otp: string) => void }> = (
+  props: any
+) => {
   const classes = useStyles({});
   const { mobileNumber, setOtp: setOtpMain } = props;
   const mobileNumberWithPrefix = `${mobileNumberPrefix}${mobileNumber}`;
@@ -122,6 +124,7 @@ const OtpInput: React.FC<{ mobileNumber: string; setOtp: (otp: string) => void }
     isSigningIn,
     customLoginId,
     resendOtp,
+    setIsLoading,
   } = useAuth();
 
   useEffect(() => {
@@ -299,6 +302,18 @@ const OtpInput: React.FC<{ mobileNumber: string; setOtp: (otp: string) => void }
                 verifyOtp(otp, customLoginId).then((authToken) => {
                   if (!authToken) {
                     setOtpSubmitCount(otpSubmitCount + 1);
+                  } else {
+                    let locationSearch =
+                      typeof window !== 'undefined' && window.location && window.location.search;
+                    const urlParams = new URLSearchParams(locationSearch);
+                    const redirectURL = urlParams.get('continue');
+                    if (redirectURL) {
+                      setIsLoading(true);
+                      setTimeout(() => {
+                        window.location.href = redirectURL;
+                        setIsLoading(false);
+                      }, 2000);
+                    }
                   }
                 });
               }}

@@ -130,19 +130,3 @@ export const postPharmacyStoreSelectedSuccess = (
   };
   postWebEngageEvent(WebEngageEventName.PHARMACY_STORE_SELECTED_SUCCESS, eventAttributes);
 };
-
-type ReorderMedicines = WebEngageEvents[WebEngageEventName.REORDER_MEDICINES];
-
-export const postReorderMedicines = (source: ReorderMedicines['source'], currentPatient: any) => {
-  const eventAttributes: ReorderMedicines = {
-    source: source,
-    'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
-    'Patient UHID': g(currentPatient, 'uhid'),
-    Relation: g(currentPatient, 'relation'),
-    'Patient Age': Math.round(moment().diff(currentPatient.dateOfBirth, 'years', true)),
-    'Patient Gender': g(currentPatient, 'gender'),
-    'Mobile Number': g(currentPatient, 'mobileNumber'),
-    'Customer ID': g(currentPatient, 'id'),
-  };
-  postWebEngageEvent(WebEngageEventName.REORDER_MEDICINES, eventAttributes);
-};

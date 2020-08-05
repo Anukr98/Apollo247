@@ -71,6 +71,7 @@ export interface MedicineCartContextProps {
   setCartItems: ((cartItems: MedicineCartItem[]) => void) | null;
   addCartItem: ((item: MedicineCartItem) => void) | null;
   removeCartItem: ((itemId: MedicineCartItem['id']) => void) | null;
+  removeCartItemSku: ((sku: MedicineCartItem['sku']) => void) | null;
   removeCartItems: ((itemId: MedicineCartItem['arrId']) => void) | null;
   updateCartItem:
     | ((itemUpdates: Partial<MedicineCartItem> & { id: MedicineCartItem['id'] }) => void)
@@ -120,6 +121,7 @@ export interface MedicineCartContextProps {
   setDurationDays: (durationDays: number | null) => void | null;
   prescriptionDuration: string | null;
   setPrescriptionDuration: ((prescriptionDuration: string) => void) | null;
+  updateEprescriptions: ((ePrescriptionData: EPrescription[] | null) => void) | null;
 }
 
 export const MedicinesCartContext = createContext<MedicineCartContextProps>({
@@ -128,6 +130,7 @@ export const MedicinesCartContext = createContext<MedicineCartContextProps>({
   setCartItems: null,
   addCartItem: null,
   removeCartItem: null,
+  removeCartItemSku: null,
   removeCartItems: null,
   updateCartItem: null,
   updateCartItemPrice: null,
@@ -171,6 +174,7 @@ export const MedicinesCartContext = createContext<MedicineCartContextProps>({
   setDurationDays: null,
   prescriptionDuration: null,
   setPrescriptionDuration: null,
+  updateEprescriptions: null,
 });
 
 export enum CartTypes {
@@ -345,8 +349,13 @@ export const MedicinesCartProvider: React.FC = (props) => {
     setIsCartUpdated(true);
   };
 
+  const removeCartItemSku: MedicineCartContextProps['removeCartItemSku'] = (sku: string) => {
+    setCartItems(cartItems.filter((item) => item.sku !== sku));
+    setIsCartUpdated(true);
+  };
+
   const removeCartItems: MedicineCartContextProps['removeCartItems'] = (arrId) => {
-    const items = cartItems.filter((item) => !arrId.includes(item.id));
+    const items = cartItems.filter((item) => !arrId.includes(item.id || Number(item.sku)));
     setCartItems(items);
     setIsCartUpdated(true);
   };
@@ -399,6 +408,14 @@ export const MedicinesCartProvider: React.FC = (props) => {
         setIsCartUpdated(true);
       }
     }
+  };
+
+  const updateEprescriptions: MedicineCartContextProps['updateEprescriptions'] = (
+    eprescriptionsToAdd
+  ) => {
+    const updatedEprescriptionData = _uniq([...ePrescriptionData, ...eprescriptionsToAdd]);
+    setEPrescriptionData(updatedEprescriptionData);
+    setUploadedEPrescription(true);
   };
 
   const addMultipleCartItems: MedicineCartContextProps['addMultipleCartItems'] = (itemsToAdd) => {
@@ -462,12 +479,14 @@ export const MedicinesCartProvider: React.FC = (props) => {
   return (
     <MedicinesCartContext.Provider
       value={{
+        updateEprescriptions,
         medicineCartType,
         cartItems,
         setCartItems,
         itemsStr,
         addCartItem,
         removeCartItem,
+        removeCartItemSku,
         removeCartItems,
         updateCartItem,
         updateCartItemPrice,
@@ -524,6 +543,7 @@ export const useShoppingCart = () => ({
   setCartItems: useShoppingCartContext().setCartItems,
   addCartItem: useShoppingCartContext().addCartItem,
   removeCartItem: useShoppingCartContext().removeCartItem,
+  removeCartItemSku: useShoppingCartContext().removeCartItemSku,
   removeCartItems: useShoppingCartContext().removeCartItems,
   updateCartItem: useShoppingCartContext().updateCartItem,
 
@@ -568,4 +588,5 @@ export const useShoppingCart = () => ({
   prescriptionOptionSelected: useShoppingCartContext().prescriptionOptionSelected,
   prescriptionDuration: useShoppingCartContext().prescriptionDuration,
   setPrescriptionDuration: useShoppingCartContext().setPrescriptionDuration,
+  updateEprescriptions: useShoppingCartContext().updateEprescriptions,
 });

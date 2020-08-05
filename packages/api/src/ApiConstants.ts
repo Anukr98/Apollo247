@@ -74,7 +74,7 @@ export enum ApiConstants {
 
   //medicine order items changed
   MEDICINE_ORDER_CHANGED_TITLE = 'Medicine order is changed',
-  MEDICINE_ORDER_CHANGED_BODY = 'Hi {0}, your order {1}  is billed with some modifications, updated details are visible on Apollo 247 in the respective order summary. For any support, please speak with our customer care executives on the official WhatsApp channel (during business hours 9 AM - 6 PM) https://bit.ly/apollo247medicines',
+  MEDICINE_ORDER_CHANGED_BODY = 'Hi {0}, your order {1} is billed with some modifications, updated details are visible on the Apollo 247 App here: https://pmt.apollo247.com/deeplink?url=apollopatients://Order?{1}. For any support, please speak with our customer care executives on the official WhatsApp channel (during business hours 9 AM - 6 PM) https://bit.ly/apollo247medicines',
   //medicine order ready at store
   ORDER_READY_AT_STORE_TITLE = 'Medicine order is ready',
   ORDER_READY_AT_STORE_BODY = 'Hi {0}! items for your order {1} are ready for pickup at your selected store {2}. Store Contact Number: {3}. Kindly alert the store 10 minutes before reaching the store. For any support, please speak with our customer care executives on the official WhatsApp channel (during business hours 9 AM - 6 PM) https://bit.ly/apollo247medicines',
@@ -92,9 +92,17 @@ export enum ApiConstants {
   ORDER_DELIVERY_BODY = 'Greetings from Apollo 24|7, Your order {1} is delivered successfully! In case of any issues or feedback related to your delivery, please speak with our customer care executives on the official WhatsApp channel (during business hours 9 AM - 8:30 PM) https://bit.ly/apollo247medicines',
 
   //medicine order cancelled
-  ORDER_CANCEL_BODY = 'Hi {name}, for order {orderId}, {reason}. For any support, please speak with our customer care executives on the official WhatsApp channel (during business hours 9 AM - 6 PM) https://bit.ly/apollo247medicines',
-  ORDER_CANCEL_PREPAID_BODY = 'For Order {orderId} the refund amount of Rs {refund} will be transferred to the source a/c within 7-10 working days.',
+  ORDER_CANCEL_BODY = 'Dear {name}, referring to your Apollo 247 Order {orderId}, {reason}',
+  ORDER_CANCEL_PREPAID_BODY = 'We have processed for a refund of Rs {refund} for Order {orderId}, the amount should reflect in your A/C in 5-7 working days.',
+  ORDER_CANCEL_HC_REFUND_BODY = 'We have refunded Health Credits worth Rs {healthCreditsRefund} to your personal health credits balance for Order {orderId}.',
 
+  // medicine order partial refund
+  ORDER_PAYMENT_PARTIAL_REFUND_BODY =  'We have processed for a refund of Rs {refundAmount} for your order {orderId}, the amount should reflect in your A/C in 5-7 working days.',
+  //medicine order partial refund health credits
+  ORDER_HC_PARTIAL_REFUND_BODY = 'We have refunded Health Credits worth Rs {healthCreditsRefund} to your personal health credits balance for Order {orderId}.',
+  //medicine order both Original Payment Method & HCs are to be refunded 
+  ORDER_PAYMENT_HC_PARTIAL_REFUND_BODY = 'We have processed for a refund of Rs {refundAmount} for your order {orderId}, the amount should reflect in your A/C in 5-7 working days. Also, we have refunded Health Credits worth Rs {healthCreditsRefund} to your personal health credits balance.',
+  
   //appointment cancellation
   CANCEL_APPT_TITLE = 'Your appointment has been cancelled',
   CANCEL_APPT_BODY = 'Hi {0}, we are really sorry. {1} will not be able to make it for this appointment. Any payment that you have made for this consultation would be refunded in 2-4 working days. We request you to please book appointment with any of our other Apollo certified Doctor',
@@ -167,6 +175,9 @@ export enum ApiConstants {
   CASESHEET_CREATED_HISTORY = 'casesheet created',
   APPT_SESSION_HISTORY = 'session created',
   APPT_SESSION_COMPLETE_HISTORY = 'session completed',
+  APPT_STATE_CHANGED_1 = 'Appointment state changed to AWAITING_RESCHEDULE',
+  APPT_STATE_CHANGED_2 = 'Appointment state changed to RESCHEDULED',
+  APPT_STATE_CHANGED_3 = 'Appointment cancelled due to max. reschedules',
 
   /*** push-notification messages end here ***/
 
@@ -193,7 +204,7 @@ export enum ApiConstants {
   APPOINTMENT_PAYMENT_SUBJECT = 'New Appointment for: {0} Hosp Doctor - {1}  {2} hrs, Dr.{3} :{4}',
 
   PATIENT_HELP_SUPPORT_EMAILID_PRODUCTION = 'helpdesk@apollo247.com',
-  PATIENT_HELP_SUPPORT_CC_EMAILID_PRODUCTION = 'sriram.kanchan@popcornapps.com',
+  PATIENT_HELP_SUPPORT_CC_EMAILID_PRODUCTION = '',
 
   BOOK_APPOINTMENT_SMS_MESSAGE = 'Thanks for choosing Apollo24|7, {0} :) Your appointment {1} with Dr. {2} is confirmed for {3} at {4}. Call us at 18605000101 for any questions',
 
@@ -239,7 +250,7 @@ export enum ApiConstants {
   PATIENT_APPT_CC_EMAILID = 'chanti.reddy@popcornapps.com',
   PATIENT_APPT_CC_EMAILID_TRIGGER = 'chanti.reddy@popcornapps.com',
   PATIENT_APPT_EMAILID_PRODUCTION = 'helpdesk@apollo247.com',
-  PATIENT_APPT_CC_EMAILID_PRODUCTION = 'sriram.kanchan@popcornapps.com',
+  PATIENT_APPT_CC_EMAILID_PRODUCTION = '',
 
   APPOINTMENT_MAX_RESCHEDULE_COUNT_PATIENT = 3,
   APPOINTMENT_MAX_RESCHEDULE_COUNT_DOCTOR = 3,
@@ -257,19 +268,22 @@ export enum ApiConstants {
   CACHE_EXPIRATION_900 = 900, //15 mins
   CACHE_EXPIRATION_3600 = 3600, // 1hour
   CACHE_EXPIRATION_14400 = 14400, // 4hour
+  CACHE_EXPIRATION_86400 = 86400, // 24 hour
   //doctor no-photo url
   DOCTOR_DEFAULT_PHOTO_URL = 'https://prodaphstorage.blob.core.windows.net/doctors/no_photo.png',
 
   PHARMA_DEFAULT_SHOPID = '16001',
 
   OTP_EXPIRATION_MINUTES = 2,
-  OTP_MESSAGE_TEXT = 'Dear Apollo Customer, Your one time password is {0} and is valid for {1} mins.',
+  DOCTOR_OTP_MESSAGE_TEXT = 'Dear Doctor, Your one time password is {0} and is valid for {1} mins.',
+  PATIENT_OTP_MESSAGE_TEXT = 'Dear Apollo Customer, Your one time password is {0} and is valid for {1} mins.',
   DOCTOR_WHATSAPP_OTP = 'Dear Doctor, your one time password is {0}. Please note that this OTP is valid for 2 minutes',
   KALEYRA_OTP_SENDER = 'APOLLO',
   KALEYRA_OTP_SMS_METHOD = 'sms',
   OTP_SUCCESS_MESSAGE = 'OTP sent to the mobile number successfully',
   OTP_FAIL_MESSAGE = 'OTP sending failed',
   INVALID_RESEND_MESSAGE = 'Invalid resend details',
+  NOTIFICATION_MSG_FOR_DR_CALL = 'Hi {0}, {1} will call you from the number {2}. Please pick up the call to connect with the doctor.',
 
   NOTIFICATION_DEFAULT_SOUND = 'default',
 
@@ -394,4 +408,50 @@ export enum ApiConstants {
   //prescriptions uploaded through medicine, diagnostic orders or from OLD APPS
   PRESCRIPTION_UPLOADED_BY_PATIENT = 'Prescription uploaded by Patient',
   ALERT_STORE_REMARKS = 'Customer Name : {name} , Mobile : {mobile} will be reaching Store in 10 mins to pickup order {orderNo} - Please handover Medicines.',
+
+  //webengage constants
+  MEDICINE_ORDER_PLACED_EVENT_NAME = 'Order Placed',
+  MEDICINE_ORDER_VERIFIED_EVENT_NAME = 'Order Verified',
+  MEDICINE_ORDER_BILLED_AND_PACKED_EVENT_NAME = 'Order Billed and Packed ',
+  MEDICINE_ORDER_DISPATCHED_EVENT_NAME = 'Order Dispatched',
+  MEDICINE_ORDER_DELIVERED_EVENT_NAME = 'Order Delivered',
+  MEDICINE_ORDER_CANCELLED_EVENT_NAME = 'Order Cancelled by Back-end',
+  MEDICINE_ORDER_CANCELLED_FROM_APP_EVENT_NAME = 'Order Cancelled from App',
+  MEDICINE_ORDER_KERB_STORE_READY_EVENT_NAME = 'Kerb side Order Ready at Store',
+  MEDICINE_ORDER_KERB_PICKEDUP_EVENT_NAME = 'Kerb side Order Picked up',
+  MEDICINE_ORDER_KERB_STORE_NOTIFICATION_EVENT_NAME = 'Kerb side Store notification',
+  DOCTOR_IN_CHAT_WINDOW_EVENT_NAME = 'Doctor is in the consult room',
+  DOCTOR_LEFT_CHAT_WINDOW_EVENT_NAME = 'Doctor left the consult room',
+  DOCTOR_SENT_MESSAGE_EVENT_NAME = 'Doctor sent a message on chat post end Consult',
+  DOCTOR_INITATED_RESCHEDULE_EVENT_NAME = 'Doctor Rescheduled the consult',
+  SD_CANCELLED_CONSULT_EVENT_NAME = 'Senior Doctor cancelled Consult',
+  JD_CANCELLED_CONSULT_EVENT_NAME = 'Junior Doctor cancelled Consult',
+  SD_SUBMITTED_JD_CASE_SHEET_BEFORE_TIME_EVENT_NAME = 'SD Submitted the JD case sheet before time',
+  DOCTOR_STARTED_CONSULTATION_EVENT_NAME = 'Doctor started consultation',
+  DOCTOR_INITIATED_VIDEO_CALL_EVENT_NAME = 'Doctor initiated a video call',
+  DOCTOR_INITIATED_AUDIO_CALL_EVENT_NAME = 'Doctor initiated a audio call',
+  DOCTOR_INITIATED_EXOTEL_CALL_EVENT_NAME = 'Doctor Initiated an Exotel call',
+  DOCTOR_ENDED_CONSULTATION_EVENT_NAME = 'Doctor Ended the consultation',
+  PRESCRIPTION_SENT_EVENT_NAME = 'Prescription Generated and sent',
+  NEW_VERSION_PRESCRIPTION_SENT_EVENT_NAME = 'New version of the prescription was sent',
+  JD_CASE_SHEET_COMPLETED_EVENT_NAME = 'JD case sheet submitted completed',
+  JD_CONSULTATION_STARTED_EVENT_NAME = 'JD consultation Started',
+}
+
+export enum PATIENT_REPO_RELATIONS {
+  LIFESTYLE = 'lifeStyle',
+  HEALTH_VAULT = 'healthVault',
+  FAMILY_HISTORY = 'familyHistory',
+  PATIENT_ADDRESS = 'patientAddress',
+  MEDICINE_ORDERS = 'medicineOrders',
+  PATIENT_DEVICE_TOKENS = 'patientDeviceTokens',
+  PATIENT_NOTIFICATION_SETTINGS = 'patientNotificationSettings',
+  PATIENT_MEDICAL_HISTORY = 'patientMedicalHistory',
+  DIAGNOSTIC_ORDERS = 'diagnosticOrders',
+  MEDICAL_RECORDS = 'medicalRecords',
+  PATIENT_HELP_TICKETS = 'patientHelpTickets',
+  SEARCH_HISTORY = 'searchHistory',
+  REGISTRATION_CODES = 'registrationCodes',
+  PHARMACOLOGIST_CONSULT = 'pharmacologistConsult',
+  PATIENT_FEEDBACK = 'patientfeedback',
 }

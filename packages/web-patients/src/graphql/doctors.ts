@@ -180,11 +180,21 @@ export const SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME = gql`
           name
           userFriendlyNomenclature
         }
-        salutation
         experience
         photoUrl
-        thumbnailUrl
         qualification
+        consultHours {
+          consultMode
+          consultType
+          id
+          isActive
+          startTime
+          weekDay
+          endTime
+        }
+        onlineConsultationFees
+        physicalConsultationFees
+        doctorType
         doctorHospital {
           facility {
             city
@@ -198,6 +208,7 @@ export const SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME = gql`
             streetLine2
             streetLine3
             id
+            imageUrl
           }
         }
       }
@@ -206,6 +217,7 @@ export const SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME = gql`
         onlineSlot
         physicalSlot
         referenceSlot
+        availableInMinutes
       }
       specialties {
         name

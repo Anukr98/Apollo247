@@ -264,6 +264,11 @@ export const JDConsult: React.FC<ConsultProps> = (props) => {
                   props.toggelChatVideo();
                   props.stopAudioVideoCallpatient();
                   setIscall(false);
+                  if (event.reason === 'networkDisconnected') {
+                    props.setSessionError({"message": 'Call was disconnected due to Network problems on the patient end.'});
+                  }else{
+                    props.setSessionError({"message": 'Patient left the call.'});
+                  }
                 },
                 streamPropertyChanged: (event: any) => {
                   const subscribers = event.target.getSubscribersForStream(event.stream);

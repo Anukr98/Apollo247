@@ -27,6 +27,12 @@ export const getDoctorsBySpecialtyAndFiltersTypeDefs = gql`
     name: String
   }
 
+
+  type brandType {
+    name: String
+    image: String
+  }
+
   type cityType {
     state: String
     data: [String]
@@ -34,7 +40,7 @@ export const getDoctorsBySpecialtyAndFiltersTypeDefs = gql`
 
   type filters {
     city: [cityType]
-    brands: [DefaultfilterType]
+    brands: [brandType]
     language: [DefaultfilterType]
     experience: [DefaultfilterType]
     availability: [DefaultfilterType]
@@ -100,9 +106,14 @@ type cityType = {
   data: [string]
 }
 
+type brandType = {
+  name: string
+  image: string
+}
+
 type filters = {
   city: [cityType]
-  brands: [DefaultfilterType]
+  brands: [brandType]
   language: [DefaultfilterType]
   experience: [DefaultfilterType]
   availability: [DefaultfilterType]
@@ -540,12 +551,12 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
   }
 
 
-  let filters: any = {city: [], brands: [], language: [], experience: [], availability: [], fee: [], gender: []};
+  const filters: any = {city: [], brands: [], language: [], experience: [], availability: [], fee: [], gender: []};
   let cityObj: {state: string, data: string[]};
   
   // making filters
-  for(let doctor of doctors){
-    for(let hospital of doctor.doctorHospital){
+  for(const doctor of doctors){
+    for(const hospital of doctor.doctorHospital){
       cityObj = { state: '', data: [] };
       if(filters.city.length){
         cityObj = ifKeyExist(filters.city, 'state', hospital.facility.state);
@@ -562,16 +573,18 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
       }
     }
     
+    // "doctor.photoUrl" needs to be replaced with actual brand images-links
     if(doctor.doctorType && !("name" in ifKeyExist(filters.brands, 'name', doctor.doctorType))){
-      filters.brands.push({'name': doctor.doctorType});
+      filters.brands.push({'name': doctor.doctorType, 'image': doctor.photoUrl});
     }
 
     if(doctor.languages instanceof Array){
-      for(let language of doctor.languages){
+      for(const language of doctor.languages){
         if(!("name" in ifKeyExist(filters.language, 'name', language))){
           filters.language.push({'name': language});
         }
       }
+      doctor.languages = doctor.languages.join(', ');
     }
 
     if(doctor.experience_range && !("name" in ifKeyExist(filters.experience, 'name', doctor.experience_range))){
@@ -588,9 +601,9 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
 
   }
 
-  let dayEndMinutes = differenceInMinutes(endOfDay(new Date()), (new Date()));
-  let twoDaysEndMinutes = differenceInMinutes(endOfDay(addDays(new Date(), 1)), (new Date()));
-  for(let availablity of finalDoctorNextAvailSlots){
+  const dayEndMinutes = differenceInMinutes(endOfDay(new Date()), (new Date()));
+  const twoDaysEndMinutes = differenceInMinutes(endOfDay(addDays(new Date(), 1)), (new Date()));
+  for(const availablity of finalDoctorNextAvailSlots){
     if(241 > availablity.availableInMinutes){
       if(!("name" in ifKeyExist(filters.availability, 'name', 'Now'))){
         filters.availability.push({'name': 'Now'});

@@ -41,6 +41,10 @@ const getMedicineOrderQuery = (method, patientId, orderId) => {
               amountPaid
               paymentRefId
               paymentStatus
+              healthCreditsRedeemed
+              healthCreditsRedemptionRequest {
+                RequestNumber
+              }
             }
           }
         }

@@ -215,12 +215,9 @@ export const generateOTP = () => {
 };
 
 //utility method to send SMS
-const sendSMS = async (mobileNumber: string, otp: string, hashCode: string) => {
+const sendSMS = async (mobileNumber: string, otp: string, hashCode: string, message: string) => {
   const apiBaseUrl = process.env.KALEYRA_OTP_API_BASE_URL;
   const apiUrlWithKey = `${apiBaseUrl}?api_key=${process.env.KALEYRA_OTP_API_KEY}`;
-
-  let message = ApiConstants.OTP_MESSAGE_TEXT.replace('{0}', otp);
-  message = message.replace('{1}', ApiConstants.OTP_EXPIRATION_MINUTES.toString());
   if (hashCode) {
     message = message + ' ' + encodeURIComponent(hashCode);
   }
@@ -307,11 +304,15 @@ export const loginResolvers = {
 const sendMessage = async (args: any) => {
   const { loginType, mobileNumber, otp, hashCode, logger, otpSaveResponse } = args;
   logger('SEND_SMS___START');
+  let textMessage;
   //let smsResult;
   if (loginType == LOGIN_TYPE.DOCTOR) {
-    const message = ApiConstants.DOCTOR_WHATSAPP_OTP.replace('{0}', otp);
-    const promiseSendNotification = sendDoctorNotificationWhatsapp(mobileNumber, message, 1, '');
-    const promiseSendSMS = sendSMS(mobileNumber, otp, hashCode);
+    const whatsAppMessage = ApiConstants.DOCTOR_WHATSAPP_OTP.replace('{0}', otp);
+    const promiseSendNotification = sendDoctorNotificationWhatsapp(mobileNumber, whatsAppMessage, 1, '');
+    textMessage = ApiConstants.DOCTOR_OTP_MESSAGE_TEXT
+      .replace('{0}', otp)
+      .replace('{1}', ApiConstants.OTP_EXPIRATION_MINUTES.toString());
+    const promiseSendSMS = sendSMS(mobileNumber, otp, hashCode, textMessage);
     await Promise.all([
       promiseSendNotification.catch((err) => {
         log(
@@ -329,7 +330,10 @@ const sendMessage = async (args: any) => {
       }),
     ]);
   } else {
-    await sendSMS(mobileNumber, otp, hashCode);
+    textMessage = ApiConstants.PATIENT_OTP_MESSAGE_TEXT
+      .replace('{0}', otp)
+      .replace('{1}', ApiConstants.OTP_EXPIRATION_MINUTES.toString());
+    await sendSMS(mobileNumber, otp, hashCode, textMessage);
   }
   logger('SEND_SMS___END');
 

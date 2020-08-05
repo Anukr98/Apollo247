@@ -91,7 +91,9 @@ import {
   StackActions,
 } from 'react-navigation';
 import { AppsFlyerEventName, AppsFlyerEvents } from '../../helpers/AppsFlyerEvents';
+import { getValuesArray } from '@aph/mobile-patients/src/utils/commonUtils';
 
+const searchFilters = require('@aph/mobile-patients/src/strings/filters');
 const { width: screenWidth } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
@@ -184,36 +186,12 @@ export type filterDataType = {
 export type locationType = { lat: number | string; lng: number | string };
 export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) => {
   const specialistPluralTerm = props.navigation.getParam('specialistPluralTerm');
+  const docFilters = props.navigation.getParam('filters');
   const typeOfConsult = props.navigation.getParam('typeOfConsult');
   const doctorTypeFilter = props.navigation.getParam('doctorType');
-  const filterData: filterDataType[] = [
-    {
-      label: 'Experience In Years',
-      options: ['0 - 5', '6 - 10', '11 - 15', '15+'],
-      selectedOptions: [],
-    },
-    {
-      label: 'Availability',
-      options: ['Now', 'Today', 'Tomorrow', 'Next 3 Days'],
-      selectedOptions: [],
-    },
-    {
-      label: 'Fees In Rupees',
-      options: ['100 - 500', '501 - 1000', '1000+'],
-      selectedOptions: [],
-    },
-    {
-      label: 'Gender',
-      options: [Gender.MALE, Gender.FEMALE],
-      selectedOptions: [],
-    },
-    {
-      label: 'Language',
-      options: ['Hindi', 'English', 'Telugu'],
-      selectedOptions: [],
-    },
-  ];
-
+  const cityFilter = props.navigation.getParam('city');
+  const brandFilter = props.navigation.getParam('brand');
+  const [docFiltersOptions, setDocFilterOptions] = useState<any>(docFilters);
   const [showLocationpopup, setshowLocationpopup] = useState<boolean>(false);
   const [displayFilter, setDisplayFilter] = useState<boolean>(false);
   const [currentLocation, setcurrentLocation] = useState<string>('');
@@ -228,7 +206,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const [doctorsType, setDoctorsType] = useState<string>('APOLLO');
   const [apolloDocsNumber, setApolloDocsNumber] = useState<number>(0);
   const [partnerDocsNumber, setPartnerDocsNumber] = useState<number>(0);
-  const [FilterData, setFilterData] = useState<filterDataType[]>([...filterData]);
+
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
   const [locationSearchList, setlocationSearchList] = useState<{ name: string; placeId: string }[]>(
     []
@@ -264,6 +242,47 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const [value, setValue] = useState<boolean>(false);
   const [sortValue, setSortValue] = useState<string>('');
   const [searchIconClicked, setSearchIconClicked] = useState<boolean>(false);
+
+  const preFilters = docFilters === undefined ? searchFilters : docFilters;
+  const filterData: filterDataType[] = [
+    {
+      label: 'City',
+      options: preFilters['city'],
+      selectedOptions: [],
+    },
+    {
+      label: 'Brands',
+      options: preFilters['brands'],
+      selectedOptions: [],
+    },
+    {
+      label: 'In Years',
+      options: getValuesArray(preFilters['experience']),
+      selectedOptions: [],
+    },
+    {
+      label: 'Availability',
+      options: getValuesArray(preFilters['availability']),
+      selectedOptions: [],
+    },
+    {
+      label: 'In Rupees',
+      options: getValuesArray(preFilters['fee']),
+      selectedOptions: [],
+    },
+    {
+      label: '',
+      options: getValuesArray(preFilters['gender']),
+      selectedOptions: [],
+    },
+    {
+      label: '',
+      options: getValuesArray(preFilters['language']),
+      selectedOptions: [],
+    },
+  ];
+  const [FilterData, setFilterData] = useState<filterDataType[]>([...filterData]);
+  const callSaveSearch = props.navigation.getParam('callSaveSearch');
 
   useEffect(() => {
     setDeepLinkFilter();
@@ -503,8 +522,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     pinCode?: string
   ) => {
     const experienceArray: Range[] = [];
-    if (SearchData[0].selectedOptions && SearchData[0].selectedOptions.length > 0)
-      SearchData[0].selectedOptions.forEach((element: string) => {
+    if (SearchData[2].selectedOptions && SearchData[2].selectedOptions.length > 0)
+      SearchData[2].selectedOptions.forEach((element: string) => {
         const splitArray = element.split(' - ');
         let object: Range | null = {};
         if (splitArray.length > 0)
@@ -518,8 +537,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       });
 
     const feesArray: Range[] = [];
-    if (SearchData[2].selectedOptions && SearchData[2].selectedOptions.length > 0)
-      SearchData[2].selectedOptions.forEach((element: string) => {
+    if (SearchData[4].selectedOptions && SearchData[4].selectedOptions.length > 0)
+      SearchData[4].selectedOptions.forEach((element: string) => {
         const splitArray = element.split(' - ');
         let object: Range | null = {};
         if (splitArray.length > 0)
@@ -536,8 +555,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     let availableNow = {};
     const availabilityArray: string[] = [];
     const today = moment(new Date(), 'YYYY-MM-DD').format('YYYY-MM-DD');
-    if (SearchData[1].selectedOptions && SearchData[1].selectedOptions.length > 0)
-      SearchData[1].selectedOptions.forEach((element: string) => {
+    if (SearchData[3].selectedOptions && SearchData[3].selectedOptions.length > 0)
+      SearchData[3].selectedOptions.forEach((element: string) => {
         if (element === 'Now') {
           availableNow = {
             availableNow: moment(new Date())
@@ -590,18 +609,25 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       specialty: props.navigation.getParam('specialityId') || '',
       // city: SearchData[0].selectedOptions,
       pincode: pinCode || g(locationDetails, 'pincode') || null,
+      doctorType:
+        brandFilter === undefined || brandFilter === null
+          ? SearchData[1].selectedOptions
+          : brandFilter,
+      city:
+        cityFilter === undefined || cityFilter === null
+          ? SearchData[0].selectedOptions
+          : cityFilter,
       experience: experienceArray,
       availability: availabilityArray,
       fees: feesArray,
-      gender: SearchData[3].selectedOptions,
-      language: SearchData[4].selectedOptions,
+      gender: SearchData[5].selectedOptions,
+      language: SearchData[6].selectedOptions,
       ...availableNow,
       // consultMode: filterMode,
       ...specialtyName,
       ...geolocation,
       sort: sort,
     };
-    console.log('FilterInput', FilterInput);
     setBugFenderLog('DOCTOR_FILTER_INPUT', JSON.stringify(FilterInput));
     client
       .query<getDoctorsBySpecialtyAndFilters>({
@@ -938,6 +964,19 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     }
   };
 
+  const postTabBarClickWEGEvent = (tab: 'APOLLO' | 'PARTNERS') => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.APOLLO_DOCTOR_TAB_CLICKED] = {
+      'Patient UHID': g(currentPatient, 'uhid'),
+      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Customer ID': g(currentPatient, 'id'),
+    };
+    if (tab == 'APOLLO') {
+      postWebEngageEvent(WebEngageEventName.APOLLO_DOCTOR_TAB_CLICKED, eventAttributes);
+    } else {
+      postWebEngageEvent(WebEngageEventName.DOCTOR_CONNECT_TAB_CLICKED, eventAttributes);
+    }
+  };
+
   const getDoctorAvailableMode = (id: string) => {
     let availableMode: ConsultMode | null = null;
     if (doctorsAvailability) {
@@ -966,10 +1005,12 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           style={styles}
           numberOfLines={numberOfLines}
           availableModes={getDoctorAvailableMode(rowData.id)}
+          callSaveSearch={callSaveSearch}
           onPress={() => {
             postDoctorClickWEGEvent(rowData, 'List');
             props.navigation.navigate(AppRoutes.DoctorDetails, {
               doctorId: rowData.id,
+              callSaveSearch: callSaveSearch,
             });
           }}
           onPressConsultNowOrBookAppointment={(type) => {
@@ -1449,8 +1490,11 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
                 doctorsType == 'APOLLO' ? theme.colors.SEARCH_UNDERLINE_COLOR : '#f7f8f5',
             }}
             onPress={() => {
-              setDoctorsType('APOLLO');
-              filterDoctors(doctorsList, 'APOLLO');
+              if (doctorsType != 'APOLLO') {
+                postTabBarClickWEGEvent('APOLLO');
+                setDoctorsType('APOLLO');
+                filterDoctors(doctorsList, 'APOLLO');
+              }
             }}
           >
             <Text
@@ -1470,8 +1514,11 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
                 doctorsType == 'PARTNERS' ? theme.colors.SEARCH_UNDERLINE_COLOR : '#f7f8f5',
             }}
             onPress={() => {
-              setDoctorsType('PARTNERS');
-              filterDoctors(doctorsList, 'PARTNERS');
+              if (doctorsType != 'PARTNERS') {
+                postTabBarClickWEGEvent('PARTNERS');
+                setDoctorsType('PARTNERS');
+                filterDoctors(doctorsList, 'PARTNERS');
+              }
             }}
           >
             <Text

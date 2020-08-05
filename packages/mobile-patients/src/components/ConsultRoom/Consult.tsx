@@ -805,13 +805,12 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                         onPress={() => {
                           postConsultCardEvents('Chat with Doctor', item);
                           CommonLogEvent(AppRoutes.Consult, 'Prepare for Consult clicked');
-                          if (item.doctorInfo && selectedTab === tabs[0].title) {
-                            props.navigation.navigate(AppRoutes.ChatRoom, {
-                              data: item,
-                              callType: '',
-                              prescription: '',
-                            });
-                          }
+                          props.navigation.navigate(AppRoutes.ChatRoom, {
+                            data: item,
+                            callType: '',
+                            prescription: '',
+                            disableChat: item.doctorInfo && selectedTab === tabs[1].title,
+                          });
                         }}
                       >
                         <Text
@@ -819,11 +818,12 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                             styles.prepareForConsult,
                             {
                               paddingBottom: -16,
-                              opacity: selectedTab === tabs[0].title ? 1 : 0.5,
                             },
                           ]}
                         >
-                          CHAT WITH DOCTOR
+                          {item.doctorInfo && selectedTab === tabs[1].title
+                            ? 'VIEW CHAT'
+                            : 'CHAT WITH DOCTOR'}
                         </Text>
                         {day1.diff(day2, 'days') > 0 ? (
                           <View

@@ -6,6 +6,12 @@ import { isEmpty, trim } from 'lodash';
 import { CaseSheetContextJrd } from 'context/CaseSheetContextJrd';
 import { GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_symptoms } from 'graphql/types/GetJuniorDoctorCaseSheet';
 import Scrollbars from 'react-custom-scrollbars';
+import {
+  getLocalStorageItem,
+  updateLocalStorageItem,
+} from 'components/case-sheet/panels/LocalStorageUtils';
+import { useParams } from 'hooks/routerHooks';
+import { Params } from 'components/JuniorDoctors/JDCaseSheet/CaseSheet';
 
 const useStyles = makeStyles((theme: Theme) => ({
   root: {
@@ -189,7 +195,8 @@ interface ErrorObject {
 
 export const Symptoms: React.FC = (props) => {
   const classes = useStyles({});
-  const { symptoms, setSymptoms } = useContext(CaseSheetContextJrd);
+  const params = useParams<Params>();
+  const { symptoms, setSymptoms, caseSheetEdit } = useContext(CaseSheetContextJrd);
   const [isDialogOpen, setIsDialogOpen] = React.useState<boolean>(false);
   const [symptom, setSymptom] = React.useState('');
   const [since, setSince] = React.useState('');
@@ -198,7 +205,6 @@ export const Symptoms: React.FC = (props) => {
   const [idx, setIdx] = React.useState<any>();
   const [severity, setSeverity] = React.useState('');
   const [isUpdate, setIsUpdate] = React.useState(false);
-  const { caseSheetEdit } = useContext(CaseSheetContextJrd);
   const [errorState, setErrorState] = React.useState<ErrorObject>({
     symptomError: false,
     sinceError: false,
@@ -208,7 +214,7 @@ export const Symptoms: React.FC = (props) => {
 
   const deleteSymptom = (idx: number) => {
     symptoms!.splice(idx, 1);
-    setSymptoms(symptoms);
+    saveSympotms(symptoms);
     const sum = idx + Math.random();
     setIdx(sum);
   };
@@ -277,6 +283,11 @@ export const Symptoms: React.FC = (props) => {
         currentSymptom.howOften = howOften;
         currentSymptom.since = since;
         currentSymptom.details = details;
+        const storageItem = getLocalStorageItem(params.appointmentId);
+        if (storageItem) {
+          storageItem.symptoms[idxValue] = currentSymptom;
+          updateLocalStorageItem(params.appointmentId, storageItem);
+        }
       } else {
         const inputParams: GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_symptoms = {
           __typename: 'SymptomList',
@@ -288,7 +299,7 @@ export const Symptoms: React.FC = (props) => {
         };
         const symptomList = symptoms;
         symptomList!.push(inputParams);
-        setSymptoms(symptomList);
+        saveSympotms(symptomList);
       }
       setIsUpdate(false);
       setIsDialogOpen(false);
@@ -296,11 +307,6 @@ export const Symptoms: React.FC = (props) => {
       clearError();
     }
   };
-  useEffect(() => {
-    if (idx >= 0) {
-      setSymptoms(symptoms);
-    }
-  }, [symptoms, idx]);
 
   const showSymptom = (idx: number) => {
     if (symptoms && symptoms.length > 0) {
@@ -316,6 +322,15 @@ export const Symptoms: React.FC = (props) => {
       setIsUpdate(true);
       setIdxValue(idx);
     }
+  };
+
+  const saveSympotms = (symptoms: any) => {
+    const storageItem = getLocalStorageItem(params.appointmentId);
+    if (storageItem) {
+      storageItem.symptoms = symptoms;
+      updateLocalStorageItem(params.appointmentId, storageItem);
+    }
+    setSymptoms(symptoms);
   };
 
   return (

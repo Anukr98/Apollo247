@@ -479,6 +479,7 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
       setAmountPaid(amountPaid);
       setIsLoading(false);
       localStorage.setItem('consultBookDetails', '');
+      sessionStorage.removeItem('utm_source');
       const eventData = {
         category: doctorInfo.doctorType,
         consultDateTime: appointmentDateTime,

@@ -253,7 +253,7 @@ export const medicineDescription = (
     item.routeOfAdministration
       ? `\nTo be taken: ${nameFormater(item.routeOfAdministration, 'title')}`
       : ''
-  }${item.medicineInstructions ? '\nInstuctions: ' + item.medicineInstructions : ''}`;
+  }${item.medicineInstructions ? '\nInstructions: ' + item.medicineInstructions : ''}`;
 };
 
 export const formatInt = (value: string) => {
