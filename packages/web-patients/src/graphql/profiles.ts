@@ -464,6 +464,16 @@ export const GET_RECOMMENDED_PRODUCTS_LIST = gql`
         categoryName
         status
         mou
+        imageBaseUrl
+        id
+        is_in_stock
+        small_image
+        thumbnail
+        type_id
+        quantity
+        isShippable
+        MaxOrderQty
+        urlKey
       }
     }
   }
