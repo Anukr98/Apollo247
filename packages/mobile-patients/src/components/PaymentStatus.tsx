@@ -7,10 +7,12 @@ import {
   ScrollView,
   StatusBar,
   Dimensions,
+  Clipboard,
 } from 'react-native';
+import { Copy } from '@aph/mobile-patients/src/components/ui/Icons';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import React, { useEffect, useState } from 'react';
-import { NavigationScreenProps } from 'react-navigation';
+import { NavigationScreenProps, NavigationActions, StackActions } from 'react-navigation';
 import { Success, Failure, Pending } from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
@@ -22,7 +24,6 @@ import {
   makeAppointmentPaymentVariables,
 } from '@aph/mobile-patients/src/graphql/types/makeAppointmentPayment';
 import { GET_PHARMA_TRANSACTION_STATUS } from '@aph/mobile-patients/src/graphql/profiles';
-import { GET_MEDICINE_ORDER_DETAILS } from '@aph/mobile-patients/src/graphql/profiles';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
@@ -35,6 +36,7 @@ import { FirebaseEvents, FirebaseEventName } from '../helpers/firebaseEvents';
 import { AppsFlyerEventName } from '../helpers/AppsFlyerEvents';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { getDate } from '@aph/mobile-patients/src/utils/dateUtil';
+import { Snackbar } from 'react-native-paper';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -51,22 +53,27 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
   // const fireBaseEventAttributes = props.navigation.getParam('fireBaseEventAttributes');
 
   const client = useApolloClient();
-  const { success, failure, pending } = Payment;
+  const { success, failure, pending, aborted } = Payment;
   const { showAphAlert } = useUIElements();
   const totalAmount = props.navigation.getParam('amount');
   const orderId = props.navigation.getParam('orderId');
   const orderAutoId = props.navigation.getParam('orderAutoId');
   const paymentTypeID = props.navigation.getParam('paymentTypeID');
   const { currentPatient } = useAllCurrentPatients();
-
+  const [copiedText, setCopiedText] = useState('');
+  const [snackbarState, setSnackbarState] = useState<boolean>(false);
+  const copyToClipboard = (refId: string) => {
+    Clipboard.setString(refId);
+    setSnackbarState(true);
+  };
   const PaymentModes: any = {
     DC: 'Debit Card',
     CC: 'Credit Card',
     NB: 'Net Banking',
     UPI: 'UPI',
     PPI: 'Paytm Wallet',
-    PAYTM_DIGITAL_CREDIT:'Paytm Postpaid',
-    EMI:'EMI'
+    PAYTM_DIGITAL_CREDIT: 'Paytm Postpaid',
+    EMI: 'EMI',
   };
 
   const Modes: any = {
@@ -114,7 +121,17 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
       .catch((error) => {
         CommonBugFender('fetchingTxnStutus', error);
         console.log(error);
-        props.navigation.navigate(AppRoutes.ConsultRoom);
+        props.navigation.dispatch(
+          StackActions.reset({
+            index: 0,
+            key: null,
+            actions: [
+              NavigationActions.navigate({
+                routeName: AppRoutes.ConsultRoom,
+              }),
+            ],
+          })
+        );
         renderErrorPopup(`Something went wrong, plaease try again after sometime`);
       });
     BackHandler.addEventListener('hardwareBackPress', handleBack);
@@ -124,14 +141,24 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
   }, []);
 
   const handleBack = () => {
-    props.navigation.navigate(AppRoutes.ConsultRoom);
+    props.navigation.dispatch(
+      StackActions.reset({
+        index: 0,
+        key: null,
+        actions: [
+          NavigationActions.navigate({
+            routeName: AppRoutes.ConsultRoom,
+          }),
+        ],
+      })
+    );
     return true;
   };
 
   const statusIcon = () => {
     if (status === success) {
       return <Success style={styles.statusIconStyles} />;
-    } else if (status === failure) {
+    } else if (status === failure || status === aborted) {
       return <Failure style={styles.statusIconStyles} />;
     } else {
       return <Pending style={styles.statusIconStyles} />;
@@ -151,7 +178,6 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
           marginHorizontal: needStyle ? 0.1 * windowWidth : undefined,
         }}
         numberOfLines={numOfLines}
-        selectable={true}
       >
         {message}
       </Text>
@@ -161,7 +187,7 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
   const statusCardColour = () => {
     if (status == success) {
       return colors.SUCCESS;
-    } else if (status == failure) {
+    } else if (status == failure || status == aborted) {
       return colors.FAILURE;
     } else {
       return colors.PENDING;
@@ -176,6 +202,9 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
       textColor = theme.colors.SUCCESS_TEXT;
     } else if (status === failure) {
       message = ' PAYMENT FAILED';
+      textColor = theme.colors.FAILURE_TEXT;
+    } else if (status === aborted) {
+      message = ' PAYMENT ABORTED';
       textColor = theme.colors.FAILURE_TEXT;
     }
     return textComponent(message, undefined, textColor, false);
@@ -217,8 +246,21 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
         </View>
         <View style={{ flex: 0.29, justifyContent: 'flex-start', alignItems: 'center' }}>
           {textComponent('Payment Ref. Number - ', undefined, theme.colors.SHADE_GREY, false)}
-          {textComponent(refNumberText, undefined, theme.colors.SHADE_GREY, false)}
+          <TouchableOpacity style={styles.refStyles} onPress={() => copyToClipboard(refNumberText)}>
+            {textComponent(refNumberText, undefined, theme.colors.SHADE_GREY, false)}
+            <Copy style={styles.iconStyle} />
+          </TouchableOpacity>
         </View>
+        <Snackbar
+          style={{ position: 'absolute', zIndex: 1001, bottom: -10 }}
+          visible={snackbarState}
+          onDismiss={() => {
+            setSnackbarState(false);
+          }}
+          duration={1000}
+        >
+          Copied
+        </Snackbar>
       </View>
     );
   };
@@ -273,7 +315,7 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
     if (status === failure) {
       noteText =
         'Note : In case your account has been debited, you should get the refund in 1-7 working days.';
-    } else if (status != success && status != failure) {
+    } else if (status != success && status != failure && status != aborted) {
       noteText =
         'Note : Your payment is in progress and this may take a couple of minutes to confirm your booking. We’ll intimate you once your bank confirms the payment.';
     }
@@ -283,7 +325,7 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
   const getButtonText = () => {
     if (status == success) {
       return 'TRSCK ORDER';
-    } else if (status == failure) {
+    } else if (status == failure || status == aborted) {
       return 'TRY AGAIN';
     } else {
       return 'GO TO HOME';
@@ -299,10 +341,20 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
         showOrderSummaryTab: false,
         orderAutoId,
       });
-    } else if (status == failure) {
+    } else if (status == failure || status == aborted) {
       navigate(AppRoutes.YourCart);
     } else {
-      navigate(AppRoutes.ConsultRoom);
+      props.navigation.dispatch(
+        StackActions.reset({
+          index: 0,
+          key: null,
+          actions: [
+            NavigationActions.navigate({
+              routeName: AppRoutes.ConsultRoom,
+            }),
+          ],
+        })
+      );
     }
   };
 
@@ -411,5 +463,14 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.4,
     shadowRadius: 8,
     elevation: 5,
+  },
+  refStyles: {
+    flexDirection: 'row',
+  },
+  iconStyle: {
+    marginLeft: 6,
+    marginTop: 5,
+    width: 9,
+    height: 10,
   },
 });

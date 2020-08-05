@@ -4,12 +4,13 @@ import {
   timeDiffFromNow,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import React from 'react';
-import { StyleProp, ViewStyle } from 'react-native';
+import { StyleProp, ViewStyle, TextStyle } from 'react-native';
 import moment from 'moment';
 
 export interface AvailabilityCapsuleProps {
   availableTime: string;
   styles?: StyleProp<ViewStyle>;
+  titleTextStyle?: StyleProp<TextStyle>;
 }
 
 export const AvailabilityCapsule: React.FC<AvailabilityCapsuleProps> = (props) => {
@@ -20,6 +21,7 @@ export const AvailabilityCapsule: React.FC<AvailabilityCapsuleProps> = (props) =
         upperCase
         title={nextAvailability(props.availableTime)}
         style={props.styles}
+        titleTextStyle={props.titleTextStyle}
         isActive={!(Number(timeDiff) > 15 || timeDiff < 0)}
       />
     );

@@ -3,8 +3,8 @@
  * @email vishnu.r@apollo247.org
  */
 
-import React, { FC } from 'react';
-import { View, StyleSheet, Dimensions } from 'react-native';
+import React, { FC, useState } from 'react';
+import { View, StyleSheet, Dimensions, TouchableOpacity, Clipboard } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { Payment } from '@aph/mobile-patients/src/strings/strings.json';
@@ -13,6 +13,8 @@ import { LocalStrings } from '@aph/mobile-patients/src/strings/LocalStrings';
 import { textComponent } from './GenericText';
 import ViewInvoice from './ViewInvoice';
 import PaymentStatusConstants from '../../constants';
+import { Copy } from '@aph/mobile-patients/src/components/ui/Icons';
+import { Snackbar } from 'react-native-paper';
 
 interface StatusCardProps {
   item: any;
@@ -26,6 +28,13 @@ const windowHeight = Dimensions.get('window').height;
 const StatusCard: FC<StatusCardProps> = (props) => {
   const { SUCCESS, FAILED, REFUND } = PaymentStatusConstants;
   const { paymentFailed, paymentPending, paymentSuccessful, paymentRefund } = LocalStrings;
+  const [copiedText, setCopiedText] = useState('');
+  const [snackbarState, setSnackbarState] = useState<boolean>(false);
+  const copyToClipboard = (refId: string) => {
+    Clipboard.setString(refId);
+    setSnackbarState(true);
+  };
+
   const statusItemValues = () => {
     const { paymentFor, item } = props;
     let status = 'PENDING';
@@ -135,7 +144,10 @@ const StatusCard: FC<StatusCardProps> = (props) => {
       </View>
       <View style={styles.refIdStyles}>
         {textComponent(payRefId, undefined, theme.colors.SHADE_GREY, false)}
-        {textComponent(refId, undefined, theme.colors.SHADE_GREY, false)}
+        <TouchableOpacity style={styles.refStyles} onPress={() => copyToClipboard(refId)}>
+          {textComponent(refId, undefined, theme.colors.SHADE_GREY, false)}
+          <Copy style={styles.iconStyle} />
+        </TouchableOpacity>
       </View>
       <ViewInvoice
         status={status}
@@ -143,6 +155,16 @@ const StatusCard: FC<StatusCardProps> = (props) => {
         paymentFor={props.paymentFor}
         patientId={props.patientId}
       />
+      <Snackbar
+        style={{ position: 'absolute', zIndex: 1001, bottom: -10 }}
+        visible={snackbarState}
+        onDismiss={() => {
+          setSnackbarState(false);
+        }}
+        duration={1000}
+      >
+        Copied
+      </Snackbar>
     </View>
   );
 };
@@ -190,6 +212,15 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
     alignItems: 'center',
     marginBottom: 10,
+  },
+  refStyles: {
+    flexDirection: 'row',
+  },
+  iconStyle: {
+    marginLeft: 6,
+    marginTop: 5,
+    width: 9,
+    height: 10,
   },
 });
 

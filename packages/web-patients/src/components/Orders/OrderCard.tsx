@@ -17,7 +17,7 @@ import { useAllCurrentPatients } from 'hooks/authHooks';
 import { MEDICINE_ORDER_STATUS, MEDICINE_DELIVERY_TYPE } from 'graphql/types/globalTypes';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
-import { getStatus, isRejectedStatus } from './OrderStatusCard';
+import { getStatus, isRejectedStatus } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -395,6 +395,8 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
                 (orderInfo: OrdersList) =>
                   orderInfo &&
                   orderInfo.medicineOrdersStatus &&
+                  orderInfo.currentStatus !== MEDICINE_ORDER_STATUS.QUOTE &&
+                  orderInfo.currentStatus !== MEDICINE_ORDER_STATUS.PURCHASED_IN_STORE &&
                   getOrderStatus(orderInfo.medicineOrdersStatus) && (
                     <div
                       key={orderInfo.id}

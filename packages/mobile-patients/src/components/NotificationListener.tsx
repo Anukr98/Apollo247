@@ -19,16 +19,20 @@ import {
   getCallDetailsVariables,
 } from '@aph/mobile-patients/src/graphql/types/getCallDetails';
 import { getMedicineDetailsApi } from '@aph/mobile-patients/src/helpers/apiCalls';
-import { dataSavedUserID, aphConsole, g } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  dataSavedUserID,
+  aphConsole,
+  g,
+  postWebEngageEvent,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
 import React, { useEffect } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
-import { StyleSheet, Platform } from 'react-native';
+import { StyleSheet, Platform, View, TouchableOpacity, Text } from 'react-native';
 import firebase from 'react-native-firebase';
 import { Notification, NotificationOpen } from 'react-native-firebase/notifications';
-import InCallManager from 'react-native-incall-manager';
 import { NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
 import { DoctorType } from '../graphql/types/globalTypes';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
@@ -39,6 +43,8 @@ import {
   getMedicineOrderOMSDetails,
   getMedicineOrderOMSDetailsVariables,
 } from '../graphql/types/getMedicineOrderOMSDetails';
+import { NotificationIconWhite } from './ui/Icons';
+import { WebEngageEvents, WebEngageEventName } from '../helpers/webEngageEvents';
 
 const styles = StyleSheet.create({
   rescheduleTextStyles: {
@@ -54,6 +60,21 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     ...theme.viewStyles.shadowStyle,
   },
+  buttonStyle: {
+    height: 60,
+    borderRadius: 10,
+    backgroundColor: theme.colors.BUTTON_BG,
+    width: '70%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'column',
+    shadowColor: 'rgba(0,0,0,0.2)',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.8,
+    shadowRadius: 2,
+    elevation: 3,
+    display: 'flex',
+  },
 });
 
 type CustomNotificationType =
@@ -65,6 +86,7 @@ type CustomNotificationType =
   | 'Order_Out_For_Delivery'
   | 'Order_Placed'
   | 'Order_Confirmed'
+  | 'Order_ready_at_store'
   | 'Reminder_Appointment_15'
   | 'Reminder_Appointment_Casesheet_15'
   | 'Diagnostic_Order_Success'
@@ -83,7 +105,15 @@ export interface NotificationListenerProps extends NavigationScreenProps {}
 export const NotificationListener: React.FC<NotificationListenerProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
 
-  const { showAphAlert, hideAphAlert, setLoading, setMedFeedback } = useUIElements();
+  const {
+    showAphAlert,
+    hideAphAlert,
+    setLoading,
+    setMedFeedback,
+    audioTrack,
+    setPrevVolume,
+    maxVolume,
+  } = useUIElements();
   const { cartItems, setCartItems, ePrescriptions, setEPrescriptions } = useShoppingCart();
   const client = useApolloClient();
 
@@ -120,6 +150,58 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
           },
         },
       ],
+    });
+  };
+
+  const showOrderReadyAtStoreAlert = (
+    data:
+      | {
+          content: string;
+          orderAutoId: string;
+          orderId: string;
+          firstName: string;
+          statusDate: string;
+        }
+      | any,
+    type?: CustomNotificationType
+  ) => {
+    aphConsole.log(`CustomNotificationType:: ${type}`);
+    showAphAlert!({
+      title: `Hi, ${data.firstName}`,
+      description:
+        'Order status updated. Kindly alert the store 10 minutes before you are about to reach, so that we can keep the items ready!',
+      children: (
+        <View
+          style={{
+            marginHorizontal: 20,
+            marginVertical: 25,
+            alignItems: 'center',
+          }}
+        >
+          <TouchableOpacity
+            style={styles.buttonStyle}
+            onPress={() => {
+              hideAphAlert!();
+              props.navigation.navigate(AppRoutes.OrderDetailsScene, {
+                goToHomeOnBack: true,
+                orderAutoId: data.orderAutoId,
+              });
+            }}
+          >
+            <NotificationIconWhite />
+            <Text
+              style={{
+                marginTop: 4,
+                textAlign: 'center',
+                color: theme.colors.WHITE,
+                ...theme.fonts.IBMPlexSansBold(14),
+              }}
+            >
+              ALERT THE STORE
+            </Text>
+          </TouchableOpacity>
+        </View>
+      ),
     });
   };
 
@@ -303,6 +385,18 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
               {
                 text: 'CLAIM REFUND',
                 onPress: () => {
+                  try {
+                    const eventAttributes: WebEngageEvents[WebEngageEventName.DOCTOR_RESCHEDULE_CLAIM_REFUND] = {
+                      'Patient Id': currentPatient.id,
+                      'Appointment ID': data.appointmentId,
+                      Type: data.type,
+                    };
+                    postWebEngageEvent(
+                      WebEngageEventName.DOCTOR_RESCHEDULE_CLAIM_REFUND,
+                      eventAttributes
+                    );
+                  } catch (error) {}
+
                   hideAphAlert && hideAphAlert();
                 },
                 type: 'white-button',
@@ -345,6 +439,11 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
       case 'Order_Confirmed':
         {
           showMedOrderStatusAlert(data, 'Order_Confirmed');
+        }
+        break;
+      case 'Order_ready_at_store':
+        {
+          showOrderReadyAtStoreAlert(data, 'Order_ready_at_store');
         }
         break;
       case 'Diagnostic_Order_Success':
@@ -409,6 +508,18 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
               {
                 text: 'CLAIM REFUND',
                 onPress: () => {
+                  try {
+                    const eventAttributes: WebEngageEvents[WebEngageEventName.DOCTOR_RESCHEDULE_CLAIM_REFUND] = {
+                      'Patient Id': currentPatient.id,
+                      'Appointment ID': data.appointmentId,
+                      Type: data.type,
+                    };
+                    postWebEngageEvent(
+                      WebEngageEventName.DOCTOR_RESCHEDULE_CLAIM_REFUND,
+                      eventAttributes
+                    );
+                  } catch (error) {}
+
                   hideAphAlert && hideAphAlert();
                 },
                 type: 'white-button',
@@ -436,11 +547,19 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
             showAphAlert!({
               title: ' ',
               description: data.content,
+              unDismissable: true,
               CTAs: [
                 {
                   text: 'DISMISS',
                   onPress: () => {
                     hideAphAlert && hideAphAlert();
+                    props.navigation.dispatch(
+                      StackActions.reset({
+                        index: 0,
+                        key: null,
+                        actions: [NavigationActions.navigate({ routeName: AppRoutes.TabBar })],
+                      })
+                    );
                   },
                   type: 'white-button',
                 },
@@ -474,6 +593,20 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
                 text: 'DISMISS',
                 onPress: () => {
                   hideAphAlert && hideAphAlert();
+                  try {
+                    if (
+                      currentScreenName === AppRoutes.AppointmentDetails ||
+                      currentScreenName === AppRoutes.AppointmentOnlineDetails
+                    ) {
+                      props.navigation.dispatch(
+                        StackActions.reset({
+                          index: 0,
+                          key: null,
+                          actions: [NavigationActions.navigate({ routeName: AppRoutes.TabBar })],
+                        })
+                      );
+                    }
+                  } catch (error) {}
                 },
                 type: 'white-button',
               },
@@ -616,7 +749,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
                 });
             })
             .catch((e) => {
-              CommonBugFender('NotificationListener_GET_MEDICINE_ORDER_DETAILS', e);
+              CommonBugFender('NotificationListener_GET_MEDICINE_ORDER_OMS_DETAILS', e);
             });
         }
         break;
@@ -726,9 +859,9 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
         .setBody(notification.body)
         .setData(notification.data)
         .android.setChannelId('fcm_FirebaseNotifiction_default_channel') // e.g. the id you chose above
-        .android.setSmallIcon('@mipmap/ic_launcher') // create this icon in Android Studio
-        .android.setColor('#000000') // you can set a color here
-        .android.setPriority(firebase.notifications.Android.Priority.Default);
+        .android.setSmallIcon('@drawable/ic_notification_white') // create this icon in Android Studio
+        .android.setColor('#fcb716') // you can set a color here
+        .android.setPriority(firebase.notifications.Android.Priority.Max);
       firebase
         .notifications()
         .displayNotification(localNotification)
@@ -775,7 +908,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
       const channel = new firebase.notifications.Android.Channel(
         'fcm_FirebaseNotifiction_default_channel',
         'Apollo',
-        firebase.notifications.Android.Importance.Default
+        firebase.notifications.Android.Importance.Max
       ).setDescription('Demo app description');
       // .setSound('incallmanager_ringtone.mp3');
       firebase.notifications().android.createChannel(channel);
@@ -787,7 +920,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
       const channelForCalls = new firebase.notifications.Android.Channel(
         'fcm_FirebaseNotifiction_call_channel',
         'Apollo Audio & Video calls',
-        firebase.notifications.Android.Importance.Default
+        firebase.notifications.Android.Importance.Max
       )
         .setDescription('Apollo Consultation')
         .setSound('incallmanager_ringtone.mp3')
@@ -863,8 +996,10 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
 
           if (endTime) {
             try {
-              InCallManager.stopRingtone();
-              InCallManager.stop();
+              setPrevVolume();
+              if (audioTrack) {
+                audioTrack.stop();
+              }
 
               console.log('call ended');
               hideAphAlert && hideAphAlert();
@@ -901,13 +1036,22 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
           } else {
             try {
               setLoading && setLoading(false);
-              console.log('call ongoing');
-              InCallManager.startRingtone('_BUNDLE_');
-              InCallManager.start({ media: 'audio' }); // audio/video, default: audio
+              try {
+                maxVolume();
+                if (audioTrack) {
+                  audioTrack.play();
+                  audioTrack.setNumberOfLoops(15);
+                  console.log('call audioTrack');
+                }
+              } catch (e) {
+                CommonBugFender('playing_callertune__failed', e);
+              }
 
               setTimeout(() => {
-                InCallManager.stopRingtone();
-                InCallManager.stop();
+                setPrevVolume();
+                if (audioTrack) {
+                  audioTrack.stop();
+                }
               }, 15000);
 
               showAphAlert!({
@@ -922,8 +1066,10 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
                     type: 'white-button',
                     onPress: () => {
                       hideAphAlert && hideAphAlert();
-                      InCallManager.stopRingtone();
-                      InCallManager.stop();
+                      setPrevVolume();
+                      if (audioTrack) {
+                        audioTrack.stop();
+                      }
                     },
                   },
                   {

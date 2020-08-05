@@ -18,6 +18,7 @@ import {
   GetPatientAddressList_getPatientAddressList_addressList as AddressDetails,
 } from 'graphql/types/GetPatientAddressList';
 import { GET_PATIENT_ADDRESSES_LIST } from 'graphql/address';
+import { getStatus, isRejectedStatus } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -288,68 +289,6 @@ export const getDeliveredDateTime = (orderStatusList: StatusDetails[]) => {
       moment(time).format('D MMMM YYYY') + ' at ' + moment(time).format('hh:mm A');
     return finalDateTime;
   }
-};
-
-export const getStatus = (status: MEDICINE_ORDER_STATUS) => {
-  let statusString = '';
-  switch (status) {
-    case MEDICINE_ORDER_STATUS.CANCELLED:
-      return 'Order Cancelled';
-    case MEDICINE_ORDER_STATUS.CANCEL_REQUEST:
-      return 'Cancel Requested';
-    case MEDICINE_ORDER_STATUS.DELIVERED:
-      return 'Order Delivered';
-    case MEDICINE_ORDER_STATUS.ITEMS_RETURNED:
-      return 'Items Returned';
-    case MEDICINE_ORDER_STATUS.ORDER_INITIATED:
-      return 'Order Initiated';
-    case MEDICINE_ORDER_STATUS.ORDER_BILLED:
-      return 'Order Billed and Packed';
-    case MEDICINE_ORDER_STATUS.ORDER_CONFIRMED:
-      return 'Order Confirmed';
-    case MEDICINE_ORDER_STATUS.ORDER_FAILED:
-      return 'Order Failed';
-    case MEDICINE_ORDER_STATUS.ORDER_PLACED:
-      return 'Order Placed';
-    case MEDICINE_ORDER_STATUS.ORDER_VERIFIED:
-      return 'Order Verified';
-    case MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY:
-      return 'Order Dispatched';
-    case MEDICINE_ORDER_STATUS.PAYMENT_FAILED:
-      return 'Payment Failed';
-    case MEDICINE_ORDER_STATUS.PAYMENT_PENDING:
-      return 'Payment Pending';
-    case MEDICINE_ORDER_STATUS.PAYMENT_SUCCESS:
-      return 'Payment Success';
-    case MEDICINE_ORDER_STATUS.PICKEDUP:
-      return 'Order Picked Up';
-    case MEDICINE_ORDER_STATUS.PRESCRIPTION_CART_READY:
-      return 'Prescription Cart Ready';
-    case MEDICINE_ORDER_STATUS.PRESCRIPTION_UPLOADED:
-      return 'Prescription Uploaded';
-    case MEDICINE_ORDER_STATUS.RETURN_ACCEPTED:
-      return 'Return Accepted';
-    case MEDICINE_ORDER_STATUS.RETURN_INITIATED:
-      return 'Return Requested';
-    case MEDICINE_ORDER_STATUS.READY_AT_STORE:
-      return 'Ready At Store';
-    // case MEDICINE_ORDER_STATUS.QUOTE:
-    //   return 'Quote';
-    case 'TO_BE_DELIVERED' as any:
-      return 'Expected Order Delivery';
-    default:
-      statusString = status
-        .split('_')
-        .map((item) => `${item.slice(0, 1).toUpperCase()}${item.slice(1).toLowerCase()}`)
-        .join(' ');
-      return statusString;
-  }
-};
-
-export const isRejectedStatus = (status: MEDICINE_ORDER_STATUS) => {
-  return (
-    status === MEDICINE_ORDER_STATUS.CANCELLED || status === MEDICINE_ORDER_STATUS.PAYMENT_FAILED
-  );
 };
 
 export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {

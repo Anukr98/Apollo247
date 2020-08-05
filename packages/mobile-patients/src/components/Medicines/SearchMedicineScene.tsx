@@ -69,6 +69,8 @@ import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { MedicineSearchSuggestionItem } from '@aph/mobile-patients/src/components/Medicines/MedicineSearchSuggestionItem';
 import { Input } from 'react-native-elements';
 import Axios from 'axios';
+import { StickyBottomComponent } from '../ui/StickyBottomComponent';
+import { Button } from '../ui/Button';
 
 const styles = StyleSheet.create({
   safeAreaViewStyle: {
@@ -156,11 +158,13 @@ export interface SearchMedicineSceneProps
   extends NavigationScreenProps<{
     searchText: string;
     isTest: boolean;
+    showButton: boolean;
   }> {}
 
 export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) => {
   const searchTextFromProp = props.navigation.getParam('searchText');
   const isTest = props.navigation.getParam('isTest');
+  const showButton = props.navigation.getParam('showButton');
 
   const [showMatchingMedicines, setShowMatchingMedicines] = useState<boolean>(false);
   const [searchText, setSearchText] = useState<string>('');
@@ -182,7 +186,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
   const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
   const { showAphAlert, setLoading: globalLoading } = useUIElements();
   const { getPatientApiCall } = useAuth();
-  const { locationDetails, pharmacyLocation } = useAppCommonData();
+  const { locationDetails, pharmacyLocation, isPharmacyLocationServiceable } = useAppCommonData();
   const pharmacyPincode = g(pharmacyLocation, 'pincode') || g(locationDetails, 'pincode');
 
   const getSpecialPrice = (special_price?: string | number) =>
@@ -344,10 +348,12 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
       suggestionItem ? null : globalLoading,
       props.navigation,
       currentPatient,
+      !!isPharmacyLocationServiceable,
       suggestionItem ? () => setItemsLoading({ ...itemsLoading, [sku]: false }) : undefined
     );
     postwebEngageAddToCartEvent(item, 'Pharmacy Full Search');
-    postAppsFlyerAddToCartEvent(item, 'Pharmacy List');
+    let id = currentPatient && currentPatient.id ? currentPatient.id : '';
+    postAppsFlyerAddToCartEvent(item, id);
   };
 
   const onRemoveCartItem = ({ sku }: MedicineProduct) => {
@@ -405,10 +411,10 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
       <Header
         container={{ borderBottomWidth: 0 }}
         leftIcon={'backArrow'}
-        title={isTest ? 'SEARCH TESTS ' : 'SEARCH MEDICINE'}
+        title={showButton ? ' ' : isTest ? 'SEARCH TESTS ' : 'SEARCH MEDICINE'}
         rightComponent={
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            {!!productsList.length && (
+            {!!productsList.length && !showButton && (
               <TouchableOpacity
                 style={{ marginRight: productsList.length ? 24 : 0 }}
                 activeOpacity={1}
@@ -476,6 +482,12 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
           Source: 'Pharmacy Search',
         };
         postWebEngageEvent(WebEngageEventName.PHARMACY_SEARCH_RESULTS, eventAttributes);
+
+        const searchEventAttribute: WebEngageEvents[WebEngageEventName.SEARCH_ENTER_CLICK] = {
+          keyword: searchText,
+          numberofresults: medicineList.length,
+        };
+        postWebEngageEvent(WebEngageEventName.SEARCH_ENTER_CLICK, searchEventAttribute);
         onSearchProduct(searchText);
         setsearchSate(undefined);
       }
@@ -966,6 +978,15 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         {renderOverlay()}
       </View>
       {renderFilterView()}
+      {showButton && (
+        <StickyBottomComponent style={{ position: 'relative' }} defaultBG>
+          <Button
+            title={'PROCEED'}
+            onPress={() => props.navigation.navigate(AppRoutes.YourCart)}
+            style={{ marginHorizontal: 40, flex: 1 }}
+          />
+        </StickyBottomComponent>
+      )}
     </SafeAreaView>
   );
 };

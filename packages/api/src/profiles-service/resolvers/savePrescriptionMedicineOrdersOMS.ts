@@ -10,6 +10,7 @@ import {
   MEDICINE_ORDER_PAYMENT_TYPE,
   BOOKING_SOURCE,
   DEVICE_TYPE,
+  MedicineOrdersStatus,
 } from 'profiles-service/entities';
 import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
@@ -188,6 +189,15 @@ const savePrescriptionMedicineOrderOMS: Resolver<
   };
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
   const saveOrder = await medicineOrdersRepo.saveMedicineOrder(medicineOrderattrs);
+
+  if (saveOrder) {
+    const orderStatusAttrs: Partial<MedicineOrdersStatus> = {
+      orderStatus: MEDICINE_ORDER_STATUS.PRESCRIPTION_UPLOADED,
+      medicineOrders: saveOrder,
+      statusDate: new Date(),
+    };
+    await medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, saveOrder.orderAutoId);
+  }
 
   const serviceBusConnectionString = process.env.AZURE_SERVICE_BUS_CONNECTION_STRING;
   const azureServiceBus = new ServiceBusService(serviceBusConnectionString);

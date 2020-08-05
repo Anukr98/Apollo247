@@ -8,7 +8,11 @@ import { clientRoutes } from 'helpers/clientRoutes';
 import { Link } from 'react-router-dom';
 import { useShoppingCart, MedicineCartItem } from '../../MedicinesCartProvider';
 import { gtmTracking } from '../../../gtmTracking';
-import { pharmacyConfigSectionTracking } from 'webEngageTracking';
+import {
+  pharmacyConfigSectionTracking,
+  addToCartTracking,
+  removeFromCartTracking,
+} from 'webEngageTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -231,6 +235,7 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
                         <AphButton
                           onClick={() => {
                             const cartItem: MedicineCartItem = {
+                              MaxOrderQty: hotSeller.MaxOrderQty,
                               url_key: hotSeller.url_key,
                               description: hotSeller.description,
                               id: hotSeller.id,
@@ -249,6 +254,18 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
                               quantity: 1,
                               isShippable: true,
                             };
+                            addToCartTracking({
+                              productName: hotSeller.name,
+                              source: 'Pharmacy Home',
+                              productId: hotSeller.sku,
+                              brand: '',
+                              brandId: '',
+                              categoryName: '',
+                              categoryId: hotSeller.category_id,
+                              discountedPrice: hotSeller.special_price,
+                              price: hotSeller.price,
+                              quantity: 1,
+                            });
                             /**Gtm code start  */
                             gtmTracking({
                               category: 'Pharmacy',
@@ -292,6 +309,18 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
                       ) : (
                         <AphButton
                           onClick={() => {
+                            removeFromCartTracking({
+                              productName: hotSeller.name,
+                              cartSize: cartItems.length,
+                              productId: hotSeller.sku,
+                              brand: '',
+                              brandId: '',
+                              categoryName: '',
+                              categoryId: hotSeller.category_id,
+                              discountedPrice: hotSeller.special_price,
+                              price: hotSeller.price,
+                              quantity: 1,
+                            });
                             /**Gtm code start  */
                             gtmTracking({
                               category: 'Pharmacy',

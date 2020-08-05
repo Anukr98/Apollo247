@@ -257,6 +257,7 @@ const createAppointmentSession: Resolver<
   ) {
     throw new AphError(AphErrorMessages.INVALID_REQUEST_ROLE);
   }
+
   const apptDetails = await apptRepo.findById(createAppointmentSessionInput.appointmentId);
   if (apptDetails == null) throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
 
@@ -311,7 +312,8 @@ const createAppointmentSession: Resolver<
         createAppointmentSessionInput.appointmentId,
         STATUS.IN_PROGRESS,
         true,
-        new Date()
+        new Date(),
+        apptDetails
       );
     }
 
@@ -379,7 +381,8 @@ const createAppointmentSession: Resolver<
       createAppointmentSessionInput.appointmentId,
       STATUS.IN_PROGRESS,
       true,
-      new Date()
+      new Date(),
+      apptDetails
     );
   }
 
@@ -473,12 +476,16 @@ const endAppointmentSession: Resolver<
   const apptRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const apptDetails = await apptRepo.findById(endAppointmentSessionInput.appointmentId);
   if (apptDetails == null) throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
+
   const callDetailsRepo = consultsDb.getCustomRepository(AppointmentCallDetailsRepository);
+
   await apptRepo.updateAppointmentStatus(
     endAppointmentSessionInput.appointmentId,
     endAppointmentSessionInput.status,
-    true
+    true,
+    apptDetails
   );
+
   const apptSessionRepo = consultsDb.getCustomRepository(AppointmentsSessionRepository);
   const apptSession = await apptSessionRepo.getAppointmentSession(
     endAppointmentSessionInput.appointmentId
@@ -584,14 +591,14 @@ const endAppointmentSession: Resolver<
       rescheduleAppointmentAttrs.rescheduleInitiatedId = apptDetails.doctorId;
       const adminRepo = doctorsDb.getCustomRepository(AdminDoctorMap);
       const adminDetails = await adminRepo.findByadminId(apptDetails.doctorId);
-      console.log(adminDetails, 'adminDetails');
+      //console.log(adminDetails, 'adminDetails');
       if (adminDetails == null) throw new AphError(AphErrorMessages.GET_ADMIN_USER_ERROR);
 
       const listOfEmails: string[] = [];
 
       adminDetails.length > 0 &&
         adminDetails.map((value) => listOfEmails.push(value.adminuser.email));
-      console.log('listOfEmails', listOfEmails);
+      //console.log('listOfEmails', listOfEmails);
       listOfEmails.forEach(async (adminemail) => {
         const adminEmailContent: EmailMessage = {
           ccEmail: ccEmailIds.toString(),
@@ -605,7 +612,12 @@ const endAppointmentSession: Resolver<
       });
     }
     await rescheduleRepo.saveReschedule(rescheduleAppointmentAttrs);
-    await apptRepo.updateTransferState(apptDetails.id, APPOINTMENT_STATE.AWAITING_RESCHEDULE);
+    await apptRepo.updateTransferState(
+      apptDetails.id,
+      APPOINTMENT_STATE.AWAITING_RESCHEDULE,
+      apptDetails
+    );
+
     // send notification
     let pushNotificationInput = {
       appointmentId: apptDetails.id,

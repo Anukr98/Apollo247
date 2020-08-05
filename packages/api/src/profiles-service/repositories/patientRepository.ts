@@ -40,19 +40,7 @@ export class PatientRepository extends Repository<Patient> {
     delCache(id);
   }
   async findById(id: string) {
-    const relations = [
-      'lifeStyle',
-      'healthVault',
-      'familyHistory',
-      'patientAddress',
-      'patientDeviceTokens',
-      'patientNotificationSettings',
-      'patientMedicalHistory',
-    ];
-    return this.findOne({
-      where: { id, isActive: true },
-      relations: relations,
-    });
+    return await this.getByIdCache(id);
   }
 
   async findByIdWithoutRelations(id: string) {
@@ -65,10 +53,14 @@ export class PatientRepository extends Repository<Patient> {
     findOptions: { mobileNumber: Patient['mobileNumber'] },
     createOptions: Partial<Patient>
   ) {
-    return this.findOne({
+    return this.find({
       where: { mobileNumber: findOptions.mobileNumber },
-    }).then((existingPatient) => {
-      return existingPatient || this.create(createOptions).save();
+    }).then(async (existingPatient) => {
+      if (existingPatient.length > 0) {
+        return existingPatient;
+      }
+      const newPatient = await this.create(createOptions).save();
+      return [newPatient];
     });
   }
   findEmpId(empId: string, patientId: string) {
@@ -113,7 +105,7 @@ export class PatientRepository extends Repository<Patient> {
   async getByIdCache(id: string | number) {
     const cache = await getCache(`${REDIS_PATIENT_ID_KEY_PREFIX}${id}`);
     if (cache && typeof cache === 'string') {
-      let patient: Patient = JSON.parse(cache);
+      const patient: Patient = JSON.parse(cache);
       patient.dateOfBirth = new Date(patient.dateOfBirth);
       return patient;
     } else {
@@ -141,13 +133,16 @@ export class PatientRepository extends Repository<Patient> {
     const patientDetails = await this.getPatientData(id);
     if (patientDetails) {
       const patientString = JSON.stringify(patientDetails);
-      setCache(`${REDIS_PATIENT_ID_KEY_PREFIX}${id}`, patientString, ApiConstants.CACHE_EXPIRATION_14400);
+      setCache(
+        `${REDIS_PATIENT_ID_KEY_PREFIX}${id}`,
+        patientString,
+        ApiConstants.CACHE_EXPIRATION_3600
+      );
     }
     return patientDetails;
   }
   async getByMobileCache(mobile: string) {
-    let ids;
-    ids = await getCache(`${REDIS_PATIENT_MOBILE_KEY_PREFIX}${mobile}`);
+    const ids = await getCache(`${REDIS_PATIENT_MOBILE_KEY_PREFIX}${mobile}`);
     if (ids && typeof ids === 'string') {
       const patientIds: string[] = ids.split(',');
       const patients: Patient[] = [];
@@ -177,10 +172,18 @@ export class PatientRepository extends Repository<Patient> {
     });
 
     const patientIds: string[] = await patients.map((patient) => {
-      setCache(`${REDIS_PATIENT_ID_KEY_PREFIX}${patient.id}`, JSON.stringify(patient), ApiConstants.CACHE_EXPIRATION_14400);
+      setCache(
+        `${REDIS_PATIENT_ID_KEY_PREFIX}${patient.id}`,
+        JSON.stringify(patient),
+        ApiConstants.CACHE_EXPIRATION_3600
+      );
       return patient.id;
     });
-    setCache(`${REDIS_PATIENT_MOBILE_KEY_PREFIX}${mobile}`, patientIds.join(','), ApiConstants.CACHE_EXPIRATION_14400);
+    setCache(
+      `${REDIS_PATIENT_MOBILE_KEY_PREFIX}${mobile}`,
+      patientIds.join(','),
+      ApiConstants.CACHE_EXPIRATION_3600
+    );
     return patients;
   }
 
@@ -191,7 +194,7 @@ export class PatientRepository extends Repository<Patient> {
       patientList.map(async (patient) => {
         if (patient.firstName == '' || patient.uhid == '') {
           console.log(patient.id, 'blank card');
-          patient.isActive = false
+          patient.isActive = false;
           this.save(patient);
         } else if (patient.primaryPatientId == null) {
           patient.primaryPatientId = patient.id;
@@ -564,6 +567,7 @@ export class PatientRepository extends Repository<Patient> {
   }
 
   async createNewUhid(id: string) {
+    await this.dropPatientCache(`${REDIS_PATIENT_ID_KEY_PREFIX}${id}`);
     const patientDetails = await this.getPatientDetails(id);
     if (!patientDetails) {
       throw new AphError(AphErrorMessages.GET_PROFILE_ERROR, undefined, {

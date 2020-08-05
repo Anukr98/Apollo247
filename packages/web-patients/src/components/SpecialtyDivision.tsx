@@ -1,18 +1,13 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Theme, Grid, CircularProgress, Popover, Typography } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { Specialties } from 'components/Specialties';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { Link } from 'react-router-dom';
-import {
-  GetAllSpecialties,
-  GetAllSpecialties_getAllSpecialties as SpecialtyType,
-} from 'graphql/types/GetAllSpecialties';
-import { GET_ALL_SPECIALITIES } from 'graphql/specialities';
-import { useQuery } from 'react-apollo-hooks';
-import { getSymptoms } from 'helpers/commonHelpers';
 import { readableParam } from 'helpers/commonHelpers';
 import _lowerCase from 'lodash/lowerCase';
+import { useAllCurrentPatients } from 'hooks/authHooks';
+import { specialtyClickTracking } from 'webEngageTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -371,11 +366,6 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: '15px 0 0',
       borderTop: '1px solid rgba(1,71,91,0.5)',
     },
-    circlularProgress: {
-      display: 'flex',
-      padding: 20,
-      justifyContent: 'center',
-    },
   };
 });
 
@@ -390,15 +380,16 @@ interface TopSpecialtyType {
   description: string;
   symptoms: string;
   slugName: string;
+  id: string;
 }
 
 const image_url = process.env.SPECIALTY_IMAGE_SOURCE;
 
 export const SpecialtyDivision: React.FC<SpecialtyDivisionProps> = (props) => {
   const classes = useStyles({});
+  const { currentPatient } = useAllCurrentPatients();
   const { selectedCity, doctorsCount } = props;
-  const { loading, error, data } = useQuery<GetAllSpecialties>(GET_ALL_SPECIALITIES);
-
+  const [specialtyCount, setSpecialtyCount] = useState<number>(0);
   const topSpecialtyListing = [
     {
       specialtyName: 'Paediatrics',
@@ -406,6 +397,7 @@ export const SpecialtyDivision: React.FC<SpecialtyDivisionProps> = (props) => {
       description: "For your child's health problems",
       symptoms: 'Fever, Cough, Diarrhoea',
       slugName: 'Paediatrics',
+      id: '91cee893-55cf-41fd-9d6b-73157c6518a9',
     },
     {
       specialtyName: 'General Physician',
@@ -413,6 +405,7 @@ export const SpecialtyDivision: React.FC<SpecialtyDivisionProps> = (props) => {
       description: 'For any common health issues',
       symptoms: 'Fever, Headache, Asthma',
       slugName: 'General Physician/ Internal Medicine',
+      id: '4dc1c5de-e062-4b3b-aec9-090389687865',
     },
     {
       specialtyName: 'Dermatology',
@@ -420,6 +413,7 @@ export const SpecialtyDivision: React.FC<SpecialtyDivisionProps> = (props) => {
       description: 'For skin & hair problems',
       symptoms: 'Skin rash, Acne, Skin patch',
       slugName: 'Dermatology',
+      id: 'fba32e11-eb1c-4e18-8d45-8c25f45d7672',
     },
     {
       specialtyName: 'Gynaecology',
@@ -427,16 +421,15 @@ export const SpecialtyDivision: React.FC<SpecialtyDivisionProps> = (props) => {
       description: "For women's health",
       symptoms: 'Irregular periods, Pregnancy',
       slugName: 'Obstetrics & Gynaecology',
+      id: '3b69e637-684d-4545-aace-91810bc5739d',
     },
   ];
-
-  const allSpecialties = data && data.getAllSpecialties;
 
   return (
     <>
       <Typography component="h2">
         Start your care now by choosing from {doctorsCount ? `${doctorsCount} doctors and ` : ''}
-        {allSpecialties && allSpecialties.length} specialities
+        {specialtyCount} specialities
       </Typography>
       <div className={classes.topSpeciality}>
         <div className={classes.sectionHeader}>
@@ -448,7 +441,22 @@ export const SpecialtyDivision: React.FC<SpecialtyDivisionProps> = (props) => {
               topSpecialtyListing.length > 0 &&
               topSpecialtyListing.map((specialityDetails: TopSpecialtyType) => (
                 <Grid key={specialityDetails.specialtyName} item xs={6} md={3}>
-                  <div className={classes.specialityCard}>
+                  <div
+                    className={classes.specialityCard}
+                    onClick={() => {
+                      const patientAge =
+                        new Date().getFullYear() -
+                        new Date(currentPatient && currentPatient.dateOfBirth).getFullYear();
+                      const eventData = {
+                        patientAge: patientAge,
+                        patientGender: currentPatient && currentPatient.gender,
+                        specialtyId: specialityDetails.id,
+                        specialtyName: specialityDetails.slugName,
+                        relation: currentPatient && currentPatient.relation,
+                      };
+                      specialtyClickTracking(eventData);
+                    }}
+                  >
                     <Link
                       to={
                         selectedCity === ''
@@ -477,15 +485,7 @@ export const SpecialtyDivision: React.FC<SpecialtyDivisionProps> = (props) => {
           <Typography component="h2">Other Specialties</Typography>
         </div>
         <div className={classes.osContainer}>
-          {loading ? (
-            <div className={classes.circlularProgress}>
-              <CircularProgress color="primary" />
-            </div>
-          ) : error ? (
-            <div>Error! </div>
-          ) : (
-            allSpecialties && <Specialties selectedCity={selectedCity} data={allSpecialties} />
-          )}
+          <Specialties selectedCity={selectedCity} setSpecialtyCount={setSpecialtyCount} />
         </div>
       </div>
     </>

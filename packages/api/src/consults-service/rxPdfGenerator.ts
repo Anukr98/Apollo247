@@ -178,6 +178,16 @@ export const convertCaseSheetToRxPdfData = async (
               .replace(/,(?=[^,]*$)/, ' and')
               .split('_')
               .join(' ');
+        } else if (csRx.medicineTimings.length > 1) {
+          frequency = frequency + ' in the';
+          frequency =
+            frequency +
+            ' ' +
+            csRx.medicineTimings
+              .join(', ')
+              .replace(/,(?=[^,]*$)/, ' and')
+              .split('_')
+              .join(' ');
         }
       }
 
@@ -303,7 +313,7 @@ export const convertCaseSheetToRxPdfData = async (
         hospitalAddress = {
           name: hospitalDetails.name,
           streetLine1: hospitalDetails.streetLine1,
-          streetLine2: hospitalDetails.streetLine2,
+          streetLine2: hospitalDetails.streetLine2 || '',
           city: hospitalDetails.city,
           zipcode: hospitalDetails.zipcode,
           state: hospitalDetails.state,
@@ -439,6 +449,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
     if (doc.y > doc.page.height - 150) {
       pageBreak();
     }
+
     if (image.length > 0)
       return (
         doc
@@ -516,7 +527,9 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
       .image(loadAsset('apolloLogo.png'), margin, margin / 2, { width: 87, height: 64 });
 
     //Doctor Details
-    const nameLine = `${doctorInfo.salutation}. ${doctorInfo.firstName} ${doctorInfo.lastName}`;
+    const nameLine = `${doctorInfo.salutation.replace('.', '')}. ${doctorInfo.firstName} ${
+      doctorInfo.lastName
+    }`;
     const specialty = doctorInfo.specialty;
     const registrationLine = `Reg.No. ${doctorInfo.registrationNumber}`;
 
@@ -524,7 +537,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
       .fontSize(11)
       .font(assetsDir + '/fonts/IBMPlexSans-Regular.ttf')
       .fillColor('#02475b')
-      .text(nameLine, 370, margin);
+      .text(nameLine, 320, margin);
 
     if (doctorInfo.qualifications) {
       doc
@@ -550,14 +563,39 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
       .moveDown(0.3)
       .fontSize(8)
       .font(assetsDir + '/fonts/IBMPlexSans-Regular.ttf')
-      .fillColor('#000000')
+      .fillColor('#666666')
       .text(hospitalAddress.name);
 
     doc.moveDown(0.2).text(hospitalAddress.streetLine1);
     if (hospitalAddress.streetLine2) doc.moveDown(0.2).text(hospitalAddress.streetLine2);
     doc.moveDown(0.2).text(addressLastLine);
 
-    doc.moveDown(2);
+    doc
+      .moveDown(0.6)
+      .fillColor('#999999')
+      .text(`${ApiConstants.CASESHEET_WHATSAPP_LABEL.toString()}`, { lineBreak: false })
+      .text(`${ApiConstants.CASESHEET_EMAIL_LABEL.toString()}`, 435, doc.y);
+
+    doc
+      .moveDown(0.5)
+      .fillColor('#333333')
+      .image(loadAsset('ic-phone.png'), 320, doc.y, {
+        valign: 'bottom',
+        height: 12,
+        width: 12,
+      })
+      .fontSize(10)
+      .text(`${ApiConstants.CASESHEET_WHATSAPP_NUMBER.toString()}`, 340, doc.y - 12, {
+        lineBreak: false,
+      })
+      .image(loadAsset('ic-email.png'), 435, doc.y, {
+        valign: 'bottom',
+        height: 12,
+        width: 12,
+      })
+      .text(`${ApiConstants.CASESHEET_EMAIL.toString()}`, 455, doc.y - 12);
+
+    doc.moveDown(0.5);
   };
 
   const renderFooter = () => {
@@ -596,6 +634,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
         if (prescription.since.length > 0) textArray.push('Since: ' + prescription.since);
         if (prescription.howOften) textArray.push('How Often: ' + prescription.howOften);
         if (prescription.severity) textArray.push('Severity: ' + prescription.severity);
+        if (prescription.details) textArray.push('Details: ' + prescription.details);
 
         doc
           .fontSize(12)
@@ -610,14 +649,14 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
           .text(`${textArray.join('  |  ')}`, margin + 15)
           .moveDown(0.8);
 
-        if (prescription.details) {
-          doc
-            .fontSize(12)
-            .font(assetsDir + '/fonts/IBMPlexSans-Regular.ttf')
-            .fillColor('#666666')
-            .text(`${prescription.details}`, margin + 15)
-            .moveDown(0.8);
-        }
+        // if (prescription.details) {
+        //   doc
+        //     .fontSize(12)
+        //     .font(assetsDir + '/fonts/IBMPlexSans-Regular.ttf')
+        //     .fillColor('#666666')
+        //     .text(`${prescription.details}`, margin + 15)
+        //     .moveDown(0.8);
+        // }
 
         if (doc.y > doc.page.height - 150) {
           pageBreak();
@@ -940,7 +979,9 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
       }
 
       //Doctor Details
-      const nameLine = `${doctorInfo.salutation}. ${doctorInfo.firstName} ${doctorInfo.lastName}`;
+      const nameLine = `${doctorInfo.salutation.replace('.', '')}. ${doctorInfo.firstName} ${
+        doctorInfo.lastName
+      }`;
       const specialty = doctorInfo.specialty;
       const registrationLine = `Reg.No. ${doctorInfo.registrationNumber}`;
 
@@ -981,6 +1022,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
   renderHeader(rxPdfData.doctorInfo, rxPdfData.hospitalAddress);
 
   if (!_isEmpty(rxPdfData.patientInfo)) {
+    doc.moveUp(1.5);
     renderpatients(rxPdfData.patientInfo, rxPdfData.appointmentDetails);
     doc.moveDown(1.5);
   }
@@ -995,7 +1037,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
     doc.moveDown(1.5);
   }
 
-  if (!_isEmpty(rxPdfData.prescriptions)) {
+  if (!_isEmpty(rxPdfData.prescriptions) || !_isEmpty(rxPdfData.removedMedicinesList)) {
     renderPrescriptions(rxPdfData.prescriptions, rxPdfData.removedMedicinesList);
     doc.moveDown(1.5);
   }

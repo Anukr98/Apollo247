@@ -19,6 +19,7 @@ const isReleaseOn = AppConfig.Configuration.ANALYTICAL_ENIVRONMENT == 'release';
 const isEnvironment = AppConfig.Configuration.LOG_ENVIRONMENT;
 
 Bugfender.init('brmAJ2pHunypOwF6EpcWyOf5mffsl2Ea');
+// Bugfender.init('CYHmWcrPEVpLXBHk2653OhhU3uHwyhwU');
 
 export const isIphone5s = () => height === 568;
 
@@ -62,19 +63,24 @@ export const CommonScreenLog = (stringName: string, parameterName: string) => {
 
 export const CommonBugFender = async (stringName: string, errorValue: Error) => {
   try {
-    const storedPhoneNumber = await AsyncStorage.getItem('phoneNumber');
-    bugsnag.notify(errorValue, function(report) {
-      report.metadata = {
-        stringName: {
-          viewSource:
-            Platform.OS === 'ios'
-              ? DEVICE_TYPE.IOS + ' ' + isEnvironment + ' ' + stringName
-              : DEVICE_TYPE.ANDROID + ' ' + isEnvironment + ' ' + stringName,
-          errorValue: errorValue as any,
-          phoneNumber: storedPhoneNumber as string,
-        },
-      };
-    });
+    // const storedPhoneNumber = await AsyncStorage.getItem('phoneNumber');
+    // bugsnag.notify(errorValue, function(report) {
+    //   report.metadata = {
+    //     stringName: {
+    //       viewSource:
+    //         Platform.OS === 'ios'
+    //           ? DEVICE_TYPE.IOS + ' ' + isEnvironment + ' ' + stringName
+    //           : DEVICE_TYPE.ANDROID + ' ' + isEnvironment + ' ' + stringName,
+    //       errorValue: errorValue as any,
+    //       phoneNumber: storedPhoneNumber as string,
+    //     },
+    //   };
+    // });
+    const phoneNumber = await AsyncStorage.getItem('phoneNumber');
+    const devicePlatform = Platform.OS === 'ios' ? 'iOS' : 'android';
+    const error = JSON.stringify(errorValue);
+    console.log('setBugFenderLog', error);
+    Bugfender.d(`${stringName} ${phoneNumber}`, `${devicePlatform} ${error}`);
   } catch (error) {
     aphConsole.log('CommonBugFender error', error);
   }

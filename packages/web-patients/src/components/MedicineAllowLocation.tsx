@@ -53,6 +53,7 @@ type AllowLocationProps = {
   setIsPopoverOpen: (isPopoverOpen: boolean) => void;
   isPopoverOpen: boolean;
   locateCurrentLocation: () => void;
+  setModeChoose: (modeChoose: string) => void;
 };
 
 export const MedicineAllowLocation: React.FC<AllowLocationProps> = (props) => {
@@ -71,6 +72,7 @@ export const MedicineAllowLocation: React.FC<AllowLocationProps> = (props) => {
         <AphButton
           onClick={() => {
             props.setIsPincodeDialogOpen(true);
+            props.setModeChoose('manual');
           }}
           title={'Enter Manualy'}
         >
@@ -80,6 +82,7 @@ export const MedicineAllowLocation: React.FC<AllowLocationProps> = (props) => {
           color="primary"
           onClick={() => {
             props.locateCurrentLocation();
+            props.setModeChoose('auto');
           }}
           title={'Allow Auto Detect'}
         >

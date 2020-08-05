@@ -266,9 +266,7 @@ export const SpecialtySearch: React.FC<SpecialtySearchProps> = (props) => {
                                   <img src={doctor.photoUrl} />
                                 </div>
                                 <div className={classes.doctorDetails}>
-                                  <Typography component="h2">
-                                    {doctor.salutation} {doctor.fullName}
-                                  </Typography>
+                                  <Typography component="h2">{doctor.fullName}</Typography>
                                   <Typography>
                                     {doctor.specialty && doctor.specialty.name
                                       ? doctor.specialty.name

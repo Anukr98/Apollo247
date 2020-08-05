@@ -600,7 +600,38 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
     });
   };
 
+  const firePurchaseEvent = (orderId: string) => {
+    let items: any = [];
+    cartItems.forEach((item, index) => {
+      let itemObj: any = {};
+      itemObj.item_name = item.name; // Product Name or Doctor Name
+      itemObj.item_id = item.id; // Product SKU or Doctor ID
+      itemObj.price = item.specialPrice ? item.specialPrice : item.price; // Product Price After discount or Doctor VC price (create another item in array for PC price)
+      itemObj.item_brand = ''; // Product brand or Apollo (for Apollo doctors) or Partner Doctors (for 3P doctors)
+      itemObj.item_category = 'Diagnostics'; // 'Pharmacy' or 'Consultations'
+      itemObj.item_category2 = ''; // FMCG or Drugs (for Pharmacy) or Specialty Name (for Consultations)
+      itemObj.item_variant = item.collectionMethod; // "Default" (for Pharmacy) or Virtual / Physcial (for Consultations)
+      itemObj.index = index + 1; // Item sequence number in the list
+      itemObj.quantity = 1; // "1" or actual quantity
+      items.push(itemObj);
+    });
+    let code: any = coupon ? coupon.code : null;
+    const eventAttributes: FirebaseEvents[FirebaseEventName.PURCHASE] = {
+      coupon: code,
+      currency: 'INR',
+      items: items,
+      transaction_id: orderId,
+      value: Number(grandTotal),
+    };
+    postFirebaseEvent(FirebaseEventName.PURCHASE, eventAttributes);
+  };
+
   const handleOrderSuccess = (orderId: string, displayId: string) => {
+    try {
+      firePurchaseEvent(orderId);
+    } catch (error) {
+      console.log(error);
+    }
     props.navigation.dispatch(
       StackActions.reset({
         index: 0,

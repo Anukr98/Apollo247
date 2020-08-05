@@ -6,7 +6,7 @@ export interface MedicineProduct {
   id: number;
   category_id: string;
   image: string | null;
-  is_in_stock: number;
+  is_in_stock: 0 | 1;
   is_prescription_required: '0' | '1'; //1 for required
   name: string;
   price: number;
@@ -15,7 +15,7 @@ export interface MedicineProduct {
   small_image?: string | null;
   status: number;
   thumbnail: string | null;
-  type_id: 'Fmcg' | 'Pharma';
+  type_id: 'FMCG' | 'Pharma' | 'PL';
   mou: string; // minimum order unit
   manufacturer: string;
   PharmaOverview: PharmaOverview[];
@@ -44,6 +44,15 @@ export interface MedicineProductDetails extends MedicineProduct {
 export interface MedicineProductDetailsResponse {
   productdp: MedicineProductDetails[];
   message?: string;
+}
+
+export interface MedicineOrderBilledItem {
+  batchId: string;
+  issuedQty: number;
+  itemId: string;
+  itemName: string;
+  mou: number;
+  mrp: number;
 }
 
 export interface MedicineProductsResponse {
@@ -106,6 +115,12 @@ export interface GetStoreInventoryResponse {
   }[];
 }
 
+export interface TatApiInput {
+  postalcode: string;
+  ordertype: 'pharma' | 'fmcg' | 'both';
+  lookup: { sku: string; qty: number }[];
+}
+
 export interface GetDeliveryTimeResponse {
   tat: {
     artCode: string;
@@ -114,6 +129,15 @@ export interface GetDeliveryTimeResponse {
   }[];
   errorMSG?: string;
 }
+
+export interface GetDeliveryTimeHeaderTatResponse {
+  tat?: {
+    deliverydate: string; // format: 16-Jul-2020 20:00
+    siteId: string;
+  }[];
+  errorMSG?: string;
+}
+
 interface MedCartItemsDetailsResponse {
   productdp: MedicineProduct[];
 }
@@ -197,22 +221,24 @@ export interface PlacesApiResponse {
 }
 
 // MedicineLandingPageAPi
-interface MedicinePageSection {
+export interface MedicinePageSection {
   category_id: string;
   title: string;
   image_url: string;
 }
-interface DealsOfTheDaySection {
+export interface DealsOfTheDaySection {
   category_id: string;
   image_url: string;
   position: number;
 }
-interface OfferBannerSection {
+export interface OfferBannerSection {
   name: string;
   status: '0' | '1';
   image: string; // full url
   start_time: string; // '2019-02-10 01:21:00';
   end_time: string;
+  category_id?: number;
+  sku?: string;
 }
 
 export interface MedicinePageAPiResponse {
@@ -221,7 +247,10 @@ export interface MedicinePageAPiResponse {
   deals_of_the_day: DealsOfTheDaySection[];
   shop_by_category: MedicinePageSection[];
   shop_by_brand: MedicinePageSection[];
-  hot_sellers?: { products: MedicineProduct[] };
+  hot_sellers?: { products: MedicineProduct[]; category_id?: number };
+  monsoon_essentials?: { products: MedicineProduct[]; category_id?: number };
+  widget_2?: { products: MedicineProduct[]; category_id?: number };
+  widget_3?: { products: MedicineProduct[]; category_id?: number };
 }
 
 export interface PackageInclusion {
@@ -492,11 +521,9 @@ export const autoCompletePlaceSearch = (
 
 let cancelGetDeliveryTimeApi: Canceler | undefined;
 
-export const getDeliveryTime = (params: {
-  postalcode: string;
-  ordertype: 'pharma' | 'fmcg' | 'both';
-  lookup: { sku: string; qty: number }[];
-}): Promise<AxiosResponse<GetDeliveryTimeResponse>> => {
+export const getDeliveryTime = (
+  params: TatApiInput
+): Promise<AxiosResponse<GetDeliveryTimeResponse>> => {
   const CancelToken = Axios.CancelToken;
   cancelGetDeliveryTimeApi && cancelGetDeliveryTimeApi();
   return Axios.post(config.GET_DELIVERY_TIME[0], params, {
@@ -507,6 +534,25 @@ export const getDeliveryTime = (params: {
     cancelToken: new CancelToken((c) => {
       // An executor function receives a cancel function as a parameter
       cancelGetDeliveryTimeApi = c;
+    }),
+  });
+};
+
+let cancelDeliveryTimeHeaderTatApi: Canceler | undefined;
+
+export const getDeliveryTimeHeaderTat = (
+  params: TatApiInput
+): Promise<AxiosResponse<GetDeliveryTimeResponse>> => {
+  const CancelToken = Axios.CancelToken;
+  cancelDeliveryTimeHeaderTatApi && cancelDeliveryTimeHeaderTatApi();
+  return Axios.post(config.GET_DELIVERY_TIME_HEADER_TAT[0], params, {
+    headers: {
+      Authentication: config.GET_DELIVERY_TIME_HEADER_TAT[1],
+    },
+    timeout: config.TAT_API_TIMEOUT_IN_SEC * 1000,
+    cancelToken: new CancelToken((c) => {
+      // An executor function receives a cancel function as a parameter
+      cancelDeliveryTimeHeaderTatApi = c;
     }),
   });
 };
@@ -622,4 +668,16 @@ export const getTxnStatus = (orderID: string): Promise<AxiosResponse<any>> => {
   const baseUrl = AppConfig.Configuration.CONSULT_PG_BASE_URL;
   const url = `${baseUrl}/transaction-status`;
   return Axios.post(url, { orderID: orderID });
+};
+
+export const fetchConsultCoupons = (): Promise<AxiosResponse<any>> => {
+  const baseUrl = AppConfig.Configuration.CONSULT_COUPON_BASE_URL;
+  const url = `${baseUrl}/frontend`;
+  return Axios.get(url);
+};
+
+export const validateConsultCoupon = (data: any): Promise<AxiosResponse<any>> => {
+  const baseUrl = AppConfig.Configuration.CONSULT_COUPON_BASE_URL;
+  const url = `${baseUrl}/validate`;
+  return Axios.post(url, data);
 };

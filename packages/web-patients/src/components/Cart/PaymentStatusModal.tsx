@@ -14,7 +14,7 @@ import { PHRAMA_PAYMENT_STATUS } from 'graphql/medicines';
 import { OrderStatusContent } from '../OrderStatusContent';
 import { OrderPlaced } from 'components/Cart/OrderPlaced';
 import { getPaymentMethodFullName } from 'helpers/commonHelpers';
-import { paymentStatusTracking } from 'webEngageTracking';
+import { paymentStatusTracking, pharmacyCheckoutTracking } from 'webEngageTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -139,6 +139,7 @@ export const PaymentStatusModal: React.FC<PaymentStatusProps> = (props) => {
   };
   const handleOnClose = () => {
     localStorage.removeItem('selectedPaymentMode');
+    sessionStorage.removeItem('pharmacyCheckoutValues');
     paymentStatusRedirect(clientRoutes.medicines());
   };
   const paymentStatusRedirect = (url: string) => {
@@ -157,7 +158,7 @@ export const PaymentStatusModal: React.FC<PaymentStatusProps> = (props) => {
       })
         .then((resp: any) => {
           if (resp && resp.data && resp.data.pharmaPaymentStatus) {
-            const { paymentStatus, paymentRefId } = resp.data.pharmaPaymentStatus;
+            const { paymentRefId, amountPaid, paymentMode } = resp.data.pharmaPaymentStatus;
             setPaymentStatusData(resp.data.pharmaPaymentStatus);
             /* WebEngage Tracking Start*/
             paymentRefId &&
@@ -169,6 +170,23 @@ export const PaymentStatusModal: React.FC<PaymentStatusProps> = (props) => {
                   typeof params.orderAutoId === 'string'
                     ? parseInt(params.orderAutoId)
                     : params.orderAutoId,
+              });
+            const pharmacyCheckoutValues = sessionStorage.getItem('pharmacyCheckoutValues')
+              ? JSON.parse(sessionStorage.getItem('pharmacyCheckoutValues'))
+              : {};
+            resp.data.pharmaPaymentStatus.paymentStatus === 'PAYMENT_SUCCESS' &&
+              pharmacyCheckoutTracking({
+                orderId:
+                  typeof params.orderAutoId === 'string'
+                    ? parseInt(params.orderAutoId)
+                    : params.orderAutoId,
+                payStatus: 'success',
+                payType: paymentMode,
+                serviceArea: 'pharmacy',
+                shippingInfo: '',
+                grandTotal: pharmacyCheckoutValues && pharmacyCheckoutValues.grandTotal,
+                discountAmount: pharmacyCheckoutValues && pharmacyCheckoutValues.discountAmount,
+                netAfterDiscount: amountPaid,
               });
             /* WebEngage Tracking End*/
           } else {
@@ -201,67 +219,67 @@ export const PaymentStatusModal: React.FC<PaymentStatusProps> = (props) => {
                 <CircularProgress />
               </div>
             ) : (
-                <OrderStatusContent
-                  paymentStatus={paymentStatus}
-                  paymentInfo={paymentDetail ? paymentDetail.info : ''}
-                  orderStatusCallback={paymentDetail ? paymentDetail.callbackFunction : () => { }}
-                  orderId={Number(params.orderAutoId)}
-                  amountPaid={paymentStatusData.amountPaid}
-                  // paymentType={paymentStatusData.paymentRefId ? 'Prepaid': 'COD'}
-                  paymentType={
-                    getPaymentMethodFullName(paymentStatusData.paymentMode) ||
-                    _startCase(_camelCase(localStorage.getItem('selectedPaymentMode')))
-                  }
-                  paymentRefId={paymentStatusData.paymentRefId}
-                  paymentDateTime={moment(
-                    paymentStatusData.orderDateTime
-                      ? paymentStatusData.orderDateTime
-                      : paymentStatusData.paymentDateTime
-                  )
-                    .format('DD MMMM YYYY[,] LT')
-                    .replace(/(A|P)(M)/, '$1.$2.')
-                    .toString()}
-                  type="ORDER"
-                  onClose={() => {
-                    handleOnClose();
-                  }}
-                  ctaText={paymentDetail ? paymentDetail.ctaText : ''}
-                />
-              )}
+              <OrderStatusContent
+                paymentStatus={paymentStatus}
+                paymentInfo={paymentDetail ? paymentDetail.info : ''}
+                orderStatusCallback={paymentDetail ? paymentDetail.callbackFunction : () => {}}
+                orderId={Number(params.orderAutoId)}
+                amountPaid={paymentStatusData.amountPaid}
+                // paymentType={paymentStatusData.paymentRefId ? 'Prepaid': 'COD'}
+                paymentType={
+                  getPaymentMethodFullName(paymentStatusData.paymentMode) ||
+                  _startCase(_camelCase(localStorage.getItem('selectedPaymentMode')))
+                }
+                paymentRefId={paymentStatusData.paymentRefId}
+                paymentDateTime={moment(
+                  paymentStatusData.orderDateTime
+                    ? paymentStatusData.orderDateTime
+                    : paymentStatusData.paymentDateTime
+                )
+                  .format('DD MMMM YYYY[,] LT')
+                  .replace(/(A|P)(M)/, '$1.$2.')
+                  .toString()}
+                type="ORDER"
+                onClose={() => {
+                  handleOnClose();
+                }}
+                ctaText={paymentDetail ? paymentDetail.ctaText : ''}
+              />
+            )}
           </>
         </Modal>
       ) : (
-          <Route
-            render={({ history }) => (
-              <Popover
-                open={showOrderPopup}
-                onClose={() => {
-                  setShowOrderPopup(false);
-                  history.push(clientRoutes.medicines());
-                }}
-                anchorEl={props.addToCartRef.current}
-                anchorOrigin={{
-                  vertical: 'bottom',
-                  horizontal: 'right',
-                }}
-                transformOrigin={{
-                  vertical: 'top',
-                  horizontal: 'right',
-                }}
-                classes={{ paper: classes.bottomPopover }}
-              >
-                <div className={classes.successPopoverWindow}>
-                  <div className={classes.windowWrap}>
-                    <div className={classes.mascotIcon}>
-                      <img src={require('images/ic-mascot.png')} alt="" />
-                    </div>
-                    <OrderPlaced setShowOrderPopup={setShowOrderPopup} />
+        <Route
+          render={({ history }) => (
+            <Popover
+              open={showOrderPopup}
+              onClose={() => {
+                setShowOrderPopup(false);
+                history.push(clientRoutes.medicines());
+              }}
+              anchorEl={props.addToCartRef.current}
+              anchorOrigin={{
+                vertical: 'bottom',
+                horizontal: 'right',
+              }}
+              transformOrigin={{
+                vertical: 'top',
+                horizontal: 'right',
+              }}
+              classes={{ paper: classes.bottomPopover }}
+            >
+              <div className={classes.successPopoverWindow}>
+                <div className={classes.windowWrap}>
+                  <div className={classes.mascotIcon}>
+                    <img src={require('images/ic-mascot.png')} alt="" />
                   </div>
+                  <OrderPlaced setShowOrderPopup={setShowOrderPopup} />
                 </div>
-              </Popover>
-            )}
-          />
-        )}
+              </div>
+            </Popover>
+          )}
+        />
+      )}
     </>
   );
 };

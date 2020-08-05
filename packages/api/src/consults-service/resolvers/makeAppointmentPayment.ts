@@ -220,6 +220,7 @@ const makeAppointmentPayment: Resolver<
       };
       await acceptCoupon(payload);
     }
+
     //check if any appointment already exists in this slot before confirming payment
     const apptCount = await apptsRepo.checkIfAppointmentExistWithId(
       processingAppointment.doctorId,
@@ -235,7 +236,7 @@ const makeAppointmentPayment: Resolver<
         `${JSON.stringify(processingAppointment)}`,
         'true'
       );
-      await apptsRepo.systemCancelAppointment(processingAppointment.id);
+      await apptsRepo.systemCancelAppointment(processingAppointment.id, processingAppointment);
       let isRefunded: boolean = false;
       if (paymentInfo.amountPaid && paymentInfo.amountPaid >= 1) {
         let refundResponse = await initiateRefund(
@@ -435,10 +436,14 @@ const makeAppointmentPayment: Resolver<
   paymentInfo.paymentStatus = paymentInput.paymentStatus;
   paymentInfo.responseCode = paymentInput.responseCode;
   paymentInfo.responseMessage = paymentInput.responseMessage;
-  await apptsRepo.updateAppointment(processingAppointment.id, {
-    status: appointmentStatus,
-    paymentInfo,
-  });
+  await apptsRepo.updateAppointment(
+    processingAppointment.id,
+    {
+      status: appointmentStatus,
+      paymentInfo,
+    },
+    processingAppointment
+  );
   processingAppointment.status = appointmentStatus;
   paymentInfo.appointment = processingAppointment;
   return { appointment: paymentInfo, isRefunded: false };

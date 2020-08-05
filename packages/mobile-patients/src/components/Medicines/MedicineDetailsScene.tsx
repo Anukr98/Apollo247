@@ -27,6 +27,7 @@ import {
   getSubstitutes,
   MedicineProduct,
   MedicineProductDetails,
+  pinCodeServiceabilityApi,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   aphConsole,
@@ -67,6 +68,7 @@ import {
   WebEngageEvents,
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import { useAllCurrentPatients } from '../../hooks/authHooks';
 
 const { width, height } = Dimensions.get('window');
 
@@ -165,10 +167,6 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
   },
-  imagePlaceholderStyle: {
-    backgroundColor: '#f0f1ec',
-    borderRadius: 5,
-  },
   iconOrImageContainerStyle: {
     alignItems: 'center',
     justifyContent: 'center',
@@ -218,7 +216,8 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   const [medicineDetails, setmedicineDetails] = useState<MedicineProductDetails>(
     {} as MedicineProductDetails
   );
-  const { locationDetails, pharmacyLocation } = useAppCommonData();
+  const { locationDetails, pharmacyLocation, isPharmacyLocationServiceable } = useAppCommonData();
+  const { currentPatient } = useAllCurrentPatients();
   const pharmacyPincode = g(pharmacyLocation, 'pincode') || g(locationDetails, 'pincode');
 
   const [apiError, setApiError] = useState<boolean>(false);
@@ -406,7 +405,8 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       isInStock: true,
     });
     postwebEngageAddToCartEvent(item, 'Pharmacy PDP');
-    postAppsFlyerAddToCartEvent(item, 'Pharmacy PDP');
+    let id = currentPatient && currentPatient.id ? currentPatient.id : '';
+    postAppsFlyerAddToCartEvent(item, id);
   };
 
   const updateQuantityCartItem = ({ sku }: MedicineProduct) => {
@@ -416,19 +416,40 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     });
   };
 
-  const fetchDeliveryTime = () => {
+  const fetchDeliveryTime = async () => {
+    if (!pincode) return;
+    const eventAttributes: WebEngageEvents[WebEngageEventName.PRODUCT_DETAIL_PINCODE_CHECK] = {
+      'product id': sku,
+      'product name': medicineDetails.name,
+      pincode: Number(pincode),
+      'customer id': currentPatient && currentPatient.id ? currentPatient.id : '',
+    };
+    postWebEngageEvent(WebEngageEventName.PRODUCT_DETAIL_PINCODE_CHECK, eventAttributes);
     const unServiceableMsg = 'Sorry, not serviceable in your area.';
     const genericServiceableDate = moment()
       .add(2, 'days')
       .set('hours', 20)
       .set('minutes', 0)
       .format('DD-MMM-YYYY hh:mm');
-
     Keyboard.dismiss();
     setshowDeliverySpinner(true);
+
+    // To handle deeplink scenario and
+    // If we performed pincode serviceability check already in Medicine Home Screen and the current pincode is same as Pharma pincode
+    const pinCodeNotServiceable =
+      isPharmacyLocationServiceable == undefined
+        ? !(await pinCodeServiceabilityApi(pincode)).data.Availability
+        : pharmacyPincode == pincode && !isPharmacyLocationServiceable;
+    if (pinCodeNotServiceable) {
+      setdeliveryTime('');
+      setdeliveryError(unServiceableMsg);
+      setshowDeliverySpinner(false);
+      return;
+    }
+
     getDeliveryTime({
       postalcode: pincode,
-      ordertype: medicineDetails.type_id == 'Fmcg' ? 'fmcg' : 'pharma',
+      ordertype: (medicineDetails.type_id || '').toLowerCase() == 'pharma' ? 'pharma' : 'fmcg',
       lookup: [
         {
           sku: sku,
@@ -703,6 +724,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
             >
               {!!medicineDetails.image ? (
                 <Image
+                  placeholderStyle={theme.viewStyles.imagePlaceholderStyle}
                   source={{
                     uri: AppConfig.Configuration.IMAGES_BASE_URL[0] + medicineDetails.image,
                   }}
@@ -798,7 +820,13 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
         <TabsComponent
           data={data}
           selectedTab={selectedTab}
-          onChange={(selectedTab) => setselectedTab(selectedTab)}
+          onChange={(selectedTab) => {
+            const eventAttributes: WebEngageEvents[WebEngageEventName.PRODUCT_DETAIL_TAB_CLICKED] = {
+              tabName: selectedTab,
+            };
+            postWebEngageEvent(WebEngageEventName.PRODUCT_DETAIL_TAB_CLICKED, eventAttributes);
+            setselectedTab(selectedTab);
+          }}
           scrollable={true}
           tabViewStyle={{ width: 'auto' }}
           selectedTitleStyle={theme.viewStyles.text('SB', 14, theme.colors.LIGHT_BLUE)}
@@ -861,7 +889,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       <View style={styles.iconOrImageContainerStyle}>
         {data.image ? (
           <Image
-            placeholderStyle={styles.imagePlaceholderStyle}
+            placeholderStyle={theme.viewStyles.imagePlaceholderStyle}
             source={{ uri: AppConfig.Configuration.IMAGES_BASE_URL[0] + data.image }}
             style={{ height: 40, width: 40 }}
             resizeMode="contain"
@@ -1106,6 +1134,14 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
                   <TouchableOpacity
                     style={styles.textViewStyle}
                     onPress={() => {
+                      const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_PRODUCT_DETAIL_SUBSTITUTE_CLICKED] = {
+                        'product id': item.sku,
+                        'product name': item.name,
+                      };
+                      postWebEngageEvent(
+                        WebEngageEventName.PHARMACY_PRODUCT_DETAIL_SUBSTITUTE_CLICKED,
+                        eventAttributes
+                      );
                       CommonLogEvent(
                         AppRoutes.MedicineDetailsScene,
                         'Navigate to Medicine Details scene with sku'

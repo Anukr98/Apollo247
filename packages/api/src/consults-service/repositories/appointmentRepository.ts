@@ -110,12 +110,33 @@ export class AppointmentRepository extends Repository<Appointment> {
     });
   }
 
-  updatePatientType(appt: Appointment, patientType: PATIENT_TYPE) {
-    this.update(appt.id, { patientType }).catch((getApptError) => {
-      throw new AphError(AphErrorMessages.UPDATE_APPOINTMENT_ERROR, undefined, {
-        getApptError,
-      });
+  /**
+   * One stop method to create/update appointments
+   * This was needed in order to always pass the @BeforeUpdate hook in index.ts
+   * and prevent certain status/states to change after they have reached a final status/states
+   * Check out the hook in index.ts for more context around the code that does that
+   */
+  createUpdateAppointment(
+    appt: Appointment,
+    updateDetails: Partial<Appointment>,
+    errorType: AphErrorMessages
+  ): Promise<Appointment> {
+    const appointment = this.create(appt);
+    Object.assign(appointment, { ...updateDetails });
+    return appointment.save().catch((appointmentError) => {
+      throw new AphError(errorType, undefined, { appointmentError });
     });
+  }
+
+  updatePatientType(appt: Appointment, patientType: PATIENT_TYPE) {
+    return this.createUpdateAppointment(
+      appt,
+      {
+        id: appt.id,
+        patientType,
+      },
+      AphErrorMessages.UPDATE_APPOINTMENT_ERROR
+    );
   }
 
   getAppointmentsByDocId(doctorId: string) {
@@ -331,12 +352,15 @@ export class AppointmentRepository extends Repository<Appointment> {
     });
   }
 
-  updateAppointment(id: string, appointmentInfo: Partial<Appointment>) {
-    return this.update(id, appointmentInfo).catch((getErrors) => {
-      throw new AphError(AphErrorMessages.UPDATE_APPOINTMENT_ERROR, undefined, {
-        getErrors,
-      });
-    });
+  updateAppointment(id: string, appointmentInfo: Partial<Appointment>, apptDetails: Appointment) {
+    return this.createUpdateAppointment(
+      apptDetails,
+      {
+        id,
+        ...appointmentInfo,
+      },
+      AphErrorMessages.UPDATE_APPOINTMENT_ERROR
+    );
   }
 
   findAppointmentPayment(id: string) {
@@ -851,9 +875,9 @@ export class AppointmentRepository extends Repository<Appointment> {
         .getUTCHours()
         .toString()
         .padStart(2, '0')}:${appointmentDate
-        .getUTCMinutes()
-        .toString()
-        .padStart(2, '0')}:00.000Z`;
+          .getUTCMinutes()
+          .toString()
+          .padStart(2, '0')}:00.000Z`;
       console.log(availableSlots, 'availableSlots final list');
       console.log(availableSlots.indexOf(sl), 'indexof');
       console.log(checkStart, checkEnd, 'check start end');
@@ -1011,9 +1035,9 @@ export class AppointmentRepository extends Repository<Appointment> {
             .getUTCHours()
             .toString()
             .padStart(2, '0')}:${doctorAppointment.appointmentDateTime
-            .getUTCMinutes()
-            .toString()
-            .padStart(2, '0')}:00.000Z`;
+              .getUTCMinutes()
+              .toString()
+              .padStart(2, '0')}:00.000Z`;
           if (availableSlots.indexOf(aptSlot) >= 0) {
             availableSlots.splice(availableSlots.indexOf(aptSlot), 1);
           }
@@ -1051,37 +1075,40 @@ export class AppointmentRepository extends Repository<Appointment> {
     else return 0;
   }
 
-  updateAppointmentStatus(id: string, status: STATUS, isSeniorConsultStarted: boolean) {
-    this.update(id, { status, isSeniorConsultStarted }).catch((createErrors) => {
-      throw new AphError(AphErrorMessages.UPDATE_APPOINTMENT_ERROR, undefined, { createErrors });
-    });
+  async updateAppointmentStatus(
+    id: string,
+    status: STATUS,
+    isSeniorConsultStarted: boolean,
+    apptDetails: Appointment
+  ) {
+    return this.createUpdateAppointment(
+      apptDetails,
+      {
+        id,
+        status,
+        isSeniorConsultStarted,
+      },
+      AphErrorMessages.UPDATE_APPOINTMENT_ERROR
+    );
   }
 
   updateSDAppointmentStatus(
     id: string,
     status: STATUS,
     isSeniorConsultStarted: boolean,
-    sdConsultationDate: Date
+    sdConsultationDate: Date,
+    apptDetails: Appointment
   ) {
-    this.update(id, { status, isSeniorConsultStarted, sdConsultationDate }).catch(
-      (createErrors) => {
-        throw new AphError(AphErrorMessages.UPDATE_APPOINTMENT_ERROR, undefined, { createErrors });
-      }
+    return this.createUpdateAppointment(
+      apptDetails,
+      {
+        id,
+        status,
+        isSeniorConsultStarted,
+        sdConsultationDate,
+      },
+      AphErrorMessages.UPDATE_APPOINTMENT_ERROR
     );
-  }
-
-  updateAppointmentStatusUsingOrderId(
-    paymentOrderId: string,
-    status: STATUS,
-    isSeniorConsultStarted: boolean
-  ) {
-    this.update(paymentOrderId, { status, isSeniorConsultStarted }).catch((createErrors) => {
-      throw new AphError(AphErrorMessages.UPDATE_APPOINTMENT_ERROR, undefined, { createErrors });
-    });
-  }
-
-  confirmAppointment(id: string, status: STATUS, apolloAppointmentId: number) {
-    this.update(id, { status, apolloAppointmentId });
   }
 
   patientLog(
@@ -1136,9 +1163,16 @@ export class AppointmentRepository extends Repository<Appointment> {
     return results.getRawMany();
   }
 
-  updateTransferState(id: string, appointmentState: APPOINTMENT_STATE) {
-    //this.update(id, { appointmentState, isConsultStarted: false, isSeniorConsultStarted: false });
-    this.update(id, { appointmentState, isSeniorConsultStarted: false });
+  updateTransferState(id: string, appointmentState: APPOINTMENT_STATE, apptDetails: Appointment) {
+    return this.createUpdateAppointment(
+      apptDetails,
+      {
+        id,
+        appointmentState,
+        isSeniorConsultStarted: false,
+      },
+      AphErrorMessages.UPDATE_APPOINTMENT_ERROR
+    );
   }
 
   checkDoctorAppointmentByDate(doctorId: string, appointmentDateTime: Date) {
@@ -1149,20 +1183,20 @@ export class AppointmentRepository extends Repository<Appointment> {
     id: string,
     appointmentDateTime: Date,
     rescheduleCount: number,
-    appointmentState: APPOINTMENT_STATE
+    appointmentState: APPOINTMENT_STATE,
+    apptDetails: Appointment
   ) {
-    return this.update(id, {
-      appointmentDateTime,
-      rescheduleCount,
-      appointmentState,
-      status: STATUS.PENDING,
-    });
-  }
-
-  updateJdQuestionStatus(id: string, isJdQuestionsComplete: boolean) {
-    return this.update(id, {
-      isJdQuestionsComplete,
-    });
+    return this.createUpdateAppointment(
+      apptDetails,
+      {
+        id,
+        appointmentDateTime,
+        rescheduleCount,
+        appointmentState,
+        status: STATUS.PENDING,
+      },
+      AphErrorMessages.RESCHEDULE_APPOINTMENT_ERROR
+    );
   }
 
   updateJdQuestionStatusbyIds(ids: string[]) {
@@ -1180,53 +1214,61 @@ export class AppointmentRepository extends Repository<Appointment> {
     id: string,
     appointmentDateTime: Date,
     rescheduleCountByDoctor: number,
-    appointmentState: APPOINTMENT_STATE
+    appointmentState: APPOINTMENT_STATE,
+    apptDetails: Appointment
   ) {
-    return this.update(id, {
-      appointmentDateTime,
-      rescheduleCountByDoctor,
-      appointmentState,
-      status: STATUS.PENDING,
-    });
+    return this.createUpdateAppointment(
+      apptDetails,
+      {
+        id,
+        appointmentDateTime,
+        rescheduleCountByDoctor,
+        appointmentState,
+        status: STATUS.PENDING,
+      },
+      AphErrorMessages.RESCHEDULE_APPOINTMENT_ERROR
+    );
   }
 
   cancelAppointment(
     id: string,
     cancelledBy: REQUEST_ROLES,
     cancelledById: string,
-    cancelReason: string
+    cancelReason: string,
+    apptDetails: Appointment
   ) {
+    const apptUpdatePartial: Partial<Appointment> = {
+      id,
+      status: STATUS.CANCELLED,
+      cancelledBy,
+      cancelledById,
+      cancelledDate: new Date(),
+    };
+
     if (cancelledBy == REQUEST_ROLES.DOCTOR) {
-      return this.update(id, {
-        status: STATUS.CANCELLED,
-        cancelledBy,
-        cancelledById,
-        doctorCancelReason: cancelReason,
-        cancelledDate: new Date(),
-      }).catch((cancelError) => {
-        throw new AphError(AphErrorMessages.CANCEL_APPOINTMENT_ERROR, undefined, { cancelError });
-      });
+      apptUpdatePartial['doctorCancelReason'] = cancelReason;
     } else {
-      return this.update(id, {
-        status: STATUS.CANCELLED,
-        cancelledBy,
-        cancelledById,
-        patientCancelReason: cancelReason,
-        cancelledDate: new Date(),
-      }).catch((cancelError) => {
-        throw new AphError(AphErrorMessages.CANCEL_APPOINTMENT_ERROR, undefined, { cancelError });
-      });
+      apptUpdatePartial['patientCancelReason'] = cancelReason;
     }
+
+    return this.createUpdateAppointment(
+      apptDetails,
+      apptUpdatePartial,
+      AphErrorMessages.CANCEL_APPOINTMENT_ERROR
+    );
   }
 
-  systemCancelAppointment(id: string) {
-    return this.update(id, {
-      status: STATUS.CANCELLED,
-      cancelledBy: REQUEST_ROLES.SYSTEM,
-      cancelledDate: new Date(),
-    }).catch((cancelError) => {
-      throw new AphError(AphErrorMessages.CANCEL_APPOINTMENT_ERROR, undefined, { cancelError });
-    });
+  systemCancelAppointment(id: string, apptDetails: Appointment) {
+    return this.createUpdateAppointment(
+      apptDetails,
+      {
+        id,
+        cancelledBy: REQUEST_ROLES.SYSTEM,
+        cancelledDate: new Date(),
+        status: STATUS.CANCELLED,
+      },
+      AphErrorMessages.CANCEL_APPOINTMENT_ERROR
+    );
   }
 
   getAppointmentsByPatientId(patientId: string, startDate: Date, endDate: Date) {
@@ -1313,9 +1355,9 @@ export class AppointmentRepository extends Repository<Appointment> {
             .getUTCHours()
             .toString()
             .padStart(2, '0')}:${blockedSlot.start
-            .getUTCMinutes()
-            .toString()
-            .padStart(2, '0')}:00.000Z`;
+              .getUTCMinutes()
+              .toString()
+              .padStart(2, '0')}:00.000Z`;
 
           let blockedSlotsCount =
             (Math.abs(differenceInMinutes(blockedSlot.end, blockedSlot.start)) / 60) * duration;
@@ -1373,9 +1415,9 @@ export class AppointmentRepository extends Repository<Appointment> {
               .getUTCHours()
               .toString()
               .padStart(2, '0')}:${slot
-              .getUTCMinutes()
-              .toString()
-              .padStart(2, '0')}:00.000Z`;
+                .getUTCMinutes()
+                .toString()
+                .padStart(2, '0')}:00.000Z`;
           }
           console.log('start slot', slot);
 
@@ -1590,13 +1632,17 @@ export class AppointmentRepository extends Repository<Appointment> {
       order: { bookingDate: 'ASC' },
     });*/
 
-  updateConsultStarted(id: string, status: Boolean) {
-    return this.update(id, { isConsultStarted: status });
+  updateConsultStarted(id: string, status: Boolean, apptDetails: Appointment) {
+    return this.createUpdateAppointment(
+      apptDetails,
+      {
+        id,
+        isConsultStarted: status,
+      },
+      AphErrorMessages.CANCEL_APPOINTMENT_ERROR
+    );
   }
 
-  updateSeniorConsultStarted(id: string, status: Boolean) {
-    return this.update(id, { isSeniorConsultStarted: status });
-  }
   getCompletedAppointments(doctorId: string, fromDate: Date, toDate: Date, statusNumber: Number) {
     const inProgress = 'IN_PROGRESS';
     const completed = 'COMPLETED';

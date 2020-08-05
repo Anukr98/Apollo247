@@ -217,9 +217,11 @@ const addToConsultQueue: Resolver<
   AddToConsultQueueResult
 > = async (parent, { appointmentId }, context) => {
   const { cqRepo, docRepo, apptRepo, caseSheetRepo } = getRepos(context);
-  await apptRepo.findOneOrFail(appointmentId);
+  const apptDetails = await apptRepo.findOneOrFail(appointmentId);
+
   const jrDocList: JuniorDoctorsList[] = [];
   const juniorDoctorCaseSheet = await caseSheetRepo.getJuniorDoctorCaseSheet(appointmentId);
+
   if (juniorDoctorCaseSheet != null) {
     const queueResult: AddToConsultQueueResult = {
       id: 0,
@@ -245,6 +247,7 @@ const addToConsultQueue: Resolver<
     isActive: true,
   });
   let doctorId: string = '0';
+
   const nextDoctorId = await cqRepo.getNextJuniorDoctor(context.doctorsDb);
   if (nextDoctorId && nextDoctorId != '0') {
     doctorId = nextDoctorId;
@@ -253,7 +256,7 @@ const addToConsultQueue: Resolver<
   }
 
   const { id } = await cqRepo.save(cqRepo.create({ appointmentId, doctorId, isActive: true }));
-  await apptRepo.updateConsultStarted(appointmentId, true);
+  await apptRepo.updateConsultStarted(appointmentId, true, apptDetails);
 
   function getJuniorDocInfo() {
     return new Promise(async (resolve, reject) => {

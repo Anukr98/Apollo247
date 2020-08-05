@@ -17,6 +17,7 @@ import _toLower from 'lodash/toLower';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { readableParam } from 'helpers/commonHelpers';
 import { useAuth } from 'hooks/authHooks';
+import { specialtyClickTracking } from 'webEngageTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -152,7 +153,22 @@ export const PastSearches: React.FC = (props) => {
                   </li>
                 )
               : index < 4 && (
-                  <li key={`${_uniqueId('psearch_spl_')}- ${searchDetails.typeId}`}>
+                  <li
+                    key={`${_uniqueId('psearch_spl_')}- ${searchDetails.typeId}`}
+                    onClick={() => {
+                      const patientAge =
+                        new Date().getFullYear() -
+                        new Date(currentPatient && currentPatient.dateOfBirth).getFullYear();
+                      const eventData = {
+                        patientAge: patientAge,
+                        patientGender: currentPatient && currentPatient.gender,
+                        specialtyId: searchDetails.typeId,
+                        specialtyName: searchDetails.name,
+                        relation: currentPatient && currentPatient.relation,
+                      };
+                      specialtyClickTracking(eventData);
+                    }}
+                  >
                     <Link
                       to={clientRoutes.specialties(readableParam(searchDetails.name))}
                       title={searchDetails && `${_startCase(_toLower(searchDetails.name || ''))}`}

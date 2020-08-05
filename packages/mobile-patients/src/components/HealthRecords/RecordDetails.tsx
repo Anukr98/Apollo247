@@ -133,62 +133,7 @@ export const RecordDetails: React.FC<RecordDetailsProps> = (props) => {
   const { setLoading, showAphAlert, hideAphAlert } = useUIElements();
 
   useEffect(() => {
-    if (
-      data.prismFileIds ||
-      data.hospitalizationPrismFileIds ||
-      data.healthCheckPrismFileIds ||
-      data.testResultPrismFileIds
-    ) {
-      const prismFileds =
-        (data.prismFileIds && data.prismFileIds.split(',')) ||
-        (data.hospitalizationPrismFileIds &&
-          (typeof data.hospitalizationPrismFileIds === 'string'
-            ? data.hospitalizationPrismFileIds.split(',')
-            : data.hospitalizationPrismFileIds)) ||
-        (data.healthCheckPrismFileIds &&
-          (typeof data.healthCheckPrismFileIds === 'string'
-            ? data.healthCheckPrismFileIds.split(',')
-            : data.healthCheckPrismFileIds)) ||
-        (data.testResultPrismFileIds &&
-          (typeof data.testResultPrismFileIds === 'string'
-            ? data.testResultPrismFileIds.split(',')
-            : data.testResultPrismFileIds));
-      const urls = data.prescriptionImageUrl && data.prescriptionImageUrl.split(',');
-      console.log('prismFileIds', urls && urls.join(','));
-      setshowSpinner(true);
-      client
-        .query<downloadDocuments>({
-          query: DOWNLOAD_DOCUMENT,
-          fetchPolicy: 'no-cache',
-          variables: {
-            downloadDocumentsInput: {
-              patientId: currentPatient && currentPatient.id,
-              fileIds: prismFileds,
-            },
-          },
-        })
-        .then(({ data }) => {
-          setshowSpinner(false);
-          console.log(data, 'DOWNLOAD_DOCUMENT');
-          const uploadUrlscheck = data.downloadDocuments.downloadPaths!.map(
-            (item, index) => item || (urls && urls.length <= index + 1 ? urls[index] : '')
-          );
-          setPlaceImage(uploadUrlscheck);
-          console.log(uploadUrlscheck, 'DOWNLOAD_DOCUMENTcmple');
-        })
-        .catch((e) => {
-          CommonBugFender('RecordDetails_DOWNLOAD_DOCUMENT', e);
-          setshowSpinner(false);
-          console.log('Error occured', e);
-        })
-        .finally(() => {
-          setshowSpinner(false);
-        });
-    } else if (data.prescriptionImageUrl) {
-      setPlaceImage(data.prescriptionImageUrl.split(','));
-    } else {
-      setshowPopUp(true);
-    }
+    !!data.fileUrl ? setshowPopUp(false) : setshowPopUp(true);
   }, []);
 
   useEffect(() => {
@@ -260,24 +205,17 @@ export const RecordDetails: React.FC<RecordDetailsProps> = (props) => {
         >
           <View style={{ flex: 1 }}>
             <Text style={styles.doctorNameStyle}>
-              {(data.testName && data.testName) ||
-                (data.issuingDoctor && data.issuingDoctor) ||
-                (data.location && data.location) ||
-                (data.diagnosisNotes && data.diagnosisNotes) ||
-                (data.healthCheckName && data.healthCheckName) ||
+              {(data.prescriptionName && data.prescriptionName) ||
                 (data.labTestName && data.labTestName)}
             </Text>
             <Text style={styles.timeStyle}>
-              {`Check-up Date: ${moment(
-                (data.testDate && data.testDate) ||
-                  (data.dateOfHospitalization && data.dateOfHospitalization) ||
-                  (data.appointmentDate && data.appointmentDate) ||
-                  (data.labTestDate && data.labTestDate)
-              ).format('DD MMM YYYY')}\nReferring Doctor: Dr. ${
-                !!data.referringDoctor
-                  ? data.referringDoctor
-                  : !!data.signingDocName
-                  ? data.signingDocName
+              {`Check-up Date: ${moment(data.date && data.date).format(
+                'DD MMM YYYY'
+              )}\nReferring Doctor: Dr. ${
+                !!data.prescribedBy
+                  ? data.prescribedBy
+                  : !!data.labTestRefferedBy
+                  ? data.labTestRefferedBy
                   : '-'
               }`}
             </Text>
@@ -329,7 +267,7 @@ export const RecordDetails: React.FC<RecordDetailsProps> = (props) => {
               <Text style={styles.descriptionStyle}>
                 {(data.observations && data.observations) ||
                   (data.additionalNotes && data.additionalNotes) ||
-                  (data.healthCheckSummary && data.healthCheckSummary)}
+                  (data.notes && data.notes)}
               </Text>
             </View>
           </View>
@@ -349,7 +287,7 @@ export const RecordDetails: React.FC<RecordDetailsProps> = (props) => {
           <View style={{ marginTop: 11, marginBottom: 20 }}>
             {(
               (data.medicalRecordParameters && data.medicalRecordParameters) ||
-              (data.labTestResultParameters && data.labTestResultParameters)
+              (data.labTestResults && data.labTestResults)
             ).map((item: any) => {
               const unit = MedicalTest.find((itm) => itm.key === item.unit);
               return (
@@ -384,7 +322,7 @@ export const RecordDetails: React.FC<RecordDetailsProps> = (props) => {
 
   const renderImage = () => {
     // const placeImage1 = placeImage.split(',');
-    console.log(placeImage, 'placeImage1');
+    console.log(!!data.fileUrl, 'placeImage1');
     // {
     //   placeImage.map((item: string, i: number) => console.log('hi', item));
     // }
@@ -395,47 +333,45 @@ export const RecordDetails: React.FC<RecordDetailsProps> = (props) => {
         }}
       >
         <ScrollView>
-          {placeImage.map((item: string, i: number) => {
-            if (item.indexOf('.pdf') > -1) {
-              return (
-                <View key={i} style={{ marginHorizontal: 20, marginBottom: 15 }}>
-                  <Button
-                    title={
-                      'Open File' +
-                      (item.indexOf('fileName=') > -1 ? ': ' + item.split('fileName=').pop() : '')
-                    }
-                    onPress={() =>
-                      props.navigation.navigate(AppRoutes.RenderPdf, {
-                        uri: item,
-                        title: item.indexOf('fileName=') > -1 ? item.split('fileName=').pop() : '',
-                      })
-                    }
-                  ></Button>
-                </View>
-              );
-            } else {
-              return (
-                <View key={i} style={{ marginHorizontal: 20, marginBottom: 15 }}>
-                  <Image
-                    placeholderStyle={{
-                      height: 425,
-                      width: '100%',
-                      alignItems: 'center',
-                      backgroundColor: 'transparent',
-                    }}
-                    PlaceholderContent={<Spinner style={{ backgroundColor: 'transparent' }} />}
-                    source={{ uri: item }}
-                    style={{
-                      // flex: 1,
-                      width: '100%',
-                      height: 425,
-                    }}
-                    resizeMode="contain"
-                  />
-                </View>
-              );
-            }
-          })}
+          {data.fileUrl.includes('.pdf') ? (
+            <View style={{ marginHorizontal: 20, marginBottom: 15 }}>
+              <Button
+                title={
+                  'Open File' +
+                  (data.fileUrl.includes('fileName=')
+                    ? ': ' + data.fileUrl.split('fileName=').pop()
+                    : '')
+                }
+                onPress={() =>
+                  props.navigation.navigate(AppRoutes.RenderPdf, {
+                    uri: data.fileUrl,
+                    title: data.fileUrl.includes('fileName=')
+                      ? data.fileUrl.split('fileName=').pop()
+                      : '',
+                  })
+                }
+              ></Button>
+            </View>
+          ) : (
+            <View style={{ marginHorizontal: 20, marginBottom: 15 }}>
+              <Image
+                placeholderStyle={{
+                  height: 425,
+                  width: '100%',
+                  alignItems: 'center',
+                  backgroundColor: 'transparent',
+                }}
+                PlaceholderContent={<Spinner style={{ backgroundColor: 'transparent' }} />}
+                source={{ uri: data.fileUrl }}
+                style={{
+                  // flex: 1,
+                  width: '100%',
+                  height: 425,
+                }}
+                resizeMode="contain"
+              />
+            </View>
+          )}
         </ScrollView>
       </View>
     );
@@ -447,10 +383,10 @@ export const RecordDetails: React.FC<RecordDetailsProps> = (props) => {
         {(!!data.observations || !!data.additionalNotes || !!data.healthCheckSummary) &&
           renderTopLineReport()}
         {(data.medicalRecordParameters && data.medicalRecordParameters.length > 0) ||
-        (data.labTestResultParameters && data.labTestResultParameters.length > 0)
+        (data.labTestResults && data.labTestResults.length > 0)
           ? renderDetailsFinding()
           : null}
-        {placeImage && renderImage()}
+        {!!data.fileUrl ? renderImage() : null}
       </View>
     );
   };

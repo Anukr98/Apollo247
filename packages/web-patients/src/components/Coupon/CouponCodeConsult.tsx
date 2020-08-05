@@ -219,7 +219,6 @@ export const CouponCodeConsult: React.FC<ApplyCouponProps> = (props) => {
               props.setCouponCode(selectCouponCode);
               props.close(false);
               props.setValidateCouponResult(couponValidateResult);
-              setMuationLoading(false);
               /*GTM TRACKING START */
               gtmTracking({
                 category: 'Consultations',
@@ -232,17 +231,16 @@ export const CouponCodeConsult: React.FC<ApplyCouponProps> = (props) => {
               });
               /*GTM TRACKING END */
             } else {
-              setMuationLoading(false);
               setErrorMessage(couponValidateResult.reason);
             }
           } else if (data && data.errorMsg && data.errorMsg.length > 0) {
-            setMuationLoading(false);
             setErrorMessage(data.errorMsg);
           }
         })
         .catch((e) => {
           console.log(e);
-        });
+        })
+        .finally(() => setMuationLoading(false));
     }
   };
   const disableCoupon =
@@ -268,7 +266,7 @@ export const CouponCodeConsult: React.FC<ApplyCouponProps> = (props) => {
                       onChange={(e: any) => {
                         setErrorMessage('');
                         props.setValidityStatus(false);
-                        const value = e.target.value.replace(/[^a-z0-9]/gi, '');
+                        const value = e.target.value.replace(/\s/g, '');
                         setSelectCouponCode(value);
                       }}
                       placeholder="Enter coupon code"

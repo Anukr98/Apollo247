@@ -1,6 +1,7 @@
 import { createClient } from 'redis';
 import { debugLog } from 'customWinstonLogger';
 import { promisify } from 'util';
+
 const dLogger = debugLog(
   'profileServiceLogger',
   'RedisConnect',

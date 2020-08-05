@@ -98,7 +98,7 @@ export const MedicineSearchSuggestionItem: React.FC<MedicineSearchSuggestionItem
       <View style={styles.iconOrImageContainerStyle}>
         {imageUri ? (
           <Image
-            // placeholderStyle={styles.imagePlaceholderStyle}
+            placeholderStyle={theme.viewStyles.imagePlaceholderStyle}
             source={{ uri: imageUri }}
             style={{ height: 40, width: 40 }}
             resizeMode="contain"

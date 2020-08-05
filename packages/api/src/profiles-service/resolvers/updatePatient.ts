@@ -10,6 +10,7 @@ import { PatientRepository } from 'profiles-service/repositories/patientReposito
 import { sendNotificationSMS } from 'notifications-service/resolvers/notifications';
 import { trim } from 'lodash';
 import { isValidReferralCode } from '@aph/universal/dist/aphValidators';
+import { delCache } from 'profiles-service/database/connectRedis';
 
 import {
   ReferralCodesMasterRepository,
@@ -32,6 +33,7 @@ export const updatePatientTypeDefs = gql`
     photoUrl: String
     deviceCode: String
     employeeId: String
+    partnerId: String
   }
 
   input UpdatePatientAllergiesInput {
@@ -106,7 +108,9 @@ const updatePatient: Resolver<
   const updatePatient = await updateEntity<Patient>(Patient, id, updateAttrs);
   if (updatePatient) {
     if (patient.uhid == '' || patient.uhid == null) {
+      console.log('calling createNewUhid');
       await patientRepo.createNewUhid(updatePatient.id);
+      await delCache(`${REDIS_PATIENT_ID_KEY_PREFIX}${updatePatient.id}`);
     }
   }
 

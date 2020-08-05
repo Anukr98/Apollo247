@@ -12,6 +12,7 @@ import {
   StyleSheet,
   Keyboard,
   TextStyle,
+  Platform,
 } from 'react-native';
 import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
@@ -19,6 +20,9 @@ import {
   MedAndTestFeedbackPopup,
   MedAndTestFeedbackPopupProps,
 } from '@aph/mobile-patients/src/components/Medicines/MedAndTestFeedbackPopup';
+import SystemSetting from 'react-native-system-setting';
+import RNSound from 'react-native-sound';
+import AsyncStorage from '@react-native-community/async-storage';
 
 const styles = StyleSheet.create({
   okButtonStyle: {
@@ -53,12 +57,18 @@ const styles = StyleSheet.create({
   },
 });
 
+RNSound.setCategory('Playback');
+let audioTrack: RNSound | null = null;
+
 export interface UIElementsContextProps {
   loading: boolean;
   setLoading: ((isLoading: boolean) => void) | null;
   showAphAlert: ((params: AphAlertParams) => void) | null;
   hideAphAlert: (() => void) | null;
   setMedFeedback: ((feedback: MedAndTestFeedbackPopupProps['feedback']) => void) | null;
+  setPrevVolume: () => void;
+  maxVolume: () => void;
+  audioTrack: RNSound | null;
 }
 
 export const UIElementsContext = createContext<UIElementsContextProps>({
@@ -67,6 +77,9 @@ export const UIElementsContext = createContext<UIElementsContextProps>({
   showAphAlert: null,
   hideAphAlert: null,
   setMedFeedback: null,
+  setPrevVolume: () => {},
+  maxVolume: () => {},
+  audioTrack: null,
 });
 
 type AphAlertCTAs = {
@@ -112,6 +125,36 @@ export const UIElementsProvider: React.FC = (props) => {
       BackHandler.removeEventListener('hardwareBackPress', handleBack);
     };
   }, [isAlertVisible, loading]);
+
+  useEffect(() => {
+    console.log('useeffectaudiotrack');
+
+    audioTrack = new RNSound(
+      'incallmanager_ringtone.mp3',
+      Platform.OS === 'ios' ? encodeURIComponent(RNSound.MAIN_BUNDLE) : RNSound.MAIN_BUNDLE,
+      (error) => {
+        console.log('erroraudiotrack', error);
+      }
+    );
+  }, []);
+
+  const setPrevVolume = async () => {
+    const mediaVolume = Number((await AsyncStorage.getItem('mediaVolume')) || '-1');
+    if (mediaVolume !== -1) {
+      SystemSetting.setVolume(mediaVolume);
+      AsyncStorage.setItem('mediaVolume', '-1');
+    }
+  };
+  const maxVolume = async () => {
+    const mediaVolume = Number((await AsyncStorage.getItem('mediaVolume')) || '-1');
+
+    if (mediaVolume === -1) {
+      SystemSetting.getVolume().then((volume: number) => {
+        AsyncStorage.setItem('mediaVolume', volume.toString());
+      });
+    }
+    SystemSetting.setVolume(1);
+  };
 
   const handleBack = async () => {
     console.log('handleBack Called');
@@ -226,6 +269,9 @@ export const UIElementsProvider: React.FC = (props) => {
         showAphAlert,
         hideAphAlert,
         setMedFeedback,
+        setPrevVolume,
+        maxVolume,
+        audioTrack,
       }}
     >
       <View style={{ flex: 1 }}>

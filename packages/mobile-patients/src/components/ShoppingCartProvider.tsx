@@ -326,7 +326,8 @@ export const ShoppingCartProvider: React.FC = (props) => {
       ? 0
       : deliveryType == MEDICINE_DELIVERY_TYPE.HOME_DELIVERY &&
         cartTotal > 0 &&
-        cartTotal - couponDiscount < AppConfig.Configuration.MIN_CART_VALUE_FOR_FREE_DELIVERY
+        cartTotal - productDiscount - couponDiscount <
+          AppConfig.Configuration.MIN_CART_VALUE_FOR_FREE_DELIVERY
       ? AppConfig.Configuration.DELIVERY_CHARGES
       : 0;
 
@@ -336,7 +337,8 @@ export const ShoppingCartProvider: React.FC = (props) => {
     (cartTotal + deliveryCharges - couponDiscount - productDiscount).toFixed(2)
   );
 
-  const uploadPrescriptionRequired = cartItems.findIndex((item) => item.prescriptionRequired) != -1;
+  const uploadPrescriptionRequired =
+    cartItems.findIndex((item) => item.prescriptionRequired) != -1 || physicalPrescriptions.length || ePrescriptions.length;
 
   const addAddress = (address: savePatientAddress_savePatientAddress_patientAddress) => {
     setAddresses([address, ...addresses]);

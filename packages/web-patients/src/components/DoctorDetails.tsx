@@ -40,6 +40,8 @@ import { AppDownload } from 'components/Doctors/AppDownload';
 import { NavigationBottom } from 'components/NavigationBottom';
 import { GetDoctorNextAvailableSlot } from 'graphql/types/GetDoctorNextAvailableSlot';
 import { GetDoctorDetailsById_getDoctorDetailsById as DoctorDetailsType } from 'graphql/types/GetDoctorDetailsById';
+import { doctorProfileViewTracking } from 'webEngageTracking';
+import { getDiffInMinutes } from 'helpers/commonHelpers';
 
 export interface DoctorDetailsProps {
   id: string;
@@ -219,9 +221,10 @@ const TabContainer: React.FC = (props) => {
 export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const { isSignedIn } = useAuth();
   const classes = useStyles({});
-  const params = useParams<{ id: string; specialty: string }>();
-  const doctorIdLength = params && params.id && params.id.length;
-  const doctorId = doctorIdLength && params.id.slice(doctorIdLength - 36);
+  const params = useParams<{ id: string; specialty: string; name: string }>();
+  const nameId = params && params.name && params.id && params.name + '-' + params.id;
+  const nameIdLength = nameId && nameId.length;
+  const doctorId = nameIdLength && nameId.slice(nameIdLength - 36);
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
   const [tabValue, setTabValue] = useState<number>(0);
   const [isShownOnce, setIsShownOnce] = useState<boolean>(false);
@@ -241,6 +244,25 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     doctorAvailableSlots.getDoctorNextAvailableSlot.doctorAvailalbeSlots &&
     doctorAvailableSlots.getDoctorNextAvailableSlot.doctorAvailalbeSlots.length > 0 &&
     doctorAvailableSlots.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0];
+
+  useEffect(() => {
+    if (doctorSlots && doctorSlots.availableSlot) {
+      const {
+        doctorType,
+        experience,
+        fullName,
+        specialty: { name },
+      } = doctorData;
+      const eventData = {
+        availableInMins: getDiffInMinutes(doctorSlots.availableSlot),
+        docCategory: doctorType,
+        exp: experience,
+        name: fullName,
+        specialty: name,
+      };
+      doctorProfileViewTracking(eventData);
+    }
+  }, [doctorSlots, doctorData]);
 
   useEffect(() => {
     setLoading(true);
@@ -401,13 +423,24 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
               <Link className={classes.backArrow} to={clientRoutes.specialties(params.specialty)}>
                 <img src={require('images/ic_back.svg')} alt="" />
               </Link>
-              <Link to={clientRoutes.specialityListing()}>Specialities</Link>
+              <Link to={clientRoutes.welcome()}>Home</Link>
               <img src={require('images/triangle.svg')} alt="" />
-
-              <Link to={clientRoutes.specialties(params.specialty)}>Doctors</Link>
+              <Link to={clientRoutes.specialityListing()}>Specialties</Link>
               <img src={require('images/triangle.svg')} alt="" />
+              {doctorData && (
+                <>
+                  {doctorData.specialty && doctorData.specialty.name ? (
+                    <>
+                      <Link to={clientRoutes.specialties(params.specialty)}>
+                        {doctorData.specialty.name}
+                      </Link>
+                      <img src={require('images/triangle.svg')} alt="" />
+                    </>
+                  ) : null}
 
-              <span>Doctor Details</span>
+                  <span>{doctorData.fullName || ''}</span>
+                </>
+              )}
             </div>
             <div className={classes.doctorProfileSection}>
               <div className={classes.leftSection}>

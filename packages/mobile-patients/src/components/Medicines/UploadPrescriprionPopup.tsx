@@ -25,6 +25,7 @@ import {
   TouchableOpacity,
   View,
   ViewStyle,
+  Alert,
 } from 'react-native';
 import { Overlay } from 'react-native-elements';
 import ImagePicker, { Image as ImageCropPickerResponse } from 'react-native-image-crop-picker';
@@ -33,6 +34,7 @@ import {
   WebEngageEventName,
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import strings from '@aph/mobile-patients/src/strings/strings.json';
 
 const styles = StyleSheet.create({
   cardContainer: {
@@ -95,6 +97,8 @@ export interface UploadPrescriprionPopupProps {
     gallery?: string;
     prescription?: string;
   };
+  blockCamera?: boolean;
+  blockCameraMessage?: string;
   instructionHeading?: string;
   instructions?: string[];
   hideTAndCs?: boolean;
@@ -150,41 +154,48 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
   };
 
   const onClickTakePhoto = () => {
-    postUPrescriptionWEGEvent('Take a Photo');
-    CommonLogEvent('UPLAOD_PRESCRIPTION_POPUP', 'Take photo on click');
+    if (!props.blockCamera) {
+      postUPrescriptionWEGEvent('Take a Photo');
+      CommonLogEvent('UPLAOD_PRESCRIPTION_POPUP', 'Take photo on click');
 
-    const eventAttributes: WebEngageEvents['Upload Photo'] = {
-      Source: 'Take Photo',
-    };
-    postWebEngageEvent('Upload Photo', eventAttributes);
+      const eventAttributes: WebEngageEvents['Upload Photo'] = {
+        Source: 'Take Photo',
+      };
+      postWebEngageEvent('Upload Photo', eventAttributes);
 
-    setshowSpinner(true);
-    ImagePicker.openCamera({
-      // width: 400,
-      // height: 400,
-      cropping: props.isProfileImage ? true : false,
-      hideBottomControls: true,
-      width: props.isProfileImage ? 2096 : undefined,
-      height: props.isProfileImage ? 2096 : undefined,
-      includeBase64: true,
-      multiple: props.isProfileImage ? false : true,
-      compressImageQuality: 0.5,
-      compressImageMaxHeight: 2096,
-      compressImageMaxWidth: 2096,
-      writeTempFile: false,
-    })
-      .then((response) => {
-        setshowSpinner(false);
-        props.onResponse(
-          'CAMERA_AND_GALLERY',
-          formatResponse([response] as ImageCropPickerResponse[])
-        );
+      setshowSpinner(true);
+      ImagePicker.openCamera({
+        // width: 400,
+        // height: 400,
+        cropping: props.isProfileImage ? true : false,
+        hideBottomControls: true,
+        width: props.isProfileImage ? 2096 : undefined,
+        height: props.isProfileImage ? 2096 : undefined,
+        includeBase64: true,
+        multiple: props.isProfileImage ? false : true,
+        compressImageQuality: 0.5,
+        compressImageMaxHeight: 2096,
+        compressImageMaxWidth: 2096,
+        writeTempFile: false,
       })
-      .catch((e: Error) => {
-        CommonBugFender('UploadPrescriprionPopup_onClickTakePhoto', e);
-        // aphConsole.log({ e });
-        setshowSpinner(false);
-      });
+        .then((response) => {
+          setshowSpinner(false);
+          props.onResponse(
+            'CAMERA_AND_GALLERY',
+            formatResponse([response] as ImageCropPickerResponse[])
+          );
+        })
+        .catch((e: Error) => {
+          CommonBugFender('UploadPrescriprionPopup_onClickTakePhoto', e);
+          // aphConsole.log({ e });
+          setshowSpinner(false);
+        });
+    } else {
+      Alert.alert('Alert', props.blockCameraMessage || strings.alerts.Open_camera_in_video_call, [
+        { text: '' },
+        { text: 'OK, GOT IT', onPress: () => props.onClickClose() },
+      ]);
+    }
   };
 
   const onClickGallery = async () => {

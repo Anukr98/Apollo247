@@ -471,7 +471,7 @@ export const HowItWorks: React.FC = (props) => {
         </div>
       </div>
       <div className={classes.appDetails}>
-        <Typography component="h6">Consultancy works only on our mobile app</Typography>
+        <Typography component="h6">Consultation works only on our mobile app</Typography>
         <Typography>To enjoy enhanced consultation experience download our mobile app</Typography>
         <div className={classes.appDownload}>
           <img src={require('images/apollo247.png')} />
@@ -514,7 +514,7 @@ export const HowItWorks: React.FC = (props) => {
             </li>
           </ul>
           <div className={`${classes.appDetails} ${classes.appDetailsMobile}`}>
-            <Typography component="h6">Consultancy works only on our mobile app</Typography>
+            <Typography component="h6">Consultation works only on our mobile app</Typography>
             <Typography>
               To enjoy enhanced consultation experience download our mobile app
             </Typography>

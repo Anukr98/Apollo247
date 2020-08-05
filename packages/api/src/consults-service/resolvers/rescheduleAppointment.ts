@@ -231,6 +231,7 @@ const initiateRescheduleAppointment: Resolver<
 > = async (parent, { RescheduleAppointmentInput }, { consultsDb, doctorsDb, patientsDb }) => {
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const appointment = await appointmentRepo.findById(RescheduleAppointmentInput.appointmentId);
+
   if (!appointment) {
     throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
   }
@@ -257,9 +258,11 @@ const initiateRescheduleAppointment: Resolver<
 
   const rescheduleApptRepo = consultsDb.getCustomRepository(RescheduleAppointmentRepository);
   const rescheduleAppointment = await rescheduleApptRepo.saveReschedule(rescheduleAppointmentAttrs);
+
   await appointmentRepo.updateTransferState(
     RescheduleAppointmentInput.appointmentId,
-    APPOINTMENT_STATE.AWAITING_RESCHEDULE
+    APPOINTMENT_STATE.AWAITING_RESCHEDULE,
+    appointment
   );
 
   const notificationType = NotificationType.INITIATE_RESCHEDULE;
@@ -390,8 +393,10 @@ const bookRescheduleAppointment: Resolver<
         bookRescheduleAppointmentInput.appointmentId,
         REQUEST_ROLES.PATIENT,
         apptDetails.patientId,
-        'MAX_RESCHEDULES_EXCEEDED'
+        'MAX_RESCHEDULES_EXCEEDED',
+        apptDetails
       );
+
       const appointmentPayment = await appointmentRepo.findAppointmentPayment(apptDetails.id);
       if (appointmentPayment) {
         let refundResponse = await initiateRefund(
@@ -431,7 +436,8 @@ const bookRescheduleAppointment: Resolver<
         bookRescheduleAppointmentInput.appointmentId,
         bookRescheduleAppointmentInput.newDateTimeslot,
         apptDetails.rescheduleCount + 1,
-        APPOINTMENT_STATE.RESCHEDULE
+        APPOINTMENT_STATE.RESCHEDULE,
+        apptDetails
       );
       // update on ES, should update new slot to booked and previous slot to open
       //open old slot
@@ -466,8 +472,10 @@ const bookRescheduleAppointment: Resolver<
         bookRescheduleAppointmentInput.appointmentId,
         REQUEST_ROLES.PATIENT,
         apptDetails.patientId,
-        'MAX_RESCHEDULES_EXCEEDED'
+        'MAX_RESCHEDULES_EXCEEDED',
+        apptDetails
       );
+
       const appointmentPayment = await appointmentRepo.findAppointmentPayment(apptDetails.id);
       if (appointmentPayment) {
         let refundResponse = await initiateRefund(
@@ -507,7 +515,8 @@ const bookRescheduleAppointment: Resolver<
         bookRescheduleAppointmentInput.appointmentId,
         bookRescheduleAppointmentInput.newDateTimeslot,
         apptDetails.rescheduleCountByDoctor + 1,
-        APPOINTMENT_STATE.RESCHEDULE
+        APPOINTMENT_STATE.RESCHEDULE,
+        apptDetails
       );
       // update on ES, should update new slot to booked and previous slot to open
       //open old slot
@@ -645,19 +654,19 @@ const bookRescheduleAppointment: Resolver<
     notificationType: NotificationType.ACCEPT_RESCHEDULED_APPOINTMENT,
   };
   if (bookRescheduleAppointmentInput.initiatedBy == TRANSFER_INITIATED_TYPE.DOCTOR) {
-    const notificationResult = await sendNotification(
-      pushNotificationInput,
-      patientsDb,
-      consultsDb,
-      doctorsDb
-    );
-    console.log(notificationResult, 'appt rescheduled notification');
+    // const notificationResult = await sendNotification(
+    //   pushNotificationInput,
+    //   patientsDb,
+    //   consultsDb,
+    //   doctorsDb
+    // );
+    //console.log(notificationResult, 'appt rescheduled notification');
   }
   if ((bookRescheduleAppointmentInput.initiatedBy = TRANSFER_INITIATED_TYPE.PATIENT)) {
-    const pushNotificationInput = {
-      appointmentId: bookRescheduleAppointmentInput.appointmentId,
-      notificationType: NotificationType.RESCHEDULE_APPOINTMENT_BY_PATIENT,
-    };
+    // const pushNotificationInput = {
+    //   appointmentId: bookRescheduleAppointmentInput.appointmentId,
+    //   notificationType: NotificationType.RESCHEDULE_APPOINTMENT_BY_PATIENT,
+    // };
     const notificationResult = await sendNotification(
       pushNotificationInput,
       patientsDb,

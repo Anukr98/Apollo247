@@ -22,10 +22,11 @@ export const createPatientTypeDefs = gql`
     WEB
     MOBILE
     ORDER_PUNCHING_TOOL
+    MFINE
   }
 
   type CreatePatientResult {
-    patient: Patient
+    patient: [Patient]
   }
 
   extend type Mutation {
@@ -34,7 +35,7 @@ export const createPatientTypeDefs = gql`
 `;
 
 type CreatePatientResult = {
-  patient: Patient;
+  patient: Patient[];
 };
 
 type CrteatePatientArgs = { createPatientInput: Partial<Patient> };
@@ -64,7 +65,6 @@ const createPatient: Resolver<
     },
     createPatientInput
   );
-
   return { patient };
 };
 

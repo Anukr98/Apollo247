@@ -26,6 +26,7 @@ import {
   g,
   postWebEngageEvent,
   postAppsFlyerEvent,
+  postFirebaseEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import moment from 'moment';
 import { WebView } from 'react-native-webview';
@@ -33,7 +34,12 @@ import {
   WebEngageEvents,
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
-import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
+import {
+  AppsFlyerEventName,
+  AppsFlyerEvents,
+} from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
+import { FirebaseEvents, FirebaseEventName } from '../helpers/firebaseEvents';
+import { ShoppingCartItem } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 
 const styles = StyleSheet.create({
   popupButtonStyle: {
@@ -61,6 +67,9 @@ export interface PaymentSceneProps
     paymentTypeID: string;
     bankCode: any;
     checkoutEventAttributes?: WebEngageEvents[WebEngageEventName.PHARMACY_CHECKOUT_COMPLETED];
+    appsflyerEventAttributes: AppsFlyerEvents[AppsFlyerEventName.PHARMACY_CHECKOUT_COMPLETED];
+    coupon: any;
+    cartItems: ShoppingCartItem[];
   }> {}
 
 export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
@@ -73,6 +82,9 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
   const paymentTypeID = props.navigation.getParam('paymentTypeID');
   const bankCode = props.navigation.getParam('bankCode');
   const checkoutEventAttributes = props.navigation.getParam('checkoutEventAttributes');
+  const appsflyerEventAttributes = props.navigation.getParam('appsflyerEventAttributes');
+  const coupon = props.navigation.getParam('coupon');
+  const cartItems = props.navigation.getParam('cartItems');
   const { currentPatient } = useAllCurrentPatients();
   const currentPatiendId = currentPatient && currentPatient.id;
   const [isRemindMeChecked, setIsRemindMeChecked] = useState(true);
@@ -126,6 +138,31 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
     });
   };
 
+  const firePurchaseEvent = () => {
+    let items: any = [];
+    cartItems.forEach((item, index) => {
+      let itemObj: any = {};
+      itemObj.item_name = item.name; // Product Name or Doctor Name
+      itemObj.item_id = item.id; // Product SKU or Doctor ID
+      itemObj.price = item.specialPrice ? item.specialPrice : item.price; // Product Price After discount or Doctor VC price (create another item in array for PC price)
+      itemObj.item_brand = ''; // Product brand or Apollo (for Apollo doctors) or Partner Doctors (for 3P doctors)
+      itemObj.item_category = 'Pharmacy'; // 'Pharmacy' or 'Consultations'
+      itemObj.item_category2 = item.isMedicine ? 'Drug' : 'FMCG'; // FMCG or Drugs (for Pharmacy) or Specialty Name (for Consultations)
+      itemObj.item_variant = 'Default'; // "Default" (for Pharmacy) or Virtual / Physcial (for Consultations)
+      itemObj.index = index + 1; // Item sequence number in the list
+      itemObj.quantity = item.quantity; // "1" or actual quantity
+      items.push(itemObj);
+    });
+    const eventAttributes: FirebaseEvents[FirebaseEventName.PURCHASE] = {
+      coupon: coupon,
+      currency: 'INR',
+      items: items,
+      transaction_id: orderId,
+      value: totalAmount,
+    };
+    postFirebaseEvent(FirebaseEventName.PURCHASE, eventAttributes);
+  };
+
   const handleOrderSuccess = async () => {
     // BackHandler.removeEventListener('hardwareBackPress', handleBack);
     try {
@@ -138,7 +175,11 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
         };
         postWebEngageEvent(WebEngageEventName.PAYMENT_STATUS, paymentEventAttributes);
         postWebEngageEvent(WebEngageEventName.PHARMACY_CHECKOUT_COMPLETED, checkoutEventAttributes);
-        postAppsFlyerEvent(AppsFlyerEventName.PHARMACY_CHECKOUT_COMPLETED, checkoutEventAttributes);
+        postAppsFlyerEvent(
+          AppsFlyerEventName.PHARMACY_CHECKOUT_COMPLETED,
+          appsflyerEventAttributes
+        );
+        firePurchaseEvent();
       }
     } catch (error) {}
 

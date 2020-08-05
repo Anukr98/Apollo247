@@ -446,6 +446,8 @@ export const ChatQuestions: React.FC<ChatQuestionsProps> = (props) => {
       values &&
       values[index - 1].v[0] !== slides[index].dependentValue
     ) {
+      const v = values!;
+      v[index].v[0] = v[index - 1].v[0];
       setcurrentIndex(index + 1);
       appIntroSliderRef.current.goToSlide(index + 1);
     }
@@ -548,10 +550,12 @@ export const ChatQuestions: React.FC<ChatQuestionsProps> = (props) => {
                   const v = values!;
                   if (item.validation) {
                     if (item.validation.test(text) || text === '') {
+                      v[item.index].v[item.buttonText ? 1 : 0] = '';
                       v[item.index].v[0] = text;
                       setValues(v);
                     }
                   } else {
+                    v[item.index].v[item.buttonText ? 1 : 0] = '';
                     v[item.index].v[0] = text;
                     setValues(v);
                   }
@@ -661,6 +665,7 @@ export const ChatQuestions: React.FC<ChatQuestionsProps> = (props) => {
                 onPress={() => {
                   const v = values!;
                   v[item.index].v[item.inputPlacerholder || item.dropDown ? 1 : 0] = text;
+                  v[item.index].v[item.inputPlacerholder || item.dropDown ? 0 : 1] = '';
                   setValues(v);
                   setRefresh(!refresh);
                 }}

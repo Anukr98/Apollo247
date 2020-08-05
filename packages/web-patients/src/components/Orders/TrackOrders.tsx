@@ -3,7 +3,7 @@ import { makeStyles } from '@material-ui/styles';
 import { Theme, Popover, Typography, Tabs, Tab } from '@material-ui/core';
 import Scrollbars from 'react-custom-scrollbars';
 import { AphButton, AphDialog, AphDialogTitle, AphDialogClose } from '@aph/web-ui-components';
-import { OrderStatusCard, isRejectedStatus } from 'components/Orders/OrderStatusCard';
+import { OrderStatusCard } from 'components/Orders/OrderStatusCard';
 import { CancelOrder } from 'components/Orders/CancelOrder';
 import { ReturnOrder } from 'components/Orders/ReturnOrder';
 import { OrdersSummary } from 'components/Orders/OrderSummary';
@@ -12,7 +12,7 @@ import { useAllCurrentPatients } from 'hooks/authHooks';
 import { GET_MEDICINE_ORDER_OMS_DETAILS } from 'graphql/medicines';
 import { getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails as OrderDetails } from 'graphql/types/getMedicineOrderOMSDetails';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
-import { MEDICINE_ORDER_STATUS } from 'graphql/types/globalTypes';
+import { MEDICINE_ORDER_STATUS, MEDICINE_ORDER_TYPE } from 'graphql/types/globalTypes';
 import { CancelOrderNotification } from 'components/Orders/CancelOrderNotification';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -243,23 +243,6 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
     }
   }, [props.orderAutoId]);
 
-  let isDisable = false;
-  if (
-    orderDetailsData &&
-    orderDetailsData.medicineOrdersStatus &&
-    orderDetailsData.medicineOrdersStatus.length > 0
-  ) {
-    const orderStatus =
-      orderDetailsData.medicineOrdersStatus[orderDetailsData.medicineOrdersStatus.length - 1];
-    if (
-      orderStatus &&
-      (isRejectedStatus(orderStatus.orderStatus) ||
-        orderStatus.orderStatus == MEDICINE_ORDER_STATUS.DELIVERED)
-    ) {
-      isDisable = true;
-    }
-  }
-
   const orderPayment =
     orderDetailsData &&
     orderDetailsData.medicineOrderPayments &&
@@ -279,14 +262,24 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
     }
   };
 
-  let isDisableCancel = false;
-  if (
-    orderDetailsData &&
-    orderDetailsData.medicineOrderPayments &&
-    orderDetailsData.medicineOrderPayments.length > 0
-  ) {
-    isDisableCancel = orderShipments ? isShipmentListHasBilledState() : false;
-  }
+  const isOrderBilled = isShipmentListHasBilledState();
+
+  let disableCancel =
+    orderDetailsData && orderDetailsData.currentStatus
+      ? orderDetailsData.currentStatus !== MEDICINE_ORDER_STATUS.ORDER_PLACED &&
+        orderDetailsData.currentStatus !== MEDICINE_ORDER_STATUS.ORDER_VERIFIED
+      : false;
+
+  const isNonCartOrder =
+    orderDetailsData && orderDetailsData.orderType
+      ? orderDetailsData.orderType === MEDICINE_ORDER_TYPE.UPLOAD_PRESCRIPTION
+      : false;
+
+  useEffect(() => {
+    if (isNonCartOrder && !isOrderBilled && tabValue === 1) {
+      setTabValue(0);
+    }
+  }, [isNonCartOrder, isOrderBilled, tabValue]);
 
   return (
     <div className={classes.root}>
@@ -314,7 +307,7 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
             )}
             <div className={classes.headerActions}>
               <AphButton
-                disabled={!props.orderAutoId || isDisable || isDisableCancel}
+                disabled={!props.orderAutoId || disableCancel}
                 onClick={handleClick}
                 className={classes.moreBtn}
               >
@@ -368,14 +361,16 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
             label="Track Order"
             title={'Open track orders'}
           />
-          <Tab
-            classes={{
-              root: classes.tabRoot,
-              selected: classes.tabSelected,
-            }}
-            label="Order Summary"
-            title={'Open order summary'}
-          />
+          {((isNonCartOrder && isOrderBilled) || !isNonCartOrder) && (
+            <Tab
+              classes={{
+                root: classes.tabRoot,
+                selected: classes.tabSelected,
+              }}
+              label="Order Summary"
+              title={'Open order summary'}
+            />
+          )}
         </Tabs>
         {tabValue === 0 && (
           <TabContainer>
@@ -392,7 +387,7 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
             </Scrollbars>
           </TabContainer>
         )}
-        {tabValue === 1 && (
+        {((isNonCartOrder && isOrderBilled) || !isNonCartOrder) && tabValue === 1 && (
           <TabContainer>
             <Scrollbars
               autoHide={true}

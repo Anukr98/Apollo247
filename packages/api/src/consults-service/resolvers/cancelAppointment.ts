@@ -110,8 +110,10 @@ const cancelAppointment: Resolver<
     cancelAppointmentInput.appointmentId,
     cancelAppointmentInput.cancelledBy,
     cancelAppointmentInput.cancelledById,
-    cancelAppointmentInput.cancelReason
+    cancelAppointmentInput.cancelReason,
+    appointment
   );
+
   if (
     appointment.appointmentPayments.length &&
     appointment.appointmentPayments[0].amountPaid >= 1

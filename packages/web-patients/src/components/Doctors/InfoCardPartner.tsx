@@ -22,6 +22,7 @@ import { BookConsult } from 'components/BookConsult';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { readableParam } from 'helpers/commonHelpers';
+import { consultNowClickTracking } from 'webEngageTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -177,10 +178,10 @@ export const InfoCardPartner: React.FC<InfoCardProps> = (props) => {
     doctorInfo.specialty.name.toLowerCase();
   const consultMode =
     doctorInfo &&
-      doctorInfo.consultHours &&
-      doctorInfo.consultHours.length > 0 &&
-      doctorInfo.consultHours[0] &&
-      doctorInfo.consultHours[0].consultMode
+    doctorInfo.consultHours &&
+    doctorInfo.consultHours.length > 0 &&
+    doctorInfo.consultHours[0] &&
+    doctorInfo.consultHours[0].consultMode
       ? doctorInfo.consultHours[0].consultMode
       : '';
   const consultModeOnline: any = [];
@@ -290,7 +291,7 @@ export const InfoCardPartner: React.FC<InfoCardProps> = (props) => {
                 alt=""
               />
             </div>
-            <div className={classes.doctorName}>{`Dr. ${doctorInfo.fullName}`}</div>
+            <div className={classes.doctorName}>{`${doctorInfo.fullName}`}</div>
             <div className={classes.doctorType}>
               <span title={'Specialty'}>{doctorInfo.specialty.userFriendlyNomenclature}</span>
               <span className={classes.doctorExp} title={'Experiance'}>
@@ -326,6 +327,22 @@ export const InfoCardPartner: React.FC<InfoCardProps> = (props) => {
                 if (!isSignedIn) {
                   protectWithLoginPopup();
                 } else {
+                  const hospitalName =
+                    doctorInfo &&
+                    doctorInfo.doctorHospital &&
+                    doctorInfo.doctorHospital.length &&
+                    doctorInfo.doctorHospital[0].facility &&
+                    doctorInfo.doctorHospital[0].facility.name;
+                  const eventdata = {
+                    availableInMins: getDiffInMinutes(nextAvailability),
+                    docCategory: doctorType,
+                    exp: doctorInfo.experience,
+                    hospital: hospitalName,
+                    name: doctorInfo.fullName,
+                    specialty: specialityName,
+                    listingType: '',
+                  };
+                  consultNowClickTracking(eventdata);
                   setPopupLoading(true);
                   saveSearchMutation({
                     variables: {
@@ -356,10 +373,10 @@ export const InfoCardPartner: React.FC<InfoCardProps> = (props) => {
                 <CircularProgress size={22} color="secondary" />
               ) : getDiffInMinutes(nextAvailability) > 0 &&
                 getDiffInMinutes(nextAvailability) <= 60 ? (
-                    'CONSULT NOW'
-                  ) : (
-                    'BOOK APPOINTMENT'
-                  )}
+                'CONSULT NOW'
+              ) : (
+                'BOOK APPOINTMENT'
+              )}
             </AphButton>
           </div>
         )}

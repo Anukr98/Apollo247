@@ -466,7 +466,7 @@ export const getDoctorDetailsResolvers = {
     async __resolveReference(object: Doctor) {
       const connection = getConnection();
       const doctorRepo = connection.getCustomRepository(DoctorRepository);
-      return await doctorRepo.findByIdWithStatusExclude(object.id.toString());
+      if (object.id != '') return await doctorRepo.findByIdWithStatusExclude(object.id.toString());
     },
   },
 

@@ -2,7 +2,7 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
-import { FilterDoctorInput, Salutation, ConsultMode, DoctorType } from "./globalTypes";
+import { FilterDoctorInput, ConsultMode, DoctorType } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: getDoctorsBySpecialtyAndFilters
@@ -40,7 +40,7 @@ export interface getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters
 export interface getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors {
   __typename: "DoctorDetails";
   id: string;
-  salutation: Salutation | null;
+  salutation: string | null;
   firstName: string;
   lastName: string;
   displayName: string | null;

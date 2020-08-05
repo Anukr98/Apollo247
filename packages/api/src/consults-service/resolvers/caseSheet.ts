@@ -1179,6 +1179,16 @@ const submitJDCaseSheet: Resolver<
   );
 
   if (juniorDoctorcaseSheet && juniorDoctorcaseSheet.isJdConsultStarted) {
+    const historyAttrs: Partial<AppointmentUpdateHistory> = {
+      appointment: appointmentData,
+      userType: APPOINTMENT_UPDATED_BY.DOCTOR,
+      fromValue: appointmentData.status,
+      toValue: appointmentData.status,
+      valueType: VALUE_TYPE.STATUS,
+      userName: juniorDoctorcaseSheet.createdDoctorId,
+      reason: ApiConstants.JD_CASESHEET_COMPLETED_HISTORY.toString(),
+    };
+    appointmentRepo.saveAppointmentHistory(historyAttrs);
     return false;
   }
 

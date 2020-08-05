@@ -1,3 +1,7 @@
+/**
+ * This component is being used for adding as well as updating addresses.
+ * Being utilized by Address Book, Medicine Cart, Diagnostics Cart & Upload Prescription Order
+ */
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
@@ -307,11 +311,13 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
         setshowSpinner(false);
         // const address = saveAddressResult.data!.savePatientAddress.patientAddress!;
         const address = g(saveAddressResult.data, 'savePatientAddress', 'patientAddress')!;
+        const isAddressServiceable =
+          pinAvailabilityResult && pinAvailabilityResult.data.Availability;
         addAddress!(address);
         addDiagnosticAddress!(address);
 
         const formattedAddress = formatAddress(address);
-        if ((pinAvailabilityResult && pinAvailabilityResult.data.Availability) || addOnly) {
+        if (isAddressServiceable || addOnly) {
           if (source != 'Diagnostics Cart') {
             postPharmacyAddNewAddressCompleted(
               source,
@@ -403,7 +409,8 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
       setLongitude(0);
       CommonBugFender('AddAddress_updateCityStateByPincode', e);
     };
-    getPlaceInfoByPincode(pincode)
+    const pincodeAndAddress = [pincode, addressLine1].filter((v) => (v || '').trim()).join(',');
+    getPlaceInfoByPincode(pincodeAndAddress)
       .then(({ data }) => {
         try {
           const addrComponents = data.results[0].address_components || [];
