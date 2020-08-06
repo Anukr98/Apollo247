@@ -92,9 +92,17 @@ export enum ApiConstants {
   ORDER_DELIVERY_BODY = 'Greetings from Apollo 24|7, Your order {1} is delivered successfully! In case of any issues or feedback related to your delivery, please speak with our customer care executives on the official WhatsApp channel (during business hours 9 AM - 8:30 PM) https://bit.ly/apollo247medicines',
 
   //medicine order cancelled
-  ORDER_CANCEL_BODY = 'Dear {name}, for order {orderId}, {reason}',
-  ORDER_CANCEL_PREPAID_BODY = 'For Order {orderId} the refund amount of Rs {refund} will be transferred to the source a/c within 7-10 working days.',
+  ORDER_CANCEL_BODY = 'Dear {name}, referring to your Apollo 247 Order {orderId}, {reason}',
+  ORDER_CANCEL_PREPAID_BODY = 'We have processed for a refund of Rs {refund} for Order {orderId}, the amount should reflect in your A/C in 5-7 working days.',
+  ORDER_CANCEL_HC_REFUND_BODY = 'We have refunded Health Credits worth Rs {healthCreditsRefund} to your personal health credits balance for Order {orderId}.',
 
+  // medicine order partial refund
+  ORDER_PAYMENT_PARTIAL_REFUND_BODY =  'We have processed for a refund of Rs {refundAmount} for your order {orderId}, the amount should reflect in your A/C in 5-7 working days.',
+  //medicine order partial refund health credits
+  ORDER_HC_PARTIAL_REFUND_BODY = 'We have refunded Health Credits worth Rs {healthCreditsRefund} to your personal health credits balance for Order {orderId}.',
+  //medicine order both Original Payment Method & HCs are to be refunded 
+  ORDER_PAYMENT_HC_PARTIAL_REFUND_BODY = 'We have processed for a refund of Rs {refundAmount} for your order {orderId}, the amount should reflect in your A/C in 5-7 working days. Also, we have refunded Health Credits worth Rs {healthCreditsRefund} to your personal health credits balance.',
+  
   //appointment cancellation
   CANCEL_APPT_TITLE = 'Your appointment has been cancelled',
   CANCEL_APPT_BODY = 'Hi {0}, we are really sorry. {1} will not be able to make it for this appointment. Any payment that you have made for this consultation would be refunded in 2-4 working days. We request you to please book appointment with any of our other Apollo certified Doctor',

@@ -18,6 +18,16 @@ export interface getRecommendedProductsList_getRecommendedProductsList_recommend
   categoryName: string | null;
   status: string | null;
   mou: string | null;
+  imageBaseUrl: string | null;
+  id: string | null;
+  is_in_stock: boolean | null;
+  small_image: string | null;
+  thumbnail: string | null;
+  type_id: string | null;
+  quantity: string | null;
+  isShippable: string | null;
+  MaxOrderQty: number | null;
+  urlKey: string | null;
 }
 
 export interface getRecommendedProductsList_getRecommendedProductsList {

@@ -1,5 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
+// @generated
 // This file was automatically generated and should not be edited.
 
 //==============================================================
@@ -247,6 +248,12 @@ export enum TRANSFER_STATUS {
   REJECTED = "REJECTED",
 }
 
+export enum WebEngageEvent {
+  DOCTOR_IN_CHAT_WINDOW = "DOCTOR_IN_CHAT_WINDOW",
+  DOCTOR_LEFT_CHAT_WINDOW = "DOCTOR_LEFT_CHAT_WINDOW",
+  DOCTOR_SENT_MESSAGE = "DOCTOR_SENT_MESSAGE",
+}
+
 export enum WeekDay {
   FRIDAY = "FRIDAY",
   MONDAY = "MONDAY",
@@ -319,6 +326,15 @@ export interface DiagnosticPrescriptionInput {
 export interface DoctorAvailabilityInput {
   availableDate: any;
   doctorId: string;
+}
+
+export interface DoctorConsultEventInput {
+  mobileNumber: string;
+  eventName: WebEngageEvent;
+  consultID: string;
+  displayId: string;
+  consultMode: ConsultMode;
+  doctorFullName: string;
 }
 
 export interface DoctorNextAvailableSlotInput {

@@ -45,6 +45,7 @@ const locationRoutesBlackList: string[] = [
   '/address-book',
   '/aboutUs',
   '/appointments',
+  '/appointmentslist',
   '/faq',
   '/needHelp',
   '/my-payments',
@@ -63,8 +64,8 @@ const getDeviceType = (): DEVICETYPE => {
     return /Android/i.test(userAgent)
       ? DEVICETYPE.ANDROID
       : /iPhone/i.test(userAgent)
-      ? DEVICETYPE.IOS
-      : null;
+        ? DEVICETYPE.IOS
+        : null;
   } else {
     return DEVICETYPE.DESKTOP;
   }
@@ -368,7 +369,7 @@ const getAvailability = (nextAvailability: string, differenceInMinutes: number, 
   } else if (isAvailableAfterTomorrow) {
     return `${message} in ${
       nextAvailabilityMoment.diff(tomorrowAvailabilityTime, 'days') + 1 // intentionally added + 1 as we need to consider 6 am as next day
-    } days`;
+      } days`;
   } else if (!isAvailableTomorrow && differenceInMinutes >= 120) {
     return `${message} at ${nextAvailabilityMoment.format('hh:mm A')}`;
   } else {

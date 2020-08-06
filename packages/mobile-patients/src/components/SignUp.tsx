@@ -3,71 +3,65 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import { DatePicker } from '@aph/mobile-patients/src/components/ui/DatePicker';
-import { Mascot, WhiteTickIcon, Gift } from '@aph/mobile-patients/src/components/ui/Icons';
+import { Gift, Mascot, WhiteTickIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
-import string from '@aph/mobile-patients/src/strings/strings.json';
-import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React, { useState, useEffect } from 'react';
 import {
-  Keyboard,
-  SafeAreaView,
-  StyleSheet,
-  View,
-  Alert,
-  TouchableOpacity,
-  Text,
-  ActivityIndicator,
-  BackHandler,
-  Platform,
-  KeyboardAvoidingView,
-  Dimensions,
-} from 'react-native';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+  CommonBugFender,
+  CommonLogEvent,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { UPDATE_PATIENT } from '@aph/mobile-patients/src/graphql/profiles';
 import {
-  NavigationScreenProps,
-  ScrollView,
-  NavigationActions,
-  StackActions,
-} from 'react-navigation';
-import Moment from 'moment';
-import { useAuth, useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+  Gender,
+  Relation,
+  UpdatePatientInput,
+} from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
-  updatePatientVariables,
   updatePatient,
+  updatePatientVariables,
 } from '@aph/mobile-patients/src/graphql/types/updatePatient';
 import {
-  Relation,
-  Gender,
-  UpdatePatientInput,
-  DEVICE_TYPE,
-} from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { UPDATE_PATIENT } from '@aph/mobile-patients/src/graphql/profiles';
-import { Mutation } from 'react-apollo';
-import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import {
-  CommonLogEvent,
-  CommonBugFender,
-  setBugFenderLog,
-} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import {
-  handleGraphQlError,
-  postWebEngageEvent,
   postAppsFlyerEvent,
   postFirebaseEvent,
+  postWebEngageEvent,
   postWEGReferralCodeEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
-  WebEngageEvents,
   WebEngageEventName,
+  WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
+import string from '@aph/mobile-patients/src/strings/strings.json';
+import { theme } from '@aph/mobile-patients/src/theme/theme';
 import AsyncStorage from '@react-native-community/async-storage';
-import { AppsFlyerEventName, AppsFlyerEvents } from '../helpers/AppsFlyerEvents';
-import moment from 'moment';
-import DeviceInfo from 'react-native-device-info';
-import { FirebaseEventName, FirebaseEvents } from '../helpers/firebaseEvents';
+import { default as Moment, default as moment } from 'moment';
+import React, { useEffect, useState } from 'react';
+import { Mutation } from 'react-apollo';
 import { useApolloClient } from 'react-apollo-hooks';
+import {
+  Alert,
+  BackHandler,
+  Dimensions,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import DeviceInfo from 'react-native-device-info';
+import {
+  NavigationActions,
+  NavigationScreenProps,
+  ScrollView,
+  StackActions,
+} from 'react-navigation';
+import { AppsFlyerEventName, AppsFlyerEvents } from '../helpers/AppsFlyerEvents';
 import { getDeviceTokenCount } from '../helpers/clientCalls';
+import { FirebaseEventName, FirebaseEvents } from '../helpers/firebaseEvents';
 
 const { height } = Dimensions.get('window');
 
@@ -366,9 +360,9 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
             }
             isDateTimePickerVisible={isDateTimePickerVisible}
             handleDatePicked={(date) => {
+              setIsDateTimePickerVisible(false);
               const formatDate = Moment(date).format('DD/MM/YYYY');
               setDate(formatDate);
-              setIsDateTimePickerVisible(false);
               Keyboard.dismiss();
             }}
             hideDateTimePicker={() => {
@@ -412,7 +406,6 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
   };
 
   const keyboardVerticalOffset = Platform.OS === 'android' ? { keyboardVerticalOffset: 20 } : {};
-  console.log(isDateTimePickerVisible, 'isDateTimePickerVisible');
 
   const [isSignupEventFired, setSignupEventFired] = useState(false);
 
