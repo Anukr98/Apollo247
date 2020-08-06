@@ -203,7 +203,7 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
             )
           );
         } catch (error) {
-          CommonBugFender(`${AppRoutes.CheckoutSceneNew}_trackTagalysEvent`, error);
+          CommonBugFender(`${AppRoutes.PaymentScene}_trackTagalysEvent`, error);
         }
       }
     } catch (error) {}

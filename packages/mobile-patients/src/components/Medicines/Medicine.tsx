@@ -1437,6 +1437,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       thumbnail,
       type_id,
       MaxOrderQty,
+      category_id,
     } = data.item;
 
     const addToCart = () => {
@@ -1464,7 +1465,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         props.navigation,
         currentPatient,
         !!isPharmacyLocationServiceable,
-        { source: 'Pharmacy Home', section: title }
+        { source: 'Pharmacy Home', section: title, categoryId: category_id }
       );
     };
 
@@ -1770,6 +1771,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       type_id,
       thumbnail,
       MaxOrderQty,
+      category_id,
     } = item;
     setItemsLoading({ ...itemsLoading, [sku]: true });
     addPharmaItemToCart(
@@ -1796,7 +1798,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       props.navigation,
       currentPatient,
       !!isPharmacyLocationServiceable,
-      { source: 'Pharmacy Partial Search' },
+      { source: 'Pharmacy Partial Search', categoryId: category_id },
       () => setItemsLoading({ ...itemsLoading, [sku]: false })
     );
   };

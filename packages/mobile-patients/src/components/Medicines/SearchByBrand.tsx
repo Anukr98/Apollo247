@@ -238,7 +238,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
       props.navigation,
       currentPatient,
       !!isPharmacyLocationServiceable,
-      { source: 'Pharmacy List' },
+      { source: 'Pharmacy List', categoryId: category_id },
       suggestionItem ? () => setItemsLoading({ ...itemsLoading, [sku]: false }) : undefined
     );
   };

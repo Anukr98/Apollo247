@@ -1320,7 +1320,7 @@ export const addPharmaItemToCart = (
   otherInfo: {
     source: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['Source'];
     section?: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['Section'];
-    categoryId?: string;
+    categoryId?: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['category ID'];
   },
   onComplete?: () => void
 ) => {

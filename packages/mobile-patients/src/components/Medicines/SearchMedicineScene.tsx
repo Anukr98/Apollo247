@@ -348,6 +348,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
       thumbnail,
       type_id,
       MaxOrderQty,
+      category_id,
     } = item;
     savePastSeacrh(sku, name).catch((e) => {
       aphConsole.log({ e });
@@ -378,7 +379,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
       props.navigation,
       currentPatient,
       !!isPharmacyLocationServiceable,
-      { source: 'Pharmacy Full Search' },
+      { source: 'Pharmacy Full Search', categoryId: category_id },
       suggestionItem ? () => setItemsLoading({ ...itemsLoading, [sku]: false }) : undefined
     );
   };
