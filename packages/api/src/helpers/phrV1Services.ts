@@ -531,3 +531,69 @@ export async function getAuthToken(primaryuhid: string): Promise<GetAuthTokenRes
       clearTimeout(timeout);
     });
 }
+
+export async function downloadDocument(uhid: string, fileUrl: string): Promise<string> {
+  if (
+    !process.env.PHR_V1_DONLOAD_PRESCRIPTION_DOCUMENT ||
+    !process.env.PHR_V1_ACCESS_TOKEN ||
+    !process.env.PHR_V1_DONLOAD_LABRESULT_DOCUMENT
+  )
+    throw new AphError(AphErrorMessages.INVALID_PRISM_URL);
+
+  const getToken = await getAuthToken(uhid);
+
+  const fileIdNameArray = fileUrl.split('_');
+  const fileId = fileIdNameArray.shift();
+  const fileName = fileIdNameArray.join('_');
+
+  let apiUrl = process.env.PHR_V1_DONLOAD_PRESCRIPTION_DOCUMENT.toString();
+  if (fileUrl.indexOf('labresults='))
+    apiUrl = process.env.PHR_V1_DONLOAD_LABRESULT_DOCUMENT.toString();
+  apiUrl = apiUrl.replace('{AUTH_KEY}', getToken.response);
+  apiUrl = apiUrl.replace('{UHID}', uhid);
+  apiUrl = apiUrl.replace('{RECORDID}', fileId!);
+  apiUrl = apiUrl.replace('{FILE_NAME}', fileName);
+
+  const reqStartTime = new Date();
+  const controller = new AbortController();
+  const timeout = setTimeout(() => {
+    controller.abort();
+  }, prismTimeoutMillSeconds);
+
+  return await fetch(apiUrl, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json;charset=utf-8',
+    },
+    signal: controller.signal,
+  }).then((res) =>
+    res
+      .text()
+      .then(
+        (data) => {
+          dLogger(
+            reqStartTime,
+            'getLabResultsFromPrism PRISM_DOWNLOAD_LABRESULTS_PRESCRIPTION_API_CALL___END',
+            `${apiUrl}--- ${JSON.stringify(data)}`
+          );
+          if (!data) throw new AphError(AphErrorMessages.PRISM_PRESCRIPTIONS_FETCH_ERROR);
+          return data;
+        },
+        (err) => {
+          dLogger(
+            reqStartTime,
+            'getLabResultsFromPrism PRISM_DOWNLOAD_LABRESULTS_PRESCRIPTION_API_CALL___ERROR',
+            `${apiUrl}--- ${JSON.stringify(err)}`
+          );
+          if (err.name === 'AbortError') {
+            throw new AphError(AphErrorMessages.NO_RESPONSE_FROM_PRISM);
+          } else {
+            throw new AphError(AphErrorMessages.PRISM_PRESCRIPTIONS_FETCH_ERROR);
+          }
+        }
+      )
+      .finally(() => {
+        clearTimeout(timeout);
+      })
+  );
+}

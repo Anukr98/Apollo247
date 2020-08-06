@@ -6,6 +6,10 @@ import { PatientRepository } from 'profiles-service/repositories/patientReposito
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { uploadFileToBlobStorage } from 'helpers/uploadFileToBlob';
+import { MedicalRecordsRepository } from 'profiles-service/repositories/medicalRecordsRepository';
+import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
+import { AppointmentDocumentRepository } from 'consults-service/repositories/appointmentDocumentRepository';
+import { downloadDocument } from 'helpers/phrV1Services';
 
 export const uploadDocumentTypeDefs = gql`
   enum PRISM_DOCUMENT_CATEGORY {
@@ -74,8 +78,48 @@ const uploadDocument: Resolver<
     : { status: false, fileId: '', filePath: blobUrl };
 };
 
+export const fetchBlobURLWithPRISMData: Resolver<
+  null,
+  { patientId: string; fileUrl: string; prismFileId: string },
+  ProfilesServiceContext,
+  string
+> = async (parent, args, { profilesDb, consultsDb }) => {
+  if (!args.fileUrl.indexOf('authToken=')) return args.fileUrl;
+
+  //check in medical records
+  const medicalRepo = profilesDb.getCustomRepository(MedicalRecordsRepository);
+  const medicalRecord = await medicalRepo.getBlobUrl(args.patientId, args.prismFileId);
+  if (medicalRecord) return medicalRecord.documentURLs;
+
+  //check in appointment documents
+  const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
+  const appointmentData = await appointmentRepo.getAppointmenIdsFromPatientID(args.patientId);
+  if (appointmentData.length > 0) {
+    const appointmentIds = appointmentData.map((item) => item.id);
+    const appointmentDocumentRepo = consultsDb.getCustomRepository(AppointmentDocumentRepository);
+    const documentData = await appointmentDocumentRepo.getDocumentsByAppointmentId(
+      appointmentIds,
+      args.prismFileId
+    );
+    if (documentData) return documentData.documentPath;
+  }
+
+  //download from prism and generate blob url
+  const patientsRepo = profilesDb.getCustomRepository(PatientRepository);
+  const patientDetails = await patientsRepo.getPatientDetails(args.patientId);
+  if (patientDetails == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
+
+  const fileName = args.fileUrl.split('.');
+  const fileType = fileName.pop();
+
+  const bufferData = await downloadDocument(patientDetails.uhid, args.fileUrl);
+  const blobUrl = await uploadFileToBlobStorage(fileType!.toUpperCase(), bufferData);
+  return blobUrl;
+};
+
 export const uploadDocumentResolvers = {
   Mutation: {
     uploadDocument,
+    fetchBlobURLWithPRISMData,
   },
 };
