@@ -260,6 +260,7 @@ interface AppointmentFilterObject {
   appointmentStatus: string[] | null;
   availability: string[] | null;
   gender: string[] | null;
+  doctorsList: string[] | null;
 }
 
 const feeInRupees = ['100 - 500', '500 - 1000', '1000+'];

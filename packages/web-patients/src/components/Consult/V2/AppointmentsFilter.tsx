@@ -9,6 +9,7 @@ import {
   availabilityList,
   AppointmentFilterObject,
 } from 'helpers/commonHelpers';
+import _uniq from 'lodash/uniq';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -195,11 +196,12 @@ interface AppointmentsFilterProps {
   setFilter: (filter: AppointmentFilterObject) => void;
   filter: AppointmentFilterObject;
   setIsFilterOpen: (filterOpen: boolean) => void;
+  filterDoctorsList: string[];
 }
 
 export const AppointmentsFilter: React.FC<AppointmentsFilterProps> = (props) => {
   const classes = useStyles({});
-  const { filter, setFilter, setIsFilterOpen } = props;
+  const { filter, setFilter, setIsFilterOpen, filterDoctorsList } = props;
   const [localFilter, setLocalFilter] = useState<AppointmentFilterObject>(filter);
 
   const applyClass = (type: Array<string>, value: string) => {
@@ -228,6 +230,9 @@ export const AppointmentsFilter: React.FC<AppointmentsFilterProps> = (props) => 
     } else if (type === 'availability') {
       const availability = filterValues(localFilter.availability, value);
       setLocalFilter({ ...localFilter, availability });
+    } else if (type === 'doctor') {
+      const doctorsList = filterValues(localFilter.doctorsList, value);
+      setLocalFilter({ ...localFilter, doctorsList });
     }
   };
 
@@ -235,7 +240,12 @@ export const AppointmentsFilter: React.FC<AppointmentsFilterProps> = (props) => 
     <div className={classes.dialogPaper}>
       <div className={classes.dialogHeader}>
         <h3>Filters</h3>
-        <AphButton onClick={() => setIsFilterOpen(false)}>
+        <AphButton
+          onClick={() => {
+            setIsFilterOpen(false);
+            setFilter(localFilter);
+          }}
+        >
           <img src={require('images/ic_cross.svg')} alt="" />
         </AphButton>
       </div>
@@ -290,6 +300,24 @@ export const AppointmentsFilter: React.FC<AppointmentsFilterProps> = (props) => 
             </div>
           </div>
           <div className={classes.filterType}>
+            <h4>Doctor</h4>
+            <div className={classes.filterBtns}>
+              {filterDoctorsList &&
+                filterDoctorsList.length > 0 &&
+                _uniq(filterDoctorsList).map((doctorName) => (
+                  <AphButton
+                    key={doctorName}
+                    className={applyClass(localFilter.doctorsList, doctorName)}
+                    onClick={() => {
+                      setFilterValues('doctor', doctorName);
+                    }}
+                  >
+                    {doctorName}
+                  </AphButton>
+                ))}
+            </div>
+          </div>
+          <div className={classes.filterType}>
             <h4>Gender</h4>
             <div className={classes.filterBtns}>
               {genderList.map((gender) => (
@@ -317,6 +345,7 @@ export const AppointmentsFilter: React.FC<AppointmentsFilterProps> = (props) => 
                 appointmentStatus: [],
                 availability: [],
                 gender: [],
+                doctorsList: [],
               };
               setLocalFilter(initialAppointmentFilterObject);
               setFilter(initialAppointmentFilterObject);

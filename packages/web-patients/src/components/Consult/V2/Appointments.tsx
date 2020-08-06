@@ -19,6 +19,7 @@ import {
   APPOINTMENT_STATE,
   STATUS,
   Gender,
+  AppointmentType,
 } from 'graphql/types/globalTypes';
 import { GetOrderInvoiceVariables, GetOrderInvoice } from 'graphql/types/GetOrderInvoice';
 import { GET_PATIENT_ALL_APPOINTMENTS } from 'graphql/doctors';
@@ -45,7 +46,7 @@ import { gtmTracking } from '../../../gtmTracking';
 import { OrderStatusContent } from 'components/OrderStatusContent';
 import { readableParam, AppointmentFilterObject } from 'helpers/commonHelpers';
 import { consultationBookTracking } from 'webEngageTracking';
-import { getDiffInMinutes } from 'helpers/commonHelpers';
+import { getDiffInMinutes, getDiffInDays } from 'helpers/commonHelpers';
 import { GetPatientAllAppointments_getPatientAllAppointments_appointments as AppointmentsType } from 'graphql/types/GetPatientAllAppointments';
 import { AppointmentsFilter } from './AppointmentsFilter';
 import { GetAppointmentData } from 'graphql/types/GetAppointmentData';
@@ -386,6 +387,7 @@ const initialAppointmentFilterObject: AppointmentFilterObject = {
   appointmentStatus: [],
   availability: [],
   gender: [],
+  doctorsList: [],
 };
 
 export const Appointments: React.FC<AppointmentProps> = (props) => {
@@ -421,6 +423,7 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
   const [paymentData, setPaymentData] = React.useState<paymentTransactionAppointmentType | null>(
     null
   );
+  const [filterDoctorsList, setFilterDoctorsList] = React.useState<string[]>([]);
   const doctorName = doctorDetail && doctorDetail.fullName;
   const readableDoctorname = (doctorName && doctorName.length && readableParam(doctorName)) || '';
 
@@ -556,8 +559,15 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
             data.getPatientAllAppointments &&
             data.getPatientAllAppointments.appointments
           ) {
-            setAppointmentsList(data.getPatientAllAppointments.appointments);
-            setFilteredAppointmentsList(data.getPatientAllAppointments.appointments);
+            const appointmentsListData = data.getPatientAllAppointments.appointments;
+            const doctorsList = appointmentsListData.map((appointment: AppointmentsType) => {
+              return appointment && appointment.doctorInfo && appointment.doctorInfo.fullName
+                ? appointment.doctorInfo.fullName
+                : null;
+            });
+            setFilterDoctorsList(doctorsList || []);
+            setAppointmentsList(appointmentsListData);
+            setFilteredAppointmentsList(appointmentsListData);
           } else {
             setAppointmentsList([]);
             setFilteredAppointmentsList([]);
@@ -648,50 +658,98 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
       const filteredList = localFilteredAppointmentsList.filter(
         (appointment) => appointment.appointmentState === APPOINTMENT_STATE.RESCHEDULE
       );
-      finalList = _uniq([...finalList, ...filteredList]);
+      finalList = [...finalList, ...filteredList];
     }
     if (appointmentStatus.includes('Cancelled')) {
       const filteredList = localFilteredAppointmentsList.filter(
         (appointment) => appointment.status === STATUS.CANCELLED
       );
-      finalList = _uniq([...finalList, ...filteredList]);
+      finalList = [...finalList, ...filteredList];
     }
     if (appointmentStatus.includes('Completed')) {
       const filteredList = localFilteredAppointmentsList.filter(
         (appointment) => appointment.status === STATUS.COMPLETED
       );
-      finalList = _uniq([...finalList, ...filteredList]);
+      finalList = [...finalList, ...filteredList];
     }
     if (appointmentStatus.includes('Follow-Up')) {
       const filteredList = localFilteredAppointmentsList.filter(
         (appointment) => appointment.isFollowUp !== 'false'
       );
-      finalList = _uniq([...finalList, ...filteredList]);
+      finalList = [...finalList, ...filteredList];
     }
+    return _uniq(finalList);
+  };
+
+  const getGenericFilteredList = (
+    list: string[],
+    localFilteredAppointmentsList: AppointmentsType[],
+    type: string
+  ) => {
+    const finalList = localFilteredAppointmentsList.filter((appointment) => {
+      switch (type) {
+        case 'doctor':
+          return list.includes(appointment.doctorInfo.fullName);
+        case 'gender':
+          return list.includes(appointment.doctorInfo.gender);
+        default:
+          return false;
+      }
+    });
     return finalList;
   };
 
-  const getGenderFilteredList = (
-    gender: string[],
+  const getAvailabilityFilteredList = (
+    availabilityList: string[],
     localFilteredAppointmentsList: AppointmentsType[]
   ) => {
     let finalList: AppointmentsType[] = [];
-    if (gender.includes('FEMALE')) {
-      finalList = localFilteredAppointmentsList.filter(
-        (appointment) => appointment.doctorInfo.gender === Gender.FEMALE
-      );
+    if (availabilityList.includes('Now')) {
+      finalList = localFilteredAppointmentsList.filter((appointment) => {
+        return getDiffInMinutes(appointment.appointmentDateTime) < 15;
+      });
     }
-    if (gender.includes('MALE')) {
-      const filteredList = localFilteredAppointmentsList.filter(
-        (appointment) => appointment.doctorInfo.gender === Gender.MALE
-      );
-      finalList = _uniq([...finalList, ...filteredList]);
+    if (availabilityList.includes('Today') || availabilityList.includes('Tomorrow')) {
+      const tomorrowAvailabilityHourTime = moment('06:00', 'HH:mm');
+      const tomorrowAvailabilityTime = moment()
+        .add('days', 1)
+        .set({
+          hour: tomorrowAvailabilityHourTime.get('hour'),
+          minute: tomorrowAvailabilityHourTime.get('minute'),
+        });
+      if (availabilityList.includes('Today')) {
+        const filteredList = localFilteredAppointmentsList.filter((appointment) => {
+          const diffInHoursForTomorrowAvailabilty = moment(appointment.appointmentDateTime).diff(
+            tomorrowAvailabilityTime,
+            'minutes'
+          );
+          return diffInHoursForTomorrowAvailabilty < 1;
+        });
+        finalList = [...finalList, ...filteredList];
+      }
+      if (availabilityList.includes('Tomorrow')) {
+        const filteredList = localFilteredAppointmentsList.filter((appointment) => {
+          const diffInHoursForTomorrowAvailabilty = moment(appointment.appointmentDateTime).diff(
+            tomorrowAvailabilityTime,
+            'minutes'
+          );
+          return diffInHoursForTomorrowAvailabilty >= 0 && diffInHoursForTomorrowAvailabilty < 1440;
+        });
+        finalList = [...finalList, ...filteredList];
+      }
     }
-    return finalList;
+    if (availabilityList.includes('Next 3 days')) {
+      const filteredList = localFilteredAppointmentsList.filter((appointment) => {
+        const differenceInDays = getDiffInDays(appointment.appointmentDateTime);
+        return differenceInDays < 4;
+      });
+      finalList = [...finalList, ...filteredList];
+    }
+    return _uniq(finalList);
   };
 
   useEffect(() => {
-    const { consultType, availability, gender, appointmentStatus } = filter;
+    const { consultType, availability, gender, appointmentStatus, doctorsList } = filter;
     if (filter === initialAppointmentFilterObject) {
       setFilteredAppointmentsList(appointmentsList || []);
     } else {
@@ -700,12 +758,16 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
         localFilteredList = getConsultTypeFilteredList(consultType, localFilteredList);
       }
       if (appointmentStatus.length > 0) {
-        const filteredList = getAppointmentStatusFilteredList(appointmentStatus, localFilteredList);
-        localFilteredList = _uniq(filteredList);
+        localFilteredList = getAppointmentStatusFilteredList(appointmentStatus, localFilteredList);
+      }
+      if (availability.length > 0) {
+        localFilteredList = getAvailabilityFilteredList(availability, localFilteredList);
+      }
+      if (doctorsList.length > 0) {
+        localFilteredList = getGenericFilteredList(doctorsList, localFilteredList, 'doctor');
       }
       if (gender.length > 0) {
-        const filteredList = getGenderFilteredList(gender, localFilteredList);
-        localFilteredList = _uniq(filteredList);
+        localFilteredList = getGenericFilteredList(gender, localFilteredList, 'gender');
       }
       setFilteredAppointmentsList(localFilteredList);
     }
@@ -1071,6 +1133,7 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
           filter={filter}
           setFilter={setFilter}
           setIsFilterOpen={setIsFilterOpen}
+          filterDoctorsList={filterDoctorsList}
         />
       </Modal>
       <NavigationBottom />
@@ -1184,3 +1247,23 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
     </div>
   );
 };
+
+// const getGenderFilteredList = (
+//   gender: string[],
+//   localFilteredAppointmentsList: AppointmentsType[]
+// ) => {
+//   const finalList = localFilteredAppointmentsList.filter((appointment) =>
+//     gender.includes(appointment.doctorInfo.gender)
+//   );
+//   return finalList;
+// };
+
+// const getDoctorFilteredList = (
+//   doctorsList: string[],
+//   localFilteredAppointmentsList: AppointmentsType[]
+// ) => {
+//   const finalList = localFilteredAppointmentsList.filter((appointment) =>
+//     doctorsList.includes(appointment.doctorInfo.fullName)
+//   );
+//   return finalList;
+// };
