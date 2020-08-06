@@ -9,7 +9,6 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
 import { StyleProp, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
 import { Image } from 'react-native-elements';
-import { QuantityButton } from '@aph/mobile-patients/src/components/ui/QuantityButton';
 import { AddToCartButtons } from '../Medicines/AddToCartButtons';
 
 const styles = StyleSheet.create({

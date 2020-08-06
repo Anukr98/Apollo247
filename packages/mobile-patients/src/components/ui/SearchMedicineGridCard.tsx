@@ -4,7 +4,6 @@ import {
   MedicineRxIcon,
   TestsIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
-import { QuantityButton } from '@aph/mobile-patients/src/components/ui/QuantityButton';
 import { Doseform } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';

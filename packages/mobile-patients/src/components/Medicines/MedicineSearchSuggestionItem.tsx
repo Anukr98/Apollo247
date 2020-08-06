@@ -12,7 +12,6 @@ import { Image } from 'react-native-elements';
 import { MedicineProduct } from '../../helpers/apiCalls';
 import { g } from '../../helpers/helperFunctions';
 import { AppConfig } from '../../strings/AppConfig';
-import { QuantityButton } from '@aph/mobile-patients/src/components/ui/QuantityButton';
 import { AddToCartButtons } from './AddToCartButtons';
 
 const styles = StyleSheet.create({
