@@ -179,6 +179,9 @@ let connectionCount = 0;
 let callDetector: any = null;
 RNSound.setCategory('Playback');
 let audioTrack: RNSound | null = null;
+let joinAudioTrack: RNSound | null = null;
+let leftAudioTrack: RNSound | null = null;
+
 export const AudioVideoProvider: React.FC = (props) => {
   const [isAudio, setIsAudio] = useState<boolean>(false);
   const [isVideo, setIsVideo] = useState<boolean>(false);
@@ -246,6 +249,12 @@ export const AudioVideoProvider: React.FC = (props) => {
 
   useEffect(() => {
     audioTrack = new RNSound('phone_ringing.mp3', RNSound.MAIN_BUNDLE, (error) => {
+      CommonBugFender('Loading_callertune__failed', error);
+    });
+    joinAudioTrack = new RNSound('join_sound.mp3', RNSound.MAIN_BUNDLE, (error) => {
+      CommonBugFender('Loading_callertune__failed', error);
+    });
+    leftAudioTrack = new RNSound('left_sound.mp3', RNSound.MAIN_BUNDLE, (error) => {
       CommonBugFender('Loading_callertune__failed', error);
     });
   }, []);
@@ -672,7 +681,11 @@ export const AudioVideoProvider: React.FC = (props) => {
       setCallConnected(true);
       if (audioTrack) {
         setPrevVolume();
-        audioTrack.stop(() => {});
+        audioTrack.stop(() => {
+          if (joinAudioTrack) {
+            joinAudioTrack.play();
+          }
+        });
       }
       hidePopup();
       // console.log('otSessionRef', otSessionRef);
@@ -685,6 +698,11 @@ export const AudioVideoProvider: React.FC = (props) => {
           errorPopup(strings.toastMessages.callDisconnected, theme.colors.APP_RED);
         }
       });
+      if (connectionCount > 0) {
+        if (leftAudioTrack) {
+          leftAudioTrack.play();
+        }
+      }
       connectionCount--;
       setIsVideo(false);
       setIsAudio(false);
@@ -776,7 +794,7 @@ export const AudioVideoProvider: React.FC = (props) => {
                 name: name,
                 resolution: '640x480',
                 audioBitrate: 30000,
-                frameRate: 15
+                frameRate: 15,
               }}
               eventHandlers={publisherEventHandlers}
             />
@@ -787,7 +805,7 @@ export const AudioVideoProvider: React.FC = (props) => {
                 subscribeToAudio: true,
                 subscribeToVideo: isVideo ? true : false,
                 audioVolume: 100,
-                resolution: '640x480' // setting this resolution to avoid over heating of device
+                resolution: '640x480', // setting this resolution to avoid over heating of device
               }}
             />
           </OTSession>
