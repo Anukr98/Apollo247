@@ -64,8 +64,8 @@ const getDeviceType = (): DEVICETYPE => {
     return /Android/i.test(userAgent)
       ? DEVICETYPE.ANDROID
       : /iPhone/i.test(userAgent)
-        ? DEVICETYPE.IOS
-        : null;
+      ? DEVICETYPE.IOS
+      : null;
   } else {
     return DEVICETYPE.DESKTOP;
   }
@@ -255,6 +255,14 @@ interface SearchObject {
   prakticeSpecialties: string | null;
 }
 
+interface AppointmentFilterObject {
+  consultType: string[] | null;
+  appointmentStatus: string[] | null;
+  availability: string[] | null;
+  gender: string[] | null;
+  doctorsList: string[] | null;
+}
+
 const feeInRupees = ['100 - 500', '500 - 1000', '1000+'];
 const experienceList = [
   { key: '0-5', value: '0 - 5' },
@@ -268,6 +276,8 @@ const genderList = [
 ];
 const languageList = ['English', 'Telugu'];
 const availabilityList = ['Now', 'Today', 'Tomorrow', 'Next 3 days'];
+const consultType = ['Online', 'Clinic Visit'];
+const appointmentStatus = ['New', 'Completed', 'Cancelled', 'Rescheduled', 'Follow-Up'];
 
 // End of doctors list based on specialty related changes
 
@@ -369,7 +379,7 @@ const getAvailability = (nextAvailability: string, differenceInMinutes: number, 
   } else if (isAvailableAfterTomorrow) {
     return `${message} in ${
       nextAvailabilityMoment.diff(tomorrowAvailabilityTime, 'days') + 1 // intentionally added + 1 as we need to consider 6 am as next day
-      } days`;
+    } days`;
   } else if (!isAvailableTomorrow && differenceInMinutes >= 120) {
     return `${message} at ${nextAvailabilityMoment.format('hh:mm A')}`;
   } else {
@@ -391,6 +401,9 @@ const getStoreName = (storeAddress: string) => {
 };
 
 export {
+  AppointmentFilterObject,
+  consultType,
+  appointmentStatus,
   getStoreName,
   getAvailability,
   isRejectedStatus,

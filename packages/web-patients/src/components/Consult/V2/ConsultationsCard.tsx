@@ -350,16 +350,20 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                     if (props.pastOrCurrent === 'past') {
                       setIsAppDetailsPopoverOpen(true);
                     } else {
-                      setIsScheduledAppPopoverOpen(true);
-                      setAppointmentType(
-                        appointmentDetails.appointmentType === 'ONLINE' ? 'online' : 'clinic'
+                      window.location.href = clientRoutes.chatRoom(
+                        appointmentDetails.id,
+                        appointmentDetails.doctorId
                       );
-                      setCurrentDoctorName(fullName);
-                      setCurrentApptTime(
-                        moment(appointmentDetails.appointmentDateTime).format(
-                          'MMMM DD, YYYY [at] LT'
-                        )
-                      );
+                      // setIsScheduledAppPopoverOpen(true);
+                      // setAppointmentType(
+                      //   appointmentDetails.appointmentType === 'ONLINE' ? 'online' : 'clinic'
+                      // );
+                      // setCurrentDoctorName(fullName);
+                      // setCurrentApptTime(
+                      //   moment(appointmentDetails.appointmentDateTime).format(
+                      //     'MMMM DD, YYYY [at] LT'
+                      //   )
+                      // );
                     }
                   }}
                 >
