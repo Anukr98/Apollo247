@@ -63,7 +63,7 @@ export enum ApiConstants {
 
   //medicine order out for delivery
   ORDER_PLACED_TITLE = 'Medicine order is placed',
-  ORDER_PLACED_BODY = 'Hi {0}, we have received your order {1}. For any support, please speak with our customer care executives on the official WhatsApp channel (during business hours 9 AM - 6 PM) https://bit.ly/apollo247medicines',
+  ORDER_PLACED_BODY = 'Hi {0}, we have received your order {1}.\nChecking your blood oxygen level is helpful. Pulse Oximeter is available Now. Click here https://tinyurl.com/y6jwn7pw.\nFor any support, please speak with our customer care executives on the official WhatsApp channel (during business hours 8:30 AM - 8:30 PM) https://bit.ly/apollo247medicines',
 
   // medicine order out for delivery
   UPLOAD_PRESCRIPTION_TITLE = 'Upload Prescription medicine order placed ',
@@ -261,6 +261,7 @@ export enum ApiConstants {
   LOCAL_DOC_ID = 'd7566de3-c967-4a0e-a53d-f4b0f98eb065',
   DEV_DOC_ID = '74c93b2e-8aab-4b6c-8391-5407f4afb833',
   QA_DOC_ID = '',
+  ES_ADD_DAYS = 7,
 
   CACHE_EXPIRATION_120 = 120, // 2 mins
   CACHE_EXPIRATION_300 = 300, // 5 mins

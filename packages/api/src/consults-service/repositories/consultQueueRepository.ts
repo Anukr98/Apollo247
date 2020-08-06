@@ -88,7 +88,7 @@ export class ConsultQueueRepository extends Repository<ConsultQueueItem> {
       .innerJoinAndSelect(
         'consultQueueItem.appointment',
         'appointment',
-        'consultQueueItem.appointmentId = appointment.id::VARCHAR'
+        'consultQueueItem.appointmentId = appointment.id'
       )
       .where('appointment.appointmentState NOT IN (:...appointmentStates)', {
         appointmentStates: [APPOINTMENT_STATE.AWAITING_RESCHEDULE],

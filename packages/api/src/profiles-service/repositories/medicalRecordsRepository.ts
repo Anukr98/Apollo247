@@ -1,5 +1,5 @@
 import { EntityRepository, Repository, Not, Between } from 'typeorm';
-import { MedicalRecords } from 'profiles-service/entities';
+import { MedicalRecords, MedicalRecordType } from 'profiles-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { addDays, format } from 'date-fns';
@@ -116,5 +116,18 @@ export class MedicalRecordsRepository extends Repository<MedicalRecords> {
       .getCount();
 
     return [newPatientCount, oldPatientCount];
+  }
+
+  async getBlobUrl(patientId: string, prismFileIds: string, category: MedicalRecordType) {
+    return this.createQueryBuilder('medical_records')
+      .where('medical_records."patientId" = :patientId', { patientId })
+      .andWhere('medical_records."recordType" = :recordType', { recordType: category })
+      .andWhere('medical_records."prismFileIds" = :prismFileIds', { prismFileIds })
+      .getOne()
+      .catch((getRecordsError) => {
+        throw new AphError(AphErrorMessages.GET_MEDICAL_RECORDS_ERROR, undefined, {
+          getRecordsError,
+        });
+      });
   }
 }

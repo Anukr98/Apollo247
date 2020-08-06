@@ -186,7 +186,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     setPharmacyLocationServiceable,
     medicinePageAPiResponse,
     setMedicinePageAPiResponse,
-    setLocationDetails
+    setLocationDetails,
   } = useAppCommonData();
   const [ShowPopop, setShowPopop] = useState<boolean>(!!showUploadPrescriptionPopup);
   const [pincodePopupVisible, setPincodePopupVisible] = useState<boolean>(false);
@@ -204,7 +204,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const [allBrandData, setAllBrandData] = useState<Brand[]>([]);
   const [serviceabilityMsg, setServiceabilityMsg] = useState('');
-  const hasLocation = (locationDetails || pharmacyLocation);
+  const hasLocation = locationDetails || pharmacyLocation;
   const { showAphAlert, hideAphAlert, setLoading: globalLoading } = useUIElements();
   const {
     data: latestMedicineOrderData,
@@ -458,7 +458,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           </View>
         ),
       });
-  }
+  };
 
   const [recommendedProducts, setRecommendedProducts] = useState<MedicineProduct[]>([]);
   const [data, setData] = useState<MedicinePageAPiResponse | null>(medicinePageAPiResponse);
@@ -659,10 +659,13 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         <MaterialMenu
           options={options}
           itemContainer={localStyles.menuItemContainer}
-          menuContainerStyle={[localStyles.menuMenuContainerStyle,{
-            marginLeft: hasLocation ? winWidth * 0.25 : 35,
-            marginTop: hasLocation ? 50 : 35
-          }]}
+          menuContainerStyle={[
+            localStyles.menuMenuContainerStyle,
+            {
+              marginLeft: hasLocation ? winWidth * 0.25 : 35,
+              marginTop: hasLocation ? 50 : 35,
+            },
+          ]}
           scrollViewContainerStyle={localStyles.menuScrollViewContainerStyle}
           itemTextStyle={localStyles.menuItemTextStyle}
           bottomPadding={localStyles.menuBottomPadding}
@@ -702,11 +705,9 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             'pincode'
           )}`;
       return (
-        <View style={{ paddingLeft: 15, marginTop: 3.5}}>
-          {
-            hasLocation
-              ?
-              <View style={{ marginTop: -7.5 }}>
+        <View style={{ paddingLeft: 15, marginTop: 3.5 }}>
+          {hasLocation ? (
+            <View style={{ marginTop: -7.5 }}>
               <View style={{ flexDirection: 'row' }}>
                 <View>
                   <Text numberOfLines={1} style={localStyles.deliverToText}>
@@ -717,18 +718,18 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                     {!serviceabilityMsg ? (
                       <Spearator style={localStyles.locationTextUnderline} />
                     ) : (
-                        <View style={{ height: 2 }} />
-                      )}
+                      <View style={{ height: 2 }} />
+                    )}
                   </View>
                 </View>
                 <View style={localStyles.dropdownGreenContainer}>
                   <DropdownGreen />
                 </View>
               </View>
-              </View>
-              :
-              <LocationOff />
-          }
+            </View>
+          ) : (
+            <LocationOff />
+          )}
           {!!serviceabilityMsg && (
             <Text style={localStyles.serviceabilityMsg}>{serviceabilityMsg}</Text>
           )}
@@ -1437,6 +1438,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       thumbnail,
       type_id,
       MaxOrderQty,
+      category_id,
     } = data.item;
 
     const addToCart = () => {
@@ -1463,12 +1465,9 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         globalLoading,
         props.navigation,
         currentPatient,
-        !!isPharmacyLocationServiceable
+        !!isPharmacyLocationServiceable,
+        { source: 'Pharmacy Home', section: title, categoryId: category_id }
       );
-
-      postwebEngageAddToCartEvent(data.item, 'Pharmacy Home', title);
-      let id = currentPatient && currentPatient.id ? currentPatient.id : '';
-      postAppsFlyerAddToCartEvent(data.item, id);
     };
 
     const removeFromCart = () => removeCartItem!(sku);
@@ -1621,7 +1620,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       setsearchSate('load');
       getMedicineSearchSuggestionsApi(_searchText)
         .then(({ data }) => {
-          // aphConsole.log({ data });
           const products = data.products || [];
           setMedicineList(products);
           setsearchSate('success');
@@ -1634,7 +1632,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         })
         .catch((e) => {
           CommonBugFender('Medicine_onSearchMedicine', e);
-          // aphConsole.log({ e });
           if (!Axios.isCancel(e)) {
             setsearchSate('fail');
           }
@@ -1643,47 +1640,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   };
 
   const renderSearchBar = () => {
-    const isFocusedStyle = isSearchFocused;
-    const styles = StyleSheet.create({
-      inputStyle: {
-        minHeight: 29,
-        ...theme.fonts.IBMPlexSansMedium(18),
-      },
-      inputContainerStyle: isFocusedStyle
-        ? {
-            borderBottomColor: '#00b38e',
-            borderBottomWidth: 2,
-            marginHorizontal: 10,
-          }
-        : {
-            borderRadius: 5,
-            backgroundColor: '#f7f8f5',
-            marginHorizontal: 10,
-            paddingHorizontal: 16,
-            borderBottomWidth: 0,
-          },
-      rightIconContainerStyle: isFocusedStyle
-        ? {
-            height: 24,
-          }
-        : {},
-      style: isFocusedStyle
-        ? {
-            paddingBottom: 18.5,
-          }
-        : { borderRadius: 5 },
-      containerStyle: isFocusedStyle
-        ? {
-            marginBottom: 20,
-            marginTop: 8,
-          }
-        : {
-            marginBottom: 20,
-            marginTop: 12,
-            alignSelf: 'center',
-          },
-    });
-
     const shouldEnableSearchSend = searchText.length > 2;
     const rigthIconView = (
       <TouchableOpacity
@@ -1714,7 +1670,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       <>
         <SearchInput
           _isSearchFocused={isSearchFocused}
-          autoFocus={(!pharmacyLocation && !locationDetails) ? false : focusSearch!}
+          autoFocus={!pharmacyLocation && !locationDetails ? false : focusSearch!}
           onSubmitEditing={() => {
             if (searchText.length > 2) {
               const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_SEARCH_RESULTS] = {
@@ -1775,6 +1731,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       type_id,
       thumbnail,
       MaxOrderQty,
+      category_id,
     } = item;
     setItemsLoading({ ...itemsLoading, [sku]: true });
     addPharmaItemToCart(
@@ -1801,12 +1758,9 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       props.navigation,
       currentPatient,
       !!isPharmacyLocationServiceable,
+      { source: 'Pharmacy Partial Search', categoryId: category_id },
       () => setItemsLoading({ ...itemsLoading, [sku]: false })
     );
-    postwebEngageAddToCartEvent(item, 'Pharmacy Partial Search');
-    let id = currentPatient && currentPatient.id ? currentPatient.id : '';
-    console.log(item);
-    postAppsFlyerAddToCartEvent(item, id);
   };
 
   const getItemQuantity = (id: string) => {
@@ -2015,7 +1969,17 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         setPharmacyLocationServiceable!(true);
       }
     };
-    return pincodePopupVisible && <PincodePopup onClickClose={() => {onClose(), checkLocation()}} onComplete={onClose} />;
+    return (
+      pincodePopupVisible && (
+        <PincodePopup
+          onClickClose={() => {
+            onClose();
+            checkLocation();
+          }}
+          onComplete={onClose}
+        />
+      )
+    );
   };
 
   return (

@@ -68,6 +68,7 @@ export const getMedicineOrdersOMSListTypeDefs = gql`
     bookingSource: BOOKING_SOURCE
     medicineOrderLineItems: [MedicineOrderOMSLineItems]
     medicineOrderPayments: [MedicineOrderOMSPayments]
+    medicineOrderRefunds:[MedicineOrderOMSRefunds]
     medicineOrdersStatus: [MedicineOrdersOMSStatus]
     medicineOrderShipments: [MedicineOrderOMSShipment]
     medicineOrderAddress: MedicineOrderOMSAddress
@@ -132,6 +133,21 @@ export const getMedicineOrdersOMSListTypeDefs = gql`
     healthCreditsRedemptionRequest: BlockUserPointsResponse
     paymentMode: PAYMENT_METHODS_REVERSE
     refundAmount: Float
+  }
+
+  type MedicineOrderOMSRefunds {
+    refundAmount: Float
+    refundStatus: REFUND_STATUS
+    refundId: String
+    orderId: String
+    createdDate: DateTime
+  }
+
+  enum REFUND_STATUS {
+    REFUND_REQUEST_RAISED
+    REFUND_FAILED
+    REFUND_SUCCESSFUL
+    REFUND_REQUEST_NOT_RAISED
   }
 
   enum PAYMENT_METHODS_REVERSE {
@@ -328,10 +344,19 @@ const getMedicineOrdersOMSList: Resolver<
     paginateParams.take = pageSize
     paginateParams.skip = (pageSize * pageNo) - pageSize //bcoz pageNo. starts from 1 not 0.
   }
-  const [medicineOrdersList, totalCount]: any = await medicineOrdersRepo.getMedicineOrdersListWithoutAbortedStatus(
+
+  // const [medicineOrdersList, totalCount]: any = await medicineOrdersRepo.getMedicineOrdersListWithoutAbortedStatus(
+  //   primaryPatientIds,
+  //   paginateParams
+  // );
+
+  console.log('pagination params ---->', paginateParams)
+  const [medicineOrdersList, totalCount]: any = await Promise.all(medicineOrdersRepo.getMedicineOrdersListWithoutAbortedStatus(
     primaryPatientIds,
     paginateParams
-  );
+  ));
+
+  console.log('medicineOrdersList length---->', medicineOrdersList.length, totalCount)
 
   let uhid = patientDetails.uhid;
   if (process.env.NODE_ENV == 'local') uhid = ApiConstants.CURRENT_UHID.toString();
