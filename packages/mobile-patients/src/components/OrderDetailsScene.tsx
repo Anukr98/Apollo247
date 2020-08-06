@@ -210,6 +210,11 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   const orderStatusList = ((!loading && order && order.medicineOrdersStatus) || []).filter(
     (item) => item!.hideStatus
   );
+  const paymentDetails = (!loading && order && order.medicineOrderPayments) || [];
+  const RefundTypes = ['REFUND_REQUEST_RAISED', 'REFUND_SUCCESSFUL'];
+  const refundDetails = ((!loading && order && order.medicineOrderRefunds) || []).filter(
+    (item) => RefundTypes.indexOf(item.refundStatus) != -1
+  );
   const offlineOrderBillNumber = loading
     ? 0
     : g(data, 'getMedicineOrderOMSDetails', 'medicineOrderDetails', 'billNumber');
@@ -969,14 +974,13 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
             );
           })}
         </View>
-        {
+        {refundDetails && refundDetails.length != 0 && (
           <RefundDetails
-            orderAutoId={orderAutoId}
-            refunds={[20, 30]}
-            orderDate={getFormattedDate(orderDetails.createdDate)}
+            refunds={refundDetails}
+            paymentDetails={paymentDetails ? paymentDetails : []}
             navigaitonProps={props.navigation}
           />
-        }
+        )}
         {isDelivered ? (
           <View
             style={{

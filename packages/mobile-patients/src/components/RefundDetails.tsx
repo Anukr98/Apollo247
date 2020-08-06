@@ -4,16 +4,18 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { NavigationScreenProps } from 'react-navigation';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import { getDate } from '@aph/mobile-patients/src/utils/dateUtil';
 
 export interface RefundDetailsProps {
-  orderAutoId: any;
-  orderDate: any;
   refunds: any;
+  paymentDetails: any;
   navigaitonProps: any;
 }
 
 export const RefundDetails: React.FC<RefundDetailsProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
+  const paymentMode =
+    props.paymentDetails && props.paymentDetails.length ? props.paymentDetails[0].paymentMode : '';
 
   return (
     <View style={styles.container}>
@@ -26,20 +28,21 @@ export const RefundDetails: React.FC<RefundDetailsProps> = (props) => {
               marginBottom: index == props.refunds.length - 1 ? 28 : 8,
             }}
           >
-            <Text numberOfLines={3} style={styles.refundMsg}>
-              Refund of Amount Rs {item} has been processed for your order {props.orderAutoId} on{' '}
-              {props.orderDate} and you will receive in your account in 10-14 working days. Track
-              Refund status by clicking here.
+            <Text numberOfLines={4} style={styles.refundMsg}>
+              Refund of Amount Rs {item.refundAmount} has been processed for your order on{' '}
+              {new Date(item.createdDate).toDateString()} and you will receive in your account in
+              10-14 working days. Track Refund status by clicking here.
             </Text>
             <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
               <TouchableOpacity
                 onPress={() => {
-                  //   props.navigaitonProps.navigate(AppRoutes.PaymentStatusScreen, {
-                  //     item: item,
-                  //     paymentFor: 'pharmacy',
-                  //     status: 'TXN_REFUND',
-                  //     patientId: currentPatient && currentPatient.id ? currentPatient.id : '',
-                  //   });
+                  props.navigaitonProps.navigate(AppRoutes.RefundStatus, {
+                    orderAutoId: item.orderId,
+                    refundAmount: item.refundAmount,
+                    refundId: item.refundId,
+                    initiationDate: item.createdDate,
+                    paymentMode: paymentMode,
+                  });
                 }}
               >
                 <Text style={styles.refundStatus}>REFUND STATUS</Text>
