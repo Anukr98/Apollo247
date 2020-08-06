@@ -119,9 +119,9 @@ export class MedicalRecordsRepository extends Repository<MedicalRecords> {
   }
 
   async getBlobUrl(patientId: string, prismFileIds: string) {
-    return this.createQueryBuilder('medicalRecords')
-      .where('medicalRecords.patientId = :patientId', { patientId })
-      .andWhere('medicalRecords.prismFileIds = :prismFileIds', { prismFileIds })
+    return this.createQueryBuilder('medical_records')
+      .where('medical_records."patientId" = :patientId', { patientId })
+      .andWhere('medical_records."prismFileIds" = :prismFileIds', { prismFileIds })
       .getOne()
       .catch((getRecordsError) => {
         throw new AphError(AphErrorMessages.GET_MEDICAL_RECORDS_ERROR, undefined, {

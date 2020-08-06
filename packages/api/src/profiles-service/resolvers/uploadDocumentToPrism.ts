@@ -10,6 +10,10 @@ import { MedicalRecordsRepository } from 'profiles-service/repositories/medicalR
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { AppointmentDocumentRepository } from 'consults-service/repositories/appointmentDocumentRepository';
 import { downloadDocument } from 'helpers/phrV1Services';
+import path from 'path';
+import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
+import { fontSize } from 'pdfkit/js/mixins/fonts';
+import { delay } from 'lodash';
 
 export const uploadDocumentTypeDefs = gql`
   enum PRISM_DOCUMENT_CATEGORY {
@@ -31,6 +35,7 @@ export const uploadDocumentTypeDefs = gql`
 
   extend type Mutation {
     uploadDocument(uploadDocumentInput: UploadDocumentInput): UploadPrismDocumentResult!
+    fetchBlobURLWithPRISMData(patientId: ID!, fileUrl: String!, prismFileId: String!): String!
   }
 `;
 type UploadPrismDocumentResult = {
@@ -84,7 +89,7 @@ export const fetchBlobURLWithPRISMData: Resolver<
   ProfilesServiceContext,
   string
 > = async (parent, args, { profilesDb, consultsDb }) => {
-  if (!args.fileUrl.indexOf('authToken=')) return args.fileUrl;
+  if (args.fileUrl.indexOf('authToken=') < 0) return args.fileUrl;
 
   //check in medical records
   const medicalRepo = profilesDb.getCustomRepository(MedicalRecordsRepository);
@@ -112,7 +117,16 @@ export const fetchBlobURLWithPRISMData: Resolver<
   const fileName = args.fileUrl.split('.');
   const fileType = fileName.pop();
 
-  const bufferData = await downloadDocument(patientDetails.uhid, args.fileUrl);
+  const bufferData = await downloadDocument(patientDetails.uhid, args.fileUrl, args.prismFileId);
+
+  const name = `test.jpeg`;
+
+  const assetsDir = <string>process.env.ASSETS_DIRECTORY;
+  const loadAsset = (file: string) => path.resolve(assetsDir, file);
+  const filePath = loadAsset(name);
+  const fs = require('fs');
+  fs.writeFile(filePath, bufferData);
+
   const blobUrl = await uploadFileToBlobStorage(fileType!.toUpperCase(), bufferData);
   return blobUrl;
 };

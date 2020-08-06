@@ -46,11 +46,11 @@ export class AppointmentDocumentRepository extends Repository<AppointmentDocumen
 
   async getDocumentsByAppointmentId(appointmentId: string[], prismFileId: string) {
     return this.createQueryBuilder('appointment_document')
-      .select(['documentPath'])
-      .andWhere('appointment_document.appointmentId in(:...appointmentId)', {
+      .select(['appointment_document."documentPath"'])
+      .andWhere('appointment_document."appointmentId" in(:...appointmentId)', {
         appointmentId: appointmentId,
       })
-      .andWhere('appointment_document.prismFileId= :prismFileId', { prismFileId })
+      .andWhere('appointment_document."prismFileId"= :prismFileId', { prismFileId })
       .getRawOne();
   }
 }

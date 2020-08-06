@@ -16,7 +16,7 @@ import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { Patient, Gender } from 'profiles-service/entities';
 import { ApiConstants } from 'ApiConstants';
-import { getUnixTime } from 'date-fns';
+import { getUnixTime, format } from 'date-fns';
 import { PrismGetUsersResponse } from 'types/prism';
 
 const prismTimeoutMillSeconds = Number(process.env.PRISM_TIMEOUT_IN_MILLISECONDS);
@@ -532,7 +532,11 @@ export async function getAuthToken(primaryuhid: string): Promise<GetAuthTokenRes
     });
 }
 
-export async function downloadDocument(uhid: string, fileUrl: string): Promise<string> {
+export async function downloadDocument(
+  uhid: string,
+  fileUrl: string,
+  prismFileId: string
+): Promise<string> {
   if (
     !process.env.PHR_V1_DONLOAD_PRESCRIPTION_DOCUMENT ||
     !process.env.PHR_V1_ACCESS_TOKEN ||
@@ -542,17 +546,21 @@ export async function downloadDocument(uhid: string, fileUrl: string): Promise<s
 
   const getToken = await getAuthToken(uhid);
 
-  const fileIdNameArray = fileUrl.split('_');
-  const fileId = fileIdNameArray.shift();
-  const fileName = fileIdNameArray.join('_');
+  const fileNameArray = fileUrl.split('.');
+  const fileType = fileNameArray.pop();
+  const fileName = format(new Date(), 'ddmmyyyy-HHmmss') + '.' + fileType!.toLowerCase();
+
+  console.log('fileurl...', fileUrl.indexOf('labresults='));
 
   let apiUrl = process.env.PHR_V1_DONLOAD_PRESCRIPTION_DOCUMENT.toString();
-  if (fileUrl.indexOf('labresults='))
+  if (fileUrl.indexOf('labresults=') > 0)
     apiUrl = process.env.PHR_V1_DONLOAD_LABRESULT_DOCUMENT.toString();
   apiUrl = apiUrl.replace('{AUTH_KEY}', getToken.response);
   apiUrl = apiUrl.replace('{UHID}', uhid);
-  apiUrl = apiUrl.replace('{RECORDID}', fileId!);
+  apiUrl = apiUrl.replace('{RECORDID}', prismFileId);
   apiUrl = apiUrl.replace('{FILE_NAME}', fileName);
+
+  console.log('apiUrl', apiUrl);
 
   const reqStartTime = new Date();
   const controller = new AbortController();
@@ -571,6 +579,7 @@ export async function downloadDocument(uhid: string, fileUrl: string): Promise<s
       .text()
       .then(
         (data) => {
+          console.log('data', data);
           dLogger(
             reqStartTime,
             'getLabResultsFromPrism PRISM_DOWNLOAD_LABRESULTS_PRESCRIPTION_API_CALL___END',
@@ -580,6 +589,7 @@ export async function downloadDocument(uhid: string, fileUrl: string): Promise<s
           return data;
         },
         (err) => {
+          console.log('err', err);
           dLogger(
             reqStartTime,
             'getLabResultsFromPrism PRISM_DOWNLOAD_LABRESULTS_PRESCRIPTION_API_CALL___ERROR',
