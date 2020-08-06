@@ -8,6 +8,7 @@ import {
   DOCTOR_CALL_TYPE,
   APPT_CALL_TYPE,
   sendDoctorNotificationWhatsapp,
+  sendCallsDisconnectNotification,
 } from 'notifications-service/resolvers/notifications';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AphError } from 'AphError';
@@ -79,6 +80,10 @@ export const doctorCallNotificationTypeDefs = gql`
     sendApptNotification: ApptNotificationResult!
     getCallDetails(appointmentCallId: String): CallDetailsResult!
     sendPatientWaitNotification(appointmentId: String): sendPatientWaitNotificationResult
+    sendCallDisconnectNotification(
+      appointmentId: String
+      callType: APPT_CALL_TYPE
+    ): EndCallResult!
   }
 `;
 type sendPatientWaitNotificationResult = {
@@ -261,6 +266,35 @@ const sendPatientWaitNotification: Resolver<
   return { status: true };
 };
 
+const sendCallDisconnectNotification: Resolver<
+  null,
+  {
+    appointmentId: string;
+    callType: APPT_CALL_TYPE;
+  },
+  ConsultServiceContext,
+  EndCallResult
+> = async (parent, args, { consultsDb, doctorsDb, patientsDb }) => {
+  const apptRepo = consultsDb.getCustomRepository(AppointmentRepository);
+  const apptDetails = await apptRepo.findById(args.appointmentId);
+  if (apptDetails == null) throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
+
+  if (args.callType != APPT_CALL_TYPE.CHAT) {
+    const pushNotificationInput = {
+      appointmentId: args.appointmentId,
+      notificationType: NotificationType.CALL_APPOINTMENT,
+    };
+    const notificationResult = sendCallsDisconnectNotification(
+      pushNotificationInput,
+      patientsDb,
+      consultsDb,
+      doctorsDb
+    );
+    console.log(notificationResult, 'doctor call appt notification');
+  }
+  return { status: true };
+};
+
 export const doctorCallNotificationResolvers = {
   Query: {
     sendCallNotification,
@@ -268,5 +302,6 @@ export const doctorCallNotificationResolvers = {
     endCallNotification,
     getCallDetails,
     sendPatientWaitNotification,
+    sendCallDisconnectNotification,
   },
 };
