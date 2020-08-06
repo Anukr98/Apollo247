@@ -31,6 +31,7 @@ import { UploadPrescription } from 'components/Prescriptions/UploadPrescription'
 import { UploadEPrescriptionCard } from 'components/Prescriptions/UploadEPrescriptionCard';
 import { MetaTagsComp } from 'MetaTagsComp';
 import moment from 'moment';
+import { useHistory } from 'react-router';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -438,7 +439,7 @@ type MedicineOverView = MedicineOverViewDetails[] | string;
 export const MedicineDetails: React.FC = (props) => {
   const classes = useStyles({});
   const [tabValue, setTabValue] = React.useState<number>(0);
-  const params = useParams<{ sku: string }>();
+  const params = useParams<{ sku: string; searchText: string }>();
   const [medicineDetails, setMedicineDetails] = React.useState<MedicineProductDetails | null>(null);
   const [alertMessage, setAlertMessage] = React.useState<string>('');
   const [isAlertOpen, setIsAlertOpen] = React.useState<boolean>(false);
@@ -611,11 +612,19 @@ export const MedicineDetails: React.FC = (props) => {
   };
 
   const onePrimaryUser = hasOnePrimaryUser();
+  const history = useHistory();
+
   useEffect(() => {
     if (!medicineDetails) {
       getMedicineDetails(params.sku);
     }
   }, [medicineDetails]);
+
+  useEffect(() => {
+    if (params && params.searchText) {
+      history.push(clientRoutes.medicineDetails(params.sku));
+    }
+  }, []);
 
   let medicinePharmacyDetails: PharmaOverview[] | null = null;
 

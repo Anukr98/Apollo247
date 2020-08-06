@@ -108,7 +108,6 @@ export enum WebEngageEventName {
   UPLOAD_PRESCRIPTION = 'Upload Prescription',
   UPLOAD_PHOTO = 'Upload Photo',
   ITEMS_CLICKED = 'Items Clicked',
-  REORDER_MEDICINES = 'Reorder Medicines',
   PHR_ORDER_MEDS_TESTS = 'PHR Order Meds & Tests',
   PHR_CONSULT_CARD_CLICK = 'PHR Consult Card click',
   RE_ORDER_MEDICINE = 'ReOrder Medicine',
@@ -150,9 +149,9 @@ export enum WebEngageEventName {
   CONSULT_PAYMENT_MODE_SELECTED = 'Consult booking payment mode selected',
 
   // Deeplink Events
-  DEEPLINK_CONSULTROOM_SCREEN = 'Deeplink open Home Page',
-  DEEPLINK_PRODUCT_DETAIL_SCREEN = 'Deeplink open Product Detail Page',
-  DEEPLINK_CATEGORY_SCREEN = 'Deeplink open Category Page',
+  HOME_PAGE_VIEWED = 'Pharmacy Home page viewed',
+  PRODUCT_PAGE_VIEWED = 'Product page viewed',
+  CATEGORY_PAGE_VIEWED = 'Category page viewed',
 }
 
 export interface PatientInfo {
@@ -204,9 +203,9 @@ export interface ConsultedBefore extends PatientInfo {
 }
 
 export interface ReorderMedicine extends PatientInfo {
-  source: 'Order Details' | 'PHR' | 'Home';
+  source: string;
   orderType: 'Cart' | 'Non Cart' | 'Offline';
-  noOfItemsNotAvailable: number;
+  noOfItemsNotAvailable?: number;
 }
 
 export interface WebEngageEvents {
@@ -342,13 +341,12 @@ export interface WebEngageEvents {
     'product name': string;
     'product id': string; // (SKUID)
     Price: number;
-    'Discounted Price': number;
+    'Discounted Price'?: number;
     Quantity: number;
     Source:
       | 'Pharmacy Home'
       | 'Pharmacy PDP'
       | 'Pharmacy List'
-      | 'Diagnostic'
       | 'Pharmacy Partial Search'
       | 'Pharmacy Full Search';
     Brand?: string;
@@ -556,7 +554,7 @@ export interface WebEngageEvents {
     Servicable: boolean;
   };
   [WebEngageEventName.PHARMACY_CATEGORY_SECTION_PRODUCT_CLICK]: {
-    SectionName: string;
+    'Section Name': string;
     ProductId: string;
     ProductName: string;
   };
@@ -904,8 +902,6 @@ export interface WebEngageEvents {
     Type: 'Prescription' | 'Test Result';
   };
 
-  [WebEngageEventName.REORDER_MEDICINES]: ReorderMedicines;
-
   [WebEngageEventName.PHR_ORDER_MEDS_TESTS]: PatientInfoWithConsultId;
 
   [WebEngageEventName.PHR_CONSULT_CARD_CLICK]: PatientInfoWithConsultId;
@@ -1235,16 +1231,16 @@ export interface WebEngageEvents {
     Type: string;
     'Patient Id': string;
   };
-  [WebEngageEventName.DEEPLINK_CONSULTROOM_SCREEN]: {
-    source: string;
+  [WebEngageEventName.HOME_PAGE_VIEWED]: {
+    source: 'deeplink' | 'app home';
   };
-  [WebEngageEventName.DEEPLINK_PRODUCT_DETAIL_SCREEN]: {
-    source: string;
+  [WebEngageEventName.PRODUCT_PAGE_VIEWED]: {
+    source: 'deeplink' | 'widget' | 'search';
     ProductId: string;
     ProductName: string;
   };
-  [WebEngageEventName.DEEPLINK_CATEGORY_SCREEN]: {
-    source: string;
+  [WebEngageEventName.CATEGORY_PAGE_VIEWED]: {
+    source: 'home' | 'deeplink';
     CategoryId: string;
     CategoryName: string;
   };

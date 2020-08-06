@@ -173,6 +173,11 @@ const useStyles = makeStyles((theme: Theme) => {
         paddingTop: 5,
       },
     },
+    postTitle: {
+      margin: 0,
+      fontSize: 24,
+      fontWeight: 600,
+    },
     bottomPopover: {
       overflow: 'initial',
       backgroundColor: 'transparent',
@@ -330,7 +335,7 @@ export const ArticleBanner: React.FC<ArticleBannerProps> = (props) => {
       </div>
       <div className={classes.content}>
         <div>
-          <h2>{title}</h2>
+          <h1 className={classes.postTitle}>{title}</h1>
           <div className={classes.articleInformation}>
             <span className={classes.type}>{type}</span>
             {/* <span className={classes.views}>

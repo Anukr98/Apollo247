@@ -103,7 +103,10 @@ export class PatientRepository extends Repository<Patient> {
     const cache = await getCache(`${REDIS_PATIENT_ID_KEY_PREFIX}${id}`);
     if (cache && typeof cache === 'string') {
       const patient: Patient = JSON.parse(cache);
-      patient.dateOfBirth = new Date(patient.dateOfBirth);
+      //Only add DOB if it is actually present, or else it will take 1970 date as default when null is passed to constructor
+      if (patient.dateOfBirth) {
+        patient.dateOfBirth = new Date(patient.dateOfBirth);
+      }
       return this.create(patient);
     } else {
       return await this.setByIdCache(id);
@@ -147,7 +150,7 @@ export class PatientRepository extends Repository<Patient> {
   async setByMobileCache(mobile: string) {
     const patients = await this.find({
       where: { mobileNumber: mobile, isActive: true },
-      /*relations: [
+      relations: [
         'lifeStyle',
         'healthVault',
         'familyHistory',
@@ -155,7 +158,7 @@ export class PatientRepository extends Repository<Patient> {
         'patientDeviceTokens',
         'patientNotificationSettings',
         'patientMedicalHistory',
-      ],*/
+      ],
     });
 
     const patientIds: string[] = await patients.map((patient) => {
@@ -339,8 +342,8 @@ export class PatientRepository extends Repository<Patient> {
     return null;
   }
 
-  saveNewProfile(patientAttrs: Partial<Patient>) {
-    return this.create(patientAttrs)
+  async saveNewProfile(patientAttrs: Partial<Patient>) {
+    return await this.create(patientAttrs)
       .save()
       .catch((patientError) => {
         throw new AphError(AphErrorMessages.SAVE_NEW_PROFILE_ERROR, undefined, {
@@ -555,7 +558,7 @@ export class PatientRepository extends Repository<Patient> {
         });
       }
     } else {
-      primaryPatientIds.push(patientId);
+      primaryPatientIds.push(patientDetails.id);
     }
     return primaryPatientIds;
   }

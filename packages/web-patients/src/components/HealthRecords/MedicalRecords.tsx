@@ -495,6 +495,11 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
                           : '-'}
                       </p>
                     </div>
+                    {activeData && activeData.data && activeData.data.siteDisplayName && (
+                      <div className={classes.reportsDetails}>
+                        <label>{activeData.data.siteDisplayName}</label>
+                      </div>
+                    )}
                   </div>
                   {(activeData.data.observations || activeData.data.additionalNotes) && (
                     <ToplineReport activeData={activeData} />

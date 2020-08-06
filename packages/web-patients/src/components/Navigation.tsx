@@ -254,7 +254,7 @@ export const Navigation: React.FC<NavigationProps> = (props) => {
             className={
               currentPath === clientRoutes.specialityListing() ? classes.menuItemActive : ''
             }
-            title={'Medicines'}
+            title={'Doctors'}
           >
             Book Appointment
           </Link>

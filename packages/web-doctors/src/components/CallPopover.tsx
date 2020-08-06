@@ -85,8 +85,8 @@ const useStyles = makeStyles((theme: Theme) => {
       marginLeft: 20,
       marginRight: 20,
       fontSize: 13,
-      padding: '35px 20px',
       fontWeight: 600,
+      padding: '35px 20px',
       color: '#02475b',
       textTransform: 'uppercase',
       display: 'flex',
@@ -844,11 +844,11 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: '#00b38e',
       color: '#FFFFFF',
       display: 'inline-block',
-      paddingLeft: 6,
-      paddingTop: 2,
       marginRight: 10,
       fontWeight: 600,
       fontSize: 20,
+      borderRadius: 5,
+      textAlign: 'center',
     },
     callOptionFirst: {
       fontSize: '16px',
@@ -858,7 +858,9 @@ const useStyles = makeStyles((theme: Theme) => {
       lineHeight: 'normal',
       letterSpacing: 'normal',
       color: '#00b38e',
+      width: '50%',
     },
+
     callNote: {
       fontSize: '14px',
       fontWeight: 'normal',
@@ -1076,7 +1078,6 @@ interface errorObjectReshedule {
   otherError: boolean;
 }
 interface CallPopoverProps {
-  setShowToastMessage: (flag: boolean) => void;
   setStartConsultAction(isVideo: boolean): void;
   createSessionAction: () => void;
   saveCasesheetAction: (onlySave: boolean, sendToPatientFlag: boolean) => void;
@@ -1211,6 +1212,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const [doctorNextAvailableSlot, setDoctorNextAvailableSlot] = useState<string>('');
   const [isConfirmationChecked, setIsConfirmationChecked] = React.useState<boolean>(false);
   const [emptyFieldsString, setEmptyFieldsString] = useState<string>('');
+  const [showToastMessage, setShowToastMessage] = useState<boolean>(false);
 
   const [floatingJoinPrompt, setFloatingJoinPrompt] = useState<boolean>(false);
   const [joinPrompt, setJoinPrompt] = useState<boolean>(false);
@@ -1859,33 +1861,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     setIscall(false);
   };
 
-  // useEffect(() => {
-  //   const presenceEventObject = props.presenceEventObject;
-  //   if (
-  //     presenceEventObject &&
-  //     isConsultStarted &&
-  //     props.appointmentStatus !== STATUS.COMPLETED &&
-  //     appointmentInfo &&
-  //     appointmentInfo.appointmentType !== APPOINTMENT_TYPE.PHYSICAL
-  //   ) {
-  //     const data: any = presenceEventObject.channels[props.appointmentId].occupants;
-  //     const occupancyPatient = data.filter((obj: any) => {
-  //       return obj.uuid === 'PATIENT' || obj.uuid.indexOf('PATIENT_') > -1;
-  //     });
-  //     if (presenceEventObject.totalOccupancy >= 2) {
-  //       didPatientJoined = true;
-  //       clearInterval(intervalCallAbundant);
-  //       abondmentStarted = false;
-  //     } else {
-  //       if (presenceEventObject.totalOccupancy === 1 && occupancyPatient.length === 0) {
-  //         if (!abondmentStarted && didPatientJoined) {
-  //           //abondmentStarted = true;
-  //           //callAbundantIntervalTimer(620);
-  //         }
-  //       }
-  //     }
-  //   }
-  // }, [props.presenceEventObject]);
   const onStartConsult = () => {
     const text = {
       id: props.doctorId,
@@ -2299,21 +2274,24 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               : ''}
           </div>
         </div>
+
         <div className={classes.consultButtonContainer}>
-          <span>
-            {(props.appointmentStatus === STATUS.COMPLETED ||
-              props.isClickedOnEdit ||
-              props.startAppointment) && (
-              <span
-                className={classes.phoneCallConnect}
-                onClick={() => {
-                  setConnectCall(true);
-                }}
-              >
-                <img src={require('images/call_connect.svg')} />
-                Connect via phone call
-              </span>
-            )}
+          <span style={{ display: 'inline-flex' }}>
+            {!showToastMessage &&
+              (props.appointmentStatus === STATUS.COMPLETED ||
+                props.isClickedOnEdit ||
+                props.startAppointment) && (
+                <span
+                  className={classes.phoneCallConnect}
+                  onClick={() => {
+                    setConnectCall(true);
+                  }}
+                >
+                  <img src={require('images/call_connect.svg')} />
+                  Connect via phone call
+                </span>
+              )}
+
             {props.appointmentStatus === STATUS.COMPLETED &&
               currentUserType !== LoggedInUserType.SECRETARY &&
               props.sentToPatient === true && (
@@ -2805,7 +2783,9 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                 <span className={classes.callSubheader}>
                   {'Please follow the steps to connect to your patient :'}
                 </span>
-                <span style={{ display: 'flex', marginTop: 30, marginBottom: 20 }}>
+                <span
+                  style={{ display: 'flex', margin: '30px 0px 20px 10px', alignItems: 'center' }}
+                >
                   <span className={classes.callOption}>1</span>
                   <span className={classes.callOptionFirst}>
                     Answer the call from {process.env.EXOTEL_CALLER_ID} <br />
@@ -2859,9 +2839,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                         },
                         fetchPolicy: 'no-cache',
                       });
-                      props.setShowToastMessage(true);
-                      // clearTimeout(5000);
-                      // setTimeout(() => props.setShowToastMessage(false), 5000);
+                      setShowToastMessage(true);
                     }}
                   >
                     {'PROCEED TO CONNECT'}
@@ -3755,6 +3733,16 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           setSubscriberError(null);
         }}
       />
+      {showToastMessage && (
+        <Alert
+          error={{
+            message: `You will get a call from ${process.env.EXOTEL_CALLER_ID}. Please pick up the call !`,
+          }}
+          onClose={() => {
+            setShowToastMessage(false);
+          }}
+        />
+      )}
       {/* Ot Errors Ends */}
     </div>
   );

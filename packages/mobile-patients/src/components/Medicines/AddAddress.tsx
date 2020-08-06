@@ -754,7 +754,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
     <View style={{ flex: 1 }}>
       <SafeAreaView style={theme.viewStyles.container}>
         {renderHeader()}
-        <KeyboardAvoidingView behavior={'padding'} style={{ flex: 1 }} {...keyboardVerticalOffset}>
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }} {...keyboardVerticalOffset}>
           <ScrollView bounces={false}>
             {renderAddress()}
             <View style={{ height: Platform.OS == 'ios' ? 60 : 0 }} />

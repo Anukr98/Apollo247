@@ -24,6 +24,7 @@ import {
   Deeplink,
   DoctorPatientExternalConnect,
   AdminAuditLogs,
+  DoctorProfileHistory,
 } from 'doctors-service/entities';
 import {
   Coupon,
@@ -75,6 +76,7 @@ import {
   AppointmentDocuments,
   AppointmentNoShow,
   AppointmentPayments,
+  ConsultQueueItem,
   AppointmentRefunds,
   AppointmentSessions,
   CaseSheet,
@@ -179,6 +181,7 @@ export const connect = async () => {
         CityPincodeMapper,
         DoctorPatientExternalConnect,
         AdminAuditLogs,
+        DoctorProfileHistory,
       ],
       type: 'postgres',
       host: process.env.DOCTORS_DB_HOST,
@@ -217,6 +220,7 @@ export const connect = async () => {
         UtilizationCapacity,
         AppointmentUpdateHistory,
         ExotelDetails,
+        ConsultQueueItem,
       ],
       type: 'postgres',
       host: process.env.CONSULTS_DB_HOST,

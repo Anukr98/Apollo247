@@ -19,6 +19,8 @@ import { ConsultMode } from 'doctors-service/entities';
 import { BlockUserPointsResponse } from 'types/oneApolloTypes';
 import { getCache, setCache, delCache } from 'profiles-service/database/connectRedis';
 import { ApiConstants } from 'ApiConstants';
+import { AphError } from 'AphError';
+import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 
 export type ONE_APOLLO_USER_REG = {
   FirstName: string;
@@ -27,6 +29,7 @@ export type ONE_APOLLO_USER_REG = {
   Gender: Gender;
   BusinessUnit: string;
   StoreCode: string;
+  CustomerId: string;
 };
 
 export enum ONE_APOLLO_PRODUCT_CATEGORY {
@@ -47,6 +50,7 @@ export type OneApollTransaction = {
   CalculateHealthCredits: boolean;
   Gender: Gender;
   Discount: number;
+  CreditsRedeemed: number;
   TransactionLineItems: Partial<TransactionLineItems>[];
 };
 
@@ -800,6 +804,7 @@ export class MedicineOrdersStatus extends BaseEntity {
   @ManyToOne((type) => MedicineOrders, (medicineOrders) => medicineOrders.medicineOrdersStatus)
   medicineOrders: MedicineOrders;
 
+  @Index('MedicineOrdersStatus_MedicineOrderShipmentId')
   @ManyToOne(
     (type) => MedicineOrderShipments,
     (medicineOrderShipments) => medicineOrderShipments.medicineOrdersStatus
@@ -1250,6 +1255,14 @@ export class PatientAddress extends BaseEntity {
   @BeforeUpdate()
   updateDateUpdate() {
     this.updatedDate = new Date();
+  }
+
+  @BeforeInsert()
+  @BeforeUpdate()
+  validateAddress() {
+    if (this.addressLine1 == '' || this.addressLine1 == null) {
+      throw new AphError(AphErrorMessages.INVALID_ADDRESS_DETAILS);
+    }
   }
 
   @AfterInsert()

@@ -21,7 +21,14 @@ import { TransferAppointmentRepository } from 'consults-service/repositories/tra
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { MedicineOrdersRepository } from 'profiles-service/repositories/MedicineOrdersRepository';
 import { FacilityRepository } from 'doctors-service/repositories/facilityRepository';
-import { addMilliseconds, format, differenceInMinutes, addDays, differenceInHours } from 'date-fns';
+import {
+  addMilliseconds,
+  format,
+  differenceInMinutes,
+  addDays,
+  differenceInHours,
+  addMinutes,
+} from 'date-fns';
 import path from 'path';
 import fs from 'fs';
 import { log } from 'customWinstonLogger';
@@ -182,6 +189,11 @@ export enum NotificationPriority {
   high = 'high',
   normal = 'normal',
 }
+
+type MedicineOrderRefundNotificationInput = {
+  refundAmount: number;
+  healthCreditsRefund: number;
+};
 
 type PushNotificationInput = {
   notificationType: NotificationType;
@@ -546,9 +558,10 @@ export async function sendNotification(
   let notificationBody: string = '';
   const notificationSound: string = ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString();
   const istDateTime = addMilliseconds(appointment.appointmentDateTime, 19800000);
-  const apptDate = format(istDateTime, 'dd-MM-yyyy HH:mm');
-
-  //Your appointment has been cancelled
+  const apptDate = format(
+    addMinutes(new Date(appointment.appointmentDateTime), +330),
+    'yyyy-MM-dd HH:mm:ss'
+  );
   if (pushNotificationInput.notificationType == NotificationType.PATIENT_CANCEL_APPOINTMENT) {
     notificationTitle = ApiConstants.PATIENT_CANCEL_APPT_TITLE;
     notificationBody = ApiConstants.PATIENT_CANCEL_APPT_BODY.replace(
@@ -885,8 +898,12 @@ export async function sendNotification(
       '{2}',
       doctorDetails.firstName + ' ' + doctorDetails.lastName
     );
-    const istDateTime = addMilliseconds(appointment.appointmentDateTime, 19800000);
-    notificationBody = notificationBody.replace('{3}', format(istDateTime, 'yyyy-MM-dd hh:mm'));
+    //const istDateTime = addMilliseconds(appointment.appointmentDateTime, 19800000);
+    const apptDate = format(
+      addMinutes(new Date(appointment.appointmentDateTime), +330),
+      'yyyy-MM-dd HH:mm:ss'
+    );
+    notificationBody = notificationBody.replace('{3}', apptDate);
 
     /*let smsLink = process.env.SMS_LINK_BOOK_APOINTMENT
       ? ' Reschedule Now ' + process.env.SMS_LINK_BOOK_APOINTMENT
@@ -1204,13 +1221,16 @@ export async function sendNotification(
       notificationResponse = response;
       //if (pushNotificationInput.notificationType == NotificationType.CALL_APPOINTMENT) {
       const fileName =
-        process.env.NODE_ENV + '_callnotification_' + format(new Date(), 'yyyyMMdd') + '.txt';
+        process.env.NODE_ENV +
+        '_callnotification_' +
+        format(addMinutes(new Date(), +330), 'yyyyMMdd') +
+        '.txt';
       let assetsDir = path.resolve('/apollo-hospitals/packages/api/src/assets');
       if (process.env.NODE_ENV != 'local') {
         assetsDir = path.resolve(<string>process.env.ASSETS_DIRECTORY);
       }
       let content =
-        format(new Date(), 'yyyy-MM-dd hh:mm') +
+        format(addMinutes(new Date(), +330), "yyyy-MM-dd'T'HH:mm:ss'+0530'") +
         '\n apptid: ' +
         pushNotificationInput.appointmentId +
         '\n';
@@ -1559,8 +1579,12 @@ export async function sendReminderNotification(
       '{2}',
       doctorDetails.firstName + ' ' + doctorDetails.lastName
     );
-    const istDateTime = addMilliseconds(appointment.appointmentDateTime, 19800000);
-    notificationBody = notificationBody.replace('{3}', format(istDateTime, 'yyyy-MM-dd hh:mm'));
+    //const istDateTime = addMilliseconds(appointment.appointmentDateTime, 19800000);
+    const apptDate = format(
+      addMinutes(new Date(appointment.appointmentDateTime), +330),
+      "yyyy-MM-dd'T'HH:mm:ss'+0530'"
+    );
+    notificationBody = notificationBody.replace('{3}', apptDate);
     payload = {
       notification: {
         title: notificationTitle,
@@ -1615,7 +1639,7 @@ export async function sendReminderNotification(
   if (
     pushNotificationInput.notificationType == NotificationType.APPOINTMENT_CASESHEET_REMINDER_15 ||
     pushNotificationInput.notificationType ==
-    NotificationType.APPOINTMENT_CASESHEET_REMINDER_15_VIRTUAL
+      NotificationType.APPOINTMENT_CASESHEET_REMINDER_15_VIRTUAL
   ) {
     if (!(appointment && appointment.id)) {
       throw new AphError(AphErrorMessages.APPOINTMENT_ID_NOT_FOUND);
@@ -2041,7 +2065,7 @@ export async function sendMedicineOrderStatusNotification(
 
   notificationTitle = notificationTitle.toString();
   notificationBody = notificationBody.replace('{0}', userName);
-  notificationBody = notificationBody.replace('{1}', orderNumber);
+  notificationBody = notificationBody.replace(/\{1}/g, orderNumber);
   if (notificationType == NotificationType.MEDICINE_ORDER_READY_AT_STORE) {
     const shopAddress = JSON.parse(orderDetails.shopAddress);
     notificationBody = notificationBody.replace('{2}', shopAddress.storename);
@@ -2203,7 +2227,7 @@ const testPushNotification: Resolver<
   { deviceToken: String },
   NotificationsServiceContext,
   PushNotificationSuccessMessage | undefined
-> = async (parent, args, { }) => {
+> = async (parent, args, {}) => {
   //initialize firebaseadmin
   const config = {
     credential: firebaseAdmin.credential.applicationDefault(),
@@ -2845,13 +2869,14 @@ export async function sendDoctorRescheduleAppointmentNotification(
     timeToLive: 60 * 60 * 24, //wait for one day.. if device is offline
   };
   //building payload
+  const apptDate = format(
+    addMinutes(new Date(appointmentDateTime), +330),
+    "yyyy-MM-dd'T'HH:mm:ss'+0530'"
+  );
   const payload = {
     notification: {
       title: `Appointment has been Rescheduled`,
-      body: `Appointment with ${patientName} has been rescheduled to ${format(
-        addMilliseconds(appointmentDateTime, 19800000),
-        'yyyy-MM-dd HH:mm:ss'
-      )}`,
+      body: `Appointment with ${patientName} has been rescheduled to ${apptDate}`,
       sound: ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString(),
     },
     data: {
@@ -2859,11 +2884,8 @@ export async function sendDoctorRescheduleAppointmentNotification(
       type: 'doctor_booked_appointment_reschedule',
       appointmentId: apptId,
       patientName: patientName,
-      date: format(addMilliseconds(appointmentDateTime, 19800000), 'yyyy-MM-dd HH:mm:ss'),
-      body: `Appointment with ${patientName} has been rescheduled to ${format(
-        addMilliseconds(appointmentDateTime, 19800000),
-        'yyyy-MM-dd HH:mm:ss'
-      )}`,
+      date: apptDate,
+      body: `Appointment with ${patientName} has been rescheduled to ${apptDate}`,
     },
   };
 
@@ -2944,7 +2966,39 @@ export async function medicineOrderCancelled(
     msgText = msgText.replace('{orderId}', orderDetails.orderAutoId.toString());
     msgText = msgText.replace('{refund}', paymentInfo.amountPaid.toString());
     await sendNotificationSMS(orderDetails.patient.mobileNumber, msgText);
+    if(paymentInfo.healthCreditsRedeemed > 0){
+      msgText = ApiConstants.ORDER_CANCEL_HC_REFUND_BODY;
+      msgText = msgText.replace('{orderId}', orderDetails.orderAutoId.toString());
+      msgText = msgText.replace('{healthCreditsRefund}', paymentInfo.healthCreditsRedeemed.toString());
+      await sendNotificationSMS(orderDetails.patient.mobileNumber, msgText);
+    }
   }
+}
+
+export async function medicineOrderRefundNotification(
+  orderDetails: MedicineOrders,
+  medicineOrderRefundNotificationInput: MedicineOrderRefundNotificationInput
+) {
+  let notificationBody: string = '';
+  if(medicineOrderRefundNotificationInput.refundAmount > 0 || medicineOrderRefundNotificationInput.healthCreditsRefund > 0){
+    if(medicineOrderRefundNotificationInput.refundAmount > 0 && medicineOrderRefundNotificationInput.healthCreditsRefund > 0){
+      notificationBody = ApiConstants.ORDER_PAYMENT_HC_PARTIAL_REFUND_BODY;
+      notificationBody = notificationBody.replace('{orderId}', orderDetails.orderAutoId.toString());
+      notificationBody = notificationBody.replace('{refundAmount}', medicineOrderRefundNotificationInput.refundAmount.toString());
+      notificationBody = notificationBody.replace('{healthCreditsRefund}',medicineOrderRefundNotificationInput.healthCreditsRefund.toString()); 
+    }else if(medicineOrderRefundNotificationInput.refundAmount > 0){
+      notificationBody = ApiConstants.ORDER_PAYMENT_PARTIAL_REFUND_BODY;
+      notificationBody = notificationBody.replace('{orderId}', orderDetails.orderAutoId.toString());
+      notificationBody = notificationBody.replace('{refundAmount}', medicineOrderRefundNotificationInput.refundAmount.toString()); 
+    }else if(medicineOrderRefundNotificationInput.healthCreditsRefund > 0){
+      notificationBody = ApiConstants.ORDER_HC_PARTIAL_REFUND_BODY;
+      notificationBody = notificationBody.replace('{orderId}', orderDetails.orderAutoId.toString());
+      notificationBody = notificationBody.replace('{healthCreditsRefund}',medicineOrderRefundNotificationInput.healthCreditsRefund.toString());
+    }
+  //console.log(notificationBody);
+  await sendNotificationSMS(orderDetails.patient.mobileNumber, notificationBody);
+  }
+  return;
 }
 
 export const getNotificationsResolvers = {

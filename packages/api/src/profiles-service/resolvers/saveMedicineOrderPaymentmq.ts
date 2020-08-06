@@ -30,7 +30,6 @@ import { EmailMessage } from 'types/notificationMessageTypes';
 import { log } from 'customWinstonLogger';
 import { BlockOneApolloPointsRequest, BlockUserPointsResponse } from 'types/oneApolloTypes';
 import { OneApollo } from 'helpers/oneApollo';
-import { initiateRefund } from 'profiles-service/helpers/refundHelper';
 
 export const saveMedicineOrderPaymentMqTypeDefs = gql`
   enum CODCity {
@@ -196,19 +195,22 @@ const SaveMedicineOrderPaymentMq: Resolver<
       orderDetails.orderAutoId,
       paymentAttrs
     );
+    //get above updated details
+    savePaymentDetails = await medicineOrdersRepo.findMedicineOrderPayment(orderDetails.id)
   } else {
     savePaymentDetails = await medicineOrdersRepo.saveMedicineOrderPayment(paymentAttrs);
-    if (!savePaymentDetails) {
-      log(
-        'profileServiceLogger',
-        'saveMedicineOrderPayment failed ',
-        'SaveMedicineOrderPaymentMq()->saveMedicineOrderPayment',
-        JSON.stringify(paymentAttrs),
-        ''
-      );
-      throw new AphError(AphErrorMessages.INVALID_MEDICINE_ORDER_ID, undefined, {});
-    }
     delete savePaymentDetails.medicineOrders;
+  }
+
+  if (!savePaymentDetails) {
+    log(
+      'profileServiceLogger',
+      'saveMedicineOrderPayment failed ',
+      'SaveMedicineOrderPaymentMq()->saveMedicineOrderPayment',
+      JSON.stringify(paymentAttrs),
+      ''
+    );
+    throw new AphError(AphErrorMessages.INVALID_MEDICINE_ORDER_ID, undefined, {});
   }
 
   orderStatus = orderDetails.currentStatus;
@@ -370,22 +372,23 @@ const SaveMedicineOrderPaymentMq: Resolver<
 
       const toEmailId =
         process.env.NODE_ENV == 'dev' ||
-        process.env.NODE_ENV == 'development' ||
-        process.env.NODE_ENV == 'local'
+          process.env.NODE_ENV == 'development' ||
+          process.env.NODE_ENV == 'local'
           ? ApiConstants.MEDICINE_SUPPORT_EMAILID
           : ApiConstants.MEDICINE_SUPPORT_EMAILID_PRODUCTION;
 
+      //medicine support cc email is '' and input is used, hence retaining this
       let ccEmailIds =
         process.env.NODE_ENV == 'dev' ||
-        process.env.NODE_ENV == 'development' ||
-        process.env.NODE_ENV == 'local'
-          ? <string>ApiConstants.MEDICINE_SUPPORT_CC_EMAILID
+          process.env.NODE_ENV == 'development' ||
+          process.env.NODE_ENV == 'local'
+          ? ''
           : <string>ApiConstants.MEDICINE_SUPPORT_CC_EMAILID_PRODUCTION;
 
       if (medicinePaymentMqInput.email && medicinePaymentMqInput.email.length > 0) {
         ccEmailIds = ccEmailIds.concat(medicinePaymentMqInput.email);
       }
-
+      //retaining cc as input is concatenated with cc
       const emailContent: EmailMessage = {
         subject: subject,
         fromEmail: <string>ApiConstants.PATIENT_HELP_FROM_EMAILID,

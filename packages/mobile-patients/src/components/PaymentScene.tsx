@@ -40,6 +40,9 @@ import {
 } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
 import { FirebaseEvents, FirebaseEventName } from '../helpers/firebaseEvents';
 import { ShoppingCartItem } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { trackTagalysEvent } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { Tagalys } from '@aph/mobile-patients/src/helpers/Tagalys';
 
 const styles = StyleSheet.create({
   popupButtonStyle: {
@@ -63,6 +66,7 @@ export interface PaymentSceneProps
     orderAutoId: number;
     token: string;
     amount: number;
+    burnHC: number;
     deliveryTime: string;
     paymentTypeID: string;
     bankCode: any;
@@ -75,6 +79,7 @@ export interface PaymentSceneProps
 export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
   const { clearCartInfo } = useShoppingCart();
   const totalAmount = props.navigation.getParam('amount');
+  const burnHC = props.navigation.getParam('burnHC');
   const orderAutoId = props.navigation.getParam('orderAutoId');
   const orderId = props.navigation.getParam('orderId');
   const authToken = props.navigation.getParam('token');
@@ -180,6 +185,26 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
           appsflyerEventAttributes
         );
         firePurchaseEvent();
+        try {
+          Promise.all(
+            cartItems.map((cartItem) =>
+              trackTagalysEvent(
+                {
+                  event_type: 'product_action',
+                  details: {
+                    sku: cartItem.id,
+                    action: 'buy',
+                    quantity: cartItem.quantity,
+                    order_id: `${orderAutoId}`,
+                  } as Tagalys.ProductAction,
+                },
+                g(currentPatient, 'id')!
+              )
+            )
+          );
+        } catch (error) {
+          CommonBugFender(`${AppRoutes.PaymentScene}_trackTagalysEvent`, error);
+        }
       }
     } catch (error) {}
 
@@ -365,9 +390,9 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
 
   const renderWebView = () => {
     const baseUrl = AppConfig.Configuration.PAYMENT_GATEWAY_BASE_URL;
-    const url = `${baseUrl}/paymed?amount=${totalAmount}&oid=${orderAutoId}&token=${authToken}&pid=${currentPatiendId}&source=mobile&paymentTypeID=${paymentTypeID}&paymentModeOnly=YES${
-      bankCode ? '&bankCode=' + bankCode : ''
-    }`;
+    const url = `${baseUrl}/paymed?amount=${totalAmount}&oid=${orderAutoId}&pid=${currentPatiendId}&source=mobile&paymentTypeID=${paymentTypeID}&paymentModeOnly=YES${
+      burnHC ? '&hc=' + burnHC : ''
+    }${bankCode ? '&bankCode=' + bankCode : ''}`;
 
     // PATH: /paymed?amount=${totalAmount}&oid=${orderAutoId}&token=${authToken}&pid=${currentPatiendId}&source=mobile
     // SUCCESS_PATH: /mob?tk=<>&status=<>

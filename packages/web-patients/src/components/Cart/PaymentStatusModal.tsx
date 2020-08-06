@@ -11,7 +11,7 @@ import _camelCase from 'lodash/camelCase';
 import _startCase from 'lodash/startCase';
 import { PharmaPaymentStatus_pharmaPaymentStatus as PharmaPaymentDetails } from 'graphql/types/PharmaPaymentStatus';
 import { PHRAMA_PAYMENT_STATUS } from 'graphql/medicines';
-import { GET_MEDICINE_ORDER_OMS_DETAILS } from 'graphql/medicines';
+import { GET_MEDICINE_ORDER_OMS_DETAILS_WITH_ADDRESS } from 'graphql/medicines';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { OrderStatusContent } from '../OrderStatusContent';
 import { OrderPlaced } from 'components/Cart/OrderPlaced';
@@ -74,7 +74,7 @@ export const PaymentStatusModal: React.FC<PaymentStatusProps> = (props) => {
   const [showPaymentStatusModal, setShowPaymentStatusModal] = useState(true);
   const [showOrderPopup, setShowOrderPopup] = useState<boolean>(true);
   const pharmaPayments = useMutation(PHRAMA_PAYMENT_STATUS);
-  const orderDetails = useMutation(GET_MEDICINE_ORDER_OMS_DETAILS);
+  const orderDetails = useMutation(GET_MEDICINE_ORDER_OMS_DETAILS_WITH_ADDRESS);
 
   const getPaymentStatus = () => {
     if (!paymentStatusData) return '';
@@ -144,6 +144,7 @@ export const PaymentStatusModal: React.FC<PaymentStatusProps> = (props) => {
   const handleOnClose = () => {
     localStorage.removeItem('selectedPaymentMode');
     sessionStorage.removeItem('pharmacyCheckoutValues');
+    sessionStorage.removeItem('utm_source');
     paymentStatusRedirect(clientRoutes.medicines());
   };
   const paymentStatusRedirect = (url: string) => {
@@ -164,8 +165,8 @@ export const PaymentStatusModal: React.FC<PaymentStatusProps> = (props) => {
         .then(({ data }: any) => {
           if (
             data &&
-            data.getMedicineOrderOMSDetails &&
-            data.getMedicineOrderOMSDetails.medicineOrderDetails
+            data.getMedicineOrderOMSDetailsWithAddress &&
+            data.getMedicineOrderOMSDetailsWithAddress.medicineOrderDetails
           ) {
             pharmaPayments({
               variables: {
