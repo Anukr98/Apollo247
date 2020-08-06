@@ -265,6 +265,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             } as ShoppingCartItem)
         ),
         'Service Area': 'Pharmacy',
+        'Customer ID': g(currentPatient, 'id'),
         // 'Cart ID': '', // since we don't have cartId before placing order
       };
       if (coupon) {
@@ -451,6 +452,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
       const res = await getDeliveryTimeHeaderTat(tatApiInput);
       const tatDate = g(res, 'data', 'tat', '0' as any, 'deliverydate');
       if (tatDate) {
+        const currentDate = moment();
         setdeliveryTime(tatDate);
         setshowDeliverySpinner(false);
         selectedAddress &&
@@ -458,7 +460,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             selectedAddress.zipcode!,
             formatAddress(selectedAddress),
             'Yes',
-            moment(tatDate, 'D-MMM-YYYY HH:mm a').toDate()
+            moment(tatDate).diff(currentDate, 'd')
           );
       }
     } catch (error) {
@@ -1696,7 +1698,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
       'Sub Total': cartTotal,
       'Delivery charge': deliveryCharges,
       'Net after discount': grandTotal,
-      'Prescription Needed?': uploadPrescriptionRequired,
+      'Prescription Needed?': uploadPrescriptionRequired ? 'Yes' : 'No',
       // 'Cart ID': '', // since we don't have cartId before placing order
       'Mode of Delivery': selectedTab === tabs[0].title ? 'Home' : 'Pickup',
       'Delivery Date Time':

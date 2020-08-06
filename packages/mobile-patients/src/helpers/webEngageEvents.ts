@@ -403,6 +403,7 @@ export interface WebEngageEvents {
     'Service Area': 'Pharmacy' | 'Diagnostic';
   };
   [WebEngageEventName.PHARMACY_CART_VIEWED]: {
+    'Customer ID': string;
     'Total items in cart': number;
     'Sub Total': number;
     'Delivery charge': number;
@@ -444,7 +445,7 @@ export interface WebEngageEvents {
     'Sub Total': number;
     'Delivery charge': number;
     'Net after discount': number;
-    'Prescription Needed?': boolean;
+    'Prescription Needed?': 'Yes' | 'No';
     'Cart ID'?: string; // we don't have cartId before placing order
     'Mode of Delivery': 'Home' | 'Pickup' | 'Home Visit' | 'Clinic Visit';
     'Delivery Date Time'?: string; // Optional (only if Home)
@@ -842,7 +843,7 @@ export interface WebEngageEvents {
     Pincode: string;
   };
   [WebEngageEventName.PHARMACY_CART_ADDRESS_SELECTED_SUCCESS]: {
-    'TAT Displayed'?: Date;
+    'TAT Displayed'?: number;
     'Delivery Successful': YesOrNo; // Yes / No (If Error message shown because it is unservicable)
     'Delivery Address': string;
     Pincode: string;
