@@ -31,6 +31,9 @@ const useStyles = makeStyles((theme: Theme) => {
       textAlign: 'center',
       display: 'block',
     },
+    sourceField: {
+      maxWidth: 70
+    },
     leftSection: {
       width: 328,
       backgroundColor: theme.palette.common.white,
@@ -487,7 +490,7 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
                     </div>
                     <div className={classes.reportsDetails}>
                       <label>Source</label>
-                      <p>{getSource(activeData.data, activeData.type)}</p>
+                      <p className={classes.sourceField}>{getSource(activeData.data, activeData.type)}</p>
                     </div>
                     <div className={classes.reportsDetails}>
                       <label>Referring Doctor</label>
