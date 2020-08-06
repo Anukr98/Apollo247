@@ -6,7 +6,7 @@ import { AphButton, AphDialog, AphDialogClose, AphDialogTitle } from '@aph/web-u
 import { reOrderItems } from 'helpers/MedicineApiCalls';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { Route } from 'react-router-dom';
-import { getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails as OrderDetails } from 'graphql/types/getMedicineOrderOMSDetails';
+import { getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails as OrderDetails } from 'graphql/types/getMedicineOrderOMSDetailsWithAddress';
 import { getLatestMedicineOrder_getLatestMedicineOrder_medicineOrderDetails as LatestOrderDetailsType } from 'graphql/types/getLatestMedicineOrder';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -80,7 +80,7 @@ export const ReOrder: React.FC<ReOrderProps> = (props) => {
       <Route
         render={({ history }) => (
           <AphButton
-            color='primary'
+            color="primary"
             className={type === 'Order Details' ? '' : classes.reorderBtn}
             onClick={async () => {
               setIsLoading(true);
@@ -104,7 +104,13 @@ export const ReOrder: React.FC<ReOrderProps> = (props) => {
               }
             }}
           >
-            {isLoading ? <CircularProgress size={22} color="secondary" /> : type === 'Order Details' ? 'Re-order' : 'Reorder'}
+            {isLoading ? (
+              <CircularProgress size={22} color="secondary" />
+            ) : type === 'Order Details' ? (
+              'Re-order'
+            ) : (
+              'Reorder'
+            )}
           </AphButton>
         )}
       />

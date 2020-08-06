@@ -52,7 +52,7 @@ import {
 import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
 import {
   callPermissions,
-  doRequestAndAccessLocation,
+  doRequestAndAccessLocationModified,
   g,
   getNetStatus,
   isValidSearch,
@@ -358,68 +358,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       BackHandler.removeEventListener('hardwareBackPress', backDataFunctionality);
     });
 
-    if (!locationDetails) {
-      showAphAlert!({
-        unDismissable: true,
-        title: 'Hi! :)',
-        description:
-          'We need to know your location to function better. Please allow us to auto detect your location or enter location manually.',
-        children: (
-          <View
-            style={{
-              flexDirection: 'row',
-              marginHorizontal: 20,
-              justifyContent: 'space-between',
-              alignItems: 'flex-end',
-              marginVertical: 18,
-            }}
-          >
-            <Button
-              style={{ flex: 1, marginRight: 16 }}
-              title={'ENTER MANUALLY'}
-              onPress={() => {
-                hideAphAlert!();
-                setshowLocationpopup(true);
-              }}
-            />
-            <Button
-              style={{ flex: 1 }}
-              title={'ALLOW AUTO DETECT'}
-              onPress={() => {
-                hideAphAlert!();
-                setLoadingContext!(true);
-                doRequestAndAccessLocation()
-                  .then((response) => {
-                    response && setLocationDetails!(response);
-                    response && setcurrentLocation(response.displayName);
-                    response && setLocationSearchText(response.displayName);
-                    response &&
-                      fetchSpecialityFilterData(
-                        filterMode,
-                        FilterData,
-                        {
-                          lat: response.latitude || '',
-                          lng: response.longitude || '',
-                        },
-                        response.pincode
-                      );
-                  })
-                  .catch((e) => {
-                    CommonBugFender('DoctorSearchListing_ALLOW_AUTO_DETECT', e);
-                    showAphAlert!({
-                      title: 'Uh oh! :(',
-                      description: 'Unable to access location.',
-                    });
-                  })
-                  .finally(() => {
-                    setLoadingContext!(false);
-                  });
-              }}
-            />
-          </View>
-        ),
-      });
-    } else {
+    if (locationDetails) {
       const coordinates = {
         lat: locationDetails.latitude || '',
         lng: locationDetails.longitude || '',
@@ -511,6 +450,74 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     } catch (e) {
       CommonBugFender('DoctorSearchListing_fetchSpecialityFilterData_try', e);
       setshowSpinner(false);
+    }
+  };
+
+  const checkLocation = () => {
+    if (!locationDetails) {
+      showAphAlert!({
+        unDismissable: true,
+        title: 'Hi! :)',
+        description:
+          'We need to know your location to function better. Please allow us to auto detect your location or enter location manually.',
+        children: (
+          <View
+            style={{
+              flexDirection: 'row',
+              marginHorizontal: 20,
+              justifyContent: 'space-between',
+              alignItems: 'flex-end',
+              marginVertical: 18,
+            }}
+          >
+            <Button
+              style={{ flex: 1, marginRight: 16 }}
+              title={'ENTER MANUALLY'}
+              onPress={() => {
+                hideAphAlert!();
+                setshowLocationpopup(true);
+              }}
+            />
+            <Button
+              style={{ flex: 1 }}
+              title={'ALLOW AUTO DETECT'}
+              onPress={() => {
+                hideAphAlert!();
+                setLoadingContext!(true);
+                doRequestAndAccessLocationModified()
+                  .then((response) => {
+                    response && setLocationDetails!(response);
+                    response && setcurrentLocation(response.displayName);
+                    response && setLocationSearchText(response.displayName);
+                    response &&
+                      fetchSpecialityFilterData(
+                        filterMode,
+                        FilterData,
+                        {
+                          lat: response.latitude || '',
+                          lng: response.longitude || '',
+                        },
+                        'distance',
+                        response.pincode
+                      );
+                  })
+                  .catch((e) => {
+                    CommonBugFender('DoctorSearchListing_ALLOW_AUTO_DETECT', e);
+                    showAphAlert!({
+                      title: 'Uh oh! :(',
+                      description: 'Unable to access location.',
+                    });
+                  })
+                  .finally(() => {
+                    setLoadingContext!(false);
+                  });
+              }}
+            />
+          </View>
+        ),
+      });
+    } else {
+      fetchSpecialityFilterData(filterMode, FilterData, latlng, 'distance');
     }
   };
 
@@ -761,6 +768,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
                     lat: coordinates.lat,
                     lng: coordinates.lng,
                   },
+                  sortValue,
                   findAddrComponents('postal_code', addrComponents)
                 );
                 latlng = {
@@ -1146,7 +1154,9 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             zIndex: 15,
             elevation: 15,
           }}
-          onPress={() => setshowLocationpopup(false)}
+          onPress={() => {
+            setshowLocationpopup(false), !locationDetails && checkLocation();
+          }}
         >
           <View
             style={{
@@ -1327,7 +1337,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
                     'Sort By': 'distance',
                   });
                   setSortValue('distance');
-                  fetchSpecialityFilterData(filterMode, FilterData, latlng, 'distance');
+                  checkLocation();
                 }
               }}
             >
@@ -1540,12 +1550,12 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       <SafeAreaView style={theme.viewStyles.container}>
         {renderTopView()}
         {searchIconClicked && renderDoctorSearchBar()}
+        {renderTopTabBar()}
         <ScrollView bounces={false} style={{ flex: 1 }}>
           {showSpinner ? (
             renderSearchLoadingView()
           ) : (
             <View>
-              {renderTopTabBar()}
               <Text style={styles.consultHeadingText}>
                 {string.doctor_search_listing.consultBest.replace(
                   '{0}',
