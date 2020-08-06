@@ -896,6 +896,26 @@ export const Mail: React.FC<IconProps> = (props) => (
   <IconBase size="xs" {...props} source={require('../../images/icons/email.png')} />
 );
 
+export const Join: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 32, width: 28.2 }}
+    {...props}
+    source={require('../../images/icons/join.png')}
+  />
+);
+
+export const JoinWhite: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 24, width: 21.1 }}
+    {...props}
+    source={require('../../images/icons/join_white.png')}
+  />
+);
+
+export const Minimize: React.FC<IconProps> = (props) => (
+  <IconBase size="xs" {...props} source={require('../../images/icons/ic_minimize.png')} />
+);
+
 export const Whatsapp: React.FC<IconProps> = (props) => (
   <IconBase size="xs" {...props} source={require('../../images/icons/whatsapp.png')} />
 );

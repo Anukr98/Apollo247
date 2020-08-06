@@ -19,6 +19,9 @@ import {
   RoundCallIcon,
   RoundChatIcon,
   RoundVideoIcon,
+  Join,
+  Minimize,
+  JoinWhite,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { ImageZoom } from '@aph/mobile-doctors/src/components/ui/ImageZoom';
 import { OptionsObject } from '@aph/mobile-doctors/src/components/ui/MaterialMenu';
@@ -139,6 +142,8 @@ import KeepAwake from 'react-native-keep-awake';
 import { PERMISSIONS } from 'react-native-permissions';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import RNFetchBlob from 'rn-fetch-blob';
+import { isIphoneX } from 'react-native-iphone-x-helper';
+import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
 import {
   postDoctorConsultEventVariables,
   postDoctorConsultEvent,
@@ -190,7 +195,16 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const [overlayDisplay, setOverlayDisplay] = useState<React.ReactNode>(null);
   const [chatReceived, setChatReceived] = useState(false);
   const client = useApolloClient();
-  const { showAphAlert, hideAphAlert, loading, setLoading, showPopup, hidePopup } = useUIElements();
+  const {
+    showAphAlert,
+    hideAphAlert,
+    loading,
+    setLoading,
+    showPopup,
+    hidePopup,
+    showFloatingCotainer,
+    hideFloatingContainer,
+  } = useUIElements();
   const AppId = props.navigation.getParam('AppId');
   const [Appintmentdatetime, setAppintmentdatetime] = useState(
     props.navigation.getParam('Appintmentdatetime')
@@ -278,6 +292,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     });
 
     return () => {
+      sendDoctorLeavesEvent();
       postBackendWebEngage(WebEngageEvent.DOCTOR_LEFT_CHAT_WINDOW);
       didFocusSubscription && didFocusSubscription.remove();
       willBlurSubscription && willBlurSubscription.remove();
@@ -289,11 +304,103 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       AsyncStorage.removeItem('chatFileData');
       AsyncStorage.removeItem('scrollToEnd');
       AsyncStorage.removeItem('callDataSend');
+      AsyncStorage.removeItem('patientName');
       KeepAwake.deactivate();
       pubnub.unsubscribeAll();
       pubnub.stop();
+      hideFloatingContainer();
     };
   }, []);
+
+  const showJoinPopUp = async () => {
+    const patientName = (await AsyncStorage.getItem('patientName')) || '';
+    showFloatingCotainer({
+      child: renderJoinView(patientName),
+      mainContainerStyle: styles.floatingContainerFullScreen,
+      backHandleEnabled: true,
+      customBack: () => {
+        showFloatingCotainer({
+          child: renderJoinMinimizedView(),
+          mainContainerStyle: styles.floatingContainerButton,
+          backHandleEnabled: true,
+          customBack: () => {
+            showAphAlert &&
+              showAphAlert({
+                title: string.common.alert,
+                description: 'Patient has joined consult room, Do you want to leave?',
+                CTAs: [
+                  {
+                    text: 'YES',
+                    onPress: () => {
+                      hideAphAlert && hideAphAlert();
+                      backDataFunctionality();
+                    },
+                  },
+                  {
+                    text: 'NO',
+                    type: 'white-button',
+                    onPress: () => {
+                      hideAphAlert && hideAphAlert();
+                    },
+                  },
+                ],
+              });
+          },
+        });
+      },
+    });
+  };
+
+  const renderJoinMinimizedView = () => {
+    return (
+      <TouchableOpacity
+        onPress={() => {
+          connectCall('V', true);
+        }}
+      >
+        <View style={styles.joinFloatingButtonContainer}>
+          <JoinWhite />
+          <Text style={styles.joinFloatingText}>JOIN</Text>
+        </View>
+      </TouchableOpacity>
+    );
+  };
+
+  const renderJoinView = (name: string) => {
+    return (
+      <View style={styles.joinMainContainer}>
+        <View style={styles.joinSubContainer}>
+          <View style={styles.joinMinimizeIconContainer}>
+            <TouchableOpacity
+              onPress={() => {
+                showFloatingCotainer({
+                  child: renderJoinMinimizedView(),
+                  mainContainerStyle: styles.floatingContainerButton,
+                });
+              }}
+            >
+              <Minimize />
+            </TouchableOpacity>
+          </View>
+          <View style={styles.joinTextContainer}>
+            <Join />
+            <Text style={styles.joinDisplayTextStyle}>
+              {string.case_sheet.join_heading.replace('{0}', name)}
+            </Text>
+          </View>
+          <View style={styles.joinButtonContainer}>
+            <Button
+              onPress={() => {
+                connectCall('V', true);
+              }}
+              title={'PROCEED'}
+              style={styles.joinButtonStyle}
+            />
+          </View>
+        </View>
+      </View>
+    );
+  };
 
   useEffect(() => {
     if ((appointmentData || {}).appointmentState == 'AWAITING_RESCHEDULE') {
@@ -326,6 +433,21 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     }
   };
 
+  const sendDoctorLeavesEvent = () => {
+    pubnub.publish(
+      {
+        message: {
+          isTyping: true,
+          message: messageCodes.leaveChatRoom,
+        },
+        channel: channel,
+        storeInHistory: false,
+        sendByPost: false,
+      },
+      (status: any, response: any) => {}
+    );
+  };
+
   const postBackendWebEngage = (eventType: WebEngageEvent) => {
     client
       .mutate<postDoctorConsultEvent, postDoctorConsultEventVariables>({
@@ -333,10 +455,16 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         variables: {
           doctorConsultEventInput: {
             consultID: channel,
-            consultMode: g(caseSheet, 'caseSheetDetails', 'consultType') as ConsultMode,
+            consultMode: (appointmentData.appointmentType ||
+              g(caseSheet, 'caseSheetDetails', 'appointment', 'appointmentType') ||
+              ConsultMode.BOTH) as ConsultMode,
             displayId:
-              g(caseSheet, 'caseSheetDetails', 'appointment', 'displayId') ||
-              appointmentData.displayId ||
+              (
+                appointmentData.displayId ||
+                g(caseSheet, 'caseSheetDetails', 'appointment', 'displayId') ||
+                ''
+              ).toString() ||
+              appointmentData.displayId.toString() ||
               '',
             doctorFullName:
               g(doctorDetails, 'fullName') ||
@@ -486,6 +614,15 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       )
     );
     setPatientDetails(g(caseSheet, 'caseSheetDetails', 'patientDetails') || null);
+    AsyncStorage.setItem(
+      'patientName',
+      `${g(caseSheet, 'caseSheetDetails', 'patientDetails', 'firstName')} ${g(
+        caseSheet,
+        'caseSheetDetails',
+        'patientDetails',
+        'lastName'
+      )}`
+    );
     setHealthWalletArrayData(
       g(caseSheet, 'caseSheetDetails', 'patientDetails', 'healthVault') || null
     );
@@ -1338,6 +1475,9 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             case 'Video call ended':
               audioVideoMethod();
               break;
+            case messageCodes.patientJoined:
+              showJoinPopUp();
+              break;
             default:
           }
         } else if (
@@ -1353,6 +1493,8 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         ) {
           callData.setMessageReceived(true);
           addMessages(message);
+        } else if (messageCodes.patientJoined === messageText) {
+          showJoinPopUp();
         } else {
           callData.setMessageReceived(true);
           addMessages(message);
@@ -1549,10 +1691,14 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     );
   };
 
-  const connectCall = (callType: 'A' | 'V') => {
-    getNetStatus().then((connected) => {
+  const connectCall = (callType: 'A' | 'V', isJoin?: boolean) => {
+    getNetStatus().then(async (connected) => {
       if (connected) {
-        if (!startConsult) {
+        const startConsultStorage = JSON.parse(
+          (await AsyncStorage.getItem('showInAppNotification')) || 'false'
+        );
+
+        if (!startConsult && startConsultStorage) {
           Alert.alert(string.common.apollo, string.consult_room.please_start_consultation);
           return;
         }
@@ -1560,7 +1706,10 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         if (callOptions.isAudio || callOptions.isVideo) {
           return;
         }
-
+        if (isJoin) {
+          callOptions.setCallAccepted(true);
+          hideFloatingContainer();
+        }
         callType === 'A' ? callOptions.setIsAudio(true) : callOptions.setIsAudio(false);
         callType === 'V' ? callOptions.setIsVideo(true) : callOptions.setIsVideo(false);
         callOptions.setIsMinimized(false);
@@ -1603,33 +1752,44 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         );
         Keyboard.dismiss();
         AsyncStorage.setItem('callDisconnected', 'false');
-        firebase.analytics().logEvent(callType == 'A' ? 'Doctor_audio_call' : 'Doctor_video_call', {
-          caseSheet: caseSheet,
-        });
-        AsyncStorage.setItem('callDataSend', 'false');
-        pubnub.publish(
-          {
-            message: {
-              isTyping: true,
-              message: callType === 'V' ? messageCodes.videoCallMsg : messageCodes.audioCallMsg,
-              messageDate: new Date(),
-            },
-            channel: channel,
-            storeInHistory: true,
-          },
-          (status, response) => {
-            if (response) {
-              callOptions.startMissedCallTimer(45, (count) => {
-                stopAllCalls(callType);
-                // if (missedCallCounter < 2) {
-
-                // } else {
-                //   callAbandonmentCall();
-                // }
-              });
+        firebase
+          .analytics()
+          .logEvent(
+            !isJoin
+              ? callType == 'A'
+                ? 'Doctor_audio_call'
+                : 'Doctor_video_call'
+              : 'Doctor_Join_Call',
+            {
+              caseSheet: caseSheet,
             }
-          }
-        );
+          );
+        AsyncStorage.setItem('callDataSend', 'false');
+        if (!isJoin) {
+          pubnub.publish(
+            {
+              message: {
+                isTyping: true,
+                message: callType === 'V' ? messageCodes.videoCallMsg : messageCodes.audioCallMsg,
+                messageDate: new Date(),
+              },
+              channel: channel,
+              storeInHistory: true,
+            },
+            (status, response) => {
+              if (response) {
+                callOptions.startMissedCallTimer(45, (count) => {
+                  stopAllCalls(callType);
+                  // if (missedCallCounter < 2) {
+
+                  // } else {
+                  //   callAbandonmentCall();
+                  // }
+                });
+              }
+            }
+          );
+        }
       } else {
         showAphAlert &&
           showAphAlert({ title: string.common.alert, description: string.alerts.no_internet });

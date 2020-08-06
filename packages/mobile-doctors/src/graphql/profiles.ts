@@ -742,7 +742,6 @@ export const GET_CASESHEET = gql`
             fullName
             doctorType
             mobileNumber
-            onlineStatus
             onlineConsultationFees
             physicalConsultationFees
             doctorHospital {
