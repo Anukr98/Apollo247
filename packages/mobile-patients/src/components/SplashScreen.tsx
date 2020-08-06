@@ -689,8 +689,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
               'min_value_to_nudge_users_to_avail_free_delivery',
               'QA_pharmacy_homepage',
               'pharmacy_homepage',
-              'Doctor_Partner',
-              'QA_Doctor_Partner',
+              'Doctor_Partner_Text',
+              'QA_Doctor_Partner_Text',
             ]);
         })
         .then((snapshot) => {
@@ -759,11 +759,11 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           homeScreenEmergencyBannerNumber &&
             updateAppConfig('HOME_SCREEN_EMERGENCY_BANNER_NUMBER', homeScreenEmergencyBannerNumber);
 
-          const doctorPartnerText = snapshot['Doctor_Partner'].val();
+          const doctorPartnerText = snapshot['Doctor_Partner_Text'].val();
           doctorPartnerText &&
             AppConfig.APP_ENV == AppEnv.PROD &&
             updateAppConfig('DOCTOR_PARTNER_TEXT', doctorPartnerText);
-          const QADoctorPartnerText = snapshot['QA_Doctor_Partner'].val();
+          const QADoctorPartnerText = snapshot['QA_Doctor_Partner_Text'].val();
           QADoctorPartnerText &&
             AppConfig.APP_ENV != AppEnv.PROD &&
             updateAppConfig('DOCTOR_PARTNER_TEXT', QADoctorPartnerText);
