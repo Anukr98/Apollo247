@@ -38,6 +38,52 @@ type DoctorSlot = {
 
 @EntityRepository(Doctor)
 export class DoctorRepository extends Repository<Doctor> {
+  async updateDoctorSlots(doctorId: string, consultsDb: Connection, doctorsDb: Connection) {
+    const daysDiff = ApiConstants.ES_ADD_DAYS;
+    let stDate = new Date();
+    let slotsAdded = '';
+    const client = new Client({ node: process.env.ELASTIC_CONNECTION_URL });
+    const updateDoc: RequestParams.Update = {
+      index: 'doctors',
+      id: doctorId,
+      body: {
+        script: {
+          source: 'ctx._source.doctorSlots = []',
+        },
+      },
+    };
+    await client.update(updateDoc);
+    for (let i = 0; i <= daysDiff; i++) {
+      const doctorSlots = await this.getDoctorSlots(
+        new Date(format(stDate, 'yyyy-MM-dd')),
+        doctorId,
+        consultsDb,
+        doctorsDb
+      );
+      //console.log(doctorSlots, 'doctor slots');
+      const doc1: RequestParams.Update = {
+        index: 'doctors',
+        id: doctorId,
+        body: {
+          script: {
+            source: 'ctx._source.doctorSlots.add(params.slot)',
+            params: {
+              slot: {
+                slotDate: format(stDate, 'yyyy-MM-dd'),
+                slots: doctorSlots,
+              },
+            },
+          },
+        },
+      };
+      slotsAdded += doctorId + ' - ' + format(stDate, 'yyyy-MM-dd') + ',';
+      const updateResp = await client.update(doc1);
+      console.log(updateResp, 'updateResp');
+      stDate = addDays(stDate, 1);
+    }
+    return slotsAdded;
+  }
+
   async getDoctorSlots(
     availableDate: Date,
     doctorId: string,
