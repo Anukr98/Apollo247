@@ -704,11 +704,11 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
       }
       if (appointmentStatus.length > 0) {
         const filteredList = getAppointmentStatusFilteredList(appointmentStatus, localFilteredList);
-        localFilteredList = _uniq([...localFilteredList, ...filteredList]);
+        localFilteredList = _uniq(filteredList);
       }
       if (gender.length > 0) {
         const filteredList = getGenderFilteredList(gender, localFilteredList);
-        localFilteredList = _uniq([...localFilteredList, ...filteredList]);
+        localFilteredList = _uniq(filteredList);
       }
       setFilteredAppointmentsList(localFilteredList);
     }
