@@ -1,6 +1,7 @@
 import AbortController from 'abort-controller';
 import { debugLog } from 'customWinstonLogger';
 import fetch from 'node-fetch';
+import fs from 'fs';
 import {
   LabResultsUploadResponse,
   LabResultsUploadRequest,
@@ -18,6 +19,9 @@ import { Patient, Gender } from 'profiles-service/entities';
 import { ApiConstants } from 'ApiConstants';
 import { getUnixTime, format } from 'date-fns';
 import { PrismGetUsersResponse } from 'types/prism';
+
+import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
+import path from 'path';
 
 const prismTimeoutMillSeconds = Number(process.env.PRISM_TIMEOUT_IN_MILLISECONDS);
 
@@ -532,7 +536,7 @@ export async function getAuthToken(primaryuhid: string): Promise<GetAuthTokenRes
     });
 }
 
-export async function downloadDocument(
+export async function downloadDocumentAndSaveToBlob(
   uhid: string,
   fileUrl: string,
   prismFileId: string
@@ -546,11 +550,12 @@ export async function downloadDocument(
 
   const getToken = await getAuthToken(uhid);
 
-  const fileNameArray = fileUrl.split('.');
-  const fileType = fileNameArray.pop();
-  const fileName = format(new Date(), 'ddmmyyyy-HHmmss') + '.' + fileType!.toLowerCase();
-
-  console.log('fileurl...', fileUrl.indexOf('labresults='));
+  const fileUrlArray = fileUrl.split('&');
+  const fileNameArray = fileUrlArray.filter((item) => item.indexOf('fileName') >= 0);
+  const fileName =
+    fileNameArray.length > 0
+      ? fileNameArray[0].replace('fileName=', '')
+      : format(new Date(), 'ddmmyyyy-HHmmss') + '.jpeg';
 
   let apiUrl = process.env.PHR_V1_DONLOAD_PRESCRIPTION_DOCUMENT.toString();
   if (fileUrl.indexOf('labresults=') > 0)
@@ -559,8 +564,6 @@ export async function downloadDocument(
   apiUrl = apiUrl.replace('{UHID}', uhid);
   apiUrl = apiUrl.replace('{RECORDID}', prismFileId);
   apiUrl = apiUrl.replace('{FILE_NAME}', fileName);
-
-  console.log('apiUrl', apiUrl);
 
   const reqStartTime = new Date();
   const controller = new AbortController();
@@ -574,36 +577,49 @@ export async function downloadDocument(
       'Content-Type': 'application/json;charset=utf-8',
     },
     signal: controller.signal,
-  }).then((res) =>
-    res
-      .text()
-      .then(
-        (data) => {
-          console.log('data', data);
-          dLogger(
-            reqStartTime,
-            'getLabResultsFromPrism PRISM_DOWNLOAD_LABRESULTS_PRESCRIPTION_API_CALL___END',
-            `${apiUrl}--- ${JSON.stringify(data)}`
-          );
-          if (!data) throw new AphError(AphErrorMessages.PRISM_PRESCRIPTIONS_FETCH_ERROR);
-          return data;
-        },
-        (err) => {
-          console.log('err', err);
-          dLogger(
-            reqStartTime,
-            'getLabResultsFromPrism PRISM_DOWNLOAD_LABRESULTS_PRESCRIPTION_API_CALL___ERROR',
-            `${apiUrl}--- ${JSON.stringify(err)}`
-          );
-          if (err.name === 'AbortError') {
-            throw new AphError(AphErrorMessages.NO_RESPONSE_FROM_PRISM);
-          } else {
-            throw new AphError(AphErrorMessages.PRISM_PRESCRIPTIONS_FETCH_ERROR);
-          }
+  })
+    .then(
+      async (res) => {
+        dLogger(
+          reqStartTime,
+          'PRISM_DOWNLOAD_FILE_AND_UPLOAD_BLOB_API_CALL___ERROR',
+          `${apiUrl} --- ${JSON.stringify(res)}`
+        );
+
+        const filePath = path.resolve(process.env.ASSETS_DIRECTORY!.toString(), fileName);
+
+        const file = fs.createWriteStream(filePath);
+        res.body.pipe(file);
+        await delay(350);
+
+        function delay(ms: number) {
+          return new Promise((resolve) => setTimeout(resolve, ms));
         }
-      )
-      .finally(() => {
-        clearTimeout(timeout);
-      })
-  );
+
+        const client = new AphStorageClient(
+          process.env.AZURE_STORAGE_CONNECTION_STRING_API,
+          process.env.AZURE_STORAGE_CONTAINER_NAME
+        );
+
+        const blob = await client.uploadFile({ name: fileName, filePath });
+        const blobUrl = client.getBlobUrl(blob.name);
+        fs.unlink(filePath, (error) => console.log(error));
+        return blobUrl;
+      },
+      (err) => {
+        dLogger(
+          reqStartTime,
+          'PRISM_DOWNLOAD_FILE_AND_UPLOAD_BLOB_API_CALL___ERROR',
+          `${apiUrl} --- ${JSON.stringify(err)}`
+        );
+        if (err.name === 'AbortError') {
+          throw new AphError(AphErrorMessages.NO_RESPONSE_FROM_PRISM);
+        } else {
+          throw new AphError(AphErrorMessages.PRISM_PRESCRIPTIONS_FETCH_ERROR);
+        }
+      }
+    )
+    .finally(() => {
+      clearTimeout(timeout);
+    });
 }

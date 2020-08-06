@@ -1,7 +1,11 @@
 import gql from 'graphql-tag';
 import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
 import { Resolver } from 'api-gateway';
-import { UPLOAD_FILE_TYPES, PRISM_DOCUMENT_CATEGORY } from 'profiles-service/entities';
+import {
+  UPLOAD_FILE_TYPES,
+  PRISM_DOCUMENT_CATEGORY,
+  MedicalRecordType,
+} from 'profiles-service/entities';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
@@ -9,11 +13,7 @@ import { uploadFileToBlobStorage } from 'helpers/uploadFileToBlob';
 import { MedicalRecordsRepository } from 'profiles-service/repositories/medicalRecordsRepository';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { AppointmentDocumentRepository } from 'consults-service/repositories/appointmentDocumentRepository';
-import { downloadDocument } from 'helpers/phrV1Services';
-import path from 'path';
-import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
-import { fontSize } from 'pdfkit/js/mixins/fonts';
-import { delay } from 'lodash';
+import { downloadDocumentAndSaveToBlob } from 'helpers/phrV1Services';
 
 export const uploadDocumentTypeDefs = gql`
   enum PRISM_DOCUMENT_CATEGORY {
@@ -33,9 +33,13 @@ export const uploadDocumentTypeDefs = gql`
     category: PRISM_DOCUMENT_CATEGORY!
   }
 
+  type Bloburl {
+    blobUrl: String!
+  }
+
   extend type Mutation {
     uploadDocument(uploadDocumentInput: UploadDocumentInput): UploadPrismDocumentResult!
-    fetchBlobURLWithPRISMData(patientId: ID!, fileUrl: String!, prismFileId: String!): String!
+    fetchBlobURLWithPRISMData(patientId: ID!, fileUrl: String!): Bloburl
   }
 `;
 type UploadPrismDocumentResult = {
@@ -85,28 +89,44 @@ const uploadDocument: Resolver<
 
 export const fetchBlobURLWithPRISMData: Resolver<
   null,
-  { patientId: string; fileUrl: string; prismFileId: string },
+  { patientId: string; fileUrl: string },
   ProfilesServiceContext,
-  string
+  { blobUrl: string }
 > = async (parent, args, { profilesDb, consultsDb }) => {
+  if (!args.fileUrl || (args.fileUrl && args.fileUrl.length == 0)) return args.fileUrl;
   if (args.fileUrl.indexOf('authToken=') < 0) return args.fileUrl;
+
+  //get recordid from the url
+  const fileUrlArray = args.fileUrl.split('&');
+  const recordId = fileUrlArray.filter((item) => item.indexOf('recordId') >= 0);
+  if (recordId.length == 0) return args.fileUrl;
+
+  const prismFileId = recordId[0].replace('recordId=', '');
+  console.log('recordId ...', recordId);
+
+  const category =
+    args.fileUrl.indexOf('labresults=') > 0
+      ? MedicalRecordType.TEST_REPORT
+      : MedicalRecordType.PRESCRIPTION;
 
   //check in medical records
   const medicalRepo = profilesDb.getCustomRepository(MedicalRecordsRepository);
-  const medicalRecord = await medicalRepo.getBlobUrl(args.patientId, args.prismFileId);
+  const medicalRecord = await medicalRepo.getBlobUrl(args.patientId, prismFileId, category);
   if (medicalRecord) return medicalRecord.documentURLs;
 
   //check in appointment documents
-  const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
-  const appointmentData = await appointmentRepo.getAppointmenIdsFromPatientID(args.patientId);
-  if (appointmentData.length > 0) {
-    const appointmentIds = appointmentData.map((item) => item.id);
-    const appointmentDocumentRepo = consultsDb.getCustomRepository(AppointmentDocumentRepository);
-    const documentData = await appointmentDocumentRepo.getDocumentsByAppointmentId(
-      appointmentIds,
-      args.prismFileId
-    );
-    if (documentData) return documentData.documentPath;
+  if (category == MedicalRecordType.PRESCRIPTION) {
+    const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
+    const appointmentData = await appointmentRepo.getAppointmenIdsFromPatientID(args.patientId);
+    if (appointmentData.length > 0) {
+      const appointmentIds = appointmentData.map((item) => item.id);
+      const appointmentDocumentRepo = consultsDb.getCustomRepository(AppointmentDocumentRepository);
+      const documentData = await appointmentDocumentRepo.getDocumentsByAppointmentId(
+        appointmentIds,
+        prismFileId
+      );
+      if (documentData) return documentData.documentPath;
+    }
   }
 
   //download from prism and generate blob url
@@ -114,21 +134,13 @@ export const fetchBlobURLWithPRISMData: Resolver<
   const patientDetails = await patientsRepo.getPatientDetails(args.patientId);
   if (patientDetails == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
 
-  const fileName = args.fileUrl.split('.');
-  const fileType = fileName.pop();
+  const blobUrl = await downloadDocumentAndSaveToBlob(
+    patientDetails.uhid,
+    args.fileUrl,
+    prismFileId
+  );
 
-  const bufferData = await downloadDocument(patientDetails.uhid, args.fileUrl, args.prismFileId);
-
-  const name = `test.jpeg`;
-
-  const assetsDir = <string>process.env.ASSETS_DIRECTORY;
-  const loadAsset = (file: string) => path.resolve(assetsDir, file);
-  const filePath = loadAsset(name);
-  const fs = require('fs');
-  fs.writeFile(filePath, bufferData);
-
-  const blobUrl = await uploadFileToBlobStorage(fileType!.toUpperCase(), bufferData);
-  return blobUrl;
+  return { blobUrl };
 };
 
 export const uploadDocumentResolvers = {
