@@ -12,6 +12,7 @@ import {
   Checkbox,
   FormControlLabel,
   Grid,
+  Box,
 } from '@material-ui/core';
 import Scrollbars from 'react-custom-scrollbars';
 import { Prompt, Link } from 'react-router-dom';
@@ -84,8 +85,8 @@ const useStyles = makeStyles((theme: Theme) => {
       marginLeft: 20,
       marginRight: 20,
       fontSize: 13,
-      padding: '35px 20px',
       fontWeight: 600,
+      padding: '35px 20px',
       color: '#02475b',
       textTransform: 'uppercase',
       display: 'flex',
@@ -843,11 +844,11 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: '#00b38e',
       color: '#FFFFFF',
       display: 'inline-block',
-      paddingLeft: 6,
-      paddingTop: 2,
       marginRight: 10,
       fontWeight: 600,
       fontSize: 20,
+      borderRadius: 5,
+      textAlign: 'center',
     },
     callOptionFirst: {
       fontSize: '16px',
@@ -857,7 +858,9 @@ const useStyles = makeStyles((theme: Theme) => {
       lineHeight: 'normal',
       letterSpacing: 'normal',
       color: '#00b38e',
+      width: '50%',
     },
+
     callNote: {
       fontSize: '14px',
       fontWeight: 'normal',
@@ -1018,6 +1021,50 @@ const useStyles = makeStyles((theme: Theme) => {
       right: '529px',
       marginBottom: '5px',
     },
+    callButtonWrapperPrompt: {
+      marginLeft: 30,
+    },
+    floatingJoinPrompt: {
+      width: 80,
+      height: 80,
+      borderRadius: '50%',
+      background: '#FC9916',
+      position: 'fixed',
+      top: '80%',
+      right: '7%',
+      color: '#FFF',
+      padding: '15px 25px',
+    },
+    joinPrompt: {
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      background: '#FFF',
+      width: '100%',
+      position: 'fixed',
+      left: 0,
+      bottom: -10,
+      height: 100,
+      zIndex: 2,
+    },
+    joinPromptText: {
+      fontSize: 18,
+      width: 600,
+    },
+    collapse: {
+      fontSize: 16,
+      color: '#FC9916',
+    },
+    fadedBgJoinPromt: {
+      background: '#000',
+      opacity: 0.5,
+      top: 0,
+      left: 0,
+      position: 'fixed',
+      width: '100%',
+      height: '100%',
+      zIndex: 2,
+    },
   };
 });
 const ringtoneUrl = require('../images/phone_ringing.mp3');
@@ -1031,7 +1078,6 @@ interface errorObjectReshedule {
   otherError: boolean;
 }
 interface CallPopoverProps {
-  setShowToastMessage: (flag: boolean) => void;
   setStartConsultAction(isVideo: boolean): void;
   createSessionAction: () => void;
   saveCasesheetAction: (onlySave: boolean, sendToPatientFlag: boolean) => void;
@@ -1149,6 +1195,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const callAbandonment = '^^#callAbandonment';
   const appointmentComplete = '^^#appointmentComplete';
   const doctorAutoResponse = '^^#doctorAutoResponse';
+  const patientJoinedMeetingRoom = '^^#patientJoinedMeetingRoom';
+  const leaveChatRoom = '^^#leaveChatRoom';
 
   const [startConsultDisableReason, setStartConsultDisableReason] = useState<string>('');
   const [iscallAbandonment, setIscallAbandonment] = React.useState<boolean>(false);
@@ -1165,6 +1213,11 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const [doctorNextAvailableSlot, setDoctorNextAvailableSlot] = useState<string>('');
   const [isConfirmationChecked, setIsConfirmationChecked] = React.useState<boolean>(false);
   const [emptyFieldsString, setEmptyFieldsString] = useState<string>('');
+  const [showToastMessage, setShowToastMessage] = useState<boolean>(false);
+
+  const [floatingJoinPrompt, setFloatingJoinPrompt] = useState<boolean>(false);
+  const [joinPrompt, setJoinPrompt] = useState<boolean>(false);
+  const patientName = patientDetails!.firstName + ' ' + patientDetails!.lastName;
 
   const moveCursorToEnd = (element: any) => {
     if (typeof element.selectionStart == 'number') {
@@ -1792,6 +1845,14 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           if (isCall) forcelyDisconnect();
         }, 2000);
       }
+      if (
+        isConsultStarted &&
+        lastMsg.message &&
+        lastMsg.message.message === patientJoinedMeetingRoom
+      ) {
+        setPlayRingtone(true);
+        setJoinPrompt(true);
+      }
     }
   }, [props.lastMsg]);
 
@@ -1801,33 +1862,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     setIscall(false);
   };
 
-  // useEffect(() => {
-  //   const presenceEventObject = props.presenceEventObject;
-  //   if (
-  //     presenceEventObject &&
-  //     isConsultStarted &&
-  //     props.appointmentStatus !== STATUS.COMPLETED &&
-  //     appointmentInfo &&
-  //     appointmentInfo.appointmentType !== APPOINTMENT_TYPE.PHYSICAL
-  //   ) {
-  //     const data: any = presenceEventObject.channels[props.appointmentId].occupants;
-  //     const occupancyPatient = data.filter((obj: any) => {
-  //       return obj.uuid === 'PATIENT' || obj.uuid.indexOf('PATIENT_') > -1;
-  //     });
-  //     if (presenceEventObject.totalOccupancy >= 2) {
-  //       didPatientJoined = true;
-  //       clearInterval(intervalCallAbundant);
-  //       abondmentStarted = false;
-  //     } else {
-  //       if (presenceEventObject.totalOccupancy === 1 && occupancyPatient.length === 0) {
-  //         if (!abondmentStarted && didPatientJoined) {
-  //           //abondmentStarted = true;
-  //           //callAbundantIntervalTimer(620);
-  //         }
-  //       }
-  //     }
-  //   }
-  // }, [props.presenceEventObject]);
   const onStartConsult = () => {
     const text = {
       id: props.doctorId,
@@ -2224,7 +2258,19 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           {(props.appointmentStatus !== STATUS.COMPLETED || props.isClickedOnEdit) && (
             <Prompt message="Are you sure to exit?" when={props.startAppointment}></Prompt>
           )}
-          <Link to={localStorage.getItem('callBackUrl')}>
+          <Link
+            to={localStorage.getItem('callBackUrl')}
+            onClick={() => {
+              pubnub.publish(
+                {
+                  message: leaveChatRoom,
+                  channel: channel,
+                  storeInHistory: true,
+                },
+                (status: any, response: any) => {}
+              );
+            }}
+          >
             <div className={classes.backArrow}>
               <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
               <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
@@ -2241,21 +2287,24 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               : ''}
           </div>
         </div>
+
         <div className={classes.consultButtonContainer}>
-          <span>
-            {(props.appointmentStatus === STATUS.COMPLETED ||
-              props.isClickedOnEdit ||
-              props.startAppointment) && (
-              <span
-                className={classes.phoneCallConnect}
-                onClick={() => {
-                  setConnectCall(true);
-                }}
-              >
-                <img src={require('images/call_connect.svg')} />
-                Connect via phone call
-              </span>
-            )}
+          <span style={{ display: 'inline-flex' }}>
+            {!showToastMessage &&
+              (props.appointmentStatus === STATUS.COMPLETED ||
+                props.isClickedOnEdit ||
+                props.startAppointment) && (
+                <span
+                  className={classes.phoneCallConnect}
+                  onClick={() => {
+                    setConnectCall(true);
+                  }}
+                >
+                  <img src={require('images/call_connect.svg')} />
+                  Connect via phone call
+                </span>
+              )}
+
             {props.appointmentStatus === STATUS.COMPLETED &&
               currentUserType !== LoggedInUserType.SECRETARY &&
               props.sentToPatient === true && (
@@ -2747,7 +2796,9 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                 <span className={classes.callSubheader}>
                   {'Please follow the steps to connect to your patient :'}
                 </span>
-                <span style={{ display: 'flex', marginTop: 30, marginBottom: 20 }}>
+                <span
+                  style={{ display: 'flex', margin: '30px 0px 20px 10px', alignItems: 'center' }}
+                >
                   <span className={classes.callOption}>1</span>
                   <span className={classes.callOptionFirst}>
                     Answer the call from {process.env.EXOTEL_CALLER_ID} <br />
@@ -2801,9 +2852,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                         },
                         fetchPolicy: 'no-cache',
                       });
-                      props.setShowToastMessage(true);
-                      // clearTimeout(5000);
-                      // setTimeout(() => props.setShowToastMessage(false), 5000);
+                      setShowToastMessage(true);
                     }}
                   >
                     {'PROCEED TO CONNECT'}
@@ -3575,6 +3624,109 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         </Paper>
       </Modal>
       {/* referral field required popup end */}
+
+      {floatingJoinPrompt && (
+        <div
+          className={classes.floatingJoinPrompt}
+          style={{
+            cursor: 'pointer',
+          }}
+        >
+          <img
+            src={require('images/ic_joinPrompt_white.svg')}
+            alt=""
+            style={{
+              height: 30,
+              width: 30,
+            }}
+            onClick={() => {
+              handleClose();
+              props.setStartConsultAction(true);
+              autoSend(videoCallMsg);
+              setIsVideoCall(true);
+              setDisableOnCancel(true);
+              missedCallIntervalTimer(45);
+              setIscall(true);
+            }}
+          />
+          {'JOIN'}
+        </div>
+      )}
+
+      {joinPrompt && <div className={classes.fadedBgJoinPromt}></div>}
+
+      {joinPrompt && (
+        <Box boxShadow={5} borderRadius={15} className={classes.joinPrompt}>
+          <img
+            src={require('images/ic_joinPrompt.svg')}
+            alt=""
+            style={{
+              height: 50,
+              width: 50,
+              position: 'relative',
+              marginRight: 30,
+            }}
+          />
+
+          <Typography component="h4" variant="h4" className={classes.joinPromptText}>
+            Patient "{patientName}" is waiting in the consult room. Please click on Proceed to join
+            consultation.
+          </Typography>
+
+          <div className={classes.callButtonWrapperPrompt}>
+            <AphButton
+              color="primary"
+              style={{
+                fontSize: 15,
+                borderRadius: 5,
+                boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
+                backgroundColor: '#fc9916',
+                cursor: 'pointer',
+              }}
+              onClick={() => {
+                handleClose();
+                props.setStartConsultAction(true);
+                autoSend(videoCallMsg);
+                setIsVideoCall(true);
+                setDisableOnCancel(true);
+                missedCallIntervalTimer(45);
+                setIscall(true);
+                setJoinPrompt(false);
+                setPlayRingtone(false);
+              }}
+            >
+              {'PROCEED'}
+            </AphButton>
+
+            <span
+              className={classes.collapse}
+              style={{
+                cursor: 'pointer',
+              }}
+              onClick={() => {
+                setPlayRingtone(false);
+                setJoinPrompt(false);
+                setFloatingJoinPrompt(true);
+              }}
+            >
+              <img
+                src={require('images/ic_collapse.svg')}
+                alt=""
+                style={{
+                  height: 18,
+                  width: 18,
+                  position: 'relative',
+                  marginLeft: 15,
+                  marginRight: 4,
+                  verticalAlign: 'middle',
+                }}
+              />
+              {'COLLAPSE'}
+            </span>
+          </div>
+        </Box>
+      )}
+
       {/* Ot Errors Start */}
       <Alert
         error={sessionError}
@@ -3594,6 +3746,16 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           setSubscriberError(null);
         }}
       />
+      {showToastMessage && (
+        <Alert
+          error={{
+            message: `You will get a call from ${process.env.EXOTEL_CALLER_ID}. Please pick up the call !`,
+          }}
+          onClose={() => {
+            setShowToastMessage(false);
+          }}
+        />
+      )}
       {/* Ot Errors Ends */}
     </div>
   );

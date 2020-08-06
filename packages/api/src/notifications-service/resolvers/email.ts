@@ -11,13 +11,12 @@ export const emailTypeDefs = gql`
 `;
 
 export async function sendMail(emailContent: EmailMessage) {
-  let ccEmailList = [];
-  ccEmailList = emailContent.ccEmail.split(',');
+  let ccEmailList: any[] | undefined = emailContent?.ccEmail?.split(',');
+
   const sendgrid = require('@sendgrid/mail');
   sendgrid.setApiKey(process.env.SENDGRID_API_KEY);
-  const emailOptions = {
+  let emailOptions = {
     to: emailContent.toEmail,
-    cc: ccEmailList,
     from: emailContent.fromEmail,
     fromname: emailContent.fromName,
     subject: emailContent.subject,
@@ -25,13 +24,11 @@ export async function sendMail(emailContent: EmailMessage) {
     html: emailContent.messageContent,
     attachments: emailContent.attachments,
   };
-  log(
-    'notificationServiceLogger',
-    `SENDING_EMAIL_TO_${emailContent.toEmail}`,
-    ``,
-    JSON.stringify(emailOptions),
-    ''
-  );
+
+  if (ccEmailList && Array.isArray(ccEmailList) && ccEmailList.length > 0) {
+    Object.assign(emailOptions, { cc: ccEmailList });
+  }
+
   try {
     const sendgridResp = await sendgrid.send(emailOptions);
     log(
@@ -54,8 +51,8 @@ export async function sendMail(emailContent: EmailMessage) {
 
 const sendEmailMessage: Resolver<null, {}, NotificationsServiceContext, string> = async (
   parent,
-  {},
-  {}
+  { },
+  { }
 ) => {
   return '';
 };

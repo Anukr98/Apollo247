@@ -23,6 +23,7 @@ import {
   SearchDoctorAndSpecialtyByName,
   SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctors as DoctorsType,
   SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_specialties as SpecialtyType,
+  SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctorsNextAvailability as NextAvailability,
 } from 'graphql/types/SearchDoctorAndSpecialtyByName';
 import { SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME } from 'graphql/doctors';
 import { useApolloClient } from 'react-apollo-hooks';
@@ -630,6 +631,9 @@ export const SpecialityListing: React.FC = (props) => {
   const [locationPopup, setLocationPopup] = useState<boolean>(false);
   const [searchSpecialty, setSearchSpecialty] = useState<SpecialtyType[] | null>(null);
   const [searchDoctors, setSearchDoctors] = useState<DoctorsType[] | null>(null);
+  const [searchDoctorsNextAvailability, setSearchDoctorsNextAvailability] = useState<
+    NextAvailability[] | null
+  >(null);
   const [searchLoading, setSearchLoading] = useState<boolean>(false);
   const [faqs, setFaqs] = useState<any | null>(null);
   const [selectedCity, setSelectedCity] = useState<string>('');
@@ -708,12 +712,16 @@ export const SpecialityListing: React.FC = (props) => {
             const specialtiesArray = specialtiesAndDoctorsList.specialties || [];
             setSearchSpecialty(specialtiesArray);
             setSearchDoctors(doctorsArray);
+            setSearchDoctorsNextAvailability(
+              specialtiesAndDoctorsList.doctorsNextAvailability || []
+            );
           }
         })
         .catch((e) => {
           console.log(e);
           setSearchSpecialty([]);
           setSearchDoctors([]);
+          setSearchDoctorsNextAvailability([]);
         })
         .finally(() => {
           setSearchLoading(false);
@@ -784,6 +792,7 @@ export const SpecialityListing: React.FC = (props) => {
                     setLocationPopup={setLocationPopup}
                     locationPopup={locationPopup}
                     setSelectedCity={setSelectedCity}
+                    searchDoctorsNextAvailability={searchDoctorsNextAvailability}
                   />
                   {currentPatient && currentPatient.id && searchKeyword.length <= 0 && (
                     <PastSearches />

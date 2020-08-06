@@ -10,6 +10,7 @@ import { PatientRepository } from 'profiles-service/repositories/patientReposito
 import { ExotelDetailsRepository } from 'consults-service/repositories/exotelDetailsRepository';
 import { uploadFileToBlobStorage } from 'helpers/uploadFileToBlob';
 import { DEVICETYPE, Appointment } from 'consults-service/entities';
+import { ApiConstants } from 'ApiConstants';
 
 export const exotelTypeDefs = gql`
   input exotelInput {
@@ -164,14 +165,10 @@ const initateConferenceTelephoneCall: Resolver<
 
   let fromMobileNumber = undefined;
   let toMobileNumber = undefined;
-
   const apptsRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
   const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
 
-  // if (!exotelInput.from && !exotelInput.to) {
-
-  // exotelInput.appointmentId made mandatory later on.
   if (!exotelInput.appointmentId) {
     throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
   }
@@ -182,7 +179,6 @@ const initateConferenceTelephoneCall: Resolver<
     throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
   }
 
-  // lookup with patientId
   const patient = await patientRepo.getPatientDetails(appt.patientId);
   if (!patient) {
     throw new AphError(AphErrorMessages.GET_PATIENTS_ERROR, undefined, {});
@@ -196,18 +192,35 @@ const initateConferenceTelephoneCall: Resolver<
 
   fromMobileNumber = doctor.mobileNumber;
   toMobileNumber = patient.mobileNumber;
-  // }
 
-  // if (exotelInput.from && !exotelInput.to) {
-  //   throw new AphError(AphErrorMessages.INVALID_PARAMETERS, undefined, {});
-  // }
+  if (!doctor) {
+    throw new AphError(AphErrorMessages.GET_DOCTORS_ERROR, undefined, {});
+  }
 
-  // if (!exotelInput.from && exotelInput.to) {
-  //   throw new AphError(AphErrorMessages.INVALID_PARAMETERS, undefined, {});
-  // }
+  fromMobileNumber = doctor.mobileNumber;
+  toMobileNumber = patient.mobileNumber;
 
-  // fromMobileNumber = exotelInput.from;
-  // toMobileNumber = exotelInput.to;
+  const apiBaseUrl = process.env.KALEYRA_OTP_API_BASE_URL;
+  const apiUrlWithKey = `${apiBaseUrl}?api_key=${process.env.KALEYRA_NOTIFICATION_API_KEY}`;
+  let message = ApiConstants.NOTIFICATION_MSG_FOR_DR_CALL.replace('{0}', patient.firstName);
+  message = message.replace('{1}', doctor.fullName);
+  if (exotelCallerId) {
+    message = message.replace('{2}', exotelCallerId);
+  }
+  const queryParams = `&method=${ApiConstants.KALEYRA_OTP_SMS_METHOD}&message=${message}&to=${toMobileNumber}&sender=${ApiConstants.KALEYRA_OTP_SENDER}`;
+  const apiUrl = `${apiUrlWithKey}${queryParams}`;
+  await fetch(apiUrl)
+    .then((res) => res.json())
+    .catch((error) => {
+      log(
+        'initateConferenceTelephoneCallAPILogger',
+        `SEND_SMS_ERROR`,
+        'smsResponse()->CATCH_BLOCK',
+        '',
+        JSON.stringify(error)
+      );
+      throw new AphError(AphErrorMessages.MESSAGE_SEND_ERROR);
+    });
 
   const exotelRequest = {
     From: fromMobileNumber,
@@ -256,7 +269,6 @@ type callStatusResult = {
 
 type callStatusInputArgs = { callStatusInput: callStatusInput };
 
-// bulkUpdateInProgressCalls by a cron-job (after half an hour)
 const updateCallStatusBySid: Resolver<
   null,
   callStatusInputArgs,

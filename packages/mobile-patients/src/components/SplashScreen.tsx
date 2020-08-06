@@ -102,7 +102,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   // const { setVirtualConsultationFee } = useAppCommonData();
 
   useEffect(() => {
-    getData('ConsultRoom', undefined, true);
+    getData('ConsultRoom', undefined, false); // no need to set timeout on didMount
     InitiateAppsFlyer();
     setBugfenderPhoneNumber();
     AppState.addEventListener('change', _handleAppStateChange);
@@ -185,25 +185,35 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           console.log('Consult');
           getData('Consult', data.length === 2 ? linkId : undefined);
           break;
+
         case 'Medicine':
           console.log('Medicine');
           getData('Medicine', data.length === 2 ? linkId : undefined);
           break;
+
         case 'UploadPrescription':
           getData('UploadPrescription', data.length === 2 ? linkId : undefined);
           break;
+
+        case 'MedicineRecommendedSection':
+          getData('MedicineRecommendedSection');
+          break;
+
         case 'Test':
           console.log('Test');
           getData('Test');
           break;
+
         case 'Speciality':
           console.log('Speciality handleopen');
           if (data.length === 2) getData('Speciality', linkId);
           break;
+
         case 'Doctor':
           console.log('Doctor handleopen');
           if (data.length === 2) getData('Doctor', linkId);
           break;
+
         case 'DoctorSearch':
           console.log('DoctorSearch handleopen');
           getData('DoctorSearch');
@@ -223,20 +233,27 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           console.log('MedicineCart handleopen');
           getData('MedicineCart', data.length === 2 ? linkId : undefined);
           break;
+
         case 'ChatRoom':
           if (data.length === 2) getAppointmentDataAndNavigate(linkId);
           break;
+
         case 'Order':
           if (data.length === 2) getData('Order', linkId);
           break;
+
         case 'MyOrders':
           getData('MyOrders');
           break;
+
         case 'webview':
           if (data.length === 2) {
             let url = data[1].replace('param=', '');
             getData('webview', url);
           }
+          break;
+        case 'FindDoctors':
+          if (data.length === 2) getData('FindDoctors', linkId);
           break;
 
         case 'HealthRecordsHome':
@@ -250,15 +267,22 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           break;
 
         case 'OneApolloMembership':
-          console.log('OneApolloMembership handleopen');
           getData('OneApolloMembership');
+          break;
+
+        case 'TestDetails':
+          getData('TestDetails', data.length === 2 ? linkId : undefined);
+          break;
+
+        case 'ConsultDetails':
+          getData('ConsultDetails', data.length === 2 ? linkId : undefined);
           break;
 
         default:
           getData('ConsultRoom', undefined, true);
           // webengage event
           const eventAttributes: WebEngageEvents[WebEngageEventName.HOME_PAGE_VIEWED] = {
-            source: 'Deeplink',
+            source: 'deeplink',
           };
           postWebEngageEvent(WebEngageEventName.HOME_PAGE_VIEWED, eventAttributes);
           break;
@@ -394,7 +418,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       .then((_data) => {
         const appointmentData: any = _data.data.getAppointmentData!.appointmentsHistory;
         if (appointmentData[0]!.doctorInfo !== null) {
-          getData('ChatRoom', appointmentData[0]);
+          getData('ChatRoom', appointmentData[0], true);
         }
       })
       .catch((error) => {
@@ -421,6 +445,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
       case 'UploadPrescription':
         props.navigation.navigate('MEDICINES', { showUploadPrescriptionPopup: true });
+        break;
+
+      case 'MedicineRecommendedSection':
+        props.navigation.navigate('MEDICINES', { showRecommendedSection: true });
         break;
 
       case 'MedicineDetail':
@@ -454,7 +482,14 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         //   specialityId: id ? id : '',
         // });
         break;
-
+      case 'FindDoctors':
+        const cityBrandFilter = id ? id.split('%20') : '';
+        props.navigation.navigate(AppRoutes.DoctorSearchListing, {
+          specialityId: cityBrandFilter[0] ? cityBrandFilter[0] : '',
+          city: cityBrandFilter.length > 1 ? cityBrandFilter[1] : null,
+          brand: cityBrandFilter.length > 2 ? cityBrandFilter[2] : null,
+        });
+        break;
       case 'Doctor':
         props.navigation.navigate(AppRoutes.DoctorDetails, {
           doctorId: id,
@@ -494,7 +529,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       case 'Order':
         props.navigation.navigate(AppRoutes.OrderDetailsScene, {
           goToHomeOnBack: true,
-          orderAutoId: id,
+          orderAutoId: isNaN(id) ? '' : id,
+          billNumber: isNaN(id) ? id : '',
         });
         break;
       case 'MyOrders':
@@ -516,6 +552,18 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
       case 'OneApolloMembership':
         props.navigation.navigate(AppRoutes.OneApolloMembership);
+        break;
+
+      case 'TestDetails':
+        props.navigation.navigate(AppRoutes.TestDetails, {
+          itemId: id,
+        });
+        break;
+
+      case 'ConsultDetails':
+        props.navigation.navigate(AppRoutes.ConsultDetails, {
+          CaseSheet: id,
+        });
         break;
 
       default:
@@ -641,6 +689,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
               'min_value_to_nudge_users_to_avail_free_delivery',
               'QA_pharmacy_homepage',
               'pharmacy_homepage',
+              'Doctor_Partner_Text',
+              'QA_Doctor_Partner_Text',
             ]);
         })
         .then((snapshot) => {
@@ -708,6 +758,15 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           const homeScreenEmergencyBannerNumber = snapshot['home_screen_emergency_number'].val();
           homeScreenEmergencyBannerNumber &&
             updateAppConfig('HOME_SCREEN_EMERGENCY_BANNER_NUMBER', homeScreenEmergencyBannerNumber);
+
+          const doctorPartnerText = snapshot['Doctor_Partner_Text'].val();
+          doctorPartnerText &&
+            AppConfig.APP_ENV == AppEnv.PROD &&
+            updateAppConfig('DOCTOR_PARTNER_TEXT', doctorPartnerText);
+          const QADoctorPartnerText = snapshot['QA_Doctor_Partner_Text'].val();
+          QADoctorPartnerText &&
+            AppConfig.APP_ENV != AppEnv.PROD &&
+            updateAppConfig('DOCTOR_PARTNER_TEXT', QADoctorPartnerText);
 
           if (AppConfig.APP_ENV === 'DEV') {
             const DEV_top6_specailties = snapshot['DEV_top6_specailties'].val();

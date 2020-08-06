@@ -7,6 +7,7 @@ import {
   AppointmentRefunds,
   AppointmentPayments,
   AppointmentSessions,
+  ConsultQueueItem,
   CaseSheet,
   DoctorNextAvaialbleSlots,
   FeedbackDashboardSummary,
@@ -93,6 +94,7 @@ import {
   MedicineOrderCancelReason,
   PharmacologistConsult,
   MedicineOrderAddress,
+  PatientEntitiySubscriber,
 } from 'profiles-service/entities';
 
 export const connect = async () => {
@@ -122,6 +124,7 @@ export const connect = async () => {
         UtilizationCapacity,
         AppointmentUpdateHistory,
         ExotelDetails,
+        ConsultQueueItem,
       ],
       type: 'postgres',
       host: process.env.CONSULTS_DB_HOST,
@@ -223,6 +226,7 @@ export const connect = async () => {
       username: process.env.PROFILES_DB_USER,
       password: process.env.PROFILES_DB_PASSWORD,
       database: `profiles_${process.env.DB_NODE_ENV}`,
+      subscribers: [PatientEntitiySubscriber],
       logging: process.env.NODE_ENV === 'production' ? false : true,
       extra: {
         connectionLimit: process.env.CONNECTION_POOL_LIMIT,

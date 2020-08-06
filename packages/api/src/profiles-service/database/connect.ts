@@ -67,6 +67,7 @@ import {
   MedicineOrderCancelReason,
   PharmacologistConsult,
   MedicineOrderAddress,
+  PatientEntitiySubscriber,
 } from 'profiles-service/entities';
 import 'reflect-metadata';
 import { createConnections } from 'typeorm';
@@ -76,6 +77,7 @@ import {
   AppointmentDocuments,
   AppointmentNoShow,
   AppointmentPayments,
+  ConsultQueueItem,
   AppointmentRefunds,
   AppointmentSessions,
   CaseSheet,
@@ -147,6 +149,7 @@ export const connect = async () => {
       username: process.env.PROFILES_DB_USER,
       password: process.env.PROFILES_DB_PASSWORD,
       database: `profiles_${process.env.DB_NODE_ENV}`,
+      subscribers: [PatientEntitiySubscriber],
       logging: process.env.NODE_ENV === 'production' ? false : true,
       synchronize: true,
       extra: {
@@ -219,6 +222,7 @@ export const connect = async () => {
         UtilizationCapacity,
         AppointmentUpdateHistory,
         ExotelDetails,
+        ConsultQueueItem,
       ],
       type: 'postgres',
       host: process.env.CONSULTS_DB_HOST,

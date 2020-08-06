@@ -10,7 +10,7 @@ import {
   Box,
 } from '@material-ui/core';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import { AphTextField } from '@aph/web-ui-components';
+import { AphTextField, AphButton } from '@aph/web-ui-components';
 import {
   Symptoms,
   LifeStyle,
@@ -210,6 +210,7 @@ export const CaseSheet: React.FC<CashSheetProps> = (props) => {
     setMedicationHistory,
     occupationHistory,
     setOccupationHistory,
+    patientDetails,
   } = useContext(CaseSheetContext);
   const params = useParams<Params>();
 
@@ -423,6 +424,8 @@ export const CaseSheet: React.FC<CashSheetProps> = (props) => {
     const storageItem = getLocalStorageItem(params.id);
     return storageItem ? storageItem.notes : notes;
   };
+
+  const patientName = patientDetails!.firstName + ' ' + patientDetails!.lastName;
 
   return (
     <div className={classes.container}>

@@ -9,6 +9,7 @@ import { DoctorDetails } from '@aph/mobile-patients/src/components/ConsultRoom/D
 import { DoctorSearch } from '@aph/mobile-patients/src/components/ConsultRoom/DoctorSearch';
 import { DoctorSearchListing } from '@aph/mobile-patients/src/components/ConsultRoom/DoctorSearchListing';
 import { FilterScene } from '@aph/mobile-patients/src/components/FilterScene';
+import { FilterHealthRecordScene } from '@aph/mobile-patients/src/components/FilterHealthRecordScene';
 import { HealthRecords } from '@aph/mobile-patients/src/components/HealthRecords';
 import { AddRecord } from '@aph/mobile-patients/src/components/HealthRecords/AddRecord';
 import { Login } from '@aph/mobile-patients/src/components/Login';
@@ -110,6 +111,7 @@ export enum AppRoutes {
   MobileHelp = 'MobileHelp',
   Consult = 'Consult',
   FilterScene = 'FilterScene',
+  FilterHealthRecordScene = 'FilterHealthRecordScene',
   DoctorDetails = 'DoctorDetails',
   AssociateDoctorDetails = 'AssociateDoctorDetails',
   AppointmentDetails = 'AppointmentDetails',
@@ -257,6 +259,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   [AppRoutes.FilterScene]: {
     screen: FilterScene,
   },
+  [AppRoutes.FilterHealthRecordScene]: {
+    screen: FilterHealthRecordScene,
+  },
   [AppRoutes.DoctorDetails]: {
     screen: DoctorDetails,
     path: 'DoctorDetailsPage',
@@ -388,6 +393,7 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.TestDetails]: {
     screen: TestDetails,
+    path: 'TestDetailsPage',
   },
   [AppRoutes.EditProfile]: {
     screen: EditProfile,

@@ -6,13 +6,10 @@ import _map from 'lodash/map';
 import _filter from 'lodash/filter';
 import _startsWith from 'lodash/startsWith';
 import _toLower from 'lodash/toLower';
-import { SAVE_PATIENT_SEARCH } from 'graphql/pastsearches';
-import { SEARCH_TYPE } from 'graphql/types/globalTypes';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { Route, Link } from 'react-router-dom';
 import { readableParam } from 'helpers/commonHelpers';
-import { useMutation } from 'react-apollo-hooks';
 import { getSymptoms } from 'helpers/commonHelpers';
 import _lowerCase from 'lodash/lowerCase';
 import {
@@ -151,8 +148,6 @@ export const Specialties: React.FC<SpecialtiesProps> = (props) => {
     }
   }, [allSpecialties]);
 
-  const saveSearchMutation = useMutation(SAVE_PATIENT_SEARCH);
-
   return loading ? (
     <div className={classes.circlularProgress}>
       <CircularProgress color="primary" />
@@ -189,17 +184,6 @@ export const Specialties: React.FC<SpecialtiesProps> = (props) => {
                             relation: currentPatient ? currentPatient.relation : '',
                           };
                           specialtyClickTracking(eventData);
-                          currentPatient &&
-                            currentPatient.id &&
-                            saveSearchMutation({
-                              variables: {
-                                saveSearchInput: {
-                                  type: SEARCH_TYPE.SPECIALTY,
-                                  typeId: specialityDetails.id,
-                                  patient: currentPatient ? currentPatient.id : '',
-                                },
-                              },
-                            });
                         }}
                       >
                         <Link

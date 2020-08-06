@@ -9,6 +9,7 @@ import {
   getDeliveryTime,
   medCartItemsDetailsApi,
   MedicineOrderBilledItem,
+  trackTagalysEvent,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   MEDICINE_ORDER_STATUS,
@@ -63,6 +64,7 @@ import { UIElementsContextProps } from '@aph/mobile-patients/src/components/UIEl
 import { NavigationScreenProp, NavigationRoute } from 'react-navigation';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { getLatestMedicineOrder_getLatestMedicineOrder_medicineOrderDetails } from '@aph/mobile-patients/src/graphql/types/getLatestMedicineOrder';
+import { Tagalys } from '@aph/mobile-patients/src/helpers/Tagalys';
 
 const googleApiKey = AppConfig.Configuration.GOOGLE_API_KEY;
 let onInstallConversionDataCanceller: any;
@@ -144,6 +146,14 @@ export const formatOrderAddress = (
     .join(', ');
   const formattedZipcode = address.zipcode ? ` - ${address.zipcode}` : '';
   return `${addrLine}${formattedZipcode}`;
+};
+
+export const getUuidV4 = () => {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    const v = c == 'x' ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
 };
 
 export const getOrderStatusText = (status: MEDICINE_ORDER_STATUS): string => {
@@ -931,7 +941,18 @@ export const postWebEngageEvent = (eventName: WebEngageEventName, attributes: Ob
 };
 
 export const postwebEngageAddToCartEvent = (
-  { sku, name, category_id, price, special_price }: MedicineProduct,
+  {
+    sku,
+    name,
+    price,
+    special_price,
+    category_id,
+  }: Partial<MedicineProduct> & {
+    sku: MedicineProduct['sku'];
+    name: MedicineProduct['name'];
+    price: MedicineProduct['price'];
+    special_price: MedicineProduct['special_price'];
+  },
   source: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['Source'],
   section?: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['Section']
 ) => {
@@ -943,15 +964,11 @@ export const postwebEngageAddToCartEvent = (
     'category name': '',
     'category ID': category_id || '',
     Price: price,
-    'Discounted Price': typeof special_price == 'string' ? Number(special_price) : special_price,
+    'Discounted Price': Number(special_price) || undefined,
     Quantity: 1,
     Source: source,
     Section: section ? section : '',
-    af_revenue: special_price
-      ? typeof special_price == 'string'
-        ? Number(special_price)
-        : special_price
-      : price,
+    af_revenue: Number(special_price) || price,
     af_currency: 'INR',
   };
   postWebEngageEvent(WebEngageEventName.PHARMACY_ADD_TO_CART, eventAttributes);
@@ -1156,20 +1173,25 @@ export const SetAppsFlyerCustID = (patientId: string) => {
 };
 
 export const postAppsFlyerAddToCartEvent = (
-  { sku, type_id, price, special_price, manufacturer }: MedicineProduct,
+  {
+    sku,
+    type_id,
+    price,
+    special_price,
+  }: Partial<MedicineProduct> & {
+    sku: MedicineProduct['sku'];
+    name: MedicineProduct['name'];
+    price: MedicineProduct['price'];
+    special_price: MedicineProduct['special_price'];
+  },
   id: string
 ) => {
   const eventAttributes: AppsFlyerEvents[AppsFlyerEventName.PHARMACY_ADD_TO_CART] = {
     'customer id': id,
-    af_revenue: special_price
-      ? typeof special_price == 'string'
-        ? Number(special_price)
-        : special_price
-      : price,
+    af_revenue: Number(special_price) || price,
     af_currency: 'INR',
     item_type: type_id == 'Pharma' ? 'Drugs' : 'FMCG',
     sku: sku,
-    brand: manufacturer,
   };
   postAppsFlyerEvent(AppsFlyerEventName.PHARMACY_ADD_TO_CART, eventAttributes);
 };
@@ -1295,25 +1317,74 @@ export const addPharmaItemToCart = (
   navigation: NavigationScreenProp<NavigationRoute<object>, object>,
   currentPatient: GetCurrentPatients_getCurrentPatients_patients,
   isLocationServeiceable: boolean,
+  otherInfo: {
+    source: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['Source'];
+    section?: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['Section'];
+    categoryId?: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['category ID'];
+  },
   onComplete?: () => void
 ) => {
   const unServiceableMsg = 'Sorry, not serviceable in your area.';
+
   const navigate = () => {
-    if (!isLocationServeiceable) {
-      const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART_NONSERVICEABLE] = {
-        'product name': cartItem.name,
-        'product id': cartItem.id,
-        pincode: pincode,
-        'Mobile Number': g(currentPatient, 'mobileNumber')!,
-      };
-      postWebEngageEvent(WebEngageEventName.PHARMACY_ADD_TO_CART_NONSERVICEABLE, eventAttributes);
-    }
     navigation.navigate(AppRoutes.MedicineDetailsScene, {
       sku: cartItem.id,
       deliveryError: unServiceableMsg,
     });
   };
+
+  const trackTagalysAddToCartEvent = () => {
+    try {
+      trackTagalysEvent(
+        {
+          event_type: 'product_action',
+          details: {
+            sku: cartItem.id,
+            action: 'add_to_cart',
+            quantity: 1,
+          } as Tagalys.ProductAction,
+        },
+        g(currentPatient, 'id')!
+      );
+    } catch (error) {
+      CommonBugFender('helperFunctions_trackTagalysEvent', error);
+    }
+  };
+
+  const addToCart = () => {
+    addCartItem!(cartItem);
+    postwebEngageAddToCartEvent(
+      {
+        sku: cartItem.id,
+        name: cartItem.name,
+        price: cartItem.price,
+        special_price: cartItem.specialPrice,
+        category_id: g(otherInfo, 'categoryId'),
+      },
+      g(otherInfo, 'source')!,
+      g(otherInfo, 'section')
+    );
+    postAppsFlyerAddToCartEvent(
+      {
+        sku: cartItem.id,
+        name: cartItem.name,
+        price: cartItem.price,
+        special_price: cartItem.specialPrice,
+        category_id: g(otherInfo, 'categoryId'),
+      },
+      g(currentPatient, 'id')!
+    );
+    trackTagalysAddToCartEvent();
+  };
+
   if (!isLocationServeiceable) {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART_NONSERVICEABLE] = {
+      'product name': cartItem.name,
+      'product id': cartItem.id,
+      pincode: pincode,
+      'Mobile Number': g(currentPatient, 'mobileNumber')!,
+    };
+    postWebEngageEvent(WebEngageEventName.PHARMACY_ADD_TO_CART_NONSERVICEABLE, eventAttributes);
     onComplete && onComplete();
     navigate();
     return;
@@ -1334,16 +1405,16 @@ export const addPharmaItemToCart = (
       const deliveryDate = g(res, 'data', 'tat', '0' as any, 'deliverydate');
       if (deliveryDate) {
         if (isDeliveryDateWithInXDays(deliveryDate)) {
-          addCartItem!(cartItem);
+          addToCart();
         } else {
           navigate();
         }
       } else {
-        addCartItem!(cartItem);
+        addToCart();
       }
     })
     .catch(() => {
-      addCartItem!(cartItem);
+      addToCart();
     })
     .finally(() => {
       setLoading && setLoading(false);

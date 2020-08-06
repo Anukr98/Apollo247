@@ -26,6 +26,9 @@ import {
   STATUS,
   DEVICETYPE,
   BOOKINGSOURCE,
+  WebEngageEvent,
+  ConsultMode,
+  DoctorConsultEventInput,
 } from 'graphql/types/globalTypes';
 import {
   GetJuniorDoctorCaseSheet,
@@ -64,8 +67,13 @@ import {
   CREATE_CASESHEET_FOR_SRD,
   MODIFY_CASESHEET,
   UPDATE_PATIENT_PRESCRIPTIONSENTSTATUS,
+  POST_WEB_ENGAGE,
 } from 'graphql/profiles';
 import { ModifyCaseSheet, ModifyCaseSheetVariables } from 'graphql/types/ModifyCaseSheet';
+import {
+  PostDoctorConsultEvent,
+  PostDoctorConsultEventVariables,
+} from 'graphql/types/PostDoctorConsultEvent';
 import { CircularProgress } from '@material-ui/core';
 import {
   GetCaseSheet,
@@ -278,27 +286,6 @@ const useStyles = makeStyles((theme: Theme) => {
       top: 94,
       zIndex: 2,
     },
-    toastMessage: {
-      width: '482px',
-      height: '40px',
-      borderRadius: '10px',
-      boxShadow: '0 1px 13px 0 rgba(0, 0, 0, 0.16)',
-      backgroundColor: '#00b38e',
-      position: 'relative',
-      top: '27px',
-      left: '201px',
-    },
-    toastMessageText: {
-      fontSize: '14px',
-      fontWeight: 500,
-      fontStretch: 'normal',
-      fontStyle: 'normal',
-      lineHeight: 1.43,
-      letterSpacing: 'normal',
-      color: '#ffffff',
-      position: 'relative',
-      top: 6,
-    },
   };
 });
 
@@ -324,9 +311,7 @@ export const ConsultTabs: React.FC = () => {
   const classes = useStyles({});
   const params = useParams<Params>();
   const paramId = params.id;
-  const [showToastMessage, setShowToastMessage] = useState<boolean>(false);
   const { currentPatient, isSignedIn, sessionClient } = useAuth();
-
   const mutationCreateSrdCaseSheet = useMutation<
     CreateSeniorDoctorCaseSheet,
     CreateSeniorDoctorCaseSheetVariables
@@ -507,6 +492,60 @@ export const ConsultTabs: React.FC = () => {
       pubnub.unsubscribe({ channels: [appointmentId] });
     };
   }, []);
+  const postDoctorConsultEventAction = (eventType: WebEngageEvent) => {
+    let consultTypeMode: ConsultMode = ConsultMode.BOTH;
+    if (consultType.includes(ConsultMode.ONLINE)) {
+      consultTypeMode = ConsultMode.ONLINE;
+    } else if (consultType.includes(ConsultMode.PHYSICAL)) {
+      consultTypeMode = ConsultMode.PHYSICAL;
+    }
+    const displayId = isSecretary
+      ? casesheetInfo!.getJuniorDoctorCaseSheet!.caseSheetDetails!.appointment!.displayId
+      : casesheetInfo!.getCaseSheet!.caseSheetDetails!.appointment!.displayId;
+
+    const inputParam: DoctorConsultEventInput = {
+      mobileNumber:
+        currentPatient && currentPatient.mobileNumber ? currentPatient.mobileNumber : '',
+      eventName: eventType,
+      consultID: appointmentId,
+      displayId: displayId,
+      consultMode: consultTypeMode,
+      doctorFullName: currentPatient && currentPatient.mobileNumber ? currentPatient.fullName : '',
+    };
+    client
+      .mutate<PostDoctorConsultEvent, PostDoctorConsultEventVariables>({
+        mutation: POST_WEB_ENGAGE,
+        variables: {
+          doctorConsultEventInput: inputParam,
+        },
+      })
+      .then((_data: any) => {
+        console.log(`${eventType} webengage event registerd.`);
+      })
+      .catch((e: any) => {
+        console.log(`${eventType} webengage event registration failed.`);
+        const patientName =
+          casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.firstName +
+          ' ' +
+          casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.lastName;
+        const logObject = {
+          api: 'PostDoctorConsultEvent',
+          inputParam: JSON.stringify(inputParam),
+          appointmentId: appointmentId,
+          doctorId: currentPatient!.id,
+          doctorDisplayName: currentPatient!.displayName,
+          patientId: params.patientId,
+          patientName: patientName,
+          currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
+          appointmentDateTime: moment(new Date(appointmentDateTime)).format(
+            'MMMM DD YYYY h:mm:ss a'
+          ),
+          error: JSON.stringify(error),
+        };
+
+        sessionClient.notify(JSON.stringify(logObject));
+      });
+  };
   const getPrismUrls = (client: ApolloClient<object>, patientId: string, fileIds: string[]) => {
     return new Promise((res, rej) => {
       client
@@ -608,36 +647,50 @@ export const ConsultTabs: React.FC = () => {
               ? setCaseSheetId(_data!.data!.getCaseSheet!.caseSheetDetails.id)
               : '';
             _data!.data!.getCaseSheet!.caseSheetDetails!.diagnosis !== null
-              ? setDiagnosis((_data!.data!.getCaseSheet!.caseSheetDetails!
-                  .diagnosis as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis[])
+              ? setDiagnosis(
+                  (_data!.data!.getCaseSheet!.caseSheetDetails!
+                    .diagnosis as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis[]
+                )
               : setDiagnosis([]);
             _data!.data!.getCaseSheet!.caseSheetDetails!.symptoms
-              ? setSymptoms((_data!.data!.getCaseSheet!.caseSheetDetails!
-                  .symptoms as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms[])
+              ? setSymptoms(
+                  (_data!.data!.getCaseSheet!.caseSheetDetails!
+                    .symptoms as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms[]
+                )
               : setSymptoms([]);
             _data!.data!.getCaseSheet!.caseSheetDetails!.otherInstructions
-              ? setOtherInstructions((_data!.data!.getCaseSheet!.caseSheetDetails!
-                  .otherInstructions as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_otherInstructions[])
+              ? setOtherInstructions(
+                  (_data!.data!.getCaseSheet!.caseSheetDetails!
+                    .otherInstructions as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_otherInstructions[]
+                )
               : setOtherInstructions([]);
             _data!.data!.getCaseSheet!.caseSheetDetails!.diagnosticPrescription
-              ? setDiagnosticPrescription((_data!.data!.getCaseSheet!.caseSheetDetails!
-                  .diagnosticPrescription as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[])
+              ? setDiagnosticPrescription(
+                  (_data!.data!.getCaseSheet!.caseSheetDetails!
+                    .diagnosticPrescription as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[]
+                )
               : setDiagnosticPrescription([]);
             _data!.data!.getCaseSheet!.caseSheetDetails!.medicinePrescription
-              ? setMedicinePrescription((_data!.data!.getCaseSheet!.caseSheetDetails!
-                  .medicinePrescription as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[])
+              ? setMedicinePrescription(
+                  (_data!.data!.getCaseSheet!.caseSheetDetails!
+                    .medicinePrescription as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[]
+                )
               : setMedicinePrescription([]);
             _data!.data!.getCaseSheet!.caseSheetDetails!.removedMedicinePrescription
-              ? setRemovedMedicinePrescription((_data!.data!.getCaseSheet!.caseSheetDetails!
-                  .removedMedicinePrescription as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[])
+              ? setRemovedMedicinePrescription(
+                  (_data!.data!.getCaseSheet!.caseSheetDetails!
+                    .removedMedicinePrescription as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[]
+                )
               : setRemovedMedicinePrescription([]);
             _data!.data!.getCaseSheet!.caseSheetDetails!.notes
-              ? setSRDNotes((_data!.data!.getCaseSheet!.caseSheetDetails!
-                  .notes as unknown) as string)
+              ? setSRDNotes(
+                  (_data!.data!.getCaseSheet!.caseSheetDetails!.notes as unknown) as string
+                )
               : setSRDNotes('');
             _data!.data!.getCaseSheet!.juniorDoctorNotes
-              ? setJuniorDoctorNotes((_data!.data!.getCaseSheet!
-                  .juniorDoctorNotes as unknown) as string)
+              ? setJuniorDoctorNotes(
+                  (_data!.data!.getCaseSheet!.juniorDoctorNotes as unknown) as string
+                )
               : setJuniorDoctorNotes('');
             _data!.data!.getCaseSheet!.caseSheetDetails!.consultType
               ? setConsultType(([
@@ -960,29 +1013,40 @@ export const ConsultTabs: React.FC = () => {
           );
 
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.diagnosis !== null
-            ? setDiagnosis((_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
-                .diagnosis as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_diagnosis[])
+            ? setDiagnosis(
+                (_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+                  .diagnosis as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_diagnosis[]
+              )
             : setDiagnosis([]);
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.symptoms
-            ? setSymptoms((_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
-                .symptoms as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_symptoms[])
+            ? setSymptoms(
+                (_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+                  .symptoms as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_symptoms[]
+              )
             : setSymptoms([]);
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.otherInstructions
-            ? setOtherInstructions((_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
-                .otherInstructions as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_otherInstructions[])
+            ? setOtherInstructions(
+                (_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+                  .otherInstructions as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_otherInstructions[]
+              )
             : setOtherInstructions([]);
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.diagnosticPrescription
-            ? setDiagnosticPrescription((_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
-                .diagnosticPrescription as unknown) as any[])
+            ? setDiagnosticPrescription(
+                (_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+                  .diagnosticPrescription as unknown) as any[]
+              )
             : setDiagnosticPrescription([]);
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.medicinePrescription
-            ? setMedicinePrescription((_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
-                .medicinePrescription as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_medicinePrescription[])
+            ? setMedicinePrescription(
+                (_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+                  .medicinePrescription as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_medicinePrescription[]
+              )
             : setMedicinePrescription([]);
 
           _data!.data!.getJuniorDoctorCaseSheet!.juniorDoctorNotes
-            ? setJuniorDoctorNotes((_data!.data!.getJuniorDoctorCaseSheet!
-                .juniorDoctorNotes as unknown) as string)
+            ? setJuniorDoctorNotes(
+                (_data!.data!.getJuniorDoctorCaseSheet!.juniorDoctorNotes as unknown) as string
+              )
             : setJuniorDoctorNotes('');
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.consultType
             ? setConsultType(([
@@ -1214,6 +1278,8 @@ export const ConsultTabs: React.FC = () => {
         document.cookie = cookieStr + ';path=/;';
       };
     }
+    console.log('CURRENT  PATIENT', currentPatient);
+    console.log('DOC ID', doctorId);
   }, []);
 
   const sendCallNotificationFn = (callType: APPT_CALL_TYPE, isCall: boolean) => {
@@ -1691,29 +1757,6 @@ export const ConsultTabs: React.FC = () => {
     <div className={classes.consultRoom}>
       <div className={classes.headerSticky}>
         <Header />
-        {showToastMessage && (
-          <div className={classes.toastMessage}>
-            <span className={classes.toastMessageText}>
-              <img
-                src={require('images/ic_cancel_green.svg')}
-                alt=""
-                style={{
-                  height: 18,
-                  width: 18,
-                  position: 'relative',
-                  top: 4,
-                  marginLeft: 12,
-                  marginRight: 20,
-                  cursor: 'pointer',
-                }}
-                onClick={() => {
-                  setShowToastMessage(false);
-                }}
-              />
-              {`You will get a call from ${process.env.EXOTEL_CALLER_ID}. Please pick up the call !`}
-            </span>
-          </div>
-        )}
       </div>
       {!loaded && (
         <div>
@@ -1839,7 +1882,6 @@ export const ConsultTabs: React.FC = () => {
           >
             <div className={classes.container}>
               <CallPopover
-                setShowToastMessage={setShowToastMessage}
                 setStartConsultAction={(flag: boolean) => setStartConsultAction(flag)}
                 createSessionAction={createSessionAction}
                 saveCasesheetAction={(flag: boolean, sendToPatientFlag: boolean) =>
@@ -1895,6 +1937,13 @@ export const ConsultTabs: React.FC = () => {
                         indicator: classes.tabsIndicator,
                       }}
                       onChange={(e, newValue) => {
+                        if (tabValue !== newValue) {
+                          postDoctorConsultEventAction(
+                            newValue === 0
+                              ? WebEngageEvent.DOCTOR_LEFT_CHAT_WINDOW
+                              : WebEngageEvent.DOCTOR_IN_CHAT_WINDOW
+                          );
+                        }
                         setTabValue(newValue);
                       }}
                     >
@@ -1934,6 +1983,10 @@ export const ConsultTabs: React.FC = () => {
                           sessionClient={sessionClient}
                           lastMsg={lastMsg}
                           messages={messages}
+                          appointmentStatus={appointmentStatus}
+                          postDoctorConsultEventAction={(eventType: WebEngageEvent) =>
+                            postDoctorConsultEventAction(eventType)
+                          }
                         />
                       </div>
                     </div>

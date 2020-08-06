@@ -1,9 +1,35 @@
+import {
+  LocationData,
+  useAppCommonData,
+} from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { CollapseCard } from '@aph/mobile-patients/src/components/CollapseCard';
+import { OverlayRescheduleView } from '@aph/mobile-patients/src/components/Consult/OverlayRescheduleView';
+import {
+  DiagnosticsCartItem,
+  useDiagnosticsCart,
+} from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import {
+  EPrescription,
+  ShoppingCartItem,
+  useShoppingCart,
+} from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
+import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
+import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
+import { Download } from '@aph/mobile-patients/src/components/ui/Icons';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import {
+  CommonBugFender,
+  CommonLogEvent,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
   CHECK_IF_FOLLOWUP_BOOKED,
   GET_CASESHEET_DETAILS,
 } from '@aph/mobile-patients/src/graphql/profiles';
+import { checkIfFollowUpBooked } from '@aph/mobile-patients/src/graphql/types/checkIfFollowUpBooked';
+import { getAppointmentData_getAppointmentData_appointmentsHistory_doctorInfo } from '@aph/mobile-patients/src/graphql/types/getAppointmentData';
 import {
   getCaseSheet,
   getCaseSheetVariables,
@@ -11,6 +37,33 @@ import {
   getCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription,
   getCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription,
 } from '@aph/mobile-patients/src/graphql/types/getCaseSheet';
+import { getDoctorDetailsById_getDoctorDetailsById } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
+import {
+  AppointmentType,
+  APPOINTMENT_TYPE,
+  MEDICINE_CONSUMPTION_DURATION,
+  MEDICINE_FORM_TYPES,
+  MEDICINE_FREQUENCY,
+  MEDICINE_TIMINGS,
+  MEDICINE_TO_BE_TAKEN,
+  MEDICINE_UNIT,
+} from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { getMedicineDetailsApi } from '@aph/mobile-patients/src/helpers/apiCalls';
+import {
+  addTestsToCart,
+  doRequestAndAccessLocation,
+  g,
+  handleGraphQlError,
+  medUnitFormatArray,
+  nameFormater,
+  postWebEngageEvent,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  WebEngageEventName,
+  WebEngageEvents,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import strings from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
@@ -18,78 +71,25 @@ import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   Alert,
+  Dimensions,
   Image,
-  Linking,
   Platform,
   SafeAreaView,
   StyleSheet,
   Text,
-  Dimensions,
   TouchableOpacity,
   View,
 } from 'react-native';
-import RNFetchBlob from 'rn-fetch-blob';
 import {
   NavigationActions,
   NavigationScreenProps,
   ScrollView,
   StackActions,
 } from 'react-navigation';
-import { checkIfFollowUpBooked } from '@aph/mobile-patients/src/graphql/types/checkIfFollowUpBooked';
-import { getMedicineDetailsApi } from '@aph/mobile-patients/src/helpers/apiCalls';
-import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
-import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
-import { OverlayRescheduleView } from '@aph/mobile-patients/src/components/Consult/OverlayRescheduleView';
-import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import {
-  EPrescription,
-  ShoppingCartItem,
-  useShoppingCart,
-} from '@aph/mobile-patients/src/components/ShoppingCartProvider';
-import { Download } from '@aph/mobile-patients/src/components/ui/Icons';
-import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import {
-  MEDICINE_UNIT,
-  MEDICINE_CONSUMPTION_DURATION,
-  AppointmentType,
-  APPOINTMENT_TYPE,
-  MEDICINE_TO_BE_TAKEN,
-  MEDICINE_TIMINGS,
-  MEDICINE_FORM_TYPES,
-  MEDICINE_FREQUENCY,
-} from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import {
-  CommonLogEvent,
-  CommonBugFender,
-} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
-import { useUIElements } from '../UIElementsProvider';
+import RNFetchBlob from 'rn-fetch-blob';
 import { mimeType } from '../../helpers/mimeType';
-import {
-  handleGraphQlError,
-  g,
-  addTestsToCart,
-  doRequestAndAccessLocation,
-  postWebEngageEvent,
-  nameFormater,
-  medUnitFormatArray,
-} from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
-import {
-  useDiagnosticsCart,
-  DiagnosticsCartItem,
-} from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
-import {
-  useAppCommonData,
-  LocationData,
-} from '@aph/mobile-patients/src/components/AppCommonDataProvider';
-import {
-  WebEngageEvents,
-  WebEngageEventName,
-} from '@aph/mobile-patients/src/helpers/webEngageEvents';
-import { getDoctorDetailsById_getDoctorDetailsById } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
-import { getAppointmentData_getAppointmentData_appointmentsHistory_doctorInfo } from '@aph/mobile-patients/src/graphql/types/getAppointmentData';
-import { Button } from '@aph/mobile-patients/src/components/ui/Button';
+import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
+
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
@@ -182,7 +182,7 @@ type rescheduleType = {
 };
 
 export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
-  const data = props.navigation.state.params!.DoctorInfo;
+  const data = props.navigation.getParam('DoctorInfo');
   const appointmentType = props.navigation.getParam('appointmentType');
   const appointmentId = props.navigation.getParam('CaseSheet');
 
@@ -199,15 +199,16 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
     getCaseSheet_getCaseSheet_caseSheetDetails
   >();
   const [displayoverlay, setdisplayoverlay] = useState<boolean>(
-    props.navigation.state.params!.Displayoverlay
+    props.navigation.getParam('Displayoverlay')
   );
   const [bookFollowUp, setBookFollowUp] = useState<boolean>(true);
   const [isfollowcount, setIsfollowucount] = useState<number>(
-    props.navigation.state.params!.isFollowcount
+    props.navigation.getParam('isFollowcount')
   );
   const [rescheduleType, setRescheduleType] = useState<rescheduleType>();
   const [testShow, setTestShow] = useState<boolean>(true);
   const [showNotExistAlert, setshowNotExistAlert] = useState<boolean>(false);
+  const [APICalled, setAPICalled] = useState<boolean>(false);
 
   const { currentPatient } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
@@ -225,13 +226,14 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
         query: GET_CASESHEET_DETAILS,
         fetchPolicy: 'no-cache',
         variables: {
-          appointmentId: props.navigation.state.params!.CaseSheet,
+          appointmentId: props.navigation.getParam('CaseSheet'),
         },
       })
       .then((_data) => {
         setLoading && setLoading(false);
         props.navigation.state.params!.DisplayId = _data.data.getCaseSheet!.caseSheetDetails!.appointment!.displayId;
         setcaseSheetDetails(_data.data.getCaseSheet!.caseSheetDetails!);
+        setAPICalled(true);
       })
       .catch((error) => {
         CommonBugFender('ConsultDetails_GET_CASESHEET_DETAILS', error);
@@ -288,7 +290,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
   const renderDoctorDetails = () => {
     return (
       <View style={styles.doctorDetailsStyle}>
-        {!props.navigation.state.params!.DoctorInfo ? null : (
+        {!g(caseSheetDetails, 'appointment', 'doctorInfo') ? null : (
           <View
             style={{
               flexDirection: 'row',
@@ -302,13 +304,11 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                   paddingBottom: 4,
                 }}
               >
-                {props.navigation.state.params!.DoctorInfo &&
-                  '#' + props.navigation.state.params!.DisplayId}
+                {'#' + g(caseSheetDetails, 'appointment', 'displayId')}
               </Text>
               <View style={theme.viewStyles.lightSeparatorStyle} />
               <Text style={styles.doctorNameStyle}>
-                {props.navigation.state.params!.DoctorInfo &&
-                  props.navigation.state.params!.DoctorInfo.displayName}
+                {g(caseSheetDetails, 'appointment', 'doctorInfo', 'displayName')}
               </Text>
               <View style={{ flexDirection: 'row' }}>
                 <Text style={styles.timeStyle}>
@@ -320,7 +320,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                 <Text style={styles.timeStyle}>{','}</Text>
 
                 <Text style={styles.timeStyle}>
-                  {props.navigation.state.params!.appointmentType == 'ONLINE'
+                  {g(caseSheetDetails, 'appointment', 'appointmentType') == 'ONLINE'
                     ? 'Online'
                     : 'Physical'}{' '}
                   Consult
@@ -329,21 +329,18 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
               <View style={theme.viewStyles.lightSeparatorStyle} />
             </View>
             <View style={styles.imageView}>
-              {!!props.navigation.state.params!.DoctorInfo &&
-                !!props.navigation.state.params!.DoctorInfo.photoUrl && (
-                  <Image
-                    source={{
-                      uri:
-                        props.navigation.state.params!.DoctorInfo &&
-                        props.navigation.state.params!.DoctorInfo.photoUrl,
-                    }}
-                    style={{
-                      width: 80,
-                      height: 80,
-                      borderRadius: 40,
-                    }}
-                  />
-                )}
+              {g(caseSheetDetails, 'appointment', 'doctorInfo', 'photoUrl') ? (
+                <Image
+                  source={{
+                    uri: g(caseSheetDetails, 'appointment', 'doctorInfo', 'photoUrl'),
+                  }}
+                  style={{
+                    width: 80,
+                    height: 80,
+                    borderRadius: 40,
+                  }}
+                />
+              ) : null}
             </View>
           </View>
         )}
@@ -777,7 +774,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
       item.routeOfAdministration
         ? `\nTo be taken: ${nameFormater(item.routeOfAdministration, 'title')}`
         : ''
-    }${item.medicineInstructions ? '\nInstuctions: ' + item.medicineInstructions : ''}`;
+    }${item.medicineInstructions ? '\nInstructions: ' + item.medicineInstructions : ''}`;
   };
 
   const renderPrescriptions = () => {
@@ -991,7 +988,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                       <Spearator style={{ marginBottom: index == array.length - 1 ? 2.5 : 11.5 }} />
                       {item!.testInstruction ? (
                         <Text style={styles.dataTextStyle}>
-                          Instuctions: {item!.testInstruction}
+                          Instructions: {item!.testInstruction}
                         </Text>
                       ) : null}
                     </>
@@ -1091,7 +1088,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
       );
   };
 
-  if (props.navigation.state.params!.DoctorInfo)
+  if (g(caseSheetDetails, 'appointment', 'doctorInfo')) {
     return (
       <View
         style={{
@@ -1111,14 +1108,13 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                 <TouchableOpacity
                   activeOpacity={1}
                   onPress={() => {
-                    if (props.navigation.state.params!.BlobName == null) {
+                    if (g(caseSheetDetails, 'blobName') == null) {
                       Alert.alert('No Image');
                       CommonLogEvent('CONSULT_DETAILS', 'No image');
                     } else {
                       postWEGEvent('download prescription');
                       let dirs = RNFetchBlob.fs.dirs;
 
-                      console.log('blollb', props.navigation.state.params!.BlobName);
                       let fileName: string = getFileName();
 
                       // props.navigation.state.params!.BlobName.substring(
@@ -1148,7 +1144,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                         .fetch(
                           'GET',
                           AppConfig.Configuration.DOCUMENT_BASE_URL.concat(
-                            props.navigation.state.params!.BlobName
+                            caseSheetDetails!.blobName!
                           ),
                           {
                             //some headers ..
@@ -1175,14 +1171,14 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                     }
                   }}
                 >
-                  {props.navigation.state.params!.BlobName ? <Download /> : null}
+                  {g(caseSheetDetails, 'blobName') ? <Download /> : null}
                 </TouchableOpacity>
               </View>
             }
           />
 
           <ScrollView bounces={false}>
-            {renderDoctorDetails()}
+            {caseSheetDetails && renderDoctorDetails()}
             {renderData()}
           </ScrollView>
           {caseSheetDetails && renderPlaceorder()}
@@ -1241,5 +1237,20 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
         )}
       </View>
     );
+  } else {
+    return (
+      <SafeAreaView
+        style={{
+          ...theme.viewStyles.container,
+        }}
+      >
+        <Header
+          title="PRESCRIPTION DETAILS"
+          leftIcon="backArrow"
+          onPressLeftIcon={() => props.navigation.goBack()}
+        />
+      </SafeAreaView>
+    );
+  }
   return null;
 };

@@ -14,6 +14,7 @@ import {
   DEVICE_TYPE,
   TransactionLineItems,
   ONE_APOLLO_PRODUCT_CATEGORY,
+  MedicineOrderInvoice,
 } from 'profiles-service/entities';
 import { ONE_APOLLO_STORE_CODE } from 'types/oneApolloTypes';
 
@@ -29,6 +30,7 @@ import { format, addMinutes, parseISO } from 'date-fns';
 import { log } from 'customWinstonLogger';
 import { PharmaItemsResponse } from 'types/medicineOrderTypes';
 import { OneApollo } from 'helpers/oneApollo';
+import { calculateRefund } from 'profiles-service/helpers/refundHelper';
 import { WebEngageInput, postEvent } from 'helpers/webEngage';
 import { ApiConstants } from 'ApiConstants';
 
@@ -120,7 +122,7 @@ const updateOrderStatus: Resolver<
 
   let status = MEDICINE_ORDER_STATUS[updateOrderStatusInput.status];
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
-  const orderDetails = await medicineOrdersRepo.getMedicineOrderWithShipments(
+  const orderDetails = await medicineOrdersRepo.getMedicineOrderWithPaymentAndShipments(
     updateOrderStatusInput.orderId
   );
 
@@ -159,6 +161,7 @@ const updateOrderStatus: Resolver<
     };
     await medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, orderDetails.orderAutoId);
     medicineOrderCancelled(orderDetails, updateOrderStatusInput.reasonCode, profilesDb);
+    calculateRefund(orderDetails, 0, profilesDb, medicineOrdersRepo);
   }
 
   if (
@@ -211,7 +214,57 @@ const updateOrderStatus: Resolver<
     } catch (e) {
       throw new AphError(AphErrorMessages.SAVE_MEDICINE_ORDER_SHIPMENT_ERROR, undefined, e);
     }
+    let invoiceIds: string[] = [];
+
+    /**
+     * Shipments which are neigther cancelled nor billed are unresolved shipments
+     */
+    let hasUnresolvedShipments: boolean = false;
+
+    let resolvedShipments: MedicineOrderShipments['id'][] = [];
+
+    // Variable for array of invoices for the orderId
+    let invoices: MedicineOrderInvoice[] = [];
+
+    /**
+     * Total order billing happened till now,
+     * For all the shipments excluding already canceled ones
+     * Will be stored in it
+     */
+    let totalOrderBilling: number = 0;
+
+    /**
+     * If current shipment in context is canceled
+     * then fetch all the invoices related to the orderId
+     */
+    if (status === MEDICINE_ORDER_STATUS.CANCELLED) {
+      invoices = await medicineOrdersRepo.getInvoiceWithShipment(orderDetails.orderAutoId);
+      invoiceIds = invoices.map((invoice: MedicineOrderInvoice) => {
+        return invoice.medicineOrderShipments.id;
+      });
+    }
     const shipmentsWithDifferentStatus = orderDetails.medicineOrderShipments.filter((shipment) => {
+      /**
+       * If any of the shipment is neighther invoiced nor cancelled,
+       * then don't initiate refund here as it will happen in pharmaOrderBilled
+       */
+      if (!invoiceIds.includes(shipment.id)) {
+        if (
+          shipment.currentStatus != MEDICINE_ORDER_STATUS.CANCELLED &&
+          shipment.id !== shipmentDetails.id
+        ) {
+          hasUnresolvedShipments = true;
+        }
+      } else {
+        if (
+          !hasUnresolvedShipments &&
+          shipment.currentStatus != MEDICINE_ORDER_STATUS.CANCELLED &&
+          shipment.id !== shipmentDetails.id
+        ) {
+          resolvedShipments.push(shipment.id);
+        }
+      }
+
       if (shipment.apOrderNo != shipmentDetails.apOrderNo) {
         const sameStatusObject = shipment.medicineOrdersStatus.find((orderStatusObj) => {
           return orderStatusObj.orderStatus == status;
@@ -219,6 +272,7 @@ const updateOrderStatus: Resolver<
         return !sameStatusObject;
       }
     });
+
     if (!shipmentsWithDifferentStatus || shipmentsWithDifferentStatus.length == 0) {
       await medicineOrdersRepo.updateMedicineOrderDetails(
         orderDetails.id,
@@ -301,6 +355,23 @@ const updateOrderStatus: Resolver<
         postEvent(postBody);
       }
     }
+    if (!hasUnresolvedShipments && status === MEDICINE_ORDER_STATUS.CANCELLED) {
+      totalOrderBilling = invoices.reduce(
+        (acc: number, curValue: Partial<MedicineOrderInvoice>) => {
+          if (
+            curValue.billDetails &&
+            curValue.medicineOrderShipments &&
+            resolvedShipments.includes(curValue.medicineOrderShipments.id)
+          ) {
+            const invoiceValue: number = JSON.parse(curValue.billDetails).invoiceValue;
+            return +new Decimal(acc).plus(invoiceValue);
+          }
+          return acc;
+        },
+        0
+      );
+      calculateRefund(orderDetails, totalOrderBilling, profilesDb, medicineOrdersRepo);
+    }
   }
 
   return {
@@ -318,7 +389,6 @@ const createOneApolloTransaction = async (
   mobileNumber: string
 ) => {
   const invoiceDetails = await medicineOrdersRepo.getInvoiceDetailsByOrderId(order.orderAutoId);
-  //throw new AphError(AphErrorMessages.INVALID_MEDICINE_ORDER_ID, undefined, {});
   if (!invoiceDetails.length) {
     log(
       'profileServiceLogger',
@@ -336,6 +406,7 @@ const createOneApolloTransaction = async (
     SendCommunication: true,
     CalculateHealthCredits: true,
     MobileNumber: mobileNumber,
+    CreditsRedeemed: order.medicineOrderPayments[0].healthCreditsRedeemed,
   };
 
   Transaction.StoreCode = ONE_APOLLO_STORE_CODE.WEBCUS;

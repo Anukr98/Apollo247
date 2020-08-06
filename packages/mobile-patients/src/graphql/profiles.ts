@@ -847,6 +847,31 @@ export const DOCTOR_SPECIALITY_BY_FILTERS = gql`
         referenceSlot
       }
       sort
+      filters {
+        city {
+          state
+          data
+        }
+        brands {
+          name
+          image
+        }
+        language {
+          name
+        }
+        experience {
+          name
+        }
+        availability {
+          name
+        }
+        fee {
+          name
+        }
+        gender {
+          name
+        }
+      }
     }
   }
 `;
@@ -1062,6 +1087,13 @@ export const GET_CASESHEET_DETAILS = gql`
           status
           displayId
           isFollowUp
+          doctorInfo {
+            id
+            fullName
+            gender
+            photoUrl
+            displayName
+          }
         }
         consultType
         diagnosis {
