@@ -9,6 +9,7 @@ import { PatientRepository } from 'profiles-service/repositories/patientReposito
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { DoctorPatientExternalConnectRepository } from 'doctors-service/repositories/DoctorPatientExternalConnectRepository';
+import { addHours } from 'date-fns';
 
 export const getAppointmentOverviewTypeDefs = gql`
   type AppointmentList {
@@ -109,30 +110,35 @@ const getAppointmentOverview: Resolver<
     },
     order: { appointmentDateTime: 'DESC' },
   });
-  const completedAppointments = await apptRepo.getCompletedAppointments(
-    doctorId,
-    fromDate,
-    toDate,
-    0
-  );
-  const cannceldAppointments = await apptRepo.getCompletedAppointments(
-    doctorId,
-    fromDate,
-    toDate,
-    1
-  );
-  const doctorAway = await apptRepo.getDoctorAway(doctorId, fromDate, toDate);
-  const inNextHour = await apptRepo.getAppointmentsInNextHour(doctorId);
+  let completedAppointments = 0;
+  let cancelledAppointments = 0;
+  let inNextHour = 0;
+  const doctorAway = allAppointments.length;
 
+  // updating the count for appointments
+  for (let i = 0; i < allAppointments.length; i++) {
+    const { status, appointmentDateTime } = allAppointments[i];
+    const now = new Date();
+    const nextHr = addHours(now, 1);
+    if (status && status == STATUS.COMPLETED) {
+      completedAppointments++;
+    } else if (status && status == STATUS.CANCELLED) {
+      cancelledAppointments++;
+    }
+    if (appointmentDateTime && appointmentDateTime >= now && appointmentDateTime <= nextHr) {
+      inNextHour++;
+    }
+  }
   const appointments = await Promise.all(
-    allAppointments.map(async (appointment) => {
+    allAppointments.map((appointment) => {
       return { appointment };
     })
   );
+
   const appointmentOverviewOutput = {
     appointments,
     completed: completedAppointments,
-    cancelled: cannceldAppointments,
+    cancelled: cancelledAppointments,
     upcoming: inNextHour,
     doctorAway: doctorAway,
   };

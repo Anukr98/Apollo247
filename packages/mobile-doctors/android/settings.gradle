@@ -1,4 +1,6 @@
 rootProject.name = 'ApolloPatient'
+include ':react-native-incall-manager'
+project(':react-native-incall-manager').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-incall-manager/android')
 include ':react-native-system-setting'
 project(':react-native-system-setting').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-system-setting/android')
 include ':react-native-sound'

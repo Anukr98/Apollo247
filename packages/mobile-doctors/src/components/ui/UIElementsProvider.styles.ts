@@ -44,7 +44,7 @@ export const UIElementsProviderStyles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.4)',
     zIndex: 5000,
-    elevation: 500,
+    elevation: 5000,
   },
   popUpMainContainer: {
     paddingHorizontal: 20,

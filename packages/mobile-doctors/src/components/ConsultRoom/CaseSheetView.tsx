@@ -70,6 +70,8 @@ import {
   ModifyCaseSheetInput,
   REQUEST_ROLES,
   STATUS,
+  BOOKINGSOURCE,
+  DEVICETYPE,
 } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
 import {
   UpdatePatientPrescriptionSentStatus,
@@ -255,6 +257,7 @@ export interface CaseSheetViewProps extends NavigationScreenProps {
   chatFiles?: {
     prismId: string | null;
     url: string;
+    fileType: 'image' | 'pdf';
   }[];
   setShowPDF: Dispatch<SetStateAction<boolean>>;
   setPatientImageshow: Dispatch<SetStateAction<boolean>>;
@@ -503,6 +506,12 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           endAppointmentSessionInput: {
             appointmentId: AppId,
             status: STATUS.COMPLETED,
+            callSource: BOOKINGSOURCE.MOBILE,
+            deviceType: Platform.OS === 'ios' ? DEVICETYPE.IOS : DEVICETYPE.ANDROID,
+            appVersion:
+              Platform.OS === 'ios'
+                ? AppConfig.Configuration.iOS_Version
+                : AppConfig.Configuration.Android_Version,
           },
         },
         fetchPolicy: 'no-cache',
@@ -1048,7 +1057,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
             )}
             {renderFields(
               strings.case_sheet.lifestyle_habits,
-              (lifeStyleData && lifeStyleData.map((i) => i && i.description).join('\n')) || '',
+              lifeStyleData && lifeStyleData[0] ? lifeStyleData[0].description || '' : '',
               (text) => {
                 setLifeStyleData([
                   {
@@ -1063,8 +1072,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
             )}
             {renderFields(
               strings.case_sheet.occupational_history,
-              (lifeStyleData && lifeStyleData.map((i) => i && i.occupationHistory).join('\n')) ||
-                '',
+              lifeStyleData && lifeStyleData[0] ? lifeStyleData[0].occupationHistory || '' : '',
               (text) => {
                 setLifeStyleData([
                   {
@@ -1999,14 +2007,14 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       </View>
     );
   };
-  const renderRecordImages = (urls: (string | null)[]) => {
+  const renderRecordImages = (urls: (string | null)[], isImage: boolean) => {
     return (
       <View style={styles.healthvaultMainContainer}>
         {urls.map((url) => {
           if (url) {
             return (
               <View style={styles.healthvaultImageContainer}>
-                {url.match(/\.(jpeg|jpg|gif|png)$/) ? (
+                {isImage ? (
                   <TouchableOpacity
                     activeOpacity={1}
                     onPress={() => {
@@ -2021,11 +2029,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                     activeOpacity={1}
                     onPress={() => {
                       setUrl(url);
-                      if (url.match(/\.(pdf)$/)) {
-                        setShowPDF(true);
-                      } else {
-                        Linking.openURL(url);
-                      }
+                      setShowPDF(true);
                     }}
                   >
                     <FileBig style={styles.healthvaultImage} />
@@ -2042,54 +2046,67 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   };
   const [patientImages, setPatientImages] = useState<(string | null)[]>([]);
   const [records, setRecords] = useState<(string | null)[]>([]);
-  const sortPDF = (urls: (string | null)[], ispdf: boolean) => {
-    return urls.map((url) => {
-      if (ispdf && url && url.match(/\.(pdf)$/)) {
-        return url;
-      } else if (!ispdf && url && !url.match(/\.(pdf)$/)) {
-        return url;
-      } else {
-        return null;
-      }
-    });
-  };
+
   useEffect(() => {
     const images =
       (healthWalletArrayData && healthWalletArrayData.map((i) => i && i.imageUrls)) || [];
-    const records =
+    const record =
       (healthWalletArrayData && healthWalletArrayData.map((i) => i && i.reportUrls)) || [];
+
     if (chatFiles) {
-      const prismIds: string[] = chatFiles.map((i) => i.prismId || '').filter((i) => i !== '');
-      const onlyUrl: string[] = chatFiles
-        .filter((i) => i.prismId === null || i.prismId === '')
+      const prismImageIds: string[] = chatFiles
+        .map((i) => (i.fileType === 'image' ? i.prismId || '' : ''))
+        .filter((i) => i !== '');
+      const prismPdfIds: string[] = chatFiles
+        .map((i) => (i.fileType === 'pdf' ? i.prismId || '' : ''))
+        .filter((i) => i !== '');
+      const onlyImageUrl: string[] = chatFiles
+        .filter((i) => (i.fileType === 'image' && i.prismId === null) || i.prismId === '')
         .map((i) => i.url);
-      images.push(...sortPDF(onlyUrl, false));
-      records.push(...sortPDF(onlyUrl, true));
-      if (prismIds.length > 0) {
+      const onlyPdfUrl: string[] = chatFiles
+        .filter((i) => (i.fileType === 'pdf' && i.prismId === null) || i.prismId === '')
+        .map((i) => i.url);
+      images.push(...onlyImageUrl);
+      record.push(...onlyPdfUrl);
+      if (prismImageIds.length > 0) {
         getPrismUrls(
           client,
           (patientDetails && patientDetails.id) || (doctorDetails && doctorDetails.id) || '',
-          prismIds
+          prismImageIds
         )
           .then((data) => {
             if (data && data.urls) {
-              images.push(...sortPDF(data.urls, false));
-              records.push(...sortPDF(data.urls, true));
+              images.push(...data.urls);
             }
             setPatientImages(images);
-            setRecords(records);
           })
           .catch((e) => {
             setPatientImages(images);
-            setRecords(records);
           });
       } else {
         setPatientImages(images);
-        setRecords(records);
+      }
+      if (prismPdfIds.length > 0) {
+        getPrismUrls(
+          client,
+          (patientDetails && patientDetails.id) || (doctorDetails && doctorDetails.id) || '',
+          prismPdfIds
+        )
+          .then((data) => {
+            if (data && data.urls) {
+              record.push(...data.urls);
+            }
+            setRecords(record);
+          })
+          .catch((e) => {
+            setRecords(record);
+          });
+      } else {
+        setRecords(record);
       }
     } else {
       setPatientImages(images);
-      setRecords(records);
+      setRecords(record);
     }
   }, [healthWalletArrayData, chatFiles]);
 
@@ -2104,11 +2121,11 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           <View style={{ marginHorizontal: 16 }}>
             {renderHeaderText(strings.case_sheet.photos_uploaded_by_patient)}
             {patientImages.length > 0
-              ? renderRecordImages(patientImages)
+              ? renderRecordImages(patientImages, true)
               : renderInfoText(strings.common.no_data)}
             {renderHeaderText(strings.case_sheet.reports)}
             {records.length > 0
-              ? renderRecordImages(records)
+              ? renderRecordImages(records, false)
               : renderInfoText(strings.common.no_data)}
             {renderHeaderText(strings.case_sheet.past_consultations)}
             {renderPastConsults()}

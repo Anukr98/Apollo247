@@ -36,6 +36,7 @@ import { NavigationActions, NavigationScreenProps, StackActions } from 'react-na
 import { resendOTP, verifyOTP } from '../helpers/loginCalls';
 import SmsRetriever from 'react-native-sms-retriever';
 import AsyncStorage from '@react-native-community/async-storage';
+import { useUIElements } from '@aph/mobile-doctors/src/components/ui/UIElementsProvider';
 
 const styles = OTPVerificationStyles;
 
@@ -78,7 +79,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   const [isOtpVerified, setisOtpVerified] = useState<boolean>(false);
 
   const phoneNumber = props.navigation.getParam('phoneNumber');
-
+  const { showAphAlert } = useUIElements();
   const handleBack = async () => {
     setonClickOpen(false);
     BackHandler.removeEventListener('hardwareBackPress', handleBack);
@@ -330,7 +331,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
               //   phoneNumber,
               // });
               _removeFromStore();
-              console.log('error', data.authToken);
+              console.log('authToken_Login', data.authToken);
 
               sendOtp &&
                 sendOtp(data.authToken).then((data) => {
@@ -338,9 +339,9 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
                   setisOtpVerified(true);
                   //set isloggedin to true
                   AsyncStorage.setItem('isLoggedIn', 'true');
+                  AsyncStorage.setItem('requestCompleted', 'true');
                 });
             } else {
-              console.log('else error');
               try {
                 setshowErrorBottomLine(true);
                 setshowSpinner(false);
@@ -362,29 +363,12 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
             }
           })
           .catch((error: Error) => {
-            try {
-              console.log({
-                error,
+            setshowSpinner(false);
+            showAphAlert &&
+              showAphAlert({
+                title: string.common.alert,
+                description: 'OTP verification failed. Try again.',
               });
-              setshowErrorBottomLine(true);
-              setshowSpinner(false);
-              // console.log('error', error);
-              _storeTimerData(invalidOtpCount + 1);
-
-              if (invalidOtpCount + 1 === 3) {
-                setShowErrorMsg(true);
-                setIsValidOTP(false);
-                // startInterval(timer);
-                setIntervalId(intervalId);
-              } else {
-                setShowErrorMsg(true);
-                setIsValidOTP(true);
-              }
-              setInvalidOtpCount(invalidOtpCount + 1);
-            } catch (error) {
-              setshowSpinner(false);
-              console.log(error);
-            }
           });
       } else {
         setshowOfflinePopup(true);
@@ -557,6 +541,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
             }}
             onPress={() => {
               props.navigation.goBack();
+              _removeFromStore();
               intervalId && clearInterval(intervalId);
               setContextDoctorDetails && setContextDoctorDetails(null);
             }}

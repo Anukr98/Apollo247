@@ -67,35 +67,40 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
       navigation: AppRoutes.MyAccountProfile,
       icon: <Profile />,
       navigationParams: { ProfileData: doctorDetails },
+      isDataDependent: true,
     },
     {
       label: strings.account.availability,
       navigation: AppRoutes.MyAvailability,
       icon: <AvailabilityIcon />,
       navigationParams: { ProfileData: doctorDetails },
+      isDataDependent: true,
     },
     {
       label: strings.account.fees,
       navigation: AppRoutes.MyFees,
       icon: <FeeIcon />,
       navigationParams: { ProfileData: doctorDetails },
+      isDataDependent: true,
     },
     {
       label: strings.account.smart_prescr,
       navigation: AppRoutes.SmartPrescription,
       icon: <SmartPrescription />,
       navigationParams: { ProfileData: doctorDetails },
+      isDataDependent: true,
     },
     {
       label: strings.account.settings,
       navigation: AppRoutes.MyAccount,
       icon: <Settings />,
       navigationParams: { ProfileData: doctorDetails },
+      isDataDependent: false,
     },
   ];
 
-  const renderProfileData = (getDoctorDetails: GetDoctorDetails_getDoctorDetails) => {
-    if (!getDoctorDetails.firstName) return null;
+  const renderProfileData = (getDoctorDetails: GetDoctorDetails_getDoctorDetails | null) => {
+    if ((getDoctorDetails && !getDoctorDetails.firstName) || getDoctorDetails === null) return null;
     return (
       <View>
         <Text style={styles.profile} numberOfLines={1}>
@@ -104,8 +109,9 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
       </View>
     );
   };
-  const renderMciNumberData = (getDoctorDetails: GetDoctorDetails_getDoctorDetails) => {
-    if (!getDoctorDetails.registrationNumber) return null;
+  const renderMciNumberData = (getDoctorDetails: GetDoctorDetails_getDoctorDetails | null) => {
+    if ((getDoctorDetails && !getDoctorDetails.registrationNumber) || getDoctorDetails === null)
+      return null;
     return (
       <View style={{ backgroundColor: '#ffffff' }}>
         <Text style={styles.mci}>
@@ -122,6 +128,9 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
           <View style={[styles.cardContainer]}>
             <TouchableOpacity
               onPress={() => {
+                if (item.isDataDependent && doctorDetails === null) {
+                  return;
+                }
                 props.navigation.navigate(item.navigation, item.navigationParams);
               }}
             >
@@ -158,57 +167,45 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
 
   return (
     <View style={theme.viewStyles.container}>
-      <ScrollView bounces={false}>
+      <ScrollView style={theme.viewStyles.container} bounces={false}>
         <SafeAreaView style={theme.viewStyles.container}>
-          <KeyboardAwareScrollView
-            style={{ flex: 1 }}
-            showsVerticalScrollIndicator={false}
-            ref={(ref) => (scrollViewRef.current = ref)}
-            bounces={false}
-          >
-            {loading ? (
-              <Spinner />
-            ) : (
-              !!doctorDetails && (
-                <>
-                  {doctorDetails.photoUrl ? (
-                    <Image
-                      style={styles.imageStyle}
-                      source={{
-                        uri: doctorDetails.photoUrl,
-                      }}
-                    />
-                  ) : (
-                    <UserPlaceHolder style={styles.imageStyle} />
-                  )}
-                  <View style={styles.shadow}>
-                    {renderProfileData(doctorDetails)}
-                    {renderMciNumberData(doctorDetails)}
-                    {renderShareLink()}
-                  </View>
-                  {renderData()}
-                  <View style={{ height: 92, marginBottom: 0 }}>
-                    <Text
-                      style={{
-                        ...theme.fonts.IBMPlexSansBold(13),
-                        color: '#00b38e',
-                        textAlign: 'center',
-                        height: 92,
-                        width: width,
-                        paddingTop: 20,
-                      }}
-                    >
-                      {`${getBuildEnvironment()} - v ${
-                        Platform.OS === 'ios'
-                          ? AppConfig.Configuration.iOS_Version
-                          : AppConfig.Configuration.Android_Version
-                      }`}
-                    </Text>
-                  </View>
-                </>
-              )
-            )}
-          </KeyboardAwareScrollView>
+          {loading ? (
+            <Spinner />
+          ) : (
+            <View style={{ flex: 1 }}>
+              {doctorDetails && doctorDetails.photoUrl ? (
+                <Image
+                  style={styles.imageStyle}
+                  source={{
+                    uri: doctorDetails.photoUrl,
+                  }}
+                />
+              ) : (
+                <UserPlaceHolder style={styles.imageStyle} />
+              )}
+              <View style={styles.shadow}>
+                {renderProfileData(doctorDetails)}
+                {renderMciNumberData(doctorDetails)}
+                {renderShareLink()}
+              </View>
+              {renderData()}
+              <View style={{ marginTop: 20 }}>
+                <Text
+                  style={{
+                    ...theme.fonts.IBMPlexSansBold(13),
+                    color: '#00b38e',
+                    textAlign: 'center',
+                  }}
+                >
+                  {`${getBuildEnvironment()} - v ${
+                    Platform.OS === 'ios'
+                      ? AppConfig.Configuration.iOS_Version
+                      : AppConfig.Configuration.Android_Version
+                  }`}
+                </Text>
+              </View>
+            </View>
+          )}
         </SafeAreaView>
       </ScrollView>
     </View>

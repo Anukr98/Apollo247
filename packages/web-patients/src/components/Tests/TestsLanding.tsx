@@ -48,7 +48,7 @@ const useStyles = makeStyles((theme: Theme) => {
     doctorListingPage: {
       backgroundColor: '#f7f8f5',
       [theme.breakpoints.down('xs')]: {
-        marginTop: 82,
+        marginTop: 96,
       },
     },
     pageTopHeader: {

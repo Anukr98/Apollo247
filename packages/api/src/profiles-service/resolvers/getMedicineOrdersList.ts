@@ -9,9 +9,21 @@ import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 
 export const getMedicineOrdersListTypeDefs = gql`
   type MedicineOrdersListResult {
+    meta: PaginateMetaData
     MedicineOrdersList: [MedicineOrders]
   }
 
+  type PaginateMetaData {
+    total: Int
+    pageSize: Int
+    pageNo: Int
+  }
+
+  enum DEVICE_TYPE {
+    IOS
+    ANDROID
+    DESKTOP
+  }
   type MedicineOrderDetailsResult {
     MedicineOrderDetails: MedicineOrders
   }
@@ -19,6 +31,8 @@ export const getMedicineOrdersListTypeDefs = gql`
   enum BOOKING_SOURCE {
     WEB
     MOBILE
+    ORDER_PUNCHING_TOOL
+    MFINE
   }
 
   type MedicineOrders {
@@ -33,6 +47,7 @@ export const getMedicineOrdersListTypeDefs = gql`
     deliveryType: MEDICINE_DELIVERY_TYPE!
     patientAddressId: ID
     devliveryCharges: Float
+    deviceType: DEVICE_TYPE
     prescriptionImageUrl: String
     prismPrescriptionFileId: String
     pharmaRequest: String
@@ -90,13 +105,27 @@ export const getMedicineOrdersListTypeDefs = gql`
   }
 
   extend type Query {
-    getMedicineOrdersList(patientId: String): MedicineOrdersListResult!
+    getMedicineOrdersList(
+      patientId: String
+      pageNo: Int
+      pageSize: Int
+    ): MedicineOrdersListResult!
     getMedicineOrderDetails(patientId: String, orderAutoId: Int): MedicineOrderDetailsResult!
-    getMedicinePaymentOrder: MedicineOrdersListResult!
+    getMedicinePaymentOrder(
+      pageNo: Int
+      pageSize: Int
+    ): MedicineOrdersListResult!
   }
 `;
 
+type PaginateMetaData = {
+  total: number | null,
+  pageSize: number | null,
+  pageNo: number | null
+}
+
 type MedicineOrdersListResult = {
+  meta: PaginateMetaData
   MedicineOrdersList: MedicineOrders[];
 };
 
@@ -106,21 +135,41 @@ type MedicineOrderDetailsResult = {
 
 const getMedicineOrdersList: Resolver<
   null,
-  { patientId: string; orderAutoId?: number },
+  { patientId: string; orderAutoId?: number, pageNo?: number, pageSize?: number },
   ProfilesServiceContext,
   MedicineOrdersListResult
 > = async (parent, args, { profilesDb }) => {
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
-  const patientDetails = await patientRepo.findById(args.patientId);
+
+  const patientDetails = await patientRepo.getPatientDetails(args.patientId);
+  // paginated vars
+  const { pageNo, pageSize = 10 } = args; //default pageSize = 10
+  const paginateParams: { take?: number, skip?: number } = {};
+
   if (!patientDetails) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
-  const primaryPatientIds = await patientRepo.getLinkedPatientIds(args.patientId);
-
+  const primaryPatientIds = await patientRepo.getLinkedPatientIds({ patientDetails });
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
-  const MedicineOrdersList = await medicineOrdersRepo.getMedicineOrdersList(primaryPatientIds);
+  //pageNo should be greater than 0
+  if (pageNo === 0) {
+    throw new AphError(AphErrorMessages.PAGINATION_PARAMS_PAGENO_ERROR, undefined, {});
+  }
+  if (pageNo) {
+    paginateParams.take = pageSize
+    paginateParams.skip = (pageSize * pageNo) - pageSize //bcoz pageNo. starts from 1 not 0.
+  }
 
-  return { MedicineOrdersList };
+  const [MedicineOrdersList, totalCount]: any = await medicineOrdersRepo.getMedicineOrdersList(primaryPatientIds, paginateParams);
+
+  return {
+    meta: {
+      pageNo: pageNo || null,
+      pageSize: (Number.isInteger(pageNo) && pageSize) || null,
+      total: (Number.isInteger(pageNo) && totalCount) || null
+    },
+    MedicineOrdersList
+  };
 };
 
 const getMedicineOrderDetails: Resolver<
@@ -131,7 +180,7 @@ const getMedicineOrderDetails: Resolver<
 > = async (parent, args, { profilesDb }) => {
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
   if (args.patientId) {
-    const patientDetails = await patientRepo.findById(args.patientId);
+    const patientDetails = await patientRepo.getPatientDetails(args.patientId);
     if (!patientDetails) {
       throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
     }
@@ -157,13 +206,32 @@ const getMedicineOrderDetails: Resolver<
 
 const getMedicinePaymentOrder: Resolver<
   null,
-  {},
+  { pageNo?: number, pageSize?: number }, //for consistency response though not mandatory
   ProfilesServiceContext,
   MedicineOrdersListResult
 > = async (parent, args, { profilesDb }) => {
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
-  const MedicineOrdersList = await medicineOrdersRepo.getPaymentMedicineOrders();
-  return { MedicineOrdersList };
+  // paginated vars
+  const { pageNo, pageSize = 10 } = args; //default pageSize = 10
+  const paginateParams: { take?: number, skip?: number } = {};
+  //pageNo should be greater than 0
+  if (pageNo === 0) {
+    throw new AphError(AphErrorMessages.PAGINATION_PARAMS_PAGENO_ERROR, undefined, {});
+  }
+  if (pageNo) {
+    paginateParams.take = pageSize
+    paginateParams.skip = (pageSize * pageNo) - pageSize //bcoz pageNo. starts from 1 not 0.
+  }
+  const [MedicineOrdersList, totalCount] = await medicineOrdersRepo.getPaymentMedicineOrders(paginateParams);
+  //meta added for consistency response 
+  return {
+    meta: {
+      pageNo: pageNo || null,
+      pageSize: (Number.isInteger(pageNo) && pageSize) || null,
+      total: (Number.isInteger(pageNo) && totalCount) || null
+    },
+    MedicineOrdersList
+  };
 };
 
 export const getMedicineOrdersListResolvers = {

@@ -32,6 +32,11 @@ export enum AccountType {
   SAVINGS = "SAVINGS",
 }
 
+export enum BOOKINGSOURCE {
+  MOBILE = "MOBILE",
+  WEB = "WEB",
+}
+
 export enum CASESHEET_STATUS {
   COMPLETED = "COMPLETED",
   PENDING = "PENDING",
@@ -46,6 +51,12 @@ export enum ConsultMode {
 export enum ConsultType {
   FIXED = "FIXED",
   PREFERRED = "PREFERRED",
+}
+
+export enum DEVICETYPE {
+  ANDROID = "ANDROID",
+  DESKTOP = "DESKTOP",
+  IOS = "IOS",
 }
 
 export enum DIAGNOSTICS_TYPE {
@@ -66,16 +77,17 @@ export enum DOCTOR_DEVICE_TYPE {
 
 export enum DoctorType {
   APOLLO = "APOLLO",
+  APOLLO_HOMECARE = "APOLLO_HOMECARE",
   CLINIC = "CLINIC",
   CRADLE = "CRADLE",
   DOCTOR_CONNECT = "DOCTOR_CONNECT",
   FERTILITY = "FERTILITY",
-  HOMECARE = "HOMECARE",
   JUNIOR = "JUNIOR",
   PAYROLL = "PAYROLL",
   SPECTRA = "SPECTRA",
   STAR_APOLLO = "STAR_APOLLO",
   SUGAR = "SUGAR",
+  WHITE_DENTAL = "WHITE_DENTAL",
 }
 
 export enum Gender {
@@ -236,18 +248,12 @@ export enum STATUS {
   JUNIOR_DOCTOR_ENDED = "JUNIOR_DOCTOR_ENDED",
   JUNIOR_DOCTOR_STARTED = "JUNIOR_DOCTOR_STARTED",
   NO_SHOW = "NO_SHOW",
+  PAYMENT_ABORTED = "PAYMENT_ABORTED",
   PAYMENT_FAILED = "PAYMENT_FAILED",
   PAYMENT_PENDING = "PAYMENT_PENDING",
   PAYMENT_PENDING_PG = "PAYMENT_PENDING_PG",
   PENDING = "PENDING",
   UNAVAILABLE_MEDMANTRA = "UNAVAILABLE_MEDMANTRA",
-}
-
-export enum Salutation {
-  DR = "DR",
-  MR = "MR",
-  MRS = "MRS",
-  MS = "MS",
 }
 
 export enum TEST_COLLECTION_TYPE {
@@ -356,6 +362,10 @@ export interface EndAppointmentSessionInput {
   appointmentId: string;
   status: STATUS;
   noShowBy?: REQUEST_ROLES | null;
+  deviceType?: DEVICETYPE | null;
+  callSource?: BOOKINGSOURCE | null;
+  callType?: APPT_CALL_TYPE | null;
+  appVersion?: string | null;
 }
 
 export interface MedicinePrescriptionInput {

@@ -76,6 +76,16 @@ export default StyleSheet.create({
     paddingTop: 0,
     marginTop: 10,
   },
+  textInputDisabledStyles: {
+    ...theme.fonts.IBMPlexSansMedium(18),
+    width: (width - 110) / 2,
+    color: '#01475b',
+    paddingBottom: 4,
+    borderBottomWidth: 2,
+    borderColor: theme.colors.SEPARATOR_LINE,
+    paddingTop: 0,
+    marginTop: 10,
+  },
   textInputStyles2: {
     ...theme.fonts.IBMPlexSansMedium(18),
     width: (width - 120) / 4,

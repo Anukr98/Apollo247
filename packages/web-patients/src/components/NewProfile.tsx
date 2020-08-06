@@ -185,6 +185,9 @@ const useStyles = makeStyles((theme: Theme) => {
     labelText: {
       fontSize: 13,
     },
+    required: {
+      color: 'red',
+    },
   });
 });
 
@@ -313,9 +316,11 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
                           className={`${classes.formControl} ${classes.noMargin}`}
                           fullWidth
                         >
+                          <label>
+                            Full Name <span className={classes.required}>*</span>
+                          </label>
                           <AphTextField
                             {...field}
-                            label="Full Name"
                             placeholder="First Name"
                             error={showError('firstName')}
                             inputProps={{ maxLength: 20 }}
@@ -374,9 +379,11 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
                       }
                       render={({ field }: FieldProps<{ firstName: string }>) => (
                         <FormControl className={classes.formControl} fullWidth>
+                          <label>
+                            Date Of Birth <span className={classes.required}>*</span>
+                          </label>
                           <AphTextField
                             {...field}
-                            label="Date Of Birth"
                             placeholder="dd/mm/yyyy"
                             error={showError('dateOfBirth')}
                             inputProps={{ type: 'text', maxLength: 10 }}
@@ -402,7 +409,9 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
                       name="gender"
                       render={({ field }: FieldProps<{ gender: Gender }>) => (
                         <FormControl className={classes.formControl}>
-                          <label>Gender</label>
+                          <label>
+                            Gender <span className={classes.required}>*</span>
+                          </label>
                           <Grid container spacing={2} className={classes.btnGroup}>
                             {orderedGenders.map((gender) => (
                               <Grid item xs={4} sm={4} key={gender}>

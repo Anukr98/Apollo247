@@ -36,6 +36,7 @@ import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { FirebaseEvents, FirebaseEventName } from '../../helpers/firebaseEvents';
 import { postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { AppsFlyerEventName, AppsFlyerEvents } from '../../helpers/AppsFlyerEvents';
+import { saveSearchDoctor, saveSearchSpeciality } from '../../helpers/clientCalls';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -43,6 +44,7 @@ const windowHeight = Dimensions.get('window').height;
 export interface ConsultCheckoutProps extends NavigationScreenProps {}
 
 export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
+  const consultedWithDoctorBefore = props.navigation.getParam('consultedWithDoctorBefore');
   const client = useApolloClient();
   const doctor = props.navigation.getParam('doctor');
   const tabs =
@@ -57,6 +59,8 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
   const [loading, setLoading] = useState(true);
   const { showAphAlert } = useUIElements();
   const couponApplied = props.navigation.getParam('couponApplied');
+  const callSaveSearch = props.navigation.getParam('callSaveSearch');
+  const patientId = props.navigation.getParam('patientId');
 
   type bankOptions = {
     name: string;
@@ -133,7 +137,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
     const localTimeSlot = moment(new Date(time));
     console.log(localTimeSlot.format('DD MMM YYYY, h:mm A'));
     let date = new Date(time);
-    date = new Date(date.getTime() + 5.5 * 60 * 60 * 1000);
+    // date = new Date(date.getTime() + 5.5 * 60 * 60 * 1000);
     const doctorClinics = (g(doctor, 'doctorHospital') || []).filter((item) => {
       if (item && item.facility && item.facility.facilityType)
         return item.facility.facilityType === 'HOSPITAL';
@@ -237,6 +241,15 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
       .then((data) => {
         console.log(JSON.stringify(data));
         try {
+          if (callSaveSearch !== 'true') {
+            saveSearchDoctor(client, doctor ? doctor.id : '', patientId);
+
+            saveSearchSpeciality(
+              client,
+              doctor && doctor.specialty && doctor.specialty.id,
+              patientId
+            );
+          }
           const paymentEventAttributes = {
             Payment_Mode: item.paymentMode,
             Type: 'Consultation',
@@ -258,6 +271,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
 
         !item.bankCode
           ? props.navigation.navigate(AppRoutes.ConsultPaymentnew, {
+              consultedWithDoctorBefore: consultedWithDoctorBefore,
               doctorName: doctorName,
               doctorID: doctor.id,
               doctor: doctor,
@@ -278,6 +292,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
               ),
             })
           : props.navigation.navigate(AppRoutes.ConsultPaymentnew, {
+              consultedWithDoctorBefore: consultedWithDoctorBefore,
               doctorName: doctorName,
               doctorID: doctor.id,
               doctor: doctor,

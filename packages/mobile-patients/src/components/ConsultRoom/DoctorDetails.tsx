@@ -60,7 +60,6 @@ import {
 import { FlatList, NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
 import { AppsFlyerEventName, AppsFlyerEvents } from '../../helpers/AppsFlyerEvents';
 import { useAppCommonData } from '../AppCommonDataProvider';
-import { CommonVideoPlayer } from '../ui/CommonVideoPlayer';
 import { ConsultTypeCard } from '../ui/ConsultTypeCard';
 import {
   ApolloDoctorIcon,
@@ -174,6 +173,7 @@ const Appointments: Appointments[] = [
 
 export interface DoctorDetailsProps extends NavigationScreenProps {}
 export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
+  const consultedWithDoctorBefore = props.navigation.getParam('consultedWithDoctorBefore');
   const [displayoverlay, setdisplayoverlay] = useState<boolean>(false);
   const [consultMode, setConsultMode] = useState<ConsultMode>(ConsultMode.ONLINE);
   const [onlineSelected, setOnlineSelected] = useState<boolean>(true);
@@ -197,6 +197,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const { VirtualConsultationFee } = useAppCommonData();
   const [consultType, setConsultType] = useState<ConsultMode>(ConsultMode.BOTH);
   const [showVideo, setShowVideo] = useState<boolean>(false);
+  const callSaveSearch = props.navigation.getParam('callSaveSearch');
 
   useEffect(() => {
     if (!currentPatient) {
@@ -1177,6 +1178,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         <ConsultOverlay
           setdisplayoverlay={() => setdisplayoverlay(false)}
           navigation={props.navigation}
+          consultedWithDoctorBefore={consultedWithDoctorBefore}
           doctor={doctorDetails ? doctorDetails : null}
           patientId={currentPatient ? currentPatient.id : ''}
           clinics={doctorDetails.doctorHospital ? doctorDetails.doctorHospital : []}
@@ -1187,7 +1189,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           consultModeSelected={consultMode}
           externalConnect={null}
           availableMode={ConsultMode.BOTH}
-          // availableMode={consultType}
+          callSaveSearch={callSaveSearch}
         />
       )}
       <Animated.View
@@ -1213,27 +1215,6 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
             justifyContent: 'center',
           }}
         >
-          {doctorDetails && (
-            <>
-              <CommonVideoPlayer isPlayClicked={!showVideo} />
-              <TouchableOpacity
-                activeOpacity={1}
-                onPress={() => {
-                  console.log('tapped');
-                  setTimeout(() => {
-                    setShowVideo(false);
-                  }, 2000);
-                }}
-                style={{
-                  position: 'absolute',
-                  height: 160,
-                  width: '100%',
-                }}
-              >
-                <View style={{ position: 'absolute', height: 160, width: '100%' }} />
-              </TouchableOpacity>
-            </>
-          )}
           {!showVideo &&
           doctorDetails &&
           doctorDetails &&

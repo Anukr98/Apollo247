@@ -847,6 +847,31 @@ export const DOCTOR_SPECIALITY_BY_FILTERS = gql`
         referenceSlot
       }
       sort
+      filters {
+        city {
+          state
+          data
+        }
+        brands {
+          name
+          image
+        }
+        language {
+          name
+        }
+        experience {
+          name
+        }
+        availability {
+          name
+        }
+        fee {
+          name
+        }
+        gender {
+          name
+        }
+      }
     }
   }
 `;
@@ -1062,6 +1087,13 @@ export const GET_CASESHEET_DETAILS = gql`
           status
           displayId
           isFollowUp
+          doctorInfo {
+            id
+            fullName
+            gender
+            photoUrl
+            displayName
+          }
         }
         consultType
         diagnosis {
@@ -1478,6 +1510,8 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS = gql`
           responseCode
           responseMessage
           bankTxnId
+          healthCreditsRedeemed
+          paymentMode
         }
         medicineOrderShipments {
           id
@@ -1524,6 +1558,16 @@ export const UPLOAD_FILE = gql`
   mutation uploadFile($fileType: String, $base64FileInput: String) {
     uploadFile(fileType: $fileType, base64FileInput: $base64FileInput) {
       filePath
+    }
+  }
+`;
+
+export const GET_PATIENT_FEEDBACK = gql`
+  query GetPatientFeedback($patientId: String, $transactionId: String) {
+    getPatientFeedback(patientId: $patientId, transactionId: $transactionId) {
+      feedback {
+        rating
+      }
     }
   }
 `;
@@ -2628,6 +2672,7 @@ export const PHARMACY_ORDER_PAYMENT_DETAILS = gql`
           paymentDateTime
           paymentMode
           amountPaid
+          healthCreditsRedeemed
         }
       }
     }
@@ -2733,6 +2778,19 @@ export const GET_PERSONALIZED_APPOITNMENTS = gql`
           }
         }
       }
+    }
+  }
+`;
+
+export const GET_APPOINTMENT_RESCHEDULE_DETAILS = gql`
+  query getAppointmentRescheduleDetails($appointmentId: String!) {
+    getAppointmentRescheduleDetails(appointmentId: $appointmentId) {
+      id
+      rescheduledDateTime
+      rescheduleReason
+      rescheduleInitiatedBy
+      rescheduleInitiatedId
+      rescheduleStatus
     }
   }
 `;

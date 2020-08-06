@@ -44,7 +44,9 @@ export enum BOOKINGSOURCE {
 }
 
 export enum BOOKING_SOURCE {
+  MFINE = "MFINE",
   MOBILE = "MOBILE",
+  ORDER_PUNCHING_TOOL = "ORDER_PUNCHING_TOOL",
   WEB = "WEB",
 }
 
@@ -88,6 +90,7 @@ export enum DEVICETYPE {
 
 export enum DEVICE_TYPE {
   ANDROID = "ANDROID",
+  DESKTOP = "DESKTOP",
   IOS = "IOS",
 }
 
@@ -317,6 +320,17 @@ export enum PAYMENT_METHODS {
   UPI = "UPI",
 }
 
+export enum PAYMENT_METHODS_REVERSE {
+  COD = "COD",
+  CREDIT_CARD = "CREDIT_CARD",
+  CREDIT_CARD_EMI = "CREDIT_CARD_EMI",
+  DEBIT_CARD = "DEBIT_CARD",
+  NET_BANKING = "NET_BANKING",
+  PAYTM_POSTPAID = "PAYTM_POSTPAID",
+  PAYTM_WALLET = "PAYTM_WALLET",
+  UPI = "UPI",
+}
+
 export enum PRISM_DOCUMENT_CATEGORY {
   HealthChecks = "HealthChecks",
   OpSummary = "OpSummary",
@@ -420,6 +434,12 @@ export enum TEST_COLLECTION_TYPE {
 export enum TRANSFER_INITIATED_TYPE {
   DOCTOR = "DOCTOR",
   PATIENT = "PATIENT",
+}
+
+export enum TRANSFER_STATUS {
+  COMPLETED = "COMPLETED",
+  INITIATED = "INITIATED",
+  REJECTED = "REJECTED",
 }
 
 export enum UPLOAD_FILE_TYPES {
@@ -653,6 +673,7 @@ export interface EndAppointmentSessionInput {
   deviceType?: DEVICETYPE | null;
   callSource?: BOOKINGSOURCE | null;
   callType?: APPT_CALL_TYPE | null;
+  appVersion?: string | null;
 }
 
 export interface FilterDoctorInput {
@@ -779,6 +800,7 @@ export interface MedicinePaymentMqInput {
   CODCity?: CODCity | null;
   orderId?: string | null;
   paymentMode?: PAYMENT_METHODS | null;
+  healthCredits?: number | null;
 }
 
 export interface MessageInput {
@@ -997,6 +1019,7 @@ export interface UpdatePatientInput {
   photoUrl?: string | null;
   deviceCode?: string | null;
   employeeId?: string | null;
+  partnerId?: string | null;
 }
 
 export interface UploadDocumentInput {

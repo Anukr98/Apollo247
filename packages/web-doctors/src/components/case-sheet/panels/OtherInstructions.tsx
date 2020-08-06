@@ -305,6 +305,16 @@ export const OtherInstructions: React.FC = () => {
     );
   };
 
+  const compare = (a: any, b: any) => {
+    if (a.instruction.toLowerCase() < b.instruction.toLowerCase()) {
+      return -1;
+    }
+    if (a.instruction.toLowerCase() > b.instruction.toLowerCase()) {
+      return 1;
+    }
+    return 0;
+  };
+
   return (
     <Typography component="div" className={classes.contentContainer}>
       <Grid container spacing={1}>
@@ -387,7 +397,7 @@ export const OtherInstructions: React.FC = () => {
               <div className={classes.othersBtnfavContainer}>
                 {adviceList !== null &&
                   adviceList.length > 0 &&
-                  adviceList!.map(
+                  adviceList!.sort(compare).map(
                     (item, idx) =>
                       item &&
                       item.instruction!.trim() !== '' && (

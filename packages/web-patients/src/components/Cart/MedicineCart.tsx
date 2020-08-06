@@ -63,7 +63,13 @@ import { savePrescriptionMedicineOrderOMSVariables } from '../../graphql/types/s
 import { SAVE_PRESCRIPTION_MEDICINE_ORDER_OMS } from 'graphql/medicines';
 import moment from 'moment';
 import { Alerts } from 'components/Alerts/Alerts';
-import { uploadPrescriptionTracking } from '../../webEngageTracking';
+import {
+  uploadPrescriptionTracking,
+  pharmacyCartViewTracking,
+  pharmacyProceedToPayTracking,
+  pharmacySubmitPrescTracking,
+  pharmacyUploadPresClickTracking,
+} from '../../webEngageTracking';
 import { ChennaiCheckout, submitFormType } from 'components/Cart/ChennaiCheckout';
 import { OrderPlaced } from 'components/Cart/OrderPlaced';
 import { useParams } from 'hooks/routerHooks';
@@ -77,7 +83,6 @@ import { VALIDATE_PHARMA_COUPONS } from 'graphql/medicines';
 import { getItemSpecialPrice } from '../PayMedicine';
 import { getTypeOfProduct } from 'helpers/commonHelpers';
 import _lowerCase from 'lodash/lowerCase';
-import { truncate } from 'fs';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -855,10 +860,14 @@ export const MedicineCart: React.FC = (props) => {
                 setErrorMessage(
                   'Coupon not applicable on your cart item(s) or item(s) with already higher discounts'
                 );
+                localStorage.removeItem('pharmaCoupon');
+                setCouponCode && setCouponCode('');
               }
             } else {
               setValidateCouponResult(null);
               setErrorMessage(couponValidateResult.reasonForInvalidStatus);
+              localStorage.removeItem('pharmaCoupon');
+              setCouponCode && setCouponCode('');
             }
           }
         })
@@ -883,7 +892,7 @@ export const MedicineCart: React.FC = (props) => {
         medicineCartOMSInput: {
           quoteId: '',
           patientId: currentPatient ? currentPatient.id : '',
-          shopId: deliveryMode === 'HOME' ? '' : storeAddressId,
+          ...(storeAddressId && storeAddressId.length && { shopId: storeAddressId }),
           patientAddressId: deliveryMode === 'HOME' ? deliveryAddressId : '',
           medicineDeliveryType:
             deliveryMode === 'HOME'
@@ -982,6 +991,20 @@ export const MedicineCart: React.FC = (props) => {
           data.savePrescriptionMedicineOrderOMS &&
           data.savePrescriptionMedicineOrderOMS.orderAutoId
         ) {
+          prescriptions &&
+            prescriptions.length > 0 &&
+            pharmacySubmitPrescTracking({
+              orderId: data.savePrescriptionMedicineOrderOMS.orderAutoId,
+              deliveryType: deliveryAddressId
+                ? MEDICINE_DELIVERY_TYPE.HOME_DELIVERY
+                : MEDICINE_DELIVERY_TYPE.STORE_PICKUP,
+              storeId: '',
+              deliverAdd: deliveryAddressId,
+              pincode:
+                storePickupPincode && storePickupPincode.length === 6
+                  ? storePickupPincode
+                  : currentPincode,
+            });
           if (prescriptionOptionSelected === 'duration') {
             clearCartInfo();
             setTimeout(() => {
@@ -1057,14 +1080,14 @@ export const MedicineCart: React.FC = (props) => {
           const uploadUrlscheck = data.map(({ data }: any) =>
             data && data.uploadDocument && data.uploadDocument.status ? data.uploadDocument : null
           );
-          const filtered = uploadUrlscheck.filter(function (el) {
+          const filtered = uploadUrlscheck.filter(function(el) {
             return el != null;
           });
           const phyPresUrls = filtered.map((item) => item.filePath).filter((i) => i);
           const phyPresPrismIds = filtered.map((item) => item.fileId).filter((i) => i);
           const prescriptionMedicineOMSInput: savePrescriptionMedicineOrderOMSVariables = {
             prescriptionMedicineOMSInput: {
-              shopId: storeAddressId || '0',
+              ...(storeAddressId && storeAddressId.length && { shopId: storeAddressId }),
               patientId: (currentPatient && currentPatient.id) || '',
               bookingSource: BOOKING_SOURCE.WEB,
               medicineDeliveryType: deliveryAddressId
@@ -1091,7 +1114,7 @@ export const MedicineCart: React.FC = (props) => {
     } else {
       const prescriptionMedicineOMSInput: savePrescriptionMedicineOrderOMSVariables = {
         prescriptionMedicineOMSInput: {
-          shopId: storeAddressId || '0',
+          ...(storeAddressId && storeAddressId.length && { shopId: storeAddressId }),
           patientId: (currentPatient && currentPatient.id) || '',
           bookingSource: BOOKING_SOURCE.WEB,
           medicineDeliveryType: deliveryAddressId
@@ -1123,6 +1146,42 @@ export const MedicineCart: React.FC = (props) => {
     }
     paymentMutation().then(({ data }: any) => {
       if (data && data.saveMedicineOrderOMS) {
+        /**Gtm code start  */
+        let ecommItems: any[] = [];
+        cartItems.map((items, key) => {
+          ecommItems.push({
+            item_name: items.name,
+            item_id: items.sku,
+            price: items.price,
+            item_category: 'Pharmacy',
+            item_category_2: items.type_id
+              ? items.type_id.toLowerCase() === 'pharma'
+                ? 'Drugs'
+                : 'FMCG'
+              : null,
+            // 'item_category_4': '', // for future
+            item_variant: 'Default',
+            index: key + 1,
+            quantity: items.quantity,
+          });
+        });
+        _obTracking({
+          userLocation: localStorage.getItem('pharmaAddress') || '',
+          paymentType: 'COD',
+          itemCount: cartItems ? cartItems.length : 0,
+          couponCode: couponCode ? couponCode : null,
+          couponValue:
+            validateCouponResult && validateCouponResult.discountedTotals
+              ? validateCouponResult.discountedTotals.couponDiscount.toFixed(2)
+              : 0,
+          finalBookingValue: totalWithCouponDiscount,
+          ecommObj: {
+            ecommerce: {
+              items: ecommItems,
+            },
+          },
+        });
+        /**Gtm code end  */
         const { orderId, orderAutoId, errorMessage } = data.saveMedicineOrderOMS;
         if (orderAutoId && orderAutoId > 0) {
           placeOrder(orderId, orderAutoId, true, dataObj.userEmail);
@@ -1146,6 +1205,7 @@ export const MedicineCart: React.FC = (props) => {
 
   const handleUploadPrescription = () => {
     uploadPrescriptionTracking({ ...patient, age });
+    pharmacyUploadPresClickTracking('Cart');
     setIsUploadPreDialogOpen(true);
   };
 
@@ -1169,6 +1229,9 @@ export const MedicineCart: React.FC = (props) => {
       });
     }
     /**Gtm code  End */
+    if (cartItems && cartItems.length > 0 && !nonCartFlow) {
+      pharmacyCartViewTracking(cartItems.length);
+    }
   }, [cartTotal]);
 
   return (
@@ -1517,6 +1580,9 @@ export const MedicineCart: React.FC = (props) => {
                     const zipCodeInt = parseInt(selectedZip);
 
                     if (cartItems && cartItems.length > 0 && !nonCartFlow) {
+                      if (prescriptions && prescriptions.length > 0) {
+                        uploadMultipleFiles(prescriptions);
+                      }
                       if (
                         checkForCartChanges().then((res) => {
                           if (res) {
@@ -1557,6 +1623,19 @@ export const MedicineCart: React.FC = (props) => {
                       }
                       onPressSubmit();
                     }
+                    pharmacyProceedToPayTracking({
+                      totalItems: cartItems.length,
+                      serviceArea: 'Pharmacy',
+                      subTotal: mrpTotal,
+                      deliveryCharge: deliveryCharges,
+                      netAfterDiscount: totalWithCouponDiscount,
+                      isPrescription:
+                        ePrescriptionData && ePrescriptionData.length > 0 ? true : false,
+                      cartId: '',
+                      deliveryMode,
+                      deliveryDateTime: deliveryTime,
+                      pincode: currentPincode,
+                    });
                   }}
                   color="primary"
                   fullWidth

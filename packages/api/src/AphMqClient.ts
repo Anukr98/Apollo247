@@ -38,8 +38,8 @@ export const AphMqClient = {
     const connectionOptions: ConnectionOptions = USE_AZURE_SB
       ? {
           transport: 'tls',
-          host: url.parse(parsedAzureConn.Endpoint).hostname,
-          hostname: url.parse(parsedAzureConn.Endpoint).hostname,
+          host: url.parse(parsedAzureConn.Endpoint).hostname || '',
+          hostname: url.parse(parsedAzureConn.Endpoint).hostname || '',
           username: parsedAzureConn.SharedAccessKeyName,
           password: parsedAzureConn.SharedAccessKey,
           port: parseInt(process.env.AZURE_SERVICE_BUS_PORT, 10),

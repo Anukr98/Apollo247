@@ -1,5 +1,6 @@
 package com.apollopatient;
 
+
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.content.Intent;
@@ -13,9 +14,25 @@ import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
+
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Context;
+import android.content.Intent;
+import android.media.RingtoneManager;
+import android.net.Uri;
+import android.os.Build;
+import android.util.Log;
+
+import androidx.core.app.NotificationCompat;
+import androidx.core.content.ContextCompat;
+
+
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.webengage.sdk.android.WebEngage;
 import com.google.firebase.messaging.RemoteMessage;
+
 import io.vitacloud.life.careplan.VitaTasksNotificationsManager;
 
 import java.util.Iterator;
@@ -35,7 +52,9 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 public class MyFirebaseMessagingService
         extends FirebaseMessagingService {
+
     private static DeviceEventManagerModule.RCTDeviceEventEmitter eventEmitter = null;
+
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
         try {

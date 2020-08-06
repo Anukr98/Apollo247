@@ -8,7 +8,7 @@ import { useApolloClient } from 'react-apollo-hooks';
 
 import { AphSelect, AphButton } from '@aph/web-ui-components';
 import { AphDialogTitle, AphDialog, AphDialogClose } from '@aph/web-ui-components';
-import { ConsultationsCard } from 'components/ConsultRoom/ConsultationsCard';
+import { ConsultationsCardList } from 'components/ConsultRoom/ConsultationsCardList';
 import { NavigationBottom } from 'components/NavigationBottom';
 import { useQueryWithSkip } from 'hooks/apolloHooks';
 import { useAllCurrentPatients } from 'hooks/authHooks';
@@ -50,6 +50,7 @@ import _toLower from 'lodash/toLower';
 import { gtmTracking } from '../../gtmTracking';
 import { OrderStatusContent } from 'components/OrderStatusContent';
 import { readableParam } from 'helpers/commonHelpers';
+import { consultationBookTracking } from 'webEngageTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -357,7 +358,7 @@ type Patient = GetCurrentPatients_getCurrentPatients_patients;
 interface AppointmentProps {
   history: History;
 }
-export const Appointments: React.FC<AppointmentProps> = (props) => {
+export const AppointmentsList: React.FC<AppointmentProps> = (props) => {
   const pageUrl = window.location.href;
   const classes = useStyles({});
   const { allCurrentPatients, currentPatient, setCurrentPatientId } = useAllCurrentPatients();
@@ -465,7 +466,7 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
       appointmentDetail.data.getAppointmentData &&
       appointmentDetail.data.getAppointmentData.appointmentsHistory[0];
     if (!_isEmpty(appointmentData) && !_isEmpty(paymentData)) {
-      const { appointmentDateTime, appointmentType, doctorInfo, doctorId } = appointmentData;
+      const { appointmentDateTime, appointmentType, doctorInfo, doctorId, id } = appointmentData;
       const { paymentStatus, paymentRefId, displayId, amountPaid } = paymentData;
       setAppointmentDateTime(appointmentDateTime);
       setAppointmentType(appointmentType);
@@ -478,6 +479,20 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
       setAmountPaid(amountPaid);
       setIsLoading(false);
       localStorage.setItem('consultBookDetails', '');
+      sessionStorage.removeItem('utm_source');
+      const eventData = {
+        category: doctorInfo.doctorType,
+        consultDateTime: appointmentDateTime,
+        consultId: id,
+        consultMode: appointmentType,
+        displayId: displayId,
+        doctorName: doctorInfo.fullName,
+        hospitalName: doctorInfo.doctorHospital[0].facility.name,
+        patientGender: currentPatient && currentPatient.gender,
+        specialisation: doctorInfo.specialty.name,
+        relation: currentPatient && currentPatient.relation,
+      };
+      consultationBookTracking(eventData);
     }
   }, [getPaymentData, appointmentDetail]);
 
@@ -559,7 +574,7 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
           props.history &&
           props.history.push(clientRoutes.doctorDetails(readableDoctorname, doctorId));
       },
-    }
+    },
   };
 
   const handlePaymentModalClose = () => {
@@ -625,8 +640,8 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
             : '';
         const specialty =
           isAppointmentAvailable.doctorInfo &&
-            isAppointmentAvailable.doctorInfo.specialty &&
-            isAppointmentAvailable.doctorInfo.specialty.specialistSingularTerm
+          isAppointmentAvailable.doctorInfo.specialty &&
+          isAppointmentAvailable.doctorInfo.specialty.specialistSingularTerm
             ? isAppointmentAvailable.doctorInfo.specialty.specialistSingularTerm
             : '';
         setAppointmentDoctorName(doctorName);
@@ -664,21 +679,21 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
       moment(new Date(item.appointmentDateTime), 'DD-MM-YYYY').add(6, 'days')
     ).length > -1 && tabValue === 0
       ? 'You have ' +
-      (appointments.filter((item) =>
-        moment(new Date(item.appointmentDateTime))
-          .add(6, 'days')
-          .startOf('day')
-          .isSameOrAfter(moment(new Date()).startOf('day'))
-      ).length || 'no') +
-      ' active appointment(s)!'
+          (appointments.filter((item) =>
+            moment(new Date(item.appointmentDateTime))
+              .add(6, 'days')
+              .startOf('day')
+              .isSameOrAfter(moment(new Date()).startOf('day'))
+          ).length || 'no') +
+          ' active appointment(s)!'
       : 'You have ' +
-      (appointments.filter((item) =>
-        moment(new Date(item.appointmentDateTime))
-          .add(6, 'days')
-          .startOf('day')
-          .isBefore(moment(new Date()).startOf('day'))
-      ).length || 'no') +
-      ' past appointment(s)!';
+          (appointments.filter((item) =>
+            moment(new Date(item.appointmentDateTime))
+              .add(6, 'days')
+              .startOf('day')
+              .isBefore(moment(new Date()).startOf('day'))
+          ).length || 'no') +
+          ' past appointment(s)!';
   };
 
   const TabContainer: React.FC = (props) => {
@@ -732,8 +747,8 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
                 </AphSelect>
               </Typography>
             ) : (
-                <Typography variant="h1">hello there!</Typography>
-              )}
+              <Typography variant="h1">hello there!</Typography>
+            )}
             <p>{data && !loading && appointmentText()}</p>
             <AphDialog open={isAddNewProfileDialogOpen} maxWidth="sm">
               <AphDialogClose onClick={() => setIsAddNewProfileDialogOpen(false)} title={'Close'} />
@@ -782,71 +797,74 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
             {tabValue === 0 && (
               <TabContainer>
                 {availableAppointments && availableAppointments.length > 0 ? (
-                  <ConsultationsCard appointments={availableAppointments} pastOrCurrent="current" />
+                  <ConsultationsCardList
+                    appointments={availableAppointments}
+                    pastOrCurrent="current"
+                  />
                 ) : loading || isSigningIn ? (
                   <div className={classes.loader}>
                     <CircularProgress />
                   </div>
                 ) : (
-                      <div className={classes.consultSection}>
-                        <div className={classes.noAppointments}>
-                          <div className={classes.leftGroup}>
-                            <h3>Want to book an appointment?</h3>
-                            <Route
-                              render={({ history }) => (
-                                <AphButton
-                                  color="primary"
-                                  onClick={() => {
-                                    history.push(clientRoutes.specialityListing());
-                                  }}
-                                  title={'Book an Appointment'}
-                                >
-                                  Book an Appointment
-                                </AphButton>
-                              )}
-                            />
-                          </div>
-                          <div className={classes.rightGroup}>
-                            <img src={require('images/ic_doctor_consult.svg')} alt="" />
-                          </div>
-                        </div>
+                  <div className={classes.consultSection}>
+                    <div className={classes.noAppointments}>
+                      <div className={classes.leftGroup}>
+                        <h3>Want to book an appointment?</h3>
+                        <Route
+                          render={({ history }) => (
+                            <AphButton
+                              color="primary"
+                              onClick={() => {
+                                history.push(clientRoutes.specialityListing());
+                              }}
+                              title={'Book an Appointment'}
+                            >
+                              Book an Appointment
+                            </AphButton>
+                          )}
+                        />
                       </div>
-                    )}
+                      <div className={classes.rightGroup}>
+                        <img src={require('images/ic_doctor_consult.svg')} alt="" />
+                      </div>
+                    </div>
+                  </div>
+                )}
               </TabContainer>
             )}
             {tabValue === 1 && (
               <TabContainer>
                 {pastAppointments && pastAppointments.length > 0 ? (
-                  <ConsultationsCard appointments={pastAppointments} pastOrCurrent="past" />
+                  <ConsultationsCardList appointments={pastAppointments} pastOrCurrent="past" />
                 ) : loading || isSigningIn ? (
                   <div className={classes.loader}>
                     <CircularProgress />
                   </div>
                 ) : (
-                      <div className={classes.consultSection}>
-                        <div className={classes.noAppointments}>
-                          <div className={classes.leftGroup}>
-                            <h3>Want to book an appointment?</h3>
-                            <Route
-                              render={({ history }) => (
-                                <AphButton
-                                  color="primary"
-                                  onClick={() => {
-                                    history.push(clientRoutes.specialityListing());
-                                  }}
-                                  title={'Book an Appointment'}
-                                >
-                                  Book an Appointment
-                                </AphButton>
-                              )}
-                            />
-                          </div>
-                          <div className={classes.rightGroup}>
-                            <img src={require('images/ic_doctor_consult.svg')} alt="" />
-                          </div>
-                        </div>
+                  <div className={classes.consultSection}>
+                    <div className={classes.noAppointments}>
+                      <div className={classes.leftGroup}>
+                        <h3>Want to book an appointment?</h3>
+                        <Route
+                          render={({ history }) => (
+                            <AphButton
+                              color="primary"
+                              onClick={() => {
+                                history.push(clientRoutes.specialityListing());
+                              }}
+                              title={'Book an Appointment'}
+                            >
+                              Book an Appointment
+                            </AphButton>
+                          )}
+                        />
                       </div>
-                    )}
+                      <div className={classes.rightGroup}>
+                        <img src={require('images/ic_doctor_consult.svg')} alt="" />
+                      </div>
+                    </div>
+                  </div>
+                )}
               </TabContainer>
             )}
           </div>
@@ -912,33 +930,35 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
               <CircularProgress />
             </div>
           ) : (
-              <>
-                <OrderStatusContent
-                  paymentStatus={
-                    paymentStatus === 'PAYMENT_FAILED'
-                      ? 'failed'
-                      : paymentStatus === 'PAYMENT_PENDING'
-                        ? 'pending' : paymentStatus === 'PAYMENT_ABORTED'
-                          ? 'aborted' : 'success'
-                  }
-                  paymentInfo={statusActions[paymentStatus].info}
-                  orderId={displayId}
-                  amountPaid={amountPaid}
-                  doctorDetail={doctorDetail}
-                  paymentRefId={paymentRefId}
-                  bookingDateTime={moment(appointmentDateTime)
-                    .format('DD MMMM YYYY[,] LT')
-                    .replace(/(A|P)(M)/, '$1.$2.')
-                    .toString()}
-                  type={'consult'}
-                  consultMode={_capitalize(appointmentType)}
-                  onClose={() => handlePaymentModalClose()}
-                  ctaText={statusActions[paymentStatus].ctaText}
-                  orderStatusCallback={statusActions[paymentStatus].callbackFunction}
-                  fetchConsultInvoice={setTriggerInvoice}
-                />
-              </>
-            )}
+            <>
+              <OrderStatusContent
+                paymentStatus={
+                  paymentStatus === 'PAYMENT_FAILED'
+                    ? 'failed'
+                    : paymentStatus === 'PAYMENT_PENDING'
+                    ? 'pending'
+                    : paymentStatus === 'PAYMENT_ABORTED'
+                    ? 'aborted'
+                    : 'success'
+                }
+                paymentInfo={statusActions[paymentStatus].info}
+                orderId={displayId}
+                amountPaid={amountPaid}
+                doctorDetail={doctorDetail}
+                paymentRefId={paymentRefId}
+                bookingDateTime={moment(appointmentDateTime)
+                  .format('DD MMMM YYYY[,] LT')
+                  .replace(/(A|P)(M)/, '$1.$2.')
+                  .toString()}
+                type={'consult'}
+                consultMode={_capitalize(appointmentType)}
+                onClose={() => handlePaymentModalClose()}
+                ctaText={statusActions[paymentStatus].ctaText}
+                orderStatusCallback={statusActions[paymentStatus].callbackFunction}
+                fetchConsultInvoice={setTriggerInvoice}
+              />
+            </>
+          )}
         </Modal>
       )}
       {/* 

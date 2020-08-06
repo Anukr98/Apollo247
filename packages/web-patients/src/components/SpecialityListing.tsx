@@ -23,6 +23,7 @@ import {
   SearchDoctorAndSpecialtyByName,
   SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctors as DoctorsType,
   SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_specialties as SpecialtyType,
+  SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctorsNextAvailability as NextAvailability,
 } from 'graphql/types/SearchDoctorAndSpecialtyByName';
 import { SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME } from 'graphql/doctors';
 import { useApolloClient } from 'react-apollo-hooks';
@@ -31,6 +32,8 @@ import { WhyApollo } from 'components/Doctors/WhyApollo';
 import { HowItWorks } from './Doctors/HowItWorks';
 import { ManageProfile } from 'components/ManageProfile';
 import { Relation } from 'graphql/types/globalTypes';
+import { MetaTagsComp } from 'MetaTagsComp';
+import { SchemaMarkup } from 'SchemaMarkup';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -208,15 +211,15 @@ const useStyles = makeStyles((theme: Theme) => {
       background: '#ffffff',
       borderRadius: 5,
       width: '66%',
-      '& h2': {
-        fontSize: 16,
-        fontWeight: 'bold',
-        margin: '0 0 20px',
-        color: '#01667c',
-      },
       [theme.breakpoints.down('sm')]: {
         width: '100%',
       },
+    },
+    faqTitle: {
+      fontSize: 16,
+      fontWeight: 'bold',
+      margin: '0 0 20px',
+      color: '#01667c',
     },
     heading: {},
     panelRoot: {
@@ -628,9 +631,13 @@ export const SpecialityListing: React.FC = (props) => {
   const [locationPopup, setLocationPopup] = useState<boolean>(false);
   const [searchSpecialty, setSearchSpecialty] = useState<SpecialtyType[] | null>(null);
   const [searchDoctors, setSearchDoctors] = useState<DoctorsType[] | null>(null);
+  const [searchDoctorsNextAvailability, setSearchDoctorsNextAvailability] = useState<
+    NextAvailability[] | null
+  >(null);
   const [searchLoading, setSearchLoading] = useState<boolean>(false);
   const [faqs, setFaqs] = useState<any | null>(null);
   const [selectedCity, setSelectedCity] = useState<string>('');
+  const [faqSchema, setFaqSchema] = useState(null);
   const onePrimaryUser =
     allCurrentPatients && allCurrentPatients.filter((x) => x.relation === Relation.ME).length === 1;
 
@@ -648,6 +655,28 @@ export const SpecialityListing: React.FC = (props) => {
     /**Gtm code start end */
   }, []);
 
+  const createFaqSchema = (faqData: any) => {
+    const mainEntity: any[] = [];
+    faqData &&
+      faqData.onlineConsultation &&
+      faqData.onlineConsultation.length > 0 &&
+      Object.values(faqData.onlineConsultation).map((faqs: any) => {
+        mainEntity.push({
+          '@type': 'Question',
+          name: faqs.faqQuestion,
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: faqs.faqAnswer,
+          },
+        });
+      });
+    setFaqSchema({
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity,
+    });
+  };
+
   useEffect(() => {
     if (!faqs) {
       scrollToRef &&
@@ -656,6 +685,7 @@ export const SpecialityListing: React.FC = (props) => {
       fetchUtil(process.env.SPECIALTY_LISTING_FAQS, 'GET', {}, '', true).then((res: any) => {
         if (res && res.success === 'true' && res.data && res.data.length > 0) {
           setFaqs(res.data[0]);
+          createFaqSchema(res.data[0]);
         }
       });
     }
@@ -682,12 +712,16 @@ export const SpecialityListing: React.FC = (props) => {
             const specialtiesArray = specialtiesAndDoctorsList.specialties || [];
             setSearchSpecialty(specialtiesArray);
             setSearchDoctors(doctorsArray);
+            setSearchDoctorsNextAvailability(
+              specialtiesAndDoctorsList.doctorsNextAvailability || []
+            );
           }
         })
         .catch((e) => {
           console.log(e);
           setSearchSpecialty([]);
           setSearchDoctors([]);
+          setSearchDoctorsNextAvailability([]);
         })
         .finally(() => {
           setSearchLoading(false);
@@ -695,8 +729,32 @@ export const SpecialityListing: React.FC = (props) => {
     }
   }, [searchKeyword, selectedCity]);
 
+  const metaTagProps = {
+    title: 'Online Doctor Consultation via Video Call / Audio / Chat - Apollo 247',
+    description:
+      'Online doctor consultation in 15 mins with 1000+ Top Specialist Doctors. Video Call or Chat with a Doctor from 100+ Specialties including General Physicians, Pediatricians, Dermatologists, Gynaecologists & more.',
+    canonicalLink: window && window.location && window.location.href,
+  };
+
+  const breadcrumbJSON = {
+    '@context': 'https://schema.org/',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'HOME', item: 'https://www.apollo247.com/' },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: 'SPECIALTIES',
+        item: 'https://www.apollo247.com/specialties',
+      },
+    ],
+  };
+
   return (
     <div className={classes.slContainer}>
+      <MetaTagsComp {...metaTagProps} />
+      <SchemaMarkup structuredJSON={breadcrumbJSON} />
+      {faqSchema && <SchemaMarkup structuredJSON={faqSchema} />}
       <Header />
       <div className={classes.container}>
         <div className={`${classes.slContent} ${currentPatient ? classes.slCotent1 : ''}`}>
@@ -722,7 +780,7 @@ export const SpecialityListing: React.FC = (props) => {
               <Grid item xs={12} md={8}>
                 <div className={classes.specialityContent}>
                   <div className={classes.sHeader}>
-                    <Typography component="h1">Book Doctor Appointments Online</Typography>
+                    <Typography component="h1">Online Doctor Consultation</Typography>
                   </div>
                   <SpecialtySearch
                     setSearchKeyword={setSearchKeyword}
@@ -734,6 +792,7 @@ export const SpecialityListing: React.FC = (props) => {
                     setLocationPopup={setLocationPopup}
                     locationPopup={locationPopup}
                     setSelectedCity={setSelectedCity}
+                    searchDoctorsNextAvailability={searchDoctorsNextAvailability}
                   />
                   {currentPatient && currentPatient.id && searchKeyword.length <= 0 && (
                     <PastSearches />
@@ -787,7 +846,7 @@ export const SpecialityListing: React.FC = (props) => {
           </div>
           {faqs && faqs.onlineConsultation && faqs.onlineConsultation.length > 0 && (
             <div className={classes.faq}>
-              <Typography component="h2">Frequently asked questions</Typography>
+              <div className={classes.faqTitle}>Frequently asked questions</div>
               {faqs.onlineConsultation.map((que: any) => (
                 <ExpansionPanel
                   key={que.id}

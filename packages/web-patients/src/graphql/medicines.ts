@@ -160,7 +160,10 @@ export const GET_MEDICINE_ORDERS_OMS_LIST = gql`
     getMedicineOrdersOMSList(patientId: $patientId) {
       medicineOrdersList {
         id
+        createdDate
         orderAutoId
+        billNumber
+        shopAddress
         deliveryType
         currentStatus
         medicineOrdersStatus {
@@ -169,17 +172,12 @@ export const GET_MEDICINE_ORDERS_OMS_LIST = gql`
           orderStatus
           hideStatus
         }
+        medicineOrderLineItems {
+          medicineName
+        }
         medicineOrderShipments {
-          id
-          siteId
-          siteName
-          apOrderNo
-          currentStatus
-          medicineOrdersStatus {
-            id
-            statusDate
-            hideStatus
-            orderStatus
+          medicineOrderInvoice {
+            itemDetails
           }
         }
       }
@@ -187,23 +185,38 @@ export const GET_MEDICINE_ORDERS_OMS_LIST = gql`
   }
 `;
 
-export const GET_MEDICINE_ORDER_OMS_DETAILS = gql`
-  query getMedicineOrderOMSDetails($patientId: String, $orderAutoId: Int) {
-    getMedicineOrderOMSDetails(patientId: $patientId, orderAutoId: $orderAutoId) {
+export const GET_MEDICINE_ORDER_OMS_DETAILS_WITH_ADDRESS = gql`
+  query getMedicineOrderOMSDetailsWithAddress(
+    $patientId: String
+    $orderAutoId: Int
+    $billNumber: String
+  ) {
+    getMedicineOrderOMSDetailsWithAddress(
+      patientId: $patientId
+      orderAutoId: $orderAutoId
+      billNumber: $billNumber
+    ) {
       medicineOrderDetails {
         id
+        createdDate
         orderAutoId
-        estimatedAmount
-        patientAddressId
+        billNumber
         coupon
         devliveryCharges
-        prescriptionImageUrl
         prismPrescriptionFileId
-        orderTat
         couponDiscount
         productDiscount
+        redeemedAmount
+        estimatedAmount
+        prescriptionImageUrl
+        orderTat
         orderType
+        shopAddress
+        packagingCharges
+        deliveryType
         currentStatus
+        patientAddressId
+        alertStore
         medicineOrderLineItems {
           medicineSKU
           medicineName
@@ -270,6 +283,13 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS = gql`
             state
             zipcode
           }
+        }
+        medicineOrderAddress {
+          addressLine1
+          addressLine2
+          city
+          state
+          zipcode
         }
       }
     }

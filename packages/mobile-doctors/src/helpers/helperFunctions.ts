@@ -6,6 +6,7 @@ import {
   MEDICINE_TIMINGS,
   MEDICINE_TO_BE_TAKEN,
   MEDICINE_FREQUENCY,
+  MEDICINE_CONSUMPTION_DURATION,
 } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
 import Permissions, { PERMISSIONS, Permission } from 'react-native-permissions';
 import { Alert, Platform } from 'react-native';
@@ -148,7 +149,7 @@ export const medicineDescription = (
 ) => {
   const type = item.medicineFormTypes === MEDICINE_FORM_TYPES.OTHERS ? 'Take' : 'Apply';
   const customDosage = item.medicineCustomDosage
-    ? item.medicineCustomDosage.split('-').filter((i) => i !== '')
+    ? item.medicineCustomDosage.split('-').filter((i) => i !== '' && i !== '0')
     : [];
   const medTimingsArray = [
     MEDICINE_TIMINGS.MORNING,
@@ -171,80 +172,88 @@ export const medicineDescription = (
   return `${type + ' '}${
     customDosage.length > 0
       ? `${customDosage.join(' ' + unit + ' - ') + ' ' + unit + ' '}${
-          medicineTimings && medicineTimings.length
-            ? '(' +
-              (medicineTimings.length > 1
-                ? medicineTimings
-                    .slice(0, -1)
-                    .map((i: MEDICINE_TIMINGS | null) => nameFormater(i || '', 'lower'))
-                    .join(', ') +
-                  ' & ' +
-                  nameFormater(medicineTimings[medicineTimings.length - 1] || '', 'lower')
-                : medicineTimings
-                    .map((i: MEDICINE_TIMINGS | null) => nameFormater(i || '', 'lower'))
-                    .join(', ')) +
-              ') '
-            : ''
-        }${
-          item.medicineConsumptionDurationInDays
-            ? `for ${item.medicineConsumptionDurationInDays} ${
-                item.medicineConsumptionDurationUnit
-                  ? `${item.medicineConsumptionDurationUnit.slice(0, -1).toLowerCase()}(s) `
-                  : ``
-              }`
-            : ''
-        }${
-          item.medicineToBeTaken && item.medicineToBeTaken.length
-            ? item.medicineToBeTaken
-                .map((i: MEDICINE_TO_BE_TAKEN | null) => nameFormater(i || '', 'lower'))
-                .join(', ') + '.'
-            : ''
+      medicineTimings && medicineTimings.length
+        ? '(' +
+        (medicineTimings.length > 1
+          ? medicineTimings
+            .slice(0, -1)
+            .map((i: MEDICINE_TIMINGS | null) => nameFormater(i || '', 'lower'))
+            .join(', ') +
+          ' & ' +
+          nameFormater(medicineTimings[medicineTimings.length - 1] || '', 'lower')
+          : medicineTimings
+            .map((i: MEDICINE_TIMINGS | null) => nameFormater(i || '', 'lower'))
+            .join(', ')) +
+        ') '
+        : ''
+      }${
+      Number(item.medicineConsumptionDurationInDays || '')
+        ? `for ${item.medicineConsumptionDurationInDays} ${
+        item.medicineConsumptionDurationUnit
+          ? `${item.medicineConsumptionDurationUnit.slice(0, -1).toLowerCase()}(s) `
+          : ``
         }`
-      : `${item.medicineDosage ? item.medicineDosage : ''} ${item.medicineUnit ? unit + ' ' : ''}${
-          item.medicineFrequency
-            ? item.medicineFrequency === MEDICINE_FREQUENCY.STAT
-              ? 'STAT (Immediately) '
-              : nameFormater(item.medicineFrequency, 'lower') + ' '
-            : ''
-        }${
-          item.medicineConsumptionDurationInDays
-            ? `for ${item.medicineConsumptionDurationInDays} ${
-                item.medicineConsumptionDurationUnit
-                  ? `${item.medicineConsumptionDurationUnit.slice(0, -1).toLowerCase()}(s) `
-                  : ``
-              }`
-            : ''
-        }${
-          item.medicineToBeTaken && item.medicineToBeTaken.length
-            ? item.medicineToBeTaken
-                .map((i: MEDICINE_TO_BE_TAKEN | null) => nameFormater(i || '', 'lower'))
-                .join(', ') + ' '
-            : ''
-        }${
-          medicineTimings && medicineTimings.length
-            ? `${
-                medicineTimings.includes(MEDICINE_TIMINGS.AS_NEEDED) && medicineTimings.length === 1
-                  ? ''
-                  : 'in the '
-              }` +
-              (medicineTimings.length > 1
-                ? medicineTimings
-                    .slice(0, -1)
-                    .map((i: MEDICINE_TIMINGS | null) => nameFormater(i || '', 'lower'))
-                    .join(', ') +
-                  ' & ' +
-                  nameFormater(medicineTimings[medicineTimings.length - 1] || '', 'lower') +
-                  ' '
-                : medicineTimings
-                    .map((i: MEDICINE_TIMINGS | null) => nameFormater(i || '', 'lower'))
-                    .join(', ') + ' ')
-            : ''
+        : item.medicineConsumptionDurationUnit ===
+          MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW
+          ? `${nameFormater(item.medicineConsumptionDurationUnit, 'lower')} `
+          : ''
+      }${
+      item.medicineToBeTaken && item.medicineToBeTaken.length
+        ? item.medicineToBeTaken
+          .map((i: MEDICINE_TO_BE_TAKEN | null) => nameFormater(i || '', 'lower'))
+          .join(', ') + '.'
+        : ''
+      }`
+      : `${item.medicineDosage ? item.medicineDosage + ' ' : ''}${
+      item.medicineUnit ? unit + ' ' : ''
+      }${
+      item.medicineFrequency
+        ? item.medicineFrequency === MEDICINE_FREQUENCY.STAT
+          ? 'STAT (Immediately) '
+          : nameFormater(item.medicineFrequency, 'lower') + ' '
+        : ''
+      }${
+      Number(item.medicineConsumptionDurationInDays || '')
+        ? `for ${item.medicineConsumptionDurationInDays} ${
+        item.medicineConsumptionDurationUnit
+          ? `${item.medicineConsumptionDurationUnit.slice(0, -1).toLowerCase()}(s) `
+          : ``
         }`
-  }${
+        : item.medicineConsumptionDurationUnit ===
+          MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW
+          ? `${nameFormater(item.medicineConsumptionDurationUnit, 'lower')} `
+          : ''
+      }${
+      item.medicineToBeTaken && item.medicineToBeTaken.length
+        ? item.medicineToBeTaken
+          .map((i: MEDICINE_TO_BE_TAKEN | null) => nameFormater(i || '', 'lower'))
+          .join(', ') + ' '
+        : ''
+      }${
+      medicineTimings && medicineTimings.length
+        ? `${
+        medicineTimings.includes(MEDICINE_TIMINGS.AS_NEEDED) && medicineTimings.length === 1
+          ? ''
+          : 'in the '
+        }` +
+        (medicineTimings.length > 1
+          ? medicineTimings
+            .slice(0, -1)
+            .map((i: MEDICINE_TIMINGS | null) => nameFormater(i || '', 'lower'))
+            .join(', ') +
+          ' & ' +
+          nameFormater(medicineTimings[medicineTimings.length - 1] || '', 'lower') +
+          ' '
+          : medicineTimings
+            .map((i: MEDICINE_TIMINGS | null) => nameFormater(i || '', 'lower'))
+            .join(', ') + ' ')
+        : ''
+      }`
+    }${
     item.routeOfAdministration
       ? `\nTo be taken: ${nameFormater(item.routeOfAdministration, 'title')}`
       : ''
-  }${item.medicineInstructions ? '\nInstuctions: ' + item.medicineInstructions : ''}`;
+    }${item.medicineInstructions ? '\nInstructions: ' + item.medicineInstructions : ''}`;
 };
 
 export const formatInt = (value: string) => {
@@ -281,8 +290,8 @@ export const messageCodes = {
 export const formatFloating = (value: string) => {
   const number =
     value.indexOf('.') === value.length - 1 ||
-    value.indexOf('0', value.length - 1) === value.length - 1 ||
-    value.indexOf('-') === value.length - 1
+      value.indexOf('0', value.length - 1) === value.length - 1 ||
+      value.indexOf('-') === value.length - 1
       ? value
       : parseFloat(value);
   return number || 0;
@@ -410,8 +419,8 @@ export const permissionHandler = (
       } else if (message === 'denied' || message === 'blocked') {
         Alert.alert((permission.split('.').pop() || 'permission').toUpperCase(), deniedMessage, [
           {
-            text: 'Cancle',
-            onPress: () => {},
+            text: 'Cancel',
+            onPress: () => { },
           },
           {
             text: 'Ok',

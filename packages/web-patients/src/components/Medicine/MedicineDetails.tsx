@@ -22,11 +22,16 @@ import { MedicineAutoSearch } from 'components/Medicine/MedicineAutoSearch';
 import { AphButton, AphDialog, AphDialogTitle, AphDialogClose } from '@aph/web-ui-components';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { useCurrentPatient } from 'hooks/authHooks';
-import { uploadPrescriptionTracking, pharmacyPdpOverviewTracking } from 'webEngageTracking';
+import {
+  uploadPrescriptionTracking,
+  pharmacyPdpOverviewTracking,
+  pharmacyProductClickTracking,
+} from 'webEngageTracking';
 import { UploadPrescription } from 'components/Prescriptions/UploadPrescription';
 import { UploadEPrescriptionCard } from 'components/Prescriptions/UploadEPrescriptionCard';
 import { MetaTagsComp } from 'MetaTagsComp';
 import moment from 'moment';
+import { useHistory } from 'react-router';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -434,7 +439,7 @@ type MedicineOverView = MedicineOverViewDetails[] | string;
 export const MedicineDetails: React.FC = (props) => {
   const classes = useStyles({});
   const [tabValue, setTabValue] = React.useState<number>(0);
-  const params = useParams<{ sku: string }>();
+  const params = useParams<{ sku: string; searchText: string }>();
   const [medicineDetails, setMedicineDetails] = React.useState<MedicineProductDetails | null>(null);
   const [alertMessage, setAlertMessage] = React.useState<string>('');
   const [isAlertOpen, setIsAlertOpen] = React.useState<boolean>(false);
@@ -495,9 +500,19 @@ export const MedicineDetails: React.FC = (props) => {
               PharmaOverview,
               url_key,
               mou,
-            } = data.productdp[0];
+              category_id,
+            } = data && data.productdp && data.productdp.length && data.productdp[0];
             let { description } = data.productdp[0];
-            window.history.replaceState(null, '', url_key);
+            pharmacyProductClickTracking({
+              productName: name,
+              source: '',
+              productId: sku,
+              brand: '',
+              brandId: '',
+              categoryName: '',
+              categoryId: category_id,
+              sectionName: '',
+            });
             if (
               type_id &&
               type_id.toLowerCase() === 'pharma' &&
@@ -597,11 +612,19 @@ export const MedicineDetails: React.FC = (props) => {
   };
 
   const onePrimaryUser = hasOnePrimaryUser();
+  const history = useHistory();
+
   useEffect(() => {
     if (!medicineDetails) {
       getMedicineDetails(params.sku);
     }
   }, [medicineDetails]);
+
+  useEffect(() => {
+    if (params && params.searchText) {
+      history.push(clientRoutes.medicineDetails(params.sku));
+    }
+  }, []);
 
   let medicinePharmacyDetails: PharmaOverview[] | null = null;
 

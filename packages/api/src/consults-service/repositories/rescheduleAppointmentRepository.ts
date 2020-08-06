@@ -12,12 +12,14 @@ import { AppointmentRepository } from 'consults-service/repositories/appointment
 
 @EntityRepository(RescheduleAppointmentDetails)
 export class RescheduleAppointmentRepository extends Repository<RescheduleAppointmentDetails> {
-  saveReschedule(rescheduleAppointmentAttrs: Partial<RescheduleAppointmentDetails>) {
-    return this.save(this.create(rescheduleAppointmentAttrs)).catch((createErrors) => {
-      throw new AphError(AphErrorMessages.RESCHEDULE_APPOINTMENT_ERROR, undefined, {
-        createErrors,
+  async saveReschedule(rescheduleAppointmentAttrs: Partial<RescheduleAppointmentDetails>) {
+    return this.create(rescheduleAppointmentAttrs)
+      .save()
+      .catch((createErrors) => {
+        throw new AphError(AphErrorMessages.RESCHEDULE_APPOINTMENT_ERROR, undefined, {
+          createErrors,
+        });
       });
-    });
   }
 
   checkTransfer(appointment: string, transferedDocotrId: string) {
@@ -120,6 +122,7 @@ export class RescheduleAppointmentRepository extends Repository<RescheduleAppoin
         rescheduleInitiatedBy: TRANSFER_INITIATED_TYPE.DOCTOR,
         rescheduleStatus: TRANSFER_STATUS.INITIATED,
       },
+      order: { createdDate: 'DESC' },
     });
   }
 

@@ -168,7 +168,7 @@ const bookTransferAppointment: Resolver<
 > = async (parent, { BookTransferAppointmentInput }, { consultsDb, doctorsDb, patientsDb }) => {
   //check if patient id is valid
   const patient = patientsDb.getCustomRepository(PatientRepository);
-  const patientDetails = await patient.findById(BookTransferAppointmentInput.patientId);
+  const patientDetails = await patient.getPatientDetails(BookTransferAppointmentInput.patientId);
   if (!patientDetails) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
@@ -226,10 +226,12 @@ const bookTransferAppointment: Resolver<
   if (patientConsults) {
     throw new AphError(AphErrorMessages.ANOTHER_DOCTOR_APPOINTMENT_EXIST, undefined, {});
   }
+
   //update exisiting appt, state to transferred
   await appointmentRepo.updateTransferState(
     BookTransferAppointmentInput.existingAppointmentId,
-    APPOINTMENT_STATE.TRANSFERRED
+    APPOINTMENT_STATE.TRANSFERRED,
+    apptDetails
   );
 
   //insert new appt booking
@@ -316,10 +318,13 @@ const initiateTransferAppointment: Resolver<
   };
 
   const transferAppointment = await transferApptRepo.saveTransfer(transferAppointmentAttrs);
+
   await appointmentRepo.updateTransferState(
     TransferAppointmentInput.appointmentId,
-    APPOINTMENT_STATE.AWAITING_TRANSFER
+    APPOINTMENT_STATE.AWAITING_TRANSFER,
+    appointment
   );
+
   let slot = '';
   let nextDate = new Date();
   while (true) {

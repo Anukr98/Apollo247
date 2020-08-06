@@ -305,7 +305,7 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
               setState(state || '');
               setCity(city || '');
               setPincode(pincode || '');
-              const location = city ? city.concat(', ').concat(state) : state;
+              const location = city ? (state ? city.concat(', ').concat(state) : city) : state;
 
               setPincode(pincode || '');
               setAddress2(location);

@@ -1016,7 +1016,7 @@ app.get('/processOmsOrders', (req, res) => {
                     deliveryZipcode = patientAddressDetails.zipcode || deliveryZipcode;
                   }
                 }
-                if (parseInt(orderDetails.shopId, 10)) {
+                if (orderDetails.shopId && orderDetails.shopId !== '0') {
                   if (!orderDetails.shopAddress) {
                     logger.error(
                       `store address details not present for store pick ${orderDetails.orderAutoId}`
@@ -1029,6 +1029,8 @@ app.get('/processOmsOrders', (req, res) => {
                   deliveryZipcode = shopAddress.zipcode;
                   deliveryAddress = shopAddress.address || '';
                   deliveryStateCode = shopAddress.stateCode;
+                } else {
+                  orderDetails.shopId = '';
                 }
                 const orderLineItems = [];
                 let requestType = 'NONCART';
@@ -1105,6 +1107,27 @@ app.get('/processOmsOrders', (req, res) => {
                 if (orderDetails.orderTat && orderDetails.orderTat.length > 20) {
                   orderTat = addMinutes(orderTat, 330);
                 }
+                const paymentDetailsOptions = [];
+                if (paymentDetails.paymentType === 'CASHLESS') {
+                  if (paymentDetails.amountPaid) {
+                    paymentDetailsOptions.push({
+                      paymentsource: 'paytm',
+                      transactionstatus: 'TRUE',
+                      paymenttransactionid: paymentDetails.paymentRefId,
+                      amount: paymentDetails.amountPaid,
+                    });
+                  }
+                  if (paymentDetails.healthCreditsRedeemed) {
+                    paymentDetailsOptions.push({
+                      paymentsource: 'oneapollo',
+                      transactionstatus: 'TRUE',
+                      paymenttransactionid:
+                        paymentDetails.healthCreditsRedemptionRequest &&
+                        paymentDetails.healthCreditsRedemptionRequest.RequestNumber,
+                      amount: paymentDetails.healthCreditsRedeemed,
+                    });
+                  }
+                }
                 const medicineOrderPharma = {
                   orderid: orderDetails.orderAutoId,
                   orderdate: format(
@@ -1149,17 +1172,7 @@ app.get('/processOmsOrders', (req, res) => {
                     latitude: lat,
                     longitude: long,
                   },
-                  paymentdetails:
-                    paymentDetails.paymentType === 'CASHLESS'
-                      ? [
-                          {
-                            paymentsource: 'paytm',
-                            transactionstatus: 'TRUE',
-                            paymenttransactionid: paymentDetails.paymentRefId,
-                            amount: paymentDetails.amountPaid,
-                          },
-                        ]
-                      : [],
+                  paymentdetails: paymentDetailsOptions,
                   itemdetails: orderLineItems || [],
                   imageurl: orderPrescriptionUrl,
                 };

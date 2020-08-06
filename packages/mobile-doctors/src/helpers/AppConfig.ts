@@ -28,16 +28,16 @@ const commonConfigs = {
 const ConfigurationDev = {
   ...commonConfigs,
   LOG_ENVIRONMENT: 'debug',
-  iOS_Version: '1.0101',
-  Android_Version: '1.0101',
+  iOS_Version: '1.0205',
+  Android_Version: '1.0205',
 };
 
 //QA
 const ConfigurationQA = {
   ...commonConfigs,
   LOG_ENVIRONMENT: 'release',
-  iOS_Version: '1.0106',
-  Android_Version: '1.0106',
+  iOS_Version: '1.0208',
+  Android_Version: '1.0208',
 };
 
 //Prod
@@ -48,8 +48,8 @@ const ConfigurationProd = {
   PRO_TOKBOX_KEY: '46422952', // PRODUCTION
   PRO_PUBNUB_PUBLISH: 'pub-c-e275fde3-09e1-44dd-bc32-5c3d04c3b2ef', // PRODUCTION
   PRO_PUBNUB_SUBSCRIBER: 'sub-c-517dafbc-d955-11e9-aa3a-6edd521294c5', // PRODUCTION
-  iOS_Version: '1.02',
-  Android_Version: '1.02',
+  iOS_Version: '1.03',
+  Android_Version: '1.03',
 };
 
 const Configuration =

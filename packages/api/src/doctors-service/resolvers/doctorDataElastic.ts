@@ -358,33 +358,77 @@ async function addDoctorElastic(allDocsInfo: Doctor) {
       groupName: allDocsInfo.specialty.groupName,
       commonSearchTerm: allDocsInfo.specialty.commonSearchTerm,
       userFriendlyNomenclature: allDocsInfo.specialty.userFriendlyNomenclature,
+      slugName: allDocsInfo.specialty.slugName,
+      updatedDate: allDocsInfo.specialty.updatedDate,
+      createdDate: allDocsInfo.specialty.createdDate,
+      shortDescription: allDocsInfo.specialty.shortDescription,
+      symptoms: allDocsInfo.specialty.symptoms,
+      commonSearchWords: allDocsInfo.specialty.commonSearchWords,
+      displayOrder: allDocsInfo.specialty.displayOrder,
+      externalId: allDocsInfo.specialty.externalId,
     };
   }
   //console.log(allDocsInfo.doctorSecretary.id, 'specialty dets');
+
+  function defineExperienceRange(experience: Number) {
+    let experience_range: string = '';
+    if (experience >= 16) {
+      experience_range = '16+';
+    } else if (experience > 10 && experience < 16) {
+      experience_range = '11-16';
+    } else if (experience > 5 && experience < 11) {
+      experience_range = '6-10';
+    } else {
+      experience_range = '0-5';
+    }
+    return experience_range;
+  }
+
+  function defineFeeRange(fees: Number) {
+    let fees_range: string = '';
+    if (fees >= 1000) {
+      fees_range = '1000+';
+    } else if (fees > 500 && fees < 1000) {
+      fees_range = '500-1000';
+    } else {
+      fees_range = '100-500';
+    }
+    return fees_range;
+  }
+
+  function pushLanguagesInArray(cslanguages: string) {
+    return cslanguages.split(',').map((elem) => elem.trim());
+  }
+
   const doctorData = {
     doctorId: allDocsInfo.id,
     firstName: allDocsInfo.firstName,
     lastName: allDocsInfo.lastName,
     mobileNumber: allDocsInfo.mobileNumber,
     awards: allDocsInfo.awards,
-    city: allDocsInfo.city,
     country: allDocsInfo.country,
     dateOfBirth: allDocsInfo.dateOfBirth,
     displayName: allDocsInfo.displayName,
-    doctorType: allDocsInfo.doctorType,
     delegateName: allDocsInfo.delegateName,
     delegateNumber: allDocsInfo.delegateNumber,
     emailAddress: allDocsInfo.emailAddress,
     externalId: allDocsInfo.externalId,
     fullName: allDocsInfo.fullName,
+
+    doctorType: allDocsInfo.doctorType,
+    city: allDocsInfo.city,
     experience: allDocsInfo.experience,
-    gender: allDocsInfo.gender,
-    isActive: allDocsInfo.isActive,
-    languages: allDocsInfo.languages,
-    middleName: allDocsInfo.middleName,
-    onlineConsultationFees: allDocsInfo.onlineConsultationFees,
-    photoUrl: allDocsInfo.photoUrl,
     physicalConsultationFees: allDocsInfo.physicalConsultationFees,
+    onlineConsultationFees: allDocsInfo.onlineConsultationFees,
+    age: '',
+    experience_range: defineExperienceRange(allDocsInfo.experience),
+    fee_range: defineFeeRange(allDocsInfo.onlineConsultationFees),
+    languages: pushLanguagesInArray(allDocsInfo.languages),
+    gender: allDocsInfo.gender,
+
+    isActive: allDocsInfo.isActive,
+    middleName: allDocsInfo.middleName,
+    photoUrl: allDocsInfo.photoUrl,
     qualification: allDocsInfo.qualification,
     registrationNumber: allDocsInfo.registrationNumber,
     salutation: allDocsInfo.salutation,

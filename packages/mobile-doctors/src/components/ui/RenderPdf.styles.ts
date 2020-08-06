@@ -27,7 +27,7 @@ export const RenderPdfStyles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0,0.1)',
     zIndex: 5,
-    elevation: 200,
+    elevation: 500,
   },
   menucontainer: {
     alignSelf: 'flex-end',

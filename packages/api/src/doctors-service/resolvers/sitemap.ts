@@ -79,7 +79,8 @@ const generateSitemap: Resolver<null, {}, DoctorsServiceContext, string> = async
   if (process.env.NODE_ENV != 'local') {
     assetsDir = path.resolve(<string>process.env.ASSETS_DIRECTORY);
   }
-  /*const listResp = await fetch(
+  let cmsUrls = '\n<!--CMS url-->\n';
+  const listResp = await fetch(
     process.env.CMS_ARTICLES_SLUG_LIST_URL ? process.env.CMS_ARTICLES_SLUG_LIST_URL : '',
     {
       method: 'GET',
@@ -88,13 +89,19 @@ const generateSitemap: Resolver<null, {}, DoctorsServiceContext, string> = async
   );
   const textRes = await listResp.text();
   const cmsUrlsList = JSON.parse(textRes);
-  
+
   if (cmsUrlsList && cmsUrlsList.data.length > 0) {
-    cmsUrlsList.data.forEach((link: string) => {
-      const url = process.env.SITEMAP_BASE_URL + 'covid19/article' + link;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    cmsUrlsList.data.forEach((link: any) => {
+      let url = process.env.SITEMAP_BASE_URL + 'covid19/';
+      if (link.type == 'ARTICLE') {
+        url += 'article' + link.slug;
+      } else {
+        url += 'report' + link.slug;
+      }
       cmsUrls += '<url>\n<loc>' + url + '</loc>\n<lastmod>' + modifiedDate + '</lastmod>\n</url>\n';
     });
-  }*/
+  }
 
   const brandsPage =
     '\n<!--Brands url-->\n<url>\n<loc>' +
@@ -122,6 +129,7 @@ const generateSitemap: Resolver<null, {}, DoctorsServiceContext, string> = async
   const healthAreasUrlsList = JSON.parse(healthAreaTextRes);
   let healthAreaUrls = '\n<!--Health Area links-->\n';
   if (healthAreasUrlsList.healthareas && healthAreasUrlsList.healthareas.length > 0) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     healthAreasUrlsList.healthareas.forEach((link: any) => {
       const url = process.env.SITEMAP_BASE_URL + 'medicine/healthareas/' + link.url_key;
       healthAreaUrls +=
@@ -130,6 +138,7 @@ const generateSitemap: Resolver<null, {}, DoctorsServiceContext, string> = async
   }
   let ShopByCategory = '\n<!--Shop By Category links-->\n';
   if (healthAreasUrlsList.shop_by_category && healthAreasUrlsList.shop_by_category.length > 0) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     healthAreasUrlsList.shop_by_category.forEach((link: any) => {
       const url = process.env.SITEMAP_BASE_URL + 'medicine/shop-by-category/' + link.url_key;
       ShopByCategory +=
@@ -140,7 +149,11 @@ const generateSitemap: Resolver<null, {}, DoctorsServiceContext, string> = async
   const redisMedKeys = await keyCache('medicine:sku:*');
   let medicineUrls = '\n<!--Medicines list-->\n';
   if (redisMedKeys && redisMedKeys.length > 0) {
-    for (let k = 0; k < redisMedKeys.length; k++) {
+    let medCount = redisMedKeys.length;
+    if (process.env.NODE_ENV == 'local' || process.env.NODE_ENV == 'dev') {
+      medCount = 100;
+    }
+    for (let k = 0; k < medCount; k++) {
       //console.log(redisMedKeys[k], 'key');
       const skuDets = await hgetAllCache(redisMedKeys[k]);
       //console.log(skuDets, 'indise key');
@@ -153,7 +166,13 @@ const generateSitemap: Resolver<null, {}, DoctorsServiceContext, string> = async
   }
 
   sitemapStr +=
-    doctorsStr + brandsPage + healthAreaUrls + ShopByCategory + medicineUrls + '</urlset>';
+    doctorsStr +
+    brandsPage +
+    healthAreaUrls +
+    ShopByCategory +
+    cmsUrls +
+    medicineUrls +
+    '</urlset>';
   const fileName = 'sitemap.xml';
   const uploadPath = assetsDir + '/' + fileName;
   fs.writeFile(uploadPath, sitemapStr, {}, (err) => {
