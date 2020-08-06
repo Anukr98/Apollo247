@@ -258,11 +258,7 @@ export const FilterHealthRecordScene: React.FC<FilterHealthRecordSceneProps> = (
   };
 
   const bottomButton = () => {
-    let length = 0;
-    data.forEach((item) => {
-      if (item.selectedOptions) length += item.selectedOptions.length;
-    });
-    console.log(length, 'length');
+    const length = data.filter((d) => d.selectedOptions).length;
     if (length == 0) {
       props.filterLength();
     }
