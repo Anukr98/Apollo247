@@ -1007,6 +1007,8 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
           marginHorizontal: 20,
           paddingBottom: index == medicineList.length - 1 ? 10 : 0,
         }}
+        maxOrderQty={getMaxQtyForMedicineItem(item.MaxOrderQty)}
+        removeCartItem={() => onRemoveCartItem(item)}
       />
     );
   };

@@ -13,6 +13,7 @@ import { MedicineProduct } from '../../helpers/apiCalls';
 import { g } from '../../helpers/helperFunctions';
 import { AppConfig } from '../../strings/AppConfig';
 import { QuantityButton } from '@aph/mobile-patients/src/components/ui/QuantityButton';
+import { AddToCartButtons } from './AddToCartButtons';
 
 const styles = StyleSheet.create({
   containerStyle: {},
@@ -40,6 +41,8 @@ export interface MedicineSearchSuggestionItemProps {
   showSeparator?: boolean;
   loading?: boolean;
   data: MedicineProduct;
+  maxOrderQty: number;
+  removeCartItem: () => void;
 }
 
 export const MedicineSearchSuggestionItem: React.FC<MedicineSearchSuggestionItemProps> = (
@@ -132,9 +135,14 @@ export const MedicineSearchSuggestionItem: React.FC<MedicineSearchSuggestionItem
   const renderQuantityView = () => {
     return (
       <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-        <QuantityButton text={'-'} onPress={props.onPressSubstract} />
-        <Text style={theme.viewStyles.text('B', 14, '#fc9916', 1, 24, 0)}>{props.quantity}</Text>
-        <QuantityButton text={'+'} onPress={props.onPressAdd} />
+        <AddToCartButtons
+          numberOfItemsInCart={props.quantity}
+          maxOrderQty={props.maxOrderQty}
+          addToCart={props.onPressAdd}
+          removeItemFromCart={props.onPressSubstract}
+          removeFromCart={props.removeCartItem}
+          isSolidContainer={false}
+        />
       </View>
     );
   };
