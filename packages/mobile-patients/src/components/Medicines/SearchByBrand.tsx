@@ -887,7 +887,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
       }
 
       setsearchSate('load');
-      getMedicineSearchSuggestionsApi(_searchText, g(currentPatient, 'id') || null)
+      getMedicineSearchSuggestionsApi(_searchText)
         .then(({ data }) => {
           const products = data.products || [];
           setMedicineList(products);

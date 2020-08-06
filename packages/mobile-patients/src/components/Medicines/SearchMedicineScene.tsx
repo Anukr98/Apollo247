@@ -30,8 +30,6 @@ import {
   aphConsole,
   isValidSearch,
   postWebEngageEvent,
-  postwebEngageAddToCartEvent,
-  postAppsFlyerAddToCartEvent,
   addPharmaItemToCart,
   g,
   getMaxQtyForMedicineItem,
@@ -102,34 +100,6 @@ const styles = StyleSheet.create({
   labelText: {
     ...theme.fonts.IBMPlexSansBold(9),
     color: theme.colors.WHITE,
-  },
-  searchValueStyle: {
-    ...theme.fonts.IBMPlexSansMedium(18),
-    color: theme.colors.SHERPA_BLUE,
-  },
-  deliveryPinCodeContaner: {
-    ...theme.viewStyles.cardContainer,
-    paddingHorizontal: 20,
-    paddingVertical: Platform.OS == 'ios' ? 12 : 7,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: '#f7f8f5',
-  },
-  pinCodeStyle: {
-    ...theme.fonts.IBMPlexSansMedium(14),
-    color: theme.colors.SHERPA_BLUE,
-    flex: 0.9,
-  },
-  pinCodeTextInput: {
-    ...theme.fonts.IBMPlexSansMedium(14),
-    color: theme.colors.SHERPA_BLUE,
-    borderColor: theme.colors.INPUT_BORDER_SUCCESS,
-    borderBottomWidth: 2,
-    paddingBottom: 3,
-    paddingLeft: Platform.OS === 'ios' ? 0 : -3,
-    paddingTop: 0,
-    width: Platform.OS === 'ios' ? 51 : 54,
   },
   sorryTextStyle: {
     ...theme.fonts.IBMPlexSansMedium(14),
@@ -254,7 +224,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         return;
       }
       setsearchSate('load');
-      getMedicineSearchSuggestionsApi(_searchText, g(currentPatient, 'id') || null)
+      getMedicineSearchSuggestionsApi(_searchText)
         .then(({ data }) => {
           const products = data.products || [];
           setMedicineList(products);
@@ -284,7 +254,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
       }
       setShowMatchingMedicines(true);
       setProductsIsLoading(true);
-      searchMedicineApi(_searchText, g(currentPatient, 'id') || null)
+      searchMedicineApi(_searchText)
         .then(async ({ data }) => {
           const products = data.products || [];
           setSearchHeading(data.search_heading!);

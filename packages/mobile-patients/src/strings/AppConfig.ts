@@ -247,9 +247,9 @@ export const updateAppConfig = (key: keyof typeof Configuration, value: object) 
 const PharmaApiConfig = {
   dev: {
     TRACK_EVENT: [`${tagalysBaseUrl}/analytics/events/track`],
-    MED_SEARCH: [`${tagalysBaseUrl}/search`],
+    MED_SEARCH: [`${apolloUatBaseUrl}/popcsrchprd_api.php`, pharmaToken201],
     MED_DETAIL: [apolloUatBaseUrl, pharmaToken201],
-    MED_SEARCH_SUGGESTION: [`${tagalysBaseUrl}/ss`],
+    MED_SEARCH_SUGGESTION: [`${apolloUatBaseUrl}/popcsrchss_api.php`, pharmaToken201],
     STORES_LIST: [apolloUatBaseUrl, pharmaToken201],
     GET_STORE_INVENTORY: [
       `https://online.apollopharmacy.org/TAT/Apollo/GetStoreInventory`,
@@ -285,9 +285,9 @@ const PharmaApiConfig = {
   },
   prod: {
     TRACK_EVENT: [`${tagalysBaseUrl}/analytics/events/track`],
-    MED_SEARCH: [`${tagalysBaseUrl}/search`],
+    MED_SEARCH: [`${apolloProdBaseUrl}/popcsrchprd_api.php`, pharmaToken201],
     MED_DETAIL: [apolloProdBaseUrl, pharmaToken201],
-    MED_SEARCH_SUGGESTION: [`${tagalysBaseUrl}/ss`],
+    MED_SEARCH_SUGGESTION: [`${apolloProdBaseUrl}/popcsrchss_api.php`, pharmaToken201],
     STORES_LIST: [apolloProdBaseUrl, pharmaToken201],
     GET_STORE_INVENTORY: [
       `https://online.apollopharmacy.org/TAT/Apollo/GetStoreInventory`,

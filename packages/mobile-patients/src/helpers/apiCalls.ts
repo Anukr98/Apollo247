@@ -1,10 +1,6 @@
 import Axios, { AxiosResponse, Canceler } from 'axios';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
-import {
-  getTagalysConfig,
-  tagalysResponseFormatter,
-  Tagalys,
-} from '@aph/mobile-patients/src/helpers/Tagalys';
+import { getTagalysConfig, Tagalys } from '@aph/mobile-patients/src/helpers/Tagalys';
 
 export interface MedicineProduct {
   category_id?: string;
@@ -318,10 +314,7 @@ export const getMedicineDetailsApi = (
 let cancelSearchMedicineApi: Canceler | undefined;
 
 export const searchMedicineApi = async (
-  searchText: string,
-  userId: string,
-  recordsPerPage: number = 10,
-  pageIndex: number = 1
+  searchText: string
 ): Promise<AxiosResponse<MedicineProductsResponse>> => {
   const CancelToken = Axios.CancelToken;
   cancelSearchMedicineApi && cancelSearchMedicineApi();
@@ -330,25 +323,15 @@ export const searchMedicineApi = async (
     url: config.MED_SEARCH[0],
     method: 'POST',
     data: {
-      ...getTagalysConfig(userId),
-      q: searchText,
-      request: ['details'],
-      per_page: recordsPerPage,
-      page: pageIndex,
+      params: searchText,
+    },
+    headers: {
+      Authorization: config.MED_SEARCH[1],
     },
     cancelToken: new CancelToken((c) => {
       // An executor function receives a cancel function as a parameter
       cancelSearchMedicineApi = c;
     }),
-    transformResponse: (data: any) => {
-      const _data = JSON.parse(data);
-      const products = (_data.details || []) as Tagalys.ProductResponse[];
-      return {
-        ..._data,
-        product_count: _data.total,
-        products: products.map(tagalysResponseFormatter),
-      };
-    },
   });
 };
 
@@ -454,8 +437,7 @@ export const trackTagalysEvent = (
 let cancelSearchSuggestionsApi: Canceler | undefined;
 
 export const getMedicineSearchSuggestionsApi = (
-  searchText: string,
-  userId: string
+  searchText: string
 ): Promise<AxiosResponse<MedicineProductsResponse>> => {
   const CancelToken = Axios.CancelToken;
   cancelSearchSuggestionsApi && cancelSearchSuggestionsApi();
@@ -464,23 +446,15 @@ export const getMedicineSearchSuggestionsApi = (
     url: config.MED_SEARCH_SUGGESTION[0],
     method: 'POST',
     data: {
-      ...getTagalysConfig(userId),
-      q: searchText,
-      products: 10,
+      params: searchText,
+    },
+    headers: {
+      Authorization: config.MED_SEARCH_SUGGESTION[1],
     },
     cancelToken: new CancelToken((c) => {
       // An executor function receives a cancel function as a parameter
       cancelSearchSuggestionsApi = c;
     }),
-    transformResponse: (data: any) => {
-      const _data = JSON.parse(data);
-      const products = (_data.products || []) as Tagalys.ProductResponse[];
-      return {
-        ..._data,
-        product_count: products.length,
-        products: products.map(tagalysResponseFormatter),
-      };
-    },
   });
 };
 

@@ -3,41 +3,11 @@ import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import moment from 'moment';
 import { Dimensions, Platform } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
-import { MedicineProduct } from '@aph/mobile-patients/src/helpers/apiCalls';
 
 export const getTagalysConfig = (userId: string) => buildTagalysConfig(userId);
 export const setTagalysConfig = (_tagalysConfig: Tagalys.Config | null) => {
   tagalysConfig = _tagalysConfig;
 };
-export const tagalysResponseFormatter = ({
-  __id,
-  image_url,
-  in_stock,
-  is_prescription_required,
-  name,
-  price,
-  sale_price,
-  sell_online,
-  sku,
-}: Tagalys.ProductResponse): MedicineProduct => ({
-  category_id: '', // TODO: Field not present in Tagalys
-  description: '',
-  id: Number(__id),
-  image: image_url,
-  is_in_stock: in_stock ? 1 : 0,
-  is_prescription_required: is_prescription_required ? 1 : 0,
-  MaxOrderQty: 3, // TODO: Field not present in Tagalys
-  mou: '1', // TODO: Field not present in Tagalys
-  name: name,
-  price: price,
-  sku: sku,
-  small_image: '',
-  special_price: price === sale_price ? '' : sale_price,
-  status: (sell_online || []).indexOf('enable') > -1 ? 1 : 0,
-  thumbnail: image_url,
-  type_id: 'Pharma', // TODO: Field not present in Tagalys
-  url_key: '', // TODO: Field not present in Tagalys (req for merchandised page)
-});
 
 let tagalysConfig: Tagalys.Config | null = null;
 let visit_info: { id: string; timestamp: number } | null = null;
@@ -151,27 +121,5 @@ export declare module Tagalys {
     pl_page: number;
     pl_total: number;
     pl_sort?: string;
-  }
-
-  export interface ProductResponse {
-    __id: string;
-    __magento_avg_rating_id_1: number;
-    __magento_avg_rating_id_2: number;
-    __magento_avg_rating_id_3: number;
-    __magento_ratings_count: number;
-    __magento_type: string;
-    __new: boolean;
-    discount_amount: number;
-    discount_percentage: number;
-    image_url: string;
-    in_stock: boolean;
-    introduced_at: string;
-    is_prescription_required: boolean;
-    link: string;
-    name: string;
-    price: number;
-    sale_price: number;
-    sell_online: string[];
-    sku: string;
   }
 }
