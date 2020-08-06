@@ -2,7 +2,7 @@ import { EntityRepository, Repository } from 'typeorm';
 import { PatientAddress } from 'profiles-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
-import { getCache, setCache } from 'profiles-service/database/connectRedis';
+import { getCache, setCache, delCache } from 'profiles-service/database/connectRedis';
 import { ApiConstants } from 'ApiConstants';
 
 // if changing key please also change the same in entity
@@ -65,6 +65,7 @@ export class PatientAddressRepository extends Repository<PatientAddress> {
   }
 
   deletePatientAddress(id: string) {
+    delCache(this.cacheKey(REDIS_ADDRESS_PATIENT_ID_KEY_PREFIX, id));
     return this.delete(id);
   }
 }
