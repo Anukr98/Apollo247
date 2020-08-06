@@ -200,7 +200,7 @@ export const SpecialtySearch: React.FC<SpecialtySearchProps> = (props) => {
     const requiredDoctor =
       searchDoctorsNextAvailability &&
       searchDoctorsNextAvailability.find((avail: NextAvailability) => avail.doctorId === id);
-    return requiredDoctor.availableInMinutes || '';
+    return (requiredDoctor && requiredDoctor.availableInMinutes) || '';
   };
   const searchRef = useRef(null);
   const pathCondition = location.pathname === clientRoutes.specialityListing();

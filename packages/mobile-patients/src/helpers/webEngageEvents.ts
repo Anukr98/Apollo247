@@ -341,13 +341,12 @@ export interface WebEngageEvents {
     'product name': string;
     'product id': string; // (SKUID)
     Price: number;
-    'Discounted Price': number;
+    'Discounted Price'?: number;
     Quantity: number;
     Source:
       | 'Pharmacy Home'
       | 'Pharmacy PDP'
       | 'Pharmacy List'
-      | 'Diagnostic'
       | 'Pharmacy Partial Search'
       | 'Pharmacy Full Search';
     Brand?: string;
@@ -555,7 +554,7 @@ export interface WebEngageEvents {
     Servicable: boolean;
   };
   [WebEngageEventName.PHARMACY_CATEGORY_SECTION_PRODUCT_CLICK]: {
-    SectionName: string;
+    'Section Name': string;
     ProductId: string;
     ProductName: string;
   };
