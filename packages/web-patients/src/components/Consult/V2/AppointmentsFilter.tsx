@@ -217,20 +217,16 @@ export const AppointmentsFilter: React.FC<AppointmentsFilterProps> = (props) => 
 
   const setFilterValues = (type: string, value: string) => {
     if (type === 'consultType') {
-      let { consultType } = localFilter;
-      consultType = filterValues(consultType, value);
+      const consultType = filterValues(localFilter.consultType, value);
       setLocalFilter({ ...localFilter, consultType });
     } else if (type === 'appointmentStatus') {
-      let { appointmentStatus } = localFilter;
-      appointmentStatus = filterValues(appointmentStatus, value);
+      const appointmentStatus = filterValues(localFilter.appointmentStatus, value);
       setLocalFilter({ ...localFilter, appointmentStatus });
     } else if (type === 'gender') {
-      let { gender } = localFilter;
-      gender = filterValues(gender, value);
+      const gender = filterValues(localFilter.gender, value);
       setLocalFilter({ ...localFilter, gender });
     } else if (type === 'availability') {
-      let { availability } = localFilter;
-      availability = filterValues(availability, value);
+      const availability = filterValues(localFilter.availability, value);
       setLocalFilter({ ...localFilter, availability });
     }
   };
@@ -248,15 +244,15 @@ export const AppointmentsFilter: React.FC<AppointmentsFilterProps> = (props) => 
           <div className={classes.filterType}>
             <h4>Consult Type</h4>
             <div className={classes.filterBtns}>
-              {consultType.map((obj) => (
+              {consultType.map((consultTypeValue) => (
                 <AphButton
-                  key={obj}
-                  className={applyClass(localFilter.consultType, obj)}
+                  key={consultTypeValue}
+                  className={applyClass(localFilter.consultType, consultTypeValue)}
                   onClick={() => {
-                    setFilterValues('consultType', obj);
+                    setFilterValues('consultType', consultTypeValue);
                   }}
                 >
-                  {obj}
+                  {consultTypeValue}
                 </AphButton>
               ))}
             </div>

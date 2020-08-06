@@ -407,7 +407,6 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
   const [filteredAppointmentsList, setFilteredAppointmentsList] = React.useState<
     AppointmentsType[] | null
   >(null);
-  const [isConfirmPopupLoaded, setIsConfirmPopupLoaded] = React.useState<boolean>(false);
   const [specialtyName, setSpecialtyName] = React.useState<string>('');
   const [isAddNewProfileDialogOpen, setIsAddNewProfileDialogOpen] = React.useState<boolean>(false);
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
@@ -425,6 +424,7 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
   const doctorName = doctorDetail && doctorDetail.fullName;
   const readableDoctorname = (doctorName && doctorName.length && readableParam(doctorName)) || '';
 
+  const [isConfirmPopupLoaded, setIsConfirmPopupLoaded] = React.useState<boolean>(false);
   const [photoUrl, setPhotoUrl] = React.useState<string>('');
   const [isFailurePayment, setIsFailurePayment] = React.useState(pageUrl.includes('failed'));
   const [anchorEl, setAnchorEl] = React.useState(null);
@@ -622,18 +622,15 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
   ) => {
     if (consultType.includes('Online') && consultType.includes('Clinic Visit')) {
       return localFilteredAppointmentsList || [];
-    } else if (consultType.includes('Online')) {
-      return (
+    } else {
+      const isPhysicalConsult = consultType.includes('Clinic Visit');
+      const filteredList =
         localFilteredAppointmentsList.filter(
-          (appointment) => appointment.appointmentType === APPOINTMENT_TYPE.ONLINE
-        ) || []
-      );
-    } else if (consultType.includes('Clinic Visit')) {
-      return (
-        localFilteredAppointmentsList.filter(
-          (appointment) => appointment.appointmentType === APPOINTMENT_TYPE.PHYSICAL
-        ) || []
-      );
+          (appointment) =>
+            appointment.appointmentType ===
+            (isPhysicalConsult ? APPOINTMENT_TYPE.PHYSICAL : APPOINTMENT_TYPE.ONLINE)
+        ) || [];
+      return filteredList;
     }
   };
 
@@ -889,7 +886,7 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
                   selected: classes.tabSelected,
                 }}
                 label="Active"
-                title={'Active appointments'}
+                title="Active appointments"
               />
               <Tab
                 classes={{
@@ -1053,7 +1050,7 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
                     .format('DD MMMM YYYY[,] LT')
                     .replace(/(A|P)(M)/, '$1.$2.')
                     .toString()}
-                  type={'consult'}
+                  type="consult"
                   consultMode={_capitalize(appointmentHistory.appointmentType)}
                   onClose={() => handlePaymentModalClose()}
                   ctaText={statusActions[paymentData.paymentStatus].ctaText}
