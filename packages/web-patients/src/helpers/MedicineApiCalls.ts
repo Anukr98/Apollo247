@@ -10,7 +10,7 @@ export interface MedicineProduct {
   url_key: string;
   description: string;
   id: number;
-  image: string | null;
+  image: any;
   is_in_stock: boolean;
   is_prescription_required: '0' | '1'; //1 for required
   name: string;
