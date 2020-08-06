@@ -352,7 +352,11 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
   const getSource = (activeData: any, type: string) => {
     switch (type) {
       case 'lab':
-        return !!activeData.labTestSource ? activeData.labTestSource : '-';
+        return activeData && activeData.siteDisplayName
+          ? activeData.siteDisplayName
+          : !!activeData.labTestSource
+          ? activeData.labTestSource
+          : '-';
       case 'prescription':
         return !!activeData.prescriptionSource ? activeData.prescriptionSource : '-';
       default:
@@ -495,11 +499,6 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
                           : '-'}
                       </p>
                     </div>
-                    {activeData && activeData.data && activeData.data.siteDisplayName && (
-                      <div className={classes.reportsDetails}>
-                        <label>{activeData.data.siteDisplayName}</label>
-                      </div>
-                    )}
                   </div>
                   {(activeData.data.observations || activeData.data.additionalNotes) && (
                     <ToplineReport activeData={activeData} />
