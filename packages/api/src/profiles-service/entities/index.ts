@@ -12,12 +12,9 @@ import {
   Index,
   AfterUpdate,
   AfterInsert,
-  AfterLoad,
   EventSubscriber,
   EntitySubscriberInterface,
-  InsertEvent,
   UpdateEvent,
-  RemoveEvent
 } from 'typeorm';
 import { Validate, IsOptional } from 'class-validator';
 import { NameValidator, MobileNumberValidator } from 'validators/entityValidators';
@@ -26,10 +23,8 @@ import { BlockUserPointsResponse } from 'types/oneApolloTypes';
 import { getCache, setCache, delCache } from 'profiles-service/database/connectRedis';
 import { ApiConstants } from 'ApiConstants';
 import { log } from 'customWinstonLogger'
-import { LoadEvent } from 'typeorm/subscriber/event/LoadEvent';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
-import { closestIndexTo } from 'date-fns';
 import { ColumnMetadata } from 'typeorm/metadata/ColumnMetadata';
 
 export type ONE_APOLLO_USER_REG = {
@@ -329,13 +324,6 @@ export enum PROFILE_SOURCE {
   ORDER_PUNCHING_TOOL = 'ORDER_PUNCHING_TOOL',
   MFINE = 'MFINE',
 }
-
-type updateValidationField = {
-  key: keyof Patient,
-  dbValue: string | null
-}
-
-
 
 @EventSubscriber()
 export class ProfilesSubscriber implements EntitySubscriberInterface<BaseEntity> {
