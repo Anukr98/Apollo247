@@ -1,7 +1,7 @@
 import { ApolloLogo } from '@aph/mobile-patients/src/components/ApolloLogo';
 import {
-  useAppCommonData,
   LocationData,
+  useAppCommonData,
 } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
@@ -13,14 +13,15 @@ import {
   CartIcon,
   ConsultationRoom,
   CovidExpert,
-  KavachIcon,
   CovidRiskLevel,
   Diabetes,
   DoctorIcon,
   DropdownGreen,
+  KavachIcon,
   LatestArticle,
   LinkedUhidIcon,
   Mascot,
+  MedicineCartIcon,
   MedicineIcon,
   MyHealth,
   NotificationIcon,
@@ -29,7 +30,6 @@ import {
   Scan,
   Symptomtracker,
   TestsCartIcon,
-  MedicineCartIcon,
   TestsIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
@@ -66,13 +66,13 @@ import {
   PatientInfoWithSourceFirebase,
 } from '@aph/mobile-patients/src/helpers/firebaseEvents';
 import {
+  distanceBwTwoLatLng,
   doRequestAndAccessLocationModified,
   g,
+  getlocationDataFromLatLang,
   postFirebaseEvent,
   postWebEngageEvent,
   UnInstallAppsFlyer,
-  getlocationDataFromLatLang,
-  distanceBwTwoLatLng,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   PatientInfo,
@@ -684,10 +684,32 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
           const tempArray: any[] = [];
           const filteredNotifications = arrayNotification.filter((el: any) => {
-            // If it is not a duplicate, return true
-            if (tempArray.indexOf(el.notificatio_details.id) == -1) {
-              tempArray.push(el.notificatio_details.id);
-              return true;
+            // If it is not a duplicate and accepts these conditions, return true
+            const val = JSON.parse(el.notificatio_details.push_notification_content);
+            const event = val.cta;
+            if (event) {
+              const actionLink = decodeURIComponent(event.actionLink);
+
+              let routing = actionLink.replace('apollopatients://', '');
+              routing = routing.replace('w://p/open_url_in_browser/', '');
+              const data = routing.split('?');
+              routing = data[0];
+
+              if (
+                routing === 'Consult' ||
+                routing === 'Medicine' ||
+                routing === 'Test' ||
+                routing === 'Speciality' ||
+                routing === 'Doctor' ||
+                routing === 'DoctorSearch' ||
+                routing === 'MedicineSearch' ||
+                routing === 'MedicineDetail'
+              ) {
+                if (tempArray.indexOf(el.notificatio_details.id) == -1) {
+                  tempArray.push(el.notificatio_details.id);
+                  return true;
+                }
+              }
             }
             return false;
           });
@@ -1418,14 +1440,16 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const onPressReadArticle = async () => {
     const deviceToken = (await AsyncStorage.getItem('jwt')) || '';
     const currentDeviceToken = deviceToken ? JSON.parse(deviceToken) : '';
-    const covidUrlWithPrm = AppConfig.Configuration.COVID_LATEST_ARTICLES_URL
-      .concat('&utm_token=', currentDeviceToken, '&utm_mobile_number=', 
-      currentPatient && g(currentPatient, 'mobileNumber') 
-      ? currentPatient.mobileNumber : "");
-      
+    const covidUrlWithPrm = AppConfig.Configuration.COVID_LATEST_ARTICLES_URL.concat(
+      '&utm_token=',
+      currentDeviceToken,
+      '&utm_mobile_number=',
+      currentPatient && g(currentPatient, 'mobileNumber') ? currentPatient.mobileNumber : ''
+    );
+
     postHomeWEGEvent(WebEngageEventName.LEARN_MORE_ABOUT_CORONAVIRUS);
     props.navigation.navigate(AppRoutes.CovidScan, {
-      covidUrl: covidUrlWithPrm 
+      covidUrl: covidUrlWithPrm,
     });
   };
 
