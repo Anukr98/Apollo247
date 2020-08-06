@@ -34,6 +34,8 @@
 		B6452DE02412783500D14AFC /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = B6452DCB2412783500D14AFC /* main.m */; };
 		B6618F48241278B200173C4C /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = B6618F47241278B200173C4C /* GoogleService-Info.plist */; };
 		B6618F4F24127B1700173C4C /* OTInstall.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6618F4E24127B1700173C4C /* OTInstall.swift */; };
+		B6CED23E24DC46BD00E1A013 /* left_sound.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = B6CED23C24DC46BD00E1A013 /* left_sound.mp3 */; };
+		B6CED23F24DC46BD00E1A013 /* join_sound.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = B6CED23D24DC46BD00E1A013 /* join_sound.mp3 */; };
 		ED297163215061F000B7C4FE /* JavaScriptCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = ED297162215061F000B7C4FE /* JavaScriptCore.framework */; };
 /* End PBXBuildFile section */
 
@@ -83,6 +85,8 @@
 		B6618F47241278B200173C4C /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "GoogleService-Info.plist"; sourceTree = SOURCE_ROOT; };
 		B6618F4E24127B1700173C4C /* OTInstall.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OTInstall.swift; sourceTree = "<group>"; };
 		B6618F5024127B9E00173C4C /* ApolloDoctor-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "ApolloDoctor-Bridging-Header.h"; sourceTree = "<group>"; };
+		B6CED23C24DC46BD00E1A013 /* left_sound.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = left_sound.mp3; sourceTree = "<group>"; };
+		B6CED23D24DC46BD00E1A013 /* join_sound.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = join_sound.mp3; sourceTree = "<group>"; };
 		BE883F4FD21349AF8E74A3F1 /* FontAwesome5_Brands.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = FontAwesome5_Brands.ttf; path = "../node_modules/react-native-vector-icons/Fonts/FontAwesome5_Brands.ttf"; sourceTree = "<group>"; };
 		C5E26C657DEA440AB1CCBDF7 /* Feather.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Feather.ttf; path = "../node_modules/react-native-vector-icons/Fonts/Feather.ttf"; sourceTree = "<group>"; };
 		C654B1BB47EB92AF414FCDCC /* Pods-ApolloDoctor.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ApolloDoctor.release.xcconfig"; path = "Target Support Files/Pods-ApolloDoctor/Pods-ApolloDoctor.release.xcconfig"; sourceTree = "<group>"; };
@@ -191,6 +195,8 @@
 		B6452DB22412783500D14AFC /* ApolloDoctor */ = {
 			isa = PBXGroup;
 			children = (
+				B6CED23D24DC46BD00E1A013 /* join_sound.mp3 */,
+				B6CED23C24DC46BD00E1A013 /* left_sound.mp3 */,
 				B62CB2E6249A4713003B74AD /* phone_ringing.mp3 */,
 				B6618F47241278B200173C4C /* GoogleService-Info.plist */,
 				B6452DB32412783500D14AFC /* ApolloDoctor.entitlements */,
@@ -317,10 +323,12 @@
 				B6452DDB2412783500D14AFC /* IBMPlexSans-ThinItalic.ttf in Resources */,
 				B6452DCF2412783500D14AFC /* IBMPlexSans-BoldItalic.ttf in Resources */,
 				B6452DDA2412783500D14AFC /* IBMPlexSans-Thin.ttf in Resources */,
+				B6CED23E24DC46BD00E1A013 /* left_sound.mp3 in Resources */,
 				B6452DD02412783500D14AFC /* IBMPlexSans-ExtraLight.ttf in Resources */,
 				B6452DCE2412783500D14AFC /* IBMPlexSans-Bold.ttf in Resources */,
 				B6452DD22412783500D14AFC /* IBMPlexSans-Italic.ttf in Resources */,
 				B6452DD52412783500D14AFC /* IBMPlexSans-Medium.ttf in Resources */,
+				B6CED23F24DC46BD00E1A013 /* join_sound.mp3 in Resources */,
 				B6452DCD2412783500D14AFC /* LaunchScreen.xib in Resources */,
 				B6452DDD2412783500D14AFC /* Images.xcassets in Resources */,
 				B6452DD62412783500D14AFC /* IBMPlexSans-MediumItalic.ttf in Resources */,
@@ -478,7 +486,7 @@
 				CODE_SIGN_ENTITLEMENTS = ApolloDoctor/ApolloDoctor.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 07;
 				DEAD_CODE_STRIPPING = NO;
 				DEVELOPMENT_TEAM = 4A6H5Y5CK5;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -503,7 +511,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.apollo.doctor247;
 				PRODUCT_NAME = ApolloDoctor;
-				PROVISIONING_PROFILE_SPECIFIER = ApolloDoctor247_AppStore;
+				PROVISIONING_PROFILE_SPECIFIER = ApolloDoctor247_Adhoc;
 				SWIFT_OBJC_BRIDGING_HEADER = "ApolloDoctor/ApolloDoctor-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
@@ -520,7 +528,7 @@
 				CODE_SIGN_ENTITLEMENTS = ApolloDoctor/ApolloDoctor.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 07;
 				DEVELOPMENT_TEAM = 4A6H5Y5CK5;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -544,7 +552,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.apollo.doctor247;
 				PRODUCT_NAME = ApolloDoctor;
-				PROVISIONING_PROFILE_SPECIFIER = ApolloDoctor247_AppStore;
+				PROVISIONING_PROFILE_SPECIFIER = ApolloDoctor247_Adhoc;
 				SWIFT_OBJC_BRIDGING_HEADER = "ApolloDoctor/ApolloDoctor-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
