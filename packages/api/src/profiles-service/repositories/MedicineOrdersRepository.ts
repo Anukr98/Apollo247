@@ -302,10 +302,10 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
         .where('medicineOrders.patient = :patientId', { patientId })
         .innerJoinAndSelect('medicineOrders.medicineOrderPayments', 'medicineOrderPayments')
         // apply filters....
-        .andWhere('medicineOrders.currentStatus != :currentStatus', { currentStatus: 'QUOTE' })
-        .andWhere('medicineOrders.currentStatus != :currentStatus', { currentStatus: 'PAYMENT_ABORTED' })
+        .andWhere('medicineOrders.currentStatus != :currentStatus', { currentStatus: MEDICINE_ORDER_STATUS.QUOTE })
+        .andWhere('medicineOrders.currentStatus != :currentStatus', { currentStatus: MEDICINE_ORDER_STATUS.PAYMENT_ABORTED })
         // need to discuss this condition as it could in orderlist with payment (one type of payment)
-        .andWhere('medicineOrderPayments.paymentType != :paymentType', { paymentType: 'COD' })
+        .andWhere('medicineOrderPayments.paymentType != :paymentType', { paymentType: MEDICINE_ORDER_PAYMENT_TYPE.COD })
         .orderBy('medicineOrders.createdDate', 'DESC')
         //send undefined to skip & take fns to skip pagination to support optional pagination
         .skip(paginate.skip)
