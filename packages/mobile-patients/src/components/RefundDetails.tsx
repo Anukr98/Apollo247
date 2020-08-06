@@ -5,10 +5,14 @@ import { NavigationScreenProps } from 'react-navigation';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { getDate } from '@aph/mobile-patients/src/utils/dateUtil';
+import {
+  MedicineOrderOMSRefunds,
+  MedicineOrderOMSPayments,
+} from '@aph/mobile-patients/src/graphql/types/globalTypes';
 
 export interface RefundDetailsProps {
-  refunds: any;
-  paymentDetails: any;
+  refunds: MedicineOrderOMSRefunds[];
+  paymentDetails: MedicineOrderOMSPayments[];
   navigaitonProps: any;
 }
 
