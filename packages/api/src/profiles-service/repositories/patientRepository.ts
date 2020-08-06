@@ -34,14 +34,6 @@ const REDIS_PATIENT_MOBILE_KEY_PREFIX: string = 'patient:mobile:';
 // const REDIS_PATIENT_DEVICE_COUNT_KEY_PREFIX: string = 'patient:deviceCodeCount:';
 @EntityRepository(Patient)
 export class PatientRepository extends Repository<Patient> {
-  /**
-   * @param patient 
-   * this method is used to load currently referenced patient record so that when
-   * updates are made, validations could be run against the freshly fetched record
-   * from Db/Cache
-   */
-  loadRecordReference = (patient: Patient | undefined) => { if (patient) { patient.setOldRecordReference(patient) } };
-
   async dropPatientCache(id: string) {
     delCache(id);
   }
@@ -106,12 +98,11 @@ export class PatientRepository extends Repository<Patient> {
       .getCount();
   }
 
-  //naman, fexed cache to old record
+  //naman, fixed cache to old record
   getPatientDetails(id: string): Promise<Patient> | undefined {
     return new Promise(async (resolve, reject) => {
       try {
         const patient: Patient | undefined = await this.getByIdCache(id);
-        this.loadRecordReference(patient);
         return resolve(patient);
       }
       catch (ex) {
@@ -134,10 +125,6 @@ export class PatientRepository extends Repository<Patient> {
       if (patient.dateOfBirth) {
         patient.dateOfBirth = new Date(patient.dateOfBirth);
       }
-
-      //cache to old record reference 
-      this.loadRecordReference(patient);
-
       return this.create(patient);
     } else {
       return await this.setByIdCache(id);
@@ -173,8 +160,6 @@ export class PatientRepository extends Repository<Patient> {
       for (let index = 0; index < patientIds.length; index++) {
         const patient = await this.getPatientDetails(patientIds[index]);
         if (patient) {
-          //cache to old record reference 
-          this.loadRecordReference(patient);
           patients.push(patient);
         }
       }
@@ -253,10 +238,6 @@ export class PatientRepository extends Repository<Patient> {
     const patient = await this.getPatientDetails(id);
     if (patient) {
       patient.allergies = allergies;
-      if (patient.old) {
-        console.log(`old found`);
-      }
-      delete patient.old;
       return await this.save(patient);
     } else return null;
   }

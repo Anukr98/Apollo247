@@ -67,6 +67,7 @@ import {
   MedicineOrderCancelReason,
   PharmacologistConsult,
   MedicineOrderAddress,
+  ProfilesSubscriber,
 } from 'profiles-service/entities';
 import 'reflect-metadata';
 import { createConnections } from 'typeorm';
@@ -148,6 +149,7 @@ export const connect = async () => {
       username: process.env.PROFILES_DB_USER,
       password: process.env.PROFILES_DB_PASSWORD,
       database: `profiles_${process.env.DB_NODE_ENV}`,
+      subscribers: [ProfilesSubscriber],
       logging: process.env.NODE_ENV === 'production' ? false : true,
       synchronize: true,
       extra: {

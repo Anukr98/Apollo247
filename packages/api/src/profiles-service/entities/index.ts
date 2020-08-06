@@ -30,6 +30,7 @@ import { LoadEvent } from 'typeorm/subscriber/event/LoadEvent';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { closestIndexTo } from 'date-fns';
+import { ColumnMetadata } from 'typeorm/metadata/ColumnMetadata';
 
 export type ONE_APOLLO_USER_REG = {
   FirstName: string;
@@ -337,63 +338,17 @@ type updateValidationField = {
 
 
 @EventSubscriber()
-export class PostSubscriber implements EntitySubscriberInterface<BaseEntity> {
-
-
-  // afterLoad(entity: ApolloEntity, event?: LoadEvent<BaseEntity>) {
-  //   console.log(`**************AfterLoad*****************\n`);
-  //   //console.log(entity);
-  //   console.log('****************************************');
-  //   entity.setOldRecordReference(entity);
-  // }
-
+export class ProfilesSubscriber implements EntitySubscriberInterface<BaseEntity> {
   beforeUpdate(event: UpdateEvent<any>): Promise<any> | void {
-    event.updatedColumns.forEach((column) => {
-      console.log(`columninfo: ${JSON.stringify(column), null, 1}`);
-      let key: string = column.databaseName;
-      let oldValue = event.databaseEntity[column.propertyName];
-      let newValue = event.entity[column.propertyName];
-
-      console.log(`${key} was ${oldValue}, newValue is ${newValue}`);
-    });
+    if (event?.metadata?.targetName == 'Patient') {
+      Patient.checkNotNulls(event);
+    }
   }
-
-  // afterUpdate(event: UpdateEvent<BaseEntity>): Promise<any> | void {
-  //   console.log('afterUpdate: removing entity from map');
-  //   const entity: BaseEntity = event.entity;
-  //   const id: string = BaseEntity.getId(entity);
-  //   this.entityMapById.delete(id);
-  // }
-
-  // afterRemove(event: RemoveEvent<BaseEntity>): Promise<any> | void {
-  //   console.log('afterRemove: removing entity from map');
-  //   if (event.entity) {
-  //     const id: string = BaseEntity.getId(event.entity);
-  //     this.entityMapById.delete(id);
-  //   }
-  // }
-
-  // afterInsert?(event: InsertEvent<BaseEntity>): Promise<any> | void {
-  //   console.log('afterInsert: removing entity from map');
-  //   const entity: BaseEntity = event.entity;
-  //   const id: string = BaseEntity.getId(entity);
-  //   this.entityMapById.delete(id);
-  // }
 }
 
+//To be utilizd in future
 export class ApolloEntity extends BaseEntity {
-  old: BaseEntity;
-  public setOldRecordReference(entity: ApolloEntity): void {
-    console.log(`setOldRecordReference|entity:`, entity);
-    console.log(`setOldRecordReference|this:`, this);
-    delete entity.old;
-    this.old = JSON.parse(JSON.stringify(entity));
-    console.log(`setOldRecordReference|afterall`, this.old);
-  }
 
-  public getLoadedRecord(): BaseEntity {
-    return this.old;
-  }
 }
 
 
@@ -1187,30 +1142,10 @@ export class Patient extends ApolloEntity {
     this.updatedDate = new Date();
   }
 
-  //-----------------------------Custom checks for Non-null fields------------------------//
-  @BeforeUpdate()
-  async getCurrentPatientFromDb() {
-    try {
-      console.log(`getCurrentPatientFromDb|`, this.old)
-      let loadedPatientRecord: any = this.old;
-      console.log(`******************Old record********************************)}`);
-      //console.log(loadedPatientRecord);
-      console.log(`************************************************************`)
-      this.checkNullsValidation(loadedPatientRecord);
-    }
-    catch (ex) {
-      console.log(`Exception|getCurrentPatientFromDb`, ex);
-    }
-  }
+  private static notNullCheckForItems = new Set(['firstName', 'lastName', 'uhid', 'primaryUhid']);
 
-
-  isUpdationAllowedAgainstCurrentValue(currentValue: any, incomingValue: any): Boolean {
-    const updateAllowed: Boolean = currentValue ? Boolean(incomingValue && currentValue) : true;
-    return updateAllowed;
-  }
-
-  isValidString(input: any): Boolean {
-    if (input) {
+  private static isValidString(input: any): Boolean {
+    if (input && typeof (input) == "string") {
       input = input.trim().toLowerCase();
       const disallowedStrings: Set<string> = new Set(['', ' ', '.', 'null', 'undefined']);
       return !disallowedStrings.has(input);
@@ -1220,38 +1155,34 @@ export class Patient extends ApolloEntity {
     }
   }
 
-  checkNullsValidation(loadedPatientRecord: Patient) {
-    const { firstName = null, lastName = null, primaryUhid = null, uhid = null } = loadedPatientRecord
-    const checkNotNullsAgainst: updateValidationField[] = [
-      { key: "firstName", dbValue: firstName },
-      { key: "lastName", dbValue: lastName },
-      { key: "primaryUhid", dbValue: primaryUhid },
-      { key: "uhid", dbValue: uhid }
-    ];
+  private static isUpdationAllowedAgainstCurrentValue(currentValue: any, incomingValue: any): Boolean {
+    const updateAllowed: Boolean = currentValue ? Boolean(incomingValue && currentValue) : true;
+    return updateAllowed;
+  }
 
-    checkNotNullsAgainst.forEach((property) => {
-      this.checkNullsForProperty(property);
+  static checkNotNulls(event: UpdateEvent<any>) {
+    const updatedColumns: ColumnMetadata[] = event.updatedColumns;
+
+    updatedColumns.forEach((column) => {
+      if (this.notNullCheckForItems.has(column?.propertyName)) {
+        let key: string = column.propertyName;
+        let oldValue = event.databaseEntity[column.propertyName];
+        let newValue = event.entity[column.propertyName];
+
+        const isValidString: Boolean = this.isValidString(newValue);
+        const isUpdateApplicable: Boolean = this.isUpdationAllowedAgainstCurrentValue(oldValue, newValue);
+
+        if (!(isValidString && isUpdateApplicable)) {
+          const error = `Attempt to overwrite ${key}: ${oldValue} with ${key}: ${newValue}
+            isValidString: ${ isValidString} isUpdateApplicable: ${isUpdateApplicable} `;
+
+          log('profileServiceLogger', `Invalid patient updation attempt for ${key}`, 'index.ts/checkNullsForProperty ', 'undefined', error);
+          throw new Error(error);
+        }
+      }
     })
   }
 
-  checkNullsForProperty(property: updateValidationField) {
-    const key = property.key;
-    const currentValue = property.dbValue;
-    const incomingValue = this[key];
-
-    const isValidString: Boolean = this.isValidString(incomingValue);
-    const isUpdateApplicable: Boolean = this.isUpdationAllowedAgainstCurrentValue(currentValue, incomingValue);
-
-    if (!(isValidString && isUpdateApplicable)) {
-      const error = `Attempt to overwrite ${key}: ${currentValue} with ${key}: ${incomingValue}
-    isValidString: ${ isValidString} isUpdateApplicable: ${isUpdateApplicable} `;
-
-      log('profileServiceLogger', `Invalid patient updation attempt for ${key}`, 'index.ts/checkNullsForProperty ', 'undefined', error);
-      throw new Error(error);
-    }
-  }
-
-  //*----------------------------------------------------------------------------------------------//
   @AfterInsert()
   async updatePatientMobileCache() {
     const mobileIdList: string | null = await getCache(`patient:mobile:${this.mobileNumber}`);
