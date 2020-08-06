@@ -3,7 +3,7 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-import { Geolocation, DoctorType, ConsultMode, ConsultType, WeekDay } from "./globalTypes";
+import { Geolocation, ConsultMode, ConsultType, WeekDay, DoctorType } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: SearchDoctorAndSpecialtyByName
@@ -14,6 +14,17 @@ export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_d
   id: string;
   name: string;
   userFriendlyNomenclature: string | null;
+}
+
+export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctors_consultHours {
+  __typename: "ConsultHours";
+  consultMode: ConsultMode;
+  consultType: ConsultType;
+  id: string;
+  isActive: boolean;
+  startTime: string;
+  weekDay: WeekDay;
+  endTime: string;
 }
 
 export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctors_doctorHospital_facility {
@@ -29,6 +40,7 @@ export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_d
   streetLine2: string | null;
   streetLine3: string | null;
   id: string;
+  imageUrl: string | null;
 }
 
 export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctors_doctorHospital {
@@ -43,11 +55,13 @@ export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_d
   lastName: string;
   fullName: string | null;
   specialty: SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctors_specialty | null;
-  salutation: string | null;
   experience: string | null;
   photoUrl: string | null;
-  thumbnailUrl: string | null;
   qualification: string | null;
+  consultHours: (SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctors_consultHours | null)[] | null;
+  onlineConsultationFees: string;
+  physicalConsultationFees: string;
+  doctorType: DoctorType;
   doctorHospital: SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctors_doctorHospital[];
 }
 
@@ -57,6 +71,7 @@ export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_d
   onlineSlot: string | null;
   physicalSlot: string | null;
   referenceSlot: string | null;
+  availableInMinutes: number | null;
 }
 
 export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_specialties {

@@ -390,7 +390,7 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
 
       {gender === Gender.FEMALE && (
         <Grid item sm={12}>
-          <div className={classes.sectionTitle}>Menstrual History*</div>
+          <div className={classes.sectionTitle}>Menstrual and Obstetric History*</div>
           <div
             className={`${classes.inputFieldContent} ${
               caseSheetEdit ? classes.inputFieldEdit : ''

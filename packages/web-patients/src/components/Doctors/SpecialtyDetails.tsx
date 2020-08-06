@@ -33,7 +33,6 @@ import _filter from 'lodash/filter';
 import { MetaTagsComp } from 'MetaTagsComp';
 import { GET_ALL_SPECIALITIES } from 'graphql/specialities';
 import { NavigationBottom } from 'components/NavigationBottom';
-import { SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME } from 'graphql/doctors';
 import {
   SearchDoctorAndSpecialtyByNameVariables,
   SearchDoctorAndSpecialtyByName,
@@ -454,33 +453,11 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
   /* Gtm code end */
 
   useEffect(() => {
-    if (searchKeyword.length > 2) {
-      setSearchLoading(true);
-      apolloClient
-        .query<SearchDoctorAndSpecialtyByName, SearchDoctorAndSpecialtyByNameVariables>({
-          query: SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME,
-          variables: {
-            searchText: searchKeyword,
-            patientId: currentPatient ? currentPatient.id : '',
-            pincode: currentPincode ? currentPincode : localStorage.getItem('currentPincode') || '',
-            city: selectedCity,
-          },
-          fetchPolicy: 'no-cache',
-        })
-        .then((response) => {
-          const specialtiesAndDoctorsList =
-            response && response.data && response.data.SearchDoctorAndSpecialtyByName;
-          if (specialtiesAndDoctorsList) {
-            const doctorsArray = specialtiesAndDoctorsList.doctors || [];
-            const specialtiesArray = specialtiesAndDoctorsList.specialties || [];
-            setSearchSpecialty(specialtiesArray);
-            setSearchDoctors(doctorsArray);
-          }
-        })
-        .catch((e) => console.log(e))
-        .finally(() => {
-          setSearchLoading(false);
-        });
+    if (searchKeyword.length > 1) {
+      const doctorsSearch = doctorData.filter((doctorDetail: DoctorDetails) => {
+        return doctorDetail.fullName.toLowerCase().includes(searchKeyword.toLowerCase());
+      });
+      setSearchDoctors(doctorsSearch);
     }
   }, [searchKeyword]);
 
@@ -688,7 +665,7 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
   useEffect(() => {
     if (doctorData) {
       setLoading(true);
-      let filterDoctorsData = doctorData;
+      let filterDoctorsData = searchKeyword.length > 1 ? searchDoctors : doctorData;
       if (isOnlineSelected || isPhysicalSelected) {
         filterDoctorsData = getConsultModeDoctorList(filterDoctorsData);
       }
@@ -698,7 +675,7 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
       setFilteredDoctorData(filterDoctorsData);
       setLoading(false);
     }
-  }, [isOnlineSelected, isPhysicalSelected, doctorType, doctorData]);
+  }, [isOnlineSelected, isPhysicalSelected, doctorType, doctorData, searchKeyword, searchDoctors]);
 
   const getDoctorsCount = (data: DoctorDetails[], type: DOCTOR_CATEGORY) => {
     return _filter(data, (doctor: DoctorDetails) => {
@@ -781,7 +758,12 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
                     }}
                     className={doctorType === DOCTOR_CATEGORY.APOLLO ? classes.buttonActive : ''}
                   >
-                    Apollo Doctors ({getDoctorsCount(doctorData || [], DOCTOR_CATEGORY.APOLLO)})
+                    Apollo Doctors (
+                    {getDoctorsCount(
+                      searchKeyword.length > 1 ? searchDoctors : doctorData || [],
+                      DOCTOR_CATEGORY.APOLLO
+                    )}
+                    )
                   </AphButton>
                   <AphButton
                     className={doctorType === DOCTOR_CATEGORY.PARTNER ? classes.buttonActive : ''}
@@ -789,7 +771,12 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
                       setDoctorType(DOCTOR_CATEGORY.PARTNER);
                     }}
                   >
-                    Doctor Partners ({getDoctorsCount(doctorData || [], DOCTOR_CATEGORY.PARTNER)})
+                    Doctor Partners (
+                    {getDoctorsCount(
+                      searchKeyword.length > 1 ? searchDoctors : doctorData || [],
+                      DOCTOR_CATEGORY.PARTNER
+                    )}
+                    )
                   </AphButton>
                 </div>
               </div>

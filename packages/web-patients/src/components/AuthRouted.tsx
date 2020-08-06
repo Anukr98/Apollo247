@@ -13,6 +13,14 @@ export const AuthRouted: React.FC<RouteProps> = (props) => {
     return <Route {...props} />;
   } else {
     setLoginPopupVisible(true);
-    return <Redirect to={`${clientRoutes.welcome()}?continue=${continueURL}`} />;
+    return (
+      <Redirect
+        to={
+          continueURL && continueURL.includes('pay')
+            ? clientRoutes.welcome()
+            : `${clientRoutes.welcome()}?continue=${continueURL}`
+        }
+      />
+    );
   }
 };

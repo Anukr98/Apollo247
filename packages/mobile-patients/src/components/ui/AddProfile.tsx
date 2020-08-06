@@ -357,9 +357,9 @@ export const AddProfile: React.FC<AddProfileProps> = (props) => {
             <DatePicker
               isDateTimePickerVisible={isDateTimePickerVisible}
               handleDatePicked={(date) => {
+                setIsDateTimePickerVisible(false);
                 const formatDate = Moment(date).format('DD/MM/YYYY');
                 setDate(formatDate);
-                setIsDateTimePickerVisible(false);
                 Keyboard.dismiss();
               }}
               hideDateTimePicker={() => {
