@@ -31,6 +31,7 @@ import {
 } from 'date-fns';
 import path from 'path';
 import fs from 'fs';
+import https from 'https';
 import { log } from 'customWinstonLogger';
 import { APPOINTMENT_TYPE, Appointment, STATUS } from 'consults-service/entities';
 import Pubnub from 'pubnub';
@@ -516,6 +517,32 @@ export async function sendCallsNotification(
       console.log('PushNotification Failed::' + error);
       throw new AphError(AphErrorMessages.PUSH_NOTIFICATION_FAILED);
     });
+
+    const voip_push_token = patientDetails.VoipPushToken;
+    if(voip_push_token){
+      const CERT_PATH = process.env.ASSETS_DIRECTORY + '/voipCert';
+      const passphrase = 'apollo@123';
+    
+      const agent = new https.Agent({
+        // key: fs.readFileSync(`${CERT_PATH}.key`, 'utf-8'),
+        cert: fs.readFileSync(`${CERT_PATH}.pem`, 'utf-8'),
+        passphrase
+      });
+    
+      await fetch('https://api.development.push.apple.com/3/device/' + voip_push_token, {
+        method: 'POST',
+        headers: { 'Content-Type' : 'application/json' },
+        body: JSON.stringify({ "name" : doctorDetails.displayName, "isVideo" : true,  "￼appointmentId￼" : appointment.id}),
+        agent
+      })
+      .then((res) => res.json())
+      .then((res) => {
+        console.log("doctor-patient call Initiation response > ", JSON.stringify(res, null, 3));
+      })
+      .catch((err) => {
+        console.error("doctor-patient call Initiation error > ", err);
+      });
+    }
 
   console.log(notificationResponse, 'notificationResponse');
 
