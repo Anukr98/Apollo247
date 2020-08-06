@@ -20,6 +20,7 @@ import {
   SearchIcon,
   RetryButtonIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
@@ -1490,6 +1491,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   };
 
   const renderTopTabBar = () => {
+    const doctor_partners_text = `${AppConfig.Configuration.DOCTOR_PARTNER_TEXT} (${partnerDocsNumber})`;
+    const apollo_doctors_text = `Apollo Doctors (${apolloDocsNumber})`;
     if (doctorsList && filteredDoctorsList && doctorsList.length > filteredDoctorsList.length) {
       return (
         <View style={styles.topTabBar}>
@@ -1514,7 +1517,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
                 color: doctorsType == 'APOLLO' ? theme.colors.LIGHT_BLUE : 'rgba(1,28,36,0.6)',
               }}
             >
-              Apollo Doctors ({apolloDocsNumber})
+              {apollo_doctors_text}
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
@@ -1538,7 +1541,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
                 color: doctorsType == 'PARTNERS' ? theme.colors.LIGHT_BLUE : 'rgba(1,28,36,0.6)',
               }}
             >
-              Doctor Partners ({partnerDocsNumber})
+              {doctor_partners_text}
             </Text>
           </TouchableOpacity>
         </View>
