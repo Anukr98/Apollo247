@@ -116,6 +116,7 @@ import {
   MedicineReOrderOverlay,
 } from '@aph/mobile-patients/src/components/Medicines/MedicineReOrderOverlay';
 import { getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails } from '@aph/mobile-patients/src/graphql/types/getMedicineOrderOMSDetails';
+import { AddToCartButtons } from './AddToCartButtons';
 
 const styles = StyleSheet.create({
   hiTextStyle: {
@@ -1261,6 +1262,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     isAddedToCart: boolean;
     numberOfItemsInCart: number;
     addToCart: (action?: string) => void;
+    removeFromCart: () => void;
+    removeItemFromCart: () => void;
     maxOrderQty: number;
     onAddOrRemoveCartItem: () => void;
     onPress: () => void;
@@ -1325,16 +1328,10 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         flexDirection: 'row',
         borderWidth: 1,
         borderColor: '#fc9916',
-        shadowColor: 'rgba(0,0,0,0.2)',
-        shadowOffset: { width: 0, height: 3 },
-        shadowOpacity: 0.8,
-        shadowRadius: 2,
-        elevation: 3,
       },
       iconSize: {
-        resizeMode: 'contain',
-        width: 12,
-        height: 12,
+        width: 10,
+        height: 14,
       },
     });
 
@@ -1380,48 +1377,14 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           {renderDiscountedPrice()}
 
           {/* add remove item container */}
-          <View style={localStyles.addRemoveItemContainer}>
-            {/* minus or delete button */}
-            <TouchableOpacity 
-              style={[
-                localStyles.addRemoveButtonContainer,
-                { borderRightWidth: 1 }
-              ]}
-              onPress={() => {
-                if (data.numberOfItemsInCart > 0) data.addToCart('remove');
-              }}
-            >
-              {
-                data.numberOfItemsInCart === 1 ? 
-                <DeleteIconOrange style={localStyles.iconSize}/> : 
-                // <Text>aaa</Text>
-                <PlusIconOrange style={localStyles.iconSize}/>
-              }
-            </TouchableOpacity>
-
-            {/* quantity */}
-            <View style={localStyles.quantityContainer}>
-              <Text
-                style={{
-                  ...theme.viewStyles.text('B', 13, '#fc9916', 1, 24),
-                  textAlign: 'center',
-                }}
-              >{data.numberOfItemsInCart}</Text>
-            </View>
-
-            {/* add button */}
-            <TouchableOpacity 
-              style={[
-                localStyles.addRemoveButtonContainer,
-                { borderLeftWidth: 1 }
-              ]}
-              onPress={() => {
-                if (data.numberOfItemsInCart !== data.maxOrderQty) data.addToCart('add');
-              }}
-            >
-              <PlusIconOrange style={localStyles.iconSize}/>
-            </TouchableOpacity>
-          </View>
+          <AddToCartButtons
+            numberOfItemsInCart={data.numberOfItemsInCart}
+            maxOrderQty={data.maxOrderQty}
+            addToCart={data.addToCart}
+            removeItemFromCart={data.removeItemFromCart}
+            removeFromCart={data.removeFromCart}
+            isSolidContainer={false}
+          />
         </View>
       </TouchableOpacity>
     );
@@ -1446,13 +1409,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     const foundMedicineInCart = !!cartItems.find((item) => item.id == sku);
     const numberOfItemsInCart = foundMedicineInCart && itemInCart ? itemInCart.quantity : 0;
 
-    const addToCart = (action?: string) => {
+    const removeItemFromCart = () => onUpdateCartItem(sku, numberOfItemsInCart-1);
+
+    const addToCart = () => {
       if (numberOfItemsInCart) {
-        if (action === 'add') {
-          onUpdateCartItem(sku, numberOfItemsInCart+1);
-        } else {
-          onUpdateCartItem(sku, numberOfItemsInCart-1);
-        }
+        onUpdateCartItem(sku, numberOfItemsInCart+1);
       } else {
         addPharmaItemToCart(
           {
@@ -1496,6 +1457,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         : undefined,
       isAddedToCart: foundMedicineInCart,
       addToCart,
+      removeItemFromCart,
+      removeFromCart,
       maxOrderQty: MaxOrderQty,
       numberOfItemsInCart,
       onAddOrRemoveCartItem: foundMedicineInCart ? removeFromCart : addToCart,

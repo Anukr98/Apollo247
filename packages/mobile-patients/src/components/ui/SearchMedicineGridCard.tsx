@@ -18,6 +18,7 @@ import {
   ViewStyle,
 } from 'react-native';
 import { Image } from 'react-native-elements';
+import { AddToCartButtons } from '../Medicines/AddToCartButtons';
 
 const styles = StyleSheet.create({
   containerStyle: {
@@ -153,6 +154,8 @@ export interface SearchMedicineGridCardProps {
   onEditPress: () => void;
   onAddSubscriptionPress: () => void;
   containerStyle?: StyleProp<ViewStyle>;
+  maxOrderQty: number;
+  removeCartItem: () => void;
 }
 
 export const SearchMedicineGridCard: React.FC<SearchMedicineGridCardProps> = (props) => {
@@ -173,6 +176,8 @@ export const SearchMedicineGridCard: React.FC<SearchMedicineGridCardProps> = (pr
     onPressSubtractQuantity,
     onPressAdd,
     onPress,
+    maxOrderQty,
+    removeCartItem,
   } = props;
 
   const renderTitleAndIcon = () => {
@@ -204,18 +209,13 @@ export const SearchMedicineGridCard: React.FC<SearchMedicineGridCardProps> = (pr
   const renderQuantityView = () => {
     return (
       <View style={styles.qtyViewStyle}>
-        <QuantityButton
-          text={'-'}
-          style={styles.minusQtyViewStyle}
-          onPress={onPressSubtractQuantity}
-          textStyle={styles.minusPlusTextStyle}
-        />
-        <Text style={theme.viewStyles.text('B', 12, '#fc9916', 1, 24, 0)}>{quantity}</Text>
-        <QuantityButton
-          text={'+'}
-          style={styles.plusQtyViewStyle}
-          onPress={onPressAddQuantity}
-          textStyle={styles.minusPlusTextStyle}
+        <AddToCartButtons
+          numberOfItemsInCart={quantity}
+          maxOrderQty={maxOrderQty}
+          addToCart={onPressAddQuantity}
+          removeItemFromCart={onPressSubtractQuantity}
+          removeFromCart={removeCartItem}
+          isSolidContainer={false}
         />
       </View>
     );

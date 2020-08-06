@@ -70,6 +70,7 @@ import {
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { useAllCurrentPatients } from '../../hooks/authHooks';
+import { AddToCartButtons } from './AddToCartButtons';
 
 const { width, height } = Dimensions.get('window');
 
@@ -139,9 +140,10 @@ const styles = StyleSheet.create({
   bottonButtonContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginHorizontal: 20,
-    paddingTop: 14,
-    paddingBottom: 20,
+    marginHorizontal: 5,
+    paddingBottom: 10,
+    ...theme.viewStyles.shadowStyle,
+    shadowOpacity: 0.8,
   },
   bottomButtonStyle: {
     flex: 1,
@@ -317,14 +319,15 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   const sku = props.navigation.getParam('sku'); // 'MED0017';
   aphConsole.log('SKU\n', sku);
 
-  const { addCartItem, cartItems, updateCartItem } = useShoppingCart();
+  const { addCartItem, cartItems, updateCartItem, removeCartItem } = useShoppingCart();
   const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
   const getItemQuantity = (id: string) => {
     const foundItem = cartItems.find((item) => item.id == id);
-    return foundItem ? foundItem.quantity : 1;
+    return foundItem ? foundItem.quantity : 0;
   };
   const [selectedQuantity, setselectedQuantity] = useState<string | number>(getItemQuantity(sku));
   const isMedicineAddedToCart = cartItems.findIndex((item) => item.id == sku) != -1;
+  const itemInCart = cartItems.find((item) => item.id == sku);
   const isOutOfStock = !medicineDetails!.is_in_stock;
   const medicineName = medicineDetails.name;
   const scrollViewRef = React.useRef<KeyboardAwareScrollView>(null);
@@ -413,7 +416,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
         : undefined,
       prescriptionRequired: is_prescription_required == '1',
       isMedicine: (type_id || '').toLowerCase() == 'pharma',
-      quantity: Number(selectedQuantity),
+      quantity: 1,
       thumbnail: thumbnail,
       isInStock: true,
       maxOrderQty: MaxOrderQty,
@@ -423,10 +426,10 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     postAppsFlyerAddToCartEvent(item, id);
   };
 
-  const updateQuantityCartItem = ({ sku }: MedicineProduct) => {
+  const updateQuantityCartItem = ({ sku }: MedicineProduct, quantity: number) => {
     updateCartItem!({
       id: sku,
-      quantity: Number(selectedQuantity),
+      quantity,
     });
   };
 
@@ -543,9 +546,13 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     }).map((_, i) => {
       return { key: (i + 1).toString(), value: i + 1 };
     });
+    const itemQty = getItemQuantity(sku);
+    const addToCart = () => updateQuantityCartItem(medicineDetails, itemQty + 1);
+    const removeItemFromCart = () => updateQuantityCartItem(medicineDetails, itemQty - 1);
+    const removeFromCart = () => removeCartItem!(sku);
 
     return (
-      <StickyBottomComponent style={{ height: 'auto' }} defaultBG>
+      <StickyBottomComponent style={{ height: 'auto' }}>
         {!showDeliverySpinner && !deliveryTime || deliveryError || isOutOfStock ? (
           <View
             style={{
@@ -583,7 +590,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
           </View>
         ) : (
           <View style={styles.bottomView}>
-            <View
+            {/* <View
               style={{
                 flexDirection: 'row',
                 height: 50,
@@ -644,9 +651,74 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
                   <Text> Rs. {medicineDetails.special_price || medicineDetails.price}</Text>
                 </Text>
               </View>
-            </View>
+            </View> */}
             <View style={styles.bottonButtonContainer}>
-              <Button
+              <View style={{
+                flex: 1,
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'flex-start'
+              }}>
+                <Text style={theme.viewStyles.text('M', 14, '#01475b', 1, 22, 0.35)}>
+                  MRP.
+                </Text>
+                <Text style={theme.viewStyles.text('SB', 17, '#01475b', 1, 20, 0.35)}>
+                  ₹{medicineDetails.special_price || medicineDetails.price}
+                </Text>
+              </View>
+              {
+                isMedicineAddedToCart ?
+                <AddToCartButtons
+                  numberOfItemsInCart={itemQty}
+                  maxOrderQty={medicineDetails.MaxOrderQty}
+                  addToCart={addToCart}
+                  removeItemFromCart={removeItemFromCart}
+                  removeFromCart={removeFromCart}
+                  isSolidContainer={true}
+                  containerStyle={{
+                    height: 40,
+                    borderColor: 'white',
+                    borderRadius: 10,
+                    backgroundColor: '#fcb716',
+                    justifyContent: 'space-between'
+                  }}
+                  deleteIconStyle={{
+                    resizeMode: 'contain',
+                    width: 8,
+                    height: 23,
+                    paddingLeft: 15,
+                    paddingRight: 15,
+                  }}
+                  plusIconStyle={{
+                    resizeMode: 'contain',
+                    width: 8,
+                    height: 23,
+                    paddingLeft: 15,
+                    paddingRight: 15,
+                  }}
+                  minusIconStyle={{
+                    resizeMode: 'contain',
+                    width: 8,
+                    height: 23,
+                    paddingLeft: 15,
+                    paddingRight: 15,
+                  }}
+                /> :
+                <Button
+                  onPress={() => {
+                    onAddCartItem(medicineDetails);
+                  }}
+                  title={
+                    loading ? 'ADD TO CART' : isMedicineAddedToCart ? 'ADDED TO CART' : 'ADD TO CART'
+                  }
+                  disabled={isMedicineAddedToCart || isOutOfStock}
+                  disabledStyle={styles.bottomButtonStyle}
+                  style={styles.bottomButtonStyle}
+                  titleTextStyle={{ color: '#fc9916' }}
+                />
+              }
+              
+              {/* <Button
                 onPress={() => {
                   onAddCartItem(medicineDetails);
                 }}
@@ -688,7 +760,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
                 }}
                 title="BUY NOW"
                 style={{ flex: 1 }}
-              />
+              /> */}
             </View>
           </View>
         )}

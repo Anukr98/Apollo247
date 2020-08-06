@@ -10,6 +10,7 @@ import React from 'react';
 import { StyleProp, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
 import { Image } from 'react-native-elements';
 import { QuantityButton } from '@aph/mobile-patients/src/components/ui/QuantityButton';
+import { AddToCartButtons } from '../Medicines/AddToCartButtons';
 
 const styles = StyleSheet.create({
   containerStyle: {
@@ -88,6 +89,8 @@ export interface SearchMedicineCardProps {
   onEditPress: () => void;
   onAddSubscriptionPress: () => void;
   containerStyle?: StyleProp<ViewStyle>;
+  maxOrderQty: number;
+  removeCartItem: () => void;
 }
 
 export const SearchMedicineCard: React.FC<SearchMedicineCardProps> = (props) => {
@@ -109,6 +112,8 @@ export const SearchMedicineCard: React.FC<SearchMedicineCardProps> = (props) => 
     onPressSubtractQuantity,
     onPressAdd,
     onPress,
+    maxOrderQty,
+    removeCartItem,
   } = props;
 
   const renderTitleAndIcon = () => {
@@ -139,9 +144,14 @@ export const SearchMedicineCard: React.FC<SearchMedicineCardProps> = (props) => 
   const renderQuantityView = () => {
     return (
       <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-        <QuantityButton text={'-'} onPress={onPressSubtractQuantity} />
-        <Text style={theme.viewStyles.text('B', 14, '#fc9916', 1, 24, 0)}>{props.quantity}</Text>
-        <QuantityButton text={'+'} onPress={onPressAddQuantity} />
+        <AddToCartButtons
+          numberOfItemsInCart={quantity}
+          maxOrderQty={maxOrderQty}
+          addToCart={onPressAddQuantity}
+          removeItemFromCart={onPressSubtractQuantity}
+          removeFromCart={removeCartItem}
+          isSolidContainer={false}
+        />
       </View>
     );
   };
