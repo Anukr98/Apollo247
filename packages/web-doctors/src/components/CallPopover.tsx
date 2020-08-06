@@ -1196,6 +1196,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const appointmentComplete = '^^#appointmentComplete';
   const doctorAutoResponse = '^^#doctorAutoResponse';
   const patientJoinedMeetingRoom = '^^#patientJoinedMeetingRoom';
+  const leaveChatRoom = '^^#leaveChatRoom';
 
   const [startConsultDisableReason, setStartConsultDisableReason] = useState<string>('');
   const [iscallAbandonment, setIscallAbandonment] = React.useState<boolean>(false);
@@ -2257,7 +2258,19 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           {(props.appointmentStatus !== STATUS.COMPLETED || props.isClickedOnEdit) && (
             <Prompt message="Are you sure to exit?" when={props.startAppointment}></Prompt>
           )}
-          <Link to={localStorage.getItem('callBackUrl')}>
+          <Link
+            to={localStorage.getItem('callBackUrl')}
+            onClick={() => {
+              pubnub.publish(
+                {
+                  message: leaveChatRoom,
+                  channel: channel,
+                  storeInHistory: true,
+                },
+                (status: any, response: any) => {}
+              );
+            }}
+          >
             <div className={classes.backArrow}>
               <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
               <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
