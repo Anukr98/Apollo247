@@ -12,6 +12,9 @@ import {
   Index,
   AfterUpdate,
   AfterInsert,
+  EventSubscriber,
+  EntitySubscriberInterface,
+  UpdateEvent,
 } from 'typeorm';
 import { Validate, IsOptional } from 'class-validator';
 import { NameValidator, MobileNumberValidator } from 'validators/entityValidators';
@@ -19,8 +22,10 @@ import { ConsultMode } from 'doctors-service/entities';
 import { BlockUserPointsResponse } from 'types/oneApolloTypes';
 import { getCache, setCache, delCache } from 'profiles-service/database/connectRedis';
 import { ApiConstants } from 'ApiConstants';
+import { log } from 'customWinstonLogger'
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
+import { ColumnMetadata } from 'typeorm/metadata/ColumnMetadata';
 
 export type ONE_APOLLO_USER_REG = {
   FirstName: string;
@@ -318,6 +323,13 @@ export enum PROFILE_SOURCE {
   MOBILE = 'MOBILE',
   ORDER_PUNCHING_TOOL = 'ORDER_PUNCHING_TOOL',
   MFINE = 'MFINE',
+}
+
+@EventSubscriber()
+export class PatientEntitiySubscriber implements EntitySubscriberInterface<Patient> {
+  beforeUpdate(event: UpdateEvent<any>): Promise<any> | void {
+    Patient.checkNotNulls(event);
+  }
 }
 
 //medicine orders starts
@@ -1108,6 +1120,60 @@ export class Patient extends BaseEntity {
   updateDateUpdate() {
     this.updatedDate = new Date();
   }
+
+  private static notNullCheckForItems = new Set(['firstName', 'lastName', 'uhid', 'primaryUhid']);
+
+  private static isValidString(input: any): Boolean {
+    if (input && typeof (input) == "string") {
+      input = input.trim().toLowerCase();
+      const disallowedStrings: Set<string> = new Set(['', ' ', '.', 'null', 'undefined']);
+      return !disallowedStrings.has(input);
+    }
+    else {
+      return true;
+    }
+  }
+
+  private static isUpdationAllowedAgainstCurrentValue(currentValue: any, incomingValue: any): Boolean {
+    const updateAllowed: Boolean = currentValue ? Boolean(incomingValue && currentValue) : true;
+    return updateAllowed;
+  }
+
+  static checkNotNulls(event: UpdateEvent<any>) {
+    const updatedColumns: ColumnMetadata[] = event.updatedColumns;
+
+    let validationFailedItems: any[] = [];
+    updatedColumns.forEach((column) => {
+      if (this.notNullCheckForItems.has(column?.propertyName)) {
+        let key: string = column.propertyName;
+        let oldValue = event.databaseEntity[column.propertyName];
+        let newValue = event.entity[column.propertyName];
+
+        const isValidString: Boolean = this.isValidString(newValue);
+        const isUpdateApplicable: Boolean = this.isUpdationAllowedAgainstCurrentValue(oldValue, newValue);
+
+        if (!(isValidString && isUpdateApplicable)) {
+          validationFailedItems.push({
+            key,
+            oldValue,
+            newValue,
+            isValidString,
+            isUpdateApplicable
+          })
+        }
+      }
+    });
+
+    if (validationFailedItems.length > 0) {
+      const validationFaiedForKeys: string[] = validationFailedItems.map((item) => {
+        return item.key
+      });
+
+      log('profileServiceLogger', `patient updation failed!`, 'index.ts/checkNullsForProperty ', 'undefined', JSON.stringify(validationFailedItems));
+      throw new Error(`Patient validation failed for items: ${JSON.stringify(validationFaiedForKeys)}`);
+    }
+  }
+
   @AfterInsert()
   async updatePatientMobileCache() {
     const mobileIdList: string | null = await getCache(`patient:mobile:${this.mobileNumber}`);
@@ -1124,7 +1190,13 @@ export class Patient extends BaseEntity {
   @AfterInsert()
   @AfterUpdate()
   async setPatientCache() {
-    await setCache(`patient:${this.id}`, JSON.stringify(this), ApiConstants.CACHE_EXPIRATION_3600);
+    try {
+      console.log(`Setting cache`);
+      await setCache(`patient:${this.id}`, JSON.stringify(this), ApiConstants.CACHE_EXPIRATION_3600);
+    }
+    catch (ex) {
+      console.log(`Exception #`, ex);
+    }
   }
 }
 //patient Ends
