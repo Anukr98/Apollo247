@@ -1103,7 +1103,7 @@ app.get('/processOmsOrders', (req, res) => {
                       .post(process.env.API_URL, requestJSON)
                       .then((response) => {
                         const url = {
-                          url: response.data.blobUrl,
+                          url: response.data.data.fetchBlobURLWithPRISMData.blobUrl,
                         };
                         console.log('fetchBlobURLWithPRISMData url>>>>>>>>>>>>>>>>>>>>>>', url);
                         orderPrescriptionUrl.push(url);
