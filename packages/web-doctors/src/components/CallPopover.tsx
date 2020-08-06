@@ -2290,7 +2290,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                 {
                   message: leaveChatRoom,
                   channel: channel,
-                  storeInHistory: true,
+                  storeInHistory: false,
+                  sendByPost: false,
                 },
                 (status: any, response: any) => {}
               );
