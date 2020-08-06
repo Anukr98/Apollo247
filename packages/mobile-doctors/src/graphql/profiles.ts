@@ -1680,3 +1680,11 @@ export const POST_WEB_ENGAGE = gql`
     }
   }
 `;
+
+export const CALL_DISCONNECT_NOTIFICATION = gql`
+  query sendCallDisconnectNotification($appointmentId: String, $callType: APPT_CALL_TYPE) {
+    sendCallDisconnectNotification(appointmentId: $appointmentId, callType: $callType) {
+      status
+    }
+  }
+`;
