@@ -55,6 +55,7 @@ export class PatientAddressRepository extends Repository<PatientAddress> {
   async updatePatientAddress(id: string, patientAddressAttrs: Partial<PatientAddress>) {
     const address = await this.findOne({ where: { id } });
     if (address) {
+      delCache(this.cacheKey(REDIS_ADDRESS_PATIENT_ID_KEY_PREFIX, id));
       Object.assign(address, patientAddressAttrs);
       return this.save(address);
     } else return address;
