@@ -63,7 +63,6 @@ import {
   StackActions,
   NavigationActions,
 } from 'react-navigation';
-import stripHtml from 'string-strip-html';
 import HTML from 'react-native-render-html';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import {
@@ -380,9 +379,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   }, [medicineOverview]);
 
   useEffect(() => {
-    console.log('useEffect deliveryTime\n', { deliveryTime, deliveryError });
     if (!!deliveryTime || !!deliveryError) {
-      // scrollViewRef.current && scrollViewRef.current.scrollToEnd({ animated: true });
       setTimeout(() => {
         scrollViewRef.current && scrollViewRef.current.scrollToEnd();
       }, 10);
@@ -515,17 +512,13 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   const fetchSubstitutes = () => {
     getSubstitutes(sku)
       .then(({ data }) => {
-        console.log({ data });
-
         try {
-          console.log('getSubstitutes', data);
           if (data) {
             if (
               data.products &&
               typeof data.products === 'object' &&
               Array.isArray(data.products)
             ) {
-              //
               setSubstitutes(data.products);
               setTimeout(() => {
                 scrollViewRef.current && scrollViewRef.current.scrollToEnd();
@@ -534,12 +527,10 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
           }
         } catch (error) {
           CommonBugFender('MedicineDetailsScene_fetchSubstitutes_try', error);
-          console.log(error);
         }
       })
       .catch((err) => {
         CommonBugFender('MedicineDetailsScene_fetchSubstitutes', err);
-        console.log({ err });
       });
   };
 
@@ -792,32 +783,22 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   };
 
   const filterHtmlContent = (content: string = '') => {
-    return stripHtml(content);
-    // .replace(/&amp;nbsp;/g, ' ')
-    // .replace(/&amp;deg;/g, '°')
-    // .replace(/&#039;/g, "'")
-    // .replace(/&amp;lt;br \/&amp;gt;. /g, '\n')
-    // .replace(/&amp;lt;br \/&amp;gt;/g, '\n')
-    // .split('\n')
-    // .filter((item) => item)
-    // .join('\n')
-    // .trim();
-  };
-
-  const renderTabComponent = () => {
-    // let description = desc; // props.route.key; //data.CaptionDesc;
-    const selectedTabdata = medicineOverview.filter((item) => item.Caption === selectedTab);
-    let description =
-      selectedTabdata.length && !!selectedTabdata[0].CaptionDesc
-        ? selectedTabdata[0].CaptionDesc
-        : '';
-    description = description
+    return content
       .replace(/&amp;/g, '&')
       .replace(/&lt;/g, '<')
       .replace(/&gt;rn/g, '>')
       .replace(/&gt;r/g, '>')
       .replace(/&gt;/g, '>')
       .replace(/\.t/g, '.');
+  };
+
+  const renderTabComponent = () => {
+    const selectedTabdata = medicineOverview.filter((item) => item.Caption === selectedTab);
+    let description =
+      selectedTabdata.length && !!selectedTabdata[0].CaptionDesc
+        ? selectedTabdata[0].CaptionDesc
+        : '';
+    description = filterHtmlContent(description);
 
     return (
       <View
@@ -875,14 +856,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   };
 
   const renderInfo = () => {
-    const description = medicineDetails.description
-      .replace(/&amp;/g, '&')
-      .replace(/&lt;/g, '<')
-      .replace(/&gt;rn/g, '>')
-      .replace(/&gt;r/g, '>')
-      .replace(/&gt;/g, '>')
-      .replace(/\.t/, '.');
-    console.log(description);
+    const description = filterHtmlContent(medicineDetails.description);
 
     if (!!description)
       return (
