@@ -97,7 +97,7 @@ import {
   MedicineOrderCancelReason,
   PharmacologistConsult,
   MedicineOrderAddress,
-  ProfilesSubscriber,
+  PatientEntitiySubscriber,
 } from 'profiles-service/entities';
 
 export const connect = async () => {
@@ -233,7 +233,7 @@ export const connect = async () => {
       username: process.env.PROFILES_DB_USER,
       password: process.env.PROFILES_DB_PASSWORD,
       database: `profiles_${process.env.DB_NODE_ENV}`,
-      subscribers: [ProfilesSubscriber],
+      subscribers: [PatientEntitiySubscriber],
       logging: process.env.NODE_ENV === 'production' ? false : true,
       extra: {
         connectionLimit: process.env.CONNECTION_POOL_LIMIT,
