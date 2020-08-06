@@ -294,12 +294,37 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
     })
   }
 
-  getMedicineOrdersListWithPayments(patientIds: String[]) {
-    return this.find({
-      where: { patient: In(patientIds) },
-      order: { createdDate: 'DESC' },
-      relations: ['medicineOrderPayments'],
-    });
+  getMedicineOrdersListWithPayments(patientIds: String[], paginate: PaginateParams): [Promise<MedicineOrders[]>, Promise<number | null>] {
+    const [patientId] = patientIds;
+    // return [data, counts]<promises>;
+    return [
+      this.createQueryBuilder('medicineOrders')
+        .where('medicineOrders.patient = :patientId', { patientId })
+        .innerJoinAndSelect('medicineOrders.medicineOrderPayments', 'medicineOrderPayments')
+        // apply filters....
+        .andWhere('medicineOrders.currentStatus != :currentStatus', { currentStatus: 'QUOTE' })
+        .andWhere('medicineOrders.currentStatus != :currentStatus', { currentStatus: 'PAYMENT_ABORTED' })
+        // need to discuss this condition as it could in orderlist with payment (one type of payment)
+        .andWhere('medicineOrderPayments.paymentType != :paymentType', { paymentType: 'COD' })
+        .orderBy('medicineOrders.createdDate', 'DESC')
+        //send undefined to skip & take fns to skip pagination to support optional pagination
+        .skip(paginate.skip)
+        .take(paginate.take)
+        .getMany()
+      ,
+      //do pagiantion if needed...
+      Number.isInteger(paginate.take || paginate.skip) ?
+        this.createQueryBuilder('medicineOrders')
+          .where('medicineOrders.patient = :patientId', { patientId })
+          .innerJoinAndSelect('medicineOrders.medicineOrderPayments', 'medicineOrderPayments')
+          .andWhere('medicineOrders.currentStatus != :currentStatus', { currentStatus: 'QUOTE' })
+          .andWhere('medicineOrders.currentStatus != :currentStatus', { currentStatus: 'PAYMENT_ABORTED' })
+          // need to discuss this condition as it could in orderlist with payment (one type of payment)
+          .andWhere('medicineOrderPayments.paymentType != :paymentType', { paymentType: 'COD' })
+          .getCount()
+        : Promise.resolve(null)
+    ]
+
   }
 
   getMedicineOrderDetailsByOderId(orderAutoId: number) {
@@ -640,7 +665,7 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
       ],
     });
   }
-  
+
   async getOfflineOrderDetails(patientId: string, uhid: string, billNumber: string) {
     if (!uhid) {
       throw new AphError(AphErrorMessages.INVALID_UHID, undefined, {});
