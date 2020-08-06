@@ -1,24 +1,22 @@
 import { filterDataType } from '@aph/mobile-patients/src/components/ConsultRoom/DoctorSearchListing';
-import { FilterScene } from '@aph/mobile-patients/src/components/FilterScene';
-import { AddFilePopup } from '@aph/mobile-patients/src/components/HealthRecords/AddFilePopup';
+import { FilterHealthRecordScene } from '@aph/mobile-patients/src/components/FilterHealthRecordScene';
 import { HealthConsultView } from '@aph/mobile-patients/src/components/HealthRecords/HealthConsultView';
 import { MedicalRecords } from '@aph/mobile-patients/src/components/HealthRecords/MedicalRecords';
+import { UploadPrescriprionPopup } from '@aph/mobile-patients/src/components/Medicines/UploadPrescriprionPopup';
 // import { PickerImage } from '@aph/mobile-patients/src/components/Medicines/Medicine';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import {
-  AddFileIcon,
   DropdownGreen,
   Filter,
-  NoData,
-  PrimaryIcon,
   LinkedUhidIcon,
+  NoData,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
 import {
-  CommonLogEvent,
   CommonBugFender,
+  CommonLogEvent,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
   CHECK_IF_FOLLOWUP_BOOKED,
@@ -26,8 +24,8 @@ import {
   GET_MEDICAL_PRISM_RECORD,
   GET_MEDICAL_RECORD,
   GET_PAST_CONSULTS_PRESCRIPTIONS,
-  UPLOAD_DOCUMENT,
   SAVE_PRESCRIPTION_MEDICINE_ORDER_OMS,
+  UPLOAD_DOCUMENT,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { checkIfFollowUpBooked } from '@aph/mobile-patients/src/graphql/types/checkIfFollowUpBooked';
 import {
@@ -44,58 +42,56 @@ import {
   getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults as ConsultsType,
   getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_medicineOrders as medicineOrders,
 } from '@aph/mobile-patients/src/graphql/types/getPatientPastConsultsAndPrescriptions';
+import { savePrescriptionMedicineOrderOMSVariables } from '@aph/mobile-patients/src/graphql/types/savePrescriptionMedicineOrderOMS';
 import {
   g,
   handleGraphQlError,
   postWebEngageEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  WebEngageEventName,
+  WebEngageEvents,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import strings from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
-import { UploadPrescriprionPopup } from '@aph/mobile-patients/src/components/Medicines/UploadPrescriprionPopup';
 import {
+  Dimensions,
   NativeScrollEvent,
   NativeSyntheticEvent,
+  Platform,
   SafeAreaView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
   ViewStyle,
-  Platform,
-  Dimensions,
 } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
+import WebEngage from 'react-native-webengage';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
 import {
   getPatientPrismMedicalRecords,
   getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_healthChecks,
   getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_hospitalizations,
-  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labTests,
   getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labResults_response,
+  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labTests,
   getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_prescriptions_response,
 } from '../../graphql/types/getPatientPrismMedicalRecords';
-import { TabHeader } from '../ui/TabHeader';
-import { useUIElements } from '../UIElementsProvider';
-import { UploadPrescription } from '../Medicines/UploadPrescription';
 import {
-  PRISM_DOCUMENT_CATEGORY,
-  UPLOAD_FILE_TYPES,
-  MEDICINE_DELIVERY_TYPE,
   BOOKING_SOURCE,
   DEVICE_TYPE,
+  MEDICINE_DELIVERY_TYPE,
+  PRISM_DOCUMENT_CATEGORY,
+  UPLOAD_FILE_TYPES,
 } from '../../graphql/types/globalTypes';
 import { uploadDocument, uploadDocumentVariables } from '../../graphql/types/uploadDocument';
 import { useShoppingCart } from '../ShoppingCartProvider';
-import { savePrescriptionMedicineOrderOMSVariables } from '@aph/mobile-patients/src/graphql/types/savePrescriptionMedicineOrderOMS';
-import {
-  WebEngageEvents,
-  WebEngageEventName,
-} from '@aph/mobile-patients/src/helpers/webEngageEvents';
-import WebEngage from 'react-native-webengage';
+import { TabHeader } from '../ui/TabHeader';
+import { useUIElements } from '../UIElementsProvider';
 
 const { width } = Dimensions.get('window');
 
@@ -107,7 +103,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-end',
   },
   hiTextStyle: {
     marginLeft: 20,
@@ -139,10 +135,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   notifyUsersTextStyle: {
-    ...theme.fonts.IBMPlexSansSemiBold(11),
+    ...theme.fonts.IBMPlexSansSemiBold(12),
     color: '#0087BA',
     fontWeight: '500',
-    width: width - 80,
+    paddingHorizontal: 20,
+    marginBottom: 16,
   },
 });
 
@@ -517,6 +514,9 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           unsetloaderDisplay={true}
         ></ProfileList>
         <Text style={styles.descriptionTextStyle}>{strings.health_records_home.description}</Text>
+        <Text style={styles.notifyUsersTextStyle}>
+          {strings.health_records_home.add_note_to_notify_users}
+        </Text>
       </View>
     );
   };
@@ -567,9 +567,6 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   const renderFilter = () => {
     return (
       <View style={styles.filterViewStyle}>
-        <Text style={styles.notifyUsersTextStyle}>
-          {strings.health_records_home.add_note_to_notify_users}
-        </Text>
         <TouchableOpacity activeOpacity={1} onPress={() => setDisplayFilter(true)}>
           <Filter />
         </TouchableOpacity>
@@ -863,7 +860,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         </ScrollView>
       </SafeAreaView>
       {displayFilter && (
-        <FilterScene
+        <FilterHealthRecordScene
           onClickClose={(data: filterDataType[]) => {
             setDisplayFilter(false);
             setFilterData(data);
