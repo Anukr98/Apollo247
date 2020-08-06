@@ -91,7 +91,7 @@ import {
 import { uploadDocument, uploadDocumentVariables } from '../../graphql/types/uploadDocument';
 import { useShoppingCart } from '../ShoppingCartProvider';
 import { TabHeader } from '../ui/TabHeader';
-import { useUIElements } from '../UIElementsProvider';
+import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 
 const { width } = Dimensions.get('window');
 
