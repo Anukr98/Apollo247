@@ -135,7 +135,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     const callkeepOptions = {
       ios: {
         appName: string.LocalStrings.appName,
-        imageName: 'splashLogo.png'
+        imageName: 'callkitIcon.png'
       }
     };
 
