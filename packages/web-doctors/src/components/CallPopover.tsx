@@ -2288,7 +2288,10 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
             onClick={() => {
               pubnub.publish(
                 {
-                  message: leaveChatRoom,
+                  message: {
+                    isTyping: true,
+                    message: leaveChatRoom,
+                  },
                   channel: channel,
                   storeInHistory: false,
                   sendByPost: false,
