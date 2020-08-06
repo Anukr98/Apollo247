@@ -377,7 +377,6 @@ export class PatientRepository extends Repository<Patient> {
     });
   }
 
-  //sorted
   async updateProfile(id: string, patientAttrs: Partial<Patient>) {
     const patient = await this.getByIdCache(id);
     if (patient) {
@@ -387,7 +386,6 @@ export class PatientRepository extends Repository<Patient> {
   }
 
 
-  //need to checkOnloaded
   updateLinkedUhidAccount(
     ids: string[],
     column: string,
@@ -551,7 +549,6 @@ export class PatientRepository extends Repository<Patient> {
     await this.save(patientDetails);
   }
 
-  //fixed
   async getIdsByMobileNumber(mobileNumber: string) {
     return await this.findByMobileNumber(mobileNumber);
   }
