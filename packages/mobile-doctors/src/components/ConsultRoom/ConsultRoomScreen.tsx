@@ -43,6 +43,7 @@ import {
   SEND_CALL_NOTIFICATION,
   UPLOAD_CHAT_FILE,
   POST_WEB_ENGAGE,
+  CALL_DISCONNECT_NOTIFICATION,
 } from '@aph/mobile-doctors/src/graphql/profiles';
 import {
   cancelAppointment,
@@ -148,6 +149,10 @@ import {
   postDoctorConsultEventVariables,
   postDoctorConsultEvent,
 } from '@aph/mobile-doctors/src/graphql/types/postDoctorConsultEvent';
+import {
+  sendCallDisconnectNotification,
+  sendCallDisconnectNotificationVariables,
+} from '@aph/mobile-doctors/src/graphql/types/sendCallDisconnectNotification';
 
 const { width } = Dimensions.get('window');
 // let joinTimerNoShow: NodeJS.Timeout;  //APP-2812: removed NoShow
@@ -1320,6 +1325,21 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   };
   const [callId, setCallId] = useState<string>();
   const [chatId, setChatId] = useState<string>();
+
+  const sendEndCallNotificationAPI = (callType: APPT_CALL_TYPE) => {
+    client
+      .query<sendCallDisconnectNotification, sendCallDisconnectNotificationVariables>({
+        query: CALL_DISCONNECT_NOTIFICATION,
+        fetchPolicy: 'no-cache',
+        variables: {
+          appointmentId: AppId,
+          callType: callType,
+        },
+      })
+      .then((_data) => {})
+      .catch((error) => {});
+  };
+
   const sendCallNotificationAPI = (callType: APPT_CALL_TYPE, isCall: boolean) => {
     client
       .query<SendCallNotification, SendCallNotificationVariables>({
@@ -1717,6 +1737,11 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           onCallEnd: (consultType, callDuration) => {
             callOptions.stopMissedCallTimer();
             endCallNotificationAPI(true);
+            if (callDuration === '00 : 00') {
+              sendEndCallNotificationAPI(
+                callType === 'V' ? APPT_CALL_TYPE.VIDEO : APPT_CALL_TYPE.AUDIO
+              );
+            }
             firebase
               .analytics()
               .logEvent(callType == 'A' ? 'Doctor_audio_call_end' : 'Doctor_video_call_end', {
