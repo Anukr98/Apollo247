@@ -97,12 +97,12 @@ export enum ApiConstants {
   ORDER_CANCEL_HC_REFUND_BODY = 'We have refunded Health Credits worth Rs {healthCreditsRefund} to your personal health credits balance for Order {orderId}.',
 
   // medicine order partial refund
-  ORDER_PAYMENT_PARTIAL_REFUND_BODY =  'We have processed for a refund of Rs {refundAmount} for your order {orderId}, the amount should reflect in your A/C in 5-7 working days.',
+  ORDER_PAYMENT_PARTIAL_REFUND_BODY = 'We have processed for a refund of Rs {refundAmount} for your order {orderId}, the amount should reflect in your A/C in 5-7 working days.',
   //medicine order partial refund health credits
   ORDER_HC_PARTIAL_REFUND_BODY = 'We have refunded Health Credits worth Rs {healthCreditsRefund} to your personal health credits balance for Order {orderId}.',
-  //medicine order both Original Payment Method & HCs are to be refunded 
+  //medicine order both Original Payment Method & HCs are to be refunded
   ORDER_PAYMENT_HC_PARTIAL_REFUND_BODY = 'We have processed for a refund of Rs {refundAmount} for your order {orderId}, the amount should reflect in your A/C in 5-7 working days. Also, we have refunded Health Credits worth Rs {healthCreditsRefund} to your personal health credits balance.',
-  
+
   //appointment cancellation
   CANCEL_APPT_TITLE = 'Your appointment has been cancelled',
   CANCEL_APPT_BODY = 'Hi {0}, we are really sorry. {1} will not be able to make it for this appointment. Any payment that you have made for this consultation would be refunded in 2-4 working days. We request you to please book appointment with any of our other Apollo certified Doctor',
@@ -404,6 +404,10 @@ export enum ApiConstants {
   REDIS_PORT = 6379,
   REDIS_PWD = 'FgFyZpibcBewC6U7AZYDq1DppMW02mi+koiEa63gDF4=',
   REDIS_IMAGE_URL = '/catalog/product/',
+
+  PHARMA_DISCOUNT = 10,
+  PL_DISCOUNT = 15,
+  FMCG_DISCOUNT = 5,
 
   //prescriptions uploaded through medicine, diagnostic orders or from OLD APPS
   PRESCRIPTION_UPLOADED_BY_PATIENT = 'Prescription uploaded by Patient',
