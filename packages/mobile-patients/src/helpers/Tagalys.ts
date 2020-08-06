@@ -14,20 +14,21 @@ let visit_info: { id: string; timestamp: number } | null = null;
 const { width, height } = Dimensions.get('screen');
 const { TAGALYS_API_KEY, TAGALYS_CLIENT_CODE } = AppConfig.Configuration;
 
+const saveAndGetNewVisitId = () => {
+  visit_info = { id: getUuidV4().replace(/-/g, ''), timestamp: new Date().getTime() };
+  return visit_info.id;
+};
+
 const generateVisitId = (): Tagalys.User['visit_id'] => {
-  if (visit_info) {
-    const isGeneratedWithin30Minutes =
-      visit_info && moment().diff(moment(visit_info.timestamp), 'minutes') > 30;
-    if (isGeneratedWithin30Minutes) {
-      return visit_info.id;
-    } else {
-      visit_info = { id: getUuidV4().replace(/-/g, ''), timestamp: new Date().getTime() };
-      return visit_info.id;
-    }
-  } else {
-    visit_info = { id: getUuidV4().replace(/-/g, ''), timestamp: new Date().getTime() };
-    return visit_info.id;
-  }
+  const isGeneratedWithin30Minutes =
+    visit_info &&
+    visit_info.timestamp &&
+    moment().diff(moment(visit_info.timestamp), 'minutes') > 30;
+  return isGeneratedWithin30Minutes
+    ? visit_info!.id
+    : visit_info
+    ? visit_info.id
+    : saveAndGetNewVisitId();
 };
 
 const buildTagalysConfig = (userId: string): Tagalys.Config => {
