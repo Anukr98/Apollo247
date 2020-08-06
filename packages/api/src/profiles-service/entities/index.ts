@@ -859,7 +859,6 @@ export class MedicineOrdersStatus extends BaseEntity {
 //medicine orders invoice starts
 @Entity()
 export class MedicineOrderInvoice extends BaseEntity {
-  @Index()
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
 
@@ -2233,7 +2232,6 @@ export class DiagnosticOrdersStatus extends BaseEntity {
 
 @Entity()
 export class DiagnosticOrgans extends BaseEntity {
-  @Index()
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
 
@@ -2258,7 +2256,6 @@ export class DiagnosticOrgans extends BaseEntity {
 
 @Entity()
 export class DiagnosticHotSellers extends BaseEntity {
-  @Index()
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
 
@@ -2358,7 +2355,6 @@ export class PatientFeedback extends BaseEntity {
 
 @Entity()
 export class PatientHelpTickets extends BaseEntity {
-  @Index('PatientHelpTickets_patientId')
   @ManyToOne((type) => Patient, (patient) => patient.id)
   patient: Patient;
 
