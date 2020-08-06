@@ -675,7 +675,6 @@ const projectedEarnings = (
     fmcg: ApiConstants.FMCG_DISCOUNT,
     pl: ApiConstants.PL_DISCOUNT,
   };
-  console.log(+new Decimal(netAmount).times(earningsPerTypes[type]));
   return discount ? 0 : +new Decimal(netAmount).times(earningsPerTypes[type]);
 };
 
