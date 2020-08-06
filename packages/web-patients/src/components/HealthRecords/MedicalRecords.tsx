@@ -32,7 +32,10 @@ const useStyles = makeStyles((theme: Theme) => {
       display: 'block',
     },
     sourceField: {
-      maxWidth: 70
+      maxWidth: 70,
+       [theme.breakpoints.down('xs')]: {
+        maxWidth: '100%',
+      },
     },
     leftSection: {
       width: 328,
