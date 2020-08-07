@@ -19,6 +19,7 @@ const getMedicineOrderQuery = (method, patientId, orderId) => {
             coupon
             customerComment
             patient{
+              id
               mobileNumber
               firstName
               lastName
