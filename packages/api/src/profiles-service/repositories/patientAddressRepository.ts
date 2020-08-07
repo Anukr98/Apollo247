@@ -55,7 +55,6 @@ export class PatientAddressRepository extends Repository<PatientAddress> {
   async updatePatientAddress(id: string, patientAddressAttrs: Partial<PatientAddress>) {
     const address = await this.findOne({ where: { id } });
     if (address) {
-      delCache(this.cacheKey(REDIS_ADDRESS_PATIENT_ID_KEY_PREFIX, id));
       Object.assign(address, patientAddressAttrs);
       return this.save(address);
     } else return address;
@@ -65,8 +64,11 @@ export class PatientAddressRepository extends Repository<PatientAddress> {
     return this.findOne({ where: { id } });
   }
 
-  deletePatientAddress(id: string) {
-    delCache(this.cacheKey(REDIS_ADDRESS_PATIENT_ID_KEY_PREFIX, id));
+  async deletePatientAddress(id: string) {
+    const address = await this.findOne({ where: { id } });
+    if (address) {
+      delCache(this.cacheKey(REDIS_ADDRESS_PATIENT_ID_KEY_PREFIX, address.patientId));
+    }
     return this.delete(id);
   }
 }
