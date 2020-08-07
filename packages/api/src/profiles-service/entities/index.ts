@@ -919,6 +919,10 @@ export class PatientDeviceTokens extends BaseEntity {
   @Column({ type: 'text' })
   deviceToken: string;
 
+  @Index('device_voip_push_token')
+  @Column({nullable:true, type: 'text'})
+  deviceVoipPushToken: string;
+
   @Column()
   deviceOS: string;
 
