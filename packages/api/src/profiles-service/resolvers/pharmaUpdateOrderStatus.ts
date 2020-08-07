@@ -462,9 +462,12 @@ const generateTransactions = async (
 
     const itemTypemap = await getSkuMap(itemSku);
     let transactionLineItems = addProductNameAndCat(transactionLineItemsPartial, itemTypemap);
+    const healthCreditsRedeemed = +new Decimal(
+      order.medicineOrderPayments[0].healthCreditsRedeemed
+    ).toDecimalPlaces(2, Decimal.ROUND_DOWN);
     const transactionLineItemsCom = updateCreditsRedeemedInfo(
       transactionLineItems,
-      +new Decimal(order.medicineOrderPayments[0].healthCreditsRedeemed).toFixed(2),
+      healthCreditsRedeemed,
       itemTypemap
     );
     netAmount = transactionLineItemsCom.reduce((acc, curValue) => {
@@ -477,15 +480,11 @@ const generateTransactions = async (
       SendCommunication: true,
       CalculateHealthCredits: true,
       MobileNumber: mobileNumber,
-      CreditsRedeemed: +new Decimal(order.medicineOrderPayments[0].healthCreditsRedeemed).toFixed(
-        2
-      ),
+      CreditsRedeemed: healthCreditsRedeemed,
       BillNo: `${billDetails.billNumber}_${order.orderAutoId}`,
       NetAmount: netAmount,
       TransactionDate: billDetails.billDateTime,
-      GrossAmount: +new Decimal(netAmount)
-        .plus(totalDiscount)
-        .plus(+new Decimal(order.medicineOrderPayments[0].healthCreditsRedeemed).toFixed(2)),
+      GrossAmount: +new Decimal(netAmount).plus(totalDiscount).plus(healthCreditsRedeemed),
       Discount: totalDiscount,
       TransactionLineItems: transactionLineItemsCom,
       StoreCode: getStoreCodeFromDevice(order.deviceType, order.bookingSource),
