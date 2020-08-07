@@ -12,7 +12,7 @@ import { Image } from 'react-native-elements';
 import { MedicineProduct } from '../../helpers/apiCalls';
 import { g } from '../../helpers/helperFunctions';
 import { AppConfig } from '../../strings/AppConfig';
-import { AddToCartButtons } from './AddToCartButtons';
+import { QuantityButton } from '../ui/QuantityButton';
 
 const styles = StyleSheet.create({
   containerStyle: {},
@@ -134,14 +134,9 @@ export const MedicineSearchSuggestionItem: React.FC<MedicineSearchSuggestionItem
   const renderQuantityView = () => {
     return (
       <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-        <AddToCartButtons
-          numberOfItemsInCart={props.quantity}
-          maxOrderQty={props.maxOrderQty}
-          addToCart={props.onPressAdd}
-          removeItemFromCart={props.onPressSubstract}
-          removeFromCart={props.removeCartItem}
-          isSolidContainer={false}
-        />
+        <QuantityButton text={'-'} onPress={props.onPressSubstract} />
+        <Text style={theme.viewStyles.text('B', 14, '#fc9916', 1, 24, 0)}>{props.quantity}</Text>
+        <QuantityButton text={'+'} onPress={props.onPressAdd} />
       </View>
     );
   };

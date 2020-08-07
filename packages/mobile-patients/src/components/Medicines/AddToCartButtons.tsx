@@ -8,10 +8,7 @@ import {
   ViewStyle,
   ImageStyle,
 } from 'react-native';
-import { 
-  DeleteIconOrange, 
-  MinusIconOrange, 
-  PlusIconOrange, 
+import {
   DeleteIconWhite, 
   MinusIconWhite, 
   PlusIconWhite 
@@ -33,17 +30,22 @@ const localStyles = StyleSheet.create({
     flexDirection: 'row',
     paddingRight: 6,
     paddingLeft: 6,
+    borderLeftWidth: 1,
+    borderLeftColor: '#fff',
+    borderRightWidth: 1,
+    borderRightColor: '#fff',
   },
   addRemoveItemContainer: {
     display: 'flex',
     flexDirection: 'row',
     borderWidth: 1,
     borderColor: '#fc9916',
+    borderRadius: 5,
     shadowColor: 'rgba(0, 0, 0, 0.2)',
     shadowOffset: { width: 0, height: 5 },
     shadowOpacity: 0.4,
     shadowRadius: 5,
-    backgroundColor: '#fff',
+    backgroundColor: '#fc9916',
     elevation: 5,
   },
   deleteIconStyle: {
@@ -78,31 +80,23 @@ export const AddToCartButtons: React.FC<AddToCartButtonsProps> = (props) => {
 
   const getDeleteIcon = () => {
     return (
-      props.isSolidContainer ? 
-        <DeleteIconWhite style={[localStyles.deleteIconStyle, props.deleteIconStyle]} /> : 
-        <DeleteIconOrange style={localStyles.deleteIconStyle}/>
+      <DeleteIconWhite style={[localStyles.deleteIconStyle, props.deleteIconStyle]} />
     );
   };
 
   const getMinusIcon = () => {
     return (
-      props.isSolidContainer ?
-      <MinusIconWhite style={[localStyles.minusIconStyle, props.minusIconStyle]} /> :
-      <MinusIconOrange style={[
-        localStyles.minusIconStyle,
-        { opacity: props.numberOfItemsInCart > 0 ? 1 : 0.3 }
-      ]}/>
+      <MinusIconWhite style={[localStyles.minusIconStyle, props.minusIconStyle]} />
     );
   };
 
   const getAddIcon = () => {
     return (
-      props.isSolidContainer ?
-      <PlusIconWhite style={[localStyles.plusIconStyle, props.plusIconStyle, { opacity: props.numberOfItemsInCart !== props.maxOrderQty ? 1 : 0.3 }]} /> :
-      <PlusIconOrange style={[
-        localStyles.plusIconStyle,
+      <PlusIconWhite style={[
+        localStyles.plusIconStyle, 
+        props.plusIconStyle, 
         { opacity: props.numberOfItemsInCart !== props.maxOrderQty ? 1 : 0.3 }
-      ]}/>
+      ]} />
     );
   };
   
@@ -111,13 +105,7 @@ export const AddToCartButtons: React.FC<AddToCartButtonsProps> = (props) => {
     <View style={[localStyles.addRemoveItemContainer, props.containerStyle]}>
       {/* minus or delete button */}
       <TouchableOpacity 
-        style={[
-          localStyles.addRemoveButtonContainer,
-          { 
-            borderRightWidth: 1,
-            borderColor: props.isSolidContainer ? '#f7f8f5' : '#fcb716',
-          }
-        ]}
+        style={localStyles.addRemoveButtonContainer}
         onPress={() => {
           (props.numberOfItemsInCart === 1) ? props.removeFromCart() : props.removeItemFromCart();
         }}
@@ -133,29 +121,20 @@ export const AddToCartButtons: React.FC<AddToCartButtonsProps> = (props) => {
       <View style={localStyles.quantityContainer}>
         <Text
           style={
-            props.isSolidContainer ? {
-              ...theme.viewStyles.text('M', 19, 'white', 1, 24),
-              paddingLeft: 15,
-              paddingRight: 15,
-            } :
+            props.isSolidContainer ? 
             {
-              ...theme.viewStyles.text('M', 13, '#fc9916', 1, 24),
-              textAlign: 'center',
-            }
+              ...theme.viewStyles.text('M', 19, 'white', 1, 24),
+              paddingLeft: 16,
+              paddingRight: 16,
+            } :
+            {...theme.viewStyles.text('M', 14, 'white', 1, 24),}
           }
         >{props.numberOfItemsInCart}</Text>
       </View>
 
       {/* add button */}
       <TouchableOpacity 
-        style={[
-          localStyles.addRemoveButtonContainer,
-          { 
-            borderLeftWidth: 1,
-            padding: 0,
-            borderColor: props.isSolidContainer ? '#f7f8f5' : '#fcb716',
-          }
-        ]}
+        style={localStyles.addRemoveButtonContainer}
         onPress={() => {
           if (props.numberOfItemsInCart !== props.maxOrderQty) props.addToCart('add');
         }}

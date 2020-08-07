@@ -1375,16 +1375,26 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           </View>
           <Spearator style={{ marginBottom: 7.5 }} />
           {renderDiscountedPrice()}
-
-          {/* add remove item container */}
-          <AddToCartButtons
-            numberOfItemsInCart={data.numberOfItemsInCart}
-            maxOrderQty={data.maxOrderQty}
-            addToCart={data.addToCart}
-            removeItemFromCart={data.removeItemFromCart}
-            removeFromCart={data.removeFromCart}
-            isSolidContainer={false}
-          />
+          {
+            data.isAddedToCart ?
+            <AddToCartButtons
+              numberOfItemsInCart={data.numberOfItemsInCart}
+              maxOrderQty={data.maxOrderQty}
+              addToCart={data.addToCart}
+              removeItemFromCart={data.removeItemFromCart}
+              removeFromCart={data.removeFromCart}
+              isSolidContainer={false}
+            /> : 
+            <Text
+              style={{
+                ...theme.viewStyles.text('B', 13, '#fc9916', 1, 24),
+                textAlign: 'center',
+              }}
+              onPress={data.onAddOrRemoveCartItem}
+            >
+              ADD TO CART
+            </Text>
+          }
         </View>
       </TouchableOpacity>
     );

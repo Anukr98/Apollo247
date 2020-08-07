@@ -140,14 +140,14 @@ const styles = StyleSheet.create({
   bottonButtonContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-evenly',
     marginHorizontal: 5,
     paddingBottom: 10,
     ...theme.viewStyles.shadowStyle,
     shadowOpacity: 0.8,
   },
   bottomButtonStyle: {
-    flex: 1,
-    backgroundColor: theme.colors.WHITE,
+    width: '45%',
   },
   separator: {
     height: 1,
@@ -590,82 +590,53 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
           </View>
         ) : (
           <View style={styles.bottomView}>
-            {/* <View
-              style={{
-                flexDirection: 'row',
-                height: 50,
-                alignItems: 'center',
-                ...theme.viewStyles.lightSeparatorStyle,
-                marginHorizontal: 20,
-              }}
-            >
-              <View
-                style={{
-                  flex: 1,
-                }}
-              >
-                <MaterialMenu
-                  options={opitons}
-                  selectedText={selectedQuantity!.toString()}
-                  selectedTextStyle={{
-                    ...theme.viewStyles.text('M', 16, '#00b38e'),
-                  }}
-                  onPress={(selectedQuantity) => setselectedQuantity(selectedQuantity.value)}
-                >
-                  <View
-                    style={{
-                      flexDirection: 'row',
-                      justifyContent: 'space-between',
-                      paddingRight: 8,
-                      borderRightWidth: 0.5,
-                      borderRightColor: 'rgba(2, 71, 91, 0.2)',
-                    }}
-                  >
-                    <Text style={theme.viewStyles.text('SB', 14, '#02475b', 1, 24, 0.35)}>
-                      QTY : {selectedQuantity}
-                    </Text>
-                    <DropdownGreen />
-                  </View>
-                </MaterialMenu>
-              </View>
-              <View style={{ flex: 1, alignItems: 'flex-end' }}>
-                <Text
-                  style={[
-                    theme.viewStyles.text('SB', 14, '#02475b', 1, 24, 0.35),
-                    { fontWeight: 'bold' },
-                  ]}
-                >
-                  {!!medicineDetails.special_price && (
-                    <Text
-                      style={[
-                        {
-                          textDecorationLine: 'line-through',
-                          color: '#01475b',
-                          opacity: 0.6,
-                        },
-                      ]}
-                    >
-                      (Rs. {medicineDetails.price})
-                    </Text>
-                  )}{' '}
-                  <Text> Rs. {medicineDetails.special_price || medicineDetails.price}</Text>
-                </Text>
-              </View>
-            </View> */}
+            <View style={{
+              flex: 1,
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'flex-start',
+              marginBottom: 10,
+              marginLeft: 15,
+            }}>
+              <Text style={theme.viewStyles.text('M', 14, '#01475b', 1, 22, 0.35)}>
+                MRP.
+              </Text>
+              <Text style={theme.viewStyles.text('SB', 17, '#01475b', 1, 20, 0.35)}>
+                ₹{medicineDetails.special_price || medicineDetails.price}
+              </Text>
+            </View>
             <View style={styles.bottonButtonContainer}>
-              <View style={{
-                flex: 1,
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'flex-start'
-              }}>
-                <Text style={theme.viewStyles.text('M', 14, '#01475b', 1, 22, 0.35)}>
-                  MRP.
-                </Text>
-                <Text style={theme.viewStyles.text('SB', 17, '#01475b', 1, 20, 0.35)}>
-                  ₹{medicineDetails.special_price || medicineDetails.price}
-                </Text>
-              </View>
+              <Button
+                onPress={() => {
+                  CommonLogEvent(AppRoutes.MedicineDetailsScene, 'Update quantity cart item');
+                  updateQuantityCartItem(medicineDetails, 1);
+                  !isMedicineAddedToCart && onAddCartItem(medicineDetails);
+
+                  const eventAttributes: WebEngageEvents[WebEngageEventName.BUY_NOW] = {
+                    'product name': medicineDetails.name,
+                    'product id': medicineDetails.sku,
+                    Brand: '',
+                    'Brand ID': '',
+                    'category name': '',
+                    'category ID': medicineDetails.category_id,
+                    Price: medicineDetails.price,
+                    'Discounted Price':
+                      typeof medicineDetails.special_price == 'string'
+                        ? Number(medicineDetails.special_price)
+                        : medicineDetails.special_price,
+                    Quantity:
+                      typeof selectedQuantity == 'string'
+                        ? Number(selectedQuantity)
+                        : selectedQuantity,
+                    'Service Area': 'Pharmacy',
+                  };
+                  postWebEngageEvent(WebEngageEventName.BUY_NOW, eventAttributes);
+                  props.navigation.navigate(AppRoutes.YourCart);
+                }}
+                title="BUY NOW"
+                style={{ width: '45%', backgroundColor: theme.colors.WHITE }}
+                titleTextStyle={{ color: '#fc9916' }}
+              />
               {
                 isMedicineAddedToCart ?
                 <AddToCartButtons
@@ -708,59 +679,12 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
                   onPress={() => {
                     onAddCartItem(medicineDetails);
                   }}
-                  title={
-                    loading ? 'ADD TO CART' : isMedicineAddedToCart ? 'ADDED TO CART' : 'ADD TO CART'
-                  }
+                  title={'ADD TO CART'}
                   disabled={isMedicineAddedToCart || isOutOfStock}
                   disabledStyle={styles.bottomButtonStyle}
                   style={styles.bottomButtonStyle}
-                  titleTextStyle={{ color: '#fc9916' }}
                 />
               }
-              
-              {/* <Button
-                onPress={() => {
-                  onAddCartItem(medicineDetails);
-                }}
-                title={
-                  loading ? 'ADD TO CART' : isMedicineAddedToCart ? 'ADDED TO CART' : 'ADD TO CART'
-                }
-                disabled={isMedicineAddedToCart || isOutOfStock}
-                disabledStyle={styles.bottomButtonStyle}
-                style={styles.bottomButtonStyle}
-                titleTextStyle={{ color: '#fc9916' }}
-              />
-              <View style={{ width: 16 }} />
-              <Button
-                onPress={() => {
-                  CommonLogEvent(AppRoutes.MedicineDetailsScene, 'Update quantity cart item');
-                  updateQuantityCartItem(medicineDetails);
-                  !isMedicineAddedToCart && onAddCartItem(medicineDetails);
-
-                  const eventAttributes: WebEngageEvents[WebEngageEventName.BUY_NOW] = {
-                    'product name': medicineDetails.name,
-                    'product id': medicineDetails.sku,
-                    Brand: '',
-                    'Brand ID': '',
-                    'category name': '',
-                    'category ID': medicineDetails.category_id,
-                    Price: medicineDetails.price,
-                    'Discounted Price':
-                      typeof medicineDetails.special_price == 'string'
-                        ? Number(medicineDetails.special_price)
-                        : medicineDetails.special_price,
-                    Quantity:
-                      typeof selectedQuantity == 'string'
-                        ? Number(selectedQuantity)
-                        : selectedQuantity,
-                    'Service Area': 'Pharmacy',
-                  };
-                  postWebEngageEvent(WebEngageEventName.BUY_NOW, eventAttributes);
-                  props.navigation.navigate(AppRoutes.YourCart);
-                }}
-                title="BUY NOW"
-                style={{ flex: 1 }}
-              /> */}
             </View>
           </View>
         )}
