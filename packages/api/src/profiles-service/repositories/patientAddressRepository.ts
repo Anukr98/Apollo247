@@ -68,7 +68,7 @@ export class PatientAddressRepository extends Repository<PatientAddress> {
     const address = await this.findOne({ where: { id } });
     if (address) {
       delCache(this.cacheKey(REDIS_ADDRESS_PATIENT_ID_KEY_PREFIX, address.patientId));
+      return this.delete(id);
     }
-    return this.delete(id);
   }
 }
