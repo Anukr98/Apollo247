@@ -113,12 +113,6 @@ const useStyles = makeStyles((theme: Theme) => {
         paddingLeft: 1,
         borderLeft: 0,
       },
-      [theme.breakpoints.down('xs')]: {
-        // position: 'absolute',
-        // right: 6,
-        // top: 22,
-        // marginRight: 0,
-      },
     },
     customScroll: {
       paddingLeft: 10,
