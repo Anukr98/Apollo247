@@ -957,9 +957,6 @@ export class Patient extends BaseEntity {
   @Column({ nullable: true })
   androidVersion: string;
 
-  @Column({ nullable: true })
-  VoipPushToken: string;
-
   @Column({ nullable: true, type: 'text' })
   allergies: string;
 
