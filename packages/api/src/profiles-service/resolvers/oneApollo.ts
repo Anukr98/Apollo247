@@ -32,7 +32,7 @@ export const oneApolloTypeDefs = gql`
 `;
 
 type UserDetailResponse = {
-  name: string;
+  name: string | null;
   earnedHC: number;
   availableHC: number;
   tier: string;

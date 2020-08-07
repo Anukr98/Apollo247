@@ -12,6 +12,7 @@ import {
   MedicineOrders,
   DiagnosticOrders,
   MEDICINE_ORDER_PAYMENT_TYPE,
+  DEVICE_TYPE
 } from 'profiles-service/entities';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { AppointmentRefundsRepository } from 'consults-service/repositories/appointmentRefundsRepository';
@@ -36,6 +37,7 @@ import { APPOINTMENT_TYPE, Appointment, STATUS } from 'consults-service/entities
 import Pubnub from 'pubnub';
 import fetch from 'node-fetch';
 import { Doctor, DoctorType } from 'doctors-service/entities';
+import * as child_process from 'child_process'; 
 
 export const getNotificationsTypeDefs = gql`
   type PushNotificationMessage {
@@ -460,6 +462,26 @@ export async function sendCallsNotification(
   const patientDetails = await patientRepo.getPatientDetails(appointment.patientId);
   if (patientDetails == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
 
+  const deviceTokenRepo = patientsDb.getCustomRepository(PatientDeviceTokenRepository);
+
+  const voipPushtoken = await deviceTokenRepo.getDeviceVoipPushToken(patientDetails.id, DEVICE_TYPE.IOS);
+  if(voipPushtoken.length && voipPushtoken[voipPushtoken.length-1]['deviceVoipPushToken']){
+    const token = voipPushtoken[voipPushtoken.length-1]['deviceVoipPushToken'];
+    const CERT_PATH = process.env.ASSETS_DIRECTORY + '/voipCert.pem';
+    const passphrase = process.env.VOIP_CALLKIT_PASSPHRASE || "apollo@123";
+    const domain = process.env.VOIP_CALLKIT_DOMAIN || "https://api.development.push.apple.com/3/device/";
+
+    try {
+      const curlCommand = `curl -v -d '{"name": ${doctorDetails.displayName}, "isVideo": ${true}, "appointmentId" : ${appointment.id}}' --http2 --cert ${CERT_PATH}:${passphrase} ${domain}${token}`;
+      const resp = child_process.execSync(curlCommand);
+      const result = resp.toString('UTF8');
+      console.info("voipCallKit result > ", result);
+
+    } catch (err){
+      console.error("voipCallKit error > ", err);
+    }
+  }
+
   if (callType == APPT_CALL_TYPE.CHAT && doctorType == DOCTOR_CALL_TYPE.SENIOR) {
     const devLink = process.env.DOCTOR_DEEP_LINK ? process.env.DOCTOR_DEEP_LINK : '';
     let whatsappMsg = ApiConstants.WHATSAPP_SD_CONSULT_START_REMINDER.replace(
@@ -540,7 +562,7 @@ export async function sendCallsNotification(
   const listOfIds: string[] = [];
   allpatients.map((value) => listOfIds.push(value.id));
   console.log(listOfIds, 'listOfIds');
-  const deviceTokenRepo = patientsDb.getCustomRepository(PatientDeviceTokenRepository);
+
   const devicetokensofFamily = await deviceTokenRepo.deviceTokensOfAllIds(listOfIds);
   if (devicetokensofFamily.length > 0) {
     devicetokensofFamily.forEach((values) => {

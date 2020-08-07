@@ -35,6 +35,10 @@ import {
   EndAppointmentSession,
   EndAppointmentSessionVariables,
 } from 'graphql/types/EndAppointmentSession';
+import {
+  SendCallDisconnectNotification,
+  SendCallDisconnectNotificationVariables,
+} from 'graphql/types/SendCallDisconnectNotification';
 import { INITIATE_RESCHDULE_APPONITMENT, END_APPOINTMENT_SESSION } from 'graphql/profiles';
 import {
   REQUEST_ROLES,
@@ -58,7 +62,10 @@ import {
 } from 'graphql/types/GetDoctorNextAvailableSlot';
 import { format } from 'date-fns';
 import { AvailableSlots } from '../components/AvailableSlots';
-import { INITIATE_CONFERENCE_TELEPHONE_CALL } from 'graphql/consults';
+import {
+  INITIATE_CONFERENCE_TELEPHONE_CALL,
+  SEND_CALL_DISCONNECT_NOTIFICATION,
+} from 'graphql/consults';
 import { getLocalStorageItem, updateLocalStorageItem } from './case-sheet/panels/LocalStorageUtils';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -1115,6 +1122,7 @@ interface CallPopoverProps {
   setIsClickedOnPriview: (flag: boolean) => void;
   showConfirmPrescription: boolean;
   setShowConfirmPrescription: (flag: boolean) => void;
+  casesheetInfo: any;
 }
 let countdowntimer: any;
 let intervalId: any;
@@ -1441,6 +1449,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const {
     currentPatient,
   }: { currentPatient: GetDoctorDetails_getDoctorDetails | null } = useAuth();
+  const { sessionClient } = useAuth();
   const [anchorElThreeDots, setAnchorElThreeDots] = React.useState(null);
   const [errorState, setErrorState] = React.useState<errorObject>({
     reasonError: false,
@@ -1479,6 +1488,12 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       startIntervalTimer(0);
     }
   }, [isCallAccepted]);
+
+  useEffect(() => {
+    return () => {
+      if (isCall) sendCallDisconnectNotification();
+    };
+  }, []);
 
   useEffect(() => {
     if (props.appointmentStatus === STATUS.COMPLETED) {
@@ -1523,6 +1538,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     setDisableOnCancel(false);
     clearInterval(intervalMissCall);
     setPlayRingtone(false);
+    if (!isCallAccepted) sendCallDisconnectNotification();
+
     const cookieStr = `action=`;
     document.cookie = cookieStr + ';path=/;';
     const text = {
@@ -1563,6 +1580,41 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     );
     stopIntervalTimer();
     props.endCallNotificationAction(true);
+  };
+
+  const sendCallDisconnectNotification = () => {
+    const variables = {
+      appointmentId: props.appointmentId,
+      callType: isVideoCall ? APPT_CALL_TYPE.VIDEO : APPT_CALL_TYPE.AUDIO,
+    };
+    client
+      .query<SendCallDisconnectNotification, SendCallDisconnectNotificationVariables>({
+        query: SEND_CALL_DISCONNECT_NOTIFICATION,
+        fetchPolicy: 'no-cache',
+        variables,
+      })
+      .catch((error: ApolloError) => {
+        const patientName =
+          props.casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.firstName +
+          ' ' +
+          props.casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.lastName;
+        const logObject = {
+          api: 'EndCallNotification',
+          inputParam: JSON.stringify(variables),
+          appointmentId: props.appointmentId,
+          doctorId: currentPatient!.id,
+          doctorDisplayName: currentPatient!.displayName,
+          patientId: params.patientId,
+          patientName: patientName,
+          currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
+          appointmentDateTime: moment(new Date(props.appointmentDateTime)).format(
+            'MMMM DD YYYY h:mm:ss a'
+          ),
+          error: JSON.stringify(error),
+        };
+        sessionClient.notify(JSON.stringify(logObject));
+        console.log('Error in Send Call Disconnect Notification', error.message);
+      });
   };
 
   const autoSend = (callType: string) => {
