@@ -295,16 +295,14 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
   }
 
   getMedicineOrdersListWithPayments(patientIds: String[], paginate: PaginateParams): [Promise<MedicineOrders[]>, Promise<number | null>] {
-    const [patientId] = patientIds;
     // return [data, counts]<promises>;
     return [
       this.createQueryBuilder('medicineOrders')
-        .where('medicineOrders.patient = :patientId', { patientId })
+        .where('medicineOrders.patient IN (:...patientIds)', { patientIds })
         .innerJoinAndSelect('medicineOrders.medicineOrderPayments', 'medicineOrderPayments')
         // apply filters....
         .andWhere('medicineOrders.currentStatus != :currentStatus', { currentStatus: MEDICINE_ORDER_STATUS.QUOTE })
         .andWhere('medicineOrders.currentStatus != :currentStatus', { currentStatus: MEDICINE_ORDER_STATUS.PAYMENT_ABORTED })
-        // need to discuss this condition as it could in orderlist with payment (one type of payment)
         .andWhere('medicineOrderPayments.paymentType != :paymentType', { paymentType: MEDICINE_ORDER_PAYMENT_TYPE.COD })
         .orderBy('medicineOrders.createdDate', 'DESC')
         //send undefined to skip & take fns to skip pagination to support optional pagination
@@ -315,11 +313,10 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
       //do pagiantion if needed...
       Number.isInteger(paginate.take || paginate.skip) ?
         this.createQueryBuilder('medicineOrders')
-          .where('medicineOrders.patient = :patientId', { patientId })
+          .where('medicineOrders.patient IN (:...patientIds)', { patientIds })
           .innerJoinAndSelect('medicineOrders.medicineOrderPayments', 'medicineOrderPayments')
           .andWhere('medicineOrders.currentStatus != :currentStatus', { currentStatus: 'QUOTE' })
           .andWhere('medicineOrders.currentStatus != :currentStatus', { currentStatus: 'PAYMENT_ABORTED' })
-          // need to discuss this condition as it could in orderlist with payment (one type of payment)
           .andWhere('medicineOrderPayments.paymentType != :paymentType', { paymentType: 'COD' })
           .getCount()
         : Promise.resolve(null)
