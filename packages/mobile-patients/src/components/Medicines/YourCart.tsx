@@ -929,6 +929,13 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
               onPressAdd={() => {}}
               onPressRemove={() => {
                 CommonLogEvent(AppRoutes.YourCart, 'Remove item from cart');
+                const eventAttributes: WebEngageEvents[WebEngageEventName.ITEMS_REMOVED_FROM_CART] = {
+                  'Customer ID': currentPatient && currentPatient!.id,
+                  'No. of items': medicine.quantity,
+                  'Product ID': medicine.id,
+                  'Product Name': medicine.name,
+                };
+                postWebEngageEvent(WebEngageEventName.ITEMS_REMOVED_FROM_CART, eventAttributes);
                 onRemoveCartItem(medicine);
               }}
               onChangeUnit={(unit) => {
@@ -1334,6 +1341,10 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
           if (cartTotal == 0) {
             renderAlert('Please add items in the cart to apply coupon.');
           } else {
+            const eventAttributes: WebEngageEvents[WebEngageEventName.CART_APPLY_COUPON_CLCIKED] = {
+              'Customer ID': currentPatient && currentPatient!.id,
+            };
+            postWebEngageEvent(WebEngageEventName.CART_APPLY_COUPON_CLCIKED, eventAttributes);
             props.navigation.navigate(AppRoutes.ApplyCouponScene);
             setCoupon!(null);
           }

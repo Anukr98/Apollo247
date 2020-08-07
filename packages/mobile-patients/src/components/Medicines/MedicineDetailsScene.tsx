@@ -211,10 +211,12 @@ export interface MedicineDetailsSceneProps
     title: string;
     movedFrom: string;
     deliveryError: string;
+    sectionName?: string;
   }> {}
 
 export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props) => {
   const _deliveryError = props.navigation.getParam('deliveryError');
+  const sectionName = props.navigation.getParam('sectionName');
   const [medicineDetails, setmedicineDetails] = useState<MedicineProductDetails>(
     {} as MedicineProductDetails
   );
@@ -432,7 +434,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       isInStock: true,
       maxOrderQty: MaxOrderQty,
     });
-    postwebEngageAddToCartEvent(item, 'Pharmacy PDP');
+    postwebEngageAddToCartEvent(item, 'Pharmacy PDP', sectionName);
     let id = currentPatient && currentPatient.id ? currentPatient.id : '';
     postAppsFlyerAddToCartEvent(item, id);
   };
@@ -446,13 +448,6 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
 
   const fetchDeliveryTime = async () => {
     if (!pincode) return;
-    const eventAttributes: WebEngageEvents[WebEngageEventName.PRODUCT_DETAIL_PINCODE_CHECK] = {
-      'product id': sku,
-      'product name': medicineDetails.name,
-      pincode: Number(pincode),
-      'customer id': currentPatient && currentPatient.id ? currentPatient.id : '',
-    };
-    postWebEngageEvent(WebEngageEventName.PRODUCT_DETAIL_PINCODE_CHECK, eventAttributes);
     const unServiceableMsg = 'Sorry, not serviceable in your area.';
     const pincodeServiceableItemOutOfStockMsg = 'Sorry, this item is out of stock in your area.';
     const genericServiceableDate = moment()
@@ -488,7 +483,17 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     })
       .then((res) => {
         const deliveryDate = g(res, 'data', 'tat', '0' as any, 'deliverydate');
+        const currentDate = moment();
         if (deliveryDate) {
+          const eventAttributes: WebEngageEvents[WebEngageEventName.PRODUCT_DETAIL_PINCODE_CHECK] = {
+            'product id': sku,
+            'product name': medicineDetails.name,
+            pincode: Number(pincode),
+            'customer id': currentPatient && currentPatient.id ? currentPatient.id : '',
+            'TAT Displayed': moment(deliveryDate).diff(currentDate, 'd'),
+            Serviceable: pinCodeNotServiceable ? 'No' : 'Yes',
+          };
+          postWebEngageEvent(WebEngageEventName.PRODUCT_DETAIL_PINCODE_CHECK, eventAttributes);
           if (isDeliveryDateWithInXDays(deliveryDate)) {
             setdeliveryTime(deliveryDate);
             setdeliveryError('');
@@ -748,6 +753,12 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
                     heading: medicineDetails.name,
                   });
                 }
+
+                const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_DETAIL_IMAGE_CLICK] = {
+                  'Product ID': sku,
+                  'Product Name': medicineName,
+                };
+                postWebEngageEvent(WebEngageEventName.PHARMACY_DETAIL_IMAGE_CLICK, eventAttributes);
               }}
             >
               {!!imagesListLength ? (
