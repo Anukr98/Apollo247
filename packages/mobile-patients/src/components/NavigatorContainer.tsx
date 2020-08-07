@@ -24,7 +24,6 @@ import { UploadPrescription } from '@aph/mobile-patients/src/components/Medicine
 import { YourCart } from '@aph/mobile-patients/src/components/Medicines/YourCart';
 import { YourCartUploadPrescriptions } from '@aph/mobile-patients/src/components/Medicines/YourCartUploadPrescriptions';
 import { MultiSignup } from '@aph/mobile-patients/src/components/MultiSignup';
-import { Onboarding } from '@aph/mobile-patients/src/components/Onboarding';
 import { OrderDetailsScene } from '@aph/mobile-patients/src/components/OrderDetailsScene';
 import { OrderModifiedScreen } from '@aph/mobile-patients/src/components/OrderModifiedScreen';
 import { OTPVerification } from '@aph/mobile-patients/src/components/OTPVerification';
@@ -91,9 +90,8 @@ import MyPaymentsScreen from '@aph/mobile-patients/src/components/MyPayments/MyP
 import PaymentStatusScreen from '@aph/mobile-patients/src/components/MyPayments/PaymentStatus/PaymentStatusScreen';
 import { ConsultTypeScreen } from './ConsultRoom/ConsultTypeScreen';
 import { CommonWebView } from '@aph/mobile-patients/src/components/CommonWebView';
-
+import { RefundStatus } from '@aph/mobile-patients/src/components/RefundStatus';
 export enum AppRoutes {
-  Onboarding = 'Onboarding',
   Login = 'Login',
   ConsultRoom = 'ConsultRoom',
   ApplyConsultCoupon = 'ApplyConsultCoupon',
@@ -174,17 +172,12 @@ export enum AppRoutes {
   OneApolloMembership = 'OneApolloMembership',
   ConsultTypeScreen = 'ConsultTypeScreen',
   CommonWebView = 'CommonWebView',
+  RefundStatus = 'RefundStatus',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
 
 const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
-  [AppRoutes.Onboarding]: {
-    screen: Onboarding,
-    navigationOptions: {
-      header: null,
-    },
-  },
   [AppRoutes.TabBar]: {
     screen: TabBar,
     navigationOptions: {
@@ -458,6 +451,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.CommonWebView]: {
     screen: CommonWebView,
+  },
+  [AppRoutes.RefundStatus]: {
+    screen: RefundStatus,
   },
 };
 

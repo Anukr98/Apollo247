@@ -1068,6 +1068,8 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 const ringtoneUrl = require('../images/phone_ringing.mp3');
+const joinToneUrl = require('../images/join_sound.mp3');
+const exitToneUrl = require('../images/left_sound.mp3');
 
 interface errorObject {
   reasonError: boolean;
@@ -1197,6 +1199,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const doctorAutoResponse = '^^#doctorAutoResponse';
   const patientJoinedMeetingRoom = '^^#patientJoinedMeetingRoom';
   const leaveChatRoom = '^^#leaveChatRoom';
+  const videoCallEnded = 'Video call ended';
 
   const [startConsultDisableReason, setStartConsultDisableReason] = useState<string>('');
   const [iscallAbandonment, setIscallAbandonment] = React.useState<boolean>(false);
@@ -1458,6 +1461,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const [consultStart, setConsultStart] = useState<boolean>(false);
   const [sendToPatientButtonDisable, setSendToPatientButtonDisable] = useState<boolean>(false);
   const [playRingtone, setPlayRingtone] = useState<boolean>(false);
+  const [playJoinTone, setPlayJoinTone] = useState<boolean>(false);
+  const [playExitTone, setPlayExitTone] = useState<boolean>(false);
   const [isCall, setIscall] = React.useState(true);
 
   //OT Error state
@@ -1837,10 +1842,14 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       if (lastMsg.message && lastMsg.message.message === acceptcallMsg) {
         setIsCallAccepted(true);
         setPlayRingtone(false);
+        setPlayJoinTone(true);
+        setPlayExitTone(false);
         clearInterval(intervalMissCall);
         missedCallCounter = 0;
       }
       if (lastMsg.message && lastMsg.message.message === stopcallMsg) {
+        setPlayJoinTone(false);
+        setPlayExitTone(true);
         setTimeout(() => {
           if (isCall) forcelyDisconnect();
         }, 2000);
@@ -1852,6 +1861,12 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       ) {
         setPlayRingtone(true);
         setJoinPrompt(true);
+      }
+      if (isConsultStarted && lastMsg.message && lastMsg.message.message === videoCallEnded) {
+        setPlayRingtone(false);
+        setJoinPrompt(false);
+        setFloatingJoinPrompt(false);
+        setPlayExitTone(true);
       }
     }
   }, [props.lastMsg]);
@@ -2253,6 +2268,20 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         </audio>
       )}
 
+      {playJoinTone && (
+        <audio controls autoPlay className={classes.ringtone}>
+          <source src={joinToneUrl} type="audio/mpeg" />
+          Your browser does not support the audio tag.
+        </audio>
+      )}
+
+      {playExitTone && (
+        <audio controls autoPlay className={classes.ringtone}>
+          <source src={exitToneUrl} type="audio/mpeg" />
+          Your browser does not support the audio tag.
+        </audio>
+      )}
+
       <div className={classes.breadcrumbs}>
         <div>
           {(props.appointmentStatus !== STATUS.COMPLETED || props.isClickedOnEdit) && (
@@ -2263,9 +2292,13 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
             onClick={() => {
               pubnub.publish(
                 {
-                  message: leaveChatRoom,
+                  message: {
+                    isTyping: true,
+                    message: leaveChatRoom,
+                  },
                   channel: channel,
-                  storeInHistory: true,
+                  storeInHistory: false,
+                  sendByPost: false,
                 },
                 (status: any, response: any) => {}
               );

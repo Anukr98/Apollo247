@@ -21,8 +21,8 @@ import { ApiConstants } from 'ApiConstants';
 import { log } from 'customWinstonLogger';
 
 interface PaginateParams {
-  take?: number,
-  skip?: number
+  take?: number;
+  skip?: number;
 }
 
 const REDIS_ORDER_AUTO_ID_KEY_PREFIX: string = 'orderAutoId:';
@@ -186,7 +186,7 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
   getMedicineOrderDetailsByAp(apOrderNo: string) {
     return this.findOne({
       where: { apOrderNo },
-      relations: ['patient', 'medicineOrderLineItems'],
+      relations: ['patient', 'medicineOrderLineItems', 'medicineOrderPayments'],
     });
   }
 
@@ -274,7 +274,7 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
         'patient',
       ],
       //extra params...
-      ...paginate
+      ...paginate,
     });
   }
 
@@ -365,7 +365,7 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
         'patient',
       ],
       //extra params...
-      ...paginate
+      ...paginate,
     });
   }
 
@@ -732,5 +732,5 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
       });
     }
     return medicineOrderDetails;
-  };
+  }
 }

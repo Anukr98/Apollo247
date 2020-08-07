@@ -33,6 +33,7 @@ const listOfPaymentMethods = require('./consult-integrations/helpers/list-of-pay
 
 const { getAddressDetails } = require('./commons/getAddressDetails');
 const { getMedicineOrderQuery } = require('./pharma-integrations/helpers/medicine-order-query');
+const getPrescriptionUrls = require('./pharma-integrations/controllers/pharma-prescription-urls');
 
 require('dotenv').config();
 
@@ -1084,18 +1085,24 @@ app.get('/processOmsOrders', (req, res) => {
                     differenceInYears(new Date(), parseISO(patientDetails.dateOfBirth))
                   );
                 }
-                const orderPrescriptionUrl = [];
+                let orderPrescriptionUrl = [];
                 let prescriptionImages = [];
                 if (orderDetails.prescriptionImageUrl) {
                   prescriptionImages = orderDetails.prescriptionImageUrl.split(',');
                 }
                 if (prescriptionImages.length > 0) {
-                  prescriptionImages.map((imageUrl) => {
-                    const url = {
-                      url: imageUrl,
-                    };
-                    orderPrescriptionUrl.push(url);
-                  });
+                  try {
+                    orderPrescriptionUrl = await getPrescriptionUrls(
+                      prescriptionImages,
+                      patientDetails
+                    );
+                  } catch (e) {
+                    logger.error(
+                      `Error while fetching prescription urls for orderid ${
+                        orderDetails.orderAutoId
+                      } ${JSON.stringify(e)}`
+                    );
+                  }
                 }
                 if (!orderDetails.orderTat) {
                   orderDetails.orderTat = '';
