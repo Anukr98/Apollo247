@@ -55,20 +55,17 @@ import {
   getNearByStoreDetailsApi,
   callToExotelApi,
   OfferBannerSection,
+  DealsOfTheDaySection,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   doRequestAndAccessLocationModified,
   g,
   isValidSearch,
-  postAppsFlyerAddToCartEvent,
-  postwebEngageAddToCartEvent,
   postWebEngageEvent,
   addPharmaItemToCart,
   productsThumbnailUrl,
   reOrderMedicines,
   getMaxQtyForMedicineItem,
-  doRequestAndAccessLocation,
-  getNetStatus,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { postMyOrdersClicked } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import {
@@ -98,7 +95,7 @@ import {
   ViewStyle,
   Platform,
 } from 'react-native';
-import { Image, Input, ListItem } from 'react-native-elements';
+import { Image, ListItem } from 'react-native-elements';
 import { FlatList, NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
 import { MedicineSearchSuggestionItem } from '@aph/mobile-patients/src/components/Medicines/MedicineSearchSuggestionItem';
 import Carousel from 'react-native-snap-carousel';
@@ -118,26 +115,6 @@ import {
 import { getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails } from '@aph/mobile-patients/src/graphql/types/getMedicineOrderOMSDetails';
 
 const styles = StyleSheet.create({
-  hiTextStyle: {
-    marginLeft: 20,
-    color: '#02475b',
-    ...theme.fonts.IBMPlexSansSemiBold(36),
-  },
-  nameTextContainerStyle: {
-    maxWidth: '65%',
-  },
-  nameTextStyle: {
-    marginLeft: 5,
-    color: '#02475b',
-    ...theme.fonts.IBMPlexSansSemiBold(36),
-  },
-  seperatorStyle: {
-    height: 2,
-    backgroundColor: '#00b38e',
-    //marginTop: 5,
-    marginHorizontal: 5,
-    marginBottom: 6,
-  },
   sliderDotStyle: {
     height: 8,
     width: 8,
@@ -231,7 +208,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       Brand: '',
       'Brand ID': '',
       'category name': '',
-      'category ID': category_id,
+      'category ID': category_id!,
       Source: source,
       'Section Name': sectionName,
     };
@@ -471,18 +448,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         moment() >= moment(banner.start_time, 'YYYY-MM-DD hh:mm:ss') &&
         moment() <= moment(banner.end_time, 'YYYY-MM-DD hh:mm:ss')
     );
-  const healthAreas = g(data, 'healthareas') || [];
-  const dealsOfTheDay = g(data, 'deals_of_the_day') || [];
-  const shopByCategory = g(data, 'shop_by_category') || [];
-  const shopByBrand = g(data, 'shop_by_brand') || [];
-  const hotSellers = g(data, 'hot_sellers', 'products') || [];
-  const hotSellersCategoryId = g(data, 'hot_sellers', 'category_id') || [];
-  const monsoonEssentials = g(data, 'monsoon_essentials', 'products') || [];
-  const monsoonEssentialsCategoryId = g(data, 'monsoon_essentials', 'category_id') || 0;
-  const widget2 = g(data, 'widget_2', 'products') || [];
-  const widget2CategoryId = g(data, 'widget_2', 'category_id') || 0;
-  const widget3 = g(data, 'widget_3', 'products') || [];
-  const widget3CategoryId = g(data, 'widget_3', 'category_id') || 0;
 
   useEffect(() => {
     if (!loading && !banners.length) {
@@ -823,7 +788,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const { width: winWidth } = Dimensions.get('window');
   const [bannerLoading, setBannerLoading] = useState(true);
 
-  const renderBannerImageToGetAspectRatio = () => {
+  const renderBannerImageToGetHeightWidth = () => {
     const imageUri = g(banners, '0' as any, 'image');
     const imageFullUri = imageUri ? productsThumbnailUrl(imageUri) : '';
     return (
@@ -1265,7 +1230,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     );
   };
 
-  const renderDealsOfTheDay = (title: string) => {
+  const renderDealsOfTheDay = (title: string, dealsOfTheDay: DealsOfTheDaySection[]) => {
     if (dealsOfTheDay.length == 0) return null;
     return (
       <View>
@@ -1548,7 +1513,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     );
   };
 
-  const renderShopByBrand = (title: string) => {
+  const renderShopByBrand = (title: string, shopByBrand: MedicinePageSection[]) => {
     if (shopByBrand.length == 0) return null;
     return (
       <View>
@@ -1883,65 +1848,61 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     );
   };
 
-  const renderRecommendedProducts = () => {
-    return renderHotSellers(string.medicine.recommendedForYou, recommendedProducts, -1);
-  };
-
   const renderSections = () => {
-    const info = AppConfig.Configuration.PHARMACY_HOMEPAGE_INFO;
-    const sectionMapping = {
-      healthareas: renderCategories,
-      deals_of_the_day: renderDealsOfTheDay,
-      shop_by_category: renderCategories,
-      shop_by_brand: renderShopByBrand,
-      hot_sellers: renderHotSellers,
-      monsoon_essentials: renderHotSellers,
-      widget_2: renderHotSellers,
-      widget_3: renderHotSellers,
-      renderBannerImageToGetAspectRatio: renderBannerImageToGetAspectRatio,
-      banners: renderBanners,
-      orders: renderYourOrders,
-      upload_prescription: renderUploadPrescriptionSection,
-      recommended_products: renderRecommendedProducts,
-    };
-    const sectionDataMapping = {
-      healthareas: [healthAreas, 0],
-      deals_of_the_day: [[], 0],
-      shop_by_category: [shopByCategory, 0],
-      shop_by_brand: [[], 0],
-      hot_sellers: [hotSellers, hotSellersCategoryId],
-      monsoon_essentials: [monsoonEssentials, monsoonEssentialsCategoryId],
-      widget_2: [widget2, widget2CategoryId],
-      widget_3: [widget3, widget3CategoryId],
-      renderBannerImageToGetAspectRatio: [[], 0],
-      banners: [[], 0],
-      orders: [[], 0],
-      upload_prescription: [[], 0],
-      recommended_products: [[], 0],
-    };
-    const bannersKey = info.findIndex((i) => i.section_key == 'banners');
+    if (loading) {
+      return renderSectionLoader();
+    }
+    if (!data) {
+      return null;
+    }
+    const metaData = g(data, 'metadata') || [];
+    const staticSectionKeys = [
+      'banners',
+      'bannerImage',
+      'orders',
+      'upload_prescription',
+      'recommended_products',
+      'shop_by_brand',
+    ];
+
+    const bannersKey = metaData.findIndex((i) => i.section_key == 'banners');
     const sectionsView = [
       {
-        section_key: 'renderBannerImageToGetAspectRatio',
-        section_name: 'Banners',
-        section_position: bannersKey > -1 ? info[bannersKey].section_position : '0',
-        visible: bannersKey > -1 ? info[bannersKey].visible : false,
+        section_key: 'bannerImage',
+        section_name: 'Banner Image',
+        section_position: bannersKey > -1 ? metaData[bannersKey].section_position : 0,
+        visible: bannersKey > -1 ? metaData[bannersKey].visible : false,
       },
-      ...info,
+      ...metaData,
     ]
       .filter((item) => item.visible)
       .sort((a, b) => Number(a.section_position) - Number(b.section_position))
-      .map((item) => {
-        const sectionsView =
-          item.section_key &&
-          item.section_name &&
-          sectionMapping[item.section_key as keyof typeof sectionMapping];
-        const sectionData =
-          sectionsView && sectionDataMapping[item.section_key as keyof typeof sectionDataMapping];
+      .map(({ section_key, section_name }) => {
+        const isStaticSection = staticSectionKeys.includes(section_key);
+        if (isStaticSection) {
+          return section_key === 'banners'
+            ? renderBanners()
+            : section_key === 'bannerImage'
+            ? renderBannerImageToGetHeightWidth()
+            : section_key === 'orders'
+            ? renderYourOrders()
+            : section_key === 'upload_prescription'
+            ? renderUploadPrescriptionSection()
+            : section_key === 'recommended_products'
+            ? renderHotSellers(section_name, recommendedProducts, -1)
+            : section_key === 'shop_by_brand'
+            ? renderShopByBrand(section_name, data[section_key])
+            : null;
+        } else {
+          const products = g(data, section_key, 'products');
+          const isCategoriesType = g(data, section_key, '0', 'title');
 
-        return sectionsView
-          ? sectionsView(item.section_name, sectionData[0] as [], sectionData[1] as number)
-          : null;
+          return products
+            ? renderHotSellers(section_name, products, g(data, section_key, 'category_id'))
+            : isCategoriesType
+            ? renderCategories(section_name, data[section_key])
+            : renderDealsOfTheDay(section_name, data[section_key]);
+        }
       });
 
     return (
