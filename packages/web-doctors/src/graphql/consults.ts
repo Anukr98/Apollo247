@@ -1,8 +1,8 @@
 import gql from 'graphql-tag';
 
 export const GET_CONSULT_QUEUE = gql`
-  query GetConsultQueue($doctorId: String!) {
-    getConsultQueue(doctorId: $doctorId) {
+  query GetConsultQueue($doctorId: String!, $isActive: Boolean) {
+    getConsultQueue(doctorId: $doctorId, isActive: $isActive) {
       consultQueue {
         id
         isActive
