@@ -118,6 +118,7 @@ export const getPatientMedicalRecordsTypeDefs = gql`
     additionalNotes: String
     consultId: String
     tag: String
+    siteDisplayName: String
     labTestResults: [LabTestFileParameters]
     fileUrl: String!
     date: Date!
@@ -282,7 +283,8 @@ const getPatientPrismMedicalRecords: Resolver<
   PrismMedicalRecordsResult
 > = async (parent, args, { mobileNumber, profilesDb }) => {
   const patientsRepo = profilesDb.getCustomRepository(PatientRepository);
-  const patientDetails = await patientsRepo.findById(args.patientId);
+  const patientDetails = await patientsRepo.getPatientDetails(args.patientId);
+
   if (!patientDetails) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
 
   if (!patientDetails.uhid) throw new AphError(AphErrorMessages.INVALID_UHID);

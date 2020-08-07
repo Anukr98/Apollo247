@@ -15,7 +15,7 @@ import DialogContentText from '@material-ui/core/DialogContentText';
 import { AddChatDocument, AddChatDocumentVariables } from 'graphql/types/AddChatDocument';
 import { ADD_CHAT_DOCUMENT } from 'graphql/profiles';
 import { useApolloClient } from 'react-apollo-hooks';
-import { REQUEST_ROLES } from 'graphql/types/globalTypes';
+import { REQUEST_ROLES, WebEngageEvent } from 'graphql/types/globalTypes';
 import { GetCaseSheet_getCaseSheet_caseSheetDetails_appointment_appointmentDocuments as appointmentDocument } from 'graphql/types/GetCaseSheet';
 import { useAuth } from 'hooks/authHooks';
 import ReactPanZoom from 'react-image-pan-zoom-rotate';
@@ -370,6 +370,8 @@ interface ConsultRoomProps {
   sessionClient: any;
   lastMsg: any;
   messages: MessagesObjectProps[];
+  postDoctorConsultEventAction: (eventType: WebEngageEvent) => void;
+  appointmentStatus: string;
 }
 
 let timerIntervalId: any;
@@ -514,6 +516,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       (status: any, response: any) => {
         setMessageText('');
         srollToBottomAction();
+        if (props.appointmentStatus === 'COMPLETED') {
+          props.postDoctorConsultEventAction(WebEngageEvent.DOCTOR_SENT_MESSAGE);
+        }
       }
     );
   };
@@ -607,6 +612,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       },
       (status: any, response: any) => {
         resetMessagesAction();
+        if (props.appointmentStatus === 'COMPLETED') {
+          props.postDoctorConsultEventAction(WebEngageEvent.DOCTOR_SENT_MESSAGE);
+        }
       }
     );
   };
@@ -803,14 +811,16 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 {rowData.message === documentUpload ? (
                   <div
                     onClick={() => {
-                      if (rowData.url.substr(-4).toLowerCase() !== '.pdf') {
-                        setModalOpen(true);
-                        setImgPrevUrl(rowData.url);
-                      }
+                      setModalOpen(rowData.fileType === 'pdf' ? false : true);
+                      setImgPrevUrl(rowData.url);
                     }}
                     className={classes.imageUpload}
                   >
-                    {rowData.url.substr(-4).toLowerCase() !== '.pdf' ? (
+                    {rowData.fileType === 'pdf' ? (
+                      <a href={rowData.url} target="_blank">
+                        <img src={require('images/pdf_thumbnail.png')} />
+                      </a>
+                    ) : (
                       <img
                         src={rowData.url}
                         alt={rowData.url}
@@ -818,10 +828,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                           handleImageError(e, rowData.url);
                         }}
                       />
-                    ) : (
-                      <a href={rowData.url} target="_blank">
-                        <img src={require('images/pdf_thumbnail.png')} />
-                      </a>
                     )}
                     {rowData.messageDate && (
                       <div className={classes.timeStampImg}>

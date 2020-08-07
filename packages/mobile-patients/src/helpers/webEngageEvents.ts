@@ -47,7 +47,8 @@ export enum WebEngageEventName {
   UPLOAD_PRESCRIPTION_CLICKED = 'Pharmacy Upload Prescription Clicked',
   UPLOAD_PRESCRIPTION_IMAGE_UPLOADED = 'Upload Prescription Image Uploaded',
   UPLOAD_PRESCRIPTION_OPTION_SELECTED = 'Upload Prescription Option Selected',
-  PHARMACY_SUBMIT_PRESCRIPTION = 'Pharmacy Submit Prescription',
+  UPLOAD_PRESCRIPTION_SUBMIT_CLICKED = 'Upload Prescription Submit Clicked',
+  PHARMACY_SUBMIT_PRESCRIPTION = 'Upload Prescription Proceed Clicked',
   PHARMACY_CHECKOUT_COMPLETED = 'Pharmacy Checkout completed',
   DIAGNOSTIC_CHECKOUT_COMPLETED = 'Diagnostic Checkout completed',
   DOCTOR_SEARCH = 'Doctor Search',
@@ -107,7 +108,6 @@ export enum WebEngageEventName {
   UPLOAD_PRESCRIPTION = 'Upload Prescription',
   UPLOAD_PHOTO = 'Upload Photo',
   ITEMS_CLICKED = 'Items Clicked',
-  REORDER_MEDICINES = 'Reorder Medicines',
   PHR_ORDER_MEDS_TESTS = 'PHR Order Meds & Tests',
   PHR_CONSULT_CARD_CLICK = 'PHR Consult Card click',
   RE_ORDER_MEDICINE = 'ReOrder Medicine',
@@ -133,7 +133,8 @@ export enum WebEngageEventName {
   CONTINUE_CONSULTATION_CLICKED = 'Continue Consultation Clicked', // In appointment details screen
   NO_SLOTS_FOUND = 'No Slots Found', // In appointment details screen
   DOCTOR_RESCHEDULE_CLAIM_REFUND = 'Doctor reschedule and Claim Refund button click',
-
+  DOCTOR_CONNECT_TAB_CLICKED = 'Doctor Connect Tab Clicked',
+  APOLLO_DOCTOR_TAB_CLICKED = 'Apollo Doctor Tab Clicked',
   // Medicine Events
   PHARMACY_AUTO_SELECT_LOCATION_CLICKED = 'Pharmacy Auto Select Location Clicked',
   PHARMACY_ENTER_DELIVERY_PINCODE_CLICKED = 'Pharmacy Enter Delivery Pincode Clicked',
@@ -146,6 +147,11 @@ export enum WebEngageEventName {
   PAYMENT_INSTRUMENT = 'Payment Instrument',
   PAYMENT_STATUS = 'Payment Status',
   CONSULT_PAYMENT_MODE_SELECTED = 'Consult booking payment mode selected',
+
+  // Deeplink Events
+  HOME_PAGE_VIEWED = 'Pharmacy Home page viewed',
+  PRODUCT_PAGE_VIEWED = 'Product page viewed',
+  CATEGORY_PAGE_VIEWED = 'Category page viewed',
 }
 
 export interface PatientInfo {
@@ -197,9 +203,9 @@ export interface ConsultedBefore extends PatientInfo {
 }
 
 export interface ReorderMedicine extends PatientInfo {
-  source: 'Order Details' | 'PHR';
+  source: string;
   orderType: 'Cart' | 'Non Cart' | 'Offline';
-  noOfItemsNotAvailable: number;
+  noOfItemsNotAvailable?: number;
 }
 
 export interface WebEngageEvents {
@@ -474,7 +480,13 @@ export interface WebEngageEvents {
     Source: 'Home' | 'Cart';
   };
   [WebEngageEventName.UPLOAD_PRESCRIPTION_OPTION_SELECTED]: {
-    OptionSelected: 'Search and add' | 'All Medicine' | 'call';
+    OptionSelected: 'Search and add' | 'All Medicine' | 'Call me for details';
+  };
+  [WebEngageEventName.UPLOAD_PRESCRIPTION_SUBMIT_CLICKED]: {
+    OptionSelected: 'Search and add' | 'All Medicine' | 'Call me for details';
+    NumberOfPrescriptionClicked: number;
+    NumberOfPrescriptionUploaded: number;
+    NumberOfEPrescriptions: number;
   };
   [WebEngageEventName.UPLOAD_PRESCRIPTION_IMAGE_UPLOADED]: {
     Source: 'Take a Photo' | 'Choose Gallery' | 'E-Rx';
@@ -556,7 +568,8 @@ export interface WebEngageEvents {
   };
 
   // ********** ConsultEvents ********** \\
-
+  [WebEngageEventName.APOLLO_DOCTOR_TAB_CLICKED]: UserInfo;
+  [WebEngageEventName.DOCTOR_CONNECT_TAB_CLICKED]: UserInfo;
   [WebEngageEventName.CONSULT_PAYMENT_MODE_SELECTED]: {
     'Payment Mode': string;
   };
@@ -890,8 +903,6 @@ export interface WebEngageEvents {
     Type: 'Prescription' | 'Test Result';
   };
 
-  [WebEngageEventName.REORDER_MEDICINES]: ReorderMedicines;
-
   [WebEngageEventName.PHR_ORDER_MEDS_TESTS]: PatientInfoWithConsultId;
 
   [WebEngageEventName.PHR_CONSULT_CARD_CLICK]: PatientInfoWithConsultId;
@@ -1220,5 +1231,18 @@ export interface WebEngageEvents {
     'Appointment ID': string;
     Type: string;
     'Patient Id': string;
+  };
+  [WebEngageEventName.HOME_PAGE_VIEWED]: {
+    source: 'deeplink' | 'app home';
+  };
+  [WebEngageEventName.PRODUCT_PAGE_VIEWED]: {
+    source: 'deeplink' | 'widget' | 'search';
+    ProductId: string;
+    ProductName: string;
+  };
+  [WebEngageEventName.CATEGORY_PAGE_VIEWED]: {
+    source: 'home' | 'deeplink';
+    CategoryId: string;
+    CategoryName: string;
   };
 }

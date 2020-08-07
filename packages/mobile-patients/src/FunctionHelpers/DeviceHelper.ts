@@ -6,20 +6,17 @@
 
 import { Dimensions, Platform } from 'react-native';
 import firebase from 'react-native-firebase';
-import { aphConsole } from '../helpers/helperFunctions';
-import { AppConfig } from '../strings/AppConfig';
+import { aphConsole } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { AppConfig, AppEnv } from '@aph/mobile-patients/src/strings/AppConfig';
 import { Client } from 'bugsnag-react-native';
-import { DEVICE_TYPE } from '../graphql/types/globalTypes';
 import AsyncStorage from '@react-native-community/async-storage';
 import Bugfender from '@bugfender/rn-bugfender';
 
 const { height, width } = Dimensions.get('window');
 const bugsnag = new Client();
-const isReleaseOn = AppConfig.Configuration.ANALYTICAL_ENIVRONMENT == 'release';
-const isEnvironment = AppConfig.Configuration.LOG_ENVIRONMENT;
+const isReleaseOn = AppConfig.APP_ENV == AppEnv.PROD;
 
 Bugfender.init('brmAJ2pHunypOwF6EpcWyOf5mffsl2Ea');
-// Bugfender.init('CYHmWcrPEVpLXBHk2653OhhU3uHwyhwU');
 
 export const isIphone5s = () => height === 568;
 

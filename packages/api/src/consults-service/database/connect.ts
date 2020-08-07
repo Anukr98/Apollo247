@@ -52,6 +52,7 @@ import {
   DoctorPatientExternalConnect,
   Deeplink,
   AdminAuditLogs,
+  DoctorProfileHistory,
 } from 'doctors-service/entities';
 import 'reflect-metadata';
 import { createConnections } from 'typeorm';
@@ -79,6 +80,7 @@ import {
   MedicineOrders,
   MedicineOrdersStatus,
   MedicineOrderShipments,
+  MedicineOrderRefunds,
   Patient,
   PatientAddress,
   PatientDeviceTokens,
@@ -94,6 +96,7 @@ import {
   CouponPharmaRules,
   MedicineOrderCancelReason,
   PharmacologistConsult,
+  MedicineOrderAddress,
 } from 'profiles-service/entities';
 
 export const connect = async () => {
@@ -166,6 +169,7 @@ export const connect = async () => {
         CityPincodeMapper,
         DoctorPatientExternalConnect,
         AdminAuditLogs,
+        DoctorProfileHistory,
       ],
       type: 'postgres',
       host: process.env.DOCTORS_DB_HOST,
@@ -205,6 +209,7 @@ export const connect = async () => {
         MedicineOrders,
         MedicineOrdersStatus,
         MedicineOrderShipments,
+        MedicineOrderRefunds,
         Patient,
         PatientAddress,
         PatientDeviceTokens,
@@ -219,6 +224,7 @@ export const connect = async () => {
         RegistrationCodes,
         MedicineOrderCancelReason,
         PharmacologistConsult,
+        MedicineOrderAddress,
       ],
       type: 'postgres',
       host: process.env.PROFILES_DB_HOST,

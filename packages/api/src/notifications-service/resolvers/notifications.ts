@@ -12,6 +12,7 @@ import {
   MedicineOrders,
   DiagnosticOrders,
   MEDICINE_ORDER_PAYMENT_TYPE,
+  DEVICE_TYPE
 } from 'profiles-service/entities';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { AppointmentRefundsRepository } from 'consults-service/repositories/appointmentRefundsRepository';
@@ -21,7 +22,14 @@ import { TransferAppointmentRepository } from 'consults-service/repositories/tra
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { MedicineOrdersRepository } from 'profiles-service/repositories/MedicineOrdersRepository';
 import { FacilityRepository } from 'doctors-service/repositories/facilityRepository';
-import { addMilliseconds, format, differenceInMinutes, addDays, differenceInHours } from 'date-fns';
+import {
+  addMilliseconds,
+  format,
+  differenceInMinutes,
+  addDays,
+  differenceInHours,
+  addMinutes,
+} from 'date-fns';
 import path from 'path';
 import fs from 'fs';
 import { log } from 'customWinstonLogger';
@@ -29,6 +37,7 @@ import { APPOINTMENT_TYPE, Appointment, STATUS } from 'consults-service/entities
 import Pubnub from 'pubnub';
 import fetch from 'node-fetch';
 import { Doctor, DoctorType } from 'doctors-service/entities';
+import * as child_process from 'child_process'; 
 
 export const getNotificationsTypeDefs = gql`
   type PushNotificationMessage {
@@ -183,6 +192,11 @@ export enum NotificationPriority {
   normal = 'normal',
 }
 
+type MedicineOrderRefundNotificationInput = {
+  refundAmount: number;
+  healthCreditsRefund: number;
+};
+
 type PushNotificationInput = {
   notificationType: NotificationType;
   appointmentId: string;
@@ -217,7 +231,7 @@ export const sendNotificationWhatsapp = async (
   message: string,
   loginType: number
 ) => {
-  const apiUrl =
+  /*const apiUrl =
     process.env.WHATSAPP_URL +
     '?method=OPT_IN&phone_number=' +
     mobileNumber +
@@ -241,7 +255,8 @@ export const sendNotificationWhatsapp = async (
     .catch((error) => {
       throw new AphError(AphErrorMessages.GET_OTP_ERROR);
     });
-  return whatsAppResponse;
+  return whatsAppResponse;*/
+  return true;
 };
 
 export const sendDoctorNotificationWhatsapp = async (
@@ -349,6 +364,26 @@ export async function sendCallsNotification(
   const patientDetails = await patientRepo.getPatientDetails(appointment.patientId);
   if (patientDetails == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
 
+  const deviceTokenRepo = patientsDb.getCustomRepository(PatientDeviceTokenRepository);
+
+  const voipPushtoken = await deviceTokenRepo.getDeviceVoipPushToken(patientDetails.id, DEVICE_TYPE.IOS);
+  if(voipPushtoken.length && voipPushtoken[voipPushtoken.length-1]['deviceVoipPushToken']){
+    const token = voipPushtoken[voipPushtoken.length-1]['deviceVoipPushToken'];
+    const CERT_PATH = process.env.ASSETS_DIRECTORY + '/voipCert.pem';
+    const passphrase = "apollo@123";
+    const domain = "https://api.development.push.apple.com/3/device/";
+
+    try {
+      const curlCommand = `curl -v -d '{"name": ${doctorDetails.displayName}, "isVideo": ${true}, "appointmentId" : ${appointment.id}}' --http2 --cert ${CERT_PATH}:${passphrase} ${domain}${token}`;
+      const resp = child_process.execSync(curlCommand);
+      const result = resp.toString('UTF8');
+      console.info("voipCallKit result > ", result);
+
+    } catch (err){
+      console.info("voipCallKit error > ", err);
+    }
+  }
+
   if (callType == APPT_CALL_TYPE.CHAT && doctorType == DOCTOR_CALL_TYPE.SENIOR) {
     const devLink = process.env.DOCTOR_DEEP_LINK ? process.env.DOCTOR_DEEP_LINK : '';
     let whatsappMsg = ApiConstants.WHATSAPP_SD_CONSULT_START_REMINDER.replace(
@@ -382,7 +417,7 @@ export async function sendCallsNotification(
     if (callType == APPT_CALL_TYPE.CHAT) {
       notificationBody = ApiConstants.JUNIOR_CALL_APPOINTMENT_BODY;
       //send whatsapp message for junior doctor call
-      const devLink: any = process.env.DOCTOR_DEEP_LINK;
+      const devLink = process.env.DOCTOR_DEEP_LINK ? process.env.DOCTOR_DEEP_LINK : '';
       let whatsappMsg = ApiConstants.WHATSAPP_JD_CONSULT_START_REMINDER.replace(
         '{0}',
         patientDetails.firstName + ' ' + patientDetails.lastName
@@ -459,7 +494,7 @@ export async function sendCallsNotification(
   const listOfIds: string[] = [];
   allpatients.map((value) => listOfIds.push(value.id));
   console.log(listOfIds, 'listOfIds');
-  const deviceTokenRepo = patientsDb.getCustomRepository(PatientDeviceTokenRepository);
+
   const devicetokensofFamily = await deviceTokenRepo.deviceTokensOfAllIds(listOfIds);
   if (devicetokensofFamily.length > 0) {
     devicetokensofFamily.forEach((values) => {
@@ -545,9 +580,10 @@ export async function sendNotification(
   let notificationBody: string = '';
   const notificationSound: string = ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString();
   const istDateTime = addMilliseconds(appointment.appointmentDateTime, 19800000);
-  const apptDate = format(istDateTime, 'dd-MM-yyyy HH:mm');
-
-  //Your appointment has been cancelled
+  const apptDate = format(
+    addMinutes(new Date(appointment.appointmentDateTime), +330),
+    'yyyy-MM-dd HH:mm:ss'
+  );
   if (pushNotificationInput.notificationType == NotificationType.PATIENT_CANCEL_APPOINTMENT) {
     notificationTitle = ApiConstants.PATIENT_CANCEL_APPT_TITLE;
     notificationBody = ApiConstants.PATIENT_CANCEL_APPT_BODY.replace(
@@ -573,7 +609,9 @@ export async function sendNotification(
     doctorSMS = doctorSMS.replace('{1}', appointment.displayId.toString());
     doctorSMS = doctorSMS.replace('{2}', patientDetails.firstName);
     doctorSMS = doctorSMS.replace('{3}', apptDate.toString());
+
     sendNotificationSMS(doctorDetails.mobileNumber, doctorSMS);
+
     sendBrowserNotitication(doctorDetails.id, doctorSMS);
   }
 
@@ -759,10 +797,8 @@ export async function sendNotification(
     //sendNotificationWhatsapp(patientDetails.mobileNumber, smsLink);
 
     //send sms to doctor if Appointment DateTime is less than 24 hours
-    //const todaysDate = new Date(format(new Date(), 'yyyy-MM-dd') + 'T18:30:00');
-    //const yesterdaysDate = new Date(format(addDays(new Date(), -1), 'yyyy-MM-dd') + 'T18:30:00');
-
-    const todaysDate = new Date(format(new Date(), 'yyyy-MM-dd') + 'T23:59:00');
+    const todaysDateTime = addMilliseconds(new Date(), 19800000);
+    const todaysDate = new Date(format(todaysDateTime, 'yyyy-MM-dd') + 'T23:59:00');
     console.log(
       'check dates for todays date appt',
       appointment.appointmentDateTime,
@@ -771,10 +807,7 @@ export async function sendNotification(
       todaysDate,
       'todays date'
     );
-    if (
-      differenceInHours(appointment.appointmentDateTime, new Date()) <= 24 &&
-      new Date() < todaysDate
-    ) {
+    if (istDateTime <= todaysDate) {
       const finalTime = format(istDateTime, 'hh:mm a');
       const doctorWhatsAppMessage = ApiConstants.DOCTOR_BOOK_APPOINTMENT_WHATSAPP.replace(
         '{0}',
@@ -887,8 +920,12 @@ export async function sendNotification(
       '{2}',
       doctorDetails.firstName + ' ' + doctorDetails.lastName
     );
-    const istDateTime = addMilliseconds(appointment.appointmentDateTime, 19800000);
-    notificationBody = notificationBody.replace('{3}', format(istDateTime, 'yyyy-MM-dd hh:mm'));
+    //const istDateTime = addMilliseconds(appointment.appointmentDateTime, 19800000);
+    const apptDate = format(
+      addMinutes(new Date(appointment.appointmentDateTime), +330),
+      'yyyy-MM-dd HH:mm:ss'
+    );
+    notificationBody = notificationBody.replace('{3}', apptDate);
 
     /*let smsLink = process.env.SMS_LINK_BOOK_APOINTMENT
       ? ' Reschedule Now ' + process.env.SMS_LINK_BOOK_APOINTMENT
@@ -911,6 +948,8 @@ export async function sendNotification(
     );
     const istDateTime = addMilliseconds(appointment.appointmentDateTime, 19800000);
     notificationBody = notificationBody.replace('{3}', format(istDateTime, 'yyyy-MM-dd hh:mm'));
+    //sendNotificationSMS(doctorDetails.mobileNumber, notificationBody);
+
     sendNotificationSMS(doctorDetails.mobileNumber, notificationBody);
     //Send Browser Notification
     sendBrowserNotitication(doctorDetails.id, notificationBody);
@@ -1204,13 +1243,16 @@ export async function sendNotification(
       notificationResponse = response;
       //if (pushNotificationInput.notificationType == NotificationType.CALL_APPOINTMENT) {
       const fileName =
-        process.env.NODE_ENV + '_callnotification_' + format(new Date(), 'yyyyMMdd') + '.txt';
+        process.env.NODE_ENV +
+        '_callnotification_' +
+        format(addMinutes(new Date(), +330), 'yyyyMMdd') +
+        '.txt';
       let assetsDir = path.resolve('/apollo-hospitals/packages/api/src/assets');
       if (process.env.NODE_ENV != 'local') {
         assetsDir = path.resolve(<string>process.env.ASSETS_DIRECTORY);
       }
       let content =
-        format(new Date(), 'yyyy-MM-dd hh:mm') +
+        format(addMinutes(new Date(), +330), "yyyy-MM-dd'T'HH:mm:ss'+0530'") +
         '\n apptid: ' +
         pushNotificationInput.appointmentId +
         '\n';
@@ -1292,7 +1334,9 @@ export async function sendReminderNotification(
       '{0}',
       doctorDetails.firstName
     ).replace('{1}', patientDetails.firstName);
+
     sendNotificationSMS(doctorDetails.mobileNumber, doctorSMS);
+
     //Send Browser Notification
     sendBrowserNotitication(doctorDetails.id, doctorSMS);
   } else if (pushNotificationInput.notificationType == NotificationType.PHYSICAL_APPT_60) {
@@ -1441,6 +1485,7 @@ export async function sendReminderNotification(
       doctorSMS = doctorSMS.replace('{1}', patientDetails.firstName);
     }
     console.log('doctorSMS=======================', doctorSMS);
+
     sendNotificationSMS(doctorDetails.mobileNumber, doctorSMS);
     //send doctor sms ends
     //Send Browser Notification
@@ -1496,6 +1541,7 @@ export async function sendReminderNotification(
         '{0}',
         patientDetails.firstName
       );
+
       sendNotificationSMS(doctorDetails.mobileNumber, doctorSMS);
       sendBrowserNotitication(doctorDetails.id, doctorSMS);
     }
@@ -1524,6 +1570,7 @@ export async function sendReminderNotification(
         patientDetails.firstName
       );
       sendNotificationSMS(doctorDetails.mobileNumber, doctorSMS);
+
       sendBrowserNotitication(doctorDetails.id, doctorSMS);
       let whatsappMsg = ApiConstants.WHATSAPP_SD_CONSULT_REMINDER_15_MIN.replace(
         '{0}',
@@ -1554,8 +1601,12 @@ export async function sendReminderNotification(
       '{2}',
       doctorDetails.firstName + ' ' + doctorDetails.lastName
     );
-    const istDateTime = addMilliseconds(appointment.appointmentDateTime, 19800000);
-    notificationBody = notificationBody.replace('{3}', format(istDateTime, 'yyyy-MM-dd hh:mm'));
+    //const istDateTime = addMilliseconds(appointment.appointmentDateTime, 19800000);
+    const apptDate = format(
+      addMinutes(new Date(appointment.appointmentDateTime), +330),
+      "yyyy-MM-dd'T'HH:mm:ss'+0530'"
+    );
+    notificationBody = notificationBody.replace('{3}', apptDate);
     payload = {
       notification: {
         title: notificationTitle,
@@ -2036,7 +2087,7 @@ export async function sendMedicineOrderStatusNotification(
 
   notificationTitle = notificationTitle.toString();
   notificationBody = notificationBody.replace('{0}', userName);
-  notificationBody = notificationBody.replace('{1}', orderNumber);
+  notificationBody = notificationBody.replace(/\{1}/g, orderNumber);
   if (notificationType == NotificationType.MEDICINE_ORDER_READY_AT_STORE) {
     const shopAddress = JSON.parse(orderDetails.shopAddress);
     notificationBody = notificationBody.replace('{2}', shopAddress.storename);
@@ -2299,7 +2350,9 @@ const sendDailyAppointmentSummary: Resolver<
         whatsAppMessageBody +=
           onlineAppointmentsText + '' + physicalAppointmentsText + whatsAppLink;
         sendBrowserNotitication(doctor.id, messageBody);
+
         sendNotificationSMS(doctor.mobileNumber, messageBody);
+
         sendDoctorNotificationWhatsapp(
           doctor.mobileNumber,
           whatsAppMessageBody,
@@ -2496,7 +2549,7 @@ const sendChatMessageToDoctor: Resolver<
   const doctorDetails = await doctorRepo.findById(appointment.doctorId);
   if (!doctorDetails) throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID, undefined, {});
   //const whatsAppLink= process.env.WHATSAPP_LINK_BOOK_APOINTMENT;
-  const devLink: any = process.env.DOCTOR_DEEP_LINK;
+  const devLink = process.env.DOCTOR_DEEP_LINK ? process.env.DOCTOR_DEEP_LINK : '';
   let whatsAppMessageBody = ApiConstants.WHATSAPP_SD_CHAT_NOTIFICATION.replace(
     '{0}',
     doctorDetails.firstName
@@ -2517,6 +2570,8 @@ const sendChatMessageToDoctor: Resolver<
     '{0}',
     doctorDetails.firstName
   ).replace('{1}', patientDetails.firstName);
+  //await sendNotificationSMS(doctorDetails.mobileNumber, messageBody);
+
   await sendNotificationSMS(doctorDetails.mobileNumber, messageBody);
   //sendNotificationWhatsapp(doctorDetails.mobileNumber, messageBody);
   const doctorTokenRepo = doctorsDb.getCustomRepository(DoctorDeviceTokenRepository);
@@ -2836,13 +2891,14 @@ export async function sendDoctorRescheduleAppointmentNotification(
     timeToLive: 60 * 60 * 24, //wait for one day.. if device is offline
   };
   //building payload
+  const apptDate = format(
+    addMinutes(new Date(appointmentDateTime), +330),
+    "yyyy-MM-dd'T'HH:mm:ss'+0530'"
+  );
   const payload = {
     notification: {
       title: `Appointment has been Rescheduled`,
-      body: `Appointment with ${patientName} has been rescheduled to ${format(
-        addMilliseconds(appointmentDateTime, 19800000),
-        'yyyy-MM-dd HH:mm:ss'
-      )}`,
+      body: `Appointment with ${patientName} has been rescheduled to ${apptDate}`,
       sound: ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString(),
     },
     data: {
@@ -2850,11 +2906,8 @@ export async function sendDoctorRescheduleAppointmentNotification(
       type: 'doctor_booked_appointment_reschedule',
       appointmentId: apptId,
       patientName: patientName,
-      date: format(addMilliseconds(appointmentDateTime, 19800000), 'yyyy-MM-dd HH:mm:ss'),
-      body: `Appointment with ${patientName} has been rescheduled to ${format(
-        addMilliseconds(appointmentDateTime, 19800000),
-        'yyyy-MM-dd HH:mm:ss'
-      )}`,
+      date: apptDate,
+      body: `Appointment with ${patientName} has been rescheduled to ${apptDate}`,
     },
   };
 
@@ -2935,7 +2988,39 @@ export async function medicineOrderCancelled(
     msgText = msgText.replace('{orderId}', orderDetails.orderAutoId.toString());
     msgText = msgText.replace('{refund}', paymentInfo.amountPaid.toString());
     await sendNotificationSMS(orderDetails.patient.mobileNumber, msgText);
+    if(paymentInfo.healthCreditsRedeemed > 0){
+      msgText = ApiConstants.ORDER_CANCEL_HC_REFUND_BODY;
+      msgText = msgText.replace('{orderId}', orderDetails.orderAutoId.toString());
+      msgText = msgText.replace('{healthCreditsRefund}', paymentInfo.healthCreditsRedeemed.toString());
+      await sendNotificationSMS(orderDetails.patient.mobileNumber, msgText);
+    }
   }
+}
+
+export async function medicineOrderRefundNotification(
+  orderDetails: MedicineOrders,
+  medicineOrderRefundNotificationInput: MedicineOrderRefundNotificationInput
+) {
+  let notificationBody: string = '';
+  if(medicineOrderRefundNotificationInput.refundAmount > 0 || medicineOrderRefundNotificationInput.healthCreditsRefund > 0){
+    if(medicineOrderRefundNotificationInput.refundAmount > 0 && medicineOrderRefundNotificationInput.healthCreditsRefund > 0){
+      notificationBody = ApiConstants.ORDER_PAYMENT_HC_PARTIAL_REFUND_BODY;
+      notificationBody = notificationBody.replace('{orderId}', orderDetails.orderAutoId.toString());
+      notificationBody = notificationBody.replace('{refundAmount}', medicineOrderRefundNotificationInput.refundAmount.toString());
+      notificationBody = notificationBody.replace('{healthCreditsRefund}',medicineOrderRefundNotificationInput.healthCreditsRefund.toString()); 
+    }else if(medicineOrderRefundNotificationInput.refundAmount > 0){
+      notificationBody = ApiConstants.ORDER_PAYMENT_PARTIAL_REFUND_BODY;
+      notificationBody = notificationBody.replace('{orderId}', orderDetails.orderAutoId.toString());
+      notificationBody = notificationBody.replace('{refundAmount}', medicineOrderRefundNotificationInput.refundAmount.toString()); 
+    }else if(medicineOrderRefundNotificationInput.healthCreditsRefund > 0){
+      notificationBody = ApiConstants.ORDER_HC_PARTIAL_REFUND_BODY;
+      notificationBody = notificationBody.replace('{orderId}', orderDetails.orderAutoId.toString());
+      notificationBody = notificationBody.replace('{healthCreditsRefund}',medicineOrderRefundNotificationInput.healthCreditsRefund.toString());
+    }
+  //console.log(notificationBody);
+  await sendNotificationSMS(orderDetails.patient.mobileNumber, notificationBody);
+  }
+  return;
 }
 
 export const getNotificationsResolvers = {

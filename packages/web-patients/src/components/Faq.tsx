@@ -240,9 +240,10 @@ export const Faq: React.FC = (props) => {
 
   const metaTagProps = {
     title: 'Frequently Asked Questions (FAQs)  - Doctors, Medicines And More - Apollo 247',
-    description: "FAQs on doctors, medicines, and more on Apollo 247 - India's online pharmacy store. Have all your questions answered at one place. Visit FAQs by Apollo 247 to get your answer today!",
+    description:
+      "FAQs on doctors, medicines, and more on Apollo 247 - India's online pharmacy store. Have all your questions answered at one place. Visit FAQs by Apollo 247 to get your answer today!",
     canonicalLink: window && window.location && window.location.href,
-  }
+  };
 
   return (
     <div className={classes.root}>

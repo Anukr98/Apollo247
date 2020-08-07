@@ -33,7 +33,6 @@ import {
   TestsIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
-import { LocationSearchHeader } from '@aph/mobile-patients/src/components/ui/LocationSearchHeader';
 import { LocationSearchPopup } from '@aph/mobile-patients/src/components/ui/LocationSearchPopup';
 import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
@@ -405,18 +404,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   }
 
   useEffect(() => {
-    if (locationDetails && locationDetails.pincode) {
-      isserviceable();
-      if (!isCurrentLocationFetched) {
-        setCurrentLocationFetched!(true);
-        updateLocation(locationDetails);
-      }
-    } else {
-      askLocationPermission();
-    }
-  }, []);
-
-  useEffect(() => {
     try {
       if (currentPatient && g(currentPatient, 'relation') == Relation.ME && !isWEGFired) {
         setWEGFired(true);
@@ -550,6 +537,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         postHomeFireBaseEvent(FirebaseEventName.BUY_MEDICINES, 'Home Screen');
         postHomeWEGEvent(WebEngageEventName.BUY_MEDICINES, 'Home Screen');
         props.navigation.navigate('MEDICINES', { focusSearch: true });
+        const eventAttributes: WebEngageEvents[WebEngageEventName.HOME_PAGE_VIEWED] = {
+          source: 'app home',
+        };
+        postWebEngageEvent(WebEngageEventName.HOME_PAGE_VIEWED, eventAttributes);
       },
     },
     {
@@ -654,7 +645,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
     const params = {
       phone: '91' + storedPhoneNumber,
-      size: 10,
+      size: 40,
     };
     console.log('params', params);
     notifcationsApi(params)
@@ -1027,6 +1018,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                   postHomeFireBaseEvent(FirebaseEventName.BUY_MEDICINES, 'Menu');
                   postHomeWEGEvent(WebEngageEventName.BUY_MEDICINES, 'Menu');
                   CommonLogEvent(AppRoutes.ConsultRoom, 'MEDICINES clicked');
+                  const eventAttributes: WebEngageEvents[WebEngageEventName.HOME_PAGE_VIEWED] = {
+                    source: 'app home',
+                  };
+                  postWebEngageEvent(WebEngageEventName.HOME_PAGE_VIEWED, eventAttributes);
                   props.navigation.navigate('MEDICINES');
                 } else if (i == 3) {
                   postHomeFireBaseEvent(FirebaseEventName.ORDER_TESTS, 'Menu');
@@ -1420,10 +1415,17 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     );
   };
 
-  const onPressReadArticle = () => {
+  const onPressReadArticle = async () => {
+    const deviceToken = (await AsyncStorage.getItem('jwt')) || '';
+    const currentDeviceToken = deviceToken ? JSON.parse(deviceToken) : '';
+    const covidUrlWithPrm = AppConfig.Configuration.COVID_LATEST_ARTICLES_URL
+      .concat('&utm_token=', currentDeviceToken, '&utm_mobile_number=', 
+      currentPatient && g(currentPatient, 'mobileNumber') 
+      ? currentPatient.mobileNumber : "");
+      
     postHomeWEGEvent(WebEngageEventName.LEARN_MORE_ABOUT_CORONAVIRUS);
     props.navigation.navigate(AppRoutes.CovidScan, {
-      covidUrl: AppConfig.Configuration.COVID_LATEST_ARTICLES_URL,
+      covidUrl: covidUrlWithPrm 
     });
   };
 
@@ -1639,9 +1641,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           <ApolloLogo style={{ width: 57, height: 37 }} resizeMode="contain" />
         </TouchableOpacity>
         <View style={{ flexDirection: 'row' }}>
-          <LocationSearchHeader
-            onLocationProcess={() => setLocationSearchVisible(!isLocationSearchVisible)}
-          />
           <TouchableOpacity
             activeOpacity={1}
             onPress={() => props.navigation.navigate(AppRoutes.MedAndTestCart)}

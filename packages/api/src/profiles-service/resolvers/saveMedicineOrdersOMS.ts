@@ -12,6 +12,7 @@ import {
   DEVICE_TYPE,
   CouponCategoryApplicable,
   MedicineOrdersStatus,
+  MedicineOrderAddress,
 } from 'profiles-service/entities';
 import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
@@ -198,12 +199,13 @@ const saveMedicineOrderOMS: Resolver<
 ) => {
   const errorCode = 0,
     errorMessage = '';
+  const medicineOrderAddressDetails: Partial<MedicineOrderAddress> = {};
 
   if (!medicineCartOMSInput.items || medicineCartOMSInput.items.length == 0) {
     throw new AphError(AphErrorMessages.CART_EMPTY_ERROR, undefined, {});
   }
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
-  const patientDetails = await patientRepo.findById(medicineCartOMSInput.patientId);
+  const patientDetails = await patientRepo.getPatientDetails(medicineCartOMSInput.patientId);
   if (!patientDetails) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
@@ -217,6 +219,18 @@ const saveMedicineOrderOMS: Resolver<
     );
     if (!patientAddressDetails) {
       throw new AphError(AphErrorMessages.INVALID_PATIENT_ADDRESS_ID, undefined, {});
+    } else {
+      medicineOrderAddressDetails.addressLine1 = patientAddressDetails.addressLine1;
+      medicineOrderAddressDetails.addressLine2 = patientAddressDetails.addressLine2;
+      medicineOrderAddressDetails.addressType = patientAddressDetails.addressType;
+      medicineOrderAddressDetails.city = patientAddressDetails.city;
+      medicineOrderAddressDetails.otherAddressType = patientAddressDetails.otherAddressType;
+      medicineOrderAddressDetails.state = patientAddressDetails.state;
+      medicineOrderAddressDetails.zipcode = patientAddressDetails.zipcode;
+      medicineOrderAddressDetails.landmark = patientAddressDetails.landmark;
+      medicineOrderAddressDetails.latitude = patientAddressDetails.latitude;
+      medicineOrderAddressDetails.longitude = patientAddressDetails.longitude;
+      medicineOrderAddressDetails.stateCode = patientAddressDetails.stateCode;
     }
   }
   if (medicineCartOMSInput.bookingSource == BOOKING_SOURCE.WEB) {
@@ -338,6 +352,12 @@ const saveMedicineOrderOMS: Resolver<
         medicineOrderStatusAttrs,
         saveOrder.orderAutoId
       );
+
+      medicineOrderAddressDetails.name = patientDetails.firstName;
+      medicineOrderAddressDetails.mobileNumber = patientDetails.mobileNumber;
+      medicineOrderAddressDetails.medicineOrders = saveOrder;
+
+      await medicineOrdersRepo.saveMedicineOrderAddress(medicineOrderAddressDetails);
     }
     return {
       errorCode,

@@ -32,6 +32,7 @@ import {
   InitiateAppsFlyer,
   APPStateInActive,
   APPStateActive,
+  postWebEngageEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
@@ -39,6 +40,11 @@ import {
   getAppointmentDataVariables,
 } from '@aph/mobile-patients/src/graphql/types/getAppointmentData';
 import { GET_APPOINTMENT_DATA } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  WebEngageEvents,
+  WebEngageEventName,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
+
 // The moment we import from sdk @praktice/navigator-react-native-sdk,
 // finally not working on all promises.
 
@@ -179,22 +185,35 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           console.log('Consult');
           getData('Consult', data.length === 2 ? linkId : undefined);
           break;
+
         case 'Medicine':
           console.log('Medicine');
           getData('Medicine', data.length === 2 ? linkId : undefined);
           break;
+
+        case 'UploadPrescription':
+          getData('UploadPrescription', data.length === 2 ? linkId : undefined);
+          break;
+
+        case 'MedicineRecommendedSection':
+          getData('MedicineRecommendedSection');
+          break;
+
         case 'Test':
           console.log('Test');
           getData('Test');
           break;
+
         case 'Speciality':
           console.log('Speciality handleopen');
           if (data.length === 2) getData('Speciality', linkId);
           break;
+
         case 'Doctor':
           console.log('Doctor handleopen');
           if (data.length === 2) getData('Doctor', linkId);
           break;
+
         case 'DoctorSearch':
           console.log('DoctorSearch handleopen');
           getData('DoctorSearch');
@@ -214,17 +233,58 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           console.log('MedicineCart handleopen');
           getData('MedicineCart', data.length === 2 ? linkId : undefined);
           break;
+
         case 'ChatRoom':
           if (data.length === 2) getAppointmentDataAndNavigate(linkId);
           break;
+
         case 'Order':
           if (data.length === 2) getData('Order', linkId);
           break;
+
         case 'MyOrders':
           getData('MyOrders');
           break;
+
+        case 'webview':
+          if (data.length === 2) {
+            let url = data[1].replace('param=', '');
+            getData('webview', url);
+          }
+          break;
+        case 'FindDoctors':
+          if (data.length === 2) getData('FindDoctors', linkId);
+          break;
+
+        case 'HealthRecordsHome':
+          console.log('HealthRecordsHome handleopen');
+          getData('HealthRecordsHome');
+          break;
+
+        case 'ManageProfile':
+          console.log('ManageProfile handleopen');
+          getData('ManageProfile');
+          break;
+
+        case 'OneApolloMembership':
+          getData('OneApolloMembership');
+          break;
+
+        case 'TestDetails':
+          getData('TestDetails', data.length === 2 ? linkId : undefined);
+          break;
+
+        case 'ConsultDetails':
+          getData('ConsultDetails', data.length === 2 ? linkId : undefined);
+          break;
+
         default:
           getData('ConsultRoom', undefined, true);
+          // webengage event
+          const eventAttributes: WebEngageEvents[WebEngageEventName.HOME_PAGE_VIEWED] = {
+            source: 'deeplink',
+          };
+          postWebEngageEvent(WebEngageEventName.HOME_PAGE_VIEWED, eventAttributes);
           break;
       }
       console.log('route', route);
@@ -383,10 +443,19 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         props.navigation.navigate('MEDICINES');
         break;
 
+      case 'UploadPrescription':
+        props.navigation.navigate('MEDICINES', { showUploadPrescriptionPopup: true });
+        break;
+
+      case 'MedicineRecommendedSection':
+        props.navigation.navigate('MEDICINES', { showRecommendedSection: true });
+        break;
+
       case 'MedicineDetail':
         console.log('MedicineDetail');
         props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
           sku: id,
+          movedFrom: 'deeplink',
         });
         break;
 
@@ -413,7 +482,14 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         //   specialityId: id ? id : '',
         // });
         break;
-
+      case 'FindDoctors':
+        const cityBrandFilter = id ? id.split('%20') : '';
+        props.navigation.navigate(AppRoutes.DoctorSearchListing, {
+          specialityId: cityBrandFilter[0] ? cityBrandFilter[0] : '',
+          city: cityBrandFilter.length > 1 ? cityBrandFilter[1] : null,
+          brand: cityBrandFilter.length > 2 ? cityBrandFilter[2] : null,
+        });
+        break;
       case 'Doctor':
         props.navigation.navigate(AppRoutes.DoctorDetails, {
           doctorId: id,
@@ -432,6 +508,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           props.navigation.navigate(AppRoutes.SearchByBrand, {
             category_id: itemId,
             title: `${name ? name : 'Products'}`.toUpperCase(),
+            movedFrom: 'deeplink',
           });
         }
         break;
@@ -452,12 +529,43 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       case 'Order':
         props.navigation.navigate(AppRoutes.OrderDetailsScene, {
           goToHomeOnBack: true,
-          orderAutoId: id,
+          orderAutoId: isNaN(id) ? '' : id,
+          billNumber: isNaN(id) ? id : '',
         });
         break;
       case 'MyOrders':
         props.navigation.navigate(AppRoutes.YourOrdersScene);
         break;
+      case 'webview':
+        props.navigation.navigate(AppRoutes.CommonWebView, {
+          url: id,
+        });
+        break;
+
+      case 'HealthRecordsHome':
+        props.navigation.navigate('HEALTH RECORDS');
+        break;
+
+      case 'ManageProfile':
+        props.navigation.navigate(AppRoutes.ManageProfile);
+        break;
+
+      case 'OneApolloMembership':
+        props.navigation.navigate(AppRoutes.OneApolloMembership);
+        break;
+
+      case 'TestDetails':
+        props.navigation.navigate(AppRoutes.TestDetails, {
+          itemId: id,
+        });
+        break;
+
+      case 'ConsultDetails':
+        props.navigation.navigate(AppRoutes.ConsultDetails, {
+          CaseSheet: id,
+        });
+        break;
+
       default:
         break;
     }
@@ -581,8 +689,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
               'min_value_to_nudge_users_to_avail_free_delivery',
               'QA_pharmacy_homepage',
               'pharmacy_homepage',
-              'QA_hotsellers_max_quantity',
-              'hotsellers_max_quantity',
             ]);
         })
         .then((snapshot) => {
@@ -651,11 +757,11 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           homeScreenEmergencyBannerNumber &&
             updateAppConfig('HOME_SCREEN_EMERGENCY_BANNER_NUMBER', homeScreenEmergencyBannerNumber);
 
-          if (buildName() === 'DEV') {
+          if (AppConfig.APP_ENV === 'DEV') {
             const DEV_top6_specailties = snapshot['DEV_top6_specailties'].val();
             DEV_top6_specailties &&
               updateAppConfig('TOP_SPECIALITIES', JSON.parse(DEV_top6_specailties));
-          } else if (buildName() === 'QA') {
+          } else if (AppConfig.APP_ENV === 'QA' || AppConfig.APP_ENV === 'QA2') {
             const QA_top6_specailties = snapshot['QA_top6_specailties'].val();
             QA_top6_specailties &&
               updateAppConfig('TOP_SPECIALITIES', JSON.parse(QA_top6_specailties));
@@ -663,15 +769,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
             const top6_specailties = snapshot['top6_specailties'].val();
             top6_specailties && updateAppConfig('TOP_SPECIALITIES', JSON.parse(top6_specailties));
           }
-          const qaHotsellersMaxQuantity = snapshot['QA_hotsellers_max_quantity'].val();
-          qaHotsellersMaxQuantity &&
-            AppConfig.APP_ENV != AppEnv.PROD &&
-            updateAppConfig('HOTSELLERS_MAX_QUANTITY', qaHotsellersMaxQuantity);
-
-          const hotsellersMaxQuantity = snapshot['hotsellers_max_quantity'].val();
-          hotsellersMaxQuantity &&
-            AppConfig.APP_ENV == AppEnv.PROD &&
-            updateAppConfig('HOTSELLERS_MAX_QUANTITY', hotsellersMaxQuantity);
 
           const myValye = snapshot;
           let index: number = 0;

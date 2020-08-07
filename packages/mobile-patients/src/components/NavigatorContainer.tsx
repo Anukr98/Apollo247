@@ -89,6 +89,7 @@ import { ChennaiNonCartOrderForm } from '@aph/mobile-patients/src/components/Med
 import MyPaymentsScreen from '@aph/mobile-patients/src/components/MyPayments/MyPaymentsScreen';
 import PaymentStatusScreen from '@aph/mobile-patients/src/components/MyPayments/PaymentStatus/PaymentStatusScreen';
 import { ConsultTypeScreen } from './ConsultRoom/ConsultTypeScreen';
+import { CommonWebView } from '@aph/mobile-patients/src/components/CommonWebView';
 
 export enum AppRoutes {
   Onboarding = 'Onboarding',
@@ -170,6 +171,7 @@ export enum AppRoutes {
   PaymentStatusScreen = 'PaymentStatusScreen',
   OneApolloMembership = 'OneApolloMembership',
   ConsultTypeScreen = 'ConsultTypeScreen',
+  CommonWebView = 'CommonWebView',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -306,6 +308,10 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.UploadPrescription]: {
     screen: UploadPrescription,
+    path: 'MedUploadPrescription',
+    navigationOptions: {
+      gesturesEnabled: false,
+    },
   },
   [AppRoutes.ChennaiNonCartOrderForm]: {
     screen: ChennaiNonCartOrderForm,
@@ -324,9 +330,11 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.HealthRecordsHome]: {
     screen: HealthRecordsHome,
+    path: 'HealthPHRHome',
   },
   [AppRoutes.ConsultDetails]: {
     screen: ConsultDetails,
+    path: 'ConsultPrescription',
   },
   [AppRoutes.RecordDetails]: {
     screen: RecordDetails,
@@ -379,12 +387,14 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.TestDetails]: {
     screen: TestDetails,
+    path: 'TestDetailsPage',
   },
   [AppRoutes.EditProfile]: {
     screen: EditProfile,
   },
   [AppRoutes.ManageProfile]: {
     screen: ManageProfile,
+    path: 'ProfileSelection',
   },
   [AppRoutes.LinkUHID]: {
     screen: LinkUHID,
@@ -436,9 +446,13 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.OneApolloMembership]: {
     screen: OneApolloMembership,
+    path: 'OneApolloPage',
   },
   [AppRoutes.ConsultTypeScreen]: {
     screen: ConsultTypeScreen,
+  },
+  [AppRoutes.CommonWebView]: {
+    screen: CommonWebView,
   },
 };
 

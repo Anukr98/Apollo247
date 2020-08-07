@@ -83,7 +83,7 @@ const getDigitizedPrescription: Resolver<
     status = 'Rejected';
   }
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
-  const orderDetails = await medicineOrdersRepo.getMedicineOrderDetails(MedicineOrderInput.quoteId);
+  const orderDetails = await medicineOrdersRepo.getMedicineOrder(MedicineOrderInput.quoteId);
   if (orderDetails) {
     MedicineOrderInput.items.map((item) => {
       const orderItemAttrs: Partial<MedicineOrderLineItems> = {
