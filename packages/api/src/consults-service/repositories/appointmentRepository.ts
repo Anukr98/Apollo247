@@ -2032,4 +2032,17 @@ export class AppointmentRepository extends Repository<Appointment> {
     historyAttrs.updatedAt = new Date();
     return AppointmentUpdateHistory.create(historyAttrs).save();
   }
+
+  async getAppointmenIdsFromPatientID(patientId: string) {
+    return this.find({
+      select: ['id'],
+      where: {
+        patientId,
+      },
+    }).catch((getApptError) => {
+      throw new AphError(AphErrorMessages.GET_APPOINTMENT_ERROR, undefined, {
+        getApptError,
+      });
+    });
+  }
 }

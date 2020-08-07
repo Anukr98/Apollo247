@@ -63,7 +63,7 @@ export enum ApiConstants {
 
   //medicine order out for delivery
   ORDER_PLACED_TITLE = 'Medicine order is placed',
-  ORDER_PLACED_BODY = 'Hi {0}, we have received your order {1}. For any support, please speak with our customer care executives on the official WhatsApp channel (during business hours 9 AM - 6 PM) https://bit.ly/apollo247medicines',
+  ORDER_PLACED_BODY = 'Hi {0}, we have received your order {1}.\nChecking your blood oxygen level is helpful. Pulse Oximeter is available Now. Click here https://tinyurl.com/y6jwn7pw.\nFor any support, please speak with our customer care executives on the official WhatsApp channel (during business hours 8:30 AM - 8:30 PM) https://bit.ly/apollo247medicines',
 
   // medicine order out for delivery
   UPLOAD_PRESCRIPTION_TITLE = 'Upload Prescription medicine order placed ',
@@ -405,6 +405,10 @@ export enum ApiConstants {
   REDIS_PORT = 6379,
   REDIS_PWD = 'FgFyZpibcBewC6U7AZYDq1DppMW02mi+koiEa63gDF4=',
   REDIS_IMAGE_URL = '/catalog/product/',
+
+  PHARMA_DISCOUNT = 10,
+  PL_DISCOUNT = 15,
+  FMCG_DISCOUNT = 5,
 
   //prescriptions uploaded through medicine, diagnostic orders or from OLD APPS
   PRESCRIPTION_UPLOADED_BY_PATIENT = 'Prescription uploaded by Patient',
