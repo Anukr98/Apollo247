@@ -814,8 +814,8 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
           }
           isDateTimePickerVisible={isDateTimePickerVisible}
           handleDatePicked={(date) => {
-            setDate(date);
             setIsDateTimePickerVisible(false);
+            setDate(date);
             Keyboard.dismiss();
           }}
           hideDateTimePicker={() => {

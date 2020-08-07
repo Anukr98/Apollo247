@@ -45,6 +45,7 @@ import {
 } from '../graphql/types/getMedicineOrderOMSDetails';
 import { NotificationIconWhite } from './ui/Icons';
 import { WebEngageEvents, WebEngageEventName } from '../helpers/webEngageEvents';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 
 const styles = StyleSheet.create({
   rescheduleTextStyles: {
@@ -117,6 +118,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
   } = useUIElements();
   const { cartItems, setCartItems, ePrescriptions, setEPrescriptions } = useShoppingCart();
   const client = useApolloClient();
+  const { setDoctorJoinedChat } = useAppCommonData();
 
   const showMedOrderStatusAlert = (
     data:
@@ -354,6 +356,9 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
       notificationType === 'doctor_Noshow_Reschedule_Appointment'
       // notificationType === 'Reschedule_Appointment'
     ) {
+      if(notificationType === 'chat_room' || notificationType === 'call_started') {
+        setDoctorJoinedChat && setDoctorJoinedChat(true); // enabling join button in chat room if in case pubnub events not fired
+      }
       if (currentScreenName === AppRoutes.ChatRoom) return;
     }
 

@@ -49,8 +49,6 @@ export const downloadDocuments: Resolver<
     const fileId = fileIdNameArray.shift();
     const fileName = fileIdNameArray.join('_');
 
-    console.log(process.env.PHR_V1_DONLOAD_PRESCRIPTION_DOCUMENT!.toString());
-
     let prescriptionDocumentUrl = process.env.PHR_V1_DONLOAD_PRESCRIPTION_DOCUMENT!.toString();
     prescriptionDocumentUrl = prescriptionDocumentUrl.replace('{AUTH_KEY}', getToken.response);
     prescriptionDocumentUrl = prescriptionDocumentUrl.replace('{UHID}', patientDetails!.uhid);

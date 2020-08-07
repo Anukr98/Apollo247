@@ -1,5 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
+// @generated
 // This file was automatically generated and should not be edited.
 
 import { DoctorType, DOCTOR_ONLINE_STATUS, WeekDay, ConsultMode, ConsultType, AccountType } from "./globalTypes";
@@ -125,6 +126,7 @@ export interface GetDoctorDetails_getDoctorDetails {
   experience: string | null;
   firebaseToken: string | null;
   firstName: string;
+  fullName: string | null;
   isActive: boolean;
   id: string;
   languages: string | null;
