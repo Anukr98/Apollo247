@@ -529,8 +529,8 @@ export const MedicineLanding: React.FC = (props: any) => {
       value: <ShopByCategory data={data.shop_by_category} />,
     },
     {
-      key: 'Monsoon Essentials',
-      value: <HotSellers data={data.monsoon_essentials} section="Monsoon Essentials" />,
+      key: 'Trending Today',
+      value: <HotSellers data={data.monsoon_essentials} section="Trending Today" />,
     },
     { key: 'Shop by Brand', value: <ShopByBrand data={data.shop_by_brand} /> },
   ];
@@ -638,7 +638,7 @@ export const MedicineLanding: React.FC = (props: any) => {
                 list.map((item, index) => (
                   <div key={index} className={classes.sliderSection}>
                     <div className={classes.sectionTitle}>
-                      {item.key === 'Shop by Brand' || item.key === 'Monsoon Essentials' ? (
+                      {item.key === 'Shop by Brand' || item.key === 'Trending Today' ? (
                         <>
                           <span>{item.key}</span>
                           <div className={classes.viewAllLink}>
