@@ -99,8 +99,8 @@ public class MyFirebaseMessagingService
         if( startCallType.equals(notifDataType)) {
                 Intent i = new Intent(getApplicationContext(), UnlockScreenActivity.class);
                 i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-                i.putExtra("DOCTOR_NAME", remoteMessage.getData().get("doctor_name"));
-                i.putExtra("APPOINTMENT_ID",remoteMessage.getData().get("appointment_id"));
+                i.putExtra("DOCTOR_NAME", remoteMessage.getData().get("doctorName"));
+                i.putExtra("APPOINTMENT_ID",remoteMessage.getData().get("appointmentId"));
                 i.putExtra("APP_STATE",isAppRunning);
                 startActivity(i);
         }else if(disconnectCallType.equals((notifDataType))){
