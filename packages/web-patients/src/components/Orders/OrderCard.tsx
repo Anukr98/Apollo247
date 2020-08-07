@@ -29,7 +29,7 @@ const useStyles = makeStyles((theme: Theme) => {
       position: 'relative',
       [theme.breakpoints.down('xs')]: {
         display: 'block',
-        padding: 16,
+        padding: 10,
       },
     },
     cardSelected: {
@@ -70,14 +70,17 @@ const useStyles = makeStyles((theme: Theme) => {
     itemImg: {
       paddingRight: 20,
       [theme.breakpoints.down('xs')]: {
-        paddingRight: 16,
+        paddingRight: 10,
       },
       '& img': {
         verticalAlign: 'middle',
       },
     },
     itemSection: {
-      paddingRight: 20,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      width: '100%',
     },
     itemName: {
       fontSize: 14,
@@ -111,10 +114,10 @@ const useStyles = makeStyles((theme: Theme) => {
         borderLeft: 0,
       },
       [theme.breakpoints.down('xs')]: {
-        position: 'absolute',
-        right: 6,
-        top: 22,
-        marginRight: 0,
+        // position: 'absolute',
+        // right: 6,
+        // top: 22,
+        // marginRight: 0,
       },
     },
     customScroll: {
@@ -128,7 +131,7 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down('xs')]: {
         width: '100%',
         display: 'flex',
-        paddingLeft: 40,
+        paddingLeft: 30,
         paddingRight: 0,
       },
     },
@@ -159,8 +162,8 @@ const useStyles = makeStyles((theme: Theme) => {
       width: '40%',
       [theme.breakpoints.down('xs')]: {
         width: '100%',
-        paddingLeft: 40,
-        paddingRight: 0,
+        paddingLeft: 30,
+        paddingRight: 20,
         margin: '8px 0',
       },
     },
