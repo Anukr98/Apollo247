@@ -12,7 +12,7 @@ import { GET_DOCTOR_FAVOURITE_ADVICE_LIST } from 'graphql/profiles';
 import { CaseSheetContext } from 'context/CaseSheetContext';
 import { useParams } from 'hooks/routerHooks';
 import { getLocalStorageItem, updateLocalStorageItem } from './LocalStorageUtils';
-import { Compare } from '../../../helpers/Utils';
+import { Compare } from 'helpers/Utils';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({

@@ -6,7 +6,7 @@ import { AphButton } from '@aph/web-ui-components';
 import { useApolloClient } from 'react-apollo-hooks';
 import { Paper, Modal, CircularProgress } from '@material-ui/core';
 import { AphTextField, AphDialogTitle } from '@aph/web-ui-components';
-import { Compare } from '../helpers/Utils';
+import { Compare } from 'helpers/Utils';
 import {
   AddDoctorFavouriteAdvice,
   AddDoctorFavouriteAdviceVariables,

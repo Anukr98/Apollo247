@@ -14,7 +14,7 @@ import { GET_DOCTOR_FAVOURITE_TESTS_DOCTOR } from 'graphql/doctors';
 import { GetDoctorFavouriteTestList } from 'graphql/types/GetDoctorFavouriteTestList';
 import { useParams } from 'hooks/routerHooks';
 import { getLocalStorageItem, updateLocalStorageItem } from './LocalStorageUtils';
-import { Compare } from '../../../helpers/Utils';
+import { Compare } from 'helpers/Utils';
 
 interface OptionType {
   itemname: string;

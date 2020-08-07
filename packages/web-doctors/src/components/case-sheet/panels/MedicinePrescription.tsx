@@ -43,7 +43,7 @@ import {
 import { useApolloClient } from 'react-apollo-hooks';
 import { useParams } from 'hooks/routerHooks';
 import { getLocalStorageItem, updateLocalStorageItem } from './LocalStorageUtils';
-import { Compare } from '../../../helpers/Utils';
+import { Compare } from 'helpers/Utils';
 
 const apiDetails = {
   url: process.env.PHARMACY_MED_PARTIAL_SEARCH_URL,

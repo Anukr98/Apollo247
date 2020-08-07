@@ -32,7 +32,7 @@ import {
   DeleteDoctorFavouriteTest,
   DeleteDoctorFavouriteTestVariables,
 } from 'graphql/types/DeleteDoctorFavouriteTest';
-import { Compare } from '../helpers/Utils';
+import { Compare } from 'helpers/Utils';
 interface OptionType {
   itemname: string;
   __typename: 'DiagnosticPrescription';
