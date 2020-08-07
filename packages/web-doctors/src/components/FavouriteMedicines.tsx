@@ -2166,6 +2166,17 @@ export const FavouriteMedicines: React.FC = () => {
     });
     setDaySlots(slots);
   };
+
+  const compare = (a: any, b: any) => {
+    if (a.medicineName.toLowerCase() < b.medicineName.toLowerCase()) {
+      return -1;
+    }
+    if (a.medicineName.toLowerCase() > b.medicineName.toLowerCase()) {
+      return 1;
+    }
+    return 0;
+  };
+
   return (
     <div className={classes.ProfileContainer}>
       <div className={classes.root}>
@@ -2177,7 +2188,7 @@ export const FavouriteMedicines: React.FC = () => {
               ) : (
                 selectedMedicinesArr &&
                 selectedMedicinesArr.length > 0 &&
-                selectedMedicinesArr.map((medicine: any, index: number) => (
+                selectedMedicinesArr.sort(compare).map((medicine: any, index: number) => (
                   <li key={index} className={classes.medicineListElement}>
                     {medicine!.medicineName}
                     <span className={classes.iconRight}>
@@ -2330,8 +2341,9 @@ export const FavouriteMedicines: React.FC = () => {
                               className={classes.radioGroup}
                               value={medicineForm}
                               onChange={(e) => {
-                                setMedicineForm((e.target as HTMLInputElement)
-                                  .value as MEDICINE_FORM_TYPES);
+                                setMedicineForm(
+                                  (e.target as HTMLInputElement).value as MEDICINE_FORM_TYPES
+                                );
                               }}
                               row
                             >

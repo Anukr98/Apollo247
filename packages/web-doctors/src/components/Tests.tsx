@@ -673,6 +673,16 @@ export const Tests: React.FC = () => {
       });
   };
 
+  const compare = (a: any, b: any) => {
+    if (a.itemname.toLowerCase() < b.itemname.toLowerCase()) {
+      return -1;
+    }
+    if (a.itemname.toLowerCase() > b.itemname.toLowerCase()) {
+      return 1;
+    }
+    return 0;
+  };
+
   return (
     <Typography component="div" className={classes.contentContainer}>
       <Typography component="div" className={classes.fullWidth}>
@@ -684,7 +694,7 @@ export const Tests: React.FC = () => {
               {selectedValues !== null &&
                 selectedValues &&
                 selectedValues.length > 0 &&
-                selectedValues!.map((item: any, idx: any) =>
+                selectedValues!.sort(compare).map((item: any, idx: any) =>
                   item && item.itemName
                     ? item.itemName!.trim() !== '' && (
                         <li key={idx}>

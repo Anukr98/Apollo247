@@ -698,10 +698,10 @@ export const DiagnosticPrescription: React.FC = () => {
             )}
           </Typography>
         </Grid>
-        {favTests && favTests.length > 0 && (
+        {!showAddCondition && caseSheetEdit && favTests && favTests.length > 0 && (
           <Grid item lg={6} xs={6}>
             <Typography component="h5" variant="h5">
-              Favorite Tests
+              Favourite Tests
             </Typography>
             <div className={classes.favTestContainer}>
               {favTests.sort(compare).map((favTest: any, id: any) => {

@@ -358,6 +358,16 @@ export const FavouriteAdvice: React.FC = () => {
       });
   }, []);
 
+  const compare = (a: any, b: any) => {
+    if (a.instruction.toLowerCase() < b.instruction.toLowerCase()) {
+      return -1;
+    }
+    if (a.instruction.toLowerCase() > b.instruction.toLowerCase()) {
+      return 1;
+    }
+    return 0;
+  };
+
   return (
     <Typography component="div" className={classes.contentContainer}>
       <Typography component="div" className={classes.column}>
@@ -367,7 +377,7 @@ export const FavouriteAdvice: React.FC = () => {
           ) : (
             selectedValues &&
             selectedValues.length > 0 &&
-            selectedValues!.map(
+            selectedValues!.sort(compare).map(
               (item, idx) =>
                 item &&
                 item.instruction!.trim() !== '' && (
