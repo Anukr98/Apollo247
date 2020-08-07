@@ -1197,6 +1197,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const doctorAutoResponse = '^^#doctorAutoResponse';
   const patientJoinedMeetingRoom = '^^#patientJoinedMeetingRoom';
   const leaveChatRoom = '^^#leaveChatRoom';
+  const videoCallEnded = 'Video call ended';
 
   const [startConsultDisableReason, setStartConsultDisableReason] = useState<string>('');
   const [iscallAbandonment, setIscallAbandonment] = React.useState<boolean>(false);
@@ -1852,6 +1853,11 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       ) {
         setPlayRingtone(true);
         setJoinPrompt(true);
+      }
+      if (isConsultStarted && lastMsg.message && lastMsg.message.message === videoCallEnded) {
+        setPlayRingtone(false);
+        setJoinPrompt(false);
+        setFloatingJoinPrompt(false);
       }
     }
   }, [props.lastMsg]);
