@@ -28,6 +28,7 @@ import {
   MedicineProduct,
   MedicineProductDetails,
   pinCodeServiceabilityApi,
+  trackTagalysEvent,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   aphConsole,
@@ -62,7 +63,6 @@ import {
   StackActions,
   NavigationActions,
 } from 'react-navigation';
-import stripHtml from 'string-strip-html';
 import HTML from 'react-native-render-html';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import {
@@ -71,6 +71,7 @@ import {
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { useAllCurrentPatients } from '../../hooks/authHooks';
 import { AddToCartButtons } from './AddToCartButtons';
+import { Tagalys } from '@aph/mobile-patients/src/helpers/Tagalys';
 
 const { width, height } = Dimensions.get('window');
 
@@ -278,10 +279,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       : `${findDesc('STORAGE')}`;
   };
 
-  const _medicineOverview =
-    medicineDetails!.PharmaOverview &&
-    medicineDetails!.PharmaOverview[0] &&
-    medicineDetails!.PharmaOverview[0].Overview;
+  const _medicineOverview = g(medicineDetails, 'PharmaOverview', '0' as any, 'Overview');
   const medicineOverview =
     typeof _medicineOverview == 'string'
       ? []
@@ -354,9 +352,10 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     setLoading(true);
     getMedicineDetailsApi(sku)
       .then(({ data }) => {
-        aphConsole.log('getMedicineDetailsApi\n', data);
-        if (data && data.productdp) {
-          setmedicineDetails((data && data.productdp[0]) || {});
+        const productDetails = g(data, 'productdp', '0' as any);
+        if (productDetails) {
+          setmedicineDetails(productDetails || {});
+          trackTagalysViewEvent(productDetails);
           if (_deliveryError) {
             setTimeout(() => {
               scrollViewRef.current && scrollViewRef.current.scrollToEnd();
@@ -383,14 +382,29 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   }, [medicineOverview]);
 
   useEffect(() => {
-    console.log('useEffect deliveryTime\n', { deliveryTime, deliveryError });
     if (!!deliveryTime || !!deliveryError) {
-      // scrollViewRef.current && scrollViewRef.current.scrollToEnd({ animated: true });
       setTimeout(() => {
         scrollViewRef.current && scrollViewRef.current.scrollToEnd();
       }, 10);
     }
   }, [deliveryTime, deliveryError]);
+
+  const trackTagalysViewEvent = (details: MedicineProductDetails) => {
+    try {
+      trackTagalysEvent(
+        {
+          event_type: 'product_action',
+          details: {
+            sku: details.sku,
+            action: 'view',
+          } as Tagalys.ProductAction,
+        },
+        g(currentPatient, 'id')!
+      );
+    } catch (error) {
+      CommonBugFender(`${AppRoutes.MedicineDetailsScene}_trackTagalysEvent`, error);
+    }
+  };
 
   const onAddCartItem = (item: MedicineProduct) => {
     const {
@@ -443,6 +457,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     };
     postWebEngageEvent(WebEngageEventName.PRODUCT_DETAIL_PINCODE_CHECK, eventAttributes);
     const unServiceableMsg = 'Sorry, not serviceable in your area.';
+    const pincodeServiceableItemOutOfStockMsg = 'Sorry, this item is out of stock in your area.';
     const genericServiceableDate = moment()
       .add(2, 'days')
       .set('hours', 20)
@@ -481,7 +496,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
             setdeliveryTime(deliveryDate);
             setdeliveryError('');
           } else {
-            setdeliveryError(unServiceableMsg);
+            setdeliveryError(pincodeServiceableItemOutOfStockMsg);
             setdeliveryTime('');
           }
         } else {
@@ -500,17 +515,13 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   const fetchSubstitutes = () => {
     getSubstitutes(sku)
       .then(({ data }) => {
-        console.log({ data });
-
         try {
-          console.log('getSubstitutes', data);
           if (data) {
             if (
               data.products &&
               typeof data.products === 'object' &&
               Array.isArray(data.products)
             ) {
-              //
               setSubstitutes(data.products);
               setTimeout(() => {
                 scrollViewRef.current && scrollViewRef.current.scrollToEnd();
@@ -519,12 +530,10 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
           }
         } catch (error) {
           CommonBugFender('MedicineDetailsScene_fetchSubstitutes_try', error);
-          console.log(error);
         }
       })
       .catch((err) => {
         CommonBugFender('MedicineDetailsScene_fetchSubstitutes', err);
-        console.log({ err });
       });
   };
 
@@ -729,8 +738,9 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
               onPress={() => {
                 if (imagesListLength) {
                   props.navigation.navigate(AppRoutes.ImageSliderScreen, {
-                    images: (g(medicineDetails, 'image') || [])
-                      .map((imgPath) => `${AppConfig.Configuration.IMAGES_BASE_URL[0]}${imgPath}`),
+                    images: (g(medicineDetails, 'image') || []).map(
+                      (imgPath) => `${AppConfig.Configuration.IMAGES_BASE_URL[0]}${imgPath}`
+                    ),
                     heading: medicineDetails.name,
                   });
                 }
@@ -769,32 +779,22 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   };
 
   const filterHtmlContent = (content: string = '') => {
-    return stripHtml(content);
-    // .replace(/&amp;nbsp;/g, ' ')
-    // .replace(/&amp;deg;/g, '°')
-    // .replace(/&#039;/g, "'")
-    // .replace(/&amp;lt;br \/&amp;gt;. /g, '\n')
-    // .replace(/&amp;lt;br \/&amp;gt;/g, '\n')
-    // .split('\n')
-    // .filter((item) => item)
-    // .join('\n')
-    // .trim();
-  };
-
-  const renderTabComponent = () => {
-    // let description = desc; // props.route.key; //data.CaptionDesc;
-    const selectedTabdata = medicineOverview.filter((item) => item.Caption === selectedTab);
-    let description =
-      selectedTabdata.length && !!selectedTabdata[0].CaptionDesc
-        ? selectedTabdata[0].CaptionDesc
-        : '';
-    description = description
+    return content
       .replace(/&amp;/g, '&')
       .replace(/&lt;/g, '<')
       .replace(/&gt;rn/g, '>')
       .replace(/&gt;r/g, '>')
       .replace(/&gt;/g, '>')
       .replace(/\.t/g, '.');
+  };
+
+  const renderTabComponent = () => {
+    const selectedTabdata = medicineOverview.filter((item) => item.Caption === selectedTab);
+    let description =
+      selectedTabdata.length && !!selectedTabdata[0].CaptionDesc
+        ? selectedTabdata[0].CaptionDesc
+        : '';
+    description = filterHtmlContent(description);
 
     return (
       <View
@@ -852,14 +852,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   };
 
   const renderInfo = () => {
-    const description = medicineDetails.description
-      .replace(/&amp;/g, '&')
-      .replace(/&lt;/g, '<')
-      .replace(/&gt;rn/g, '>')
-      .replace(/&gt;r/g, '>')
-      .replace(/&gt;/g, '>')
-      .replace(/\.t/, '.');
-    console.log(description);
+    const description = filterHtmlContent(medicineDetails.description);
 
     if (!!description)
       return (

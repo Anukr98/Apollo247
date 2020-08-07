@@ -52,6 +52,7 @@ import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { TabHeader } from '@aph/mobile-patients/src/components/ui/TabHeader';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import codePush from 'react-native-code-push';
+import { setTagalysConfig } from '@aph/mobile-patients/src/helpers/Tagalys';
 
 const { width } = Dimensions.get('window');
 
@@ -271,6 +272,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
       setSavePatientDetails && setSavePatientDetails('');
       setAppointmentsPersonalized && setAppointmentsPersonalized([]);
       signOut();
+      setTagalysConfig(null);
 
       props.navigation.dispatch(
         StackActions.reset({

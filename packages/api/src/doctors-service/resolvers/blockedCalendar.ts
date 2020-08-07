@@ -8,6 +8,7 @@ import { areIntervalsOverlapping, isEqual, isAfter } from 'date-fns';
 import { RescheduleAppointmentDetailsRepository } from 'consults-service/repositories/rescheduleAppointmentDetailsRepository';
 import { ConsultMode } from 'doctors-service/entities';
 import _ from 'lodash';
+import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 
 export const blockedCalendarTypeDefs = gql`
   type BlockedCalendarItem {
@@ -71,6 +72,7 @@ const checkAuth = (doctorId: string, context: DoctorsServiceContext) => {
 
 const getRepos = (context: DoctorsServiceContext) => ({
   bciRepo: context.doctorsDb.getCustomRepository(BlockedCalendarItemRepository),
+  docRepo: context.doctorsDb.getCustomRepository(DoctorRepository),
 });
 
 const doesItemOverlap = (item: BlockedCalendarItem, itemsToCheckAgainst: BlockedCalendarItem[]) =>
@@ -105,7 +107,7 @@ const addBlockedCalendarItem: Resolver<
   BlockedCalendarResult
 > = async (parent, { doctorId, start, end, reason }, context) => {
   checkAuth(doctorId, context);
-  const { bciRepo } = getRepos(context);
+  const { bciRepo, docRepo } = getRepos(context);
   if (isEqual(new Date(start), new Date(end))) {
     throw new AphError(AphErrorMessages.INVALID_DATES);
   }
@@ -138,6 +140,8 @@ const addBlockedCalendarItem: Resolver<
   );
 
   const blockedCalendar = await bciRepo.find({ doctorId });
+  docRepo.updateDoctorSlots(doctorId, context.consultsDb, context.doctorsDb);
+
   return { blockedCalendar };
 };
 
@@ -148,7 +152,7 @@ const updateBlockedCalendarItem: Resolver<
   BlockedCalendarResult
 > = async (parent, { id, doctorId, start, end }, context) => {
   checkAuth(doctorId, context);
-  const { bciRepo } = getRepos(context);
+  const { bciRepo, docRepo } = getRepos(context);
   /*const itemToUpdate = await bciRepo.findOneOrFail(id);
   const existingItems = (await bciRepo.find({ doctorId })).filter(
   (item) => item.id !== itemToUpdate.id
@@ -164,6 +168,7 @@ const updateBlockedCalendarItem: Resolver<
   if (overlap) throw new AphError(AphErrorMessages.BLOCKED_CALENDAR_ITEM_OVERLAPS);
   await bciRepo.update({ id, doctorId }, { start, end });
   const blockedCalendar = await bciRepo.find({ doctorId });
+  docRepo.updateDoctorSlots(doctorId, context.consultsDb, context.doctorsDb);
   return { blockedCalendar };
 };
 
@@ -173,12 +178,13 @@ const removeBlockedCalendarItem: Resolver<
   DoctorsServiceContext,
   BlockedCalendarResult
 > = async (parent, { id }, context) => {
-  const { bciRepo } = getRepos(context);
+  const { bciRepo, docRepo } = getRepos(context);
   const item = await bciRepo.findOneOrFail(id);
   const { doctorId } = item;
   checkAuth(doctorId, context);
   await bciRepo.delete(item.id);
   const blockedCalendar = await bciRepo.find({ doctorId });
+  docRepo.updateDoctorSlots(doctorId, context.consultsDb, context.doctorsDb);
   return { blockedCalendar };
 };
 
@@ -204,7 +210,7 @@ const blockMultipleCalendarItems: Resolver<
   DoctorsServiceContext,
   BlockedCalendarResult
 > = async (parent, { blockCalendarInputs }, context) => {
-  const { bciRepo } = getRepos(context);
+  const { bciRepo, docRepo } = getRepos(context);
   checkAuth(blockCalendarInputs.doctorId, context);
   const doctorId = blockCalendarInputs.doctorId;
   const reason = blockCalendarInputs.reason;
@@ -250,6 +256,7 @@ const blockMultipleCalendarItems: Resolver<
   //push notification ends
 
   const blockedCalendar = await bciRepo.find({ doctorId });
+  docRepo.updateDoctorSlots(doctorId, context.consultsDb, context.doctorsDb);
   return { blockedCalendar };
 
   function checkOverlapsAndException(overlapCount: number, dateException: number) {

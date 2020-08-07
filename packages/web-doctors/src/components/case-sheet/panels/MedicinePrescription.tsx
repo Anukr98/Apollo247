@@ -677,7 +677,7 @@ export const MedicinePrescription: React.FC = () => {
     setMedicinePrescription: setSelectedMedicinesArr,
     removedMedicinePrescription,
     setRemovedMedicinePrescription,
-    casesheetVersion
+    casesheetVersion,
   } = useContext(CaseSheetContext);
   const [removedMedicinePrescriptionState, setRemovedMedicinePrescriptionState] = useState<any>([]);
   const [medicinePrescriptionState, setMedicinePrescriptionState] = useState<any>([]);
@@ -1371,7 +1371,9 @@ export const MedicinePrescription: React.FC = () => {
   };
 
   const deletemedicine = (idx: any) => {
-    casesheetVersion === 1 ? removedMedicinePrescriptionFn('delete', idx) : removedMedicinePrescriptionFn('add', idx);
+    casesheetVersion === 1
+      ? removedMedicinePrescriptionFn('delete', idx)
+      : removedMedicinePrescriptionFn('add', idx);
     //removedMedicinePrescriptionFn('add', idx);
     selectedMedicines.splice(idx, 1);
     setSelectedMedicines(selectedMedicines);
@@ -2309,7 +2311,15 @@ export const MedicinePrescription: React.FC = () => {
       })
     );
   };
-
+  const compare = (a: any, b: any) => {
+    if (a.medicineName.toLowerCase() < b.medicineName.toLowerCase()) {
+      return -1;
+    }
+    if (a.medicineName.toLowerCase() > b.medicineName.toLowerCase()) {
+      return 1;
+    }
+    return 0;
+  };
   return (
     <div className={classes.root}>
       <Grid container spacing={1}>
@@ -2332,7 +2342,7 @@ export const MedicinePrescription: React.FC = () => {
           <Grid item lg={6} xs={12}>
             <div className={classes.favmedicineHeading}>Favourite Medicines</div>
             <div className={classes.mediceneContainer}>
-              {favouriteMedicine.map((_favMedicine: any, id, index) => {
+              {favouriteMedicine.sort(compare).map((_favMedicine: any, id, index) => {
                 const favMedicine = _favMedicine!;
                 const forFavHtml =
                   favMedicine.medicineConsumptionDurationInDays &&
@@ -2517,8 +2527,9 @@ export const MedicinePrescription: React.FC = () => {
                           className={classes.radioGroup}
                           value={medicineForm}
                           onChange={(e) => {
-                            setMedicineForm((e.target as HTMLInputElement)
-                              .value as MEDICINE_FORM_TYPES);
+                            setMedicineForm(
+                              (e.target as HTMLInputElement).value as MEDICINE_FORM_TYPES
+                            );
                           }}
                           row
                         >
@@ -3104,8 +3115,9 @@ export const MedicinePrescription: React.FC = () => {
                             className={classes.radioGroup}
                             value={medicineForm}
                             onChange={(e) => {
-                              setMedicineForm((e.target as HTMLInputElement)
-                                .value as MEDICINE_FORM_TYPES);
+                              setMedicineForm(
+                                (e.target as HTMLInputElement).value as MEDICINE_FORM_TYPES
+                              );
                             }}
                             row
                           >
