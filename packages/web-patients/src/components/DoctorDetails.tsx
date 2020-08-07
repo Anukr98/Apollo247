@@ -44,7 +44,7 @@ import { doctorProfileViewTracking } from 'webEngageTracking';
 import { getDiffInMinutes } from 'helpers/commonHelpers';
 import { hasOnePrimaryUser } from 'helpers/onePrimaryUser';
 import { SAVE_PATIENT_SEARCH } from 'graphql/pastsearches';
-import { useHistory, useLocation } from 'react-router';
+import { useLocation } from 'react-router';
 
 export interface DoctorDetailsProps {
   id: string;
@@ -270,12 +270,11 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       doctorProfileViewTracking(eventData);
     }
   }, [doctorSlots, doctorData]);
-  const history = useHistory();
   const location = useLocation();
 
   useEffect(() => {
     if (location.pathname.includes('/specialties')) {
-      history.push(clientRoutes.doctorDetails(params.name, params.id));
+      history.replaceState(null, '', clientRoutes.doctorDetails(params.name, params.id));
     }
     setLoading(true);
     apolloClient

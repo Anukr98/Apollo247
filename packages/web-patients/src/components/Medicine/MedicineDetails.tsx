@@ -31,7 +31,6 @@ import { UploadPrescription } from 'components/Prescriptions/UploadPrescription'
 import { UploadEPrescriptionCard } from 'components/Prescriptions/UploadEPrescriptionCard';
 import { MetaTagsComp } from 'MetaTagsComp';
 import moment from 'moment';
-import { useHistory } from 'react-router';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -612,7 +611,6 @@ export const MedicineDetails: React.FC = (props) => {
   };
 
   const onePrimaryUser = hasOnePrimaryUser();
-  const history = useHistory();
 
   useEffect(() => {
     if (!medicineDetails) {
@@ -622,7 +620,7 @@ export const MedicineDetails: React.FC = (props) => {
 
   useEffect(() => {
     if (params && params.searchText) {
-      history.push(clientRoutes.medicineDetails(params.sku));
+      history.replaceState(null, '', clientRoutes.medicineDetails(params.sku));
     }
   }, []);
 
