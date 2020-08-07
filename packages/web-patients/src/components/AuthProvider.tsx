@@ -367,7 +367,10 @@ export const AuthProvider: React.FC = (props) => {
       const search = window.location.search;
       const params = new URLSearchParams(search);
       const token = params.get('utm_token') || '';
-      const mobileNumber = `+${params.get('utm_mobile_number').trim()}` || '';
+      const mobileNumber =
+        params.get('utm_mobile_number') && params.get('utm_mobile_number').length > 1
+          ? `+${params.get('utm_mobile_number').trim()}`
+          : '';
       localStorage.setItem('userMobileNo', mobileNumber);
       if (token && mobileNumber) {
         setAuthToken(token);
