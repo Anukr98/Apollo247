@@ -13,7 +13,7 @@ export interface MedicineCartItem {
   description: string;
   id: number;
   arrId?: any[];
-  image: string | null;
+  image: string[] | null;
   is_in_stock: boolean;
   is_prescription_required: '0' | '1';
   name: string;

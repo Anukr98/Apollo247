@@ -31,6 +31,12 @@ const useStyles = makeStyles((theme: Theme) => {
       textAlign: 'center',
       display: 'block',
     },
+    sourceField: {
+      maxWidth: 70,
+       [theme.breakpoints.down('xs')]: {
+        maxWidth: '100%',
+      },
+    },
     leftSection: {
       width: 328,
       backgroundColor: theme.palette.common.white,
@@ -352,7 +358,11 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
   const getSource = (activeData: any, type: string) => {
     switch (type) {
       case 'lab':
-        return !!activeData.labTestSource ? activeData.labTestSource : '-';
+        return activeData && activeData.siteDisplayName
+          ? activeData.siteDisplayName
+          : !!activeData.labTestSource
+          ? activeData.labTestSource
+          : '-';
       case 'prescription':
         return !!activeData.prescriptionSource ? activeData.prescriptionSource : '-';
       default:
@@ -483,7 +493,7 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
                     </div>
                     <div className={classes.reportsDetails}>
                       <label>Source</label>
-                      <p>{getSource(activeData.data, activeData.type)}</p>
+                      <p className={classes.sourceField}>{getSource(activeData.data, activeData.type)}</p>
                     </div>
                     <div className={classes.reportsDetails}>
                       <label>Referring Doctor</label>
@@ -495,11 +505,6 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
                           : '-'}
                       </p>
                     </div>
-                    {activeData && activeData.data && activeData.data.siteDisplayName && (
-                      <div className={classes.reportsDetails}>
-                        <label>{activeData.data.siteDisplayName}</label>
-                      </div>
-                    )}
                   </div>
                   {(activeData.data.observations || activeData.data.additionalNotes) && (
                     <ToplineReport activeData={activeData} />
