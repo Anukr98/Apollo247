@@ -222,13 +222,7 @@ export const InfoCardPartner: React.FC<InfoCardProps> = (props) => {
 
   return (
     <div className={classes.root}>
-      <Link
-        to={clientRoutes.specialtyDoctorDetails(
-          readableParam(specialityName),
-          readableParam(doctorValue),
-          doctorInfo.id
-        )}
-      >
+      <Link to={clientRoutes.doctorDetails(readableParam(doctorValue), doctorInfo.id)}>
         <div className={classes.topContent}>
           <div className={classes.iconGroup}>
             <Avatar

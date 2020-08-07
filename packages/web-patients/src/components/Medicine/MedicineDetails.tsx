@@ -31,7 +31,6 @@ import { UploadPrescription } from 'components/Prescriptions/UploadPrescription'
 import { UploadEPrescriptionCard } from 'components/Prescriptions/UploadEPrescriptionCard';
 import { MetaTagsComp } from 'MetaTagsComp';
 import moment from 'moment';
-import { useHistory } from 'react-router';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -612,7 +611,6 @@ export const MedicineDetails: React.FC = (props) => {
   };
 
   const onePrimaryUser = hasOnePrimaryUser();
-  const history = useHistory();
 
   useEffect(() => {
     if (!medicineDetails) {
@@ -622,7 +620,7 @@ export const MedicineDetails: React.FC = (props) => {
 
   useEffect(() => {
     if (params && params.searchText) {
-      history.push(clientRoutes.medicineDetails(params.sku));
+      history.replaceState(null, '', clientRoutes.medicineDetails(params.sku));
     }
   }, []);
 
@@ -811,7 +809,7 @@ export const MedicineDetails: React.FC = (props) => {
             <div className={classes.container}>
               <div className={classes.medicineDetailsPage}>
                 <div className={classes.breadcrumbs}>
-                  <a onClick={() => window.history.back()}>
+                  <a onClick={() => history.push(clientRoutes.medicines())}>
                     <div className={classes.backArrow}>
                       <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
                       <img
