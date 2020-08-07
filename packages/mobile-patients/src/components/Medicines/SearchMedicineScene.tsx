@@ -24,13 +24,12 @@ import {
   MedicineProduct,
   searchMedicineApi,
   getMedicineSearchSuggestionsApi,
+  trackTagalysEvent,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   aphConsole,
   isValidSearch,
   postWebEngageEvent,
-  postwebEngageAddToCartEvent,
-  postAppsFlyerAddToCartEvent,
   addPharmaItemToCart,
   g,
   getMaxQtyForMedicineItem,
@@ -101,34 +100,6 @@ const styles = StyleSheet.create({
   labelText: {
     ...theme.fonts.IBMPlexSansBold(9),
     color: theme.colors.WHITE,
-  },
-  searchValueStyle: {
-    ...theme.fonts.IBMPlexSansMedium(18),
-    color: theme.colors.SHERPA_BLUE,
-  },
-  deliveryPinCodeContaner: {
-    ...theme.viewStyles.cardContainer,
-    paddingHorizontal: 20,
-    paddingVertical: Platform.OS == 'ios' ? 12 : 7,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: '#f7f8f5',
-  },
-  pinCodeStyle: {
-    ...theme.fonts.IBMPlexSansMedium(14),
-    color: theme.colors.SHERPA_BLUE,
-    flex: 0.9,
-  },
-  pinCodeTextInput: {
-    ...theme.fonts.IBMPlexSansMedium(14),
-    color: theme.colors.SHERPA_BLUE,
-    borderColor: theme.colors.INPUT_BORDER_SUCCESS,
-    borderBottomWidth: 2,
-    paddingBottom: 3,
-    paddingLeft: Platform.OS === 'ios' ? 0 : -3,
-    paddingTop: 0,
-    width: Platform.OS === 'ios' ? 51 : 54,
   },
   sorryTextStyle: {
     ...theme.fonts.IBMPlexSansMedium(14),
@@ -255,7 +226,6 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
       setsearchSate('load');
       getMedicineSearchSuggestionsApi(_searchText)
         .then(({ data }) => {
-          // aphConsole.log({ data });
           const products = data.products || [];
           setMedicineList(products);
           setsearchSate('success');
@@ -268,7 +238,6 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         })
         .catch((e) => {
           CommonBugFender('SearchByBrand_onSearchMedicine', e);
-          // aphConsole.log({ e });
           if (!Axios.isCancel(e)) {
             setsearchSate('fail');
           }
@@ -297,6 +266,23 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
             resultsdisplayed: products.length,
           };
           postWebEngageEvent(WebEngageEventName.SEARCH, eventAttributes);
+          try {
+            trackTagalysEvent(
+              {
+                event_type: 'product_list',
+                details: {
+                  pl_type: 'search',
+                  pl_details: {
+                    q: _searchText,
+                  },
+                  pl_products: products.map((p) => p.sku),
+                  pl_page: 1, // Need to make dynamic if pagination is integrated
+                  pl_total: data.product_count,
+                },
+              },
+              g(currentPatient, 'id') || null
+            );
+          } catch (error) {}
         })
         .catch((e) => {
           CommonBugFender('SearchMedicineScene_onSearchMedicine', e);
@@ -332,6 +318,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
       thumbnail,
       type_id,
       MaxOrderQty,
+      category_id,
     } = item;
     savePastSeacrh(sku, name).catch((e) => {
       aphConsole.log({ e });
@@ -362,11 +349,9 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
       props.navigation,
       currentPatient,
       !!isPharmacyLocationServiceable,
+      { source: 'Pharmacy Full Search', categoryId: category_id },
       suggestionItem ? () => setItemsLoading({ ...itemsLoading, [sku]: false }) : undefined
     );
-    postwebEngageAddToCartEvent(item, 'Pharmacy Full Search');
-    let id = currentPatient && currentPatient.id ? currentPatient.id : '';
-    postAppsFlyerAddToCartEvent(item, id);
   };
 
   const onRemoveCartItem = ({ sku }: MedicineProduct) => {

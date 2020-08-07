@@ -40,6 +40,9 @@ import {
 } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
 import { FirebaseEvents, FirebaseEventName } from '../helpers/firebaseEvents';
 import { ShoppingCartItem } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { trackTagalysEvent } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { Tagalys } from '@aph/mobile-patients/src/helpers/Tagalys';
 
 const styles = StyleSheet.create({
   popupButtonStyle: {
@@ -182,6 +185,26 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
           appsflyerEventAttributes
         );
         firePurchaseEvent();
+        try {
+          Promise.all(
+            cartItems.map((cartItem) =>
+              trackTagalysEvent(
+                {
+                  event_type: 'product_action',
+                  details: {
+                    sku: cartItem.id,
+                    action: 'buy',
+                    quantity: cartItem.quantity,
+                    order_id: `${orderAutoId}`,
+                  } as Tagalys.ProductAction,
+                },
+                g(currentPatient, 'id')!
+              )
+            )
+          );
+        } catch (error) {
+          CommonBugFender(`${AppRoutes.PaymentScene}_trackTagalysEvent`, error);
+        }
       }
     } catch (error) {}
 

@@ -20,6 +20,7 @@ import {
   SearchIcon,
   RetryButtonIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
@@ -39,7 +40,6 @@ import {
 import {
   ConsultMode,
   FilterDoctorInput,
-  Gender,
   Range,
   SpecialtySearchType,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
@@ -51,7 +51,6 @@ import {
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
 import {
-  callPermissions,
   doRequestAndAccessLocationModified,
   g,
   getNetStatus,
@@ -290,12 +289,9 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     if (!currentPatient) {
       getPatientApiCall();
     }
-    // checkTime();
   }, [currentPatient]);
 
   useEffect(() => {
-    // checkTime();
-
     if (doctorsList.length === 0) {
       if (
         generalPhysicians &&
@@ -323,7 +319,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const vaueChange = (data: any) => {
     const filterGetData =
       data && data.getDoctorsBySpecialtyAndFilters ? data.getDoctorsBySpecialtyAndFilters : null;
-    console.log('vaueChange', filterGetData);
     if (filterGetData.sort === 'distance') {
       setNearyByFlag(true);
       setAvailabilityFlag(false);
@@ -369,24 +364,11 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       setcurrentLocation(locationDetails.displayName);
       setLocationSearchText(locationDetails.displayName);
     }
-    // callPermissions();
     return () => {
       didFocusSubscription && didFocusSubscription.remove();
       willBlurSubscription && willBlurSubscription.remove();
     };
   }, []);
-
-  const checkTime = () => {
-    const currentTime = moment().format('HH');
-    console.log('currentTime', currentTime);
-    if (parseInt(currentTime, 10) < 8 || 16 <= parseInt(currentTime, 10)) {
-      setAvailabilityFlag(true);
-      setNearyByFlag(false);
-    } else {
-      setNearyByFlag(true);
-      setAvailabilityFlag(false);
-    }
-  };
 
   const filterDoctors = (
     data: (getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors | null)[],
@@ -409,12 +391,10 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         return item && item.doctorType !== 'DOCTOR_CONNECT';
       });
       setFilteredDoctorsList(apolloDoctors);
-      console.log(apolloDoctors.length);
       setApolloDocsNumber(apolloDoctors.length);
       setPartnerDocsNumber(doctorsApollo.length - apolloDoctors.length);
     } else {
       const otherDoctors = doctorsApollo.filter((item) => {
-        console.log(item && item.doctorType);
         return item && item.doctorType === 'DOCTOR_CONNECT';
       });
       setFilteredDoctorsList(otherDoctors);
@@ -636,6 +616,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       sort: sort,
     };
     setBugFenderLog('DOCTOR_FILTER_INPUT', JSON.stringify(FilterInput));
+    setshowSpinner(true);
     client
       .query<getDoctorsBySpecialtyAndFilters>({
         query: DOCTOR_SPECIALITY_BY_FILTERS,
@@ -645,9 +626,9 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         },
       })
       .then(({ data }) => {
-        console.log('data', data);
         setData(data);
         vaueChange(data);
+        setshowSpinner(false);
         //log data
         const doctorInfo =
           data &&
@@ -898,7 +879,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             <TouchableOpacity
               activeOpacity={1}
               onPress={() => {
-                console.log('data1111111111');
                 setSearchIconClicked(!searchIconClicked);
                 setDoctorSearch('');
                 filterDoctors(doctorsList, doctorsType, '');
@@ -1320,27 +1300,39 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     }
   };
 
+  const onPressNearByRadioButton = () => {
+    if (!nearyByFlag) {
+      setNearyByFlag(!nearyByFlag);
+      setAvailabilityFlag(false);
+      setshowSpinner(true);
+      postWebEngageEvent(WebEngageEventName.CONSULT_SORT, {
+        'Sort By': 'distance',
+      });
+      setSortValue('distance');
+      checkLocation();
+    }
+  };
+
+  const onPressAvailabiltyRadioButton = () => {
+    if (!availabilityFlag) {
+      setAvailabilityFlag(!availabilityFlag);
+      setNearyByFlag(false);
+      setshowSpinner(true);
+      postWebEngageEvent(WebEngageEventName.CONSULT_SORT, {
+        'Sort By': 'availability',
+      });
+      setSortValue('availability');
+      fetchSpecialityFilterData(filterMode, FilterData, latlng, 'availability');
+    }
+  };
+
   const renderBottomOptions = () => {
     return (
       <View style={styles.bottomMainContainer}>
         <Text style={styles.sortByTextStyle}>{string.doctor_search_listing.sortby}</Text>
         <View style={styles.bottomOptionsContainer}>
           <View style={styles.bottomItemContainer}>
-            <TouchableOpacity
-              activeOpacity={1}
-              onPress={() => {
-                if (!nearyByFlag) {
-                  setNearyByFlag(!nearyByFlag);
-                  setAvailabilityFlag(false);
-                  setshowSpinner(true);
-                  postWebEngageEvent(WebEngageEventName.CONSULT_SORT, {
-                    'Sort By': 'distance',
-                  });
-                  setSortValue('distance');
-                  checkLocation();
-                }
-              }}
-            >
+            <TouchableOpacity activeOpacity={1} onPress={onPressNearByRadioButton}>
               <View
                 style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}
               >
@@ -1364,18 +1356,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             <TouchableOpacity
               activeOpacity={1}
               style={{ marginLeft: 8 }}
-              onPress={() => {
-                if (!availabilityFlag) {
-                  setAvailabilityFlag(!availabilityFlag);
-                  setNearyByFlag(false);
-                  setshowSpinner(true);
-                  postWebEngageEvent(WebEngageEventName.CONSULT_SORT, {
-                    'Sort By': 'availability',
-                  });
-                  setSortValue('availability');
-                  fetchSpecialityFilterData(filterMode, FilterData, latlng, 'availability');
-                }
-              }}
+              onPress={onPressAvailabiltyRadioButton}
             >
               <View
                 style={{
@@ -1489,7 +1470,26 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     );
   };
 
+  const onPressApolloDoctorsTab = () => {
+    if (doctorsType != 'APOLLO') {
+      postTabBarClickWEGEvent('APOLLO');
+      setDoctorsType('APOLLO');
+      filterDoctors(doctorsList, 'APOLLO');
+    }
+  };
+
+  const onPressDoctorPartnersTab = () => {
+    if (doctorsType != 'PARTNERS') {
+      postTabBarClickWEGEvent('PARTNERS');
+      setDoctorsType('PARTNERS');
+      onPressNearByRadioButton();
+      filterDoctors(doctorsList, 'PARTNERS');
+    }
+  };
+
   const renderTopTabBar = () => {
+    const doctor_partners_text = `${AppConfig.Configuration.DOCTOR_PARTNER_TEXT} (${partnerDocsNumber})`;
+    const apollo_doctors_text = `Apollo Doctors (${apolloDocsNumber})`;
     if (doctorsList && filteredDoctorsList && doctorsList.length > filteredDoctorsList.length) {
       return (
         <View style={styles.topTabBar}>
@@ -1499,13 +1499,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
               borderBottomColor:
                 doctorsType == 'APOLLO' ? theme.colors.SEARCH_UNDERLINE_COLOR : '#f7f8f5',
             }}
-            onPress={() => {
-              if (doctorsType != 'APOLLO') {
-                postTabBarClickWEGEvent('APOLLO');
-                setDoctorsType('APOLLO');
-                filterDoctors(doctorsList, 'APOLLO');
-              }
-            }}
+            onPress={onPressApolloDoctorsTab}
           >
             <Text
               style={{
@@ -1514,7 +1508,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
                 color: doctorsType == 'APOLLO' ? theme.colors.LIGHT_BLUE : 'rgba(1,28,36,0.6)',
               }}
             >
-              Apollo Doctors ({apolloDocsNumber})
+              {apollo_doctors_text}
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
@@ -1523,13 +1517,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
               borderBottomColor:
                 doctorsType == 'PARTNERS' ? theme.colors.SEARCH_UNDERLINE_COLOR : '#f7f8f5',
             }}
-            onPress={() => {
-              if (doctorsType != 'PARTNERS') {
-                postTabBarClickWEGEvent('PARTNERS');
-                setDoctorsType('PARTNERS');
-                filterDoctors(doctorsList, 'PARTNERS');
-              }
-            }}
+            onPress={onPressDoctorPartnersTab}
           >
             <Text
               style={{
@@ -1538,7 +1526,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
                 color: doctorsType == 'PARTNERS' ? theme.colors.LIGHT_BLUE : 'rgba(1,28,36,0.6)',
               }}
             >
-              Doctor Partners ({partnerDocsNumber})
+              {doctor_partners_text}
             </Text>
           </TouchableOpacity>
         </View>

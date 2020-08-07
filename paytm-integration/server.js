@@ -33,6 +33,7 @@ const listOfPaymentMethods = require('./consult-integrations/helpers/list-of-pay
 
 const { getAddressDetails } = require('./commons/getAddressDetails');
 const { getMedicineOrderQuery } = require('./pharma-integrations/helpers/medicine-order-query');
+const getPrescriptionUrls = require('./pharma-integrations/controllers/pharma-prescription-urls');
 
 require('dotenv').config();
 
@@ -1090,12 +1091,11 @@ app.get('/processOmsOrders', (req, res) => {
                   prescriptionImages = orderDetails.prescriptionImageUrl.split(',');
                 }
                 if (prescriptionImages.length > 0) {
-                  prescriptionImages.map((imageUrl) => {
-                    const url = {
-                      url: imageUrl,
-                    };
-                    orderPrescriptionUrl.push(url);
-                  });
+                  orderPrescriptionUrl = await getPrescriptionUrls(
+                    prescriptionImages,
+                    patientDetails
+                  );
+                  console.log(orderPrescriptionUrl);
                 }
                 if (!orderDetails.orderTat) {
                   orderDetails.orderTat = '';
