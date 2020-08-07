@@ -1085,17 +1085,24 @@ app.get('/processOmsOrders', (req, res) => {
                     differenceInYears(new Date(), parseISO(patientDetails.dateOfBirth))
                   );
                 }
-                const orderPrescriptionUrl = [];
+                let orderPrescriptionUrl = [];
                 let prescriptionImages = [];
                 if (orderDetails.prescriptionImageUrl) {
                   prescriptionImages = orderDetails.prescriptionImageUrl.split(',');
                 }
                 if (prescriptionImages.length > 0) {
-                  orderPrescriptionUrl = await getPrescriptionUrls(
-                    prescriptionImages,
-                    patientDetails
-                  );
-                  console.log(orderPrescriptionUrl);
+                  try {
+                    orderPrescriptionUrl = await getPrescriptionUrls(
+                      prescriptionImages,
+                      patientDetails
+                    );
+                  } catch (e) {
+                    logger.error(
+                      `Error while fetching prescription urls for orderid ${
+                        orderDetails.orderAutoId
+                      } ${JSON.stringify(e)}`
+                    );
+                  }
                 }
                 if (!orderDetails.orderTat) {
                   orderDetails.orderTat = '';

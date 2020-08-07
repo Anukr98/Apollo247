@@ -162,3 +162,11 @@ export const INITIATE_CONFERENCE_TELEPHONE_CALL = gql`
     }
   }
 `;
+
+export const SEND_CALL_DISCONNECT_NOTIFICATION = gql`
+  query SendCallDisconnectNotification($appointmentId: String!, $callType: APPT_CALL_TYPE!) {
+    sendCallDisconnectNotification(appointmentId: $appointmentId, callType: $callType) {
+      status
+    }
+  }
+`;
