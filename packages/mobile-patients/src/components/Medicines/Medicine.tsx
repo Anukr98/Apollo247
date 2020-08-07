@@ -1307,32 +1307,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         alignItems: 'center',
         ...style,
       },
-      addRemoveButtonContainer: {
-        backgroundColor: '#f7f8f5',
-        alignItems: 'center',
-        justifyContent: 'center',
-        flexDirection: 'row',
-        borderColor: '#fc9916',
-        paddingRight: 6,
-        paddingLeft: 6,
-      },
-      quantityContainer: {
-        alignItems: 'center',
-        justifyContent: 'center',
-        flexDirection: 'row',
-        paddingRight: 6,
-        paddingLeft: 6,
-      },
-      addRemoveItemContainer: {
-        display: 'flex',
-        flexDirection: 'row',
-        borderWidth: 1,
-        borderColor: '#fc9916',
-      },
-      iconSize: {
-        width: 10,
-        height: 14,
-      },
     });
 
     const renderDiscountedPrice = () => {
@@ -1384,6 +1358,27 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               removeItemFromCart={data.removeItemFromCart}
               removeFromCart={data.removeFromCart}
               isSolidContainer={false}
+              deleteIconStyle={{
+                resizeMode: 'contain',
+                width: 10,
+                height: 14,
+                paddingLeft: 10,
+                paddingRight: 10,
+              }}
+              minusIconStyle={{
+                resizeMode: 'contain',
+                width: 10,
+                height: 20,
+                paddingLeft: 10,
+                paddingRight: 10,
+              }}
+              plusIconStyle={{
+                resizeMode: 'contain',
+                width: 15,
+                height: 15,
+                paddingLeft: 10,
+                paddingRight: 10,
+              }}
             /> : 
             <Text
               style={{
