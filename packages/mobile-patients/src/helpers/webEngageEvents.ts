@@ -463,6 +463,8 @@ export interface WebEngageEvents {
     'Service Area': 'Pharmacy' | 'Diagnostic';
     'Store Id'?: string;
     'Store Name'?: string;
+    'Popup Shown'?: boolean;
+    'No. of out of stock items'?: number;
   };
   [WebEngageEventName.DIAGNOSTIC_PROCEED_TO_PAY_CLICKED]: {
     'Total items in cart': number;

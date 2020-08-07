@@ -230,6 +230,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   const [lastPincodeReplica, setLastPincodeReplica] = useState('');
   const scrollViewRef = useRef<ScrollView | null>();
   const [whatsAppUpdate, setWhatsAppUpdate] = useState<boolean>(true);
+  const [alertShown, setAlertShown] = useState<boolean>(false);
 
   const navigatedFrom = props.navigation.getParam('movedFrom') || '';
 
@@ -540,6 +541,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             deliveryAddressId
         );
         setCartItems!(validation.newItems);
+        setAlertShown(true);
         showAphAlert!({
           title: 'Hi! :)',
           description: string.medicine_cart.cartUpdatedAfterPriceCheckMsg,
@@ -643,6 +645,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     if (validation.alertText) {
       // setStoreInventoryCheck(false);
       setLoading!(false);
+      setAlertShown(true);
       showAphAlert!({
         title: 'Hi! :)',
         description: validation.alertText,
@@ -1704,6 +1707,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   };
 
   const postwebEngageProceedToPayEvent = () => {
+    const numberOfOutOfStockItems = cartItems.filter((medicine) => medicine.isInStock === false).length;
     const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_PROCEED_TO_PAY_CLICKED] = {
       'Total items in cart': cartItems.length,
       'Sub Total': cartTotal,
@@ -1716,7 +1720,10 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         selectedTab === tabs[0].title && moment(deliveryTime).isValid ? deliveryTime : undefined, // Optional (only if Home)
       'Pin Code': pinCode,
       'Service Area': 'Pharmacy',
+      'Popup Shown': alertShown,
+      'No. of out of stock items': numberOfOutOfStockItems,
     };
+    setAlertShown(false);
     if (selectedStore) {
       eventAttributes['Store Id'] = selectedStore.storeid;
       eventAttributes['Store Name'] = selectedStore.storename;
