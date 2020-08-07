@@ -1068,6 +1068,8 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 const ringtoneUrl = require('../images/phone_ringing.mp3');
+const joinToneUrl = require('../images/join_sound.mp3');
+const exitToneUrl = require('../images/left_sound.mp3');
 
 interface errorObject {
   reasonError: boolean;
@@ -1459,6 +1461,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const [consultStart, setConsultStart] = useState<boolean>(false);
   const [sendToPatientButtonDisable, setSendToPatientButtonDisable] = useState<boolean>(false);
   const [playRingtone, setPlayRingtone] = useState<boolean>(false);
+  const [playJoinTone, setPlayJoinTone] = useState<boolean>(false);
+  const [playExitTone, setPlayExitTone] = useState<boolean>(false);
   const [isCall, setIscall] = React.useState(true);
 
   //OT Error state
@@ -1838,10 +1842,14 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       if (lastMsg.message && lastMsg.message.message === acceptcallMsg) {
         setIsCallAccepted(true);
         setPlayRingtone(false);
+        setPlayJoinTone(true);
+        setPlayExitTone(false);
         clearInterval(intervalMissCall);
         missedCallCounter = 0;
       }
       if (lastMsg.message && lastMsg.message.message === stopcallMsg) {
+        setPlayJoinTone(false);
+        setPlayExitTone(true);
         setTimeout(() => {
           if (isCall) forcelyDisconnect();
         }, 2000);
@@ -1858,6 +1866,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         setPlayRingtone(false);
         setJoinPrompt(false);
         setFloatingJoinPrompt(false);
+        setPlayExitTone(true);
       }
     }
   }, [props.lastMsg]);
@@ -2255,6 +2264,20 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       {playRingtone && (
         <audio controls autoPlay loop className={classes.ringtone}>
           <source src={ringtoneUrl} type="audio/mpeg" />
+          Your browser does not support the audio tag.
+        </audio>
+      )}
+
+      {playJoinTone && (
+        <audio controls autoPlay className={classes.ringtone}>
+          <source src={joinToneUrl} type="audio/mpeg" />
+          Your browser does not support the audio tag.
+        </audio>
+      )}
+
+      {playExitTone && (
+        <audio controls autoPlay className={classes.ringtone}>
+          <source src={exitToneUrl} type="audio/mpeg" />
           Your browser does not support the audio tag.
         </audio>
       )}
