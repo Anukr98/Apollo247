@@ -818,6 +818,9 @@ export type CaseSheetMedicinePrescription = {
   medicineUnit: MEDICINE_UNIT;
   routeOfAdministration?: ROUTE_OF_ADMINISTRATION;
   medicineCustomDosage?: string;
+  medicineCustomDetails?: string;
+  includeGenericNameInPrescription?: Boolean;
+  genericName?: string;
 };
 export type CaseSheetDiagnosis = { name: string };
 export type CaseSheetDiagnosisPrescription = {
@@ -1935,6 +1938,7 @@ export interface RxPdfData {
     instructions?: string;
     routeOfAdministration?: string;
     medicineFormTypes?: string;
+    genericName?: string;
   }[];
   generalAdvice: CaseSheetOtherInstruction[];
   diagnoses: CaseSheetDiagnosis[];
