@@ -54,3 +54,15 @@ export interface AcceptCouponResponse {
   errorType: null | string;
   response: null | string;
 }
+
+export interface CouponsList {
+  errorCode: number;
+  errorMsg: string;
+  errorType: string;
+  response: CouponsListResponse[];
+}
+
+export interface CouponsListResponse {
+  coupon: string;
+  message: string;
+}

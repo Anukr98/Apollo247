@@ -7,13 +7,11 @@ import { PatientRepository } from 'profiles-service/repositories/patientReposito
 import { CouponRepository } from 'profiles-service/repositories/couponRepository';
 import { ApiConstants } from 'ApiConstants';
 import { discountCalculation, genericRuleCheck } from 'helpers/couponCommonFunctions';
-import {
-  Coupon,
-  CouponCategoryApplicable,
-  PharmaDiscountApplicableOn,
-} from 'profiles-service/entities';
+import { CouponCategoryApplicable, PharmaDiscountApplicableOn } from 'profiles-service/entities';
 import { customerTypeInCoupons } from 'coupons-service/resolvers/validateConsultCoupon';
 import { MedicineOrdersRepository } from 'profiles-service/repositories/MedicineOrdersRepository';
+import { getCouponsList } from 'helpers/couponServices';
+import { CouponsList, CouponsListResponse } from 'types/coupons';
 
 export const validatePharmaCouponTypeDefs = gql`
   enum CouponCategoryApplicable {
@@ -292,22 +290,41 @@ export const validatePharmaCoupon: Resolver<
   };
 };
 
+type CouponData = {
+  code: string;
+  couponPharmaRule: {
+    messageOnCouponScreen: string;
+  };
+};
+
+type CouponDetails = CouponData[];
+
 const getPharmaCouponList: Resolver<
   null,
   {},
   CouponServiceContext,
   {
-    coupons: Coupon[];
+    coupons: CouponDetails;
   }
-> = async (parent, args, { mobileNumber, patientsDb, doctorsDb, consultsDb }) => {
+> = async (parent, args, { mobileNumber, patientsDb }) => {
   //check for patient request validity
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
   const patientData = await patientRepo.findDetailsByMobileNumber(mobileNumber);
   if (patientData == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
 
-  const couponRepo = patientsDb.getCustomRepository(CouponRepository);
-  const couponData = await couponRepo.getPharmaActiveCoupons();
-  return { coupons: couponData };
+  const couponDetails: CouponDetails = [];
+  const couponData = await getCouponsList();
+  couponData.response.map((item) => {
+    const singleCoupon: CouponData = {
+      code: item.coupon,
+      couponPharmaRule: {
+        messageOnCouponScreen: item.message,
+      },
+    };
+    couponDetails.push(singleCoupon);
+  });
+
+  return { coupons: couponDetails };
 };
 
 export const validatePharmaCouponResolvers = {

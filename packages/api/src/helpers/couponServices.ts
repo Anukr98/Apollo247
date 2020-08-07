@@ -6,6 +6,7 @@ import {
   ValidateCouponResponse,
   AcceptCouponResponse,
   AcceptCouponRequest,
+  CouponsList,
 } from 'types/coupons';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
@@ -110,6 +111,55 @@ export async function acceptCoupon(payload: AcceptCouponRequest): Promise<Accept
           throw new AphError(AphErrorMessages.NO_RESPONSE_FROM_COUPON);
         } else {
           throw new AphError(AphErrorMessages.COUPON_ACCEPT_ERROR);
+        }
+      }
+    )
+    .finally(() => {
+      clearTimeout(timeout);
+    });
+}
+
+export async function getCouponsList(): Promise<CouponsList> {
+  if (!process.env.GET_CONSULT_COUPONS)
+    throw new AphError(AphErrorMessages.INVALID_VALIDATE_COUPON_URL);
+
+  const apiUrl = process.env.GET_CONSULT_COUPONS.toString();
+
+  const reqStartTime = new Date();
+  const controller = new AbortController();
+  const timeout = setTimeout(() => {
+    controller.abort();
+  }, couponTimeoutMillSeconds);
+
+  return await fetch(apiUrl, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json;charset=utf-8',
+    },
+    signal: controller.signal,
+  })
+    .then((res) => res.json())
+    .then(
+      (data) => {
+        dLogger(
+          reqStartTime,
+          'GET_COUPONS_API_CALL___END',
+          `${apiUrl} ------ ${JSON.stringify(data)}`
+        );
+
+        if (data.errorCode) throw new AphError(AphErrorMessages.GET_COUPONS_ERROR);
+        return data;
+      },
+      (err) => {
+        dLogger(
+          reqStartTime,
+          'GET_COUPONS_API_CALL___ERROR',
+          `${apiUrl} ----- ${JSON.stringify(err)}`
+        );
+        if (err.name === 'AbortError') {
+          throw new AphError(AphErrorMessages.NO_RESPONSE_FROM_COUPON);
+        } else {
+          throw new AphError(AphErrorMessages.GET_COUPONS_ERROR);
         }
       }
     )
