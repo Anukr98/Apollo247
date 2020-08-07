@@ -340,23 +340,11 @@ const getMedicineOrdersOMSList: Resolver<
   if (pageNo === 0) {
     throw new AphError(AphErrorMessages.PAGINATION_PARAMS_PAGENO_ERROR, undefined, {});
   }
-  if (pageNo) {
-    paginateParams.take = pageSize
-    paginateParams.skip = (pageSize * pageNo) - pageSize //bcoz pageNo. starts from 1 not 0.
-  }
 
-  // const [medicineOrdersList, totalCount]: any = await medicineOrdersRepo.getMedicineOrdersListWithoutAbortedStatus(
-  //   primaryPatientIds,
-  //   paginateParams
-  // );
+  let medicineOrdersList = await medicineOrdersRepo.getMedicineOrdersListWithoutAbortedStatus(primaryPatientIds);
 
-  console.log('pagination params ---->', paginateParams)
-  const [medicineOrdersList, totalCount]: any = await Promise.all(medicineOrdersRepo.getMedicineOrdersListWithoutAbortedStatus(
-    primaryPatientIds,
-    paginateParams
-  ));
-
-  console.log('medicineOrdersList length---->', medicineOrdersList.length, totalCount)
+  //to know later if medicineOrderList is updated or not
+  const saveCount = medicineOrdersList.length;
 
   let uhid = patientDetails.uhid;
   if (process.env.NODE_ENV == 'local') uhid = ApiConstants.CURRENT_UHID.toString();
@@ -370,6 +358,7 @@ const getMedicineOrdersOMSList: Resolver<
       mobileNumber,
       ''
     );
+
     const ordersResp = await fetch(
       process.env.PRISM_GET_OFFLINE_ORDERS ? process.env.PRISM_GET_OFFLINE_ORDERS + uhid : '',
       {
@@ -459,11 +448,26 @@ const getMedicineOrdersOMSList: Resolver<
     }
   }
 
-  //redundant code as db calls takes care of sorting...
-  // function GetSortOrder(a: MedicineOrders, b: MedicineOrders) {
-  //   return new Date(b.createdDate).getTime() - new Date(a.createdDate).getTime();
-  // }
-  // medicineOrdersList.sort(GetSortOrder);
+  function GetSortOrder(a: MedicineOrders, b: MedicineOrders) {
+    return new Date(b.createdDate).getTime() - new Date(a.createdDate).getTime();
+  }
+  // console.log('checking medicineOrdersList length if mutate --->', saveCount, medicineOrdersList.length)
+
+  // needs to sort bcoz of updated medicineOrdersList orders
+  if (saveCount != medicineOrdersList.length) {
+    medicineOrdersList.sort(GetSortOrder);
+  }
+
+
+  // record total count
+  const totalCount = medicineOrdersList.length
+
+  // paginate data
+  if (pageNo) {
+    paginateParams.take = pageSize
+    paginateParams.skip = (pageSize * pageNo) - pageSize //bcoz pageNo. starts from 1 not 0.
+    medicineOrdersList = medicineOrdersList.slice(paginateParams.skip).slice(0, paginateParams.take)
+  }
 
   return {
     meta: {
@@ -770,6 +774,7 @@ const getLatestMedicineOrder: Resolver<
   let uhid = args.patientUhid;
   if (process.env.NODE_ENV == 'local') uhid = ApiConstants.CURRENT_UHID.toString();
   else if (process.env.NODE_ENV == 'dev') uhid = ApiConstants.CURRENT_UHID.toString();
+
   const listResp = await fetch(
     process.env.PRISM_GET_RECOMMENDED_PRODUCTS
       ? process.env.PRISM_GET_RECOMMENDED_PRODUCTS + uhid
