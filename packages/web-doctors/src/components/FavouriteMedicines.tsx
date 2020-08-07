@@ -55,6 +55,7 @@ import {
   RemoveFavouriteMedicineVariables,
 } from 'graphql/types/RemoveFavouriteMedicine';
 import { GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList } from 'graphql/types/GetDoctorFavouriteMedicineList';
+import { Compare } from 'helpers/Utils';
 const apiDetails = {
   url: process.env.PHARMACY_MED_PARTIAL_SEARCH_URL,
   authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
@@ -2166,6 +2167,7 @@ export const FavouriteMedicines: React.FC = () => {
     });
     setDaySlots(slots);
   };
+
   return (
     <div className={classes.ProfileContainer}>
       <div className={classes.root}>
@@ -2177,25 +2179,27 @@ export const FavouriteMedicines: React.FC = () => {
               ) : (
                 selectedMedicinesArr &&
                 selectedMedicinesArr.length > 0 &&
-                selectedMedicinesArr.map((medicine: any, index: number) => (
-                  <li key={index} className={classes.medicineListElement}>
-                    {medicine!.medicineName}
-                    <span className={classes.iconRight}>
-                      <img
-                        width="16"
-                        onClick={() => updateMedicine(index)}
-                        src={require('images/round_edit_24_px.svg')}
-                        alt=""
-                      />
-                      <img
-                        width="16"
-                        onClick={() => deletemedicine(index)}
-                        src={require('images/ic_cancel_green.svg')}
-                        alt=""
-                      />
-                    </span>
-                  </li>
-                ))
+                selectedMedicinesArr
+                  .sort((a: any, b: any) => Compare(a, b, 'medicineName'))
+                  .map((medicine: any, index: number) => (
+                    <li key={index} className={classes.medicineListElement}>
+                      {medicine!.medicineName}
+                      <span className={classes.iconRight}>
+                        <img
+                          width="16"
+                          onClick={() => updateMedicine(index)}
+                          src={require('images/round_edit_24_px.svg')}
+                          alt=""
+                        />
+                        <img
+                          width="16"
+                          onClick={() => deletemedicine(index)}
+                          src={require('images/ic_cancel_green.svg')}
+                          alt=""
+                        />
+                      </span>
+                    </li>
+                  ))
               )}
               <li>
                 <AphButton
@@ -2330,8 +2334,9 @@ export const FavouriteMedicines: React.FC = () => {
                               className={classes.radioGroup}
                               value={medicineForm}
                               onChange={(e) => {
-                                setMedicineForm((e.target as HTMLInputElement)
-                                  .value as MEDICINE_FORM_TYPES);
+                                setMedicineForm(
+                                  (e.target as HTMLInputElement).value as MEDICINE_FORM_TYPES
+                                );
                               }}
                               row
                             >

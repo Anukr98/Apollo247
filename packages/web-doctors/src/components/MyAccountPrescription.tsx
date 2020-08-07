@@ -103,19 +103,19 @@ export const MyAccountPrescription: React.FC = () => {
       <div>
         <Grid container spacing={2}>
           <Grid sm={6} xs={12} key={1} item>
-            <div className={classes.faverite}>Favorite Medicines</div>
+            <div className={classes.faverite}>Favourite Medicines</div>
             <div className={classes.card}>
               <FavouriteMedicines></FavouriteMedicines>
             </div>
           </Grid>
           <Grid sm={6} xs={12} key={2} item>
-            <div className={classes.faverite}>Favorite Tests</div>
+            <div className={classes.faverite}>Favourite Tests</div>
             <div className={classes.card}>
               <Tests></Tests>
             </div>
           </Grid>
           <Grid sm={6} xs={12} key={3} item>
-            <div className={classes.faverite}>Favorite Advice</div>
+            <div className={classes.faverite}>Favourite Advice</div>
             <div className={classes.card}>
               <FavouriteAdvice></FavouriteAdvice>
             </div>
