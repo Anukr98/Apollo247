@@ -223,10 +223,6 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
             onPress={() => {
               hideAphAlert!();
               props.navigation.navigate(AppRoutes.TabBar);
-              CommonLogEvent(
-                AppRoutes.ConsultPayment,
-                'Navigate to consult room after booking payment sucess.'
-              );
             }}
           >
             <Text style={theme.viewStyles.yellowTextStyle}>GO TO CONSULT ROOM</Text>
@@ -465,19 +461,6 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
             g(apptmt, 'appointmentDateTime'),
             g(apptmt, 'displayId')!
           );
-
-          // props.navigation.navigate(AppRoutes.ConsultPayment, {
-          //   doctorName: `${g(props.doctor, 'fullName')}`,
-          //   appointmentId: g(data, 'data', 'bookAppointment', 'appointment', 'id'),
-          //   price: coupon ? doctorDiscountedFees : Number(doctorFees),
-          //   webEngageEventAttributes: getConsultationBookedEventAttributes(
-          //     g(apptmt, 'appointmentDateTime'),
-          //     g(data, 'data', 'bookAppointment', 'appointment', 'id')!
-          //   ),
-          //   //   tabs[0].title === selectedTab
-          //   //     ? price //1 //props.doctor!.onlineConsultationFees
-          //   //     : props.doctor!.physicalConsultationFees,
-          // });
         })
         .catch((error) => {
           CommonBugFender('ConsultOverlay_onSubmitBookAppointment', error);

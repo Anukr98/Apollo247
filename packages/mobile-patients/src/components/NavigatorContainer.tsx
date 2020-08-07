@@ -44,7 +44,6 @@ import { HealthRecordsHome } from '@aph/mobile-patients/src/components/HealthRec
 import { ConsultDetails } from '@aph/mobile-patients/src/components/HealthRecords/ConsultDetails';
 import { RecordDetails } from '@aph/mobile-patients/src/components/HealthRecords/RecordDetails';
 import { SymptomChecker } from '@aph/mobile-patients/src/components/SymptomChecker';
-import { CheckoutScene } from '@aph/mobile-patients/src/components/CheckoutScene';
 import { PaymentScene } from '@aph/mobile-patients/src/components/PaymentScene';
 import { MedicineConsultDetails } from '@aph/mobile-patients/src/components/HealthRecords/MedicineConsultDetails';
 import { MobileHelp } from '@aph/mobile-patients/src/components/ui/MobileHelp';
@@ -71,7 +70,6 @@ import { ManageProfile } from '@aph/mobile-patients/src/components/Account/Manag
 import { LinkUHID } from '@aph/mobile-patients/src/components/Account/LinkUHID';
 import { ReadMoreLinkUHID } from '@aph/mobile-patients/src/components/Account/ReadMoreLinkUHID';
 import { TestsByCategory } from '@aph/mobile-patients/src/components/Medicines/TestsByCategory';
-import { ConsultPayment } from '@aph/mobile-patients/src/components/ConsultRoom/ConsultPayment';
 import { RenderPdf } from '@aph/mobile-patients/src/components/ui/RenderPdf';
 import { TestPayment } from '@aph/mobile-patients/src/components/Tests/TestPayment';
 import { ApplyConsultCoupon } from '@aph/mobile-patients/src/components/ConsultRoom/ApplyConsultCoupon';
@@ -95,7 +93,6 @@ export enum AppRoutes {
   Login = 'Login',
   ConsultRoom = 'ConsultRoom',
   ApplyConsultCoupon = 'ApplyConsultCoupon',
-  ConsultPayment = 'ConsultPayment',
   TabBar = 'TabBar',
   DoctorSearch = 'DoctorSearch',
   SignUp = 'SignUp',
@@ -124,7 +121,6 @@ export enum AppRoutes {
   OrderModifiedScreen = 'OrderModifiedScreen',
   YourCart = 'YourCart',
   YourCartUploadPrescriptions = 'YourCartUploadPrescriptions',
-  CheckoutScene = 'CheckoutScene',
   TestsCheckoutScene = 'TestsCheckoutScene',
   PaymentScene = 'PaymentScene',
   AddAddress = 'AddAddress',
@@ -216,9 +212,6 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   [AppRoutes.ApplyConsultCoupon]: {
     screen: ApplyConsultCoupon,
   },
-  [AppRoutes.ConsultPayment]: {
-    screen: ConsultPayment,
-  },
   [AppRoutes.DoctorSearchListing]: {
     screen: DoctorSearchListing,
     path: 'DoctorSearchListingPage',
@@ -287,9 +280,6 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.YourOrdersScene]: {
     screen: YourOrdersScene,
-  },
-  [AppRoutes.CheckoutScene]: {
-    screen: CheckoutScene,
   },
   [AppRoutes.TestsCheckoutScene]: {
     screen: TestsCheckoutScene,

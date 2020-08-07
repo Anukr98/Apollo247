@@ -717,7 +717,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         leftIcon={'backArrow'}
         title={'PAYMENT'}
         onPressLeftIcon={() => {
-          CommonLogEvent(AppRoutes.CheckoutScene, 'Go back clicked');
+          CommonLogEvent(AppRoutes.CheckoutSceneNew, 'Go back clicked');
           if (showChennaiOrderForm) {
             handleBackPressFromChennaiOrderForm();
           } else {
@@ -738,7 +738,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       showAphAlert!({ title: 'Uh oh.. :(', description: 'Enter valid email' });
     } else {
       try {
-        CommonLogEvent(AppRoutes.CheckoutScene, `SUBMIT TO CONFIRM ORDER`);
+        CommonLogEvent(AppRoutes.CheckoutSceneNew, `SUBMIT TO CONFIRM ORDER`);
       } catch (error) {
         CommonBugFender('CheckoutScene_renderPayButton_try', error);
       }
