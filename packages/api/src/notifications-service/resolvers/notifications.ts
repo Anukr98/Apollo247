@@ -370,8 +370,8 @@ export async function sendCallsNotification(
   if(voipPushtoken.length && voipPushtoken[voipPushtoken.length-1]['deviceVoipPushToken']){
     const token = voipPushtoken[voipPushtoken.length-1]['deviceVoipPushToken'];
     const CERT_PATH = process.env.ASSETS_DIRECTORY + '/voipCert.pem';
-    const passphrase = "apollo@123";
-    const domain = "https://api.development.push.apple.com/3/device/";
+    const passphrase = process.env.VOIP_CALLKIT_PASSPHRASE || "apollo@123";
+    const domain = process.env.VOIP_CALLKIT_DOMAIN || "https://api.development.push.apple.com/3/device/";
 
     try {
       const curlCommand = `curl -v -d '{"name": ${doctorDetails.displayName}, "isVideo": ${true}, "appointmentId" : ${appointment.id}}' --http2 --cert ${CERT_PATH}:${passphrase} ${domain}${token}`;
@@ -380,7 +380,7 @@ export async function sendCallsNotification(
       console.info("voipCallKit result > ", result);
 
     } catch (err){
-      console.info("voipCallKit error > ", err);
+      console.error("voipCallKit error > ", err);
     }
   }
 
