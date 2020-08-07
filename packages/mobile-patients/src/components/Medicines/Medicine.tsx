@@ -1397,7 +1397,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       onAddOrRemoveCartItem: foundMedicineInCart ? removeFromCart : addToCart,
       onPress: () => {
         const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_CATEGORY_SECTION_PRODUCT_CLICK] = {
-          SectionName: title,
+          'Section Name': title,
           ProductId: sku,
           ProductName: name,
         };
