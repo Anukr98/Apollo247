@@ -145,6 +145,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     VoipPushNotification.addEventListener('register', (token: String) => {
       // --- send token to your apn provider server
       console.log("voip token", token)
+      alert(token)
     });
 
     try {
