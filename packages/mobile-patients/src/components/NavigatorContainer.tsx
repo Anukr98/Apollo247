@@ -90,7 +90,7 @@ import MyPaymentsScreen from '@aph/mobile-patients/src/components/MyPayments/MyP
 import PaymentStatusScreen from '@aph/mobile-patients/src/components/MyPayments/PaymentStatus/PaymentStatusScreen';
 import { ConsultTypeScreen } from './ConsultRoom/ConsultTypeScreen';
 import { CommonWebView } from '@aph/mobile-patients/src/components/CommonWebView';
-
+import { RefundStatus } from '@aph/mobile-patients/src/components/RefundStatus';
 export enum AppRoutes {
   Login = 'Login',
   ConsultRoom = 'ConsultRoom',
@@ -172,6 +172,7 @@ export enum AppRoutes {
   OneApolloMembership = 'OneApolloMembership',
   ConsultTypeScreen = 'ConsultTypeScreen',
   CommonWebView = 'CommonWebView',
+  RefundStatus = 'RefundStatus',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -450,6 +451,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.CommonWebView]: {
     screen: CommonWebView,
+  },
+  [AppRoutes.RefundStatus]: {
+    screen: RefundStatus,
   },
 };
 
