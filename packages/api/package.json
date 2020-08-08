@@ -21,7 +21,7 @@
     "start:coupons-service": "webpack --config webpack.config.coupons-service.js",
     "typecheck": "tsc --project . --noEmit",
     "typeorm": "ts-node -r tsconfig-paths/register ./node_modules/.bin/typeorm",
-    "migration:consult-service": "webpack --config webpack.consult.migration.config"
+    "start:consults-service:migration": "webpack --config webpack.consult.migration.config && npm run start:consults-service"
   },
   "devDependencies": {
     "@aph/api-schema": "file:../api-schema",
@@ -105,6 +105,7 @@
     "sendgrid": "^5.2.3",
     "sync-request": "^6.1.0",
     "typeorm": "^0.2.25",
+    "uglifyjs-webpack-plugin": "^2.2.0",
     "url": "^0.11.0",
     "uuid": "^3.3.3",
     "validator": "^11.1.0",

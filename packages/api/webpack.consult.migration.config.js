@@ -1,5 +1,6 @@
 const glob = require('glob');
 const path = require('path');
+const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
 
 
 const isLocal = process.env.NODE_ENV === 'local';
@@ -13,8 +14,6 @@ const tsLoader = {
         : undefined,
 };
 module.exports = {
-
-
     entry: glob.sync(path.resolve('src/consults-service/database/migrations/*.ts')).reduce((entries, filename) => {
         const migrationName = path.basename(filename, '.ts');
         return Object.assign({}, entries, {
@@ -37,6 +36,16 @@ module.exports = {
                 exclude: [/node_modules/],
                 use: [tsLoader],
             },
+        ],
+    },
+    optimization: {
+        minimizer: [
+            new UglifyJsPlugin({
+                uglifyOptions: {
+                    keep_classnames: true,
+                    keep_fnames: true
+                }
+            })
         ],
     },
 };
