@@ -83,7 +83,7 @@ import com.android.build.OutputFile
 
 project.ext.react = [
     entryFile: "index.js",
-    enableHermes: false,  // clean and rebuild if changing
+    enableHermes: true,  // clean and rebuild if changing
 ]
 
 apply from: "../../node_modules/react-native/react.gradle"
@@ -123,7 +123,7 @@ def jscFlavor = 'org.webkit:android-jsc:+'
  * on project.ext.react, JavaScript will not be compiled to Hermes Bytecode
  * and the benefits of using Hermes will therefore be sharply reduced.
  */
-def enableHermes = project.ext.react.get("enableHermes", false);
+def enableHermes = project.ext.react.get("enableHermes", true);
 
 android {
     compileSdkVersion rootProject.ext.compileSdkVersion
@@ -137,8 +137,8 @@ android {
         applicationId "com.apollo.patientapp"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 51
-        versionName "3.2.0"
+        versionCode 52
+        versionName "4.0.0"
         ndk {
             abiFilters "armeabi-v7a", "x86", "arm64-v8a", "x86_64"
         }
@@ -197,9 +197,16 @@ android {
     packagingOptions {
         pickFirst '**/libc++_shared.so'
     }
+
+    configurations.all {
+        resolutionStrategy {
+            force "com.facebook.soloader:soloader:0.8.0" // to fix crash on app bundle file
+        }
+    }
 }
 
 dependencies {
+    implementation project(':@react-native-community_datetimepicker')
     implementation project(':react-native-code-push')
     implementation project(':react-native-background-timer')
     implementation project(':react-native-video')

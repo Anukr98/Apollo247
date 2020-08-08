@@ -1,8 +1,8 @@
 import gql from 'graphql-tag';
 
 export const GET_CONSULT_QUEUE = gql`
-  query GetConsultQueue($doctorId: String!) {
-    getConsultQueue(doctorId: $doctorId) {
+  query GetConsultQueue($doctorId: String!, $isActive: Boolean) {
+    getConsultQueue(doctorId: $doctorId, isActive: $isActive) {
       consultQueue {
         id
         isActive
@@ -159,6 +159,14 @@ export const INITIATE_CONFERENCE_TELEPHONE_CALL = gql`
     initateConferenceTelephoneCall(exotelInput: $exotelInput) {
       response
       isError
+    }
+  }
+`;
+
+export const SEND_CALL_DISCONNECT_NOTIFICATION = gql`
+  query SendCallDisconnectNotification($appointmentId: String!, $callType: APPT_CALL_TYPE!) {
+    sendCallDisconnectNotification(appointmentId: $appointmentId, callType: $callType) {
+      status
     }
   }
 `;

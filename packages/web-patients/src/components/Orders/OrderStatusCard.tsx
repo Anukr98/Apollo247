@@ -3,28 +3,23 @@ import { makeStyles } from '@material-ui/styles';
 import { Theme, CircularProgress } from '@material-ui/core';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
-  getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails as OrderDetails,
-  getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus as StatusDetails,
-} from 'graphql/types/getMedicineOrderOMSDetails';
+  getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails as OrderDetails,
+  getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_medicineOrdersStatus as StatusDetails,
+  getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_medicineOrderAddress as OrderAddress,
+} from 'graphql/types/getMedicineOrderOMSDetailsWithAddress';
 import moment from 'moment';
 import { OrderFeedback } from './OrderFeedback';
 import { MEDICINE_ORDER_STATUS } from 'graphql/types/globalTypes';
 import { AphButton } from '@aph/web-ui-components';
 import Popover from '@material-ui/core/Popover';
-import { useShoppingCart, MedicineCartItem } from 'components/MedicinesCartProvider';
-import {
-  GetPatientAddressList,
-  GetPatientAddressListVariables,
-  GetPatientAddressList_getPatientAddressList_addressList as AddressDetails,
-} from 'graphql/types/GetPatientAddressList';
-import { GET_PATIENT_ADDRESSES_LIST } from 'graphql/address';
+import { useShoppingCart } from 'components/MedicinesCartProvider';
 import { getStatus, isRejectedStatus } from 'helpers/commonHelpers';
 import { ReOrder } from './ReOrder';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
     orderStatusGroup: {
-      padding: 0,
+      padding: '0 0 30px',
     },
     cardRoot: {
       padding: 20,
@@ -298,8 +293,6 @@ export const getDeliveredDateTime = (orderStatusList: StatusDetails[]) => {
 export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
   const classes = useStyles({});
   const { orderDetailsData, isLoading } = props;
-  const { deliveryAddresses, setDeliveryAddresses } = useShoppingCart();
-  const client = useApolloClient();
 
   const getSortedStatusList = (statusList: (StatusDetails | null)[]) => {
     if (statusList && statusList.length > 0) {
@@ -363,54 +356,16 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
   const mascotRef = useRef(null);
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
 
-  const getAddressDetails = (id: string) => {
-    client
-      .query<GetPatientAddressList, GetPatientAddressListVariables>({
-        query: GET_PATIENT_ADDRESSES_LIST,
-        variables: {
-          patientId: id || '',
-        },
-        fetchPolicy: 'no-cache',
-      })
-      .then((_data) => {
-        if (
-          _data.data &&
-          _data.data.getPatientAddressList &&
-          _data.data.getPatientAddressList.addressList
-        ) {
-          const addresses = _data.data.getPatientAddressList.addressList.reverse();
-          if (addresses && addresses.length > 0) {
-            setDeliveryAddresses && setDeliveryAddresses(addresses);
-            getPatientAddress(addresses);
-          } else {
-            setDeliveryAddresses && setDeliveryAddresses([]);
-          }
-        }
-      })
-      .catch((e) => {
-        console.log('Error occured while fetching Doctor', e);
-      });
-  };
-
-  const getPatientAddress = (deliveryAddresses: AddressDetails[]) => {
-    if (deliveryAddresses.length > 0) {
-      if (orderDetailsData && orderDetailsData.patientAddressId) {
-        const selectedAddress = deliveryAddresses.find(
-          (address: AddressDetails) => address.id == orderDetailsData.patientAddressId
-        );
-        const address1 = selectedAddress.addressLine1 ? `${selectedAddress.addressLine1}, ` : '';
-        const address2 = selectedAddress.addressLine2 ? `${selectedAddress.addressLine2}, ` : '';
-        const city = selectedAddress.city ? `${selectedAddress.city}, ` : '';
-        const state = selectedAddress.state ? `${selectedAddress.state}, ` : '';
-        const addressData = selectedAddress
-          ? `${address1}${address2}${city}${state}${selectedAddress.zipcode || ''}`
-          : '';
-        return addressData;
-      } else {
-        return '';
-      }
-    } else {
-      getAddressDetails(orderDetailsData.patient.id);
+  const getPatientAddress = (deliveryAddress: OrderAddress) => {
+    if (deliveryAddress) {
+      const address1 = deliveryAddress.addressLine1 ? `${deliveryAddress.addressLine1}, ` : '';
+      const address2 = deliveryAddress.addressLine2 ? `${deliveryAddress.addressLine2}, ` : '';
+      const city = deliveryAddress.city ? `${deliveryAddress.city}, ` : '';
+      const state = deliveryAddress.state ? `${deliveryAddress.state}, ` : '';
+      const addressData = deliveryAddress
+        ? `${address1}${address2}${city}${state}${deliveryAddress.zipcode || ''}`
+        : '';
+      return addressData;
     }
   };
 
@@ -527,7 +482,9 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
             )}
             <div className={classes.detailsRow}>
               <div className={classes.orderTitle}>Address -</div>
-              <div className={classes.discription}>{getPatientAddress(deliveryAddresses)}</div>
+              <div className={classes.discription}>
+                {getPatientAddress(orderDetailsData.medicineOrderAddress)}
+              </div>
             </div>
           </div>
           {!isRejectedStatus(orderDetailsData.currentStatus) && orderDetailsData.orderTat && (

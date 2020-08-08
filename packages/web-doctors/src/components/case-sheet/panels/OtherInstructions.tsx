@@ -12,6 +12,7 @@ import { GET_DOCTOR_FAVOURITE_ADVICE_LIST } from 'graphql/profiles';
 import { CaseSheetContext } from 'context/CaseSheetContext';
 import { useParams } from 'hooks/routerHooks';
 import { getLocalStorageItem, updateLocalStorageItem } from './LocalStorageUtils';
+import { Compare } from 'helpers/Utils';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -387,40 +388,42 @@ export const OtherInstructions: React.FC = () => {
               <div className={classes.othersBtnfavContainer}>
                 {adviceList !== null &&
                   adviceList.length > 0 &&
-                  adviceList!.map(
-                    (item, idx) =>
-                      item &&
-                      item.instruction!.trim() !== '' && (
-                        <div className={classes.othersBtnfav}>
-                          <Chip className={classes.chip} key={idx} label={item!.instruction} />
-                          <img
-                            src={caseSheetEdit && require('images/add_doctor_white.svg')}
-                            onClick={() => {
-                              const node = (adviceInputRef as any).current;
-                              if (item!.instruction.trim() !== '') {
-                                selectedValues!.splice(idx, 0, {
-                                  instruction: item!.instruction,
-                                  __typename: 'OtherInstructions',
-                                });
-                                const storageItem = getLocalStorageItem(params.id);
-                                if (storageItem) {
-                                  storageItem.otherInstructions = selectedValues;
-                                  updateLocalStorageItem(params.id, storageItem);
-                                }
-                                setSelectedValues(selectedValues);
-                                setIdx(selectedValues!.length + 1);
-                                setTimeout(() => {
+                  adviceList!
+                    .sort((a: any, b: any) => Compare(a, b, 'instruction'))
+                    .map(
+                      (item, idx) =>
+                        item &&
+                        item.instruction!.trim() !== '' && (
+                          <div className={classes.othersBtnfav}>
+                            <Chip className={classes.chip} key={idx} label={item!.instruction} />
+                            <img
+                              src={caseSheetEdit && require('images/add_doctor_white.svg')}
+                              onClick={() => {
+                                const node = (adviceInputRef as any).current;
+                                if (item!.instruction.trim() !== '') {
+                                  selectedValues!.splice(idx, 0, {
+                                    instruction: item!.instruction,
+                                    __typename: 'OtherInstructions',
+                                  });
+                                  const storageItem = getLocalStorageItem(params.id);
+                                  if (storageItem) {
+                                    storageItem.otherInstructions = selectedValues;
+                                    updateLocalStorageItem(params.id, storageItem);
+                                  }
+                                  setSelectedValues(selectedValues);
+                                  setIdx(selectedValues!.length + 1);
+                                  setTimeout(() => {
+                                    if (node) node.value = '';
+                                  }, 10);
+                                } else {
                                   if (node) node.value = '';
-                                }, 10);
-                              } else {
-                                if (node) node.value = '';
-                              }
-                            }}
-                            alt=""
-                          />
-                        </div>
-                      )
-                  )}
+                                }
+                              }}
+                              alt=""
+                            />
+                          </div>
+                        )
+                    )}
               </div>
             </Typography>
           </Grid>

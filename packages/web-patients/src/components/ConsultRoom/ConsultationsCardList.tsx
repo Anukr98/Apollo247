@@ -207,7 +207,7 @@ interface ConsultationsCardProps {
   pastOrCurrent: string;
 }
 
-export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
+export const ConsultationsCardList: React.FC<ConsultationsCardProps> = (props) => {
   const classes = useStyles({});
   const otherDateMarkup = (appointmentTime: number) => {
     if (isToday(new Date(appointmentTime))) {

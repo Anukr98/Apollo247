@@ -2,7 +2,7 @@ import { EntityRepository, Repository } from 'typeorm';
 import { PatientAddress } from 'profiles-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
-import { getCache, setCache } from 'profiles-service/database/connectRedis';
+import { getCache, setCache, delCache } from 'profiles-service/database/connectRedis';
 import { ApiConstants } from 'ApiConstants';
 
 // if changing key please also change the same in entity
@@ -64,7 +64,11 @@ export class PatientAddressRepository extends Repository<PatientAddress> {
     return this.findOne({ where: { id } });
   }
 
-  deletePatientAddress(id: string) {
-    return this.delete(id);
+  async deletePatientAddress(id: string) {
+    const address = await this.findOne({ where: { id } });
+    if (address) {
+      delCache(this.cacheKey(REDIS_ADDRESS_PATIENT_ID_KEY_PREFIX, address.patientId));
+      return this.delete(id);
+    }
   }
 }

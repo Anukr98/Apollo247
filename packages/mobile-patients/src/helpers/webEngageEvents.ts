@@ -6,11 +6,6 @@ import {
 type YesOrNo = 'Yes' | 'No';
 
 export enum WebEngageEventName {
-  ONBOARDING_SCREEN_1 = 'Onboarding Screen 1',
-  ONBOARDING_SCREEN_2 = 'Onboarding Screen 2',
-  ONBOARDING_SCREEN_3 = 'Onboarding Screen 3',
-  ONBOARDING_SCREEN_4 = 'Onboarding Screen 4',
-  ONBOARDING_SKIP_CLICKED = 'Onboarding Skip Clicked',
   MOBILE_ENTRY = 'Mobile Entry',
   MOBILE_NUMBER_ENTERED = 'Mobile Number Entered',
   OTP_ENTERED = 'OTP Entered',
@@ -211,11 +206,6 @@ export interface ReorderMedicine extends PatientInfo {
 export interface WebEngageEvents {
   // ********** AppEvents ********** \\
 
-  [WebEngageEventName.ONBOARDING_SCREEN_1]: {};
-  [WebEngageEventName.ONBOARDING_SCREEN_2]: {};
-  [WebEngageEventName.ONBOARDING_SCREEN_3]: {};
-  [WebEngageEventName.ONBOARDING_SCREEN_4]: {};
-  [WebEngageEventName.ONBOARDING_SKIP_CLICKED]: {};
   [WebEngageEventName.MOBILE_ENTRY]: {};
   [WebEngageEventName.MOBILE_NUMBER_ENTERED]: { mobilenumber: string };
   [WebEngageEventName.OTP_ENTERED]: { value: YesOrNo };
@@ -341,13 +331,12 @@ export interface WebEngageEvents {
     'product name': string;
     'product id': string; // (SKUID)
     Price: number;
-    'Discounted Price': number;
+    'Discounted Price'?: number;
     Quantity: number;
     Source:
       | 'Pharmacy Home'
       | 'Pharmacy PDP'
       | 'Pharmacy List'
-      | 'Diagnostic'
       | 'Pharmacy Partial Search'
       | 'Pharmacy Full Search';
     Brand?: string;
@@ -555,7 +544,7 @@ export interface WebEngageEvents {
     Servicable: boolean;
   };
   [WebEngageEventName.PHARMACY_CATEGORY_SECTION_PRODUCT_CLICK]: {
-    SectionName: string;
+    'Section Name': string;
     ProductId: string;
     ProductName: string;
   };

@@ -8,7 +8,7 @@ import { useApolloClient } from 'react-apollo-hooks';
 
 import { AphSelect, AphButton } from '@aph/web-ui-components';
 import { AphDialogTitle, AphDialog, AphDialogClose } from '@aph/web-ui-components';
-import { ConsultationsCard } from 'components/ConsultRoom/ConsultationsCard';
+import { ConsultationsCardList } from 'components/ConsultRoom/ConsultationsCardList';
 import { NavigationBottom } from 'components/NavigationBottom';
 import { useQueryWithSkip } from 'hooks/apolloHooks';
 import { useAllCurrentPatients } from 'hooks/authHooks';
@@ -358,7 +358,7 @@ type Patient = GetCurrentPatients_getCurrentPatients_patients;
 interface AppointmentProps {
   history: History;
 }
-export const Appointments: React.FC<AppointmentProps> = (props) => {
+export const AppointmentsList: React.FC<AppointmentProps> = (props) => {
   const pageUrl = window.location.href;
   const classes = useStyles({});
   const { allCurrentPatients, currentPatient, setCurrentPatientId } = useAllCurrentPatients();
@@ -797,7 +797,10 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
             {tabValue === 0 && (
               <TabContainer>
                 {availableAppointments && availableAppointments.length > 0 ? (
-                  <ConsultationsCard appointments={availableAppointments} pastOrCurrent="current" />
+                  <ConsultationsCardList
+                    appointments={availableAppointments}
+                    pastOrCurrent="current"
+                  />
                 ) : loading || isSigningIn ? (
                   <div className={classes.loader}>
                     <CircularProgress />
@@ -832,7 +835,7 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
             {tabValue === 1 && (
               <TabContainer>
                 {pastAppointments && pastAppointments.length > 0 ? (
-                  <ConsultationsCard appointments={pastAppointments} pastOrCurrent="past" />
+                  <ConsultationsCardList appointments={pastAppointments} pastOrCurrent="past" />
                 ) : loading || isSigningIn ? (
                   <div className={classes.loader}>
                     <CircularProgress />
