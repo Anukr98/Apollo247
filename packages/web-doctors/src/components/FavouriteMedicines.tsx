@@ -12,6 +12,7 @@ import {
   CircularProgress,
   FormControlLabel,
   RadioGroup,
+  Checkbox,
 } from '@material-ui/core';
 import {
   AphTextField,
@@ -56,6 +57,7 @@ import {
 } from 'graphql/types/RemoveFavouriteMedicine';
 import { GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList } from 'graphql/types/GetDoctorFavouriteMedicineList';
 import { Compare } from 'helpers/Utils';
+import { GenericMedicineName } from './GenericMedicineName';
 const apiDetails = {
   url: process.env.PHARMACY_MED_PARTIAL_SEARCH_URL,
   authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
@@ -2766,6 +2768,7 @@ export const FavouriteMedicines: React.FC = () => {
                                 </FormHelperText>
                               )}
                           </div>
+                          <GenericMedicineName />
                           <Grid item lg={12} xs={12}>
                             <h6 className={classes.instructionText}>Instructions/Notes</h6>
                             <div className={classes.numberTablets}>

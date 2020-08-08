@@ -44,6 +44,7 @@ import { useApolloClient } from 'react-apollo-hooks';
 import { useParams } from 'hooks/routerHooks';
 import { getLocalStorageItem, updateLocalStorageItem } from './LocalStorageUtils';
 import { Compare } from 'helpers/Utils';
+import { GenericMedicineName } from 'components/GenericMedicineName';
 
 const apiDetails = {
   url: process.env.PHARMACY_MED_PARTIAL_SEARCH_URL,
@@ -2953,6 +2954,7 @@ export const MedicinePrescription: React.FC = () => {
                             </FormHelperText>
                           )}
                       </div>
+                      <GenericMedicineName />
                       <Grid item lg={12} xs={12}>
                         <h6 className={classes.instructionText}>Instructions/Notes</h6>
                         <div className={classes.numberTablets}>
@@ -3540,6 +3542,7 @@ export const MedicinePrescription: React.FC = () => {
                               </FormHelperText>
                             )}
                         </div>
+                        <GenericMedicineName />
                         <Grid item lg={12} xs={12}>
                           <h6 className={classes.instructionText}>Instructions/Notes</h6>
                           <div className={classes.numberTablets}>
