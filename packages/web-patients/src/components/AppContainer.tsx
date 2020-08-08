@@ -21,7 +21,7 @@ import { MedicineLanding } from 'components/Medicine/MedicineLanding';
 import { ViewAllBrands } from 'components/Medicine/ViewAllBrands';
 import { SearchByBrand } from 'components/Medicine/SearchByBrand';
 import { Appointments } from 'components/Consult/V2/Appointments';
-import { ChatRoom } from 'components/ChatRoom/ChatRoom';
+import { ChatRoom } from 'components/ChatRoom/V2/ChatRoom';
 import { PrescriptionsLanding } from 'components/Prescriptions/PrescriptionsLanding';
 import { MyAccount } from 'components/MyAccount/MyAccount';
 import { NotificationSettings } from 'components/Notifications/NotificationSettings';
