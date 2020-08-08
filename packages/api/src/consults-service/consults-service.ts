@@ -127,209 +127,215 @@ import { winstonLogger } from 'customWinstonLogger';
 import { exotelCallingResolvers, exotelTypeDefs } from 'consults-service/resolvers/exotelCalling';
 
 (async () => {
-  await connect();
+  connect()
+    .then(res => {
+      const consultsLogger = winstonLogger.loggers.get('consultServiceLogger');
 
-  const consultsLogger = winstonLogger.loggers.get('consultServiceLogger');
-
-  const server = new ApolloServer({
-    context: async ({ req }) => {
-      const headers = req.headers as GatewayHeaders;
-      const mobileNumber = headers.mobilenumber;
-      const consultsDb = getConnection();
-      const doctorsDb = getConnection('doctors-db');
-      const patientsDb = getConnection('patients-db');
-      const context: ConsultServiceContext = {
-        mobileNumber,
-        doctorsDb,
-        consultsDb,
-        patientsDb,
-      };
-      return context;
-    },
-    schema: buildFederatedSchema([
-      {
-        typeDefs: gql`
-          scalar Date
-          scalar Time
-          scalar DateTime
-        `,
-        resolvers: {
-          Date: GraphQLDate,
-          Time: GraphQLTime,
-          DateTime: GraphQLDateTime,
-        },
-      },
-      {
-        typeDefs: exotelTypeDefs,
-        resolvers: exotelCallingResolvers,
-      },
-      {
-        typeDefs: getAvailableSlotsTypeDefs,
-        resolvers: getAvailableSlotsResolvers,
-      },
-      {
-        typeDefs: bookAppointmentTypeDefs,
-        resolvers: bookAppointmentResolvers,
-      },
-      {
-        typeDefs: makeAppointmentPaymentTypeDefs,
-        resolvers: makeAppointmentPaymentResolvers,
-      },
-      {
-        typeDefs: getAppointmentHistoryTypeDefs,
-        resolvers: getAppointmentHistoryResolvers,
-      },
-      {
-        typeDefs: getPatinetAppointmentsTypeDefs,
-        resolvers: getPatinetAppointmentsResolvers,
-      },
-      {
-        typeDefs: createAppointmentSessionTypeDefs,
-        resolvers: createAppointmentSessionResolvers,
-      },
-      {
-        typeDefs: getNextAvailableSlotTypeDefs,
-        resolvers: getNextAvailableSlotResolvers,
-      },
-      {
-        typeDefs: getPhysicalAvailableSlotsTypeDefs,
-        resolvers: getPhysicalAvailableSlotsResolvers,
-      },
-      {
-        typeDefs: paymentTransactionStatusTypeDefs,
-        resolvers: paymentTransactionStatusResolvers,
-      },
-      {
-        typeDefs: caseSheetTypeDefs,
-        resolvers: caseSheetResolvers,
-      },
-      {
-        typeDefs: transferAppointmentTypeDefs,
-        resolvers: transferAppointmentResolvers,
-      },
-      {
-        typeDefs: rescheduleAppointmentTypeDefs,
-        resolvers: rescheduleAppointmentResolvers,
-      },
-      {
-        typeDefs: getPatientConsultsAndPrescriptionsTypeDefs,
-        resolvers: getPatientConsultsAndPrescriptionsResolvers,
-      },
-      {
-        typeDefs: chooseDoctorTypeDefs,
-        resolvers: chooseDoctorResolvers,
-      },
-      {
-        typeDefs: chatTranscriptsTypeDefs,
-        resolvers: chatTranscriptsResolvers,
-      },
-      {
-        typeDefs: cancelAppointmentTypeDefs,
-        resolvers: cancelAppointmentResolvers,
-      },
-      {
-        typeDefs: bookFollowUpAppointmentTypeDefs,
-        resolvers: bookFollowUpAppointmentResolvers,
-      },
-      {
-        typeDefs: consultQueueTypeDefs,
-        resolvers: consultQueueResolvers,
-      },
-      {
-        typeDefs: getAllDoctorAppointmentsTypeDefs,
-        resolvers: getAllDoctorAppointmentsResolvers,
-      },
-      {
-        typeDefs: uploadChatDocumentTypeDefs,
-        resolvers: uploadChatDocumentResolvers,
-      },
-      {
-        typeDefs: appointmentsSummaryTypeDefs,
-        resolvers: appointmentsSummaryResolvers,
-      },
-      {
-        typeDefs: availableDoctorsTypeDefs,
-        resolvers: availableDoctorsResolvers,
-      },
-      {
-        typeDefs: doctorCallNotificationTypeDefs,
-        resolvers: doctorCallNotificationResolvers,
-      },
-      {
-        typeDefs: getAppointmentOverviewTypeDefs,
-        resolvers: getAppointmentOverviewResolvers,
-      },
-      {
-        typeDefs: sdDashboardSummaryTypeDefs,
-        resolvers: sdDashboardSummaryResolvers,
-      },
-      {
-        typeDefs: jdDashboardSummaryTypeDefs,
-        resolvers: jdDashboardSummaryResolvers,
-      },
-      {
-        typeDefs: appointmentNotificationTypeDefs,
-        resolvers: appointmentNotificationResolvers,
-      },
-      {
-        typeDefs: getOrderInvoiceTypeDefs,
-        resolvers: getOrderInvoiceResolvers,
-      },
-      {
-        typeDefs: consultOrdersTypeDefs,
-        resolvers: consultOrdersResolvers,
-      },
-    ]),
-    plugins: [
-      /* This plugin is defined in-line. */
-      {
-        serverWillStart() {
-          consultsLogger.log('info', 'Server starting up!');
-        },
-        requestDidStart({ operationName, request }) {
-          /* Within this returned object, define functions that respond
-             to request-specific lifecycle events. */
-          const reqStartTime = new Date();
-          const reqStartTimeFormatted = format(reqStartTime, "yyyy-MM-dd'T'HH:mm:ss.SSSX");
-          return {
-            parsingDidStart(requestContext) {
-              consultsLogger.log({
-                message: 'Request Starting',
-                time: reqStartTimeFormatted,
-                operation: requestContext.request.query,
-                level: 'info',
-              });
-            },
-            didEncounterErrors(requestContext) {
-              requestContext.errors.forEach((error) => {
-                consultsLogger.log(
-                  'error',
-                  `Encountered Error at ${reqStartTimeFormatted}: `,
-                  error
-                );
-              });
-            },
-            willSendResponse({ response }) {
-              const errorCount = (response.errors || []).length;
-              const responseLog = {
-                message: 'Request Ended',
-                time: format(new Date(), "yyyy-MM-dd'T'HH:mm:ss.SSSX"),
-                durationInMilliSeconds: differenceInMilliseconds(new Date(), reqStartTime),
-                errorCount,
-                level: 'info',
-                response: response,
-              };
-              //remove response if there is no error
-              if (errorCount === 0) delete responseLog.response;
-              consultsLogger.log(responseLog);
-            },
+      const server = new ApolloServer({
+        context: async ({ req }) => {
+          const headers = req.headers as GatewayHeaders;
+          const mobileNumber = headers.mobilenumber;
+          const consultsDb = getConnection();
+          const doctorsDb = getConnection('doctors-db');
+          const patientsDb = getConnection('patients-db');
+          const context: ConsultServiceContext = {
+            mobileNumber,
+            doctorsDb,
+            consultsDb,
+            patientsDb,
           };
+          return context;
         },
-      },
-    ],
-  });
+        schema: buildFederatedSchema([
+          {
+            typeDefs: gql`
+            scalar Date
+            scalar Time
+            scalar DateTime
+          `,
+            resolvers: {
+              Date: GraphQLDate,
+              Time: GraphQLTime,
+              DateTime: GraphQLDateTime,
+            },
+          },
+          {
+            typeDefs: exotelTypeDefs,
+            resolvers: exotelCallingResolvers,
+          },
+          {
+            typeDefs: getAvailableSlotsTypeDefs,
+            resolvers: getAvailableSlotsResolvers,
+          },
+          {
+            typeDefs: bookAppointmentTypeDefs,
+            resolvers: bookAppointmentResolvers,
+          },
+          {
+            typeDefs: makeAppointmentPaymentTypeDefs,
+            resolvers: makeAppointmentPaymentResolvers,
+          },
+          {
+            typeDefs: getAppointmentHistoryTypeDefs,
+            resolvers: getAppointmentHistoryResolvers,
+          },
+          {
+            typeDefs: getPatinetAppointmentsTypeDefs,
+            resolvers: getPatinetAppointmentsResolvers,
+          },
+          {
+            typeDefs: createAppointmentSessionTypeDefs,
+            resolvers: createAppointmentSessionResolvers,
+          },
+          {
+            typeDefs: getNextAvailableSlotTypeDefs,
+            resolvers: getNextAvailableSlotResolvers,
+          },
+          {
+            typeDefs: getPhysicalAvailableSlotsTypeDefs,
+            resolvers: getPhysicalAvailableSlotsResolvers,
+          },
+          {
+            typeDefs: paymentTransactionStatusTypeDefs,
+            resolvers: paymentTransactionStatusResolvers,
+          },
+          {
+            typeDefs: caseSheetTypeDefs,
+            resolvers: caseSheetResolvers,
+          },
+          {
+            typeDefs: transferAppointmentTypeDefs,
+            resolvers: transferAppointmentResolvers,
+          },
+          {
+            typeDefs: rescheduleAppointmentTypeDefs,
+            resolvers: rescheduleAppointmentResolvers,
+          },
+          {
+            typeDefs: getPatientConsultsAndPrescriptionsTypeDefs,
+            resolvers: getPatientConsultsAndPrescriptionsResolvers,
+          },
+          {
+            typeDefs: chooseDoctorTypeDefs,
+            resolvers: chooseDoctorResolvers,
+          },
+          {
+            typeDefs: chatTranscriptsTypeDefs,
+            resolvers: chatTranscriptsResolvers,
+          },
+          {
+            typeDefs: cancelAppointmentTypeDefs,
+            resolvers: cancelAppointmentResolvers,
+          },
+          {
+            typeDefs: bookFollowUpAppointmentTypeDefs,
+            resolvers: bookFollowUpAppointmentResolvers,
+          },
+          {
+            typeDefs: consultQueueTypeDefs,
+            resolvers: consultQueueResolvers,
+          },
+          {
+            typeDefs: getAllDoctorAppointmentsTypeDefs,
+            resolvers: getAllDoctorAppointmentsResolvers,
+          },
+          {
+            typeDefs: uploadChatDocumentTypeDefs,
+            resolvers: uploadChatDocumentResolvers,
+          },
+          {
+            typeDefs: appointmentsSummaryTypeDefs,
+            resolvers: appointmentsSummaryResolvers,
+          },
+          {
+            typeDefs: availableDoctorsTypeDefs,
+            resolvers: availableDoctorsResolvers,
+          },
+          {
+            typeDefs: doctorCallNotificationTypeDefs,
+            resolvers: doctorCallNotificationResolvers,
+          },
+          {
+            typeDefs: getAppointmentOverviewTypeDefs,
+            resolvers: getAppointmentOverviewResolvers,
+          },
+          {
+            typeDefs: sdDashboardSummaryTypeDefs,
+            resolvers: sdDashboardSummaryResolvers,
+          },
+          {
+            typeDefs: jdDashboardSummaryTypeDefs,
+            resolvers: jdDashboardSummaryResolvers,
+          },
+          {
+            typeDefs: appointmentNotificationTypeDefs,
+            resolvers: appointmentNotificationResolvers,
+          },
+          {
+            typeDefs: getOrderInvoiceTypeDefs,
+            resolvers: getOrderInvoiceResolvers,
+          },
+          {
+            typeDefs: consultOrdersTypeDefs,
+            resolvers: consultOrdersResolvers,
+          },
+        ]),
+        plugins: [
+          /* This plugin is defined in-line. */
+          {
+            serverWillStart() {
+              consultsLogger.log('info', 'Server starting up!');
+            },
+            requestDidStart({ operationName, request }) {
+              /* Within this returned object, define functions that respond
+                 to request-specific lifecycle events. */
+              const reqStartTime = new Date();
+              const reqStartTimeFormatted = format(reqStartTime, "yyyy-MM-dd'T'HH:mm:ss.SSSX");
+              return {
+                parsingDidStart(requestContext) {
+                  consultsLogger.log({
+                    message: 'Request Starting',
+                    time: reqStartTimeFormatted,
+                    operation: requestContext.request.query,
+                    level: 'info',
+                  });
+                },
+                didEncounterErrors(requestContext) {
+                  requestContext.errors.forEach((error) => {
+                    consultsLogger.log(
+                      'error',
+                      `Encountered Error at ${reqStartTimeFormatted}: `,
+                      error
+                    );
+                  });
+                },
+                willSendResponse({ response }) {
+                  const errorCount = (response.errors || []).length;
+                  const responseLog = {
+                    message: 'Request Ended',
+                    time: format(new Date(), "yyyy-MM-dd'T'HH:mm:ss.SSSX"),
+                    durationInMilliSeconds: differenceInMilliseconds(new Date(), reqStartTime),
+                    errorCount,
+                    level: 'info',
+                    response: response,
+                  };
+                  //remove response if there is no error
+                  if (errorCount === 0) delete responseLog.response;
+                  consultsLogger.log(responseLog);
+                },
+              };
+            },
+          },
+        ],
+      });
 
-  server.listen({ port: process.env.CONSULTS_SERVICE_PORT }).then(({ url }) => {
-    console.log(`🚀 consults-service ready`);
-  });
+      server.listen({ port: process.env.CONSULTS_SERVICE_PORT }).then(({ url }) => {
+        console.log(`🚀 consults-service ready`);
+      });
+    })
+    .catch(error => {
+      console.log('Connection failed', error)
+    })
+
+
 })();
