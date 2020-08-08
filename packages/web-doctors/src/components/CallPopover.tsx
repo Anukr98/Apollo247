@@ -35,6 +35,10 @@ import {
   EndAppointmentSession,
   EndAppointmentSessionVariables,
 } from 'graphql/types/EndAppointmentSession';
+import {
+  SendCallDisconnectNotification,
+  SendCallDisconnectNotificationVariables,
+} from 'graphql/types/SendCallDisconnectNotification';
 import { INITIATE_RESCHDULE_APPONITMENT, END_APPOINTMENT_SESSION } from 'graphql/profiles';
 import {
   REQUEST_ROLES,
@@ -58,7 +62,10 @@ import {
 } from 'graphql/types/GetDoctorNextAvailableSlot';
 import { format } from 'date-fns';
 import { AvailableSlots } from '../components/AvailableSlots';
-import { INITIATE_CONFERENCE_TELEPHONE_CALL } from 'graphql/consults';
+import {
+  INITIATE_CONFERENCE_TELEPHONE_CALL,
+  SEND_CALL_DISCONNECT_NOTIFICATION,
+} from 'graphql/consults';
 import { getLocalStorageItem, updateLocalStorageItem } from './case-sheet/panels/LocalStorageUtils';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -1070,6 +1077,7 @@ const useStyles = makeStyles((theme: Theme) => {
 const ringtoneUrl = require('../images/phone_ringing.mp3');
 const joinToneUrl = require('../images/join_sound.mp3');
 const exitToneUrl = require('../images/left_sound.mp3');
+const shortToneUrl = require('../images/short_tone.mp3');
 
 interface errorObject {
   reasonError: boolean;
@@ -1115,6 +1123,7 @@ interface CallPopoverProps {
   setIsClickedOnPriview: (flag: boolean) => void;
   showConfirmPrescription: boolean;
   setShowConfirmPrescription: (flag: boolean) => void;
+  casesheetInfo: any;
 }
 let countdowntimer: any;
 let intervalId: any;
@@ -1441,6 +1450,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const {
     currentPatient,
   }: { currentPatient: GetDoctorDetails_getDoctorDetails | null } = useAuth();
+  const { sessionClient } = useAuth();
   const [anchorElThreeDots, setAnchorElThreeDots] = React.useState(null);
   const [errorState, setErrorState] = React.useState<errorObject>({
     reasonError: false,
@@ -1463,6 +1473,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const [playRingtone, setPlayRingtone] = useState<boolean>(false);
   const [playJoinTone, setPlayJoinTone] = useState<boolean>(false);
   const [playExitTone, setPlayExitTone] = useState<boolean>(false);
+  const [playShortTone, setPlayShortTone] = useState<boolean>(false);
   const [isCall, setIscall] = React.useState(true);
 
   //OT Error state
@@ -1479,6 +1490,12 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       startIntervalTimer(0);
     }
   }, [isCallAccepted]);
+
+  useEffect(() => {
+    return () => {
+      if (isCall) sendCallDisconnectNotification();
+    };
+  }, []);
 
   useEffect(() => {
     if (props.appointmentStatus === STATUS.COMPLETED) {
@@ -1523,6 +1540,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     setDisableOnCancel(false);
     clearInterval(intervalMissCall);
     setPlayRingtone(false);
+    if (!isCallAccepted) sendCallDisconnectNotification();
+
     const cookieStr = `action=`;
     document.cookie = cookieStr + ';path=/;';
     const text = {
@@ -1563,6 +1582,41 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     );
     stopIntervalTimer();
     props.endCallNotificationAction(true);
+  };
+
+  const sendCallDisconnectNotification = () => {
+    const variables = {
+      appointmentId: props.appointmentId,
+      callType: isVideoCall ? APPT_CALL_TYPE.VIDEO : APPT_CALL_TYPE.AUDIO,
+    };
+    client
+      .query<SendCallDisconnectNotification, SendCallDisconnectNotificationVariables>({
+        query: SEND_CALL_DISCONNECT_NOTIFICATION,
+        fetchPolicy: 'no-cache',
+        variables,
+      })
+      .catch((error: ApolloError) => {
+        const patientName =
+          props.casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.firstName +
+          ' ' +
+          props.casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.lastName;
+        const logObject = {
+          api: 'EndCallNotification',
+          inputParam: JSON.stringify(variables),
+          appointmentId: props.appointmentId,
+          doctorId: currentPatient!.id,
+          doctorDisplayName: currentPatient!.displayName,
+          patientId: params.patientId,
+          patientName: patientName,
+          currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
+          appointmentDateTime: moment(new Date(props.appointmentDateTime)).format(
+            'MMMM DD YYYY h:mm:ss a'
+          ),
+          error: JSON.stringify(error),
+        };
+        sessionClient.notify(JSON.stringify(logObject));
+        console.log('Error in Send Call Disconnect Notification', error.message);
+      });
   };
 
   const autoSend = (callType: string) => {
@@ -1859,11 +1913,11 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         lastMsg.message &&
         lastMsg.message.message === patientJoinedMeetingRoom
       ) {
-        setPlayRingtone(true);
+        setPlayShortTone(true);
         setJoinPrompt(true);
       }
       if (isConsultStarted && lastMsg.message && lastMsg.message.message === videoCallEnded) {
-        setPlayRingtone(false);
+        setPlayShortTone(false);
         setJoinPrompt(false);
         setFloatingJoinPrompt(false);
         setPlayExitTone(true);
@@ -2276,6 +2330,13 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       )}
 
       {playExitTone && (
+        <audio controls autoPlay className={classes.ringtone}>
+          <source src={exitToneUrl} type="audio/mpeg" />
+          Your browser does not support the audio tag.
+        </audio>
+      )}
+
+      {playShortTone && (
         <audio controls autoPlay className={classes.ringtone}>
           <source src={exitToneUrl} type="audio/mpeg" />
           Your browser does not support the audio tag.
@@ -3664,6 +3725,15 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           style={{
             cursor: 'pointer',
           }}
+          onClick={() => {
+            handleClose();
+            props.setStartConsultAction(true);
+            autoSend(videoCallMsg);
+            setIsVideoCall(true);
+            setDisableOnCancel(true);
+            setIscall(true);
+            setPlayRingtone(false);
+          }}
         >
           <img
             src={require('images/ic_joinPrompt_white.svg')}
@@ -3671,15 +3741,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
             style={{
               height: 30,
               width: 30,
-            }}
-            onClick={() => {
-              handleClose();
-              props.setStartConsultAction(true);
-              autoSend(videoCallMsg);
-              setIsVideoCall(true);
-              setDisableOnCancel(true);
-              missedCallIntervalTimer(45);
-              setIscall(true);
             }}
           />
           {'JOIN'}
@@ -3722,7 +3783,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                 autoSend(videoCallMsg);
                 setIsVideoCall(true);
                 setDisableOnCancel(true);
-                missedCallIntervalTimer(45);
                 setIscall(true);
                 setJoinPrompt(false);
                 setPlayRingtone(false);

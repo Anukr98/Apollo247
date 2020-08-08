@@ -947,6 +947,15 @@ export class DoctorsFavouriteMedicine extends BaseEntity {
   medicineName: string;
 
   @Column({ nullable: true })
+  medicineCustomDetails: string;
+
+  @Column({ nullable: true })
+  includeGenericNameInPrescription: Boolean;
+
+  @Column({ nullable: true })
+  genericName: string;
+
+  @Column({ nullable: true })
   routeOfAdministration: ROUTE_OF_ADMINISTRATION;
 
   @Column({ nullable: true })

@@ -19,7 +19,8 @@ import { AuthProvider } from 'components/AuthProvider';
 import DateFnsUtils from '@date-io/date-fns';
 import { useAuth } from 'hooks/authHooks';
 import { aphTheme, AphThemeProvider } from '@aph/web-ui-components';
-import { JuniorDoctor } from 'components/JuniorDoctors/JuniorDoctor';
+import { JuniorDoctorActive } from 'components/JuniorDoctors/JuniorDoctorActive';
+import { JuniorDoctorPast } from 'components/JuniorDoctors/JuniorDoctorPast';
 import { PatientDetails } from 'components/JuniorDoctors/PatientDetails';
 import { JDProfile } from 'components/JuniorDoctors/JDProfile';
 import { JDConsultRoom } from 'components/JuniorDoctors/JDConsultRoom';
@@ -51,7 +52,7 @@ const App: React.FC = () => {
           isJDAdmin ? (
             <Redirect to={clientRoutes.juniorDoctorAdmin()} />
           ) : isJuniorDoctor ? (
-            <Redirect to={clientRoutes.juniorDoctor()} />
+            <Redirect to={clientRoutes.juniorDoctorActive()} />
           ) : isSecretary ? (
             <Redirect to={clientRoutes.secretaryDashboard()} />
           ) : (
@@ -74,7 +75,8 @@ const App: React.FC = () => {
         path={clientRoutes.ConsultTabs(':id', ':patientId', ':tabValue')}
         component={ConsultTabs}
       />
-      <AuthRouted exact path={clientRoutes.juniorDoctor()} component={JuniorDoctor} />
+      <AuthRouted exact path={clientRoutes.juniorDoctorActive()} component={JuniorDoctorActive} />
+      <AuthRouted exact path={clientRoutes.juniorDoctorPast()} component={JuniorDoctorPast} />
       <AuthRouted exact path={clientRoutes.patientDetails()} component={PatientDetails} />
       <AuthRouted exact path={clientRoutes.juniorDoctorProfile()} component={JDProfile} />
       <AuthRouted exact path={clientRoutes.juniorDoctorAdmin()} component={JDAdminDashboard} />
