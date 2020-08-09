@@ -60,8 +60,6 @@ import {
   doRequestAndAccessLocationModified,
   g,
   isValidSearch,
-  postAppsFlyerAddToCartEvent,
-  postwebEngageAddToCartEvent,
   postWebEngageEvent,
   addPharmaItemToCart,
   productsThumbnailUrl,
@@ -1517,9 +1515,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           { source: 'Pharmacy Home', section: title, categoryId: category_id }
         );
       }
-      postwebEngageAddToCartEvent(data.item, 'Pharmacy Home', title);
-      let id = currentPatient && currentPatient.id ? currentPatient.id : '';
-      postAppsFlyerAddToCartEvent(data.item, id);
     };
 
     return hotSellerCard({
