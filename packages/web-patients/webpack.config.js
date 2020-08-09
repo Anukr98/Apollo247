@@ -6,6 +6,8 @@ const CircularDependencyPlugin = require('circular-dependency-plugin');
 const HardSourceWebpackPlugin = require('hard-source-webpack-plugin');
 const DotenvWebpack = require('dotenv-webpack');
 const dotenv = require('dotenv');
+const WorkboxPlugin = require('workbox-webpack-plugin');
+const WebpackPwaManifest = require('webpack-pwa-manifest');
 
 const envFile = path.resolve(__dirname, '../../.env');
 const dotEnvConfig = dotenv.config({ path: envFile });
@@ -28,6 +30,7 @@ const plugins = [
   }),
   new HtmlWebpackPlugin({
     filename: 'index.html',
+    title: 'Apollo 247',
     chunks: ['index'],
     template: './index.html',
     templateParameters: {
@@ -36,6 +39,27 @@ const plugins = [
     },
     inject: true,
     favicon: './favicon.svg',
+  }),
+  new WorkboxPlugin.GenerateSW({
+    // these options encourage the ServiceWorkers to get in there fast
+    // and not allow any straggling "old" SWs to hang around
+    clientsClaim: true,
+    skipWaiting: true,
+    maximumFileSizeToCacheInBytes: 50000000,
+  }),
+  new WebpackPwaManifest({
+    name: 'Apollo 247',
+    short_name: 'Apollo 247',
+    description:
+      'Apollo 24|7 helps you get treated from Apollo certified doctors at any time of the day, wherever you are. The mobile app has features like e-consultation in 15 minutes, online pharmacy to doorstep delivery of medicines, home diagnostic test and digital vault where you can upload all your medical history.',
+    background_color: '#ffffff',
+    theme_color: '#fdb714',
+    icons: [
+      {
+        src: path.resolve('src/favicon.svg'),
+        sizes: [96, 128, 192, 256, 384, 512], // multiple sizes
+      },
+    ],
   }),
 ];
 if (isLocal) {
