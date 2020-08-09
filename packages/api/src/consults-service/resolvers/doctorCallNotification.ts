@@ -300,9 +300,7 @@ const sendCallStartNotification: Resolver<null, {}, ConsultServiceContext, EndCa
 ) => {
   const apptRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const apptDetails = await apptRepo.getNotStartedAppointments();
-  const devLink = process.env.DOCTOR_DEEP_LINK
-    ? process.env.DOCTOR_DEEP_LINK
-    : 'https://apollo247.com';
+  const devLink = process.env.DOCTOR_DEEP_LINK ? process.env.DOCTOR_DEEP_LINK : '';
   if (apptDetails.length > 0) {
     const docRepo = doctorsDb.getCustomRepository(DoctorRepository);
     apptDetails.forEach(async (appt) => {
