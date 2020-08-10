@@ -2,6 +2,8 @@ import { ApiResponse, Client, RequestParams } from "@elastic/elasticsearch";
 import { Doctor } from "doctors-service/entities";
 import { APPOINTMENT_TYPE, ES_DOCTOR_SLOT_STATUS, Appointment } from "consults-service/entities";
 import { format, addMinutes, addDays } from "date-fns";
+import { AphError } from "AphError";
+import { AphErrorMessages } from "@aph/universal/dist/AphErrorMessages";
 
 export async function addDoctorElastic(allDocsInfo: Doctor) {
     console.log('==========addDoctorElastic==========')
@@ -161,11 +163,14 @@ export async function addDoctorElastic(allDocsInfo: Doctor) {
         doctorSlots: [],
     };
     //console.log(doctorData, 'doc data');
-    //naman_change index name
+
+    if (!process.env.ELASTIC_INDEX_DOCTORS) {
+        throw new AphError(AphErrorMessages.ELASTIC_INDEX_NAME_MISSING);
+    }
 
     console.log('================GOING TO INDEX==============');
     const resp: ApiResponse = await client.index({
-        index: 'doctors_local',
+        index: process.env.ELASTIC_INDEX_DOCTORS,
         id: allDocsInfo.id,
         body: doctorData,
     });
@@ -199,9 +204,13 @@ export async function updateDoctorSlotStatusES(
 
     const client = new Client({ node: process.env.ELASTIC_CONNECTION_URL });
 
+    if (!process.env.ELASTIC_INDEX_DOCTORS) {
+        throw new AphError(AphErrorMessages.ELASTIC_INDEX_NAME_MISSING);
+    }
+
     //naman_change index name
     const updateDoc: RequestParams.Update = {
-        index: 'doctors_local',
+        index: process.env.ELASTIC_INDEX_DOCTORS,
         id: doctorId,
         body: {
             script: {

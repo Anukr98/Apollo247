@@ -457,6 +457,7 @@ export async function sendCallsNotification(
     patientDetails.id,
     DEVICE_TYPE.IOS
   );
+
   if (voipPushtoken.length && voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken']) {
     const token = voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken'];
     const CERT_PATH = process.env.ASSETS_DIRECTORY + '/voipCert.pem';
@@ -467,12 +468,12 @@ export async function sendCallsNotification(
     try {
       const curlCommand = `curl -v -d '{"name": ${
         doctorDetails.displayName
-      }, "isVideo": ${true}, "appointmentId" : ${
+        }, "isVideo": ${true}, "appointmentId" : ${
         appointment.id
-      }}' --http2 --cert ${CERT_PATH}:${passphrase} ${domain}${token}`;
+        }}' --http2 --cert ${CERT_PATH}:${passphrase} ${domain}${token}`;
       const resp = child_process.execSync(curlCommand);
-      const result = resp.toString('UTF8');
-      console.info('voipCallKit result > ', result);
+      const result = resp.toString('utf-8');
+      console.log('voipCallKit result > ', result);
     } catch (err) {
       console.error('voipCallKit error > ', err);
     }
@@ -1760,7 +1761,7 @@ export async function sendReminderNotification(
   if (
     pushNotificationInput.notificationType == NotificationType.APPOINTMENT_CASESHEET_REMINDER_15 ||
     pushNotificationInput.notificationType ==
-      NotificationType.APPOINTMENT_CASESHEET_REMINDER_15_VIRTUAL
+    NotificationType.APPOINTMENT_CASESHEET_REMINDER_15_VIRTUAL
   ) {
     if (!(appointment && appointment.id)) {
       throw new AphError(AphErrorMessages.APPOINTMENT_ID_NOT_FOUND);
@@ -2348,7 +2349,7 @@ const testPushNotification: Resolver<
   { deviceToken: String },
   NotificationsServiceContext,
   PushNotificationSuccessMessage | undefined
-> = async (parent, args, {}) => {
+> = async (parent, args, { }) => {
   //initialize firebaseadmin
   const config = {
     credential: firebaseAdmin.credential.applicationDefault(),
