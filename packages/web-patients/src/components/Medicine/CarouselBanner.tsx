@@ -12,7 +12,10 @@ const useStyles = makeStyles((theme: Theme) => {
       width: '100%',
       overflow: 'hidden',
       position: 'relative',
-      // marginTop: 12,
+      marginTop: 12,
+      [theme.breakpoints.down('xs')]: {
+        margin: 0,
+      },
     },
     card: {
       color: '#fff',
@@ -22,6 +25,12 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 14,
       '& img': {
         maxWidth: '100%',
+        [theme.breakpoints.down('xs')]: {
+          margin: '0 auto',
+        },
+        [theme.breakpoints.down(500)]: {
+          width: '100%',
+        },
       },
       '&:hover': {
         cursor: 'pointer',
@@ -62,6 +71,10 @@ const useStyles = makeStyles((theme: Theme) => {
               },
             },
           },
+        },
+        [theme.breakpoints.down(500)]: {
+          position: 'absolute !important',
+          bottom: 6,
         },
       },
     },
