@@ -1,4 +1,4 @@
-import { EntityRepository, Repository, Brackets, Connection, Not } from 'typeorm';
+import { EntityRepository, Repository, Brackets, Connection, Not, In } from 'typeorm';
 import {
   Doctor,
   ConsultMode,
@@ -1061,6 +1061,10 @@ export class DoctorRepository extends Repository<Doctor> {
 
   updateNextAvailSlot(id: string, nextAvailableSlot: Date) {
     return this.update(id, { nextAvailableSlot });
+  }
+
+  getAllDocsById(ids: string[]) {
+    return this.find({ where: { id: In(ids) } });
   }
 
   getAllDoctors(doctorId: string, limit: number, offset: number) {

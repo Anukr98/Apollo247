@@ -2412,20 +2412,33 @@ const sendDailyAppointmentSummary: Resolver<
     let prevDoc = allAppts.length > 0 ? allAppts[0].doctorId : '';
     let onlineAppointments = 0;
     let physicalAppointments = 0;
+    const docIds: string[] = [];
+    allAppts.forEach((appt) => {
+      docIds.push(appt.doctorId);
+    });
 
+    const allDoctorDetails = await doctorRepo.getAllDocsById(docIds);
     allAppts.forEach(async (appointment, index, array) => {
+      if (appointment.status != STATUS.COMPLETED) {
+        if (appointment.appointmentType == APPOINTMENT_TYPE.PHYSICAL) {
+          physicalAppointments++;
+        } else if (appointment.appointmentType == APPOINTMENT_TYPE.ONLINE) {
+          onlineAppointments++;
+        }
+      }
       if (prevDoc != appointment.doctorId || index + 1 == array.length) {
-        const doctorDetails = await doctorRepo.findById(prevDoc);
+        const doctorDetails = allDoctorDetails.filter((item) => {
+          return item.id == prevDoc;
+        });
         if (doctorDetails) {
           const totalAppointments = onlineAppointments + physicalAppointments;
-          //if (totalAppointments > 0) {
           doctorsCount++;
           const whatsAppLink = process.env.WHATSAPP_LINK_BOOK_APOINTMENT
             ? process.env.WHATSAPP_LINK_BOOK_APOINTMENT
             : '';
           let messageBody = ApiConstants.DAILY_APPOINTMENT_SUMMARY.replace(
             '{0}',
-            doctorDetails.firstName
+            doctorDetails[0].firstName
           ).replace('{1}', totalAppointments.toString());
           const onlineAppointmentsText =
             onlineAppointments > 0
@@ -2436,9 +2449,9 @@ const sendDailyAppointmentSummary: Resolver<
               ? ApiConstants.PHYSICAL_APPOINTMENTS.replace('{0}', physicalAppointments.toString())
               : '';
           messageBody += onlineAppointmentsText + physicalAppointmentsText;
-          sendBrowserNotitication(doctorDetails.id, messageBody);
+          sendBrowserNotitication(doctorDetails[0].id, messageBody);
 
-          sendNotificationSMS(doctorDetails.mobileNumber, messageBody);
+          sendNotificationSMS(doctorDetails[0].mobileNumber, messageBody);
           const todaysDate = format(addMinutes(new Date(), +330), 'do LLLL');
           const templateData: string[] = [
             todaysDate + ' as of 8 AM',
@@ -2448,25 +2461,14 @@ const sendDailyAppointmentSummary: Resolver<
 
           sendDoctorNotificationWhatsapp(
             ApiConstants.WHATSAPP_DOC_SUMMARY,
-            doctorDetails.mobileNumber,
+            doctorDetails[0].mobileNumber,
             templateData
           );
           onlineAppointments = 0;
           physicalAppointments = 0;
           prevDoc = appointment.doctorId;
-          //}
         }
       }
-      if (appointment.status != STATUS.COMPLETED) {
-        if (appointment.appointmentType == APPOINTMENT_TYPE.PHYSICAL) {
-          physicalAppointments++;
-        } else if (appointment.appointmentType == APPOINTMENT_TYPE.ONLINE) {
-          onlineAppointments++;
-        }
-      }
-      //appointments.forEach((appointment) => {
-
-      //});
 
       if (index + 1 === array.length) {
         resolve(doctorsCount);
