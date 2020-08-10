@@ -97,7 +97,7 @@ import {
   AppointmentUpdateHistory,
   ExotelDetails,
 } from 'consults-service/entities';
-import { AppointmentEntitySubscriber } from 'doctors-service/entities/observers/observer';
+import { AppointmentEntitySubscriber } from 'consults-service/entities/observers/observer';
 
 export const connect = async () => {
   return await createConnections([
