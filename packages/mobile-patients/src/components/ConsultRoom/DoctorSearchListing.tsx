@@ -1351,6 +1351,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   };
 
   const renderBottomOptions = () => {
+    const doctors_partners = doctorsType === 'PARTNERS' ? true : false;
     return (
       <View style={styles.bottomMainContainer}>
         <Text style={styles.sortByTextStyle}>{string.doctor_search_listing.sortby}</Text>
@@ -1358,7 +1359,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           <View style={styles.bottomItemContainer}>
             <TouchableOpacity
               activeOpacity={1}
-              onPress={() => onPressNearByRadioButton(doctorsType === 'PARTNERS' ? true : false)}
+              onPress={() => onPressNearByRadioButton(doctors_partners)}
             >
               <View
                 style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}
@@ -1383,9 +1384,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             <TouchableOpacity
               activeOpacity={1}
               style={{ marginLeft: 8 }}
-              onPress={() =>
-                onPressAvailabiltyRadioButton(doctorsType === 'PARTNERS' ? true : false)
-              }
+              onPress={() => onPressAvailabiltyRadioButton(doctors_partners)}
             >
               <View
                 style={{
