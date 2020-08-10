@@ -3,6 +3,7 @@ import { Theme } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import ImageGallery from 'react-image-gallery';
 import { MedicineProductDetails, MedicineProduct } from '../../helpers/MedicineApiCalls';
+import { getPackOfMedicine } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -85,6 +86,8 @@ export const MedicineImageGallery: React.FC<MedicineInformationProps> = (props) 
     {
       original: `${apiDetails.url}${props.data.image}`,
       thumbnail: `${apiDetails.url}${props.data.thumbnail}`,
+      originalAlt: `${props.data.name}, Pack of ${getPackOfMedicine(props.data)}`,
+      originalTitle: `${props.data.name}, Pack of ${getPackOfMedicine(props.data)}`,
     },
   ];
 
