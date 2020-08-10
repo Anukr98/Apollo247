@@ -677,7 +677,16 @@ export const MedicineLanding: React.FC = (props: any) => {
                     {({ protectWithLoginPopup }) => (
                       <div
                         className={`${classes.sectionGroup} ${classes.marginNone}`}
-                        onClick={() => !isSignedIn && protectWithLoginPopup()}
+                        onClick={() => {
+                          if (!isSignedIn) {
+                            protectWithLoginPopup();
+                            const redirectURL = encodeURIComponent(
+                              `${window.location.origin}${clientRoutes.yourOrders()}`
+                            );
+                            redirectURL &&
+                              history.replaceState(null, '', `?continue=${redirectURL}`);
+                          }
+                        }}
                       >
                         <div className={classes.preServiceType}>
                           <div className={classes.prescriptionGroup}>
@@ -703,9 +712,11 @@ export const MedicineLanding: React.FC = (props: any) => {
                                 </span>
                                 <span className={classes.linkText}>
                                   {productsRecommended.length > 1
-                                    ? `${productsRecommended[0].medicineName} + ${
-                                        productsRecommended.length - 1
-                                      } item${productsRecommended.length > 2 ? 's ' : ' '}`
+                                    ? `${
+                                        productsRecommended[0].medicineName
+                                      } + ${productsRecommended.length - 1} item${
+                                        productsRecommended.length > 2 ? 's ' : ' '
+                                      }`
                                     : productsRecommended[0].medicineName}
                                 </span>
                                 <span className={classes.reOrder}>

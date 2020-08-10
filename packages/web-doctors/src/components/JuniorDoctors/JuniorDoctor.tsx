@@ -124,6 +124,7 @@ export const JuniorDoctor: React.FC = (props) => {
       skip: !currentDoctor,
       variables: {
         doctorId: currentDoctor!.id,
+        isActive: true,
       },
       pollInterval: 10 * 1000,
       notifyOnNetworkStatusChange: true,

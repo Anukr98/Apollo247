@@ -94,7 +94,7 @@ const saveOrderPlacedStatus: Resolver<
       statusDateTime: format(addMinutes(new Date(), +330), "yyyy-MM-dd'T'HH:mm:ss'+0530'"),
       orderAmount: orderDetails.estimatedAmount.toString(),
       orderTAT: orderDetails.orderTat
-        ? format(new Date(orderDetails.orderTat), "yyyy-MM-dd'T'HH:mm:ss")
+        ? format(new Date(Date.parse(orderDetails.orderTat)), "yyyy-MM-dd'T'HH:mm:ss")
         : '',
     },
   };

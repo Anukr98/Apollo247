@@ -227,7 +227,7 @@ export const FilterScene: React.FC<FilterSceneProps> = (props) => {
     </TouchableOpacity>
   );
 
-  const searchedData = (sectionsData: any, searchTerm: string) => {
+  const searchedData = (sectionsData: any, searchTerm = '') => {
     const finalData = sectionsData.reduce((result, sectionData) => {
       const { state, data } = sectionData;
       const filteredData = data.filter((item: any) => {

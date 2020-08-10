@@ -137,7 +137,7 @@ export interface AppsFlyerEvents {
     af_revenue: number;
     af_currency: string;
     item_type: string;
-    brand: string;
+    brand?: string;
     sku: string;
   };
   [AppsFlyerEventName.DIAGNOSTIC_ADD_TO_CART]: {

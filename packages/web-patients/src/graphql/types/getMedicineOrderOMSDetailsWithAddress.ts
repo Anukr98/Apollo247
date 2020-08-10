@@ -146,4 +146,5 @@ export interface getMedicineOrderOMSDetailsWithAddress {
 export interface getMedicineOrderOMSDetailsWithAddressVariables {
   patientId?: string | null;
   orderAutoId?: number | null;
+  billNumber?: string | null;
 }

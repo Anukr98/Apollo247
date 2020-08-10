@@ -22,7 +22,7 @@ import { GET_PATIENT_FEEDBACK } from 'graphql/medicines';
 const useStyles = makeStyles((theme: Theme) => {
   return {
     orderStatusGroup: {
-      padding: 0,
+      padding: '0 0 30px',
     },
     cardRoot: {
       padding: 20,

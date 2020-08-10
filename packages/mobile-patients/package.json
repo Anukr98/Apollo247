@@ -107,6 +107,7 @@
     "react-native-hyperlink": "0.0.16",
     "react-native-image-crop-picker": "^0.26.2",
     "react-native-image-picker": "^2.0.0",
+    "react-native-image-zoom-viewer": "^3.0.1",
     "react-native-incall-manager": "^3.2.7",
     "react-native-keep-awake": "^4.0.0",
     "react-native-keyboard-aware-scroll-view": "^0.8.0",

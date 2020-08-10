@@ -4,9 +4,11 @@ import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext'
 import { MedicineOrdersRepository } from 'profiles-service/repositories/MedicineOrdersRepository';
 import {
   MEDICINE_ORDER_STATUS,
+  MedicineOrderInvoice,
   MedicineOrdersStatus,
   MedicineOrders,
   TransactionLineItems,
+  TransactionLineItemsPartial,
   OneApollTransaction,
   ONE_APOLLO_PRODUCT_CATEGORY,
   Patient,
@@ -25,6 +27,8 @@ import {
 } from 'notifications-service/resolvers/notifications';
 import { log } from 'customWinstonLogger';
 import { OneApollo } from 'helpers/oneApollo';
+import { PharmaItemsResponse } from 'types/medicineOrderTypes';
+import { ApiConstants } from 'ApiConstants';
 
 export const pharmaOrderDeliveredTypeDefs = gql`
   input OrderDeliveryInput {
@@ -111,6 +115,12 @@ enum ProductTypes {
   FMCG = 'Non Pharma',
   PL = 'Private Label',
 }
+enum ProductTypePharmacy {
+  pharma = 'pharma',
+  fmcg = 'fmcg',
+  pl = 'pl',
+}
+
 type ProductDP = {
   id: number;
   sku: string;
@@ -123,10 +133,6 @@ type ProductDP = {
   mou: string;
   is_prescription_required: string;
   Message: string;
-};
-
-type PharmaSKUResp = {
-  productdp: ProductDP[];
 };
 
 const saveOrderDeliveryStatus: Resolver<
@@ -184,78 +190,159 @@ const createOneApolloTransaction = async (
   patient: Patient,
   mobileNumber: string
 ) => {
-  const invoiceDetails = await medicineOrdersRepo.getInvoiceDetailsByOrderId(order.orderAutoId);
-  if (!invoiceDetails.length) {
-    log(
-      'profileServiceLogger',
-      `invalid Invoice: $ - ${order.orderAutoId}`,
-      'createOneApolloTransaction',
-      JSON.stringify(order),
-      'true'
-    );
-    //throw new AphError(AphErrorMessages.INVALID_MEDICINE_ORDER_ID, undefined, {});
-    return true;
-  }
-
-  const Transaction: Partial<OneApollTransaction> = {
-    Gender: patient.gender,
-    BU: process.env.ONEAPOLLO_BUSINESS_UNIT || '',
-    SendCommunication: true,
-    CalculateHealthCredits: true,
-    MobileNumber: mobileNumber,
-  };
-
-  Transaction.StoreCode = ONE_APOLLO_STORE_CODE.WEBCUS;
-  if (order.bookingSource == BOOKING_SOURCE.MOBILE) {
-    if (order.deviceType == DEVICE_TYPE.ANDROID) {
-      Transaction.StoreCode = ONE_APOLLO_STORE_CODE.ANDCUS;
-    } else {
-      Transaction.StoreCode = ONE_APOLLO_STORE_CODE.IOSCUS;
+  try {
+    const invoiceDetails = await medicineOrdersRepo.getInvoiceDetailsByOrderId(order.orderAutoId);
+    if (!invoiceDetails.length) {
+      log(
+        'profileServiceLogger',
+        `invalid Invoice: $ - ${order.orderAutoId}`,
+        'createOneApolloTransaction',
+        JSON.stringify(order),
+        'true'
+      );
+      return true;
     }
-  }
-
-  const transactionLineItems: Partial<TransactionLineItems>[] = [];
-
-  const itemTypemap: ItemsSkuTypeMap = {};
-  const itemSku: string[] = [];
-  let netAmount: number = 0;
-  let totalDiscount: number = 0;
-  invoiceDetails.forEach((val) => {
-    const itemDetails = JSON.parse(val.itemDetails);
-    itemDetails.forEach((item: ItemDetails) => {
-      itemSku.push(item.itemId);
-      const netMrp = Number(new Decimal(item.mrp).times(item.issuedQty).toFixed(1));
-      let netDiscount = 0;
-      if (item.discountPrice) {
-        netDiscount = Number(new Decimal(item.discountPrice).times(item.issuedQty).toFixed(1));
-      }
-      const netPrice: number = +new Decimal(netMrp).minus(netDiscount);
+    const transactionArr = await generateTransactions(invoiceDetails, patient, mobileNumber, order);
+    if (transactionArr) {
+      console.log('transactionArr', JSON.stringify(transactionArr));
       log(
         'profileServiceLogger',
         `oneApollo Transaction Payload- ${order.orderAutoId}`,
         'createOneApolloTransaction()',
-        JSON.stringify({ netPrice: netPrice, netDiscount: netDiscount, netMrp: netMrp }),
+        JSON.stringify(transactionArr),
         ''
       );
-
-      transactionLineItems.push({
-        ProductCode: item.itemId,
-        NetAmount: netPrice,
-        GrossAmount: netMrp,
-        DiscountAmount: netDiscount,
+      const transactionsPromise: Promise<JSON>[] = [];
+      const oneApollo = new OneApollo();
+      transactionArr.forEach((transaction) => {
+        transactionsPromise.push(oneApollo.createOneApolloTransaction(transaction));
       });
-      totalDiscount = +new Decimal(netDiscount).plus(totalDiscount);
-      netAmount = +new Decimal(netPrice).plus(netAmount);
-    });
-    if (val.billDetails) {
-      const billDetails: BillDetails = JSON.parse(val.billDetails);
-      Transaction.BillNo = `${billDetails.billNumber}_${order.orderAutoId}`;
-      Transaction.NetAmount = netAmount;
-      Transaction.TransactionDate = billDetails.billDateTime;
-      Transaction.GrossAmount = +new Decimal(netAmount).plus(totalDiscount);
-      Transaction.Discount = totalDiscount;
+      const oneApolloRes = await Promise.all(transactionsPromise);
+
+      log(
+        'profileServiceLogger',
+        `oneApollo Transaction response- ${order.orderAutoId}`,
+        'createOneApolloTransaction()',
+        JSON.stringify(oneApolloRes),
+        ''
+      );
     }
+    return true;
+  } catch (e) {
+    log(
+      'profileServiceLogger',
+      `oneApollo Transaction response - ${order.orderAutoId}`,
+      'createOneApolloTransaction()',
+      e.stack,
+      'true'
+    );
+    throw new AphError(AphErrorMessages.CREATE_ONEAPOLLO_USER_TRANSACTION_ERROR, undefined, {});
+  }
+};
+
+const generateTransactions = async (
+  invoiceDetails: MedicineOrderInvoice[],
+  patient: Patient,
+  mobileNumber: string,
+  order: MedicineOrders
+) => {
+  let transactions: OneApollTransaction[] = [];
+  let index = 0;
+  const totalInvoices = invoiceDetails.length;
+  return processInvoices(invoiceDetails[index]);
+  async function processInvoices(val: MedicineOrderInvoice) {
+    const itemDetails = JSON.parse(val.itemDetails);
+    let { transactionLineItemsPartial, totalDiscount, netAmount, itemSku } = createLineItems(
+      itemDetails
+    );
+
+    const itemTypemap = await getSkuMap(itemSku);
+    let transactionLineItems = addProductNameAndCat(transactionLineItemsPartial, itemTypemap);
+    const transactionLineItemsCom = updateCreditsRedeemedInfo(
+      transactionLineItems,
+      +new Decimal(order.medicineOrderPayments[0].healthCreditsRedeemed).toFixed(2),
+      itemTypemap
+    );
+    netAmount = transactionLineItemsCom.reduce((acc, curValue) => {
+      return acc + curValue.NetAmount;
+    }, 0);
+    const billDetails: BillDetails = JSON.parse(val.billDetails);
+    const transaction: OneApollTransaction = {
+      Gender: patient.gender,
+      BU: process.env.ONEAPOLLO_BUSINESS_UNIT || '',
+      SendCommunication: true,
+      CalculateHealthCredits: true,
+      MobileNumber: mobileNumber,
+      CreditsRedeemed: +new Decimal(order.medicineOrderPayments[0].healthCreditsRedeemed).toFixed(
+        2
+      ),
+      BillNo: `${billDetails.billNumber}_${order.orderAutoId}`,
+      NetAmount: netAmount,
+      TransactionDate: billDetails.billDateTime,
+      GrossAmount: +new Decimal(netAmount)
+        .plus(totalDiscount)
+        .plus(+new Decimal(order.medicineOrderPayments[0].healthCreditsRedeemed).toFixed(2)),
+      Discount: totalDiscount,
+      TransactionLineItems: transactionLineItemsCom,
+      StoreCode: getStoreCodeFromDevice(order.deviceType, order.bookingSource),
+    };
+    transactions.push(transaction);
+    index++;
+    if (invoiceDetails[index]) {
+      processInvoices(invoiceDetails[index]);
+    } else {
+      return transactions;
+    }
+  }
+};
+
+const getStoreCodeFromDevice = (
+  deviceType: MedicineOrders['deviceType'],
+  bookingSource: MedicineOrders['bookingSource']
+) => {
+  let storeCode = ONE_APOLLO_STORE_CODE.WEBCUS;
+  if (bookingSource == BOOKING_SOURCE.MOBILE) {
+    if (deviceType == DEVICE_TYPE.ANDROID) {
+      storeCode = ONE_APOLLO_STORE_CODE.ANDCUS;
+    } else {
+      storeCode = ONE_APOLLO_STORE_CODE.IOSCUS;
+    }
+  }
+  return storeCode;
+};
+
+const addProductNameAndCat = (
+  transactionLineItems: TransactionLineItemsPartial[],
+  itemTypemap: ItemsSkuTypeMap
+): TransactionLineItems[] => {
+  const transactionLineItemsComplete: TransactionLineItems[] = [];
+  transactionLineItems.forEach((val, i, arr) => {
+    const productType = itemTypemap[val.ProductCode].toLowerCase();
+    let productName = ProductTypes.PHARMA;
+    let ProductCategory = ONE_APOLLO_PRODUCT_CATEGORY.PHARMA;
+    switch (productType) {
+      case 'fmcg':
+        productName = ProductTypes.FMCG;
+        ProductCategory = ONE_APOLLO_PRODUCT_CATEGORY.NON_PHARMA;
+        break;
+      case 'pl':
+        productName = ProductTypes.PL;
+        ProductCategory = ONE_APOLLO_PRODUCT_CATEGORY.PRIVATE_LABEL;
+        break;
+    }
+    transactionLineItemsComplete.push({
+      ...arr[i],
+      ProductName: productName,
+      ProductCategory: ProductCategory,
+    });
   });
+
+  return transactionLineItemsComplete;
+};
+
+const getSkuMap = async (itemSku: string[]) => {
+  const itemTypemap: ItemsSkuTypeMap = {};
+
   const skusInfoUrl = process.env.PHARMACY_MED_BULK_PRODUCT_INFO_URL || '';
   const authToken = process.env.PHARMACY_MED_AUTH_TOKEN || '';
   const pharmaResp = await fetch(skusInfoUrl, {
@@ -265,10 +352,10 @@ const createOneApolloTransaction = async (
     }),
     headers: { 'Content-Type': 'application/json', authorization: authToken },
   });
-  const pharmaResponse = (await pharmaResp.json()) as PharmaSKUResp;
+  const pharmaResponse = (await pharmaResp.json()) as PharmaItemsResponse;
   log(
     'profileServiceLogger',
-    `EXTERNAL_API_CALL_PHARMACY: ${skusInfoUrl} - ${order.orderAutoId}`,
+    `EXTERNAL_API_CALL_PHARMACY: ${skusInfoUrl}`,
     'createOneApolloTransaction()->API_CALL_STARTING',
     JSON.stringify(pharmaResponse),
     ''
@@ -276,55 +363,116 @@ const createOneApolloTransaction = async (
   if (!pharmaResponse) {
     throw new AphError(AphErrorMessages.PHARMACY_SKU_FETCH_FAILED, undefined, {});
   }
+  if (!pharmaResponse.productdp)
+    throw new AphError(AphErrorMessages.INVALID_RESPONSE_FOR_SKU_PHARMACY, undefined, {});
+  pharmaResponse.productdp.forEach((val) => {
+    if (val.type_id) {
+      itemTypemap[val.sku] = val.type_id;
+    } else {
+      throw new AphError(AphErrorMessages.PHARMACY_SKU_NOT_FOUND, undefined, {});
+    }
+  });
 
-  if (pharmaResponse.productdp) {
-    pharmaResponse.productdp.forEach((val) => {
-      if (val.type_id) {
-        itemTypemap[val.sku] = val.type_id;
-      } else {
-        throw new AphError(AphErrorMessages.PHARMACY_SKU_NOT_FOUND, undefined, {});
-      }
+  return itemTypemap;
+};
+
+const createLineItems = (itemDetails: Array<ItemDetails>) => {
+  const itemSku: string[] = [];
+  let netAmount: number = 0;
+  let totalDiscount: number = 0;
+  let transactionLineItemsPartial: TransactionLineItemsPartial[] = [];
+  itemDetails.forEach((item: ItemDetails) => {
+    itemSku.push(item.itemId);
+    const netMrp = Number(new Decimal(item.mrp).times(item.issuedQty).toFixed(1));
+    let netDiscount = 0;
+    if (item.discountPrice) {
+      netDiscount = Number(new Decimal(item.discountPrice).times(item.issuedQty).toFixed(1));
+    }
+    const netPrice: number = +new Decimal(netMrp).minus(netDiscount);
+
+    totalDiscount = +new Decimal(netDiscount).plus(totalDiscount);
+    netAmount = +new Decimal(netPrice).plus(netAmount);
+    transactionLineItemsPartial.push({
+      ProductCode: item.itemId,
+      NetAmount: netPrice,
+      GrossAmount: netMrp,
+      DiscountAmount: netDiscount,
     });
-    transactionLineItems.forEach((val, i, arr) => {
-      if (val.ProductCode) {
-        switch (itemTypemap[val.ProductCode].toLowerCase()) {
-          case 'pharma':
-            arr[i].ProductName = ProductTypes.PHARMA;
-            arr[i].ProductCategory = ONE_APOLLO_PRODUCT_CATEGORY.PHARMA;
-            break;
-          case 'fmcg':
-            arr[i].ProductName = ProductTypes.FMCG;
-            arr[i].ProductCategory = ONE_APOLLO_PRODUCT_CATEGORY.NON_PHARMA;
-            break;
-          case 'pl':
-            arr[i].ProductName = ProductTypes.PL;
-            arr[i].ProductCategory = ONE_APOLLO_PRODUCT_CATEGORY.PRIVATE_LABEL;
-            break;
+  });
+  return {
+    transactionLineItemsPartial,
+    totalDiscount,
+    netAmount,
+    itemSku,
+  };
+};
+
+const updateCreditsRedeemedInfo = (
+  transactionLineItems: TransactionLineItems[],
+  totalCreditsRedeemed: number,
+  itemTypemap: ItemsSkuTypeMap
+): TransactionLineItems[] => {
+  let availableCredits = totalCreditsRedeemed;
+  const arrSize = transactionLineItems.length;
+  for (let i = 0; i < arrSize; i++) {
+    let currentItem = Object.assign({}, transactionLineItems[i]);
+    if (currentItem.ProductCode) {
+      const currentProductCode: ProductTypePharmacy = itemTypemap[
+        currentItem.ProductCode
+      ].toLowerCase() as ProductTypePharmacy;
+      let earningCurrentItem = projectedEarnings(
+        currentProductCode,
+        currentItem.NetAmount,
+        currentItem.DiscountAmount
+      );
+      for (let j = i + 1; j < arrSize; j++) {
+        if (!availableCredits) {
+          break;
+        }
+        const iterationItem = Object.assign({}, transactionLineItems[j]);
+        const iterationProductCode: ProductTypePharmacy = itemTypemap[
+          iterationItem.ProductCode
+        ].toLowerCase() as ProductTypePharmacy;
+        const earningIterationItem = projectedEarnings(
+          iterationProductCode,
+          iterationItem.NetAmount,
+          iterationItem.DiscountAmount
+        );
+
+        if (earningCurrentItem > earningIterationItem) {
+          transactionLineItems[i] = Object.assign({}, iterationItem);
+          transactionLineItems[j] = Object.assign({}, currentItem);
+          currentItem = transactionLineItems[i];
+          earningCurrentItem = earningIterationItem;
         }
       }
-    });
-    Transaction.TransactionLineItems = transactionLineItems;
-    log(
-      'profileServiceLogger',
-      `oneApollo Transaction Payload- ${order.orderAutoId}`,
-      'createOneApolloTransaction()',
-      JSON.stringify(Transaction),
-      ''
-    );
 
-    const oneApollo = new OneApollo();
-    const oneApolloResponse = await oneApollo.createOneApolloTransaction(Transaction);
-    log(
-      'profileServiceLogger',
-      `oneApollo Transaction response- ${order.orderAutoId}`,
-      'createOneApolloTransaction()',
-      JSON.stringify(oneApolloResponse),
-      ''
-    );
-    return true;
-  } else {
-    throw new AphError(AphErrorMessages.INVALID_RESPONSE_FOR_SKU_PHARMACY, undefined, {});
+      const pointsRedeemed =
+        currentItem.NetAmount > availableCredits ? availableCredits : currentItem.NetAmount;
+      availableCredits = +new Decimal(availableCredits).minus(pointsRedeemed);
+      transactionLineItems[i].PointsRedeemed = pointsRedeemed;
+
+      transactionLineItems[i].NetAmount = +new Decimal(currentItem.NetAmount).minus(pointsRedeemed);
+    }
   }
+  if (availableCredits) {
+    transactionLineItems[arrSize - 1].PointsRedeemed = availableCredits;
+  }
+  return transactionLineItems;
+};
+
+const projectedEarnings = (
+  type: ProductTypePharmacy,
+  netAmount: number,
+  discount: number
+): number => {
+  const earningsPerTypes = {
+    pharma: ApiConstants.PHARMA_DISCOUNT,
+    fmcg: ApiConstants.FMCG_DISCOUNT,
+    pl: ApiConstants.PL_DISCOUNT,
+  };
+  console.log(+new Decimal(netAmount).times(earningsPerTypes[type]));
+  return discount ? 0 : +new Decimal(netAmount).times(earningsPerTypes[type]);
 };
 
 const saveOrderOutForDeliveryStatus: Resolver<

@@ -67,7 +67,7 @@ import {
   WebEngageEvents,
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
-import { fetchPaymentOptions } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { fetchPaymentOptions, trackTagalysEvent } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   AppsFlyerEventName,
   AppsFlyerEvents,
@@ -78,6 +78,7 @@ import string from '@aph/mobile-patients/src/strings/strings.json';
 import { FirebaseEvents, FirebaseEventName } from '../helpers/firebaseEvents';
 import { CollapseCard } from '@aph/mobile-patients/src/components/CollapseCard';
 import { Down, Up } from '@aph/mobile-patients/src/components/ui/Icons';
+import { Tagalys } from '@aph/mobile-patients/src/helpers/Tagalys';
 
 export interface CheckoutSceneNewProps extends NavigationScreenProps {}
 
@@ -306,6 +307,27 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       ...getPrepaidCheckoutCompletedAppsFlyerEventAttributes(`${orderId}`),
     };
     postAppsFlyerEvent(AppsFlyerEventName.PHARMACY_CHECKOUT_COMPLETED, appsflyerEventAttributes);
+
+    try {
+      Promise.all(
+        cartItems.map((cartItem) =>
+          trackTagalysEvent(
+            {
+              event_type: 'product_action',
+              details: {
+                sku: cartItem.id,
+                action: 'buy',
+                quantity: cartItem.quantity,
+                order_id: `${orderAutoId}`,
+              } as Tagalys.ProductAction,
+            },
+            g(currentPatient, 'id')!
+          )
+        )
+      );
+    } catch (error) {
+      CommonBugFender(`${AppRoutes.CheckoutSceneNew}_trackTagalysEvent`, error);
+    }
   };
 
   const placeOrder = (orderId: string, orderAutoId: number, orderType: string) => {
@@ -695,7 +717,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         leftIcon={'backArrow'}
         title={'PAYMENT'}
         onPressLeftIcon={() => {
-          CommonLogEvent(AppRoutes.CheckoutScene, 'Go back clicked');
+          CommonLogEvent(AppRoutes.CheckoutSceneNew, 'Go back clicked');
           if (showChennaiOrderForm) {
             handleBackPressFromChennaiOrderForm();
           } else {
@@ -716,7 +738,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       showAphAlert!({ title: 'Uh oh.. :(', description: 'Enter valid email' });
     } else {
       try {
-        CommonLogEvent(AppRoutes.CheckoutScene, `SUBMIT TO CONFIRM ORDER`);
+        CommonLogEvent(AppRoutes.CheckoutSceneNew, `SUBMIT TO CONFIRM ORDER`);
       } catch (error) {
         CommonBugFender('CheckoutScene_renderPayButton_try', error);
       }
