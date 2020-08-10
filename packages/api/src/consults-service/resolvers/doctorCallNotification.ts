@@ -238,28 +238,18 @@ const sendPatientWaitNotification: Resolver<
   const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
   const doctorDetails = await doctorRepo.findById(appointment.doctorId);
   if (!doctorDetails) throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID, undefined, {});
-  const patientRepo = patientsDb.getCustomRepository(PatientRepository);
-  const patientDetails = await patientRepo.getPatientDetails(appointment.patientId);
-  if (patientDetails == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
+  //const patientRepo = patientsDb.getCustomRepository(PatientRepository);
+  //const patientDetails = await patientRepo.getPatientDetails(appointment.patientId);
+  //if (patientDetails == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
   //const applicationLink = process.env.WHATSAPP_LINK_BOOK_APOINTMENT + '?' + appointment.id;
-  //const devLink = process.env.DOCTOR_DEEP_LINK ? process.env.DOCTOR_DEEP_LINK : '';
+  const devLink = process.env.DOCTOR_DEEP_LINK ? process.env.DOCTOR_DEEP_LINK : '';
   if (appointment) {
-    // const whatsAppMessageBody = ApiConstants.SEND_PATIENT_NOTIFICATION.replace(
-    //   '{0}',
-    //   doctorDetails.firstName
-    // )
-    //   .replace('{1}', patientDetails.firstName + ' ' + patientDetails.lastName)
-    //   .replace('{2}', args.appointmentId)
-    //   .replace('{3}', doctorDetails.salutation)
-    //   .replace('{4}', appointment.appointmentDateTime.toISOString())
-    //   .replace('{5}', devLink);
-    //whatsAppMessageBody += applicationLink;
-    // await sendDoctorNotificationWhatsapp(
-    //   doctorDetails.mobileNumber,
-    //   whatsAppMessageBody,
-    //   1,
-    //   doctorDetails.doctorType
-    // );
+    const templateData: string[] = [appointment.appointmentType, appointment.patientName, devLink];
+    sendDoctorNotificationWhatsapp(
+      ApiConstants.WHATSAPP_SD_CONSULT_DELAY,
+      doctorDetails.mobileNumber,
+      templateData
+    );
   }
   return { status: true };
 };
