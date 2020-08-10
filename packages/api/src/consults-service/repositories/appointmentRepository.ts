@@ -1969,6 +1969,15 @@ export class AppointmentRepository extends Repository<Appointment> {
       .getCount();
   }
 
+  getNotStartedAppointments() {
+    return this.createQueryBuilder('appointment')
+      .where('appointment.status = :status', { status: STATUS.PENDING })
+      .andWhere('appointment.appointmentDateTime = :apptDateTime', {
+        apptDateTime: addMinutes(new Date(), -5),
+      })
+      .getMany();
+  }
+
   getAppointmentCountByCouponCode(couponCode: string) {
     return this.createQueryBuilder('appointment')
       .andWhere('appointment.couponCode = :couponCode', { couponCode })
@@ -2031,5 +2040,18 @@ export class AppointmentRepository extends Repository<Appointment> {
   saveAppointmentHistory(historyAttrs: Partial<AppointmentUpdateHistory>) {
     historyAttrs.updatedAt = new Date();
     return AppointmentUpdateHistory.create(historyAttrs).save();
+  }
+
+  async getAppointmenIdsFromPatientID(patientId: string) {
+    return this.find({
+      select: ['id'],
+      where: {
+        patientId,
+      },
+    }).catch((getApptError) => {
+      throw new AphError(AphErrorMessages.GET_APPOINTMENT_ERROR, undefined, {
+        getApptError,
+      });
+    });
   }
 }

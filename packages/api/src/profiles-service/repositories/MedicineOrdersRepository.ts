@@ -21,8 +21,8 @@ import { ApiConstants } from 'ApiConstants';
 import { log } from 'customWinstonLogger';
 
 interface PaginateParams {
-  take?: number,
-  skip?: number
+  take?: number;
+  skip?: number;
 }
 
 const REDIS_ORDER_AUTO_ID_KEY_PREFIX: string = 'orderAutoId:';
@@ -186,7 +186,7 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
   getMedicineOrderDetailsByAp(apOrderNo: string) {
     return this.findOne({
       where: { apOrderNo },
-      relations: ['patient', 'medicineOrderLineItems'],
+      relations: ['patient', 'medicineOrderLineItems', 'medicineOrderPayments'],
     });
   }
 
@@ -274,11 +274,14 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
         'patient',
       ],
       //extra params...
-      ...paginate
+      ...paginate,
     });
   }
 
-  getMedicineOrdersListWithoutAbortedStatus(patientIds: String[], paginate: PaginateParams): [Promise<MedicineOrders[]>, Promise<number | null>] {
+  getMedicineOrdersListWithoutAbortedStatus(
+    patientIds: String[],
+    paginate: PaginateParams
+  ): [Promise<MedicineOrders[]>, Promise<number | null>] {
     // getMedicineOrdersListWithoutAbortedStatus(patientIds: String[], paginate: PaginateParams) {
     // returns [result , total]
     // return this.findAndCount({
@@ -301,7 +304,9 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
     return [
       this.createQueryBuilder('medicineOrders')
         .where('medicineOrders.patient IN (:...patientIds)', { patientIds })
-        .andWhere('medicineOrders.currentStatus != :currentStatus', { currentStatus: MEDICINE_ORDER_STATUS.PAYMENT_ABORTED })
+        .andWhere('medicineOrders.currentStatus != :currentStatus', {
+          currentStatus: MEDICINE_ORDER_STATUS.PAYMENT_ABORTED,
+        })
         .leftJoinAndSelect('medicineOrders.medicineOrderLineItems', 'medicineOrderLineItems')
         .leftJoinAndSelect('medicineOrders.medicineOrdersStatus', 'medicineOrdersStatus')
         .leftJoinAndSelect('medicineOrders.medicineOrderShipments', 'medicineOrderShipments')
@@ -311,24 +316,57 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
         //send undefined to skip & take fns to skip pagination to support optional pagination
         .skip(paginate.skip)
         .take(paginate.take)
-        .getMany()
-      ,
+        .getMany(),
       //do pagiantion if needed...
-      Number.isInteger(paginate.take || paginate.skip) ?
-        this.createQueryBuilder('medicineOrders')
-          .where('medicineOrders.patient IN (:...patientIds)', { patientIds })
-          .andWhere('medicineOrders.currentStatus != :currentStatus', { currentStatus: MEDICINE_ORDER_STATUS.PAYMENT_ABORTED })
-          .getCount()
-        : Promise.resolve(null)
-    ]
+      Number.isInteger(paginate.take || paginate.skip)
+        ? this.createQueryBuilder('medicineOrders')
+            .where('medicineOrders.patient IN (:...patientIds)', { patientIds })
+            .andWhere('medicineOrders.currentStatus != :currentStatus', {
+              currentStatus: MEDICINE_ORDER_STATUS.PAYMENT_ABORTED,
+            })
+            .getCount()
+        : Promise.resolve(null),
+    ];
   }
 
-  getMedicineOrdersListWithPayments(patientIds: String[]) {
-    return this.find({
-      where: { patient: In(patientIds) },
-      order: { createdDate: 'DESC' },
-      relations: ['medicineOrderPayments'],
-    });
+  getMedicineOrdersListWithPayments(
+    patientIds: String[],
+    paginate: PaginateParams
+  ): [Promise<MedicineOrders[]>, Promise<number | null>] {
+    // return [data, counts]<promises>;
+    return [
+      this.createQueryBuilder('medicineOrders')
+        .where('medicineOrders.patient IN (:...patientIds)', { patientIds })
+        .innerJoinAndSelect('medicineOrders.medicineOrderPayments', 'medicineOrderPayments')
+        .leftJoinAndSelect('medicineOrderPayments.medicineOrderRefunds', 'medicineOrderRefunds')
+        // apply filters....
+        .andWhere('medicineOrders.currentStatus != :currentStatus', {
+          currentStatus: MEDICINE_ORDER_STATUS.QUOTE,
+        })
+        .andWhere('medicineOrders.currentStatus != :currentStatus', {
+          currentStatus: MEDICINE_ORDER_STATUS.PAYMENT_ABORTED,
+        })
+        .andWhere('medicineOrderPayments.paymentType != :paymentType', {
+          paymentType: MEDICINE_ORDER_PAYMENT_TYPE.COD,
+        })
+        .orderBy('medicineOrders.createdDate', 'DESC')
+        //send undefined to skip & take fns to skip pagination to support optional pagination
+        .skip(paginate.skip)
+        .take(paginate.take)
+        .getMany(),
+      //do pagiantion if needed...
+      Number.isInteger(paginate.take || paginate.skip)
+        ? this.createQueryBuilder('medicineOrders')
+            .where('medicineOrders.patient IN (:...patientIds)', { patientIds })
+            .innerJoinAndSelect('medicineOrders.medicineOrderPayments', 'medicineOrderPayments')
+            .andWhere('medicineOrders.currentStatus != :currentStatus', { currentStatus: 'QUOTE' })
+            .andWhere('medicineOrders.currentStatus != :currentStatus', {
+              currentStatus: 'PAYMENT_ABORTED',
+            })
+            .andWhere('medicineOrderPayments.paymentType != :paymentType', { paymentType: 'COD' })
+            .getCount()
+        : Promise.resolve(null),
+    ];
   }
 
   getMedicineOrderDetailsByOderId(orderAutoId: number) {
@@ -396,7 +434,7 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
         'patient',
       ],
       //extra params...
-      ...paginate
+      ...paginate,
     });
   }
 
@@ -763,5 +801,5 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
       });
     }
     return medicineOrderDetails;
-  };
+  }
 }

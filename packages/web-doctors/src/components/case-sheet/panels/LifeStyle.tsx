@@ -341,7 +341,7 @@ export const LifeStyle: React.FC = () => {
         {gender === Gender.FEMALE && (
           <Typography component="div">
             <Typography component="h5" variant="h5" className={classes.header}>
-              Menstual History*
+            Menstrual and Obstetric History*
             </Typography>
             <Typography component="div" className={classes.content}>
               <AphTextField

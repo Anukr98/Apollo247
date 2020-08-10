@@ -5,7 +5,6 @@ import { makeStyles } from '@material-ui/styles';
 import { Theme, Popover, CircularProgress, Typography } from '@material-ui/core';
 import { Header } from 'components/Header';
 import { AphButton, AphDialog, AphDialogTitle, AphDialogClose } from '@aph/web-ui-components';
-import { ShopByAreas } from 'components/Medicine/Cards/ShopByAreas';
 import { ShopByBrand } from 'components/Medicine/Cards/ShopByBrand';
 import { ShopByCategory } from 'components/Medicine/Cards/ShopByCategory';
 import { RecommendedProducts } from 'components/Medicine/Cards/RecommendedProducts';
@@ -35,7 +34,6 @@ import { useShoppingCart } from 'components/MedicinesCartProvider';
 import { ManageProfile } from 'components/ManageProfile';
 import { Relation } from 'graphql/types/globalTypes';
 import { CarouselBanner } from 'components/Medicine/CarouselBanner';
-import { useLocationDetails } from 'components/LocationProvider';
 import { gtmTracking } from '../../gtmTracking';
 import { MetaTagsComp } from 'MetaTagsComp';
 import { BottomLinks } from 'components/BottomLinks';
@@ -466,6 +464,7 @@ export const MedicineLanding: React.FC = (props: any) => {
   }
 
   const [data, setData] = useState<MedicinePageAPiResponse | null>(null);
+  const [metadata, setMetadata] = useState(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<ApolloError | null>(null);
   const [showPrescriptionPopup, setShowPrescriptionPopup] = useState<boolean>(
@@ -555,6 +554,48 @@ export const MedicineLanding: React.FC = (props: any) => {
       )
       .then((res: any) => {
         setData(res.data);
+        if (res.data && res.data.metadata && res.data.metadata.length > 0) {
+          const removableData = [
+            'banners',
+            'orders',
+            'upload_prescription',
+            'recommended_products',
+          ];
+          let position = 0;
+          let updatedMetadata: any[] = [];
+          res.data.metadata.forEach((section: any) => {
+            const sectionData = res.data[`${section.section_key}`];
+            if (!removableData.includes(section.section_key) && section.visible) {
+              position += 1;
+              const renderValue = () => {
+                if (sectionData) {
+                  return sectionData.products ? (
+                    <HotSellers data={sectionData} />
+                  ) : sectionData.length > 0 && sectionData[0].title ? (
+                    section.section_key === 'shop_by_brand' ? (
+                      <ShopByBrand data={sectionData} sectionName={section.section_key} />
+                    ) : (
+                      <ShopByCategory data={sectionData} sectionName={section.section_key} />
+                    )
+                  ) : (
+                    <DayDeals data={sectionData} sectionName={section.section_key} />
+                  );
+                }
+              };
+              updatedMetadata.push({
+                section_key: section.section_key,
+                section_name: section.section_name,
+                section_position: position,
+                visible: section.visible,
+                value: renderValue(),
+                viewAll: sectionData && sectionData.products && sectionData.url_key ? true : false,
+                viewAllUrlKey: sectionData && sectionData.url_key ? sectionData.url_key : '',
+              });
+            }
+          });
+          setMetadata(updatedMetadata);
+          console.log('updatedMetadata', updatedMetadata);
+        }
         /**Gtm code start  */
         gtmTracking({ category: 'Pharmacy', action: 'Landing Page', label: 'Listing Page Viewed' });
         /**Gtm code End  */
@@ -571,27 +612,6 @@ export const MedicineLanding: React.FC = (props: any) => {
       getMedicinePageProducts();
     }
   }, [data]);
-
-  const list = data && [
-    {
-      key: 'Shop by Health Areas',
-      value: <ShopByAreas data={data.healthareas} />,
-    },
-    {
-      key: 'Deals of the day',
-      value: <DayDeals data={data.deals_of_the_day} />,
-    },
-    { key: 'Hot Sellers', value: <HotSellers data={data.hot_sellers} section="Hotsellers" /> },
-    {
-      key: 'Shop by Category',
-      value: <ShopByCategory data={data.shop_by_category} />,
-    },
-    {
-      key: 'Monsoon Essentials',
-      value: <HotSellers data={data.monsoon_essentials} section="Monsoon Essentials" />,
-    },
-    { key: 'Shop by Brand', value: <ShopByBrand data={data.shop_by_brand} /> },
-  ];
 
   const productsRecommended = latestMedicineOrder && latestMedicineOrder.medicineOrderLineItems;
   const latestMedicineOrderDate =
@@ -757,21 +777,21 @@ export const MedicineLanding: React.FC = (props: any) => {
                   <RecommendedProducts section="Recommended Products" />
                 </div>
               )}
-              {list &&
-                list.map((item, index) => (
+              {metadata &&
+                metadata.map((item: any, index: number) => (
                   <div key={index} className={classes.sliderSection}>
                     <div className={classes.sectionTitle}>
-                      {item.key === 'Shop by Brand' || item.key === 'Monsoon Essentials' ? (
+                      {item.section_key === 'shop_by_brand' || item.viewAll ? (
                         <>
-                          <span>{item.key}</span>
+                          <span>{item.section_name}</span>
                           <div className={classes.viewAllLink}>
                             <Link
                               to={
-                                item.key === 'Shop by Brand'
+                                item.section_key === 'shop_by_brand'
                                   ? clientRoutes.medicineAllBrands()
                                   : clientRoutes.searchByMedicine(
                                       'shop-by-category',
-                                      'monsoon-essentials'
+                                      item.viewAllUrlKey
                                     )
                               }
                             >
@@ -780,7 +800,7 @@ export const MedicineLanding: React.FC = (props: any) => {
                           </div>
                         </>
                       ) : (
-                        item.key
+                        item.section_name
                       )}
                     </div>
                     {item.value}

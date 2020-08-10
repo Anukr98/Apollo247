@@ -210,6 +210,11 @@ import {
   alertMedicineOrderPickupResolvers,
 } from 'profiles-service/resolvers/alertMedicineOrderPickup';
 
+import {
+  patientDeviceVoipTokenTypeDefs,
+  patientDeviceVoipTokenResolvers,
+} from 'profiles-service/resolvers/savepatientDeviceVoipToken';
+
 (async () => {
   await connect();
   const profilesLogger = winstonLogger.loggers.get('profileServiceLogger');
@@ -466,6 +471,10 @@ import {
       {
         typeDefs: alertMedicineOrderPickupTypeDefs,
         resolvers: alertMedicineOrderPickupResolvers,
+      },
+      {
+        typeDefs: patientDeviceVoipTokenTypeDefs,
+        resolvers: patientDeviceVoipTokenResolvers,
       },
     ]),
     plugins: [
