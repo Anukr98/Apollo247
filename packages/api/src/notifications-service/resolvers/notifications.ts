@@ -891,6 +891,9 @@ export async function sendNotification(
         const chatroom_sms_link = process.env.SMS_WEBLINK_APPOINTMENT_CHATROOM.replace(
           '{0}',
           appointment.id.toString()
+        ).replace(
+          '{1}',
+          appointment.doctorId.toString()
         );
         smsLink = smsLink.replace('{5}', chatroom_sms_link);
       } else {
