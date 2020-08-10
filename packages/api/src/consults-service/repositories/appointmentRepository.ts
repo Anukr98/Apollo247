@@ -46,6 +46,11 @@ import { ApiConstants } from 'ApiConstants';
 import { Client, RequestParams } from '@elastic/elasticsearch';
 import { getCache, setCache, delCache } from 'consults-service/database/connectRedis';
 
+interface PaginateParams {
+  take?: number,
+  skip?: number
+}
+
 const REDIS_APPOINTMENT_ID_KEY_PREFIX: string = 'patient:appointment:';
 
 @EntityRepository(Appointment)
@@ -919,9 +924,9 @@ export class AppointmentRepository extends Repository<Appointment> {
         .getUTCHours()
         .toString()
         .padStart(2, '0')}:${appointmentDate
-        .getUTCMinutes()
-        .toString()
-        .padStart(2, '0')}:00.000Z`;
+          .getUTCMinutes()
+          .toString()
+          .padStart(2, '0')}:00.000Z`;
       console.log(availableSlots, 'availableSlots final list');
       console.log(availableSlots.indexOf(sl), 'indexof');
       console.log(checkStart, checkEnd, 'check start end');
@@ -1079,9 +1084,9 @@ export class AppointmentRepository extends Repository<Appointment> {
             .getUTCHours()
             .toString()
             .padStart(2, '0')}:${doctorAppointment.appointmentDateTime
-            .getUTCMinutes()
-            .toString()
-            .padStart(2, '0')}:00.000Z`;
+              .getUTCMinutes()
+              .toString()
+              .padStart(2, '0')}:00.000Z`;
           if (availableSlots.indexOf(aptSlot) >= 0) {
             availableSlots.splice(availableSlots.indexOf(aptSlot), 1);
           }
@@ -1358,17 +1363,36 @@ export class AppointmentRepository extends Repository<Appointment> {
       .getMany();
   }
 
-  getAllAppointmentsByPatientId(ids: string[]) {
-    return this.createQueryBuilder('appointment')
-      .innerJoinAndSelect('appointment.appointmentPayments', 'appointmentPayments')
-      .leftJoinAndSelect('appointment.appointmentRefunds', 'appointmentRefunds')
-      .where('appointment.patientId IN (:...ids)', { ids })
-      .andWhere('appointment.discountedAmount not in(:discountedAmount)', { discountedAmount: 0 })
-      .andWhere('appointment.status not in(:status1)', {
-        status1: STATUS.PAYMENT_ABORTED,
-      })
-      .orderBy('appointment.bookingDate', 'ASC')
-      .getMany();
+  getAllAppointmentsByPatientId(ids: string[], paginate: PaginateParams) {
+    // returns [result , total]
+    return this.findAndCount({
+      where: {
+        patientId: In(ids),
+        discountedAmount: Not(0),
+        status: Not(STATUS.PAYMENT_ABORTED)
+      },
+      relations: [
+        'appointmentPayments',
+        'appointmentRefunds'
+      ],
+      order: { bookingDate: 'ASC' },
+      //extra params...
+      ...paginate
+    });
+    /**
+     * keeping below snippet to validate above query
+     * once verified can be removed...
+     */
+    // return this.createQueryBuilder('appointment')
+    //   .innerJoinAndSelect('appointment.appointmentPayments', 'appointmentPayments')
+    //   .leftJoinAndSelect('appointment.appointmentRefunds', 'appointmentRefunds')
+    //   .where('appointment.patientId IN (:...ids)', { ids })
+    //   .andWhere('appointment.discountedAmount not in(:discountedAmount)', { discountedAmount: 0 })
+    //   .andWhere('appointment.status not in(:status1)', {
+    //     status1: STATUS.PAYMENT_ABORTED,
+    //   })
+    //   .orderBy('appointment.bookingDate', 'ASC')
+    //   .getMany();
   }
   followUpBookedCount(id: string) {
     return this.count({ where: { followUpParentId: id } });
@@ -1407,9 +1431,9 @@ export class AppointmentRepository extends Repository<Appointment> {
             .getUTCHours()
             .toString()
             .padStart(2, '0')}:${blockedSlot.start
-            .getUTCMinutes()
-            .toString()
-            .padStart(2, '0')}:00.000Z`;
+              .getUTCMinutes()
+              .toString()
+              .padStart(2, '0')}:00.000Z`;
 
           let blockedSlotsCount =
             (Math.abs(differenceInMinutes(blockedSlot.end, blockedSlot.start)) / 60) * duration;
@@ -1467,9 +1491,9 @@ export class AppointmentRepository extends Repository<Appointment> {
               .getUTCHours()
               .toString()
               .padStart(2, '0')}:${slot
-              .getUTCMinutes()
-              .toString()
-              .padStart(2, '0')}:00.000Z`;
+                .getUTCMinutes()
+                .toString()
+                .padStart(2, '0')}:00.000Z`;
           }
           console.log('start slot', slot);
 
