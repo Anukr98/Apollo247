@@ -50,6 +50,7 @@ import {
   doRequestAndAccessLocationModified,
   formatAddress,
   getFormattedLocation,
+  postWebEngageEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
@@ -71,6 +72,7 @@ import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { postPharmacyAddNewAddressCompleted } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { getPatientAddressList_getPatientAddressList_addressList } from '@aph/mobile-patients/src/graphql/types/getPatientAddressList';
+import { WebEngageEvents, WebEngageEventName } from '../../helpers/webEngageEvents';
 
 const { height, width } = Dimensions.get('window');
 const key = AppConfig.Configuration.GOOGLE_API_KEY;
@@ -315,6 +317,13 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
           pinAvailabilityResult && pinAvailabilityResult.data.Availability;
         addAddress!(address);
         addDiagnosticAddress!(address);
+
+        if (source === 'Upload Prescription') {
+          const eventAttributes: WebEngageEvents[WebEngageEventName.UPLOAD_PRESCRIPTION_ADDRESS_SELECTED] = {
+            Serviceable: isAddressServiceable ? 'Yes' : 'No',
+          };
+          postWebEngageEvent(WebEngageEventName.UPLOAD_PRESCRIPTION_ADDRESS_SELECTED, eventAttributes);
+        }
 
         const formattedAddress = formatAddress(address);
         if (isAddressServiceable || addOnly) {
