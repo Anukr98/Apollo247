@@ -115,16 +115,14 @@ export const useAllCurrentPatients = () => {
         }
         setCurrentPatientId(currentUserId);
       }
-    } else {
-      if (defaultCurrentPatient && defaultCurrentPatient.id) {
-        const currentUserId = defaultCurrentPatient.id;
-        const storageItem = localStorage.getItem(`${currentUserId}`);
-        if (!storageItem) {
-          const cartItems = localStorage.getItem('cartItems');
-          if (cartItems) {
-            localStorage.setItem(`${currentUserId}`, cartItems);
-            localStorage.removeItem('cartItems');
-          }
+    } else if (defaultCurrentPatient && defaultCurrentPatient.id) {
+      const currentUserId = defaultCurrentPatient.id;
+      const storageItem = localStorage.getItem(`${currentUserId}`);
+      if (!storageItem) {
+        const cartItems = localStorage.getItem('cartItems');
+        if (cartItems) {
+          localStorage.setItem(`${currentUserId}`, cartItems);
+          localStorage.removeItem('cartItems');
         }
       }
     }
