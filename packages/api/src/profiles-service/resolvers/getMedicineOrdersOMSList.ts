@@ -21,14 +21,7 @@ const path = require('path');
 
 export const getMedicineOrdersOMSListTypeDefs = gql`
   type MedicineOrdersOMSListResult {
-    meta: PaginateMetaDataOMS
     medicineOrdersList: [MedicineOrdersOMS]
-  }
-
-  type PaginateMetaDataOMS {
-    total: Int
-    pageSize: Int
-    pageNo: Int
   }
 
   type getMedicineOrdersListResult {
@@ -227,15 +220,13 @@ export const getMedicineOrdersOMSListTypeDefs = gql`
   extend type Query {
     getMedicineOrdersOMSList(
       patientId: String
-      pageNo: Int
-      pageSize: Int
     ): MedicineOrdersOMSListResult!
     getMedicineOrderOMSDetails(
       patientId: String
       orderAutoId: Int
       billNumber: String
     ): MedicineOrderOMSDetailsResult!
-    getMedicineOMSPaymentOrder(pageNo: Int, pageSize: Int): MedicineOrdersOMSListResult!
+    getMedicineOMSPaymentOrder: MedicineOrdersOMSListResult!
     getRecommendedProductsList(patientUhid: String!): RecommendedProductsListResult!
     checkIfProductsOnline(productSkus: [String]): ProductAvailabilityResult!
     updateMedicineDataRedis(limit: Int, offset: Int): getMedicineOrdersListResult
@@ -252,14 +243,14 @@ type getMedicineOrdersListResult = {
   updatedSkus: string[];
 };
 
-type PaginateMetaDataOMS = {
-  total: number | null;
-  pageSize: number | null;
-  pageNo: number | null;
-};
+// type PaginateMetaDataOMS = {
+//   total: number | null;
+//   pageSize: number | null;
+//   pageNo: number | null;
+// };
 
 type MedicineOrdersOMSListResult = {
-  meta: PaginateMetaDataOMS;
+  // meta: PaginateMetaDataOMS;
   medicineOrdersList: MedicineOrders[];
 };
 
@@ -306,14 +297,14 @@ type ProductAvailability = {
 
 const getMedicineOrdersOMSList: Resolver<
   null,
-  { patientId: string; orderAutoId?: number; pageNo?: number; pageSize?: number },
+  { patientId: string; orderAutoId?: number; },
   ProfilesServiceContext,
   MedicineOrdersOMSListResult
 > = async (parent, args, { profilesDb, mobileNumber }) => {
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
   const patientDetails = await patientRepo.getPatientDetails(args.patientId);
   // paginated vars
-  const { pageNo, pageSize = 10 } = args; //default pageSize = 10
+  // const { pageNo, pageSize = 10 } = args; //default pageSize = 10
   const paginateParams: { take?: number; skip?: number } = {};
 
   log(
@@ -334,9 +325,9 @@ const getMedicineOrdersOMSList: Resolver<
   const primaryPatientIds = await patientRepo.getLinkedPatientIds({ patientDetails });
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
   //pageNo should be greater than 0
-  if (pageNo === 0) {
-    throw new AphError(AphErrorMessages.PAGINATION_PARAMS_PAGENO_ERROR, undefined, {});
-  }
+  // if (pageNo === 0) {
+  //   throw new AphError(AphErrorMessages.PAGINATION_PARAMS_PAGENO_ERROR, undefined, {});
+  // }
 
   let medicineOrdersList = await medicineOrdersRepo.getMedicineOrdersListWithoutAbortedStatus(primaryPatientIds);
 
@@ -457,21 +448,21 @@ const getMedicineOrdersOMSList: Resolver<
 
 
   // record total count
-  const totalCount = medicineOrdersList.length
+  // const totalCount = medicineOrdersList.length
 
   // paginate data
-  if (pageNo) {
-    paginateParams.take = pageSize
-    paginateParams.skip = (pageSize * pageNo) - pageSize //bcoz pageNo. starts from 1 not 0.
-    medicineOrdersList = medicineOrdersList.slice(paginateParams.skip).slice(0, paginateParams.take)
-  }
+  // if (pageNo) {
+  //   paginateParams.take = pageSize
+  //   paginateParams.skip = (pageSize * pageNo) - pageSize //bcoz pageNo. starts from 1 not 0.
+  //   medicineOrdersList = medicineOrdersList.slice(paginateParams.skip).slice(0, paginateParams.take)
+  // }
 
   return {
-    meta: {
-      pageNo: pageNo || null,
-      pageSize: (Number.isInteger(pageNo) && pageSize) || null,
-      total: (Number.isInteger(pageNo) && totalCount) || null,
-    },
+    // meta: {
+    //   pageNo: pageNo || null,
+    //   pageSize: (Number.isInteger(pageNo) && pageSize) || null,
+    //   total: (Number.isInteger(pageNo) && totalCount) || null,
+    // },
     medicineOrdersList,
   };
 };
@@ -549,32 +540,30 @@ const getMedicineOrderOMSDetails: Resolver<
 
 const getMedicineOMSPaymentOrder: Resolver<
   null,
-  { pageNo?: number; pageSize?: number }, //for consistency response though not mandatory
+  {}, //for consistency response though not mandatory
   ProfilesServiceContext,
   MedicineOrdersOMSListResult
 > = async (parent, args, { profilesDb }) => {
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
   // paginated vars
-  const { pageNo, pageSize = 10 } = args; //default pageSize = 10
-  const paginateParams: { take?: number; skip?: number } = {};
-  //pageNo should be greater than 0
-  if (pageNo === 0) {
-    throw new AphError(AphErrorMessages.PAGINATION_PARAMS_PAGENO_ERROR, undefined, {});
-  }
-  if (pageNo) {
-    paginateParams.take = pageSize;
-    paginateParams.skip = pageSize * pageNo - pageSize; //bcoz pageNo. starts from 1 not 0.
-  }
-  const [medicineOrdersList, totalCount] = await medicineOrdersRepo.getPaymentMedicineOrders(
-    paginateParams
-  );
+  // const { pageNo, pageSize = 10 } = args; //default pageSize = 10
+  // const paginateParams: { take?: number; skip?: number } = {};
+  // pageNo should be greater than 0
+  // if (pageNo === 0) {
+  //   throw new AphError(AphErrorMessages.PAGINATION_PARAMS_PAGENO_ERROR, undefined, {});
+  // }
+  // if (pageNo) {
+  //   paginateParams.take = pageSize;
+  //   paginateParams.skip = pageSize * pageNo - pageSize; //bcoz pageNo. starts from 1 not 0.
+  // }
+  const medicineOrdersList = await medicineOrdersRepo.getPaymentMedicineOrders();
   //meta added for consistency response
   return {
-    meta: {
-      pageNo: pageNo || null,
-      pageSize: (Number.isInteger(pageNo) && pageSize) || null,
-      total: (Number.isInteger(pageNo) && totalCount) || null,
-    },
+    // meta: {
+    //   pageNo: pageNo || null,
+    //   pageSize: (Number.isInteger(pageNo) && pageSize) || null,
+    //   total: (Number.isInteger(pageNo) && totalCount) || null,
+    // },
     medicineOrdersList,
   };
 };

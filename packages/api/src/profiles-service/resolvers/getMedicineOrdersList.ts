@@ -9,16 +9,9 @@ import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 
 export const getMedicineOrdersListTypeDefs = gql`
   type MedicineOrdersListResult {
-    meta: PaginateMetaData
     MedicineOrdersList: [MedicineOrders]
   }
-
-  type PaginateMetaData {
-    total: Int
-    pageSize: Int
-    pageNo: Int
-  }
-
+  
   enum DEVICE_TYPE {
     IOS
     ANDROID
@@ -105,27 +98,13 @@ export const getMedicineOrdersListTypeDefs = gql`
   }
 
   extend type Query {
-    getMedicineOrdersList(
-      patientId: String
-      pageNo: Int
-      pageSize: Int
-    ): MedicineOrdersListResult!
+    getMedicineOrdersList(patientId: String): MedicineOrdersListResult!
     getMedicineOrderDetails(patientId: String, orderAutoId: Int): MedicineOrderDetailsResult!
-    getMedicinePaymentOrder(
-      pageNo: Int
-      pageSize: Int
-    ): MedicineOrdersListResult!
+    getMedicinePaymentOrder: MedicineOrdersListResult!
   }
 `;
 
-type PaginateMetaData = {
-  total: number | null,
-  pageSize: number | null,
-  pageNo: number | null
-}
-
 type MedicineOrdersListResult = {
-  meta: PaginateMetaData
   MedicineOrdersList: MedicineOrders[];
 };
 
@@ -135,7 +114,7 @@ type MedicineOrderDetailsResult = {
 
 const getMedicineOrdersList: Resolver<
   null,
-  { patientId: string; orderAutoId?: number, pageNo?: number, pageSize?: number },
+  { patientId: string; orderAutoId?: number },
   ProfilesServiceContext,
   MedicineOrdersListResult
 > = async (parent, args, { profilesDb }) => {
@@ -143,7 +122,7 @@ const getMedicineOrdersList: Resolver<
 
   const patientDetails = await patientRepo.getPatientDetails(args.patientId);
   // paginated vars
-  const { pageNo, pageSize = 10 } = args; //default pageSize = 10
+  // const { pageNo, pageSize = 10 } = args; //default pageSize = 10
   const paginateParams: { take?: number, skip?: number } = {};
 
   if (!patientDetails) {
@@ -152,22 +131,22 @@ const getMedicineOrdersList: Resolver<
   const primaryPatientIds = await patientRepo.getLinkedPatientIds({ patientDetails });
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
   //pageNo should be greater than 0
-  if (pageNo === 0) {
-    throw new AphError(AphErrorMessages.PAGINATION_PARAMS_PAGENO_ERROR, undefined, {});
-  }
-  if (pageNo) {
-    paginateParams.take = pageSize
-    paginateParams.skip = (pageSize * pageNo) - pageSize //bcoz pageNo. starts from 1 not 0.
-  }
+  // if (pageNo === 0) {
+  //   throw new AphError(AphErrorMessages.PAGINATION_PARAMS_PAGENO_ERROR, undefined, {});
+  // }
+  // if (pageNo) {
+  //   paginateParams.take = pageSize
+  //   paginateParams.skip = (pageSize * pageNo) - pageSize //bcoz pageNo. starts from 1 not 0.
+  // }
 
-  const [MedicineOrdersList, totalCount]: any = await medicineOrdersRepo.getMedicineOrdersList(primaryPatientIds, paginateParams);
+  const MedicineOrdersList = await medicineOrdersRepo.getMedicineOrdersList(primaryPatientIds);
 
   return {
-    meta: {
-      pageNo: pageNo || null,
-      pageSize: (Number.isInteger(pageNo) && pageSize) || null,
-      total: (Number.isInteger(pageNo) && totalCount) || null
-    },
+    // meta: {
+    //   pageNo: pageNo || null,
+    //   pageSize: (Number.isInteger(pageNo) && pageSize) || null,
+    //   total: (Number.isInteger(pageNo) && totalCount) || null
+    // },
     MedicineOrdersList
   };
 };
@@ -206,30 +185,30 @@ const getMedicineOrderDetails: Resolver<
 
 const getMedicinePaymentOrder: Resolver<
   null,
-  { pageNo?: number, pageSize?: number }, //for consistency response though not mandatory
+  {}, //for consistency response though not mandatory
   ProfilesServiceContext,
   MedicineOrdersListResult
 > = async (parent, args, { profilesDb }) => {
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
   // paginated vars
-  const { pageNo, pageSize = 10 } = args; //default pageSize = 10
+  // const { pageNo, pageSize = 10 } = args; //default pageSize = 10
   const paginateParams: { take?: number, skip?: number } = {};
   //pageNo should be greater than 0
-  if (pageNo === 0) {
-    throw new AphError(AphErrorMessages.PAGINATION_PARAMS_PAGENO_ERROR, undefined, {});
-  }
-  if (pageNo) {
-    paginateParams.take = pageSize
-    paginateParams.skip = (pageSize * pageNo) - pageSize //bcoz pageNo. starts from 1 not 0.
-  }
-  const [MedicineOrdersList, totalCount] = await medicineOrdersRepo.getPaymentMedicineOrders(paginateParams);
+  // if (pageNo === 0) {
+  //   throw new AphError(AphErrorMessages.PAGINATION_PARAMS_PAGENO_ERROR, undefined, {});
+  // }
+  // if (pageNo) {
+  //   paginateParams.take = pageSize
+  //   paginateParams.skip = (pageSize * pageNo) - pageSize //bcoz pageNo. starts from 1 not 0.
+  // }
+  const MedicineOrdersList = await medicineOrdersRepo.getPaymentMedicineOrders();
   //meta added for consistency response 
   return {
-    meta: {
-      pageNo: pageNo || null,
-      pageSize: (Number.isInteger(pageNo) && pageSize) || null,
-      total: (Number.isInteger(pageNo) && totalCount) || null
-    },
+    // meta: {
+    //   pageNo: pageNo || null,
+    //   pageSize: (Number.isInteger(pageNo) && pageSize) || null,
+    //   total: (Number.isInteger(pageNo) && totalCount) || null
+    // },
     MedicineOrdersList
   };
 };

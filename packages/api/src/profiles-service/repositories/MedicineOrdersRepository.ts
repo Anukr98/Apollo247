@@ -20,10 +20,10 @@ import { getCache, setCache } from 'profiles-service/database/connectRedis';
 import { ApiConstants } from 'ApiConstants';
 import { log } from 'customWinstonLogger';
 
-interface PaginateParams {
-  take?: number;
-  skip?: number;
-}
+// interface PaginateParams {
+//   take?: number;
+//   skip?: number;
+// }
 
 const REDIS_ORDER_AUTO_ID_KEY_PREFIX: string = 'orderAutoId:';
 @EntityRepository(MedicineOrders)
@@ -258,9 +258,8 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
     });
   }
 
-  getMedicineOrdersList(patientIds: String[], paginate: PaginateParams) {
-    // returns [result , total]
-    return this.findAndCount({
+  getMedicineOrdersList(patientIds: String[]) {
+    return this.find({
       where: { patient: In(patientIds) },
       order: { createdDate: 'DESC' },
       relations: [
@@ -273,9 +272,24 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
         'medicineOrderInvoice',
         'patient',
       ],
-      //extra params...
-      ...paginate,
-    });
+    })
+    // returns [result , total]
+    // return this.findAndCount({
+    //   where: { patient: In(patientIds) },
+    //   order: { createdDate: 'DESC' },
+    //   relations: [
+    //     'medicineOrderLineItems',
+    //     'medicineOrderPayments',
+    //     'medicineOrdersStatus',
+    //     'medicineOrderShipments',
+    //     'medicineOrderShipments.medicineOrdersStatus',
+    //     'medicineOrderShipments.medicineOrderInvoice',
+    //     'medicineOrderInvoice',
+    //     'patient',
+    //   ],
+    //   //extra params...
+    //   ...paginate,
+    // });
   }
 
 
@@ -350,9 +364,8 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
     });
   }
 
-  getPaymentMedicineOrders(paginate: PaginateParams) {
-    // returns [result , total]
-    return this.findAndCount({
+  getPaymentMedicineOrders() {
+    return this.find({
       where: { currentStatus: MEDICINE_ORDER_STATUS.PAYMENT_SUCCESS },
       relations: [
         'medicineOrderLineItems',
@@ -364,9 +377,23 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
         'medicineOrderInvoice',
         'patient',
       ],
-      //extra params...
-      ...paginate,
-    });
+    })
+    // returns [result , total]
+    // return this.findAndCount({
+    //   where: { currentStatus: MEDICINE_ORDER_STATUS.PAYMENT_SUCCESS },
+    //   relations: [
+    //     'medicineOrderLineItems',
+    //     'medicineOrderPayments',
+    //     'medicineOrdersStatus',
+    //     'medicineOrderShipments',
+    //     'medicineOrderShipments.medicineOrdersStatus',
+    //     'medicineOrderShipments.medicineOrderInvoice',
+    //     'medicineOrderInvoice',
+    //     'patient',
+    //   ],
+    //   //extra params...
+    //   ...paginate,
+    // });
   }
 
   getMedicineOrderWithId(orderAutoId: number) {
