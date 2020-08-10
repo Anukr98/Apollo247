@@ -268,7 +268,6 @@ export const OrderFeedback: React.FC<Props> = (props) => {
           </Typography>
           <div className={classes.flex}>
             <Link
-              href="javascript:void(0);"
               onClick={() => {
                 setIsPopoverOpen(false);
                 setShowDeliveryRateBtn(false);
