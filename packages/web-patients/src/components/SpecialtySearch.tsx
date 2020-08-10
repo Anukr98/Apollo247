@@ -253,10 +253,7 @@ export const SpecialtySearch: React.FC<SpecialtySearchProps> = (props) => {
                           <li key={doctor.id}>
                             <Link
                               key={doctor.id}
-                              to={clientRoutes.specialtyDoctorDetails(
-                                doctor.specialty && doctor.specialty.name
-                                  ? readableParam(doctor.specialty.name)
-                                  : '',
+                              to={clientRoutes.doctorDetails(
                                 readableParam(doctor.fullName),
                                 doctor.id
                               )}
