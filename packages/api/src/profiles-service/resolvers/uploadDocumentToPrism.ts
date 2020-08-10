@@ -93,7 +93,7 @@ export const fetchBlobURLWithPRISMData: Resolver<
   ProfilesServiceContext,
   { blobUrl: string }
 > = async (parent, args, { profilesDb, consultsDb }) => {
-  if (!args.fileUrl || (args.fileUrl && args.fileUrl.length == 0)) return args.fileUrl;
+  if (!args.fileUrl || (args.fileUrl && args.fileUrl.length == 0)) return { blobUrl: args.fileUrl };
   if (args.fileUrl.indexOf('authToken=') < 0) return { blobUrl: args.fileUrl };
 
   //get recordid from the url
@@ -102,7 +102,6 @@ export const fetchBlobURLWithPRISMData: Resolver<
   if (recordId.length == 0) return { blobUrl: args.fileUrl };
 
   const prismFileId = recordId[0].replace('recordId=', '');
-  console.log('recordId ...', recordId);
 
   const category =
     args.fileUrl.indexOf('labresults=') > 0
