@@ -184,10 +184,21 @@ const initateConferenceTelephoneCall: Resolver<
     throw new AphError(AphErrorMessages.GET_PATIENTS_ERROR, undefined, {});
   }
 
-  const doctor = await doctorRepo.findById(appt.doctorId);
+  if(exotelInput.to && patient.mobileNumber != exotelInput.to){
+    throw new AphError(AphErrorMessages.GET_PATIENTS_ERROR, undefined, {});
+  }
+
+  let doctor = await doctorRepo.findById(appt.doctorId);
 
   if (!doctor) {
     throw new AphError(AphErrorMessages.GET_DOCTORS_ERROR, undefined, {});
+  }
+
+  if(exotelInput.from && doctor.mobileNumber != exotelInput.from){
+    doctor = await doctorRepo.searchDoctorByMobileNumber(exotelInput.from, true);
+    if (!doctor) {
+      throw new AphError(AphErrorMessages.GET_DOCTORS_ERROR, undefined, {});
+    }
   }
 
   fromMobileNumber = doctor.mobileNumber;
