@@ -426,8 +426,8 @@ export const MedicineAutoSearch: React.FC = (props) => {
                                 brand: '',
                                 brandId: '',
                                 categoryName: '',
-                                categoryId: medicine.category_id,
-                                discountedPrice: medicine.special_price,
+                                categoryId: '',
+                                discountedPrice: medicine.special_price || medicine.price,
                                 price: medicine.price,
                                 quantity: 1,
                               });
