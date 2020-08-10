@@ -329,12 +329,34 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
     ];
   }
 
-  getMedicineOrdersListWithPayments(patientIds: String[]) {
-    return this.find({
-      where: { patient: In(patientIds) },
-      order: { createdDate: 'DESC' },
-      relations: ['medicineOrderPayments'],
-    });
+  getMedicineOrdersListWithPayments(patientIds: String[], paginate: PaginateParams): [Promise<MedicineOrders[]>, Promise<number | null>] {
+    // return [data, counts]<promises>;
+    return [
+      this.createQueryBuilder('medicineOrders')
+        .where('medicineOrders.patient IN (:...patientIds)', { patientIds })
+        .innerJoinAndSelect('medicineOrders.medicineOrderPayments', 'medicineOrderPayments')
+        // apply filters....
+        .andWhere('medicineOrders.currentStatus != :currentStatus', { currentStatus: MEDICINE_ORDER_STATUS.QUOTE })
+        .andWhere('medicineOrders.currentStatus != :currentStatus', { currentStatus: MEDICINE_ORDER_STATUS.PAYMENT_ABORTED })
+        .andWhere('medicineOrderPayments.paymentType != :paymentType', { paymentType: MEDICINE_ORDER_PAYMENT_TYPE.COD })
+        .orderBy('medicineOrders.createdDate', 'DESC')
+        //send undefined to skip & take fns to skip pagination to support optional pagination
+        .skip(paginate.skip)
+        .take(paginate.take)
+        .getMany()
+      ,
+      //do pagiantion if needed...
+      Number.isInteger(paginate.take || paginate.skip) ?
+        this.createQueryBuilder('medicineOrders')
+          .where('medicineOrders.patient IN (:...patientIds)', { patientIds })
+          .innerJoinAndSelect('medicineOrders.medicineOrderPayments', 'medicineOrderPayments')
+          .andWhere('medicineOrders.currentStatus != :currentStatus', { currentStatus: 'QUOTE' })
+          .andWhere('medicineOrders.currentStatus != :currentStatus', { currentStatus: 'PAYMENT_ABORTED' })
+          .andWhere('medicineOrderPayments.paymentType != :paymentType', { paymentType: 'COD' })
+          .getCount()
+        : Promise.resolve(null)
+    ]
+
   }
 
   getMedicineOrderDetailsByOderId(orderAutoId: number) {
