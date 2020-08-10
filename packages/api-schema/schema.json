@@ -12894,7 +12894,7 @@
               "name": null,
               "ofType": {
                 "kind": "OBJECT",
-                "name": "medicineOrderRefunds",
+                "name": "MedicineOrderRefunds",
                 "ofType": null
               }
             },
@@ -12909,7 +12909,7 @@
       },
       {
         "kind": "OBJECT",
-        "name": "medicineOrderRefunds",
+        "name": "MedicineOrderRefunds",
         "description": null,
         "fields": [
           {
