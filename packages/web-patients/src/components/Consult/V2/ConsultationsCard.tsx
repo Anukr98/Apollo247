@@ -18,6 +18,7 @@ import { AddToConsultQueue, AddToConsultQueueVariables } from 'graphql/types/Add
 import { ADD_TO_CONSULT_QUEUE } from 'graphql/consult';
 import moment from 'moment';
 import { isPastAppointment } from 'helpers/commonHelpers';
+import { Route } from 'react-router-dom';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -438,40 +439,40 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                         </div>
                       )}
                     <div className={classes.cardBottomActons}>
-                      <AphButton
-                        onClick={() => {
-                          if (
-                            appointmentState === APPOINTMENT_STATE.AWAITING_RESCHEDULE ||
-                            isConsultStarted
-                          ) {
-                            window.location.href = clientRoutes.chatRoom(appointmentId, doctorId);
-                          } else {
-                            isConsultStarted
-                              ? (window.location.href = clientRoutes.chatRoom(
-                                  appointmentId,
-                                  doctorId
-                                ))
-                              : addConsultToQueue({
-                                  variables: {
-                                    appointmentId,
-                                  },
-                                })
-                                  .then((res) => {
-                                    window.location.href = clientRoutes.chatRoom(
-                                      appointmentId,
-                                      doctorId
-                                    );
-                                  })
-                                  .catch((e: ApolloError) => {
-                                    alert(e);
-                                  });
-                          }
-                        }}
-                      >
-                        {appointmentDetails.isFollowUp === 'false'
-                          ? showAppointmentAction(appointmentState, status, isConsultStarted)
-                          : 'SCHEDULE FOLLOWUP'}
-                      </AphButton>
+                      <Route
+                        render={({ history }) => (
+                          <AphButton
+                            onClick={() => {
+                              if (
+                                appointmentState === APPOINTMENT_STATE.AWAITING_RESCHEDULE ||
+                                isConsultStarted
+                              ) {
+                                history.push(clientRoutes.chatRoom(appointmentId, doctorId));
+                              } else {
+                                isConsultStarted
+                                  ? history.push(clientRoutes.chatRoom(appointmentId, doctorId))
+                                  : addConsultToQueue({
+                                      variables: {
+                                        appointmentId,
+                                      },
+                                    })
+                                      .then((res) => {
+                                        history.push(
+                                          clientRoutes.chatRoom(appointmentId, doctorId)
+                                        );
+                                      })
+                                      .catch((e: ApolloError) => {
+                                        alert(e);
+                                      });
+                              }
+                            }}
+                          >
+                            {appointmentDetails.isFollowUp === 'false'
+                              ? showAppointmentAction(appointmentState, status, isConsultStarted)
+                              : 'SCHEDULE FOLLOWUP'}
+                          </AphButton>
+                        )}
+                      />
                       {status === STATUS.COMPLETED ? (
                         <div className={classes.noteText}>
                           You can chat with the doctor for {comparingDays()}
