@@ -113,7 +113,7 @@ import {
   MedicineReOrderOverlay,
 } from '@aph/mobile-patients/src/components/Medicines/MedicineReOrderOverlay';
 import { getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails } from '@aph/mobile-patients/src/graphql/types/getMedicineOrderOMSDetails';
-import { AddToCartButtons } from './AddToCartButtons';
+import { AddToCartButtons } from '@aph/mobile-patients/src/components/Medicines/AddToCartButtons';
 
 const styles = StyleSheet.create({
   sliderDotStyle: {
@@ -144,6 +144,16 @@ const styles = StyleSheet.create({
     height: '100%',
   },
 });
+
+const filterBanners = (banners: OfferBannerSection[]) => {
+  return banners
+    .filter((banner) => Number(banner.status))
+    .filter(
+      (banner) =>
+        moment() >= moment(banner.start_time, 'YYYY-MM-DD hh:mm:ss') &&
+        moment() <= moment(banner.end_time, 'YYYY-MM-DD hh:mm:ss')
+    );
+};
 
 export interface MedicineProps
   extends NavigationScreenProps<{
@@ -184,19 +194,18 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const [serviceabilityMsg, setServiceabilityMsg] = useState('');
   const hasLocation = locationDetails || pharmacyLocation;
   const { showAphAlert, hideAphAlert, setLoading: globalLoading } = useUIElements();
-  const {
-    data: latestMedicineOrderData,
-    loading: latestMedicineOrderLoading,
-    error: latestMedicineOrderError,
-    // refetch: latestMedicineOrderRefetch,
-  } = useQuery<getLatestMedicineOrder, getLatestMedicineOrderVariables>(GET_LATEST_MEDICINE_ORDER, {
-    variables: { patientUhid: g(currentPatient, 'uhid') || '' },
-    fetchPolicy: 'no-cache',
-  });
-  const latestMedicineOrder =
-    latestMedicineOrderLoading || latestMedicineOrderError
-      ? null
-      : g(latestMedicineOrderData, 'getLatestMedicineOrder', 'medicineOrderDetails');
+  const [latestMedicineOrder, setLatestMedicineOrder] = useState<
+    getLatestMedicineOrder_getLatestMedicineOrder_medicineOrderDetails
+  >();
+
+  const [recommendedProducts, setRecommendedProducts] = useState<MedicineProduct[]>([]);
+  const [data, setData] = useState<MedicinePageAPiResponse | null>(medicinePageAPiResponse);
+  const [loading, setLoading] = useState<boolean>(!medicinePageAPiResponse);
+  const [error, setError] = useState<boolean>(false);
+  const banners = !loading && !error && data ? filterBanners(g(data, 'mainbanners') || []) : [];
+  const [imgHeight, setImgHeight] = useState(120);
+  const { width: winWidth } = Dimensions.get('window');
+  const [bannerLoading, setBannerLoading] = useState(true);
 
   const postwebEngageProductClickedEvent = (
     { name, sku, category_id }: MedicineProduct,
@@ -390,8 +399,14 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
   useEffect(() => {
     fetchMedicinePageProducts();
-    fetchRecommendedProducts();
   }, []);
+
+  useEffect(() => {
+    if (g(currentPatient, 'uhid')) {
+      fetchRecommendedProducts();
+      fetchLatestMedicineOrder();
+    }
+  }, [currentPatient]);
 
   useEffect(() => {
     checkLocation();
@@ -438,23 +453,20 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       });
   };
 
-  const [recommendedProducts, setRecommendedProducts] = useState<MedicineProduct[]>([]);
-  const [data, setData] = useState<MedicinePageAPiResponse | null>(medicinePageAPiResponse);
-  const [loading, setLoading] = useState<boolean>(!medicinePageAPiResponse);
-  const [error, setError] = useState<boolean>(false);
-  const banners = (g(data, 'mainbanners') || [])
-    .filter((banner) => Number(banner.status))
-    .filter(
-      (banner) =>
-        moment() >= moment(banner.start_time, 'YYYY-MM-DD hh:mm:ss') &&
-        moment() <= moment(banner.end_time, 'YYYY-MM-DD hh:mm:ss')
-    );
-
   useEffect(() => {
-    if (!loading && !banners.length) {
-      setBannerLoading(false);
+    if (!loading && banners.length) {
+      ImageNative.getSize(
+        productsThumbnailUrl(g(banners, '0' as any, 'image')!),
+        (width, height) => {
+          setImgHeight(height * (winWidth / width));
+          setBannerLoading(false);
+        },
+        () => {
+          setBannerLoading(false);
+        }
+      );
     }
-  }, [loading]);
+  }, [loading, banners]);
 
   const getImageUrl = (fileIds: string) => {
     return fileIds
@@ -531,6 +543,19 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       }
     } catch (e) {
       CommonBugFender(`${AppRoutes.Medicine}_fetchRecommendedProducts`, e);
+    }
+  };
+
+  const fetchLatestMedicineOrder = async () => {
+    try {
+      const response = await client.query<getLatestMedicineOrder, getLatestMedicineOrderVariables>({
+        query: GET_LATEST_MEDICINE_ORDER,
+        variables: { patientUhid: g(currentPatient, 'uhid') || '' },
+        fetchPolicy: 'no-cache',
+      });
+      setLatestMedicineOrder(response.data.getLatestMedicineOrder.medicineOrderDetails!);
+    } catch (e) {
+      CommonBugFender(`${AppRoutes.Medicine}_fetchLatestMedicineOrder`, e);
     }
   };
 
@@ -785,31 +810,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     );
   };
 
-  const [imgHeight, setImgHeight] = useState(120);
-  const { width: winWidth } = Dimensions.get('window');
-  const [bannerLoading, setBannerLoading] = useState(true);
-
-  const renderBannerImageToGetHeightWidth = () => {
-    const imageUri = g(banners, '0' as any, 'image');
-    const imageFullUri = imageUri ? productsThumbnailUrl(imageUri) : '';
-    return (
-      !!imageFullUri &&
-      bannerLoading && (
-        <View style={{ height: 0 }}>
-          <ImageNative
-            onLoad={(value) => {
-              const { height, width } = value.nativeEvent.source;
-              setImgHeight(height * (winWidth / width));
-              setBannerLoading(false);
-            }}
-            style={{ width: '100%', height: 120 }}
-            source={{ uri: imageFullUri }}
-          />
-        </View>
-      )
-    );
-  };
-
   const renderSliderItem = ({ item, index }: { item: OfferBannerSection; index: number }) => {
     const handleOnPress = () => {
       const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_BANNER_CLICK] = {
@@ -850,10 +850,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     if (loading || bannerLoading) {
       return (
         <View style={[styles.sliderPlaceHolderStyle, { height: imgHeight }]}>
-          <Spinner
-            // spinnerProps={{ size: 'small' }}
-            style={{ backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR }}
-          />
+          <Spinner style={{ backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR }} />
         </View>
       );
     } else if (banners.length && !isSelectPrescriptionVisible) {
@@ -1383,8 +1380,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           </View>
           <Spearator style={{ marginBottom: 7.5 }} />
           {renderDiscountedPrice()}
-          {
-            data.isAddedToCart ?
+          {data.isAddedToCart ? (
             <AddToCartButtons
               numberOfItemsInCart={data.numberOfItemsInCart}
               maxOrderQty={data.maxOrderQty}
@@ -1413,7 +1409,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                 paddingLeft: 10,
                 paddingRight: 10,
               }}
-            /> : 
+            />
+          ) : (
             <Text
               style={{
                 ...theme.viewStyles.text('B', 13, '#fc9916', 1, 24),
@@ -1423,7 +1420,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             >
               ADD TO CART
             </Text>
-          }
+          )}
         </View>
       </TouchableOpacity>
     );
@@ -1449,11 +1446,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     const foundMedicineInCart = !!cartItems.find((item) => item.id == sku);
     const numberOfItemsInCart = foundMedicineInCart && itemInCart ? itemInCart.quantity : 0;
 
-    const removeItemFromCart = () => onUpdateCartItem(sku, numberOfItemsInCart-1);
+    const removeItemFromCart = () => onUpdateCartItem(sku, numberOfItemsInCart - 1);
 
     const addToCart = () => {
       if (numberOfItemsInCart) {
-        onUpdateCartItem(sku, numberOfItemsInCart+1);
+        onUpdateCartItem(sku, numberOfItemsInCart + 1);
       } else {
         addPharmaItemToCart(
           {
@@ -1511,7 +1508,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           eventAttributes
         );
         postwebEngageProductClickedEvent(data.item, title, 'Home');
-        props.navigation.navigate(AppRoutes.MedicineDetailsScene, { sku, movedFrom: 'widget', sectionName: title });
+        props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
+          sku,
+          movedFrom: 'widget',
+          sectionName: title,
+        });
       },
       style: {
         marginHorizontal: 4,
@@ -1903,7 +1904,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
   const renderSections = () => {
     if (loading) {
-      return renderSectionLoader();
+      return renderSectionLoader(200);
     }
     if (!data) {
       return null;
@@ -1911,23 +1912,12 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     const metaData = g(data, 'metadata') || [];
     const staticSectionKeys = [
       'banners',
-      'bannerImage',
       'orders',
       'upload_prescription',
       'recommended_products',
       'shop_by_brand',
     ];
-
-    const bannersKey = metaData.findIndex((i) => i.section_key == 'banners');
-    const sectionsView = [
-      {
-        section_key: 'bannerImage',
-        section_name: 'Banner Image',
-        section_position: bannersKey > -1 ? metaData[bannersKey].section_position : 0,
-        visible: bannersKey > -1 ? metaData[bannersKey].visible : false,
-      },
-      ...metaData,
-    ]
+    const sectionsView = metaData
       .filter((item) => item.visible)
       .sort((a, b) => Number(a.section_position) - Number(b.section_position))
       .map(({ section_key, section_name }) => {
@@ -1935,8 +1925,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         if (isStaticSection) {
           return section_key === 'banners'
             ? renderBanners()
-            : section_key === 'bannerImage'
-            ? renderBannerImageToGetHeightWidth()
             : section_key === 'orders'
             ? renderYourOrders()
             : section_key === 'upload_prescription'
