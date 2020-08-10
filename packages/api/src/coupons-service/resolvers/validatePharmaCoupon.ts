@@ -149,14 +149,12 @@ export const validatePharmaCoupon: Resolver<
     pinCode: '',
     products: couponProduct,
   };
-  console.log('payload......', payload);
+
   const couponData = await validateCoupon(payload);
-  console.log('couponData......', JSON.stringify(couponData));
 
   let validityStatus = false;
   let reasonForInvalidStatus = '';
   const lineItemsWithDiscount: PharmaLineItems[] = [];
-  let discountedPriceTotal = 0;
 
   if (couponData && couponData.response) {
     validityStatus = couponData.response.valid;
@@ -167,11 +165,10 @@ export const validatePharmaCoupon: Resolver<
       );
       mrpPriceTotal = mrpPriceTotal + item.mrp * item.quantity;
       specialPriceTotal = specialPriceTotal + item.specialPrice * item.quantity;
-      discountedPriceTotal = discountedPriceTotal + item.totalCost;
 
       const lineItems: PharmaLineItems = {
-        applicablePrice: Number((item.totalCost / item.quantity).toFixed(2)),
-        discountedPrice: Number((item.totalCost / item.quantity).toFixed(2)),
+        applicablePrice: Number((item.mrp - item.discountAmt).toFixed(2)),
+        discountedPrice: Number(item.discountAmt.toFixed(2)),
         itemId: item.sku ? item.sku.toString() : '',
         mrp: item.mrp,
         productName: orderLineItemData.length ? orderLineItemData[0].productName : '',
@@ -185,14 +182,11 @@ export const validatePharmaCoupon: Resolver<
     });
   }
 
-  console.log('mrpPriceTotal ::', mrpPriceTotal);
-  console.log('specialPriceTotal ::', specialPriceTotal);
-  console.log('discountedPriceTotal ::', discountedPriceTotal);
-
   const productDiscount = Number((mrpPriceTotal - specialPriceTotal).toFixed(2));
+  const totalDiscountPrice = mrpPriceTotal - couponData.response!.discount;
 
   const discountedTotals: DiscountedTotals = {
-    couponDiscount: Number((discountedPriceTotal - productDiscount).toFixed(2)),
+    couponDiscount: Number((totalDiscountPrice - productDiscount).toFixed(2)),
     mrpPriceTotal: mrpPriceTotal,
     productDiscount: productDiscount,
   };

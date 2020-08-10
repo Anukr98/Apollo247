@@ -53,7 +53,7 @@ export interface ValidateCouponResponse {
       mrp: number;
       specialPrice: number;
       quantity: number;
-      totalCost: number;
+      onMrp: boolean;
       discountAmt: number;
     }[];
     diagnostics: [];
