@@ -294,180 +294,190 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
       <div className={classes.consultationSection}>
         <Grid container spacing={2}>
           {props.appointments.map((appointmentDetails, index) => {
-            const appointmentId = appointmentDetails.id;
-            const {
-              appointmentState,
-              status,
-              appointmentDateTime,
-              doctorId,
-              isConsultStarted,
-            } = appointmentDetails;
-            const {
-              fullName,
-              photoUrl,
-              experience,
-              specialty,
-              doctorHospital,
-            } = appointmentDetails.doctorInfo;
-            const doctorImage = photoUrl || require('images/no_photo.png');
-            const specialization =
-              specialty && !_isNull(specialty.name) ? specialty.specialistSingularTerm : '';
-            const currentTime = new Date().getTime();
-            const appointmentTime = new Date(appointmentDateTime).getTime();
-            const difference = Math.round((appointmentTime - currentTime) / 60000);
-            shouldRefreshComponent(difference);
-            const day1 = moment(appointmentDetails.appointmentDateTime).add(7, 'days');
-            const day2 = moment(new Date());
-            // day1.diff(day2, 'days'); // 1
-            const comparingDays = () => {
-              return day1.diff(day2, 'days') == 0
-                ? 'Today'
-                : day1.diff(day2, 'days') +
-                    ' more ' +
-                    (day1.diff(day2, 'days') == 1 ? 'day' : 'days');
-            };
-            const clinicList = doctorHospital || [];
-            let facilityName = '',
-              streetName = '';
-            if (
-              clinicList &&
-              clinicList.length > 0 &&
-              clinicList[0] &&
-              clinicList[0].facility &&
-              clinicList[0].facility.name
-            ) {
-              facilityName = clinicList[0].facility.name;
-              streetName =
-                clinicList[0].facility.streetLine1 && clinicList[0].facility.streetLine1.length > 0
-                  ? clinicList[0].facility.streetLine1
-                  : '';
-            }
-            return (
-              <Grid item sm={4} xs={12} key={index}>
-                <div
-                  className={classes.consultCard}
-                  onClick={() => {
-                    if (props.pastOrCurrent === 'past') {
-                      setIsAppDetailsPopoverOpen(true);
-                    } else {
-                      window.location.href = clientRoutes.chatRoom(
-                        appointmentDetails.id,
-                        appointmentDetails.doctorId
-                      );
-                      // setIsScheduledAppPopoverOpen(true);
-                      // setAppointmentType(
-                      //   appointmentDetails.appointmentType === 'ONLINE' ? 'online' : 'clinic'
-                      // );
-                      // setCurrentDoctorName(fullName);
-                      // setCurrentApptTime(
-                      //   moment(appointmentDetails.appointmentDateTime).format(
-                      //     'MMMM DD, YYYY [at] LT'
-                      //   )
-                      // );
-                    }
-                  }}
-                >
-                  <div className={classes.consultCardWrap}>
-                    <div className={classes.startDoctor}>
-                      <Avatar
-                        alt="Doctor Image"
-                        src={doctorImage}
-                        className={classes.doctorAvatar}
-                      />
-                      {appointmentDetails.doctorInfo &&
-                        appointmentDetails.doctorInfo.doctorType === DoctorType.STAR_APOLLO && (
-                          <span>
-                            <img src={require('images/ic_star.svg')} alt="" />
-                          </span>
-                        )}
-                    </div>
-                    <div className={classes.doctorInfo}>
-                      <div
-                        className={`${classes.availability} ${
-                          difference <= 15 && difference > 0 ? classes.availableNow : ''
-                        }`}
-                      >
-                        {appointmentDetails.appointmentType === 'ONLINE'
-                          ? difference <= 15 && difference > 0
-                            ? `Available in ${difference} ${difference === 1 ? 'MIN' : 'MINS'}`
-                            : otherDateMarkup(appointmentTime)
-                          : 'Clinic Visit'}
-                      </div>
-                      {/* <Link to={clientRoutes.doctorDetails(doctorId)} target="_blank"> */}
-                      <div className={classes.doctorName}>{`${_startCase(
-                        _toLower(fullName)
-                      )}`}</div>
-                      {/* </Link> */}
-                      <div className={classes.doctorType}>
-                        {specialization}
-                        <span className={classes.doctorExp}>{experience} YRS</span>
-                      </div>
-                      <div className={classes.consultaitonType}>
-                        <span>
-                          {appointmentDetails.appointmentType === APPOINTMENT_TYPE.ONLINE
-                            ? 'Online Consultation'
-                            : `${facilityName}, ${streetName}`}
-                        </span>
-                        <span>
-                          {appointmentDetails.appointmentType === APPOINTMENT_TYPE.ONLINE ? (
-                            <img src={require('images/ic-video.svg')} alt="" />
-                          ) : (
-                            <img src={require('images/fa-solid-hospital.svg')} alt="" />
+            if (appointmentDetails) {
+              const appointmentId = appointmentDetails.id;
+              const {
+                appointmentState,
+                status,
+                appointmentDateTime,
+                doctorId,
+                isConsultStarted,
+                doctorInfo,
+              } = appointmentDetails;
+              let fullName = null;
+              let photoUrl = null;
+              let experience = null;
+              let specialty = null;
+              let doctorHospital = null;
+              if (doctorInfo) {
+                fullName = doctorInfo.fullName;
+                experience = doctorInfo.experience;
+                specialty = doctorInfo.specialty;
+                doctorHospital = doctorInfo.doctorHospital;
+              }
+
+              const doctorImage = photoUrl || require('images/no_photo.png');
+              const specialization =
+                specialty && !_isNull(specialty.name) ? specialty.specialistSingularTerm : '';
+              const currentTime = new Date().getTime();
+              const appointmentTime = new Date(appointmentDateTime).getTime();
+              const difference = Math.round((appointmentTime - currentTime) / 60000);
+              shouldRefreshComponent(difference);
+              const day1 = moment(appointmentDetails.appointmentDateTime).add(7, 'days');
+              const day2 = moment(new Date());
+              const comparingDays = () => {
+                return day1.diff(day2, 'days') == 0
+                  ? 'Today'
+                  : day1.diff(day2, 'days') +
+                      ' more ' +
+                      (day1.diff(day2, 'days') == 1 ? 'day' : 'days');
+              };
+              const clinicList = doctorHospital || [];
+              let facilityName = '',
+                streetName = '';
+              if (
+                clinicList &&
+                clinicList.length > 0 &&
+                clinicList[0] &&
+                clinicList[0].facility &&
+                clinicList[0].facility.name
+              ) {
+                facilityName = clinicList[0].facility.name;
+                streetName =
+                  clinicList[0].facility.streetLine1 &&
+                  clinicList[0].facility.streetLine1.length > 0
+                    ? clinicList[0].facility.streetLine1
+                    : '';
+              }
+              return (
+                <Grid item sm={4} xs={12} key={index}>
+                  <div
+                    className={classes.consultCard}
+                    onClick={() => {
+                      if (props.pastOrCurrent === 'past') {
+                        setIsAppDetailsPopoverOpen(true);
+                      } else {
+                        window.location.href = clientRoutes.chatRoom(
+                          appointmentDetails.id,
+                          appointmentDetails.doctorId
+                        );
+                        // setIsScheduledAppPopoverOpen(true);
+                        // setAppointmentType(
+                        //   appointmentDetails.appointmentType === 'ONLINE' ? 'online' : 'clinic'
+                        // );
+                        // setCurrentDoctorName(fullName);
+                        // setCurrentApptTime(
+                        //   moment(appointmentDetails.appointmentDateTime).format(
+                        //     'MMMM DD, YYYY [at] LT'
+                        //   )
+                        // );
+                      }
+                    }}
+                  >
+                    <div className={classes.consultCardWrap}>
+                      <div className={classes.startDoctor}>
+                        <Avatar
+                          alt="Doctor Image"
+                          src={doctorImage}
+                          className={classes.doctorAvatar}
+                        />
+                        {appointmentDetails.doctorInfo &&
+                          appointmentDetails.doctorInfo.doctorType === DoctorType.STAR_APOLLO && (
+                            <span>
+                              <img src={require('images/ic_star.svg')} alt="" />
+                            </span>
                           )}
-                        </span>
+                      </div>
+                      <div className={classes.doctorInfo}>
+                        <div
+                          className={`${classes.availability} ${
+                            difference <= 15 && difference > 0 ? classes.availableNow : ''
+                          }`}
+                        >
+                          {appointmentDetails.appointmentType === 'ONLINE'
+                            ? difference <= 15 && difference > 0
+                              ? `Available in ${difference} ${difference === 1 ? 'MIN' : 'MINS'}`
+                              : otherDateMarkup(appointmentTime)
+                            : 'Clinic Visit'}
+                        </div>
+                        {fullName && (
+                          <div className={classes.doctorName}>{`${_startCase(
+                            _toLower(fullName)
+                          )}`}</div>
+                        )}
+                        <div className={classes.doctorType}>
+                          {specialization}
+                          {experience && (
+                            <span className={classes.doctorExp}>{experience} YRS</span>
+                          )}
+                        </div>
+                        <div className={classes.consultaitonType}>
+                          <span>
+                            {appointmentDetails.appointmentType === APPOINTMENT_TYPE.ONLINE
+                              ? 'Online Consultation'
+                              : `${facilityName}, ${streetName}`}
+                          </span>
+                          <span>
+                            {appointmentDetails.appointmentType === APPOINTMENT_TYPE.ONLINE ? (
+                              <img src={require('images/ic-video.svg')} alt="" />
+                            ) : (
+                              <img src={require('images/fa-solid-hospital.svg')} alt="" />
+                            )}
+                          </span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  <div className={classes.consultChat}>
-                    <h3>GO TO CONSULT CHAT ROOM</h3>
-                    <h6>Connect with Junior Doctor before final consult</h6>
-                  </div>
-                  <div className={classes.cardBottomActons}>
-                    <AphButton
-                      onClick={() => {
-                        if (
-                          appointmentState === APPOINTMENT_STATE.AWAITING_RESCHEDULE ||
-                          isConsultStarted
-                        ) {
-                          window.location.href = clientRoutes.chatRoom(appointmentId, doctorId);
-                        } else {
-                          isConsultStarted
-                            ? (window.location.href = clientRoutes.chatRoom(
-                                appointmentId,
-                                doctorId
-                              ))
-                            : addConsultToQueue({
-                                variables: {
+                    <div className={classes.consultChat}>
+                      <h3>GO TO CONSULT CHAT ROOM</h3>
+                      <h6>Connect with Junior Doctor before final consult</h6>
+                    </div>
+                    <div className={classes.cardBottomActons}>
+                      <AphButton
+                        onClick={() => {
+                          if (
+                            appointmentState === APPOINTMENT_STATE.AWAITING_RESCHEDULE ||
+                            isConsultStarted
+                          ) {
+                            window.location.href = clientRoutes.chatRoom(appointmentId, doctorId);
+                          } else {
+                            isConsultStarted
+                              ? (window.location.href = clientRoutes.chatRoom(
                                   appointmentId,
-                                },
-                              })
-                                .then((res) => {
-                                  window.location.href = clientRoutes.chatRoom(
+                                  doctorId
+                                ))
+                              : addConsultToQueue({
+                                  variables: {
                                     appointmentId,
-                                    doctorId
-                                  );
+                                  },
                                 })
-                                .catch((e: ApolloError) => {
-                                  alert(e);
-                                });
-                        }
-                      }}
-                    >
-                      {appointmentDetails.isFollowUp === 'false'
-                        ? showAppointmentAction(appointmentState, status, isConsultStarted)
-                        : 'SCHEDULE FOLLOWUP'}
-                    </AphButton>
-                    {status === STATUS.COMPLETED ? (
-                      <div className={classes.noteText}>
-                        You can chat with the doctor for {comparingDays()}
-                      </div>
-                    ) : (
-                      ''
-                    )}
+                                  .then((res) => {
+                                    window.location.href = clientRoutes.chatRoom(
+                                      appointmentId,
+                                      doctorId
+                                    );
+                                  })
+                                  .catch((e: ApolloError) => {
+                                    alert(e);
+                                  });
+                          }
+                        }}
+                      >
+                        {appointmentDetails.isFollowUp === 'false'
+                          ? showAppointmentAction(appointmentState, status, isConsultStarted)
+                          : 'SCHEDULE FOLLOWUP'}
+                      </AphButton>
+                      {status === STATUS.COMPLETED ? (
+                        <div className={classes.noteText}>
+                          You can chat with the doctor for {comparingDays()}
+                        </div>
+                      ) : (
+                        ''
+                      )}
+                    </div>
                   </div>
-                </div>
-              </Grid>
-            );
+                </Grid>
+              );
+            }
           })}
         </Grid>
       </div>

@@ -527,15 +527,18 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
       setIsLoading(false);
       localStorage.setItem('consultBookDetails', '');
       const eventData = {
-        category: doctorInfo.doctorType,
+        category: doctorInfo ? doctorInfo.doctorType : '',
         consultDateTime: appointmentDateTime,
         consultId: id,
         consultMode: appointmentType,
         displayId: displayId,
-        doctorName: doctorInfo.fullName,
-        hospitalName: doctorInfo.doctorHospital[0].facility.name,
+        doctorName: doctorInfo ? doctorInfo.fullName : '',
+        hospitalName:
+          doctorInfo && doctorInfo.doctorHospital && doctorInfo.doctorHospital[0]
+            ? doctorInfo.doctorHospital[0].facility.name
+            : '',
         patientGender: currentPatient && currentPatient.gender,
-        specialisation: doctorInfo.specialty.name,
+        specialisation: doctorInfo && doctorInfo.specialty ? doctorInfo.specialty.name : '',
         relation: currentPatient && currentPatient.relation,
       };
       consultationBookTracking(eventData);
