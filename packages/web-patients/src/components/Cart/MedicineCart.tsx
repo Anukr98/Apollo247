@@ -1641,7 +1641,7 @@ export const MedicineCart: React.FC = (props) => {
                   fullWidth
                   disabled={
                     (!nonCartFlow
-                      ? !cartTat && deliveryTime === ''
+                      ? (!cartTat && deliveryTime === '') || (cartItems && cartItems.length === 0)
                       : !deliveryAddressId ||
                         (deliveryAddressId && deliveryAddressId.length === 0)) ||
                     !isPaymentButtonEnable ||
@@ -1649,7 +1649,7 @@ export const MedicineCart: React.FC = (props) => {
                   }
                   className={
                     (!nonCartFlow
-                      ? !cartTat && deliveryTime === ''
+                      ? (!cartTat && deliveryTime === '') || (cartItems && cartItems.length === 0)
                       : !deliveryAddressId ||
                         (deliveryAddressId && deliveryAddressId.length === 0)) ||
                     !isPaymentButtonEnable ||
