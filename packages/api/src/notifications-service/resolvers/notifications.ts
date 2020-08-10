@@ -2401,64 +2401,73 @@ const sendDailyAppointmentSummary: Resolver<
   string
 > = async (parent, args, { doctorsDb, consultsDb }) => {
   const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
-  const doctors = await doctorRepo.getAllDoctors('0', args.docLimit, args.docOffset);
+  //const doctors = await doctorRepo.getAllDoctors('0', args.docLimit, args.docOffset);
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
+  const allAppts = await appointmentRepo.getTodaysAppointments(new Date());
+  console.log(allAppts, 'all appts');
   const countOfNotifications = await new Promise<Number>(async (resolve, reject) => {
     let doctorsCount = 0;
-    doctors.forEach(async (doctor, index, array) => {
-      const appointments = await appointmentRepo.getDoctorAppointments(
-        doctor.id,
-        new Date(),
-        new Date()
-      );
-      let onlineAppointments = 0;
-      let physicalAppointments = 0;
-      appointments.forEach((appointment) => {
-        if (appointment.status != STATUS.COMPLETED) {
-          if (appointment.appointmentType == APPOINTMENT_TYPE.PHYSICAL) {
-            physicalAppointments++;
-          } else if (appointment.appointmentType == APPOINTMENT_TYPE.ONLINE) {
-            onlineAppointments++;
-          }
+    let prevDoc = allAppts.length > 0 ? allAppts[0].doctorId : '';
+    let onlineAppointments = 0;
+    let physicalAppointments = 0;
+    if (allAppts.length == 0) {
+      resolve(doctorsCount);
+    }
+    allAppts.forEach(async (appointment, index, array) => {
+      if (prevDoc != appointment.doctorId || index + 1 == array.length) {
+        const doctorDetails = await doctorRepo.findById(prevDoc);
+        if (doctorDetails) {
+          const totalAppointments = onlineAppointments + physicalAppointments;
+          //if (totalAppointments > 0) {
+          doctorsCount++;
+          const whatsAppLink = process.env.WHATSAPP_LINK_BOOK_APOINTMENT
+            ? process.env.WHATSAPP_LINK_BOOK_APOINTMENT
+            : '';
+          let messageBody = ApiConstants.DAILY_APPOINTMENT_SUMMARY.replace(
+            '{0}',
+            doctorDetails.firstName
+          ).replace('{1}', totalAppointments.toString());
+          const onlineAppointmentsText =
+            onlineAppointments > 0
+              ? ApiConstants.ONLINE_APPOINTMENTS.replace('{0}', onlineAppointments.toString())
+              : '';
+          const physicalAppointmentsText =
+            physicalAppointments > 0
+              ? ApiConstants.PHYSICAL_APPOINTMENTS.replace('{0}', physicalAppointments.toString())
+              : '';
+          messageBody += onlineAppointmentsText + physicalAppointmentsText;
+          sendBrowserNotitication(doctorDetails.id, messageBody);
+
+          sendNotificationSMS(doctorDetails.mobileNumber, messageBody);
+          const todaysDate = format(addMinutes(new Date(), +330), 'do LLLL');
+          const templateData: string[] = [
+            todaysDate + ' as of 8 AM',
+            whatsAppLink,
+            totalAppointments.toString(),
+          ];
+
+          sendDoctorNotificationWhatsapp(
+            ApiConstants.WHATSAPP_DOC_SUMMARY,
+            doctorDetails.mobileNumber,
+            templateData
+          );
+          onlineAppointments = 0;
+          physicalAppointments = 0;
+          prevDoc = appointment.doctorId;
+          //}
         }
-      });
-
-      const totalAppointments = onlineAppointments + physicalAppointments;
-
-      if (totalAppointments > 0) {
-        doctorsCount++;
-        const whatsAppLink = process.env.WHATSAPP_LINK_BOOK_APOINTMENT
-          ? process.env.WHATSAPP_LINK_BOOK_APOINTMENT
-          : '';
-        let messageBody = ApiConstants.DAILY_APPOINTMENT_SUMMARY.replace(
-          '{0}',
-          doctor.firstName
-        ).replace('{1}', totalAppointments.toString());
-        const onlineAppointmentsText =
-          onlineAppointments > 0
-            ? ApiConstants.ONLINE_APPOINTMENTS.replace('{0}', onlineAppointments.toString())
-            : '';
-        const physicalAppointmentsText =
-          physicalAppointments > 0
-            ? ApiConstants.PHYSICAL_APPOINTMENTS.replace('{0}', physicalAppointments.toString())
-            : '';
-        messageBody += onlineAppointmentsText + physicalAppointmentsText;
-        sendBrowserNotitication(doctor.id, messageBody);
-
-        sendNotificationSMS(doctor.mobileNumber, messageBody);
-        const todaysDate = format(addMinutes(new Date(), +330), 'do LLLL');
-        const templateData: string[] = [
-          todaysDate + ' as of 8 AM',
-          whatsAppLink,
-          totalAppointments.toString(),
-        ];
-
-        sendDoctorNotificationWhatsapp(
-          ApiConstants.WHATSAPP_DOC_SUMMARY,
-          doctor.mobileNumber,
-          templateData
-        );
       }
+      if (appointment.status != STATUS.COMPLETED) {
+        if (appointment.appointmentType == APPOINTMENT_TYPE.PHYSICAL) {
+          physicalAppointments++;
+        } else if (appointment.appointmentType == APPOINTMENT_TYPE.ONLINE) {
+          onlineAppointments++;
+        }
+      }
+      //appointments.forEach((appointment) => {
+
+      //});
+
       if (index + 1 === array.length) {
         resolve(doctorsCount);
       }
