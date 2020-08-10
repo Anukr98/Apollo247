@@ -55,7 +55,7 @@ const useStyles = makeStyles((theme: Theme) => {
     doctorListingPage: {
       backgroundColor: '#f7f8f5',
       [theme.breakpoints.down('xs')]: {
-        marginTop: 96,
+        marginTop: 80,
       },
     },
     pageTopHeader: {
@@ -168,12 +168,12 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 500,
       [theme.breakpoints.down('xs')]: {
         backgroundColor: '#fff',
-        boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
+        // boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
       },
     },
     preServiceType: {
       backgroundColor: '#f7f8f5',
-      borderRadius: 5,
+      borderRadius: 10,
       padding: 16,
       color: '#02475b',
       fontSize: 14,
@@ -220,8 +220,8 @@ const useStyles = makeStyles((theme: Theme) => {
       display: 'flex',
       width: '100%',
       '& button': {
-        backgroundColor: '#fff',
-        color: '#fcb716',
+        backgroundColor: '#fcb716',
+        color: '#fff',
         border: '1px solid #fcb716',
         minWidth: 105,
         '&:hover': {
@@ -254,11 +254,10 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     sliderSection: {
-      paddingBottom: 22,
+      padding: '0 0 20px',
       [theme.breakpoints.down('xs')]: {
-        '&:last-child': {
-          paddingBottom: 70,
-        },
+        padding: '0 20px 20px',
+        overflowX: 'hidden',
       },
     },
     sectionTitle: {
@@ -270,9 +269,6 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingBottom: 8,
       marginBottom: 10,
       display: 'flex',
-      [theme.breakpoints.down('xs')]: {
-        marginLeft: 20,
-      },
     },
     viewAllLink: {
       marginLeft: 'auto',

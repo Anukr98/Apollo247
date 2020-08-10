@@ -84,8 +84,10 @@ const useStyles = makeStyles((theme: Theme) => {
       '& img': {
         verticalAlign: 'middle',
       },
-      '& >span': {
+      '& >a': {
         position: 'relative',
+        padding: 0,
+        display: 'block',
       },
       '&:focus': {
         outline: 'none',
@@ -364,21 +366,22 @@ export const Navigation: React.FC<NavigationProps> = (props) => {
       )} */}
       <div
         id="cartId"
-        onClick={() => setIsCartPopoverOpen(!isCartPopoverOpen)}
-        onKeyPress={() => setIsCartPopoverOpen(true)}
-        ref={cartPopoverRef}
-        tabIndex={0}
-        className={`${classes.notificationBtn} ${
-          currentPath === clientRoutes.medicinesCart() ? classes.menuItemActive : ''
-        }  ${currentPath === clientRoutes.testsCart() ? classes.menuItemActive : ''}`}
-        title={'cart'}
+        className={classes.notificationBtn}
+        // onClick={() => setIsCartPopoverOpen(!isCartPopoverOpen)}
+        // onKeyPress={() => setIsCartPopoverOpen(true)}
+        // ref={cartPopoverRef}
+        // tabIndex={0}
+        //  ${
+        //   currentPath === clientRoutes.medicinesCart() ? classes.menuItemActive : ''
+        // }  ${currentPath === clientRoutes.testsCart() ? classes.menuItemActive : ''}`}
+        // title={'cart'}
       >
-        <span>
+        <Link to={clientRoutes.medicinesCart()}>
           <img src={require('images/ic_cart.svg')} alt="Cart" title={'cart'} />
           <span className={classes.itemCount}>
             {cartItems.length + diagnosticsCartItems.length || 0}
           </span>
-        </span>
+        </Link>
       </div>
       {/* <div className={`${classes.notificationBtn}`}>
         <img src={require('images/ic_notification.svg')} alt="Notifications" />
