@@ -65,6 +65,7 @@ import { NavigationScreenProp, NavigationRoute } from 'react-navigation';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { getLatestMedicineOrder_getLatestMedicineOrder_medicineOrderDetails } from '@aph/mobile-patients/src/graphql/types/getLatestMedicineOrder';
 import { Tagalys } from '@aph/mobile-patients/src/helpers/Tagalys';
+import { getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails } from '../graphql/types/getMedicineOrderOMSDetailsWithAddress';
 
 const googleApiKey = AppConfig.Configuration.GOOGLE_API_KEY;
 let onInstallConversionDataCanceller: any;
@@ -659,7 +660,7 @@ export const extractUrlFromString = (text: string): string | undefined => {
 
 export const reOrderMedicines = async (
   order:
-    | getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails
+    | getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails
     | getLatestMedicineOrder_getLatestMedicineOrder_medicineOrderDetails,
   currentPatient: any,
   source: ReorderMedicines['source']
