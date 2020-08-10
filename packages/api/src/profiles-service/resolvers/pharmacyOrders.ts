@@ -6,6 +6,7 @@ import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import _ from 'lodash';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
+import { MedicineOrderRefunds } from 'profiles-service/entities';
 
 export const pharmaOrdersTypeDefs = gql`
   type PharmacyOrderResult {
@@ -41,26 +42,33 @@ export const pharmaOrdersTypeDefs = gql`
     amountPaid: Float
     paymentDateTime: DateTime
     healthCreditsRedeemed: Float
+    refundAmount: Float
+    medicineOrderRefunds: [medicineOrderRefunds]
   }
+
+  type medicineOrderRefunds {
+    refundId: String
+    refundAmount: Float
+    txnId: String
+    createdDate: DateTime
+    refundStatus: REFUND_STATUS
+  }
+
   extend type Query {
-    pharmacyOrders(
-      patientId: String
-      pageNo: Int
-      pageSize: Int
-    ): PharmacyOrderResult
+    pharmacyOrders(patientId: String, pageNo: Int, pageSize: Int): PharmacyOrderResult
   }
 `;
 
 type PharmacyOrderResult = {
-  meta: PaginateMetaDataPharmacyOrders,
+  meta: PaginateMetaDataPharmacyOrders;
   pharmaOrders: Partial<PharmaResponse[]>;
 };
 
 type PaginateMetaDataPharmacyOrders = {
-  total: number | null,
-  pageSize: number | null,
-  pageNo: number | null
-}
+  total: number | null;
+  pageSize: number | null;
+  pageNo: number | null;
+};
 
 type PharmaResponse = {
   id: string;
@@ -73,6 +81,7 @@ type PharmaResponse = {
   orderType: string;
   quoteDateTime: Date;
   orderDateTime: Date;
+  refundAmount: number;
   medicineOrderPayments: PharmacyPayment[];
 };
 type PharmacyPayment = {
@@ -84,11 +93,12 @@ type PharmacyPayment = {
   amountPaid: number;
   paymentDateTime: Date;
   healthCreditsRedeemed: number;
+  medicineOrderRefunds: MedicineOrderRefunds[];
 };
 
 const pharmacyOrders: Resolver<
   null,
-  { patientId: string, pageNo?: number, pageSize?: number },
+  { patientId: string; pageNo?: number; pageSize?: number },
   ProfilesServiceContext,
   PharmacyOrderResult
 > = async (parent, args, { profilesDb }) => {
@@ -106,32 +116,31 @@ const pharmacyOrders: Resolver<
 
   // paginated vars
   const { pageNo, pageSize = 10 } = args; //default pageSize = 10
-  const paginateParams: { take?: number, skip?: number } = {};
+  const paginateParams: { take?: number; skip?: number } = {};
 
   //pageNo should be greater than 0
   if (pageNo === 0) {
     throw new AphError(AphErrorMessages.PAGINATION_PARAMS_PAGENO_ERROR, undefined, {});
   }
   if (pageNo) {
-    paginateParams.take = pageSize
-    paginateParams.skip = (pageSize * pageNo) - pageSize //bcoz pageNo. starts from 1 not 0.
+    paginateParams.take = pageSize;
+    paginateParams.skip = pageSize * pageNo - pageSize; //bcoz pageNo. starts from 1 not 0.
   }
 
-  const [pharmaOrders, totalCount]: any = await Promise.all(medicineOrderRepo.getMedicineOrdersListWithPayments(
-    primaryPatientIds,
-    paginateParams
-  ));
+  const [pharmaOrders, totalCount]: any = await Promise.all(
+    medicineOrderRepo.getMedicineOrdersListWithPayments(primaryPatientIds, paginateParams)
+  );
 
   const metaResponse = {
     pageNo: pageNo || null,
     pageSize: (Number.isInteger(pageNo) && pageSize) || null,
-    total: (Number.isInteger(pageNo) && totalCount) || null
-  }
+    total: (Number.isInteger(pageNo) && totalCount) || null,
+  };
 
   return {
     pharmaOrders: pharmaOrders,
-    meta: metaResponse
-  }
+    meta: metaResponse,
+  };
   /**
    * keeping it for ref as below filters used in getMedicineOrdersListWithPayments
    * once verified abv fn remove below snippet
