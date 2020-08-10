@@ -2406,12 +2406,13 @@ const sendDailyAppointmentSummary: Resolver<
   const allAppts = await appointmentRepo.getTodaysAppointments(new Date());
   const countOfNotifications = await new Promise<Number>(async (resolve, reject) => {
     let doctorsCount = 0;
-    let prevDoc = allAppts.length > 0 ? allAppts[0].doctorId : '';
-    let onlineAppointments = 0;
-    let physicalAppointments = 0;
     if (allAppts.length == 0) {
       resolve(doctorsCount);
     }
+    let prevDoc = allAppts.length > 0 ? allAppts[0].doctorId : '';
+    let onlineAppointments = 0;
+    let physicalAppointments = 0;
+
     allAppts.forEach(async (appointment, index, array) => {
       if (prevDoc != appointment.doctorId || index + 1 == array.length) {
         const doctorDetails = await doctorRepo.findById(prevDoc);
