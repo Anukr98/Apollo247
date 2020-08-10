@@ -169,6 +169,11 @@ export const medicineDescription = (
     .filter((i) => i !== null);
   const unit: string =
     (medUnitFormatArray.find((i) => i.key === item.medicineUnit) || {}).value || 'others';
+  if (item.medicineCustomDetails) {
+    return `${item.medicineCustomDetails}${
+      item.includeGenericNameInPrescription ? `\nGeneric Name: ${item.genericName}` : ''
+    }`;
+  }
   return `${type + ' '}${
     customDosage.length > 0
       ? `${customDosage.join(' ' + unit + ' - ') + ' ' + unit + ' '}${
@@ -253,7 +258,9 @@ export const medicineDescription = (
     item.routeOfAdministration
       ? `\nTo be taken: ${nameFormater(item.routeOfAdministration, 'title')}`
       : ''
-  }${item.medicineInstructions ? '\nInstructions: ' + item.medicineInstructions : ''}`;
+  }${item.medicineInstructions ? '\nInstructions: ' + item.medicineInstructions : ''}${
+    item.includeGenericNameInPrescription ? `\nGeneric Name: ${item.genericName}` : ''
+  }`;
 };
 
 export const formatInt = (value: string) => {

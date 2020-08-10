@@ -187,6 +187,9 @@ export interface modifyCaseSheet_modifyCaseSheet_medicinePrescription {
   medicineConsumptionDurationUnit: MEDICINE_CONSUMPTION_DURATION | null;
   routeOfAdministration: ROUTE_OF_ADMINISTRATION | null;
   medicineCustomDosage: string | null;
+  medicineCustomDetails: string | null;
+  includeGenericNameInPrescription: boolean | null;
+  genericName: string | null;
 }
 
 export interface modifyCaseSheet_modifyCaseSheet_removedMedicinePrescription {
@@ -206,6 +209,9 @@ export interface modifyCaseSheet_modifyCaseSheet_removedMedicinePrescription {
   medicineConsumptionDurationUnit: MEDICINE_CONSUMPTION_DURATION | null;
   routeOfAdministration: ROUTE_OF_ADMINISTRATION | null;
   medicineCustomDosage: string | null;
+  medicineCustomDetails: string | null;
+  includeGenericNameInPrescription: boolean | null;
+  genericName: string | null;
 }
 
 export interface modifyCaseSheet_modifyCaseSheet_otherInstructions {

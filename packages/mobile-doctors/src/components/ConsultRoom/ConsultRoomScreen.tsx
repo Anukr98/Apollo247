@@ -978,6 +978,9 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                     medicineUnit: i.medicineUnit,
                     routeOfAdministration: i.routeOfAdministration,
                     medicineCustomDosage: i.medicineCustomDosage || '',
+                    medicineCustomDetails: i.medicineCustomDetails || null,
+                    includeGenericNameInPrescription: i.includeGenericNameInPrescription,
+                    genericName: i.genericName,
                   };
                 } else {
                   return '';
@@ -1005,6 +1008,9 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                     medicineUnit: i.medicineUnit,
                     routeOfAdministration: i.routeOfAdministration,
                     medicineCustomDosage: i.medicineCustomDosage || '',
+                    medicineCustomDetails: i.medicineCustomDetails || null,
+                    includeGenericNameInPrescription: i.includeGenericNameInPrescription,
+                    genericName: i.genericName,
                   };
                 } else {
                   return '';
