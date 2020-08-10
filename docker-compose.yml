@@ -116,7 +116,7 @@ services:
     image: node:12.6.0
     env_file: .env
     working_dir: /apollo-hospitals/packages/api
-    command: bash -c "npm run start:consults-service"
+    command: bash -c "npm run start:consults-service:migration && npm run start:consults-service"
     volumes:
       - ./:/apollo-hospitals:cached
     depends_on:
