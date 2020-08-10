@@ -8,6 +8,7 @@ import { useMutation } from 'react-apollo-hooks';
 import { addPatientFeedback, addPatientFeedbackVariables } from 'graphql/types/addPatientFeedback';
 import { FEEDBACKTYPE } from 'graphql/types/globalTypes';
 import { Alerts } from 'components/Alerts/Alerts';
+import { useAllCurrentPatients } from 'hooks/authHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -158,12 +159,7 @@ export const OrderFeedback: React.FC<Props> = (props) => {
   const {
     setIsPopoverOpen,
     setShowDeliveryRateBtn,
-    orderDetailsData: {
-      orderAutoId,
-      orderTat,
-      id: orderId,
-      patient: { id },
-    },
+    orderDetailsData: { orderAutoId, orderTat, id: orderId },
   } = props;
   const [feedbackSubmitted, setFeedbackSubmitted] = React.useState<boolean>(false);
   const [selected, setSelected] = React.useState<number | null>(null);
@@ -181,13 +177,14 @@ export const OrderFeedback: React.FC<Props> = (props) => {
       label: 'Great',
     },
   ];
+  const { currentPatient } = useAllCurrentPatients();
 
   const addPatientFeedbackMutation = useMutation<addPatientFeedback, addPatientFeedbackVariables>(
     ADD_PATIENT_FEEDBACK,
     {
       variables: {
         patientFeedbackInput: {
-          patientId: id,
+          patientId: currentPatient && currentPatient.id,
           rating: rating,
           thankyouNote: reason,
           reason: reason,
