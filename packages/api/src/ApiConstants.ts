@@ -441,6 +441,12 @@ export enum ApiConstants {
   NEW_VERSION_PRESCRIPTION_SENT_EVENT_NAME = 'New version of the prescription was sent',
   JD_CASE_SHEET_COMPLETED_EVENT_NAME = 'JD case sheet submitted completed',
   JD_CONSULTATION_STARTED_EVENT_NAME = 'JD consultation Started',
+
+  WHATSAPP_SD_CONSULT_REMINDER_15 = 'inf_sd_consult_reminder_15_min',
+  WHATSAPP_SD_CHAT_NOTIFICATION_ID = 'inf_sd_chat_notification',
+  WHATSAPP_SD_OTP = 'inf_sd_otp_message',
+  WHATSAPP_DOCTOR_BOOKING_CONFIRMATION = 'inf_doctor_consult_booking_confirmation',
+  WHATSAPP_SD_CONSULT_DELAY = 'inf_sd_consult_delay_1',
 }
 
 export enum PATIENT_REPO_RELATIONS {
