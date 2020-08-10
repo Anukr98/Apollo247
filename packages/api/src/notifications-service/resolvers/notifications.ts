@@ -888,10 +888,11 @@ export async function sendNotification(
 
     if (pushNotificationInput.notificationType == NotificationType.BOOK_APPOINTMENT_WEB) {
       if (process.env.SMS_WEBLINK_APPOINTMENT_CHATROOM) {
-        const chatroom_sms_link = process.env.SMS_WEBLINK_APPOINTMENT_CHATROOM.replace(
+        let chatroom_sms_link = process.env.SMS_WEBLINK_APPOINTMENT_CHATROOM.replace(
           '{0}',
           appointment.id.toString()
         );
+        chatroom_sms_link = chatroom_sms_link.replace('{1}', appointment.doctorId.toString())
         smsLink = smsLink.replace('{5}', chatroom_sms_link);
       } else {
         throw new AphError(AphErrorMessages.SMS_WEBLINK_APPOINTMENT_CHATROOM_MISSING);
