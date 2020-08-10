@@ -51,6 +51,7 @@ const useStyles = makeStyles((theme: Theme) => {
 
 interface ShopByCategoryProps {
   data: MedicinePageSection[];
+  sectionName: string;
 }
 
 export const ShopByCategory: React.FC<ShopByCategoryProps> = (props) => {
@@ -100,6 +101,8 @@ export const ShopByCategory: React.FC<ShopByCategoryProps> = (props) => {
     url: process.env.PHARMACY_MED_IMAGES_BASE_URL,
   };
 
+  const searchText = props.sectionName.replace(/_/g, '-');
+
   return (
     <div className={classes.root}>
       <Slider {...sliderSettings}>
@@ -109,7 +112,7 @@ export const ShopByCategory: React.FC<ShopByCategoryProps> = (props) => {
             formattedTitle = _replace(formattedTitle, ' ', '-');
             return (
               <div key={category.category_id} className={classes.card}>
-                <Link to={clientRoutes.searchByMedicine('shop-by-category', category.url_key)}>
+                <Link to={clientRoutes.searchByMedicine(searchText, category.url_key)}>
                   <div className={classes.cardWrap}>
                     <div className={classes.cardIcon}>
                       <img src={`${apiDetails.url}${category.image_url}`} alt="" />

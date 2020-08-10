@@ -63,7 +63,7 @@ export enum ApiConstants {
 
   //medicine order out for delivery
   ORDER_PLACED_TITLE = 'Medicine order is placed',
-  ORDER_PLACED_BODY = 'Hi {0}, we have received your order {1}. For any support, please speak with our customer care executives on the official WhatsApp channel (during business hours 9 AM - 6 PM) https://bit.ly/apollo247medicines',
+  ORDER_PLACED_BODY = 'Hi {0}, we have received your order {1}.\nChecking your blood oxygen level is helpful. Pulse Oximeter is available Now. Click here https://tinyurl.com/y6jwn7pw.\nFor any support, please speak with our customer care executives on the official WhatsApp channel (during business hours 8:30 AM - 8:30 PM) https://bit.ly/apollo247medicines',
 
   // medicine order out for delivery
   UPLOAD_PRESCRIPTION_TITLE = 'Upload Prescription medicine order placed ',
@@ -406,6 +406,10 @@ export enum ApiConstants {
   REDIS_PWD = 'FgFyZpibcBewC6U7AZYDq1DppMW02mi+koiEa63gDF4=',
   REDIS_IMAGE_URL = '/catalog/product/',
 
+  PHARMA_DISCOUNT = 10,
+  PL_DISCOUNT = 15,
+  FMCG_DISCOUNT = 5,
+
   //prescriptions uploaded through medicine, diagnostic orders or from OLD APPS
   PRESCRIPTION_UPLOADED_BY_PATIENT = 'Prescription uploaded by Patient',
   ALERT_STORE_REMARKS = 'Customer Name : {name} , Mobile : {mobile} will be reaching Store in 10 mins to pickup order {orderNo} - Please handover Medicines.',
@@ -437,6 +441,12 @@ export enum ApiConstants {
   NEW_VERSION_PRESCRIPTION_SENT_EVENT_NAME = 'New version of the prescription was sent',
   JD_CASE_SHEET_COMPLETED_EVENT_NAME = 'JD case sheet submitted completed',
   JD_CONSULTATION_STARTED_EVENT_NAME = 'JD consultation Started',
+
+  WHATSAPP_SD_CONSULT_REMINDER_15 = 'inf_sd_consult_reminder_15_min',
+  WHATSAPP_SD_CHAT_NOTIFICATION_ID = 'inf_sd_chat_notification',
+  WHATSAPP_SD_OTP = 'inf_sd_otp_message',
+  WHATSAPP_DOCTOR_BOOKING_CONFIRMATION = 'inf_doctor_consult_booking_confirmation',
+  WHATSAPP_SD_CONSULT_DELAY = 'inf_sd_consult_delay_1',
 }
 
 export enum PATIENT_REPO_RELATIONS {

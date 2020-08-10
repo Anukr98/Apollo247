@@ -104,6 +104,7 @@ import {
   GetPatientFeedbackVariables,
 } from '@aph/mobile-patients/src/graphql/types/GetPatientFeedback';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import { RefundDetails } from '@aph/mobile-patients/src/components/RefundDetails';
 
 const styles = StyleSheet.create({
   headerShadowContainer: {
@@ -208,6 +209,11 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     {}) as getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails;
   const orderStatusList = ((!loading && order && order.medicineOrdersStatus) || []).filter(
     (item) => item!.hideStatus
+  );
+  const paymentDetails = (!loading && order && order.medicineOrderPayments) || [];
+  const RefundTypes = ['REFUND_REQUEST_RAISED', 'REFUND_SUCCESSFUL'];
+  const refundDetails = ((!loading && order && order.medicineOrderRefunds) || []).filter(
+    (item) => RefundTypes.indexOf(item.refundStatus) != -1
   );
   const offlineOrderBillNumber = loading
     ? 0
@@ -968,6 +974,13 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
             );
           })}
         </View>
+        {refundDetails && refundDetails.length != 0 && (
+          <RefundDetails
+            refunds={refundDetails}
+            paymentDetails={paymentDetails ? paymentDetails : []}
+            navigaitonProps={props.navigation}
+          />
+        )}
         {isDelivered ? (
           <View
             style={{

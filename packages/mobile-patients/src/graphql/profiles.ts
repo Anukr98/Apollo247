@@ -1621,6 +1621,13 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS = gql`
           healthCreditsRedeemed
           paymentMode
         }
+        medicineOrderRefunds {
+          refundAmount
+          refundStatus
+          refundId
+          orderId
+          createdDate
+        }
         medicineOrderShipments {
           id
           siteId

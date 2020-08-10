@@ -82,22 +82,6 @@ export const DropdownGreen: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_dropdown_green.png')} />
 );
 
-export const ArrowFull: React.FC<IconProps> = (props) => (
-  <IconBase {...props} source={require('./icons/ic_arrowFull.png')} />
-);
-
-export const ArrowStep1: React.FC<IconProps> = (props) => (
-  <IconBase {...props} source={require('./icons/ic_arrowStep1.png')} />
-);
-
-export const ArrowStep2: React.FC<IconProps> = (props) => (
-  <IconBase {...props} source={require('./icons/ic_arrowStep2.png')} />
-);
-
-export const ArrowStep3: React.FC<IconProps> = (props) => (
-  <IconBase {...props} source={require('./icons/ic_arrowStep3.png')} />
-);
-
 export const Remove: React.FC<IconProps> = (props) => (
   <IconBase size={'sm'} {...props} source={require('./icons/ic_cross.png')} />
 );

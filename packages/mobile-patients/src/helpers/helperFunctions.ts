@@ -955,7 +955,8 @@ export const postwebEngageAddToCartEvent = (
     special_price: MedicineProduct['special_price'];
   },
   source: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['Source'],
-  section?: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['Section']
+  section?: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['Section'],
+  sectionName?: string
 ) => {
   const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART] = {
     'product name': name,
@@ -971,6 +972,7 @@ export const postwebEngageAddToCartEvent = (
     Section: section ? section : '',
     af_revenue: Number(special_price) || price,
     af_currency: 'INR',
+    'Section Name': sectionName || '',
   };
   postWebEngageEvent(WebEngageEventName.PHARMACY_ADD_TO_CART, eventAttributes);
 };

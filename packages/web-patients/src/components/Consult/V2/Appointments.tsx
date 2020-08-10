@@ -552,7 +552,7 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
 
   const handlePaymentModalClose = () => {
     setIsConfirmedPopoverOpen(false);
-    props && props.history && props.history.push(clientRoutes.appointments());
+    window.location.href = clientRoutes.appointments();
   };
 
   const upcomingAppointment: AppointmentsType[] = [];
@@ -898,10 +898,6 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
       {successApptId && (
         <Modal
           open={isConfirmedPopoverOpen}
-          onClose={() => {
-            setIsConfirmedPopoverOpen(false);
-            // history.push(clientRoutes.appointments());
-          }}
           className={classes.modal}
           disableBackdropClick
           disableEscapeKeyDown

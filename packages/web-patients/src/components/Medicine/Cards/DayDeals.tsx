@@ -66,6 +66,7 @@ const useStyles = makeStyles((theme: Theme) => {
 
 interface DayDealsProps {
   data: DealsOfTheDaySection[];
+  sectionName: string;
 }
 
 export const DayDeals: React.FC<DayDealsProps> = (props) => {
@@ -115,6 +116,8 @@ export const DayDeals: React.FC<DayDealsProps> = (props) => {
     url: process.env.PHARMACY_MED_IMAGES_BASE_URL,
   };
 
+  const searchText = props.sectionName.replace(/_/g, '-');
+
   return (
     <div className={classes.root}>
       <Slider {...sliderSettings}>
@@ -123,7 +126,7 @@ export const DayDeals: React.FC<DayDealsProps> = (props) => {
             <div key={index} className={classes.card}>
               <Link
                 className={classes.cardLink}
-                to={clientRoutes.searchByMedicine('deals-of-the-day', deal.url_key)}
+                to={clientRoutes.searchByMedicine(searchText, deal.url_key)}
               >
                 <div className={classes.cardWrap}>
                   <div className={classes.cardIcon}>
