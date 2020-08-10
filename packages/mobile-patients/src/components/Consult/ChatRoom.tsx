@@ -2249,6 +2249,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         !appointmentData.isJdQuestionsComplete &&
         jdCount > 0 &&
         isJdAllowed === true &&
+        !!(textChange && !jrDoctorJoined) &&
         status !== STATUS.COMPLETED
       ) {
         // console.log('result.length ', result);
@@ -5908,11 +5909,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const uploadDocument = (resource: any, base66: any, type: any) => {
-    console.log('upload base66', base66);
-    console.log('upload fileType', type);
-    console.log('chanel', channel);
-    console.log('resource', resource);
-    // console.log('mimeType', mimeType(resource[0].title + '.' + type));
     CommonLogEvent(AppRoutes.ChatRoom, 'Upload document');
     resource.map((item: any) => {
       if (
@@ -5921,8 +5917,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         item.fileType == 'pdf' ||
         item.fileType == 'png'
       ) {
-        // console.log('item', item.base64, item.fileType);
-        // console.log('resource item', item);
         const formattedDate = moment(new Date()).format('YYYY-MM-DD');
         const prescriptionFile: MediaPrescriptionFileProperties = {
           fileName: item.title + '.' + item.fileType,
@@ -5953,28 +5947,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             console.log('upload data', data);
             setLoading(false);
             const recordId = g(data.data!, 'uploadMediaDocument', 'recordId');
-            // if (fileUrl) {
-            //   console.log('api call data', fileUrl);
-            //   const text = {
-            //     id: patientId,
-            //     message: imageconsult,
-            //     fileType: (item.fileType || '').match(/\.(pdf)$/) ? 'pdf' : 'image',
-            //     url: fileUrl || '',
-            //     messageDate: new Date(),
-            //   };
-            //   pubnub.publish(
-            //     {
-            //       channel: channel,
-            //       message: text,
-            //       storeInHistory: true,
-            //       sendByPost: true,
-            //     },
-            //     (status, response) => {}
-            //   );
-            //   InsertMessageToDoctor('ImageUploaded');
-            //   KeepAwake.activate();
             if (recordId) {
-              // const prismFeildId = data.data!.uploadChatDocumentToPrism.fileId || '';
               getPrismUrls(client, patientId, [recordId])
                 .then((data: any) => {
                   console.log('api call data', data);
@@ -5998,7 +5971,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     (status, response) => {
                       if (status.statusCode == 200) {
                         HereNowPubnub('ImageUploaded');
-                        // InsertMessageToDoctor('ImageUploaded');
                       }
                     }
                   );
