@@ -661,6 +661,7 @@ export const MedicineCart: React.FC = (props) => {
     authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
     bulk_product_info_url: process.env.PHARMACY_MED_BULK_PRODUCT_INFO_URL,
     priceUpdateToken: process.env.PHARMACY_MED_DELIVERY_AUTH_TOKEN,
+    getInventoryUrl: process.env.PHARMACY_GET_STORE_INVENTORY,
   };
   useEffect(() => {
     if (params.orderStatus === 'failed') {
@@ -689,7 +690,7 @@ export const MedicineCart: React.FC = (props) => {
     });
     return await axios
       .post(
-        'https://online.apollopharmacy.org/TAT/Apollo/GetStoreInventory' || '',
+        apiDetails.getInventoryUrl || '',
         {
           shopId: shopId,
           itemDetails: productSKUs,
