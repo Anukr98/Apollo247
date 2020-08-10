@@ -1,5 +1,6 @@
 export interface ValidateCouponRequest {
   mobile: string;
+  email: string;
   billAmount: number;
   coupon: string;
   paymentType: string;
@@ -13,6 +14,24 @@ export interface ValidateCouponRequest {
     cost: number;
     rescheduling: boolean;
   }[];
+}
+
+export interface ValidateCouponRequestPharma {
+  mobile: string;
+  email: string;
+  billAmount: number;
+  coupon: string;
+  paymentType: string;
+  pinCode: string;
+  products: CouponProduct[];
+}
+
+export interface CouponProduct {
+  sku: number;
+  mrp: number;
+  specialPrice: number;
+  quantity: number;
+  totalCost: number;
 }
 
 export interface ValidateCouponResponse {
@@ -34,7 +53,8 @@ export interface ValidateCouponResponse {
       mrp: number;
       specialPrice: number;
       quantity: number;
-      totalCost: number;
+      onMrp: boolean;
+      discountAmt: number;
     }[];
     diagnostics: [];
     discount: number;
@@ -53,4 +73,16 @@ export interface AcceptCouponResponse {
   errorMsg: null | string;
   errorType: null | string;
   response: null | string;
+}
+
+export interface CouponsList {
+  errorCode: number;
+  errorMsg: string;
+  errorType: string;
+  response: CouponsListResponse[];
+}
+
+export interface CouponsListResponse {
+  coupon: string;
+  message: string;
 }
