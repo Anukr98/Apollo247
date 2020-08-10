@@ -20,7 +20,7 @@ import {
   CouponCategoryApplicable,
   OrderLineItems,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { g, postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
@@ -34,6 +34,7 @@ import {
 } from '../../graphql/types/validatePharmaCoupon';
 import { useAllCurrentPatients } from '../../hooks/authHooks';
 import { useUIElements } from '../UIElementsProvider';
+import { WebEngageEvents, WebEngageEventName } from '../../helpers/webEngageEvents';
 
 const styles = StyleSheet.create({
   bottonButtonContainer: {
@@ -165,6 +166,14 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
             g(data, 'validatePharmaCoupon', 'reasonForInvalidStatus') || 'Invalid Coupon Code'
           );
         }
+
+        const discountedTotals = g(data, 'validatePharmaCoupon', 'discountedTotals');
+        const eventAttributes: WebEngageEvents[WebEngageEventName.CART_COUPON_APPLIED] = {
+          'Coupon Code': coupon,
+          'Discounted amount': validityStatus ? discountedTotals!.productDiscount : 'Not Applicable',
+          'Customer ID': g(currentPatient, 'id'),
+        };
+        postWebEngageEvent(WebEngageEventName.CART_COUPON_APPLIED, eventAttributes);
       })
       .catch(() => {
         setCouponError('Sorry, unable to validate coupon right now.');
