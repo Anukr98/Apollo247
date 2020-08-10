@@ -60,8 +60,6 @@ import {
   doRequestAndAccessLocationModified,
   g,
   isValidSearch,
-  postAppsFlyerAddToCartEvent,
-  postwebEngageAddToCartEvent,
   postWebEngageEvent,
   addPharmaItemToCart,
   productsThumbnailUrl,
@@ -116,6 +114,7 @@ import {
   MedicineReOrderOverlay,
 } from '@aph/mobile-patients/src/components/Medicines/MedicineReOrderOverlay';
 import { getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails } from '@aph/mobile-patients/src/graphql/types/getMedicineOrderOMSDetails';
+import { AddToCartButtons } from './AddToCartButtons';
 
 const styles = StyleSheet.create({
   hiTextStyle: {
@@ -1328,6 +1327,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     price: number;
     specialPrice?: number;
     isAddedToCart: boolean;
+    numberOfItemsInCart: number;
+    addToCart: (action?: string) => void;
+    removeFromCart: () => void;
+    removeItemFromCart: () => void;
+    maxOrderQty: number;
     onAddOrRemoveCartItem: () => void;
     onPress: () => void;
     style?: ViewStyle;
@@ -1412,15 +1416,47 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           </View>
           <Spearator style={{ marginBottom: 7.5 }} />
           {renderDiscountedPrice()}
-          <Text
-            style={{
-              ...theme.viewStyles.text('B', 13, '#fc9916', 1, 24),
-              textAlign: 'center',
-            }}
-            onPress={data.onAddOrRemoveCartItem}
-          >
-            {data.isAddedToCart ? 'REMOVE' : 'ADD TO CART'}
-          </Text>
+          {
+            data.isAddedToCart ?
+            <AddToCartButtons
+              numberOfItemsInCart={data.numberOfItemsInCart}
+              maxOrderQty={data.maxOrderQty}
+              addToCart={data.addToCart}
+              removeItemFromCart={data.removeItemFromCart}
+              removeFromCart={data.removeFromCart}
+              isSolidContainer={false}
+              deleteIconStyle={{
+                resizeMode: 'contain',
+                width: 10,
+                height: 14,
+                paddingLeft: 10,
+                paddingRight: 10,
+              }}
+              minusIconStyle={{
+                resizeMode: 'contain',
+                width: 10,
+                height: 20,
+                paddingLeft: 10,
+                paddingRight: 10,
+              }}
+              plusIconStyle={{
+                resizeMode: 'contain',
+                width: 15,
+                height: 15,
+                paddingLeft: 10,
+                paddingRight: 10,
+              }}
+            /> : 
+            <Text
+              style={{
+                ...theme.viewStyles.text('B', 13, '#fc9916', 1, 24),
+                textAlign: 'center',
+              }}
+              onPress={data.onAddOrRemoveCartItem}
+            >
+              ADD TO CART
+            </Text>
+          }
         </View>
       </TouchableOpacity>
     );
@@ -1441,37 +1477,45 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       category_id,
     } = data.item;
 
-    const addToCart = () => {
-      addPharmaItemToCart(
-        {
-          id: sku,
-          mou: mou,
-          name: name,
-          price: price,
-          specialPrice: special_price
-            ? typeof special_price == 'string'
-              ? Number(special_price)
-              : special_price
-            : undefined,
-          prescriptionRequired: is_prescription_required == '1',
-          isMedicine: (type_id || '').toLowerCase() == 'pharma',
-          quantity: 1,
-          thumbnail,
-          isInStock: true,
-          maxOrderQty: MaxOrderQty,
-        },
-        pharmacyPincode!,
-        addCartItem,
-        globalLoading,
-        props.navigation,
-        currentPatient,
-        !!isPharmacyLocationServiceable,
-        { source: 'Pharmacy Home', section: title, categoryId: category_id }
-      );
-    };
-
     const removeFromCart = () => removeCartItem!(sku);
+    const itemInCart = cartItems.find((item) => item.id == sku);
     const foundMedicineInCart = !!cartItems.find((item) => item.id == sku);
+    const numberOfItemsInCart = foundMedicineInCart && itemInCart ? itemInCart.quantity : 0;
+
+    const removeItemFromCart = () => onUpdateCartItem(sku, numberOfItemsInCart-1);
+
+    const addToCart = () => {
+      if (numberOfItemsInCart) {
+        onUpdateCartItem(sku, numberOfItemsInCart+1);
+      } else {
+        addPharmaItemToCart(
+          {
+            id: sku,
+            mou: mou,
+            name: name,
+            price: price,
+            specialPrice: special_price
+              ? typeof special_price == 'string'
+                ? Number(special_price)
+                : special_price
+              : undefined,
+            prescriptionRequired: is_prescription_required == '1',
+            isMedicine: (type_id || '').toLowerCase() == 'pharma',
+            quantity: 1,
+            thumbnail,
+            isInStock: true,
+            maxOrderQty: MaxOrderQty,
+          },
+          pharmacyPincode!,
+          addCartItem,
+          globalLoading,
+          props.navigation,
+          currentPatient,
+          !!isPharmacyLocationServiceable,
+          { source: 'Pharmacy Home', section: title, categoryId: category_id }
+        );
+      }
+    };
 
     return hotSellerCard({
       name,
@@ -1483,10 +1527,15 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           : special_price
         : undefined,
       isAddedToCart: foundMedicineInCart,
+      addToCart,
+      removeItemFromCart,
+      removeFromCart,
+      maxOrderQty: MaxOrderQty,
+      numberOfItemsInCart,
       onAddOrRemoveCartItem: foundMedicineInCart ? removeFromCart : addToCart,
       onPress: () => {
         const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_CATEGORY_SECTION_PRODUCT_CLICK] = {
-          SectionName: title,
+          'Section Name': title,
           ProductId: sku,
           ProductName: name,
         };
@@ -1495,7 +1544,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           eventAttributes
         );
         postwebEngageProductClickedEvent(data.item, title, 'Home');
-        props.navigation.navigate(AppRoutes.MedicineDetailsScene, { sku, movedFrom: 'widget' });
+        props.navigation.navigate(AppRoutes.MedicineDetailsScene, { sku, movedFrom: 'widget', sectionName: title });
       },
       style: {
         marginHorizontal: 4,
@@ -1819,6 +1868,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           marginHorizontal: 20,
           paddingBottom: index == medicineList.length - 1 ? 10 : 0,
         }}
+        maxOrderQty={getMaxQtyForMedicineItem(item.MaxOrderQty)}
+        removeCartItem={() => onRemoveCartItem(item.sku)}
       />
     );
   };

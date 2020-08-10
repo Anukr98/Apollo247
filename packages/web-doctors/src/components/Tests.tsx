@@ -32,6 +32,7 @@ import {
   DeleteDoctorFavouriteTest,
   DeleteDoctorFavouriteTestVariables,
 } from 'graphql/types/DeleteDoctorFavouriteTest';
+import { Compare } from 'helpers/Utils';
 interface OptionType {
   itemname: string;
   __typename: 'DiagnosticPrescription';
@@ -684,48 +685,50 @@ export const Tests: React.FC = () => {
               {selectedValues !== null &&
                 selectedValues &&
                 selectedValues.length > 0 &&
-                selectedValues!.map((item: any, idx: any) =>
-                  item && item.itemName
-                    ? item.itemName!.trim() !== '' && (
-                        <li key={idx}>
-                          {item!.itemName}
-                          <span className={classes.iconRight}>
-                            <img
-                              width="16"
-                              onClick={() => updateModalValue(idx)}
-                              src={require('images/round_edit_24_px.svg')}
-                              alt=""
-                            />
-                            <img
-                              width="16"
-                              onClick={() => handleDelete(item, idx)}
-                              src={require('images/ic_cancel_green.svg')}
-                              alt=""
-                            />
-                          </span>
-                        </li>
-                      )
-                    : item.itemname &&
-                      item.itemname!.trim() !== '' && (
-                        <li key={idx}>
-                          {item!.itemname}
-                          <span className={classes.iconRight}>
-                            <img
-                              width="16"
-                              onClick={() => updateModalValue(idx)}
-                              src={require('images/round_edit_24_px.svg')}
-                              alt=""
-                            />
-                            <img
-                              width="16"
-                              onClick={() => handleDelete(item, idx)}
-                              src={require('images/ic_cancel_green.svg')}
-                              alt=""
-                            />
-                          </span>
-                        </li>
-                      )
-                )}
+                selectedValues!
+                  .sort((a: any, b: any) => Compare(a, b, 'itemname'))
+                  .map((item: any, idx: any) =>
+                    item && item.itemName
+                      ? item.itemName!.trim() !== '' && (
+                          <li key={idx}>
+                            {item!.itemName}
+                            <span className={classes.iconRight}>
+                              <img
+                                width="16"
+                                onClick={() => updateModalValue(idx)}
+                                src={require('images/round_edit_24_px.svg')}
+                                alt=""
+                              />
+                              <img
+                                width="16"
+                                onClick={() => handleDelete(item, idx)}
+                                src={require('images/ic_cancel_green.svg')}
+                                alt=""
+                              />
+                            </span>
+                          </li>
+                        )
+                      : item.itemname &&
+                        item.itemname!.trim() !== '' && (
+                          <li key={idx}>
+                            {item!.itemname}
+                            <span className={classes.iconRight}>
+                              <img
+                                width="16"
+                                onClick={() => updateModalValue(idx)}
+                                src={require('images/round_edit_24_px.svg')}
+                                alt=""
+                              />
+                              <img
+                                width="16"
+                                onClick={() => handleDelete(item, idx)}
+                                src={require('images/ic_cancel_green.svg')}
+                                alt=""
+                              />
+                            </span>
+                          </li>
+                        )
+                  )}
             </ul>
           </Typography>
         )}

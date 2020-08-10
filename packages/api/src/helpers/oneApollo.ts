@@ -77,7 +77,7 @@ export class OneApollo {
         method: 'POST',
         headers: this.headers,
         body: JSON.stringify(input),
-        signal: this.controller.signal
+        signal: this.controller.signal,
       });
       return response.json();
     } catch (e) {
@@ -87,7 +87,7 @@ export class OneApollo {
       clearTimeout(timeout);
     }
   }
-  async createOneApolloTransaction(transaction: Partial<OneApollTransaction>) {
+  async createOneApolloTransaction(transaction: Partial<OneApollTransaction>): Promise<JSON> {
     const timeout = this._requestTimeout();
     try {
       const response = await fetch(this.baseUrl + '/transaction/create', {
@@ -131,8 +131,8 @@ export class OneApollo {
         method: 'POST',
         headers: this.headers,
         body: JSON.stringify(input),
-        signal: this.controller.signal
-      })
+        signal: this.controller.signal,
+      });
     } catch (e) {
       if (e.name === 'AbortError') throw new AphError(AphErrorMessages.ONEAPOLLO_REQUEST_TIMEOUT);
       throw new AphError(AphErrorMessages.UNBLOCK_CREDITS_ONEAPOLLO_ERROR, undefined, { e });

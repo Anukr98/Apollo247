@@ -24,7 +24,6 @@ import { UploadPrescription } from '@aph/mobile-patients/src/components/Medicine
 import { YourCart } from '@aph/mobile-patients/src/components/Medicines/YourCart';
 import { YourCartUploadPrescriptions } from '@aph/mobile-patients/src/components/Medicines/YourCartUploadPrescriptions';
 import { MultiSignup } from '@aph/mobile-patients/src/components/MultiSignup';
-import { Onboarding } from '@aph/mobile-patients/src/components/Onboarding';
 import { OrderDetailsScene } from '@aph/mobile-patients/src/components/OrderDetailsScene';
 import { OrderModifiedScreen } from '@aph/mobile-patients/src/components/OrderModifiedScreen';
 import { OTPVerification } from '@aph/mobile-patients/src/components/OTPVerification';
@@ -45,7 +44,6 @@ import { HealthRecordsHome } from '@aph/mobile-patients/src/components/HealthRec
 import { ConsultDetails } from '@aph/mobile-patients/src/components/HealthRecords/ConsultDetails';
 import { RecordDetails } from '@aph/mobile-patients/src/components/HealthRecords/RecordDetails';
 import { SymptomChecker } from '@aph/mobile-patients/src/components/SymptomChecker';
-import { CheckoutScene } from '@aph/mobile-patients/src/components/CheckoutScene';
 import { PaymentScene } from '@aph/mobile-patients/src/components/PaymentScene';
 import { MedicineConsultDetails } from '@aph/mobile-patients/src/components/HealthRecords/MedicineConsultDetails';
 import { MobileHelp } from '@aph/mobile-patients/src/components/ui/MobileHelp';
@@ -72,7 +70,6 @@ import { ManageProfile } from '@aph/mobile-patients/src/components/Account/Manag
 import { LinkUHID } from '@aph/mobile-patients/src/components/Account/LinkUHID';
 import { ReadMoreLinkUHID } from '@aph/mobile-patients/src/components/Account/ReadMoreLinkUHID';
 import { TestsByCategory } from '@aph/mobile-patients/src/components/Medicines/TestsByCategory';
-import { ConsultPayment } from '@aph/mobile-patients/src/components/ConsultRoom/ConsultPayment';
 import { RenderPdf } from '@aph/mobile-patients/src/components/ui/RenderPdf';
 import { TestPayment } from '@aph/mobile-patients/src/components/Tests/TestPayment';
 import { ApplyConsultCoupon } from '@aph/mobile-patients/src/components/ConsultRoom/ApplyConsultCoupon';
@@ -91,13 +88,11 @@ import MyPaymentsScreen from '@aph/mobile-patients/src/components/MyPayments/MyP
 import PaymentStatusScreen from '@aph/mobile-patients/src/components/MyPayments/PaymentStatus/PaymentStatusScreen';
 import { ConsultTypeScreen } from './ConsultRoom/ConsultTypeScreen';
 import { CommonWebView } from '@aph/mobile-patients/src/components/CommonWebView';
-
+import { RefundStatus } from '@aph/mobile-patients/src/components/RefundStatus';
 export enum AppRoutes {
-  Onboarding = 'Onboarding',
   Login = 'Login',
   ConsultRoom = 'ConsultRoom',
   ApplyConsultCoupon = 'ApplyConsultCoupon',
-  ConsultPayment = 'ConsultPayment',
   TabBar = 'TabBar',
   DoctorSearch = 'DoctorSearch',
   SignUp = 'SignUp',
@@ -126,7 +121,6 @@ export enum AppRoutes {
   OrderModifiedScreen = 'OrderModifiedScreen',
   YourCart = 'YourCart',
   YourCartUploadPrescriptions = 'YourCartUploadPrescriptions',
-  CheckoutScene = 'CheckoutScene',
   TestsCheckoutScene = 'TestsCheckoutScene',
   PaymentScene = 'PaymentScene',
   AddAddress = 'AddAddress',
@@ -174,17 +168,12 @@ export enum AppRoutes {
   OneApolloMembership = 'OneApolloMembership',
   ConsultTypeScreen = 'ConsultTypeScreen',
   CommonWebView = 'CommonWebView',
+  RefundStatus = 'RefundStatus',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
 
 const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
-  [AppRoutes.Onboarding]: {
-    screen: Onboarding,
-    navigationOptions: {
-      header: null,
-    },
-  },
   [AppRoutes.TabBar]: {
     screen: TabBar,
     navigationOptions: {
@@ -223,9 +212,6 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.ApplyConsultCoupon]: {
     screen: ApplyConsultCoupon,
-  },
-  [AppRoutes.ConsultPayment]: {
-    screen: ConsultPayment,
   },
   [AppRoutes.DoctorSearchListing]: {
     screen: DoctorSearchListing,
@@ -295,9 +281,6 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.YourOrdersScene]: {
     screen: YourOrdersScene,
-  },
-  [AppRoutes.CheckoutScene]: {
-    screen: CheckoutScene,
   },
   [AppRoutes.TestsCheckoutScene]: {
     screen: TestsCheckoutScene,
@@ -458,6 +441,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.CommonWebView]: {
     screen: CommonWebView,
+  },
+  [AppRoutes.RefundStatus]: {
+    screen: RefundStatus,
   },
 };
 

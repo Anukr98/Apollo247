@@ -19,7 +19,7 @@ import { ReOrder } from './ReOrder';
 const useStyles = makeStyles((theme: Theme) => {
   return {
     orderStatusGroup: {
-      padding: 0,
+      padding: '0 0 30px',
     },
     cardRoot: {
       padding: 20,
