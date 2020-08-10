@@ -474,7 +474,7 @@ export async function sendCallsNotification(
     try {
       const curlCommand = `curl -v -d '{"name": ${doctorDetails.displayName}, "isVideo": ${true}, "appointmentId" : ${appointment.id}}' --http2 --cert ${CERT_PATH}:${passphrase} ${domain}${token}`;
       const resp = child_process.execSync(curlCommand);
-      const result = resp.toString('UTF8');
+      const result = resp.toString('utf-8');
       console.info("voipCallKit result > ", result);
 
     } catch (err){

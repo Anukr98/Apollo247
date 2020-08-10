@@ -14,8 +14,8 @@ import { ApiConstants } from 'ApiConstants';
 
 export const exotelTypeDefs = gql`
   input exotelInput {
-    from: String!
-    to: String!
+    from: String
+    to: String
     appointmentId: String!
     deviceType: DEVICETYPE
   }
@@ -68,8 +68,8 @@ export const exotelTypeDefs = gql`
 `;
 
 type exotelInput = {
-  from: string;
-  to: string;
+  from?: string;
+  to?: string;
   appointmentId: string;
   deviceType?: DEVICETYPE;
 };
@@ -159,7 +159,7 @@ const initateConferenceTelephoneCall: Resolver<
   exotelInputArgs,
   ConsultServiceContext,
   ExotelCalling
-> = async (parent, { exotelInput }, { consultsDb, doctorsDb, patientsDb }) => {
+> = async (parent, { exotelInput }, { mobileNumber, consultsDb, doctorsDb, patientsDb }) => {
   const exotelCallerId: string | undefined = process.env.EXOTEL_CALLER_ID;
   const exotelUrl: string | undefined = process.env.EXOTEL_API_URL;
 
@@ -184,21 +184,10 @@ const initateConferenceTelephoneCall: Resolver<
     throw new AphError(AphErrorMessages.GET_PATIENTS_ERROR, undefined, {});
   }
 
-  if(exotelInput.to && patient.mobileNumber != exotelInput.to){
-    throw new AphError(AphErrorMessages.GET_PATIENTS_ERROR, undefined, {});
-  }
-
-  let doctor = await doctorRepo.findById(appt.doctorId);
+  const doctor = await doctorRepo.findByMobileNumber(mobileNumber, true);
 
   if (!doctor) {
     throw new AphError(AphErrorMessages.GET_DOCTORS_ERROR, undefined, {});
-  }
-
-  if(exotelInput.from && doctor.mobileNumber != exotelInput.from){
-    doctor = await doctorRepo.searchDoctorByMobileNumber(exotelInput.from, true);
-    if (!doctor) {
-      throw new AphError(AphErrorMessages.GET_DOCTORS_ERROR, undefined, {});
-    }
   }
 
   fromMobileNumber = doctor.mobileNumber;
