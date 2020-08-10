@@ -109,11 +109,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       console.log('Accept Params', params);
       getAppointmentDataAndNavigate(params.appointment_id);
     });
-    DeviceEventEmitter.addListener('incoming_event', (params) => {
-      console.log('incoming_event Params', params);
-      props.navigation.navigate('MEDICINES');
-      // getAppointmentDataAndNavigate(params.appointment_id)
-    });
     setBugfenderPhoneNumber();
     AppState.addEventListener('change', _handleAppStateChange);
     checkForVersionUpdate();

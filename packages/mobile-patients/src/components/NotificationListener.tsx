@@ -356,7 +356,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
       notificationType === 'doctor_Noshow_Reschedule_Appointment'
       // notificationType === 'Reschedule_Appointment'
     ) {
-      if(notificationType === 'chat_room' || notificationType === 'call_started') {
+      if (notificationType === 'chat_room' || notificationType === 'call_started') {
         setDoctorJoinedChat && setDoctorJoinedChat(true); // enabling join button in chat room if in case pubnub events not fired
       }
       if (currentScreenName === AppRoutes.ChatRoom) return;
@@ -945,7 +945,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
         .enableVibration(true)
         .setVibrationPattern([1000])
         .setShowBadge(true);
-      firebase.notifications().android.createChannel(channelForCalls);
+      // firebase.notifications().android.createChannel(channelForCalls);
     } catch (error) {
       CommonBugFender('NotificationListener_channel_try', error);
       aphConsole.log('error in notification channel', error);
