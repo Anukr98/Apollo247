@@ -887,11 +887,16 @@ export async function sendNotification(
     }
 
     if (pushNotificationInput.notificationType == NotificationType.BOOK_APPOINTMENT_WEB) {
-      //TODO: update static link with dynamic web uri
-      const chatroom_sms_link = "https://www.apollo247.com/specialties"
-      smsLink = smsLink.replace('{5}', chatroom_sms_link);
+      if (process.env.SMS_WEBLINK_APPOINTMENT_CHATROOM) {
+        const chatroom_sms_link = process.env.SMS_WEBLINK_APPOINTMENT_CHATROOM.replace(
+          '{0}',
+          appointment.id.toString()
+        );
+        smsLink = smsLink.replace('{5}', chatroom_sms_link);
+      } else {
+        throw new AphError(AphErrorMessages.SMS_WEBLINK_APPOINTMENT_CHATROOM_MISSING);
+      }
     }
-
 
     notificationTitle = ApiConstants.BOOK_APPOINTMENT_TITLE;
     notificationBody = content;
