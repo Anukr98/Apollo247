@@ -1,20 +1,21 @@
+
 module.exports = [
     {
         "name": 'consults-db',
         "type": "postgres",
         "cli": {
-            "migrationsDir": "src/consults-service/database/migrations"
-        }
+            "migrationsDir": "src/consults-service/database/migration"
+        },
     },
     {
         "name": 'doctors-db',
         "cli": {
-            "migrationsDir": "src/doctors-service/database/migrations"
+            "migrationsDir": "src/doctors-service/database/migration"
         }
     },
     {
         "name": 'patients-db',
         "cli": {
-            "migrationsDir": "src/profiles-service/database/migrations"
+            "migrationsDir": "src/profiles-service/database/migration"
         }
     }]

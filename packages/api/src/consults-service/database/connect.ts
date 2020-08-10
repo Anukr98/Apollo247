@@ -141,9 +141,7 @@ export const connect = async () => {
           "database": `consults_${process.env.DB_NODE_ENV}`,
           "logging": process.env.NODE_ENV === 'production' ? false : true,
           "synchronize": false,
-
           "migrations": ["dist/migration/**/*.js"],
-
           "extra": {
             "connectionLimit": process.env.CONNECTION_POOL_LIMIT,
           },
@@ -245,9 +243,9 @@ export const connect = async () => {
         console.log('db connection established');
       })
       .catch(err => {
-        console.log('connection error', err)
+        throw new Error(err);
       })
   } catch (error) {
-    console.log('connection error', error)
+    throw new Error(error);
   }
 };
