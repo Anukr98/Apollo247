@@ -940,12 +940,11 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
         firebase.notifications.Android.Importance.Max
       )
         .setDescription('Apollo Consultation')
-        .setSound('incallmanager_ringtone.mp3')
         .enableLights(true)
         .enableVibration(true)
         .setVibrationPattern([1000])
         .setShowBadge(true);
-      // firebase.notifications().android.createChannel(channelForCalls);
+      firebase.notifications().android.createChannel(channelForCalls);
     } catch (error) {
       CommonBugFender('NotificationListener_channel_try', error);
       aphConsole.log('error in notification channel', error);
