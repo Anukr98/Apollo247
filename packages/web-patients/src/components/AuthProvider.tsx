@@ -367,13 +367,13 @@ export const AuthProvider: React.FC = (props) => {
       const search = window.location.search;
       const params = new URLSearchParams(search);
       const token = params.get('utm_token') || '';
-      const utmMobileNumber = params.get('utm_mobile_number');
-      const mobileNumber = utmMobileNumber ? `+${utmMobileNumber.trim()}` : '';
-      localStorage.setItem('userMobileNo', mobileNumber);
-      if (token && token.length && mobileNumber && mobileNumber.length) {
+      if (params.get('utm_mobile_number') && params.get('utm_mobile_number').length) {
+        const mobileNumber = `+${params.get('utm_mobile_number').trim()}`;
+        localStorage.setItem('userMobileNo', mobileNumber);
+      }
+      if (token && localStorage.getitem('userMobileNo')) {
         setAuthToken(token);
         apolloClient = buildApolloClient(token, () => signOut());
-
         apolloClient
           .query<GetPatientByMobileNumber>({
             query: GET_PATIENT_BY_MOBILE_NUMBER,

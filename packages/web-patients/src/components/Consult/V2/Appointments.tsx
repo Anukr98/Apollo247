@@ -646,6 +646,10 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
       return filteredList;
     }
   };
+  const handlePaymentModalClose = () => {
+    setIsConfirmedPopoverOpen(false);
+    window.location.href = clientRoutes.appointments();
+  };
 
   const getAppointmentStatusFilteredList = (
     appointmentStatus: string[],
@@ -775,11 +779,6 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
       setFilteredAppointmentsList(localFilteredList);
     }
   }, [filter]);
-
-  const handlePaymentModalClose = () => {
-    setIsConfirmedPopoverOpen(false);
-    props && props.history && props.history.push(clientRoutes.appointments());
-  };
 
   const upcomingAppointment: AppointmentsType[] = [];
   const todaysAppointments: AppointmentsType[] = [];
