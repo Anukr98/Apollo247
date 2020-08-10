@@ -7,6 +7,7 @@ import {
   AcceptCouponResponse,
   AcceptCouponRequest,
   CouponsList,
+  ValidateCouponRequestPharma,
 } from 'types/coupons';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
@@ -20,7 +21,7 @@ const dLogger = debugLog(
 );
 
 export async function validateCoupon(
-  payload: ValidateCouponRequest
+  payload: ValidateCouponRequest | ValidateCouponRequestPharma
 ): Promise<ValidateCouponResponse> {
   if (!process.env.COUPON_VALIDATE_API)
     throw new AphError(AphErrorMessages.INVALID_VALIDATE_COUPON_URL);

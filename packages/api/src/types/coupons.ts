@@ -16,6 +16,24 @@ export interface ValidateCouponRequest {
   }[];
 }
 
+export interface ValidateCouponRequestPharma {
+  mobile: string;
+  email: string;
+  billAmount: number;
+  coupon: string;
+  paymentType: string;
+  pinCode: string;
+  products: CouponProduct[];
+}
+
+export interface CouponProduct {
+  sku: number;
+  mrp: number;
+  specialPrice: number;
+  quantity: number;
+  totalCost: number;
+}
+
 export interface ValidateCouponResponse {
   errorCode: null | number;
   errorMsg: null | string;
@@ -36,6 +54,7 @@ export interface ValidateCouponResponse {
       specialPrice: number;
       quantity: number;
       totalCost: number;
+      discountAmt: number;
     }[];
     diagnostics: [];
     discount: number;
