@@ -134,6 +134,7 @@
     "fees": "Fees",
     "smart_prescr": "Smart Prescription",
     "settings": "Settings",
+    "logout": "Logout",
     "ac_num": "A/C Number: *********",
     "consultation_fees": " Consultation Fees",
     "consult_fee_q": " consultation fees?",
@@ -486,5 +487,17 @@
     "noPatientText2": "Please try checking your spelling or use another term.",
     "searchResult": "Search results with “{0}”",
     "searchCharLimit": "Enter atleast 3 characters to search."
+  },
+  "settings": {
+    "ivrHeading": "Set-up an IVR as a reminder for appointment booking",
+    "yes": "YES",
+    "no": "NO",
+    "ivrOptionSelect": "Select the type of appointment for",
+    "ivrOnlineHeading": "Select the time of call before online appointment.",
+    "ivrInPersonHeading": "Select the time of call before in-person appointment.",
+    "inMins": "in mins",
+    "notificationHeader": "Set up Notification prefrences",
+    "followupHeader": "Set up your patient follow up days",
+    "saveText": "The last changes saved on {0}."
   }
 }

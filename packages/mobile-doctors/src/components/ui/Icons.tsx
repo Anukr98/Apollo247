@@ -615,6 +615,10 @@ export const Settings: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('../../images/icons/settings.png')} />
 );
 
+export const Logout: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('../../images/icons/ic_logout.png')} />
+);
+
 export const End: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('../../images/icons/end.png')} />
 );
@@ -918,4 +922,8 @@ export const Minimize: React.FC<IconProps> = (props) => (
 
 export const Whatsapp: React.FC<IconProps> = (props) => (
   <IconBase size="xs" {...props} source={require('../../images/icons/whatsapp.png')} />
+);
+
+export const ChekGray: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('../../images/icons/check_gray.png')} />
 );
