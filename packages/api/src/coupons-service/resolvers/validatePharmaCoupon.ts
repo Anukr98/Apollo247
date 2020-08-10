@@ -132,8 +132,7 @@ export const validatePharmaCoupon: Resolver<
       mrp: item.mrp,
       specialPrice: item.specialPrice,
       quantity: item.quantity,
-      totalCost:
-        item.specialPrice < item.mrp ? item.specialPrice * item.quantity : item.mrp * item.quantity,
+      totalCost: amountToBeConsidered * item.quantity,
     };
     couponProduct.push(product);
   });
@@ -158,7 +157,7 @@ export const validatePharmaCoupon: Resolver<
 
   if (couponData && couponData.response) {
     validityStatus = couponData.response.valid;
-    reasonForInvalidStatus = couponData.response.reason ? couponData.response.reason : '';
+    reasonForInvalidStatus = couponData.response.reason || '';
     couponData.response.products.map((item) => {
       const orderLineItemData = orderLineItems.filter(
         (item1) => item1.itemId == item.sku.toString()
