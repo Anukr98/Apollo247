@@ -2401,7 +2401,11 @@ const sendDailyAppointmentSummary: Resolver<
   string
 > = async (parent, args, { doctorsDb, consultsDb }) => {
   const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
-  const doctors = await doctorRepo.getAllDoctors('0', args.docLimit, args.docOffset);
+  const doctors = await doctorRepo.getAllDoctors(
+    '0',
+    args.docLimit,
+    args.docOffset
+  );
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const countOfNotifications = await new Promise<Number>(async (resolve, reject) => {
     let doctorsCount = 0;
@@ -2427,12 +2431,9 @@ const sendDailyAppointmentSummary: Resolver<
 
       if (totalAppointments > 0) {
         doctorsCount++;
-        const whatsAppLink =
-          ApiConstants.WHATSAPP_LINK + '' + process.env.WHATSAPP_LINK_BOOK_APOINTMENT;
-        let whatsAppMessageBody = ApiConstants.DAILY_WHATSAPP_NOTIFICATION.replace(
-          '{0}',
-          doctor.firstName
-        ).replace('{1}', totalAppointments.toString());
+        const whatsAppLink = process.env.WHATSAPP_LINK_BOOK_APOINTMENT
+          ? process.env.WHATSAPP_LINK_BOOK_APOINTMENT
+          : '';
         let messageBody = ApiConstants.DAILY_APPOINTMENT_SUMMARY.replace(
           '{0}',
           doctor.firstName
@@ -2446,18 +2447,22 @@ const sendDailyAppointmentSummary: Resolver<
             ? ApiConstants.PHYSICAL_APPOINTMENTS.replace('{0}', physicalAppointments.toString())
             : '';
         messageBody += onlineAppointmentsText + physicalAppointmentsText;
-        whatsAppMessageBody +=
-          onlineAppointmentsText + '' + physicalAppointmentsText + whatsAppLink;
         sendBrowserNotitication(doctor.id, messageBody);
 
         sendNotificationSMS(doctor.mobileNumber, messageBody);
+        const todaysDate = format(addMinutes(new Date(), +330), 'do LLLL');
+        console.log(todaysDate, 'todays date');
+        const templateData: string[] = [
+          todaysDate + ' as of 8 AM',
+          whatsAppLink,
+          totalAppointments.toString(),
+        ];
 
-        // sendDoctorNotificationWhatsapp(
-        //   doctor.mobileNumber,
-        //   whatsAppMessageBody,
-        //   1,
-        //   doctor.doctorType
-        // );
+        sendDoctorNotificationWhatsapp(
+          ApiConstants.WHATSAPP_DOC_SUMMARY,
+          doctor.mobileNumber,
+          templateData
+        );
       }
       if (index + 1 === array.length) {
         resolve(doctorsCount);
