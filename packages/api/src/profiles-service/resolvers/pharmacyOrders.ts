@@ -43,10 +43,10 @@ export const pharmaOrdersTypeDefs = gql`
     paymentDateTime: DateTime
     healthCreditsRedeemed: Float
     refundAmount: Float
-    medicineOrderRefunds: [medicineOrderRefunds]
+    medicineOrderRefunds: [MedicineOrderRefunds]
   }
 
-  type medicineOrderRefunds {
+  type MedicineOrderRefunds {
     refundId: String
     refundAmount: Float
     txnId: String
