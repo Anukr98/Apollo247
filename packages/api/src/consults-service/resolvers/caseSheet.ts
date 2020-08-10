@@ -390,6 +390,9 @@ export const caseSheetTypeDefs = gql`
     medicineUnit: MEDICINE_UNIT
     routeOfAdministration: ROUTE_OF_ADMINISTRATION
     medicineCustomDosage: String
+    medicineCustomDetails: String
+    includeGenericNameInPrescription: Boolean
+    genericName: String
   }
 
   input MedicinePrescriptionInput {
@@ -407,6 +410,9 @@ export const caseSheetTypeDefs = gql`
     medicineUnit: MEDICINE_UNIT
     routeOfAdministration: ROUTE_OF_ADMINISTRATION
     medicineCustomDosage: String
+    medicineCustomDetails: String
+    includeGenericNameInPrescription: Boolean
+    genericName: String
   }
 
   type OtherInstructions {

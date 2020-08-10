@@ -356,7 +356,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
       notificationType === 'doctor_Noshow_Reschedule_Appointment'
       // notificationType === 'Reschedule_Appointment'
     ) {
-      if(notificationType === 'chat_room' || notificationType === 'call_started') {
+      if (notificationType === 'chat_room' || notificationType === 'call_started') {
         setDoctorJoinedChat && setDoctorJoinedChat(true); // enabling join button in chat room if in case pubnub events not fired
       }
       if (currentScreenName === AppRoutes.ChatRoom) return;
@@ -940,7 +940,6 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
         firebase.notifications.Android.Importance.Max
       )
         .setDescription('Apollo Consultation')
-        .setSound('incallmanager_ringtone.mp3')
         .enableLights(true)
         .enableVibration(true)
         .setVibrationPattern([1000])

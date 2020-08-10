@@ -521,3 +521,21 @@ exports.generateDeeplinkForNewDoctors = (req, res) => {
       console.log('error', error);
     });
 };
+
+exports.sendCallStartNotification = (req, res) => {
+  const requestJSON = {
+    query: Constants.CALL_START_NOTIFICATION,
+  };
+  axios.defaults.headers.common['authorization'] = Constants.AUTH_TOKEN;
+  axios
+    .post(process.env.API_URL, requestJSON)
+    .then((response) => {
+      res.send({
+        status: 'success',
+        message: response.data,
+      });
+    })
+    .catch((error) => {
+      console.log('error', error);
+    });
+};
