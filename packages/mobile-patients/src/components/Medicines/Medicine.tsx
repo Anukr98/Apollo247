@@ -1544,7 +1544,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           eventAttributes
         );
         postwebEngageProductClickedEvent(data.item, title, 'Home');
-        props.navigation.navigate(AppRoutes.MedicineDetailsScene, { sku, movedFrom: 'widget' });
+        props.navigation.navigate(AppRoutes.MedicineDetailsScene, { sku, movedFrom: 'widget', sectionName: title });
       },
       style: {
         marginHorizontal: 4,

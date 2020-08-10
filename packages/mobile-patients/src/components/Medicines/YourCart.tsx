@@ -230,6 +230,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   const [lastPincodeReplica, setLastPincodeReplica] = useState('');
   const scrollViewRef = useRef<ScrollView | null>();
   const [whatsAppUpdate, setWhatsAppUpdate] = useState<boolean>(true);
+  const [alertShown, setAlertShown] = useState<boolean>(false);
 
   const navigatedFrom = props.navigation.getParam('movedFrom') || '';
 
@@ -265,6 +266,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             } as ShoppingCartItem)
         ),
         'Service Area': 'Pharmacy',
+        'Customer ID': g(currentPatient, 'id'),
         // 'Cart ID': '', // since we don't have cartId before placing order
       };
       if (coupon) {
@@ -451,6 +453,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
       const res = await getDeliveryTimeHeaderTat(tatApiInput);
       const tatDate = g(res, 'data', 'tat', '0' as any, 'deliverydate');
       if (tatDate) {
+        const currentDate = moment();
         setdeliveryTime(tatDate);
         setshowDeliverySpinner(false);
         selectedAddress &&
@@ -458,7 +461,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             selectedAddress.zipcode!,
             formatAddress(selectedAddress),
             'Yes',
-            moment(tatDate, 'D-MMM-YYYY HH:mm a').toDate()
+            moment(tatDate).diff(currentDate, 'd')
           );
       }
     } catch (error) {
@@ -538,6 +541,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             deliveryAddressId
         );
         setCartItems!(validation.newItems);
+        setAlertShown(true);
         showAphAlert!({
           title: 'Hi! :)',
           description: string.medicine_cart.cartUpdatedAfterPriceCheckMsg,
@@ -641,6 +645,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     if (validation.alertText) {
       // setStoreInventoryCheck(false);
       setLoading!(false);
+      setAlertShown(true);
       showAphAlert!({
         title: 'Hi! :)',
         description: validation.alertText,
@@ -927,6 +932,13 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
               onPressAdd={() => {}}
               onPressRemove={() => {
                 CommonLogEvent(AppRoutes.YourCart, 'Remove item from cart');
+                const eventAttributes: WebEngageEvents[WebEngageEventName.ITEMS_REMOVED_FROM_CART] = {
+                  'Customer ID': currentPatient && currentPatient!.id,
+                  'No. of items': medicine.quantity,
+                  'Product ID': medicine.id,
+                  'Product Name': medicine.name,
+                };
+                postWebEngageEvent(WebEngageEventName.ITEMS_REMOVED_FROM_CART, eventAttributes);
                 onRemoveCartItem(medicine);
               }}
               onChangeUnit={(unit) => {
@@ -1332,6 +1344,10 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
           if (cartTotal == 0) {
             renderAlert('Please add items in the cart to apply coupon.');
           } else {
+            const eventAttributes: WebEngageEvents[WebEngageEventName.CART_APPLY_COUPON_CLCIKED] = {
+              'Customer ID': currentPatient && currentPatient!.id,
+            };
+            postWebEngageEvent(WebEngageEventName.CART_APPLY_COUPON_CLCIKED, eventAttributes);
             props.navigation.navigate(AppRoutes.ApplyCouponScene);
             setCoupon!(null);
           }
@@ -1691,19 +1707,23 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   };
 
   const postwebEngageProceedToPayEvent = () => {
+    const numberOfOutOfStockItems = cartItems.filter((medicine) => medicine.isInStock === false).length;
     const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_PROCEED_TO_PAY_CLICKED] = {
       'Total items in cart': cartItems.length,
       'Sub Total': cartTotal,
       'Delivery charge': deliveryCharges,
       'Net after discount': grandTotal,
-      'Prescription Needed?': uploadPrescriptionRequired,
+      'Prescription Needed?': uploadPrescriptionRequired ? 'Yes' : 'No',
       // 'Cart ID': '', // since we don't have cartId before placing order
       'Mode of Delivery': selectedTab === tabs[0].title ? 'Home' : 'Pickup',
       'Delivery Date Time':
         selectedTab === tabs[0].title && moment(deliveryTime).isValid ? deliveryTime : undefined, // Optional (only if Home)
       'Pin Code': pinCode,
       'Service Area': 'Pharmacy',
+      'Popup Shown': alertShown,
+      'No. of out of stock items': numberOfOutOfStockItems,
     };
+    setAlertShown(false);
     if (selectedStore) {
       eventAttributes['Store Id'] = selectedStore.storeid;
       eventAttributes['Store Name'] = selectedStore.storename;
