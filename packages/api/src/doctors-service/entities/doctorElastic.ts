@@ -4,25 +4,17 @@ import { APPOINTMENT_TYPE, ES_DOCTOR_SLOT_STATUS, Appointment } from "consults-s
 import { format, addMinutes, addDays } from "date-fns";
 import { AphError } from "AphError";
 import { AphErrorMessages } from "@aph/universal/dist/AphErrorMessages";
+import { omit } from "lodash";
 
 export async function addDoctorElastic(allDocsInfo: Doctor) {
-    console.log('==========addDoctorElastic==========')
     const client = new Client({ node: process.env.ELASTIC_CONNECTION_URL });
     const consultHours = [];
     for (let k = 0; k < allDocsInfo.consultHours.length; k++) {
         const hourData = {
             consultHoursId: allDocsInfo.consultHours[k].id,
-            weekDay: allDocsInfo.consultHours[k].weekDay,
-            startTime: allDocsInfo.consultHours[k].startTime,
-            endTime: allDocsInfo.consultHours[k].endTime,
-            consultMode: allDocsInfo.consultHours[k].consultMode,
-            consultDuration: allDocsInfo.consultHours[k].consultDuration,
-            consultBuffer: allDocsInfo.consultHours[k].consultBuffer,
-            actualDay: allDocsInfo.consultHours[k].actualDay,
-            slotsPerHour: allDocsInfo.consultHours[k].slotsPerHour,
-            isActive: allDocsInfo.consultHours[k].isActive,
-            consultType: allDocsInfo.consultHours[k].consultType,
         };
+
+        Object.assign(hourData, omit(allDocsInfo.consultHours[k], 'id', 'consultHoursId', 'updatedDate', 'createdDate'));
         consultHours.push(hourData);
     }
     let doctorSecratry = {};
@@ -45,45 +37,27 @@ export async function addDoctorElastic(allDocsInfo: Doctor) {
             };
             const facilityData = {
                 docFacilityId: allDocsInfo.doctorHospital[f].id,
-                name: allDocsInfo.doctorHospital[f].facility.name,
-                facilityType: allDocsInfo.doctorHospital[f].facility.facilityType,
-                streetLine1: allDocsInfo.doctorHospital[f].facility.streetLine1,
-                streetLine2: allDocsInfo.doctorHospital[f].facility.streetLine2,
-                streetLine3: allDocsInfo.doctorHospital[f].facility.streetLine3,
-                city: allDocsInfo.doctorHospital[f].facility.city,
-                state: allDocsInfo.doctorHospital[f].facility.state,
-                zipcode: allDocsInfo.doctorHospital[f].facility.zipcode,
-                imageUrl: allDocsInfo.doctorHospital[f].facility.imageUrl,
-                latitude: allDocsInfo.doctorHospital[f].facility.latitude,
-                longitude: allDocsInfo.doctorHospital[f].facility.longitude,
-                country: allDocsInfo.doctorHospital[f].facility.country,
                 facilityId: allDocsInfo.doctorHospital[f].facility.id,
                 location,
             };
+
+            Object.assign(facilityData, omit(allDocsInfo.doctorHospital[f].facility, [
+                'id',
+                'docFacilityId',
+                'facilityId',
+                'location',
+                'createdDate',
+                'updatedDate'
+            ]));
             facility.push(facilityData);
         }
     }
     if (allDocsInfo.specialty) {
         specialty = {
             specialtyId: allDocsInfo.specialty.id,
-            name: allDocsInfo.specialty.name,
-            image: allDocsInfo.specialty.image,
-            specialistSingularTerm: allDocsInfo.specialty.specialistSingularTerm,
-            specialistPluralTerm: allDocsInfo.specialty.specialistPluralTerm,
-            groupName: allDocsInfo.specialty.groupName,
-            commonSearchTerm: allDocsInfo.specialty.commonSearchTerm,
-            userFriendlyNomenclature: allDocsInfo.specialty.userFriendlyNomenclature,
-            slugName: allDocsInfo.specialty.slugName,
-            updatedDate: allDocsInfo.specialty.updatedDate,
-            createdDate: allDocsInfo.specialty.createdDate,
-            shortDescription: allDocsInfo.specialty.shortDescription,
-            symptoms: allDocsInfo.specialty.symptoms,
-            commonSearchWords: allDocsInfo.specialty.commonSearchWords,
-            displayOrder: allDocsInfo.specialty.displayOrder,
-            externalId: allDocsInfo.specialty.externalId,
         };
+        Object.assign(specialty, omit(allDocsInfo.specialty, ['id']));
     }
-    //console.log(allDocsInfo.doctorSecretary.id, 'specialty dets');
 
     function defineExperienceRange(experience: Number) {
         let experience_range: string = '';
@@ -117,58 +91,37 @@ export async function addDoctorElastic(allDocsInfo: Doctor) {
 
     const doctorData = {
         doctorId: allDocsInfo.id,
-        firstName: allDocsInfo.firstName,
-        lastName: allDocsInfo.lastName,
-        mobileNumber: allDocsInfo.mobileNumber,
-        awards: allDocsInfo.awards,
-        country: allDocsInfo.country,
-        dateOfBirth: allDocsInfo.dateOfBirth,
-        displayName: allDocsInfo.displayName,
-        delegateName: allDocsInfo.delegateName,
-        delegateNumber: allDocsInfo.delegateNumber,
-        emailAddress: allDocsInfo.emailAddress,
-        externalId: allDocsInfo.externalId,
-        fullName: allDocsInfo.fullName,
-
-        doctorType: allDocsInfo.doctorType,
-        city: allDocsInfo.city,
-        experience: allDocsInfo.experience,
-        physicalConsultationFees: allDocsInfo.physicalConsultationFees,
-        onlineConsultationFees: allDocsInfo.onlineConsultationFees,
         age: '',
         experience_range: defineExperienceRange(allDocsInfo.experience),
         fee_range: defineFeeRange(allDocsInfo.onlineConsultationFees),
         languages: pushLanguagesInArray(allDocsInfo.languages),
-        gender: allDocsInfo.gender,
-
-        isActive: allDocsInfo.isActive,
-        middleName: allDocsInfo.middleName,
-        photoUrl: allDocsInfo.photoUrl,
-        qualification: allDocsInfo.qualification,
-        registrationNumber: allDocsInfo.registrationNumber,
-        salutation: allDocsInfo.salutation,
-        signature: allDocsInfo.signature,
-        specialization: allDocsInfo.specialization,
-        state: allDocsInfo.state,
-        streetLine1: allDocsInfo.streetLine1,
-        streetLine2: allDocsInfo.streetLine2,
-        streetLine3: allDocsInfo.streetLine3,
-        thumbnailUrl: allDocsInfo.thumbnailUrl,
-        zip: allDocsInfo.zip,
-        isSearchable: allDocsInfo.isSearchable,
         specialty,
         facility,
         consultHours,
         doctorSecratry,
         doctorSlots: [],
     };
-    //console.log(doctorData, 'doc data');
+
+    Object.assign(doctorData, omit(allDocsInfo, [
+        'doctorId',
+        'id',
+        'experience_range',
+        'fee_range',
+        'age',
+        'experience',
+        'onlineConsultationFees',
+        'languages',
+        'specialty',
+        'facility',
+        'consultHours',
+        'doctorSecratry',
+        'doctorSlots'
+    ]));
 
     if (!process.env.ELASTIC_INDEX_DOCTORS) {
         throw new AphError(AphErrorMessages.ELASTIC_INDEX_NAME_MISSING);
     }
 
-    console.log('================GOING TO INDEX==============');
     const resp: ApiResponse = await client.index({
         index: process.env.ELASTIC_INDEX_DOCTORS,
         id: allDocsInfo.id,
