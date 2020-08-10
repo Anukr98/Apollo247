@@ -459,7 +459,7 @@ export async function sendCallsNotification(
   );
   if (voipPushtoken.length && voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken']) {
     const token = voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken'];
-    const CERT_PATH = process.env.ASSETS_DIRECTORY + '/voipCert.pem';
+    const CERT_PATH = ApiConstants.ASSETS_DIR + '/voipCert.pem';
     const passphrase = process.env.VOIP_CALLKIT_PASSPHRASE || 'apollo@123';
     const domain =
       process.env.VOIP_CALLKIT_DOMAIN || 'https://api.development.push.apple.com/3/device/';
