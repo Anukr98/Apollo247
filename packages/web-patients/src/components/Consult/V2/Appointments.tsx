@@ -44,7 +44,7 @@ import _startCase from 'lodash/startCase';
 import _toLower from 'lodash/toLower';
 import { gtmTracking } from '../../../gtmTracking';
 import { OrderStatusContent } from 'components/OrderStatusContent';
-import { readableParam, AppointmentFilterObject } from 'helpers/commonHelpers';
+import { readableParam, AppointmentFilterObject, isPastAppointment } from 'helpers/commonHelpers';
 import { consultationBookTracking } from 'webEngageTracking';
 import { getDiffInMinutes, getDiffInDays } from 'helpers/commonHelpers';
 import { GetPatientAllAppointments_getPatientAllAppointments_appointments as AppointmentsType } from 'graphql/types/GetPatientAllAppointments';
@@ -713,7 +713,7 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
       });
     }
     if (availabilityList.includes('Today') || availabilityList.includes('Tomorrow')) {
-      const tomorrowAvailabilityHourTime = moment('06:00', 'HH:mm');
+      const tomorrowAvailabilityHourTime = moment('00:00', 'HH:mm');
       const tomorrowAvailabilityTime = moment()
         .add('days', 1)
         .set({
@@ -783,15 +783,19 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
 
   const upcomingAppointment: AppointmentsType[] = [];
   const todaysAppointments: AppointmentsType[] = [];
-  const pastAppointments: AppointmentsType[] = [];
+  const pastAppointments: AppointmentsType[] =
+    filteredAppointmentsList &&
+    filteredAppointmentsList.filter((appointmentDetails) => {
+      return (
+        appointmentDetails.status === STATUS.CANCELLED ||
+        (appointmentDetails.status === STATUS.COMPLETED && isPastAppointment(appointmentDetails))
+      );
+    });
 
   filteredAppointmentsList &&
     filteredAppointmentsList.forEach((appointmentDetails) => {
-      const differenceInMinutes = getDiffInMinutes(appointmentDetails.appointmentDateTime);
-      if (differenceInMinutes < 1) {
-        pastAppointments.push(appointmentDetails);
-      } else {
-        const tomorrowAvailabilityHourTime = moment('06:00', 'HH:mm');
+      if (appointmentDetails.status !== STATUS.CANCELLED) {
+        const tomorrowAvailabilityHourTime = moment('00:00', 'HH:mm');
         const tomorrowAvailabilityTime = moment()
           .add('days', 1)
           .set({

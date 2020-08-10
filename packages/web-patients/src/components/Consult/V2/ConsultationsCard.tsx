@@ -1,19 +1,13 @@
 import { makeStyles } from '@material-ui/styles';
-import { Theme, Grid, Avatar, Switch } from '@material-ui/core';
+import { Theme, Grid, Avatar } from '@material-ui/core';
 import React, { useState } from 'react';
-import { AphDialogTitle, AphDialog, AphDialogClose } from '@aph/web-ui-components';
-import {
-  // GetPatientAppointments,
-  GetPatientAppointments_getPatinetAppointments_patinetAppointments as appointmentDetails,
-} from 'graphql/types/GetPatientAppointments';
+import { GetPatientAllAppointments_getPatientAllAppointments_appointments as AppointmentDetails } from 'graphql/types/GetPatientAllAppointments';
 import { DoctorType, APPOINTMENT_STATE, APPOINTMENT_TYPE } from 'graphql/types/globalTypes';
 import _isNull from 'lodash/isNull';
-// import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
 import { clientRoutes } from 'helpers/clientRoutes';
 import isTomorrow from 'date-fns/isTomorrow';
 import isToday from 'date-fns/isToday';
-// import { getIstTimestamp } from 'helpers/dateHelpers';
 import { STATUS } from 'graphql/types/globalTypes';
 import _startCase from 'lodash/startCase';
 import _toLower from 'lodash/toLower';
@@ -23,7 +17,7 @@ import { useMutation } from 'react-apollo-hooks';
 import { AddToConsultQueue, AddToConsultQueueVariables } from 'graphql/types/AddToConsultQueue';
 import { ADD_TO_CONSULT_QUEUE } from 'graphql/consult';
 import moment from 'moment';
-import { getAppStoreLink } from 'helpers/dateHelpers';
+import { isPastAppointment } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -222,7 +216,7 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 interface ConsultationsCardProps {
-  appointments: appointmentDetails[];
+  appointments: AppointmentDetails[];
   pastOrCurrent: string;
 }
 
@@ -239,11 +233,6 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
   };
 
   const [refreshTimer, setRefreshTimer] = useState<boolean>(false);
-  const [isScheduledAppPopoverOpen, setIsScheduledAppPopoverOpen] = useState<boolean>(false);
-  const [isAppDetailsPopoverOpen, setIsAppDetailsPopoverOpen] = useState<boolean>(false);
-  const [currentDoctorName, setCurrentDoctorName] = useState<string>('');
-  const [currentApptTime, setCurrentApptTime] = useState<string>('');
-  const [appointmentType, setAppointmentType] = useState<string>('');
 
   const shouldRefreshComponent = (diff: number) => {
     const id = setInterval(() => {
@@ -286,7 +275,22 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
           return 'CHAT WITH DOCTOR';
       }
     }
+    // need to add one more condition for view prescription
     getAppointmentStatus(status, isConsultStarted);
+  };
+
+  const getConsultationUpdateText = (appointmentDetails: AppointmentDetails) => {
+    const {
+      isSeniorConsultStarted,
+      isJdQuestionsComplete,
+      isFollowUp,
+      status,
+    } = appointmentDetails;
+    if (!isJdQuestionsComplete) {
+      return 'Connect with Junior Doctor before final consult';
+    } else if (!isSeniorConsultStarted) {
+      return 'Connect with doctor to start the consult';
+    }
   };
 
   return (
@@ -354,24 +358,10 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                   <div
                     className={classes.consultCard}
                     onClick={() => {
-                      if (props.pastOrCurrent === 'past') {
-                        setIsAppDetailsPopoverOpen(true);
-                      } else {
-                        window.location.href = clientRoutes.chatRoom(
-                          appointmentDetails.id,
-                          appointmentDetails.doctorId
-                        );
-                        // setIsScheduledAppPopoverOpen(true);
-                        // setAppointmentType(
-                        //   appointmentDetails.appointmentType === 'ONLINE' ? 'online' : 'clinic'
-                        // );
-                        // setCurrentDoctorName(fullName);
-                        // setCurrentApptTime(
-                        //   moment(appointmentDetails.appointmentDateTime).format(
-                        //     'MMMM DD, YYYY [at] LT'
-                        //   )
-                        // );
-                      }
+                      window.location.href = clientRoutes.chatRoom(
+                        appointmentDetails.id,
+                        appointmentDetails.doctorId
+                      );
                     }}
                   >
                     <div className={classes.consultCardWrap}>
@@ -428,9 +418,25 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                       </div>
                     </div>
                     <div className={classes.consultChat}>
-                      <h3>GO TO CONSULT CHAT ROOM</h3>
-                      <h6>Connect with Junior Doctor before final consult</h6>
+                      <h3>
+                        {appointmentDetails.isFollowUp === 'false' &&
+                          showAppointmentAction(appointmentState, status, isConsultStarted)}
+                      </h3>
+                      <h6>{getConsultationUpdateText(appointmentDetails)}</h6>
                     </div>
+                    {/* below div should come to left */}
+                    {appointmentDetails.status === STATUS.COMPLETED &&
+                      !isPastAppointment(appointmentDetails) &&
+                      appointmentDetails.isFollowUp !== 'false' && (
+                        <div className={classes.consultChat}>
+                          <h3>BOOK FOLLOWUP</h3>
+                          {appointmentDetails &&
+                            appointmentDetails.doctorInfo &&
+                            appointmentDetails.doctorInfo.fullName && (
+                              <h6>With {appointmentDetails.doctorInfo.fullName}</h6>
+                            )}
+                        </div>
+                      )}
                     <div className={classes.cardBottomActons}>
                       <AphButton
                         onClick={() => {
@@ -481,35 +487,6 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
           })}
         </Grid>
       </div>
-
-      <AphDialog open={isScheduledAppPopoverOpen} maxWidth="sm">
-        <AphDialogClose onClick={() => setIsScheduledAppPopoverOpen(false)} title={'Close'} />
-        <AphDialogTitle>Scheduled Appointment</AphDialogTitle>
-        <div className={classes.messageBox}>
-          <p>
-            You have {appointmentType === 'online' ? 'an online consultation' : 'clinic visit'}{' '}
-            scheduled with {currentDoctorName} for {currentApptTime}.
-          </p>
-          <p>Kindly visit the app to continue with the consultation or to make any changes.</p>
-          <a className={classes.appDownloadBtn} href={getAppStoreLink()} target="_blank">
-            Download Apollo247 App
-          </a>
-        </div>
-      </AphDialog>
-
-      <AphDialog open={isAppDetailsPopoverOpen} maxWidth="sm">
-        <AphDialogClose onClick={() => setIsAppDetailsPopoverOpen(false)} title={'Close'} />
-        <AphDialogTitle>Appointment Details</AphDialogTitle>
-        <div className={classes.messageBox}>
-          <p className={classes.textCenter}>
-            Kindly visit the app to access your appointment details.
-          </p>
-          <p className={classes.textCenter}>Download the app by clicking below.</p>
-          <a className={classes.appDownloadBtn} href={getAppStoreLink()} target="_blank">
-            Download Apollo247 App
-          </a>
-        </div>
-      </AphDialog>
     </div>
   );
 };
