@@ -2404,7 +2404,6 @@ const sendDailyAppointmentSummary: Resolver<
   //const doctors = await doctorRepo.getAllDoctors('0', args.docLimit, args.docOffset);
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const allAppts = await appointmentRepo.getTodaysAppointments(new Date());
-  console.log(allAppts, 'all appts');
   const countOfNotifications = await new Promise<Number>(async (resolve, reject) => {
     let doctorsCount = 0;
     let prevDoc = allAppts.length > 0 ? allAppts[0].doctorId : '';
