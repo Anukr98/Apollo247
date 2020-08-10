@@ -183,7 +183,7 @@ module.exports = {
         // Also set `"sideEffects": false` in `package.json`
         sideEffects: true,
         usedExports: true,
-        runtimeChunk: 'single',
+        runtimeChunk: 'multiple',
         moduleIds: 'hashed',
         splitChunks: {
           cacheGroups: {
