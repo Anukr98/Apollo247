@@ -1,5 +1,6 @@
 export interface ValidateCouponRequest {
   mobile: string;
+  email: string;
   billAmount: number;
   coupon: string;
   paymentType: string;

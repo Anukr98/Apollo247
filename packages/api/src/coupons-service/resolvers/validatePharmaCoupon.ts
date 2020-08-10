@@ -11,7 +11,6 @@ import { CouponCategoryApplicable, PharmaDiscountApplicableOn } from 'profiles-s
 import { customerTypeInCoupons } from 'coupons-service/resolvers/validateConsultCoupon';
 import { MedicineOrdersRepository } from 'profiles-service/repositories/MedicineOrdersRepository';
 import { getCouponsList } from 'helpers/couponServices';
-import { CouponsList, CouponsListResponse } from 'types/coupons';
 
 export const validatePharmaCouponTypeDefs = gql`
   enum CouponCategoryApplicable {
