@@ -193,13 +193,6 @@ const initateConferenceTelephoneCall: Resolver<
   fromMobileNumber = doctor.mobileNumber;
   toMobileNumber = patient.mobileNumber;
 
-  if (!doctor) {
-    throw new AphError(AphErrorMessages.GET_DOCTORS_ERROR, undefined, {});
-  }
-
-  fromMobileNumber = doctor.mobileNumber;
-  toMobileNumber = patient.mobileNumber;
-
   const apiBaseUrl = process.env.KALEYRA_OTP_API_BASE_URL;
   const apiUrlWithKey = `${apiBaseUrl}?api_key=${process.env.KALEYRA_NOTIFICATION_API_KEY}`;
   let message = ApiConstants.NOTIFICATION_MSG_FOR_DR_CALL.replace('{0}', patient.firstName);
