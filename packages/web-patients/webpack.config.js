@@ -54,10 +54,33 @@ const plugins = [
       'Apollo 24|7 helps you get treated from Apollo certified doctors at any time of the day, wherever you are. The mobile app has features like e-consultation in 15 minutes, online pharmacy to doorstep delivery of medicines, home diagnostic test and digital vault where you can upload all your medical history.',
     background_color: '#ffffff',
     theme_color: '#fdb714',
+    ios: true,
     icons: [
       {
-        src: path.resolve('src/favicon.svg'),
+        src: path.resolve('src/images/apollo_logo.png'),
         sizes: [96, 128, 192, 256, 384, 512], // multiple sizes
+      },
+      {
+        src: path.resolve('src/images/apollo_logo.jpg'),
+        size: '1024x1024',
+        purpose: 'maskable',
+      },
+      {
+        src: path.resolve('src/images/apollo_logo.png'),
+        sizes: [120, 152, 167, 180, 1024],
+        destination: path.join('icons', 'ios'),
+        ios: true,
+      },
+      {
+        src: path.resolve('src/images/apollo_logo.png'),
+        size: 1024,
+        destination: path.join('icons', 'ios'),
+        ios: 'startup',
+      },
+      {
+        src: path.resolve('src/images/apollo_logo.png'),
+        sizes: [36, 48, 72, 96, 144, 192, 512],
+        destination: path.join('icons', 'android'),
       },
     ],
   }),
@@ -155,6 +178,17 @@ module.exports = {
         // Also set `"sideEffects": false` in `package.json`
         sideEffects: true,
         usedExports: true,
+        runtimeChunk: 'single',
+        moduleIds: 'hashed',
+        splitChunks: {
+          cacheGroups: {
+            vendor: {
+              test: /[\\/]node_modules[\\/]/,
+              name: 'vendors',
+              chunks: 'all',
+            },
+          },
+        },
       },
 
   devServer: isLocal

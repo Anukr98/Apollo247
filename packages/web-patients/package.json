@@ -14,7 +14,8 @@
     "lint:fix": "eslint src --ext .ts,.tsx,.js,.jsx --fix",
     "start": "npm run apollo:codegen && webpack-dev-server",
     "test": "cypress open --project src",
-    "typecheck": "tsc --project . --noEmit"
+    "typecheck": "tsc --project . --noEmit",
+    "startDev": "http-server dist"
   },
   "devDependencies": {
     "@aph/api-schema": "file:../api-schema",
