@@ -326,14 +326,15 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [loading, setLoading] = useState<boolean>(false);
   const { isIphoneX } = DeviceHelper();
 
-  let appointmentData: any = props.navigation.state.params!.data;
+  let appointmentData: any = props.navigation.getParam('data');
   const disableChat =
     props.navigation.getParam('disableChat') ||
     moment(new Date(appointmentData.appointmentDateTime))
       .add(6, 'days')
       .startOf('day')
       .isBefore(moment(new Date()).startOf('day'));
-  // console.log('appointmentData', appointmentData);
+  // console.log('appointmentData >>>>', appointmentData);
+
   const callType = props.navigation.state.params!.callType
     ? props.navigation.state.params!.callType
     : '';
