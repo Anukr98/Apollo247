@@ -14,8 +14,8 @@ import { ApiConstants } from 'ApiConstants';
 
 export const exotelTypeDefs = gql`
   input exotelInput {
-    from: String
-    to: String
+    from: String!
+    to: String!
     appointmentId: String!
     deviceType: DEVICETYPE
   }
@@ -68,8 +68,8 @@ export const exotelTypeDefs = gql`
 `;
 
 type exotelInput = {
-  from?: string;
-  to?: string;
+  from: string;
+  to: string;
   appointmentId: string;
   deviceType?: DEVICETYPE;
 };
