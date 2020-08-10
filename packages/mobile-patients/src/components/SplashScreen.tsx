@@ -7,6 +7,7 @@ import {
   Linking,
   AppStateStatus,
   AppState,
+  DeviceEventEmitter,
 } from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
 import { NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
@@ -104,6 +105,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   useEffect(() => {
     getData('ConsultRoom', undefined, false); // no need to set timeout on didMount
     InitiateAppsFlyer();
+    DeviceEventEmitter.addListener('accept', (params) => {
+      console.log('Accept Params', params);
+      getAppointmentDataAndNavigate(params.appointment_id);
+    });
     setBugfenderPhoneNumber();
     AppState.addEventListener('change', _handleAppStateChange);
     checkForVersionUpdate();
