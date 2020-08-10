@@ -1631,6 +1631,7 @@ export const MedicineCart: React.FC = (props) => {
                                 totalWithCouponDiscount: totalWithCouponDiscount,
                                 deliveryTime: deliveryTime,
                                 validateCouponResult: validateCouponResult,
+                                shopId: shopId,
                               })
                             );
                             history.push(clientRoutes.payMedicine('pharmacy'));
