@@ -10,7 +10,7 @@ import { ONE_APOLLO_STORE_CODE } from 'types/oneApolloTypes';
 
 export const oneApolloTypeDefs = gql`
   type UserDetailResponse {
-    name: String!
+    name: String
     earnedHC: Float!
     availableHC: Float!
     tier: String!

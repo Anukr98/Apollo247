@@ -7,6 +7,7 @@ import {
   Linking,
   AppStateStatus,
   AppState,
+  DeviceEventEmitter,
 } from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
 import { NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
@@ -104,6 +105,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   useEffect(() => {
     getData('ConsultRoom', undefined, false); // no need to set timeout on didMount
     InitiateAppsFlyer();
+    DeviceEventEmitter.addListener('accept', (params) => {
+      console.log('Accept Params', params);
+      getAppointmentDataAndNavigate(params.appointment_id);
+    });
     setBugfenderPhoneNumber();
     AppState.addEventListener('change', _handleAppStateChange);
     checkForVersionUpdate();
@@ -687,8 +692,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
               'top6_specailties',
               'QA_min_value_to_nudge_users_to_avail_free_delivery',
               'min_value_to_nudge_users_to_avail_free_delivery',
-              'QA_pharmacy_homepage',
-              'pharmacy_homepage',
               'Doctor_Partner_Text',
               'QA_Doctor_Partner_Text',
             ]);
@@ -698,22 +701,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
           const needHelpToContactInMessage = snapshot['Need_Help_To_Contact_In'].val();
           needHelpToContactInMessage && setNeedHelpToContactInMessage!(needHelpToContactInMessage);
-
-          const pharmacyHomepageInfoQA = JSON.parse(snapshot['QA_pharmacy_homepage'].val() || null);
-          pharmacyHomepageInfoQA &&
-            AppConfig.APP_ENV != AppEnv.PROD &&
-            updateAppConfig(
-              'PHARMACY_HOMEPAGE_INFO',
-              pharmacyHomepageInfoQA as PharmacyHomepageInfo[]
-            );
-
-          const pharmacyHomepageInfo = JSON.parse(snapshot['pharmacy_homepage'].val() || null);
-          pharmacyHomepageInfo &&
-            AppConfig.APP_ENV == AppEnv.PROD &&
-            updateAppConfig(
-              'PHARMACY_HOMEPAGE_INFO',
-              pharmacyHomepageInfo as PharmacyHomepageInfo[]
-            );
 
           const minValueForPharmacyFreeDelivery = snapshot[
             'Min_Value_For_Pharmacy_Free_Delivery'
