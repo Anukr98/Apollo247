@@ -204,6 +204,9 @@ type CouponData = {
   couponPharmaRule: {
     messageOnCouponScreen: string;
   };
+  couponGenericRule: {
+    isActive: boolean;
+  };
 };
 
 type CouponDetails = CouponData[];
@@ -228,6 +231,9 @@ const getPharmaCouponList: Resolver<
       code: item.coupon,
       couponPharmaRule: {
         messageOnCouponScreen: item.message,
+      },
+      couponGenericRule: {
+        isActive: true,
       },
     };
     couponDetails.push(singleCoupon);
