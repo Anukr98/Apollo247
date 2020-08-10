@@ -40,11 +40,18 @@ export enum WebEngageEventName {
   PHARMACY_PAYMENT_INITIATED = 'Pharmacy Payment Initiated',
   DIAGNOSTIC_PAYMENT_INITIATED = 'Diagnostic Payment Initiated',
   UPLOAD_PRESCRIPTION_CLICKED = 'Pharmacy Upload Prescription Clicked',
+  CART_UPLOAD_PRESCRIPTION_CLICKED = 'Cart - upload prescription',
+  ITEMS_REMOVED_FROM_CART = 'Items removed from cart',
+  CART_APPLY_COUPON_CLCIKED = 'Pharmacy cart - Apply coupon clicked',
+  CART_COUPON_APPLIED = 'Pharmacy cart - coupon applied',
   UPLOAD_PRESCRIPTION_IMAGE_UPLOADED = 'Upload Prescription Image Uploaded',
   UPLOAD_PRESCRIPTION_OPTION_SELECTED = 'Upload Prescription Option Selected',
   UPLOAD_PRESCRIPTION_SUBMIT_CLICKED = 'Upload Prescription Submit Clicked',
+  UPLOAD_PRESCRIPTION_ADDRESS_SELECTED = 'Upload prescription - Address selected',
+  UPLOAD_PRESCRIPTION_NEW_ADDRESS = 'Upload prescription - New address added',
   PHARMACY_SUBMIT_PRESCRIPTION = 'Upload Prescription Proceed Clicked',
   PHARMACY_CHECKOUT_COMPLETED = 'Pharmacy Checkout completed',
+  PHARMACY_DETAIL_IMAGE_CLICK = 'Product Detail page Image clicked',
   DIAGNOSTIC_CHECKOUT_COMPLETED = 'Diagnostic Checkout completed',
   DOCTOR_SEARCH = 'Doctor Search',
   SPECIALITY_CLICKED = 'Speciality Clicked',
@@ -278,6 +285,8 @@ export interface WebEngageEvents {
     'product name': string;
     'customer id': string;
     pincode: number;
+    Serviceable: 'Yes' | 'No';
+    'TAT Displayed': number;
   };
   [WebEngageEventName.PRODUCT_DETAIL_TAB_CLICKED]: {
     tabName: string;
@@ -344,6 +353,7 @@ export interface WebEngageEvents {
     'category name'?: string;
     'category ID'?: string;
     Section?: string;
+    'Section Name'?: string;
     af_revenue: number;
     af_currency: string;
     // 'Patient Name': string;
@@ -393,6 +403,7 @@ export interface WebEngageEvents {
     'Service Area': 'Pharmacy' | 'Diagnostic';
   };
   [WebEngageEventName.PHARMACY_CART_VIEWED]: {
+    'Customer ID': string;
     'Total items in cart': number;
     'Sub Total': number;
     'Delivery charge': number;
@@ -434,7 +445,7 @@ export interface WebEngageEvents {
     'Sub Total': number;
     'Delivery charge': number;
     'Net after discount': number;
-    'Prescription Needed?': boolean;
+    'Prescription Needed?': 'Yes' | 'No';
     'Cart ID'?: string; // we don't have cartId before placing order
     'Mode of Delivery': 'Home' | 'Pickup' | 'Home Visit' | 'Clinic Visit';
     'Delivery Date Time'?: string; // Optional (only if Home)
@@ -442,6 +453,8 @@ export interface WebEngageEvents {
     'Service Area': 'Pharmacy' | 'Diagnostic';
     'Store Id'?: string;
     'Store Name'?: string;
+    'Popup Shown'?: boolean;
+    'No. of out of stock items'?: number;
   };
   [WebEngageEventName.DIAGNOSTIC_PROCEED_TO_PAY_CLICKED]: {
     'Total items in cart': number;
@@ -468,8 +481,31 @@ export interface WebEngageEvents {
   [WebEngageEventName.UPLOAD_PRESCRIPTION_CLICKED]: {
     Source: 'Home' | 'Cart';
   };
+  [WebEngageEventName.CART_UPLOAD_PRESCRIPTION_CLICKED]: {
+    'Customer ID': string;
+  };
+  [WebEngageEventName.ITEMS_REMOVED_FROM_CART]: {
+    'Product ID': string;
+    'Customer ID': string;
+    'Product Name': string;
+    'No. of items': number;
+  };
+  [WebEngageEventName.CART_APPLY_COUPON_CLCIKED]: {
+    'Customer ID': string;
+  };
+  [WebEngageEventName.CART_COUPON_APPLIED]: {
+    'Coupon Code': string;
+    'Discounted amount': string | number;
+    'Customer ID': string;
+  };
   [WebEngageEventName.UPLOAD_PRESCRIPTION_OPTION_SELECTED]: {
     OptionSelected: 'Search and add' | 'All Medicine' | 'Call me for details';
+  };
+  [WebEngageEventName.UPLOAD_PRESCRIPTION_ADDRESS_SELECTED]: {
+    Serviceable: 'Yes' | 'No';
+  };
+  [WebEngageEventName.UPLOAD_PRESCRIPTION_NEW_ADDRESS]: {
+    Serviceable: 'Yes' | 'No';
   };
   [WebEngageEventName.UPLOAD_PRESCRIPTION_SUBMIT_CLICKED]: {
     OptionSelected: 'Search and add' | 'All Medicine' | 'Call me for details';
@@ -510,6 +546,10 @@ export interface WebEngageEvents {
     'Store Address'?: string;
     af_revenue: number;
     af_currency: string;
+  };
+  [WebEngageEventName.PHARMACY_DETAIL_IMAGE_CLICK]: {
+    'Product ID': string;
+    'Product Name': string;
   };
   [WebEngageEventName.DIAGNOSTIC_CHECKOUT_COMPLETED]: {
     'Order ID': string | number;
@@ -832,7 +872,7 @@ export interface WebEngageEvents {
     Pincode: string;
   };
   [WebEngageEventName.PHARMACY_CART_ADDRESS_SELECTED_SUCCESS]: {
-    'TAT Displayed'?: Date;
+    'TAT Displayed'?: number;
     'Delivery Successful': YesOrNo; // Yes / No (If Error message shown because it is unservicable)
     'Delivery Address': string;
     Pincode: string;

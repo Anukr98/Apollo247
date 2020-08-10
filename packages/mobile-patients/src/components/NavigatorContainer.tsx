@@ -39,6 +39,7 @@ import {
   createStackNavigator,
   NavigationRouteConfig,
   StackNavigatorConfig,
+  StackViewTransitionConfigs,
 } from 'react-navigation';
 import { HealthRecordsHome } from '@aph/mobile-patients/src/components/HealthRecords/HealthRecordsHome';
 import { ConsultDetails } from '@aph/mobile-patients/src/components/HealthRecords/ConsultDetails';
@@ -472,6 +473,7 @@ const stackConfig: StackNavigatorConfig = {
   initialRouteName: AppRoutes.SplashScreen,
   headerMode: 'none',
   cardStyle: { backgroundColor: 'transparent' },
+  mode: 'card',
   transitionConfig: (sceneProps) => {
     try {
       AsyncStorage.setItem('setCurrentName', sceneProps.scene.route.routeName);
@@ -489,6 +491,7 @@ const stackConfig: StackNavigatorConfig = {
       console.log('sceneProps error', error);
     }
     return {
+      ...StackViewTransitionConfigs.SlideFromRightIOS,
       transitionSpec: {
         duration: sceneProps.scene.route.routeName === 'TabBar' ? 0 : 100,
       },

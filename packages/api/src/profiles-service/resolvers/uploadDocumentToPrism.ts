@@ -94,12 +94,12 @@ export const fetchBlobURLWithPRISMData: Resolver<
   { blobUrl: string }
 > = async (parent, args, { profilesDb, consultsDb }) => {
   if (!args.fileUrl || (args.fileUrl && args.fileUrl.length == 0)) return args.fileUrl;
-  if (args.fileUrl.indexOf('authToken=') < 0) return args.fileUrl;
+  if (args.fileUrl.indexOf('authToken=') < 0) return { blobUrl: args.fileUrl };
 
   //get recordid from the url
   const fileUrlArray = args.fileUrl.split('&');
   const recordId = fileUrlArray.filter((item) => item.indexOf('recordId') >= 0);
-  if (recordId.length == 0) return args.fileUrl;
+  if (recordId.length == 0) return { blobUrl: args.fileUrl };
 
   const prismFileId = recordId[0].replace('recordId=', '');
   console.log('recordId ...', recordId);
@@ -112,7 +112,7 @@ export const fetchBlobURLWithPRISMData: Resolver<
   //check in medical records
   const medicalRepo = profilesDb.getCustomRepository(MedicalRecordsRepository);
   const medicalRecord = await medicalRepo.getBlobUrl(args.patientId, prismFileId, category);
-  if (medicalRecord) return medicalRecord.documentURLs;
+  if (medicalRecord) return { blobUrl: medicalRecord.documentURLs };
 
   //check in appointment documents
   if (category == MedicalRecordType.PRESCRIPTION) {
@@ -125,7 +125,7 @@ export const fetchBlobURLWithPRISMData: Resolver<
         appointmentIds,
         prismFileId
       );
-      if (documentData) return documentData.documentPath;
+      if (documentData) return { blobUrl: documentData.documentPath };
     }
   }
 

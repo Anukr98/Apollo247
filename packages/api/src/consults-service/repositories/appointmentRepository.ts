@@ -1969,6 +1969,15 @@ export class AppointmentRepository extends Repository<Appointment> {
       .getCount();
   }
 
+  getNotStartedAppointments() {
+    return this.createQueryBuilder('appointment')
+      .where('appointment.status = :status', { status: STATUS.PENDING })
+      .andWhere('appointment.appointmentDateTime = :apptDateTime', {
+        apptDateTime: addMinutes(new Date(), -5),
+      })
+      .getMany();
+  }
+
   getAppointmentCountByCouponCode(couponCode: string) {
     return this.createQueryBuilder('appointment')
       .andWhere('appointment.couponCode = :couponCode', { couponCode })
