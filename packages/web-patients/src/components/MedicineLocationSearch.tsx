@@ -25,8 +25,8 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down('xs')]: {
         marginLeft: 'auto',
         borderLeft: 'none',
-        paddingTop: 15,
-        paddingBottom: 15,
+        paddingTop: 0,
+        paddingBottom: 0,
       },
     },
     locationWrap: {
@@ -65,6 +65,7 @@ const useStyles = makeStyles((theme: Theme) => {
     userName: {
       fontSize: 12,
       color: '#01475b',
+      lineHeight: 'normal',
     },
     locationPopRoot: {
       overflow: 'initial',
