@@ -194,11 +194,45 @@ const useStyles = makeStyles((theme: Theme) => {
     textCenter: {
       textAlign: 'center',
     },
+    consultChatContainer: {
+      position: 'relative',
+    },
     consultChat: {
       borderTop: '1px solid  rgb(2,71,91, 0.4)',
       paddingTop: 10,
       marginTop: 6,
       textAlign: 'right',
+      '& h3': {
+        fontSize: 13,
+        lineHeight: '24px',
+        color: '#FC9916',
+        margin: 0,
+        textTransform: 'uppercase',
+      },
+      '& h6': {
+        fontSize: 12,
+        fontWeight: '500',
+        lineHeight: '16px',
+        color: '#02475B',
+        margin: 0,
+      },
+      '& h5': {
+        fontSize: 12,
+        fontWeight: '500',
+        lineHeight: '20px',
+        color: '#02475B',
+        margin: '0 0 7px 0',
+        textAlign: 'left',
+      },
+    },
+    bookFollowup: {
+      // borderTop: '1px solid  rgb(2,71,91, 0.4)',
+      paddingTop: 10,
+      marginTop: 6,
+      textAlign: 'left',
+      position: 'absolute',
+      left: 15,
+      top: -6,
       '& h3': {
         fontSize: 13,
         lineHeight: '24px',
@@ -211,6 +245,64 @@ const useStyles = makeStyles((theme: Theme) => {
         lineHeight: '16px',
         color: '#02475B',
         margin: 0,
+      },
+    },
+    chatIcon: {
+      position: 'relative',
+      marginRight: 8,
+    },
+    chatIconCount: {
+      width: 9,
+      height: 9,
+      background: '#FC9916',
+      borderRadius: '50%',
+      color: '#fff',
+      fontSize: 6,
+      lineHeight: '8px',
+      textAlign: 'center',
+      position: 'absolute',
+      fontWeight: 'normal',
+      top: -6,
+      right: -9,
+    },
+    consultIcon: {
+      position: 'relative',
+      top: 3,
+    },
+    presButton: {
+      background: '#0087BA',
+      borderRadius: 10,
+      fontWeight: 500,
+      fontSize: 12,
+      lineHeight: '20px',
+      color: '#fff',
+      width: '100%',
+      textAlign: 'left',
+      textTransform: 'capitalize',
+      marginBottom: 10,
+      '&:hover': {
+        background: '#0087BA',
+      },
+      '& img': {
+        marginRight: 10,
+      },
+    },
+    btnContent: {
+      width: '80%',
+    },
+    errorButton: {
+      background: 'rgba(229,0,0,0.1)',
+      borderRadius: 10,
+      fontWeight: 500,
+      fontSize: 12,
+      lineHeight: '18px',
+      color: '#890000',
+      width: '100%',
+      textAlign: 'left',
+      textTransform: 'none',
+      marginBottom: 10,
+      '&:hover': {
+        background: 'rgba(229,0,0,0.1)',
       },
     },
   };
@@ -334,8 +426,8 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                 return day1.diff(day2, 'days') == 0
                   ? 'Today'
                   : day1.diff(day2, 'days') +
-                      ' more ' +
-                      (day1.diff(day2, 'days') == 1 ? 'day' : 'days');
+                  ' more ' +
+                  (day1.diff(day2, 'days') == 1 ? 'day' : 'days');
               };
               const clinicList = doctorHospital || [];
               let facilityName = '',
@@ -350,7 +442,7 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                 facilityName = clinicList[0].facility.name;
                 streetName =
                   clinicList[0].facility.streetLine1 &&
-                  clinicList[0].facility.streetLine1.length > 0
+                    clinicList[0].facility.streetLine1.length > 0
                     ? clinicList[0].facility.streetLine1
                     : '';
               }
@@ -383,7 +475,7 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                         <div
                           className={`${classes.availability} ${
                             difference <= 15 && difference > 0 ? classes.availableNow : ''
-                          }`}
+                            }`}
                         >
                           {appointmentDetails.appointmentType === 'ONLINE'
                             ? difference <= 15 && difference > 0
@@ -412,32 +504,54 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                             {appointmentDetails.appointmentType === APPOINTMENT_TYPE.ONLINE ? (
                               <img src={require('images/ic-video.svg')} alt="" />
                             ) : (
-                              <img src={require('images/fa-solid-hospital.svg')} alt="" />
-                            )}
+                                <img src={require('images/fa-solid-hospital.svg')} alt="" />
+                              )}
                           </span>
                         </div>
                       </div>
                     </div>
-                    <div className={classes.consultChat}>
-                      <h3>
-                        {appointmentDetails.isFollowUp === 'false' &&
-                          showAppointmentAction(appointmentState, status, isConsultStarted)}
-                      </h3>
-                      <h6>{getConsultationUpdateText(appointmentDetails)}</h6>
+                    <div className={classes.consultChatContainer}>
+                      {/* below div should come to left */}
+                      {appointmentDetails.status === STATUS.COMPLETED &&
+                        !isPastAppointment(appointmentDetails) &&
+                        appointmentDetails.isFollowUp !== 'false' && (
+                          <div className={classes.bookFollowup}>
+                            <h3>BOOK FOLLOWUP</h3>
+                            {appointmentDetails &&
+                              appointmentDetails.doctorInfo &&
+                              appointmentDetails.doctorInfo.fullName && (
+                                <h6>With {appointmentDetails.doctorInfo.fullName}</h6>
+                              )}
+                          </div>
+                        )}
+                      <div className={classes.consultChat}>
+                        <h5>Previous Prescription</h5>
+                        <AphButton className={classes.presButton}>
+                          <img src={require('images/ic_prescription_white.svg')} alt="" />
+                          <span className={classes.btnContent}>Cytoplam, Metformin, Insulin…</span>
+                          <img src={require('images/ic_arrow_right_white.svg')} alt="" />
+                        </AphButton>
+                        <AphButton className={classes.errorButton}>
+                          Sorry, we had to reschedule this appointment. Please pick another slot.
+                        </AphButton>
+                        <h3>
+                          {appointmentDetails.isFollowUp === 'false' &&
+                            showAppointmentAction(appointmentState, status, isConsultStarted)}
+                        </h3>
+                        <h6>{getConsultationUpdateText(appointmentDetails)}</h6>
+                      </div>
+                      {/* below div will render for Follow - Up Chat  */}
+                      {/* <div className={classes.consultChat}>
+                        <h3>
+                          <span className={classes.chatIcon}>
+                            <img className={classes.consultIcon} src={require('images/ic_chatblue.svg')} alt="" />
+                            <span className={classes.chatIconCount}>1</span>
+                          </span>
+                          Chat with Doctor
+                        </h3>
+                        <h6>7 days free chat remaining</h6>
+                      </div> */}
                     </div>
-                    {/* below div should come to left */}
-                    {appointmentDetails.status === STATUS.COMPLETED &&
-                      !isPastAppointment(appointmentDetails) &&
-                      appointmentDetails.isFollowUp !== 'false' && (
-                        <div className={classes.consultChat}>
-                          <h3>BOOK FOLLOWUP</h3>
-                          {appointmentDetails &&
-                            appointmentDetails.doctorInfo &&
-                            appointmentDetails.doctorInfo.fullName && (
-                              <h6>With {appointmentDetails.doctorInfo.fullName}</h6>
-                            )}
-                        </div>
-                      )}
                     <div className={classes.cardBottomActons}>
                       <Route
                         render={({ history }) => (
@@ -452,18 +566,18 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                                 isConsultStarted
                                   ? history.push(clientRoutes.chatRoom(appointmentId, doctorId))
                                   : addConsultToQueue({
-                                      variables: {
-                                        appointmentId,
-                                      },
+                                    variables: {
+                                      appointmentId,
+                                    },
+                                  })
+                                    .then((res) => {
+                                      history.push(
+                                        clientRoutes.chatRoom(appointmentId, doctorId)
+                                      );
                                     })
-                                      .then((res) => {
-                                        history.push(
-                                          clientRoutes.chatRoom(appointmentId, doctorId)
-                                        );
-                                      })
-                                      .catch((e: ApolloError) => {
-                                        alert(e);
-                                      });
+                                    .catch((e: ApolloError) => {
+                                      alert(e);
+                                    });
                               }
                             }}
                           >
@@ -478,8 +592,8 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                           You can chat with the doctor for {comparingDays()}
                         </div>
                       ) : (
-                        ''
-                      )}
+                          ''
+                        )}
                     </div>
                   </div>
                 </Grid>
