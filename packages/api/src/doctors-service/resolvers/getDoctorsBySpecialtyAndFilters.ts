@@ -16,6 +16,8 @@ import { ApiConstants } from 'ApiConstants';
 import { debugLog } from 'customWinstonLogger';
 import { distanceBetweenTwoLatLongInMeters } from 'helpers/distanceCalculator';
 import { endOfDay, addDays } from 'date-fns';
+import { AphError } from 'AphError';
+import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 
 export const getDoctorsBySpecialtyAndFiltersTypeDefs = gql`
   enum SpecialtySearchType {
@@ -195,7 +197,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
   { filterInput: FilterDoctorInput },
   DoctorsServiceContext,
   FilterDoctorsResult
-> = async (parent, args, {}) => {
+> = async (parent, args, { }) => {
   apiCallId = Math.floor(Math.random() * 1000000);
   callStartTime = new Date();
   identifier = args.filterInput.patientId;
@@ -285,8 +287,12 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
 
   elasticMatch.push({ match: { isSearchable: 'true' } });
 
+  if (!process.env.ELASTIC_INDEX_DOCTORS) {
+    throw new AphError(AphErrorMessages.ELASTIC_INDEX_NAME_MISSING);
+  }
+
   const searchParams: RequestParams.Search = {
-    index: 'doctors',
+    index: process.env.ELASTIC_INDEX_DOCTORS,
     body: {
       size: 1000,
       query: {
@@ -491,7 +497,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
         i < earlyAvailableStarApolloDoctors.length &&
         (j >= earlyAvailableNonStarApolloDoctors.length ||
           earlyAvailableStarApolloDoctors[i].earliestSlotavailableInMinutes <=
-            earlyAvailableNonStarApolloDoctors[j].earliestSlotavailableInMinutes)
+          earlyAvailableNonStarApolloDoctors[j].earliestSlotavailableInMinutes)
       ) {
         earlyAvailableApolloDoctors.push(earlyAvailableStarApolloDoctors[i]);
         i++;
@@ -515,7 +521,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
         i < starDoctor.length &&
         (j >= nonStarDoctor.length ||
           starDoctor[i].earliestSlotavailableInMinutes <=
-            nonStarDoctor[j].earliestSlotavailableInMinutes)
+          nonStarDoctor[j].earliestSlotavailableInMinutes)
       ) {
         docs.push(starDoctor[i]);
         i++;
@@ -535,13 +541,13 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
       .concat(docs);
   }
 
-  function ifKeyExist(arr: any[], key: string, value: string){
-    if(arr.length){
+  function ifKeyExist(arr: any[], key: string, value: string) {
+    if (arr.length) {
       arr = arr.filter((elem: any) => {
         return elem[key] === value
       });
       // if filter returned a non-empty array
-      if(arr.length){
+      if (arr.length) {
         return arr[0];
       }
       return {};
@@ -551,18 +557,18 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
   }
 
 
-  const filters: any = {city: [], brands: [], language: [], experience: [], availability: [], fee: [], gender: []};
-  let cityObj: {state: string, data: string[]};
-  
+  const filters: any = { city: [], brands: [], language: [], experience: [], availability: [], fee: [], gender: [] };
+  let cityObj: { state: string, data: string[] };
+
   // making filters
-  for(const doctor of doctors){
-    for(const hospital of doctor.doctorHospital){
+  for (const doctor of doctors) {
+    for (const hospital of doctor.doctorHospital) {
       cityObj = { state: '', data: [] };
-      if(filters.city.length){
+      if (filters.city.length) {
         cityObj = ifKeyExist(filters.city, 'state', hospital.facility.state);
       }
-      if(cityObj && cityObj.state){
-        if(!cityObj.data.includes(hospital.facility.city)){
+      if (cityObj && cityObj.state) {
+        if (!cityObj.data.includes(hospital.facility.city)) {
           cityObj.data.push(hospital.facility.city);
         }
       } else {
@@ -572,54 +578,54 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
         filters.city.push(cityObj);
       }
     }
-    
+
     // "doctor.photoUrl" needs to be replaced with actual brand images-links
-    if(doctor.doctorType && !("name" in ifKeyExist(filters.brands, 'name', doctor.doctorType))){
-      filters.brands.push({'name': doctor.doctorType, 'image': doctor.photoUrl});
+    if (doctor.doctorType && !("name" in ifKeyExist(filters.brands, 'name', doctor.doctorType))) {
+      filters.brands.push({ 'name': doctor.doctorType, 'image': doctor.photoUrl });
     }
 
-    if(doctor.languages instanceof Array){
-      for(const language of doctor.languages){
-        if(!("name" in ifKeyExist(filters.language, 'name', language))){
-          filters.language.push({'name': language});
+    if (doctor.languages instanceof Array) {
+      for (const language of doctor.languages) {
+        if (!("name" in ifKeyExist(filters.language, 'name', language))) {
+          filters.language.push({ 'name': language });
         }
       }
       doctor.languages = doctor.languages.join(', ');
     }
 
-    if(doctor.experience_range && !("name" in ifKeyExist(filters.experience, 'name', doctor.experience_range))){
-      filters.experience.push({'name': doctor.experience_range});
-    }
-    
-    if(doctor.fees_range && !("name" in ifKeyExist(filters.fee, 'name', doctor.fees_range))){
-      filters.fee.push({'name': doctor.fees_range});
+    if (doctor.experience_range && !("name" in ifKeyExist(filters.experience, 'name', doctor.experience_range))) {
+      filters.experience.push({ 'name': doctor.experience_range });
     }
 
-    if(doctor.gender && !("name" in ifKeyExist(filters.gender, 'name', doctor.gender))){
-      filters.gender.push({'name': doctor.gender});
+    if (doctor.fees_range && !("name" in ifKeyExist(filters.fee, 'name', doctor.fees_range))) {
+      filters.fee.push({ 'name': doctor.fees_range });
+    }
+
+    if (doctor.gender && !("name" in ifKeyExist(filters.gender, 'name', doctor.gender))) {
+      filters.gender.push({ 'name': doctor.gender });
     }
 
   }
 
   const dayEndMinutes = differenceInMinutes(endOfDay(new Date()), (new Date()));
   const twoDaysEndMinutes = differenceInMinutes(endOfDay(addDays(new Date(), 1)), (new Date()));
-  for(const availablity of finalDoctorNextAvailSlots){
-    if(241 > availablity.availableInMinutes){
-      if(!("name" in ifKeyExist(filters.availability, 'name', 'Now'))){
-        filters.availability.push({'name': 'Now'});
+  for (const availablity of finalDoctorNextAvailSlots) {
+    if (241 > availablity.availableInMinutes) {
+      if (!("name" in ifKeyExist(filters.availability, 'name', 'Now'))) {
+        filters.availability.push({ 'name': 'Now' });
       }
     }
-    if(dayEndMinutes > availablity.availableInMinutes && availablity.availableInMinutes > 240) {
-      if(!("name" in ifKeyExist(filters.availability, 'name', 'Today'))){
-        filters.availability.push({'name': 'Today'});
+    if (dayEndMinutes > availablity.availableInMinutes && availablity.availableInMinutes > 240) {
+      if (!("name" in ifKeyExist(filters.availability, 'name', 'Today'))) {
+        filters.availability.push({ 'name': 'Today' });
       }
-    } else if(twoDaysEndMinutes > availablity.availableInMinutes){
-      if(!("name" in ifKeyExist(filters.availability, 'name', 'Tomorrow'))){
-        filters.availability.push({'name': 'Tomorrow'});
+    } else if (twoDaysEndMinutes > availablity.availableInMinutes) {
+      if (!("name" in ifKeyExist(filters.availability, 'name', 'Tomorrow'))) {
+        filters.availability.push({ 'name': 'Tomorrow' });
       }
     } else if (availablity.availableInMinutes > twoDaysEndMinutes) {
-      if(!("name" in ifKeyExist(filters.availability, 'name', 'Next 3 Days'))){
-        filters.availability.push({'name': 'Next 3 Days'});
+      if (!("name" in ifKeyExist(filters.availability, 'name', 'Next 3 Days'))) {
+        filters.availability.push({ 'name': 'Next 3 Days' });
       }
     }
   }

@@ -20,7 +20,6 @@ import {
   CONSULTS_RX_SEARCH_FILTER,
   REQUEST_ROLES,
   PATIENT_TYPE,
-  ES_DOCTOR_SLOT_STATUS,
   AppointmentUpdateHistory,
 } from 'consults-service/entities';
 import { AppointmentDateTime } from 'doctors-service/resolvers/getDoctorsBySpecialtyAndFilters';
@@ -43,7 +42,6 @@ import { PatientRepository } from 'profiles-service/repositories/patientReposito
 //import { DoctorNextAvaialbleSlotsRepository } from 'consults-service/repositories/DoctorNextAvaialbleSlotsRepository';
 import { log } from 'customWinstonLogger';
 import { ApiConstants } from 'ApiConstants';
-import { Client, RequestParams } from '@elastic/elasticsearch';
 import { getCache, setCache, delCache } from 'consults-service/database/connectRedis';
 
 const REDIS_APPOINTMENT_ID_KEY_PREFIX: string = 'patient:appointment:';
@@ -2011,36 +2009,6 @@ export class AppointmentRepository extends Repository<Appointment> {
         status1: STATUS.PAYMENT_PENDING,
       })
       .getCount();
-  }
-
-  async updateDoctorSlotStatusES(
-    doctorId: string,
-    apptDate: string,
-    apptSlot: string,
-    slotType: APPOINTMENT_TYPE,
-    status: ES_DOCTOR_SLOT_STATUS
-  ) {
-    const client = new Client({ node: process.env.ELASTIC_CONNECTION_URL });
-    const updateDoc: RequestParams.Update = {
-      index: 'doctors',
-      id: doctorId,
-      body: {
-        script: {
-          source:
-            'for (int i = 0; i < ctx._source.doctorSlots.length; ++i) { if(ctx._source.doctorSlots[i].slotDate == params.slotDate) { for(int k=0;k<ctx._source.doctorSlots[i].slots.length;k++){if(ctx._source.doctorSlots[i].slots[k].slot == params.slot){ ctx._source.doctorSlots[i].slots[k].status = params.status;}}}}',
-          params: {
-            slotDate: apptDate,
-            slot: apptSlot,
-            slotType,
-            status,
-          },
-        },
-      },
-    };
-    const updateResp = await client.update(updateDoc).catch((error) => {
-      console.log(error, 'update error in slot');
-    });
-    console.log(updateResp, 'updateResp');
   }
 
   getAllDoctorAppointments(doctorId: string, apptDate: Date) {
