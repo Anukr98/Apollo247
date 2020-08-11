@@ -155,6 +155,7 @@ import BackgroundTimer from 'react-native-background-timer';
 import { UploadPrescriprionPopup } from '../Medicines/UploadPrescriprionPopup';
 import { ChatRoom_NotRecorded_Value } from '@aph/mobile-patients/src/strings/strings.json';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import RNCallKeep from 'react-native-callkeep';
 
 interface OpentokStreamObject {
   connection: {
@@ -655,6 +656,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     setTimeout(() => {
       CheckDoctorPresentInChat();
     }, 2000);
+    handleCallkitEventListeners();
   }, []);
 
   useEffect(() => {
@@ -664,6 +666,50 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     KeepAwake.activate();
     AppState.addEventListener('change', _handleAppStateChange);
   }, []);
+
+  const handleCallkitEventListeners = () => {
+    RNCallKeep.addEventListener('endCall', onDisconnetCallAction);
+  }
+
+  const onDisconnetCallAction = () => {
+    setIsCall(false);
+              setIsPublishAudio(true);
+              setShowVideo(true);
+              setCameraPosition('front');
+              stopTimer();
+              setHideStatusBar(false);
+              setChatReceived(false);
+
+              pubnub.publish(
+                {
+                  message: {
+                    isTyping: true,
+                    message: 'Video call ended',
+                    duration: callTimerStarted,
+                    id: patientId,
+                    messageDate: new Date(),
+                  },
+                  channel: channel,
+                  storeInHistory: true,
+                },
+                (status, response) => {}
+              );
+
+              pubnub.publish(
+                {
+                  message: {
+                    isTyping: true,
+                    message: endCallMsg,
+                    id: patientId,
+                    messageDate: new Date(),
+                  },
+                  channel: channel,
+                  storeInHistory: true,
+                },
+                (status, response) => {}
+              );
+            
+  }
 
   const playSound = () => {
     try {

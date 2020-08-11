@@ -4,8 +4,12 @@ import android.app.Application;
 import android.content.Context;
 import com.facebook.react.PackageList;
 import com.facebook.react.ReactApplication;
+<<<<<<< HEAD
 import com.reactcommunity.rndatetimepicker.RNDateTimePickerPackage;
 import com.microsoft.codepush.react.CodePush;
+=======
+import io.wazo.callkeep.RNCallKeepPackage;
+>>>>>>> origin/APP-3085
 import com.ocetnik.timer.BackgroundTimerPackage;
 import com.brentvatne.react.ReactVideoPackage;
 import com.zmxv.RNSound.RNSoundPackage;

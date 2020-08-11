@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   StyleSheet,
   View,
@@ -26,6 +26,7 @@ import {
   CommonBugFender,
   setBugFenderLog,
   setBugfenderPhoneNumber,
+  isIos,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import {
@@ -45,6 +46,9 @@ import {
   WebEngageEvents,
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import RNCallKeep from 'react-native-callkeep';
+import VoipPushNotification from 'react-native-voip-push-notification';
+import { string } from '../strings/string';
 
 // The moment we import from sdk @praktice/navigator-react-native-sdk,
 // finally not working on all promises.
@@ -101,6 +105,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const { showAphAlert, hideAphAlert } = useUIElements();
   const [appState, setAppState] = useState(AppState.currentState);
   const client = useApolloClient();
+  const voipAppointmentId = useRef<string>('');
+
   // const { setVirtualConsultationFee } = useAppCommonData();
 
   useEffect(() => {
@@ -131,6 +137,48 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   useEffect(() => {
     handleDeepLink();
   }, []);
+  
+  useEffect(() => {
+    if (isIos()) {
+      initializeCallkit();
+      handleVoipEventListeners();
+    }
+  }, [])
+
+  const initializeCallkit = () => {
+    const callkeepOptions = {
+      ios: {
+        appName: string.LocalStrings.appName,
+        imageName: 'callkitAppIcon.png'
+      }
+    };
+
+    try {
+      RNCallKeep.setup(callkeepOptions);
+    } catch (err) {
+      CommonBugFender('InitializeCallKeep_Error', err.message);
+    }
+
+    // Add RNCallKeep Events
+    RNCallKeep.addEventListener('answerCall', onAnswerCallAction);
+  }
+  
+  const handleVoipEventListeners = () => {
+    VoipPushNotification.addEventListener('notification', (notification) => {
+      //on receive voip push
+      
+      if(notification && notification.getData() && notification.getData().appointmentId){
+        voipAppointmentId.current = notification.getData().appointmentId;
+      }
+      if(notification && notification.getData() && notification.getData().disconnectCall){
+        RNCallKeep.endAllCalls();
+      }
+    });
+  }
+
+  const onAnswerCallAction = () => {
+    getAppointmentDataAndNavigate(voipAppointmentId.current);
+  }
 
   const handleDeepLink = () => {
     try {
