@@ -793,18 +793,14 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
   const todaysAppointments: AppointmentsType[] = [];
   const activeAppointments: AppointmentsType[] = [];
   const followUpAppointments: AppointmentsType[] = [];
-  const pastAppointments: AppointmentsType[] =
-    filteredAppointmentsList &&
-    filteredAppointmentsList.filter((appointmentDetails) => {
-      return (
-        appointmentDetails.status === STATUS.CANCELLED ||
-        (appointmentDetails.status === STATUS.COMPLETED && isPastAppointment(appointmentDetails))
-      );
-    });
+  const pastAppointments: AppointmentsType[] = [];
 
   filteredAppointmentsList &&
     filteredAppointmentsList.forEach((appointmentDetails) => {
-      if (appointmentDetails.status !== STATUS.CANCELLED) {
+      if (
+        appointmentDetails.status !== STATUS.CANCELLED &&
+        !isPastAppointment(appointmentDetails)
+      ) {
         const tomorrowAvailabilityHourTime = moment('00:00', 'HH:mm');
         const tomorrowAvailabilityTime = moment()
           .add('days', 1)
@@ -823,6 +819,8 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
             ? followUpAppointments.push(appointmentDetails)
             : activeAppointments.push(appointmentDetails);
         }
+      } else {
+        pastAppointments.push(appointmentDetails);
       }
     });
 
