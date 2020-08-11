@@ -11,6 +11,8 @@ import {
   validatePharmaCoupon_validatePharmaCoupon_pharmaLineItemsWithDiscountedPrice,
 } from '@aph/mobile-patients/src/graphql/types/validatePharmaCoupon';
 import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { addToCartTagalysEvent } from '@aph/mobile-patients/src/helpers/Tagalys';
 
 export interface ShoppingCartItem {
   id: string;
@@ -181,6 +183,7 @@ const showGenericAlert = (message: string) => {
 };
 
 export const ShoppingCartProvider: React.FC = (props) => {
+  const { currentPatient } = useAllCurrentPatients();
   const [cartItems, _setCartItems] = useState<ShoppingCartContextProps['cartItems']>([]);
   const [couponDiscount, setCouponDiscount] = useState<ShoppingCartContextProps['couponDiscount']>(
     0
@@ -261,6 +264,10 @@ export const ShoppingCartProvider: React.FC = (props) => {
     if (cartItems.find((item) => item.id == itemToAdd.id)) {
       return;
     }
+    addToCartTagalysEvent(
+      { sku: itemToAdd.id, quantity: itemToAdd.quantity },
+      g(currentPatient, 'id')
+    );
     const newCartItems = [itemToAdd, ...cartItems];
     setCartItems(newCartItems);
   };
@@ -276,6 +283,9 @@ export const ShoppingCartProvider: React.FC = (props) => {
       ...itemsToAdd.filter((v, i, a) => a.findIndex((t) => t.id === v.id) === i),
     ];
     // console.log('newCartItems\n', { newCartItems });
+    newCartItems.forEach((i) =>
+      addToCartTagalysEvent({ sku: i.id, quantity: i.quantity }, g(currentPatient, 'id'))
+    );
     setCartItems(newCartItems);
   };
 
@@ -286,6 +296,10 @@ export const ShoppingCartProvider: React.FC = (props) => {
   const updateCartItem: ShoppingCartContextProps['updateCartItem'] = (itemUpdates) => {
     const foundIndex = cartItems.findIndex((item) => item.id == itemUpdates.id);
     if (foundIndex !== -1) {
+      addToCartTagalysEvent(
+        { sku: cartItems[foundIndex].id, quantity: itemUpdates.quantity || 1 },
+        g(currentPatient, 'id')
+      );
       cartItems[foundIndex] = { ...cartItems[foundIndex], ...itemUpdates };
       setCartItems([...cartItems]);
     }
