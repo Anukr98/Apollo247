@@ -100,7 +100,7 @@ import {
   MedicineOrderAddress
 } from 'profiles-service/entities';
 import { AppointmentEntitySubscriber } from 'consults-service/entities/observers/appointmentObserver';
-
+import { migrationDir } from 'ApiConstants';
 export const connect = async () => {
   return await createConnections([
     {
@@ -142,7 +142,7 @@ export const connect = async () => {
       subscribers: [AppointmentEntitySubscriber],
       logging: process.env.NODE_ENV === 'production' ? false : true,
       synchronize: false,
-      migrations: ["dist/migration/**/*.js"],
+      migrations: [migrationDir.consults_db],
       extra: {
         connectionLimit: process.env.CONNECTION_POOL_LIMIT,
       },
@@ -185,7 +185,7 @@ export const connect = async () => {
       logging: process.env.NODE_ENV === 'production' ? false : true,
       migrationsRun: true,
       synchronize: false,
-      migrations: ["dist/migration/**/*.js"],
+      migrations: [migrationDir.doctors_db],
       extra: {
         connectionLimit: process.env.CONNECTION_POOL_LIMIT,
       },
@@ -243,7 +243,7 @@ export const connect = async () => {
       subscribers: [PatientEntitiySubscriber],
       migrationsRun: true,
       synchronize: false,
-      migrations: ["dist/migration/**/*.js"],
+      migrations: [migrationDir.profiles_db],
       logging: process.env.NODE_ENV === 'production' ? false : true,
       extra: {
         connectionLimit: process.env.CONNECTION_POOL_LIMIT,
