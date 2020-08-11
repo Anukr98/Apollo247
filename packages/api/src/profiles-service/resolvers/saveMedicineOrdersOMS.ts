@@ -199,7 +199,6 @@ const saveMedicineOrderOMS: Resolver<
 ) => {
   const errorCode = 0,
     errorMessage = '';
-  const medicineOrderAddressDetails: Partial<MedicineOrderAddress> = {};
 
   if (!medicineCartOMSInput.items || medicineCartOMSInput.items.length == 0) {
     throw new AphError(AphErrorMessages.CART_EMPTY_ERROR, undefined, {});
@@ -209,9 +208,14 @@ const saveMedicineOrderOMS: Resolver<
   if (!patientDetails) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
-  if (!medicineCartOMSInput.patientAddressId && !medicineCartOMSInput.shopId) {
+  const deliveryType = medicineCartOMSInput.medicineDeliveryType;
+  if (
+    deliveryType == MEDICINE_DELIVERY_TYPE.HOME_DELIVERY &&
+    !medicineCartOMSInput.patientAddressId
+  ) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ADDRESS_ID, undefined, {});
   }
+  const medicineOrderAddressDetails: Partial<MedicineOrderAddress> = {};
   if (medicineCartOMSInput.patientAddressId) {
     const patientAddressRepo = profilesDb.getCustomRepository(PatientAddressRepository);
     const patientAddressDetails = await patientAddressRepo.findById(
@@ -233,14 +237,11 @@ const saveMedicineOrderOMS: Resolver<
       medicineOrderAddressDetails.stateCode = patientAddressDetails.stateCode;
     }
   }
+  // validate items prices and coupon for web orders
   if (medicineCartOMSInput.bookingSource == BOOKING_SOURCE.WEB) {
     let orderLineItems;
-    if (medicineCartOMSInput.medicineDeliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP) {
-      if (medicineCartOMSInput.shopId) {
-        orderLineItems = await validateStoreItems(medicineCartOMSInput);
-      } else {
-        throw new AphError(AphErrorMessages.INVALID_SHOP_ID_STORE_PICKUP, undefined, {});
-      }
+    if (medicineCartOMSInput.shopId) {
+      orderLineItems = await validateStoreItems(medicineCartOMSInput);
     } else {
       orderLineItems = await validatePharmaItems(medicineCartOMSInput);
     }
