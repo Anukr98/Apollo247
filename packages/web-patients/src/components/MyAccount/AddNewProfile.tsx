@@ -69,7 +69,12 @@ const useStyles = makeStyles((theme: Theme) => {
         fontSize: 14,
         fontWeight: 500,
         color: theme.palette.secondary.dark,
+        transform: 'none',
+        '&:disable': {
+          color: '#f00',
+        },
       },
+
     },
     noMargin: {
       marginBottom: 5,
@@ -216,7 +221,15 @@ const useStyles = makeStyles((theme: Theme) => {
       '&:hover': {
         backgroundColor: '#fff',
       },
-    }
+    },
+    disabledInput: {
+      '& label': {
+        color: '#02475b !important',
+      },
+      '& input': {
+        opacity: '0.5 !important',
+      },
+    },
   };
 });
 
@@ -475,12 +488,14 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
                   </div> */}
                   <FormControl
                     className={`${classes.formControl} ${classes.noMargin}`}
+                    ref={disableFieldsRef}
                     onClick={selectedPatientId.length ? () => setIsDisablePopoverOpen(true) : () => { }}
                     fullWidth>
                     <AphTextField
                       label="Full Name"
                       placeholder="First Name"
                       inputProps={{ maxLength: 20 }}
+                      className={selectedPatientId.length > 0 ? classes.disabledInput : ''}
                       value={firstName}
                       disabled={selectedPatientId.length > 0}
                       onChange={(e) => {
@@ -501,11 +516,14 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
                       </FormHelperText>
                     ) : null}
                   </FormControl>
-                  <FormControl className={`${classes.formControl}`} fullWidth>
+                  <FormControl className={`${classes.formControl}`}
+                    onClick={selectedPatientId.length ? () => setIsDisablePopoverOpen(true) : () => { }}
+                    fullWidth>
                     <AphTextField
                       placeholder="Last name"
                       inputProps={{ maxLength: 20 }}
                       disabled={selectedPatientId.length > 0}
+                      className={selectedPatientId.length > 0 ? classes.disabledInput : ''}
                       value={lastName}
                       onChange={(e) => {
                         setLastName(e.target.value);
@@ -525,7 +543,9 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
                       </FormHelperText>
                     ) : null}
                   </FormControl>
-                  <FormControl className={classes.formControl} fullWidth>
+                  <FormControl className={classes.formControl}
+                    onClick={selectedPatientId.length ? () => setIsDisablePopoverOpen(true) : () => { }}
+                    fullWidth>
                     <AphTextField
                       label="Date Of Birth"
                       placeholder="dd/mm/yyyy"
@@ -535,6 +555,7 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
                       onChange={(e) => {
                         setDob(e.target.value);
                       }}
+                      className={selectedPatientId.length > 0 ? classes.disabledInput : ''}
                       onBlur={(e) => {
                         setIsValidDob(isDobValid(e.target.value));
                       }}
@@ -550,7 +571,11 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
                       </FormHelperText>
                     ) : null}
                   </FormControl>
-                  <FormControl className={classes.formControl}>
+                  <FormControl className={classes.formControl}
+
+                    onClick={selectedPatientId.length ? () => setIsDisablePopoverOpen(true) : () => { }}
+
+                  >
                     <label>Gender</label>
                     <Grid container spacing={2} className={classes.btnGroup}>
                       {orderedGenders.map((gender) => {
