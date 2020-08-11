@@ -32,6 +32,9 @@ import { UploadEPrescriptionCard } from 'components/Prescriptions/UploadEPrescri
 import { MetaTagsComp } from 'MetaTagsComp';
 import moment from 'moment';
 import { useHistory } from 'react-router';
+import { Link } from 'react-router-dom';
+import { useShoppingCart } from 'components/MedicinesCartProvider';
+import { useDiagnosticsCart } from 'components/Tests/DiagnosticsCartProvider';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -80,7 +83,7 @@ const useStyles = makeStyles((theme: Theme) => {
         margin: 0,
         paddingLeft: 20,
         paddingRight: 20,
-        boxShadow: '0 15px 20px 0 rgba(0, 0, 0, 0.1)',
+        boxShadow: '0px 0px 5px rgba(128, 128, 128, 0.2)',
         textAlign: 'center',
       },
     },
@@ -90,7 +93,8 @@ const useStyles = makeStyles((theme: Theme) => {
         padding: '20px',
       },
       [theme.breakpoints.down('xs')]: {
-        marginTop: 99,
+        marginTop: 27,
+        background: '#F7F8F5',
       },
     },
     medicineDetailsHeader: {
@@ -178,8 +182,9 @@ const useStyles = makeStyles((theme: Theme) => {
       },
       [theme.breakpoints.down(768)]: {
         display: 'flex',
-        padding: '20px 0 0 0',
         backgroundColor: '#f7f8f5',
+        flexDirection: 'row-reverse',
+        justifyContent: 'flex-end',
       },
     },
     noImageWrapper: {
@@ -191,8 +196,13 @@ const useStyles = makeStyles((theme: Theme) => {
       },
       [theme.breakpoints.down('xs')]: {
         width: 80,
-        position: 'absolute',
-        marginLeft: 20,
+        height: 80,
+        borderRadius: '50%',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: '#fff',
+        boxShadow: '0px 0px 5px rgba(128, 128, 128, 0.2)',
       },
       '& img': {
         width: '100%',
@@ -208,6 +218,7 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down('xs')]: {
         paddingTop: 0,
         paddingLeft: 0,
+        width: '70%',
       },
       '& h2': {
         fontSize: 20,
@@ -218,10 +229,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     productBasicInfo: {
-      [theme.breakpoints.down('xs')]: {
-        paddingLeft: 115,
-        minHeight: 160,
-      },
+      [theme.breakpoints.down('xs')]: {},
     },
     productDetailed: {
       [theme.breakpoints.down('xs')]: {
@@ -258,7 +266,7 @@ const useStyles = makeStyles((theme: Theme) => {
       borderRadius: 0,
       minHeight: 'auto',
       borderBottom: '0.5px solid rgba(2,71,91,0.3)',
-      margin: '5px 0 0 0',
+      // margin: '5px 0 0 0',
       '& svg': {
         color: '#02475b',
       },
@@ -278,17 +286,17 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 500,
       textAlign: 'center',
       color: '#02475b',
-      padding: '10px 0',
+      padding: '10px 12px',
       textTransform: 'none',
       opacity: 0.5,
       lineHeight: 'normal',
       minWidth: 'auto',
       minHeight: 'auto',
       flexBasis: 'auto',
-      margin: '0 15px 0 0',
     },
     tabSelected: {
       opacity: 1,
+      fontWeight: 700,
     },
     tabsIndicator: {
       backgroundColor: '#00b38e',
@@ -333,6 +341,9 @@ const useStyles = makeStyles((theme: Theme) => {
       alignItems: 'center',
       marginTop: 8,
       marginBottom: 16,
+      [theme.breakpoints.down('xs')]: {
+        background: '#fff',
+      },
     },
     preImg: {
       marginLeft: 'auto',
@@ -426,6 +437,37 @@ const useStyles = makeStyles((theme: Theme) => {
         marginRight: 10,
       },
     },
+    itemCount: {
+      width: 14,
+      height: 14,
+      borderRadius: '50%',
+      backgroundColor: '#ff748e',
+      position: 'absolute',
+      right: -4,
+      top: -7,
+      fontSize: 9,
+      fontWeight: 'bold',
+      color: theme.palette.common.white,
+      lineHeight: '14px',
+      textAlign: 'center',
+    },
+    cartContainer: {
+      '& a': {
+        position: 'relative',
+        display: 'block',
+      },
+    },
+    mobileView: {
+      [theme.breakpoints.down('xs')]: {
+        display: 'none',
+      },
+    },
+    tabWrapper: {
+      padding: 20,
+      [theme.breakpoints.down('xs')]: {
+        padding: 0,
+      },
+    },
   };
 });
 
@@ -448,6 +490,8 @@ export const MedicineDetails: React.FC = (props) => {
   const [isUploadPreDialogOpen, setIsUploadPreDialogOpen] = React.useState<boolean>(false);
   const [isEPrescriptionOpen, setIsEPrescriptionOpen] = React.useState<boolean>(false);
   const [metaTagProps, setMetaTagProps] = React.useState(null);
+  const { cartItems } = useShoppingCart();
+  const { diagnosticsCartItems } = useDiagnosticsCart();
 
   const apiDetails = {
     skuUrl: process.env.PHARMACY_MED_PROD_SKU_URL,
@@ -821,10 +865,20 @@ export const MedicineDetails: React.FC = (props) => {
                     </div>
                   </a>
                   <div className={classes.detailsHeader}>Product Detail</div>
+                  <div className={classes.cartContainer}>
+                    <Link to={clientRoutes.medicinesCart()}>
+                      <img src={require('images/ic_cart.svg')} alt="Cart" title={'cart'} />
+                      <span className={classes.itemCount}>
+                        {cartItems.length + diagnosticsCartItems.length || 0}
+                      </span>
+                    </Link>
+                  </div>
                 </div>
-
                 <div className={classes.autoSearch}>
-                  <MedicineAutoSearch />
+                  <div className={classes.mobileView}>
+                    <MedicineAutoSearch />
+                  </div>
+
                   <div className={classes.searchRight}>
                     <AphButton
                       className={classes.uploadPreBtn}
@@ -903,44 +957,42 @@ export const MedicineDetails: React.FC = (props) => {
                                 </div>
                               )}
                             </div>
-                            {medicinePharmacyDetails &&
-                            medicinePharmacyDetails.length > 0 &&
-                            medicinePharmacyDetails[0].Overview &&
-                            medicinePharmacyDetails[0].Overview.length > 0 ? (
-                              <>
-                                <Tabs
-                                  value={tabValue}
-                                  variant="scrollable"
-                                  scrollButtons="on"
-                                  classes={{
-                                    root: classes.tabsRoot,
-                                    indicator: classes.tabsIndicator,
-                                  }}
-                                  onChange={(e, newValue) => {
-                                    setTabValue(newValue);
-                                    const overviewData = getData(
-                                      medicinePharmacyDetails[0].Overview
-                                    );
-                                    const tabName = overviewData[newValue].key;
-                                    pharmacyPdpOverviewTracking(tabName);
-                                  }}
-                                >
-                                  {renderOverviewTabs(medicinePharmacyDetails[0].Overview)}
-                                </Tabs>
-                                {renderOverviewTabDesc(medicinePharmacyDetails[0].Overview)}
-                              </>
-                            ) : medicineDetails.description ? (
-                              <div className={classes.productDetailed}>
-                                <div className={classes.productInfo}>Product Information</div>
-                                <div className={classes.productDescription}>
-                                  {medicineDetails.description && (
-                                    <div dangerouslySetInnerHTML={{ __html: renderInfo() }}></div>
-                                  )}
-                                </div>
-                              </div>
-                            ) : null}
                           </div>
                         </div>
+                        {medicinePharmacyDetails &&
+                        medicinePharmacyDetails.length > 0 &&
+                        medicinePharmacyDetails[0].Overview &&
+                        medicinePharmacyDetails[0].Overview.length > 0 ? (
+                          <div className={classes.tabWrapper}>
+                            <Tabs
+                              value={tabValue}
+                              variant="scrollable"
+                              scrollButtons="on"
+                              classes={{
+                                root: classes.tabsRoot,
+                                indicator: classes.tabsIndicator,
+                              }}
+                              onChange={(e, newValue) => {
+                                setTabValue(newValue);
+                                const overviewData = getData(medicinePharmacyDetails[0].Overview);
+                                const tabName = overviewData[newValue].key;
+                                pharmacyPdpOverviewTracking(tabName);
+                              }}
+                            >
+                              {renderOverviewTabs(medicinePharmacyDetails[0].Overview)}
+                            </Tabs>
+                            {renderOverviewTabDesc(medicinePharmacyDetails[0].Overview)}
+                          </div>
+                        ) : medicineDetails.description ? (
+                          <div className={classes.productDetailed}>
+                            <div className={classes.productInfo}>Product Information</div>
+                            <div className={classes.productDescription}>
+                              {medicineDetails.description && (
+                                <div dangerouslySetInnerHTML={{ __html: renderInfo() }}></div>
+                              )}
+                            </div>
+                          </div>
+                        ) : null}
                       </Scrollbars>
                     </div>
                     <MedicineInformation data={medicineDetails} />

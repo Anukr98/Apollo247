@@ -27,7 +27,7 @@ const useStyles = makeStyles((theme: Theme) => {
         position: 'fixed',
         width: '100%',
         top: 84,
-        zIndex: 99,
+        zIndex: 999,
         background: '#fff',
         boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
       },
@@ -53,6 +53,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     searchInput: {
       '& input': {
+        borderRadius: 5,
         [theme.breakpoints.down('xs')]: {
           backgroundColor: '#f7f8f5',
           padding: '15px 33px 15px 12px',

@@ -173,6 +173,7 @@ const useStyles = makeStyles((theme: Theme) => {
         bottom: 0,
         width: '100%',
         background: '#f7f8f5',
+        boxShadow: '0px -2px 5px rgba(128, 128, 128, 0.2)',
       },
     },
     priceGroup: {
@@ -184,6 +185,9 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: '6px 10px',
       display: 'flex',
       alignItems: 'center',
+      [theme.breakpoints.down('xs')]: {
+        padding: 0,
+      },
     },
     medicinePrice: {
       fontSize: 13,
@@ -299,6 +303,17 @@ const useStyles = makeStyles((theme: Theme) => {
     outOfStock: {
       textAlign: 'center',
       padding: 16,
+    },
+    webView: {
+      [theme.breakpoints.down('xs')]: {
+        display: 'none',
+      },
+    },
+    mobileView: {
+      display: 'none',
+      [theme.breakpoints.down('xs')]: {
+        display: 'block',
+      },
     },
   });
 });
@@ -563,20 +578,33 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
             {substitutes && (
               <>
                 <div className={classes.sectionTitle}>Substitute Drugs</div>
-                <div
-                  className={classes.substitutes}
-                  onClick={() => {
-                    setIsSubDrugsPopoverOpen(true);
-                  }}
-                  ref={subDrugsRef}
-                >
+
+                <div className={classes.webView}>
+                  <div
+                    className={classes.substitutes}
+                    onClick={() => {
+                      setIsSubDrugsPopoverOpen(true);
+                    }}
+                    ref={subDrugsRef}
+                  >
+                    <span>
+                      Pick from {substitutes.length} available
+                      {substitutes.length === 1 ? ' substitute' : ' substitutes'}
+                    </span>
+                    <div className={classes.dropDownArrow}>
+                      <img src={require('images/ic_dropdown_green.svg')} alt="" />
+                    </div>
+                  </div>
+                </div>
+                <div className={classes.mobileView}>
                   <span>
                     Pick from {substitutes.length} available
                     {substitutes.length === 1 ? ' substitute' : ' substitutes'}
                   </span>
-                  <div className={classes.dropDownArrow}>
-                    <img src={require('images/ic_dropdown_green.svg')} alt="" />
-                  </div>
+                  <SubstituteDrugsList
+                    data={substitutes}
+                    setIsSubDrugsPopoverOpen={setIsSubDrugsPopoverOpen}
+                  />
                 </div>
               </>
             )}
