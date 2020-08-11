@@ -334,7 +334,8 @@ export const getMedicineDetailsApi = (
 let cancelSearchMedicineApi: Canceler | undefined;
 
 export const searchMedicineApi = async (
-  searchText: string
+  searchText: string,
+  pageId: number = 1
 ): Promise<AxiosResponse<MedicineProductsResponse>> => {
   const CancelToken = Axios.CancelToken;
   cancelSearchMedicineApi && cancelSearchMedicineApi();
@@ -344,6 +345,7 @@ export const searchMedicineApi = async (
     method: 'POST',
     data: {
       params: searchText,
+      page_id: pageId,
     },
     headers: {
       Authorization: config.MED_SEARCH[1],
