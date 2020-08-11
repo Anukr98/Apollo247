@@ -962,6 +962,12 @@ export class CaseSheet extends BaseEntity {
   trackWebEngageEventForCasesheetInsert() {
     trackWebEngageEventForCasesheetInsert(this);
   }
+
+  @AfterUpdate()
+  async dropAppointmentCache() {
+    await delCache(`patient:appointment:${this.appointment.id}`);
+  }
+
 }
 //case sheet ends
 
