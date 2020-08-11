@@ -828,3 +828,15 @@ export const pageViewTracking = (eventName: string) => {
     }
   }
 };
+
+export const buyMedicineClickTracking = (result: string) => {
+  if (typeof window !== 'undefined') {
+    try {
+      window.webengage.track('Buy Medicine clicked - web', {
+        'Customer ID': result,
+      });
+    } catch (err) {
+      console.log('WebEngage Err: ', err);
+    }
+  }
+};

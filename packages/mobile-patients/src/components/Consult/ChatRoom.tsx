@@ -360,14 +360,15 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [loading, setLoading] = useState<boolean>(false);
   const { isIphoneX } = DeviceHelper();
 
-  let appointmentData: any = props.navigation.state.params!.data;
+  let appointmentData: any = props.navigation.getParam('data');
   const disableChat =
     props.navigation.getParam('disableChat') ||
     moment(new Date(appointmentData.appointmentDateTime))
       .add(6, 'days')
       .startOf('day')
       .isBefore(moment(new Date()).startOf('day'));
-  // console.log('appointmentData', appointmentData);
+  // console.log('appointmentData >>>>', appointmentData);
+
   const callType = props.navigation.state.params!.callType
     ? props.navigation.state.params!.callType
     : '';
@@ -691,6 +692,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   useEffect(() => {
     console.log('callType', callType);
     if (callType) {
+      AsyncStorage.setItem('callDisconnected', 'false');
+
       callPermissions(() => {
         if (callType === 'VIDEO') {
           setOnSubscribe(true);
@@ -1470,10 +1473,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       subscriberConnected.current = false;
     },
     error: (error: string) => {
+      AsyncStorage.setItem('callDisconnected', 'true');
       setSnackBar();
       console.log(`There was an error with the publisherEventHandlers: ${JSON.stringify(error)}`);
     },
     otrnError: (error: string) => {
+      AsyncStorage.setItem('callDisconnected', 'true');
       setSnackBar();
       console.log(`There was an error with the publisherEventHandlers: ${JSON.stringify(error)}`);
     },
@@ -1526,6 +1531,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   const sessionEventHandlers = {
     error: (error: string) => {
+      AsyncStorage.setItem('callDisconnected', 'true');
       setSnackBar();
       console.log(`There was an error with the sessionEventHandlers: ${JSON.stringify(error)}`);
     },
@@ -1536,6 +1542,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     connectionDestroyed: (event: string) => {
       console.log('session stream connectionDestroyed!', event);
       eventsAfterConnectionDestroyed();
+      AsyncStorage.getItem('callDisconnected').then((data) => {
+        if (!JSON.parse(data || 'false')) {
+          setSnackbarState(true);
+          setHandlerMessage('Call disconnected due to Network issues at the Doctor side');
+        }
+      });
     },
     sessionConnected: (event: string) => {
       setSnackbarState(false);
@@ -1576,6 +1588,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       }
     },
     otrnError: (error: string) => {
+      AsyncStorage.setItem('callDisconnected', 'true');
       setSnackBar();
       console.log(
         `There was an error with the otrnError sessionEventHandlers: ${JSON.stringify(error)}`
@@ -2437,6 +2450,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       } else if (message.message.message === leaveChatRoom) {
         setDoctorJoinedChat && setDoctorJoinedChat(false);
         setDoctorJoined(false);
+      } else if (message.message.message === endCallMsg) {
+        AsyncStorage.setItem('callDisconnected', 'true');
       }
     } else {
       console.log('succss');
@@ -5781,6 +5796,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           }}
           onPress={() => {
             callPermissions(() => {
+              AsyncStorage.setItem('callDisconnected', 'false');
               setOnSubscribe(false);
               stopTimer();
               startTimer(0);
@@ -5861,6 +5877,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       },
       (status, response) => {}
     );
+    AsyncStorage.setItem('callDisconnected', 'false');
+
     if (isAudio && !patientJoinedCall.current) {
       setIsAudioCall(true);
     } else {

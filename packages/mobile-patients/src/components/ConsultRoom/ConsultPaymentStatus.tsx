@@ -544,10 +544,18 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
           if (appointmentData) {
             try {
               if (appointmentData[0]!.doctorInfo !== null) {
+                props.navigation.dispatch(
+                  StackActions.reset({
+                    index: 0,
+                    key: null,
+                    actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
+                  })
+                );
                 props.navigation.navigate(AppRoutes.ChatRoom, {
                   data: appointmentData[0],
                   callType: '',
                   prescription: '',
+                  disableChat: false,
                 });
               }
             } catch (error) {}

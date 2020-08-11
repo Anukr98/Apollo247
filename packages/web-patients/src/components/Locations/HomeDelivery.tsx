@@ -219,6 +219,7 @@ type HomeDeliveryProps = {
   setDeliveryTime: (deliveryTime: string) => void;
   deliveryTime: string;
   selectedZipCode: (zipCode: string) => void;
+  checkForPriceUpdate: (shopid: string) => void;
 };
 
 interface TatInterface {
@@ -410,9 +411,10 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
           }),
         }
       )
-      .then(({ data }: any) => {
+      .then(async ({ data }: any) => {
         if (data && data.tat && data.tat[0]) {
           setDeliveryTime(data.tat[0].deliverydate);
+          props.checkForPriceUpdate(data.tat[0].siteId);
           changeCartTatStatus && changeCartTatStatus(true);
         }
       })
@@ -461,7 +463,12 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
               const tatResult = res.data.tat;
 
               const nonDeliverySKUArr = tatResult
-                .filter((item: TatInterface) => getDiffInDays(item.deliverydate) > 10)
+                .filter(
+                  (item: TatInterface) =>
+                    getDiffInDays(item.deliverydate) > 10 ||
+                    item.siteId === '' ||
+                    item.siteId === null
+                )
                 .map((filteredSku: TatInterface) => filteredSku.artCode);
 
               const deliverableSku = tatResult

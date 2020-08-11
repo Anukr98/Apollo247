@@ -447,6 +447,7 @@ export enum ApiConstants {
   WHATSAPP_SD_OTP = 'inf_sd_otp_message',
   WHATSAPP_DOCTOR_BOOKING_CONFIRMATION = 'inf_doctor_consult_booking_confirmation',
   WHATSAPP_SD_CONSULT_DELAY = 'inf_sd_consult_delay_1',
+  WHATSAPP_DOC_SUMMARY = 'inf_doc_8am_summary',
 }
 
 export enum PATIENT_REPO_RELATIONS {

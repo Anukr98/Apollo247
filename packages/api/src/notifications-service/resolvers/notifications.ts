@@ -457,9 +457,10 @@ export async function sendCallsNotification(
     patientDetails.id,
     DEVICE_TYPE.IOS
   );
+
   if (voipPushtoken.length && voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken']) {
     const token = voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken'];
-    const CERT_PATH = process.env.ASSETS_DIRECTORY + '/voipCert.pem';
+    const CERT_PATH = ApiConstants.ASSETS_DIR + '/voipCert.pem';
     const passphrase = process.env.VOIP_CALLKIT_PASSPHRASE || 'apollo@123';
     const domain =
       process.env.VOIP_CALLKIT_DOMAIN || 'https://api.development.push.apple.com/3/device/';
@@ -467,14 +468,15 @@ export async function sendCallsNotification(
     try {
       const curlCommand = `curl -v -d '{"name": ${
         doctorDetails.displayName
-      }, "isVideo": ${true}, "appointmentId" : ${
+        }, "isVideo": ${true}, "appointmentId" : ${
         appointment.id
-      }}' --http2 --cert ${CERT_PATH}:${passphrase} ${domain}${token}`;
+        }}' --http2 --cert ${CERT_PATH}:${passphrase} ${domain}${token}`;
       const resp = child_process.execSync(curlCommand);
-      const result = resp.toString('UTF8');
-      console.info('voipCallKit result > ', result);
+      const result = resp.toString('utf-8');
+      console.info("voipCallKit result > ", result);
+
     } catch (err) {
-      console.error('voipCallKit error > ', err);
+      console.error("voipCallKit error > ", err);
     }
   }
 
@@ -1760,7 +1762,7 @@ export async function sendReminderNotification(
   if (
     pushNotificationInput.notificationType == NotificationType.APPOINTMENT_CASESHEET_REMINDER_15 ||
     pushNotificationInput.notificationType ==
-      NotificationType.APPOINTMENT_CASESHEET_REMINDER_15_VIRTUAL
+    NotificationType.APPOINTMENT_CASESHEET_REMINDER_15_VIRTUAL
   ) {
     if (!(appointment && appointment.id)) {
       throw new AphError(AphErrorMessages.APPOINTMENT_ID_NOT_FOUND);
@@ -2348,7 +2350,7 @@ const testPushNotification: Resolver<
   { deviceToken: String },
   NotificationsServiceContext,
   PushNotificationSuccessMessage | undefined
-> = async (parent, args, {}) => {
+> = async (parent, args, { }) => {
   //initialize firebaseadmin
   const config = {
     credential: firebaseAdmin.credential.applicationDefault(),
@@ -2401,64 +2403,75 @@ const sendDailyAppointmentSummary: Resolver<
   string
 > = async (parent, args, { doctorsDb, consultsDb }) => {
   const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
-  const doctors = await doctorRepo.getAllDoctors('0', args.docLimit, args.docOffset);
+  //const doctors = await doctorRepo.getAllDoctors('0', args.docLimit, args.docOffset);
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
+  const allAppts = await appointmentRepo.getTodaysAppointments(new Date());
   const countOfNotifications = await new Promise<Number>(async (resolve, reject) => {
     let doctorsCount = 0;
-    doctors.forEach(async (doctor, index, array) => {
-      const appointments = await appointmentRepo.getDoctorAppointments(
-        doctor.id,
-        new Date(),
-        new Date()
-      );
-      let onlineAppointments = 0;
-      let physicalAppointments = 0;
-      appointments.forEach((appointment) => {
-        if (appointment.status != STATUS.COMPLETED) {
-          if (appointment.appointmentType == APPOINTMENT_TYPE.PHYSICAL) {
-            physicalAppointments++;
-          } else if (appointment.appointmentType == APPOINTMENT_TYPE.ONLINE) {
-            onlineAppointments++;
-          }
+    if (allAppts.length == 0) {
+      resolve(doctorsCount);
+    }
+    let prevDoc = allAppts.length > 0 ? allAppts[0].doctorId : '';
+    let onlineAppointments = 0;
+    let physicalAppointments = 0;
+    const docIds: string[] = [];
+    allAppts.forEach((appt) => {
+      docIds.push(appt.doctorId);
+    });
+
+    const allDoctorDetails = await doctorRepo.getAllDocsById(docIds);
+    allAppts.forEach(async (appointment, index, array) => {
+      if (appointment.status != STATUS.COMPLETED) {
+        if (appointment.appointmentType == APPOINTMENT_TYPE.PHYSICAL) {
+          physicalAppointments++;
+        } else if (appointment.appointmentType == APPOINTMENT_TYPE.ONLINE) {
+          onlineAppointments++;
         }
-      });
-
-      const totalAppointments = onlineAppointments + physicalAppointments;
-
-      if (totalAppointments > 0) {
-        doctorsCount++;
-        const whatsAppLink =
-          ApiConstants.WHATSAPP_LINK + '' + process.env.WHATSAPP_LINK_BOOK_APOINTMENT;
-        let whatsAppMessageBody = ApiConstants.DAILY_WHATSAPP_NOTIFICATION.replace(
-          '{0}',
-          doctor.firstName
-        ).replace('{1}', totalAppointments.toString());
-        let messageBody = ApiConstants.DAILY_APPOINTMENT_SUMMARY.replace(
-          '{0}',
-          doctor.firstName
-        ).replace('{1}', totalAppointments.toString());
-        const onlineAppointmentsText =
-          onlineAppointments > 0
-            ? ApiConstants.ONLINE_APPOINTMENTS.replace('{0}', onlineAppointments.toString())
-            : '';
-        const physicalAppointmentsText =
-          physicalAppointments > 0
-            ? ApiConstants.PHYSICAL_APPOINTMENTS.replace('{0}', physicalAppointments.toString())
-            : '';
-        messageBody += onlineAppointmentsText + physicalAppointmentsText;
-        whatsAppMessageBody +=
-          onlineAppointmentsText + '' + physicalAppointmentsText + whatsAppLink;
-        sendBrowserNotitication(doctor.id, messageBody);
-
-        sendNotificationSMS(doctor.mobileNumber, messageBody);
-
-        // sendDoctorNotificationWhatsapp(
-        //   doctor.mobileNumber,
-        //   whatsAppMessageBody,
-        //   1,
-        //   doctor.doctorType
-        // );
       }
+      if (prevDoc != appointment.doctorId || index + 1 == array.length) {
+        const doctorDetails = allDoctorDetails.filter((item) => {
+          return item.id == prevDoc;
+        });
+        if (doctorDetails) {
+          const totalAppointments = onlineAppointments + physicalAppointments;
+          doctorsCount++;
+          const whatsAppLink = process.env.WHATSAPP_LINK_BOOK_APOINTMENT
+            ? process.env.WHATSAPP_LINK_BOOK_APOINTMENT
+            : '';
+          let messageBody = ApiConstants.DAILY_APPOINTMENT_SUMMARY.replace(
+            '{0}',
+            doctorDetails[0].firstName
+          ).replace('{1}', totalAppointments.toString());
+          const onlineAppointmentsText =
+            onlineAppointments > 0
+              ? ApiConstants.ONLINE_APPOINTMENTS.replace('{0}', onlineAppointments.toString())
+              : '';
+          const physicalAppointmentsText =
+            physicalAppointments > 0
+              ? ApiConstants.PHYSICAL_APPOINTMENTS.replace('{0}', physicalAppointments.toString())
+              : '';
+          messageBody += onlineAppointmentsText + physicalAppointmentsText;
+          sendBrowserNotitication(doctorDetails[0].id, messageBody);
+
+          sendNotificationSMS(doctorDetails[0].mobileNumber, messageBody);
+          const todaysDate = format(addMinutes(new Date(), +330), 'do LLLL');
+          const templateData: string[] = [
+            todaysDate + ' as of 8 AM',
+            whatsAppLink,
+            totalAppointments.toString(),
+          ];
+
+          sendDoctorNotificationWhatsapp(
+            ApiConstants.WHATSAPP_DOC_SUMMARY,
+            doctorDetails[0].mobileNumber,
+            templateData
+          );
+          onlineAppointments = 0;
+          physicalAppointments = 0;
+          prevDoc = appointment.doctorId;
+        }
+      }
+
       if (index + 1 === array.length) {
         resolve(doctorsCount);
       }

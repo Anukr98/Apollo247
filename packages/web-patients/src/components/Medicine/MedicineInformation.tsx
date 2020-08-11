@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { makeStyles, createStyles } from '@material-ui/styles';
-import { Theme, MenuItem, Popover } from '@material-ui/core';
+import { Theme, MenuItem, Popover, Typography } from '@material-ui/core';
 import { AphButton, AphTextField, AphCustomDropdown } from '@aph/web-ui-components';
 import Scrollbars from 'react-custom-scrollbars';
 
@@ -562,7 +562,10 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
           <div className={classes.customScroll}>
             {substitutes && (
               <>
-                <div className={classes.sectionTitle}>Substitute Drugs</div>
+                <Typography
+                  component="h2"
+                  className={classes.sectionTitle}
+                >{`${data.name} alternatives`}</Typography>
                 <div
                   className={classes.substitutes}
                   onClick={() => {
@@ -575,7 +578,11 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                     {substitutes.length === 1 ? ' substitute' : ' substitutes'}
                   </span>
                   <div className={classes.dropDownArrow}>
-                    <img src={require('images/ic_dropdown_green.svg')} alt="" />
+                    <img
+                      src={require('images/ic_dropdown_green.svg')}
+                      alt="Dropdown"
+                      title="Dropdown"
+                    />
                   </div>
                 </div>
               </>
