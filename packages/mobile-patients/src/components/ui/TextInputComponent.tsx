@@ -7,6 +7,7 @@ import {
   TextInput,
   TextInputProps,
   View,
+  TouchableOpacity,
   ViewStyle,
   TextStyle,
 } from 'react-native';
@@ -60,6 +61,8 @@ export interface TextInputComponentProps {
   onChangeText?: TextInputProps['onChangeText'];
   underlineColorAndroid?: string;
   autoCorrect?: boolean;
+  editable?: boolean;
+  onPressNonEditableTextInput?: () => void;
   width?: number;
   textInputprops?: TextInputProps;
   maxLength?: TextInputProps['maxLength'];
@@ -69,6 +72,31 @@ export interface TextInputComponentProps {
 }
 
 export const TextInputComponent: React.FC<TextInputComponentProps> = (props) => {
+  const renderTextInput = () => {
+    return (
+      <TextInput
+        value={props.value}
+        editable={props.editable}
+        placeholder={props.placeholder ? props.placeholder : ''}
+        style={[styles.textInputStyle, props.inputStyle]}
+        multiline={props.multiline}
+        numberOfLines={props.numberOfLines}
+        placeholderTextColor={props.placeholderTextColor || theme.colors.placeholderTextColor}
+        onFocus={props.onFocus}
+        onBlur={props.onBlur}
+        onChangeText={props.onChangeText}
+        underlineColorAndroid={'transparent'}
+        autoCorrect={props.autoCorrect}
+        selectionColor={theme.colors.INPUT_CURSOR_COLOR}
+        maxLength={props.maxLength}
+        keyboardType={props.keyboardType}
+        {...props.textInputprops}
+        returnKeyType={props.keyboardType === 'numeric' ? 'done' : 'default'}
+        autoCapitalize={props.autoCapitalize}
+      />
+    );
+  };
+
   return (
     <View style={[styles.mainveiw, props.conatinerstyles]}>
       {props.label && (
@@ -76,26 +104,12 @@ export const TextInputComponent: React.FC<TextInputComponentProps> = (props) => 
           <Text style={[styles.labelStyle, props.labelStyle]}>{props.label}</Text>
         </View>
       )}
-      {props.noInput ? null : (
-        <TextInput
-          value={props.value}
-          placeholder={props.placeholder ? props.placeholder : ''}
-          style={[styles.textInputStyle, props.inputStyle]}
-          multiline={props.multiline}
-          numberOfLines={props.numberOfLines}
-          placeholderTextColor={props.placeholderTextColor || theme.colors.placeholderTextColor}
-          onFocus={props.onFocus}
-          onBlur={props.onBlur}
-          onChangeText={props.onChangeText}
-          underlineColorAndroid={'transparent'}
-          autoCorrect={props.autoCorrect}
-          selectionColor={theme.colors.INPUT_CURSOR_COLOR}
-          maxLength={props.maxLength}
-          keyboardType={props.keyboardType}
-          {...props.textInputprops}
-          returnKeyType={props.keyboardType === 'numeric' ? 'done' : 'default'}
-          autoCapitalize={props.autoCapitalize}
-        />
+      {props.noInput ? null : !!!props.editable ? (
+        <TouchableOpacity activeOpacity={1} onPress={props.onPressNonEditableTextInput}>
+          {renderTextInput()}
+        </TouchableOpacity>
+      ) : (
+        renderTextInput()
       )}
       {props.icon && <View style={styles.iconStyle}>{props.icon}</View>}
     </View>
