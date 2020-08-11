@@ -65,6 +65,7 @@ import {
   postPharmacyAddNewAddressClick,
   postPharmacyStorePickupViewed,
   postPharmacyStoreSelectedSuccess,
+  postPharmacyAddNewAddressCompleted,
 } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import {
   WebEngageEventName,
@@ -182,6 +183,8 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     addresses,
     setDeliveryAddressId,
     deliveryAddressId,
+    newAddressAdded,
+    setNewAddressAdded,
     storeId,
     setStoreId,
     showPrescriptionAtStore,
@@ -452,8 +455,8 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     try {
       const res = await getDeliveryTimeHeaderTat(tatApiInput);
       const tatDate = g(res, 'data', 'tat', '0' as any, 'deliverydate');
+      const currentDate = moment();
       if (tatDate) {
-        const currentDate = moment();
         setdeliveryTime(tatDate);
         setshowDeliverySpinner(false);
         selectedAddress &&
@@ -463,6 +466,17 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             'Yes',
             moment(tatDate).diff(currentDate, 'd')
           );
+
+        if (selectedAddress && selectedAddress.id === newAddressAdded) {
+          postPharmacyAddNewAddressCompleted(
+            'Cart',
+            g(selectedAddress, 'zipcode')!,
+            formatAddress(selectedAddress),
+            moment(tatDate).diff(currentDate, 'd'),
+            'Yes'
+          );
+          setNewAddressAdded && setNewAddressAdded('');
+        }
       }
     } catch (error) {
       showGenericTatDate(tatApiInput.lookup, error, true);
