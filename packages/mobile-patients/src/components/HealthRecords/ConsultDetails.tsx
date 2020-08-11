@@ -1026,7 +1026,8 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
     if (
       caseSheetDetails!.medicinePrescription &&
       caseSheetDetails!.medicinePrescription.length !== 0 &&
-      caseSheetDetails!.doctorType !== 'JUNIOR'
+      caseSheetDetails!.doctorType !== 'JUNIOR' &&
+      g(caseSheetDetails, 'blobName') 
     ) {
       return (
         <View
