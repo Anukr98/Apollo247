@@ -408,10 +408,7 @@ const getStoreName = (storeAddress: string) => {
 };
 
 const isPastAppointment = (appointmentDetails: AppointmentDetails) =>
-  moment(new Date(appointmentDetails.appointmentDateTime))
-    .add(7, 'days')
-    .startOf('day')
-    .isBefore(moment(new Date()).startOf('day'));
+  moment(appointmentDetails.appointmentDateTime).add(7, 'days').isBefore(moment());
 
 export {
   isPastAppointment,

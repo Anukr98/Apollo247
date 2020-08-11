@@ -329,6 +329,7 @@ interface ConsultationsCardProps {
 
 export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
   const classes = useStyles({});
+  const [openSlotPopup, setOpenSlotPopup] = useState<boolean>(false);
   const otherDateMarkup = (appointmentTime: number) => {
     if (isToday(new Date(appointmentTime))) {
       return format(new Date(appointmentTime), 'h:mm a');
@@ -361,6 +362,7 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
       case STATUS.NO_SHOW || STATUS.CALL_ABANDON:
         return 'PICK ANOTHER SLOT';
       case STATUS.COMPLETED:
+        return props.pastOrCurrent === 'past' ? 'BOOK FOLLOW UP' : 'CHAT WITH DOCTOR';
       case STATUS.IN_PROGRESS:
         return 'CHAT WITH DOCTOR';
       case STATUS.CANCELLED:
@@ -373,9 +375,7 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
     status: STATUS,
     isConsultStarted: boolean | null
   ) => {
-    if (props.pastOrCurrent === 'past') {
-      return STATUS.CANCELLED ? 'BOOK AGAIN' : 'BOOK FOLLOW UP';
-    } else if (appointmentState) {
+    if (appointmentState) {
       switch (appointmentState) {
         case APPOINTMENT_STATE.NEW:
           return getAppointmentStatus(status, isConsultStarted);
@@ -596,16 +596,20 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                                   appointmentDetails.doctorInfo.fullName
                                     ? readableParam(appointmentDetails.doctorInfo.fullName)
                                     : '';
-                                appointmentDetails.status !== STATUS.CANCELLED &&
-                                props.pastOrCurrent !== 'past'
-                                  ? !pickAnotherSlot &&
-                                    history.push(clientRoutes.chatRoom(appointmentId, doctorId))
-                                  : history.push(
-                                      clientRoutes.doctorDetails(
-                                        doctorName,
-                                        appointmentDetails.doctorId
+                                if (pickAnotherSlot) {
+                                  setOpenSlotPopup(true);
+                                } else {
+                                  appointmentDetails.status === STATUS.CANCELLED ||
+                                  (appointmentDetails.status === STATUS.COMPLETED &&
+                                    props.pastOrCurrent === 'past')
+                                    ? history.push(
+                                        clientRoutes.doctorDetails(
+                                          doctorName,
+                                          appointmentDetails.doctorId
+                                        )
                                       )
-                                    );
+                                    : history.push(clientRoutes.chatRoom(appointmentId, doctorId));
+                                }
                               }}
                             >
                               <h3>
