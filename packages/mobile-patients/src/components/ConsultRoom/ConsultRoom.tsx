@@ -73,6 +73,7 @@ import {
   postFirebaseEvent,
   postWebEngageEvent,
   UnInstallAppsFlyer,
+  setWebEngageScreenNames,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   PatientInfo,
@@ -600,6 +601,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     AsyncStorage.removeItem('deeplinkReferalCode');
     storePatientDetailsTOBugsnag();
     callAPIForNotificationResult();
+    setWebEngageScreenNames('Home Screen');
   }, []);
 
   const storePatientDetailsTOBugsnag = async () => {

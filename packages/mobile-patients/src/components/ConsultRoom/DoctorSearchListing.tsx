@@ -58,6 +58,7 @@ import {
   postAppsFlyerEvent,
   postFirebaseEvent,
   postWebEngageEvent,
+  setWebEngageScreenNames,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEventName,
@@ -333,6 +334,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const params = props.navigation.getParam('specialities') || null;
 
   useEffect(() => {
+    setWebEngageScreenNames('Speciality Listing');
     getNetStatus()
       .then((status) => {
         if (status) {

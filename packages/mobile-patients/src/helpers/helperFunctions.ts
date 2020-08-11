@@ -1429,3 +1429,7 @@ export const dataSavedUserID = async (key: string) => {
   userId = JSON.parse(userId);
   return userId;
 };
+
+export const setWebEngageScreenNames = (screenName: string) => {
+  webengage.screen(screenName);
+};
