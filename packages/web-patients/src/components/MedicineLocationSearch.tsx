@@ -25,8 +25,8 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down('xs')]: {
         marginLeft: 'auto',
         borderLeft: 'none',
-        paddingTop: 15,
-        paddingBottom: 15,
+        paddingTop: 0,
+        paddingBottom: 0,
       },
     },
     locationWrap: {
@@ -65,6 +65,7 @@ const useStyles = makeStyles((theme: Theme) => {
     userName: {
       fontSize: 12,
       color: '#01475b',
+      lineHeight: 'normal',
     },
     locationPopRoot: {
       overflow: 'initial',
@@ -395,7 +396,7 @@ export const MedicineLocationSearch: React.FC = (props) => {
             } ${pharmaAddressDetails ? pharmaAddressDetails.pincode : ''}`}
           </span>
           <span>
-            <img src={require('images/ic_dropdown_green.svg')} alt="" />
+            <img src={require('images/ic_dropdown_green.svg')} alt="Dropdown" title="Dropdown" />
           </span>
         </div>
         {headerPincodeError === '1' && (

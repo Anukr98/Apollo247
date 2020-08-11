@@ -1,15 +1,24 @@
 /* tslint:disable */
 /* eslint-disable */
+// @generated
 // This file was automatically generated and should not be edited.
 
-import { MEDICINE_CONSUMPTION_DURATION, MEDICINE_FORM_TYPES, MEDICINE_FREQUENCY, MEDICINE_UNIT, MEDICINE_TIMINGS, MEDICINE_TO_BE_TAKEN, ROUTE_OF_ADMINISTRATION } from "./globalTypes";
+import {
+  MEDICINE_CONSUMPTION_DURATION,
+  MEDICINE_FORM_TYPES,
+  MEDICINE_FREQUENCY,
+  MEDICINE_UNIT,
+  MEDICINE_TIMINGS,
+  MEDICINE_TO_BE_TAKEN,
+  ROUTE_OF_ADMINISTRATION,
+} from './globalTypes';
 
 // ====================================================
 // GraphQL query operation: GetDoctorFavouriteMedicineList
 // ====================================================
 
 export interface GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList {
-  __typename: "DoctorFavouriteMedicine";
+  __typename: 'DoctorFavouriteMedicine';
   medicineConsumptionDurationInDays: string | null;
   medicineConsumptionDuration: string | null;
   medicineConsumptionDurationUnit: MEDICINE_CONSUMPTION_DURATION | null;
@@ -25,11 +34,15 @@ export interface GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_m
   externalId: string | null;
   routeOfAdministration: ROUTE_OF_ADMINISTRATION | null;
   medicineCustomDosage: string | null;
+  genericName: string | null;
+  includeGenericNameInPrescription: boolean | null;
 }
 
 export interface GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList {
-  __typename: "GetDoctorFavouriteMedicineListResult";
-  medicineList: (GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList | null)[] | null;
+  __typename: 'GetDoctorFavouriteMedicineListResult';
+  medicineList:
+    | (GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList | null)[]
+    | null;
   allowedDosages: (string | null)[] | null;
 }
 

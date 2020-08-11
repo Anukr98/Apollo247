@@ -9,6 +9,8 @@ import {
 import { Client, RequestParams } from '@elastic/elasticsearch';
 import { differenceInMinutes } from 'date-fns';
 import { debugLog } from 'customWinstonLogger';
+import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
+import { AphError } from 'AphError';
 
 const ES_FIELDS_PRIORITY = {
   doctor_fullName: 5,
@@ -118,8 +120,13 @@ const SearchDoctorAndSpecialtyByName: Resolver<
   // const specialtyRepository = doctorsDb.getCustomRepository(DoctorSpecialtyRepository);
   const client = new Client({ node: process.env.ELASTIC_CONNECTION_URL });
   searchLogger(`GET_MATCHED_DOCTORS_AND_SPECIALTIES___START`);
+
+  if (!process.env.ELASTIC_INDEX_DOCTORS) {
+    throw new AphError(AphErrorMessages.ELASTIC_INDEX_NAME_MISSING);
+  }
+
   let PerfectdocSearchParams: RequestParams.Search = {
-    index: 'doctors',
+    index: process.env.ELASTIC_INDEX_DOCTORS,
     body: {
       size: 1000,
       query: {
@@ -148,7 +155,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
 
   if (args.city && args.city != '' && args.searchText != '') {
     PerfectdocSearchParams = {
-      index: 'doctors',
+      index: process.env.ELASTIC_INDEX_DOCTORS,
       body: {
         size: 1000,
         query: {
@@ -179,7 +186,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
 
   if (args.city && args.city != '' && args.searchText == '') {
     const PerfectdocCitySearchParams: RequestParams.Search = {
-      index: 'doctors',
+      index: process.env.ELASTIC_INDEX_DOCTORS,
       body: {
         size: 1000,
         query: {
@@ -285,7 +292,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
     }
   }
   const docSearchParams: RequestParams.Search = {
-    index: 'doctors',
+    index: process.env.ELASTIC_INDEX_DOCTORS,
     body: {
       size: 1000,
       query: {
@@ -414,8 +421,9 @@ const SearchDoctorAndSpecialtyByName: Resolver<
   if (args.city) {
     elasticMatch.push({ match: { 'facility.city': args.city } });
   }
+
   const specialtiesSearchParams: RequestParams.Search = {
-    index: 'doctors',
+    index: process.env.ELASTIC_INDEX_DOCTORS,
     body: {
       _source: ['specialty'],
       query: {
@@ -479,8 +487,9 @@ const SearchDoctorAndSpecialtyByName: Resolver<
     matchedDoctors.length === 0 &&
     matchedSpecialties.length === 0
   ) {
+
     const PossibleDoctorParams: RequestParams.Search = {
-      index: 'doctors',
+      index: process.env.ELASTIC_INDEX_DOCTORS,
       body: {
         size: 200,
         query: {

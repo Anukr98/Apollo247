@@ -10,16 +10,23 @@ const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
       width: '100%',
-      '& >div >img': {
-        width: 24,
-        height: 24,
-        [theme.breakpoints.down('xs')]: {
-          display: 'none !important',
+      '& >div': {
+        '& >img': {
+          width: 24,
+          height: 24,
+          [theme.breakpoints.down('xs')]: {
+            display: 'none !important',
+          },
+        },
+        '& >div': {
+          [theme.breakpoints.down('xs')]: {
+            margin: '0 -20px 0 -10px',
+          },
         },
       },
     },
     card: {
-      padding: 7,
+      padding: 10,
       outline: 'none',
     },
     cardLink: {
@@ -32,9 +39,6 @@ const useStyles = makeStyles((theme: Theme) => {
       borderRadius: 10,
       padding: '14px 12px 14px 15px',
       display: 'flex',
-      [theme.breakpoints.down('xs')]: {
-        boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
-      },
     },
     cardIcon: {
       width: '100%',
@@ -104,7 +108,7 @@ export const DayDeals: React.FC<DayDealsProps> = (props) => {
         settings: {
           slidesToShow: 1,
           slidesToScroll: 1,
-          centerMode: true,
+          // centerMode: true,
           nextArrow: <img src={require('images/ic_white_arrow_right.svg')} alt="" />,
           prevArrow: <img src={require('images/ic_white_arrow_right.svg')} alt="" />,
         },

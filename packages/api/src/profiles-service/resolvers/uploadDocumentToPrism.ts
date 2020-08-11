@@ -124,7 +124,7 @@ export const fetchBlobURLWithPRISMData: Resolver<
         appointmentIds,
         prismFileId
       );
-      if (documentData) return { blobUrl: documentData.documentPath };
+      if (documentData && documentData.documentPath) return { blobUrl: documentData.documentPath };
     }
   }
 

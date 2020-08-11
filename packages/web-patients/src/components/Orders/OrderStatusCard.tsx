@@ -514,11 +514,11 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
                 {getOrderState(orderDetailsData.currentStatus)}
               </div>
             )}
-            {orderDetailsData.patient && (
+            {orderDetailsData.medicineOrderAddress && (
               <div className={classes.detailsRow}>
                 <div className={classes.orderTitle}>Name -</div>
                 <div className={classes.discription}>
-                  {`${orderDetailsData.patient.firstName} ${orderDetailsData.patient.lastName}`}
+                  {`${orderDetailsData.medicineOrderAddress.name}`}
                 </div>
               </div>
             )}
@@ -598,8 +598,8 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
               orderDetailsData={orderDetailsData}
               type="Order Details"
               patientName={
-                orderDetailsData.patient && orderDetailsData.patient.firstName
-                  ? orderDetailsData.patient.firstName
+                orderDetailsData.medicineOrderAddress && orderDetailsData.medicineOrderAddress.name
+                  ? orderDetailsData.medicineOrderAddress.name
                   : ''
               }
             />
