@@ -1,6 +1,6 @@
-import { Theme, FormControl, MenuItem } from '@material-ui/core';
+import { Theme, FormControl, MenuItem, Popover } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Scrollbars from 'react-custom-scrollbars';
 import { AphButton, AphTextField, AphSelect } from '@aph/web-ui-components';
 import Grid from '@material-ui/core/Grid';
@@ -50,7 +50,7 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingLeft: 20,
       paddingRight: 20,
       paddingBottom: 20,
-      paddingTop: 30,
+      paddingTop: 45,
     },
     shadowHide: {
       overflow: 'hidden',
@@ -162,6 +162,58 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#fff',
       opacity: 0.5,
     },
+    warningMsg: {
+      color: '#0087BA',
+      fontWeight: 500,
+      fontSize: 11,
+      lineHeight: '16px',
+      position: 'absolute',
+      top: -29,
+      left: 20,
+      width: '65%',
+    },
+    disabledFields: {
+      '& input': {
+        opacity: '0.5',
+        pointerEvents: 'none',
+      },
+      '& button': {
+        opacity: '0.5',
+        pointerEvents: 'none',
+      },
+    },
+    popDisablepopover: {
+      '& h3': {
+        fontWeight: 600,
+        fontSize: 18,
+        lineHeight: '23px',
+        color: '#02475B',
+        maxWidth: 190,
+        padding: '20px 20px 8px 20px',
+        margin: 0,
+      },
+      '& h6': {
+        fontWeight: 500,
+        fontSize: 14,
+        lineHeight: '20px',
+        color: '#0087BA',
+        marginTop: 10,
+        padding: '0 20px 8px 20px',
+        maxWidth: 280,
+        marginBottom: 0,
+      },
+    },
+    addnewMemberBtn: {
+      color: '#FC9916',
+      margin: '0 20px 10px 10px',
+      fontSize: 13,
+      lineHeight: '24px',
+      fontWeight: 'bold',
+      boxShadow: 'none',
+      '&:hover': {
+        backgroundColor: '#fff',
+      },
+    }
   };
 });
 
@@ -181,7 +233,7 @@ interface AddNewProfileProps {
 export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
   const classes = useStyles({});
   const { closeHandler, selectedPatientId, successHandler, isProfileDelete } = props;
-
+  const disableFieldsRef = useRef(null);
   const [mutationLoading, setMutationLoading] = useState<boolean>(false);
   const [firstName, setFirstName] = useState<string>('');
   const [lastName, setLastName] = useState<string>('');
@@ -232,6 +284,7 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
   const multiplePrimaryUsers =
     allCurrentPatients && allCurrentPatients.filter((x) => x.relation === Relation.ME).length > 0;
   const [primaryUserErrorMessage, setPrimaryUserErrorMessage] = useState<string>('');
+  const [isDisablePopoverOpen, setIsDisablePopoverOpen] = useState<boolean>(false);
 
   useEffect(() => {
     // if (selectedPatientId.length > 0) {
@@ -360,6 +413,7 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
       <div className={classes.shadowHide}>
         <div className={classes.dialogContent}>
           <Scrollbars autoHide={true} autoHeight autoHeightMax={'48vh'}>
+            <h6 className={classes.warningMsg}>Important : You will not be able to edit these details once you have saved them!</h6>
             <div className={classes.customScrollBar}>
               <div className={classes.profileForm}>
                 <div className={classes.uploadImage} title={'Upload Profile'}>
@@ -413,100 +467,124 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
                     <img src={require('images/ic-edit-white.svg')} />
                   </label>
                 </div>
-                <FormControl className={`${classes.formControl} ${classes.noMargin}`} fullWidth>
-                  <AphTextField
-                    label="Full Name"
-                    placeholder="First Name"
-                    inputProps={{ maxLength: 20 }}
-                    value={firstName}
-                    onChange={(e) => {
-                      setFirstName(e.target.value);
+                <div className={classes.disabledFields} ref={disableFieldsRef} onClick={() => setIsDisablePopoverOpen(true)}>
+                  <Popover
+                    open={isDisablePopoverOpen}
+                    anchorEl={disableFieldsRef.current}
+                    onClose={() => setIsDisablePopoverOpen(false)}
+                    anchorOrigin={{
+                      vertical: 'top',
+                      horizontal: 'left',
                     }}
-                    onBlur={(e) => {
-                      setIsFirstNameValid(isNameValid(e.target.value));
+                    transformOrigin={{
+                      vertical: 'top',
+                      horizontal: 'left',
                     }}
-                    error={!isFirstNameValid}
-                  />
-                  {!isFirstNameValid ? (
-                    <FormHelperText
-                      className={!isFirstNameValid ? classes.showMessage : classes.hideMessage}
-                      component="div"
-                      error={true}
+                    className={classes.popDisablepopover}
+                  >
+                    <h3>Uh oh! :(</h3>
+                    <h6>You cannot edit Name, Age, Date of Birth and Gender!</h6>
+                    <AphButton
+                      className={classes.addnewMemberBtn}
                     >
-                      Invalid first name
-                    </FormHelperText>
-                  ) : null}
-                </FormControl>
-                <FormControl className={`${classes.formControl}`} fullWidth>
-                  <AphTextField
-                    placeholder="Last name"
-                    inputProps={{ maxLength: 20 }}
-                    value={lastName}
-                    onChange={(e) => {
-                      setLastName(e.target.value);
-                    }}
-                    onBlur={(e) => {
-                      setIsLastNameValid(isNameValid(e.target.value));
-                    }}
-                    error={!isLastNameValid}
-                  />
-                  {!isLastNameValid ? (
-                    <FormHelperText
-                      className={!isLastNameValid ? classes.showMessage : classes.hideMessage}
-                      component="div"
-                      error={true}
-                    >
-                      Invalid last name
-                    </FormHelperText>
-                  ) : null}
-                </FormControl>
-                <FormControl className={classes.formControl} fullWidth>
-                  <AphTextField
-                    label="Date Of Birth"
-                    placeholder="dd/mm/yyyy"
-                    inputProps={{ type: 'text', maxLength: 10 }}
-                    value={dob}
-                    onChange={(e) => {
-                      setDob(e.target.value);
-                    }}
-                    onBlur={(e) => {
-                      setIsValidDob(isDobValid(e.target.value));
-                    }}
-                    error={!isValidDob}
-                  />
-                  {!isValidDob ? (
-                    <FormHelperText
-                      className={!isValidDob ? classes.showMessage : classes.hideMessage}
-                      component="div"
-                      error={true}
-                    >
-                      Invalid date of birth
-                    </FormHelperText>
-                  ) : null}
-                </FormControl>
-                <FormControl className={classes.formControl}>
-                  <label>Gender</label>
-                  <Grid container spacing={2} className={classes.btnGroup}>
-                    {orderedGenders.map((gender) => {
-                      return (
-                        <Grid item xs={4} sm={4}>
-                          <AphButton
-                            color="secondary"
-                            className={`${classes.genderBtns} ${
-                              gender === genderSelected ? classes.btnActive : ''
-                            }`}
-                            value={genderSelected}
-                            onClick={() => {
-                              setGenderSelected(gender as Gender);
-                            }}
-                          >
-                            {_startCase(_toLower(gender))}
-                          </AphButton>
-                        </Grid>
-                      );
-                    })}
-                  </Grid>
-                </FormControl>
+                      ADD NEW MEMBER
+                    </AphButton>
+                  </Popover>
+                  <FormControl className={`${classes.formControl} ${classes.noMargin}`} fullWidth>
+                    <AphTextField
+                      label="Full Name"
+                      placeholder="First Name"
+                      inputProps={{ maxLength: 20 }}
+                      value={firstName}
+                      onChange={(e) => {
+                        setFirstName(e.target.value);
+                      }}
+                      onBlur={(e) => {
+                        setIsFirstNameValid(isNameValid(e.target.value));
+                      }}
+                      error={!isFirstNameValid}
+                    />
+                    {!isFirstNameValid ? (
+                      <FormHelperText
+                        className={!isFirstNameValid ? classes.showMessage : classes.hideMessage}
+                        component="div"
+                        error={true}
+                      >
+                        Invalid first name
+                      </FormHelperText>
+                    ) : null}
+                  </FormControl>
+                  <FormControl className={`${classes.formControl}`} fullWidth>
+                    <AphTextField
+                      placeholder="Last name"
+                      inputProps={{ maxLength: 20 }}
+                      value={lastName}
+                      onChange={(e) => {
+                        setLastName(e.target.value);
+                      }}
+                      onBlur={(e) => {
+                        setIsLastNameValid(isNameValid(e.target.value));
+                      }}
+                      error={!isLastNameValid}
+                    />
+                    {!isLastNameValid ? (
+                      <FormHelperText
+                        className={!isLastNameValid ? classes.showMessage : classes.hideMessage}
+                        component="div"
+                        error={true}
+                      >
+                        Invalid last name
+                      </FormHelperText>
+                    ) : null}
+                  </FormControl>
+                  <FormControl className={classes.formControl} fullWidth>
+                    <AphTextField
+                      label="Date Of Birth"
+                      placeholder="dd/mm/yyyy"
+                      inputProps={{ type: 'text', maxLength: 10 }}
+                      value={dob}
+                      onChange={(e) => {
+                        setDob(e.target.value);
+                      }}
+                      onBlur={(e) => {
+                        setIsValidDob(isDobValid(e.target.value));
+                      }}
+                      error={!isValidDob}
+                    />
+                    {!isValidDob ? (
+                      <FormHelperText
+                        className={!isValidDob ? classes.showMessage : classes.hideMessage}
+                        component="div"
+                        error={true}
+                      >
+                        Invalid date of birth
+                      </FormHelperText>
+                    ) : null}
+                  </FormControl>
+                  <FormControl className={classes.formControl}>
+                    <label>Gender</label>
+                    <Grid container spacing={2} className={classes.btnGroup}>
+                      {orderedGenders.map((gender) => {
+                        return (
+                          <Grid item xs={4} sm={4}>
+                            <AphButton
+                              color="secondary"
+                              className={`${classes.genderBtns} ${
+                                gender === genderSelected ? classes.btnActive : ''
+                                }`}
+                              value={genderSelected}
+                              onClick={() => {
+                                setGenderSelected(gender as Gender);
+                              }}
+                            >
+                              {_startCase(_toLower(gender))}
+                            </AphButton>
+                          </Grid>
+                        );
+                      })}
+                    </Grid>
+                  </FormControl>
+                </div>
                 <FormControl className={`${classes.formControl} ${classes.relationMenu}`} fullWidth>
                   <label>Relation</label>
                   <AphSelect

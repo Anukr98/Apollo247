@@ -69,7 +69,6 @@ import {
   View,
 } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import { postPharmacyAddNewAddressCompleted } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { getPatientAddressList_getPatientAddressList_addressList } from '@aph/mobile-patients/src/graphql/types/getPatientAddressList';
 import { WebEngageEvents, WebEngageEventName } from '../../helpers/webEngageEvents';
@@ -142,7 +141,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
   const addOnly = props.navigation.state.params ? props.navigation.state.params.addOnly : false;
 
   const addressData = props.navigation.getParam('DataAddress');
-  const { addAddress, setDeliveryAddressId } = useShoppingCart();
+  const { addAddress, setDeliveryAddressId, setNewAddressAdded } = useShoppingCart();
   const {
     addAddress: addDiagnosticAddress,
     setDeliveryAddressId: setDiagnosticAddressId,
@@ -325,29 +324,16 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
           postWebEngageEvent(WebEngageEventName.UPLOAD_PRESCRIPTION_ADDRESS_SELECTED, eventAttributes);
         }
 
-        const formattedAddress = formatAddress(address);
         if (isAddressServiceable || addOnly) {
-          if (source != 'Diagnostics Cart') {
-            postPharmacyAddNewAddressCompleted(
-              source,
-              g(address, 'zipcode')!,
-              formattedAddress,
-              source == 'My Account' ? undefined : 'Yes'
-            );
-          }
           setDeliveryAddressId!(address.id || '');
+          setNewAddressAdded!(address.id || '');
           setDiagnosticAddressId!(address.id || '');
           props.navigation.goBack();
         } else {
           setDeliveryAddressId!('');
+          setNewAddressAdded!('');
           setDiagnosticAddressId!(address.id || '');
 
-          postPharmacyAddNewAddressCompleted(
-            'Cart',
-            g(address, 'zipcode')!,
-            formattedAddress,
-            'No'
-          );
           showAphAlert!({
             title: 'Uh oh.. :(',
             description: string.medicine_cart.pharmaAddressUnServiceableAlert,
@@ -707,6 +693,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
                   .then((_data: any) => {
                     console.log(('dat', _data));
                     setDeliveryAddressId!('');
+                    setNewAddressAdded!('');
                     setDiagnosticAddressId!('');
                     props.navigation.pop(2, { immediate: true });
                     props.navigation.push(AppRoutes.AddressBook);

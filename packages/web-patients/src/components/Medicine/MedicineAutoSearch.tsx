@@ -26,8 +26,8 @@ const useStyles = makeStyles((theme: Theme) => {
         padding: '15px 20px 15px 20px',
         position: 'fixed',
         width: '100%',
-        top: 84,
-        zIndex: 99,
+        top: 72,
+        zIndex: 999,
         background: '#fff',
         boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
       },
@@ -336,7 +336,7 @@ export const MedicineAutoSearch: React.FC = (props) => {
             disabled: classes.searchBtnDisabled,
           }}
         >
-          <img src={require('images/ic_send.svg')} alt="" />
+          <img src={require('images/ic_send.svg')} alt="send" title="send" />
         </AphButton>
       </div>
       {showError ? (

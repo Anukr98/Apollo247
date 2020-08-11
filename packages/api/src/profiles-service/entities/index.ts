@@ -66,6 +66,11 @@ export interface TransactionLineItemsPartial {
   DiscountAmount: number;
 }
 
+export interface PaginateParams {
+  take?: number;
+  skip?: number;
+}
+
 export interface TransactionLineItems extends TransactionLineItemsPartial {
   ProductName: string;
   ProductCategory: ONE_APOLLO_PRODUCT_CATEGORY;

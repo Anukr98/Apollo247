@@ -97,6 +97,7 @@ import {
 } from 'profiles-service/entities';
 import 'reflect-metadata';
 import { createConnections } from 'typeorm';
+import { AppointmentEntitySubscriber } from 'consults-service/entities/observers/appointmentObserver';
 
 export const connect = async () => {
   return await createConnections([
@@ -174,6 +175,7 @@ export const connect = async () => {
       username: process.env.CONSULTS_DB_USER,
       password: process.env.CONSULTS_DB_PASSWORD,
       database: `consults_${process.env.DB_NODE_ENV}`,
+      subscribers: [AppointmentEntitySubscriber],
       logging: process.env.NODE_ENV === 'production' ? false : true,
       extra: {
         connectionLimit: process.env.CONNECTION_POOL_LIMIT,

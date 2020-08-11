@@ -11,11 +11,18 @@ const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
       width: '100%',
-      '& >div >img': {
-        width: 24,
-        height: 24,
-        [theme.breakpoints.down('xs')]: {
-          display: 'none !important',
+      '& >div': {
+        '& >img': {
+          width: 24,
+          height: 24,
+          [theme.breakpoints.down('xs')]: {
+            display: 'none !important',
+          },
+        },
+        '& >div': {
+          [theme.breakpoints.down('xs')]: {
+            margin: '0 -20px 0 -10px',
+          },
         },
       },
     },
@@ -31,9 +38,6 @@ const useStyles = makeStyles((theme: Theme) => {
       display: 'flex',
       alignItems: 'center',
       height: 60,
-      [theme.breakpoints.down('xs')]: {
-        boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
-      },
     },
     cardIcon: {
       textAlign: 'center',
@@ -86,9 +90,9 @@ export const ShopByBrand: React.FC<ShopByBrandsProps> = (props) => {
       {
         breakpoint: 480,
         settings: {
-          slidesToShow: 1,
-          slidesToScroll: 1,
-          centerMode: true,
+          slidesToShow: 2,
+          slidesToScroll: 2,
+          // centerMode: true,
           nextArrow: <img src={require('images/ic_white_arrow_right.svg')} alt="" />,
           prevArrow: <img src={require('images/ic_white_arrow_right.svg')} alt="" />,
         },

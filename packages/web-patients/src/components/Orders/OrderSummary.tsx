@@ -20,6 +20,7 @@ import { ORDER_BILLING_STATUS_STRINGS } from 'helpers/commonHelpers';
 import { MedicineOrderBilledItem } from 'helpers/MedicineApiCalls';
 import { pharmacyOrderSummaryTracking } from 'webEngageTracking';
 import { ReOrder } from './ReOrder';
+import { useAllCurrentPatients } from 'hooks/authHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -458,17 +459,18 @@ export const OrdersSummary: React.FC<OrdersSummaryProps> = (props) => {
     orderDetailsData &&
     Math.round(orderDetailsData.productDiscount + orderDetailsData.couponDiscount) <
       Math.round(billedPaymentDetails && billedPaymentDetails.discountValue);
+  const { currentPatient } = useAllCurrentPatients();
 
   useEffect(() => {
     if (orderDetailsData) {
-      const { id, orderTat, orderType, currentStatus, patient } = orderDetailsData;
+      const { id, orderTat, orderType, currentStatus, medicineOrderAddress } = orderDetailsData;
       const data = {
         orderId: id,
-        orderDate: getFormattedDateTime('webengage'),
+        orderDate: getFormattedDateTime('webengage') || '',
         orderType,
-        customerId: patient ? patient.id : '',
+        customerId: currentPatient ? currentPatient.id : '',
         deliveryDate: moment(orderTat).format('DD-MM-YYYY'),
-        mobileNumber: patient ? patient.mobileNumber : null,
+        mobileNumber: medicineOrderAddress ? medicineOrderAddress.mobileNumber : '',
         orderStatus: currentStatus,
       };
       pharmacyOrderSummaryTracking(data);
@@ -517,10 +519,10 @@ export const OrdersSummary: React.FC<OrdersSummaryProps> = (props) => {
           <span>Shipping Address</span>
         </div>
         <div className={classes.addressDetails}>
-          {orderDetailsData.patient && (
+          {orderDetailsData.medicineOrderAddress && (
             <div className={classes.addressRow}>
               <label>Name -</label>
-              <span>{`${orderDetailsData.patient.firstName} ${orderDetailsData.patient.lastName}`}</span>
+              <span>{`${orderDetailsData.medicineOrderAddress.name}`}</span>
             </div>
           )}
           <div className={classes.addressRow}>
@@ -713,8 +715,8 @@ export const OrdersSummary: React.FC<OrdersSummaryProps> = (props) => {
             orderDetailsData={orderDetailsData}
             type="Order Details"
             patientName={
-              orderDetailsData.patient && orderDetailsData.patient.firstName
-                ? orderDetailsData.patient.firstName
+              orderDetailsData.medicineOrderAddress && orderDetailsData.medicineOrderAddress.name
+                ? orderDetailsData.medicineOrderAddress.name
                 : ''
             }
           />

@@ -155,7 +155,7 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
   const [discriptionText, setDiscriptionText] = useState<string>('');
   const [showText, setShowText] = useState<boolean>(false);
   const [verifyingPhoneNumber, setVerifyingPhoneNumber] = useState<boolean>(false);
-  const { currentPatient } = useAllCurrentPatients();
+  const { currentPatient, setCurrentPatientId } = useAllCurrentPatients();
   const [referredBy, setReferredBy] = useState<string>();
   const [referral, setReferral] = useState<string>('');
   const [isValidReferral, setValidReferral] = useState<boolean>(false);
@@ -815,6 +815,9 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
                           const { data } = _data as { data: updatePatient };
                           const patient = g(data, 'updatePatient', 'patient')!;
                           if (patient.relation == Relation.ME) {
+                            setCurrentPatientId(patient.id);
+                            AsyncStorage.setItem('selectUserId', patient.id);
+                            AsyncStorage.setItem('selectUserUHId', patient.uhid!);
                             _postWebEngageEvent(patient);
                           }
                         } catch (error) {

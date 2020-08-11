@@ -3,6 +3,8 @@ import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import moment from 'moment';
 import { Dimensions, Platform } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
+import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { trackTagalysEvent } from '@aph/mobile-patients/src/helpers/apiCalls';
 
 export const getTagalysConfig = (userId: string) => buildTagalysConfig(userId);
 export const setTagalysConfig = (_tagalysConfig: Tagalys.Config | null) => {
@@ -58,6 +60,26 @@ const buildTagalysConfig = (userId: string): Tagalys.Config => {
         screen_resolution: { width, height },
       },
     };
+  }
+};
+
+export const addToCartTagalysEvent = async (
+  params: Pick<Tagalys.ProductAction, 'sku' | 'quantity'>,
+  userId: string
+) => {
+  try {
+    await trackTagalysEvent(
+      {
+        event_type: 'product_action',
+        details: {
+          ...params,
+          action: 'add_to_cart',
+        } as Tagalys.ProductAction,
+      },
+      userId
+    );
+  } catch (error) {
+    CommonBugFender('Tagalys_trackTagalysEvent', error);
   }
 };
 
