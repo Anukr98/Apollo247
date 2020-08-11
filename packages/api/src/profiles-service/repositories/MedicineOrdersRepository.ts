@@ -272,26 +272,8 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
         'medicineOrderInvoice',
         'patient',
       ],
-    })
-    // returns [result , total]
-    // return this.findAndCount({
-    //   where: { patient: In(patientIds) },
-    //   order: { createdDate: 'DESC' },
-    //   relations: [
-    //     'medicineOrderLineItems',
-    //     'medicineOrderPayments',
-    //     'medicineOrdersStatus',
-    //     'medicineOrderShipments',
-    //     'medicineOrderShipments.medicineOrdersStatus',
-    //     'medicineOrderShipments.medicineOrderInvoice',
-    //     'medicineOrderInvoice',
-    //     'patient',
-    //   ],
-    //   //extra params...
-    //   ...paginate,
-    // });
+    });
   }
-
 
   getMedicineOrdersListWithoutAbortedStatus(patientIds: String[]) {
     return this.find({
@@ -302,8 +284,8 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
         'medicineOrdersStatus',
         'medicineOrderShipments',
         'medicineOrderShipments.medicineOrderInvoice',
-      ]
-    })
+      ],
+    });
   }
 
   getMedicineOrdersListWithPayments(patientIds: String[]) {
@@ -377,23 +359,7 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
         'medicineOrderInvoice',
         'patient',
       ],
-    })
-    // returns [result , total]
-    // return this.findAndCount({
-    //   where: { currentStatus: MEDICINE_ORDER_STATUS.PAYMENT_SUCCESS },
-    //   relations: [
-    //     'medicineOrderLineItems',
-    //     'medicineOrderPayments',
-    //     'medicineOrdersStatus',
-    //     'medicineOrderShipments',
-    //     'medicineOrderShipments.medicineOrdersStatus',
-    //     'medicineOrderShipments.medicineOrderInvoice',
-    //     'medicineOrderInvoice',
-    //     'patient',
-    //   ],
-    //   //extra params...
-    //   ...paginate,
-    // });
+    });
   }
 
   getMedicineOrderWithId(orderAutoId: number) {

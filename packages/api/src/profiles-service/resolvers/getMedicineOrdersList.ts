@@ -11,7 +11,7 @@ export const getMedicineOrdersListTypeDefs = gql`
   type MedicineOrdersListResult {
     MedicineOrdersList: [MedicineOrders]
   }
-  
+
   enum DEVICE_TYPE {
     IOS
     ANDROID
@@ -121,33 +121,17 @@ const getMedicineOrdersList: Resolver<
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
 
   const patientDetails = await patientRepo.getPatientDetails(args.patientId);
-  // paginated vars
-  // const { pageNo, pageSize = 10 } = args; //default pageSize = 10
-  const paginateParams: { take?: number, skip?: number } = {};
 
   if (!patientDetails) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
   const primaryPatientIds = await patientRepo.getLinkedPatientIds({ patientDetails });
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
-  //pageNo should be greater than 0
-  // if (pageNo === 0) {
-  //   throw new AphError(AphErrorMessages.PAGINATION_PARAMS_PAGENO_ERROR, undefined, {});
-  // }
-  // if (pageNo) {
-  //   paginateParams.take = pageSize
-  //   paginateParams.skip = (pageSize * pageNo) - pageSize //bcoz pageNo. starts from 1 not 0.
-  // }
 
   const MedicineOrdersList = await medicineOrdersRepo.getMedicineOrdersList(primaryPatientIds);
 
   return {
-    // meta: {
-    //   pageNo: pageNo || null,
-    //   pageSize: (Number.isInteger(pageNo) && pageSize) || null,
-    //   total: (Number.isInteger(pageNo) && totalCount) || null
-    // },
-    MedicineOrdersList
+    MedicineOrdersList,
   };
 };
 
@@ -176,7 +160,6 @@ const getMedicineOrderDetails: Resolver<
       args.orderAutoId
     );
   }
-  console.log(MedicineOrderDetails, 'medicineOrderDetails');
   if (!MedicineOrderDetails) {
     throw new AphError(AphErrorMessages.INVALID_MEDICINE_ORDER_ID, undefined, {});
   }
@@ -190,26 +173,11 @@ const getMedicinePaymentOrder: Resolver<
   MedicineOrdersListResult
 > = async (parent, args, { profilesDb }) => {
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
-  // paginated vars
-  // const { pageNo, pageSize = 10 } = args; //default pageSize = 10
-  const paginateParams: { take?: number, skip?: number } = {};
-  //pageNo should be greater than 0
-  // if (pageNo === 0) {
-  //   throw new AphError(AphErrorMessages.PAGINATION_PARAMS_PAGENO_ERROR, undefined, {});
-  // }
-  // if (pageNo) {
-  //   paginateParams.take = pageSize
-  //   paginateParams.skip = (pageSize * pageNo) - pageSize //bcoz pageNo. starts from 1 not 0.
-  // }
+
   const MedicineOrdersList = await medicineOrdersRepo.getPaymentMedicineOrders();
-  //meta added for consistency response 
+
   return {
-    // meta: {
-    //   pageNo: pageNo || null,
-    //   pageSize: (Number.isInteger(pageNo) && pageSize) || null,
-    //   total: (Number.isInteger(pageNo) && totalCount) || null
-    // },
-    MedicineOrdersList
+    MedicineOrdersList,
   };
 };
 
