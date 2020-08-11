@@ -21,14 +21,7 @@ const path = require('path');
 
 export const getMedicineOrdersOMSListTypeDefs = gql`
   type MedicineOrdersOMSListResult {
-    meta: PaginateMetaDataOMS
     medicineOrdersList: [MedicineOrdersOMS]
-  }
-
-  type PaginateMetaDataOMS {
-    total: Int
-    pageSize: Int
-    pageNo: Int
   }
 
   type getMedicineOrdersListResult {
@@ -225,17 +218,13 @@ export const getMedicineOrdersOMSListTypeDefs = gql`
   }
 
   extend type Query {
-    getMedicineOrdersOMSList(
-      patientId: String
-      pageNo: Int
-      pageSize: Int
-    ): MedicineOrdersOMSListResult!
+    getMedicineOrdersOMSList(patientId: String): MedicineOrdersOMSListResult!
     getMedicineOrderOMSDetails(
       patientId: String
       orderAutoId: Int
       billNumber: String
     ): MedicineOrderOMSDetailsResult!
-    getMedicineOMSPaymentOrder(pageNo: Int, pageSize: Int): MedicineOrdersOMSListResult!
+    getMedicineOMSPaymentOrder: MedicineOrdersOMSListResult!
     getRecommendedProductsList(patientUhid: String!): RecommendedProductsListResult!
     checkIfProductsOnline(productSkus: [String]): ProductAvailabilityResult!
     updateMedicineDataRedis(limit: Int, offset: Int): getMedicineOrdersListResult
@@ -252,14 +241,7 @@ type getMedicineOrdersListResult = {
   updatedSkus: string[];
 };
 
-type PaginateMetaDataOMS = {
-  total: number | null;
-  pageSize: number | null;
-  pageNo: number | null;
-};
-
 type MedicineOrdersOMSListResult = {
-  meta: PaginateMetaDataOMS;
   medicineOrdersList: MedicineOrders[];
 };
 
@@ -306,15 +288,12 @@ type ProductAvailability = {
 
 const getMedicineOrdersOMSList: Resolver<
   null,
-  { patientId: string; orderAutoId?: number; pageNo?: number; pageSize?: number },
+  { patientId: string; orderAutoId?: number },
   ProfilesServiceContext,
   MedicineOrdersOMSListResult
 > = async (parent, args, { profilesDb, mobileNumber }) => {
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
   const patientDetails = await patientRepo.getPatientDetails(args.patientId);
-  // paginated vars
-  const { pageNo, pageSize = 10 } = args; //default pageSize = 10
-  const paginateParams: { take?: number; skip?: number } = {};
 
   log(
     'profileServiceLogger',
@@ -333,26 +312,12 @@ const getMedicineOrdersOMSList: Resolver<
   }
   const primaryPatientIds = await patientRepo.getLinkedPatientIds({ patientDetails });
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
-  //pageNo should be greater than 0
-  if (pageNo === 0) {
-    throw new AphError(AphErrorMessages.PAGINATION_PARAMS_PAGENO_ERROR, undefined, {});
-  }
-  if (pageNo) {
-    paginateParams.take = pageSize;
-    paginateParams.skip = pageSize * pageNo - pageSize; //bcoz pageNo. starts from 1 not 0.
-  }
-
-  // const [medicineOrdersList, totalCount]: any = await medicineOrdersRepo.getMedicineOrdersListWithoutAbortedStatus(
-  //   primaryPatientIds,
-  //   paginateParams
-  // );
-
-  console.log('pagination params ---->', paginateParams);
-  const [medicineOrdersList, totalCount]: any = await Promise.all(
-    medicineOrdersRepo.getMedicineOrdersListWithoutAbortedStatus(primaryPatientIds, paginateParams)
+  let medicineOrdersList = await medicineOrdersRepo.getMedicineOrdersListWithoutAbortedStatus(
+    primaryPatientIds
   );
 
-  console.log('medicineOrdersList length---->', medicineOrdersList.length, totalCount);
+  //to know later if medicineOrderList is updated or not
+  const saveCount = medicineOrdersList.length;
 
   let uhid = patientDetails.uhid;
   if (process.env.NODE_ENV == 'local') uhid = ApiConstants.CURRENT_UHID.toString();
@@ -366,6 +331,7 @@ const getMedicineOrdersOMSList: Resolver<
       mobileNumber,
       ''
     );
+
     const ordersResp = await fetch(
       process.env.PRISM_GET_OFFLINE_ORDERS ? process.env.PRISM_GET_OFFLINE_ORDERS + uhid : '',
       {
@@ -455,18 +421,16 @@ const getMedicineOrdersOMSList: Resolver<
     }
   }
 
-  //redundant code as db calls takes care of sorting...
-  // function GetSortOrder(a: MedicineOrders, b: MedicineOrders) {
-  //   return new Date(b.createdDate).getTime() - new Date(a.createdDate).getTime();
-  // }
-  // medicineOrdersList.sort(GetSortOrder);
+  function GetSortOrder(a: MedicineOrders, b: MedicineOrders) {
+    return new Date(b.createdDate).getTime() - new Date(a.createdDate).getTime();
+  }
+
+  // needs to sort bcoz of updated medicineOrdersList orders
+  if (saveCount != medicineOrdersList.length) {
+    medicineOrdersList.sort(GetSortOrder);
+  }
 
   return {
-    meta: {
-      pageNo: pageNo || null,
-      pageSize: (Number.isInteger(pageNo) && pageSize) || null,
-      total: (Number.isInteger(pageNo) && totalCount) || null,
-    },
     medicineOrdersList,
   };
 };
@@ -544,32 +508,13 @@ const getMedicineOrderOMSDetails: Resolver<
 
 const getMedicineOMSPaymentOrder: Resolver<
   null,
-  { pageNo?: number; pageSize?: number }, //for consistency response though not mandatory
+  {}, //for consistency response though not mandatory
   ProfilesServiceContext,
   MedicineOrdersOMSListResult
 > = async (parent, args, { profilesDb }) => {
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
-  // paginated vars
-  const { pageNo, pageSize = 10 } = args; //default pageSize = 10
-  const paginateParams: { take?: number; skip?: number } = {};
-  //pageNo should be greater than 0
-  if (pageNo === 0) {
-    throw new AphError(AphErrorMessages.PAGINATION_PARAMS_PAGENO_ERROR, undefined, {});
-  }
-  if (pageNo) {
-    paginateParams.take = pageSize;
-    paginateParams.skip = pageSize * pageNo - pageSize; //bcoz pageNo. starts from 1 not 0.
-  }
-  const [medicineOrdersList, totalCount] = await medicineOrdersRepo.getPaymentMedicineOrders(
-    paginateParams
-  );
-  //meta added for consistency response
+  const medicineOrdersList = await medicineOrdersRepo.getPaymentMedicineOrders();
   return {
-    meta: {
-      pageNo: pageNo || null,
-      pageSize: (Number.isInteger(pageNo) && pageSize) || null,
-      total: (Number.isInteger(pageNo) && totalCount) || null,
-    },
     medicineOrdersList,
   };
 };
@@ -772,6 +717,7 @@ const getLatestMedicineOrder: Resolver<
   let uhid = args.patientUhid;
   if (process.env.NODE_ENV == 'local') uhid = ApiConstants.CURRENT_UHID.toString();
   else if (process.env.NODE_ENV == 'dev') uhid = ApiConstants.CURRENT_UHID.toString();
+
   const listResp = await fetch(
     process.env.PRISM_GET_RECOMMENDED_PRODUCTS
       ? process.env.PRISM_GET_RECOMMENDED_PRODUCTS + uhid
