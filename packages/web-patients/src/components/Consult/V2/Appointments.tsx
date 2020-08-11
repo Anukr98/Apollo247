@@ -596,8 +596,6 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
     }
   }, [currentPatient]);
 
-  if (mutationError) return <div>Unable to load Consults...</div>;
-
   const statusActions: statusMap = {
     PAYMENT_PENDING: {
       ctaText: 'TRY AGAIN',
@@ -884,235 +882,248 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
     <div className={classes.root}>
       <Header />
       <div className={classes.container}>
-        <div className={classes.consultPage}>
-          <div className={`${classes.consultationsHeader}`}>
-            {allCurrentPatients && currentPatient && !_isEmpty(currentPatient.firstName) ? (
-              <Typography variant="h1">
-                <span>hi</span>
-                <AphSelect
-                  value={currentPatient.id}
-                  onChange={(e) => setCurrentPatientId(e.target.value as Patient['id'])}
-                  classes={{
-                    root: classes.selectMenuRoot,
-                    selectMenu: classes.selectMenuItem,
-                  }}
-                >
-                  {allCurrentPatients.map((patient) => {
-                    const isSelected = patient.id === currentPatient.id;
-                    const name = isSelected
-                      ? (patient.firstName || '').toLocaleLowerCase()
-                      : (patient.firstName || '').toLocaleLowerCase();
-                    return (
-                      <MenuItem
-                        selected={isSelected}
-                        value={patient.id}
-                        classes={{ selected: classes.menuSelected }}
-                        key={patient.id}
-                      >
-                        {name}
-                      </MenuItem>
-                    );
-                  })}
-                  <MenuItem classes={{ selected: classes.menuSelected }}>
-                    <AphButton
-                      color="primary"
-                      classes={{ root: classes.addMemberBtn }}
-                      onClick={() => {
-                        setIsAddNewProfileDialogOpen(true);
+        {mutationError ? (
+          <div>Unable to load Consults...</div>
+        ) : (
+          appointmentsList &&
+          appointmentsList.length > 0 && (
+            <div className={classes.consultPage}>
+              <div className={`${classes.consultationsHeader}`}>
+                {allCurrentPatients && currentPatient && !_isEmpty(currentPatient.firstName) ? (
+                  <Typography variant="h1">
+                    <span>hi</span>
+                    <AphSelect
+                      value={currentPatient.id}
+                      onChange={(e) => setCurrentPatientId(e.target.value as Patient['id'])}
+                      classes={{
+                        root: classes.selectMenuRoot,
+                        selectMenu: classes.selectMenuItem,
                       }}
                     >
-                      Add Member
-                    </AphButton>
-                  </MenuItem>
-                </AphSelect>
-              </Typography>
-            ) : (
-              <Typography variant="h1">hello there!</Typography>
-            )}
-            <p>
-              {filteredAppointmentsList && !mutationLoading && appointmentText()}{' '}
-              <span className={classes.filterIcon} onClick={() => setIsFilterOpen(true)}>
-                <img src={require('images/ic_filterblack.svg')} alt="" />
-              </span>
-            </p>
+                      {allCurrentPatients.map((patient) => {
+                        const isSelected = patient.id === currentPatient.id;
+                        const name = isSelected
+                          ? (patient.firstName || '').toLocaleLowerCase()
+                          : (patient.firstName || '').toLocaleLowerCase();
+                        return (
+                          <MenuItem
+                            selected={isSelected}
+                            value={patient.id}
+                            classes={{ selected: classes.menuSelected }}
+                            key={patient.id}
+                          >
+                            {name}
+                          </MenuItem>
+                        );
+                      })}
+                      <MenuItem classes={{ selected: classes.menuSelected }}>
+                        <AphButton
+                          color="primary"
+                          classes={{ root: classes.addMemberBtn }}
+                          onClick={() => {
+                            setIsAddNewProfileDialogOpen(true);
+                          }}
+                        >
+                          Add Member
+                        </AphButton>
+                      </MenuItem>
+                    </AphSelect>
+                  </Typography>
+                ) : (
+                  <Typography variant="h1">hello there!</Typography>
+                )}
+                <p>
+                  {filteredAppointmentsList && !mutationLoading && appointmentText()}{' '}
+                  <span className={classes.filterIcon} onClick={() => setIsFilterOpen(true)}>
+                    <img src={require('images/ic_filterblack.svg')} alt="" />
+                  </span>
+                </p>
 
-            <AphDialog open={isAddNewProfileDialogOpen} maxWidth="sm">
-              <AphDialogClose onClick={() => setIsAddNewProfileDialogOpen(false)} title={'Close'} />
-              <AphDialogTitle>Add New Member</AphDialogTitle>
-              <AddNewProfile
-                closeHandler={(isAddNewProfileDialogOpen: boolean) =>
-                  setIsAddNewProfileDialogOpen(isAddNewProfileDialogOpen)
-                }
-                isMeClicked={false}
-                selectedPatientId=""
-                successHandler={(isPopoverOpen: boolean) => setIsPopoverOpen(isPopoverOpen)}
-                isProfileDelete={false}
-              />
-            </AphDialog>
-          </div>
-          <div>
-            <Tabs
-              value={tabValue}
-              variant="fullWidth"
-              classes={{
-                root: classes.tabsRoot,
-                indicator: classes.tabsIndicator,
-              }}
-              onChange={(e, newValue) => {
-                setTabValue(newValue);
-              }}
-            >
-              <Tab
-                classes={{
-                  root: classes.tabRoot,
-                  selected: classes.tabSelected,
-                }}
-                label="Active"
-                title="Active appointments"
-              />
-              <Tab
-                classes={{
-                  root: classes.tabRoot,
-                  selected: classes.tabSelected,
-                }}
-                label="Upcoming"
-                title={'Upcoming appointments'}
-              />
-              <Tab
-                classes={{
-                  root: classes.tabRoot,
-                  selected: classes.tabSelected,
-                }}
-                label="Past"
-                title={'Past appointments'}
-              />
-            </Tabs>
-            {tabValue === 0 && (
-              <TabContainer>
-                {todaysAppointments && todaysAppointments.length > 0 ? (
-                  <>
-                    {activeAppointments && activeAppointments.length > 0 && (
-                      <div className={classes.cardContainer}>
-                        <h1>Active</h1>
-                        <ConsultationsCard
-                          appointments={activeAppointments}
-                          pastOrCurrent="current"
-                        />
+                <AphDialog open={isAddNewProfileDialogOpen} maxWidth="sm">
+                  <AphDialogClose
+                    onClick={() => setIsAddNewProfileDialogOpen(false)}
+                    title={'Close'}
+                  />
+                  <AphDialogTitle>Add New Member</AphDialogTitle>
+                  <AddNewProfile
+                    closeHandler={(isAddNewProfileDialogOpen: boolean) =>
+                      setIsAddNewProfileDialogOpen(isAddNewProfileDialogOpen)
+                    }
+                    isMeClicked={false}
+                    selectedPatientId=""
+                    successHandler={(isPopoverOpen: boolean) => setIsPopoverOpen(isPopoverOpen)}
+                    isProfileDelete={false}
+                  />
+                </AphDialog>
+              </div>
+              <div>
+                <Tabs
+                  value={tabValue}
+                  variant="fullWidth"
+                  classes={{
+                    root: classes.tabsRoot,
+                    indicator: classes.tabsIndicator,
+                  }}
+                  onChange={(e, newValue) => {
+                    setTabValue(newValue);
+                  }}
+                >
+                  <Tab
+                    classes={{
+                      root: classes.tabRoot,
+                      selected: classes.tabSelected,
+                    }}
+                    label="Active"
+                    title="Active appointments"
+                  />
+                  <Tab
+                    classes={{
+                      root: classes.tabRoot,
+                      selected: classes.tabSelected,
+                    }}
+                    label="Upcoming"
+                    title={'Upcoming appointments'}
+                  />
+                  <Tab
+                    classes={{
+                      root: classes.tabRoot,
+                      selected: classes.tabSelected,
+                    }}
+                    label="Past"
+                    title={'Past appointments'}
+                  />
+                </Tabs>
+                {tabValue === 0 && (
+                  <TabContainer>
+                    {todaysAppointments && todaysAppointments.length > 0 ? (
+                      <>
+                        {activeAppointments && activeAppointments.length > 0 && (
+                          <div className={classes.cardContainer}>
+                            <h1>Active</h1>
+                            <ConsultationsCard
+                              appointments={activeAppointments}
+                              pastOrCurrent="current"
+                            />
+                          </div>
+                        )}
+                        {followUpAppointments && followUpAppointments.length > 0 && (
+                          <div className={classes.cardContainer}>
+                            <h1>Follow - Up Chat</h1>
+                            <ConsultationsCard
+                              appointments={followUpAppointments}
+                              pastOrCurrent="current"
+                            />
+                          </div>
+                        )}
+                      </>
+                    ) : mutationLoading || isSigningIn ? (
+                      <div className={classes.loader}>
+                        <CircularProgress />
+                      </div>
+                    ) : (
+                      <div className={classes.consultSection}>
+                        <div className={classes.noAppointments}>
+                          <div className={classes.leftGroup}>
+                            <h3>Want to book an appointment?</h3>
+                            <Route
+                              render={({ history }) => (
+                                <AphButton
+                                  color="primary"
+                                  onClick={() => {
+                                    history.push(clientRoutes.specialityListing());
+                                  }}
+                                  title={'Book an Appointment'}
+                                >
+                                  Book an Appointment
+                                </AphButton>
+                              )}
+                            />
+                          </div>
+                          <div className={classes.rightGroup}>
+                            <img src={require('images/ic_doctor_consult.svg')} alt="" />
+                          </div>
+                        </div>
                       </div>
                     )}
-                    {followUpAppointments && followUpAppointments.length > 0 && (
-                      <div className={classes.cardContainer}>
-                        <h1>Follow - Up Chat</h1>
-                        <ConsultationsCard
-                          appointments={followUpAppointments}
-                          pastOrCurrent="current"
-                        />
+                  </TabContainer>
+                )}
+                {tabValue === 1 && (
+                  <TabContainer>
+                    {upcomingAppointment && upcomingAppointment.length > 0 ? (
+                      <ConsultationsCard
+                        appointments={upcomingAppointment}
+                        pastOrCurrent="upcoming"
+                      />
+                    ) : mutationLoading || isSigningIn ? (
+                      <div className={classes.loader}>
+                        <CircularProgress />
+                      </div>
+                    ) : (
+                      <div className={classes.consultSection}>
+                        <div className={classes.noAppointments}>
+                          <div className={classes.leftGroup}>
+                            <h3>Want to book an appointment?</h3>
+                            <Route
+                              render={({ history }) => (
+                                <AphButton
+                                  color="primary"
+                                  onClick={() => {
+                                    history.push(clientRoutes.specialityListing());
+                                  }}
+                                  title={'Book an Appointment'}
+                                >
+                                  Book an Appointment
+                                </AphButton>
+                              )}
+                            />
+                          </div>
+                          <div className={classes.rightGroup}>
+                            <img src={require('images/ic_doctor_consult.svg')} alt="" />
+                          </div>
+                        </div>
                       </div>
                     )}
-                  </>
-                ) : mutationLoading || isSigningIn ? (
-                  <div className={classes.loader}>
-                    <CircularProgress />
-                  </div>
-                ) : (
-                  <div className={classes.consultSection}>
-                    <div className={classes.noAppointments}>
-                      <div className={classes.leftGroup}>
-                        <h3>Want to book an appointment?</h3>
-                        <Route
-                          render={({ history }) => (
-                            <AphButton
-                              color="primary"
-                              onClick={() => {
-                                history.push(clientRoutes.specialityListing());
-                              }}
-                              title={'Book an Appointment'}
-                            >
-                              Book an Appointment
-                            </AphButton>
-                          )}
-                        />
-                      </div>
-                      <div className={classes.rightGroup}>
-                        <img src={require('images/ic_doctor_consult.svg')} alt="" />
-                      </div>
-                    </div>
-                  </div>
+                  </TabContainer>
                 )}
-              </TabContainer>
-            )}
-            {tabValue === 1 && (
-              <TabContainer>
-                {upcomingAppointment && upcomingAppointment.length > 0 ? (
-                  <ConsultationsCard appointments={upcomingAppointment} pastOrCurrent="upcoming" />
-                ) : mutationLoading || isSigningIn ? (
-                  <div className={classes.loader}>
-                    <CircularProgress />
-                  </div>
-                ) : (
-                  <div className={classes.consultSection}>
-                    <div className={classes.noAppointments}>
-                      <div className={classes.leftGroup}>
-                        <h3>Want to book an appointment?</h3>
-                        <Route
-                          render={({ history }) => (
-                            <AphButton
-                              color="primary"
-                              onClick={() => {
-                                history.push(clientRoutes.specialityListing());
-                              }}
-                              title={'Book an Appointment'}
-                            >
-                              Book an Appointment
-                            </AphButton>
-                          )}
-                        />
+                {tabValue === 2 && (
+                  <TabContainer>
+                    {pastAppointments && pastAppointments.length > 0 ? (
+                      <ConsultationsCard appointments={pastAppointments} pastOrCurrent="past" />
+                    ) : mutationLoading || isSigningIn ? (
+                      <div className={classes.loader}>
+                        <CircularProgress />
                       </div>
-                      <div className={classes.rightGroup}>
-                        <img src={require('images/ic_doctor_consult.svg')} alt="" />
+                    ) : (
+                      <div className={classes.consultSection}>
+                        <div className={classes.noAppointments}>
+                          <div className={classes.leftGroup}>
+                            <h3>Want to book an appointment?</h3>
+                            <Route
+                              render={({ history }) => (
+                                <AphButton
+                                  color="primary"
+                                  onClick={() => {
+                                    history.push(clientRoutes.specialityListing());
+                                  }}
+                                  title={'Book an Appointment'}
+                                >
+                                  Book an Appointment
+                                </AphButton>
+                              )}
+                            />
+                          </div>
+                          <div className={classes.rightGroup}>
+                            <img src={require('images/ic_doctor_consult.svg')} alt="" />
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  </div>
+                    )}
+                  </TabContainer>
                 )}
-              </TabContainer>
-            )}
-            {tabValue === 2 && (
-              <TabContainer>
-                {pastAppointments && pastAppointments.length > 0 ? (
-                  <ConsultationsCard appointments={pastAppointments} pastOrCurrent="past" />
-                ) : mutationLoading || isSigningIn ? (
-                  <div className={classes.loader}>
-                    <CircularProgress />
-                  </div>
-                ) : (
-                  <div className={classes.consultSection}>
-                    <div className={classes.noAppointments}>
-                      <div className={classes.leftGroup}>
-                        <h3>Want to book an appointment?</h3>
-                        <Route
-                          render={({ history }) => (
-                            <AphButton
-                              color="primary"
-                              onClick={() => {
-                                history.push(clientRoutes.specialityListing());
-                              }}
-                              title={'Book an Appointment'}
-                            >
-                              Book an Appointment
-                            </AphButton>
-                          )}
-                        />
-                      </div>
-                      <div className={classes.rightGroup}>
-                        <img src={require('images/ic_doctor_consult.svg')} alt="" />
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </TabContainer>
-            )}
-          </div>
-        </div>
+              </div>
+            </div>
+          )
+        )}
       </div>
       {successApptId && (
         <Modal
