@@ -8,6 +8,7 @@ import {
   DOCTOR_CALL_TYPE,
   APPT_CALL_TYPE,
   sendDoctorNotificationWhatsapp,
+  hitCallKitCurl
 } from 'notifications-service/resolvers/notifications';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AphError } from 'AphError';
@@ -18,6 +19,8 @@ import { AppointmentCallDetailsRepository } from 'consults-service/repositories/
 import { format } from 'date-fns';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
+import { PatientDeviceTokenRepository } from 'profiles-service/repositories/patientDeviceTokenRepository';
+import { DEVICE_TYPE } from 'profiles-service/entities';
 
 export const doctorCallNotificationTypeDefs = gql`
   type AppointmentCallDetails {
@@ -108,6 +111,31 @@ const endCallNotification: Resolver<
   EndCallResult
 > = async (parent, args, { consultsDb, doctorsDb, patientsDb }) => {
   const callDetailsRepo = consultsDb.getCustomRepository(AppointmentCallDetailsRepository);
+  const callDetails = await callDetailsRepo.getCallDetails(args.appointmentCallId);
+  if(!callDetails){
+    throw new AphError(AphErrorMessages.INVALID_CALL_ID, undefined, {});
+  }
+
+  let doctorName = callDetails.doctorName;
+  if(!doctorName){
+    const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
+    const doctor = await doctorRepo.findById(callDetails.appointment.doctorId);
+    if(!doctor){
+      throw new AphError(AphErrorMessages.GET_DOCTORS_ERROR, undefined, {});
+    }
+    doctorName = doctor.displayName;
+  }
+
+  const deviceTokenRepo = patientsDb.getCustomRepository(PatientDeviceTokenRepository);
+  const voipPushtoken = await deviceTokenRepo.getDeviceVoipPushToken(
+    callDetails.appointment.patientId,
+    DEVICE_TYPE.IOS
+  );
+
+  if (voipPushtoken.length && voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken'] && callDetails.callType != APPT_CALL_TYPE.CHAT) {
+    hitCallKitCurl(voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken'], doctorName, callDetails.appointment.id, false, APPT_CALL_TYPE.AUDIO)
+  }
+
   await callDetailsRepo.updateCallDetails(args.appointmentCallId);
   return { status: true };
 };
