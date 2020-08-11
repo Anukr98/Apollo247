@@ -201,6 +201,7 @@ export const validatePharmaCoupon: Resolver<
 
 type CouponData = {
   code: string;
+  displayStatus: boolean;
   couponPharmaRule: {
     messageOnCouponScreen: string;
   };
@@ -229,6 +230,7 @@ const getPharmaCouponList: Resolver<
   couponData.response.map((item) => {
     const singleCoupon: CouponData = {
       code: item.coupon,
+      displayStatus: true,
       couponPharmaRule: {
         messageOnCouponScreen: item.message,
       },
