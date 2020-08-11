@@ -178,7 +178,7 @@ export const getMedicineOrdersOMSListTypeDefs = gql`
     landmark: String
     latitude: Float
     longitude: Float
-    statecode: String
+    stateCode: String
   }
 
   type RecommendedProductsListResult {
@@ -811,13 +811,15 @@ const getMedicineOrderOMSDetailsWithAddress: Resolver<
   MedicineOrderOMSDetailsResult
 > = async (parent, args, { profilesDb }) => {
   let medicineOrderDetails: any = '';
-  const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
-  if (args.billNumber && args.billNumber != '' && args.billNumber != '0' && args.patientId) {
+  let patientDetails, uhid;
+  if (args.patientId) {
     const patientRepo = profilesDb.getCustomRepository(PatientRepository);
-    const patientDetails = await patientRepo.getPatientDetails(args.patientId);
+    patientDetails = await patientRepo.getPatientDetails(args.patientId);
     if (!patientDetails) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
-    const uhid = patientDetails.uhid;
-
+    uhid = patientDetails.uhid;
+  }
+  const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
+  if (args.billNumber && args.billNumber != '0' && uhid) {
     medicineOrderDetails = await medicineOrdersRepo.getOfflineOrderDetails(
       args.patientId,
       uhid,
@@ -828,13 +830,6 @@ const getMedicineOrderOMSDetailsWithAddress: Resolver<
       throw new AphError(AphErrorMessages.INVALID_MEDICINE_ORDER_ID, undefined, {});
     }
   } else {
-    const patientRepo = profilesDb.getCustomRepository(PatientRepository);
-    if (args.patientId) {
-      const patientDetails = await patientRepo.getPatientDetails(args.patientId);
-      if (!patientDetails) {
-        throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
-      }
-    }
     //let medicineOrderDetails;
     medicineOrderDetails = await medicineOrdersRepo.getMedicineOrderDetailsWithAddressByOrderId(
       args.orderAutoId
@@ -865,6 +860,7 @@ const getMedicineOrderOMSDetailsWithAddress: Resolver<
       return getUnixTime(new Date(a.statusDate)) - getUnixTime(new Date(b.statusDate));
     });
   }
+  medicineOrderDetails.patient = patientDetails;
   return { medicineOrderDetails };
 };
 
