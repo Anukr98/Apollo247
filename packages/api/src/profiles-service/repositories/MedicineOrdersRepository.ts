@@ -12,6 +12,7 @@ import {
   MedicineOrderAddress,
   MEDICINE_ORDER_PAYMENT_TYPE,
   MEDICINE_DELIVERY_TYPE,
+  PaginateParams,
 } from 'profiles-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
@@ -19,11 +20,6 @@ import { format, addDays, differenceInMinutes, getUnixTime } from 'date-fns';
 import { getCache, setCache } from 'profiles-service/database/connectRedis';
 import { ApiConstants } from 'ApiConstants';
 import { log } from 'customWinstonLogger';
-
-// interface PaginateParams {
-//   take?: number;
-//   skip?: number;
-// }
 
 const REDIS_ORDER_AUTO_ID_KEY_PREFIX: string = 'orderAutoId:';
 @EntityRepository(MedicineOrders)
