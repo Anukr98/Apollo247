@@ -329,6 +329,7 @@ interface ConsultationsCardProps {
 
 export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
   const classes = useStyles({});
+  const [openSlotPopup, setOpenSlotPopup] = useState<boolean>(false);
   const otherDateMarkup = (appointmentTime: number) => {
     if (isToday(new Date(appointmentTime))) {
       return format(new Date(appointmentTime), 'h:mm a');
@@ -595,16 +596,20 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                                   appointmentDetails.doctorInfo.fullName
                                     ? readableParam(appointmentDetails.doctorInfo.fullName)
                                     : '';
-                                appointmentDetails.status !== STATUS.CANCELLED &&
-                                props.pastOrCurrent !== 'past'
-                                  ? !pickAnotherSlot &&
-                                    history.push(clientRoutes.chatRoom(appointmentId, doctorId))
-                                  : history.push(
-                                      clientRoutes.doctorDetails(
-                                        doctorName,
-                                        appointmentDetails.doctorId
+                                if (pickAnotherSlot) {
+                                  setOpenSlotPopup(true);
+                                } else {
+                                  appointmentDetails.status === STATUS.CANCELLED ||
+                                  (appointmentDetails.status === STATUS.COMPLETED &&
+                                    props.pastOrCurrent === 'past')
+                                    ? history.push(
+                                        clientRoutes.doctorDetails(
+                                          doctorName,
+                                          appointmentDetails.doctorId
+                                        )
                                       )
-                                    );
+                                    : history.push(clientRoutes.chatRoom(appointmentId, doctorId));
+                                }
                               }}
                             >
                               <h3>
