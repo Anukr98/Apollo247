@@ -98,6 +98,7 @@ import {
   ExotelDetails,
 } from 'consults-service/entities';
 import { AppointmentEntitySubscriber } from 'consults-service/entities/observers/appointmentObserver';
+import { migrationDir } from 'ApiConstants';
 
 export const connect = async () => {
   return await createConnections([
@@ -152,7 +153,8 @@ export const connect = async () => {
       database: `profiles_${process.env.DB_NODE_ENV}`,
       subscribers: [PatientEntitiySubscriber],
       logging: process.env.NODE_ENV === 'production' ? false : true,
-      synchronize: true,
+      synchronize: false,
+      migrations: [migrationDir.profiles_db],
       extra: {
         connectionLimit: process.env.CONNECTION_POOL_LIMIT,
       },
@@ -196,6 +198,8 @@ export const connect = async () => {
       extra: {
         connectionLimit: process.env.CONNECTION_POOL_LIMIT,
       },
+      synchronize: false,
+      migrations: [migrationDir.doctors_db],
     },
     {
       name: 'consults-db',
@@ -236,6 +240,8 @@ export const connect = async () => {
       extra: {
         connectionLimit: process.env.CONNECTION_POOL_LIMIT,
       },
+      synchronize: false,
+      migrations: [migrationDir.consults_db],
     },
   ]).catch((error) => {
     throw new Error(error);
