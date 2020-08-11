@@ -17,8 +17,8 @@ import { useMutation } from 'react-apollo-hooks';
 import { AddToConsultQueue, AddToConsultQueueVariables } from 'graphql/types/AddToConsultQueue';
 import { ADD_TO_CONSULT_QUEUE } from 'graphql/consult';
 import moment from 'moment';
-import { isPastAppointment } from 'helpers/commonHelpers';
-import { Route } from 'react-router-dom';
+import { readableParam } from 'helpers/commonHelpers';
+import { Link, Route } from 'react-router-dom';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -129,6 +129,20 @@ const useStyles = makeStyles((theme: Theme) => {
       borderRadius: 10,
       position: 'absolute',
       right: 0,
+      top: 0,
+      minWidth: 134,
+    },
+    statusShow: {
+      fontSize: 9,
+      fontWeight: 'bold',
+      textAlign: 'center',
+      padding: '6px 12px',
+      color: '#ff748e',
+      textTransform: 'uppercase',
+      letterSpacing: 0.5,
+      borderRadius: 10,
+      position: 'absolute',
+      left: 0,
       top: 0,
       minWidth: 134,
     },
@@ -344,10 +358,13 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
     switch (status) {
       case STATUS.PENDING:
         return isConsultStarted ? 'CONTINUE CONSULT' : 'FILL MEDICAL DETAILS';
+      case STATUS.NO_SHOW || STATUS.CALL_ABANDON:
+        return 'PICK ANOTHER SLOT';
       case STATUS.COMPLETED:
+      case STATUS.IN_PROGRESS:
         return 'CHAT WITH DOCTOR';
-      default:
-        return 'CHAT WITH DOCTOR';
+      case STATUS.CANCELLED:
+        return 'BOOK AGAIN';
     }
   };
 
@@ -356,7 +373,9 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
     status: STATUS,
     isConsultStarted: boolean | null
   ) => {
-    if (appointmentState) {
+    if (props.pastOrCurrent === 'past') {
+      return STATUS.CANCELLED ? 'BOOK AGAIN' : 'BOOK FOLLOW UP';
+    } else if (appointmentState) {
       switch (appointmentState) {
         case APPOINTMENT_STATE.NEW:
           return getAppointmentStatus(status, isConsultStarted);
@@ -364,11 +383,9 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
           return 'PICK ANOTHER SLOT';
         case APPOINTMENT_STATE.RESCHEDULE:
           return isConsultStarted ? 'CONTINUE CONSULT' : 'FILL MEDICAL DETAILS';
-        default:
-          return 'CHAT WITH DOCTOR';
       }
     }
-    // need to add one more condition for view prescription
+    // need to add one more condition for view prescription for this have to query casesheet
     getAppointmentStatus(status, isConsultStarted);
   };
 
@@ -377,12 +394,32 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
       isSeniorConsultStarted,
       isJdQuestionsComplete,
       isFollowUp,
+      isConsultStarted,
       status,
     } = appointmentDetails;
-    if (!isJdQuestionsComplete) {
+    if (isFollowUp === 'false' && status === STATUS.COMPLETED && props.pastOrCurrent !== 'past') {
+      return '7 days free chat remaining';
+    } else if (!isConsultStarted) {
+      return 'Fill vitals to get started with the consult journey';
+    } else if (!isJdQuestionsComplete) {
       return 'Connect with Junior Doctor before final consult';
     } else if (!isSeniorConsultStarted) {
       return 'Connect with doctor to start the consult';
+    }
+  };
+
+  const showStatusAtTop = (appointmentDetails: AppointmentDetails) => {
+    const { status, appointmentState, isFollowUp } = appointmentDetails;
+    if (status === STATUS.CANCELLED) {
+      return 'Cancelled';
+    } else if (props.pastOrCurrent === 'past' && status === STATUS.COMPLETED) {
+      return 'Completed';
+    } else if (appointmentState === APPOINTMENT_STATE.RESCHEDULE) {
+      return 'Rescheduled';
+    } else if (isFollowUp === 'true') {
+      return 'Follow Up Appointment';
+    } else {
+      return null;
     }
   };
 
@@ -426,8 +463,8 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                 return day1.diff(day2, 'days') == 0
                   ? 'Today'
                   : day1.diff(day2, 'days') +
-                  ' more ' +
-                  (day1.diff(day2, 'days') == 1 ? 'day' : 'days');
+                      ' more ' +
+                      (day1.diff(day2, 'days') == 1 ? 'day' : 'days');
               };
               const clinicList = doctorHospital || [];
               let facilityName = '',
@@ -442,21 +479,13 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                 facilityName = clinicList[0].facility.name;
                 streetName =
                   clinicList[0].facility.streetLine1 &&
-                    clinicList[0].facility.streetLine1.length > 0
+                  clinicList[0].facility.streetLine1.length > 0
                     ? clinicList[0].facility.streetLine1
                     : '';
               }
               return (
                 <Grid item sm={4} xs={12} key={index}>
-                  <div
-                    className={classes.consultCard}
-                    onClick={() => {
-                      window.location.href = clientRoutes.chatRoom(
-                        appointmentDetails.id,
-                        appointmentDetails.doctorId
-                      );
-                    }}
-                  >
+                  <div className={classes.consultCard}>
                     <div className={classes.consultCardWrap}>
                       <div className={classes.startDoctor}>
                         <Avatar
@@ -472,10 +501,15 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                           )}
                       </div>
                       <div className={classes.doctorInfo}>
+                        {showStatusAtTop(appointmentDetails) && (
+                          <div className={classes.statusShow}>
+                            {showStatusAtTop(appointmentDetails)}
+                          </div>
+                        )}
                         <div
                           className={`${classes.availability} ${
                             difference <= 15 && difference > 0 ? classes.availableNow : ''
-                            }`}
+                          }`}
                         >
                           {appointmentDetails.appointmentType === 'ONLINE'
                             ? difference <= 15 && difference > 0
@@ -504,96 +538,93 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                             {appointmentDetails.appointmentType === APPOINTMENT_TYPE.ONLINE ? (
                               <img src={require('images/ic-video.svg')} alt="" />
                             ) : (
-                                <img src={require('images/fa-solid-hospital.svg')} alt="" />
-                              )}
+                              <img src={require('images/fa-solid-hospital.svg')} alt="" />
+                            )}
                           </span>
                         </div>
                       </div>
                     </div>
                     <div className={classes.consultChatContainer}>
-                      {/* below div should come to left */}
-                      {appointmentDetails.status === STATUS.COMPLETED &&
-                        !isPastAppointment(appointmentDetails) &&
-                        appointmentDetails.isFollowUp !== 'false' && (
-                          <div className={classes.bookFollowup}>
-                            <h3>BOOK FOLLOWUP</h3>
-                            {appointmentDetails &&
-                              appointmentDetails.doctorInfo &&
-                              appointmentDetails.doctorInfo.fullName && (
-                                <h6>With {appointmentDetails.doctorInfo.fullName}</h6>
-                              )}
-                          </div>
+                      <Link
+                        to={clientRoutes.doctorDetails(
+                          appointmentDetails.doctorInfo && appointmentDetails.doctorInfo.fullName
+                            ? readableParam(appointmentDetails.doctorInfo.fullName)
+                            : '',
+                          appointmentDetails.doctorId
                         )}
+                      >
+                        {appointmentDetails.status === STATUS.COMPLETED &&
+                          appointmentDetails.isFollowUp === 'false' && (
+                            <div className={classes.bookFollowup}>
+                              <h3>
+                                {props.pastOrCurrent !== 'past' ? 'BOOK FOLLOWUP' : 'VIEW DETAILS'}
+                              </h3>
+                              {props.pastOrCurrent !== 'past' &&
+                                appointmentDetails &&
+                                appointmentDetails.doctorInfo &&
+                                appointmentDetails.doctorInfo.fullName && (
+                                  <h6>With {appointmentDetails.doctorInfo.fullName}</h6>
+                                )}
+                            </div>
+                          )}
+                      </Link>
                       <div className={classes.consultChat}>
-                        <h5>Previous Prescription</h5>
+                        {/* <h5>Previous Prescription</h5>
                         <AphButton className={classes.presButton}>
                           <img src={require('images/ic_prescription_white.svg')} alt="" />
                           <span className={classes.btnContent}>Cytoplam, Metformin, Insulin…</span>
                           <img src={require('images/ic_arrow_right_white.svg')} alt="" />
-                        </AphButton>
-                        <AphButton className={classes.errorButton}>
-                          Sorry, we had to reschedule this appointment. Please pick another slot.
-                        </AphButton>
-                        <h3>
-                          {appointmentDetails.isFollowUp === 'false' &&
-                            showAppointmentAction(appointmentState, status, isConsultStarted)}
-                        </h3>
-                        <h6>{getConsultationUpdateText(appointmentDetails)}</h6>
-                      </div>
-                      {/* below div will render for Follow - Up Chat  */}
-                      {/* <div className={classes.consultChat}>
-                        <h3>
-                          <span className={classes.chatIcon}>
-                            <img className={classes.consultIcon} src={require('images/ic_chatblue.svg')} alt="" />
-                            <span className={classes.chatIconCount}>1</span>
-                          </span>
-                          Chat with Doctor
-                        </h3>
-                        <h6>7 days free chat remaining</h6>
-                      </div> */}
-                    </div>
-                    <div className={classes.cardBottomActons}>
-                      <Route
-                        render={({ history }) => (
-                          <AphButton
-                            onClick={() => {
-                              if (
-                                appointmentState === APPOINTMENT_STATE.AWAITING_RESCHEDULE ||
-                                isConsultStarted
-                              ) {
-                                history.push(clientRoutes.chatRoom(appointmentId, doctorId));
-                              } else {
-                                isConsultStarted
-                                  ? history.push(clientRoutes.chatRoom(appointmentId, doctorId))
-                                  : addConsultToQueue({
-                                    variables: {
-                                      appointmentId,
-                                    },
-                                  })
-                                    .then((res) => {
-                                      history.push(
-                                        clientRoutes.chatRoom(appointmentId, doctorId)
-                                      );
-                                    })
-                                    .catch((e: ApolloError) => {
-                                      alert(e);
-                                    });
-                              }
-                            }}
-                          >
-                            {appointmentDetails.isFollowUp === 'false'
-                              ? showAppointmentAction(appointmentState, status, isConsultStarted)
-                              : 'SCHEDULE FOLLOWUP'}
+                        </AphButton> */}
+                        {appointmentDetails.appointmentState ===
+                          APPOINTMENT_STATE.AWAITING_RESCHEDULE && (
+                          <AphButton className={classes.errorButton}>
+                            Sorry, we had to reschedule this appointment. Please pick another slot.
                           </AphButton>
                         )}
-                      />
-                      {status === STATUS.COMPLETED ? (
-                        <div className={classes.noteText}>
-                          You can chat with the doctor for {comparingDays()}
-                        </div>
-                      ) : (
-                          ''
+                        <Route
+                          render={({ history }) => (
+                            <div
+                              style={{ cursor: 'pointer' }}
+                              onClick={() => {
+                                const pickAnotherSlot =
+                                  appointmentDetails.status === STATUS.NO_SHOW ||
+                                  appointmentDetails.status === STATUS.CALL_ABANDON ||
+                                  appointmentDetails.appointmentState ===
+                                    APPOINTMENT_STATE.AWAITING_RESCHEDULE;
+                                const doctorName =
+                                  appointmentDetails.doctorInfo &&
+                                  appointmentDetails.doctorInfo.fullName
+                                    ? readableParam(appointmentDetails.doctorInfo.fullName)
+                                    : '';
+                                appointmentDetails.status !== STATUS.CANCELLED &&
+                                props.pastOrCurrent !== 'past'
+                                  ? !pickAnotherSlot &&
+                                    history.push(clientRoutes.chatRoom(appointmentId, doctorId))
+                                  : history.push(
+                                      clientRoutes.doctorDetails(
+                                        doctorName,
+                                        appointmentDetails.doctorId
+                                      )
+                                    );
+                              }}
+                            >
+                              <h3>
+                                {appointmentDetails.appointmentType === APPOINTMENT_TYPE.ONLINE
+                                  ? showAppointmentAction(
+                                      appointmentState,
+                                      status,
+                                      isConsultStarted
+                                    )
+                                  : 'VIEW DETAILS'}
+                              </h3>
+                            </div>
+                          )}
+                        />
+                        {appointmentDetails.appointmentState !==
+                          APPOINTMENT_STATE.AWAITING_RESCHEDULE && (
+                          <h6>{getConsultationUpdateText(appointmentDetails)}</h6>
                         )}
+                      </div>
                     </div>
                   </div>
                 </Grid>
