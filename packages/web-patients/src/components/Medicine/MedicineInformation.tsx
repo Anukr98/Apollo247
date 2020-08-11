@@ -578,7 +578,11 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                     {substitutes.length === 1 ? ' substitute' : ' substitutes'}
                   </span>
                   <div className={classes.dropDownArrow}>
-                    <img src={require('images/ic_dropdown_green.svg')} alt="" />
+                    <img
+                      src={require('images/ic_dropdown_green.svg')}
+                      alt="Dropdown"
+                      title="Dropdown"
+                    />
                   </div>
                 </div>
               </>
