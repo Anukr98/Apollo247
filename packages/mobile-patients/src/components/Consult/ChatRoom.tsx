@@ -5459,6 +5459,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               setIsPublishAudio(true);
               setShowVideo(true);
               setCameraPosition('front');
+              endVoipCall();
 
               pubnub.publish(
                 {
@@ -5497,6 +5498,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     );
   };
 
+  const endVoipCall = () => {
+    RNCallKeep.endCall(appointmentData.id);
+  }
+  
   const renderOnCallPipButtons = (pipType: 'audio' | 'video') => {
     return (
       <View
@@ -5529,7 +5534,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             setCameraPosition('front');
             stopTimer();
             setHideStatusBar(false);
-
+            endVoipCall();
+            
             pubnub.publish(
               {
                 message: {
@@ -5736,6 +5742,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               stopTimer();
               setHideStatusBar(false);
               setChatReceived(false);
+              endVoipCall();
 
               pubnub.publish(
                 {

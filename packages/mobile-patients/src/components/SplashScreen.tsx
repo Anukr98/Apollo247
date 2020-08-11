@@ -161,6 +161,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
     // Add RNCallKeep Events
     RNCallKeep.addEventListener('answerCall', onAnswerCallAction);
+    RNCallKeep.addEventListener('endCall', onDisconnetCallAction);
   }
   
   const handleVoipEventListeners = () => {
@@ -175,6 +176,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
   const onAnswerCallAction = () => {
     voipAppointmentId.current && getAppointmentDataAndNavigate(voipAppointmentId.current);
+  }
+
+  const onDisconnetCallAction = () => {
+    voipAppointmentId.current = "";
   }
 
   const handleDeepLink = () => {
