@@ -34,6 +34,7 @@ import {
   postWebEngageEvent,
   statusBarHeight,
   timeDiffFromNow,
+  setWebEngageScreenNames,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEventName,
@@ -222,6 +223,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   });
 
   useEffect(() => {
+    setWebEngageScreenNames('Doctor Profile');
     getNetStatus()
       .then((status) => {
         if (status) {
