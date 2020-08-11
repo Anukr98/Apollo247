@@ -250,6 +250,9 @@ export interface GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription
   medicineConsumptionDurationUnit: MEDICINE_CONSUMPTION_DURATION | null;
   routeOfAdministration: ROUTE_OF_ADMINISTRATION | null;
   medicineCustomDosage: string | null;
+  medicineCustomDetails: string | null;
+  includeGenericNameInPrescription: boolean | null;
+  genericName: string | null;
 }
 
 export interface GetCaseSheet_getCaseSheet_caseSheetDetails_removedMedicinePrescription {
@@ -269,6 +272,9 @@ export interface GetCaseSheet_getCaseSheet_caseSheetDetails_removedMedicinePresc
   medicineConsumptionDurationUnit: MEDICINE_CONSUMPTION_DURATION | null;
   routeOfAdministration: ROUTE_OF_ADMINISTRATION | null;
   medicineCustomDosage: string | null;
+  medicineCustomDetails: string | null;
+  includeGenericNameInPrescription: boolean | null;
+  genericName: string | null;
 }
 
 export interface GetCaseSheet_getCaseSheet_caseSheetDetails_otherInstructions {
@@ -362,6 +368,9 @@ export interface GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_medicinePr
   medicineConsumptionDurationUnit: MEDICINE_CONSUMPTION_DURATION | null;
   routeOfAdministration: ROUTE_OF_ADMINISTRATION | null;
   medicineCustomDosage: string | null;
+  medicineCustomDetails: string | null;
+  includeGenericNameInPrescription: boolean | null;
+  genericName: string | null;
 }
 
 export interface GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_removedMedicinePrescription {
@@ -381,6 +390,9 @@ export interface GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_removedMed
   medicineConsumptionDurationUnit: MEDICINE_CONSUMPTION_DURATION | null;
   routeOfAdministration: ROUTE_OF_ADMINISTRATION | null;
   medicineCustomDosage: string | null;
+  medicineCustomDetails: string | null;
+  includeGenericNameInPrescription: boolean | null;
+  genericName: string | null;
 }
 
 export interface GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_otherInstructions {

@@ -160,6 +160,9 @@ export const GET_DOCTOR_APPOINTMENTS = gql`
             medicineConsumptionDurationUnit
             routeOfAdministration
             medicineCustomDosage
+            medicineCustomDetails
+            includeGenericNameInPrescription
+            genericName
           }
           removedMedicinePrescription {
             id
@@ -177,6 +180,9 @@ export const GET_DOCTOR_APPOINTMENTS = gql`
             medicineConsumptionDurationUnit
             routeOfAdministration
             medicineCustomDosage
+            medicineCustomDetails
+            includeGenericNameInPrescription
+            genericName
           }
           otherInstructions {
             instruction
@@ -442,6 +448,9 @@ export const MODIFY_CASESHEET = gql`
         medicineConsumptionDurationUnit
         routeOfAdministration
         medicineCustomDosage
+        medicineCustomDetails
+        includeGenericNameInPrescription
+        genericName
       }
       removedMedicinePrescription {
         id
@@ -459,6 +468,9 @@ export const MODIFY_CASESHEET = gql`
         medicineConsumptionDurationUnit
         routeOfAdministration
         medicineCustomDosage
+        medicineCustomDetails
+        includeGenericNameInPrescription
+        genericName
       }
       notes
       otherInstructions {
@@ -814,6 +826,9 @@ export const GET_CASESHEET = gql`
           medicineConsumptionDurationUnit
           routeOfAdministration
           medicineCustomDosage
+          medicineCustomDetails
+          includeGenericNameInPrescription
+          genericName
         }
         removedMedicinePrescription {
           id
@@ -831,6 +846,9 @@ export const GET_CASESHEET = gql`
           medicineConsumptionDurationUnit
           routeOfAdministration
           medicineCustomDosage
+          medicineCustomDetails
+          includeGenericNameInPrescription
+          genericName
         }
         otherInstructions {
           instruction
@@ -906,6 +924,9 @@ export const GET_CASESHEET = gql`
             medicineConsumptionDurationUnit
             routeOfAdministration
             medicineCustomDosage
+            medicineCustomDetails
+            includeGenericNameInPrescription
+            genericName
           }
           removedMedicinePrescription {
             id
@@ -923,6 +944,9 @@ export const GET_CASESHEET = gql`
             medicineConsumptionDurationUnit
             routeOfAdministration
             medicineCustomDosage
+            medicineCustomDetails
+            includeGenericNameInPrescription
+            genericName
           }
           otherInstructions {
             instruction
@@ -1236,6 +1260,9 @@ export const SAVE_DOCTORS_FAVOURITE_MEDICINE = gql`
         medicineUnit
         routeOfAdministration
         medicineCustomDosage
+        medicineCustomDetails
+        includeGenericNameInPrescription
+        genericName
       }
     }
   }
@@ -1264,6 +1291,9 @@ export const UPDATE_DOCTOR_FAVOURITE_MEDICINE = gql`
         medicineUnit
         routeOfAdministration
         medicineCustomDosage
+        medicineCustomDetails
+        includeGenericNameInPrescription
+        genericName
       }
     }
   }
@@ -1288,6 +1318,9 @@ export const REMOVE_FAVOURITE_MEDICINE = gql`
         medicineUnit
         routeOfAdministration
         medicineCustomDosage
+        medicineCustomDetails
+        includeGenericNameInPrescription
+        genericName
       }
     }
   }
@@ -1440,6 +1473,9 @@ export const GET_DOCTOR_FAVOURITE_MEDICINE_LIST = gql`
         medicineUnit
         routeOfAdministration
         medicineCustomDosage
+        medicineCustomDetails
+        includeGenericNameInPrescription
+        genericName
       }
       allowedDosages
     }

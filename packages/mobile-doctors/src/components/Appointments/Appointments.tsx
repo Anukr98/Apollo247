@@ -103,9 +103,11 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
       moment(new Date()).format('YYYY-MM-DD')
     );
   };
-
   useEffect(() => {
     getAppointmentsApi();
+  }, [date]);
+
+  useEffect(() => {
     if (!isPastDate(date) && !isAlertVisible) {
       console.log('future dates', date, new Date());
       timerId = setInterval(() => {

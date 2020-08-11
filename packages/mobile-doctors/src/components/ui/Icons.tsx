@@ -927,3 +927,11 @@ export const Whatsapp: React.FC<IconProps> = (props) => (
 export const ChekGray: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('../../images/icons/check_gray.png')} />
 );
+
+export const CheckboxGrey: React.FC<IconProps> = (props) => (
+  <IconBase size="xs" {...props} source={require('../../images/icons/box_grey.png')} />
+);
+
+export const CheckboxOrangeSelected: React.FC<IconProps> = (props) => (
+  <IconBase size="xs" {...props} source={require('../../images/icons/box_select_orange.png')} />
+);
