@@ -165,19 +165,16 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   
   const handleVoipEventListeners = () => {
     VoipPushNotification.addEventListener('notification', (notification) => {
-      //on receive voip push
-      
-      if(notification && notification.getData() && notification.getData().appointmentId){
+      // on receive voip push
+      const payload = notification && notification.getData();
+      if(payload && payload.appointmentId){
         voipAppointmentId.current = notification.getData().appointmentId;
-      }
-      if(notification && notification.getData() && notification.getData().disconnectCall){
-        RNCallKeep.endAllCalls();
       }
     });
   }
 
   const onAnswerCallAction = () => {
-    getAppointmentDataAndNavigate(voipAppointmentId.current);
+    voipAppointmentId.current && getAppointmentDataAndNavigate(voipAppointmentId.current);
   }
 
   const handleDeepLink = () => {

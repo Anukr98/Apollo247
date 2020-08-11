@@ -90,32 +90,38 @@
 // --- Handle incoming pushes (for ios <= 10)
 - (void)pushRegistry:(PKPushRegistry *)registry didReceiveIncomingPushWithPayload:(PKPushPayload *)payload forType:(PKPushType)type {
   
-  if(payload && payload.dictionaryPayload && payload.dictionaryPayload[@"name"] != nil && payload.dictionaryPayload[@"isVideo"] != nil && payload.dictionaryPayload[@"appointmentId"] != nil && payload.dictionaryPayload[@"disconnectCall"] == nil){
-  
-    NSString *uuid = [[NSUUID UUID] UUIDString];
-    NSString *name = payload.dictionaryPayload[@"name"];
-    BOOL isVideo = [payload.dictionaryPayload[@"isVideo"] boolValue];
-
-   [RNVoipPushNotificationManager didReceiveIncomingPushWithPayload:payload forType:(NSString *)type];
-    [RNCallKeep reportNewIncomingCall:uuid handle:name handleType:@"generic" hasVideo:isVideo localizedCallerName:name fromPushKit: YES payload:nil];
-           
-  }
+  [self handleVoipIncomingCall:payload forType:type];
 }
 
 // --- Handle incoming pushes (for ios >= 11)
 - (void)pushRegistry:(PKPushRegistry *)registry didReceiveIncomingPushWithPayload:(PKPushPayload *)payload forType:(PKPushType)type withCompletionHandler:(void (^)(void))completion {
     
-  [RNVoipPushNotificationManager didReceiveIncomingPushWithPayload:payload forType:(NSString *)type];
+  [self handleVoipIncomingCall:payload forType:type];
+  completion();
+}
+
+- (void) handleVoipIncomingCall:(PKPushPayload *)payload forType:(PKPushType)type {
   
-  if(payload && payload.dictionaryPayload && payload.dictionaryPayload[@"name"] != nil && payload.dictionaryPayload[@"isVideo"] != nil && payload.dictionaryPayload[@"appointmentId"] != nil){
-  
-    NSString *uuid = [[NSUUID UUID] UUIDString];
+  if(payload && payload.dictionaryPayload && payload.dictionaryPayload[@"name"] != nil && payload.dictionaryPayload[@"isVideo"] != nil && payload.dictionaryPayload[@"appointmentId"] != nil &&
+     payload.dictionaryPayload[@"disconnectCall"] == nil){
+    
+    // show incoming call
+    
+    NSString *appointmentId = payload.dictionaryPayload[@"appointmentId"];
     NSString *name = payload.dictionaryPayload[@"name"];
     BOOL isVideo = [payload.dictionaryPayload[@"isVideo"] boolValue];
-
-    [RNCallKeep reportNewIncomingCall:uuid handle:name handleType:@"generic" hasVideo:isVideo localizedCallerName:name fromPushKit: YES payload:nil];
+    
+    [RNVoipPushNotificationManager didReceiveIncomingPushWithPayload:payload forType:(NSString *)type]; //sending payload to JS
+    
+    [RNCallKeep reportNewIncomingCall:appointmentId handle:name handleType:@"generic" hasVideo:isVideo localizedCallerName:name fromPushKit: YES payload:nil];
            
-    completion();
+  } else if(payload && payload.dictionaryPayload[@"appointmentId"] != nil && payload.dictionaryPayload[@"disconnectCall"] != nil) {
+    
+    // disconnect ongoing call
+    
+    NSString *appointmentId = payload.dictionaryPayload[@"appointmentId"];
+    
+    [RNCallKeep endCallWithUUID:appointmentId reason:2]; // CXCallEndedReasonRemoteEnded
   }
 }
 

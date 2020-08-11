@@ -817,7 +817,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   }, [])
 
   const initializeVoip = () => {
-    
     VoipPushNotification.requestPermissions();
     VoipPushNotification.registerVoipToken();
 
