@@ -1484,6 +1484,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                 }
               };
               callBack();
+              hideFloatingContainer();
               callOptions.stopCalls(false);
               callOptions.setCallAccepted(false);
               break;
