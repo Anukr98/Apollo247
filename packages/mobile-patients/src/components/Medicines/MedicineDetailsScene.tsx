@@ -28,6 +28,7 @@ import {
   MedicineProduct,
   MedicineProductDetails,
   pinCodeServiceabilityApi,
+  trackTagalysEvent,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   aphConsole,
@@ -62,7 +63,6 @@ import {
   StackActions,
   NavigationActions,
 } from 'react-navigation';
-import stripHtml from 'string-strip-html';
 import HTML from 'react-native-render-html';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import {
@@ -70,6 +70,8 @@ import {
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { useAllCurrentPatients } from '../../hooks/authHooks';
+import { AddToCartButtons } from './AddToCartButtons';
+import { Tagalys } from '@aph/mobile-patients/src/helpers/Tagalys';
 
 const { width, height } = Dimensions.get('window');
 
@@ -139,13 +141,14 @@ const styles = StyleSheet.create({
   bottonButtonContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginHorizontal: 20,
-    paddingTop: 14,
-    paddingBottom: 20,
+    justifyContent: 'space-evenly',
+    marginHorizontal: 5,
+    paddingBottom: 10,
+    ...theme.viewStyles.shadowStyle,
+    shadowOpacity: 0.8,
   },
   bottomButtonStyle: {
-    flex: 1,
-    backgroundColor: theme.colors.WHITE,
+    width: '45%',
   },
   separator: {
     height: 1,
@@ -210,10 +213,12 @@ export interface MedicineDetailsSceneProps
     title: string;
     movedFrom: string;
     deliveryError: string;
+    sectionName?: string;
   }> {}
 
 export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props) => {
   const _deliveryError = props.navigation.getParam('deliveryError');
+  const sectionName = props.navigation.getParam('sectionName');
   const [medicineDetails, setmedicineDetails] = useState<MedicineProductDetails>(
     {} as MedicineProductDetails
   );
@@ -276,10 +281,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       : `${findDesc('STORAGE')}`;
   };
 
-  const _medicineOverview =
-    medicineDetails!.PharmaOverview &&
-    medicineDetails!.PharmaOverview[0] &&
-    medicineDetails!.PharmaOverview[0].Overview;
+  const _medicineOverview = g(medicineDetails, 'PharmaOverview', '0' as any, 'Overview');
   const medicineOverview =
     typeof _medicineOverview == 'string'
       ? []
@@ -317,14 +319,15 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   const sku = props.navigation.getParam('sku'); // 'MED0017';
   aphConsole.log('SKU\n', sku);
 
-  const { addCartItem, cartItems, updateCartItem } = useShoppingCart();
+  const { addCartItem, cartItems, updateCartItem, removeCartItem } = useShoppingCart();
   const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
   const getItemQuantity = (id: string) => {
     const foundItem = cartItems.find((item) => item.id == id);
-    return foundItem ? foundItem.quantity : 1;
+    return foundItem ? foundItem.quantity : 0;
   };
   const [selectedQuantity, setselectedQuantity] = useState<string | number>(getItemQuantity(sku));
   const isMedicineAddedToCart = cartItems.findIndex((item) => item.id == sku) != -1;
+  const itemInCart = cartItems.find((item) => item.id == sku);
   const isOutOfStock = !medicineDetails!.is_in_stock;
   const medicineName = medicineDetails.name;
   const scrollViewRef = React.useRef<KeyboardAwareScrollView>(null);
@@ -351,9 +354,10 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     setLoading(true);
     getMedicineDetailsApi(sku)
       .then(({ data }) => {
-        aphConsole.log('getMedicineDetailsApi\n', data);
-        if (data && data.productdp) {
-          setmedicineDetails((data && data.productdp[0]) || {});
+        const productDetails = g(data, 'productdp', '0' as any);
+        if (productDetails) {
+          setmedicineDetails(productDetails || {});
+          trackTagalysViewEvent(productDetails);
           if (_deliveryError) {
             setTimeout(() => {
               scrollViewRef.current && scrollViewRef.current.scrollToEnd();
@@ -380,14 +384,29 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   }, [medicineOverview]);
 
   useEffect(() => {
-    console.log('useEffect deliveryTime\n', { deliveryTime, deliveryError });
     if (!!deliveryTime || !!deliveryError) {
-      // scrollViewRef.current && scrollViewRef.current.scrollToEnd({ animated: true });
       setTimeout(() => {
         scrollViewRef.current && scrollViewRef.current.scrollToEnd();
       }, 10);
     }
   }, [deliveryTime, deliveryError]);
+
+  const trackTagalysViewEvent = (details: MedicineProductDetails) => {
+    try {
+      trackTagalysEvent(
+        {
+          event_type: 'product_action',
+          details: {
+            sku: details.sku,
+            action: 'view',
+          } as Tagalys.ProductAction,
+        },
+        g(currentPatient, 'id')!
+      );
+    } catch (error) {
+      CommonBugFender(`${AppRoutes.MedicineDetailsScene}_trackTagalysEvent`, error);
+    }
+  };
 
   const onAddCartItem = (item: MedicineProduct) => {
     const {
@@ -413,32 +432,25 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
         : undefined,
       prescriptionRequired: is_prescription_required == '1',
       isMedicine: (type_id || '').toLowerCase() == 'pharma',
-      quantity: Number(selectedQuantity),
+      quantity: 1,
       thumbnail: thumbnail,
       isInStock: true,
       maxOrderQty: MaxOrderQty,
     });
-    postwebEngageAddToCartEvent(item, 'Pharmacy PDP');
+    postwebEngageAddToCartEvent(item, 'Pharmacy PDP', sectionName);
     let id = currentPatient && currentPatient.id ? currentPatient.id : '';
     postAppsFlyerAddToCartEvent(item, id);
   };
 
-  const updateQuantityCartItem = ({ sku }: MedicineProduct) => {
+  const updateQuantityCartItem = ({ sku }: MedicineProduct, quantity: number) => {
     updateCartItem!({
       id: sku,
-      quantity: Number(selectedQuantity),
+      quantity,
     });
   };
 
   const fetchDeliveryTime = async () => {
     if (!pincode) return;
-    const eventAttributes: WebEngageEvents[WebEngageEventName.PRODUCT_DETAIL_PINCODE_CHECK] = {
-      'product id': sku,
-      'product name': medicineDetails.name,
-      pincode: Number(pincode),
-      'customer id': currentPatient && currentPatient.id ? currentPatient.id : '',
-    };
-    postWebEngageEvent(WebEngageEventName.PRODUCT_DETAIL_PINCODE_CHECK, eventAttributes);
     const unServiceableMsg = 'Sorry, not serviceable in your area.';
     const pincodeServiceableItemOutOfStockMsg = 'Sorry, this item is out of stock in your area.';
     const genericServiceableDate = moment()
@@ -474,7 +486,17 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     })
       .then((res) => {
         const deliveryDate = g(res, 'data', 'tat', '0' as any, 'deliverydate');
+        const currentDate = moment();
         if (deliveryDate) {
+          const eventAttributes: WebEngageEvents[WebEngageEventName.PRODUCT_DETAIL_PINCODE_CHECK] = {
+            'product id': sku,
+            'product name': medicineDetails.name,
+            pincode: Number(pincode),
+            'customer id': currentPatient && currentPatient.id ? currentPatient.id : '',
+            'TAT Displayed': moment(deliveryDate).diff(currentDate, 'd'),
+            Serviceable: pinCodeNotServiceable ? 'No' : 'Yes',
+          };
+          postWebEngageEvent(WebEngageEventName.PRODUCT_DETAIL_PINCODE_CHECK, eventAttributes);
           if (isDeliveryDateWithInXDays(deliveryDate)) {
             setdeliveryTime(deliveryDate);
             setdeliveryError('');
@@ -498,17 +520,13 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   const fetchSubstitutes = () => {
     getSubstitutes(sku)
       .then(({ data }) => {
-        console.log({ data });
-
         try {
-          console.log('getSubstitutes', data);
           if (data) {
             if (
               data.products &&
               typeof data.products === 'object' &&
               Array.isArray(data.products)
             ) {
-              //
               setSubstitutes(data.products);
               setTimeout(() => {
                 scrollViewRef.current && scrollViewRef.current.scrollToEnd();
@@ -517,12 +535,10 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
           }
         } catch (error) {
           CommonBugFender('MedicineDetailsScene_fetchSubstitutes_try', error);
-          console.log(error);
         }
       })
       .catch((err) => {
         CommonBugFender('MedicineDetailsScene_fetchSubstitutes', err);
-        console.log({ err });
       });
   };
 
@@ -544,9 +560,13 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     }).map((_, i) => {
       return { key: (i + 1).toString(), value: i + 1 };
     });
+    const itemQty = getItemQuantity(sku);
+    const addToCart = () => updateQuantityCartItem(medicineDetails, itemQty + 1);
+    const removeItemFromCart = () => updateQuantityCartItem(medicineDetails, itemQty - 1);
+    const removeFromCart = () => removeCartItem!(sku);
 
     return (
-      <StickyBottomComponent style={{ height: 'auto' }} defaultBG>
+      <StickyBottomComponent style={{ height: 'auto' }}>
         {!showDeliverySpinner && !deliveryTime || deliveryError || isOutOfStock ? (
           <View
             style={{
@@ -584,86 +604,26 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
           </View>
         ) : (
           <View style={styles.bottomView}>
-            <View
-              style={{
-                flexDirection: 'row',
-                height: 50,
-                alignItems: 'center',
-                ...theme.viewStyles.lightSeparatorStyle,
-                marginHorizontal: 20,
-              }}
-            >
-              <View
-                style={{
-                  flex: 1,
-                }}
-              >
-                <MaterialMenu
-                  options={opitons}
-                  selectedText={selectedQuantity!.toString()}
-                  selectedTextStyle={{
-                    ...theme.viewStyles.text('M', 16, '#00b38e'),
-                  }}
-                  onPress={(selectedQuantity) => setselectedQuantity(selectedQuantity.value)}
-                >
-                  <View
-                    style={{
-                      flexDirection: 'row',
-                      justifyContent: 'space-between',
-                      paddingRight: 8,
-                      borderRightWidth: 0.5,
-                      borderRightColor: 'rgba(2, 71, 91, 0.2)',
-                    }}
-                  >
-                    <Text style={theme.viewStyles.text('SB', 14, '#02475b', 1, 24, 0.35)}>
-                      QTY : {selectedQuantity}
-                    </Text>
-                    <DropdownGreen />
-                  </View>
-                </MaterialMenu>
-              </View>
-              <View style={{ flex: 1, alignItems: 'flex-end' }}>
-                <Text
-                  style={[
-                    theme.viewStyles.text('SB', 14, '#02475b', 1, 24, 0.35),
-                    { fontWeight: 'bold' },
-                  ]}
-                >
-                  {!!medicineDetails.special_price && (
-                    <Text
-                      style={[
-                        {
-                          textDecorationLine: 'line-through',
-                          color: '#01475b',
-                          opacity: 0.6,
-                        },
-                      ]}
-                    >
-                      (Rs. {medicineDetails.price})
-                    </Text>
-                  )}{' '}
-                  <Text> Rs. {medicineDetails.special_price || medicineDetails.price}</Text>
-                </Text>
-              </View>
+            <View style={{
+              flex: 1,
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'flex-start',
+              marginBottom: 10,
+              marginLeft: 15,
+            }}>
+              <Text style={theme.viewStyles.text('M', 14, '#01475b', 1, 22, 0.35)}>
+                MRP.
+              </Text>
+              <Text style={theme.viewStyles.text('SB', 17, '#01475b', 1, 20, 0.35)}>
+                ₹{medicineDetails.special_price || medicineDetails.price}
+              </Text>
             </View>
             <View style={styles.bottonButtonContainer}>
               <Button
                 onPress={() => {
-                  onAddCartItem(medicineDetails);
-                }}
-                title={
-                  loading ? 'ADD TO CART' : isMedicineAddedToCart ? 'ADDED TO CART' : 'ADD TO CART'
-                }
-                disabled={isMedicineAddedToCart || isOutOfStock}
-                disabledStyle={styles.bottomButtonStyle}
-                style={styles.bottomButtonStyle}
-                titleTextStyle={{ color: '#fc9916' }}
-              />
-              <View style={{ width: 16 }} />
-              <Button
-                onPress={() => {
                   CommonLogEvent(AppRoutes.MedicineDetailsScene, 'Update quantity cart item');
-                  updateQuantityCartItem(medicineDetails);
+                  updateQuantityCartItem(medicineDetails, 1);
                   !isMedicineAddedToCart && onAddCartItem(medicineDetails);
 
                   const eventAttributes: WebEngageEvents[WebEngageEventName.BUY_NOW] = {
@@ -688,8 +648,57 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
                   props.navigation.navigate(AppRoutes.YourCart);
                 }}
                 title="BUY NOW"
-                style={{ flex: 1 }}
+                style={{ width: '45%', backgroundColor: theme.colors.WHITE }}
+                titleTextStyle={{ color: '#fc9916' }}
               />
+              {
+                isMedicineAddedToCart ?
+                <AddToCartButtons
+                  numberOfItemsInCart={itemQty}
+                  maxOrderQty={medicineDetails.MaxOrderQty}
+                  addToCart={addToCart}
+                  removeItemFromCart={removeItemFromCart}
+                  removeFromCart={removeFromCart}
+                  isSolidContainer={true}
+                  containerStyle={{
+                    height: 40,
+                    borderColor: '#fcb716',
+                    borderRadius: 10,
+                    backgroundColor: '#fcb716',
+                    justifyContent: 'space-between'
+                  }}
+                  deleteIconStyle={{
+                    resizeMode: 'contain',
+                    width: 8,
+                    height: 23,
+                    paddingLeft: 15,
+                    paddingRight: 15,
+                  }}
+                  plusIconStyle={{
+                    resizeMode: 'contain',
+                    width: 8,
+                    height: 23,
+                    paddingLeft: 15,
+                    paddingRight: 15,
+                  }}
+                  minusIconStyle={{
+                    resizeMode: 'contain',
+                    width: 8,
+                    height: 23,
+                    paddingLeft: 15,
+                    paddingRight: 15,
+                  }}
+                /> :
+                <Button
+                  onPress={() => {
+                    onAddCartItem(medicineDetails);
+                  }}
+                  title={'ADD TO CART'}
+                  disabled={isMedicineAddedToCart || isOutOfStock}
+                  disabledStyle={styles.bottomButtonStyle}
+                  style={styles.bottomButtonStyle}
+                />
+              }
             </View>
           </View>
         )}
@@ -740,6 +749,12 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
                     heading: medicineDetails.name,
                   });
                 }
+
+                const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_DETAIL_IMAGE_CLICK] = {
+                  'Product ID': sku,
+                  'Product Name': medicineName,
+                };
+                postWebEngageEvent(WebEngageEventName.PHARMACY_DETAIL_IMAGE_CLICK, eventAttributes);
               }}
             >
               {!!imagesListLength ? (
@@ -775,32 +790,22 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   };
 
   const filterHtmlContent = (content: string = '') => {
-    return stripHtml(content);
-    // .replace(/&amp;nbsp;/g, ' ')
-    // .replace(/&amp;deg;/g, '°')
-    // .replace(/&#039;/g, "'")
-    // .replace(/&amp;lt;br \/&amp;gt;. /g, '\n')
-    // .replace(/&amp;lt;br \/&amp;gt;/g, '\n')
-    // .split('\n')
-    // .filter((item) => item)
-    // .join('\n')
-    // .trim();
-  };
-
-  const renderTabComponent = () => {
-    // let description = desc; // props.route.key; //data.CaptionDesc;
-    const selectedTabdata = medicineOverview.filter((item) => item.Caption === selectedTab);
-    let description =
-      selectedTabdata.length && !!selectedTabdata[0].CaptionDesc
-        ? selectedTabdata[0].CaptionDesc
-        : '';
-    description = description
+    return content
       .replace(/&amp;/g, '&')
       .replace(/&lt;/g, '<')
       .replace(/&gt;rn/g, '>')
       .replace(/&gt;r/g, '>')
       .replace(/&gt;/g, '>')
       .replace(/\.t/g, '.');
+  };
+
+  const renderTabComponent = () => {
+    const selectedTabdata = medicineOverview.filter((item) => item.Caption === selectedTab);
+    let description =
+      selectedTabdata.length && !!selectedTabdata[0].CaptionDesc
+        ? selectedTabdata[0].CaptionDesc
+        : '';
+    description = filterHtmlContent(description);
 
     return (
       <View
@@ -858,14 +863,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   };
 
   const renderInfo = () => {
-    const description = medicineDetails.description
-      .replace(/&amp;/g, '&')
-      .replace(/&lt;/g, '<')
-      .replace(/&gt;rn/g, '>')
-      .replace(/&gt;r/g, '>')
-      .replace(/&gt;/g, '>')
-      .replace(/\.t/, '.');
-    console.log(description);
+    const description = filterHtmlContent(medicineDetails.description);
 
     if (!!description)
       return (

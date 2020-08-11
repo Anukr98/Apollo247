@@ -20,7 +20,6 @@ import {
   CONSULTS_RX_SEARCH_FILTER,
   REQUEST_ROLES,
   PATIENT_TYPE,
-  ES_DOCTOR_SLOT_STATUS,
   AppointmentUpdateHistory,
 } from 'consults-service/entities';
 import { AppointmentDateTime } from 'doctors-service/resolvers/getDoctorsBySpecialtyAndFilters';
@@ -43,8 +42,12 @@ import { PatientRepository } from 'profiles-service/repositories/patientReposito
 //import { DoctorNextAvaialbleSlotsRepository } from 'consults-service/repositories/DoctorNextAvaialbleSlotsRepository';
 import { log } from 'customWinstonLogger';
 import { ApiConstants } from 'ApiConstants';
-import { Client, RequestParams } from '@elastic/elasticsearch';
 import { getCache, setCache, delCache } from 'consults-service/database/connectRedis';
+
+interface PaginateParams {
+  take?: number,
+  skip?: number
+}
 
 const REDIS_APPOINTMENT_ID_KEY_PREFIX: string = 'patient:appointment:';
 
@@ -509,7 +512,7 @@ export class AppointmentRepository extends Repository<Appointment> {
       skip: offset,
       take: limit,
       order: {
-        appointmentDateTime: 'DESC',
+        sdConsultationDate: 'DESC',
       },
     });
   }
@@ -548,6 +551,32 @@ export class AppointmentRepository extends Repository<Appointment> {
         }
       )
       .orderBy('appointment.appointmentDateTime', 'ASC')
+      .getMany();
+  }
+
+  getTodaysAppointments(startDate: Date) {
+    //const newStartDate = new Date(format(addDays(startDate, -1), 'yyyy-MM-dd') + '18:30');
+    const newStartDate = new Date(format(addDays(startDate, -1), 'yyyy-MM-dd') + 'T18:30');
+    const newEndDate = new Date(format(startDate, 'yyyy-MM-dd') + 'T18:30');
+
+    return this.createQueryBuilder('appointment')
+      .leftJoinAndSelect('appointment.caseSheet', 'caseSheet')
+      .where('(appointment.appointmentDateTime Between :fromDate AND :toDate)', {
+        fromDate: newStartDate,
+        toDate: newEndDate,
+      })
+      .andWhere(
+        'appointment.status not in(:status1,:status2,:status3,:status4,:status5,:status6)',
+        {
+          status1: STATUS.CANCELLED,
+          status2: STATUS.PAYMENT_PENDING,
+          status3: STATUS.UNAVAILABLE_MEDMANTRA,
+          status4: STATUS.PAYMENT_FAILED,
+          status5: STATUS.PAYMENT_PENDING_PG,
+          status6: STATUS.PAYMENT_ABORTED,
+        }
+      )
+      .orderBy('appointment.doctorId', 'ASC')
       .getMany();
   }
 
@@ -919,9 +948,9 @@ export class AppointmentRepository extends Repository<Appointment> {
         .getUTCHours()
         .toString()
         .padStart(2, '0')}:${appointmentDate
-        .getUTCMinutes()
-        .toString()
-        .padStart(2, '0')}:00.000Z`;
+          .getUTCMinutes()
+          .toString()
+          .padStart(2, '0')}:00.000Z`;
       console.log(availableSlots, 'availableSlots final list');
       console.log(availableSlots.indexOf(sl), 'indexof');
       console.log(checkStart, checkEnd, 'check start end');
@@ -1079,9 +1108,9 @@ export class AppointmentRepository extends Repository<Appointment> {
             .getUTCHours()
             .toString()
             .padStart(2, '0')}:${doctorAppointment.appointmentDateTime
-            .getUTCMinutes()
-            .toString()
-            .padStart(2, '0')}:00.000Z`;
+              .getUTCMinutes()
+              .toString()
+              .padStart(2, '0')}:00.000Z`;
           if (availableSlots.indexOf(aptSlot) >= 0) {
             availableSlots.splice(availableSlots.indexOf(aptSlot), 1);
           }
@@ -1358,17 +1387,36 @@ export class AppointmentRepository extends Repository<Appointment> {
       .getMany();
   }
 
-  getAllAppointmentsByPatientId(ids: string[]) {
-    return this.createQueryBuilder('appointment')
-      .innerJoinAndSelect('appointment.appointmentPayments', 'appointmentPayments')
-      .leftJoinAndSelect('appointment.appointmentRefunds', 'appointmentRefunds')
-      .where('appointment.patientId IN (:...ids)', { ids })
-      .andWhere('appointment.discountedAmount not in(:discountedAmount)', { discountedAmount: 0 })
-      .andWhere('appointment.status not in(:status1)', {
-        status1: STATUS.PAYMENT_ABORTED,
-      })
-      .orderBy('appointment.bookingDate', 'ASC')
-      .getMany();
+  getAllAppointmentsByPatientId(ids: string[], paginate: PaginateParams) {
+    // returns [result , total]
+    return this.findAndCount({
+      where: {
+        patientId: In(ids),
+        discountedAmount: Not(0),
+        status: Not(STATUS.PAYMENT_ABORTED)
+      },
+      relations: [
+        'appointmentPayments',
+        'appointmentRefunds'
+      ],
+      order: { bookingDate: 'ASC' },
+      //extra params...
+      ...paginate
+    });
+    /**
+     * keeping below snippet to validate above query
+     * once verified can be removed...
+     */
+    // return this.createQueryBuilder('appointment')
+    //   .innerJoinAndSelect('appointment.appointmentPayments', 'appointmentPayments')
+    //   .leftJoinAndSelect('appointment.appointmentRefunds', 'appointmentRefunds')
+    //   .where('appointment.patientId IN (:...ids)', { ids })
+    //   .andWhere('appointment.discountedAmount not in(:discountedAmount)', { discountedAmount: 0 })
+    //   .andWhere('appointment.status not in(:status1)', {
+    //     status1: STATUS.PAYMENT_ABORTED,
+    //   })
+    //   .orderBy('appointment.bookingDate', 'ASC')
+    //   .getMany();
   }
   followUpBookedCount(id: string) {
     return this.count({ where: { followUpParentId: id } });
@@ -1407,9 +1455,9 @@ export class AppointmentRepository extends Repository<Appointment> {
             .getUTCHours()
             .toString()
             .padStart(2, '0')}:${blockedSlot.start
-            .getUTCMinutes()
-            .toString()
-            .padStart(2, '0')}:00.000Z`;
+              .getUTCMinutes()
+              .toString()
+              .padStart(2, '0')}:00.000Z`;
 
           let blockedSlotsCount =
             (Math.abs(differenceInMinutes(blockedSlot.end, blockedSlot.start)) / 60) * duration;
@@ -1467,9 +1515,9 @@ export class AppointmentRepository extends Repository<Appointment> {
               .getUTCHours()
               .toString()
               .padStart(2, '0')}:${slot
-              .getUTCMinutes()
-              .toString()
-              .padStart(2, '0')}:00.000Z`;
+                .getUTCMinutes()
+                .toString()
+                .padStart(2, '0')}:00.000Z`;
           }
           console.log('start slot', slot);
 
@@ -1969,6 +2017,15 @@ export class AppointmentRepository extends Repository<Appointment> {
       .getCount();
   }
 
+  getNotStartedAppointments() {
+    return this.createQueryBuilder('appointment')
+      .where('appointment.status = :status', { status: STATUS.PENDING })
+      .andWhere('appointment.appointmentDateTime = :apptDateTime', {
+        apptDateTime: addMinutes(new Date(), -5),
+      })
+      .getMany();
+  }
+
   getAppointmentCountByCouponCode(couponCode: string) {
     return this.createQueryBuilder('appointment')
       .andWhere('appointment.couponCode = :couponCode', { couponCode })
@@ -1976,36 +2033,6 @@ export class AppointmentRepository extends Repository<Appointment> {
         status1: STATUS.PAYMENT_PENDING,
       })
       .getCount();
-  }
-
-  async updateDoctorSlotStatusES(
-    doctorId: string,
-    apptDate: string,
-    apptSlot: string,
-    slotType: APPOINTMENT_TYPE,
-    status: ES_DOCTOR_SLOT_STATUS
-  ) {
-    const client = new Client({ node: process.env.ELASTIC_CONNECTION_URL });
-    const updateDoc: RequestParams.Update = {
-      index: 'doctors',
-      id: doctorId,
-      body: {
-        script: {
-          source:
-            'for (int i = 0; i < ctx._source.doctorSlots.length; ++i) { if(ctx._source.doctorSlots[i].slotDate == params.slotDate) { for(int k=0;k<ctx._source.doctorSlots[i].slots.length;k++){if(ctx._source.doctorSlots[i].slots[k].slot == params.slot){ ctx._source.doctorSlots[i].slots[k].status = params.status;}}}}',
-          params: {
-            slotDate: apptDate,
-            slot: apptSlot,
-            slotType,
-            status,
-          },
-        },
-      },
-    };
-    const updateResp = await client.update(updateDoc).catch((error) => {
-      console.log(error, 'update error in slot');
-    });
-    console.log(updateResp, 'updateResp');
   }
 
   getAllDoctorAppointments(doctorId: string, apptDate: Date) {
@@ -2031,5 +2058,18 @@ export class AppointmentRepository extends Repository<Appointment> {
   saveAppointmentHistory(historyAttrs: Partial<AppointmentUpdateHistory>) {
     historyAttrs.updatedAt = new Date();
     return AppointmentUpdateHistory.create(historyAttrs).save();
+  }
+
+  async getAppointmenIdsFromPatientID(patientId: string) {
+    return this.find({
+      select: ['id'],
+      where: {
+        patientId,
+      },
+    }).catch((getApptError) => {
+      throw new AphError(AphErrorMessages.GET_APPOINTMENT_ERROR, undefined, {
+        getApptError,
+      });
+    });
   }
 }

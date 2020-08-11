@@ -133,7 +133,7 @@ export const Unauthorized: React.FC = (props) => {
         </h5>
         <div className={classes.backBtn}>
           <img src={require('images/backarrow.svg')} alt="" />
-          <Link to={isJuniorDoctor ? clientRoutes.juniorDoctor() : clientRoutes.calendar()}>
+          <Link to={isJuniorDoctor ? clientRoutes.juniorDoctorActive() : clientRoutes.calendar()}>
             GO BACK
           </Link>
         </div>

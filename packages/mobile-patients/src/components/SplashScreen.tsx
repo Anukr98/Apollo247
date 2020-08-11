@@ -7,6 +7,7 @@ import {
   Linking,
   AppStateStatus,
   AppState,
+  DeviceEventEmitter,
 } from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
 import { NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
@@ -94,6 +95,7 @@ const styles = StyleSheet.create({
 export interface SplashScreenProps extends NavigationScreenProps {}
 
 export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
+  const { APP_ENV } = AppConfig;
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
   const { setAllPatients, setMobileAPICalled } = useAuth();
   const { showAphAlert, hideAphAlert } = useUIElements();
@@ -102,8 +104,12 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   // const { setVirtualConsultationFee } = useAppCommonData();
 
   useEffect(() => {
-    getData('ConsultRoom', undefined, true);
+    getData('ConsultRoom', undefined, false); // no need to set timeout on didMount
     InitiateAppsFlyer();
+    DeviceEventEmitter.addListener('accept', (params) => {
+      console.log('Accept Params', params);
+      getAppointmentDataAndNavigate(params.appointment_id);
+    });
     setBugfenderPhoneNumber();
     AppState.addEventListener('change', _handleAppStateChange);
     checkForVersionUpdate();
@@ -418,7 +424,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       .then((_data) => {
         const appointmentData: any = _data.data.getAppointmentData!.appointmentsHistory;
         if (appointmentData[0]!.doctorInfo !== null) {
-          getData('ChatRoom', appointmentData[0]);
+          getData('ChatRoom', appointmentData[0], true);
         }
       })
       .catch((error) => {
@@ -647,6 +653,108 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     setAppState(nextAppState);
   };
 
+  type RemoteConfigKeysType = {
+    QA?: string;
+    DEV?: string;
+    PROD: string;
+  };
+
+  const RemoteConfigKeys = {
+    Android_mandatory: {
+      QA: 'QA_Android_mandatory',
+      PROD: 'Android_mandatory',
+    },
+    android_latest_version: {
+      QA: 'QA_android_latest_version',
+      PROD: 'android_latest_version',
+    },
+    ios_mandatory: {
+      QA: 'QA_ios_mandatory',
+      PROD: 'ios_mandatory',
+    },
+    ios_Latest_version: {
+      QA: 'QA_ios_latest_version',
+      PROD: 'ios_Latest_version',
+    },
+    Enable_Conditional_Management: {
+      PROD: 'Enable_Conditional_Management',
+    },
+    Virtual_consultation_fee: {
+      QA: 'QA_Virtual_consultation_fee',
+      PROD: 'Virtual_consultation_fee',
+    },
+    Need_Help_To_Contact_In: {
+      PROD: 'Need_Help_To_Contact_In',
+    },
+    Min_Value_For_Pharmacy_Free_Delivery: {
+      QA: 'QA_Min_Value_For_Pharmacy_Free_Delivery',
+      PROD: 'Min_Value_For_Pharmacy_Free_Delivery',
+    },
+    Pharmacy_Delivery_Charges: {
+      PROD: 'Pharmacy_Delivery_Charges',
+    },
+    home_screen_emergency_banner: {
+      PROD: 'home_screen_emergency_banner',
+    },
+    home_screen_emergency_number: {
+      PROD: 'home_screen_emergency_number',
+    },
+    top6_specailties: {
+      QA: 'QA_top6_specailties',
+      DEV: 'DEV_top6_specailties',
+      PROD: 'top6_specailties',
+    },
+    min_value_to_nudge_users_to_avail_free_delivery: {
+      QA: 'QA_min_value_to_nudge_users_to_avail_free_delivery',
+      PROD: 'min_value_to_nudge_users_to_avail_free_delivery',
+    },
+    Doctor_Partner_Text: {
+      QA: 'QA_Doctor_Partner_Text',
+      PROD: 'Doctor_Partner_Text',
+    },
+  };
+
+  const getConfigStringBasedOnEnv = (
+    currentEnv: AppEnv,
+    config: typeof RemoteConfigKeys,
+    _key: keyof typeof RemoteConfigKeys
+  ) => {
+    const valueBasedOnEnv = config[_key] as RemoteConfigKeysType;
+    return currentEnv === AppEnv.PROD
+      ? valueBasedOnEnv.PROD
+      : currentEnv === AppEnv.QA || currentEnv === AppEnv.QA2
+      ? valueBasedOnEnv.QA || valueBasedOnEnv.PROD
+      : valueBasedOnEnv.DEV || valueBasedOnEnv.QA || valueBasedOnEnv.PROD;
+  };
+
+  const getRemoteConfigKeys = (): string[] => {
+    return (Object.keys(RemoteConfigKeys) as (keyof typeof RemoteConfigKeys)[]).map((configKey) =>
+      getConfigStringBasedOnEnv(APP_ENV, RemoteConfigKeys, configKey)
+    );
+  };
+
+  const getRemoteConfigValue = (
+    remoteConfigKey: keyof typeof RemoteConfigKeys,
+    snapshot: {
+      [key: string]: { val(): any };
+    }
+  ) => snapshot[getConfigStringBasedOnEnv(APP_ENV, RemoteConfigKeys, remoteConfigKey)].val();
+
+  const setAppConfig = (
+    remoteConfigKey: keyof typeof RemoteConfigKeys,
+    appConfigKey: keyof typeof AppConfig.Configuration,
+    snapshot: {
+      [key: string]: { val(): any };
+    },
+    processValue?: (val: string | number) => any
+  ) => {
+    const _val = snapshot[
+      getConfigStringBasedOnEnv(APP_ENV, RemoteConfigKeys, remoteConfigKey)
+    ].val();
+    const finalValue = processValue ? processValue(_val) : _val;
+    updateAppConfig(appConfigKey, finalValue);
+  };
+
   const checkForVersionUpdate = () => {
     console.log('checkForVersionUpdate');
 
@@ -662,168 +770,72 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           return firebase.config().activateFetched();
         })
         .then(() => {
-          return firebase
-            .config()
-            .getValues([
-              'Android_mandatory',
-              'android_latest_version',
-              'ios_mandatory',
-              'ios_Latest_version',
-              'QA_Android_mandatory',
-              'QA_android_latest_version',
-              'QA_ios_mandatory',
-              'QA_ios_latest_version',
-              'Enable_Conditional_Management',
-              'Virtual_consultation_fee',
-              'QA_Virtual_consultation_fee',
-              'Need_Help_To_Contact_In',
-              'Min_Value_For_Pharmacy_Free_Delivery',
-              'QA_Min_Value_For_Pharmacy_Free_Delivery',
-              'Pharmacy_Delivery_Charges',
-              'home_screen_emergency_banner',
-              'home_screen_emergency_number',
-              'QA_top6_specailties',
-              'DEV_top6_specailties',
-              'top6_specailties',
-              'QA_min_value_to_nudge_users_to_avail_free_delivery',
-              'min_value_to_nudge_users_to_avail_free_delivery',
-              'QA_pharmacy_homepage',
-              'pharmacy_homepage',
-            ]);
+          return firebase.config().getValues(getRemoteConfigKeys());
         })
         .then((snapshot) => {
-          const remoteConfigValuesCount = Object.keys(snapshot).length - 1;
-
-          const needHelpToContactInMessage = snapshot['Need_Help_To_Contact_In'].val();
-          needHelpToContactInMessage && setNeedHelpToContactInMessage!(needHelpToContactInMessage);
-
-          const pharmacyHomepageInfoQA = JSON.parse(snapshot['QA_pharmacy_homepage'].val() || null);
-          pharmacyHomepageInfoQA &&
-            AppConfig.APP_ENV != AppEnv.PROD &&
-            updateAppConfig(
-              'PHARMACY_HOMEPAGE_INFO',
-              pharmacyHomepageInfoQA as PharmacyHomepageInfo[]
-            );
-
-          const pharmacyHomepageInfo = JSON.parse(snapshot['pharmacy_homepage'].val() || null);
-          pharmacyHomepageInfo &&
-            AppConfig.APP_ENV == AppEnv.PROD &&
-            updateAppConfig(
-              'PHARMACY_HOMEPAGE_INFO',
-              pharmacyHomepageInfo as PharmacyHomepageInfo[]
-            );
-
-          const minValueForPharmacyFreeDelivery = snapshot[
-            'Min_Value_For_Pharmacy_Free_Delivery'
-          ].val();
-          const QAMinValueForPharmacyFreeDelivery = snapshot[
-            'QA_Min_Value_For_Pharmacy_Free_Delivery'
-          ].val();
-          const QAMinValueToNudgeUsersToAvailFreeDelivery = snapshot[
-            'QA_min_value_to_nudge_users_to_avail_free_delivery'
-          ].val();
-          QAMinValueToNudgeUsersToAvailFreeDelivery &&
-            AppConfig.APP_ENV != AppEnv.PROD &&
-            updateAppConfig(
-              'MIN_VALUE_TO_NUDGE_USERS_TO_AVAIL_FREE_DELIVERY',
-              QAMinValueToNudgeUsersToAvailFreeDelivery
-            );
-          const minValueToNudgeUsersToAvailFreeDelivery = snapshot[
-            'min_value_to_nudge_users_to_avail_free_delivery'
-          ].val();
-          minValueToNudgeUsersToAvailFreeDelivery &&
-            AppConfig.APP_ENV == AppEnv.PROD &&
-            updateAppConfig(
-              'MIN_VALUE_TO_NUDGE_USERS_TO_AVAIL_FREE_DELIVERY',
-              minValueToNudgeUsersToAvailFreeDelivery
-            );
-
-          minValueForPharmacyFreeDelivery &&
-            AppConfig.APP_ENV == AppEnv.PROD &&
-            updateAppConfig('MIN_CART_VALUE_FOR_FREE_DELIVERY', minValueForPharmacyFreeDelivery);
-
-          QAMinValueForPharmacyFreeDelivery &&
-            AppConfig.APP_ENV != AppEnv.PROD &&
-            updateAppConfig('MIN_CART_VALUE_FOR_FREE_DELIVERY', QAMinValueForPharmacyFreeDelivery);
-
-          const pharmacyDeliveryCharges = snapshot['Pharmacy_Delivery_Charges'].val();
-          pharmacyDeliveryCharges && updateAppConfig('DELIVERY_CHARGES', pharmacyDeliveryCharges);
-
-          const homeScreenEmergencyBannerText = snapshot['home_screen_emergency_banner'].val();
-          homeScreenEmergencyBannerText &&
-            updateAppConfig('HOME_SCREEN_EMERGENCY_BANNER_TEXT', homeScreenEmergencyBannerText);
-
-          const homeScreenEmergencyBannerNumber = snapshot['home_screen_emergency_number'].val();
-          homeScreenEmergencyBannerNumber &&
-            updateAppConfig('HOME_SCREEN_EMERGENCY_BANNER_NUMBER', homeScreenEmergencyBannerNumber);
-
-          if (AppConfig.APP_ENV === 'DEV') {
-            const DEV_top6_specailties = snapshot['DEV_top6_specailties'].val();
-            DEV_top6_specailties &&
-              updateAppConfig('TOP_SPECIALITIES', JSON.parse(DEV_top6_specailties));
-          } else if (AppConfig.APP_ENV === 'QA' || AppConfig.APP_ENV === 'QA2') {
-            const QA_top6_specailties = snapshot['QA_top6_specailties'].val();
-            QA_top6_specailties &&
-              updateAppConfig('TOP_SPECIALITIES', JSON.parse(QA_top6_specailties));
-          } else {
-            const top6_specailties = snapshot['top6_specailties'].val();
-            top6_specailties && updateAppConfig('TOP_SPECIALITIES', JSON.parse(top6_specailties));
+          if (__DEV__) {
+            const snapshotLog = Object.keys(snapshot).map((k) => [k, snapshot[k].val()]);
+            console.log({ snapshotLog });
           }
 
-          const myValye = snapshot;
-          let index: number = 0;
-          const nietos = [];
-          const Android_version: string = AppConfig.Configuration.Android_Version;
-          const iOS_version: string = AppConfig.Configuration.iOS_Version;
+          const needHelpToContactInMessage = getRemoteConfigValue(
+            'Need_Help_To_Contact_In',
+            snapshot
+          );
+          needHelpToContactInMessage && setNeedHelpToContactInMessage!(needHelpToContactInMessage);
 
-          for (const val in myValye) {
-            if (myValye.hasOwnProperty(val)) {
-              index++;
-              const element = myValye[val];
-              nietos.push({ index: index, value: element.val() });
-              if (nietos.length === remoteConfigValuesCount) {
-                console.log(
-                  'nietos',
-                  parseFloat(nietos[1].value),
-                  parseFloat(iOS_version),
-                  parseFloat(Android_version),
-                  parseFloat(nietos[5].value),
-                  parseFloat(nietos[7].value),
-                  nietos[8].value
-                );
+          setAppConfig(
+            'Min_Value_For_Pharmacy_Free_Delivery',
+            'MIN_CART_VALUE_FOR_FREE_DELIVERY',
+            snapshot
+          );
 
-                AsyncStorage.setItem('CMEnable', JSON.stringify(nietos[8].value));
+          setAppConfig(
+            'min_value_to_nudge_users_to_avail_free_delivery',
+            'MIN_VALUE_TO_NUDGE_USERS_TO_AVAIL_FREE_DELIVERY',
+            snapshot
+          );
 
-                // if (buildName() === 'PROD') {
-                //   setVirtualConsultationFee &&
-                //     setVirtualConsultationFee(JSON.stringify(nietos[9].value));
-                // } else {
-                //   setVirtualConsultationFee &&
-                //     setVirtualConsultationFee(JSON.stringify(nietos[10].value));
-                // }
+          setAppConfig('Pharmacy_Delivery_Charges', 'DELIVERY_CHARGES', snapshot);
 
-                if (Platform.OS === 'ios') {
-                  if (buildName() === 'QA') {
-                    if (parseFloat(nietos[7].value) > parseFloat(iOS_version)) {
-                      showUpdateAlert(nietos[6].value);
-                    }
-                  } else {
-                    if (parseFloat(nietos[3].value) > parseFloat(iOS_version)) {
-                      showUpdateAlert(nietos[2].value);
-                    }
-                  }
-                } else {
-                  if (buildName() === 'QA') {
-                    if (parseFloat(nietos[5].value) > parseFloat(Android_version)) {
-                      showUpdateAlert(nietos[4].value);
-                    }
-                  } else {
-                    if (parseFloat(nietos[1].value) > parseFloat(Android_version)) {
-                      showUpdateAlert(nietos[0].value);
-                    }
-                  }
-                }
-              }
+          setAppConfig(
+            'home_screen_emergency_banner',
+            'HOME_SCREEN_EMERGENCY_BANNER_TEXT',
+            snapshot
+          );
+
+          setAppConfig(
+            'home_screen_emergency_number',
+            'HOME_SCREEN_EMERGENCY_BANNER_NUMBER',
+            snapshot
+          );
+
+          setAppConfig('Doctor_Partner_Text', 'DOCTOR_PARTNER_TEXT', snapshot);
+
+          setAppConfig('top6_specailties', 'TOP_SPECIALITIES', snapshot, (val: any) =>
+            JSON.parse(val)
+          );
+
+          try {
+            AsyncStorage.setItem(
+              'CMEnable',
+              JSON.stringify(getRemoteConfigValue('Enable_Conditional_Management', snapshot))
+            );
+          } catch (error) {}
+
+          if (Platform.OS === 'ios') {
+            const iosVersion = AppConfig.Configuration.iOS_Version;
+            const iosLatestVersion = getRemoteConfigValue('ios_Latest_version', snapshot);
+            const isMandatory: boolean = getRemoteConfigValue('ios_mandatory', snapshot);
+            if (`${iosLatestVersion}` > iosVersion) {
+              showUpdateAlert(isMandatory);
+            }
+          } else {
+            const androidVersion = AppConfig.Configuration.Android_Version;
+            const androidLatestVersion = getRemoteConfigValue('android_latest_version', snapshot);
+            const isMandatory: boolean = getRemoteConfigValue('Android_mandatory', snapshot);
+            if (`${androidLatestVersion}` > androidVersion) {
+              showUpdateAlert(isMandatory);
             }
           }
         })

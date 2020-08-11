@@ -191,7 +191,7 @@ const deletePatientAddress: Resolver<
   const patientAddressRepo = profilesDb.getCustomRepository(PatientAddressRepository);
   const deleteResp = await patientAddressRepo.deletePatientAddress(args.id);
   if (!deleteResp) {
-    throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
+    throw new AphError(AphErrorMessages.INVALID_PATIENT_ADDRESS_ID, undefined, {});
   }
   return { status: true };
 };

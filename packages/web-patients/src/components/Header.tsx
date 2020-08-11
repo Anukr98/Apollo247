@@ -376,7 +376,7 @@ export const Header: React.FC = (props) => {
                     <CircularProgress />
                   ) : (
                     <>
-                      <img src={require('images/ic_account.svg')} />
+                      <img src={require('images/ic_account.svg')} alt="Profile" title="Profile" />
                       {profileVisible && (
                         <Paper
                           className={`${classes.userOptions} ${
@@ -510,7 +510,11 @@ export const Header: React.FC = (props) => {
                         {isSigningIn ? (
                           <CircularProgress />
                         ) : (
-                          <img src={require('images/ic_account.svg')} title={'Login/SignUp'} />
+                          <img
+                            src={require('images/ic_account.svg')}
+                            title={'Login/SignUp'}
+                            alt="Login/SignUp"
+                          />
                         )}
                       </div>
                     </>

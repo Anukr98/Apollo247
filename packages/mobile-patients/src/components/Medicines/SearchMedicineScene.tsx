@@ -24,13 +24,12 @@ import {
   MedicineProduct,
   searchMedicineApi,
   getMedicineSearchSuggestionsApi,
+  trackTagalysEvent,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   aphConsole,
   isValidSearch,
   postWebEngageEvent,
-  postwebEngageAddToCartEvent,
-  postAppsFlyerAddToCartEvent,
   addPharmaItemToCart,
   g,
   getMaxQtyForMedicineItem,
@@ -102,34 +101,6 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansBold(9),
     color: theme.colors.WHITE,
   },
-  searchValueStyle: {
-    ...theme.fonts.IBMPlexSansMedium(18),
-    color: theme.colors.SHERPA_BLUE,
-  },
-  deliveryPinCodeContaner: {
-    ...theme.viewStyles.cardContainer,
-    paddingHorizontal: 20,
-    paddingVertical: Platform.OS == 'ios' ? 12 : 7,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: '#f7f8f5',
-  },
-  pinCodeStyle: {
-    ...theme.fonts.IBMPlexSansMedium(14),
-    color: theme.colors.SHERPA_BLUE,
-    flex: 0.9,
-  },
-  pinCodeTextInput: {
-    ...theme.fonts.IBMPlexSansMedium(14),
-    color: theme.colors.SHERPA_BLUE,
-    borderColor: theme.colors.INPUT_BORDER_SUCCESS,
-    borderBottomWidth: 2,
-    paddingBottom: 3,
-    paddingLeft: Platform.OS === 'ios' ? 0 : -3,
-    paddingTop: 0,
-    width: Platform.OS === 'ios' ? 51 : 54,
-  },
   sorryTextStyle: {
     ...theme.fonts.IBMPlexSansMedium(14),
     color: '#02475b',
@@ -183,6 +154,10 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isProductsLoading, setProductsIsLoading] = useState<boolean>(false);
   const [isSearchFocused, setSearchFocused] = useState(false);
+  const [pageCount, setPageCount] = useState<number>(1);
+  const [listFetching, setListFetching] = useState<boolean>(false);
+  const [endReached, setEndReached] = useState<boolean>(false);
+  const [prevData, setPrevData] = useState<MedicineProduct[]>();
   const [showListView, setShowListView] = useState<boolean>(true);
   const [pastSearches, setPastSearches] = useState<
     (getPatientPastMedicineSearches_getPatientPastMedicineSearches | null)[]
@@ -255,7 +230,6 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
       setsearchSate('load');
       getMedicineSearchSuggestionsApi(_searchText)
         .then(({ data }) => {
-          // aphConsole.log({ data });
           const products = data.products || [];
           setMedicineList(products);
           setsearchSate('success');
@@ -268,7 +242,6 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         })
         .catch((e) => {
           CommonBugFender('SearchByBrand_onSearchMedicine', e);
-          // aphConsole.log({ e });
           if (!Axios.isCancel(e)) {
             setsearchSate('fail');
           }
@@ -285,11 +258,16 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
       }
       setShowMatchingMedicines(true);
       setProductsIsLoading(true);
-      searchMedicineApi(_searchText)
+      searchMedicineApi(_searchText, pageCount)
         .then(async ({ data }) => {
           const products = data.products || [];
           setSearchHeading(data.search_heading!);
           setProductsList(products);
+          if (products.length < 10) {
+            setEndReached(true);
+          }
+          setPageCount(pageCount + 1);
+          setPrevData(products);
           setProductsIsLoading(false);
           const eventAttributes: WebEngageEvents[WebEngageEventName.SEARCH] = {
             keyword: _searchText,
@@ -297,13 +275,35 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
             resultsdisplayed: products.length,
           };
           postWebEngageEvent(WebEngageEventName.SEARCH, eventAttributes);
+          try {
+            trackTagalysEvent(
+              {
+                event_type: 'product_list',
+                details: {
+                  pl_type: 'search',
+                  pl_details: {
+                    q: _searchText,
+                  },
+                  pl_products: products.map((p) => p.sku),
+                  pl_page: 1, // Need to make dynamic if pagination is integrated
+                  pl_total: data.product_count,
+                },
+              },
+              g(currentPatient, 'id') || null
+            );
+          } catch (error) {}
         })
         .catch((e) => {
           CommonBugFender('SearchMedicineScene_onSearchMedicine', e);
           if (!axios.isCancel(e)) {
             setProductsIsLoading(false);
+            setListFetching(false);
             showGenericALert(e);
           }
+        })
+        .finally(() => {
+          setProductsIsLoading(false);
+          setListFetching(false);
         });
     }
   };
@@ -332,6 +332,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
       thumbnail,
       type_id,
       MaxOrderQty,
+      category_id,
     } = item;
     savePastSeacrh(sku, name).catch((e) => {
       aphConsole.log({ e });
@@ -362,11 +363,9 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
       props.navigation,
       currentPatient,
       !!isPharmacyLocationServiceable,
+      { source: 'Pharmacy Full Search', categoryId: category_id },
       suggestionItem ? () => setItemsLoading({ ...itemsLoading, [sku]: false }) : undefined
     );
-    postwebEngageAddToCartEvent(item, 'Pharmacy Full Search');
-    let id = currentPatient && currentPatient.id ? currentPatient.id : '';
-    postAppsFlyerAddToCartEvent(item, id);
   };
 
   const onRemoveCartItem = ({ sku }: MedicineProduct) => {
@@ -655,6 +654,8 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         onChangeSubscription={() => {}}
         onEditPress={() => {}}
         onAddSubscriptionPress={() => {}}
+        removeCartItem={() => removeCartItem!(medicine.sku)}
+        maxOrderQty={getMaxQtyForMedicineItem(medicine.MaxOrderQty)}
       />
     );
   };
@@ -751,6 +752,8 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         onChangeSubscription={() => {}}
         onEditPress={() => {}}
         onAddSubscriptionPress={() => {}}
+        removeCartItem={() => removeCartItem!(medicine.sku)}
+        maxOrderQty={getMaxQtyForMedicineItem(medicine.MaxOrderQty)}
       />
     );
   };
@@ -826,104 +829,144 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         ) : (
           !!searchText &&
           searchText.length > 2 && (
-            <FlatList
-              style={flatListStyle}
-              ref={(ref) => {
-                medicineListRef.current = ref;
-              }}
-              numColumns={showListView ? 1 : 2}
-              key={showListView ? 1 : 0}
-              onScroll={() => Keyboard.dismiss()}
-              data={filteredMedicineList}
-              renderItem={({ item, index }) =>
-                showListView
-                  ? renderMedicineCard(item, index, filteredMedicineList)
-                  : renderMedicineGridCard(item, index, filteredMedicineList)
-              }
-              keyExtractor={(_, index) => `${index}`}
-              bounces={false}
-              ListEmptyComponent={
-                discount.from ||
-                (discount.to && discount.to != 100) ||
-                false ||
-                price.from ||
-                price.to ||
-                categoryIds.length ? (
-                  <Text
-                    style={{
-                      textAlign: 'center',
-                      marginTop: 20,
-                      ...theme.viewStyles.text('M', 14, '#02475b'),
-                    }}
-                  >
-                    No results matching your filter criteria, please change the filter and try
-                    again.
-                  </Text>
-                ) : null
-              }
-              ListHeaderComponent={
-                (filteredMedicineList.length > 0 &&
-                  (isTest ? (
-                    <View style={styles.listHeaderViewStyle}>
-                      <Text
-                        style={[
-                          styles.listHeaderTextStyle,
-                          {
-                            marginHorizontal: showListView ? 20 : 5,
-                          },
-                        ]}
-                      >{`Matching Tests — ${filteredMedicineList.length}`}</Text>
-                      {renderFilterAndListView(true)}
-                    </View>
-                  ) : search_heading_text ? (
-                    <>
-                      <View
-                        style={{
-                          marginLeft: showListView ? 20 : 5,
-                          marginRight: showListView ? 20 : 5,
-                          marginTop: 24,
-                        }}
-                      >
-                        <Text style={{ ...theme.viewStyles.text('R', 14, '#01475b', 1, 18) }}>
-                          {search_heading_text[0]}
-                          <Text style={{ ...theme.viewStyles.text('SB', 14, '#01475b', 1, 18) }}>
-                            {"'" + search_heading_text[1] + "'"}
-                          </Text>
-                          {search_heading_text[2] && search_heading_text[2]}
-                          <Text style={{ ...theme.viewStyles.text('SB', 14, '#01475b', 1, 18) }}>
-                            {search_heading_text[3] && "'" + search_heading_text[3] + "'"}
-                          </Text>
-                          {search_heading_text[4]}
-                        </Text>
+            <>
+              <FlatList
+                style={flatListStyle}
+                ref={(ref) => {
+                  medicineListRef.current = ref;
+                }}
+                numColumns={showListView ? 1 : 2}
+                key={showListView ? 1 : 0}
+                onScroll={() => Keyboard.dismiss()}
+                data={filteredMedicineList}
+                renderItem={({ item, index }) =>
+                  showListView
+                    ? renderMedicineCard(item, index, filteredMedicineList)
+                    : renderMedicineGridCard(item, index, filteredMedicineList)
+                }
+                keyExtractor={(_, index) => `${index}`}
+                bounces={false}
+                onEndReachedThreshold={0.5}
+                onEndReached={() => {
+                  if (!listFetching && !endReached) {
+                    setListFetching(true);
+                    searchMedicineApi(searchText, pageCount)
+                      .then(({ data }) => {
+                        const products = data.products || [];
+                        if (prevData && JSON.stringify(prevData) !== JSON.stringify(products)) {
+                          setProductsList([...productsList, ...products]);
+                          setPageCount(pageCount + 1);
+                          setPrevData(products);
+                        } else {
+                          setEndReached(true);
+                          showAphAlert &&
+                            showAphAlert({
+                              title: 'Alert!',
+                              description: "You've reached the end of the list",
+                            });
+                        }
+                      })
+                      .catch((err) => {
+                        CommonBugFender('SearchByBrand_getProductsByCategoryApi', err);
+                        console.log(err, 'errr');
+                      })
+                      .finally(() => {
+                        setIsLoading(false);
+                        setListFetching(false);
+                      });
+                  }
+                }}
+                ListEmptyComponent={
+                  discount.from ||
+                  (discount.to && discount.to != 100) ||
+                  false ||
+                  price.from ||
+                  price.to ||
+                  categoryIds.length ? (
+                    <Text
+                      style={{
+                        textAlign: 'center',
+                        marginTop: 20,
+                        ...theme.viewStyles.text('M', 14, '#02475b'),
+                      }}
+                    >
+                      No results matching your filter criteria, please change the filter and try
+                      again.
+                    </Text>
+                  ) : null
+                }
+                ListHeaderComponent={
+                  (filteredMedicineList.length > 0 &&
+                    (isTest ? (
+                      <View style={styles.listHeaderViewStyle}>
+                        <Text
+                          style={[
+                            styles.listHeaderTextStyle,
+                            {
+                              marginHorizontal: showListView ? 20 : 5,
+                            },
+                          ]}
+                        >{`Matching Tests — ${filteredMedicineList.length}`}</Text>
+                        {renderFilterAndListView(true)}
                       </View>
-                      {renderFilterAndListView()}
-                      <View
-                        style={{
-                          backgroundColor: '#02475b',
-                          marginTop: 5,
-                          marginLeft: showListView ? 20 : 5,
-                          marginRight: showListView ? 20 : 5,
-                          opacity: 0.2,
-                          height: 1,
-                        }}
-                      />
-                    </>
-                  ) : (
-                    <View style={styles.listHeaderViewStyle}>
-                      <Text
-                        style={[
-                          styles.listHeaderTextStyle,
-                          {
-                            marginHorizontal: showListView ? 20 : 5,
-                          },
-                        ]}
-                      >{`Matching Medicines — ${filteredMedicineList.length}`}</Text>
-                      {renderFilterAndListView(true)}
-                    </View>
-                  ))) ||
-                null
-              }
-            />
+                    ) : search_heading_text ? (
+                      <>
+                        <View
+                          style={{
+                            marginLeft: showListView ? 20 : 5,
+                            marginRight: showListView ? 20 : 5,
+                            marginTop: 24,
+                          }}
+                        >
+                          <Text style={{ ...theme.viewStyles.text('R', 14, '#01475b', 1, 18) }}>
+                            {search_heading_text[0]}
+                            <Text style={{ ...theme.viewStyles.text('SB', 14, '#01475b', 1, 18) }}>
+                              {"'" + search_heading_text[1] + "'"}
+                            </Text>
+                            {search_heading_text[2] && search_heading_text[2]}
+                            <Text style={{ ...theme.viewStyles.text('SB', 14, '#01475b', 1, 18) }}>
+                              {search_heading_text[3] && "'" + search_heading_text[3] + "'"}
+                            </Text>
+                            {search_heading_text[4]}
+                          </Text>
+                        </View>
+                        {renderFilterAndListView()}
+                        <View
+                          style={{
+                            backgroundColor: '#02475b',
+                            marginTop: 5,
+                            marginLeft: showListView ? 20 : 5,
+                            marginRight: showListView ? 20 : 5,
+                            opacity: 0.2,
+                            height: 1,
+                          }}
+                        />
+                      </>
+                    ) : (
+                      <View style={styles.listHeaderViewStyle}>
+                        <Text
+                          style={[
+                            styles.listHeaderTextStyle,
+                            {
+                              marginHorizontal: showListView ? 20 : 5,
+                            },
+                          ]}
+                        >{`Matching Medicines — ${filteredMedicineList.length}`}</Text>
+                        {renderFilterAndListView(true)}
+                      </View>
+                    ))) ||
+                  null
+                }
+              />
+              {listFetching ? (
+                <ActivityIndicator
+                  style={{ backgroundColor: 'transparent' }}
+                  animating={listFetching}
+                  size="large"
+                  color="green"
+                />
+              ) : null}
+            </>
           )
         )}
       </>
@@ -1003,6 +1046,8 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
           marginHorizontal: 20,
           paddingBottom: index == medicineList.length - 1 ? 10 : 0,
         }}
+        maxOrderQty={getMaxQtyForMedicineItem(item.MaxOrderQty)}
+        removeCartItem={() => onRemoveCartItem(item)}
       />
     );
   };

@@ -215,7 +215,7 @@ export const PatientDetailLifeStyle: React.FC<LifeStyleProps> = (props) => {
         {patientDetails && patientDetails.gender === Gender.FEMALE && (
           <Typography className={classes.fullRow} component="div">
             <Typography component="h5" variant="h5" className={classes.header}>
-              Menstual History*
+              Menstrual and Obstetric History*
             </Typography>
             <Typography component="div" className={classes.content}>
               <ListItem>

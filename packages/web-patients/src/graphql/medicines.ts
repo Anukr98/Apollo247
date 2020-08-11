@@ -313,3 +313,13 @@ export const SAVE_PHARMACOLOGIST_CONSULT = gql`
     }
   }
 `;
+
+export const GET_PATIENT_FEEDBACK = gql`
+  query GetPatientFeedback($patientId: String, $transactionId: String) {
+    getPatientFeedback(patientId: $patientId, transactionId: $transactionId) {
+      feedback {
+        rating
+      }
+    }
+  }
+`;

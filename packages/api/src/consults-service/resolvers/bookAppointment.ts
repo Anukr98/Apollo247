@@ -324,6 +324,7 @@ const bookAppointment: Resolver<
 
     const payload: ValidateCouponRequest = {
       mobile: patientDetails.mobileNumber.replace('+91', ''),
+      email: patientDetails.emailAddress,
       billAmount: parseInt(amount.toString(), 10),
       coupon: appointmentInput.couponCode,
       paymentType: '',

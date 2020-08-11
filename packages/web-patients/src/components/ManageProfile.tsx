@@ -98,7 +98,7 @@ export const ManageProfile: React.FC = (props) => {
             onClick={() => (isProtected ? protectWithLoginPopup() : setIsPopoverOpen(true))}
             title={'Need Help?'}
           >
-            <img src={require('images/ic-mascot.png')} alt="" />
+            <img src={require('images/ic-mascot.png')} alt="Need Help" title="Need Help" />
             {isSigningIn && (
               <CircularProgress style={{ position: 'absolute', top: 17, left: 17 }} />
             )}
