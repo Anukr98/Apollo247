@@ -51,7 +51,11 @@ export interface EPrescription {
 }
 
 export interface PharmaCoupon extends validatePharmaCoupon_validatePharmaCoupon {
-  code: string;
+  coupon: string;
+  discount: number;
+  valid: boolean;
+  reason: String;
+  products: [];
 }
 
 export type EPrescriptionDisableOption = 'CAMERA_AND_GALLERY' | 'E-PRESCRIPTION' | 'NONE';
@@ -407,9 +411,14 @@ export const ShoppingCartProvider: React.FC = (props) => {
     cartItem: ShoppingCartItem,
     lineItems: validatePharmaCoupon_validatePharmaCoupon_pharmaLineItemsWithDiscountedPrice[]
   ) => {
-    const foundItem = lineItems.find((item) => item.itemId == cartItem.id);
-    return foundItem && foundItem.applicablePrice < (cartItem.specialPrice || cartItem.price)
-      ? foundItem.applicablePrice
+    const foundItem = lineItems.find((item) => item.sku == cartItem.id);
+    // return foundItem && foundItem.applicablePrice < (cartItem.specialPrice || cartItem.price)
+    //   ? foundItem.applicablePrice
+    //   : undefined;
+    return foundItem
+      ? foundItem.onMrp
+        ? foundItem.mrp - foundItem.discountAmt
+        : foundItem.specialPrice - foundItem.discountAmt
       : undefined;
   };
 
@@ -432,17 +441,29 @@ export const ShoppingCartProvider: React.FC = (props) => {
       );
 
     if (coupon) {
-      setCouponDiscount(g(coupon, 'discountedTotals', 'couponDiscount') || 0);
-      setProductDiscount(g(coupon, 'discountedTotals', 'productDiscount') || 0);
-      setCartItems(
-        cartItems.map((item) => ({
-          ...item,
-          couponPrice: getDiscountPrice(
-            item,
-            coupon.pharmaLineItemsWithDiscountedPrice as validatePharmaCoupon_validatePharmaCoupon_pharmaLineItemsWithDiscountedPrice[]
-          ),
-        }))
-      );
+      if (
+        g(coupon, 'discount') != 0 &&
+        g(coupon, 'discount') > deductProductDiscount(coupon.products)
+      ) {
+        setCouponDiscount(g(coupon, 'discount') - deductProductDiscount(coupon.products) || 0);
+        // setProductDiscount(g(coupon, 'discountedTotals', 'productDiscount') || 0);
+        setProductDiscount(getProductDiscount(coupon.products) || 0);
+        setCartItems(
+          cartItems.map((item) => ({
+            ...item,
+            couponPrice: getDiscountPrice(item, coupon.products),
+          }))
+        );
+      } else {
+        setCouponDiscount(0);
+        setProductDiscount(getProductDiscount(coupon.products) || 0);
+        setCartItems(
+          cartItems.map((item) => ({
+            ...item,
+            couponPrice: undefined,
+          }))
+        );
+      }
     } else {
       setCouponDiscount(0);
       setProductDiscount(productDiscount);
@@ -450,6 +471,27 @@ export const ShoppingCartProvider: React.FC = (props) => {
     }
   }, [cartTotal, coupon]);
 
+  const deductProductDiscount = (products: any) => {
+    let discount = 0;
+    products &&
+      products.forEach((item) => {
+        if (item.mrp != item.specialPrice && item.onMrp) {
+          discount = discount + (item.mrp - item.specialPrice) * item.quantity;
+        }
+      });
+    return discount;
+  };
+
+  const getProductDiscount = (products: any) => {
+    let discount = 0;
+    products &&
+      products.forEach((item) => {
+        if (item.mrp != item.specialPrice) {
+          discount = discount + (item.mrp - item.specialPrice) * item.quantity;
+        }
+      });
+    return discount;
+  };
   useEffect(() => {
     // updating prescription here on update in cart items
     if (cartTotalOfRxProducts == 0) {

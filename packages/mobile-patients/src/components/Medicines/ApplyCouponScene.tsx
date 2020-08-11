@@ -35,6 +35,13 @@ import {
 import { useAllCurrentPatients } from '../../hooks/authHooks';
 import { useUIElements } from '../UIElementsProvider';
 import { WebEngageEvents, WebEngageEventName } from '../../helpers/webEngageEvents';
+import {
+  fetchConsultCoupons,
+  validateConsultCoupon,
+} from '@aph/mobile-patients/src/helpers/apiCalls';
+import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 
 const styles = StyleSheet.create({
   bottonButtonContainer: {
@@ -95,6 +102,10 @@ const styles = StyleSheet.create({
     letterSpacing: 0.04,
   },
 });
+export interface pharma_coupon {
+  coupon: string;
+  message: string;
+}
 
 export interface ApplyCouponSceneProps extends NavigationScreenProps {}
 
@@ -102,31 +113,42 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
   // const isTest = props.navigation.getParam('isTest');
   const [couponText, setCouponText] = useState<string>('');
   const [couponError, setCouponError] = useState<string>('');
+  const [couponList, setcouponList] = useState<pharma_coupon[]>([]);
   const { currentPatient } = useAllCurrentPatients();
-  const { setCoupon, coupon: cartCoupon, cartItems } = useShoppingCart();
-  const { setLoading: setGlobalLoading, loading: globalLoading, showAphAlert } = useUIElements();
+  const { setCoupon, coupon: cartCoupon, cartItems, cartTotal } = useShoppingCart();
+  const { showAphAlert } = useUIElements();
+  const [loading, setLoading] = useState<boolean>(true);
   const client = useApolloClient();
   const isEnableApplyBtn = couponText.length >= 4;
+  const { locationDetails } = useAppCommonData();
+  // const { data, loading, error } = useQuery<getPharmaCouponList>(GET_PHARMA_COUPON_LIST, {
+  //   fetchPolicy: 'no-cache',
+  // });
+  // const couponList = (g(data, 'getPharmaCouponList', 'coupons') || []).filter(
+  //   (v) => v!.displayStatus
+  // );
 
-  const { data, loading, error } = useQuery<getPharmaCouponList>(GET_PHARMA_COUPON_LIST, {
-    fetchPolicy: 'no-cache',
-  });
-  const couponList = (g(data, 'getPharmaCouponList', 'coupons') || []).filter(
-    (v) => v!.displayStatus
-  );
+  // useEffect(() => {
+  //   setGlobalLoading!(loading);
+  // }, [loading]);
 
   useEffect(() => {
-    setGlobalLoading!(loading);
-  }, [loading]);
-
-  useEffect(() => {
-    if (error) {
-      showAphAlert!({
-        title: string.common.uhOh,
-        description: "Sorry, we're unable to fetch coupon codes right now. Please try again.",
+    fetchConsultCoupons()
+      .then((res: any) => {
+        console.log(JSON.stringify(res.data), 'objobj');
+        setcouponList(res.data.response);
+        setLoading(false);
+      })
+      .catch((error) => {
+        CommonBugFender('fetchingConsultCoupons', error);
+        console.log(error);
+        props.navigation.goBack();
+        showAphAlert!({
+          title: string.common.uhOh,
+          description: "Sorry, we're unable to fetch coupon codes right now. Please try again.",
+        });
       });
-    }
-  }, [error]);
+  }, []);
 
   const validateCoupon = (variables: validatePharmaCouponVariables) =>
     client.mutate<validatePharmaCoupon, validatePharmaCouponVariables>({
@@ -136,49 +158,93 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
 
   const applyCoupon = (coupon: string, cartItems: ShoppingCartItem[]) => {
     CommonLogEvent(AppRoutes.ApplyCouponScene, 'Select coupon');
-    setGlobalLoading!(true);
-    validateCoupon({
-      pharmaCouponInput: {
-        code: coupon,
-        patientId: g(currentPatient, 'id') || '',
-        orderLineItems: cartItems.map(
-          (item) =>
-            ({
-              itemId: item.id,
-              mrp: item.price,
-              productName: item.name,
-              productType: item.isMedicine
-                ? CouponCategoryApplicable.PHARMA
-                : CouponCategoryApplicable.FMCG,
-              quantity: item.quantity,
-              specialPrice: item.specialPrice || item.price,
-            } as OrderLineItems)
-        ),
-      },
-    })
-      .then(({ data }) => {
-        const validityStatus = g(data, 'validatePharmaCoupon', 'validityStatus');
-        if (validityStatus) {
-          setCoupon!({ code: coupon, ...g(data, 'validatePharmaCoupon')! });
-          props.navigation.goBack();
-        } else {
-          setCouponError(
-            g(data, 'validatePharmaCoupon', 'reasonForInvalidStatus') || 'Invalid Coupon Code'
-          );
-        }
+    setLoading(true);
+    const data = {
+      mobile: g(currentPatient, 'mobileNumber'),
+      billAmount: cartTotal.toFixed(2),
+      coupon: coupon,
+      pinCode: locationDetails && locationDetails.pincode,
+      products: cartItems.map((item) => ({
+        sku: item.id,
+        mrp: item.price,
+        quantity: item.quantity,
+        specialPrice: item.specialPrice || item.price,
+      })),
+    };
+    validateConsultCoupon(data)
+      .then((resp: any) => {
+        if (resp.data.errorCode == 0) {
+          if (resp.data.response.valid) {
+            setCoupon!(g(resp.data, 'response')!);
+            props.navigation.goBack();
+          } else {
+            setCouponError(g(resp.data, 'response', 'reason'));
+          }
 
-        const discountedTotals = g(data, 'validatePharmaCoupon', 'discountedTotals');
-        const eventAttributes: WebEngageEvents[WebEngageEventName.CART_COUPON_APPLIED] = {
-          'Coupon Code': coupon,
-          'Discounted amount': validityStatus ? discountedTotals!.productDiscount : 'Not Applicable',
-          'Customer ID': g(currentPatient, 'id'),
-        };
-        postWebEngageEvent(WebEngageEventName.CART_COUPON_APPLIED, eventAttributes);
+          const eventAttributes: WebEngageEvents[WebEngageEventName.CART_COUPON_APPLIED] = {
+            'Coupon Code': coupon,
+            'Discounted amount': g(resp.data, 'response', 'discount')
+              ? g(resp.data, 'response', 'valid')
+              : 'Not Applicable',
+            'Customer ID': g(currentPatient, 'id'),
+          };
+          postWebEngageEvent(WebEngageEventName.CART_COUPON_APPLIED, eventAttributes);
+        } else {
+          CommonBugFender('validatingPharmaCoupon', g(resp.data, 'errorMsg'));
+          setCouponError(g(resp.data, 'errorMsg'));
+        }
       })
-      .catch(() => {
+      .catch((error) => {
+        CommonBugFender('validatingPharmaCoupon', error);
+        console.log(error);
         setCouponError('Sorry, unable to validate coupon right now.');
       })
-      .finally(() => setGlobalLoading!(false));
+      .finally(() => setLoading!(false));
+    // validateCoupon({
+    //   pharmaCouponInput: {
+    //     code: coupon,
+    //     patientId: g(currentPatient, 'id') || '',
+    //     orderLineItems: cartItems.map(
+    //       (item) =>
+    //         ({
+    //           itemId: item.id,
+    //           mrp: item.price,
+    //           productName: item.name,
+    //           productType: item.isMedicine
+    //             ? CouponCategoryApplicable.PHARMA
+    //             : CouponCategoryApplicable.FMCG,
+    //           quantity: item.quantity,
+    //           specialPrice: item.specialPrice || item.price,
+    //         } as OrderLineItems)
+    //     ),
+    //   },
+    // })
+    //   .then(({ data }) => {
+    //     const validityStatus = g(data, 'validatePharmaCoupon', 'validityStatus');
+    //     console.log('data >>>', data);
+    //     if (validityStatus) {
+    //       setCoupon!({ code: coupon, ...g(data, 'validatePharmaCoupon')! });
+    //       props.navigation.goBack();
+    //     } else {
+    //       setCouponError(
+    //         g(data, 'validatePharmaCoupon', 'reasonForInvalidStatus') || 'Invalid Coupon Code'
+    //       );
+    //     }
+
+    //     const discountedTotals = g(data, 'validatePharmaCoupon', 'discountedTotals');
+    //     const eventAttributes: WebEngageEvents[WebEngageEventName.CART_COUPON_APPLIED] = {
+    //       'Coupon Code': coupon,
+    //       'Discounted amount': validityStatus
+    //         ? discountedTotals!.productDiscount
+    //         : 'Not Applicable',
+    //       'Customer ID': g(currentPatient, 'id'),
+    //     };
+    //     postWebEngageEvent(WebEngageEventName.CART_COUPON_APPLIED, eventAttributes);
+    //   })
+    //   .catch(() => {
+    //     setCouponError('Sorry, unable to validate coupon right now.');
+    //   })
+    //   .finally(() => setGlobalLoading!(false));
   };
 
   const renderBottomButtons = () => {
@@ -226,8 +292,7 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
           }}
           textInputprops={{
             ...(couponError ? { selectionColor: '#e50000' } : {}),
-            maxLength: 10,
-            autoFocus: true,
+            maxLength: 20,
           }}
           inputStyle={[
             styles.couponInputStyle,
@@ -272,14 +337,12 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
         activeOpacity={1}
         style={styles.radioButtonContainer}
         key={i}
-        onPress={() => setCouponText(coupon!.code == couponText ? '' : coupon!.code!)}
+        onPress={() => setCouponText(coupon!.coupon == couponText ? '' : coupon!.coupon!)}
       >
-        {coupon!.code == couponText ? <RadioButtonIcon /> : <RadioButtonUnselectedIcon />}
+        {coupon!.coupon == couponText ? <RadioButtonIcon /> : <RadioButtonUnselectedIcon />}
         <View style={styles.radioButtonTitleDescContainer}>
-          <Text style={styles.radioButtonTitle}>{coupon!.code}</Text>
-          <Text style={styles.radioButtonDesc}>
-            {g(coupon, 'couponPharmaRule', 'messageOnCouponScreen') || ''}
-          </Text>
+          <Text style={styles.radioButtonTitle}>{coupon!.coupon}</Text>
+          <Text style={styles.radioButtonDesc}>{coupon!.message}</Text>
           <View style={styles.separator} />
         </View>
       </TouchableOpacity>
@@ -309,6 +372,7 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
           {renderCouponCard()}
         </ScrollView>
         {renderBottomButtons()}
+        {loading && <Spinner style={{ backgroundColor: 'rgba(0,0,0, 0)' }} />}
       </SafeAreaView>
     </View>
   );

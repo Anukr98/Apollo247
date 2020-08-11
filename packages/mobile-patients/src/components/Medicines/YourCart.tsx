@@ -58,6 +58,7 @@ import {
   GetDeliveryTimeResponse,
   TatApiInput,
   getDeliveryTimeHeaderTat,
+  validateConsultCoupon,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   postPhamracyCartAddressSelectedFailure,
@@ -270,7 +271,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         // 'Cart ID': '', // since we don't have cartId before placing order
       };
       if (coupon) {
-        eventAttributes['Coupon code used'] = coupon.code;
+        eventAttributes['Coupon code used'] = coupon.coupon;
       }
       postWebEngageEvent(WebEngageEventName.PHARMACY_CART_VIEWED, eventAttributes);
     }
@@ -362,7 +363,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
 
   useEffect(() => {
     if (coupon && cartTotal > 0) {
-      applyCoupon(coupon.code, cartItems);
+      applyCoupon(coupon.coupon, cartItems);
     }
   }, [cartTotal]);
 
@@ -706,23 +707,53 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   const applyCoupon = (coupon: string, cartItems: ShoppingCartItem[]) => {
     CommonLogEvent(AppRoutes.ApplyCouponScene, 'Apply coupon');
     setLoading!(true);
-    validateCoupon(coupon, cartItems, g(currentPatient, 'id') || '')
-      .then(({ data }) => {
-        const validityStatus = g(data, 'validatePharmaCoupon', 'validityStatus');
-        if (validityStatus) {
-          setCoupon!({ code: coupon, ...g(data, 'validatePharmaCoupon')! });
+    const data = {
+      mobile: g(currentPatient, 'mobileNumber'),
+      billAmount: cartTotal.toFixed(2),
+      coupon: coupon,
+      pinCode: locationDetails && locationDetails.pincode,
+      products: cartItems.map((item) => ({
+        sku: item.id,
+        mrp: item.price,
+        quantity: item.quantity,
+        specialPrice: item.specialPrice || item.price,
+      })),
+    };
+    validateConsultCoupon(data)
+      .then((resp: any) => {
+        if (resp.data.errorCode == 0) {
+          if (resp.data.response.valid) {
+            setCoupon!(g(resp.data, 'response')!);
+          } else {
+            removeCouponWithAlert(g(resp.data, 'response', 'reason'));
+          }
         } else {
-          removeCouponWithAlert(
-            g(data, 'validatePharmaCoupon', 'reasonForInvalidStatus') || 'Invalid Coupon Code.'
-          );
+          CommonBugFender('validatingPharmaCoupon', resp.data.errorMsg);
+          removeCouponWithAlert(g(resp.data, 'errorMsg'));
         }
       })
-      .catch(() => {
+      .catch((error) => {
+        CommonBugFender('validatingPharmaCoupon', error);
         removeCouponWithAlert('Sorry, unable to validate coupon right now.');
       })
-      .finally(() => {
-        setLoading!(false);
-      });
+      .finally(() => setLoading!(false));
+    // validateCoupon(coupon, cartItems, g(currentPatient, 'id') || '')
+    //   .then(({ data }) => {
+    //     const validityStatus = g(data, 'validatePharmaCoupon', 'validityStatus');
+    //     if (validityStatus) {
+    //       setCoupon!({ code: coupon, ...g(data, 'validatePharmaCoupon')! });
+    //     } else {
+    //       removeCouponWithAlert(
+    //         g(data, 'validatePharmaCoupon', 'reasonForInvalidStatus') || 'Invalid Coupon Code.'
+    //       );
+    //     }
+    //   })
+    //   .catch(() => {
+    //     removeCouponWithAlert('Sorry, unable to validate coupon right now.');
+    //   })
+    //   .finally(() => {
+    //     setLoading!(false);
+    //   });
   };
 
   const getTatOrderType = (cartItems: ShoppingCartItem[]): 'pharma' | 'fmcg' | 'both' => {
@@ -865,6 +896,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   };
 
   const renderItemsInCart = () => {
+    // console.log('cartItems >>', cartItems);
     const cartItemsCount =
       cartItems.length > 10 || cartItems.length == 0
         ? `${cartItems.length}`
@@ -1337,6 +1369,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   };
 
   const renderCouponSection = () => {
+    // console.log('coupon >>>', coupon);
     return (
       <TouchableOpacity
         activeOpacity={1}
@@ -1388,13 +1421,13 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
                       paddingHorizontal: 16,
                     }}
                   >
-                    {coupon.code + ' '}
+                    {coupon.coupon + ' '}
                   </Text>
                   Applied
                 </Text>
               )}
 
-              {!!coupon && (
+              {/* {!!coupon && (
                 <Text
                   style={{
                     ...theme.viewStyles.text('M', 12, '#01475b', 1, 24),
@@ -1404,7 +1437,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
                 >
                   {coupon.successMessage}
                 </Text>
-              )}
+              )} */}
             </View>
             <ArrowRight />
           </View>
@@ -1425,7 +1458,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
                   paddingVertical: 4,
                 }}
               >
-                {coupon.discountedTotals!.couponDiscount > 0
+                {couponDiscount > 0
                   ? `Savings of Rs. ${couponDiscount.toFixed(2)} on the bill`
                   : 'Coupon not applicable on your cart item(s) or item(s) with already higher discounts'}
               </Text>
@@ -1482,7 +1515,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
                 </Text>
               </View>
               <View style={[styles.rowSpaceBetweenStyle, { marginTop: 5 }]}>
-                <Text style={styles.blueTextStyle}>Discount({coupon.code})</Text>
+                <Text style={styles.blueTextStyle}>Discount({coupon.coupon})</Text>
                 <Text style={styles.blueTextStyle}>- Rs. {couponDiscount.toFixed(2)}</Text>
               </View>
               <View
@@ -1707,7 +1740,8 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   };
 
   const postwebEngageProceedToPayEvent = () => {
-    const numberOfOutOfStockItems = cartItems.filter((medicine) => medicine.isInStock === false).length;
+    const numberOfOutOfStockItems = cartItems.filter((medicine) => medicine.isInStock === false)
+      .length;
     const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_PROCEED_TO_PAY_CLICKED] = {
       'Total items in cart': cartItems.length,
       'Sub Total': cartTotal,
