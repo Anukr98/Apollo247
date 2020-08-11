@@ -219,17 +219,19 @@ const useStyles = makeStyles((theme: Theme) => {
         paddingTop: 0,
         paddingLeft: 0,
         width: '70%',
+        paddingRight: 10,
       },
       '& h2': {
         fontSize: 20,
         fontWeight: 600,
         color: '#02475b',
         margin: 0,
-        paddingBottom: 10,
       },
     },
     productBasicInfo: {
-      [theme.breakpoints.down('xs')]: {},
+      [theme.breakpoints.down('xs')]: {
+        padding: '0 10px 0 0',
+      },
     },
     productDetailed: {
       [theme.breakpoints.down('xs')]: {
@@ -246,8 +248,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
       [theme.breakpoints.down('xs')]: {
         borderTop: '0.5px solid rgba(2,71,91,0.3)',
-        margin: '0 20px',
-        padding: '20px 0',
+        padding: '10px 20px',
       },
     },
     textInfo: {
@@ -277,8 +278,8 @@ const useStyles = makeStyles((theme: Theme) => {
         content: '""',
         borderTop: '0.5px solid rgba(2,71,91,0.3)',
         position: 'absolute',
-        left: 20,
-        right: 20,
+        left: 0,
+        right: 0,
       },
     },
     tabRoot: {
@@ -327,7 +328,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
       [theme.breakpoints.down('xs')]: {
         backgroundColor: '#fff',
-        padding: 20,
+        padding: '0 20px',
       },
     },
     prescriptionBox: {
