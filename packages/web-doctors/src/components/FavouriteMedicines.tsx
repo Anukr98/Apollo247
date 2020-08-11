@@ -1048,12 +1048,6 @@ export const FavouriteMedicines: React.FC = () => {
               .defaultRoa
           );
           setGenericName(result.data.productdp[0].PharmaOverview[0].generic);
-          console.log({
-            genericName: result.data.productdp[0].PharmaOverview[0].generic,
-            selectedValue: selectedValue,
-            selectedMedicines: selectedMedicines,
-            selectedMedicinesArr: selectedMedicinesArr,
-          });
         } else {
           setMedicineUnit(medicineMappingObj['others'].defaultUnitDp);
           setMedicineForm(medicineMappingObj['others'].defaultSetting);
@@ -1123,7 +1117,6 @@ export const FavouriteMedicines: React.FC = () => {
         fetchPolicy: 'no-cache',
       })
       .then((_data) => {
-        debugger;
         if (
           _data &&
           _data.data &&
@@ -1261,7 +1254,6 @@ export const FavouriteMedicines: React.FC = () => {
       return slot;
     });
     setToBeTakenSlots(slots);
-    //console.log(selectedMedicinesArr![idx].medicineTimings)
     const dayslots = daySlots.map((slot: SlotsObject) => {
       selectedMedicinesArr![idx].medicineTimings!.map((selectedSlot: any) => {
         //const selectedValue = selectedSlot.replace('_', '');
