@@ -89,13 +89,27 @@ import _lowerCase from 'lodash/lowerCase';
 const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
-      paddingTop: 10,
-      [theme.breakpoints.up('sm')]: {
-        paddingRight: 20,
-        paddingTop: 20,
-        PaddingLeft: 3,
-        display: 'flex',
-        paddingBottom: 20,
+      paddingRight: 20,
+      paddingTop: 20,
+      PaddingLeft: 3,
+      paddingBottom: 20,
+      [theme.breakpoints.down('xs')]: {
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        padding: 0,
+        zIndex: 999,
+        background: '#f5f7f8',
+      },
+    },
+    cartContent: {
+      display: 'flex',
+      [theme.breakpoints.down('xs')]: {
+        flexDirection: 'column',
+        height: 'calc(100% - 150px)',
+        overflow: 'auto',
       },
     },
     buttonDisable: {
@@ -107,6 +121,7 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingRight: 5,
       [theme.breakpoints.down('xs')]: {
         width: '100%',
+        padding: 0,
       },
     },
     bottomActions: {
@@ -217,6 +232,9 @@ const useStyles = makeStyles((theme: Theme) => {
     medicineListGroup: {
       paddingRight: 15,
       paddingLeft: 20,
+      [theme.breakpoints.down('xs')]: {
+        padding: '0 20px',
+      },
     },
     sectionHeader: {
       color: '#02475b',
@@ -228,6 +246,9 @@ const useStyles = makeStyles((theme: Theme) => {
       marginBottom: 20,
       display: 'flex',
       alignItems: 'center',
+      [theme.breakpoints.down('xs')]: {
+        justifyContent: 'space-between',
+      },
     },
     windowBody: {
       padding: 20,
@@ -258,6 +279,11 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 'bold',
       paddingLeft: 20,
       marginLeft: 'auto',
+      [theme.breakpoints.down('xs')]: {
+        position: 'fixed',
+        top: 25,
+        right: 20,
+      },
     },
     deliveryAddress: {
       backgroundColor: '#f7f8f5',
@@ -405,6 +431,13 @@ const useStyles = makeStyles((theme: Theme) => {
       },
       '& button': {
         marginLeft: 'auto',
+      },
+      [theme.breakpoints.down('xs')]: {
+        display: 'block',
+        '& >span': {
+          padding: '0 0 10px',
+          display: 'block',
+        },
       },
     },
     consultDoctor: {
@@ -581,6 +614,24 @@ const useStyles = makeStyles((theme: Theme) => {
           '&:last-child': {
             fontWeight: 600,
           },
+        },
+      },
+    },
+    blackArrow: {},
+    cartHeader: {
+      display: 'none',
+      [theme.breakpoints.down('xs')]: {
+        background: '#fff',
+        padding: 20,
+        boxShadow: '0px 5px 20px rgba(128, 128, 128, 0.3)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        '& h2': {
+          fontSize: 13,
+          fontWeight: 600,
+          textTransform: 'uppercase',
+          margin: '0 50px 0 0',
         },
       },
     },
@@ -1262,281 +1313,294 @@ export const MedicineCart: React.FC = (props) => {
 
   return (
     <div className={classes.root}>
-      <div className={classes.leftSection}>
-        <Scrollbars
-          className={classes.cartItemsScroll}
-          autoHide={true}
-          renderView={(props) =>
-            isSmallScreen ? <div {...props} style={{ position: 'static' }} /> : <div {...props} />
-          }
-        >
-          <div className={classes.medicineListGroup}>
-            {!nonCartFlow && (
-              <div className={classes.sectionHeader}>
-                <span>Medicines In Your Cart</span>
-                <span className={classes.count}>
-                  ({cartItems.length > 0 ? String(cartItems.length).padStart(2, '0') : 0})
-                </span>
-                <Link
-                  className={classes.addItemBtn}
-                  to={clientRoutes.medicines()}
-                  title={'Add items to cart'}
-                >
-                  {/* <AphButton className={classes.addItemBtn}>Add Items</AphButton> */}
-                  Add Items
-                </Link>
-              </div>
-            )}
-            {cartItems.length > 0 ||
-            (prescriptions && prescriptions.length > 0) ||
-            (ePrescriptionData && ePrescriptionData.length > 0) ? (
-              <>
-                {!nonCartFlow && (
-                  <MedicineListingCard validateCouponResult={validateCouponResult} />
-                )}
-                {uploadPrescriptionRequired >= 0 ||
-                (prescriptions && prescriptions.length > 0) ||
-                (ePrescriptionData && ePrescriptionData.length > 0) ? (
-                  <>
-                    <div className={classes.sectionHeader}>Upload Prescription</div>
-                    {(prescriptions && prescriptions.length > 0) ||
-                    (ePrescriptionData && ePrescriptionData.length > 0) ? (
-                      <div className={classes.uploadedPreList}>
-                        {prescriptions &&
-                          prescriptions.length > 0 &&
-                          prescriptions.map((prescriptionDetails) => {
-                            const fileName = prescriptionDetails.name;
-                            const imageUrl = prescriptionDetails.imageUrl;
-                            return (
-                              <PrescriptionCard
-                                fileName={fileName || ''}
-                                imageUrl={imageUrl || ''}
-                                removePrescription={(fileName: string) =>
-                                  removeImagePrescription(fileName)
-                                }
-                                key={prescriptionDetails.name}
+      <div className={classes.cartHeader}>
+        <a href="#">
+          <img
+            className={classes.blackArrow}
+            src={require('images/ic_back.svg')}
+            alt="Back Arrow"
+            title="Back Arrow"
+          />
+        </a>
+        <Typography component="h2">Your Cart</Typography>
+        <div></div>
+      </div>
+      <div className={classes.cartContent}>
+        <div className={classes.leftSection}>
+          <Scrollbars
+            className={classes.cartItemsScroll}
+            autoHide={true}
+            renderView={(props) =>
+              isSmallScreen ? <div {...props} style={{ position: 'static' }} /> : <div {...props} />
+            }
+          >
+            <div className={classes.medicineListGroup}>
+              {!nonCartFlow && (
+                <div className={classes.sectionHeader}>
+                  <span>Medicines In Your Cart</span>
+                  <span className={classes.count}>
+                    ({cartItems.length > 0 ? String(cartItems.length).padStart(2, '0') : 0})
+                  </span>
+                  <Link
+                    className={classes.addItemBtn}
+                    to={clientRoutes.medicines()}
+                    title={'Add items to cart'}
+                  >
+                    {/* <AphButton className={classes.addItemBtn}>Add Items</AphButton> */}
+                    Add Items
+                  </Link>
+                </div>
+              )}
+              {cartItems.length > 0 ||
+              (prescriptions && prescriptions.length > 0) ||
+              (ePrescriptionData && ePrescriptionData.length > 0) ? (
+                <>
+                  {!nonCartFlow && (
+                    <MedicineListingCard validateCouponResult={validateCouponResult} />
+                  )}
+                  {uploadPrescriptionRequired >= 0 ||
+                  (prescriptions && prescriptions.length > 0) ||
+                  (ePrescriptionData && ePrescriptionData.length > 0) ? (
+                    <>
+                      <div className={classes.sectionHeader}>Upload Prescription</div>
+                      {(prescriptions && prescriptions.length > 0) ||
+                      (ePrescriptionData && ePrescriptionData.length > 0) ? (
+                        <div className={classes.uploadedPreList}>
+                          {prescriptions &&
+                            prescriptions.length > 0 &&
+                            prescriptions.map((prescriptionDetails) => {
+                              const fileName = prescriptionDetails.name;
+                              const imageUrl = prescriptionDetails.imageUrl;
+                              return (
+                                <PrescriptionCard
+                                  fileName={fileName || ''}
+                                  imageUrl={imageUrl || ''}
+                                  removePrescription={(fileName: string) =>
+                                    removeImagePrescription(fileName)
+                                  }
+                                  key={prescriptionDetails.name}
+                                  readOnly={nonCartFlow}
+                                />
+                              );
+                            })}
+                          {ePrescriptionData &&
+                            ePrescriptionData.length > 0 &&
+                            ePrescriptionData.map((prescription: EPrescription) => (
+                              <EPrescriptionCard
+                                key={prescription.id}
+                                prescription={prescription}
+                                removePrescription={removePrescription}
                                 readOnly={nonCartFlow}
                               />
-                            );
-                          })}
-                        {ePrescriptionData &&
-                          ePrescriptionData.length > 0 &&
-                          ePrescriptionData.map((prescription: EPrescription) => (
-                            <EPrescriptionCard
-                              key={prescription.id}
-                              prescription={prescription}
-                              removePrescription={removePrescription}
-                              readOnly={nonCartFlow}
-                            />
-                          ))}
-                        {!nonCartFlow && (
-                          <div className={classes.uploadMore}>
+                            ))}
+                          {!nonCartFlow && (
+                            <div className={classes.uploadMore}>
+                              <AphButton
+                                disabled={uploadingFiles || mutationLoading}
+                                onClick={() => handleUploadPrescription()}
+                              >
+                                Upload More
+                              </AphButton>
+                            </div>
+                          )}
+                        </div>
+                      ) : uploadPrescriptionRequired >= 0 ? (
+                        <div className={classes.uploadPrescription}>
+                          <div className={classes.prescriptionRow}>
+                            <span>
+                              Items in your cart marked with ‘Rx’ need prescriptions to complete
+                              your purchase. Please upload the necessary prescriptions
+                            </span>
                             <AphButton
-                              disabled={uploadingFiles || mutationLoading}
                               onClick={() => handleUploadPrescription()}
+                              className={classes.presUploadBtn}
                             >
-                              Upload More
+                              Upload Prescription
                             </AphButton>
                           </div>
-                        )}
-                      </div>
-                    ) : uploadPrescriptionRequired >= 0 ? (
-                      <div className={classes.uploadPrescription}>
-                        <div className={classes.prescriptionRow}>
-                          <span>
-                            Items in your cart marked with ‘Rx’ need prescriptions to complete your
-                            purchase. Please upload the necessary prescriptions
-                          </span>
-                          <AphButton
-                            onClick={() => handleUploadPrescription()}
-                            className={classes.presUploadBtn}
-                          >
-                            Upload Prescription
-                          </AphButton>
-                        </div>
-                        <div className={classes.consultDoctor}>
-                          <span>Don’t have a prescription? Don’t worry!</span>
-                          <Link
-                            to={clientRoutes.specialityListing()}
-                            className={classes.consultDoctoLink}
-                          >
-                            Consult A Doctor
-                          </Link>
-                        </div>
-                      </div>
-                    ) : null}
-                  </>
-                ) : null}
-              </>
-            ) : null}
-          </div>
-        </Scrollbars>
-      </div>
-      <div className={classes.rightSection}>
-        <Scrollbars
-          autoHide={true}
-          className={classes.paymentsScroll}
-          renderView={(props) =>
-            isSmallScreen ? <div {...props} style={{ position: 'static' }} /> : <div {...props} />
-          }
-        >
-          <div className={classes.medicineSection}>
-            {currentPatient && currentPatient.id && (
-              <>
-                <div className={`${classes.sectionHeader} ${classes.topHeader}`}>
-                  <span>Where Should We Deliver?</span>
-                </div>
-                <div className={classes.sectionGroup}>
-                  <div className={classes.deliveryAddress}>
-                    <Tabs
-                      value={tabValue}
-                      classes={{
-                        root: classes.tabsRoot,
-                        indicator: classes.tabsIndicator,
-                      }}
-                      onChange={(e, newValue) => {
-                        setTabValue(newValue);
-                      }}
-                    >
-                      <Tab
-                        classes={{
-                          root: classes.tabRoot,
-                          selected: classes.tabSelected,
-                        }}
-                        label="Home Delivery"
-                        title={'Choose home delivery'}
-                      />
-                      <Tab
-                        disabled
-                        classes={{
-                          root: classes.tabRoot,
-                          selected: classes.tabSelected,
-                        }}
-                        label="Store Pick Up"
-                        title={'Choose store pick up'}
-                      />
-                    </Tabs>
-                    {tabValue === 0 && (
-                      <TabContainer>
-                        <HomeDelivery
-                          selectedZipCode={setSelectedZip}
-                          setDeliveryTime={setDeliveryTime}
-                          deliveryTime={deliveryTime}
-                          checkForPriceUpdate={checkForPriceUpdate}
-                        />
-                      </TabContainer>
-                    )}
-                    {tabValue === 1 && (
-                      <TabContainer>
-                        <StorePickUp
-                          pincode={
-                            storePickupPincode && storePickupPincode.length === 6
-                              ? storePickupPincode
-                              : currentPincode
-                          }
-                        />
-                      </TabContainer>
-                    )}
-                  </div>
-                </div>
-                {nonCartFlow && (
-                  <>
-                    <div className={`${classes.sectionHeader} ${classes.topHeader}`}>
-                      <span>payment option</span>
-                    </div>
-                    <div className={classes.radioContainer}>
-                      <FormControlLabel
-                        checked={true}
-                        value={'CASH_ON_DELIVERY'}
-                        control={<AphRadio color="primary" />}
-                        label={'Cash On Delivery'}
-                        onChange={() => {}}
-                      />
-                    </div>
-                  </>
-                )}
-              </>
-            )}
-            {cartItems && cartItems.length > 0 && !nonCartFlow && currentPatient && (
-              <>
-                <div className={`${classes.sectionHeader} ${classes.uppercase}`}>
-                  <span>Total Charges</span>
-                </div>
-                <div className={`${classes.sectionGroup}`}>
-                  <div
-                    onClick={() => {
-                      if (couponCode === '') {
-                        setIsApplyCouponDialogOpen(true);
-                      } else {
-                        /* GTM TRACKING START */
-                        gtmTracking({
-                          category: 'Pharmacy',
-                          action: 'Order',
-                          label: `Coupon Removed - ${couponCode}`,
-                          value:
-                            validateCouponResult &&
-                            validateCouponResult.discountedTotals &&
-                            validateCouponResult.discountedTotals.couponDiscount
-                              ? Number(
-                                  validateCouponResult.discountedTotals.couponDiscount.toFixed(2)
-                                )
-                              : null,
-                        });
-                        setValidateCouponResult(null);
-                        setErrorMessage('');
-                        setCouponCode && setCouponCode('');
-                      }
-                    }}
-                    className={`${classes.serviceType}`}
-                  >
-                    <div className={classes.couponTopGroup}>
-                      <span className={classes.serviceIcon}>
-                        <img src={require('images/ic_coupon.svg')} alt="Coupon Icon" />
-                      </span>
-                      <div className={classes.couponRight}>
-                        {!validateCouponResult ? (
-                          <div className={classes.applyCoupon}>
-                            <span className={classes.linkText}>Apply Coupon</span>
-                            <span className={classes.rightArrow}>
-                              <img src={require('images/ic_arrow_right.svg')} alt="" />
-                            </span>
+                          <div className={classes.consultDoctor}>
+                            <span>Don’t have a prescription? Don’t worry!</span>
+                            <Link
+                              to={clientRoutes.specialityListing()}
+                              className={classes.consultDoctoLink}
+                            >
+                              Consult A Doctor
+                            </Link>
                           </div>
-                        ) : (
-                          <>
-                            <div className={classes.appliedCoupon}>
-                              <span className={classes.linkText}>
-                                <span>{couponCode}</span> applied
-                              </span>
+                        </div>
+                      ) : null}
+                    </>
+                  ) : null}
+                </>
+              ) : null}
+            </div>
+          </Scrollbars>
+        </div>
+        <div className={classes.rightSection}>
+          <Scrollbars
+            autoHide={true}
+            className={classes.paymentsScroll}
+            renderView={(props) =>
+              isSmallScreen ? <div {...props} style={{ position: 'static' }} /> : <div {...props} />
+            }
+          >
+            <div className={classes.medicineSection}>
+              {currentPatient && currentPatient.id && (
+                <>
+                  <div className={`${classes.sectionHeader} ${classes.topHeader}`}>
+                    <span>Where Should We Deliver?</span>
+                  </div>
+                  <div className={classes.sectionGroup}>
+                    <div className={classes.deliveryAddress}>
+                      <Tabs
+                        value={tabValue}
+                        classes={{
+                          root: classes.tabsRoot,
+                          indicator: classes.tabsIndicator,
+                        }}
+                        onChange={(e, newValue) => {
+                          setTabValue(newValue);
+                        }}
+                      >
+                        <Tab
+                          classes={{
+                            root: classes.tabRoot,
+                            selected: classes.tabSelected,
+                          }}
+                          label="Home Delivery"
+                          title={'Choose home delivery'}
+                        />
+                        <Tab
+                          disabled
+                          classes={{
+                            root: classes.tabRoot,
+                            selected: classes.tabSelected,
+                          }}
+                          label="Store Pick Up"
+                          title={'Choose store pick up'}
+                        />
+                      </Tabs>
+                      {tabValue === 0 && (
+                        <TabContainer>
+                          <HomeDelivery
+                            selectedZipCode={setSelectedZip}
+                            setDeliveryTime={setDeliveryTime}
+                            deliveryTime={deliveryTime}
+                            checkForPriceUpdate={checkForPriceUpdate}
+                          />
+                        </TabContainer>
+                      )}
+                      {tabValue === 1 && (
+                        <TabContainer>
+                          <StorePickUp
+                            pincode={
+                              storePickupPincode && storePickupPincode.length === 6
+                                ? storePickupPincode
+                                : currentPincode
+                            }
+                          />
+                        </TabContainer>
+                      )}
+                    </div>
+                  </div>
+                  {nonCartFlow && (
+                    <>
+                      <div className={`${classes.sectionHeader} ${classes.topHeader}`}>
+                        <span>payment option</span>
+                      </div>
+                      <div className={classes.radioContainer}>
+                        <FormControlLabel
+                          checked={true}
+                          value={'CASH_ON_DELIVERY'}
+                          control={<AphRadio color="primary" />}
+                          label={'Cash On Delivery'}
+                          onChange={() => {}}
+                        />
+                      </div>
+                    </>
+                  )}
+                </>
+              )}
+              {cartItems && cartItems.length > 0 && !nonCartFlow && currentPatient && (
+                <>
+                  <div className={`${classes.sectionHeader} ${classes.uppercase}`}>
+                    <span>Total Charges</span>
+                  </div>
+                  <div className={`${classes.sectionGroup}`}>
+                    <div
+                      onClick={() => {
+                        if (couponCode === '') {
+                          setIsApplyCouponDialogOpen(true);
+                        } else {
+                          /* GTM TRACKING START */
+                          gtmTracking({
+                            category: 'Pharmacy',
+                            action: 'Order',
+                            label: `Coupon Removed - ${couponCode}`,
+                            value:
+                              validateCouponResult &&
+                              validateCouponResult.discountedTotals &&
+                              validateCouponResult.discountedTotals.couponDiscount
+                                ? Number(
+                                    validateCouponResult.discountedTotals.couponDiscount.toFixed(2)
+                                  )
+                                : null,
+                          });
+                          setValidateCouponResult(null);
+                          setErrorMessage('');
+                          setCouponCode && setCouponCode('');
+                        }
+                      }}
+                      className={`${classes.serviceType}`}
+                    >
+                      <div className={classes.couponTopGroup}>
+                        <span className={classes.serviceIcon}>
+                          <img src={require('images/ic_coupon.svg')} alt="Coupon Icon" />
+                        </span>
+                        <div className={classes.couponRight}>
+                          {!validateCouponResult ? (
+                            <div className={classes.applyCoupon}>
+                              <span className={classes.linkText}>Apply Coupon</span>
                               <span className={classes.rightArrow}>
                                 <img src={require('images/ic_arrow_right.svg')} alt="" />
                               </span>
                             </div>
-                            <div className={classes.couponText}>
-                              {validateCouponResult ? validateCouponResult.successMessage : ''}
-                            </div>
-                          </>
-                        )}
+                          ) : (
+                            <>
+                              <div className={classes.appliedCoupon}>
+                                <span className={classes.linkText}>
+                                  <span>{couponCode}</span> applied
+                                </span>
+                                <span className={classes.rightArrow}>
+                                  <img src={require('images/ic_arrow_right.svg')} alt="" />
+                                </span>
+                              </div>
+                              <div className={classes.couponText}>
+                                {validateCouponResult ? validateCouponResult.successMessage : ''}
+                              </div>
+                            </>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                    {couponCode.length > 0 &&
-                      validateCouponResult &&
-                      validateCouponResult.discountedTotals &&
-                      validateCouponResult.discountedTotals.couponDiscount > 0 && (
-                        <div className={classes.discountTotal}>
-                          {`Savings of Rs.
+                      {couponCode.length > 0 &&
+                        validateCouponResult &&
+                        validateCouponResult.discountedTotals &&
+                        validateCouponResult.discountedTotals.couponDiscount > 0 && (
+                          <div className={classes.discountTotal}>
+                            {`Savings of Rs.
                           ${validateCouponResult.discountedTotals.couponDiscount.toFixed(2)}
                            on the bill`}
-                        </div>
+                          </div>
+                        )}
+                      {errorMessage.length > 0 && (
+                        <div className={classes.higherDiscountText}>{errorMessage}</div>
                       )}
-                    {errorMessage.length > 0 && (
-                      <div className={classes.higherDiscountText}>{errorMessage}</div>
-                    )}
+                    </div>
                   </div>
-                </div>
-                <div className={`${classes.sectionGroup}`}>
-                  <div className={classes.priceSection}>
-                    <div className={classes.topSection}>
-                      {/* <div className={classes.priceRow}>
+                  <div className={`${classes.sectionGroup}`}>
+                    <div className={classes.priceSection}>
+                      <div className={classes.topSection}>
+                        {/* <div className={classes.priceRow}>
                         <span>Subtotal</span>
                         <span className={classes.priceCol}>Rs. {cartTotal.toFixed(2)}</span>
                       </div>
@@ -1546,173 +1610,176 @@ export const MedicineCart: React.FC = (props) => {
                           {deliveryCharges > 0 ? `+ Rs. ${deliveryCharges}` : '+ Rs. 0'}
                         </span>
                       </div> */}
-                      <div className={classes.priceRow}>
-                        <span>MRP Total</span>
-                        <span className={classes.priceCol}>Rs. {mrpTotal.toFixed(2)}</span>
-                      </div>
-                      <div className={classes.priceRow}>
-                        <span>Product Discount</span>
-                        <span className={classes.priceCol}>- Rs. {productDiscount.toFixed(2)}</span>
-                      </div>
-                      <div className={classes.priceRow}>
-                        <span>Delivery Charges</span>
-                        <span className={classes.priceCol}>
-                          {deliveryCharges > 0 ? `+ Rs. ${deliveryCharges}` : '+ Rs. 0.00'}
-                        </span>
-                      </div>
-                      {/* <div className={classes.priceRow}>
+                        <div className={classes.priceRow}>
+                          <span>MRP Total</span>
+                          <span className={classes.priceCol}>Rs. {mrpTotal.toFixed(2)}</span>
+                        </div>
+                        <div className={classes.priceRow}>
+                          <span>Product Discount</span>
+                          <span className={classes.priceCol}>
+                            - Rs. {productDiscount.toFixed(2)}
+                          </span>
+                        </div>
+                        <div className={classes.priceRow}>
+                          <span>Delivery Charges</span>
+                          <span className={classes.priceCol}>
+                            {deliveryCharges > 0 ? `+ Rs. ${deliveryCharges}` : '+ Rs. 0.00'}
+                          </span>
+                        </div>
+                        {/* <div className={classes.priceRow}>
                         <span>Packaging Charges</span>
                         <span className={classes.priceCol}>{'+ Rs. 0'}</span>
                       </div> */}
-                    </div>
-                    <div className={classes.bottomSection}>
-                      {validateCouponResult && (
-                        <>
-                          <div className={classes.priceRow}>
-                            <span>Total</span>
-                            <span className={classes.priceCol}>Rs. {totalAmount}</span>
-                          </div>
-                          <div className={classes.priceRow}>
-                            <span>Discount({couponCode})</span>
-                            <span className={classes.priceCol}>
-                              -Rs. {validateCouponResult.discountedTotals.couponDiscount.toFixed(2)}
-                            </span>
-                          </div>{' '}
-                        </>
-                      )}
-                      <div
-                        className={`${classes.priceRow} ${classes.totalPriceRow} ${
-                          validateCouponResult ? classes.totalPriceBorder : ''
-                        }`}
-                      >
-                        <span>TO PAY</span>
-                        <span className={classes.totalPrice}>
-                          {/* {showGross ? `(${cartTotal.toFixed(2)})` : ''} Rs. {totalAmount} */}
-                          Rs. {totalWithCouponDiscount.toFixed(2)}
-                        </span>
+                      </div>
+                      <div className={classes.bottomSection}>
+                        {validateCouponResult && (
+                          <>
+                            <div className={classes.priceRow}>
+                              <span>Total</span>
+                              <span className={classes.priceCol}>Rs. {totalAmount}</span>
+                            </div>
+                            <div className={classes.priceRow}>
+                              <span>Discount({couponCode})</span>
+                              <span className={classes.priceCol}>
+                                -Rs.{' '}
+                                {validateCouponResult.discountedTotals.couponDiscount.toFixed(2)}
+                              </span>
+                            </div>{' '}
+                          </>
+                        )}
+                        <div
+                          className={`${classes.priceRow} ${classes.totalPriceRow} ${
+                            validateCouponResult ? classes.totalPriceBorder : ''
+                          }`}
+                        >
+                          <span>TO PAY</span>
+                          <span className={classes.totalPrice}>
+                            {/* {showGross ? `(${cartTotal.toFixed(2)})` : ''} Rs. {totalAmount} */}
+                            Rs. {totalWithCouponDiscount.toFixed(2)}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              </>
+                </>
+              )}
+            </div>
+          </Scrollbars>
+          <div className={classes.checkoutBtn}>
+            {currentPatient && currentPatient.id ? (
+              <Route
+                render={({ history }) => (
+                  <AphButton
+                    onClick={() => {
+                      const zipCodeInt = parseInt(selectedZip);
+
+                      if (cartItems && cartItems.length > 0 && !nonCartFlow) {
+                        if (prescriptions && prescriptions.length > 0) {
+                          uploadMultipleFiles(prescriptions);
+                        }
+                        if (
+                          checkForCartChanges(shopId).then((res) => {
+                            if (res) {
+                              if (isChennaiZipCode(zipCodeInt)) {
+                                // redirect to chennai orders form
+                                setIsChennaiCheckoutDialogOpen(true);
+                                return;
+                              }
+                              sessionStorage.setItem(
+                                'cartValues',
+                                JSON.stringify({
+                                  couponCode: couponCode == '' ? null : couponCode,
+                                  couponValue:
+                                    validateCouponResult && validateCouponResult.discountedTotals
+                                      ? validateCouponResult.discountedTotals.couponDiscount.toFixed(
+                                          2
+                                        )
+                                      : 0,
+                                  totalWithCouponDiscount: totalWithCouponDiscount,
+                                  deliveryTime: deliveryTime,
+                                  validateCouponResult: validateCouponResult,
+                                  shopId: shopId,
+                                })
+                              );
+                              history.push(clientRoutes.payMedicine('pharmacy'));
+                            }
+                          })
+                        ) {
+                        }
+                      } else if (
+                        nonCartFlow &&
+                        ((prescriptions && prescriptions.length > 0) ||
+                          (ePrescriptionData && ePrescriptionData.length > 0))
+                      ) {
+                        if (isChennaiZipCode(zipCodeInt)) {
+                          // redirect to chennai orders form
+                          setIsChennaiCheckoutDialogOpen(true);
+                          return;
+                        }
+                        onPressSubmit();
+                      }
+                      pharmacyProceedToPayTracking({
+                        totalItems: cartItems.length,
+                        serviceArea: 'Pharmacy',
+                        subTotal: mrpTotal,
+                        deliveryCharge: deliveryCharges,
+                        netAfterDiscount: totalWithCouponDiscount,
+                        isPrescription:
+                          ePrescriptionData && ePrescriptionData.length > 0 ? true : false,
+                        cartId: '',
+                        deliveryMode,
+                        deliveryDateTime: deliveryTime,
+                        pincode: currentPincode,
+                      });
+                    }}
+                    color="primary"
+                    fullWidth
+                    disabled={
+                      (!nonCartFlow
+                        ? (!cartTat && deliveryTime === '') || (cartItems && cartItems.length === 0)
+                        : !deliveryAddressId ||
+                          (deliveryAddressId && deliveryAddressId.length === 0)) ||
+                      !isPaymentButtonEnable ||
+                      disableSubmit
+                    }
+                    className={
+                      (!nonCartFlow
+                        ? (!cartTat && deliveryTime === '') || (cartItems && cartItems.length === 0)
+                        : !deliveryAddressId ||
+                          (deliveryAddressId && deliveryAddressId.length === 0)) ||
+                      !isPaymentButtonEnable ||
+                      disableSubmit
+                        ? classes.buttonDisable
+                        : ''
+                    }
+                    title={'Proceed to pay bill'}
+                  >
+                    {cartItems && cartItems.length > 0 && !nonCartFlow ? (
+                      `Proceed to pay — RS. ${totalWithCouponDiscount.toFixed(2)}`
+                    ) : uploadingFiles ? (
+                      <CircularProgress size={22} color="secondary" />
+                    ) : (
+                      'Place order'
+                    )}
+                  </AphButton>
+                )}
+              />
+            ) : (
+              <AphButton
+                color="primary"
+                fullWidth
+                title={'Login to continue'}
+                onClick={() => {
+                  const signInPopup = document.getElementById('loginPopup');
+                  signInPopup && document.getElementById('loginPopup')!.click();
+                }}
+              >
+                Login to continue
+              </AphButton>
             )}
           </div>
-        </Scrollbars>
-        <div className={classes.checkoutBtn}>
-          {currentPatient && currentPatient.id ? (
-            <Route
-              render={({ history }) => (
-                <AphButton
-                  onClick={() => {
-                    const zipCodeInt = parseInt(selectedZip);
-
-                    if (cartItems && cartItems.length > 0 && !nonCartFlow) {
-                      if (prescriptions && prescriptions.length > 0) {
-                        uploadMultipleFiles(prescriptions);
-                      }
-                      if (
-                        checkForCartChanges(shopId).then((res) => {
-                          if (res) {
-                            if (isChennaiZipCode(zipCodeInt)) {
-                              // redirect to chennai orders form
-                              setIsChennaiCheckoutDialogOpen(true);
-                              return;
-                            }
-                            sessionStorage.setItem(
-                              'cartValues',
-                              JSON.stringify({
-                                couponCode: couponCode == '' ? null : couponCode,
-                                couponValue:
-                                  validateCouponResult && validateCouponResult.discountedTotals
-                                    ? validateCouponResult.discountedTotals.couponDiscount.toFixed(
-                                        2
-                                      )
-                                    : 0,
-                                totalWithCouponDiscount: totalWithCouponDiscount,
-                                deliveryTime: deliveryTime,
-                                validateCouponResult: validateCouponResult,
-                                shopId: shopId,
-                              })
-                            );
-                            history.push(clientRoutes.payMedicine('pharmacy'));
-                          }
-                        })
-                      ) {
-                      }
-                    } else if (
-                      nonCartFlow &&
-                      ((prescriptions && prescriptions.length > 0) ||
-                        (ePrescriptionData && ePrescriptionData.length > 0))
-                    ) {
-                      if (isChennaiZipCode(zipCodeInt)) {
-                        // redirect to chennai orders form
-                        setIsChennaiCheckoutDialogOpen(true);
-                        return;
-                      }
-                      onPressSubmit();
-                    }
-                    pharmacyProceedToPayTracking({
-                      totalItems: cartItems.length,
-                      serviceArea: 'Pharmacy',
-                      subTotal: mrpTotal,
-                      deliveryCharge: deliveryCharges,
-                      netAfterDiscount: totalWithCouponDiscount,
-                      isPrescription:
-                        ePrescriptionData && ePrescriptionData.length > 0 ? true : false,
-                      cartId: '',
-                      deliveryMode,
-                      deliveryDateTime: deliveryTime,
-                      pincode: currentPincode,
-                    });
-                  }}
-                  color="primary"
-                  fullWidth
-                  disabled={
-                    (!nonCartFlow
-                      ? (!cartTat && deliveryTime === '') || (cartItems && cartItems.length === 0)
-                      : !deliveryAddressId ||
-                        (deliveryAddressId && deliveryAddressId.length === 0)) ||
-                    !isPaymentButtonEnable ||
-                    disableSubmit
-                  }
-                  className={
-                    (!nonCartFlow
-                      ? (!cartTat && deliveryTime === '') || (cartItems && cartItems.length === 0)
-                      : !deliveryAddressId ||
-                        (deliveryAddressId && deliveryAddressId.length === 0)) ||
-                    !isPaymentButtonEnable ||
-                    disableSubmit
-                      ? classes.buttonDisable
-                      : ''
-                  }
-                  title={'Proceed to pay bill'}
-                >
-                  {cartItems && cartItems.length > 0 && !nonCartFlow ? (
-                    `Proceed to pay — RS. ${totalWithCouponDiscount.toFixed(2)}`
-                  ) : uploadingFiles ? (
-                    <CircularProgress size={22} color="secondary" />
-                  ) : (
-                    'Place order'
-                  )}
-                </AphButton>
-              )}
-            />
-          ) : (
-            <AphButton
-              color="primary"
-              fullWidth
-              title={'Login to continue'}
-              onClick={() => {
-                const signInPopup = document.getElementById('loginPopup');
-                signInPopup && document.getElementById('loginPopup')!.click();
-              }}
-            >
-              Login to continue
-            </AphButton>
-          )}
         </div>
       </div>
-
       <Popover
         open={showOrderPopup}
         anchorEl={addToCartRef.current}

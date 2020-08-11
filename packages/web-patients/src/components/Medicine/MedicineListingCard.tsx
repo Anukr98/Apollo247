@@ -21,6 +21,10 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: 10,
       marginBottom: 10,
       position: 'relative',
+      [theme.breakpoints.down('xs')]: {
+        padding: 20,
+        boxShadow: '0px 5px 20px rgba(128, 128, 128, 0.3)',
+      },
     },
     medicineStripDisabled: {
       backgroundColor: '#f7f8f5',
@@ -36,6 +40,9 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingRight: 10,
       display: 'flex',
       alignItems: 'center',
+      [theme.breakpoints.down('xs')]: {
+        padding: '0 0 10px',
+      },
     },
     cartRight: {
       marginLeft: 'auto',
@@ -43,10 +50,11 @@ const useStyles = makeStyles((theme: Theme) => {
       alignItems: 'center',
       [theme.breakpoints.down('xs')]: {
         borderTop: 'solid 0.5px rgba(2,71,91,0.2)',
+        padding: '10px 0 0',
       },
     },
     medicineIcon: {
-      paddingRight: 10,
+      paddingRight: 20,
       '& img': {
         maxWidth: 35,
         verticalAlign: 'middle',
@@ -94,15 +102,12 @@ const useStyles = makeStyles((theme: Theme) => {
       minWidth: 90,
       textAlign: 'right',
       [theme.breakpoints.down('xs')]: {
-        paddingLeft: 2,
-        paddingTop: 12,
-        paddingBottom: 5,
-        marginLeft: 'auto',
+        padding: 0,
         borderRight: 'none',
         flexGrow: 1,
         paddingRight: 2,
-        minHeight: 45,
-        minWidth: 75,
+        // minHeight: 45,
+        // minWidth: 75,
       },
       '& span': {
         fontWeight: 500,
@@ -140,13 +145,12 @@ const useStyles = makeStyles((theme: Theme) => {
       alignItems: 'center',
       justifyContent: 'center',
       [theme.breakpoints.down('xs')]: {
-        paddingLeft: 5,
-        paddingRight: 0,
+        padding: 0,
         borderLeft: 'none',
         flexGrow: 1,
         textAlign: 'left',
         justifyContent: 'left',
-        minHeight: 45,
+        // minHeight: 45,
       },
       [theme.breakpoints.up('xs')]: {
         minWidth: 110,
@@ -337,7 +341,7 @@ export const MedicineListingCard: React.FC<MedicineListingCardProps> = (props) =
                               Rs. {validateCouponResult.pharmaLineItemsWithDiscountedPrice[idx].mrp}
                             </span>
                           ) : null}
-                          <div className={classes.mrpText}>(MRP)</div>
+                          {/* <div className={classes.mrpText}>(MRP)</div> */}
                         </div>
 
                         <div className={classes.medicinePrice}>
@@ -350,12 +354,12 @@ export const MedicineListingCard: React.FC<MedicineListingCardProps> = (props) =
                       </>
                     ) : (
                       <>
-                        <div className={`${classes.medicinePrice} ${classes.mrpPrice}`}>
+                        {/* <div className={`${classes.medicinePrice} ${classes.mrpPrice}`}>
                           {item.special_price ? (
                             <span className={classes.lineThrough}>Rs. {item.price}</span>
                           ) : null}
                           <div className={classes.mrpText}>(MRP)</div>
-                        </div>
+                        </div> */}
 
                         <div className={classes.medicinePrice}>
                           Rs. {item.special_price || item.price}
