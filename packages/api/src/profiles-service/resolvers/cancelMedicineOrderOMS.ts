@@ -147,7 +147,7 @@ const cancelMedicineOrderOMS: Resolver<
   } else {
     updateOrderCancelled(profilesDb, orderDetails, medicineOrderCancelOMSInput);
   }
-  medicineOrderCancelled(orderDetails, medicineOrderCancelOMSInput.cancelReasonCode, profilesDb);
+ // medicineOrderCancelled(orderDetails, medicineOrderCancelOMSInput.cancelReasonCode, profilesDb);
 
   //post order cancelled event to webEngage
   const postBody: Partial<WebEngageInput> = {
@@ -185,7 +185,7 @@ const updateOrderCancelled = async (
     new Date(),
     MEDICINE_ORDER_STATUS.CANCELLED
   );
-  calculateRefund(orderDetails, 0, profilesDb, medicineOrdersRepo);
+  calculateRefund(orderDetails, 0, profilesDb, medicineOrdersRepo,medicineOrderCancelOMSInput.cancelReasonCode);
 };
 
 export const medicineOrderCancelOMSResolvers = {

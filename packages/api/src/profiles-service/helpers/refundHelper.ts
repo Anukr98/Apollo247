@@ -167,7 +167,8 @@ export const calculateRefund = async (
   orderDetails: MedicineOrders,
   totalOrderBilling: number,
   profilesDb: Connection,
-  medOrderRepo: MedicineOrdersRepository
+  medOrderRepo: MedicineOrdersRepository,
+  reasonCode?:string
 ) => {
   const paymentInfo = await medOrderRepo.getRefundsAndPaymentsByOrderId(orderDetails.id);
   if (!paymentInfo) {
@@ -315,12 +316,20 @@ export const calculateRefund = async (
   }
 
   //send refund SMS notification for partial refund
+  let isPartialRefund:boolean;
   if (totalOrderBilling > 0) {
-    medicineOrderRefundNotification(orderDetails, {
-      refundAmount: refundAmount,
-      healthCreditsRefund: healthCreditsToRefund,
-    });
+    isPartialRefund = true;
+  }else{
+    isPartialRefund = false;
   }
+  medicineOrderRefundNotification(orderDetails, {
+    refundAmount: refundAmount,
+    healthCreditsRefund: healthCreditsToRefund,
+    isPartialRefund,
+    reasonCode
+  },
+  profilesDb
+  );
 };
 
 const genCheckSumPromiseWrapper = (body: PaytmBody, key: string): Promise<string> => {

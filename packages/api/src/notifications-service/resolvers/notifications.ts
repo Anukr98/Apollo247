@@ -195,6 +195,8 @@ export enum NotificationPriority {
 type MedicineOrderRefundNotificationInput = {
   refundAmount: number;
   healthCreditsRefund: number;
+  reasonCode?:string;
+  isPartialRefund:boolean;
 };
 
 type PushNotificationInput = {
@@ -3069,7 +3071,7 @@ export async function sendDoctorRescheduleAppointmentNotification(
   return { status: true };
 }
 
-export async function medicineOrderCancelled(
+export async function medicineOrderCancelled( //this function is merge with medicineOrderRefundNotification
   orderDetails: MedicineOrders,
   reasonCode: string,
   patientsDb: Connection
@@ -3108,44 +3110,83 @@ export async function medicineOrderCancelled(
 
 export async function medicineOrderRefundNotification(
   orderDetails: MedicineOrders,
-  medicineOrderRefundNotificationInput: MedicineOrderRefundNotificationInput
+  medicineOrderRefundNotificationInput: MedicineOrderRefundNotificationInput,
+  patientsDb: Connection
 ) {
   let notificationBody: string = '';
-  if (
-    medicineOrderRefundNotificationInput.refundAmount > 0 ||
-    medicineOrderRefundNotificationInput.healthCreditsRefund > 0
-  ) {
+  
+  if(medicineOrderRefundNotificationInput.isPartialRefund === true){
     if (
-      medicineOrderRefundNotificationInput.refundAmount > 0 &&
+      medicineOrderRefundNotificationInput.refundAmount > 0 ||
       medicineOrderRefundNotificationInput.healthCreditsRefund > 0
     ) {
-      notificationBody = ApiConstants.ORDER_PAYMENT_HC_PARTIAL_REFUND_BODY;
-      notificationBody = notificationBody.replace('{orderId}', orderDetails.orderAutoId.toString());
-      notificationBody = notificationBody.replace(
-        '{refundAmount}',
-        medicineOrderRefundNotificationInput.refundAmount.toString()
-      );
-      notificationBody = notificationBody.replace(
-        '{healthCreditsRefund}',
-        medicineOrderRefundNotificationInput.healthCreditsRefund.toString()
-      );
-    } else if (medicineOrderRefundNotificationInput.refundAmount > 0) {
-      notificationBody = ApiConstants.ORDER_PAYMENT_PARTIAL_REFUND_BODY;
-      notificationBody = notificationBody.replace('{orderId}', orderDetails.orderAutoId.toString());
-      notificationBody = notificationBody.replace(
-        '{refundAmount}',
-        medicineOrderRefundNotificationInput.refundAmount.toString()
-      );
-    } else if (medicineOrderRefundNotificationInput.healthCreditsRefund > 0) {
-      notificationBody = ApiConstants.ORDER_HC_PARTIAL_REFUND_BODY;
-      notificationBody = notificationBody.replace('{orderId}', orderDetails.orderAutoId.toString());
-      notificationBody = notificationBody.replace(
-        '{healthCreditsRefund}',
-        medicineOrderRefundNotificationInput.healthCreditsRefund.toString()
-      );
+      if (
+        medicineOrderRefundNotificationInput.refundAmount > 0 &&
+        medicineOrderRefundNotificationInput.healthCreditsRefund > 0
+      ) {
+        notificationBody = ApiConstants.ORDER_PAYMENT_HC_PARTIAL_REFUND_BODY;
+        notificationBody = notificationBody.replace('{orderId}', orderDetails.orderAutoId.toString());
+        notificationBody = notificationBody.replace(
+          '{refundAmount}',
+          medicineOrderRefundNotificationInput.refundAmount.toString()
+        );
+        notificationBody = notificationBody.replace(
+          '{healthCreditsRefund}',
+          medicineOrderRefundNotificationInput.healthCreditsRefund.toString()
+        );
+      } else if (medicineOrderRefundNotificationInput.refundAmount > 0) {
+        notificationBody = ApiConstants.ORDER_PAYMENT_PARTIAL_REFUND_BODY;
+        notificationBody = notificationBody.replace('{orderId}', orderDetails.orderAutoId.toString());
+        notificationBody = notificationBody.replace(
+          '{refundAmount}',
+          medicineOrderRefundNotificationInput.refundAmount.toString()
+        );
+      } else if (medicineOrderRefundNotificationInput.healthCreditsRefund > 0) {
+        notificationBody = ApiConstants.ORDER_HC_PARTIAL_REFUND_BODY;
+        notificationBody = notificationBody.replace('{orderId}', orderDetails.orderAutoId.toString());
+        notificationBody = notificationBody.replace(
+          '{healthCreditsRefund}',
+          medicineOrderRefundNotificationInput.healthCreditsRefund.toString()
+        );
+      }
+      //console.log(notificationBody);
+      await sendNotificationSMS(orderDetails.patient.mobileNumber, notificationBody);
     }
-    //console.log(notificationBody);
-    await sendNotificationSMS(orderDetails.patient.mobileNumber, notificationBody);
+  }else{
+    notificationBody = ApiConstants.ORDER_CANCEL_BODY;
+    const medicineOrdersRepo = patientsDb.getCustomRepository(MedicineOrdersRepository);
+    notificationBody = notificationBody.replace('{name}', orderDetails.patient.firstName);
+    notificationBody = notificationBody.replace('{orderId}', orderDetails.orderAutoId.toString());
+    if(medicineOrderRefundNotificationInput.reasonCode){
+      const cancellationReasons = await medicineOrdersRepo.getMedicineOrderCancelReasonByCode(
+        medicineOrderRefundNotificationInput.reasonCode
+      );
+      if (cancellationReasons) {
+        notificationBody = notificationBody.replace('{reason}', cancellationReasons.displayMessage);
+      } else {
+        notificationBody = notificationBody.replace('{reason}', 'Your order has been cancelled');
+      }
+      await sendNotificationSMS(orderDetails.patient.mobileNumber, notificationBody);
+    }
+    
+    const paymentInfo = orderDetails.medicineOrderPayments[0] || {};
+    if (paymentInfo.paymentType == MEDICINE_ORDER_PAYMENT_TYPE.CASHLESS) {
+      if(paymentInfo.amountPaid > 0){
+        notificationBody = ApiConstants.ORDER_CANCEL_PREPAID_BODY;
+        notificationBody = notificationBody.replace('{orderId}', orderDetails.orderAutoId.toString());
+        notificationBody = notificationBody.replace('{refund}', paymentInfo.amountPaid.toString());
+        await sendNotificationSMS(orderDetails.patient.mobileNumber, notificationBody);
+      }
+      if (paymentInfo.healthCreditsRedeemed > 0) {
+        notificationBody = ApiConstants.ORDER_CANCEL_HC_REFUND_BODY;
+        notificationBody = notificationBody.replace('{orderId}', orderDetails.orderAutoId.toString());
+        notificationBody = notificationBody.replace(
+          '{healthCreditsRefund}',
+          paymentInfo.healthCreditsRedeemed.toString()
+        );
+        await sendNotificationSMS(orderDetails.patient.mobileNumber, notificationBody);
+      }
+    }
   }
   return;
 }

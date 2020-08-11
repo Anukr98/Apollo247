@@ -167,8 +167,8 @@ const updateOrderStatus: Resolver<
       statusMessage: updateOrderStatusInput.reasonCode,
     };
     await medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, orderDetails.orderAutoId);
-    medicineOrderCancelled(orderDetails, updateOrderStatusInput.reasonCode, profilesDb);
-    calculateRefund(orderDetails, 0, profilesDb, medicineOrdersRepo);
+  //  medicineOrderCancelled(orderDetails, updateOrderStatusInput.reasonCode, profilesDb);
+    calculateRefund(orderDetails, 0, profilesDb, medicineOrdersRepo,updateOrderStatusInput.reasonCode);
   }
 
   if (
@@ -345,7 +345,7 @@ const updateOrderStatus: Resolver<
         postEvent(postBody);
       }
       if (status == MEDICINE_ORDER_STATUS.CANCELLED) {
-        medicineOrderCancelled(orderDetails, updateOrderStatusInput.reasonCode, profilesDb);
+        //medicineOrderCancelled(orderDetails, updateOrderStatusInput.reasonCode, profilesDb);
 
         //post order cancelled event to webEngage
         const postBody: Partial<WebEngageInput> = {
@@ -377,7 +377,7 @@ const updateOrderStatus: Resolver<
         },
         0
       );
-      calculateRefund(orderDetails, totalOrderBilling, profilesDb, medicineOrdersRepo);
+      calculateRefund(orderDetails, totalOrderBilling, profilesDb, medicineOrdersRepo,updateOrderStatusInput.reasonCode);
     }
   }
 
