@@ -373,7 +373,9 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
     status: STATUS,
     isConsultStarted: boolean | null
   ) => {
-    if (appointmentState) {
+    if (props.pastOrCurrent === 'past') {
+      return STATUS.CANCELLED ? 'BOOK AGAIN' : 'BOOK FOLLOW UP';
+    } else if (appointmentState) {
       switch (appointmentState) {
         case APPOINTMENT_STATE.NEW:
           return getAppointmentStatus(status, isConsultStarted);
@@ -383,7 +385,7 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
           return isConsultStarted ? 'CONTINUE CONSULT' : 'FILL MEDICAL DETAILS';
       }
     }
-    // need to add one more condition for view prescription
+    // need to add one more condition for view prescription for this have to query casesheet
     getAppointmentStatus(status, isConsultStarted);
   };
 
@@ -552,11 +554,13 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                         )}
                       >
                         {appointmentDetails.status === STATUS.COMPLETED &&
-                          appointmentDetails.isFollowUp === 'false' &&
-                          props.pastOrCurrent !== 'past' && (
+                          appointmentDetails.isFollowUp === 'false' && (
                             <div className={classes.bookFollowup}>
-                              <h3>BOOK FOLLOWUP</h3>
-                              {appointmentDetails &&
+                              <h3>
+                                {props.pastOrCurrent !== 'past' ? 'BOOK FOLLOWUP' : 'VIEW DETAILS'}
+                              </h3>
+                              {props.pastOrCurrent !== 'past' &&
+                                appointmentDetails &&
                                 appointmentDetails.doctorInfo &&
                                 appointmentDetails.doctorInfo.fullName && (
                                   <h6>With {appointmentDetails.doctorInfo.fullName}</h6>
@@ -592,7 +596,8 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                                   appointmentDetails.doctorInfo.fullName
                                     ? readableParam(appointmentDetails.doctorInfo.fullName)
                                     : '';
-                                appointmentDetails.status !== STATUS.CANCELLED
+                                appointmentDetails.status !== STATUS.CANCELLED &&
+                                props.pastOrCurrent !== 'past'
                                   ? !pickAnotherSlot &&
                                     history.push(clientRoutes.chatRoom(appointmentId, doctorId))
                                   : history.push(
