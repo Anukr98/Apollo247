@@ -168,7 +168,7 @@ export const calculateRefund = async (
   totalOrderBilling: number,
   profilesDb: Connection,
   medOrderRepo: MedicineOrdersRepository,
-  reasonCode?:string
+  reasonCode?: string
 ) => {
   const paymentInfo = await medOrderRepo.getRefundsAndPaymentsByOrderId(orderDetails.id);
   if (!paymentInfo) {
@@ -197,10 +197,12 @@ export const calculateRefund = async (
   /**
    * Amount to be refunded for the order
    */
-  let refundAmount = 0;
+  let refundAmount: number = 0;
 
   // Health credits to be refunded
   let healthCreditsToRefund = 0;
+
+  let isRefundSuccessful = false;
 
   // Maximum possible refund
   const maxRefundAmountPossible = +new Decimal(amountPaid).minus(totalRefundAmount);
@@ -247,7 +249,8 @@ export const calculateRefund = async (
       profilesDb
     );
     refundResp = refundResp as PaytmResponse;
-    if(refundResp.refundId){
+    if (refundResp.refundId) {
+      isRefundSuccessful = true;
       const totalAmountRefunded = +new Decimal(refundAmount).plus(totalRefundAmount);
       updatePaymentRequest.refundAmount = totalAmountRefunded;
     } else {
@@ -279,20 +282,14 @@ export const calculateRefund = async (
       const oneApollo = new OneApollo();
 
       // Send request for unblock of health credits
-      const oneApollResponse = await oneApollo.unblockHealthCredits({
+      oneApollo.unblockHealthCredits({
         MobileNumber: orderDetails.patient.mobileNumber.slice(3),
         PointsToRelease: healthCreditsToRefund.toString(),
         StoreCode: storeCode,
         BusinessUnit: process.env.ONEAPOLLO_BUSINESS_UNIT || '',
         RedemptionRequestNumber: healthCreditsRedemptionRequest.RequestNumber.toString(),
       });
-      log(
-        'profileServiceLogger',
-        `HEALTH_CREDITS_UNBLOCKED - ${JSON.stringify(oneApollResponse)}`,
-        `HEALTH CREDITS UNBLOCKED_FOR_ORDER - ${orderDetails.orderAutoId}`,
-        `${JSON.stringify(oneApollResponse)}`,
-        ''
-      );
+
       const blockedHealthCredits = +new Decimal(healthCreditsRedeemed).minus(healthCreditsToRefund);
 
       updatePaymentRequest.healthCreditsRedeemed = blockedHealthCredits;
@@ -316,19 +313,23 @@ export const calculateRefund = async (
   }
 
   //send refund SMS notification for partial refund
-  let isPartialRefund:boolean;
+  let isPartialRefund: boolean;
   if (totalOrderBilling > 0) {
     isPartialRefund = true;
-  }else{
+  } else {
     isPartialRefund = false;
   }
-  medicineOrderRefundNotification(orderDetails, {
-    refundAmount: refundAmount,
-    healthCreditsRefund: healthCreditsToRefund,
-    isPartialRefund,
-    reasonCode
-  },
-  profilesDb
+  medicineOrderRefundNotification(
+    orderDetails,
+    {
+      refundAmount: refundAmount,
+      paymentInfo,
+      healthCreditsRefunded: healthCreditsToRefund,
+      isPartialRefund,
+      reasonCode,
+      isRefundSuccessful,
+    },
+    profilesDb
   );
 };
 

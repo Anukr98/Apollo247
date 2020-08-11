@@ -15,7 +15,6 @@ import { PharmaCancelResult } from 'types/medicineOrderTypes';
 import { log } from 'customWinstonLogger';
 import { Connection } from 'typeorm';
 import {} from 'coupons-service/resolvers/validatePharmaCoupon';
-import { medicineOrderCancelled } from 'notifications-service/resolvers/notifications';
 import { calculateRefund } from 'profiles-service/helpers/refundHelper';
 import { WebEngageInput, postEvent } from 'helpers/webEngage';
 import { ApiConstants } from 'ApiConstants';
@@ -147,7 +146,6 @@ const cancelMedicineOrderOMS: Resolver<
   } else {
     updateOrderCancelled(profilesDb, orderDetails, medicineOrderCancelOMSInput);
   }
- // medicineOrderCancelled(orderDetails, medicineOrderCancelOMSInput.cancelReasonCode, profilesDb);
 
   //post order cancelled event to webEngage
   const postBody: Partial<WebEngageInput> = {
@@ -185,7 +183,13 @@ const updateOrderCancelled = async (
     new Date(),
     MEDICINE_ORDER_STATUS.CANCELLED
   );
-  calculateRefund(orderDetails, 0, profilesDb, medicineOrdersRepo,medicineOrderCancelOMSInput.cancelReasonCode);
+  calculateRefund(
+    orderDetails,
+    0,
+    profilesDb,
+    medicineOrdersRepo,
+    medicineOrderCancelOMSInput.cancelReasonCode
+  );
 };
 
 export const medicineOrderCancelOMSResolvers = {
