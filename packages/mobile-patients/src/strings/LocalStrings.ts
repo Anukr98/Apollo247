@@ -83,6 +83,10 @@ const voip = {
   appName: 'Apollo 24/7'
 }
 
+const asyncKeys = {
+  voipDeviceToken: 'voipDeviceToken'
+}
+
 export const LocalStrings = {
   ...common,
   ...login,
@@ -90,5 +94,6 @@ export const LocalStrings = {
   ...Notification,
   ...AddFile,
   ...MyPayments,
-  ...voip
+  ...voip,
+  ...asyncKeys
 };

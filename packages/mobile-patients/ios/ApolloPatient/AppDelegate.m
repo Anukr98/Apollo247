@@ -88,19 +88,30 @@
 
 // --- Handle incoming pushes (for ios <= 10)
 - (void)pushRegistry:(PKPushRegistry *)registry didReceiveIncomingPushWithPayload:(PKPushPayload *)payload forType:(PKPushType)type {
-  [RNVoipPushNotificationManager didReceiveIncomingPushWithPayload:payload forType:(NSString *)type];
-}
-
-// --- Handle incoming pushes (for ios >= 11)
-- (void)pushRegistry:(PKPushRegistry *)registry didReceiveIncomingPushWithPayload:(PKPushPayload *)payload forType:(PKPushType)type withCompletionHandler:(void (^)(void))completion {
-    
-  if(payload && payload.dictionaryPayload && payload.dictionaryPayload[@"name"] != nil && payload.dictionaryPayload[@"isVideo"] != nil){
+  
+  if(payload && payload.dictionaryPayload && payload.dictionaryPayload[@"name"] != nil && payload.dictionaryPayload[@"isVideo"] != nil && payload.dictionaryPayload[@"appointmentId"] != nil && payload.dictionaryPayload[@"disconnectCall"] == nil){
   
     NSString *uuid = [[NSUUID UUID] UUIDString];
     NSString *name = payload.dictionaryPayload[@"name"];
     BOOL isVideo = [payload.dictionaryPayload[@"isVideo"] boolValue];
 
-    [RNVoipPushNotificationManager didReceiveIncomingPushWithPayload:payload forType:(NSString *)type];
+   [RNVoipPushNotificationManager didReceiveIncomingPushWithPayload:payload forType:(NSString *)type];
+    [RNCallKeep reportNewIncomingCall:uuid handle:name handleType:@"generic" hasVideo:isVideo localizedCallerName:name fromPushKit: YES payload:nil];
+           
+  }
+}
+
+// --- Handle incoming pushes (for ios >= 11)
+- (void)pushRegistry:(PKPushRegistry *)registry didReceiveIncomingPushWithPayload:(PKPushPayload *)payload forType:(PKPushType)type withCompletionHandler:(void (^)(void))completion {
+    
+  [RNVoipPushNotificationManager didReceiveIncomingPushWithPayload:payload forType:(NSString *)type];
+  
+  if(payload && payload.dictionaryPayload && payload.dictionaryPayload[@"name"] != nil && payload.dictionaryPayload[@"isVideo"] != nil && payload.dictionaryPayload[@"appointmentId"] != nil){
+  
+    NSString *uuid = [[NSUUID UUID] UUIDString];
+    NSString *name = payload.dictionaryPayload[@"name"];
+    BOOL isVideo = [payload.dictionaryPayload[@"isVideo"] boolValue];
+
     [RNCallKeep reportNewIncomingCall:uuid handle:name handleType:@"generic" hasVideo:isVideo localizedCallerName:name fromPushKit: YES payload:nil];
            
     completion();

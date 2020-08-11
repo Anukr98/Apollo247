@@ -2736,3 +2736,14 @@ export const GET_PERSONALIZED_APPOITNMENTS = gql`
     }
   }
 `;
+
+export const SAVE_VOIP_DEVICE_TOKEN = gql`
+  mutation addVoipPushToken($voipPushTokenInput: voipPushTokenInput!) {
+    addVoipPushToken(voipPushTokenInput: $voipPushTokenInput) {
+      isError
+      response
+      patientId
+      voipToken
+    }
+  }
+`;

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   StyleSheet,
   View,
@@ -98,6 +98,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const { showAphAlert, hideAphAlert } = useUIElements();
   const [appState, setAppState] = useState(AppState.currentState);
   const client = useApolloClient();
+  const voipAppointmentId = useRef<string>('');
+
   // const { setVirtualConsultationFee } = useAppCommonData();
 
   useEffect(() => {
@@ -127,26 +129,18 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   
   useEffect(() => {
     if (isIos()) {
-      initializeVoip();
+      initializeCallkit();
+      handleVoipEventListeners();
     }
   }, [])
 
-  const initializeVoip = () => {
+  const initializeCallkit = () => {
     const callkeepOptions = {
       ios: {
         appName: string.LocalStrings.appName,
-        imageName: 'callkitIcon.png'
+        imageName: 'callkitAppIcon.png'
       }
     };
-
-    VoipPushNotification.requestPermissions();
-    VoipPushNotification.registerVoipToken();
-
-    VoipPushNotification.addEventListener('register', (token: String) => {
-      // --- send token to your apn provider server
-      console.log("voip token", token)
-      alert(token)
-    });
 
     try {
       RNCallKeep.setup(callkeepOptions);
@@ -157,9 +151,22 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     // Add RNCallKeep Events
     RNCallKeep.addEventListener('answerCall', onAnswerCallAction);
   }
+  
+  const handleVoipEventListeners = () => {
+    VoipPushNotification.addEventListener('notification', (notification) => {
+      //on receive voip push
+      
+      if(notification && notification.getData() && notification.getData().appointmentId){
+        voipAppointmentId.current = notification.getData().appointmentId;
+      }
+      if(notification && notification.getData() && notification.getData().disconnectCall){
+        RNCallKeep.endAllCalls();
+      }
+    });
+  }
 
   const onAnswerCallAction = () => {
-    props.navigation.navigate(AppRoutes.Medicine);
+    getAppointmentDataAndNavigate(voipAppointmentId.current);
   }
 
   const handleDeepLink = () => {

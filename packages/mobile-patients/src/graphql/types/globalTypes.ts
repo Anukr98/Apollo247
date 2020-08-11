@@ -912,6 +912,11 @@ export interface SaveDeviceTokenInput {
   patientId: string;
 }
 
+export interface VoipPushTokenInput {
+  patientId: string;
+  voipToken: string;
+}
+
 export interface SavePatientNotificationSettingsInput {
   patient: string;
   commissionNotification?: boolean | null;
