@@ -150,7 +150,6 @@ export const validatePharmaCoupon: Resolver<
   };
 
   const couponData = await validateCoupon(payload);
-
   let validityStatus = false;
   let reasonForInvalidStatus = '';
   const lineItemsWithDiscount: PharmaLineItems[] = [];
@@ -182,7 +181,7 @@ export const validatePharmaCoupon: Resolver<
   }
 
   const productDiscount = Number((mrpPriceTotal - specialPriceTotal).toFixed(2));
-  const totalDiscountPrice = mrpPriceTotal - couponData.response!.discount;
+  const totalDiscountPrice = couponData.response!.discount;
 
   const discountedTotals: DiscountedTotals = {
     couponDiscount: Number((totalDiscountPrice - productDiscount).toFixed(2)),
