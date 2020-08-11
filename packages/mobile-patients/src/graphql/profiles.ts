@@ -2681,6 +2681,12 @@ export const PHARMACY_ORDER_PAYMENT_DETAILS = gql`
           paymentMode
           amountPaid
           healthCreditsRedeemed
+          refundAmount
+          medicineOrderRefunds {
+            refundAmount
+            createdDate
+            refundStatus
+          }
         }
       }
     }
