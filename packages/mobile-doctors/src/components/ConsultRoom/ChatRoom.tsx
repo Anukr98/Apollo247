@@ -95,7 +95,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const Appintmentdatetime = props.navigation.getParam('Appintmentdatetime');
   const doctorId = props.navigation.getParam('DoctorId');
   const patientId = props.patientId || props.navigation.getParam('PatientId');
-
+  const [keyBoardVisible, setKeyboardVisible] = useState<boolean>(false);
   const [heightList, setHeightList] = useState<number>(
     height - (props.extendedHeader ? 230 : 190) - (Platform.OS === 'android' ? 10 : 0)
   );
@@ -110,6 +110,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     if (Platform.OS === 'ios') {
       setHeightList(e.endCoordinates.screenY - changeHeight);
     }
+    setKeyboardVisible(true);
     setTimeout(() => {
       flatListRef.current && flatListRef.current.scrollToEnd();
     }, 200);
@@ -117,6 +118,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const keyboardDidHide = async () => {
     const changeHeight = Number(await AsyncStorage.getItem('changeHeight'));
     setHeightList(height - changeHeight);
+    setKeyboardVisible(false);
   };
 
   useEffect(() => {
@@ -811,6 +813,15 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               marginHorizontal: 20,
               marginTop: 0,
             }}
+            ListHeaderComponent={() => {
+              return (
+                <View
+                  style={{
+                    height: Platform.OS === 'android' && keyBoardVisible ? 210 : 0,
+                  }}
+                />
+              );
+            }}
             removeClippedSubviews={false}
             bounces={false}
             data={messages}
@@ -822,7 +833,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               return <View style={{ height: isIphoneX() ? 40 : 0 }} />;
             }}
             keyboardShouldPersistTaps="always"
-            keyboardDismissMode="on-drag"
+            keyboardDismissMode={Platform.OS === 'ios' ? 'interactive' : 'on-drag'}
           />
         ) : (
           <View
