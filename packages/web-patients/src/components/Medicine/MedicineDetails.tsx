@@ -616,14 +616,11 @@ export const MedicineDetails: React.FC = (props) => {
               data.productdp &&
               data.productdp.length &&
               setMetaTagProps({
-                title: `${data.productdp[0].name} Price, Uses, Side Effects - Apollo 247`,
-                description: `Buy ${data.productdp[0].name}, Pack of ${getPackOfMedicine(
+                title: `${name} Price, Uses, Side Effects - Apollo 247`,
+                description: `Buy ${name}, Pack of ${getPackOfMedicine(
                   data.productdp[0]
-                )} in India. Order ${
-                  data.productdp[0].name
-                } online at get the medicine delivered within 4 hours at your doorsteps. Know the uses, side effects, precautions and more about ${
-                  data.productdp[0].name
-                }. `,
+                )} at Rs. ${special_price ||
+                  price} in India. Order ${name} online at get the medicine delivered within 4 hours at your doorsteps. Know the uses, side effects, precautions and more about ${name}. `,
                 canonicalLink:
                   typeof window !== 'undefined' &&
                   window.location &&
@@ -847,10 +844,17 @@ export const MedicineDetails: React.FC = (props) => {
                 <div className={classes.breadcrumbs}>
                   <a onClick={() => history.push(clientRoutes.medicines())}>
                     <div className={classes.backArrow}>
-                      <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
+                      <img
+                        className={classes.blackArrow}
+                        src={require('images/ic_back.svg')}
+                        alt="Back Arrow"
+                        title="Back Arrow"
+                      />
                       <img
                         className={classes.whiteArrow}
                         src={require('images/ic_back_white.svg')}
+                        alt="Back Arrow"
+                        title="Back Arrow"
                       />
                     </div>
                   </a>
@@ -879,7 +883,11 @@ export const MedicineDetails: React.FC = (props) => {
                       }
                     >
                       <span>
-                        <img src={require('images/offer-icon.svg')} alt="" />
+                        <img
+                          src={require('images/offer-icon.svg')}
+                          alt="Offer Icon"
+                          title="Offer Icon"
+                        />
                       </span>
                       <span>Special offers</span>
                     </div>
