@@ -93,6 +93,9 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: '7px 13px 7px 13px',
       textTransform: 'none',
       borderRadius: 10,
+      '&:disabled': {
+        color: '#eaeaea !important'
+      }
     },
     menuSelected: {
       backgroundColor: 'transparent !important',
@@ -467,35 +470,19 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
                     <img src={require('images/ic-edit-white.svg')} />
                   </label>
                 </div>
-                <div className={classes.disabledFields} ref={disableFieldsRef} onClick={() => setIsDisablePopoverOpen(true)}>
-                  <Popover
-                    open={isDisablePopoverOpen}
-                    anchorEl={disableFieldsRef.current}
-                    onClose={() => setIsDisablePopoverOpen(false)}
-                    anchorOrigin={{
-                      vertical: 'top',
-                      horizontal: 'left',
-                    }}
-                    transformOrigin={{
-                      vertical: 'top',
-                      horizontal: 'left',
-                    }}
-                    className={classes.popDisablepopover}
-                  >
-                    <h3>Uh oh! :(</h3>
-                    <h6>You cannot edit Name, Age, Date of Birth and Gender!</h6>
-                    <AphButton
-                      className={classes.addnewMemberBtn}
-                    >
-                      ADD NEW MEMBER
-                    </AphButton>
-                  </Popover>
-                  <FormControl className={`${classes.formControl} ${classes.noMargin}`} fullWidth>
+                <div>
+                  {/* <div className={classes.disabledFields} ref={disableFieldsRef}>
+                  </div> */}
+                  <FormControl
+                    className={`${classes.formControl} ${classes.noMargin}`}
+                    onClick={selectedPatientId.length ? () => setIsDisablePopoverOpen(true) : () => { }}
+                    fullWidth>
                     <AphTextField
                       label="Full Name"
                       placeholder="First Name"
                       inputProps={{ maxLength: 20 }}
                       value={firstName}
+                      disabled={selectedPatientId.length > 0}
                       onChange={(e) => {
                         setFirstName(e.target.value);
                       }}
@@ -518,6 +505,7 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
                     <AphTextField
                       placeholder="Last name"
                       inputProps={{ maxLength: 20 }}
+                      disabled={selectedPatientId.length > 0}
                       value={lastName}
                       onChange={(e) => {
                         setLastName(e.target.value);
@@ -541,6 +529,7 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
                     <AphTextField
                       label="Date Of Birth"
                       placeholder="dd/mm/yyyy"
+                      disabled={selectedPatientId.length > 0}
                       inputProps={{ type: 'text', maxLength: 10 }}
                       value={dob}
                       onChange={(e) => {
@@ -569,6 +558,7 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
                           <Grid item xs={4} sm={4}>
                             <AphButton
                               color="secondary"
+                              disabled={selectedPatientId.length > 0}
                               className={`${classes.genderBtns} ${
                                 gender === genderSelected ? classes.btnActive : ''
                                 }`}
@@ -715,6 +705,28 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
             {mutationLoading ? <CircularProgress size={20} /> : 'Save'}
           </AphButton>
         </div>
+        <Popover
+          open={isDisablePopoverOpen}
+          anchorEl={disableFieldsRef.current}
+          onClose={() => setIsDisablePopoverOpen(false)}
+          anchorOrigin={{
+            vertical: 'top',
+            horizontal: 'left',
+          }}
+          transformOrigin={{
+            vertical: 'top',
+            horizontal: 'left',
+          }}
+          className={classes.popDisablepopover}
+        >
+          <h3>Uh oh! :(</h3>
+          <h6>You cannot edit Name, Date of Birth and Gender!</h6>
+          <AphButton
+            className={classes.addnewMemberBtn}
+          >
+            ADD NEW MEMBER
+                    </AphButton>
+        </Popover>
       </div>
       <Alerts
         setAlertMessage={setAlertMessage}
