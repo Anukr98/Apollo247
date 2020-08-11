@@ -164,6 +164,13 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: 20,
       justifyContent: 'center',
     },
+    memberTitle: {
+      '& h2': {
+        fontSize: 15,
+        textTransform: 'uppercase',
+      }
+
+    },
   };
 });
 
@@ -195,98 +202,98 @@ export const ManageProfiles: React.FC = (props) => {
       <CircularProgress />
     </div>
   ) : (
-    <div className={classes.root}>
-      <Scrollbars
-        autoHide={true}
-        autoHeight
-        className={classes.scrollBars}
-        renderView={(props) =>
-          isSmallScreen ? <div {...props} style={{ position: 'static' }} /> : <div {...props} />
-        }
-      >
-        {allCurrentPatients &&
-          allCurrentPatients.map((accountDetails) => {
-            if (accountDetails) {
-              const firstName = _startCase(
-                _toLower(accountDetails.firstName ? accountDetails.firstName : '')
-              );
-              const lastName = _startCase(
-                _toLower(accountDetails.lastName ? accountDetails.lastName : '')
-              );
-              const relation = accountDetails.relation === 'ME' ? 'SELF' : accountDetails.relation;
-              const gender = accountDetails.gender ? accountDetails.gender : null;
-              const uhid = accountDetails.uhid;
-              const dob = accountDetails.dateOfBirth ? accountDetails.dateOfBirth : null;
-              const age = dob ? moment().diff(dob, 'years') : null;
-              const photoUrl = accountDetails.photoUrl;
-              const userId = accountDetails.id;
-              const mobileNumber =
-                (accountDetails.mobileNumber && accountDetails.mobileNumber) || '';
+      <div className={classes.root}>
+        <Scrollbars
+          autoHide={true}
+          autoHeight
+          className={classes.scrollBars}
+          renderView={(props) =>
+            isSmallScreen ? <div {...props} style={{ position: 'static' }} /> : <div {...props} />
+          }
+        >
+          {allCurrentPatients &&
+            allCurrentPatients.map((accountDetails) => {
+              if (accountDetails) {
+                const firstName = _startCase(
+                  _toLower(accountDetails.firstName ? accountDetails.firstName : '')
+                );
+                const lastName = _startCase(
+                  _toLower(accountDetails.lastName ? accountDetails.lastName : '')
+                );
+                const relation = accountDetails.relation === 'ME' ? 'SELF' : accountDetails.relation;
+                const gender = accountDetails.gender ? accountDetails.gender : null;
+                const uhid = accountDetails.uhid;
+                const dob = accountDetails.dateOfBirth ? accountDetails.dateOfBirth : null;
+                const age = dob ? moment().diff(dob, 'years') : null;
+                const photoUrl = accountDetails.photoUrl;
+                const userId = accountDetails.id;
+                const mobileNumber =
+                  (accountDetails.mobileNumber && accountDetails.mobileNumber) || '';
 
-              return (
-                <div
-                  className={classes.customScroll}
-                  onClick={() => {
-                    setIsAddNewProfileDialogOpen(true);
-                    setUpdatingPatientId(userId);
-                    setIsMeClicked(accountDetails.relation === 'ME');
-                  }}
-                  title={'Update Profile'}
-                >
-                  {firstName && (
-                    <div className={classes.profileCard}>
-                      <div className={classes.profileImg}>
-                        <img src={photoUrl ? photoUrl : require('images/no_photo.png')} alt="" />
-                      </div>
-                      <div className={classes.profileGroup}>
-                        <div className={classes.userTopGroup}>
-                          <div className={classes.userName}>{`${firstName} ${lastName}`}</div>
-                          <div className={classes.rightGroup}>
-                            <div className={classes.userInfo}>
-                              {gender && age ? (
-                                <>{`${relation} | ${gender} | ${age}`}</>
-                              ) : (
-                                `${relation}`
-                              )}
+                return (
+                  <div
+                    className={classes.customScroll}
+                    onClick={() => {
+                      setIsAddNewProfileDialogOpen(true);
+                      setUpdatingPatientId(userId);
+                      setIsMeClicked(accountDetails.relation === 'ME');
+                    }}
+                    title={'Update Profile'}
+                  >
+                    {firstName && (
+                      <div className={classes.profileCard}>
+                        <div className={classes.profileImg}>
+                          <img src={photoUrl ? photoUrl : require('images/no_photo.png')} alt="" />
+                        </div>
+                        <div className={classes.profileGroup}>
+                          <div className={classes.userTopGroup}>
+                            <div className={classes.userName}>{`${firstName} ${lastName}`}</div>
+                            <div className={classes.rightGroup}>
+                              <div className={classes.userInfo}>
+                                {gender && age ? (
+                                  <>{`${relation} | ${gender} | ${age}`}</>
+                                ) : (
+                                    `${relation}`
+                                  )}
+                              </div>
                             </div>
                           </div>
-                        </div>
-                        <div className={classes.userBottomGroup}>
-                          <div className={classes.userId}>UHID : {uhid}</div>
-                          {dob && dob.length && (
-                            <div className={classes.rightGroup}>
-                              {`DOB : ${moment(dob).format('DD MMM, YYYY')}`}
-                            </div>
-                          )}
-                        </div>
-                        <div className={classes.userBottom}>
-                          <div className={classes.rightGroup}>{mobileNumber}</div>
+                          <div className={classes.userBottomGroup}>
+                            <div className={classes.userId}>UHID : {uhid}</div>
+                            {dob && dob.length && (
+                              <div className={classes.rightGroup}>
+                                {`DOB : ${moment(dob).format('DD MMM, YYYY')}`}
+                              </div>
+                            )}
+                          </div>
+                          <div className={classes.userBottom}>
+                            <div className={classes.rightGroup}>{mobileNumber}</div>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  )}
-                </div>
-              );
-            }
-          })}
-      </Scrollbars>
-      <div className={classes.bottomActions}>
-        <AphButton
-          onClick={() => {
-            setIsAddNewProfileDialogOpen(true);
-            setUpdatingPatientId('');
-          }}
-          color="primary"
-          title={'Add New Profile'}
-        >
-          Add New Profile
+                    )}
+                  </div>
+                );
+              }
+            })}
+        </Scrollbars>
+        <div className={classes.bottomActions}>
+          <AphButton
+            onClick={() => {
+              setIsAddNewProfileDialogOpen(true);
+              setUpdatingPatientId('');
+            }}
+            color="primary"
+            title={'Add New Profile'}
+          >
+            Add New Profile
         </AphButton>
-      </div>
-      <AphDialog open={isAddNewProfileDialogOpen} maxWidth="sm">
-        <AphDialogClose onClick={() => setIsAddNewProfileDialogOpen(false)} title={'Close'} />
-        <AphDialogTitle>
-          {updatingPatientId.length > 0 ? 'Update Profile' : 'Add New Profile'}
-          {/* {updatingPatientId.length > 0 ? (
+        </div>
+        <AphDialog open={isAddNewProfileDialogOpen} maxWidth="sm">
+          <AphDialogClose onClick={() => setIsAddNewProfileDialogOpen(false)} title={'Close'} />
+          <AphDialogTitle className={classes.memberTitle}>
+            {updatingPatientId.length > 0 ? 'Update Profile' : 'Add New Family Member'}
+            {/* {updatingPatientId.length > 0 ? (
             <div
               onClick={() => setIsDeletePopoverOpen(true)}
               ref={cancelAppointRef}
@@ -295,90 +302,90 @@ export const ManageProfiles: React.FC = (props) => {
               <img src={require('images/ic_more.svg')} alt="" />
             </div>
           ) : null} */}
-        </AphDialogTitle>
-        <AddNewProfile
-          closeHandler={(isAddNewProfileDialogOpen: boolean) =>
-            setIsAddNewProfileDialogOpen(isAddNewProfileDialogOpen)
-          }
-          isMeClicked={isMeClicked}
-          selectedPatientId={updatingPatientId}
-          successHandler={(isPopoverOpen: boolean) => setIsPopoverOpen(isPopoverOpen)}
-          isProfileDelete={isProfileDelete}
-        />
-      </AphDialog>
-      {!isMeClicked && (
-        <>
-          <Popover
-            open={isDeletePopoverOpen}
-            anchorEl={cancelAppointRef.current}
-            onClose={() => setIsDeletePopoverOpen(false)}
-            anchorOrigin={{
-              vertical: 'top',
-              horizontal: 'right',
-            }}
-            transformOrigin={{
-              vertical: 'top',
-              horizontal: 'right',
-            }}
-          >
-            <AphButton
-              className={classes.deleteBtn}
-              onClick={() => {
-                setIsProfileDelete(true);
-                deleteProfileMutation({ variables: { patientId: updatingPatientId } })
-                  .then(() => {
-                    setIsAddNewProfileDialogOpen(false);
-                    setIsDeletePopoverOpen(false);
-                    setIsPopoverOpen(true);
-                  })
-                  .catch(() => {
-                    setIsProfileDelete(false);
-                    setIsAlertOpen(true);
-                    setAlertMessage('An error occurred while deleting profile.');
-                  });
+          </AphDialogTitle>
+          <AddNewProfile
+            closeHandler={(isAddNewProfileDialogOpen: boolean) =>
+              setIsAddNewProfileDialogOpen(isAddNewProfileDialogOpen)
+            }
+            isMeClicked={isMeClicked}
+            selectedPatientId={updatingPatientId}
+            successHandler={(isPopoverOpen: boolean) => setIsPopoverOpen(isPopoverOpen)}
+            isProfileDelete={isProfileDelete}
+          />
+        </AphDialog>
+        {!isMeClicked && (
+          <>
+            <Popover
+              open={isDeletePopoverOpen}
+              anchorEl={cancelAppointRef.current}
+              onClose={() => setIsDeletePopoverOpen(false)}
+              anchorOrigin={{
+                vertical: 'top',
+                horizontal: 'right',
+              }}
+              transformOrigin={{
+                vertical: 'top',
+                horizontal: 'right',
               }}
             >
-              Delete Profile
+              <AphButton
+                className={classes.deleteBtn}
+                onClick={() => {
+                  setIsProfileDelete(true);
+                  deleteProfileMutation({ variables: { patientId: updatingPatientId } })
+                    .then(() => {
+                      setIsAddNewProfileDialogOpen(false);
+                      setIsDeletePopoverOpen(false);
+                      setIsPopoverOpen(true);
+                    })
+                    .catch(() => {
+                      setIsProfileDelete(false);
+                      setIsAlertOpen(true);
+                      setAlertMessage('An error occurred while deleting profile.');
+                    });
+                }}
+              >
+                Delete Profile
             </AphButton>
-          </Popover>
-        </>
-      )}
-      <Popover
-        open={isPopoverOpen}
-        anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'right',
-        }}
-        transformOrigin={{
-          vertical: 'bottom',
-          horizontal: 'right',
-        }}
-        classes={{ paper: classes.bottomPopover }}
-      >
-        <MascotWithMessage
-          messageTitle=""
-          message={
-            updatingPatientId.length > 0
-              ? isProfileDelete
-                ? profileDeleteMessage
-                : profileUpdateMessage
-              : profileCreateMessage
-          }
-          closeButtonLabel="OK"
-          closeMascot={() => {
-            setIsPopoverOpen(false);
-            if (updatingPatientId.length === 0 || isProfileDelete) {
-              window.location.reload(true);
-            }
+            </Popover>
+          </>
+        )}
+        <Popover
+          open={isPopoverOpen}
+          anchorOrigin={{
+            vertical: 'bottom',
+            horizontal: 'right',
           }}
+          transformOrigin={{
+            vertical: 'bottom',
+            horizontal: 'right',
+          }}
+          classes={{ paper: classes.bottomPopover }}
+        >
+          <MascotWithMessage
+            messageTitle=""
+            message={
+              updatingPatientId.length > 0
+                ? isProfileDelete
+                  ? profileDeleteMessage
+                  : profileUpdateMessage
+                : profileCreateMessage
+            }
+            closeButtonLabel="OK"
+            closeMascot={() => {
+              setIsPopoverOpen(false);
+              if (updatingPatientId.length === 0 || isProfileDelete) {
+                window.location.reload(true);
+              }
+            }}
+          />
+        </Popover>
+        <Alerts
+          setAlertMessage={setAlertMessage}
+          alertMessage={alertMessage}
+          isAlertOpen={isAlertOpen}
+          setIsAlertOpen={setIsAlertOpen}
         />
-      </Popover>
-      <Alerts
-        setAlertMessage={setAlertMessage}
-        alertMessage={alertMessage}
-        isAlertOpen={isAlertOpen}
-        setIsAlertOpen={setIsAlertOpen}
-      />
-    </div>
-  );
+      </div>
+    );
 };
