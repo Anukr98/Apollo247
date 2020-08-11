@@ -331,30 +331,28 @@ export const sendNotificationSMS = async (mobileNumber: string, message: string)
 };
 
 export async function hitCallKitCurl(
-  token: string, 
-  doctorName: string, 
-  apptId: string, 
-  connecting: boolean, 
-  callType: APPT_CALL_TYPE){
-    const CERT_PATH = ApiConstants.ASSETS_DIR + '/voipCert.pem';
-    const passphrase = process.env.VOIP_CALLKIT_PASSPHRASE || 'apollo@123';
-    const domain = process.env.VOIP_CALLKIT_DOMAIN || 'https://api.development.push.apple.com/3/device/';
-    try {
-      const curlCommand = `curl -v -d '{"name": "${
-        doctorName
-      }", 
-      "${connecting ? "isVideo" : "disconnectCall" }": 
-      ${connecting ? (callType==APPT_CALL_TYPE.VIDEO ? true : false) : true}, 
-      "appointmentId" : "${
-        apptId
-      }"}' --http2 --cert ${CERT_PATH}:${passphrase} ${domain}${token}`;
-      const resp = child_process.execSync(curlCommand);
-      const result = resp.toString('utf-8');
-      console.log("voipCallKit result > ", result);
-      console.log("curlCommand > ", curlCommand)
-    } catch (err){
-      console.error("voipCallKit error > ", err);
-    }
+  token: string,
+  doctorName: string,
+  apptId: string,
+  connecting: boolean,
+  callType: APPT_CALL_TYPE
+) {
+  const CERT_PATH = ApiConstants.ASSETS_DIR + '/voipCert.pem';
+  const passphrase = process.env.VOIP_CALLKIT_PASSPHRASE || 'apollo@123';
+  const domain =
+    process.env.VOIP_CALLKIT_DOMAIN || 'https://api.development.push.apple.com/3/device/';
+  try {
+    const curlCommand = `curl -v -d '{"name": "${doctorName}", 
+      "${connecting ? 'isVideo' : 'disconnectCall'}": 
+      ${connecting ? (callType == APPT_CALL_TYPE.VIDEO ? true : false) : true}, 
+      "appointmentId" : "${apptId}"}' --http2 --cert ${CERT_PATH}:${passphrase} ${domain}${token}`;
+    const resp = child_process.execSync(curlCommand);
+    const result = resp.toString('utf-8');
+    console.log('voipCallKit result > ', result);
+    console.log('curlCommand > ', curlCommand);
+  } catch (err) {
+    console.error('voipCallKit error > ', err);
+  }
 }
 
 export async function sendCallsDisconnectNotification(
@@ -485,8 +483,18 @@ export async function sendCallsNotification(
     DEVICE_TYPE.IOS
   );
 
-  if (voipPushtoken.length && voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken'] && callType != APPT_CALL_TYPE.CHAT) {
-    hitCallKitCurl(voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken'], doctorDetails.displayName, appointment.id, true, callType)
+  if (
+    voipPushtoken.length &&
+    voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken'] &&
+    callType != APPT_CALL_TYPE.CHAT
+  ) {
+    hitCallKitCurl(
+      voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken'],
+      doctorDetails.displayName,
+      appointment.id,
+      true,
+      callType
+    );
   }
 
   if (callType == APPT_CALL_TYPE.CHAT && doctorType == DOCTOR_CALL_TYPE.SENIOR) {
@@ -1771,7 +1779,7 @@ export async function sendReminderNotification(
   if (
     pushNotificationInput.notificationType == NotificationType.APPOINTMENT_CASESHEET_REMINDER_15 ||
     pushNotificationInput.notificationType ==
-    NotificationType.APPOINTMENT_CASESHEET_REMINDER_15_VIRTUAL
+      NotificationType.APPOINTMENT_CASESHEET_REMINDER_15_VIRTUAL
   ) {
     if (!(appointment && appointment.id)) {
       throw new AphError(AphErrorMessages.APPOINTMENT_ID_NOT_FOUND);
@@ -2359,7 +2367,7 @@ const testPushNotification: Resolver<
   { deviceToken: String },
   NotificationsServiceContext,
   PushNotificationSuccessMessage | undefined
-> = async (parent, args, { }) => {
+> = async (parent, args, {}) => {
   //initialize firebaseadmin
   const config = {
     credential: firebaseAdmin.credential.applicationDefault(),
@@ -2546,18 +2554,17 @@ export async function sendChatMessageNotification(
   doctorsDb: Connection,
   chatMessage: string
 ) {
-  //const whatsAppLink = process.env.WHATSAPP_LINK_BOOK_APOINTMENT;
-  //const devLink: any = process.env.DOCTOR_DEEP_LINK;
-  // const whatsAppMessageBody = ApiConstants.WHATSAPP_SD_CHAT_NOTIFICATION.replace(
-  //   '{0}',
-  //   doctorDetails.firstName
-  // )
-  //   .replace('{1}', patientDetails.firstName + ' ' + patientDetails.lastName)
-  //   .replace('{2}', doctorDetails.salutation)
-  //   .replace('{3}', appointment.id)
-  //   .replace('{4}', devLink);
-  //whatsAppMessageBody = whatsAppMessageBody;
-  //await sendNotificationWhatsapp(doctorDetails.mobileNumber, whatsAppMessageBody, 1);
+  const devLink = process.env.DOCTOR_DEEP_LINK ? process.env.DOCTOR_DEEP_LINK : '';
+  const templateData: string[] = [
+    doctorDetails.salutation + ' ' + doctorDetails.firstName,
+    patientDetails.firstName + ' ' + patientDetails.lastName,
+    devLink,
+  ];
+  sendDoctorNotificationWhatsapp(
+    ApiConstants.WHATSAPP_SD_CHAT_NOTIFICATION_ID,
+    doctorDetails.mobileNumber,
+    templateData
+  );
   const messageBody = ApiConstants.CHAT_MESSGAE_TEXT.replace(
     '{0}',
     doctorDetails.firstName
