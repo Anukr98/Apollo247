@@ -361,9 +361,7 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
       case STATUS.NO_SHOW || STATUS.CALL_ABANDON:
         return 'PICK ANOTHER SLOT';
       case STATUS.COMPLETED:
-        return props.pastOrCurrent === 'past' && status === STATUS.COMPLETED
-          ? 'BOOK FOLLOW UP'
-          : 'CHAT WITH DOCTOR';
+        return props.pastOrCurrent === 'past' ? 'BOOK FOLLOW UP' : 'CHAT WITH DOCTOR';
       case STATUS.IN_PROGRESS:
         return 'CHAT WITH DOCTOR';
       case STATUS.CANCELLED:
