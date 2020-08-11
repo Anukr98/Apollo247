@@ -20,10 +20,10 @@ import { getCache, setCache } from 'profiles-service/database/connectRedis';
 import { ApiConstants } from 'ApiConstants';
 import { log } from 'customWinstonLogger';
 
-// interface PaginateParams {
-//   take?: number;
-//   skip?: number;
-// }
+interface PaginateParams {
+  take?: number;
+  skip?: number;
+}
 
 const REDIS_ORDER_AUTO_ID_KEY_PREFIX: string = 'orderAutoId:';
 @EntityRepository(MedicineOrders)
