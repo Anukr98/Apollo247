@@ -64,6 +64,8 @@ import { NavigationScreenProp, NavigationRoute } from 'react-navigation';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { getLatestMedicineOrder_getLatestMedicineOrder_medicineOrderDetails } from '@aph/mobile-patients/src/graphql/types/getLatestMedicineOrder';
 import { getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails } from '@aph/mobile-patients/src/graphql/types/getMedicineOrderOMSDetailsWithAddress';
+import { Tagalys } from '@aph/mobile-patients/src/helpers/Tagalys';
+import { handleUniversalLinks } from './UniversalLinks';
 
 const googleApiKey = AppConfig.Configuration.GOOGLE_API_KEY;
 let onInstallConversionDataCanceller: any;
@@ -1044,7 +1046,9 @@ export const callPermissions = (doRequest?: () => void) => {
   });
 };
 
-export const InitiateAppsFlyer = () => {
+export const InitiateAppsFlyer = (
+  navigation: NavigationScreenProp<NavigationRoute<object>, object>
+) => {
   console.log('InitiateAppsFlyer');
   onInstallConversionDataCanceller = appsFlyer.onInstallConversionData((res) => {
     if (JSON.parse(res.data.is_first_launch) == true) {
@@ -1104,6 +1108,7 @@ export const InitiateAppsFlyer = () => {
     console.log('onAppOpenAttribution', res);
     console.log('res.data.af_dp', decodeURIComponent(res.data.af_dp));
 
+    handleUniversalLinks(res.data, navigation);
     // AsyncStorage.setItem('deeplink', decodeURIComponent(res.data.af_dp));
   });
 };
