@@ -1489,7 +1489,6 @@ export const MedicinePrescription: React.FC = () => {
     setIdx(idx);
   };
   const updateFavMedicine = (idx: any) => {
-    console.log(idx);
     setGenericName(idx.genericName);
     setIncludeGenericNameInPrescription(idx.includeGenericNameInPrescription);
     setSelectedValue(idx.medicineName);
