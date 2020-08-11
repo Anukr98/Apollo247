@@ -66,6 +66,7 @@ import {
   productsThumbnailUrl,
   reOrderMedicines,
   getMaxQtyForMedicineItem,
+  setWebEngageScreenNames,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { postMyOrdersClicked } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import {
@@ -398,6 +399,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   }, [pharmacyPincode]);
 
   useEffect(() => {
+    setWebEngageScreenNames('Medicine Home Page');
     fetchMedicinePageProducts();
   }, []);
 
