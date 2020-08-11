@@ -102,6 +102,9 @@ export interface ShoppingCartContextProps {
   deliveryAddressId: string;
   setDeliveryAddressId: ((id: string) => void) | null;
 
+  newAddressAdded: string;
+  setNewAddressAdded: ((id: string) => void) | null;
+
   addresses: savePatientAddress_savePatientAddress_patientAddress[];
   setAddresses:
     | ((addresses: savePatientAddress_savePatientAddress_patientAddress[]) => void)
@@ -166,6 +169,8 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
 
   deliveryAddressId: '',
   setDeliveryAddressId: null,
+  newAddressAdded: '',
+  setNewAddressAdded: null,
   storeId: '',
   setStoreId: null,
   deliveryType: null,
@@ -199,6 +204,9 @@ export const ShoppingCartProvider: React.FC = (props) => {
   const [pinCode, setPinCode] = useState<string>('');
   const [deliveryAddressId, _setDeliveryAddressId] = useState<
     ShoppingCartContextProps['deliveryAddressId']
+  >('');
+  const [newAddressAdded, _setNewAddedAddress] = useState<
+    ShoppingCartContextProps['newAddressAdded']
   >('');
   const [storeId, _setStoreId] = useState<ShoppingCartContextProps['storeId']>('');
   const [coupon, setCoupon] = useState<ShoppingCartContextProps['coupon']>(null);
@@ -355,6 +363,10 @@ export const ShoppingCartProvider: React.FC = (props) => {
     _setStoreId('');
   };
 
+  const setNewAddressAdded = (id: ShoppingCartContextProps['newAddressAdded']) => {
+    _setNewAddedAddress(id);
+  };
+
   const addPhysicalPrescription: ShoppingCartContextProps['addPhysicalPrescription'] = (item) => {
     setPhysicalPrescriptions([item, ...physicalPrescriptions]);
   };
@@ -386,6 +398,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
     setEPrescriptions([]);
     setCartItems([]);
     setDeliveryAddressId('');
+    setNewAddressAdded('');
     setStoreId('');
     setPinCode('');
     setStores([]);
@@ -514,6 +527,8 @@ export const ShoppingCartProvider: React.FC = (props) => {
         addAddress,
         deliveryAddressId,
         setDeliveryAddressId,
+        newAddressAdded,
+        setNewAddressAdded,
 
         stores,
         setStores,
