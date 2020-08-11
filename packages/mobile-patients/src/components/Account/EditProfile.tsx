@@ -178,6 +178,7 @@ const styles = StyleSheet.create({
   newProfileOverlayStyle: {
     ...theme.viewStyles.cardViewStyle,
     width: '90%',
+    height: 'auto',
     paddingHorizontal: 0,
     paddingTop: 0,
   },
@@ -1017,7 +1018,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
         overlayBackgroundColor={'#FFF'}
         windowBackgroundColor={'rgba(0,0,0,0.8)'}
         transparent={true}
-        overlayStyle={[styles.newProfileOverlayStyle, email ? { height: '85%' } : {}]}
+        overlayStyle={styles.newProfileOverlayStyle}
       >
         <>
           <Header
