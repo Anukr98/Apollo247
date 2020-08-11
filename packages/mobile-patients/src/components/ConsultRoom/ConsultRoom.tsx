@@ -821,6 +821,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     VoipPushNotification.registerVoipToken();
 
     VoipPushNotification.addEventListener('register', (token: string) => {
+      alert(token)
       if (token) setVoipDeviceToken(token);
     });
   }
