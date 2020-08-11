@@ -548,7 +548,7 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
                   <FormControl
                     className={`${classes.formControl}`}
                     onClick={
-                      selectedPatientId.length ? () => setIsDisablePopoverOpen(true) : () => {}
+                      selectedPatientId.length > 0 ? () => setIsDisablePopoverOpen(true) : () => {}
                     }
                     fullWidth
                   >
@@ -578,9 +578,9 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
                   </FormControl>
                   <FormControl
                     className={classes.formControl}
-                    onClick={
-                      selectedPatientId.length ? () => setIsDisablePopoverOpen(true) : () => {}
-                    }
+                    onClick={() => {
+                      selectedPatientId.length > 0 ? setIsDisablePopoverOpen(true) : {};
+                    }}
                     fullWidth
                   >
                     <AphTextField

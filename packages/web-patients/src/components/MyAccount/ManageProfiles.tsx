@@ -239,7 +239,7 @@ export const ManageProfiles: React.FC = (props) => {
                   }}
                   title={'Update Profile'}
                 >
-                  {firstName && (
+                  {firstName && firstName.length > 0 && (
                     <div className={classes.profileCard}>
                       <div className={classes.profileImg}>
                         <img src={photoUrl ? photoUrl : require('images/no_photo.png')} alt="" />
@@ -259,7 +259,7 @@ export const ManageProfiles: React.FC = (props) => {
                         </div>
                         <div className={classes.userBottomGroup}>
                           <div className={classes.userId}>UHID : {uhid}</div>
-                          {dob && dob.length && (
+                          {dob && dob.length > 0 && (
                             <div className={classes.rightGroup}>
                               {`DOB : ${moment(dob).format('DD MMM, YYYY')}`}
                             </div>
