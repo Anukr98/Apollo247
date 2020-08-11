@@ -58,6 +58,16 @@ export interface PharmaCoupon extends validatePharmaCoupon_validatePharmaCoupon 
   products: [];
 }
 
+export interface CartProduct {
+  sku: string;
+  categoryId: any;
+  subCategoryId: any;
+  mrp: number;
+  specialPrice: number;
+  quantity: number;
+  discountAmt: number;
+  onMrp: boolean;
+}
 export type EPrescriptionDisableOption = 'CAMERA_AND_GALLERY' | 'E-PRESCRIPTION' | 'NONE';
 
 export interface ShoppingCartContextProps {
@@ -412,9 +422,6 @@ export const ShoppingCartProvider: React.FC = (props) => {
     lineItems: validatePharmaCoupon_validatePharmaCoupon_pharmaLineItemsWithDiscountedPrice[]
   ) => {
     const foundItem = lineItems.find((item) => item.sku == cartItem.id);
-    // return foundItem && foundItem.applicablePrice < (cartItem.specialPrice || cartItem.price)
-    //   ? foundItem.applicablePrice
-    //   : undefined;
     return foundItem
       ? foundItem.onMrp
         ? foundItem.mrp - foundItem.discountAmt
@@ -446,7 +453,6 @@ export const ShoppingCartProvider: React.FC = (props) => {
         g(coupon, 'discount') > deductProductDiscount(coupon.products)
       ) {
         setCouponDiscount(g(coupon, 'discount') - deductProductDiscount(coupon.products) || 0);
-        // setProductDiscount(g(coupon, 'discountedTotals', 'productDiscount') || 0);
         setProductDiscount(getProductDiscount(coupon.products) || 0);
         setCartItems(
           cartItems.map((item) => ({
@@ -471,7 +477,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
     }
   }, [cartTotal, coupon]);
 
-  const deductProductDiscount = (products: any) => {
+  const deductProductDiscount = (products: CartProduct[]) => {
     let discount = 0;
     products &&
       products.forEach((item) => {
@@ -482,7 +488,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
     return discount;
   };
 
-  const getProductDiscount = (products: any) => {
+  const getProductDiscount = (products: CartProduct[]) => {
     let discount = 0;
     products &&
       products.forEach((item) => {

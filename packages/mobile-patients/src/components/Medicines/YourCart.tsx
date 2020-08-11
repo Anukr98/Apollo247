@@ -671,34 +671,6 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     return !cartItems.find((item) => !isInventoryAvailable(item));
   };
 
-  const _validateCoupon = (variables: validatePharmaCouponVariables) =>
-    client.mutate<validatePharmaCoupon, validatePharmaCouponVariables>({
-      mutation: VALIDATE_PHARMA_COUPON,
-      variables,
-    });
-
-  const validateCoupon = (coupon: string, cartItems: ShoppingCartItem[], patientId: string) => {
-    return _validateCoupon({
-      pharmaCouponInput: {
-        code: coupon,
-        patientId: patientId,
-        orderLineItems: cartItems.map(
-          (item) =>
-            ({
-              itemId: item.id,
-              mrp: item.price,
-              productName: item.name,
-              productType: item.isMedicine
-                ? CouponCategoryApplicable.PHARMA
-                : CouponCategoryApplicable.FMCG,
-              quantity: item.quantity,
-              specialPrice: item.specialPrice || item.price,
-            } as OrderLineItems)
-        ),
-      },
-    });
-  };
-
   const removeCouponWithAlert = (message: string) => {
     setCoupon!(null);
     renderAlert(message);
@@ -737,23 +709,6 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         removeCouponWithAlert('Sorry, unable to validate coupon right now.');
       })
       .finally(() => setLoading!(false));
-    // validateCoupon(coupon, cartItems, g(currentPatient, 'id') || '')
-    //   .then(({ data }) => {
-    //     const validityStatus = g(data, 'validatePharmaCoupon', 'validityStatus');
-    //     if (validityStatus) {
-    //       setCoupon!({ code: coupon, ...g(data, 'validatePharmaCoupon')! });
-    //     } else {
-    //       removeCouponWithAlert(
-    //         g(data, 'validatePharmaCoupon', 'reasonForInvalidStatus') || 'Invalid Coupon Code.'
-    //       );
-    //     }
-    //   })
-    //   .catch(() => {
-    //     removeCouponWithAlert('Sorry, unable to validate coupon right now.');
-    //   })
-    //   .finally(() => {
-    //     setLoading!(false);
-    //   });
   };
 
   const getTatOrderType = (cartItems: ShoppingCartItem[]): 'pharma' | 'fmcg' | 'both' => {
@@ -1426,18 +1381,6 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
                   Applied
                 </Text>
               )}
-
-              {/* {!!coupon && (
-                <Text
-                  style={{
-                    ...theme.viewStyles.text('M', 12, '#01475b', 1, 24),
-                    paddingHorizontal: 16,
-                    marginTop: 1,
-                  }}
-                >
-                  {coupon.successMessage}
-                </Text>
-              )} */}
             </View>
             <ArrowRight />
           </View>

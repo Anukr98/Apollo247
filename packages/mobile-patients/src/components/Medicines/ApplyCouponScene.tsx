@@ -121,16 +121,6 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
   const client = useApolloClient();
   const isEnableApplyBtn = couponText.length >= 4;
   const { locationDetails } = useAppCommonData();
-  // const { data, loading, error } = useQuery<getPharmaCouponList>(GET_PHARMA_COUPON_LIST, {
-  //   fetchPolicy: 'no-cache',
-  // });
-  // const couponList = (g(data, 'getPharmaCouponList', 'coupons') || []).filter(
-  //   (v) => v!.displayStatus
-  // );
-
-  // useEffect(() => {
-  //   setGlobalLoading!(loading);
-  // }, [loading]);
 
   useEffect(() => {
     fetchConsultCoupons()
@@ -149,12 +139,6 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
         });
       });
   }, []);
-
-  const validateCoupon = (variables: validatePharmaCouponVariables) =>
-    client.mutate<validatePharmaCoupon, validatePharmaCouponVariables>({
-      mutation: VALIDATE_PHARMA_COUPON,
-      variables,
-    });
 
   const applyCoupon = (coupon: string, cartItems: ShoppingCartItem[]) => {
     CommonLogEvent(AppRoutes.ApplyCouponScene, 'Select coupon');
@@ -183,8 +167,8 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
 
           const eventAttributes: WebEngageEvents[WebEngageEventName.CART_COUPON_APPLIED] = {
             'Coupon Code': coupon,
-            'Discounted amount': g(resp.data, 'response', 'discount')
-              ? g(resp.data, 'response', 'valid')
+            'Discounted amount': g(resp.data, 'response', 'valid')
+              ? g(resp.data, 'response', 'discount')
               : 'Not Applicable',
             'Customer ID': g(currentPatient, 'id'),
           };
@@ -200,51 +184,6 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
         setCouponError('Sorry, unable to validate coupon right now.');
       })
       .finally(() => setLoading!(false));
-    // validateCoupon({
-    //   pharmaCouponInput: {
-    //     code: coupon,
-    //     patientId: g(currentPatient, 'id') || '',
-    //     orderLineItems: cartItems.map(
-    //       (item) =>
-    //         ({
-    //           itemId: item.id,
-    //           mrp: item.price,
-    //           productName: item.name,
-    //           productType: item.isMedicine
-    //             ? CouponCategoryApplicable.PHARMA
-    //             : CouponCategoryApplicable.FMCG,
-    //           quantity: item.quantity,
-    //           specialPrice: item.specialPrice || item.price,
-    //         } as OrderLineItems)
-    //     ),
-    //   },
-    // })
-    //   .then(({ data }) => {
-    //     const validityStatus = g(data, 'validatePharmaCoupon', 'validityStatus');
-    //     console.log('data >>>', data);
-    //     if (validityStatus) {
-    //       setCoupon!({ code: coupon, ...g(data, 'validatePharmaCoupon')! });
-    //       props.navigation.goBack();
-    //     } else {
-    //       setCouponError(
-    //         g(data, 'validatePharmaCoupon', 'reasonForInvalidStatus') || 'Invalid Coupon Code'
-    //       );
-    //     }
-
-    //     const discountedTotals = g(data, 'validatePharmaCoupon', 'discountedTotals');
-    //     const eventAttributes: WebEngageEvents[WebEngageEventName.CART_COUPON_APPLIED] = {
-    //       'Coupon Code': coupon,
-    //       'Discounted amount': validityStatus
-    //         ? discountedTotals!.productDiscount
-    //         : 'Not Applicable',
-    //       'Customer ID': g(currentPatient, 'id'),
-    //     };
-    //     postWebEngageEvent(WebEngageEventName.CART_COUPON_APPLIED, eventAttributes);
-    //   })
-    //   .catch(() => {
-    //     setCouponError('Sorry, unable to validate coupon right now.');
-    //   })
-    //   .finally(() => setGlobalLoading!(false));
   };
 
   const renderBottomButtons = () => {
