@@ -337,7 +337,7 @@ export async function hitCallKitCurl(
   connecting: boolean,
   callType: APPT_CALL_TYPE
 ) {
-  const CERT_PATH = ApiConstants.ASSETS_DIR + '/voipCert.pem';
+  const CERT_PATH = process.env.VOIP_CALLKIT_CERT_PATH + '/voipCert.pem';
   const passphrase = process.env.VOIP_CALLKIT_PASSPHRASE || 'apollo@123';
   const domain =
     process.env.VOIP_CALLKIT_DOMAIN || 'https://api.development.push.apple.com/3/device/';
