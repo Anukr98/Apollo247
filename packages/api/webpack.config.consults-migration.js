@@ -13,5 +13,6 @@ module.exports = makeWebpackConfig({
             });
         }, {}),
     },
-    isMigration: true
+    isMigration: true,
+    serviceName: 'consults'
 });

@@ -14,7 +14,7 @@ module.exports = [
         }
     },
     {
-        "name": 'patients-db',
+        "name": 'profiles-db',
         "cli": {
             "migrationsDir": "src/profiles-service/database/migration"
         }

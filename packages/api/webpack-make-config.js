@@ -5,11 +5,9 @@ const nodeExternals = require('webpack-node-externals');
 const NodemonPlugin = require('nodemon-webpack-plugin');
 const DotenvPlugin = require('dotenv-webpack');
 const dotenv = require('dotenv');
-
-
 const forkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 
-module.exports = ({ nodemonPluginArgs, webpackConfigOptions, isMigration }) => {
+module.exports = ({ nodemonPluginArgs, webpackConfigOptions, isMigration, serviceName }) => {
   const envFile = path.resolve(__dirname, '../../.env');
   const dotEnvConfig = dotenv.config({ path: envFile });
   if (dotEnvConfig.error) throw dotEnvConfig.error;
@@ -19,7 +17,10 @@ module.exports = ({ nodemonPluginArgs, webpackConfigOptions, isMigration }) => {
   const isProduction = process.env.NODE_ENV === 'production';
 
   const distDir = path.resolve(__dirname, 'dist');
-  const distMigrationDir = path.resolve(__dirname, 'dist/migration');
+  let distMigrationDir = path.resolve(__dirname, 'dist/migration');
+  if (serviceName && isMigration) {
+    distMigrationDir = path.resolve(distMigrationDir, serviceName);
+  }
 
   const plugins = [new DotenvPlugin({ path: envFile })];
 

@@ -23,7 +23,8 @@
     "typeorm": "ts-node -r tsconfig-paths/register ./node_modules/.bin/typeorm",
     "start:consults-service:migration": "webpack --config webpack.config.consults-migration",
     "start:doctors-service:migration": "webpack --config webpack.config.doctors-migration",
-    "start:profiles-service:migration": "webpack --config webpack.config.profiles-migration"
+    "start:profiles-service:migration": "webpack --config webpack.config.profiles-migration",
+    "start:migration": "npm run start:consults-service:migration && npm run start:doctors-service:migration && npm run start:profiles-service:migration"
   },
   "devDependencies": {
     "@aph/api-schema": "file:../api-schema",
