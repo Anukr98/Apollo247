@@ -108,8 +108,6 @@ export async function addDoctorElastic(allDocsInfo: Doctor) {
         'experience_range',
         'fee_range',
         'age',
-        'experience',
-        'onlineConsultationFees',
         'languages',
         'specialty',
         'facility',
