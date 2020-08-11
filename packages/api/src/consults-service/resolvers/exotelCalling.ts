@@ -159,7 +159,7 @@ const initateConferenceTelephoneCall: Resolver<
   exotelInputArgs,
   ConsultServiceContext,
   ExotelCalling
-> = async (parent, { exotelInput }, { consultsDb, doctorsDb, patientsDb }) => {
+> = async (parent, { exotelInput }, { mobileNumber, consultsDb, doctorsDb, patientsDb }) => {
   const exotelCallerId: string | undefined = process.env.EXOTEL_CALLER_ID;
   const exotelUrl: string | undefined = process.env.EXOTEL_API_URL;
 
@@ -184,14 +184,7 @@ const initateConferenceTelephoneCall: Resolver<
     throw new AphError(AphErrorMessages.GET_PATIENTS_ERROR, undefined, {});
   }
 
-  const doctor = await doctorRepo.findById(appt.doctorId);
-
-  if (!doctor) {
-    throw new AphError(AphErrorMessages.GET_DOCTORS_ERROR, undefined, {});
-  }
-
-  fromMobileNumber = doctor.mobileNumber;
-  toMobileNumber = patient.mobileNumber;
+  const doctor = await doctorRepo.findByMobileNumber(mobileNumber, true);
 
   if (!doctor) {
     throw new AphError(AphErrorMessages.GET_DOCTORS_ERROR, undefined, {});

@@ -80,10 +80,8 @@ export const doctorCallNotificationTypeDefs = gql`
     sendApptNotification: ApptNotificationResult!
     getCallDetails(appointmentCallId: String): CallDetailsResult!
     sendPatientWaitNotification(appointmentId: String): sendPatientWaitNotificationResult
-    sendCallDisconnectNotification(
-      appointmentId: String
-      callType: APPT_CALL_TYPE
-    ): EndCallResult!
+    sendCallDisconnectNotification(appointmentId: String, callType: APPT_CALL_TYPE): EndCallResult!
+    sendCallStartNotification: EndCallResult!
   }
 `;
 type sendPatientWaitNotificationResult = {
@@ -240,27 +238,17 @@ const sendPatientWaitNotification: Resolver<
   const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
   const doctorDetails = await doctorRepo.findById(appointment.doctorId);
   if (!doctorDetails) throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID, undefined, {});
-  const patientRepo = patientsDb.getCustomRepository(PatientRepository);
-  const patientDetails = await patientRepo.getPatientDetails(appointment.patientId);
-  if (patientDetails == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
+  //const patientRepo = patientsDb.getCustomRepository(PatientRepository);
+  //const patientDetails = await patientRepo.getPatientDetails(appointment.patientId);
+  //if (patientDetails == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
   //const applicationLink = process.env.WHATSAPP_LINK_BOOK_APOINTMENT + '?' + appointment.id;
   const devLink = process.env.DOCTOR_DEEP_LINK ? process.env.DOCTOR_DEEP_LINK : '';
   if (appointment) {
-    const whatsAppMessageBody = ApiConstants.SEND_PATIENT_NOTIFICATION.replace(
-      '{0}',
-      doctorDetails.firstName
-    )
-      .replace('{1}', patientDetails.firstName + ' ' + patientDetails.lastName)
-      .replace('{2}', args.appointmentId)
-      .replace('{3}', doctorDetails.salutation)
-      .replace('{4}', appointment.appointmentDateTime.toISOString())
-      .replace('{5}', devLink);
-    //whatsAppMessageBody += applicationLink;
-    await sendDoctorNotificationWhatsapp(
+    const templateData: string[] = [appointment.appointmentType, appointment.patientName, devLink];
+    sendDoctorNotificationWhatsapp(
+      ApiConstants.WHATSAPP_SD_CONSULT_DELAY,
       doctorDetails.mobileNumber,
-      whatsAppMessageBody,
-      1,
-      doctorDetails.doctorType
+      templateData
     );
   }
   return { status: true };
@@ -295,6 +283,32 @@ const sendCallDisconnectNotification: Resolver<
   return { status: true };
 };
 
+const sendCallStartNotification: Resolver<null, {}, ConsultServiceContext, EndCallResult> = async (
+  parent,
+  args,
+  { consultsDb, doctorsDb }
+) => {
+  const apptRepo = consultsDb.getCustomRepository(AppointmentRepository);
+  const apptDetails = await apptRepo.getNotStartedAppointments();
+  const devLink = process.env.DOCTOR_DEEP_LINK ? process.env.DOCTOR_DEEP_LINK : '';
+  if (apptDetails.length > 0) {
+    const docRepo = doctorsDb.getCustomRepository(DoctorRepository);
+    apptDetails.forEach(async (appt) => {
+      const doctorDetails = await docRepo.findById(appt.doctorId);
+      if (doctorDetails) {
+        const templateData: string[] = [appt.appointmentType, appt.patientName, devLink];
+        sendDoctorNotificationWhatsapp(
+          ApiConstants.WHATSAPP_SD_CONSULT_DELAY,
+          doctorDetails.doctorSecretary.secretary.mobileNumber,
+          templateData
+        );
+      }
+    });
+  }
+  console.log(apptDetails.length, 'apptDetails.length');
+  return { status: true };
+};
+
 export const doctorCallNotificationResolvers = {
   Query: {
     sendCallNotification,
@@ -303,5 +317,6 @@ export const doctorCallNotificationResolvers = {
     getCallDetails,
     sendPatientWaitNotification,
     sendCallDisconnectNotification,
+    sendCallStartNotification,
   },
 };

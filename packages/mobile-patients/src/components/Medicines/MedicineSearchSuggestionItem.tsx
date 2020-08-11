@@ -12,7 +12,7 @@ import { Image } from 'react-native-elements';
 import { MedicineProduct } from '../../helpers/apiCalls';
 import { g } from '../../helpers/helperFunctions';
 import { AppConfig } from '../../strings/AppConfig';
-import { QuantityButton } from '@aph/mobile-patients/src/components/ui/QuantityButton';
+import { QuantityButton } from '../ui/QuantityButton';
 
 const styles = StyleSheet.create({
   containerStyle: {},
@@ -40,6 +40,8 @@ export interface MedicineSearchSuggestionItemProps {
   showSeparator?: boolean;
   loading?: boolean;
   data: MedicineProduct;
+  maxOrderQty: number;
+  removeCartItem: () => void;
 }
 
 export const MedicineSearchSuggestionItem: React.FC<MedicineSearchSuggestionItemProps> = (

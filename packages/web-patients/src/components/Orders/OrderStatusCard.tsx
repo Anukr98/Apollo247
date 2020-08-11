@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { makeStyles } from '@material-ui/styles';
 import { Theme, CircularProgress } from '@material-ui/core';
 import { useApolloClient } from 'react-apollo-hooks';
@@ -15,11 +15,14 @@ import Popover from '@material-ui/core/Popover';
 import { useShoppingCart } from 'components/MedicinesCartProvider';
 import { getStatus, isRejectedStatus } from 'helpers/commonHelpers';
 import { ReOrder } from './ReOrder';
+import { useAllCurrentPatients } from 'hooks/authHooks';
+import { GetPatientFeedback, GetPatientFeedbackVariables } from 'graphql/types/GetPatientFeedback';
+import { GET_PATIENT_FEEDBACK } from 'graphql/medicines';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
     orderStatusGroup: {
-      padding: 0,
+      padding: '0 0 30px',
     },
     cardRoot: {
       padding: 20,
@@ -293,6 +296,8 @@ export const getDeliveredDateTime = (orderStatusList: StatusDetails[]) => {
 export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
   const classes = useStyles({});
   const { orderDetailsData, isLoading } = props;
+  const client = useApolloClient();
+  const [showDeliveryRateBtn, setShowDeliveryRateBtn] = useState<Boolean>(false);
 
   const getSortedStatusList = (statusList: (StatusDetails | null)[]) => {
     if (statusList && statusList.length > 0) {
@@ -355,6 +360,43 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
 
   const mascotRef = useRef(null);
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
+
+  useEffect(() => {
+    updateRateDeliveryBtnVisibility();
+  }, [orderDetailsData]);
+  const { currentPatient } = useAllCurrentPatients();
+
+  const updateRateDeliveryBtnVisibility = () => {
+    if (
+      !showDeliveryRateBtn &&
+      orderDetailsData &&
+      orderDetailsData.currentStatus === MEDICINE_ORDER_STATUS.DELIVERED
+    ) {
+      client
+        .query<GetPatientFeedback, GetPatientFeedbackVariables>({
+          query: GET_PATIENT_FEEDBACK,
+          variables: {
+            patientId: currentPatient ? currentPatient.id : '',
+            transactionId: `${orderDetailsData.id}`,
+          },
+          fetchPolicy: 'no-cache',
+        })
+        .then((res) => {
+          const feedback =
+            res &&
+            res.data &&
+            res.data.getPatientFeedback &&
+            res.data.getPatientFeedback.feedback &&
+            res.data.getPatientFeedback.feedback.length;
+          if (!feedback) {
+            setShowDeliveryRateBtn(true);
+          }
+        })
+        .catch((e) => {
+          console.log('Error occured while getting Patient Feedback', e);
+        });
+    }
+  };
 
   const getPatientAddress = (deliveryAddress: OrderAddress) => {
     if (deliveryAddress) {
@@ -460,7 +502,7 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
         return <div className={classes.orderStatus}>Successful</div>;
     }
   };
-  const [isDialogOpen, setIsDialogOpen] = React.useState<boolean>(false);
+
   return (
     <div className={classes.orderStatusGroup}>
       {!isLoading && orderDetailsData && (
@@ -567,9 +609,11 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
             delivered on {getDeliveredDateTime(orderStatusList)}.
           </p>
           <h4>Thank You for choosing Apollo 24|7</h4>
-          <AphButton color="primary" onClick={() => setIsPopoverOpen(true)}>
-            Rate your delivery experience
-          </AphButton>
+          {showDeliveryRateBtn && (
+            <AphButton color="primary" onClick={() => setIsPopoverOpen(true)}>
+              Rate your delivery experience
+            </AphButton>
+          )}
         </div>
       )}
       <Popover
@@ -593,6 +637,7 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
             <OrderFeedback
               setIsPopoverOpen={setIsPopoverOpen}
               orderDetailsData={orderDetailsData}
+              setShowDeliveryRateBtn={setShowDeliveryRateBtn}
             />
           </div>
         </div>
