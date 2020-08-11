@@ -21,20 +21,19 @@ const useStyles = makeStyles(() => {
 
 export const GenericMedicineName = (props: any) => {
   const classes = useStyles({});
-  const [isChecked, setIsChecked] = useState(false);
   const [report, setReport] = useState(false);
 
   return (
     <div style={{ marginTop: 20 }}>
       <Checkbox
         classes={{ checked: classes.checked }}
-        checked={isChecked}
-        onChange={() => setIsChecked((check) => !check)}
+        checked={props.isChecked}
+        onChange={() => props.setIsChecked((check: any) => !check)}
       />
       <span className={classes.checkboxLabel}>
         {'Include Generic medicine name in the prescription.'}
       </span>
-      {isChecked && !report && (
+      {props.isChecked && !report && (
         <span
           style={{
             display: 'inline-block',
@@ -44,7 +43,12 @@ export const GenericMedicineName = (props: any) => {
             height: 55,
           }}
         >
-          <AphTextField classes={{ root: classes.genericText }} />
+          <AphTextField
+            classes={{ root: classes.genericText }}
+            value={props.value}
+            onChange={(e) => props.setGenericName(e.target.value)}
+          />
+
           {false && (
             <span
               style={{

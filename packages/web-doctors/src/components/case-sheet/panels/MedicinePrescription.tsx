@@ -1157,6 +1157,10 @@ export const MedicinePrescription: React.FC = () => {
   const [frequency, setFrequency] = useState(dosageFrequency[0].id);
   const [forUnit, setforUnit] = useState(forOptions[0].id);
   const [searchInput, setSearchInput] = useState('');
+  const [genericName, setGenericName] = useState<string>('');
+  const [includeGenericNameInPrescription, setIncludeGenericNameInPrescription] = useState<boolean>(
+    false
+  );
 
   useEffect(() => {
     if (isCustomform) {
@@ -1173,6 +1177,7 @@ export const MedicinePrescription: React.FC = () => {
   }
   const [medicineForm, setMedicineForm] = useState<string>('OTHERS');
   const getMedicineDetails = (suggestion: OptionType) => {
+    setIncludeGenericNameInPrescription(false);
     const CancelToken = axios.CancelToken;
     setLoading(true);
     axios
@@ -1219,6 +1224,7 @@ export const MedicinePrescription: React.FC = () => {
             medicineMappingObj[result.data.productdp[0].PharmaOverview[0].Doseform.toLowerCase()]
               .defaultRoa
           );
+          setGenericName(result.data.productdp[0].PharmaOverview[0].generic);
         } else {
           setMedicineUnit(medicineMappingObj['others'].defaultUnitDp);
           setMedicineForm(medicineMappingObj['others'].defaultSetting);
@@ -1391,6 +1397,8 @@ export const MedicinePrescription: React.FC = () => {
     setIdx(sum);
   };
   const updateMedicine = (idx: any) => {
+    setGenericName(selectedMedicinesArr[idx].genericName);
+    setIncludeGenericNameInPrescription(selectedMedicinesArr[idx].includeGenericNameInPrescription);
     const slots = toBeTakenSlots.map((slot: SlotsObject) => {
       selectedMedicinesArr![idx].medicineToBeTaken!.map((selectedSlot: any) => {
         const selectedValue = selectedSlot.replace('_', '');
@@ -1481,6 +1489,9 @@ export const MedicinePrescription: React.FC = () => {
     setIdx(idx);
   };
   const updateFavMedicine = (idx: any) => {
+    console.log(idx);
+    setGenericName(idx.genericName);
+    setIncludeGenericNameInPrescription(idx.includeGenericNameInPrescription);
     setSelectedValue(idx.medicineName);
     setFavMedicineName(idx.medicineName);
     if (idx.medicineUnit && dosageList.indexOf(idx.medicineUnit) < 0) {
@@ -1850,6 +1861,8 @@ export const MedicinePrescription: React.FC = () => {
         medicineUnit: medicineUnit,
         routeOfAdministration: roaOption,
         medicineCustomDosage: isCustomform ? medicineCustomDosage : '',
+        genericName: genericName,
+        includeGenericNameInPrescription: includeGenericNameInPrescription,
       };
       const inputParams: any = {
         id: selectedId,
@@ -1865,6 +1878,8 @@ export const MedicinePrescription: React.FC = () => {
         medicineFormTypes: medicineForm,
         routeOfAdministration: roaOption,
         medicineCustomDosage: isCustomform ? medicineCustomDosage : '',
+        genericName: genericName,
+        includeGenericNameInPrescription: includeGenericNameInPrescription,
       };
       if (isUpdate) {
         const medicineArray = selectedMedicinesArr;
@@ -1909,6 +1924,8 @@ export const MedicinePrescription: React.FC = () => {
       setMedicineUnit('OTHERS');
       setSelectedValue('');
       setSelectedId('');
+      setGenericName('');
+      setIncludeGenericNameInPrescription(false);
     }
   };
   const setInTheTime = (slotId: string, selected: boolean) => {
@@ -2954,7 +2971,15 @@ export const MedicinePrescription: React.FC = () => {
                             </FormHelperText>
                           )}
                       </div>
-                      <GenericMedicineName />
+                      <span className="a2">
+                        <GenericMedicineName
+                          value={genericName}
+                          setGenericName={setGenericName}
+                          setIsChecked={setIncludeGenericNameInPrescription}
+                          isChecked={includeGenericNameInPrescription}
+                        />
+                      </span>
+
                       <Grid item lg={12} xs={12}>
                         <h6 className={classes.instructionText}>Instructions/Notes</h6>
                         <div className={classes.numberTablets}>
@@ -3542,7 +3567,16 @@ export const MedicinePrescription: React.FC = () => {
                               </FormHelperText>
                             )}
                         </div>
-                        <GenericMedicineName />
+
+                        <span className="a1">
+                          <GenericMedicineName
+                            value={genericName}
+                            setGenericName={setGenericName}
+                            setIsChecked={setIncludeGenericNameInPrescription}
+                            isChecked={includeGenericNameInPrescription}
+                          />
+                        </span>
+
                         <Grid item lg={12} xs={12}>
                           <h6 className={classes.instructionText}>Instructions/Notes</h6>
                           <div className={classes.numberTablets}>

@@ -983,6 +983,10 @@ export const FavouriteMedicines: React.FC = () => {
   const [forUnit, setforUnit] = useState(forOptions[0].id);
   const [searchInput, setSearchInput] = useState('');
   const [medicineForm, setMedicineForm] = useState<string>(MEDICINE_FORM_TYPES.OTHERS);
+  const [genericName, setGenericName] = useState<string>('');
+  const [includeGenericNameInPrescription, setIncludeGenericNameInPrescription] = useState<boolean>(
+    false
+  );
 
   useEffect(() => {
     if (isCustomform) {
@@ -995,6 +999,7 @@ export const FavouriteMedicines: React.FC = () => {
   }, [isCustomform]);
 
   const getMedicineDetails = (suggestion: OptionType) => {
+    setIncludeGenericNameInPrescription(false);
     const CancelToken = axios.CancelToken;
     setLoading(true);
     axios
@@ -1042,6 +1047,13 @@ export const FavouriteMedicines: React.FC = () => {
             medicineMappingObj[result.data.productdp[0].PharmaOverview[0].Doseform.toLowerCase()]
               .defaultRoa
           );
+          setGenericName(result.data.productdp[0].PharmaOverview[0].generic);
+          console.log({
+            genericName: result.data.productdp[0].PharmaOverview[0].generic,
+            selectedValue: selectedValue,
+            selectedMedicines: selectedMedicines,
+            selectedMedicinesArr: selectedMedicinesArr,
+          });
         } else {
           setMedicineUnit(medicineMappingObj['others'].defaultUnitDp);
           setMedicineForm(medicineMappingObj['others'].defaultSetting);
@@ -1111,6 +1123,7 @@ export const FavouriteMedicines: React.FC = () => {
         fetchPolicy: 'no-cache',
       })
       .then((_data) => {
+        debugger;
         if (
           _data &&
           _data.data &&
@@ -1233,6 +1246,10 @@ export const FavouriteMedicines: React.FC = () => {
 
     setIdx(sum);
   };
+  const onChangeGenericName = (e: any) => {
+    setGenericName(e.target.value);
+  };
+
   const updateMedicine = (idx: any) => {
     const slots = toBeTakenSlots.map((slot: SlotsObject) => {
       selectedMedicinesArr![idx].medicineToBeTaken!.map((selectedSlot: any) => {
@@ -1256,6 +1273,10 @@ export const FavouriteMedicines: React.FC = () => {
     });
     setDaySlots(dayslots);
     if (selectedMedicinesArr) {
+      setGenericName(selectedMedicinesArr[idx].genericName!);
+      setIncludeGenericNameInPrescription(
+        selectedMedicinesArr[idx].includeGenericNameInPrescription!
+      );
       setMedicineInstruction(selectedMedicinesArr[idx].medicineInstructions!);
       setConsumptionDuration(
         selectedMedicinesArr[idx].medicineConsumptionDurationInDays! &&
@@ -1620,6 +1641,8 @@ export const FavouriteMedicines: React.FC = () => {
         medicineFrequency: frequency,
         medicineConsumptionDurationUnit: forUnit,
         medicineFormTypes: medicineForm,
+        genericName: genericName,
+        includeGenericNameInPrescription: includeGenericNameInPrescription,
       };
       const inputParams: any = {
         id: selectedId,
@@ -1634,6 +1657,8 @@ export const FavouriteMedicines: React.FC = () => {
         medicineFrequency: frequency,
         medicineConsumptionDurationUnit: forUnit,
         medicineFormTypes: medicineForm,
+        genericName: genericName,
+        includeGenericNameInPrescription: includeGenericNameInPrescription,
       };
       const medicineArray: any = selectedMedicinesArr;
       medicineArray.push(inputParamsArr);
@@ -1675,12 +1700,16 @@ export const FavouriteMedicines: React.FC = () => {
               medicineInstructions: String(medicineInstruction),
               routeOfAdministration: roaOption,
               medicineCustomDosage: isCustomform ? medicineCustomDosage : '',
+              genericName: genericName,
+              includeGenericNameInPrescription: includeGenericNameInPrescription,
             },
           },
         })
         .then((data) => {
           getMedicineData();
         });
+      setGenericName('');
+      setIncludeGenericNameInPrescription(false);
       setMedicineInstruction('');
       setConsumptionDuration('');
       setTabletsCount('1');
@@ -1885,6 +1914,8 @@ export const FavouriteMedicines: React.FC = () => {
         routeOfAdministration: roaOption,
         medicineFrequency: frequency,
         medicineCustomDosage: isCustomform ? medicineCustomDosage : '',
+        genericName: genericName,
+        includeGenericNameInPrescription: includeGenericNameInPrescription,
       };
       const inputParams: any = {
         id: selectedId,
@@ -1901,6 +1932,8 @@ export const FavouriteMedicines: React.FC = () => {
         routeOfAdministration: roaOption,
         medicineFrequency: frequency,
         medicineCustomDosage: isCustomform ? medicineCustomDosage : '',
+        genericName: genericName,
+        includeGenericNameInPrescription: includeGenericNameInPrescription,
       };
       if (isUpdate) {
         const medicineArray = selectedMedicinesArr;
@@ -1944,6 +1977,8 @@ export const FavouriteMedicines: React.FC = () => {
               id: selectedId,
               routeOfAdministration: roaOption,
               medicineCustomDosage: isCustomform ? medicineCustomDosage : '',
+              genericName: genericName,
+              includeGenericNameInPrescription: includeGenericNameInPrescription,
             },
           },
         })
@@ -1951,6 +1986,8 @@ export const FavouriteMedicines: React.FC = () => {
           console.log('data after mutation' + data);
           setMedicineLoader(false);
         });
+      setGenericName('');
+      setIncludeGenericNameInPrescription(false);
       setMedicineInstruction('');
       setConsumptionDuration('');
       setTabletsCount('1');
@@ -2768,7 +2805,12 @@ export const FavouriteMedicines: React.FC = () => {
                                 </FormHelperText>
                               )}
                           </div>
-                          <GenericMedicineName />
+                          <GenericMedicineName
+                            value={genericName}
+                            setGenericName={setGenericName}
+                            setIsChecked={setIncludeGenericNameInPrescription}
+                            isChecked={includeGenericNameInPrescription}
+                          />
                           <Grid item lg={12} xs={12}>
                             <h6 className={classes.instructionText}>Instructions/Notes</h6>
                             <div className={classes.numberTablets}>
