@@ -392,11 +392,10 @@ interface statusMap {
 }
 
 const initialAppointmentFilterObject: AppointmentFilterObject = {
-  consultType: [],
   appointmentStatus: [],
   availability: [],
-  gender: [],
   doctorsList: [],
+  specialtyList: [],
 };
 
 export const Appointments: React.FC<AppointmentProps> = (props) => {
@@ -433,6 +432,7 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
     null
   );
   const [filterDoctorsList, setFilterDoctorsList] = React.useState<string[]>([]);
+  const [filterSpecialtyList, setFilterSpecialtyList] = React.useState<string[]>([]);
   const doctorName = doctorDetail && doctorDetail.fullName;
   const readableDoctorname = (doctorName && doctorName.length && readableParam(doctorName)) || '';
 
@@ -577,7 +577,16 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
                 ? appointment.doctorInfo.fullName
                 : null;
             });
+            const specialtyList = appointmentsListData.map((appointment: AppointmentsType) => {
+              return appointment &&
+                appointment.doctorInfo &&
+                appointment.doctorInfo.specialty &&
+                appointment.doctorInfo.specialty.name
+                ? appointment.doctorInfo.specialty.name
+                : null;
+            });
             setFilterDoctorsList(doctorsList || []);
+            setFilterSpecialtyList(specialtyList || []);
             setAppointmentsList(appointmentsListData);
             setFilteredAppointmentsList(appointmentsListData);
           } else {
@@ -665,7 +674,7 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
     localFilteredAppointmentsList: AppointmentsType[]
   ) => {
     let finalList: AppointmentsType[] = [];
-    if (appointmentStatus.includes('New')) {
+    if (appointmentStatus.includes('Active')) {
       finalList = localFilteredAppointmentsList.filter(
         (appointment) => appointment.appointmentState === APPOINTMENT_STATE.NEW
       );
@@ -706,8 +715,8 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
       switch (type) {
         case 'doctor':
           return list.includes(appointment.doctorInfo.fullName);
-        case 'gender':
-          return list.includes(appointment.doctorInfo.gender);
+        case 'specialty':
+          return list.includes(appointment.doctorInfo.specialty.name);
         default:
           return false;
       }
@@ -765,14 +774,11 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
   };
 
   useEffect(() => {
-    const { consultType, availability, gender, appointmentStatus, doctorsList } = filter;
+    const { availability, appointmentStatus, doctorsList, specialtyList } = filter;
     if (filter === initialAppointmentFilterObject) {
       setFilteredAppointmentsList(appointmentsList || []);
     } else {
       let localFilteredList: AppointmentsType[] = appointmentsList || [];
-      if (consultType.length > 0) {
-        localFilteredList = getConsultTypeFilteredList(consultType, localFilteredList);
-      }
       if (appointmentStatus.length > 0) {
         localFilteredList = getAppointmentStatusFilteredList(appointmentStatus, localFilteredList);
       }
@@ -782,8 +788,8 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
       if (doctorsList.length > 0) {
         localFilteredList = getGenericFilteredList(doctorsList, localFilteredList, 'doctor');
       }
-      if (gender.length > 0) {
-        localFilteredList = getGenericFilteredList(gender, localFilteredList, 'gender');
+      if (specialtyList.length > 0) {
+        localFilteredList = getGenericFilteredList(specialtyList, localFilteredList, 'specialty');
       }
       setFilteredAppointmentsList(localFilteredList);
     }
@@ -1175,6 +1181,7 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
           setFilter={setFilter}
           setIsFilterOpen={setIsFilterOpen}
           filterDoctorsList={filterDoctorsList}
+          filterSpecialtyList={filterSpecialtyList}
         />
       </Modal>
       <NavigationBottom />
