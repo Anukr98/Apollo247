@@ -1023,7 +1023,10 @@ app.get('/processOmsOrders', (req, res) => {
                     logger.error(
                       `store address details not present for store pick ${orderDetails.orderAutoId}`
                     );
-                    return;
+                    res.send({
+                      status: 'Failed',
+                      reason: 'store address not present',
+                    });
                   }
                   const shopAddress = JSON.parse(orderDetails.shopAddress);
                   deliveryState = shopAddress.state;
@@ -1104,7 +1107,10 @@ app.get('/processOmsOrders', (req, res) => {
                         orderDetails.orderAutoId
                       } ${JSON.stringify(e)}`
                     );
-                    return;
+                    res.send({
+                      status: 'Failed',
+                      reason: 'error while fetching prescription urls',
+                    });
                   }
                 }
                 if (!orderDetails.orderTat) {
