@@ -1,9 +1,9 @@
-import { Theme, FormControl } from '@material-ui/core';
+import { Theme } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
-import React, { useState, useEffect, useRef } from 'react';
+import React from 'react';
 import Scrollbars from 'react-custom-scrollbars';
-import { AphButton, AphTextField, AphSelect } from '@aph/web-ui-components';
-import Grid from '@material-ui/core/Grid';
+import { AphButton } from '@aph/web-ui-components';
+import { UserInputInterface } from 'components/MyAccount/AddNewProfile';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -79,8 +79,8 @@ const useStyles = makeStyles((theme: Theme) => {
       textTransform: 'none',
       borderRadius: 10,
       '&:disabled': {
-        color: '#eaeaea !important'
-      }
+        color: '#eaeaea !important',
+      },
     },
     menuSelected: {
       backgroundColor: 'transparent !important',
@@ -222,72 +222,69 @@ const useStyles = makeStyles((theme: Theme) => {
     },
   };
 });
+
 interface AddNewProfileProps {
-  closeHandler: (popOpen: boolean) => void;
-  selectedPatientId: string;
-  successHandler: (isPopoverOpen: boolean) => void;
-  isProfileDelete: boolean;
-  isMeClicked: boolean;
+  successHandler: () => void;
+  handleEdit: () => void;
+  userInput: UserInputInterface;
 }
 
 export const AddNewProfileConfirm: React.FC<AddNewProfileProps> = (props) => {
   const classes = useStyles({});
-  const { closeHandler, selectedPatientId, successHandler, isProfileDelete } = props;
-  const disableFieldsRef = useRef(null);
+  const { successHandler, userInput } = props;
   return (
     <div className={classes.root}>
       <div className={classes.shadowHide}>
         <div className={classes.dialogContent}>
-          <Scrollbars autoHide={true} autoHeight autoHeightMax={'48vh'}>
+          <Scrollbars autoHide={true} autoHeight autoHeightMax={'52vh'}>
             <div className={classes.customScrollBar}>
               <div className={classes.profileForm}>
                 <div className={classes.confirmContent}>
                   <h3>Full Name</h3>
-                  <h5>Surj Gupta</h5>
+                  <h5>
+                    {userInput.firstName} {userInput.lastName}
+                  </h5>
                 </div>
                 <div className={classes.confirmContent}>
                   <h3>Date Of Birth</h3>
-                  <h5>01/01/1987</h5>
+                  <h5>{userInput.dateOfBirth}</h5>
                 </div>
                 <div className={classes.confirmContent}>
                   <h3>Gender</h3>
                   <h5>
                     <AphButton
                       color="secondary"
-                      disabled={selectedPatientId.length > 0}
+                      disabled={true}
                       className={`${classes.genderBtns} ${classes.btnActive}`}
                     >
-                      Female
+                      {userInput.gender}
                     </AphButton>
                   </h5>
                 </div>
                 <div className={classes.confirmContent}>
                   <h3>Relation</h3>
-                  <h5>Son</h5>
+                  <h5>{userInput.relation}</h5>
                 </div>
                 <div className={classes.confirmContent}>
                   <h3>Email Address (Optional)</h3>
-                  <h5>surj.gupta@gmail.com</h5>
+                  <h5>{userInput.emailAddress}</h5>
                 </div>
                 <div className={classes.confirmContent}>
                   <h4>
-                    You cannot edit these details once you have saved them. They will appear on all your medical documents. Do you wish to confirm?
+                    You cannot edit these details once you have saved them. They will appear on all
+                    your medical documents. Do you wish to confirm?
                   </h4>
                 </div>
-
               </div>
             </div>
           </Scrollbars>
         </div>
         <div className={classes.dialogActions}>
-          <AphButton
-            disabled={isProfileDelete}
-          >
-            EDIT
-          </AphButton>
+          <AphButton onClick={() => props.handleEdit()}>EDIT</AphButton>
           <AphButton
             color="primary"
             className={classes.saveButton}
+            onClick={() => successHandler()}
           >
             CONFIRM
           </AphButton>
