@@ -36,6 +36,9 @@ type DoctorSlot = {
   slotType: string;
 };
 
+//define generalise  anonymous cb fn
+// type responseCB = (data: any) => any
+
 @EntityRepository(Doctor)
 export class DoctorRepository extends Repository<Doctor> {
   async updateDoctorSlots(doctorId: string, consultsDb: Connection, doctorsDb: Connection) {
@@ -459,6 +462,18 @@ export class DoctorRepository extends Repository<Doctor> {
       .where('doctor.id IN (:...doctorIds)', { doctorIds })
       .getRawMany();
   }
+
+  // async getDoctorById(doctorId: string, cb?: responseCB) {
+  //   const data = await this.findOne({
+  //     where: [{ id: doctorId }]
+  //   })
+
+  //   if (cb) {
+  //     cb(data)
+  //     return;
+  //   }
+  //   return data
+  // }
 
   searchByName(searchString: string, cityName: string) {
     const cities: string[] = [
