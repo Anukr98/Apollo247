@@ -217,18 +217,15 @@ interface PastAppointmentProps {
 const PastAppointment: React.FC<PastAppointmentProps> = ({ data, isChild }) => {
   const classes = useStyles({});
   const ischild: boolean = true;
-  const sortedConsult =
-    data && data.length > 0
-      ? data.sort(
-          (a, b) =>
-            moment(b ? b.appointmentDateTime : new Date())
-              .toDate()
-              .getTime() -
-            moment(a ? a.appointmentDateTime : new Date())
-              .toDate()
-              .getTime()
-        )
-      : [];
+  const sortedConsult = data && data.length > 0 ? data.sort(
+    (a, b) =>
+    moment(b ? b.appointmentDateTime : new Date())
+    .toDate()
+    .getTime() -
+    moment(a ? a.appointmentDateTime : new Date())
+    .toDate()
+    .getTime()
+    ) : [];
   return (
     <List className={isChild ? classes.childListStyle : classes.listStyle}>
       {sortedConsult &&
