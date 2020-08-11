@@ -16,6 +16,22 @@ const useStyles = makeStyles(() => {
     genericText: {
       '& div ': { paddingRight: 55 },
     },
+    textFieldWrapper: {
+      display: 'inline-block',
+      width: '100%',
+      paddingLeft: 10,
+      paddingRight: 10,
+      height: 55,
+    },
+    reportWrapper: {
+      position: 'absolute',
+      right: 23,
+      marginTop: 10,
+      color: '#FC9916',
+      fontWeight: 600,
+      fontSize: 14,
+      cursor: 'pointer',
+    },
   };
 });
 
@@ -34,15 +50,7 @@ export const GenericMedicineName = (props: any) => {
         {'Include Generic medicine name in the prescription.'}
       </span>
       {props.isChecked && !report && (
-        <span
-          style={{
-            display: 'inline-block',
-            width: '100%',
-            paddingLeft: 10,
-            paddingRight: 10,
-            height: 55,
-          }}
-        >
+        <span className={classes.textFieldWrapper}>
           <AphTextField
             classes={{ root: classes.genericText }}
             value={props.value}
@@ -51,15 +59,7 @@ export const GenericMedicineName = (props: any) => {
 
           {false && (
             <span
-              style={{
-                position: 'absolute',
-                right: 23,
-                marginTop: 10,
-                color: '#FC9916',
-                fontWeight: 600,
-                fontSize: 14,
-                cursor: 'pointer',
-              }}
+              className={classes.reportWrapper}
               onClick={() => {
                 setReport(true);
                 setTimeout(() => {
