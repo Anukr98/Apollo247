@@ -328,6 +328,10 @@ type MedicineInformationProps = {
   data: MedicineProductDetails;
 };
 
+interface AddToCarProps {
+  setClickAddCart: (clickAddCart: boolean) => void;
+}
+
 export const MedicineInformation: React.FC<MedicineInformationProps> = (props) => {
   const { data } = props;
   const classes = useStyles({});
@@ -846,7 +850,6 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                       /**Gtm code End  */
                       applyCartOperations(cartItem);
                       setAddMutationLoading(false);
-                      setShowPopup(true);
                     }}
                   >
                     {' '}
