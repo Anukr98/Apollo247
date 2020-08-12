@@ -386,6 +386,10 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 13,
       '& a': {
         color: '#fc9916',
+        [theme.breakpoints.down('xs')]: {
+          display: 'block',
+          margin: '5px 0 0',
+        },
       },
       '& p': {
         marginBottom: 0,
