@@ -1,5 +1,6 @@
 import { NavigationScreenProp, NavigationRoute } from 'react-navigation';
 import { AppRoutes } from '../components/NavigatorContainer';
+import { isUpperCase } from '@aph/mobile-patients/src/utils/commonUtils';
 
 export const handleUniversalLinks = (
   universalLinkData: any,
@@ -164,8 +165,16 @@ const pushTheView = (
       const cityBrandFilter = id ? id.split('%20') : '';
       navigation.navigate(AppRoutes.DoctorSearchListing, {
         specialityId: cityBrandFilter[0] ? cityBrandFilter[0] : '',
-        city: cityBrandFilter.length > 1 ? cityBrandFilter[1] : null,
-        brand: cityBrandFilter.length > 2 ? cityBrandFilter[2] : null,
+        city:
+          cityBrandFilter.length > 1 && !isUpperCase(cityBrandFilter[1])
+            ? cityBrandFilter[1]
+            : null,
+        brand:
+          cityBrandFilter.length > 2
+            ? cityBrandFilter[2]
+            : isUpperCase(cityBrandFilter[1])
+            ? cityBrandFilter[1]
+            : null,
       });
       break;
 
