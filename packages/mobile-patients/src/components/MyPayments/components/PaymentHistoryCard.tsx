@@ -46,6 +46,12 @@ const PaymentHistoryCard: FC<PaymentHistoryCardProps> = (props) => {
       if (status === 'CANCELLED' && appointmentRefunds.length) {
         return <PaymentCardHeader status={status} />;
       }
+    } else if (paymentFor === 'pharmacy'){
+      const { currentStatus, medicineOrderPayments } = item;
+      const { medicineOrderRefunds } = medicineOrderPayments[0]
+      if (currentStatus === 'CANCELLED' && medicineOrderRefunds.length) {
+        return <PaymentCardHeader status={currentStatus} />;
+      }
     } else {
       return null;
     }

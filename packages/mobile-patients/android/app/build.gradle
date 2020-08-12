@@ -206,12 +206,9 @@ android {
 }
 
 dependencies {
-<<<<<<< HEAD
     implementation project(':@react-native-community_datetimepicker')
     implementation project(':react-native-code-push')
-=======
     implementation project(':react-native-callkeep')
->>>>>>> origin/APP-3085
     implementation project(':react-native-background-timer')
     implementation project(':react-native-video')
     implementation project(':react-native-sound')

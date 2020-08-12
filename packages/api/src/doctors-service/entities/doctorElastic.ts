@@ -55,6 +55,7 @@ export async function addDoctorElastic(allDocsInfo: Doctor) {
     if (allDocsInfo.specialty) {
         specialty = {
             specialtyId: allDocsInfo.specialty.id,
+            id: allDocsInfo.specialty.id
         };
         Object.assign(specialty, omit(allDocsInfo.specialty, ['id']));
     }
@@ -108,8 +109,6 @@ export async function addDoctorElastic(allDocsInfo: Doctor) {
         'experience_range',
         'fee_range',
         'age',
-        'experience',
-        'onlineConsultationFees',
         'languages',
         'specialty',
         'facility',
