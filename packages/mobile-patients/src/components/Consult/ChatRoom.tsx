@@ -36,7 +36,8 @@ import {
   CommonLogEvent,
   DeviceHelper,
   setBugFenderLog,
-} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+  isIos
+  } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
   BOOK_APPOINTMENT_RESCHEDULE,
   BOOK_APPOINTMENT_TRANSFER,
@@ -664,7 +665,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     setTimeout(() => {
       CheckDoctorPresentInChat();
     }, 2000);
-    handleCallkitEventListeners();
+    if(isIos()){
+      handleCallkitEventListeners();
+    }
   }, []);
 
   useEffect(() => {
@@ -5483,7 +5486,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const endVoipCall = () => {
-    RNCallKeep.endCall(appointmentData.id);
+    if(isIos()){
+      RNCallKeep.endCall(appointmentData.id);
+    }
   }
   
   const renderOnCallPipButtons = (pipType: 'audio' | 'video') => {
