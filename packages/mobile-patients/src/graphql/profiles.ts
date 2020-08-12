@@ -1470,10 +1470,6 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS_WITH_ADDRESS = gql`
         id
         createdDate
         orderAutoId
-        quoteId
-        shopId
-        patientId
-        quoteDateTime
         billNumber
         coupon
         devliveryCharges
@@ -1481,8 +1477,6 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS_WITH_ADDRESS = gql`
         couponDiscount
         productDiscount
         redeemedAmount
-        bookingSource
-        showPrescriptionAtStore
         estimatedAmount
         prescriptionImageUrl
         orderTat
@@ -1538,8 +1532,6 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS_WITH_ADDRESS = gql`
           orderStatus
           statusDate
           hideStatus
-          statusMessage
-          customReason
         }
         medicineOrderShipments {
           id
@@ -1569,41 +1561,9 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS_WITH_ADDRESS = gql`
         }
         patient {
           mobileNumber
-          allergies
-          dateOfBirth
-          emailAddress
-          familyHistory
           id
           firstName
-          gender
           lastName
-          lifeStyle {
-            description
-            occupationHistory
-          }
-          patientMedicalHistory {
-            bp
-            dietAllergies
-            drugAllergies
-            height
-            menstrualHistory
-            pastMedicalHistory
-            pastSurgicalHistory
-            temperature
-            weight
-            medicationHistory
-          }
-          photoUrl
-          athsToken
-          referralCode
-          relation
-          uhid
-          isLinked
-          isUhidPrimary
-          primaryUhid
-          primaryPatientId
-          whatsAppMedicine
-          whatsAppConsult
           addressList {
             id
             addressLine1
@@ -1613,22 +1573,12 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS_WITH_ADDRESS = gql`
             zipcode
           }
         }
-        customerComment
         medicineOrderAddress {
-          id
-          name
-          mobileNumber
           addressLine1
           addressLine2
-          addressType
           city
-          otherAddressType
           state
           zipcode
-          landmark
-          latitude
-          longitude
-          stateCode
         }
       }
     }
