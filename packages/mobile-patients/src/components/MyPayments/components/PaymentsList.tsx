@@ -3,23 +3,42 @@
  * @email vishnu.r@apollo247.org
  */
 
-import React, { FC } from 'react';
+import React, { FC, useState } from 'react';
 import { StyleSheet, View, FlatList } from 'react-native';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import PaymentHistoryCard from './PaymentHistoryCard';
 import { IPayment } from 'src/models/IPayment';
 import NoPaymentsScreen from './NoPaymentsScreen';
+import {
+  CONSULT_ORDER_PAYMENT_DETAILS,
+  PHARMACY_ORDER_PAYMENT_DETAILS,
+} from '@aph/mobile-patients/src/graphql/profiles';
+import { useApolloClient } from 'react-apollo-hooks';
+import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { colors } from '@aph/mobile-patients/src/theme/colors';
+import { g } from '@aph/mobile-patients/src//helpers/helperFunctions';
 
+interface meta {
+  total: number;
+  pageSize: number;
+  pageNo: number;
+}
 interface IProps {
   payments: any;
   type: string;
   navigationProps: any;
   patientId?: string;
   fromNotification?: boolean;
+  meta: meta | undefined;
 }
-
 const PaymentsList: FC<IProps> = (props) => {
-  const { payments, type, patientId, fromNotification } = props;
+  const { payments, type, patientId, fromNotification, meta } = props;
+  const [pageNo, setpageNo] = useState<number>(1);
+  const [pageSize, setpageSize] = useState<number>(8);
+  const [paymentsList, setpaymentsList] = useState(props.payments);
+  const [fetching, setfetching] = useState<boolean>(false);
+  const client = useApolloClient();
+
   const _renderAllPayments = ({ item, index }: any) => {
     return (
       <PaymentHistoryCard
@@ -41,13 +60,96 @@ const PaymentsList: FC<IProps> = (props) => {
   if (!payments.length) {
     return <NoPaymentsScreen />;
   }
+  const renderListFooter = () => {
+    return (
+      <View style={{ height: 50 }}>
+        {fetching && <Spinner style={{ backgroundColor: colors.DEFAULT_BACKGROUND_COLOR }} />}
+      </View>
+    );
+  };
+
+  const onConsultEndReached = () => {
+    console.log('End reached');
+    if (!fetching && paymentsList.length < meta.total) {
+      setfetching(true);
+      client
+        .query({
+          query: CONSULT_ORDER_PAYMENT_DETAILS,
+          variables: {
+            patientId: patientId,
+            pageNo: pageNo + 1,
+            pageSize: pageSize,
+          },
+          fetchPolicy: 'no-cache',
+        })
+        .then((res) => {
+          if (res.data) {
+            console.log('payments-->', g(res.data, 'consultOrders', 'appointments').length);
+            console.log('pageNo-->', pageNo + 1);
+            let array = paymentsList;
+            array = array.concat(g(res.data, 'consultOrders', 'appointments'));
+            setpaymentsList(array);
+            setpageNo(pageNo + 1);
+          }
+        })
+        .catch((error) => {
+          CommonBugFender('fetchingConsultPayments', error);
+        })
+        .finally(() => setfetching(false));
+    }
+  };
+
+  const onPharmaEndReached = () => {
+    console.log('End reached');
+    if (!fetching && paymentsList.length < meta.total) {
+      setfetching(true);
+      client
+        .query({
+          query: PHARMACY_ORDER_PAYMENT_DETAILS,
+          variables: {
+            patientId: patientId,
+            pageNo: pageNo + 1,
+            pageSize: pageSize,
+          },
+          fetchPolicy: 'no-cache',
+        })
+        .then((res) => {
+          if (res.data) {
+            console.log('payments-->', g(res.data, 'pharmacyOrders', 'pharmaOrders').length);
+            console.log('pageNo-->', pageNo + 1);
+            let array = paymentsList;
+            array = array.concat(g(res.data, 'pharmacyOrders', 'pharmaOrders'));
+            setpaymentsList(array);
+            setpageNo(pageNo + 1);
+          }
+        })
+        .catch((error) => {
+          CommonBugFender('fetchingConsultPayments', error);
+        })
+        .finally(() => setfetching(false));
+    }
+  };
+
+  const onEndReached = () => {
+    if (type == 'consult') {
+      onConsultEndReached();
+    } else {
+      onPharmaEndReached();
+    }
+  };
   return (
     <View style={styles.mainContainer}>
       <FlatList
-        data={payments}
+        data={paymentsList}
         renderItem={_renderAllPayments}
         keyExtractor={(item) => item.id}
         refreshing={false}
+        onEndReachedThreshold={0.2}
+        onEndReached={(info: { distanceFromEnd: number }) => {
+          console.log(info);
+          onEndReached();
+        }}
+        ListFooterComponent={renderListFooter()}
       />
     </View>
   );
