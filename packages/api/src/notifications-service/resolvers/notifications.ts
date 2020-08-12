@@ -3158,17 +3158,26 @@ export async function medicineOrderRefundNotification(
       await sendNotificationSMS(orderDetails.patient.mobileNumber, notificationBody);
     }
 
-    if (paymentInfo.paymentType == MEDICINE_ORDER_PAYMENT_TYPE.CASHLESS) {
-      if (paymentInfo.amountPaid > 0 && isRefundSuccessful) {
+    if (paymentInfo.paymentType == MEDICINE_ORDER_PAYMENT_TYPE.CASHLESS && ( (paymentInfo.amountPaid > 0 && isRefundSuccessful) || paymentInfo.healthCreditsRedeemed > 0) ) {
+      if (paymentInfo.amountPaid > 0 && isRefundSuccessful && paymentInfo.healthCreditsRedeemed > 0) {
+        notificationBody = ApiConstants.ORDER_CANCEL_PAYMENT_HC_REFUND_BODY;
+        notificationBody = notificationBody.replace(
+          '{orderId}',
+          orderDetails.orderAutoId.toString()
+        );
+        notificationBody = notificationBody.replace('{refund}', refundAmount.toString());
+        notificationBody = notificationBody.replace(
+          '{healthCreditsRefund}',
+          paymentInfo.healthCreditsRedeemed.toString()
+        );
+      }else if (paymentInfo.amountPaid > 0 && isRefundSuccessful) {
         notificationBody = ApiConstants.ORDER_CANCEL_PREPAID_BODY;
         notificationBody = notificationBody.replace(
           '{orderId}',
           orderDetails.orderAutoId.toString()
         );
         notificationBody = notificationBody.replace('{refund}', refundAmount.toString());
-        await sendNotificationSMS(orderDetails.patient.mobileNumber, notificationBody);
-      }
-      if (paymentInfo.healthCreditsRedeemed > 0) {
+      }else if (paymentInfo.healthCreditsRedeemed > 0) {
         notificationBody = ApiConstants.ORDER_CANCEL_HC_REFUND_BODY;
         notificationBody = notificationBody.replace(
           '{orderId}',
@@ -3178,8 +3187,8 @@ export async function medicineOrderRefundNotification(
           '{healthCreditsRefund}',
           paymentInfo.healthCreditsRedeemed.toString()
         );
-        await sendNotificationSMS(orderDetails.patient.mobileNumber, notificationBody);
       }
+      await sendNotificationSMS(orderDetails.patient.mobileNumber, notificationBody);
     }
   }
   return;
