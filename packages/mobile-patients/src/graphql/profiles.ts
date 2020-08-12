@@ -1532,6 +1532,8 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS_WITH_ADDRESS = gql`
           orderStatus
           statusDate
           hideStatus
+          statusMessage
+          customReason
         }
         medicineOrderShipments {
           id
@@ -1546,8 +1548,6 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS_WITH_ADDRESS = gql`
             orderStatus
             statusDate
             hideStatus
-            statusMessage
-            customReason
           }
           medicineOrderInvoice {
             id
