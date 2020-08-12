@@ -513,6 +513,18 @@ export async function sendCallsNotification(
       .replace('{3}', devLink);
     sendNotificationWhatsapp(patientDetails.mobileNumber, whatsappMsg, 1);
     return;
+  } else if (callType == APPT_CALL_TYPE.CHAT && doctorType == DOCTOR_CALL_TYPE.JUNIOR) {
+    const devLink = process.env.DOCTOR_DEEP_LINK ? process.env.DOCTOR_DEEP_LINK : '';
+    let whatsappMsg = ApiConstants.WHATSAPP_JD_CONSULT_START_REMINDER.replace(
+      '{0}',
+      patientDetails.firstName + ' ' + patientDetails.lastName
+    );
+    whatsappMsg = whatsappMsg
+      .replace('{1}', doctorDetails.firstName)
+      .replace('{2}', doctorDetails.salutation)
+      .replace('{3}', devLink);
+    sendNotificationWhatsapp(patientDetails.mobileNumber, whatsappMsg, 1);
+    return;
   }
   let notificationTitle: string = '';
   let notificationBody: string = '';
