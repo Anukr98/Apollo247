@@ -21,7 +21,7 @@ interface PaymentCardFooterProps {
   navigationProps: any;
 }
 const PaymentCardFooter: FC<PaymentCardFooterProps> = (props) => {
-  const { SUCCESS, FAILED } = PaymentConstants;
+  const { SUCCESS, FAILED, REFUND } = PaymentConstants;
   const PaymentModes: any = {
     DEBIT_CARD: 'Debit Card',
     CREDIT_CARD: 'Credit Card',
@@ -101,6 +101,7 @@ const PaymentCardFooter: FC<PaymentCardFooterProps> = (props) => {
           paymentMode,
           healthCreditsRedeemed,
           amountPaid,
+          medicineOrderRefunds
         } = medicineOrderPayments[0];
         if (amountPaid == 0) {
           type = healthCreditsRedeemed != 0 ? 'HC' : paymentType;
@@ -112,7 +113,7 @@ const PaymentCardFooter: FC<PaymentCardFooterProps> = (props) => {
             : PaymentModes[paymentMode];
         }
 
-        status = medicineOrderPayments[0].paymentStatus;
+        status = medicineOrderRefunds.length ? REFUND : medicineOrderPayments[0].paymentStatus;
         return {
           leftHeaderText: 'Order No. - ' + orderAutoId,
           dateAndTime: getDate(dateAndTime),
