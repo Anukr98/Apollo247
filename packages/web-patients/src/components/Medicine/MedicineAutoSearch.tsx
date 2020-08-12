@@ -14,6 +14,7 @@ import {
   notifyMeTracking,
   pharmacySearchTracking,
   addToCartTracking,
+  pharmacyProductClickedTracking,
 } from '../../webEngageTracking';
 import { NotifyMeNotification } from './NotifyMeNotification';
 import { useAllCurrentPatients } from 'hooks/authHooks';
@@ -363,6 +364,12 @@ export const MedicineAutoSearch: React.FC = (props) => {
                       onClick={() => {
                         setSearchText('');
                         window.location.href = clientRoutes.medicineDetails(medicine.url_key);
+                        pharmacyProductClickedTracking({
+                          productName: medicine.name,
+                          source: 'Search',
+                          productId: medicine.sku,
+                          sectionName: '',
+                        });
                       }}
                     >
                       <div className={classes.medicineImg}>

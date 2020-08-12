@@ -25,7 +25,7 @@ import { useCurrentPatient } from 'hooks/authHooks';
 import {
   uploadPrescriptionTracking,
   pharmacyPdpOverviewTracking,
-  pharmacyProductClickTracking,
+  pharmacyProductViewTracking,
 } from 'webEngageTracking';
 import { UploadPrescription } from 'components/Prescriptions/UploadPrescription';
 import { UploadEPrescriptionCard } from 'components/Prescriptions/UploadEPrescriptionCard';
@@ -526,7 +526,7 @@ export const MedicineDetails: React.FC = (props) => {
               category_id,
             } = data && data.productdp && data.productdp.length && data.productdp[0];
             let { description } = data.productdp[0];
-            pharmacyProductClickTracking({
+            pharmacyProductViewTracking({
               productName: name,
               source: '',
               productId: sku,

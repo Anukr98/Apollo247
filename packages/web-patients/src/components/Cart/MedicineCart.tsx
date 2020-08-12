@@ -756,15 +756,15 @@ export const MedicineCart: React.FC = (props) => {
         const updatedCartItems = res.data.itemDetails;
         const newCartItems = cartItems.map((item, index) => {
           const itemToBeMatched = _find(updatedCartItems, { itemId: item.sku });
-          if (item.price !== itemToBeMatched.mrp) {
+          if (item.price !== itemToBeMatched.mrp * Number(item.mou)) {
             let newItem = { ...item };
-            newItem['price'] = itemToBeMatched.mrp;
+            newItem['price'] = itemToBeMatched.mrp * Number(item.mou);
             if (item.special_price) {
               // get new special price
               newItem['special_price'] = getSpecialPriceFromRelativePrices(
                 item.price,
                 Number(item.special_price),
-                itemToBeMatched.mrp
+                itemToBeMatched.mrp * Number(item.mou)
               );
             }
             /* the below commented code are the price difference
