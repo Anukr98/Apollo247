@@ -781,11 +781,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           return firebase.config().getValues(getRemoteConfigKeys());
         })
         .then((snapshot) => {
-          if (__DEV__) {
-            const snapshotLog = Object.keys(snapshot).map((k) => [k, snapshot[k].val()]);
-            console.log({ snapshotLog });
-          }
-
           const needHelpToContactInMessage = getRemoteConfigValue(
             'Need_Help_To_Contact_In',
             snapshot
