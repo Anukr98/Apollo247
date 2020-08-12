@@ -133,6 +133,7 @@ export const validatePharmaCoupon: Resolver<
       specialPrice: item.specialPrice,
       quantity: item.quantity,
       totalCost: amountToBeConsidered * item.quantity,
+      categoryId: item.productType.toString(),
     };
     couponProduct.push(product);
   });

@@ -32,6 +32,7 @@ export interface CouponProduct {
   specialPrice: number;
   quantity: number;
   totalCost: number;
+  categoryId: string;
 }
 
 export interface ValidateCouponResponse {
