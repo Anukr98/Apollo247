@@ -597,8 +597,8 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
       filters.experience.push({ 'name': doctor.experience_range });
     }
 
-    if (doctor.fees_range && !("name" in ifKeyExist(filters.fee, 'name', doctor.fees_range))) {
-      filters.fee.push({ 'name': doctor.fees_range });
+    if (doctor.fee_range && !("name" in ifKeyExist(filters.fee, 'name', doctor.fee_range))) {
+      filters.fee.push({ 'name': doctor.fee_range });
     }
 
     if (doctor.gender && !("name" in ifKeyExist(filters.gender, 'name', doctor.gender))) {
