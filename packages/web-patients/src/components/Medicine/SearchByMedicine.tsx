@@ -45,8 +45,13 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     searchByBrandPage: {
       position: 'relative',
-      [theme.breakpoints.up('sm')]: {
-        backgroundColor: '#f7f8f5',
+      backgroundColor: '#f7f8f5',
+      [theme.breakpoints.down('sm')]: {
+        position: 'fixed',
+        top: 0,
+        width: '100%',
+        zIndex: 999,
+        bottom: 0,
       },
     },
     breadcrumbs: {
@@ -66,26 +71,28 @@ const useStyles = makeStyles((theme: Theme) => {
         position: 'fixed',
         top: 0,
         width: '100%',
-        zIndex: 991,
+        zIndex: 999,
         borderBottom: 'none',
         backgroundColor: theme.palette.common.white,
         margin: 0,
-        paddingLeft: 20,
-        paddingRight: 20,
+        padding: '20px 20px 10px',
         justifyContent: 'space-between',
       },
     },
     brandListingSection: {
-      [theme.breakpoints.up('sm')]: {
-        display: 'flex',
-        padding: '20px 3px 20px 20px',
+      display: 'flex',
+      padding: '20px 3px 20px 20px',
+
+      [theme.breakpoints.down('xs')]: {
+        height: '100%',
+        padding: 0,
       },
     },
     searchSection: {
       width: 'calc(100% - 328px)',
       [theme.breakpoints.down('xs')]: {
         width: '100%',
-        paddingTop: 50,
+        paddingTop: 110,
       },
     },
     backArrow: {
@@ -142,7 +149,7 @@ const useStyles = makeStyles((theme: Theme) => {
         height: 'calc(100vh - 245px) !important',
       },
       [theme.breakpoints.down('xs')]: {
-        height: 'calc(100vh - 185px) !important',
+        height: 'calc(100vh - 135px) !important',
       },
     },
     footerLinks: {
@@ -166,7 +173,8 @@ const useStyles = makeStyles((theme: Theme) => {
       '& >div:first-child': {
         flex: 1,
         [theme.breakpoints.down('xs')]: {
-          top: 50,
+          top: 54,
+          zIndex: 999,
         },
       },
     },
@@ -197,8 +205,8 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingBottom: 16,
       fontWeight: 500,
       [theme.breakpoints.down('xs')]: {
-        marginTop: 25,
-        paddingLeft: 10,
+        marginTop: 0,
+        paddingLeft: 0,
       },
     },
     specialOffer: {

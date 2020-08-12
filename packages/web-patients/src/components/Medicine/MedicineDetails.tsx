@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from 'react';
-import { Theme, Tabs, Tab } from '@material-ui/core';
+import { Theme, Tabs, Tab, Typography } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
 import Scrollbars from 'react-custom-scrollbars';
@@ -25,7 +25,7 @@ import { useCurrentPatient } from 'hooks/authHooks';
 import {
   uploadPrescriptionTracking,
   pharmacyPdpOverviewTracking,
-  pharmacyProductClickTracking,
+  pharmacyProductViewTracking,
 } from 'webEngageTracking';
 import { UploadPrescription } from 'components/Prescriptions/UploadPrescription';
 import { UploadEPrescriptionCard } from 'components/Prescriptions/UploadEPrescriptionCard';
@@ -35,6 +35,7 @@ import { useHistory } from 'react-router';
 import { Link } from 'react-router-dom';
 import { useShoppingCart } from 'components/MedicinesCartProvider';
 import { useDiagnosticsCart } from 'components/Tests/DiagnosticsCartProvider';
+import { getPackOfMedicine } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -221,7 +222,7 @@ const useStyles = makeStyles((theme: Theme) => {
         width: '70%',
         paddingRight: 10,
       },
-      '& h2': {
+      '& h1': {
         fontSize: 20,
         fontWeight: 600,
         color: '#02475b',
@@ -262,6 +263,24 @@ const useStyles = makeStyles((theme: Theme) => {
         color: '#658f9b',
         display: 'block',
       },
+      '& h2': {
+        textTransform: 'none',
+        color: '#658f9b',
+        display: 'block',
+        fontSize: 10,
+        fontWeight: 500,
+      },
+      '& h3': {
+        fontSize: 10,
+        fontWeight: 500,
+      },
+    },
+    packOfText: {
+      textTransform: 'none',
+      color: '#658f9b',
+      display: 'block',
+      fontSize: 10,
+      fontWeight: 500,
     },
     tabsRoot: {
       borderRadius: 0,
@@ -294,6 +313,11 @@ const useStyles = makeStyles((theme: Theme) => {
       minWidth: 'auto',
       minHeight: 'auto',
       flexBasis: 'auto',
+      margin: '0 15px 0 0',
+      '& h2, h3': {
+        fontSize: 14,
+        fontWeight: 500,
+      },
     },
     tabSelected: {
       opacity: 1,
@@ -548,7 +572,7 @@ export const MedicineDetails: React.FC = (props) => {
               category_id,
             } = data && data.productdp && data.productdp.length && data.productdp[0];
             let { description } = data.productdp[0];
-            pharmacyProductClickTracking({
+            pharmacyProductViewTracking({
               productName: name,
               source: '',
               productId: sku,
@@ -638,10 +662,13 @@ export const MedicineDetails: React.FC = (props) => {
               data.productdp &&
               data.productdp.length &&
               setMetaTagProps({
-                title: `Buy / Order ${data.productdp[0].name} Online At Best Price - Pharmacy Store - Apollo 247`,
-                description: `Buy ${data.productdp[0].name} online in just a few clicks on Apollo 247 - one of India's leading online pharmacy store. Get ${data.productdp[0].name} and a lot more at best prices. Head straight to Apollo 247 to know more.`,
+                title: `${name} Price, Uses, Side Effects - Apollo 247`,
+                description: `Buy ${name}, Pack of ${getPackOfMedicine(
+                  data.productdp[0]
+                )} at Rs. ${special_price ||
+                  price} in India. Order ${name} online and get the medicine delivered within 4 hours at your doorsteps. Know the uses, side effects, precautions and more about ${name}. `,
                 canonicalLink:
-                  window &&
+                  typeof window !== 'undefined' &&
                   window.location &&
                   window.location.origin &&
                   `${window.location.origin}/medicine/${params.sku}`,
@@ -816,6 +843,7 @@ export const MedicineDetails: React.FC = (props) => {
     }
     return [];
   };
+  const headerTags = ['Usage', 'Side Effects', 'Precautions'];
 
   const renderOverviewTabs = (overView: MedicineOverView) => {
     const data = getData(overView);
@@ -826,7 +854,11 @@ export const MedicineDetails: React.FC = (props) => {
           root: classes.tabRoot,
           selected: classes.tabSelected,
         }}
-        label={item.key}
+        label={
+          <Typography component={headerTags.includes(item.key) ? 'h2' : 'h3'}>
+            {item.key}
+          </Typography>
+        }
       />
     ));
   };
@@ -858,10 +890,17 @@ export const MedicineDetails: React.FC = (props) => {
                 <div className={classes.breadcrumbs}>
                   <a onClick={() => history.push(clientRoutes.medicines())}>
                     <div className={classes.backArrow}>
-                      <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
+                      <img
+                        className={classes.blackArrow}
+                        src={require('images/ic_back.svg')}
+                        alt="Back Arrow"
+                        title="Back Arrow"
+                      />
                       <img
                         className={classes.whiteArrow}
                         src={require('images/ic_back_white.svg')}
+                        alt="Back Arrow"
+                        title="Back Arrow"
                       />
                     </div>
                   </a>
@@ -900,7 +939,11 @@ export const MedicineDetails: React.FC = (props) => {
                       }
                     >
                       <span>
-                        <img src={require('images/offer-icon.svg')} alt="" />
+                        <img
+                          src={require('images/offer-icon.svg')}
+                          alt="Offer Icon"
+                          title="Offer Icon"
+                        />
                       </span>
                       <span>Special offers</span>
                     </div>
@@ -921,33 +964,37 @@ export const MedicineDetails: React.FC = (props) => {
                             <MedicineImageGallery data={medicineDetails} />
                           ) : (
                             <div className={classes.noImageWrapper}>
-                              <img src={require('images/medicine.svg')} alt="" />
+                              <img
+                                src={require('images/medicine.svg')}
+                                alt={`${medicineDetails.name}, Pack of ${getPackOfMedicine(
+                                  medicineDetails
+                                )}`}
+                                title={`${medicineDetails.name}, Pack of ${getPackOfMedicine(
+                                  medicineDetails
+                                )}`}
+                              />
                             </div>
                           )}
                           <div className={classes.productDetails}>
                             <div className={classes.productBasicInfo}>
-                              <h2>{medicineDetails.name}</h2>
+                              <h1>{medicineDetails.name}</h1>
                               <div className={classes.textInfo}>
                                 <label>Manufacturer</label>
                                 {medicineDetails.manufacturer}
                               </div>
                               {medicinePharmacyDetails && medicinePharmacyDetails.length > 0 && (
                                 <div className={classes.textInfo}>
-                                  <label>Composition</label>
-                                  {`${medicinePharmacyDetails[0].generic}-${medicinePharmacyDetails[0].Strengh}${medicinePharmacyDetails[0].Unit}`}
+                                  <Typography component="h2">Composition</Typography>
+                                  <Typography component="h3">{`${medicinePharmacyDetails[0].generic}-${medicinePharmacyDetails[0].Strengh}${medicinePharmacyDetails[0].Unit}`}</Typography>
                                 </div>
                               )}
                               <div className={classes.textInfo}>
-                                <label>Pack Of</label>
-                                {`${medicineDetails.mou} ${
-                                  medicinePharmacyDetails && medicinePharmacyDetails.length > 0
-                                    ? medicinePharmacyDetails[0].Doseform
-                                    : ''
-                                }${
-                                  medicineDetails.mou && parseFloat(medicineDetails.mou) !== 1
-                                    ? 'S'
-                                    : ''
-                                }`}
+                                <Typography component="h3" className={classes.packOfText}>
+                                  Pack Of
+                                </Typography>
+                                <Typography component="h3">
+                                  {getPackOfMedicine(medicineDetails)}
+                                </Typography>
                               </div>
                               {Number(medicineDetails.is_prescription_required) !== 0 && (
                                 <div className={classes.prescriptionBox}>

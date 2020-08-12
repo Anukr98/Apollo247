@@ -58,13 +58,15 @@ export const postPharmacyAddNewAddressCompleted = (
   source: PharmacyAddNewAddressCompleted['Source'],
   pincode: PharmacyAddNewAddressCompleted['Pincode'],
   deliveryAddress: PharmacyAddNewAddressCompleted['Delivery address'],
-  success?: PharmacyAddNewAddressCompleted['Success']
+  tat: PharmacyAddNewAddressCompleted['TAT Displayed'],
+  success?: PharmacyAddNewAddressCompleted['Success'],
 ) => {
   const eventAttributes: PharmacyAddNewAddressCompleted = {
     Source: source,
     Success: success,
     'Delivery address': deliveryAddress,
     Pincode: pincode,
+    'TAT Displayed': tat,
   };
   postWebEngageEvent(WebEngageEventName.PHARMACY_ADD_NEW_ADDRESS_COMPLETED, eventAttributes);
 };

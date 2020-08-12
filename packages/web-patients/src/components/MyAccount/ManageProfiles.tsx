@@ -164,6 +164,12 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: 20,
       justifyContent: 'center',
     },
+    memberTitle: {
+      '& h2': {
+        fontSize: 15,
+        textTransform: 'uppercase',
+      },
+    },
   };
 });
 
@@ -233,7 +239,7 @@ export const ManageProfiles: React.FC = (props) => {
                   }}
                   title={'Update Profile'}
                 >
-                  {firstName && (
+                  {firstName && firstName.length > 0 && (
                     <div className={classes.profileCard}>
                       <div className={classes.profileImg}>
                         <img src={photoUrl ? photoUrl : require('images/no_photo.png')} alt="" />
@@ -253,7 +259,7 @@ export const ManageProfiles: React.FC = (props) => {
                         </div>
                         <div className={classes.userBottomGroup}>
                           <div className={classes.userId}>UHID : {uhid}</div>
-                          {dob && dob.length && (
+                          {dob && dob.length > 0 && (
                             <div className={classes.rightGroup}>
                               {`DOB : ${moment(dob).format('DD MMM, YYYY')}`}
                             </div>
@@ -284,8 +290,8 @@ export const ManageProfiles: React.FC = (props) => {
       </div>
       <AphDialog open={isAddNewProfileDialogOpen} maxWidth="sm">
         <AphDialogClose onClick={() => setIsAddNewProfileDialogOpen(false)} title={'Close'} />
-        <AphDialogTitle>
-          {updatingPatientId.length > 0 ? 'Update Profile' : 'Add New Profile'}
+        <AphDialogTitle className={classes.memberTitle}>
+          {updatingPatientId.length > 0 ? 'Update Profile' : 'Add New Family Member'}
           {/* {updatingPatientId.length > 0 ? (
             <div
               onClick={() => setIsDeletePopoverOpen(true)}
@@ -304,6 +310,9 @@ export const ManageProfiles: React.FC = (props) => {
           selectedPatientId={updatingPatientId}
           successHandler={(isPopoverOpen: boolean) => setIsPopoverOpen(isPopoverOpen)}
           isProfileDelete={isProfileDelete}
+          addNewProfileFromEditMenu={() => {
+            setUpdatingPatientId('');
+          }}
         />
       </AphDialog>
       {!isMeClicked && (

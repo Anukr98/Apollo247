@@ -66,6 +66,7 @@ import {
   productsThumbnailUrl,
   reOrderMedicines,
   getMaxQtyForMedicineItem,
+  setWebEngageScreenNames,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { postMyOrdersClicked } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import {
@@ -112,8 +113,8 @@ import {
   MedicineReOrderOverlayProps,
   MedicineReOrderOverlay,
 } from '@aph/mobile-patients/src/components/Medicines/MedicineReOrderOverlay';
-import { getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails } from '@aph/mobile-patients/src/graphql/types/getMedicineOrderOMSDetails';
-import { AddToCartButtons } from '@aph/mobile-patients/src/components/Medicines/AddToCartButtons';
+import { AddToCartButtons } from './AddToCartButtons';
+import { getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails } from '../../graphql/types/getMedicineOrderOMSDetailsWithAddress';
 
 const styles = StyleSheet.create({
   sliderDotStyle: {
@@ -398,6 +399,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   }, [pharmacyPincode]);
 
   useEffect(() => {
+    setWebEngageScreenNames('Medicine Home Page');
     fetchMedicinePageProducts();
   }, []);
 
@@ -1003,7 +1005,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       );
 
       const orderDetails = ((!loading && order) ||
-        {}) as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails;
+        {}) as getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails;
 
       const eventAttributes: WebEngageEvents[WebEngageEventName.RE_ORDER_MEDICINE] = {
         orderType: !!g(order, 'billNumber')

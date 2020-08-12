@@ -14,6 +14,7 @@ import {
   notifyMeTracking,
   pharmacySearchTracking,
   addToCartTracking,
+  pharmacyProductClickedTracking,
 } from '../../webEngageTracking';
 import { NotifyMeNotification } from './NotifyMeNotification';
 import { useAllCurrentPatients } from 'hooks/authHooks';
@@ -26,7 +27,7 @@ const useStyles = makeStyles((theme: Theme) => {
         padding: '15px 20px 15px 20px',
         position: 'fixed',
         width: '100%',
-        top: 84,
+        top: 72,
         zIndex: 999,
         background: '#fff',
         boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
@@ -337,7 +338,7 @@ export const MedicineAutoSearch: React.FC = (props) => {
             disabled: classes.searchBtnDisabled,
           }}
         >
-          <img src={require('images/ic_send.svg')} alt="" />
+          <img src={require('images/ic_send.svg')} alt="send" title="send" />
         </AphButton>
       </div>
       {showError ? (
@@ -364,6 +365,12 @@ export const MedicineAutoSearch: React.FC = (props) => {
                       onClick={() => {
                         setSearchText('');
                         window.location.href = clientRoutes.medicineDetails(medicine.url_key);
+                        pharmacyProductClickedTracking({
+                          productName: medicine.name,
+                          source: 'Search',
+                          productId: medicine.sku,
+                          sectionName: '',
+                        });
                       }}
                     >
                       <div className={classes.medicineImg}>
@@ -427,8 +434,8 @@ export const MedicineAutoSearch: React.FC = (props) => {
                                 brand: '',
                                 brandId: '',
                                 categoryName: '',
-                                categoryId: medicine.category_id,
-                                discountedPrice: medicine.special_price,
+                                categoryId: '',
+                                discountedPrice: medicine.special_price || medicine.price,
                                 price: medicine.price,
                                 quantity: 1,
                               });
