@@ -440,12 +440,14 @@ export const AppointmentsList: React.FC<AppointmentProps> = (props) => {
         })
         .then(({ data }) => {
           setIsLoading(false);
+          setTriggerInvoice(false);
           if (data && data.getOrderInvoice && data.getOrderInvoice.length) {
             window.open(data.getOrderInvoice, '_blank');
           }
         })
         .catch((e) => {
           setIsLoading(false);
+          setTriggerInvoice(false);
           console.log(e);
         });
     }
