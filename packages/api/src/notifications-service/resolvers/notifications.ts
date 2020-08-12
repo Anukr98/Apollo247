@@ -2562,7 +2562,9 @@ export async function sendChatMessageNotification(
   doctorsDb: Connection,
   chatMessage: string
 ) {
-  const devLink = process.env.DOCTOR_DEEP_LINK ? process.env.DOCTOR_DEEP_LINK : '';
+  const devLink = process.env.CHAT_DOCTOR_DEEP_LINK
+    ? process.env.CHAT_DOCTOR_DEEP_LINK + appointment.id
+    : '';
   const templateData: string[] = [
     doctorDetails.salutation + ' ' + doctorDetails.firstName,
     patientDetails.firstName + ' ' + patientDetails.lastName,
