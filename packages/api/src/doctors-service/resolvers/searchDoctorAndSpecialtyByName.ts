@@ -121,7 +121,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
   let PerfectdocSearchParams: RequestParams.Search = {
     index: 'doctors',
     body: {
-      size: 1000,
+      size: 100,
       query: {
         bool: {
           must: [
@@ -150,7 +150,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
     PerfectdocSearchParams = {
       index: 'doctors',
       body: {
-        size: 1000,
+        size: 100,
         query: {
           bool: {
             must: [
@@ -181,7 +181,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
     const PerfectdocCitySearchParams: RequestParams.Search = {
       index: 'doctors',
       body: {
-        size: 1000,
+        size: 100,
         query: {
           bool: {
             must: [
