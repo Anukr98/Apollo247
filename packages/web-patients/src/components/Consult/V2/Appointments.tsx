@@ -434,16 +434,16 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
           fetchPolicy: 'cache-first',
         })
         .then(({ data }) => {
-          setIsLoading(false);
-          setTriggerInvoice(false);
           if (data && data.getOrderInvoice && data.getOrderInvoice.length) {
             window.open(data.getOrderInvoice, '_blank');
           }
         })
         .catch((e) => {
+          console.log(e);
+        })
+        .finally(() => {
           setIsLoading(false);
           setTriggerInvoice(false);
-          console.log(e);
         });
     }
   }, [triggerInvoice]);
