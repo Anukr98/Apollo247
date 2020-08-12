@@ -3108,7 +3108,7 @@ export async function medicineOrderRefundNotification(
    * Otherwise, order was cancelled and user should have been refunded
    */
   if (isPartialRefund === true) {
-    if (refundAmount > 0 || healthCreditsRefunded > 0) {
+    if ( (refundAmount > 0 && isRefundSuccessful) || healthCreditsRefunded > 0) {
       if (refundAmount > 0 && isRefundSuccessful && healthCreditsRefunded > 0) {
         notificationBody = ApiConstants.ORDER_PAYMENT_HC_PARTIAL_REFUND_BODY;
         notificationBody = notificationBody.replace(
@@ -3138,7 +3138,6 @@ export async function medicineOrderRefundNotification(
           healthCreditsRefunded.toString()
         );
       }
-
       await sendNotificationSMS(orderDetails.patient.mobileNumber, notificationBody);
     }
   } else {
@@ -3158,17 +3157,26 @@ export async function medicineOrderRefundNotification(
       await sendNotificationSMS(orderDetails.patient.mobileNumber, notificationBody);
     }
 
-    if (paymentInfo.paymentType == MEDICINE_ORDER_PAYMENT_TYPE.CASHLESS) {
-      if (paymentInfo.amountPaid > 0 && isRefundSuccessful) {
+    if (paymentInfo.paymentType == MEDICINE_ORDER_PAYMENT_TYPE.CASHLESS && ( (refundAmount > 0 && isRefundSuccessful) || healthCreditsRefunded > 0) ) {
+      if (refundAmount > 0 && isRefundSuccessful && healthCreditsRefunded > 0) {
+        notificationBody = ApiConstants.ORDER_CANCEL_PAYMENT_HC_REFUND_BODY;
+        notificationBody = notificationBody.replace(
+          '{orderId}',
+          orderDetails.orderAutoId.toString()
+        );
+        notificationBody = notificationBody.replace('{refund}', refundAmount.toString());
+        notificationBody = notificationBody.replace(
+          '{healthCreditsRefund}',
+          healthCreditsRefunded.toString()
+        );
+      }else if (refundAmount > 0 && isRefundSuccessful) {
         notificationBody = ApiConstants.ORDER_CANCEL_PREPAID_BODY;
         notificationBody = notificationBody.replace(
           '{orderId}',
           orderDetails.orderAutoId.toString()
         );
         notificationBody = notificationBody.replace('{refund}', refundAmount.toString());
-        await sendNotificationSMS(orderDetails.patient.mobileNumber, notificationBody);
-      }
-      if (paymentInfo.healthCreditsRedeemed > 0) {
+      }else if (healthCreditsRefunded > 0) {
         notificationBody = ApiConstants.ORDER_CANCEL_HC_REFUND_BODY;
         notificationBody = notificationBody.replace(
           '{orderId}',
@@ -3176,10 +3184,10 @@ export async function medicineOrderRefundNotification(
         );
         notificationBody = notificationBody.replace(
           '{healthCreditsRefund}',
-          paymentInfo.healthCreditsRedeemed.toString()
+          healthCreditsRefunded.toString()
         );
-        await sendNotificationSMS(orderDetails.patient.mobileNumber, notificationBody);
       }
+      await sendNotificationSMS(orderDetails.patient.mobileNumber, notificationBody);
     }
   }
   return;
