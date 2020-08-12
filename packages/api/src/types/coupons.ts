@@ -49,7 +49,7 @@ export interface ValidateCouponResponse {
     consultations: [];
     products: {
       sku: string;
-      categoryId: number;
+      categoryId: string;
       subCategoryId: number;
       mrp: number;
       specialPrice: number;
