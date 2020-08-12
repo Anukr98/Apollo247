@@ -1314,14 +1314,14 @@ export const MedicineCart: React.FC = (props) => {
   return (
     <div className={classes.root}>
       <div className={classes.cartHeader}>
-        <a href="#">
+        <Link to={clientRoutes.medicines()}>
           <img
             className={classes.blackArrow}
             src={require('images/ic_back.svg')}
             alt="Back Arrow"
             title="Back Arrow"
           />
-        </a>
+        </Link>
         <Typography component="h2">Your Cart</Typography>
         <div></div>
       </div>
