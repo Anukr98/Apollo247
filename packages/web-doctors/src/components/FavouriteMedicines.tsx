@@ -276,6 +276,7 @@ const useStyles = makeStyles((theme: Theme) =>
       },
     },
     radioGroup: {
+      marginBottom: 20,
       '& label': {
         width: '30%',
         color: 'rgba(2, 71, 91, 0.8)',
@@ -985,7 +986,7 @@ export const FavouriteMedicines: React.FC = () => {
   const [searchInput, setSearchInput] = useState('');
   const [medicineForm, setMedicineForm] = useState<string>(MEDICINE_FORM_TYPES.OTHERS);
   const [freeTextSwitch, setFreeTextSwitch] = useState<boolean>(false);
-  const [medicineCustomDetails, setMedicineCustomDetails] = useState<string>('');
+  const [medicineCustomDetails, setMedicineCustomDetails] = useState<string>(null);
   const [genericName, setGenericName] = useState<string>('');
   const [includeGenericNameInPrescription, setIncludeGenericNameInPrescription] = useState<boolean>(
     false
@@ -1064,7 +1065,7 @@ export const FavouriteMedicines: React.FC = () => {
           setMedicineForm(medicineMappingObj['others'].defaultSetting);
           setRoaOption(medicineMappingObj['others'].defaultRoa);
         }
-        setMedicineCustomDetails('');
+        setMedicineCustomDetails(null);
         setShowDosage(true);
         setSelectedValue(suggestion.label);
         setSelectedId(suggestion.sku);
@@ -1282,10 +1283,7 @@ export const FavouriteMedicines: React.FC = () => {
         selectedMedicinesArr[idx].includeGenericNameInPrescription!
       );
       setMedicineCustomDetails(selectedMedicinesArr[idx].medicineCustomDetails);
-      if (
-        selectedMedicinesArr[idx].medicineCustomDetails &&
-        selectedMedicinesArr[idx].medicineCustomDetails.length !== 0
-      ) {
+      if (selectedMedicinesArr[idx].medicineCustomDetails) {
         setFreeTextSwitch(true);
       }
       setMedicineInstruction(selectedMedicinesArr[idx].medicineInstructions!);
@@ -1505,7 +1503,7 @@ export const FavouriteMedicines: React.FC = () => {
       !isCustomform &&
       (tabletsCount.trim() === '' || tabletsCount.trim() === '0') &&
       medicineForm !== MEDICINE_FORM_TYPES.GEL_LOTION_OINTMENT &&
-      medicineCustomDetails.length == 0
+      !medicineCustomDetails
     ) {
       setErrorState({
         ...errorState,
@@ -1519,7 +1517,7 @@ export const FavouriteMedicines: React.FC = () => {
       tabletsCount.trim() === '' &&
       medicineForm === MEDICINE_FORM_TYPES.GEL_LOTION_OINTMENT &&
       medicineUnit !== 'AS_PRESCRIBED' &&
-      medicineCustomDetails.length == 0
+      !medicineCustomDetails
     ) {
       setErrorState({
         ...errorState,
@@ -1530,7 +1528,7 @@ export const FavouriteMedicines: React.FC = () => {
       });
     } else if (
       isCustomform &&
-      medicineCustomDetails.length == 0 &&
+      !medicineCustomDetails &&
       ((customDosageMorning.trim() === '' &&
         customDosageNoon.trim() === '' &&
         customDosageEvening.trim() === '' &&
@@ -1553,7 +1551,7 @@ export const FavouriteMedicines: React.FC = () => {
       });
     } else if (
       isCustomform &&
-      medicineCustomDetails.length == 0 &&
+      !medicineCustomDetails &&
       ((customDosageMorning.trim() !== '' &&
         customDosageMorning.trim() !== '0' &&
         daySlotsArr.indexOf('MORNING') < 0) ||
@@ -1568,7 +1566,7 @@ export const FavouriteMedicines: React.FC = () => {
       });
     } else if (
       isCustomform &&
-      medicineCustomDetails.length == 0 &&
+      !medicineCustomDetails &&
       ((customDosageNoon.trim() !== '' &&
         customDosageNoon.trim() !== '0' &&
         daySlotsArr.indexOf('NOON') < 0) ||
@@ -1583,7 +1581,7 @@ export const FavouriteMedicines: React.FC = () => {
       });
     } else if (
       isCustomform &&
-      medicineCustomDetails.length == 0 &&
+      !medicineCustomDetails &&
       ((customDosageEvening.trim() !== '' &&
         customDosageEvening.trim() !== '0' &&
         daySlotsArr.indexOf('EVENING') < 0) ||
@@ -1598,7 +1596,7 @@ export const FavouriteMedicines: React.FC = () => {
       });
     } else if (
       isCustomform &&
-      medicineCustomDetails.length == 0 &&
+      !medicineCustomDetails &&
       ((customDosageNight.trim() !== '' &&
         customDosageNight.trim() !== '0' &&
         daySlotsArr.indexOf('NIGHT') < 0) ||
@@ -1613,7 +1611,7 @@ export const FavouriteMedicines: React.FC = () => {
       });
     } else if (
       isCustomform &&
-      medicineCustomDetails.length == 0 &&
+      !medicineCustomDetails &&
       customDosageArray.length > daySlotsArr.length
     ) {
       setErrorState({
@@ -1623,7 +1621,7 @@ export const FavouriteMedicines: React.FC = () => {
         tobeTakenErr: false,
         dosageErr: false,
       });
-    } else if (daySlotsArr.length === 0 && medicineCustomDetails.length == 0) {
+    } else if (daySlotsArr.length === 0 && !medicineCustomDetails) {
       setErrorState({
         ...errorState,
         durationErr: false,
@@ -1633,7 +1631,7 @@ export const FavouriteMedicines: React.FC = () => {
       });
     } else if (
       forUnit !== MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW &&
-      medicineCustomDetails.length == 0 &&
+      !medicineCustomDetails &&
       (consumptionDuration === '' ||
         isNaN(Number(consumptionDuration)) ||
         consumptionDuration === '0')
@@ -1734,7 +1732,7 @@ export const FavouriteMedicines: React.FC = () => {
         .then((data) => {
           getMedicineData();
         });
-      setMedicineCustomDetails('');
+      setMedicineCustomDetails(null);
       setGenericName('');
       setIncludeGenericNameInPrescription(false);
       setMedicineInstruction('');
@@ -1788,7 +1786,7 @@ export const FavouriteMedicines: React.FC = () => {
       customDosageArray.push(customDosageNight.trim());
     if (
       !isCustomform &&
-      medicineCustomDetails.length == 0 &&
+      !medicineCustomDetails &&
       (tabletsCount.trim() === '' || tabletsCount.trim() === '0') &&
       medicineForm !== MEDICINE_FORM_TYPES.GEL_LOTION_OINTMENT
     ) {
@@ -1801,7 +1799,7 @@ export const FavouriteMedicines: React.FC = () => {
       });
     } else if (
       !isCustomform &&
-      medicineCustomDetails.length == 0 &&
+      !medicineCustomDetails &&
       tabletsCount.trim() === '' &&
       medicineForm === MEDICINE_FORM_TYPES.GEL_LOTION_OINTMENT &&
       medicineUnit !== 'AS_PRESCRIBED'
@@ -1815,7 +1813,7 @@ export const FavouriteMedicines: React.FC = () => {
       });
     } else if (
       isCustomform &&
-      medicineCustomDetails.length == 0 &&
+      !medicineCustomDetails &&
       ((customDosageMorning.trim() === '' &&
         customDosageNoon.trim() === '' &&
         customDosageEvening.trim() === '' &&
@@ -1838,7 +1836,7 @@ export const FavouriteMedicines: React.FC = () => {
       });
     } else if (
       isCustomform &&
-      medicineCustomDetails.length == 0 &&
+      !medicineCustomDetails &&
       ((customDosageMorning.trim() !== '' &&
         customDosageMorning.trim() !== '0' &&
         daySlotsArr.indexOf('MORNING') < 0) ||
@@ -1853,7 +1851,7 @@ export const FavouriteMedicines: React.FC = () => {
       });
     } else if (
       isCustomform &&
-      medicineCustomDetails.length == 0 &&
+      !medicineCustomDetails &&
       ((customDosageNoon.trim() !== '' &&
         customDosageNoon.trim() !== '0' &&
         daySlotsArr.indexOf('NOON') < 0) ||
@@ -1868,7 +1866,7 @@ export const FavouriteMedicines: React.FC = () => {
       });
     } else if (
       isCustomform &&
-      medicineCustomDetails.length == 0 &&
+      !medicineCustomDetails &&
       ((customDosageEvening.trim() !== '' &&
         customDosageEvening.trim() !== '0' &&
         daySlotsArr.indexOf('EVENING') < 0) ||
@@ -1883,7 +1881,7 @@ export const FavouriteMedicines: React.FC = () => {
       });
     } else if (
       isCustomform &&
-      medicineCustomDetails.length == 0 &&
+      !medicineCustomDetails &&
       ((customDosageNight.trim() !== '' &&
         customDosageNight.trim() !== '0' &&
         daySlotsArr.indexOf('NIGHT') < 0) ||
@@ -1898,7 +1896,7 @@ export const FavouriteMedicines: React.FC = () => {
       });
     } else if (
       isCustomform &&
-      medicineCustomDetails.length == 0 &&
+      !medicineCustomDetails &&
       customDosageArray.length > daySlotsArr.length
     ) {
       setErrorState({
@@ -1908,7 +1906,7 @@ export const FavouriteMedicines: React.FC = () => {
         tobeTakenErr: false,
         dosageErr: false,
       });
-    } else if (daySlotsArr.length === 0 && medicineCustomDetails.length == 0) {
+    } else if (daySlotsArr.length === 0 && !medicineCustomDetails) {
       setErrorState({
         ...errorState,
         durationErr: false,
@@ -1918,7 +1916,7 @@ export const FavouriteMedicines: React.FC = () => {
       });
     } else if (
       forUnit !== MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW &&
-      medicineCustomDetails.length == 0 &&
+      !medicineCustomDetails &&
       (consumptionDuration === '' ||
         isNaN(Number(consumptionDuration)) ||
         consumptionDuration === '0')
@@ -2028,7 +2026,7 @@ export const FavouriteMedicines: React.FC = () => {
           console.log('data after mutation' + data);
           setMedicineLoader(false);
         });
-      setMedicineCustomDetails('');
+      setMedicineCustomDetails(null);
       setGenericName('');
       setIncludeGenericNameInPrescription(false);
       setMedicineInstruction('');
@@ -2423,11 +2421,13 @@ export const FavouriteMedicines: React.FC = () => {
                             <FormControlLabel
                               value={MEDICINE_FORM_TYPES.OTHERS}
                               label="Take"
+                              disabled={freeTextSwitch ? true : false}
                               control={<AphRadio title="Take" />}
                             />
                             <FormControlLabel
                               value={MEDICINE_FORM_TYPES.GEL_LOTION_OINTMENT}
                               label="Apply"
+                              disabled={freeTextSwitch ? true : false}
                               control={<AphRadio title="Apply" />}
                             />
                             <FormControlLabel
@@ -2892,7 +2892,7 @@ export const FavouriteMedicines: React.FC = () => {
                                 multiline
                                 rows={6}
                                 placeholder="Type here..."
-                                value={medicineCustomDetails}
+                                value={medicineCustomDetails ? medicineCustomDetails : ''}
                                 onChange={(event: any) => {
                                   setMedicineCustomDetails(event.target.value);
                                 }}
