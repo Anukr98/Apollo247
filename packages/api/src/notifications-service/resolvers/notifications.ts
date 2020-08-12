@@ -313,6 +313,7 @@ export const sendDoctorNotificationWhatsapp = async (
 };
 
 export const sendNotificationSMS = async (mobileNumber: string, message: string) => {
+  console.log('message:', message);
   //Adding Apollo 247 string at starting of the body
   message = '[Apollo 247] ' + message;
 
@@ -487,7 +488,6 @@ export async function sendCallsNotification(
     patientDetails.id,
     DEVICE_TYPE.IOS
   );
-
   if (
     voipPushtoken.length &&
     voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken'] &&
@@ -501,22 +501,9 @@ export async function sendCallsNotification(
       callType
     );
   }
-
   if (callType == APPT_CALL_TYPE.CHAT && doctorType == DOCTOR_CALL_TYPE.SENIOR) {
     const devLink = process.env.DOCTOR_DEEP_LINK ? process.env.DOCTOR_DEEP_LINK : '';
     let whatsappMsg = ApiConstants.WHATSAPP_SD_CONSULT_START_REMINDER.replace(
-      '{0}',
-      patientDetails.firstName + ' ' + patientDetails.lastName
-    );
-    whatsappMsg = whatsappMsg
-      .replace('{1}', doctorDetails.firstName)
-      .replace('{2}', doctorDetails.salutation)
-      .replace('{3}', devLink);
-    sendNotificationWhatsapp(patientDetails.mobileNumber, whatsappMsg, 1);
-    return;
-  } else if (callType == APPT_CALL_TYPE.CHAT && doctorType == DOCTOR_CALL_TYPE.JUNIOR) {
-    const devLink = process.env.DOCTOR_DEEP_LINK ? process.env.DOCTOR_DEEP_LINK : '';
-    let whatsappMsg = ApiConstants.WHATSAPP_JD_CONSULT_START_REMINDER.replace(
       '{0}',
       patientDetails.firstName + ' ' + patientDetails.lastName
     );
@@ -3109,13 +3096,19 @@ export async function medicineOrderCancelled( //this function is merge with medi
   } else {
     msgText = msgText.replace('{reason}', 'Your order has been cancelled');
   }
+  console.log('messageTxt:', msgText);
   await sendNotificationSMS(orderDetails.patient.mobileNumber, msgText);
   const paymentInfo = orderDetails.medicineOrderPayments[0] || {};
+  console.log('paymentInfo:', paymentInfo);
   if (paymentInfo.paymentType == MEDICINE_ORDER_PAYMENT_TYPE.CASHLESS) {
-    msgText = ApiConstants.ORDER_CANCEL_PREPAID_BODY;
-    msgText = msgText.replace('{orderId}', orderDetails.orderAutoId.toString());
-    msgText = msgText.replace('{refund}', paymentInfo.amountPaid.toString());
-    await sendNotificationSMS(orderDetails.patient.mobileNumber, msgText);
+    if (paymentInfo.amountPaid) {
+      msgText = ApiConstants.ORDER_CANCEL_PREPAID_BODY;
+      msgText = msgText.replace('{orderId}', orderDetails.orderAutoId.toString());
+      msgText = msgText.replace('{refund}', paymentInfo.amountPaid.toString());
+      console.log('message Amount:', msgText);
+      await sendNotificationSMS(orderDetails.patient.mobileNumber, msgText);
+    }
+
     if (paymentInfo.healthCreditsRedeemed > 0) {
       msgText = ApiConstants.ORDER_CANCEL_HC_REFUND_BODY;
       msgText = msgText.replace('{orderId}', orderDetails.orderAutoId.toString());
@@ -3123,6 +3116,8 @@ export async function medicineOrderCancelled( //this function is merge with medi
         '{healthCreditsRefund}',
         paymentInfo.healthCreditsRedeemed.toString()
       );
+      console.log('message HC:', msgText);
+
       await sendNotificationSMS(orderDetails.patient.mobileNumber, msgText);
     }
   }
