@@ -12,10 +12,6 @@ import { STATUS } from 'graphql/types/globalTypes';
 import _startCase from 'lodash/startCase';
 import _toLower from 'lodash/toLower';
 import { AphButton } from '@aph/web-ui-components';
-import { ApolloError } from 'apollo-client';
-import { useMutation } from 'react-apollo-hooks';
-import { AddToConsultQueue, AddToConsultQueueVariables } from 'graphql/types/AddToConsultQueue';
-import { ADD_TO_CONSULT_QUEUE } from 'graphql/consult';
 import moment from 'moment';
 import { readableParam } from 'helpers/commonHelpers';
 import { Link, Route } from 'react-router-dom';
@@ -253,7 +249,7 @@ const useStyles = makeStyles((theme: Theme) => {
       marginTop: 6,
       textAlign: 'left',
       position: 'absolute',
-      left: 15,
+      left: 0,
       top: -6,
       '& h3': {
         fontSize: 13,
@@ -358,10 +354,6 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
       }
     }, 60000);
   };
-
-  const addConsultToQueue = useMutation<AddToConsultQueue, AddToConsultQueueVariables>(
-    ADD_TO_CONSULT_QUEUE
-  );
 
   const getAppointmentStatus = (status: STATUS, isConsultStarted: boolean | null) => {
     switch (status) {
