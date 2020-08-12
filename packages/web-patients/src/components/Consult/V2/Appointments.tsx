@@ -430,10 +430,6 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
 
   const [filterDoctorsList, setFilterDoctorsList] = React.useState<string[]>([]);
-  // const [filterAppointmentStatus, setFilterAppointmentStatus] = React.useState<string[]>([]);
-  // const [filterGender, setFilterGender] = React.useState<string[]>([]);
-  // const [filterAvailability, setFilterAvailability] = React.useState<string[]>([]);
-  // const [filterConsultType, setFilterConsultType] = React.useState<string[]>([]);
 
   const getAppointmentHistory = (successApptId: string) => {
     if (!appointmentHistory) {
@@ -710,7 +706,11 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
         return diffInMinutes < 15 && diffInMinutes >= 0;
       });
     }
-    if (availabilityList.includes('Today') || availabilityList.includes('Tomorrow')) {
+    if (
+      availabilityList.includes('Today') ||
+      availabilityList.includes('Tomorrow') ||
+      availabilityList.includes('Next 3 days')
+    ) {
       const tomorrowAvailabilityHourTime = moment('00:00', 'HH:mm');
       const tomorrowAvailabilityTime = moment()
         .add('days', 1)
@@ -738,13 +738,20 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
         });
         finalList = [...finalList, ...filteredList];
       }
-    }
-    if (availabilityList.includes('Next 3 days')) {
-      const filteredList = localFilteredAppointmentsList.filter((appointment) => {
-        const differenceInDays = getDiffInDays(appointment.appointmentDateTime);
-        return differenceInDays < 4 && differenceInDays >= 0;
-      });
-      finalList = [...finalList, ...filteredList];
+      if (availabilityList.includes('Next 3 days')) {
+        const filteredList = localFilteredAppointmentsList.filter((appointment) => {
+          const differenceInDays = moment(appointment.appointmentDateTime).diff(
+            tomorrowAvailabilityTime,
+            'days'
+          );
+          const differenceInMinutes = moment(appointment.appointmentDateTime).diff(
+            tomorrowAvailabilityTime,
+            'minutes'
+          );
+          return differenceInMinutes >= 0 && differenceInDays < 4 && differenceInDays >= 0;
+        });
+        finalList = [...finalList, ...filteredList];
+      }
     }
     return _uniq(finalList);
   };
