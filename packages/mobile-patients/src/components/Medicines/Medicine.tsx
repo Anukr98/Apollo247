@@ -1676,6 +1676,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           props.navigation.navigate(AppRoutes.SearchMedicineScene, { searchText });
           setSearchText('');
           setMedicineList([]);
+          setSearchFocused(false);
         }}
       >
         <SearchSendIcon />
