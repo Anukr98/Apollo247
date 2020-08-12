@@ -340,12 +340,15 @@ export async function hitCallKitCurl(
   doctorName: string,
   apptId: string,
   connecting: boolean,
-  callType: APPT_CALL_TYPE
+  callType: APPT_CALL_TYPE,
+  isDev: boolean
 ) {
   const CERT_PATH = process.env.VOIP_CALLKIT_CERT_PATH + '/voipCert.pem';
   const passphrase = process.env.VOIP_CALLKIT_PASSPHRASE || 'apollo@123';
-  const domain =
-    process.env.VOIP_CALLKIT_DOMAIN || 'https://api.development.push.apple.com/3/device/';
+  let domain = process.env.VOIP_CALLKIT_DOMAIN || 'https://api.push.apple.com/3/device/';
+  if(isDev){
+    domain = 'https://api.development.push.apple.com/3/device/';
+  }
   try {
     const curlCommand = `curl -v -d '{"name": "${doctorName}", 
       "${connecting ? 'isVideo' : 'disconnectCall'}": 
@@ -465,7 +468,8 @@ export async function sendCallsNotification(
   doctorsDb: Connection,
   callType: APPT_CALL_TYPE,
   doctorType: DOCTOR_CALL_TYPE,
-  appointmentCallId: string
+  appointmentCallId: string,
+  isDev: boolean
 ) {
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const appointment = await appointmentRepo.findById(pushNotificationInput.appointmentId);
@@ -497,7 +501,8 @@ export async function sendCallsNotification(
       doctorDetails.displayName,
       appointment.id,
       true,
-      callType
+      callType,
+      isDev,
     );
   }
   if (callType == APPT_CALL_TYPE.CHAT && doctorType == DOCTOR_CALL_TYPE.SENIOR) {
