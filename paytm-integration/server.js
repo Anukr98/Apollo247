@@ -985,8 +985,8 @@ app.get('/processOmsOrders', (req, res) => {
               response &&
               response.data &&
               response.data.data &&
-              response.data.data.getMedicineOrderOMSDetails &&
-              response.data.data.getMedicineOrderOMSDetails.medicineOrderDetails;
+              response.data.data.getMedicineOrderOMSDetailsWithAddress &&
+              response.data.data.getMedicineOrderOMSDetailsWithAddress.medicineOrderDetails;
             if (orderDetails) {
               logger.info(
                 `message from topic -processOrders() OMS->getMedicineOrderDetails()-> ${JSON.stringify(

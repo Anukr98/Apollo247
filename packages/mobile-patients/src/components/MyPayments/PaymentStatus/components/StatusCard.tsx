@@ -75,8 +75,8 @@ const StatusCard: FC<StatusCardProps> = (props) => {
       if (!medicineOrderPayments.length) {
         status = 'PENDING';
       } else {
-        const { paymentStatus, paymentRefId, amountPaid } = medicineOrderPayments[0];
-        status = paymentStatus;
+        const { paymentStatus, paymentRefId, amountPaid, medicineOrderRefunds } = medicineOrderPayments[0];
+        status = medicineOrderRefunds.length ? REFUND : paymentStatus;
         refId = paymentRefId;
         price = amountPaid;
       }

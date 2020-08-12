@@ -45,7 +45,7 @@ import {
   WebEngageEvents,
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
-
+import { isUpperCase } from '@aph/mobile-patients/src/utils/commonUtils';
 // The moment we import from sdk @praktice/navigator-react-native-sdk,
 // finally not working on all promises.
 
@@ -105,7 +105,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
   useEffect(() => {
     getData('ConsultRoom', undefined, false); // no need to set timeout on didMount
-    InitiateAppsFlyer();
+    InitiateAppsFlyer(props.navigation);
     DeviceEventEmitter.addListener('accept', (params) => {
       console.log('Accept Params', params);
       getAppointmentDataAndNavigate(params.appointment_id);
@@ -492,8 +492,16 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         const cityBrandFilter = id ? id.split('%20') : '';
         props.navigation.navigate(AppRoutes.DoctorSearchListing, {
           specialityId: cityBrandFilter[0] ? cityBrandFilter[0] : '',
-          city: cityBrandFilter.length > 1 ? cityBrandFilter[1] : null,
-          brand: cityBrandFilter.length > 2 ? cityBrandFilter[2] : null,
+          city:
+            cityBrandFilter.length > 1 && !isUpperCase(cityBrandFilter[1])
+              ? cityBrandFilter[1]
+              : null,
+          brand:
+            cityBrandFilter.length > 2
+              ? cityBrandFilter[2]
+              : isUpperCase(cityBrandFilter[1])
+              ? cityBrandFilter[1]
+              : null,
         });
         break;
       case 'Doctor':
@@ -773,11 +781,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           return firebase.config().getValues(getRemoteConfigKeys());
         })
         .then((snapshot) => {
-          if (__DEV__) {
-            const snapshotLog = Object.keys(snapshot).map((k) => [k, snapshot[k].val()]);
-            console.log({ snapshotLog });
-          }
-
           const needHelpToContactInMessage = getRemoteConfigValue(
             'Need_Help_To_Contact_In',
             snapshot

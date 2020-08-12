@@ -95,7 +95,8 @@ export enum ApiConstants {
   ORDER_CANCEL_BODY = 'Dear {name}, referring to your Apollo 247 Order {orderId}, {reason}',
   ORDER_CANCEL_PREPAID_BODY = 'We have processed for a refund of Rs {refund} for Order {orderId}, the amount should reflect in your A/C in 5-7 working days.',
   ORDER_CANCEL_HC_REFUND_BODY = 'We have refunded Health Credits worth Rs {healthCreditsRefund} to your personal health credits balance for Order {orderId}.',
-
+  ORDER_CANCEL_PAYMENT_HC_REFUND_BODY = 'We have processed for a refund of Rs {refund} for Order {orderId}, the amount should reflect in your A/C in 5-7 working days. Also, Health Credits worth Rs {healthCreditsRefund} have been added back to your personal health credits balance.',
+  
   // medicine order partial refund
   ORDER_PAYMENT_PARTIAL_REFUND_BODY = 'We have processed for a refund of Rs {refundAmount} for your order {orderId}, the amount should reflect in your A/C in 5-7 working days.',
   //medicine order partial refund health credits
@@ -448,6 +449,8 @@ export enum ApiConstants {
   WHATSAPP_DOCTOR_BOOKING_CONFIRMATION = 'inf_doctor_consult_booking_confirmation',
   WHATSAPP_SD_CONSULT_DELAY = 'inf_sd_consult_delay_1',
   WHATSAPP_DOC_SUMMARY = 'inf_doc_8am_summary',
+
+  ONE_APOLLO_ORDER_CANCELLATION_REASON_CODE = 'R000247',
 }
 
 export enum PATIENT_REPO_RELATIONS {

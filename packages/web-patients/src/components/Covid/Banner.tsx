@@ -185,7 +185,7 @@ export const Banner: React.FC<BannerProps> = (props) => {
   return (
     <div
       className={classes.root}
-      style={{ backgroundImage: `url(${require('images/covid-banner.png')})` }}
+      style={{ backgroundImage: `url(${require('images/covid-banner.jpg')})` }}
     >
       <div className={classes.bannerTop}>
         {!props.isWebView && (

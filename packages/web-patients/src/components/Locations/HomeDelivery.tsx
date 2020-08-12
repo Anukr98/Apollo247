@@ -61,12 +61,18 @@ const useStyles = makeStyles((theme: Theme) => {
       marginTop: 0,
       borderTop: '0.5px solid rgba(2,71,91,0.2)',
       paddingTop: 10,
+      [theme.breakpoints.down('xs')]: {
+        margin: '10px 0 0',
+      },
     },
     deliveryTimeGroupWrap: {
       display: 'flex',
       backgroundColor: theme.palette.common.white,
       padding: 10,
       borderRadius: 5,
+      [theme.breakpoints.down('xs')]: {
+        padding: 0,
+      },
     },
     deliveryTime: {
       fontSize: 14,
