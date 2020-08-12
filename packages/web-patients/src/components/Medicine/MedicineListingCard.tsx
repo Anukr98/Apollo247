@@ -150,6 +150,7 @@ const useStyles = makeStyles((theme: Theme) => {
         flexGrow: 1,
         textAlign: 'left',
         justifyContent: 'left',
+        width: '50%',
         // minHeight: 45,
       },
       [theme.breakpoints.up('xs')]: {
@@ -188,7 +189,9 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingBottom: 5,
       textAlign: 'center',
       [theme.breakpoints.down('xs')]: {
-        borderRight: 'solid 0.5px rgba(2,71,91,0.2)',
+        padding: '0 10px',
+        textAlign: 'left',
+        minWidth: 'auto',
       },
     },
     mrpText: {
@@ -341,7 +344,7 @@ export const MedicineListingCard: React.FC<MedicineListingCardProps> = (props) =
                               Rs. {validateCouponResult.pharmaLineItemsWithDiscountedPrice[idx].mrp}
                             </span>
                           ) : null}
-                          {/* <div className={classes.mrpText}>(MRP)</div> */}
+                          <div className={classes.mrpText}>(MRP)</div>
                         </div>
 
                         <div className={classes.medicinePrice}>
@@ -354,12 +357,12 @@ export const MedicineListingCard: React.FC<MedicineListingCardProps> = (props) =
                       </>
                     ) : (
                       <>
-                        {/* <div className={`${classes.medicinePrice} ${classes.mrpPrice}`}>
+                        <div className={`${classes.medicinePrice} ${classes.mrpPrice}`}>
                           {item.special_price ? (
                             <span className={classes.lineThrough}>Rs. {item.price}</span>
                           ) : null}
                           <div className={classes.mrpText}>(MRP)</div>
-                        </div> */}
+                        </div>
 
                         <div className={classes.medicinePrice}>
                           Rs. {item.special_price || item.price}

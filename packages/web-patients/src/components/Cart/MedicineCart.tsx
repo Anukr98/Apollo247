@@ -359,7 +359,7 @@ const useStyles = makeStyles((theme: Theme) => {
         left: 0,
         bottom: 0,
         backgroundColor: '#dcdfce',
-        zIndex: 991,
+        zIndex: 999,
       },
     },
     dialogContent: {
