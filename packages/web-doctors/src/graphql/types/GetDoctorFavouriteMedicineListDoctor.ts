@@ -1,6 +1,5 @@
 /* tslint:disable */
 /* eslint-disable */
-// @generated
 // This file was automatically generated and should not be edited.
 
 import {
@@ -34,8 +33,9 @@ export interface GetDoctorFavouriteMedicineListDoctor_getDoctorFavouriteMedicine
   externalId: string | null;
   routeOfAdministration: ROUTE_OF_ADMINISTRATION | null;
   medicineCustomDosage: string | null;
-  genericName: string | null;
+  medicineCustomDetails: string | null;
   includeGenericNameInPrescription: boolean | null;
+  genericName: string | null;
 }
 
 export interface GetDoctorFavouriteMedicineListDoctor_getDoctorFavouriteMedicineList {
