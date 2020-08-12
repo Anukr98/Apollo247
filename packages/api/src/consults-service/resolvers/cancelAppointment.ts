@@ -152,30 +152,6 @@ const cancelAppointment: Resolver<
     }
   }
 
-  //update slot status in ES as open
-  const slotApptDt = format(appointment.appointmentDateTime, 'yyyy-MM-dd') + ' 18:30:00';
-  const actualApptDt = format(appointment.appointmentDateTime, 'yyyy-MM-dd');
-  let apptDt = format(appointment.appointmentDateTime, 'yyyy-MM-dd');
-  if (appointment.appointmentDateTime >= new Date(slotApptDt)) {
-    apptDt = format(addDays(new Date(apptDt), 1), 'yyyy-MM-dd');
-  }
-
-  const sl = `${actualApptDt}T${appointment.appointmentDateTime
-    .getUTCHours()
-    .toString()
-    .padStart(2, '0')}:${appointment.appointmentDateTime
-      .getUTCMinutes()
-      .toString()
-      .padStart(2, '0')}:00.000Z`;
-  console.log(slotApptDt, apptDt, sl, appointment.doctorId, 'appoint date time');
-  appointmentRepo.updateDoctorSlotStatusES(
-    appointment.doctorId,
-    apptDt,
-    sl,
-    appointment.appointmentType,
-    ES_DOCTOR_SLOT_STATUS.BOOKED
-  );
-
   const historyAttrs: Partial<AppointmentUpdateHistory> = {
     appointment,
     userType:

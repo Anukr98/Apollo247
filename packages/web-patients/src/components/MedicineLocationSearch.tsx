@@ -396,7 +396,7 @@ export const MedicineLocationSearch: React.FC = (props) => {
             } ${pharmaAddressDetails ? pharmaAddressDetails.pincode : ''}`}
           </span>
           <span>
-            <img src={require('images/ic_dropdown_green.svg')} alt="" />
+            <img src={require('images/ic_dropdown_green.svg')} alt="Dropdown" title="Dropdown" />
           </span>
         </div>
         {headerPincodeError === '1' && (

@@ -1,7 +1,7 @@
 import gql from 'graphql-tag';
 import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
 import { MedicineOrdersRepository } from 'profiles-service/repositories/MedicineOrdersRepository';
-import { Connection } from 'typeorm';
+import { Connection, UpdateResult } from 'typeorm';
 import {
   MEDICINE_ORDER_PAYMENT_TYPE,
   MedicineOrderPayments,
@@ -30,6 +30,7 @@ import { EmailMessage } from 'types/notificationMessageTypes';
 import { log } from 'customWinstonLogger';
 import { BlockOneApolloPointsRequest, BlockUserPointsResponse } from 'types/oneApolloTypes';
 import { OneApollo } from 'helpers/oneApollo';
+import { calculateRefund } from 'profiles-service/helpers/refundHelper';
 
 export const saveMedicineOrderPaymentMqTypeDefs = gql`
   enum CODCity {
@@ -306,9 +307,36 @@ const SaveMedicineOrderPaymentMq: Resolver<
             JSON.stringify(oneApolloresponse),
             'true'
           );
-          /// initiateRefund;
-          // send communication to the user
-          // return error code
+
+          let cancelOrderUpdates: Promise<MedicineOrdersStatus | UpdateResult>[] = [];
+
+          const orderStatusAttrs: Partial<MedicineOrdersStatus> = {
+            orderStatus: MEDICINE_ORDER_STATUS.CANCELLED,
+            medicineOrders: orderDetails,
+            statusDate: new Date(),
+            statusMessage: '' + ApiConstants.ONE_APOLLO_ORDER_CANCELLATION_REASON_CODE,
+          };
+          cancelOrderUpdates.push(
+            medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, orderDetails.orderAutoId)
+          );
+
+          cancelOrderUpdates.push(
+            medicineOrdersRepo.updateMedicineOrderDetails(
+              orderDetails.id,
+              orderDetails.orderAutoId,
+              new Date(),
+              MEDICINE_ORDER_STATUS.CANCELLED
+            )
+          );
+          await Promise.all(cancelOrderUpdates);
+
+          calculateRefund(
+            orderDetails,
+            0,
+            profilesDb,
+            medicineOrdersRepo,
+            ApiConstants.ONE_APOLLO_ORDER_CANCELLATION_REASON_CODE
+          );
           throw new AphError(AphErrorMessages.ONEAPOLLO_CREDITS_BLOCK_FAILED, undefined, {});
         }
       }

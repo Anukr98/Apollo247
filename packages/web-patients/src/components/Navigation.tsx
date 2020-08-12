@@ -3,13 +3,14 @@ import { Theme, Popover } from '@material-ui/core';
 import React, { useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
-import { useAuth } from 'hooks/authHooks';
+import { useAuth, useAllCurrentPatients } from 'hooks/authHooks';
 import { useShoppingCart } from 'components/MedicinesCartProvider';
 import { useDiagnosticsCart } from 'components/Tests/DiagnosticsCartProvider';
 import { getAppStoreLink } from 'helpers/dateHelpers';
 import { useParams } from 'hooks/routerHooks';
 import Typography from '@material-ui/core/Typography';
 import { useLocation } from 'react-router';
+import { buyMedicineClickTracking } from 'webEngageTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -222,8 +223,7 @@ export const Navigation: React.FC<NavigationProps> = (props) => {
     clientRoutes.payOnlineClinicConsult(),
     // clientRoutes.payMedicine(params.payType),
   ];
-  const location = useLocation();
-  // const headTagCondition = location.pathname === '/';
+  const { currentPatient } = useAllCurrentPatients();
 
   return (
     <div
@@ -268,6 +268,7 @@ export const Navigation: React.FC<NavigationProps> = (props) => {
                 : ''
             }
             title={'Medicines'}
+            onClick={() => buyMedicineClickTracking(currentPatient && currentPatient.id)}
           >
             Buy Medicines
           </Link>

@@ -1,18 +1,16 @@
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import { NavigationScreenProps } from 'react-navigation';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import { getDate } from '@aph/mobile-patients/src/utils/dateUtil';
 import {
-  MedicineOrderOMSRefunds,
-  MedicineOrderOMSPayments,
-} from '@aph/mobile-patients/src/graphql/types/globalTypes';
+  getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrderRefunds,
+  getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrderPayments,
+} from '@aph/mobile-patients/src/graphql/types/getMedicineOrderOMSDetails';
 
 export interface RefundDetailsProps {
-  refunds: MedicineOrderOMSRefunds[];
-  paymentDetails: MedicineOrderOMSPayments[];
+  refunds: getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrderRefunds[];
+  paymentDetails: getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrderPayments[];
   navigaitonProps: any;
 }
 

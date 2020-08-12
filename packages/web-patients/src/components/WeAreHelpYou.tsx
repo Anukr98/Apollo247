@@ -184,7 +184,7 @@ export const WeAreHelpYou: React.FC = (props) => {
       <div className={classes.helpCard}>
         <div
           className={classes.cardHeader}
-          style={{ backgroundImage: `url(${require('images/covid-banner.png')})` }}
+          style={{ backgroundImage: `url(${require('images/covid-banner.jpg')})` }}
         >
           <div className={classes.contentGroup}>
             <div className={classes.title}>Coronavirus (Covid-19)</div>

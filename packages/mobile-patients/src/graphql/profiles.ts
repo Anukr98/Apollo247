@@ -1126,6 +1126,7 @@ export const GET_CASESHEET_DETAILS = gql`
           medicineConsumptionDurationUnit
           routeOfAdministration
           medicineCustomDosage
+          medicineCustomDetails
         }
         notes
         otherInstructions {
@@ -1453,6 +1454,114 @@ export const UPDATE_DIAGNOSTIC_ORDER = gql`
   mutation updateDiagnosticOrder($updateDiagnosticOrderInput: UpdateDiagnosticOrderInput) {
     updateDiagnosticOrder(updateDiagnosticOrderInput: $updateDiagnosticOrderInput) {
       message
+    }
+  }
+`;
+
+
+export const GET_MEDICINE_ORDER_OMS_DETAILS_WITH_ADDRESS = gql`
+  query getMedicineOrderOMSDetailsWithAddress($patientId: String, $orderAutoId: Int, $billNumber: String) {
+    getMedicineOrderOMSDetailsWithAddress(
+      patientId: $patientId
+      orderAutoId: $orderAutoId
+      billNumber: $billNumber
+    ) {
+      medicineOrderDetails {
+        id
+        createdDate
+        orderAutoId
+        billNumber
+        coupon
+        devliveryCharges
+        prismPrescriptionFileId
+        couponDiscount
+        productDiscount
+        redeemedAmount
+        estimatedAmount
+        prescriptionImageUrl
+        orderTat
+        orderType
+        shopAddress
+        packagingCharges
+        deliveryType
+        currentStatus
+        patientAddressId
+        alertStore
+        medicineOrderLineItems {
+          medicineSKU
+          medicineName
+          price
+          mrp
+          quantity
+          isMedicine
+          mou
+          isPrescriptionNeeded
+        }
+        medicineOrderPayments {
+          id
+          paymentType
+          amountPaid
+          paymentRefId
+          paymentStatus
+          paymentDateTime
+          responseCode
+          responseMessage
+          bankTxnId
+        }
+        medicineOrdersStatus {
+          id
+          orderStatus
+          statusDate
+          hideStatus
+          statusMessage
+          customReason
+        }
+        medicineOrderShipments {
+          id
+          siteId
+          siteName
+          apOrderNo
+          updatedDate
+          currentStatus
+          itemDetails
+          medicineOrdersStatus {
+            id
+            orderStatus
+            statusDate
+            hideStatus
+          }
+          medicineOrderInvoice {
+            id
+            siteId
+            remarks
+            requestType
+            vendorName
+            billDetails
+            itemDetails
+          }
+        }
+        patient {
+          mobileNumber
+          id
+          firstName
+          lastName
+          addressList {
+            id
+            addressLine1
+            addressLine2
+            city
+            state
+            zipcode
+          }
+        }
+        medicineOrderAddress {
+          addressLine1
+          addressLine2
+          city
+          state
+          zipcode
+        }
+      }
     }
   }
 `;
@@ -2680,6 +2789,12 @@ export const PHARMACY_ORDER_PAYMENT_DETAILS = gql`
           paymentMode
           amountPaid
           healthCreditsRedeemed
+          refundAmount
+          medicineOrderRefunds {
+            refundAmount
+            createdDate
+            refundStatus
+          }
         }
       }
     }

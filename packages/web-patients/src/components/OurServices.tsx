@@ -2,12 +2,13 @@ import { makeStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { useAuth } from 'hooks/authHooks';
+import { useAuth, useAllCurrentPatients } from 'hooks/authHooks';
 import Typography from '@material-ui/core/Typography';
 import Paper from '@material-ui/core/Paper';
 import Avatar from '@material-ui/core/Avatar';
 import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
 import { clientRoutes } from 'helpers/clientRoutes';
+import { buyMedicineClickTracking } from 'webEngageTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -83,6 +84,9 @@ const ServiceItem: React.FC<ServiceItemProps> = (props) => {
   const classes = useStyles({});
   const { title, imgUrl, content, action } = props.item;
   const headTagCondition = title === 'Online Doctor Consultation' || title === 'Buy Medicines';
+  const { isSignedIn } = useAuth();
+  const { currentPatient } = useAllCurrentPatients();
+
   return (
     <ProtectedWithLoginPopup>
       {({ protectWithLoginPopup }) => (
@@ -94,6 +98,9 @@ const ServiceItem: React.FC<ServiceItemProps> = (props) => {
                 if (action.link === '') {
                   protectWithLoginPopup();
                 }
+                isSignedIn &&
+                  title === 'Buy Medicines' &&
+                  buyMedicineClickTracking(currentPatient && currentPatient.id);
               }}
               title={title}
             >

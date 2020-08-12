@@ -40,6 +40,7 @@ import { CaseSheetRepository } from 'consults-service/repositories/caseSheetRepo
 import { ConsultQueueRepository } from 'consults-service/repositories/consultQueueRepository';
 import { acceptCoupon } from 'helpers/couponServices';
 import { AcceptCouponRequest } from 'types/coupons';
+import { updateDoctorSlotStatusES } from 'doctors-service/entities/doctorElastic';
 
 export const makeAppointmentPaymentTypeDefs = gql`
   enum APPOINTMENT_PAYMENT_TYPE {
@@ -285,29 +286,14 @@ const makeAppointmentPayment: Resolver<
       };
     }
 
-    const slotApptDt =
-      format(processingAppointment.appointmentDateTime, 'yyyy-MM-dd') + ' 18:30:00';
-    const actualApptDt = format(processingAppointment.appointmentDateTime, 'yyyy-MM-dd');
-    let apptDt = format(processingAppointment.appointmentDateTime, 'yyyy-MM-dd');
-    if (processingAppointment.appointmentDateTime >= new Date(slotApptDt)) {
-      apptDt = format(addDays(new Date(apptDt), 1), 'yyyy-MM-dd');
-    }
-
-    const sl = `${actualApptDt}T${processingAppointment.appointmentDateTime
-      .getUTCHours()
-      .toString()
-      .padStart(2, '0')}:${processingAppointment.appointmentDateTime
-      .getUTCMinutes()
-      .toString()
-      .padStart(2, '0')}:00.000Z`;
-    console.log(slotApptDt, apptDt, sl, processingAppointment.doctorId, 'appoint date time');
-    apptsRepo.updateDoctorSlotStatusES(
+    //cannot remove this from here
+    updateDoctorSlotStatusES(
       processingAppointment.doctorId,
-      apptDt,
-      sl,
       processingAppointment.appointmentType,
-      ES_DOCTOR_SLOT_STATUS.BOOKED
-    );
+      ES_DOCTOR_SLOT_STATUS.BOOKED,
+      processingAppointment.appointmentDateTime,
+      processingAppointment
+    )
 
     //Send booking confirmation SMS,EMAIL & NOTIFICATION to patient
     sendPatientAcknowledgements(
@@ -343,7 +329,7 @@ const makeAppointmentPayment: Resolver<
     }
     if (
       timeDifference / 60 <=
-        parseInt(ApiConstants.AUTO_SUBMIT_CASESHEET_TIME_APPOINMENT.toString(), 10) ||
+      parseInt(ApiConstants.AUTO_SUBMIT_CASESHEET_TIME_APPOINMENT.toString(), 10) ||
       submitFlag == 1
     ) {
       const consultQueueRepo = consultsDb.getCustomRepository(ConsultQueueRepository);

@@ -369,6 +369,13 @@ const bookRescheduleAppointment: Resolver<
 > = async (parent, { bookRescheduleAppointmentInput }, { consultsDb, doctorsDb, patientsDb }) => {
   //input - appointmentid, doctorid, newslot, initiatedby-patient, initiatedid-patientid, rescheduledid
   //same doctor different slot - update datetime, and state = rescheduled
+
+  /**
+   * ES UPDATIONS HAPPEN THROUGH 
+   * SUBSCRIBER ON APPOINTMENT IN
+   * OBSERVER.TS
+   */
+
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const rescheduleApptRepo = consultsDb.getCustomRepository(RescheduleAppointmentRepository);
   const apptDetails = await appointmentRepo.findById(bookRescheduleAppointmentInput.appointmentId);
@@ -434,43 +441,6 @@ const bookRescheduleAppointment: Resolver<
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
 
-  //eslint-disable-next-line @typescript-eslint/no-explicit-any
-  async function updateSlotsInEs(appointment: any, appointmentDateTime: any, status: string) {
-    const slotApptDt =
-      format(addMinutes(new Date(appointmentDateTime), +0), 'yyyy-MM-dd') + ' 18:30:00';
-    //format(appointmentDateTime, 'yyyy-MM-dd') + ' 18:30:00';
-    const actualApptDt = format(addMinutes(new Date(appointmentDateTime), +0), 'yyyy-MM-dd');
-    //format(appointmentDateTime, 'yyyy-MM-dd');
-    let apptDt = format(addMinutes(new Date(appointmentDateTime), +0), 'yyyy-MM-dd');
-    // format(appointmentDateTime, 'yyyy-MM-dd');
-    if (appointmentDateTime >= new Date(slotApptDt)) {
-      apptDt = format(addDays(new Date(apptDt), 1), 'yyyy-MM-dd');
-    }
-    const sl = `${actualApptDt}T${new Date(appointmentDateTime)
-      .getUTCHours()
-      .toString()
-      .padStart(2, '0')}:${new Date(appointmentDateTime)
-        .getUTCMinutes()
-        .toString()
-        .padStart(2, '0')}:00.000Z`;
-    console.log(slotApptDt, apptDt, sl, appointment.doctorId, 'appoint date time');
-    const esDocotrStatusOpen =
-      status === 'OPEN' ? ES_DOCTOR_SLOT_STATUS.OPEN : ES_DOCTOR_SLOT_STATUS.BOOKED;
-    await appointmentRepo.updateDoctorSlotStatusES(
-      appointment.doctorId,
-      apptDt,
-      sl,
-      appointment.appointmentType,
-      esDocotrStatusOpen
-    );
-  }
-  log(
-    'consultServiceLogger',
-    'bookRescheduleAppointment prev appointment',
-    'rescheduleAppointment()',
-    JSON.stringify(apptDetails),
-    'false'
-  );
   if (bookRescheduleAppointmentInput.initiatedBy == TRANSFER_INITIATED_TYPE.PATIENT) {
     if (apptDetails.rescheduleCount == ApiConstants.APPOINTMENT_MAX_RESCHEDULE_COUNT_PATIENT) {
       //cancel appt
@@ -537,12 +507,7 @@ const bookRescheduleAppointment: Resolver<
         APPOINTMENT_STATE.RESCHEDULE,
         apptDetails
       );
-      // update on ES, should update new slot to booked and previous slot to open
-      //open old slot
-      await updateSlotsInEs(apptDetails, apptDetails.appointmentDateTime, 'OPEN');
-      // book new slot
-      await updateSlotsInEs(apptDetails, bookRescheduleAppointmentInput.newDateTimeslot, 'BOOKED');
-      //ends
+
       const historyAttrs: Partial<AppointmentUpdateHistory> = {
         appointment: apptDetails,
         userType: APPOINTMENT_UPDATED_BY.PATIENT,
@@ -641,12 +606,6 @@ const bookRescheduleAppointment: Resolver<
         apptDetails
       );
 
-      // update on ES, should update new slot to booked and previous slot to open
-      //open old slot
-      await updateSlotsInEs(apptDetails, apptDetails.appointmentDateTime, 'OPEN');
-      // book new slot
-      await updateSlotsInEs(apptDetails, bookRescheduleAppointmentInput.newDateTimeslot, 'BOOKED');
-      //ends
       const historyAttrs: Partial<AppointmentUpdateHistory> = {
         appointment: apptDetails,
         userType: APPOINTMENT_UPDATED_BY.PATIENT,

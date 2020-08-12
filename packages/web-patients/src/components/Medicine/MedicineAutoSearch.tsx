@@ -14,6 +14,7 @@ import {
   notifyMeTracking,
   pharmacySearchTracking,
   addToCartTracking,
+  pharmacyProductClickedTracking,
 } from '../../webEngageTracking';
 import { NotifyMeNotification } from './NotifyMeNotification';
 import { useAllCurrentPatients } from 'hooks/authHooks';
@@ -53,6 +54,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     searchInput: {
       '& input': {
+        borderRadius: 5,
         [theme.breakpoints.down('xs')]: {
           backgroundColor: '#f7f8f5',
           padding: '15px 33px 15px 12px',
@@ -336,7 +338,7 @@ export const MedicineAutoSearch: React.FC = (props) => {
             disabled: classes.searchBtnDisabled,
           }}
         >
-          <img src={require('images/ic_send.svg')} alt="" />
+          <img src={require('images/ic_send.svg')} alt="send" title="send" />
         </AphButton>
       </div>
       {showError ? (
@@ -363,6 +365,12 @@ export const MedicineAutoSearch: React.FC = (props) => {
                       onClick={() => {
                         setSearchText('');
                         window.location.href = clientRoutes.medicineDetails(medicine.url_key);
+                        pharmacyProductClickedTracking({
+                          productName: medicine.name,
+                          source: 'Search',
+                          productId: medicine.sku,
+                          sectionName: '',
+                        });
                       }}
                     >
                       <div className={classes.medicineImg}>
