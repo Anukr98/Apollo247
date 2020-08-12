@@ -194,11 +194,11 @@ export const SearchMedicineGridCard: React.FC<SearchMedicineGridCardProps> = (pr
   const renderAddToCartView = () => {
     return (
       <TouchableOpacity
-        style={styles.addToCartViewStyle}
+        style={[styles.addToCartViewStyle, isInStock && { paddingHorizontal: 10 }]}
         activeOpacity={1}
         onPress={!isInStock ? onNotifyMeClicked : onPressAdd}
       >
-        <Text style={{ ...theme.viewStyles.text('SB', 9, '#fc9916', 1, 17, 0) }}>
+        <Text style={{ ...theme.viewStyles.text('SB', !isInStock ? 9 : 10, '#fc9916', 1, !isInStock ? 17 : 20, 0) }}>
           {!isInStock ? 'NOTIFY ME' : 'ADD'}
         </Text>
       </TouchableOpacity>

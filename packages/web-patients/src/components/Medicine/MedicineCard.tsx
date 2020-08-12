@@ -7,7 +7,11 @@ import { clientRoutes } from 'helpers/clientRoutes';
 import { Link } from 'react-router-dom';
 import { MedicineProduct } from './../../helpers/MedicineApiCalls';
 import { gtmTracking } from '../../gtmTracking';
-import { notifyMeTracking, addToCartTracking } from '../../webEngageTracking';
+import {
+  notifyMeTracking,
+  addToCartTracking,
+  pharmacyProductClickedTracking,
+} from '../../webEngageTracking';
 import { NotifyMeNotification } from './NotifyMeNotification';
 import { useParams } from 'hooks/routerHooks';
 import _replace from 'lodash/replace';
@@ -211,7 +215,6 @@ export const MedicineCard: React.FC<MedicineInformationProps> = (props) => {
     imageUrl: process.env.PHARMACY_MED_IMAGES_BASE_URL,
   };
   const params = useParams<Params>();
-  const paramSearchText = params.searchText;
   const { addCartItem, cartItems, updateCartItem, removeCartItem } = useShoppingCart();
   const mascotRef = useRef(null);
   const [iśNotifyMeDialogOpen, setIsNotifyMeDialogOpen] = useState<boolean>(false);
@@ -233,7 +236,17 @@ export const MedicineCard: React.FC<MedicineInformationProps> = (props) => {
         ? props.medicineList.map((product: MedicineProduct) => (
             <Grid key={product.id} item xs={6} sm={6} md={4} lg={4} className={classes.gridItem}>
               <div className={classes.root}>
-                <Link to={clientRoutes.medicineDetails(product.url_key)}>
+                <Link
+                  to={clientRoutes.medicineDetails(product.url_key)}
+                  onClick={() =>
+                    pharmacyProductClickedTracking({
+                      productName: product.name,
+                      source: 'Category',
+                      productId: product.sku,
+                      sectionName: params.searchMedicineType,
+                    })
+                  }
+                >
                   <div className={classes.pdHeader}>
                     <div className={classes.bigAvatar}>
                       <img src={`${apiDetails.imageUrl}${product.image}`} alt="" />
