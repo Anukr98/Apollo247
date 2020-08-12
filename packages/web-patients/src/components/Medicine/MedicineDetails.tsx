@@ -620,7 +620,7 @@ export const MedicineDetails: React.FC = (props) => {
                 description: `Buy ${name}, Pack of ${getPackOfMedicine(
                   data.productdp[0]
                 )} at Rs. ${special_price ||
-                  price} in India. Order ${name} online at get the medicine delivered within 4 hours at your doorsteps. Know the uses, side effects, precautions and more about ${name}. `,
+                  price} in India. Order ${name} online and get the medicine delivered within 4 hours at your doorsteps. Know the uses, side effects, precautions and more about ${name}. `,
                 canonicalLink:
                   typeof window !== 'undefined' &&
                   window.location &&

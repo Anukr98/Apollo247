@@ -1361,6 +1361,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const CheckDoctorPresentInChat = () => {
+    if (status === STATUS.COMPLETED) return; // no need to show join button if consultation has been completed
     pubnub
       .hereNow({
         channels: [channel],
@@ -2447,6 +2448,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         setTextChange(false);
         setStatus(STATUS.COMPLETED);
         APIForUpdateAppointmentData(true);
+        setDoctorJoinedChat && setDoctorJoinedChat(false);
+        setDoctorJoined(false);
       } else if (message.message.message === leaveChatRoom) {
         setDoctorJoinedChat && setDoctorJoinedChat(false);
         setDoctorJoined(false);
