@@ -377,6 +377,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const prescription = props.navigation.state.params!.prescription
     ? props.navigation.state.params!.prescription
     : '';
+  
+  const isVoipCall = props.navigation.state.params!.isVoipCall;
 
   let dateIsAfter = moment(new Date()).isAfter(moment(appointmentData.appointmentDateTime));
 
@@ -623,6 +625,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     };
   }, []);
 
+  useEffect(() => {
+    if(isVoipCall) {
+      joinCallHandler();
+    }
+  }, [])
+
   const backDataFunctionality = () => {
     try {
       console.log(callhandelBack, 'is back called');
@@ -669,46 +677,15 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   const handleCallkitEventListeners = () => {
     RNCallKeep.addEventListener('endCall', onDisconnetCallAction);
+    RNCallKeep.addEventListener('answerCall', onAnswerCallAction);
+  }
+
+  const onAnswerCallAction = () => {
+    joinCallHandler();
   }
 
   const onDisconnetCallAction = () => {
-    setIsCall(false);
-              setIsPublishAudio(true);
-              setShowVideo(true);
-              setCameraPosition('front');
-              stopTimer();
-              setHideStatusBar(false);
-              setChatReceived(false);
-
-              pubnub.publish(
-                {
-                  message: {
-                    isTyping: true,
-                    message: 'Video call ended',
-                    duration: callTimerStarted,
-                    id: patientId,
-                    messageDate: new Date(),
-                  },
-                  channel: channel,
-                  storeInHistory: true,
-                },
-                (status, response) => {}
-              );
-
-              pubnub.publish(
-                {
-                  message: {
-                    isTyping: true,
-                    message: endCallMsg,
-                    id: patientId,
-                    messageDate: new Date(),
-                  },
-                  channel: channel,
-                  storeInHistory: true,
-                },
-                (status, response) => {}
-              );
-            
+    handleEndCall();
   }
 
   const playSound = () => {
@@ -1517,6 +1494,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       console.log('Publisher stream destroyed!', event);
       patientJoinedCall.current = false;
       subscriberConnected.current = false;
+      endVoipCall();
     },
     error: (error: string) => {
       AsyncStorage.setItem('callDisconnected', 'true');
@@ -1539,6 +1517,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       setSnackbarState(false);
       console.log('Subscribe stream connected!', event);
       subscriberConnected.current = true;
+      stopSound();
     },
     disconnected: (event: string) => {
       // setSnackbarState(true);
@@ -1546,6 +1525,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       console.log('Subscribe stream disconnected!', event);
       patientJoinedCall.current = false;
       subscriberConnected.current = false;
+      endVoipCall();
     },
     otrnError: (error: string) => {
       setSnackBar();
@@ -4744,7 +4724,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           <Text style={styles.joinRoomDescriptionText}>
             {strings.common.joinConsultRoomDescription} {appointmentData.doctorInfo.displayName}
           </Text>
-          <Button title="JOIN" style={styles.joinBtn} onPress={() => joinCallHandler()} />
+          <Button title="JOIN" style={styles.joinBtn} onPress={() => {
+            patientJoinedCall.current = true;
+            joinCallHandler();
+            }}/>
         </View>
       </View>
     );
@@ -4752,7 +4735,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   const joinCallHandler = () => {
     callPermissions(() => {
-      patientJoinedCall.current = true;
       setLoading(true);
       stopTimer();
       startTimer(0);
@@ -5459,7 +5441,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               setIsPublishAudio(true);
               setShowVideo(true);
               setCameraPosition('front');
-              endVoipCall();
 
               pubnub.publish(
                 {
@@ -5534,8 +5515,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             setCameraPosition('front');
             stopTimer();
             setHideStatusBar(false);
-            endVoipCall();
-            
+
             pubnub.publish(
               {
                 message: {
@@ -5734,46 +5714,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           </TouchableOpacity>
           <TouchableOpacity
             activeOpacity={1}
-            onPress={() => {
-              setIsCall(false);
-              setIsPublishAudio(true);
-              setShowVideo(true);
-              setCameraPosition('front');
-              stopTimer();
-              setHideStatusBar(false);
-              setChatReceived(false);
-              endVoipCall();
-
-              pubnub.publish(
-                {
-                  message: {
-                    isTyping: true,
-                    message: 'Video call ended',
-                    duration: callTimerStarted,
-                    id: patientId,
-                    messageDate: new Date(),
-                  },
-                  channel: channel,
-                  storeInHistory: true,
-                },
-                (status, response) => {}
-              );
-
-              pubnub.publish(
-                {
-                  message: {
-                    isTyping: true,
-                    message: endCallMsg,
-                    id: patientId,
-                    messageDate: new Date(),
-                  },
-                  channel: channel,
-                  storeInHistory: true,
-                },
-                (status, response) => {}
-              );
-            }}
-          >
+            onPress={() => handleEndCall()}>
             <EndCallIcon style={{ height: 60, width: 60 }} />
           </TouchableOpacity>
         </View>
@@ -5781,6 +5722,45 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     );
   };
 
+  const handleEndCall = () => {
+    setIsCall(false);
+    setIsPublishAudio(true);
+    setShowVideo(true);
+    setCameraPosition('front');
+    stopTimer();
+    setHideStatusBar(false);
+    setChatReceived(false);
+
+    pubnub.publish(
+      {
+        message: {
+          isTyping: true,
+          message: 'Video call ended',
+          duration: callTimerStarted,
+          id: patientId,
+          messageDate: new Date(),
+        },
+        channel: channel,
+        storeInHistory: true,
+      },
+      (status, response) => { }
+    );
+
+    pubnub.publish(
+      {
+        message: {
+          isTyping: true,
+          message: endCallMsg,
+          id: patientId,
+          messageDate: new Date(),
+        },
+        channel: channel,
+        storeInHistory: true,
+      },
+      (status, response) => { }
+    );
+  }
+  
   const IncomingCallView = () => {
     return (
       <View

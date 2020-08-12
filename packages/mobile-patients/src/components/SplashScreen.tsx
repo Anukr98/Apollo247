@@ -580,6 +580,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           data: id,
           callType: '',
           prescription: '',
+          isVoipCall: voipAppointmentId.current ? true : false
         });
         break;
       case 'Order':
