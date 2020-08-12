@@ -21,21 +21,21 @@ module.exports = ({ nodemonPluginArgs, webpackConfigOptions }) => {
   const plugins = [new DotenvPlugin({ path: envFile })];
 
   if (isLocal) {
-    plugins.push(new NodemonPlugin({ ...nodemonPluginArgs }));
+    plugins.push(new forkTsCheckerWebpackPlugin(), new NodemonPlugin({ ...nodemonPluginArgs }));
   }
 
   const tsLoader = {
     loader: 'ts-loader',
     options: isLocal
       ? {
-          transpileOnly: true,
-        }
+        transpileOnly: true,
+      }
       : undefined,
   };
   const cache = isLocal
     ? {
-        type: 'memory',
-      }
+      type: 'memory',
+    }
     : false;
   return {
     target: 'node',

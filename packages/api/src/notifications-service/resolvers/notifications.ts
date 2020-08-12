@@ -313,7 +313,6 @@ export const sendDoctorNotificationWhatsapp = async (
 };
 
 export const sendNotificationSMS = async (mobileNumber: string, message: string) => {
-  console.log('message:', message);
   //Adding Apollo 247 string at starting of the body
   message = '[Apollo 247] ' + message;
 
@@ -3107,16 +3106,13 @@ export async function medicineOrderCancelled( //this function is merge with medi
   } else {
     msgText = msgText.replace('{reason}', 'Your order has been cancelled');
   }
-  console.log('messageTxt:', msgText);
   await sendNotificationSMS(orderDetails.patient.mobileNumber, msgText);
   const paymentInfo = orderDetails.medicineOrderPayments[0] || {};
-  console.log('paymentInfo:', paymentInfo);
   if (paymentInfo.paymentType == MEDICINE_ORDER_PAYMENT_TYPE.CASHLESS) {
     if (paymentInfo.amountPaid) {
       msgText = ApiConstants.ORDER_CANCEL_PREPAID_BODY;
       msgText = msgText.replace('{orderId}', orderDetails.orderAutoId.toString());
       msgText = msgText.replace('{refund}', paymentInfo.amountPaid.toString());
-      console.log('message Amount:', msgText);
       await sendNotificationSMS(orderDetails.patient.mobileNumber, msgText);
     }
 
@@ -3127,8 +3123,6 @@ export async function medicineOrderCancelled( //this function is merge with medi
         '{healthCreditsRefund}',
         paymentInfo.healthCreditsRedeemed.toString()
       );
-      console.log('message HC:', msgText);
-
       await sendNotificationSMS(orderDetails.patient.mobileNumber, msgText);
     }
   }
