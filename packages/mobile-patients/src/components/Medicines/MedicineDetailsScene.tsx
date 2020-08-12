@@ -336,7 +336,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
 
   useEffect(() => {
     if (!_deliveryError) {
-      fetchDeliveryTime();
+      fetchDeliveryTime(false);
     }
 
     if (typeof movedFrom !== 'undefined') {
@@ -449,7 +449,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     });
   };
 
-  const fetchDeliveryTime = async () => {
+  const fetchDeliveryTime = async (checkButtonClicked?: boolean) => {
     if (!pincode) return;
     const unServiceableMsg = 'Sorry, not serviceable in your area.';
     const pincodeServiceableItemOutOfStockMsg = 'Sorry, this item is out of stock in your area.';
@@ -488,15 +488,17 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
         const deliveryDate = g(res, 'data', 'tat', '0' as any, 'deliverydate');
         const currentDate = moment();
         if (deliveryDate) {
-          const eventAttributes: WebEngageEvents[WebEngageEventName.PRODUCT_DETAIL_PINCODE_CHECK] = {
-            'product id': sku,
-            'product name': medicineDetails.name,
-            pincode: Number(pincode),
-            'customer id': currentPatient && currentPatient.id ? currentPatient.id : '',
-            'TAT Displayed': moment(deliveryDate).diff(currentDate, 'd'),
-            Serviceable: pinCodeNotServiceable ? 'No' : 'Yes',
-          };
-          postWebEngageEvent(WebEngageEventName.PRODUCT_DETAIL_PINCODE_CHECK, eventAttributes);
+          if (checkButtonClicked) {
+            const eventAttributes: WebEngageEvents[WebEngageEventName.PRODUCT_DETAIL_PINCODE_CHECK] = {
+              'product id': sku,
+              'product name': medicineDetails.name,
+              pincode: Number(pincode),
+              'customer id': currentPatient && currentPatient.id ? currentPatient.id : '',
+              'TAT Displayed': moment(deliveryDate).diff(currentDate, 'd'),
+              Serviceable: pinCodeNotServiceable ? 'No' : 'Yes',
+            };
+            postWebEngageEvent(WebEngageEventName.PRODUCT_DETAIL_PINCODE_CHECK, eventAttributes);
+          }
           if (isDeliveryDateWithInXDays(deliveryDate)) {
             setdeliveryTime(deliveryDate);
             setdeliveryError('');
@@ -1001,7 +1003,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
                   theme.viewStyles.yellowTextStyle,
                   { opacity: pincode.length === 6 ? 1 : 0.21, padding: 5 },
                 ]}
-                onPress={() => (pincode.length === 6 ? fetchDeliveryTime() : {})}
+                onPress={() => (pincode.length === 6 ? fetchDeliveryTime(true) : {})}
                 suppressHighlighting={pincode.length !== 6}
               >
                 CHECK

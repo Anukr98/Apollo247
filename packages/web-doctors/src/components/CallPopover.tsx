@@ -3727,7 +3727,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           }}
           onClick={() => {
             handleClose();
-            props.setStartConsultAction(true);
             autoSend(videoCallMsg);
             setIsVideoCall(true);
             setDisableOnCancel(true);
@@ -3779,7 +3778,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               }}
               onClick={() => {
                 handleClose();
-                props.setStartConsultAction(true);
                 autoSend(videoCallMsg);
                 setIsVideoCall(true);
                 setDisableOnCancel(true);

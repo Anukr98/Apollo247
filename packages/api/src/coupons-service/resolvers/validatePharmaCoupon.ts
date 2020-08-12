@@ -150,7 +150,6 @@ export const validatePharmaCoupon: Resolver<
   };
 
   const couponData = await validateCoupon(payload);
-
   let validityStatus = false;
   let reasonForInvalidStatus = '';
   const lineItemsWithDiscount: PharmaLineItems[] = [];
@@ -182,7 +181,7 @@ export const validatePharmaCoupon: Resolver<
   }
 
   const productDiscount = Number((mrpPriceTotal - specialPriceTotal).toFixed(2));
-  const totalDiscountPrice = mrpPriceTotal - couponData.response!.discount;
+  const totalDiscountPrice = couponData.response!.discount;
 
   const discountedTotals: DiscountedTotals = {
     couponDiscount: Number((totalDiscountPrice - productDiscount).toFixed(2)),
@@ -201,6 +200,7 @@ export const validatePharmaCoupon: Resolver<
 
 type CouponData = {
   code: string;
+  displayStatus: boolean;
   couponPharmaRule: {
     messageOnCouponScreen: string;
   };
@@ -229,6 +229,7 @@ const getPharmaCouponList: Resolver<
   couponData.response.map((item) => {
     const singleCoupon: CouponData = {
       code: item.coupon,
+      displayStatus: true,
       couponPharmaRule: {
         messageOnCouponScreen: item.message,
       },

@@ -336,7 +336,7 @@ export const MedicineAutoSearch: React.FC = (props) => {
             disabled: classes.searchBtnDisabled,
           }}
         >
-          <img src={require('images/ic_send.svg')} alt="" />
+          <img src={require('images/ic_send.svg')} alt="send" title="send" />
         </AphButton>
       </div>
       {showError ? (
