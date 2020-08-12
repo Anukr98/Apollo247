@@ -3088,46 +3088,6 @@ export async function sendDoctorRescheduleAppointmentNotification(
   return { status: true };
 }
 
-export async function medicineOrderCancelled( //this function is merge with medicineOrderRefundNotification
-  orderDetails: MedicineOrders,
-  reasonCode: string,
-  patientsDb: Connection
-) {
-  let msgText: string = '';
-  msgText = ApiConstants.ORDER_CANCEL_BODY;
-  const medicineOrdersRepo = patientsDb.getCustomRepository(MedicineOrdersRepository);
-  msgText = msgText.replace('{name}', orderDetails.patient.firstName);
-  msgText = msgText.replace('{orderId}', orderDetails.orderAutoId.toString());
-  const cancellationReasons = await medicineOrdersRepo.getMedicineOrderCancelReasonByCode(
-    reasonCode
-  );
-  if (cancellationReasons) {
-    msgText = msgText.replace('{reason}', cancellationReasons.displayMessage);
-  } else {
-    msgText = msgText.replace('{reason}', 'Your order has been cancelled');
-  }
-  await sendNotificationSMS(orderDetails.patient.mobileNumber, msgText);
-  const paymentInfo = orderDetails.medicineOrderPayments[0] || {};
-  if (paymentInfo.paymentType == MEDICINE_ORDER_PAYMENT_TYPE.CASHLESS) {
-    if (paymentInfo.amountPaid) {
-      msgText = ApiConstants.ORDER_CANCEL_PREPAID_BODY;
-      msgText = msgText.replace('{orderId}', orderDetails.orderAutoId.toString());
-      msgText = msgText.replace('{refund}', paymentInfo.amountPaid.toString());
-      await sendNotificationSMS(orderDetails.patient.mobileNumber, msgText);
-    }
-
-    if (paymentInfo.healthCreditsRedeemed > 0) {
-      msgText = ApiConstants.ORDER_CANCEL_HC_REFUND_BODY;
-      msgText = msgText.replace('{orderId}', orderDetails.orderAutoId.toString());
-      msgText = msgText.replace(
-        '{healthCreditsRefund}',
-        paymentInfo.healthCreditsRedeemed.toString()
-      );
-      await sendNotificationSMS(orderDetails.patient.mobileNumber, msgText);
-    }
-  }
-}
-
 export async function medicineOrderRefundNotification(
   orderDetails: MedicineOrders,
   medicineOrderRefundNotificationInput: MedicineOrderRefundNotificationInput,

@@ -21,7 +21,6 @@ import { ServiceBusService } from 'azure-sb';
 import {
   sendMedicineOrderStatusNotification,
   NotificationType,
-  medicineOrderCancelled,
 } from 'notifications-service/resolvers/notifications';
 
 import { medicineCOD } from 'helpers/emailTemplates/medicineCOD';
