@@ -17,7 +17,12 @@ import {
   MedicineOrderInvoice,
   TransactionLineItemsPartial,
 } from 'profiles-service/entities';
-import { ONE_APOLLO_STORE_CODE } from 'types/oneApolloTypes';
+import {
+  ONE_APOLLO_STORE_CODE,
+  TierEarningsPerCategory,
+  Tier,
+  Earnings,
+} from 'types/oneApolloTypes';
 
 import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
@@ -33,7 +38,6 @@ import { OneApollo } from 'helpers/oneApollo';
 import { calculateRefund } from 'profiles-service/helpers/refundHelper';
 import { WebEngageInput, postEvent } from 'helpers/webEngage';
 import { ApiConstants } from 'ApiConstants';
-
 export const updateOrderStatusTypeDefs = gql`
   input OrderStatusInput {
     orderId: Int!
@@ -469,6 +473,12 @@ const generateTransactions = async (
     );
 
     const itemTypemap = await getSkuMap(itemSku);
+    const oneApollo = new OneApollo();
+    const oneApolloRes = await oneApollo.getOneApolloUser(mobileNumber);
+    let userTier: Tier = Tier.Silver;
+    if (oneApolloRes.Success) {
+      userTier = oneApolloRes.CustomerData.Tier as Tier;
+    }
     let transactionLineItems = addProductNameAndCat(transactionLineItemsPartial, itemTypemap);
     const healthCreditsRedeemed = +new Decimal(
       order.medicineOrderPayments[0].healthCreditsRedeemed
@@ -476,7 +486,8 @@ const generateTransactions = async (
     const transactionLineItemsCom = updateCreditsRedeemedInfo(
       transactionLineItems,
       healthCreditsRedeemed,
-      itemTypemap
+      itemTypemap,
+      userTier
     );
     netAmount = transactionLineItemsCom.reduce((acc, curValue) => {
       return acc + curValue.NetAmount;
@@ -621,7 +632,8 @@ const createLineItems = (itemDetails: Array<ItemDetails>) => {
 const updateCreditsRedeemedInfo = (
   transactionLineItems: TransactionLineItems[],
   totalCreditsRedeemed: number,
-  itemTypemap: ItemsSkuTypeMap
+  itemTypemap: ItemsSkuTypeMap,
+  userTier: Tier
 ): TransactionLineItems[] => {
   let availableCredits = totalCreditsRedeemed;
   const arrSize = transactionLineItems.length;
@@ -634,7 +646,8 @@ const updateCreditsRedeemedInfo = (
       let earningCurrentItem = projectedEarnings(
         currentProductCode,
         currentItem.NetAmount,
-        currentItem.DiscountAmount
+        currentItem.DiscountAmount,
+        userTier
       );
       for (let j = i + 1; j < arrSize; j++) {
         if (!availableCredits) {
@@ -647,7 +660,8 @@ const updateCreditsRedeemedInfo = (
         const earningIterationItem = projectedEarnings(
           iterationProductCode,
           iterationItem.NetAmount,
-          iterationItem.DiscountAmount
+          iterationItem.DiscountAmount,
+          userTier
         );
 
         if (earningCurrentItem > earningIterationItem) {
@@ -675,14 +689,16 @@ const updateCreditsRedeemedInfo = (
 const projectedEarnings = (
   type: ProductTypePharmacy,
   netAmount: number,
-  discount: number
+  discount: number,
+  tier: Tier
 ): number => {
-  const earningsPerTypes = {
-    pharma: ApiConstants.PHARMA_DISCOUNT,
-    fmcg: ApiConstants.FMCG_DISCOUNT,
-    pl: ApiConstants.PL_DISCOUNT,
-  };
-  return discount ? 0 : +new Decimal(netAmount).times(earningsPerTypes[type]);
+  const oneApollo = new OneApollo();
+  const earnings = oneApollo.getOneApolloTierInfo();
+  let tierEarnings = earnings[tier];
+  if (!tierEarnings) {
+    tierEarnings = earnings.Silver;
+  }
+  return discount ? 0 : +new Decimal(netAmount).times(tierEarnings[type]);
 };
 
 export const updateOrderStatusResolvers = {

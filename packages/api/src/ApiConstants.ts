@@ -406,10 +406,6 @@ export enum ApiConstants {
   REDIS_PWD = 'FgFyZpibcBewC6U7AZYDq1DppMW02mi+koiEa63gDF4=',
   REDIS_IMAGE_URL = '/catalog/product/',
 
-  PHARMA_DISCOUNT = 10,
-  PL_DISCOUNT = 15,
-  FMCG_DISCOUNT = 5,
-
   //prescriptions uploaded through medicine, diagnostic orders or from OLD APPS
   PRESCRIPTION_UPLOADED_BY_PATIENT = 'Prescription uploaded by Patient',
   ALERT_STORE_REMARKS = 'Customer Name : {name} , Mobile : {mobile} will be reaching Store in 10 mins to pickup order {orderNo} - Please handover Medicines.',

@@ -15,7 +15,7 @@ import {
   BOOKING_SOURCE,
   DEVICE_TYPE,
 } from 'profiles-service/entities';
-import { ONE_APOLLO_STORE_CODE } from 'types/oneApolloTypes';
+import { ONE_APOLLO_STORE_CODE, Tier } from 'types/oneApolloTypes';
 
 import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
@@ -204,7 +204,6 @@ const createOneApolloTransaction = async (
     }
     const transactionArr = await generateTransactions(invoiceDetails, patient, mobileNumber, order);
     if (transactionArr) {
-      console.log('transactionArr', JSON.stringify(transactionArr));
       log(
         'profileServiceLogger',
         `oneApollo Transaction Payload- ${order.orderAutoId}`,
@@ -257,11 +256,21 @@ const generateTransactions = async (
     );
 
     const itemTypemap = await getSkuMap(itemSku);
+    const oneApollo = new OneApollo();
+    const oneApolloRes = await oneApollo.getOneApolloUser(mobileNumber);
+    let userTier: Tier = Tier.Silver;
+    if (oneApolloRes.Success) {
+      userTier = oneApolloRes.CustomerData.Tier as Tier;
+    }
     let transactionLineItems = addProductNameAndCat(transactionLineItemsPartial, itemTypemap);
+    const healthCreditsRedeemed = +new Decimal(
+      order.medicineOrderPayments[0].healthCreditsRedeemed
+    ).toDecimalPlaces(2, Decimal.ROUND_DOWN);
     const transactionLineItemsCom = updateCreditsRedeemedInfo(
       transactionLineItems,
-      +new Decimal(order.medicineOrderPayments[0].healthCreditsRedeemed).toFixed(2),
-      itemTypemap
+      healthCreditsRedeemed,
+      itemTypemap,
+      userTier
     );
     netAmount = transactionLineItemsCom.reduce((acc, curValue) => {
       return acc + curValue.NetAmount;
@@ -273,15 +282,11 @@ const generateTransactions = async (
       SendCommunication: true,
       CalculateHealthCredits: true,
       MobileNumber: mobileNumber,
-      CreditsRedeemed: +new Decimal(order.medicineOrderPayments[0].healthCreditsRedeemed).toFixed(
-        2
-      ),
+      CreditsRedeemed: healthCreditsRedeemed,
       BillNo: `${billDetails.billNumber}_${order.orderAutoId}`,
       NetAmount: netAmount,
       TransactionDate: billDetails.billDateTime,
-      GrossAmount: +new Decimal(netAmount)
-        .plus(totalDiscount)
-        .plus(+new Decimal(order.medicineOrderPayments[0].healthCreditsRedeemed).toFixed(2)),
+      GrossAmount: +new Decimal(netAmount).plus(totalDiscount).plus(healthCreditsRedeemed),
       Discount: totalDiscount,
       TransactionLineItems: transactionLineItemsCom,
       StoreCode: getStoreCodeFromDevice(order.deviceType, order.bookingSource),
@@ -383,10 +388,10 @@ const createLineItems = (itemDetails: Array<ItemDetails>) => {
   let transactionLineItemsPartial: TransactionLineItemsPartial[] = [];
   itemDetails.forEach((item: ItemDetails) => {
     itemSku.push(item.itemId);
-    const netMrp = Number(new Decimal(item.mrp).times(item.issuedQty).toFixed(1));
+    const netMrp = Number(new Decimal(item.mrp).times(item.issuedQty).toFixed(2));
     let netDiscount = 0;
     if (item.discountPrice) {
-      netDiscount = Number(new Decimal(item.discountPrice).times(item.issuedQty).toFixed(1));
+      netDiscount = Number(new Decimal(item.discountPrice).times(item.issuedQty).toFixed(2));
     }
     const netPrice: number = +new Decimal(netMrp).minus(netDiscount);
 
@@ -410,7 +415,8 @@ const createLineItems = (itemDetails: Array<ItemDetails>) => {
 const updateCreditsRedeemedInfo = (
   transactionLineItems: TransactionLineItems[],
   totalCreditsRedeemed: number,
-  itemTypemap: ItemsSkuTypeMap
+  itemTypemap: ItemsSkuTypeMap,
+  userTier: Tier
 ): TransactionLineItems[] => {
   let availableCredits = totalCreditsRedeemed;
   const arrSize = transactionLineItems.length;
@@ -423,7 +429,8 @@ const updateCreditsRedeemedInfo = (
       let earningCurrentItem = projectedEarnings(
         currentProductCode,
         currentItem.NetAmount,
-        currentItem.DiscountAmount
+        currentItem.DiscountAmount,
+        userTier
       );
       for (let j = i + 1; j < arrSize; j++) {
         if (!availableCredits) {
@@ -436,7 +443,8 @@ const updateCreditsRedeemedInfo = (
         const earningIterationItem = projectedEarnings(
           iterationProductCode,
           iterationItem.NetAmount,
-          iterationItem.DiscountAmount
+          iterationItem.DiscountAmount,
+          userTier
         );
 
         if (earningCurrentItem > earningIterationItem) {
@@ -464,15 +472,16 @@ const updateCreditsRedeemedInfo = (
 const projectedEarnings = (
   type: ProductTypePharmacy,
   netAmount: number,
-  discount: number
+  discount: number,
+  tier: Tier
 ): number => {
-  const earningsPerTypes = {
-    pharma: ApiConstants.PHARMA_DISCOUNT,
-    fmcg: ApiConstants.FMCG_DISCOUNT,
-    pl: ApiConstants.PL_DISCOUNT,
-  };
-  console.log(+new Decimal(netAmount).times(earningsPerTypes[type]));
-  return discount ? 0 : +new Decimal(netAmount).times(earningsPerTypes[type]);
+  const oneApollo = new OneApollo();
+  const earnings = oneApollo.getOneApolloTierInfo();
+  let tierEarnings = earnings[tier];
+  if (!tierEarnings) {
+    tierEarnings = earnings.Silver;
+  }
+  return discount ? 0 : +new Decimal(netAmount).times(tierEarnings[type]);
 };
 
 const saveOrderOutForDeliveryStatus: Resolver<
