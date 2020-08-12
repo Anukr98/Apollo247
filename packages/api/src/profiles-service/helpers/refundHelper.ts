@@ -6,7 +6,11 @@ import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { MedicineOrderRefundsRepository } from 'profiles-service/repositories/MedicineOrderRefundsRepository';
 //to avoid code duplication...
 import { genchecksumbystring } from 'lib/paytmLib/checksum.js';
-import { PAYTM_STATUS, REFUND_STATUS } from 'profiles-service/entities';
+import {
+  PAYTM_STATUS,
+  REFUND_STATUS,
+  MEDICINE_ORDER_PAYMENT_TYPE,
+} from 'profiles-service/entities';
 import { OneApollo } from 'helpers/oneApollo';
 import {
   MedicineOrderRefunds,
@@ -232,105 +236,123 @@ export const calculateRefund = async (
     JSON.stringify(paymentInfo),
     ''
   );
-  const updatePaymentRequest: Partial<MedicineOrderPayments> = {};
 
-  /**
-   * We cannot refund less than 1 rs as per Paytm refunds policy
-   */
-  if (refundAmount >= 1) {
-    let refundResp = await initiateRefund(
+  if (paymentInfo.paymentType != MEDICINE_ORDER_PAYMENT_TYPE.CASHLESS && !totalOrderBilling) {
+    medicineOrderRefundNotification(
+      orderDetails,
       {
-        refundAmount,
-        txnId,
-        medicineOrderPayments: paymentInfo,
-        medicineOrders: orderDetails,
-        orderId: '' + orderDetails.orderAutoId,
+        refundAmount: 0,
+        paymentInfo,
+        healthCreditsRefunded: 0,
+        isPartialRefund: false,
+        reasonCode,
+        isRefundSuccessful,
       },
       profilesDb
     );
-    refundResp = refundResp as PaytmResponse;
-    if (refundResp.refundId) {
-      isRefundSuccessful = true;
-      const totalAmountRefunded = +new Decimal(refundAmount).plus(totalRefundAmount);
-      updatePaymentRequest.refundAmount = totalAmountRefunded;
-    } else {
-      log(
-        'profileServiceLogger',
-        `REFUND_REQUEST_FAILED - ${JSON.stringify(paymentInfo)}`,
-        `HEALTH CREDITS UNBLOCKED_FOR_ORDER - ${orderDetails.orderAutoId}`,
-        `${JSON.stringify(orderDetails)}`,
-        'true'
-      );
-    }
-  }
+  } else if (paymentInfo.paymentType == MEDICINE_ORDER_PAYMENT_TYPE.CASHLESS) {
+    const updatePaymentRequest: Partial<MedicineOrderPayments> = {};
 
-  if (healthCreditsToRefund > 0) {
-    // check if healthCredits were blocked for the order
-    if (healthCreditsRedemptionRequest && healthCreditsRedemptionRequest.RequestNumber) {
-      /**
-       * StoreCode for the OneApollo is decided based on deviceType in order
-       */
-      let storeCode: ONE_APOLLO_STORE_CODE = ONE_APOLLO_STORE_CODE.WEBCUS;
-      if (orderDetails.deviceType) {
-        storeCode = ONE_APOLLO_STORE_CODE.IOSCUS;
+    /**
+     * We cannot refund less than 1 rs as per Paytm refunds policy
+     */
+    if (refundAmount >= 1) {
+      let refundResp = await initiateRefund(
+        {
+          refundAmount,
+          txnId,
+          medicineOrderPayments: paymentInfo,
+          medicineOrders: orderDetails,
+          orderId: '' + orderDetails.orderAutoId,
+        },
+        profilesDb
+      );
+      refundResp = refundResp as PaytmResponse;
+      if (refundResp.refundId) {
+        isRefundSuccessful = true;
+        const totalAmountRefunded = +new Decimal(refundAmount).plus(totalRefundAmount);
+        updatePaymentRequest.refundAmount = totalAmountRefunded;
+      } else {
+        log(
+          'profileServiceLogger',
+          `REFUND_REQUEST_FAILED - ${JSON.stringify(paymentInfo)}`,
+          `HEALTH CREDITS UNBLOCKED_FOR_ORDER - ${orderDetails.orderAutoId}`,
+          `${JSON.stringify(orderDetails)}`,
+          'true'
+        );
       }
-      if (orderDetails.deviceType) {
-        storeCode = ONE_APOLLO_STORE_CODE.ANDCUS;
+    }
+
+    if (healthCreditsToRefund > 0) {
+      // check if healthCredits were blocked for the order
+      if (healthCreditsRedemptionRequest && healthCreditsRedemptionRequest.RequestNumber) {
+        /**
+         * StoreCode for the OneApollo is decided based on deviceType in order
+         */
+        let storeCode: ONE_APOLLO_STORE_CODE = ONE_APOLLO_STORE_CODE.WEBCUS;
+        if (orderDetails.deviceType) {
+          storeCode = ONE_APOLLO_STORE_CODE.IOSCUS;
+        }
+        if (orderDetails.deviceType) {
+          storeCode = ONE_APOLLO_STORE_CODE.ANDCUS;
+        }
+
+        //Instantiate OneApollo helper class
+        const oneApollo = new OneApollo();
+
+        // Send request for unblock of health credits
+        oneApollo.unblockHealthCredits({
+          MobileNumber: orderDetails.patient.mobileNumber.slice(3),
+          PointsToRelease: healthCreditsToRefund.toString(),
+          StoreCode: storeCode,
+          BusinessUnit: process.env.ONEAPOLLO_BUSINESS_UNIT || '',
+          RedemptionRequestNumber: healthCreditsRedemptionRequest.RequestNumber.toString(),
+        });
+
+        const blockedHealthCredits = +new Decimal(healthCreditsRedeemed).minus(
+          healthCreditsToRefund
+        );
+
+        updatePaymentRequest.healthCreditsRedeemed = blockedHealthCredits;
+      } else {
+        log(
+          'profileServiceLogger',
+          `HEALTH_CREDITS_REDEMPTION_REQUEST_NOT_FOUND`,
+          `HEALTH CREDITS REFUND FAILED - ${orderDetails.orderAutoId}`,
+          JSON.stringify(paymentInfo),
+          'true'
+        );
+        throw new AphError(AphErrorMessages.HEALTH_CREDITS_REQUEST_NOT_FOUND, undefined, {});
       }
+      if (Object.keys(updatePaymentRequest).length) {
+        medOrderRepo.updateMedicineOrderPayment(
+          orderDetails.id,
+          orderDetails.orderAutoId,
+          updatePaymentRequest
+        );
+      }
+    }
 
-      //Instantiate OneApollo helper class
-      const oneApollo = new OneApollo();
-
-      // Send request for unblock of health credits
-      oneApollo.unblockHealthCredits({
-        MobileNumber: orderDetails.patient.mobileNumber.slice(3),
-        PointsToRelease: healthCreditsToRefund.toString(),
-        StoreCode: storeCode,
-        BusinessUnit: process.env.ONEAPOLLO_BUSINESS_UNIT || '',
-        RedemptionRequestNumber: healthCreditsRedemptionRequest.RequestNumber.toString(),
-      });
-
-      const blockedHealthCredits = +new Decimal(healthCreditsRedeemed).minus(healthCreditsToRefund);
-
-      updatePaymentRequest.healthCreditsRedeemed = blockedHealthCredits;
+    //send refund SMS notification for partial refund
+    let isPartialRefund: boolean;
+    if (totalOrderBilling > 0) {
+      isPartialRefund = true;
     } else {
-      log(
-        'profileServiceLogger',
-        `HEALTH_CREDITS_REDEMPTION_REQUEST_NOT_FOUND`,
-        `HEALTH CREDITS REFUND FAILED - ${orderDetails.orderAutoId}`,
-        JSON.stringify(paymentInfo),
-        'true'
-      );
-      throw new AphError(AphErrorMessages.HEALTH_CREDITS_REQUEST_NOT_FOUND, undefined, {});
+      isPartialRefund = false;
     }
-    if (Object.keys(updatePaymentRequest).length) {
-      medOrderRepo.updateMedicineOrderPayment(
-        orderDetails.id,
-        orderDetails.orderAutoId,
-        updatePaymentRequest
-      );
-    }
+    medicineOrderRefundNotification(
+      orderDetails,
+      {
+        refundAmount: refundAmount,
+        paymentInfo,
+        healthCreditsRefunded: healthCreditsToRefund,
+        isPartialRefund,
+        reasonCode,
+        isRefundSuccessful,
+      },
+      profilesDb
+    );
   }
-
-  //send refund SMS notification for partial refund
-  let isPartialRefund: boolean;
-  if (totalOrderBilling > 0) {
-    isPartialRefund = true;
-  } else {
-    isPartialRefund = false;
-  }
-  medicineOrderRefundNotification(
-    orderDetails,
-    {
-      refundAmount: refundAmount,
-      paymentInfo,
-      healthCreditsRefunded: healthCreditsToRefund,
-      isPartialRefund,
-      reasonCode,
-      isRefundSuccessful,
-    },
-    profilesDb
-  );
 };
 
 const genCheckSumPromiseWrapper = (body: PaytmBody, key: string): Promise<string> => {

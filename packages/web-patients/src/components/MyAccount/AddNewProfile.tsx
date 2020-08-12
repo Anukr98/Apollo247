@@ -683,6 +683,9 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
                     value={emailAddress}
                     onChange={(e) => {
                       setEmailAddress(e.target.value);
+                      if (e.target.value !== '') {
+                        setIsEmailAddressValid(isEmailValid(e.target.value));
+                      }
                     }}
                     onBlur={(e) => {
                       if (e.target.value !== '') {
