@@ -12,7 +12,11 @@ import {
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-
+interface meta {
+  total: number;
+  pageSize: number;
+  pageNo: number;
+}
 export const useGetPayments = (
   pageNo: number,
   pageSize: number,
@@ -22,7 +26,7 @@ export const useGetPayments = (
 ) => {
   const [payments, setPayments] = useState();
   const [loading, setLoading] = useState(true);
-  const [meta, setmeta] = useState();
+  const [meta, setmeta] = useState<meta>();
   const client = useApolloClient();
   const { showAphAlert } = useUIElements();
 

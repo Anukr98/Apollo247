@@ -70,7 +70,7 @@ const PaymentsList: FC<IProps> = (props) => {
 
   const onConsultEndReached = () => {
     console.log('End reached');
-    if (!fetching && paymentsList.length < meta.total) {
+    if (meta && !fetching && paymentsList.length < meta.total) {
       setfetching(true);
       client
         .query({
