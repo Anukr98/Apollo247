@@ -154,6 +154,7 @@ export const connect = async () => {
       subscribers: [PatientEntitiySubscriber],
       logging: process.env.NODE_ENV === 'production' ? false : true,
       synchronize: false,
+      migrationsRun: true,
       migrations: [migrationDir.profiles_db],
       extra: {
         connectionLimit: process.env.CONNECTION_POOL_LIMIT,
@@ -198,6 +199,7 @@ export const connect = async () => {
       extra: {
         connectionLimit: process.env.CONNECTION_POOL_LIMIT,
       },
+      migrationsRun: true,
       synchronize: false,
       migrations: [migrationDir.doctors_db],
     },
@@ -240,6 +242,7 @@ export const connect = async () => {
       extra: {
         connectionLimit: process.env.CONNECTION_POOL_LIMIT,
       },
+      migrationsRun: true,
       synchronize: false,
       migrations: [migrationDir.consults_db],
     },
