@@ -105,7 +105,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
   useEffect(() => {
     getData('ConsultRoom', undefined, false); // no need to set timeout on didMount
-    InitiateAppsFlyer();
+    InitiateAppsFlyer(props.navigation);
     DeviceEventEmitter.addListener('accept', (params) => {
       console.log('Accept Params', params);
       getAppointmentDataAndNavigate(params.appointment_id);
