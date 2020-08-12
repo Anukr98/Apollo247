@@ -9,7 +9,6 @@ import {
   getDeliveryTime,
   medCartItemsDetailsApi,
   MedicineOrderBilledItem,
-  trackTagalysEvent,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   MEDICINE_ORDER_STATUS,
@@ -64,7 +63,7 @@ import { UIElementsContextProps } from '@aph/mobile-patients/src/components/UIEl
 import { NavigationScreenProp, NavigationRoute } from 'react-navigation';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { getLatestMedicineOrder_getLatestMedicineOrder_medicineOrderDetails } from '@aph/mobile-patients/src/graphql/types/getLatestMedicineOrder';
-import { Tagalys } from '@aph/mobile-patients/src/helpers/Tagalys';
+import { getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails } from '@aph/mobile-patients/src/graphql/types/getMedicineOrderOMSDetailsWithAddress';
 
 const googleApiKey = AppConfig.Configuration.GOOGLE_API_KEY;
 let onInstallConversionDataCanceller: any;
@@ -659,7 +658,7 @@ export const extractUrlFromString = (text: string): string | undefined => {
 
 export const reOrderMedicines = async (
   order:
-    | getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails
+    | getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails
     | getLatestMedicineOrder_getLatestMedicineOrder_medicineOrderDetails,
   currentPatient: any,
   source: ReorderMedicines['source']
@@ -1335,24 +1334,6 @@ export const addPharmaItemToCart = (
     });
   };
 
-  const trackTagalysAddToCartEvent = () => {
-    try {
-      trackTagalysEvent(
-        {
-          event_type: 'product_action',
-          details: {
-            sku: cartItem.id,
-            action: 'add_to_cart',
-            quantity: 1,
-          } as Tagalys.ProductAction,
-        },
-        g(currentPatient, 'id')!
-      );
-    } catch (error) {
-      CommonBugFender('helperFunctions_trackTagalysEvent', error);
-    }
-  };
-
   const addToCart = () => {
     addCartItem!(cartItem);
     postwebEngageAddToCartEvent(
@@ -1376,7 +1357,6 @@ export const addPharmaItemToCart = (
       },
       g(currentPatient, 'id')!
     );
-    trackTagalysAddToCartEvent();
   };
 
   if (!isLocationServeiceable) {

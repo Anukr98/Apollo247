@@ -21,6 +21,7 @@ import {
   REQUEST_ROLES,
   PATIENT_TYPE,
   AppointmentUpdateHistory,
+  PaginateParams,
 } from 'consults-service/entities';
 import { AppointmentDateTime } from 'doctors-service/resolvers/getDoctorsBySpecialtyAndFilters';
 import { AphError } from 'AphError';
@@ -43,11 +44,6 @@ import { PatientRepository } from 'profiles-service/repositories/patientReposito
 import { log } from 'customWinstonLogger';
 import { ApiConstants } from 'ApiConstants';
 import { getCache, setCache, delCache } from 'consults-service/database/connectRedis';
-
-interface PaginateParams {
-  take?: number,
-  skip?: number
-}
 
 const REDIS_APPOINTMENT_ID_KEY_PREFIX: string = 'patient:appointment:';
 
@@ -651,7 +647,7 @@ export class AppointmentRepository extends Repository<Appointment> {
           status5: STATUS.PAYMENT_PENDING_PG,
           status6: STATUS.PAYMENT_ABORTED,
         }
-      )
+      ).orderBy("appointment.sdConsultationDate", "DESC")
       .getMany();
   }
 
@@ -948,9 +944,9 @@ export class AppointmentRepository extends Repository<Appointment> {
         .getUTCHours()
         .toString()
         .padStart(2, '0')}:${appointmentDate
-          .getUTCMinutes()
-          .toString()
-          .padStart(2, '0')}:00.000Z`;
+        .getUTCMinutes()
+        .toString()
+        .padStart(2, '0')}:00.000Z`;
       console.log(availableSlots, 'availableSlots final list');
       console.log(availableSlots.indexOf(sl), 'indexof');
       console.log(checkStart, checkEnd, 'check start end');
@@ -1108,9 +1104,9 @@ export class AppointmentRepository extends Repository<Appointment> {
             .getUTCHours()
             .toString()
             .padStart(2, '0')}:${doctorAppointment.appointmentDateTime
-              .getUTCMinutes()
-              .toString()
-              .padStart(2, '0')}:00.000Z`;
+            .getUTCMinutes()
+            .toString()
+            .padStart(2, '0')}:00.000Z`;
           if (availableSlots.indexOf(aptSlot) >= 0) {
             availableSlots.splice(availableSlots.indexOf(aptSlot), 1);
           }
@@ -1393,15 +1389,12 @@ export class AppointmentRepository extends Repository<Appointment> {
       where: {
         patientId: In(ids),
         discountedAmount: Not(0),
-        status: Not(STATUS.PAYMENT_ABORTED)
+        status: Not(STATUS.PAYMENT_ABORTED),
       },
-      relations: [
-        'appointmentPayments',
-        'appointmentRefunds'
-      ],
+      relations: ['appointmentPayments', 'appointmentRefunds'],
       order: { bookingDate: 'ASC' },
       //extra params...
-      ...paginate
+      ...paginate,
     });
     /**
      * keeping below snippet to validate above query
@@ -1455,9 +1448,9 @@ export class AppointmentRepository extends Repository<Appointment> {
             .getUTCHours()
             .toString()
             .padStart(2, '0')}:${blockedSlot.start
-              .getUTCMinutes()
-              .toString()
-              .padStart(2, '0')}:00.000Z`;
+            .getUTCMinutes()
+            .toString()
+            .padStart(2, '0')}:00.000Z`;
 
           let blockedSlotsCount =
             (Math.abs(differenceInMinutes(blockedSlot.end, blockedSlot.start)) / 60) * duration;
@@ -1515,9 +1508,9 @@ export class AppointmentRepository extends Repository<Appointment> {
               .getUTCHours()
               .toString()
               .padStart(2, '0')}:${slot
-                .getUTCMinutes()
-                .toString()
-                .padStart(2, '0')}:00.000Z`;
+              .getUTCMinutes()
+              .toString()
+              .padStart(2, '0')}:00.000Z`;
           }
           console.log('start slot', slot);
 

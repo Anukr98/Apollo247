@@ -49,6 +49,7 @@ import {
 import RNCallKeep from 'react-native-callkeep';
 import VoipPushNotification from 'react-native-voip-push-notification';
 import { string } from '../strings/string';
+import { isUpperCase } from '@aph/mobile-patients/src/utils/commonUtils';
 
 // The moment we import from sdk @praktice/navigator-react-native-sdk,
 // finally not working on all promises.
@@ -542,8 +543,16 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         const cityBrandFilter = id ? id.split('%20') : '';
         props.navigation.navigate(AppRoutes.DoctorSearchListing, {
           specialityId: cityBrandFilter[0] ? cityBrandFilter[0] : '',
-          city: cityBrandFilter.length > 1 ? cityBrandFilter[1] : null,
-          brand: cityBrandFilter.length > 2 ? cityBrandFilter[2] : null,
+          city:
+            cityBrandFilter.length > 1 && !isUpperCase(cityBrandFilter[1])
+              ? cityBrandFilter[1]
+              : null,
+          brand:
+            cityBrandFilter.length > 2
+              ? cityBrandFilter[2]
+              : isUpperCase(cityBrandFilter[1])
+              ? cityBrandFilter[1]
+              : null,
         });
         break;
       case 'Doctor':

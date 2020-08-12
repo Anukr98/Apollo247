@@ -135,7 +135,7 @@ const endCallNotification: Resolver<
     DEVICE_TYPE.IOS
   );
 
-  if (voipPushtoken.length && voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken'] && callDetails.callType != APPT_CALL_TYPE.CHAT) {
+  if (voipPushtoken.length && voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken']) {
     hitCallKitCurl(voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken'], doctorName, callDetails.appointment.id, false, APPT_CALL_TYPE.AUDIO)
   }
 
