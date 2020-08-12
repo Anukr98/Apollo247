@@ -19,10 +19,9 @@ import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { ServiceBusService } from 'azure-sb';
 import {
-  sendMedicineOrderStatusNotification,
-  NotificationType,
-} from 'notifications-service/resolvers/notifications';
-
+  sendMedicineOrderStatusNotification
+} from 'notifications-service/handlers';
+import { NotificationType } from 'notifications-service/constants';
 import { medicineCOD } from 'helpers/emailTemplates/medicineCOD';
 import { sendMail } from 'notifications-service/resolvers/email';
 import { ApiConstants } from 'ApiConstants';

@@ -13,7 +13,7 @@ import {
   MedicineOrderPayments,
   MedicineOrders,
 } from 'profiles-service/entities/index';
-import { medicineOrderRefundNotification } from 'notifications-service/resolvers/notifications';
+import { medicineOrderRefundNotification } from 'notifications-service/handlers';
 
 import { log } from 'customWinstonLogger';
 import { MedicineOrdersRepository } from 'profiles-service/repositories/MedicineOrdersRepository';
@@ -223,7 +223,7 @@ export const calculateRefund = async (
   log(
     'profileServiceLogger',
     `HEALTH_CREDITS_TO_REFUND_FOR_ORDER - ${orderDetails.orderAutoId} -- ${
-      healthCreditsToRefund > 0 ? healthCreditsToRefund : 0
+    healthCreditsToRefund > 0 ? healthCreditsToRefund : 0
     }`,
     `AMOUNT_TO_BE_REFUNDED_FOR_ORDER - ${orderDetails.orderAutoId} -- ${refundAmount}`,
     JSON.stringify(paymentInfo),
@@ -246,7 +246,7 @@ export const calculateRefund = async (
       profilesDb
     );
     refundResp = refundResp as PaytmResponse;
-    if(refundResp.refundId){
+    if (refundResp.refundId) {
       const totalAmountRefunded = +new Decimal(refundAmount).plus(totalRefundAmount);
       updatePaymentRequest.refundAmount = totalAmountRefunded;
     } else {

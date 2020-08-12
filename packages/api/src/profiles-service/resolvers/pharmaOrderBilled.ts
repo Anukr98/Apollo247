@@ -17,10 +17,10 @@ import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { format, addMinutes, parseISO } from 'date-fns';
 import { log } from 'customWinstonLogger';
+import { NotificationType } from 'notifications-service/constants';
 import {
-  NotificationType,
   sendMedicineOrderStatusNotification,
-} from 'notifications-service/resolvers/notifications';
+} from 'notifications-service/handlers';
 import { calculateRefund } from 'profiles-service/helpers/refundHelper';
 import { WebEngageInput, postEvent } from 'helpers/webEngage';
 import { ApiConstants } from 'ApiConstants';
@@ -269,7 +269,7 @@ const saveOrderShipmentInvoice: Resolver<
     );
     if (
       Math.abs(Math.floor(billDetails.invoiceValue) - Math.floor(orderDetails.estimatedAmount)) >
-        1 &&
+      1 &&
       orderDetails.deliveryType == MEDICINE_DELIVERY_TYPE.HOME_DELIVERY
     ) {
       sendMedicineOrderStatusNotification(

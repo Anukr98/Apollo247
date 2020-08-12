@@ -23,10 +23,10 @@ import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import {
-  NotificationType,
   medicineOrderCancelled,
   sendMedicineOrderStatusNotification,
-} from 'notifications-service/resolvers/notifications';
+} from 'notifications-service/handlers';
+import { NotificationType } from 'notifications-service/constants';
 import { format, addMinutes, parseISO } from 'date-fns';
 import { log } from 'customWinstonLogger';
 import { PharmaItemsResponse } from 'types/medicineOrderTypes';

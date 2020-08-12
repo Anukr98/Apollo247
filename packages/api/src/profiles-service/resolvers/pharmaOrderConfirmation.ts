@@ -7,9 +7,8 @@ import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import {
   sendMedicineOrderStatusNotification,
-  NotificationType,
-} from 'notifications-service/resolvers/notifications';
-
+} from 'notifications-service/handlers';
+import { NotificationType } from 'notifications-service/constants';
 export const pharmaOrderConfirmationTypeDefs = gql`
   input OrderConfirmationInput {
     ordersResult: OrderResult

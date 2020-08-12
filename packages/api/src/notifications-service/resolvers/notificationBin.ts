@@ -18,11 +18,11 @@ import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { subDays, format, differenceInDays, addMinutes } from 'date-fns';
 import { ApiConstants } from 'ApiConstants';
-import { sendNotificationSMS } from 'notifications-service/resolvers/notifications';
+import { sendNotificationSMS } from 'notifications-service/handlers';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
-import { sendChatMessageNotification } from 'notifications-service/resolvers/notifications';
+import { sendChatMessageNotification } from 'notifications-service/handlers';
 
 export const notificationBinTypeDefs = gql`
   enum notificationStatus {
