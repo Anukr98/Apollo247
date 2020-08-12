@@ -41,8 +41,9 @@ const useStyles = makeStyles((theme: Theme) => {
       display: 'flex',
     },
     doctorAvatar: {
-      width: 80,
-      height: 80,
+      width: 70,
+      height: 70,
+      marginTop: 10,
     },
     doctorInfo: {
       paddingLeft: 15,
@@ -133,19 +134,26 @@ const useStyles = makeStyles((theme: Theme) => {
       minWidth: 134,
     },
     statusShow: {
-      fontSize: 9,
-      fontWeight: 'bold',
-      textAlign: 'center',
+      fontSize: 10,
+      fontWeight: 500,
+      textAlign: 'left',
       padding: '6px 12px',
-      color: '#ff748e',
-      textTransform: 'uppercase',
+      color: '#0087BA',
+      textTransform: 'capitalize',
       letterSpacing: 0.5,
       borderRadius: 10,
       position: 'absolute',
-      left: 0,
+      left: 8,
       top: 0,
       minWidth: 134,
+      '&.COMPLETED': {
+        color: '#00B38E',
+      },
+      '&.CANCELLED': {
+        color: '#DB0404',
+      },
     },
+
     availableNow: {
       backgroundColor: '#ff748e',
       color: theme.palette.common.white,
@@ -463,8 +471,8 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                 return day1.diff(day2, 'days') == 0
                   ? 'Today'
                   : day1.diff(day2, 'days') +
-                      ' more ' +
-                      (day1.diff(day2, 'days') == 1 ? 'day' : 'days');
+                  ' more ' +
+                  (day1.diff(day2, 'days') == 1 ? 'day' : 'days');
               };
               const clinicList = doctorHospital || [];
               let facilityName = '',
@@ -479,7 +487,7 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                 facilityName = clinicList[0].facility.name;
                 streetName =
                   clinicList[0].facility.streetLine1 &&
-                  clinicList[0].facility.streetLine1.length > 0
+                    clinicList[0].facility.streetLine1.length > 0
                     ? clinicList[0].facility.streetLine1
                     : '';
               }
@@ -502,14 +510,15 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                       </div>
                       <div className={classes.doctorInfo}>
                         {showStatusAtTop(appointmentDetails) && (
-                          <div className={classes.statusShow}>
+                          // <div className={classes.statusShow}>
+                          <div className={`${classes.statusShow} ${appointmentState}`}>
                             {showStatusAtTop(appointmentDetails)}
                           </div>
                         )}
                         <div
                           className={`${classes.availability} ${
                             difference <= 15 && difference > 0 ? classes.availableNow : ''
-                          }`}
+                            }`}
                         >
                           {appointmentDetails.appointmentType === 'ONLINE'
                             ? difference <= 15 && difference > 0
@@ -538,8 +547,8 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                             {appointmentDetails.appointmentType === APPOINTMENT_TYPE.ONLINE ? (
                               <img src={require('images/ic-video.svg')} alt="" />
                             ) : (
-                              <img src={require('images/fa-solid-hospital.svg')} alt="" />
-                            )}
+                                <img src={require('images/fa-solid-hospital.svg')} alt="" />
+                              )}
                           </span>
                         </div>
                       </div>
@@ -577,10 +586,10 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                         </AphButton> */}
                         {appointmentDetails.appointmentState ===
                           APPOINTMENT_STATE.AWAITING_RESCHEDULE && (
-                          <AphButton className={classes.errorButton}>
-                            Sorry, we had to reschedule this appointment. Please pick another slot.
-                          </AphButton>
-                        )}
+                            <AphButton className={classes.errorButton}>
+                              Sorry, we had to reschedule this appointment. Please pick another slot.
+                            </AphButton>
+                          )}
                         <Route
                           render={({ history }) => (
                             <div
@@ -590,24 +599,24 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                                   appointmentDetails.status === STATUS.NO_SHOW ||
                                   appointmentDetails.status === STATUS.CALL_ABANDON ||
                                   appointmentDetails.appointmentState ===
-                                    APPOINTMENT_STATE.AWAITING_RESCHEDULE;
+                                  APPOINTMENT_STATE.AWAITING_RESCHEDULE;
                                 const doctorName =
                                   appointmentDetails.doctorInfo &&
-                                  appointmentDetails.doctorInfo.fullName
+                                    appointmentDetails.doctorInfo.fullName
                                     ? readableParam(appointmentDetails.doctorInfo.fullName)
                                     : '';
                                 if (pickAnotherSlot) {
                                   setOpenSlotPopup(true);
                                 } else {
                                   appointmentDetails.status === STATUS.CANCELLED ||
-                                  (appointmentDetails.status === STATUS.COMPLETED &&
-                                    props.pastOrCurrent === 'past')
+                                    (appointmentDetails.status === STATUS.COMPLETED &&
+                                      props.pastOrCurrent === 'past')
                                     ? history.push(
-                                        clientRoutes.doctorDetails(
-                                          doctorName,
-                                          appointmentDetails.doctorId
-                                        )
+                                      clientRoutes.doctorDetails(
+                                        doctorName,
+                                        appointmentDetails.doctorId
                                       )
+                                    )
                                     : history.push(clientRoutes.chatRoom(appointmentId, doctorId));
                                 }
                               }}
@@ -615,10 +624,10 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                               <h3>
                                 {appointmentDetails.appointmentType === APPOINTMENT_TYPE.ONLINE
                                   ? showAppointmentAction(
-                                      appointmentState,
-                                      status,
-                                      isConsultStarted
-                                    )
+                                    appointmentState,
+                                    status,
+                                    isConsultStarted
+                                  )
                                   : 'VIEW DETAILS'}
                               </h3>
                             </div>
@@ -626,8 +635,8 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                         />
                         {appointmentDetails.appointmentState !==
                           APPOINTMENT_STATE.AWAITING_RESCHEDULE && (
-                          <h6>{getConsultationUpdateText(appointmentDetails)}</h6>
-                        )}
+                            <h6>{getConsultationUpdateText(appointmentDetails)}</h6>
+                          )}
                       </div>
                     </div>
                   </div>
