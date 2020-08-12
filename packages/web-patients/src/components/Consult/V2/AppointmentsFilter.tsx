@@ -270,15 +270,15 @@ export const AppointmentsFilter: React.FC<AppointmentsFilterProps> = (props) => 
           <div className={classes.filterType}>
             <h4>Appointment Status</h4>
             <div className={classes.filterBtns}>
-              {appointmentStatus.map((fee) => (
+              {appointmentStatus.map((status) => (
                 <AphButton
-                  key={fee}
-                  className={applyClass(localFilter.appointmentStatus, fee)}
+                  key={status}
+                  className={applyClass(localFilter.appointmentStatus, status)}
                   onClick={() => {
-                    setFilterValues('appointmentStatus', fee);
+                    setFilterValues('appointmentStatus', status);
                   }}
                 >
-                  {fee}
+                  {status}
                 </AphButton>
               ))}
             </div>
