@@ -469,7 +469,7 @@ export enum PATIENT_REPO_RELATIONS {
 }
 
 export const migrationDir = {
-  consults_db: 'dist/migration/consults/**/*.js',
-  doctors_db: 'dist/migration/doctors/**/*.js',
-  profiles_db: 'dist/migration/profiles/**/*.js'
+  consults_db: "dist/migration/consults/**/*.js",
+  doctors_db: "dist/migration/doctors/**/*.js",
+  profiles_db: "dist/migration/profiles/**/*.js"
 }
