@@ -130,7 +130,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
   const [productsList, setProductsList] = useState<MedicineProduct[]>(products || []);
   const [medicineList, setMedicineList] = useState<MedicineProduct[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(products ? false : true);
-  const [showListView, setShowListView] = useState<boolean>(true);
+  const [showListView, setShowListView] = useState<boolean>(false);
   const [searchSate, setsearchSate] = useState<'load' | 'success' | 'fail' | undefined>();
   const medicineListRef = useRef<FlatList<MedicineProduct> | null>();
   const [pageCount, setPageCount] = useState<number>(1);

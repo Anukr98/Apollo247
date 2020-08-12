@@ -102,7 +102,7 @@ const styles = StyleSheet.create({
     borderColor: '#fc9916',
     borderWidth: 0.5,
     borderRadius: 1,
-    paddingHorizontal: 8,
+    paddingHorizontal: 10,
     shadowColor: 'rgba(0, 0, 0, 0.2)',
     shadowOffset: { width: 0, height: 5 },
     shadowOpacity: 0.4,
@@ -198,7 +198,7 @@ export const SearchMedicineGridCard: React.FC<SearchMedicineGridCardProps> = (pr
         activeOpacity={1}
         onPress={!isInStock ? onNotifyMeClicked : onPressAdd}
       >
-        <Text style={{ ...theme.viewStyles.text('SB', 9, '#fc9916', 1, 17, 0) }}>
+        <Text style={{ ...theme.viewStyles.text('SB', 10, '#fc9916', 1, 20, 0) }}>
           {!isInStock ? 'NOTIFY ME' : 'ADD'}
         </Text>
       </TouchableOpacity>
