@@ -3138,7 +3138,6 @@ export async function medicineOrderRefundNotification(
           healthCreditsRefunded.toString()
         );
       }
-
       await sendNotificationSMS(orderDetails.patient.mobileNumber, notificationBody);
     }
   } else {
