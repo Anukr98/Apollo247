@@ -1384,6 +1384,16 @@ export class AppointmentRepository extends Repository<Appointment> {
   }
 
   getAllAppointmentsByPatientId(ids: string[], paginate: PaginateParams) {
+    /**
+     * to support ui for web as well as mobile
+     * as web using asc and mobile will use desc (who sends paignation params)
+     * wll remove this once web also use pagination
+     */
+    const order: { bookingDate: 'ASC' | 'DESC' } = { bookingDate: 'ASC' };
+
+    if (paginate.skip || paginate.take) {
+      order.bookingDate = 'DESC';
+    }
     // returns [result , total]
     return this.findAndCount({
       where: {
@@ -1392,7 +1402,7 @@ export class AppointmentRepository extends Repository<Appointment> {
         status: Not(STATUS.PAYMENT_ABORTED),
       },
       relations: ['appointmentPayments', 'appointmentRefunds'],
-      order: { bookingDate: 'ASC' },
+      order,
       //extra params...
       ...paginate,
     });
