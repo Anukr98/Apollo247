@@ -197,7 +197,7 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
             productType: getTypeOfProduct(item.type_id || ''),
             quantity: item.quantity,
             specialPrice: item.special_price ? item.special_price : item.price,
-            itemId: item.id.toString(),
+            itemId: item.sku,
           };
         }),
       },
