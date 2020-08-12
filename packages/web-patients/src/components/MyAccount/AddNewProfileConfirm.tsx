@@ -2,6 +2,7 @@ import { Theme } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import React from 'react';
 import Scrollbars from 'react-custom-scrollbars';
+import moment from 'moment';
 import { AphButton } from '@aph/web-ui-components';
 import { UserInputInterface } from 'components/MyAccount/AddNewProfile';
 
@@ -247,7 +248,7 @@ export const AddNewProfileConfirm: React.FC<AddNewProfileProps> = (props) => {
                 </div>
                 <div className={classes.confirmContent}>
                   <h3>Date Of Birth</h3>
-                  <h5>{userInput.dateOfBirth}</h5>
+                  <h5>{moment(userInput.dateOfBirth).format('DD/MM/YYYY')}</h5>
                 </div>
                 <div className={classes.confirmContent}>
                   <h3>Gender</h3>
