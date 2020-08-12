@@ -858,14 +858,14 @@ export const MedicineCart: React.FC = (props) => {
     (v) => Number(v.is_prescription_required) === 1
   );
 
-  const getDiscountedLineItemPrice = (id: number) => {
+  const getDiscountedLineItemPrice = (id: string) => {
     if (
       couponCode.length > 0 &&
       validateCouponResult &&
       validateCouponResult.pharmaLineItemsWithDiscountedPrice
     ) {
       const item = validateCouponResult.pharmaLineItemsWithDiscountedPrice.find(
-        (item) => item.itemId === id.toString()
+        (item) => item.itemId === id
       );
       return item.applicablePrice.toFixed(2);
     }
@@ -879,7 +879,7 @@ export const MedicineCart: React.FC = (props) => {
             medicineName: cartItemDetails.name,
             price:
               couponCode.length > 0 && validateCouponResult // validateCouponResult check is needed because there are some cases we will have code but coupon discount=0  when coupon discount <= product discount
-                ? Number(getDiscountedLineItemPrice(cartItemDetails.id))
+                ? Number(getDiscountedLineItemPrice(cartItemDetails.sku))
                 : Number(getItemSpecialPrice(cartItemDetails)),
             quantity: cartItemDetails.quantity,
             itemValue: cartItemDetails.quantity * cartItemDetails.price,
@@ -887,7 +887,7 @@ export const MedicineCart: React.FC = (props) => {
               (
                 cartItemDetails.quantity *
                 (couponCode && couponCode.length > 0 && validateCouponResult // validateCouponResult check is needed because there are some cases we will have code but coupon discount=0  when coupon discount <= product discount
-                  ? cartItemDetails.price - Number(getDiscountedLineItemPrice(cartItemDetails.id))
+                  ? cartItemDetails.price - Number(getDiscountedLineItemPrice(cartItemDetails.sku))
                   : cartItemDetails.price - Number(getItemSpecialPrice(cartItemDetails)))
               ).toFixed(2)
             ),
@@ -918,7 +918,7 @@ export const MedicineCart: React.FC = (props) => {
                 productType: getTypeOfProduct(item.type_id || ''),
                 quantity: item.quantity,
                 specialPrice: item.special_price ? item.special_price : item.price,
-                itemId: item.id.toString(),
+                itemId: item.sku,
               };
             }),
           },
