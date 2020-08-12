@@ -138,7 +138,7 @@ export type Resolver<Parent, Args, Context, Result> = (
 
       if (jwt.indexOf('Bearer 3d1833da7020e0602165529446587434') == 0) {
         const gatewayContext: GatewayContext = {
-          mobileNumber: '+919560923408',
+          mobileNumber: '',
         };
         return gatewayContext;
       }
