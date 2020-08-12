@@ -521,7 +521,7 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
                     className={`${classes.formControl} ${classes.noMargin}`}
                     ref={disableFieldsRef}
                     onClick={
-                      selectedPatientId.length ? () => setIsDisablePopoverOpen(true) : () => {}
+                      selectedPatientId.length ? () => setIsDisablePopoverOpen(true) : () => { }
                     }
                     fullWidth
                   >
@@ -553,7 +553,7 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
                   <FormControl
                     className={`${classes.formControl}`}
                     onClick={
-                      selectedPatientId.length > 0 ? () => setIsDisablePopoverOpen(true) : () => {}
+                      selectedPatientId.length > 0 ? () => setIsDisablePopoverOpen(true) : () => { }
                     }
                     fullWidth
                   >
@@ -616,7 +616,7 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
                   <FormControl
                     className={classes.formControl}
                     onClick={
-                      selectedPatientId.length ? () => setIsDisablePopoverOpen(true) : () => {}
+                      selectedPatientId.length ? () => setIsDisablePopoverOpen(true) : () => { }
                     }
                   >
                     <label>Gender</label>
@@ -631,14 +631,14 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
                               selectedPatientId.length > 0 && gender !== genderSelected
                                 ? classes.hideBtn
                                 : ''
-                            }`}
+                              }`}
                           >
                             <AphButton
                               color="secondary"
                               disabled={selectedPatientId.length > 0}
                               className={`${classes.genderBtns} ${
                                 gender === genderSelected ? classes.btnActive : ''
-                              }`}
+                                }`}
                               value={genderSelected}
                               onClick={() => {
                                 setGenderSelected(gender as Gender);
@@ -683,6 +683,9 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
                     value={emailAddress}
                     onChange={(e) => {
                       setEmailAddress(e.target.value);
+                      if (e.target.value !== '') {
+                        setIsEmailAddressValid(isEmailValid(e.target.value));
+                      }
                     }}
                     onBlur={(e) => {
                       if (e.target.value !== '') {
