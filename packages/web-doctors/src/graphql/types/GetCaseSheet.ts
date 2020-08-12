@@ -1,6 +1,5 @@
 /* tslint:disable */
 /* eslint-disable */
-// @generated
 // This file was automatically generated and should not be edited.
 
 import {
@@ -159,8 +158,9 @@ export interface GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription
   medicineConsumptionDurationUnit: MEDICINE_CONSUMPTION_DURATION | null;
   routeOfAdministration: ROUTE_OF_ADMINISTRATION | null;
   medicineCustomDosage: string | null;
-  genericName?: string | null;
-  includeGenericNameInPrescription?: boolean | null;
+  medicineCustomDetails: string | null;
+  genericName: string | null;
+  includeGenericNameInPrescription: boolean | null;
 }
 
 export interface GetCaseSheet_getCaseSheet_caseSheetDetails_removedMedicinePrescription {
