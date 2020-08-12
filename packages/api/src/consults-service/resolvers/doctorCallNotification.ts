@@ -3,14 +3,16 @@ import { Resolver } from 'api-gateway';
 import { ApiConstants } from 'ApiConstants';
 import {
   sendNotification,
-  NotificationType,
   sendCallsNotification,
-  DOCTOR_CALL_TYPE,
-  APPT_CALL_TYPE,
   sendDoctorNotificationWhatsapp,
   hitCallKitCurl,
   sendCallsDisconnectNotification,
-} from 'notifications-service/resolvers/notifications';
+} from 'notifications-service/handlers';
+import { NotificationType } from 'notifications-service/constants';
+import {
+  DOCTOR_CALL_TYPE,
+  APPT_CALL_TYPE,
+} from 'notifications-service/constants'
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
@@ -115,15 +117,15 @@ const endCallNotification: Resolver<
 > = async (parent, args, { consultsDb, doctorsDb, patientsDb }) => {
   const callDetailsRepo = consultsDb.getCustomRepository(AppointmentCallDetailsRepository);
   const callDetails = await callDetailsRepo.getCallDetails(args.appointmentCallId);
-  if(!callDetails){
+  if (!callDetails) {
     throw new AphError(AphErrorMessages.INVALID_CALL_ID, undefined, {});
   }
 
   let doctorName = callDetails.doctorName;
-  if(!doctorName){
+  if (!doctorName) {
     const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
     const doctor = await doctorRepo.findById(callDetails.appointment.doctorId);
-    if(!doctor){
+    if (!doctor) {
       throw new AphError(AphErrorMessages.GET_DOCTORS_ERROR, undefined, {});
     }
     doctorName = doctor.displayName;
