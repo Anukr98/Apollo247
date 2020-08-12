@@ -27,7 +27,7 @@ export interface ValidateCouponRequestPharma {
 }
 
 export interface CouponProduct {
-  sku: number;
+  sku: string;
   mrp: number;
   specialPrice: number;
   quantity: number;
@@ -48,7 +48,7 @@ export interface ValidateCouponResponse {
     pinCode: string;
     consultations: [];
     products: {
-      sku: number;
+      sku: string;
       categoryId: number;
       subCategoryId: number;
       mrp: number;
