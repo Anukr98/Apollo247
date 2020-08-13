@@ -28,7 +28,7 @@ const useStyles = makeStyles((theme: Theme) => {
         position: 'fixed',
         width: '100%',
         top: 72,
-        zIndex: 999,
+        zIndex: 998,
         background: '#fff',
         boxShadow: '0 4px 4px 0 rgba(0, 0, 0, 0.2)',
       },

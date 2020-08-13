@@ -15,11 +15,11 @@ import { buyMedicineClickTracking } from 'webEngageTracking';
 const useStyles = makeStyles((theme: Theme) => {
   return {
     appNavigation: {
-      marginLeft: 'auto',
+      // marginLeft: 'auto',
       display: 'flex',
       alignItems: 'center',
       [theme.breakpoints.down('xs')]: {
-        marginLeft: 0,
+        // marginLeft: 0,
       },
       '& a': {
         fontSize: 13,
@@ -37,12 +37,7 @@ const useStyles = makeStyles((theme: Theme) => {
         padding: '36px 16px 34px 16px',
       },
     },
-    homePageNav: {
-      marginLeft: 'auto',
-      [theme.breakpoints.down('xs')]: {
-        marginLeft: 'auto',
-      },
-    },
+    homePageNav: {},
     menuTitle: {
       textTransform: 'uppercase',
       borderBottom: '1px solid #01475b',
@@ -80,7 +75,7 @@ const useStyles = makeStyles((theme: Theme) => {
       textTransform: 'uppercase',
       cursor: 'pointer',
       [theme.breakpoints.down('xs')]: {
-        padding: '25px 16px 23px 16px',
+        padding: '25px 10px 23px 10px',
       },
       '& img': {
         verticalAlign: 'middle',
