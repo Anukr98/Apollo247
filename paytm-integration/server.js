@@ -74,6 +74,7 @@ app.get(
   })
 );
 
+app.get('/sendCallStartNotification', cronTabs.sendCallStartNotification);
 app.get('/refreshDoctorDeepLinks', cronTabs.refreshDoctorDeepLinks);
 app.get('/generateDeeplinkForNewDoctors', cronTabs.generateDeeplinkForNewDoctors);
 app.get('/invokeArchiveMessages', cronTabs.archiveMessages);
@@ -972,7 +973,11 @@ app.get('/processOmsOrders', (req, res) => {
           url: process.env.API_URL,
           method: 'post',
           data: {
-            query: getMedicineOrderQuery('getMedicineOrderOMSDetails', patientId, orderAutoId),
+            query: getMedicineOrderQuery(
+              'getMedicineOrderOMSDetailsWithAddress',
+              patientId,
+              orderAutoId
+            ),
           },
         })
           .then(async (response) => {
@@ -980,8 +985,8 @@ app.get('/processOmsOrders', (req, res) => {
               response &&
               response.data &&
               response.data.data &&
-              response.data.data.getMedicineOrderOMSDetails &&
-              response.data.data.getMedicineOrderOMSDetails.medicineOrderDetails;
+              response.data.data.getMedicineOrderOMSDetailsWithAddress &&
+              response.data.data.getMedicineOrderOMSDetailsWithAddress.medicineOrderDetails;
             if (orderDetails) {
               logger.info(
                 `message from topic -processOrders() OMS->getMedicineOrderDetails()-> ${JSON.stringify(
@@ -999,30 +1004,16 @@ app.get('/processOmsOrders', (req, res) => {
                   deliveryStateCode = 'TS',
                   lat = 0,
                   long = 0;
-                if (orderDetails.patientAddressId) {
-                  const patientAddressDetails = await getAddressDetails(
-                    orderDetails.patientAddressId
-                  );
-                  if (patientAddressDetails) {
-                    deliveryState = patientAddressDetails.state;
-                    deliveryAddress1 = patientAddressDetails.addressLine1;
-                    deliveryAddress2 = patientAddressDetails.addressLine2;
-                    landmark = patientAddressDetails.landmark || landmark;
-                    lat = patientAddressDetails.latitude || lat;
-                    long = patientAddressDetails.longitude || long;
-                    deliveryStateCode = patientAddressDetails.stateCode || deliveryStateCode;
-                    deliveryAddress =
-                      patientAddressDetails.addressLine1 + ' ' + patientAddressDetails.addressLine2;
-                    deliveryCity = patientAddressDetails.city || deliveryCity;
-                    deliveryZipcode = patientAddressDetails.zipcode || deliveryZipcode;
-                  }
-                }
-                if (orderDetails.shopId && orderDetails.shopId !== '0') {
+                const patientAddressDetails = orderDetails.medicineOrderAddress;
+                if (orderDetails.deliveryType == 'STORE_PICKUP') {
                   if (!orderDetails.shopAddress) {
                     logger.error(
                       `store address details not present for store pick ${orderDetails.orderAutoId}`
                     );
-                    return;
+                    res.send({
+                      status: 'Failed',
+                      reason: 'store address not present',
+                    });
                   }
                   const shopAddress = JSON.parse(orderDetails.shopAddress);
                   deliveryState = shopAddress.state;
@@ -1031,6 +1022,18 @@ app.get('/processOmsOrders', (req, res) => {
                   deliveryAddress = shopAddress.address || '';
                   deliveryStateCode = shopAddress.stateCode;
                 } else {
+                  deliveryState = patientAddressDetails.state;
+                  deliveryAddress1 = patientAddressDetails.addressLine1;
+                  deliveryAddress2 = patientAddressDetails.addressLine2;
+                  landmark = patientAddressDetails.landmark || landmark;
+                  lat = patientAddressDetails.latitude || lat;
+                  long = patientAddressDetails.longitude || long;
+                  deliveryStateCode = patientAddressDetails.stateCode || deliveryStateCode;
+                  deliveryAddress = deliveryAddress1 + ' ' + deliveryAddress2;
+                  deliveryCity = patientAddressDetails.city || deliveryCity;
+                  deliveryZipcode = patientAddressDetails.zipcode || deliveryZipcode;
+                }
+                if (orderDetails.shopId == '0') {
                   orderDetails.shopId = '';
                 }
                 const orderLineItems = [];
@@ -1085,17 +1088,28 @@ app.get('/processOmsOrders', (req, res) => {
                     differenceInYears(new Date(), parseISO(patientDetails.dateOfBirth))
                   );
                 }
-                const orderPrescriptionUrl = [];
+                let orderPrescriptionUrl = [];
                 let prescriptionImages = [];
                 if (orderDetails.prescriptionImageUrl) {
                   prescriptionImages = orderDetails.prescriptionImageUrl.split(',');
                 }
                 if (prescriptionImages.length > 0) {
-                  orderPrescriptionUrl = await getPrescriptionUrls(
-                    prescriptionImages,
-                    patientDetails
-                  );
-                  console.log(orderPrescriptionUrl);
+                  try {
+                    orderPrescriptionUrl = await getPrescriptionUrls(
+                      prescriptionImages,
+                      patientDetails
+                    );
+                  } catch (e) {
+                    logger.error(
+                      `Error while fetching prescription urls for orderid ${
+                        orderDetails.orderAutoId
+                      } ${JSON.stringify(e)}`
+                    );
+                    res.send({
+                      status: 'Failed',
+                      reason: 'error while fetching prescription urls',
+                    });
+                  }
                 }
                 if (!orderDetails.orderTat) {
                   orderDetails.orderTat = '';
@@ -1164,7 +1178,7 @@ app.get('/processOmsOrders', (req, res) => {
                     customername:
                       patientDetails.firstName +
                       (patientDetails.lastName ? ' ' + patientDetails.lastName : ''),
-                    primarycontactno: patientDetails.mobileNumber.substr(3),
+                    primarycontactno: patientAddressDetails.mobileNumber.substr(3),
                     secondarycontactno: '',
                     age: patientAge,
                     emailid: patientDetails.emailAddress || '',

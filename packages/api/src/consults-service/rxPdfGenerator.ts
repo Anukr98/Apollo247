@@ -52,6 +52,7 @@ export const convertCaseSheetToRxPdfData = async (
     instructions: string;
     routeOfAdministration?: string;
     medicineFormTypes?: MEDICINE_FORM_TYPES;
+    genericName: string;
   };
 
   let prescriptions: PrescriptionData[] | [];
@@ -62,6 +63,7 @@ export const convertCaseSheetToRxPdfData = async (
       const name = _capitalize(csRx.medicineName);
       const ingredients = [] as string[];
       let frequency;
+      let genericName;
       const plural =
         csRx.medicineUnit == MEDICINE_UNIT.ML ||
         csRx.medicineUnit == MEDICINE_UNIT.MG ||
@@ -88,7 +90,9 @@ export const convertCaseSheetToRxPdfData = async (
             .toLowerCase() +
           plural
         : '';
-      if (csRx.medicineFormTypes != MEDICINE_FORM_TYPES.OTHERS) {
+      if (csRx.medicineCustomDetails) {
+        frequency = csRx.medicineCustomDetails;
+      } else if (csRx.medicineFormTypes != MEDICINE_FORM_TYPES.OTHERS) {
         frequency = 'Apply';
         if (csRx.medicineCustomDosage) {
           frequency =
@@ -198,7 +202,9 @@ export const convertCaseSheetToRxPdfData = async (
 
       const instructions = csRx.medicineInstructions;
       const routeOfAdministration = _capitalize(csRx.routeOfAdministration);
-
+      if (csRx.includeGenericNameInPrescription) {
+        genericName = csRx.genericName;
+      }
       return {
         name,
         ingredients,
@@ -206,6 +212,7 @@ export const convertCaseSheetToRxPdfData = async (
         instructions,
         routeOfAdministration,
         medicineFormTypes: csRx.medicineFormTypes,
+        genericName,
       } as PrescriptionData;
     });
   }
@@ -707,6 +714,14 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
         .fillColor('#333333')
         .text(`${index + 1}.  ${prescription.name}`, margin + 15)
         .moveDown(0.5);
+      if (prescription.genericName) {
+        doc
+          .fontSize(9)
+          .font(assetsDir + '/fonts/IBMPlexSans-Regular.ttf')
+          .fillColor('#7f7f7f')
+          .text(`${prescription.genericName}`, margin + 15)
+          .moveDown(0.5);
+      }
       doc
         .fontSize(11)
         .font(assetsDir + '/fonts/IBMPlexSans-Regular.ttf')

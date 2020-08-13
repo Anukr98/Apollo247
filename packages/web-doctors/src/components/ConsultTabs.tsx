@@ -1039,7 +1039,7 @@ export const ConsultTabs: React.FC = () => {
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.medicinePrescription
             ? setMedicinePrescription(
                 (_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
-                  .medicinePrescription as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_medicinePrescription[]
+                  .medicinePrescription as unknown) as any
               )
             : setMedicinePrescription([]);
 
@@ -1897,6 +1897,7 @@ export const ConsultTabs: React.FC = () => {
                 sessionId={sessionId}
                 token={token}
                 startAppointment={startAppointment}
+                casesheetInfo={casesheetInfo}
                 startAppointmentClick={startAppointmentClick}
                 saving={saving}
                 appointmentStatus={appointmentStatus}

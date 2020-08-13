@@ -1,12 +1,10 @@
 import { UploadPrescriprionPopup } from '@aph/mobile-patients/src/components/Medicines/UploadPrescriprionPopup';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { DatePicker } from '@aph/mobile-patients/src/components/ui/DatePicker';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import {
   DropdownGreen,
-  More,
   EditIcon,
   EditProfilePlaceHolder,
 } from '@aph/mobile-patients/src/components/ui/Icons';
@@ -45,7 +43,6 @@ import Moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
-  Alert,
   Dimensions,
   Image,
   Keyboard,
@@ -58,9 +55,10 @@ import {
   KeyboardAvoidingView,
   BackHandler,
 } from 'react-native';
-import { Text } from 'react-native-elements';
+import { Text, Overlay } from 'react-native-elements';
 import { NavigationScreenProps } from 'react-navigation';
 import { useUIElements } from '../UIElementsProvider';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 import { getRelations } from '../../helpers/helperFunctions';
 import AsyncStorage from '@react-native-community/async-storage';
 import moment from 'moment';
@@ -146,8 +144,69 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     width: 90,
     height: 90,
-    marginTop: -60,
+    marginTop: -30,
   },
+  importantTextStyle: {
+    ...theme.viewStyles.text('M', 12, '#0087BA', 1, 16),
+    flex: 1,
+    marginTop: -58,
+    marginLeft: -8,
+  },
+  editErrorPopupOverlayStyle: {
+    ...theme.viewStyles.cardViewStyle,
+    height: 146,
+    width: 219,
+  },
+  uhTextStyle: {
+    ...theme.viewStyles.text('SB', 18, '#02475B', 1, 23),
+  },
+  editAlertTextStyle: {
+    ...theme.viewStyles.text('M', 14, '#0087BA', 1, 20),
+    marginTop: 8,
+  },
+  editAlertViewStyle: {
+    marginLeft: 10,
+    marginBottom: 10,
+    marginTop: 10,
+  },
+  addNewMemberButtonStyle: {
+    marginTop: 8,
+  },
+  addNewMemeberTextStyle: {
+    ...theme.viewStyles.text('B', 13, '#FC9916', 1, 24),
+  },
+  newProfileOverlayStyle: {
+    ...theme.viewStyles.cardViewStyle,
+    width: '90%',
+    height: 'auto',
+    paddingHorizontal: 0,
+    paddingTop: 0,
+  },
+  newProfileAlertViewStyle: {
+    marginLeft: 25,
+    paddingBottom: 0,
+    marginTop: 6,
+    marginRight: 16,
+  },
+  genderPreviewTextStyle: {
+    ...theme.viewStyles.text('M', 14, '#A4A4A4', 1, 20, 0.35),
+    marginBottom: 9,
+  },
+  newProfilePopupHeaderContainerStyle: {
+    ...theme.viewStyles.cardViewStyle,
+    borderBottomLeftRadius: 0,
+    borderBottomRightRadius: 0,
+  },
+  newProfileConfirmationTextStyle: {
+    ...theme.viewStyles.text('M', 14, '#0087BA', 1, 20, 0.35),
+    marginBottom: 3,
+    marginTop: 13,
+  },
+  labelPreviewTextStyle: {
+    ...theme.viewStyles.text('M', 14, '#A4A4A4', 1, 20, 0.35),
+    marginBottom: 3,
+  },
+  previewTextStyle: { ...theme.viewStyles.text('M', 18, '#01475B', 1, 24, 0.4) },
   profileImageContainer: {
     backgroundColor: 'transparent',
     alignItems: 'center',
@@ -266,9 +325,11 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
   const { currentPatient, allCurrentPatients, setCurrentPatientId } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
   const { loading, setLoading, showAphAlert, hideAphAlert } = useUIElements();
-
+  const [isEditProfile, setIsEditProfile] = useState(isEdit);
   const [deleteProfile, setDeleteProfile] = useState<boolean>(false);
   const [uploadVisible, setUploadVisible] = useState<boolean>(false);
+  const [editErrorPopupVisible, setEditErrorPopupVisible] = useState(false);
+  const [newProfileConfirmPopupVisible, setNewProfileConfirmPopupVisible] = useState(false);
   const [showSelectedRelation, setShowSelectedRelation] = useState<boolean>(false);
   const [profileData, setProfileData] = useState<
     getPatientByMobileNumber_getPatientByMobileNumber_patients
@@ -281,8 +342,6 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
   const [relation, setRelation] = useState<RelationArray>();
   const [email, setEmail] = useState<string>('');
   const [isDateTimePickerVisible, setIsDateTimePickerVisible] = useState<boolean>(false);
-  const [bottomPopUp, setBottomPopUp] = useState<boolean>(false);
-  const [alertMessage, setAlertMessage] = useState<boolean>(false);
 
   const { isIphoneX } = DeviceHelper();
   const client = useApolloClient();
@@ -341,7 +400,9 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
 
   const handleBack = async () => {
     BackHandler.removeEventListener('hardwareBackPress', handleBack);
-    isEdit ? props.navigation.goBack() : props.navigation.navigate(AppRoutes.ConsultRoom, {});
+    isEditProfile
+      ? props.navigation.goBack()
+      : props.navigation.navigate(AppRoutes.ConsultRoom, {});
     return false;
   };
 
@@ -555,10 +616,6 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
             getPatientApiCall();
             props.navigation.goBack();
             setLoading && setLoading(true);
-            // props.navigation.pop(2);
-            // props.navigation.push(AppRoutes.ManageProfile, {
-            //   mobileNumber: props.navigation.getParam('mobileNumber'),
-            // });
           })
           .catch((e) => {
             setLoading && setLoading(false);
@@ -568,9 +625,6 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
             });
             CommonBugFender('EditProfile_deleteUserProfile', e);
           });
-        // .finally(() => {
-        //   setLoading && setLoading(false);
-        // });
       } else {
         setLoading && setLoading(false);
         showAphAlert!({
@@ -611,15 +665,9 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
           if (relation && relation.key === Relation.ME && profileData.relation !== Relation.ME) {
             setCurrentPatientId(profileData!.id);
             AsyncStorage.removeItem('selectUserId');
-            // AsyncStorage.setItem('selectUserId', profileData!.id);
           }
           getPatientApiCall();
           props.navigation.goBack();
-          // setLoading && setLoading(true);
-          // props.navigation.pop(2);
-          // props.navigation.push(AppRoutes.ManageProfile, {
-          //   mobileNumber: props.navigation.getParam('mobileNumber'),
-          // });
         })
         .catch((e) => {
           setLoading && setLoading(false);
@@ -629,9 +677,6 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
           });
           CommonBugFender('EditProfile_updateUserProfile', e);
         });
-      // .finally(() => {
-      //   // setLoading && setLoading(false);
-      // });
     } else {
       setLoading && setLoading(false);
       props.navigation.goBack();
@@ -667,17 +712,6 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
         getPatientApiCall();
         props.navigation.goBack();
         selectUser(data.data!.addNewProfile.patient);
-        // console.log('addprofiledata==>', data.data!.addNewProfile.patient);
-        // if (relation!.key === Relation.ME) {
-        //   setCurrentPatientId(data!.data!.addNewProfile!.patient!.id);
-        //   AsyncStorage.setItem('selectUserId', profileData!.id);
-        // }
-        // isPoptype
-        //   ? (props.navigation.goBack(), getPatientApiCall())
-        //   : (props.navigation.pop(2),
-        //     props.navigation.push(AppRoutes.ManageProfile, {
-        //       mobileNumber: props.navigation.getParam('mobileNumber'),
-        //     }));
       })
       .catch((e) => {
         setLoading && setLoading(false);
@@ -687,9 +721,6 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
         });
         CommonBugFender('EditProfile_newProfile', e);
       });
-    // .finally(() => {
-    //   setLoading && setLoading(false);
-    // });
   };
 
   const renderUploadSelection = () => {
@@ -741,10 +772,12 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
           borderRadius: 0,
         }}
         leftIcon={'backArrow'}
-        title={isEdit ? 'EDIT PROFILE' : 'ADD NEW FAMILY MEMBER'}
+        title={isEditProfile ? 'EDIT PROFILE' : 'ADD NEW FAMILY MEMBER'}
         rightComponent={null}
         onPressLeftIcon={() =>
-          isEdit ? props.navigation.goBack() : props.navigation.navigate(AppRoutes.ConsultRoom, {})
+          isEditProfile
+            ? props.navigation.goBack()
+            : props.navigation.navigate(AppRoutes.ConsultRoom, {})
         }
       />
     );
@@ -790,7 +823,8 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
               style={styles.placeholderViewStyle}
               onPress={() => {
                 Keyboard.dismiss();
-                setIsDateTimePickerVisible(true);
+                !isEditProfile && setIsDateTimePickerVisible(true);
+                isEditProfile && setEditErrorPopupVisible(true);
               }}
             >
               <Text
@@ -798,6 +832,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
                   styles.placeholderTextStyle,
                   ,
                   date !== undefined ? null : styles.placeholderStyle,
+                  isEditProfile && styles.placeholderStyle,
                 ]}
               >
                 {date !== undefined ? Moment(date).format('DD/MM/YYYY') : 'dd/mm/yyyy'}
@@ -837,21 +872,176 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
           paddingHorizontal: 2,
         }}
       >
-        {GenderOptions.map((option) => (
-          <Button
-            key={option.name}
-            title={option.title}
-            style={[
-              styles.buttonViewStyle,
-              gender === option.name ? styles.selectedButtonViewStyle : null,
-            ]}
-            titleTextStyle={
-              gender === option.name ? styles.selectedButtonTitleStyle : styles.buttonTitleStyle
-            }
-            onPress={() => setGender(option.name)}
-          />
-        ))}
+        {GenderOptions.map((option) => {
+          return (
+            isEditProfile &&
+            gender === option.name && (
+              <Button
+                key={option.name}
+                title={option.title}
+                style={[
+                  styles.buttonViewStyle,
+                  gender === option.name
+                    ? { backgroundColor: 'rgba(0, 179, 142,0.5)', elevation: 0 }
+                    : null,
+                ]}
+                titleTextStyle={
+                  gender === option.name ? styles.selectedButtonTitleStyle : styles.buttonTitleStyle
+                }
+                onPress={() => {
+                  setGender(option.name);
+                  setEditErrorPopupVisible(true);
+                }}
+              />
+            )
+          );
+        })}
+        {GenderOptions.map((option) => {
+          return (
+            !isEditProfile && (
+              <Button
+                key={option.name}
+                title={option.title}
+                style={[
+                  styles.buttonViewStyle,
+                  gender === option.name ? styles.selectedButtonViewStyle : null,
+                ]}
+                titleTextStyle={
+                  gender === option.name ? styles.selectedButtonTitleStyle : styles.buttonTitleStyle
+                }
+                onPress={() => setGender(option.name)}
+              />
+            )
+          );
+        })}
       </View>
+    );
+  };
+
+  const _onBackdropEditErrorPopupPress = () => {
+    setEditErrorPopupVisible(!editErrorPopupVisible);
+  };
+
+  const renderEditErrorPopup = () => {
+    return (
+      <Overlay
+        isVisible={editErrorPopupVisible}
+        onBackdropPress={_onBackdropEditErrorPopupPress}
+        overlayBackgroundColor={'#F7F8F5'}
+        transparent={true}
+        overlayStyle={styles.editErrorPopupOverlayStyle}
+      >
+        <View style={styles.editAlertViewStyle}>
+          <Text style={styles.uhTextStyle}>{'Uh oh! :('}</Text>
+          <Text style={styles.editAlertTextStyle}>
+            {'You cannot edit Name, Age, \nDate of Birth and Gender!'}
+          </Text>
+          <TouchableOpacity
+            style={styles.addNewMemberButtonStyle}
+            activeOpacity={1}
+            onPress={() => {
+              setIsEditProfile(false);
+              setPhotoUrl('');
+              _setFirstName('');
+              _setLastName('');
+              setDate(undefined);
+              setGender(undefined);
+              setRelation(undefined);
+              setEmail('');
+              _onBackdropEditErrorPopupPress();
+            }}
+          >
+            <Text style={styles.addNewMemeberTextStyle}>{'ADD NEW MEMBER'}</Text>
+          </TouchableOpacity>
+        </View>
+      </Overlay>
+    );
+  };
+
+  const _onBackdropNewProfileConfirmPopupPress = () => {
+    setNewProfileConfirmPopupVisible(!newProfileConfirmPopupVisible);
+  };
+
+  const renderLabelAndText = (label: string, text: string) => {
+    return (
+      <View style={{ marginTop: 22 }}>
+        <Text style={styles.labelPreviewTextStyle}>{label}</Text>
+        <Text style={styles.previewTextStyle}>{text}</Text>
+      </View>
+    );
+  };
+
+  const renderGenderPreview = () => {
+    return (
+      <View style={{ marginTop: 21 }}>
+        <Text style={styles.genderPreviewTextStyle}>{'Gender'}</Text>
+        <Button
+          title={gender == Gender.MALE ? 'Male' : 'Female'}
+          style={[styles.buttonViewStyle, styles.selectedButtonViewStyle, { height: 44 }]}
+          titleTextStyle={styles.selectedButtonTitleStyle}
+        />
+      </View>
+    );
+  };
+
+  const renderEditAndConfirmButtons = () => {
+    return (
+      <View style={styles.bottonButtonContainer}>
+        <Button
+          onPress={() => {
+            _onBackdropNewProfileConfirmPopupPress();
+          }}
+          title={'EDIT'}
+          style={styles.bottomWhiteButtonStyle}
+          titleTextStyle={styles.bottomWhiteButtonTextStyle}
+        />
+        <View style={styles.buttonSeperatorStyle} />
+        <View style={styles.bottomButtonStyle}>
+          <Button
+            onPress={() => {
+              setNewProfileConfirmPopupVisible(false);
+              newProfile();
+            }}
+            title={'CONFIRM'}
+            style={styles.bottomButtonStyle}
+          />
+        </View>
+      </View>
+    );
+  };
+
+  const renderNewProfileConfirmationPopup = () => {
+    return (
+      <Overlay
+        isVisible={newProfileConfirmPopupVisible}
+        onBackdropPress={_onBackdropNewProfileConfirmPopupPress}
+        overlayBackgroundColor={'#FFF'}
+        windowBackgroundColor={'rgba(0,0,0,0.8)'}
+        transparent={true}
+        overlayStyle={styles.newProfileOverlayStyle}
+      >
+        <>
+          <Header
+            container={styles.newProfilePopupHeaderContainerStyle}
+            title={'New Member Details'}
+            titleStyle={{ ...theme.viewStyles.text('M', 16, '#02475B', 1, 21) }}
+          />
+          <ScrollView bounces={false} style={{ backgroundColor: '#fff' }}>
+            <View style={styles.newProfileAlertViewStyle}>
+              {renderLabelAndText('Full Name', `${firstName.trim()} ${lastName.trim()}`)}
+              {renderLabelAndText('Date Of Birth', Moment(date).format('DD/MM/YYYY'))}
+              {renderGenderPreview()}
+              {renderLabelAndText('Relation', (relation && relation.key.toString()) || '')}
+              {email ? renderLabelAndText('Email Address (Optional)', email) : null}
+              <View style={{ backgroundColor: '#CECECE', height: 0.8, marginTop: 15 }} />
+              <Text style={styles.newProfileConfirmationTextStyle}>
+                {string.common.new_profile_confirmation_text}
+              </Text>
+              {renderEditAndConfirmButtons()}
+            </View>
+          </ScrollView>
+        </>
+      </Overlay>
     );
   };
 
@@ -873,11 +1063,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
         key: selected.key as Relation,
         title: selected.value.toString(),
       });
-    }
-    // } else if (presentRelation == Relation.ME||) {
-    //   setBottomPopUp(false);
-    // }
-    else {
+    } else {
       showAphAlert!({
         title: 'Apollo',
         description: "'Self' is already choosen for another profile.",
@@ -927,6 +1113,9 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
   };
 
   const renderForm = () => {
+    const inputStyle = {
+      color: theme.colors.placeholderTextColor,
+    };
     return (
       <View
         style={{
@@ -936,16 +1125,25 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
           marginHorizontal: 20,
         }}
       >
+        <Text style={styles.importantTextStyle} numberOfLines={2}>
+          {isEditProfile ? string.common.edit_profile_imp_text : string.common.add_profile_imp_text}
+        </Text>
         {renderProfileImage()}
         <TextInputComponent
           label={'Full Name'}
           value={`${firstName}`}
+          onPressNonEditableTextInput={() => setEditErrorPopupVisible(true)}
+          editable={!isEditProfile}
+          inputStyle={isEditProfile && inputStyle}
           onChangeText={(fname) => _setFirstName(fname)}
           placeholder={'First Name'}
         />
         <TextInputComponent
           value={`${lastName}`}
           onChangeText={(lname) => _setLastName(lname)}
+          editable={!isEditProfile}
+          inputStyle={isEditProfile && inputStyle}
+          onPressNonEditableTextInput={() => setEditErrorPopupVisible(true)}
           placeholder={'Last Name'}
         />
         <TextInputComponent label={'Date Of Birth'} noInput={true} />
@@ -970,7 +1168,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
         <View style={styles.bottonButtonContainer}>
           <Button
             onPress={() => {
-              isEdit
+              isEditProfile
                 ? props.navigation.goBack()
                 : props.navigation.navigate(AppRoutes.ConsultRoom, {});
             }}
@@ -982,19 +1180,6 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
           <View style={styles.bottomButtonStyle}>
             <Button
               onPress={() => {
-                // setFirstName(firstName.trim());
-                // setLastName(lastName.trim());
-                // setEmail(email.trim());
-                // console.log(
-                //   firstName.length,
-                //   firstName,
-                //   'fname',
-                //   isSatisfyingNameRegex(firstName),
-                //   !firstName && isSatisfyingNameRegex(firstName),
-                //   firstName && isSatisfyingNameRegex(firstName),
-                //   !firstName && !isSatisfyingNameRegex(firstName)
-                // );
-
                 let validationMessage = '';
                 if (!(firstName && isSatisfyingNameRegex(firstName.trim()))) {
                   validationMessage = 'Enter valid first name';
@@ -1011,9 +1196,8 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
                 }
                 if (validationMessage) {
                   showAphAlert && showAphAlert({ title: 'Alert!', description: validationMessage });
-                  // Alert.alert('Error', validationMessage);
                 } else {
-                  isEdit ? updateUserProfile() : newProfile();
+                  isEditProfile ? updateUserProfile() : setNewProfileConfirmPopupVisible(true);
                 }
               }}
               title={'SAVE'}
@@ -1068,7 +1252,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
                   marginLeft: width - 165,
                   ...Platform.select({
                     ios: {
-                      marginTop: isIphoneX ? height * 0.1 : height * 0.08,
+                      marginTop: isIphoneX() ? height * 0.1 : height * 0.08,
                     },
                     android: {
                       marginTop: height * 0.05,
@@ -1106,11 +1290,13 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
           <ScrollView bounces={false} style={{ backgroundColor: '#f7f8f5' }}>
             {renderForm()}
             <View style={{ height: 100 }} />
+            {renderEditErrorPopup()}
+            {renderNewProfileConfirmationPopup()}
           </ScrollView>
           {renderButtons()}
         </KeyboardAvoidingView>
       </SafeAreaView>
-      {deleteProfile && isEdit && renderDeleteButton()}
+      {deleteProfile && isEditProfile && renderDeleteButton()}
       {loading && <Spinner />}
     </View>
   );

@@ -154,6 +154,10 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isProductsLoading, setProductsIsLoading] = useState<boolean>(false);
   const [isSearchFocused, setSearchFocused] = useState(false);
+  const [pageCount, setPageCount] = useState<number>(1);
+  const [listFetching, setListFetching] = useState<boolean>(false);
+  const [endReached, setEndReached] = useState<boolean>(false);
+  const [prevData, setPrevData] = useState<MedicineProduct[]>();
   const [showListView, setShowListView] = useState<boolean>(true);
   const [pastSearches, setPastSearches] = useState<
     (getPatientPastMedicineSearches_getPatientPastMedicineSearches | null)[]
@@ -254,11 +258,16 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
       }
       setShowMatchingMedicines(true);
       setProductsIsLoading(true);
-      searchMedicineApi(_searchText)
+      searchMedicineApi(_searchText, pageCount)
         .then(async ({ data }) => {
           const products = data.products || [];
           setSearchHeading(data.search_heading!);
           setProductsList(products);
+          if (products.length < 10) {
+            setEndReached(true);
+          }
+          setPageCount(pageCount + 1);
+          setPrevData(products);
           setProductsIsLoading(false);
           const eventAttributes: WebEngageEvents[WebEngageEventName.SEARCH] = {
             keyword: _searchText,
@@ -288,8 +297,13 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
           CommonBugFender('SearchMedicineScene_onSearchMedicine', e);
           if (!axios.isCancel(e)) {
             setProductsIsLoading(false);
+            setListFetching(false);
             showGenericALert(e);
           }
+        })
+        .finally(() => {
+          setProductsIsLoading(false);
+          setListFetching(false);
         });
     }
   };
@@ -640,6 +654,8 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         onChangeSubscription={() => {}}
         onEditPress={() => {}}
         onAddSubscriptionPress={() => {}}
+        removeCartItem={() => removeCartItem!(medicine.sku)}
+        maxOrderQty={getMaxQtyForMedicineItem(medicine.MaxOrderQty)}
       />
     );
   };
@@ -736,6 +752,8 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         onChangeSubscription={() => {}}
         onEditPress={() => {}}
         onAddSubscriptionPress={() => {}}
+        removeCartItem={() => removeCartItem!(medicine.sku)}
+        maxOrderQty={getMaxQtyForMedicineItem(medicine.MaxOrderQty)}
       />
     );
   };
@@ -811,104 +829,144 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         ) : (
           !!searchText &&
           searchText.length > 2 && (
-            <FlatList
-              style={flatListStyle}
-              ref={(ref) => {
-                medicineListRef.current = ref;
-              }}
-              numColumns={showListView ? 1 : 2}
-              key={showListView ? 1 : 0}
-              onScroll={() => Keyboard.dismiss()}
-              data={filteredMedicineList}
-              renderItem={({ item, index }) =>
-                showListView
-                  ? renderMedicineCard(item, index, filteredMedicineList)
-                  : renderMedicineGridCard(item, index, filteredMedicineList)
-              }
-              keyExtractor={(_, index) => `${index}`}
-              bounces={false}
-              ListEmptyComponent={
-                discount.from ||
-                (discount.to && discount.to != 100) ||
-                false ||
-                price.from ||
-                price.to ||
-                categoryIds.length ? (
-                  <Text
-                    style={{
-                      textAlign: 'center',
-                      marginTop: 20,
-                      ...theme.viewStyles.text('M', 14, '#02475b'),
-                    }}
-                  >
-                    No results matching your filter criteria, please change the filter and try
-                    again.
-                  </Text>
-                ) : null
-              }
-              ListHeaderComponent={
-                (filteredMedicineList.length > 0 &&
-                  (isTest ? (
-                    <View style={styles.listHeaderViewStyle}>
-                      <Text
-                        style={[
-                          styles.listHeaderTextStyle,
-                          {
-                            marginHorizontal: showListView ? 20 : 5,
-                          },
-                        ]}
-                      >{`Matching Tests — ${filteredMedicineList.length}`}</Text>
-                      {renderFilterAndListView(true)}
-                    </View>
-                  ) : search_heading_text ? (
-                    <>
-                      <View
-                        style={{
-                          marginLeft: showListView ? 20 : 5,
-                          marginRight: showListView ? 20 : 5,
-                          marginTop: 24,
-                        }}
-                      >
-                        <Text style={{ ...theme.viewStyles.text('R', 14, '#01475b', 1, 18) }}>
-                          {search_heading_text[0]}
-                          <Text style={{ ...theme.viewStyles.text('SB', 14, '#01475b', 1, 18) }}>
-                            {"'" + search_heading_text[1] + "'"}
-                          </Text>
-                          {search_heading_text[2] && search_heading_text[2]}
-                          <Text style={{ ...theme.viewStyles.text('SB', 14, '#01475b', 1, 18) }}>
-                            {search_heading_text[3] && "'" + search_heading_text[3] + "'"}
-                          </Text>
-                          {search_heading_text[4]}
-                        </Text>
+            <>
+              <FlatList
+                style={flatListStyle}
+                ref={(ref) => {
+                  medicineListRef.current = ref;
+                }}
+                numColumns={showListView ? 1 : 2}
+                key={showListView ? 1 : 0}
+                onScroll={() => Keyboard.dismiss()}
+                data={filteredMedicineList}
+                renderItem={({ item, index }) =>
+                  showListView
+                    ? renderMedicineCard(item, index, filteredMedicineList)
+                    : renderMedicineGridCard(item, index, filteredMedicineList)
+                }
+                keyExtractor={(_, index) => `${index}`}
+                bounces={false}
+                onEndReachedThreshold={0.5}
+                onEndReached={() => {
+                  if (!listFetching && !endReached) {
+                    setListFetching(true);
+                    searchMedicineApi(searchText, pageCount)
+                      .then(({ data }) => {
+                        const products = data.products || [];
+                        if (prevData && JSON.stringify(prevData) !== JSON.stringify(products)) {
+                          setProductsList([...productsList, ...products]);
+                          setPageCount(pageCount + 1);
+                          setPrevData(products);
+                        } else {
+                          setEndReached(true);
+                          showAphAlert &&
+                            showAphAlert({
+                              title: 'Alert!',
+                              description: "You've reached the end of the list",
+                            });
+                        }
+                      })
+                      .catch((err) => {
+                        CommonBugFender('SearchByBrand_getProductsByCategoryApi', err);
+                        console.log(err, 'errr');
+                      })
+                      .finally(() => {
+                        setIsLoading(false);
+                        setListFetching(false);
+                      });
+                  }
+                }}
+                ListEmptyComponent={
+                  discount.from ||
+                  (discount.to && discount.to != 100) ||
+                  false ||
+                  price.from ||
+                  price.to ||
+                  categoryIds.length ? (
+                    <Text
+                      style={{
+                        textAlign: 'center',
+                        marginTop: 20,
+                        ...theme.viewStyles.text('M', 14, '#02475b'),
+                      }}
+                    >
+                      No results matching your filter criteria, please change the filter and try
+                      again.
+                    </Text>
+                  ) : null
+                }
+                ListHeaderComponent={
+                  (filteredMedicineList.length > 0 &&
+                    (isTest ? (
+                      <View style={styles.listHeaderViewStyle}>
+                        <Text
+                          style={[
+                            styles.listHeaderTextStyle,
+                            {
+                              marginHorizontal: showListView ? 20 : 5,
+                            },
+                          ]}
+                        >{`Matching Tests — ${filteredMedicineList.length}`}</Text>
+                        {renderFilterAndListView(true)}
                       </View>
-                      {renderFilterAndListView()}
-                      <View
-                        style={{
-                          backgroundColor: '#02475b',
-                          marginTop: 5,
-                          marginLeft: showListView ? 20 : 5,
-                          marginRight: showListView ? 20 : 5,
-                          opacity: 0.2,
-                          height: 1,
-                        }}
-                      />
-                    </>
-                  ) : (
-                    <View style={styles.listHeaderViewStyle}>
-                      <Text
-                        style={[
-                          styles.listHeaderTextStyle,
-                          {
-                            marginHorizontal: showListView ? 20 : 5,
-                          },
-                        ]}
-                      >{`Matching Medicines — ${filteredMedicineList.length}`}</Text>
-                      {renderFilterAndListView(true)}
-                    </View>
-                  ))) ||
-                null
-              }
-            />
+                    ) : search_heading_text ? (
+                      <>
+                        <View
+                          style={{
+                            marginLeft: showListView ? 20 : 5,
+                            marginRight: showListView ? 20 : 5,
+                            marginTop: 24,
+                          }}
+                        >
+                          <Text style={{ ...theme.viewStyles.text('R', 14, '#01475b', 1, 18) }}>
+                            {search_heading_text[0]}
+                            <Text style={{ ...theme.viewStyles.text('SB', 14, '#01475b', 1, 18) }}>
+                              {"'" + search_heading_text[1] + "'"}
+                            </Text>
+                            {search_heading_text[2] && search_heading_text[2]}
+                            <Text style={{ ...theme.viewStyles.text('SB', 14, '#01475b', 1, 18) }}>
+                              {search_heading_text[3] && "'" + search_heading_text[3] + "'"}
+                            </Text>
+                            {search_heading_text[4]}
+                          </Text>
+                        </View>
+                        {renderFilterAndListView()}
+                        <View
+                          style={{
+                            backgroundColor: '#02475b',
+                            marginTop: 5,
+                            marginLeft: showListView ? 20 : 5,
+                            marginRight: showListView ? 20 : 5,
+                            opacity: 0.2,
+                            height: 1,
+                          }}
+                        />
+                      </>
+                    ) : (
+                      <View style={styles.listHeaderViewStyle}>
+                        <Text
+                          style={[
+                            styles.listHeaderTextStyle,
+                            {
+                              marginHorizontal: showListView ? 20 : 5,
+                            },
+                          ]}
+                        >{`Matching Medicines — ${filteredMedicineList.length}`}</Text>
+                        {renderFilterAndListView(true)}
+                      </View>
+                    ))) ||
+                  null
+                }
+              />
+              {listFetching ? (
+                <ActivityIndicator
+                  style={{ backgroundColor: 'transparent' }}
+                  animating={listFetching}
+                  size="large"
+                  color="green"
+                />
+              ) : null}
+            </>
           )
         )}
       </>
@@ -988,6 +1046,8 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
           marginHorizontal: 20,
           paddingBottom: index == medicineList.length - 1 ? 10 : 0,
         }}
+        maxOrderQty={getMaxQtyForMedicineItem(item.MaxOrderQty)}
+        removeCartItem={() => onRemoveCartItem(item)}
       />
     );
   };

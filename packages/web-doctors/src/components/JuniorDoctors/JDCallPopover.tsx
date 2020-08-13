@@ -2019,8 +2019,8 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
                         storeInHistory: true,
                       },
                       (status: any, response: any) => {
-                        if (document.getElementById('homeId')) {
-                          document.getElementById('homeId')!.click();
+                        if (document.getElementById('activeConsult')) {
+                          document.getElementById('activeConsult')!.click();
                         }
                       }
                     );

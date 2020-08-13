@@ -13,8 +13,8 @@ module.exports = async (prescriptionImages, patientDetails) => {
     axios.defaults.headers.common['authorization'] = Constants.AUTH_TOKEN;
     return await axios.post(process.env.API_URL, requestJSON);
   });
-  prescriptionImages = await Promise.all(prescriptionImagesPromises);
-  return prescriptionImages.map((imageUrl) => {
-    url: response.data.data.fetchBlobURLWithPRISMData.blobUrl;
+  const prescriptionImagesResponse = await Promise.all(prescriptionImagesPromises);
+  return prescriptionImagesResponse.map((response) => {
+    return { url: response.data.data.fetchBlobURLWithPRISMData.blobUrl };
   });
 };

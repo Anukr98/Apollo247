@@ -72,12 +72,12 @@ const useStyles = makeStyles((theme: Theme) => {
     mobileOverlay: {
       [theme.breakpoints.down('xs')]: {
         display: 'block',
-        position: 'absolute',
+        position: 'fixed',
         top: 0,
         left: 0,
         width: '100%',
         backgroundColor: '#f7f8f5',
-        zIndex: 991,
+        zIndex: 999,
         height: '100%',
       },
     },

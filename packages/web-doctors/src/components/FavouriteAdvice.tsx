@@ -6,6 +6,7 @@ import { AphButton } from '@aph/web-ui-components';
 import { useApolloClient } from 'react-apollo-hooks';
 import { Paper, Modal, CircularProgress } from '@material-ui/core';
 import { AphTextField, AphDialogTitle } from '@aph/web-ui-components';
+import { Compare } from 'helpers/Utils';
 import {
   AddDoctorFavouriteAdvice,
   AddDoctorFavouriteAdviceVariables,
@@ -367,34 +368,36 @@ export const FavouriteAdvice: React.FC = () => {
           ) : (
             selectedValues &&
             selectedValues.length > 0 &&
-            selectedValues!.map(
-              (item, idx) =>
-                item &&
-                item.instruction!.trim() !== '' && (
-                  <li key={idx} className={classes.medicineListElement}>
-                    {item!.instruction}
-                    <span className={classes.iconRight}>
-                      <img
-                        width="16"
-                        src={require('images/round_edit_24_px.svg')}
-                        onClick={() => {
-                          setShowUpdatePopup(true);
-                          setUpdateAdviceId(item.id);
-                          setAdvice(item.instruction);
-                          setShowAddInputText(true);
-                        }}
-                        alt=""
-                      />
-                      <img
-                        width="16"
-                        src={require('images/ic_cancel_green.svg')}
-                        onClick={() => handleDelete(item, idx, item.id)}
-                        alt=""
-                      />
-                    </span>
-                  </li>
-                )
-            )
+            selectedValues!
+              .sort((a: any, b: any) => Compare(a, b, 'instruction'))
+              .map(
+                (item, idx) =>
+                  item &&
+                  item.instruction!.trim() !== '' && (
+                    <li key={idx} className={classes.medicineListElement}>
+                      {item!.instruction}
+                      <span className={classes.iconRight}>
+                        <img
+                          width="16"
+                          src={require('images/round_edit_24_px.svg')}
+                          onClick={() => {
+                            setShowUpdatePopup(true);
+                            setUpdateAdviceId(item.id);
+                            setAdvice(item.instruction);
+                            setShowAddInputText(true);
+                          }}
+                          alt=""
+                        />
+                        <img
+                          width="16"
+                          src={require('images/ic_cancel_green.svg')}
+                          onClick={() => handleDelete(item, idx, item.id)}
+                          alt=""
+                        />
+                      </span>
+                    </li>
+                  )
+              )
           )}
 
           <li className={classes.favAdviceList}>

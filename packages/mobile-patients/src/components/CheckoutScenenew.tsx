@@ -247,7 +247,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       description: `${desc || ''}`.trim(),
     });
 
-  const getPrepaidCheckoutCompletedEventAttributes = (orderAutoId: string) => {
+  const getPrepaidCheckoutCompletedEventAttributes = (orderAutoId: string, isOrderCod?: boolean) => {
     try {
       const addr = deliveryAddressId && addresses.find((item) => item.id == deliveryAddressId);
       const store = storeId && stores.find((item) => item.storeid == storeId);
@@ -267,7 +267,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         'Delivery charge': deliveryCharges,
         'Net after discount': getFormattedAmount(grandTotal),
         'Payment status': 1,
-        'Payment Type': 'Prepaid',
+        'Payment Type': isOrderCod ? 'COD' : 'Prepaid',
         'Service Area': 'Pharmacy',
         'Mode of Delivery': deliveryAddressId ? 'Home' : 'Pickup',
         af_revenue: getFormattedAmount(grandTotal),
@@ -297,9 +297,9 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     return appsflyerEventAttributes;
   };
 
-  const postwebEngageCheckoutCompletedEvent = (orderAutoId: string, orderId: string) => {
+  const postwebEngageCheckoutCompletedEvent = (orderAutoId: string, orderId: string, isOrderCod?: boolean) => {
     const eventAttributes = {
-      ...getPrepaidCheckoutCompletedEventAttributes(`${orderAutoId}`),
+      ...getPrepaidCheckoutCompletedEventAttributes(`${orderAutoId}`, isOrderCod),
     };
     postWebEngageEvent(WebEngageEventName.PHARMACY_CHECKOUT_COMPLETED, eventAttributes);
 
@@ -371,7 +371,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         } else {
           // Order-Success, Show popup here & clear cart info
           try {
-            postwebEngageCheckoutCompletedEvent(`${orderAutoId}`, orderId);
+            postwebEngageCheckoutCompletedEvent(`${orderAutoId}`, orderId, orderType == 'COD');
             firePurchaseEvent(orderId);
           } catch (error) {
             console.log(error);
@@ -409,7 +409,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     const token = await firebase.auth().currentUser!.getIdToken();
     console.log({ token });
     const checkoutEventAttributes = {
-      ...getPrepaidCheckoutCompletedEventAttributes(`${orderAutoId}`),
+      ...getPrepaidCheckoutCompletedEventAttributes(`${orderAutoId}`, false),
     };
     const appsflyerEventAttributes = {
       ...getPrepaidCheckoutCompletedAppsFlyerEventAttributes(`${orderId}`),
@@ -717,7 +717,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         leftIcon={'backArrow'}
         title={'PAYMENT'}
         onPressLeftIcon={() => {
-          CommonLogEvent(AppRoutes.CheckoutScene, 'Go back clicked');
+          CommonLogEvent(AppRoutes.CheckoutSceneNew, 'Go back clicked');
           if (showChennaiOrderForm) {
             handleBackPressFromChennaiOrderForm();
           } else {
@@ -738,7 +738,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       showAphAlert!({ title: 'Uh oh.. :(', description: 'Enter valid email' });
     } else {
       try {
-        CommonLogEvent(AppRoutes.CheckoutScene, `SUBMIT TO CONFIRM ORDER`);
+        CommonLogEvent(AppRoutes.CheckoutSceneNew, `SUBMIT TO CONFIRM ORDER`);
       } catch (error) {
         CommonBugFender('CheckoutScene_renderPayButton_try', error);
       }

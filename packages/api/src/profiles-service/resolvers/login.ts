@@ -307,11 +307,17 @@ const sendMessage = async (args: any) => {
   let textMessage;
   //let smsResult;
   if (loginType == LOGIN_TYPE.DOCTOR) {
-    const whatsAppMessage = ApiConstants.DOCTOR_WHATSAPP_OTP.replace('{0}', otp);
-    const promiseSendNotification = sendDoctorNotificationWhatsapp(mobileNumber, whatsAppMessage, 1, '');
-    textMessage = ApiConstants.DOCTOR_OTP_MESSAGE_TEXT
-      .replace('{0}', otp)
-      .replace('{1}', ApiConstants.OTP_EXPIRATION_MINUTES.toString());
+    //const whatsAppMessage = ApiConstants.DOCTOR_WHATSAPP_OTP.replace('{0}', otp);
+    const templateData: string[] = [otp];
+    const promiseSendNotification = sendDoctorNotificationWhatsapp(
+      ApiConstants.WHATSAPP_SD_OTP,
+      mobileNumber,
+      templateData
+    );
+    textMessage = ApiConstants.DOCTOR_OTP_MESSAGE_TEXT.replace('{0}', otp).replace(
+      '{1}',
+      ApiConstants.OTP_EXPIRATION_MINUTES.toString()
+    );
     const promiseSendSMS = sendSMS(mobileNumber, otp, hashCode, textMessage);
     await Promise.all([
       promiseSendNotification.catch((err) => {
@@ -330,9 +336,10 @@ const sendMessage = async (args: any) => {
       }),
     ]);
   } else {
-    textMessage = ApiConstants.PATIENT_OTP_MESSAGE_TEXT
-      .replace('{0}', otp)
-      .replace('{1}', ApiConstants.OTP_EXPIRATION_MINUTES.toString());
+    textMessage = ApiConstants.PATIENT_OTP_MESSAGE_TEXT.replace('{0}', otp).replace(
+      '{1}',
+      ApiConstants.OTP_EXPIRATION_MINUTES.toString()
+    );
     await sendSMS(mobileNumber, otp, hashCode, textMessage);
   }
   logger('SEND_SMS___END');
