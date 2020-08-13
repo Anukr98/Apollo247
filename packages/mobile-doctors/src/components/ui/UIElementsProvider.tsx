@@ -254,7 +254,7 @@ export const UIElementsProvider: React.FC = (props) => {
             <View style={[styles.popUpMainContainer, style]}>
               {icon ? icon : null}
               <View style={[styles.popUpPointer, popUpPointerStyle]} />
-              <View>
+              <View style={{ flex: 1 }}>
                 {title && <Text style={[styles.popUpTitleText, titleStyle]}>{title}</Text>}
                 {description && (
                   <Text style={[styles.popUpDescriptionText, descriptionTextStyle]}>

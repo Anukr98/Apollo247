@@ -843,13 +843,13 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
               selectionColor={theme.colors.APP_GREEN}
               underlineColorAndroid={theme.colors.TRANSPARENT}
             />
-            <View style={{ marginLeft: 10 }}>
+            {/* <View style={{ marginLeft: 10 }}>
               <TouchableOpacity>
                 <Text style={theme.viewStyles.text('SB', 14, theme.colors.APP_YELLOW, 1, 16, 0.02)}>
                   Report
                 </Text>
               </TouchableOpacity>
-            </View>
+            </View> */}
           </View>
         ) : null}
       </View>
