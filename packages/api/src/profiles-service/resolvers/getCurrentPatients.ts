@@ -162,7 +162,7 @@ const getCurrentPatients: Resolver<
             : undefined,
           mobileNumber,
           uhid: data.uhid,
-          dateOfBirth: (data.dob && data.dob.length == 0) ? undefined : new Date(data.dob),
+          dateOfBirth: (!data.dob || data.dob.length == 0) ? undefined : new Date(data.dob),
           androidVersion: args.deviceType === DEVICE_TYPE.ANDROID ? args.appVersion : undefined,
           iosVersion: args.deviceType === DEVICE_TYPE.IOS ? args.appVersion : undefined,
           primaryUhid: data.uhid,
