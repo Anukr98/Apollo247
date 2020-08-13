@@ -141,6 +141,7 @@ const useStyles = makeStyles((theme: Theme) => {
     saveButton: {
       backgroundColor: '#fcb716',
       color: '#fff',
+      width: 58,
       '&:hover': {
         backgroundColor: '#fcb716',
         color: '#fff',
