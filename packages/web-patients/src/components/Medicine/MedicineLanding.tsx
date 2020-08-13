@@ -386,6 +386,10 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 13,
       '& a': {
         color: '#fc9916',
+        [theme.breakpoints.down('xs')]: {
+          display: 'block',
+          margin: '5px 0 0',
+        },
       },
       '& p': {
         marginBottom: 0,
@@ -577,7 +581,7 @@ export const MedicineLanding: React.FC = (props: any) => {
               const renderValue = () => {
                 if (sectionData) {
                   return sectionData.products ? (
-                    <HotSellers data={sectionData} />
+                    <HotSellers data={sectionData} section={section.section_name} />
                   ) : sectionData.length > 0 && sectionData[0].title ? (
                     section.section_key === 'shop_by_brand' ? (
                       <ShopByBrand data={sectionData} sectionName={section.section_key} />
@@ -601,7 +605,6 @@ export const MedicineLanding: React.FC = (props: any) => {
             }
           });
           setMetadata(updatedMetadata);
-          console.log('updatedMetadata', updatedMetadata);
         }
         /**Gtm code start  */
         gtmTracking({ category: 'Pharmacy', action: 'Landing Page', label: 'Listing Page Viewed' });

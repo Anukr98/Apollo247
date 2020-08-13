@@ -11,6 +11,7 @@ import {
   NotifySymbol,
   MedicalIcon,
   NotificationIcon,
+  RetryButtonIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import { OrderProgressCard } from '@aph/mobile-patients/src/components/ui/OrderProgressCard';
@@ -72,6 +73,7 @@ import {
   ScrollView,
   StackActions,
 } from 'react-navigation';
+import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import { CommonBugFender, isIphone5s } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { postPharmacyMyOrderTrackingClicked } from '../helpers/webEngageEventHelpers';
 import {
@@ -141,6 +143,14 @@ const styles = StyleSheet.create({
     right: 0,
     backgroundColor: 'rgba(247,248,245,0.2)',
   },
+  card: {
+    marginHorizontal: 64,
+    shadowRadius: 0,
+    shadowOffset: { width: 0, height: 0 },
+    shadowColor: 'white',
+    elevation: 0,
+  },
+  retyButton: { width: 185, height: 48, marginTop: 30 },
 });
 
 export interface OrderDetailsSceneProps
@@ -168,7 +178,6 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   const [selectedTab, setSelectedTab] = useState<string>(
     showOrderSummaryTab ? string.orders.viewBill : string.orders.trackOrder
   );
-  const [isCancelVisible, setCancelVisible] = useState(false);
   const [omsAPIError, setOMSAPIError] = useState(false);
   const [addressData, setAddressData] = useState('');
   const [storePhoneNumber, setStorePhoneNumber] = useState('');
@@ -182,15 +191,17 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     scrollViewRef.current &&
       scrollViewRef.current.scrollTo({ x: 0, y: scrollYValue, animated: true });
   };
-
   const { currentPatient } = useAllCurrentPatients();
   const { addMultipleCartItems, addMultipleEPrescriptions, addresses } = useShoppingCart();
   const { showAphAlert, hideAphAlert, setLoading } = useUIElements();
+  const [isCancelVisible, setCancelVisible] = useState(false);
+
   const vars: getMedicineOrderOMSDetailsWithAddressVariables = {
     patientId: currentPatient && currentPatient.id,
     orderAutoId: billNumber ? 0 : Number(orderAutoId),
     billNumber: billNumber || '',
   };
+
   const { data, loading, refetch } = useQuery<
     getMedicineOrderOMSDetailsWithAddress,
     getMedicineOrderOMSDetailsWithAddressVariables
@@ -1610,18 +1621,28 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         </View>
 
         {omsAPIError && !order && !loading ? (
-          <View
-            style={{ justifyContent: 'center', alignSelf: 'center', flex: 1, alignItems: 'center' }}
-          >
-            <Text
-              style={{
-                ...theme.viewStyles.text('M', 16, '#890000'),
-                paddingHorizontal: 16,
-                textAlign: 'center',
+          <View style={{ alignItems: 'center' }}>
+            <Card
+              cardContainer={styles.card}
+              heading={string.common.uhOh}
+              description={'Seems like we are having an issue. Please try again.'}
+              descriptionTextStyle={{ fontSize: 14 }}
+              headingTextStyle={{ fontSize: 14 }}
+            />
+            <TouchableOpacity
+              activeOpacity={1}
+              onPress={async () => {
+                try {
+                  setLoading!(true);
+                  await refetch();
+                  setLoading!(false);
+                } catch (error) {
+                  setLoading!(false);
+                }
               }}
             >
-              {'Something went wrong. Unable fetch order details.'}
-            </Text>
+              <RetryButtonIcon style={styles.retyButton} />
+            </TouchableOpacity>
           </View>
         ) : (
           <>

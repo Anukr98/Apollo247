@@ -1,6 +1,5 @@
 /* tslint:disable */
 /* eslint-disable */
-// @generated
 // This file was automatically generated and should not be edited.
 
 //==============================================================
@@ -374,6 +373,9 @@ export interface MedicinePrescriptionInput {
   medicineUnit?: MEDICINE_UNIT | null;
   routeOfAdministration?: ROUTE_OF_ADMINISTRATION | null;
   medicineCustomDosage?: string | null;
+  medicineCustomDetails?: string | null;
+  includeGenericNameInPrescription?: boolean | null;
+  genericName?: string | null;
 }
 
 export interface ModifyCaseSheetInput {
@@ -452,8 +454,9 @@ export interface SaveDoctorsFavouriteMedicineInput {
   medicineUnit: MEDICINE_UNIT;
   routeOfAdministration?: ROUTE_OF_ADMINISTRATION | null;
   medicineCustomDosage?: string | null;
-  genericName: string | null;
-  includeGenericNameInPrescription: boolean | null;
+  medicineCustomDetails?: string | null;
+  includeGenericNameInPrescription?: boolean | null;
+  genericName?: string | null;
 }
 
 export interface SymptomInput {
@@ -490,8 +493,9 @@ export interface UpdateDoctorsFavouriteMedicineInput {
   medicineUnit?: MEDICINE_UNIT | null;
   routeOfAdministration?: ROUTE_OF_ADMINISTRATION | null;
   medicineCustomDosage?: string | null;
-  genericName: string | null;
-  includeGenericNameInPrescription: boolean | null;
+  medicineCustomDetails?: string | null;
+  includeGenericNameInPrescription?: boolean | null;
+  genericName?: string | null;
 }
 
 export interface UpdatePatientInput {

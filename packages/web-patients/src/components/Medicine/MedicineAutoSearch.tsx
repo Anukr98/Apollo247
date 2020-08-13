@@ -14,6 +14,7 @@ import {
   notifyMeTracking,
   pharmacySearchTracking,
   addToCartTracking,
+  pharmacyProductClickedTracking,
 } from '../../webEngageTracking';
 import { NotifyMeNotification } from './NotifyMeNotification';
 import { useAllCurrentPatients } from 'hooks/authHooks';
@@ -27,9 +28,9 @@ const useStyles = makeStyles((theme: Theme) => {
         position: 'fixed',
         width: '100%',
         top: 72,
-        zIndex: 999,
+        zIndex: 998,
         background: '#fff',
-        boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
+        boxShadow: '0 4px 4px 0 rgba(0, 0, 0, 0.2)',
       },
     },
     medicineSearchForm: {
@@ -38,6 +39,7 @@ const useStyles = makeStyles((theme: Theme) => {
       display: 'flex',
       alignItems: 'center',
       borderRadius: 5,
+      overflow: 'hidden',
       [theme.breakpoints.down('xs')]: {
         padding: 0,
       },
@@ -52,6 +54,7 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingLeft: 12,
     },
     searchInput: {
+      // borderRadius: 5,
       '& input': {
         [theme.breakpoints.down('xs')]: {
           backgroundColor: '#f7f8f5',
@@ -363,6 +366,12 @@ export const MedicineAutoSearch: React.FC = (props) => {
                       onClick={() => {
                         setSearchText('');
                         window.location.href = clientRoutes.medicineDetails(medicine.url_key);
+                        pharmacyProductClickedTracking({
+                          productName: medicine.name,
+                          source: 'Search',
+                          productId: medicine.sku,
+                          sectionName: '',
+                        });
                       }}
                     >
                       <div className={classes.medicineImg}>
