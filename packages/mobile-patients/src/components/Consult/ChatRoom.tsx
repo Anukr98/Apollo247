@@ -36,8 +36,8 @@ import {
   CommonLogEvent,
   DeviceHelper,
   setBugFenderLog,
-  isIos
-  } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+  isIos,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
   BOOK_APPOINTMENT_RESCHEDULE,
   BOOK_APPOINTMENT_TRANSFER,
@@ -365,6 +365,7 @@ const urlRegEx = /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jfif|jpeg|JPEG
 export interface ChatRoomProps extends NavigationScreenProps {}
 export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [loading, setLoading] = useState<boolean>(false);
+  const fromIncomingCall = props.navigation.state.params!.isCall;
   const { isIphoneX } = DeviceHelper();
 
   let appointmentData: any = props.navigation.getParam('data');
@@ -383,7 +384,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const prescription = props.navigation.state.params!.prescription
     ? props.navigation.state.params!.prescription
     : '';
-  
+
   const isVoipCall = props.navigation.state.params!.isVoipCall;
 
   let dateIsAfter = moment(new Date()).isAfter(moment(appointmentData.appointmentDateTime));
@@ -632,10 +633,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   }, []);
 
   useEffect(() => {
-    if(isVoipCall) {
+    if (isVoipCall || fromIncomingCall) {
       joinCallHandler();
     }
-  }, [])
+  }, []);
 
   const backDataFunctionality = () => {
     try {
@@ -670,7 +671,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     setTimeout(() => {
       CheckDoctorPresentInChat();
     }, 2000);
-    if(isIos()){
+    if (isIos()) {
       handleCallkitEventListeners();
     }
   }, []);
@@ -686,15 +687,15 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const handleCallkitEventListeners = () => {
     RNCallKeep.addEventListener('endCall', onDisconnetCallAction);
     RNCallKeep.addEventListener('answerCall', onAnswerCallAction);
-  }
+  };
 
   const onAnswerCallAction = () => {
     joinCallHandler();
-  }
+  };
 
   const onDisconnetCallAction = () => {
     handleEndCall();
-  }
+  };
 
   const playSound = () => {
     try {
@@ -4761,10 +4762,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           <Text style={styles.joinRoomDescriptionText}>
             {strings.common.joinConsultRoomDescription} {appointmentData.doctorInfo.displayName}
           </Text>
-          <Button title="JOIN" style={styles.joinBtn} onPress={() => {
-            patientJoinedCall.current = true;
-            joinCallHandler();
-            }}/>
+          <Button
+            title="JOIN"
+            style={styles.joinBtn}
+            onPress={() => {
+              patientJoinedCall.current = true;
+              joinCallHandler();
+            }}
+          />
         </View>
       </View>
     );
@@ -5067,6 +5072,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 {strings.common.waitForDoctirToJoinCall.replace('doctor_name', doctorName)}
               </Text>
             )}
+
             {renderBusyMessages(!PipView, isIphoneX() ? 171 : 161)}
 
             {PipView && renderOnCallPipButtons('video')}
@@ -5495,11 +5501,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const endVoipCall = () => {
-    if(isIos()){
+    if (isIos()) {
       RNCallKeep.endCall(appointmentData.id);
     }
-  }
-  
+  };
+
   const renderOnCallPipButtons = (pipType: 'audio' | 'video') => {
     return (
       <View
@@ -5729,9 +5735,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               <MuteIcon style={{ height: 60, width: 60 }} />
             )}
           </TouchableOpacity>
-          <TouchableOpacity
-            activeOpacity={1}
-            onPress={() => handleEndCall()}>
+          <TouchableOpacity activeOpacity={1} onPress={() => handleEndCall()}>
             <EndCallIcon style={{ height: 60, width: 60 }} />
           </TouchableOpacity>
         </View>
@@ -5760,7 +5764,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         channel: channel,
         storeInHistory: true,
       },
-      (status, response) => { }
+      (status, response) => {}
     );
 
     pubnub.publish(
@@ -5774,10 +5778,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         channel: channel,
         storeInHistory: true,
       },
-      (status, response) => { }
+      (status, response) => {}
     );
-  }
-  
+  };
+
   const IncomingCallView = () => {
     return (
       <View

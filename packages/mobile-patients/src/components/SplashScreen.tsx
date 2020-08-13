@@ -115,7 +115,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     InitiateAppsFlyer(props.navigation);
     DeviceEventEmitter.addListener('accept', (params) => {
       console.log('Accept Params', params);
-      getAppointmentDataAndNavigate(params.appointment_id);
+      getAppointmentDataAndNavigate(params.appointment_id, true);
     });
     setBugfenderPhoneNumber();
     AppState.addEventListener('change', _handleAppStateChange);
@@ -138,20 +138,20 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   useEffect(() => {
     handleDeepLink();
   }, []);
-  
+
   useEffect(() => {
     if (isIos()) {
       initializeCallkit();
       handleVoipEventListeners();
     }
-  }, [])
+  }, []);
 
   const initializeCallkit = () => {
     const callkeepOptions = {
       ios: {
         appName: string.LocalStrings.appName,
-        imageName: 'callkitAppIcon.png'
-      }
+        imageName: 'callkitAppIcon.png',
+      },
     };
 
     try {
@@ -163,25 +163,25 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     // Add RNCallKeep Events
     RNCallKeep.addEventListener('answerCall', onAnswerCallAction);
     RNCallKeep.addEventListener('endCall', onDisconnetCallAction);
-  }
-  
+  };
+
   const handleVoipEventListeners = () => {
     VoipPushNotification.addEventListener('notification', (notification) => {
       // on receive voip push
       const payload = notification && notification.getData();
-      if(payload && payload.appointmentId){
+      if (payload && payload.appointmentId) {
         voipAppointmentId.current = notification.getData().appointmentId;
       }
     });
-  }
+  };
 
   const onAnswerCallAction = () => {
     voipAppointmentId.current && getAppointmentDataAndNavigate(voipAppointmentId.current);
-  }
+  };
 
   const onDisconnetCallAction = () => {
-    voipAppointmentId.current = "";
-  }
+    voipAppointmentId.current = '';
+  };
 
   const handleDeepLink = () => {
     try {
@@ -292,7 +292,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           break;
 
         case 'ChatRoom':
-          if (data.length === 2) getAppointmentDataAndNavigate(linkId);
+          if (data.length === 2) getAppointmentDataAndNavigate(linkId, false);
           break;
 
         case 'Order':
@@ -348,7 +348,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     } catch (error) {}
   };
 
-  const getData = (routeName: String, id?: String, timeout?: boolean) => {
+  const getData = (routeName: String, id?: String, timeout?: boolean, isCall?: boolean) => {
     async function fetchData() {
       firebase.analytics().setAnalyticsCollectionEnabled(true);
       // const onboarding = await AsyncStorage.getItem('onboarding');
@@ -424,7 +424,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
             if (mePatient) {
               if (mePatient.firstName !== '') {
-                pushTheView(routeName, id ? id : undefined);
+                pushTheView(routeName, id ? id : undefined, isCall);
               } else {
                 props.navigation.replace(AppRoutes.Login);
               }
@@ -463,7 +463,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     }
     fetchData();
   };
-  const getAppointmentDataAndNavigate = (appointmentID: string) => {
+  const getAppointmentDataAndNavigate = (appointmentID: string, isCall: boolean) => {
     client
       .query<getAppointmentDataQuery, getAppointmentDataVariables>({
         query: GET_APPOINTMENT_DATA,
@@ -475,7 +475,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       .then((_data) => {
         const appointmentData: any = _data.data.getAppointmentData!.appointmentsHistory;
         if (appointmentData[0]!.doctorInfo !== null) {
-          getData('ChatRoom', appointmentData[0], true);
+          getData('ChatRoom', appointmentData[0], true, isCall);
         }
       })
       .catch((error) => {
@@ -483,7 +483,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       });
   };
 
-  const pushTheView = (routeName: String, id?: any) => {
+  const pushTheView = (routeName: String, id?: any, isCall?: boolean) => {
     console.log('pushTheView', routeName);
     setBugFenderLog('DEEP_LINK_PUSHVIEW', { routeName, id });
     switch (routeName) {
@@ -589,7 +589,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           data: id,
           callType: '',
           prescription: '',
-          isVoipCall: voipAppointmentId.current ? true : false
+          isCall: isCall,
+          isVoipCall: voipAppointmentId.current ? true : false,
         });
         break;
       case 'Order':
