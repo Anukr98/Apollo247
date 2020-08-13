@@ -1507,6 +1507,25 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS_WITH_ADDRESS = gql`
           responseCode
           responseMessage
           bankTxnId
+          healthCreditsRedeemed
+          healthCreditsRedemptionRequest {
+            Success
+            Message
+            RequestNumber
+            AvailablePoints
+            BalancePoints
+            RedeemedPoints
+            PointsValue
+          }
+          paymentMode
+          refundAmount
+        }
+        medicineOrderRefunds {
+          refundAmount
+          refundStatus
+          refundId
+          orderId
+          createdDate
         }
         medicineOrdersStatus {
           id
@@ -2738,8 +2757,13 @@ export const GET_PHARMA_TRANSACTION_STATUS = gql`
 `;
 
 export const CONSULT_ORDER_PAYMENT_DETAILS = gql`
-  query consultOrders($patientId: String!) {
-    consultOrders(patientId: $patientId) {
+  query consultOrders($patientId: String!, $pageNo: Int!, $pageSize: Int!) {
+    consultOrders(patientId: $patientId, pageNo: $pageNo, pageSize: $pageSize) {
+      meta {
+        pageNo
+        pageSize
+        total
+      }
       appointments {
         id
         doctorId
@@ -2768,8 +2792,13 @@ export const CONSULT_ORDER_PAYMENT_DETAILS = gql`
 `;
 
 export const PHARMACY_ORDER_PAYMENT_DETAILS = gql`
-  query pharmacyOrders($patientId: String!) {
-    pharmacyOrders(patientId: $patientId) {
+  query pharmacyOrders($patientId: String!, $pageNo: Int!, $pageSize: Int!) {
+    pharmacyOrders(patientId: $patientId, pageNo: $pageNo, pageSize: $pageSize) {
+      meta {
+        pageNo
+        pageSize
+        total
+      }
       pharmaOrders {
         id
         estimatedAmount
@@ -2913,6 +2942,17 @@ export const GET_APPOINTMENT_RESCHEDULE_DETAILS = gql`
       rescheduleInitiatedBy
       rescheduleInitiatedId
       rescheduleStatus
+    }
+  }
+`;
+
+export const SAVE_VOIP_DEVICE_TOKEN = gql`
+  mutation addVoipPushToken($voipPushTokenInput: voipPushTokenInput!) {
+    addVoipPushToken(voipPushTokenInput: $voipPushTokenInput) {
+      isError
+      response
+      patientId
+      voipToken
     }
   }
 `;
