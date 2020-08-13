@@ -1507,6 +1507,25 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS_WITH_ADDRESS = gql`
           responseCode
           responseMessage
           bankTxnId
+          healthCreditsRedeemed
+          healthCreditsRedemptionRequest {
+            Success
+            Message
+            RequestNumber
+            AvailablePoints
+            BalancePoints
+            RedeemedPoints
+            PointsValue
+          }
+          paymentMode
+          refundAmount
+        }
+        medicineOrderRefunds {
+          refundAmount
+          refundStatus
+          refundId
+          orderId
+          createdDate
         }
         medicineOrdersStatus {
           id
