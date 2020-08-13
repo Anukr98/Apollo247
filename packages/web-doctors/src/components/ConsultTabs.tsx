@@ -488,10 +488,12 @@ export const ConsultTabs: React.FC = () => {
       //     });
       // },
     });
+
     return () => {
       pubnub.unsubscribe({ channels: [appointmentId] });
     };
   }, []);
+
   const postDoctorConsultEventAction = (eventType: WebEngageEvent) => {
     let consultTypeMode: ConsultMode = ConsultMode.BOTH;
     if (consultType.includes(ConsultMode.ONLINE)) {
@@ -647,50 +649,36 @@ export const ConsultTabs: React.FC = () => {
               ? setCaseSheetId(_data!.data!.getCaseSheet!.caseSheetDetails.id)
               : '';
             _data!.data!.getCaseSheet!.caseSheetDetails!.diagnosis !== null
-              ? setDiagnosis(
-                  (_data!.data!.getCaseSheet!.caseSheetDetails!
-                    .diagnosis as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis[]
-                )
+              ? setDiagnosis((_data!.data!.getCaseSheet!.caseSheetDetails!
+                  .diagnosis as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis[])
               : setDiagnosis([]);
             _data!.data!.getCaseSheet!.caseSheetDetails!.symptoms
-              ? setSymptoms(
-                  (_data!.data!.getCaseSheet!.caseSheetDetails!
-                    .symptoms as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms[]
-                )
+              ? setSymptoms((_data!.data!.getCaseSheet!.caseSheetDetails!
+                  .symptoms as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms[])
               : setSymptoms([]);
             _data!.data!.getCaseSheet!.caseSheetDetails!.otherInstructions
-              ? setOtherInstructions(
-                  (_data!.data!.getCaseSheet!.caseSheetDetails!
-                    .otherInstructions as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_otherInstructions[]
-                )
+              ? setOtherInstructions((_data!.data!.getCaseSheet!.caseSheetDetails!
+                  .otherInstructions as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_otherInstructions[])
               : setOtherInstructions([]);
             _data!.data!.getCaseSheet!.caseSheetDetails!.diagnosticPrescription
-              ? setDiagnosticPrescription(
-                  (_data!.data!.getCaseSheet!.caseSheetDetails!
-                    .diagnosticPrescription as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[]
-                )
+              ? setDiagnosticPrescription((_data!.data!.getCaseSheet!.caseSheetDetails!
+                  .diagnosticPrescription as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[])
               : setDiagnosticPrescription([]);
             _data!.data!.getCaseSheet!.caseSheetDetails!.medicinePrescription
-              ? setMedicinePrescription(
-                  (_data!.data!.getCaseSheet!.caseSheetDetails!
-                    .medicinePrescription as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[]
-                )
+              ? setMedicinePrescription((_data!.data!.getCaseSheet!.caseSheetDetails!
+                  .medicinePrescription as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[])
               : setMedicinePrescription([]);
             _data!.data!.getCaseSheet!.caseSheetDetails!.removedMedicinePrescription
-              ? setRemovedMedicinePrescription(
-                  (_data!.data!.getCaseSheet!.caseSheetDetails!
-                    .removedMedicinePrescription as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[]
-                )
+              ? setRemovedMedicinePrescription((_data!.data!.getCaseSheet!.caseSheetDetails!
+                  .removedMedicinePrescription as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[])
               : setRemovedMedicinePrescription([]);
             _data!.data!.getCaseSheet!.caseSheetDetails!.notes
-              ? setSRDNotes(
-                  (_data!.data!.getCaseSheet!.caseSheetDetails!.notes as unknown) as string
-                )
+              ? setSRDNotes((_data!.data!.getCaseSheet!.caseSheetDetails!
+                  .notes as unknown) as string)
               : setSRDNotes('');
             _data!.data!.getCaseSheet!.juniorDoctorNotes
-              ? setJuniorDoctorNotes(
-                  (_data!.data!.getCaseSheet!.juniorDoctorNotes as unknown) as string
-                )
+              ? setJuniorDoctorNotes((_data!.data!.getCaseSheet!
+                  .juniorDoctorNotes as unknown) as string)
               : setJuniorDoctorNotes('');
             _data!.data!.getCaseSheet!.caseSheetDetails!.consultType
               ? setConsultType(([
@@ -1013,40 +1001,29 @@ export const ConsultTabs: React.FC = () => {
           );
 
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.diagnosis !== null
-            ? setDiagnosis(
-                (_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
-                  .diagnosis as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_diagnosis[]
-              )
+            ? setDiagnosis((_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+                .diagnosis as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_diagnosis[])
             : setDiagnosis([]);
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.symptoms
-            ? setSymptoms(
-                (_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
-                  .symptoms as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_symptoms[]
-              )
+            ? setSymptoms((_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+                .symptoms as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_symptoms[])
             : setSymptoms([]);
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.otherInstructions
-            ? setOtherInstructions(
-                (_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
-                  .otherInstructions as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_otherInstructions[]
-              )
+            ? setOtherInstructions((_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+                .otherInstructions as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_otherInstructions[])
             : setOtherInstructions([]);
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.diagnosticPrescription
-            ? setDiagnosticPrescription(
-                (_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
-                  .diagnosticPrescription as unknown) as any[]
-              )
+            ? setDiagnosticPrescription((_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+                .diagnosticPrescription as unknown) as any[])
             : setDiagnosticPrescription([]);
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.medicinePrescription
-            ? setMedicinePrescription(
-                (_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
-                  .medicinePrescription as unknown) as any
-              )
+            ? setMedicinePrescription((_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+                .medicinePrescription as unknown) as any)
             : setMedicinePrescription([]);
 
           _data!.data!.getJuniorDoctorCaseSheet!.juniorDoctorNotes
-            ? setJuniorDoctorNotes(
-                (_data!.data!.getJuniorDoctorCaseSheet!.juniorDoctorNotes as unknown) as string
-              )
+            ? setJuniorDoctorNotes((_data!.data!.getJuniorDoctorCaseSheet!
+                .juniorDoctorNotes as unknown) as string)
             : setJuniorDoctorNotes('');
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.consultType
             ? setConsultType(([
@@ -1282,7 +1259,11 @@ export const ConsultTabs: React.FC = () => {
     console.log('DOC ID', doctorId);
   }, []);
 
-  const sendCallNotificationFn = (callType: APPT_CALL_TYPE, isCall: boolean) => {
+  const sendCallNotificationFnWithCheck = (
+    callType: APPT_CALL_TYPE,
+    isCall: boolean,
+    numberOfParticipants: number
+  ) => {
     client
       .query<SendCallNotification, SendCallNotificationVariables>({
         query: SEND_CALL_NOTIFICATION,
@@ -1293,6 +1274,7 @@ export const ConsultTabs: React.FC = () => {
           doctorType: DOCTOR_CALL_TYPE.SENIOR,
           deviceType: DEVICETYPE.DESKTOP,
           callSource: BOOKINGSOURCE.WEB,
+          numberOfParticipants,
         },
       })
       .then((_data) => {
@@ -1339,6 +1321,24 @@ export const ConsultTabs: React.FC = () => {
 
         sessionClient.notify(JSON.stringify(logObject));
         console.log('An error occurred while sending notification to Client.');
+      });
+  };
+
+  const sendCallNotificationFn = (callType: APPT_CALL_TYPE, isCall: boolean) => {
+    pubnub
+      .hereNow({
+        channels: [appointmentId],
+        includeUUIDs: true,
+      })
+      .then((response: any) => {
+        const occupants = response.channels[appointmentId].occupants;
+        const occupancyDoctor = occupants.filter((obj: any) => {
+          return obj.uuid.indexOf('DOCTOR') > -1;
+        });
+        sendCallNotificationFnWithCheck(callType, isCall, occupancyDoctor.length);
+      })
+      .catch((error) => {
+        console.error(error);
       });
   };
 
