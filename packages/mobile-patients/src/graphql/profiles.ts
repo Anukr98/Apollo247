@@ -2757,8 +2757,13 @@ export const GET_PHARMA_TRANSACTION_STATUS = gql`
 `;
 
 export const CONSULT_ORDER_PAYMENT_DETAILS = gql`
-  query consultOrders($patientId: String!) {
-    consultOrders(patientId: $patientId) {
+  query consultOrders($patientId: String!, $pageNo: Int!, $pageSize: Int!) {
+    consultOrders(patientId: $patientId, pageNo: $pageNo, pageSize: $pageSize) {
+      meta {
+        pageNo
+        pageSize
+        total
+      }
       appointments {
         id
         doctorId
@@ -2787,8 +2792,13 @@ export const CONSULT_ORDER_PAYMENT_DETAILS = gql`
 `;
 
 export const PHARMACY_ORDER_PAYMENT_DETAILS = gql`
-  query pharmacyOrders($patientId: String!) {
-    pharmacyOrders(patientId: $patientId) {
+  query pharmacyOrders($patientId: String!, $pageNo: Int!, $pageSize: Int!) {
+    pharmacyOrders(patientId: $patientId, pageNo: $pageNo, pageSize: $pageSize) {
+      meta {
+        pageNo
+        pageSize
+        total
+      }
       pharmaOrders {
         id
         estimatedAmount
