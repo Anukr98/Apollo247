@@ -433,6 +433,7 @@ export const ChatRoom: React.FC = () => {
   const [nextSlotAvailable, setNextSlotAvailable] = useState<string>('');
   const [isRescheduleSuccess, setIsRescheduleSuccess] = useState<boolean>(false);
   const [rescheduledSlot, setRescheduledSlot] = useState<string | null>(null);
+  const [disaplayId, setDisplayId] = useState<number | null>(null);
   const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
   const patientId = (currentPatient && currentPatient.id) || '';
@@ -478,10 +479,7 @@ export const ChatRoom: React.FC = () => {
     });
 
   const nextAvailableSlot = (slotDoctorId: string, date: Date) => {
-    const todayDate = moment
-      .utc(date)
-      .local()
-      .format('YYYY-MM-DD');
+    const todayDate = moment.utc(date).local().format('YYYY-MM-DD');
     availableSlot(slotDoctorId, todayDate)
       .then(({ data }: any) => {
         try {
@@ -537,6 +535,7 @@ export const ChatRoom: React.FC = () => {
             <div className={classes.leftSection}>
               {data && (
                 <ConsultDoctorProfile
+                  setDisplayId={setDisplayId}
                   doctorDetails={data}
                   appointmentId={appointmentId}
                   hasDoctorJoined={hasDoctorJoined}
@@ -546,7 +545,7 @@ export const ChatRoom: React.FC = () => {
             </div>
             <div className={classes.rightSection}>
               <div className={classes.sectionHeader}>
-                <span className={classes.caseNumber}>Case #362079 </span>
+                {disaplayId && <span className={classes.caseNumber}>Case #{disaplayId} </span>}
                 <div className={classes.headerActions}>
                   <AphButton
                     disabled={jrDoctorJoined}
