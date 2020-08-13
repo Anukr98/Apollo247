@@ -166,6 +166,7 @@ export class AppointmentRepository extends Repository<Appointment> {
   ): Promise<Appointment> {
     const appointment = this.create(appt);
     Object.assign(appointment, { ...updateDetails });
+    console.log('objectassign:::::::::', appointment);
     return appointment.save().catch((appointmentError) => {
       throw new AphError(errorType, undefined, { appointmentError });
     });
@@ -647,7 +648,8 @@ export class AppointmentRepository extends Repository<Appointment> {
           status5: STATUS.PAYMENT_PENDING_PG,
           status6: STATUS.PAYMENT_ABORTED,
         }
-      ).orderBy("appointment.sdConsultationDate", "DESC")
+      )
+      .orderBy('appointment.sdConsultationDate', 'DESC')
       .getMany();
   }
 
@@ -1174,7 +1176,7 @@ export class AppointmentRepository extends Repository<Appointment> {
         id,
         status,
         isSeniorConsultStarted,
-        sdConsultationDate,
+        sdConsultationDate: new Date(),
       },
       AphErrorMessages.UPDATE_APPOINTMENT_ERROR
     );

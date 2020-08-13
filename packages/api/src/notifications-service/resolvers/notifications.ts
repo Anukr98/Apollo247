@@ -469,7 +469,8 @@ export async function sendCallsNotification(
   callType: APPT_CALL_TYPE,
   doctorType: DOCTOR_CALL_TYPE,
   appointmentCallId: string,
-  isDev: boolean
+  isDev: boolean,
+  numberOfParticipants: number
 ) {
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const appointment = await appointmentRepo.findById(pushNotificationInput.appointmentId);
@@ -599,49 +600,53 @@ export async function sendCallsNotification(
   if (registrationToken.length == 0) return;
 
   //First payload (data only)
-  let dataOnlyPayloadResponse;
-  const dataOnlyPayload = {
-    data: {
-      type: 'call_start',
-      appointmentId: appointment.id.toString(),
-      doctorName: 'Dr. ' + doctorDetails.firstName,
-    },
-  };
+  let dataOnlyPayloadResponse = null;
+  const sendDataOnlyPayload = callType != APPT_CALL_TYPE.CHAT && numberOfParticipants && numberOfParticipants == 1;
 
-  admin
-    .messaging()
-    .sendToDevice(registrationToken, dataOnlyPayload, options)
-    .then((response: PushNotificationSuccessMessage) => {
-      dataOnlyPayloadResponse = response;
-      if (pushNotificationInput.notificationType == NotificationType.CALL_APPOINTMENT) {
-        const fileName =
-          process.env.NODE_ENV + '_callnotification_' + format(new Date(), 'yyyyMMdd') + '.txt';
-        let assetsDir = path.resolve('/apollo-hospitals/packages/api/src/assets');
-        if (process.env.NODE_ENV != 'local') {
-          assetsDir = path.resolve(<string>process.env.ASSETS_DIRECTORY);
-        }
-        let content =
-          format(new Date(), 'yyyy-MM-dd hh:mm') +
-          '\n apptid: ' +
-          pushNotificationInput.appointmentId +
-          '\n multicastId: ';
-        content +=
-          response.multicastId.toString() +
-          '\n------------------------------------------------------------------------------------\n';
-        fs.appendFile(assetsDir + '/' + fileName, content, (err) => {
-          if (err) {
-            console.log('file saving error', err);
+  if (sendDataOnlyPayload) {
+    const dataOnlyPayload = {
+      data: {
+        type: 'call_start',
+        appointmentId: appointment.id.toString(),
+        doctorName: 'Dr. ' + doctorDetails.firstName,
+      },
+    };
+
+    admin
+      .messaging()
+      .sendToDevice(registrationToken, dataOnlyPayload, options)
+      .then((response: PushNotificationSuccessMessage) => {
+        dataOnlyPayloadResponse = response;
+        if (pushNotificationInput.notificationType == NotificationType.CALL_APPOINTMENT) {
+          const fileName =
+            process.env.NODE_ENV + '_callnotification_' + format(new Date(), 'yyyyMMdd') + '.txt';
+          let assetsDir = path.resolve('/apollo-hospitals/packages/api/src/assets');
+          if (process.env.NODE_ENV != 'local') {
+            assetsDir = path.resolve(<string>process.env.ASSETS_DIRECTORY);
           }
-          console.log('notification results saved');
-        });
-      }
-    })
-    .catch((error: JSON) => {
-      console.log('PushNotification Failed::' + error);
-      throw new AphError(AphErrorMessages.PUSH_NOTIFICATION_FAILED);
-    });
+          let content =
+            format(new Date(), 'yyyy-MM-dd hh:mm') +
+            '\n apptid: ' +
+            pushNotificationInput.appointmentId +
+            '\n multicastId: ';
+          content +=
+            response.multicastId.toString() +
+            '\n------------------------------------------------------------------------------------\n';
+          fs.appendFile(assetsDir + '/' + fileName, content, (err) => {
+            if (err) {
+              console.log('file saving error', err);
+            }
+            console.log('notification results saved');
+          });
+        }
+      })
+      .catch((error: JSON) => {
+        console.log('PushNotification Failed::' + error);
+        throw new AphError(AphErrorMessages.PUSH_NOTIFICATION_FAILED);
+      });
 
-  console.log(dataOnlyPayloadResponse, 'dataOnlyPayloadResponse');
+    console.log(dataOnlyPayloadResponse, 'dataOnlyPayloadResponse');
+  }
 
   admin
     .messaging()
