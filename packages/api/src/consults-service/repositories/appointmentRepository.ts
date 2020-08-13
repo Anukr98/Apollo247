@@ -166,7 +166,7 @@ export class AppointmentRepository extends Repository<Appointment> {
   ): Promise<Appointment> {
     const appointment = this.create(appt);
     Object.assign(appointment, { ...updateDetails });
-    console.log('Object.assign:::::::::', appointment);
+    console.log('objectassign:::::::::', appointment);
     return appointment.save().catch((appointmentError) => {
       throw new AphError(errorType, undefined, { appointmentError });
     });
