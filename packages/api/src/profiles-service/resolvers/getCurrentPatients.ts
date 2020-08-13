@@ -138,7 +138,10 @@ const getCurrentPatients: Resolver<
     findOptions: { uhid?: Patient['uhid']; mobileNumber: Patient['mobileNumber']; isActive: true },
     createOptions: Partial<Patient>
   ): Promise<Patient> => {
-    return Patient.create(createOptions).save();
+    const existingPatient = await Patient.findOne({
+      where: { uhid: findOptions.uhid, mobileNumber: findOptions.mobileNumber, isActive: true },
+    });
+    return existingPatient || Patient.create(createOptions).save();
   };
 
   let patientPromises: Object[] = [];
