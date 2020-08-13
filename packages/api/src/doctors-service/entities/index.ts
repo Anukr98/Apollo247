@@ -1292,10 +1292,10 @@ export class DoctorProfileHistory extends BaseEntity {
 
 @Entity()
 export class DoctorHelpLine extends BaseEntity {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn("uuid")
   id: string;
   @Column({ unique: true })
-  type: string
+  doctorType: DoctorType
   @Column()
   mobileNumber: string;
 }

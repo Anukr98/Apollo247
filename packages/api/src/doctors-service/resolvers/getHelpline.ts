@@ -1,14 +1,16 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
-import { DoctorHelpLine } from 'doctors-service/entities/';
+import { DoctorHelpLine, DoctorType } from 'doctors-service/entities/';
 import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext';
 import { DoctorHelpLineRepository } from 'doctors-service/repositories/doctorHelplineRepository';
 
 export const getDoctorHelplineTypeDef = gql`
+
 type DoctorHelpLine{
-    type:String!
+    doctorType:DoctorType!
     mobileNumber: String!
 }
+
   extend type Query {
     getDoctorHelpline:[DoctorHelpLine]
   }

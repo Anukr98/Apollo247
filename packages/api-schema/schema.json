@@ -17085,15 +17085,15 @@
         "description": null,
         "fields": [
           {
-            "name": "type",
+            "name": "doctorType",
             "description": null,
             "args": [],
             "type": {
               "kind": "NON_NULL",
               "name": null,
               "ofType": {
-                "kind": "SCALAR",
-                "name": "String",
+                "kind": "ENUM",
+                "name": "DoctorType",
                 "ofType": null
               }
             },
