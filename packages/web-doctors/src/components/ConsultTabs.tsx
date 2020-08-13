@@ -488,10 +488,12 @@ export const ConsultTabs: React.FC = () => {
       //     });
       // },
     });
+
     return () => {
       pubnub.unsubscribe({ channels: [appointmentId] });
     };
   }, []);
+
   const postDoctorConsultEventAction = (eventType: WebEngageEvent) => {
     let consultTypeMode: ConsultMode = ConsultMode.BOTH;
     if (consultType.includes(ConsultMode.ONLINE)) {
@@ -1257,7 +1259,11 @@ export const ConsultTabs: React.FC = () => {
     console.log('DOC ID', doctorId);
   }, []);
 
-  const sendCallNotificationFn = (callType: APPT_CALL_TYPE, isCall: boolean) => {
+  const sendCallNotificationFnWithCheck = (
+    callType: APPT_CALL_TYPE,
+    isCall: boolean,
+    numberOfParticipants: number
+  ) => {
     client
       .query<SendCallNotification, SendCallNotificationVariables>({
         query: SEND_CALL_NOTIFICATION,
@@ -1268,6 +1274,7 @@ export const ConsultTabs: React.FC = () => {
           doctorType: DOCTOR_CALL_TYPE.SENIOR,
           deviceType: DEVICETYPE.DESKTOP,
           callSource: BOOKINGSOURCE.WEB,
+          //numberOfParticipants
         },
       })
       .then((_data) => {
@@ -1314,6 +1321,21 @@ export const ConsultTabs: React.FC = () => {
 
         sessionClient.notify(JSON.stringify(logObject));
         console.log('An error occurred while sending notification to Client.');
+      });
+  };
+
+  const sendCallNotificationFn = (callType: APPT_CALL_TYPE, isCall: boolean) => {
+    pubnub
+      .hereNow({
+        channels: [appointmentId],
+        includeUUIDs: true,
+      })
+      .then((response: any) => {
+        const { totalOccupancy } = response;
+        sendCallNotificationFnWithCheck(callType, isCall, totalOccupancy);
+      })
+      .catch((error) => {
+        console.error(error);
       });
   };
 

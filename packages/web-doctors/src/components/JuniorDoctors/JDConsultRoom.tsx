@@ -6,6 +6,7 @@ import { Header } from 'components/Header';
 import { JDCallPopover } from 'components/JuniorDoctors/JDCallPopover';
 import Typography from '@material-ui/core/Typography';
 import { useApolloClient } from 'react-apollo-hooks';
+import Pubnub from 'pubnub';
 import {
   CreateAppointmentSession,
   CreateAppointmentSessionVariables,
@@ -420,6 +421,21 @@ export const JDConsultRoom: React.FC = () => {
     assignedDoctorSpecialty: '',
     assignedDoctorPhoto: '',
   });
+
+  const subscribekey: string = process.env.SUBSCRIBE_KEY ? process.env.SUBSCRIBE_KEY : '';
+  const publishkey: string = process.env.PUBLISH_KEY ? process.env.PUBLISH_KEY : '';
+
+  const config: Pubnub.PubnubConfig = {
+    subscribeKey: subscribekey,
+    publishKey: publishkey,
+    ssl: true,
+    restore: true,
+    keepAlive: true,
+    //presenceTimeout: 20,
+    heartbeatInterval: 20,
+    uuid: REQUEST_ROLES.JUNIOR,
+  };
+  const pubnub = new Pubnub(config);
 
   const { currentPatient: currentDoctor, isSignedIn, sessionClient } = useAuth();
   const doctorId = currentDoctor!.id;
@@ -1060,6 +1076,25 @@ export const JDConsultRoom: React.FC = () => {
   };
 
   const sendCallNotificationFn = (callType: APPT_CALL_TYPE, isCall: boolean) => {
+    pubnub
+      .hereNow({
+        channels: [appointmentId],
+        includeUUIDs: true,
+      })
+      .then((response: any) => {
+        const { totalOccupancy } = response;
+        sendCallNotificationFnWithCheck(callType, isCall, totalOccupancy);
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  };
+
+  const sendCallNotificationFnWithCheck = (
+    callType: APPT_CALL_TYPE,
+    isCall: boolean,
+    numberOfParticipants: number
+  ) => {
     client
       .query<SendCallNotification, SendCallNotificationVariables>({
         query: SEND_CALL_NOTIFICATION,
@@ -1070,6 +1105,7 @@ export const JDConsultRoom: React.FC = () => {
           doctorType: DOCTOR_CALL_TYPE.JUNIOR,
           deviceType: DEVICETYPE.DESKTOP,
           callSource: BOOKINGSOURCE.WEB,
+          //numberOfParticipants
         },
       })
       .then((_data) => {
