@@ -15,6 +15,7 @@ import {
   pharmacyConfigSectionTracking,
   addToCartTracking,
   removeFromCartTracking,
+  pharmacyProductClickedTracking,
 } from 'webEngageTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -308,13 +309,19 @@ export const RecommendedProducts: React.FC<RecommendedProductsProps> = (props) =
                 <div className={classes.cardWrap}>
                   <Link
                     to={clientRoutes.medicineDetails(productList.productSku)}
-                    onClick={() =>
+                    onClick={() => {
                       pharmacyConfigSectionTracking({
                         sectionName: props.section,
                         productId: productList.productSku,
                         productName: productList.productName,
-                      })
-                    }
+                      });
+                      pharmacyProductClickedTracking({
+                        productName: productList.productName,
+                        source: 'Home',
+                        productId: productList.productSku,
+                        sectionName: props.section,
+                      });
+                    }}
                   >
                     <div className={classes.productIcon}>
                       <img src={getImageUrl(productList.productImage)} alt="" />

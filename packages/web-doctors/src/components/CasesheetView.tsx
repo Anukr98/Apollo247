@@ -552,64 +552,77 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
           dosageHtml = prescription!.medicineDosage! + ' ' + unitHtmls;
         }
         return (
-          <li>
-            {prescription.medicineName}
-            <br />
-            <span>
-              {prescription.includeGenericNameInPrescription && (
-                <div>{`Contains ${prescription.genericName}`}</div>
-              )}
+          <div>
+            {prescription.medicineCustomDetails ? (
+              <li>
+                {prescription.medicineName}
+                <br />
+                <span>{prescription.medicineCustomDetails}</span>
+              </li>
+            ) : (
+              <li>
+                {prescription.medicineName}
+                <br />
+                <span>
+                  {prescription.includeGenericNameInPrescription && (
+                    <div>{`Contains ${prescription.genericName}`}</div>
+                  )}
 
-              {`${prescription!.medicineFormTypes! === 'OTHERS' ? 'Take' : 'Apply'} ${
-                dosageHtml ? dosageHtml.toLowerCase() : ''
-              }${
-                timesString.length > 0 &&
-                prescription!.medicineCustomDosage! &&
-                prescription!.medicineCustomDosage! !== ''
-                  ? ' (' + timesString + ') '
-                  : ' '
-              }${
-                prescription!.medicineCustomDosage! && prescription!.medicineCustomDosage! !== ''
-                  ? ''
-                  : prescription!.medicineFrequency
-                  ? prescription!.medicineFrequency === MEDICINE_FREQUENCY.STAT
-                    ? 'STAT (Immediately)'
-                    : prescription!.medicineFrequency
+                  {`${prescription!.medicineFormTypes! === 'OTHERS' ? 'Take' : 'Apply'} ${
+                    dosageHtml ? dosageHtml.toLowerCase() : ''
+                  }${
+                    timesString.length > 0 &&
+                    prescription!.medicineCustomDosage! &&
+                    prescription!.medicineCustomDosage! !== ''
+                      ? ' (' + timesString + ') '
+                      : ' '
+                  }${
+                    prescription!.medicineCustomDosage! &&
+                    prescription!.medicineCustomDosage! !== ''
+                      ? ''
+                      : prescription!.medicineFrequency
+                      ? prescription!.medicineFrequency === MEDICINE_FREQUENCY.STAT
+                        ? 'STAT (Immediately)'
+                        : prescription!.medicineFrequency
+                            .split('_')
+                            .join(' ')
+                            .toLowerCase()
+                      : dosageFrequency[0].id
+                          .split('_')
+                          .join(' ')
+                          .toLowerCase()
+                  } ${duration} ${whenString.length > 0 ? whenString : ''} ${
+                    timesString.length > 0 &&
+                    prescription!.medicineCustomDosage! &&
+                    prescription!.medicineCustomDosage! !== ''
+                      ? ''
+                      : timesString
+                  }`}
+                </span>
+                {prescription.routeOfAdministration &&
+                  !isEmpty(trim(prescription.routeOfAdministration)) && (
+                    <>
+                      <br />
+                      <span>{`${
+                        prescription.medicineFormTypes === 'OTHERS'
+                          ? 'To be taken'
+                          : 'To be Applied'
+                      }: ${prescription.routeOfAdministration
                         .split('_')
                         .join(' ')
-                        .toLowerCase()
-                  : dosageFrequency[0].id
-                      .split('_')
-                      .join(' ')
-                      .toLowerCase()
-              } ${duration} ${whenString.length > 0 ? whenString : ''} ${
-                timesString.length > 0 &&
-                prescription!.medicineCustomDosage! &&
-                prescription!.medicineCustomDosage! !== ''
-                  ? ''
-                  : timesString
-              }`}
-            </span>
-            {prescription.routeOfAdministration &&
-              !isEmpty(trim(prescription.routeOfAdministration)) && (
-                <>
-                  <br />
-                  <span>{`${
-                    prescription.medicineFormTypes === 'OTHERS' ? 'To be taken' : 'To be Applied'
-                  }: ${prescription.routeOfAdministration
-                    .split('_')
-                    .join(' ')
-                    .toLowerCase()}`}</span>
-                </>
-              )}
-            {prescription.medicineInstructions &&
-              !isEmpty(trim(prescription.medicineInstructions)) && (
-                <>
-                  <br />
-                  <span>{prescription.medicineInstructions}</span>
-                </>
-              )}
-          </li>
+                        .toLowerCase()}`}</span>
+                    </>
+                  )}
+                {prescription.medicineInstructions &&
+                  !isEmpty(trim(prescription.medicineInstructions)) && (
+                    <>
+                      <br />
+                      <span>{prescription.medicineInstructions}</span>
+                    </>
+                  )}
+              </li>
+            )}
+          </div>
         );
       }
     );

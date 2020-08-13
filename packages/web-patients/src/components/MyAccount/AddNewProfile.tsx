@@ -2,9 +2,16 @@ import { Theme, FormControl, MenuItem, Popover } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import React, { useState, useEffect, useRef } from 'react';
 import Scrollbars from 'react-custom-scrollbars';
-import { AphButton, AphTextField, AphSelect } from '@aph/web-ui-components';
+import {
+  AphButton,
+  AphTextField,
+  AphSelect,
+  AphDialogTitle,
+  AphDialog,
+  AphDialogClose,
+} from '@aph/web-ui-components';
 import Grid from '@material-ui/core/Grid';
-import { Gender, Relation } from 'graphql/types/globalTypes';
+import { Gender, Relation, PatientProfileInput } from 'graphql/types/globalTypes';
 import { useMutation } from 'react-apollo-hooks';
 import { ADD_PROFILE, EDIT_PROFILE } from 'graphql/profiles';
 import { useAllCurrentPatients } from 'hooks/authHooks';
@@ -18,6 +25,7 @@ import _startCase from 'lodash/startCase';
 import _toLower from 'lodash/toLower';
 import { Alerts } from 'components/Alerts/Alerts';
 import { INVALID_FILE_SIZE_ERROR } from 'helpers/commonHelpers';
+import { AddNewProfileConfirm } from 'components/MyAccount/AddNewProfileConfirm';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -69,6 +77,10 @@ const useStyles = makeStyles((theme: Theme) => {
         fontSize: 14,
         fontWeight: 500,
         color: theme.palette.secondary.dark,
+        transform: 'none',
+        '&:disable': {
+          color: '#f00',
+        },
       },
     },
     noMargin: {
@@ -88,11 +100,17 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: '#00b38e !important',
       color: '#fff !important',
     },
+    hideBtn: {
+      display: 'none',
+    },
     genderBtns: {
       boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
       padding: '7px 13px 7px 13px',
       textTransform: 'none',
       borderRadius: 10,
+      '&:disabled': {
+        color: '#eaeaea !important',
+      },
     },
     menuSelected: {
       backgroundColor: 'transparent !important',
@@ -152,6 +170,8 @@ const useStyles = makeStyles((theme: Theme) => {
     saveButton: {
       backgroundColor: '#fcb716',
       color: '#fff',
+      boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.2)',
+      minWidth: 134,
       '&:hover': {
         backgroundColor: '#fcb716',
         color: '#fff',
@@ -213,7 +233,21 @@ const useStyles = makeStyles((theme: Theme) => {
       '&:hover': {
         backgroundColor: '#fff',
       },
-    }
+    },
+    disabledInput: {
+      '& label': {
+        color: '#02475b !important',
+      },
+      '& input': {
+        opacity: '0.5 !important',
+      },
+    },
+    memberTitle: {
+      '& h2': {
+        fontSize: 15,
+        textTransform: 'uppercase',
+      },
+    },
   };
 });
 
@@ -228,8 +262,19 @@ interface AddNewProfileProps {
   successHandler: (isPopoverOpen: boolean) => void;
   isProfileDelete: boolean;
   isMeClicked: boolean;
+  addNewProfileFromEditMenu?: () => void;
 }
-
+export interface UserInputInterface {
+  firstName: string;
+  lastName: string;
+  dateOfBirth: string;
+  gender: string;
+  relation: string;
+  emailAddress: string;
+  photoUrl: string;
+  id: string;
+  mobileNumber: string;
+}
 export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
   const classes = useStyles({});
   const { closeHandler, selectedPatientId, successHandler, isProfileDelete } = props;
@@ -254,10 +299,11 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
 
   const [alertMessage, setAlertMessage] = React.useState<string>('');
   const [isAlertOpen, setIsAlertOpen] = React.useState<boolean>(false);
-
+  const [isAddNewProfileConfirmDialogOpen, setIsAddNewProfileConfirmDialogOpen] = React.useState<
+    boolean
+  >(false);
+  const [userInput, setUserInput] = React.useState<UserInputInterface>(null);
   const { allCurrentPatients, setCurrentPatientId } = useAllCurrentPatients();
-
-  // console.log(currentPatient, 'current patient......');
 
   const orderedGenders = [Gender.MALE, Gender.FEMALE];
   const orderedRelations = [
@@ -292,14 +338,6 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
       // return currentPatientDetails.id === (currentPatient ? currentPatient.id : '');
       return currentPatientDetails.relation === 'ME';
     });
-
-    // console.log(
-    //   selectedPatientDetails,
-    //   multiplePrimaryUsers &&
-    //   selectedRelation === 'ME' &&
-    //   selectedPatientDetails &&
-    //   selectedPatientDetails.relation !== selectedRelation
-    // );
 
     if (
       multiplePrimaryUsers &&
@@ -391,29 +429,40 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
       (emailAddress !== '' ? isEmailAddressValid : true)) ||
     isProfileDelete;
 
-  // console.log(
-  //   'disable button',
-  //   disableSubmitButton,
-  //   firstName,
-  //   lastName,
-  //   dob,
-  //   genderSelected,
-  //   relation,
-  //   emailAddress,
-  //   firstName.length > 0 &&
-  //     lastName.length > 0 &&
-  //     dob.length > 0 &&
-  //     genderSelected.length > 0 &&
-  //     relation.length > 0 &&
-  //     (emailAddress !== '' ? emailAddress.length > 0 : true)
-  // );
+  const handleProfileSubmit = () => {
+    setIsAddNewProfileConfirmDialogOpen(false);
+    setMutationLoading(true);
+    let userObject = userInput;
+    delete userObject.id;
+    addProfileMutation({
+      variables: {
+        PatientProfileInput: { ...userObject },
+      },
+    })
+      .then((response) => {
+        closeHandler(false);
+        successHandler(true);
+        window.location.reload();
+      })
+      .catch((e) => {
+        setIsAlertOpen(true);
+        setAlertMessage('An error occurred while creating profile.');
+      })
+      .finally(() => {
+        setMutationLoading(false);
+      });
+  };
 
   return (
     <div className={classes.root}>
       <div className={classes.shadowHide}>
         <div className={classes.dialogContent}>
           <Scrollbars autoHide={true} autoHeight autoHeightMax={'48vh'}>
-            <h6 className={classes.warningMsg}>Important : You will not be able to edit these details once you have saved them!</h6>
+            <h6 className={classes.warningMsg}>
+              {selectedPatientId.length > 0
+                ? 'You cannot edit Name, Date of Birth and Gender!'
+                : 'Important : You will not be able to edit these details once you have saved them!'}
+            </h6>
             <div className={classes.customScrollBar}>
               <div className={classes.profileForm}>
                 <div className={classes.uploadImage} title={'Upload Profile'}>
@@ -467,35 +516,24 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
                     <img src={require('images/ic-edit-white.svg')} />
                   </label>
                 </div>
-                <div className={classes.disabledFields} ref={disableFieldsRef} onClick={() => setIsDisablePopoverOpen(true)}>
-                  <Popover
-                    open={isDisablePopoverOpen}
-                    anchorEl={disableFieldsRef.current}
-                    onClose={() => setIsDisablePopoverOpen(false)}
-                    anchorOrigin={{
-                      vertical: 'top',
-                      horizontal: 'left',
-                    }}
-                    transformOrigin={{
-                      vertical: 'top',
-                      horizontal: 'left',
-                    }}
-                    className={classes.popDisablepopover}
+                <div>
+                  {/* <div className={classes.disabledFields} ref={disableFieldsRef}>
+                  </div> */}
+                  <FormControl
+                    className={`${classes.formControl} ${classes.noMargin}`}
+                    ref={disableFieldsRef}
+                    onClick={
+                      selectedPatientId.length ? () => setIsDisablePopoverOpen(true) : () => { }
+                    }
+                    fullWidth
                   >
-                    <h3>Uh oh! :(</h3>
-                    <h6>You cannot edit Name, Age, Date of Birth and Gender!</h6>
-                    <AphButton
-                      className={classes.addnewMemberBtn}
-                    >
-                      ADD NEW MEMBER
-                    </AphButton>
-                  </Popover>
-                  <FormControl className={`${classes.formControl} ${classes.noMargin}`} fullWidth>
                     <AphTextField
                       label="Full Name"
                       placeholder="First Name"
                       inputProps={{ maxLength: 20 }}
+                      className={selectedPatientId.length > 0 ? classes.disabledInput : ''}
                       value={firstName}
+                      disabled={selectedPatientId.length > 0}
                       onChange={(e) => {
                         setFirstName(e.target.value);
                       }}
@@ -514,10 +552,18 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
                       </FormHelperText>
                     ) : null}
                   </FormControl>
-                  <FormControl className={`${classes.formControl}`} fullWidth>
+                  <FormControl
+                    className={`${classes.formControl}`}
+                    onClick={
+                      selectedPatientId.length > 0 ? () => setIsDisablePopoverOpen(true) : () => { }
+                    }
+                    fullWidth
+                  >
                     <AphTextField
                       placeholder="Last name"
                       inputProps={{ maxLength: 20 }}
+                      disabled={selectedPatientId.length > 0}
+                      className={selectedPatientId.length > 0 ? classes.disabledInput : ''}
                       value={lastName}
                       onChange={(e) => {
                         setLastName(e.target.value);
@@ -537,15 +583,23 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
                       </FormHelperText>
                     ) : null}
                   </FormControl>
-                  <FormControl className={classes.formControl} fullWidth>
+                  <FormControl
+                    className={classes.formControl}
+                    onClick={() => {
+                      selectedPatientId.length > 0 ? setIsDisablePopoverOpen(true) : {};
+                    }}
+                    fullWidth
+                  >
                     <AphTextField
                       label="Date Of Birth"
                       placeholder="dd/mm/yyyy"
+                      disabled={selectedPatientId.length > 0}
                       inputProps={{ type: 'text', maxLength: 10 }}
                       value={dob}
                       onChange={(e) => {
                         setDob(e.target.value);
                       }}
+                      className={selectedPatientId.length > 0 ? classes.disabledInput : ''}
                       onBlur={(e) => {
                         setIsValidDob(isDobValid(e.target.value));
                       }}
@@ -561,14 +615,29 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
                       </FormHelperText>
                     ) : null}
                   </FormControl>
-                  <FormControl className={classes.formControl}>
+                  <FormControl
+                    className={classes.formControl}
+                    onClick={
+                      selectedPatientId.length ? () => setIsDisablePopoverOpen(true) : () => { }
+                    }
+                  >
                     <label>Gender</label>
                     <Grid container spacing={2} className={classes.btnGroup}>
                       {orderedGenders.map((gender) => {
                         return (
-                          <Grid item xs={4} sm={4}>
+                          <Grid
+                            item
+                            xs={4}
+                            sm={4}
+                            className={`${
+                              selectedPatientId.length > 0 && gender !== genderSelected
+                                ? classes.hideBtn
+                                : ''
+                              }`}
+                          >
                             <AphButton
                               color="secondary"
+                              disabled={selectedPatientId.length > 0}
                               className={`${classes.genderBtns} ${
                                 gender === genderSelected ? classes.btnActive : ''
                                 }`}
@@ -616,6 +685,9 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
                     value={emailAddress}
                     onChange={(e) => {
                       setEmailAddress(e.target.value);
+                      if (e.target.value !== '') {
+                        setIsEmailAddressValid(isEmailValid(e.target.value));
+                      }
                     }}
                     onBlur={(e) => {
                       if (e.target.value !== '') {
@@ -649,7 +721,6 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
           <AphButton
             color="primary"
             onClick={() => {
-              setMutationLoading(true);
               const selectedPatientDetails = _find(allCurrentPatients, (currentPatientDetails) => {
                 return currentPatientDetails.relation === 'ME';
               });
@@ -667,7 +738,10 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
                     ? selectedPatientDetails.mobileNumber
                     : '',
               };
+              setUserInput(userObject);
               if (selectedPatientId.length > 0) {
+                setMutationLoading(true);
+
                 delete userObject.mobileNumber;
                 userObject.id = selectedPatientId;
                 editProfileMutation({
@@ -687,27 +761,12 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
                     setAlertMessage('An error occurred while updating profile.');
                   });
               } else {
-                delete userObject.id;
-                addProfileMutation({
-                  variables: {
-                    PatientProfileInput: { ...userObject },
-                  },
-                })
-                  .then((response) => {
-                    closeHandler(false);
-                    successHandler(true);
-                    window.location.reload();
-                  })
-                  .catch((e) => {
-                    setMutationLoading(false);
-                    setIsAlertOpen(true);
-                    setAlertMessage('An error occurred while creating profile.');
-                  });
+                setIsAddNewProfileConfirmDialogOpen(true);
               }
             }}
-            disabled={!disableSubmitButton}
+            disabled={!disableSubmitButton || mutationLoading}
             classes={{
-              root: classes.saveButton,
+              root: mutationLoading ? '' : classes.saveButton,
               disabled: !disableSubmitButton ? classes.saveBtnDisable : '',
             }}
             title={'save'}
@@ -715,6 +774,38 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
             {mutationLoading ? <CircularProgress size={20} /> : 'Save'}
           </AphButton>
         </div>
+        <Popover
+          open={isDisablePopoverOpen}
+          anchorEl={disableFieldsRef.current}
+          onClose={() => setIsDisablePopoverOpen(false)}
+          anchorOrigin={{
+            vertical: 'top',
+            horizontal: 'left',
+          }}
+          transformOrigin={{
+            vertical: 'top',
+            horizontal: 'left',
+          }}
+          className={classes.popDisablepopover}
+        >
+          <h3>Uh oh! :(</h3>
+          <h6>You cannot edit Name, Date of Birth and Gender!</h6>
+          <AphButton
+            className={classes.addnewMemberBtn}
+            onClick={() => {
+              props.addNewProfileFromEditMenu();
+              setIsDisablePopoverOpen(false);
+              setFirstName('');
+              setLastName('');
+              setDob('');
+              setGenderSelected('');
+              setPhotoUrl('');
+              setRelation('');
+            }}
+          >
+            ADD NEW MEMBER
+          </AphButton>
+        </Popover>
       </div>
       <Alerts
         setAlertMessage={setAlertMessage}
@@ -722,6 +813,25 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
         isAlertOpen={isAlertOpen}
         setIsAlertOpen={setIsAlertOpen}
       />
+      <AphDialog open={isAddNewProfileConfirmDialogOpen} maxWidth="sm">
+        <AphDialogClose
+          onClick={() => {
+            setIsAddNewProfileConfirmDialogOpen(false);
+            closeHandler(false);
+          }}
+          title={'Close'}
+        />
+        <AphDialogTitle className={classes.memberTitle}>New Member Details</AphDialogTitle>
+        <AddNewProfileConfirm
+          handleEdit={() => {
+            setIsAddNewProfileConfirmDialogOpen(false);
+          }}
+          successHandler={() => {
+            handleProfileSubmit();
+          }}
+          userInput={userInput}
+        />
+      </AphDialog>
     </div>
   );
 };

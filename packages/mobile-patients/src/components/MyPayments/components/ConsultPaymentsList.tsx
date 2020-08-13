@@ -15,15 +15,17 @@ interface ConsultPaymentsListProps {
 }
 const ConsultPaymentsList: FC<ConsultPaymentsListProps> = (props) => {
   const { patientId, navigationProps, fromNotification } = props;
-  const { payments, loading } = useGetPayments('consult', patientId, navigationProps);
+  const { payments, loading, meta } = useGetPayments(1, 8, 'consult', patientId, navigationProps);
 
   if (loading) {
     return <Spinner />;
   }
+
   return (
     <PaymentsList
       patientId={patientId}
       payments={payments}
+      meta={meta}
       type="consult"
       navigationProps={navigationProps}
       fromNotification={fromNotification}

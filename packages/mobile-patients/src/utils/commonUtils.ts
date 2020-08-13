@@ -165,3 +165,7 @@ export const getValuesArray = (arr: any) => {
   const finalArr = arr.map((item: any) => item.name);
   return finalArr;
 };
+
+export const isUpperCase = (str: string) => {
+  return str === str.toUpperCase();
+};

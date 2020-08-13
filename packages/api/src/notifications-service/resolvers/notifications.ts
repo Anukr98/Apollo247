@@ -13,6 +13,7 @@ import {
   DiagnosticOrders,
   MEDICINE_ORDER_PAYMENT_TYPE,
   DEVICE_TYPE,
+  MedicineOrderPayments,
 } from 'profiles-service/entities';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { AppointmentRefundsRepository } from 'consults-service/repositories/appointmentRefundsRepository';
@@ -194,7 +195,11 @@ export enum NotificationPriority {
 
 type MedicineOrderRefundNotificationInput = {
   refundAmount: number;
-  healthCreditsRefund: number;
+  healthCreditsRefunded: number;
+  paymentInfo: MedicineOrderPayments;
+  reasonCode?: string;
+  isPartialRefund: boolean;
+  isRefundSuccessful: boolean;
 };
 
 type PushNotificationInput = {
@@ -331,30 +336,31 @@ export const sendNotificationSMS = async (mobileNumber: string, message: string)
 };
 
 export async function hitCallKitCurl(
-  token: string, 
-  doctorName: string, 
-  apptId: string, 
-  connecting: boolean, 
-  callType: APPT_CALL_TYPE){
-    const CERT_PATH = ApiConstants.ASSETS_DIR + '/voipCert.pem';
-    const passphrase = process.env.VOIP_CALLKIT_PASSPHRASE || 'apollo@123';
-    const domain = process.env.VOIP_CALLKIT_DOMAIN || 'https://api.development.push.apple.com/3/device/';
-    try {
-      const curlCommand = `curl -v -d '{"name": "${
-        doctorName
-      }", 
-      "${connecting ? "isVideo" : "disconnectCall" }": 
-      ${connecting ? (callType==APPT_CALL_TYPE.VIDEO ? true : false) : true}, 
-      "appointmentId" : "${
-        apptId
-      }"}' --http2 --cert ${CERT_PATH}:${passphrase} ${domain}${token}`;
-      const resp = child_process.execSync(curlCommand);
-      const result = resp.toString('utf-8');
-      console.log("voipCallKit result > ", result);
-      console.log("curlCommand > ", curlCommand)
-    } catch (err){
-      console.error("voipCallKit error > ", err);
-    }
+  token: string,
+  doctorName: string,
+  apptId: string,
+  connecting: boolean,
+  callType: APPT_CALL_TYPE,
+  isDev: boolean
+) {
+  const CERT_PATH = process.env.VOIP_CALLKIT_CERT_PATH + '/voipCert.pem';
+  const passphrase = process.env.VOIP_CALLKIT_PASSPHRASE || 'apollo@123';
+  let domain = process.env.VOIP_CALLKIT_DOMAIN || 'https://api.push.apple.com/3/device/';
+  if (isDev) {
+    domain = 'https://api.development.push.apple.com/3/device/';
+  }
+  try {
+    const curlCommand = `curl -v -d '{"name": "${doctorName}", 
+      "${connecting ? 'isVideo' : 'disconnectCall'}": 
+      ${connecting ? (callType == APPT_CALL_TYPE.VIDEO ? true : false) : true}, 
+      "appointmentId" : "${apptId}"}' --http2 --cert ${CERT_PATH}:${passphrase} ${domain}${token}`;
+    const resp = child_process.execSync(curlCommand);
+    const result = resp.toString('utf-8');
+    console.log('voipCallKit result > ', result);
+    console.log('curlCommand > ', curlCommand);
+  } catch (err) {
+    console.error('voipCallKit error > ', err);
+  }
 }
 
 export async function sendCallsDisconnectNotification(
@@ -462,7 +468,8 @@ export async function sendCallsNotification(
   doctorsDb: Connection,
   callType: APPT_CALL_TYPE,
   doctorType: DOCTOR_CALL_TYPE,
-  appointmentCallId: string
+  appointmentCallId: string,
+  isDev: boolean
 ) {
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const appointment = await appointmentRepo.findById(pushNotificationInput.appointmentId);
@@ -484,11 +491,20 @@ export async function sendCallsNotification(
     patientDetails.id,
     DEVICE_TYPE.IOS
   );
-
-  if (voipPushtoken.length && voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken'] && callType != APPT_CALL_TYPE.CHAT) {
-    hitCallKitCurl(voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken'], doctorDetails.displayName, appointment.id, true, callType)
+  if (
+    voipPushtoken.length &&
+    voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken'] &&
+    callType != APPT_CALL_TYPE.CHAT
+  ) {
+    hitCallKitCurl(
+      voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken'],
+      doctorDetails.displayName,
+      appointment.id,
+      true,
+      callType,
+      isDev,
+    );
   }
-
   if (callType == APPT_CALL_TYPE.CHAT && doctorType == DOCTOR_CALL_TYPE.SENIOR) {
     const devLink = process.env.DOCTOR_DEEP_LINK ? process.env.DOCTOR_DEEP_LINK : '';
     let whatsappMsg = ApiConstants.WHATSAPP_SD_CONSULT_START_REMINDER.replace(
@@ -581,42 +597,8 @@ export async function sendCallsNotification(
   });*/
   console.log(registrationToken.length, patientDetails.mobileNumber, 'token length');
   if (registrationToken.length == 0) return;
-  admin
-    .messaging()
-    .sendToDevice(registrationToken, payload, options)
-    .then((response: PushNotificationSuccessMessage) => {
-      notificationPayloadResponse = response;
-      if (pushNotificationInput.notificationType == NotificationType.CALL_APPOINTMENT) {
-        const fileName =
-          process.env.NODE_ENV + '_callnotification_' + format(new Date(), 'yyyyMMdd') + '.txt';
-        let assetsDir = path.resolve('/apollo-hospitals/packages/api/src/assets');
-        if (process.env.NODE_ENV != 'local') {
-          assetsDir = path.resolve(<string>process.env.ASSETS_DIRECTORY);
-        }
-        let content =
-          format(new Date(), 'yyyy-MM-dd hh:mm') +
-          '\n apptid: ' +
-          pushNotificationInput.appointmentId +
-          '\n multicastId: ';
-        content +=
-          response.multicastId.toString() +
-          '\n------------------------------------------------------------------------------------\n';
-        fs.appendFile(assetsDir + '/' + fileName, content, (err) => {
-          if (err) {
-            console.log('file saving error', err);
-          }
-          console.log('notification results saved');
-        });
-      }
-    })
-    .catch((error: JSON) => {
-      console.log('PushNotification Failed::' + error);
-      throw new AphError(AphErrorMessages.PUSH_NOTIFICATION_FAILED);
-    });
 
-  console.log(notificationPayloadResponse, 'notificationPayloadResponse');
-
-  //second payload
+  //First payload (data only)
   let dataOnlyPayloadResponse;
   const dataOnlyPayload = {
     data: {
@@ -660,6 +642,41 @@ export async function sendCallsNotification(
     });
 
   console.log(dataOnlyPayloadResponse, 'dataOnlyPayloadResponse');
+
+  admin
+    .messaging()
+    .sendToDevice(registrationToken, payload, options)
+    .then((response: PushNotificationSuccessMessage) => {
+      notificationPayloadResponse = response;
+      if (pushNotificationInput.notificationType == NotificationType.CALL_APPOINTMENT) {
+        const fileName =
+          process.env.NODE_ENV + '_callnotification_' + format(new Date(), 'yyyyMMdd') + '.txt';
+        let assetsDir = path.resolve('/apollo-hospitals/packages/api/src/assets');
+        if (process.env.NODE_ENV != 'local') {
+          assetsDir = path.resolve(<string>process.env.ASSETS_DIRECTORY);
+        }
+        let content =
+          format(new Date(), 'yyyy-MM-dd hh:mm') +
+          '\n apptid: ' +
+          pushNotificationInput.appointmentId +
+          '\n multicastId: ';
+        content +=
+          response.multicastId.toString() +
+          '\n------------------------------------------------------------------------------------\n';
+        fs.appendFile(assetsDir + '/' + fileName, content, (err) => {
+          if (err) {
+            console.log('file saving error', err);
+          }
+          console.log('notification results saved');
+        });
+      }
+    })
+    .catch((error: JSON) => {
+      console.log('PushNotification Failed::' + error);
+      throw new AphError(AphErrorMessages.PUSH_NOTIFICATION_FAILED);
+    });
+
+  console.log(notificationPayloadResponse, 'notificationPayloadResponse');
 
   return {
     notificationPayloadResponse: notificationPayloadResponse,
@@ -2546,18 +2563,19 @@ export async function sendChatMessageNotification(
   doctorsDb: Connection,
   chatMessage: string
 ) {
-  //const whatsAppLink = process.env.WHATSAPP_LINK_BOOK_APOINTMENT;
-  //const devLink: any = process.env.DOCTOR_DEEP_LINK;
-  // const whatsAppMessageBody = ApiConstants.WHATSAPP_SD_CHAT_NOTIFICATION.replace(
-  //   '{0}',
-  //   doctorDetails.firstName
-  // )
-  //   .replace('{1}', patientDetails.firstName + ' ' + patientDetails.lastName)
-  //   .replace('{2}', doctorDetails.salutation)
-  //   .replace('{3}', appointment.id)
-  //   .replace('{4}', devLink);
-  //whatsAppMessageBody = whatsAppMessageBody;
-  //await sendNotificationWhatsapp(doctorDetails.mobileNumber, whatsAppMessageBody, 1);
+  const devLink = process.env.CHAT_DOCTOR_DEEP_LINK
+    ? process.env.CHAT_DOCTOR_DEEP_LINK + appointment.id
+    : '';
+  const templateData: string[] = [
+    doctorDetails.salutation + ' ' + doctorDetails.firstName,
+    patientDetails.firstName + ' ' + patientDetails.lastName,
+    devLink,
+  ];
+  sendDoctorNotificationWhatsapp(
+    ApiConstants.WHATSAPP_SD_CHAT_NOTIFICATION_ID,
+    doctorDetails.mobileNumber,
+    templateData
+  );
   const messageBody = ApiConstants.CHAT_MESSGAE_TEXT.replace(
     '{0}',
     doctorDetails.firstName
@@ -3078,83 +3096,107 @@ export async function sendDoctorRescheduleAppointmentNotification(
   return { status: true };
 }
 
-export async function medicineOrderCancelled(
-  orderDetails: MedicineOrders,
-  reasonCode: string,
-  patientsDb: Connection
-) {
-  let msgText: string = '';
-  msgText = ApiConstants.ORDER_CANCEL_BODY;
-  const medicineOrdersRepo = patientsDb.getCustomRepository(MedicineOrdersRepository);
-  msgText = msgText.replace('{name}', orderDetails.patient.firstName);
-  msgText = msgText.replace('{orderId}', orderDetails.orderAutoId.toString());
-  const cancellationReasons = await medicineOrdersRepo.getMedicineOrderCancelReasonByCode(
-    reasonCode
-  );
-  if (cancellationReasons) {
-    msgText = msgText.replace('{reason}', cancellationReasons.displayMessage);
-  } else {
-    msgText = msgText.replace('{reason}', 'Your order has been cancelled');
-  }
-  await sendNotificationSMS(orderDetails.patient.mobileNumber, msgText);
-  const paymentInfo = orderDetails.medicineOrderPayments[0] || {};
-  if (paymentInfo.paymentType == MEDICINE_ORDER_PAYMENT_TYPE.CASHLESS) {
-    msgText = ApiConstants.ORDER_CANCEL_PREPAID_BODY;
-    msgText = msgText.replace('{orderId}', orderDetails.orderAutoId.toString());
-    msgText = msgText.replace('{refund}', paymentInfo.amountPaid.toString());
-    await sendNotificationSMS(orderDetails.patient.mobileNumber, msgText);
-    if (paymentInfo.healthCreditsRedeemed > 0) {
-      msgText = ApiConstants.ORDER_CANCEL_HC_REFUND_BODY;
-      msgText = msgText.replace('{orderId}', orderDetails.orderAutoId.toString());
-      msgText = msgText.replace(
-        '{healthCreditsRefund}',
-        paymentInfo.healthCreditsRedeemed.toString()
-      );
-      await sendNotificationSMS(orderDetails.patient.mobileNumber, msgText);
-    }
-  }
-}
-
 export async function medicineOrderRefundNotification(
   orderDetails: MedicineOrders,
-  medicineOrderRefundNotificationInput: MedicineOrderRefundNotificationInput
+  medicineOrderRefundNotificationInput: MedicineOrderRefundNotificationInput,
+  patientsDb: Connection
 ) {
   let notificationBody: string = '';
-  if (
-    medicineOrderRefundNotificationInput.refundAmount > 0 ||
-    medicineOrderRefundNotificationInput.healthCreditsRefund > 0
-  ) {
-    if (
-      medicineOrderRefundNotificationInput.refundAmount > 0 &&
-      medicineOrderRefundNotificationInput.healthCreditsRefund > 0
-    ) {
-      notificationBody = ApiConstants.ORDER_PAYMENT_HC_PARTIAL_REFUND_BODY;
-      notificationBody = notificationBody.replace('{orderId}', orderDetails.orderAutoId.toString());
-      notificationBody = notificationBody.replace(
-        '{refundAmount}',
-        medicineOrderRefundNotificationInput.refundAmount.toString()
-      );
-      notificationBody = notificationBody.replace(
-        '{healthCreditsRefund}',
-        medicineOrderRefundNotificationInput.healthCreditsRefund.toString()
-      );
-    } else if (medicineOrderRefundNotificationInput.refundAmount > 0) {
-      notificationBody = ApiConstants.ORDER_PAYMENT_PARTIAL_REFUND_BODY;
-      notificationBody = notificationBody.replace('{orderId}', orderDetails.orderAutoId.toString());
-      notificationBody = notificationBody.replace(
-        '{refundAmount}',
-        medicineOrderRefundNotificationInput.refundAmount.toString()
-      );
-    } else if (medicineOrderRefundNotificationInput.healthCreditsRefund > 0) {
-      notificationBody = ApiConstants.ORDER_HC_PARTIAL_REFUND_BODY;
-      notificationBody = notificationBody.replace('{orderId}', orderDetails.orderAutoId.toString());
-      notificationBody = notificationBody.replace(
-        '{healthCreditsRefund}',
-        medicineOrderRefundNotificationInput.healthCreditsRefund.toString()
-      );
+  const {
+    paymentInfo,
+    isPartialRefund,
+    isRefundSuccessful,
+    reasonCode,
+    healthCreditsRefunded,
+    refundAmount,
+  } = medicineOrderRefundNotificationInput;
+
+  /**
+   * If partial refund happens, it means order is not cancelled but billing amount is less
+   * Otherwise, order was cancelled and user should have been refunded
+   */
+  if (isPartialRefund === true) {
+    if ((refundAmount > 0 && isRefundSuccessful) || healthCreditsRefunded > 0) {
+      if (refundAmount > 0 && isRefundSuccessful && healthCreditsRefunded > 0) {
+        notificationBody = ApiConstants.ORDER_PAYMENT_HC_PARTIAL_REFUND_BODY;
+        notificationBody = notificationBody.replace(
+          '{orderId}',
+          orderDetails.orderAutoId.toString()
+        );
+        notificationBody = notificationBody.replace('{refundAmount}', refundAmount.toString());
+        notificationBody = notificationBody.replace(
+          '{healthCreditsRefund}',
+          healthCreditsRefunded.toString()
+        );
+      } else if (refundAmount > 0 && isRefundSuccessful) {
+        notificationBody = ApiConstants.ORDER_PAYMENT_PARTIAL_REFUND_BODY;
+        notificationBody = notificationBody.replace(
+          '{orderId}',
+          orderDetails.orderAutoId.toString()
+        );
+        notificationBody = notificationBody.replace('{refundAmount}', refundAmount.toString());
+      } else if (healthCreditsRefunded > 0) {
+        notificationBody = ApiConstants.ORDER_HC_PARTIAL_REFUND_BODY;
+        notificationBody = notificationBody.replace(
+          '{orderId}',
+          orderDetails.orderAutoId.toString()
+        );
+        notificationBody = notificationBody.replace(
+          '{healthCreditsRefund}',
+          healthCreditsRefunded.toString()
+        );
+      }
+      await sendNotificationSMS(orderDetails.patient.mobileNumber, notificationBody);
     }
-    //console.log(notificationBody);
-    await sendNotificationSMS(orderDetails.patient.mobileNumber, notificationBody);
+  } else {
+    notificationBody = ApiConstants.ORDER_CANCEL_BODY;
+    const medicineOrdersRepo = patientsDb.getCustomRepository(MedicineOrdersRepository);
+    notificationBody = notificationBody.replace('{name}', orderDetails.patient.firstName);
+    notificationBody = notificationBody.replace('{orderId}', orderDetails.orderAutoId.toString());
+    if (reasonCode) {
+      const cancellationReasons = await medicineOrdersRepo.getMedicineOrderCancelReasonByCode(
+        reasonCode
+      );
+      if (cancellationReasons) {
+        notificationBody = notificationBody.replace('{reason}', cancellationReasons.displayMessage);
+      } else {
+        notificationBody = notificationBody.replace('{reason}', 'Your order has been cancelled');
+      }
+      await sendNotificationSMS(orderDetails.patient.mobileNumber, notificationBody);
+    }
+
+    if (paymentInfo.paymentType == MEDICINE_ORDER_PAYMENT_TYPE.CASHLESS && ((refundAmount > 0 && isRefundSuccessful) || healthCreditsRefunded > 0)) {
+      if (refundAmount > 0 && isRefundSuccessful && healthCreditsRefunded > 0) {
+        notificationBody = ApiConstants.ORDER_CANCEL_PAYMENT_HC_REFUND_BODY;
+        notificationBody = notificationBody.replace(
+          '{orderId}',
+          orderDetails.orderAutoId.toString()
+        );
+        notificationBody = notificationBody.replace('{refund}', refundAmount.toString());
+        notificationBody = notificationBody.replace(
+          '{healthCreditsRefund}',
+          healthCreditsRefunded.toString()
+        );
+      } else if (refundAmount > 0 && isRefundSuccessful) {
+        notificationBody = ApiConstants.ORDER_CANCEL_PREPAID_BODY;
+        notificationBody = notificationBody.replace(
+          '{orderId}',
+          orderDetails.orderAutoId.toString()
+        );
+        notificationBody = notificationBody.replace('{refund}', refundAmount.toString());
+      } else if (healthCreditsRefunded > 0) {
+        notificationBody = ApiConstants.ORDER_CANCEL_HC_REFUND_BODY;
+        notificationBody = notificationBody.replace(
+          '{orderId}',
+          orderDetails.orderAutoId.toString()
+        );
+        notificationBody = notificationBody.replace(
+          '{healthCreditsRefund}',
+          healthCreditsRefunded.toString()
+        );
+      }
+      await sendNotificationSMS(orderDetails.patient.mobileNumber, notificationBody);
+    }
   }
   return;
 }

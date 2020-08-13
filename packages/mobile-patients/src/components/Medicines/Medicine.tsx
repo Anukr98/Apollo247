@@ -113,8 +113,8 @@ import {
   MedicineReOrderOverlayProps,
   MedicineReOrderOverlay,
 } from '@aph/mobile-patients/src/components/Medicines/MedicineReOrderOverlay';
-import { getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails } from '@aph/mobile-patients/src/graphql/types/getMedicineOrderOMSDetails';
-import { AddToCartButtons } from '@aph/mobile-patients/src/components/Medicines/AddToCartButtons';
+import { AddToCartButtons } from './AddToCartButtons';
+import { getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails } from '../../graphql/types/getMedicineOrderOMSDetailsWithAddress';
 
 const styles = StyleSheet.create({
   sliderDotStyle: {
@@ -1005,7 +1005,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       );
 
       const orderDetails = ((!loading && order) ||
-        {}) as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails;
+        {}) as getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails;
 
       const eventAttributes: WebEngageEvents[WebEngageEventName.RE_ORDER_MEDICINE] = {
         orderType: !!g(order, 'billNumber')
@@ -1676,6 +1676,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           props.navigation.navigate(AppRoutes.SearchMedicineScene, { searchText });
           setSearchText('');
           setMedicineList([]);
+          setSearchFocused(false);
         }}
       >
         <SearchSendIcon />
