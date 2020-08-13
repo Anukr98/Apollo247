@@ -37,6 +37,8 @@ const testApiCredentialsProd = {
 const appStaticVariables = {
   iOS_Version: DeviceInfo.getVersion(),
   Android_Version: DeviceInfo.getVersion(),
+  MED_DELIVERY_DATE_API_FORMAT: 'DD-MMM-YYYY hh:mm',
+  MED_DELIVERY_DATE_DISPLAY_FORMAT: 'D MMM YYYY | hh:mm A',
   DIAGNOSTIC_SLOTS_LEAD_TIME_IN_MINUTES: 60, // slots visible after this period for current date
   DIAGNOSTIC_SLOTS_MAX_FORWARD_DAYS: 2, // slots can be booked upto this period
   DIAGNOSTIC_MAX_SLOT_TIME: '12:00', // 24 hours format

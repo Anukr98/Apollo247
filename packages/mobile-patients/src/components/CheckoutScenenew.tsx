@@ -79,6 +79,7 @@ import { FirebaseEvents, FirebaseEventName } from '../helpers/firebaseEvents';
 import { CollapseCard } from '@aph/mobile-patients/src/components/CollapseCard';
 import { Down, Up } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Tagalys } from '@aph/mobile-patients/src/helpers/Tagalys';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
 export interface CheckoutSceneNewProps extends NavigationScreenProps {}
 
@@ -247,7 +248,10 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       description: `${desc || ''}`.trim(),
     });
 
-  const getPrepaidCheckoutCompletedEventAttributes = (orderAutoId: string, isOrderCod?: boolean) => {
+  const getPrepaidCheckoutCompletedEventAttributes = (
+    orderAutoId: string,
+    isOrderCod?: boolean
+  ) => {
     try {
       const addr = deliveryAddressId && addresses.find((item) => item.id == deliveryAddressId);
       const store = storeId && stores.find((item) => item.storeid == storeId);
@@ -297,7 +301,11 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     return appsflyerEventAttributes;
   };
 
-  const postwebEngageCheckoutCompletedEvent = (orderAutoId: string, orderId: string, isOrderCod?: boolean) => {
+  const postwebEngageCheckoutCompletedEvent = (
+    orderAutoId: string,
+    orderId: string,
+    isOrderCod?: boolean
+  ) => {
     const eventAttributes = {
       ...getPrepaidCheckoutCompletedEventAttributes(`${orderAutoId}`, isOrderCod),
     };
@@ -605,6 +613,10 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
       })
     );
+    const deliveryTimeMomentFormat = moment(
+      deliveryTime,
+      AppConfig.Configuration.MED_DELIVERY_DATE_API_FORMAT
+    );
     showAphAlert!({
       // unDismissable: true,
       title: `Hi, ${(currentPatient && currentPatient.firstName) || ''} :)`,
@@ -650,7 +662,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
               {`#${orderAutoId}`}
             </Text>
           </View>
-          {moment(deliveryTime).isValid() && (
+          {deliveryTimeMomentFormat.isValid() && (
             <>
               <View
                 style={{
@@ -668,7 +680,9 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
                   }}
                 >
                   {deliveryTime &&
-                    `Delivery By: ${moment(deliveryTime).format('D MMM YYYY  | hh:mm A')}`}
+                    `Delivery By: ${deliveryTimeMomentFormat.format(
+                      AppConfig.Configuration.MED_DELIVERY_DATE_DISPLAY_FORMAT
+                    )}`}
                 </Text>
               </View>
             </>
