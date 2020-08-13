@@ -27,11 +27,19 @@ function updateElasticSlotsViaAppointMent(event: UpdateEvent<any>) {
             }
 
             isAppointmentCanceled = oldAppointment.status != newAppointment.status && newAppointment.status == STATUS.CANCELLED ? true : false;
-            isAppointmentRescheduled = (oldAppointment.appointmentState != newAppointment.appointmentState)
-                && newAppointment.appointmentState == APPOINTMENT_STATE.RESCHEDULE;
+            isAppointmentRescheduled = newAppointment.appointmentState == APPOINTMENT_STATE.RESCHEDULE;
 
-
-            if (isAppointmentRescheduled) {
+            if (isAppointmentCanceled) {
+                const response = await updateDoctorSlotStatusES(
+                    oldAppointment.doctorId,
+                    oldAppointment.appointmentType,
+                    ES_DOCTOR_SLOT_STATUS.OPEN,
+                    oldAppointment.appointmentDateTime,
+                    oldAppointment
+                )
+                log('consultServiceLogger', `Appointment ${oldAppointment.id} cancelled, the Slot will now be opened`, "observer.ts", JSON.stringify(response), '');
+            }
+            else if (isAppointmentRescheduled) {
                 // Open up older slot
                 let response = await updateDoctorSlotStatusES(
                     oldAppointment.doctorId,
@@ -51,16 +59,6 @@ function updateElasticSlotsViaAppointMent(event: UpdateEvent<any>) {
                     newAppointment
                 );
                 log('consultServiceLogger', `Appointment ${newAppointment.id} is the new appointment, the slot will be booked from rescheduling  `, "observer.ts", JSON.stringify(response), '');
-            }
-            else if (isAppointmentCanceled) {
-                const response = await updateDoctorSlotStatusES(
-                    oldAppointment.doctorId,
-                    oldAppointment.appointmentType,
-                    ES_DOCTOR_SLOT_STATUS.OPEN,
-                    oldAppointment.appointmentDateTime,
-                    oldAppointment
-                )
-                log('consultServiceLogger', `Appointment ${oldAppointment.id} cancelled, the Slot will now be opened`, "observer.ts", JSON.stringify(response), '');
             }
 
             return resolve();
