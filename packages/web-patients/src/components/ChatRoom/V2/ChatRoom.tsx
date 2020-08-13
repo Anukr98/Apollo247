@@ -440,6 +440,7 @@ export const ChatRoom: React.FC = (props) => {
   const [nextSlotAvailable, setNextSlotAvailable] = useState<string>('');
   const [isRescheduleSuccess, setIsRescheduleSuccess] = useState<boolean>(false);
   const [rescheduledSlot, setRescheduledSlot] = useState<string | null>(null);
+  const [disaplayId, setDisplayId] = useState<number | null>(null);
   const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
   const patientId = (currentPatient && currentPatient.id) || '';
@@ -484,10 +485,7 @@ export const ChatRoom: React.FC = (props) => {
     });
 
   const nextAvailableSlot = (slotDoctorId: string, date: Date) => {
-    const todayDate = moment
-      .utc(date)
-      .local()
-      .format('YYYY-MM-DD');
+    const todayDate = moment.utc(date).local().format('YYYY-MM-DD');
     availableSlot(slotDoctorId, todayDate)
       .then(({ data }: any) => {
         try {
@@ -526,82 +524,83 @@ export const ChatRoom: React.FC = (props) => {
   return !isSignedIn ? (
     <LinearProgress />
   ) : (
-      <div className={classes.root}>
-        <Header />
-        <div className={classes.container}>
-          <div className={classes.doctorListingPage}>
-            <div className={classes.breadcrumbs}>
-              <a onClick={() => (window.location.href = clientRoutes.appointments())}>
-                <div className={classes.backArrow}>
-                  <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
-                  <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
-                </div>
-              </a>
+    <div className={classes.root}>
+      <Header />
+      <div className={classes.container}>
+        <div className={classes.doctorListingPage}>
+          <div className={classes.breadcrumbs}>
+            <a onClick={() => (window.location.href = clientRoutes.appointments())}>
+              <div className={classes.backArrow}>
+                <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
+                <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
+              </div>
+            </a>
             Consult Room
           </div>
-            <div className={classes.doctorListingSection}>
-              <div className={classes.leftSection}>
-                {data && (
-                  <ConsultDoctorProfile
-                    doctorDetails={data}
-                    appointmentId={appointmentId}
-                    hasDoctorJoined={hasDoctorJoined}
-                    jrDoctorJoined={jrDoctorJoined}
-                  />
-                )}
-              </div>
-              <div className={classes.rightSection}>
-                <div className={classes.sectionHeader}>
-                  <span className={classes.caseNumber}>Case #362079 </span>
-                  <div className={classes.headerActions}>
-                    <AphButton
-                      disabled={jrDoctorJoined}
-                      classes={{
-                        root: classes.viewButton,
-                        disabled: classes.disabledButton,
-                      }}
-                      onClick={() => {
-                        nextAvailableSlot(params.doctorId, new Date());
-                        setIsPopoverOpen(true);
-                      }}
-                    >
-                      Reschedule
+          <div className={classes.doctorListingSection}>
+            <div className={classes.leftSection}>
+              {data && (
+                <ConsultDoctorProfile
+                  setDisplayId={setDisplayId}
+                  doctorDetails={data}
+                  appointmentId={appointmentId}
+                  hasDoctorJoined={hasDoctorJoined}
+                  jrDoctorJoined={jrDoctorJoined}
+                />
+              )}
+            </div>
+            <div className={classes.rightSection}>
+              <div className={classes.sectionHeader}>
+                {disaplayId && <span className={classes.caseNumber}>Case #{disaplayId} </span>}
+                <div className={classes.headerActions}>
+                  <AphButton
+                    disabled={jrDoctorJoined}
+                    classes={{
+                      root: classes.viewButton,
+                      disabled: classes.disabledButton,
+                    }}
+                    onClick={() => {
+                      nextAvailableSlot(params.doctorId, new Date());
+                      setIsPopoverOpen(true);
+                    }}
+                  >
+                    Reschedule
                   </AphButton>
-                  </div>
                 </div>
-                {data && (
-                  <ChatWindow
-                    doctorDetails={data}
-                    appointmentId={appointmentId}
-                    doctorId={doctorId}
-                    hasDoctorJoined={(hasDoctorJoined: boolean) =>
-                      setHasDoctorJoined(hasDoctorJoined)
-                    }
-                    jrDoctorJoined={jrDoctorJoined}
-                    setJrDoctorJoined={setJrDoctorJoined}
-                    isModalOpen={isModalOpen}
-                    setIsModalOpen={setIsModalOpen}
-                    nextSlotAvailable={nextSlotAvailable}
-                    availableNextSlot={nextAvailableSlot}
-                    rescheduleAPI={rescheduleAPI}
-                  />
-                )}
               </div>
+              {data && (
+                <ChatWindow
+                  doctorDetails={data}
+                  appointmentId={appointmentId}
+                  doctorId={doctorId}
+                  hasDoctorJoined={(hasDoctorJoined: boolean) =>
+                    setHasDoctorJoined(hasDoctorJoined)
+                  }
+                  jrDoctorJoined={jrDoctorJoined}
+                  setJrDoctorJoined={setJrDoctorJoined}
+                  isModalOpen={isModalOpen}
+                  setIsModalOpen={setIsModalOpen}
+                  nextSlotAvailable={nextSlotAvailable}
+                  availableNextSlot={nextAvailableSlot}
+                  rescheduleAPI={rescheduleAPI}
+                />
+              )}
             </div>
           </div>
         </div>
-        {data && (
-          <Modal
-            open={isModalOpen}
-            onClose={() => setIsModalOpen(false)}
-            disableBackdropClick
-            disableEscapeKeyDown
-          >
-            <Paper className={classes.modalBox}>
-              <div className={classes.modalBoxClose} onClick={() => setIsModalOpen(false)}>
-                <img src={require('images/ic_cross_popup.svg')} alt="" />
-              </div>
-              {/* <OnlineConsult
+      </div>
+      {data && (
+        <Modal
+          open={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          disableBackdropClick
+          disableEscapeKeyDown
+        >
+          <Paper className={classes.modalBox}>
+            <div className={classes.modalBoxClose} onClick={() => setIsModalOpen(false)}>
+              <img src={require('images/ic_cross_popup.svg')} alt="" />
+            </div>
+            {/* <OnlineConsult
               setIsPopoverOpen={setIsModalOpen}
               doctorDetails={data.getDoctorDetailsById}
               onBookConsult={(popover: boolean) => setIsModalOpen(popover)}
@@ -609,262 +608,262 @@ export const ChatRoom: React.FC = (props) => {
               appointmentId={params.appointmentId}
               rescheduleAPI={rescheduleAPI}
             /> */}
-            </Paper>
-          </Modal>
-        )}
-        <Popover
-          open={isPopoverOpen}
-          anchorEl={mascotRef.current}
-          anchorOrigin={{
-            vertical: 'bottom',
-            horizontal: 'right',
-          }}
-          transformOrigin={{
-            vertical: 'top',
-            horizontal: 'right',
-          }}
-          classes={{ paper: classes.bottomPopover }}
-        >
-          <div className={classes.successPopoverWindow}>
-            <div className={classes.windowWrap}>
-              <div className={classes.mascotIcon}>
-                <img src={require('images/ic-mascot.png')} alt="" />
-              </div>
-              <div className={classes.windowBody}>
-                {/* <Typography variant="h2">hi! :)</Typography> */}
-                <p>
-                  We’re sorry that you have to reschedule. You can reschedule up to 3 times for free.
-              </p>
-                <p>
-                  Next slot for Dr.{' '}
-                  {`${data && data.getDoctorDetailsById && data.getDoctorDetailsById.firstName}`} is
-                available on -{moment(nextSlotAvailable).format('Do MMMM, dddd \nhh:mm a')}
-                </p>
-              </div>
-              <div className={classes.actions}>
-                <AphButton onClick={() => setIsModalOpen(true)}>CHANGE SLOT</AphButton>
-                <AphButton
-                  onClick={() => {
-                    const bookRescheduleInput = {
-                      appointmentId: params.appointmentId,
-                      doctorId: params.doctorId,
-                      newDateTimeslot: nextSlotAvailable,
-                      initiatedBy: TRANSFER_INITIATED_TYPE.PATIENT,
-                      initiatedId: patientId,
-                      patientId: patientId,
-                      rescheduledId: '',
-                    };
-                    rescheduleAPI(bookRescheduleInput);
-                  }}
-                >
-                  ACCEPT
-              </AphButton>
-              </div>
-            </div>
-          </div>
-        </Popover>
-        <Popover
-          open={isRescheduleSuccess}
-          anchorEl={mascotRef.current}
-          anchorOrigin={{
-            vertical: 'bottom',
-            horizontal: 'right',
-          }}
-          transformOrigin={{
-            vertical: 'top',
-            horizontal: 'right',
-          }}
-          classes={{ paper: classes.bottomPopover }}
-        >
-          <div className={classes.successPopoverWindow}>
-            <div className={classes.windowWrap}>
-              <div className={classes.mascotIcon}>
-                <img src={require('images/ic-mascot.png')} alt="" />
-              </div>
-              <div className={classes.windowBody}>
-                <p>Hi! :)</p>
-                <p>
-                  Your appointment with Dr.
-                {` ${data && data.getDoctorDetailsById && data.getDoctorDetailsById.firstName} `}
-                has been rescheduled for{' '}
-                  {rescheduledSlot && moment(rescheduledSlot).format('Do MMMM, dddd \nhh:mm a')}
-                </p>
-              </div>
-              <div className={classes.actions}>
-                <AphButton onClick={() => (window.location.href = clientRoutes.appointments())}>
-                  OK, GOT IT
-              </AphButton>
-              </div>
-            </div>
-          </div>
-        </Popover>
-        <div className={classes.headerActions}>
-          <div
-            onClick={() => {
-              setIsFeedbackPopoverOpen(true);
-            }}
-          >
-            <div className={classes.mascotIconFeedback}>
+          </Paper>
+        </Modal>
+      )}
+      <Popover
+        open={isPopoverOpen}
+        anchorEl={mascotRef.current}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+        classes={{ paper: classes.bottomPopover }}
+      >
+        <div className={classes.successPopoverWindow}>
+          <div className={classes.windowWrap}>
+            <div className={classes.mascotIcon}>
               <img src={require('images/ic-mascot.png')} alt="" />
+            </div>
+            <div className={classes.windowBody}>
+              {/* <Typography variant="h2">hi! :)</Typography> */}
+              <p>
+                We’re sorry that you have to reschedule. You can reschedule up to 3 times for free.
+              </p>
+              <p>
+                Next slot for Dr.{' '}
+                {`${data && data.getDoctorDetailsById && data.getDoctorDetailsById.firstName}`} is
+                available on -{moment(nextSlotAvailable).format('Do MMMM, dddd \nhh:mm a')}
+              </p>
+            </div>
+            <div className={classes.actions}>
+              <AphButton onClick={() => setIsModalOpen(true)}>CHANGE SLOT</AphButton>
+              <AphButton
+                onClick={() => {
+                  const bookRescheduleInput = {
+                    appointmentId: params.appointmentId,
+                    doctorId: params.doctorId,
+                    newDateTimeslot: nextSlotAvailable,
+                    initiatedBy: TRANSFER_INITIATED_TYPE.PATIENT,
+                    initiatedId: patientId,
+                    patientId: patientId,
+                    rescheduledId: '',
+                  };
+                  rescheduleAPI(bookRescheduleInput);
+                }}
+              >
+                ACCEPT
+              </AphButton>
             </div>
           </div>
         </div>
-        <Popover
-          open={isFeedbackPopoverOpen}
-          anchorEl={mascotRef.current}
-          anchorOrigin={{
-            vertical: 'bottom',
-            horizontal: 'right',
-          }}
-          transformOrigin={{
-            vertical: 'top',
-            horizontal: 'right',
-          }}
-          classes={{ paper: classes.popoverBottom }}
-        >
-          <div className={classes.successPopoverWindow}>
-            <div className={`${classes.windowWrap} ${classes.feedbackWindow}`}>
-              <div className={classes.mascotIcon}>
-                <img src={require('images/ic-mascot.png')} alt="" />
-              </div>
-              <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 200px)'}>
-                <div className={classes.windowBody}>
-                  <Typography variant="h2">We value your feedback! :)</Typography>
-                  <p>How was your overall experience with the following consultation — </p>
-                  <div className={classes.doctorProfile}>
-                    <div>
-                      <img className={classes.doctorPic} src={require('images/doctordp_01.png')} />
-                    </div>
-                    <div className={classes.doctorDetails}>
-                      <div className={classes.doctorName}>Dr. Simran Rai</div>
-                      <div className={classes.consultationTime}>
-                        <span>Today, 6:30 pm</span>
-                        <div className={classes.chatIcon}>
-                          <img src={require('images/ic_chat_icon_gray.svg')} alt="" />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className={classes.feedbackImages}>
-                    <div className={classes.feedWrapper}>
-                      <img src={require('images/ic_poor.svg')} />
-                      <img className={classes.onActive} src={require('images/ic_poor_filled.svg')} />
-                      <div>Poor</div>
-                    </div>
-                    <div className={classes.feedWrapper}>
-                      <img src={require('images/ic_okay.svg')} />
-                      <div>okay</div>
-                    </div>
-                    <div className={classes.feedWrapper}>
-                      <img src={require('images/ic_good.svg')} />
-                      <div>good</div>
-                    </div>
-                    <div className={classes.feedWrapper}>
-                      <img src={require('images/ic_great.svg')} />
-                      <div>great</div>
-                    </div>
-                  </div>
-                  <div className={classes.feedbackDetailed}>
-                    <p>What went wrong?</p>
-                    <div>
-                      <div className={classes.checkboxOptions}>
-                        <FormControlLabel
-                          className={classes.radioLabel}
-                          control={<AphRadio color="primary" />}
-                          label="Doctor didn’t ask enough questions"
-                        />
-                      </div>
-                      <div className={classes.checkboxOptions}>
-                        <FormControlLabel
-                          className={classes.radioLabel}
-                          control={<AphRadio color="primary" />}
-                          label="Doctor was not polite"
-                        />
-                      </div>
-                      <div className={classes.checkboxOptions}>
-                        <FormControlLabel
-                          className={classes.radioLabel}
-                          control={<AphRadio color="primary" />}
-                          label="Doctor didn’t share prescription"
-                        />
-                      </div>
-                      <div className={classes.checkboxOptions}>
-                        <FormControlLabel
-                          className={classes.radioLabel}
-                          control={<AphRadio color="primary" />}
-                          label="Doctor hurried through the chat"
-                        />
-                      </div>
-                      <div className={classes.checkboxOptions}>
-                        <FormControlLabel
-                          className={classes.radioLabel}
-                          control={<AphRadio color="primary" />}
-                          label="Doctor replied late"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                  <p className={classes.toImprove}>What can be improved? </p>
-                  <AphTextField placeholder="Write your suggestion here..." />
-                </div>
-              </Scrollbars>
-              <div
-                className={classes.submitButton}
-                onClick={() => {
-                  setIsSubmitPopoverOpen(true);
-                  setIsFeedbackPopoverOpen(false);
-                }}
-              >
-                <AphButton color="primary">Submit Feedback</AphButton>
-              </div>
+      </Popover>
+      <Popover
+        open={isRescheduleSuccess}
+        anchorEl={mascotRef.current}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+        classes={{ paper: classes.bottomPopover }}
+      >
+        <div className={classes.successPopoverWindow}>
+          <div className={classes.windowWrap}>
+            <div className={classes.mascotIcon}>
+              <img src={require('images/ic-mascot.png')} alt="" />
+            </div>
+            <div className={classes.windowBody}>
+              <p>Hi! :)</p>
+              <p>
+                Your appointment with Dr.
+                {` ${data && data.getDoctorDetailsById && data.getDoctorDetailsById.firstName} `}
+                has been rescheduled for{' '}
+                {rescheduledSlot && moment(rescheduledSlot).format('Do MMMM, dddd \nhh:mm a')}
+              </p>
+            </div>
+            <div className={classes.actions}>
+              <AphButton onClick={() => (window.location.href = clientRoutes.appointments())}>
+                OK, GOT IT
+              </AphButton>
             </div>
           </div>
-        </Popover>
-        <Popover
-          open={isSubmitPopoverOpen}
-          anchorEl={mascotRef.current}
-          anchorOrigin={{
-            vertical: 'bottom',
-            horizontal: 'right',
+        </div>
+      </Popover>
+      <div className={classes.headerActions}>
+        <div
+          onClick={() => {
+            setIsFeedbackPopoverOpen(true);
           }}
-          transformOrigin={{
-            vertical: 'top',
-            horizontal: 'right',
-          }}
-          classes={{ paper: classes.popoverBottom }}
         >
-          <div className={classes.successPopoverWindow}>
-            <div className={`${classes.windowWrap} ${classes.feedbackWindow}`}>
-              <div className={classes.mascotIcon}>
-                <img src={require('images/ic-mascot.png')} alt="" />
-              </div>
-              <div className={classes.windowBody}>
-                <Typography variant="h2">Send Note</Typography>
-                <p>Write a thank you note for your Doctor!</p>
-                <AphTextField placeholder="Write your note here..." />
-                <div className={classes.note}>*This note would be viewed only by your Doctor</div>
-                <div className={classes.sendNoteActions}>
-                  <AphButton
-                    color="default"
-                    onClick={() => {
-                      setIsSubmitPopoverOpen(false);
-                    }}
-                  >
-                    SKIP
-                </AphButton>
-                  <AphButton color="primary">SEND NOTE</AphButton>
-                </div>
-              </div>
-            </div>
+          <div className={classes.mascotIconFeedback}>
+            <img src={require('images/ic-mascot.png')} alt="" />
           </div>
-        </Popover>
-        <Alerts
-          setAlertMessage={setAlertMessage}
-          alertMessage={alertMessage}
-          isAlertOpen={isAlertOpen}
-          setIsAlertOpen={setIsAlertOpen}
-        />
-        {!onePrimaryUser && <ManageProfile />}
+        </div>
       </div>
-    );
+      <Popover
+        open={isFeedbackPopoverOpen}
+        anchorEl={mascotRef.current}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+        classes={{ paper: classes.popoverBottom }}
+      >
+        <div className={classes.successPopoverWindow}>
+          <div className={`${classes.windowWrap} ${classes.feedbackWindow}`}>
+            <div className={classes.mascotIcon}>
+              <img src={require('images/ic-mascot.png')} alt="" />
+            </div>
+            <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 200px)'}>
+              <div className={classes.windowBody}>
+                <Typography variant="h2">We value your feedback! :)</Typography>
+                <p>How was your overall experience with the following consultation — </p>
+                <div className={classes.doctorProfile}>
+                  <div>
+                    <img className={classes.doctorPic} src={require('images/doctordp_01.png')} />
+                  </div>
+                  <div className={classes.doctorDetails}>
+                    <div className={classes.doctorName}>Dr. Simran Rai</div>
+                    <div className={classes.consultationTime}>
+                      <span>Today, 6:30 pm</span>
+                      <div className={classes.chatIcon}>
+                        <img src={require('images/ic_chat_icon_gray.svg')} alt="" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className={classes.feedbackImages}>
+                  <div className={classes.feedWrapper}>
+                    <img src={require('images/ic_poor.svg')} />
+                    <img className={classes.onActive} src={require('images/ic_poor_filled.svg')} />
+                    <div>Poor</div>
+                  </div>
+                  <div className={classes.feedWrapper}>
+                    <img src={require('images/ic_okay.svg')} />
+                    <div>okay</div>
+                  </div>
+                  <div className={classes.feedWrapper}>
+                    <img src={require('images/ic_good.svg')} />
+                    <div>good</div>
+                  </div>
+                  <div className={classes.feedWrapper}>
+                    <img src={require('images/ic_great.svg')} />
+                    <div>great</div>
+                  </div>
+                </div>
+                <div className={classes.feedbackDetailed}>
+                  <p>What went wrong?</p>
+                  <div>
+                    <div className={classes.checkboxOptions}>
+                      <FormControlLabel
+                        className={classes.radioLabel}
+                        control={<AphRadio color="primary" />}
+                        label="Doctor didn’t ask enough questions"
+                      />
+                    </div>
+                    <div className={classes.checkboxOptions}>
+                      <FormControlLabel
+                        className={classes.radioLabel}
+                        control={<AphRadio color="primary" />}
+                        label="Doctor was not polite"
+                      />
+                    </div>
+                    <div className={classes.checkboxOptions}>
+                      <FormControlLabel
+                        className={classes.radioLabel}
+                        control={<AphRadio color="primary" />}
+                        label="Doctor didn’t share prescription"
+                      />
+                    </div>
+                    <div className={classes.checkboxOptions}>
+                      <FormControlLabel
+                        className={classes.radioLabel}
+                        control={<AphRadio color="primary" />}
+                        label="Doctor hurried through the chat"
+                      />
+                    </div>
+                    <div className={classes.checkboxOptions}>
+                      <FormControlLabel
+                        className={classes.radioLabel}
+                        control={<AphRadio color="primary" />}
+                        label="Doctor replied late"
+                      />
+                    </div>
+                  </div>
+                </div>
+                <p className={classes.toImprove}>What can be improved? </p>
+                <AphTextField placeholder="Write your suggestion here..." />
+              </div>
+            </Scrollbars>
+            <div
+              className={classes.submitButton}
+              onClick={() => {
+                setIsSubmitPopoverOpen(true);
+                setIsFeedbackPopoverOpen(false);
+              }}
+            >
+              <AphButton color="primary">Submit Feedback</AphButton>
+            </div>
+          </div>
+        </div>
+      </Popover>
+      <Popover
+        open={isSubmitPopoverOpen}
+        anchorEl={mascotRef.current}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+        classes={{ paper: classes.popoverBottom }}
+      >
+        <div className={classes.successPopoverWindow}>
+          <div className={`${classes.windowWrap} ${classes.feedbackWindow}`}>
+            <div className={classes.mascotIcon}>
+              <img src={require('images/ic-mascot.png')} alt="" />
+            </div>
+            <div className={classes.windowBody}>
+              <Typography variant="h2">Send Note</Typography>
+              <p>Write a thank you note for your Doctor!</p>
+              <AphTextField placeholder="Write your note here..." />
+              <div className={classes.note}>*This note would be viewed only by your Doctor</div>
+              <div className={classes.sendNoteActions}>
+                <AphButton
+                  color="default"
+                  onClick={() => {
+                    setIsSubmitPopoverOpen(false);
+                  }}
+                >
+                  SKIP
+                </AphButton>
+                <AphButton color="primary">SEND NOTE</AphButton>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Popover>
+      <Alerts
+        setAlertMessage={setAlertMessage}
+        alertMessage={alertMessage}
+        isAlertOpen={isAlertOpen}
+        setIsAlertOpen={setIsAlertOpen}
+      />
+      {!onePrimaryUser && <ManageProfile />}
+    </div>
+  );
 };

@@ -13,7 +13,7 @@ import _startCase from 'lodash/startCase';
 import _toLower from 'lodash/toLower';
 import { AphButton } from '@aph/web-ui-components';
 import moment from 'moment';
-import { readableParam } from 'helpers/commonHelpers';
+import { readableParam, getAvailableFreeChatDays } from 'helpers/commonHelpers';
 import { Link, Route } from 'react-router-dom';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -398,7 +398,9 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
       status,
     } = appointmentDetails;
     if (isFollowUp === 'false' && status === STATUS.COMPLETED && props.pastOrCurrent !== 'past') {
-      return '7 days free chat remaining';
+      return `${getAvailableFreeChatDays(
+        appointmentDetails.appointmentDateTime
+      )} days free chat remaining`;
     } else if (!isConsultStarted) {
       return 'Fill vitals to get started with the consult journey';
     } else if (!isJdQuestionsComplete) {
@@ -463,8 +465,8 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                 return day1.diff(day2, 'days') == 0
                   ? 'Today'
                   : day1.diff(day2, 'days') +
-                  ' more ' +
-                  (day1.diff(day2, 'days') == 1 ? 'day' : 'days');
+                      ' more ' +
+                      (day1.diff(day2, 'days') == 1 ? 'day' : 'days');
               };
               const clinicList = doctorHospital || [];
               let facilityName = '',
@@ -479,7 +481,7 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                 facilityName = clinicList[0].facility.name;
                 streetName =
                   clinicList[0].facility.streetLine1 &&
-                    clinicList[0].facility.streetLine1.length > 0
+                  clinicList[0].facility.streetLine1.length > 0
                     ? clinicList[0].facility.streetLine1
                     : '';
               }
@@ -510,7 +512,7 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                         <div
                           className={`${classes.availability} ${
                             difference <= 15 && difference > 0 ? classes.availableNow : ''
-                            }`}
+                          }`}
                         >
                           {appointmentDetails.appointmentType === 'ONLINE'
                             ? difference <= 15 && difference > 0
@@ -539,8 +541,8 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                             {appointmentDetails.appointmentType === APPOINTMENT_TYPE.ONLINE ? (
                               <img src={require('images/ic-video.svg')} alt="" />
                             ) : (
-                                <img src={require('images/fa-solid-hospital.svg')} alt="" />
-                              )}
+                              <img src={require('images/fa-solid-hospital.svg')} alt="" />
+                            )}
                           </span>
                         </div>
                       </div>
@@ -578,10 +580,10 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                         </AphButton> */}
                         {appointmentDetails.appointmentState ===
                           APPOINTMENT_STATE.AWAITING_RESCHEDULE && (
-                            <AphButton className={classes.errorButton}>
-                              Sorry, we had to reschedule this appointment. Please pick another slot.
-                            </AphButton>
-                          )}
+                          <AphButton className={classes.errorButton}>
+                            Sorry, we had to reschedule this appointment. Please pick another slot.
+                          </AphButton>
+                        )}
                         <Route
                           render={({ history }) => (
                             <div
@@ -591,24 +593,24 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                                   appointmentDetails.status === STATUS.NO_SHOW ||
                                   appointmentDetails.status === STATUS.CALL_ABANDON ||
                                   appointmentDetails.appointmentState ===
-                                  APPOINTMENT_STATE.AWAITING_RESCHEDULE;
+                                    APPOINTMENT_STATE.AWAITING_RESCHEDULE;
                                 const doctorName =
                                   appointmentDetails.doctorInfo &&
-                                    appointmentDetails.doctorInfo.fullName
+                                  appointmentDetails.doctorInfo.fullName
                                     ? readableParam(appointmentDetails.doctorInfo.fullName)
                                     : '';
                                 if (pickAnotherSlot) {
                                   setOpenSlotPopup(true);
                                 } else {
                                   appointmentDetails.status === STATUS.CANCELLED ||
-                                    (appointmentDetails.status === STATUS.COMPLETED &&
-                                      props.pastOrCurrent === 'past')
+                                  (appointmentDetails.status === STATUS.COMPLETED &&
+                                    props.pastOrCurrent === 'past')
                                     ? history.push(
-                                      clientRoutes.doctorDetails(
-                                        doctorName,
-                                        appointmentDetails.doctorId
+                                        clientRoutes.doctorDetails(
+                                          doctorName,
+                                          appointmentDetails.doctorId
+                                        )
                                       )
-                                    )
                                     : history.push(clientRoutes.chatRoom(appointmentId, doctorId));
                                 }
                               }}
@@ -616,10 +618,10 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                               <h3>
                                 {appointmentDetails.appointmentType === APPOINTMENT_TYPE.ONLINE
                                   ? showAppointmentAction(
-                                    appointmentState,
-                                    status,
-                                    isConsultStarted
-                                  )
+                                      appointmentState,
+                                      status,
+                                      isConsultStarted
+                                    )
                                   : 'VIEW DETAILS'}
                               </h3>
                             </div>
@@ -627,8 +629,8 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                         />
                         {appointmentDetails.appointmentState !==
                           APPOINTMENT_STATE.AWAITING_RESCHEDULE && (
-                            <h6>{getConsultationUpdateText(appointmentDetails)}</h6>
-                          )}
+                          <h6>{getConsultationUpdateText(appointmentDetails)}</h6>
+                        )}
                       </div>
                     </div>
                   </div>
