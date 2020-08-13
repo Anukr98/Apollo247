@@ -590,7 +590,8 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     cartItemMrp: number,
     cartItemPackSize: number,
     storeMrp: number,
-    skuId: string
+    skuId: string,
+    isDifference: boolean
   ) => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.SKU_PRICE_MISMATCH] = {
       'Mobile Number': g(currentPatient, 'mobileNumber') || '',
@@ -598,6 +599,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
       'Magento MRP': cartItemMrp,
       'Magento Pack Size': cartItemPackSize,
       'Store API MRP': storeMrp,
+      'Price Change In Cart': isDifference ? 'No' : 'Yes'
     };
     postWebEngageEvent(WebEngageEventName.SKU_PRICE_MISMATCH, eventAttributes);
   };
@@ -617,9 +619,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     const isDiff = storeItemPrice
       ? isDiffLessOrGreaterThan25Percent(cartItem.price, storeItemPrice)
       : true;
-    if (isDiff) {
-      postSkuPriceMismatchEvent(cartItem.price, Number(cartItem.mou), storeItemPrice, cartItem.id);
-    }
+    postSkuPriceMismatchEvent(cartItem.price, Number(cartItem.mou), storeItemPrice, cartItem.id, isDiff);
     const storeItemSP =
       !isDiff && cartItem.specialPrice
         ? getSpecialPriceFromRelativePrices(
