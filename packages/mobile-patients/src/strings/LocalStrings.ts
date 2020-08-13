@@ -79,6 +79,14 @@ const MyPayments = {
   refundNote: 'Note : The amount should be credited in your account in 10-14 business days.',
 };
 
+const voip = {
+  appName: 'Apollo 24/7'
+}
+
+const asyncKeys = {
+  voipDeviceToken: 'voipDeviceToken'
+}
+
 export const LocalStrings = {
   ...common,
   ...login,
@@ -86,4 +94,6 @@ export const LocalStrings = {
   ...Notification,
   ...AddFile,
   ...MyPayments,
+  ...voip,
+  ...asyncKeys
 };
