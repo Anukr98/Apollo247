@@ -14,7 +14,7 @@ const tsLoader = {
         : undefined,
 };
 module.exports = {
-    entry: glob.sync(path.resolve('src/consults-service/database/migration/*.ts')).reduce((entries, filename) => {
+    entry: glob.sync(path.resolve('src/profiles-service/database/migration/*.ts')).reduce((entries, filename) => {
         const migrationName = path.basename(filename, '.ts');
         return Object.assign({}, entries, {
             [migrationName]: filename,
