@@ -6,6 +6,7 @@ import { CouponCategoryApplicable } from 'graphql/types/globalTypes';
 import _lowerCase from 'lodash/lowerCase';
 import _upperFirst from 'lodash/upperFirst';
 import { MEDICINE_ORDER_STATUS } from 'graphql/types/globalTypes';
+import { GetPatientAllAppointments_getPatientAllAppointments_appointments as AppointmentDetails } from 'graphql/types/GetPatientAllAppointments';
 
 declare global {
   interface Window {
@@ -400,7 +401,25 @@ const getStoreName = (storeAddress: string) => {
   return store && store.storename ? _upperFirst(_lowerCase(store.storename)) : '';
 };
 
+const isPastAppointment = (appointmentDateTime: string) =>
+  moment(appointmentDateTime)
+    .add(7, 'days')
+    .isBefore(moment());
+
+const getAvailableFreeChatDays = (appointmentTime: string) => {
+  const diffInDays = moment().diff(appointmentTime, 'days');
+  if (diffInDays < 0) {
+    const diffInHours = moment().diff(appointmentTime, 'hours');
+    const diffInMinutes = moment().diff(appointmentTime, 'minutes');
+    return diffInHours > 0 ? diffInHours : diffInMinutes;
+  } else {
+    return diffInDays;
+  }
+};
+
 export {
+  getAvailableFreeChatDays,
+  isPastAppointment,
   AppointmentFilterObject,
   consultType,
   appointmentStatus,
