@@ -711,6 +711,7 @@ export const reOrderMedicines = async (
         thumbnail: item.thumbnail || item.image,
         isInStock: item.is_in_stock == 1,
         maxOrderQty: item.MaxOrderQty,
+        productType: item.type_id,
       } as ShoppingCartItem)
   );
   const unavailableItems = billedLineItems
