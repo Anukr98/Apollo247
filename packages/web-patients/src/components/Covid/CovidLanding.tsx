@@ -191,7 +191,9 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     headerCovid: {
       [theme.breakpoints.down('xs')]: {
-        visibility: 'hidden',
+        '& header': {
+          visibility: 'hidden',
+        },
       },
     },
     modalFooter: {
@@ -336,7 +338,7 @@ export const CovidLanding: React.FC = (props: any) => {
   return (
     <div className={classes.root}>
       <div className={classes.headerCovid}>
-        <Header backArrrowVisible={true} />
+        <Header backArrrowVisible={true} isWebView={isWebView} />
       </div>
       <div className={classes.container}>
         <div className={classes.pageContainer} ref={scrollToRef}>

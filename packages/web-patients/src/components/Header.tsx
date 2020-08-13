@@ -276,9 +276,9 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     backArrow: {
-      zIndex: 2,
-      cursor: 'pointer',
-      marginRight: 20,
+      position: 'fixed',
+      top: 25,
+      left: 20,
       [theme.breakpoints.up(1220)]: {
         position: 'absolute',
         top: 90,
@@ -296,9 +296,9 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     whiteArrow: {
       verticalAlign: 'middle',
-      [theme.breakpoints.down(1220)]: {
-        display: 'none',
-      },
+      // [theme.breakpoints.down(1220)]: {
+      //   display: 'none',
+      // },
     },
     blackArrow: {
       verticalAlign: 'middle',
@@ -589,14 +589,18 @@ export const Header: React.FC<any> = (props) => {
               )}
             </div>
           </div>
-          {props.backArrrowVisible && (
-            <Link to={props.backLocation || clientRoutes.welcome()}>
-              <div className={classes.backArrow}>
-                <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
-              </div>
-            </Link>
-          )}
         </header>
+        {props.backArrrowVisible && (
+          <>
+            {!props.isWebView && (
+              <Link to={props.backLocation || clientRoutes.welcome()}>
+                <div className={classes.backArrow}>
+                  <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
+                </div>
+              </Link>
+            )}
+          </>
+        )}
       </div>
     </div>
   );
