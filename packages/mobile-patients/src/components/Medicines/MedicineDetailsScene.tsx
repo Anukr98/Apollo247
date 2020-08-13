@@ -436,6 +436,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       thumbnail: thumbnail,
       isInStock: true,
       maxOrderQty: MaxOrderQty,
+      productType: type_id,
     });
     postwebEngageAddToCartEvent(item, 'Pharmacy PDP', sectionName);
     let id = currentPatient && currentPatient.id ? currentPatient.id : '';
@@ -567,7 +568,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
 
     return (
       <StickyBottomComponent style={{ height: 'auto' }}>
-        {!showDeliverySpinner && !deliveryTime || deliveryError || isOutOfStock ? (
+        {(!showDeliverySpinner && !deliveryTime) || deliveryError || isOutOfStock ? (
           <View
             style={{
               paddingTop: 8,
@@ -604,17 +605,17 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
           </View>
         ) : (
           <View style={styles.bottomView}>
-            <View style={{
-              flex: 1,
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'flex-start',
-              marginBottom: 10,
-              marginLeft: 15,
-            }}>
-              <Text style={theme.viewStyles.text('M', 14, '#01475b', 1, 22, 0.35)}>
-                MRP.
-              </Text>
+            <View
+              style={{
+                flex: 1,
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'flex-start',
+                marginBottom: 10,
+                marginLeft: 15,
+              }}
+            >
+              <Text style={theme.viewStyles.text('M', 14, '#01475b', 1, 22, 0.35)}>MRP.</Text>
               <Text style={theme.viewStyles.text('SB', 17, '#01475b', 1, 20, 0.35)}>
                 ₹{medicineDetails.special_price || medicineDetails.price}
               </Text>
@@ -651,8 +652,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
                 style={{ width: '45%', backgroundColor: theme.colors.WHITE }}
                 titleTextStyle={{ color: '#fc9916' }}
               />
-              {
-                isMedicineAddedToCart ?
+              {isMedicineAddedToCart ? (
                 <AddToCartButtons
                   numberOfItemsInCart={itemQty}
                   maxOrderQty={medicineDetails.MaxOrderQty}
@@ -665,7 +665,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
                     borderColor: '#fcb716',
                     borderRadius: 10,
                     backgroundColor: '#fcb716',
-                    justifyContent: 'space-between'
+                    justifyContent: 'space-between',
                   }}
                   deleteIconStyle={{
                     resizeMode: 'contain',
@@ -688,7 +688,8 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
                     paddingLeft: 15,
                     paddingRight: 15,
                   }}
-                /> :
+                />
+              ) : (
                 <Button
                   onPress={() => {
                     onAddCartItem(medicineDetails);
@@ -698,7 +699,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
                   disabledStyle={styles.bottomButtonStyle}
                   style={styles.bottomButtonStyle}
                 />
-              }
+              )}
             </View>
           </View>
         )}
