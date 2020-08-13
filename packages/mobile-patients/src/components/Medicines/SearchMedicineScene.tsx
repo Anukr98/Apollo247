@@ -342,6 +342,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         thumbnail,
         isInStock: true,
         maxOrderQty: MaxOrderQty,
+        productType: type_id,
       },
       pharmacyPincode!,
       addCartItem,
