@@ -31,7 +31,9 @@ import { gtmTracking } from 'gtmTracking';
 import { MetaTagsComp } from 'MetaTagsComp';
 import { GET_RECOMMENDED_PRODUCTS_LIST } from 'graphql/profiles';
 import { useMutation } from 'react-apollo-hooks';
-
+import { Link } from 'react-router-dom';
+import { useShoppingCart } from 'components/MedicinesCartProvider';
+import { useDiagnosticsCart } from 'components/Tests/DiagnosticsCartProvider';
 import { getRecommendedProductsList_getRecommendedProductsList_recommendedProducts as recommendedProductsType } from 'graphql/types/getRecommendedProductsList';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -222,6 +224,26 @@ const useStyles = makeStyles((theme: Theme) => {
         marginRight: 10,
       },
     },
+    cartContainer: {
+      '& a': {
+        position: 'relative',
+        display: 'block',
+      },
+    },
+    itemCount: {
+      width: 14,
+      height: 14,
+      borderRadius: '50%',
+      backgroundColor: '#ff748e',
+      position: 'absolute',
+      right: -4,
+      top: -7,
+      fontSize: 9,
+      fontWeight: 'bold',
+      color: theme.palette.common.white,
+      lineHeight: '14px',
+      textAlign: 'center',
+    },
   };
 });
 
@@ -257,6 +279,8 @@ export const SearchByMedicine: React.FC = (props) => {
   const [isUploadPreDialogOpen, setIsUploadPreDialogOpen] = React.useState<boolean>(false);
   const [isEPrescriptionOpen, setIsEPrescriptionOpen] = React.useState<boolean>(false);
   const [heading, setHeading] = React.useState<string>('');
+  const { cartItems } = useShoppingCart();
+  const { diagnosticsCartItems } = useDiagnosticsCart();
 
   const getTitle = () => {
     let title = params.searchMedicineType;
@@ -660,6 +684,14 @@ export const SearchByMedicine: React.FC = (props) => {
             >
               <img src={require('images/ic_filter.svg')} alt="" />
             </AphButton>
+            <div className={classes.cartContainer}>
+              <Link to={clientRoutes.medicinesCart()}>
+                <img src={require('images/ic_cart.svg')} alt="Cart" title={'cart'} />
+                <span className={classes.itemCount}>
+                  {cartItems.length + diagnosticsCartItems.length || 0}
+                </span>
+              </Link>
+            </div>
           </div>
           <div className={classes.autoSearch}>
             <MedicineAutoSearch />
