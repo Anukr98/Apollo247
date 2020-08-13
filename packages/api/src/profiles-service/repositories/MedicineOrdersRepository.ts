@@ -364,6 +364,7 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
         'medicineOrderLineItems',
         'medicineOrderPayments',
         'medicineOrdersStatus',
+        'medicineOrderRefunds',
         'medicineOrderShipments',
         'medicineOrderShipments.medicineOrdersStatus',
         'medicineOrderShipments.medicineOrderInvoice',
