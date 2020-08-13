@@ -700,6 +700,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
       pinCode: locationDetails && locationDetails.pincode,
       products: cartItems.map((item) => ({
         sku: item.id,
+        categoryId: item.productType,
         mrp: item.price,
         quantity: item.quantity,
         specialPrice: item.specialPrice || item.price,
@@ -1020,6 +1021,10 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   };
 
   const renderHomeDelivery = () => {
+    const deliveryTimeMomentFormat = moment(
+      deliveryTime,
+      AppConfig.Configuration.MED_DELIVERY_DATE_API_FORMAT
+    );
     return (
       <View
         style={{ marginTop: 8, marginHorizontal: 16 }}
@@ -1087,8 +1092,10 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
                 <View style={styles.rowSpaceBetweenStyle}>
                   <Text style={styles.deliveryStyle}>{deliveryTime && 'Delivery Time'}</Text>
                   <Text style={styles.deliveryTimeStyle}>
-                    {moment(deliveryTime).isValid()
-                      ? moment(deliveryTime).format('D MMM YYYY  | hh:mm A')
+                    {deliveryTimeMomentFormat.isValid()
+                      ? deliveryTimeMomentFormat.format(
+                          AppConfig.Configuration.MED_DELIVERY_DATE_DISPLAY_FORMAT
+                        )
                       : '...'}
                   </Text>
                 </View>
