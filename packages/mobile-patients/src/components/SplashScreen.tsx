@@ -162,6 +162,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   };
   const handleOpenURL = (event: any) => {
     try {
+      InitiateAppsFlyer(props.navigation);
       console.log('event', event);
       let route;
 
