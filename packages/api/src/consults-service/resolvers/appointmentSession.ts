@@ -273,6 +273,7 @@ const createAppointmentSession: Resolver<
   const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
 
   if (createAppointmentSessionInput.requestRole == REQUEST_ROLES.JUNIOR) {
+    console.log('11111111111111111111111111111111111111111');
     const juniorDoctorcaseSheet = await caseSheetRepo.getJDCaseSheetByAppointmentId(apptDetails.id);
     if (juniorDoctorcaseSheet && juniorDoctorcaseSheet.status == CASESHEET_STATUS.COMPLETED) {
       return {
