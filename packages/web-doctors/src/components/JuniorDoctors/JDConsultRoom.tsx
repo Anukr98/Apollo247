@@ -1082,8 +1082,11 @@ export const JDConsultRoom: React.FC = () => {
         includeUUIDs: true,
       })
       .then((response: any) => {
-        const { totalOccupancy } = response;
-        sendCallNotificationFnWithCheck(callType, isCall, totalOccupancy);
+        const occupants = response.channels[appointmentId].occupants;
+        const occupancyDoctor = occupants.filter((obj: any) => {
+          return obj.uuid.indexOf('JUNIOR') > -1;
+        });
+        sendCallNotificationFnWithCheck(callType, isCall, occupancyDoctor.length);
       })
       .catch((error) => {
         console.error(error);
