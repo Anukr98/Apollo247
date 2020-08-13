@@ -158,9 +158,7 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
   // console.log(props.PastData, 'pastData');
 
   let item = (g(props, 'PastData', 'caseSheet') || []).find((obj: any) => {
-    return (
-      obj!.doctorType !== 'JUNIOR'
-    );
+    return obj!.doctorType !== 'JUNIOR';
   });
 
   useEffect(() => {
@@ -498,6 +496,7 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                                       (medicineDetails.type_id || '').toLowerCase() == 'pharma',
                                     thumbnail: medicineDetails.thumbnail || medicineDetails.image,
                                     isInStock: !!medicineDetails.is_in_stock,
+                                    productType: medicineDetails.type_id,
                                   } as ShoppingCartItem;
                                 });
                                 const medicines = medicineAll.filter((item: any) => !!item);

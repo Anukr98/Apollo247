@@ -711,6 +711,7 @@ export const reOrderMedicines = async (
         thumbnail: item.thumbnail || item.image,
         isInStock: item.is_in_stock == 1,
         maxOrderQty: item.MaxOrderQty,
+        productType: item.type_id,
       } as ShoppingCartItem)
   );
   const unavailableItems = billedLineItems
@@ -948,12 +949,7 @@ export const postwebEngageAddToCartEvent = (
     price,
     special_price,
     category_id,
-  }: Partial<MedicineProduct> & {
-    sku: MedicineProduct['sku'];
-    name: MedicineProduct['name'];
-    price: MedicineProduct['price'];
-    special_price: MedicineProduct['special_price'];
-  },
+  }: Pick<MedicineProduct, 'sku' | 'name' | 'price' | 'special_price' | 'category_id'>,
   source: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['Source'],
   section?: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['Section'],
   sectionName?: string
@@ -1194,12 +1190,7 @@ export const postAppsFlyerAddToCartEvent = (
     type_id,
     price,
     special_price,
-  }: Partial<MedicineProduct> & {
-    sku: MedicineProduct['sku'];
-    name: MedicineProduct['name'];
-    price: MedicineProduct['price'];
-    special_price: MedicineProduct['special_price'];
-  },
+  }: Pick<MedicineProduct, 'sku' | 'type_id' | 'price' | 'special_price'>,
   id: string
 ) => {
   const eventAttributes: AppsFlyerEvents[AppsFlyerEventName.PHARMACY_ADD_TO_CART] = {
