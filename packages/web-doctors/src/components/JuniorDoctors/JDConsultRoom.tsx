@@ -1108,7 +1108,7 @@ export const JDConsultRoom: React.FC = () => {
           doctorType: DOCTOR_CALL_TYPE.JUNIOR,
           deviceType: DEVICETYPE.DESKTOP,
           callSource: BOOKINGSOURCE.WEB,
-          //numberOfParticipants
+          numberOfParticipants,
         },
       })
       .then((_data) => {
