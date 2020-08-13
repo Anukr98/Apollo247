@@ -35,6 +35,11 @@ export enum APPOINTMENT_UPDATED_BY {
   ADMIN = 'ADMIN',
 }
 
+export interface PaginateParams {
+  take?: number;
+  skip?: number;
+}
+
 export enum ES_DOCTOR_SLOT_STATUS {
   BOOKED = 'BOOKED',
   OPEN = 'OPEN',
@@ -381,10 +386,7 @@ export class Appointment extends BaseEntity {
   )
   appointmentDocuments: AppointmentDocuments[];
 
-  @OneToMany(
-    (type) => ConsultQueueItem,
-    (consultQueueItem) => consultQueueItem.appointment
-  )
+  @OneToMany((type) => ConsultQueueItem, (consultQueueItem) => consultQueueItem.appointment)
   consultQueueItem: ConsultQueueItem[];
 
   @OneToMany((type) => AuditHistory, (auditHistory) => auditHistory.appointment)
@@ -824,6 +826,9 @@ export type CaseSheetMedicinePrescription = {
   medicineUnit: MEDICINE_UNIT;
   routeOfAdministration?: ROUTE_OF_ADMINISTRATION;
   medicineCustomDosage?: string;
+  medicineCustomDetails?: string;
+  includeGenericNameInPrescription?: Boolean;
+  genericName?: string;
 };
 export type CaseSheetDiagnosis = { name: string };
 export type CaseSheetDiagnosisPrescription = {
@@ -958,6 +963,11 @@ export class CaseSheet extends BaseEntity {
   @AfterInsert()
   trackWebEngageEventForCasesheetInsert() {
     trackWebEngageEventForCasesheetInsert(this);
+  }
+
+  @AfterUpdate()
+  async dropAppointmentCache() {
+    await delCache(`patient:appointment:${this.appointment.id}`);
   }
 }
 //case sheet ends
@@ -1941,6 +1951,7 @@ export interface RxPdfData {
     instructions?: string;
     routeOfAdministration?: string;
     medicineFormTypes?: string;
+    genericName?: string;
   }[];
   generalAdvice: CaseSheetOtherInstruction[];
   diagnoses: CaseSheetDiagnosis[];

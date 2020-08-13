@@ -52,6 +52,7 @@ export const convertCaseSheetToRxPdfData = async (
     instructions: string;
     routeOfAdministration?: string;
     medicineFormTypes?: MEDICINE_FORM_TYPES;
+    genericName: string;
   };
 
   let prescriptions: PrescriptionData[] | [];
@@ -62,6 +63,7 @@ export const convertCaseSheetToRxPdfData = async (
       const name = _capitalize(csRx.medicineName);
       const ingredients = [] as string[];
       let frequency;
+      let genericName;
       const plural =
         csRx.medicineUnit == MEDICINE_UNIT.ML ||
         csRx.medicineUnit == MEDICINE_UNIT.MG ||
@@ -88,117 +90,124 @@ export const convertCaseSheetToRxPdfData = async (
             .toLowerCase() +
           plural
         : '';
-      if (csRx.medicineFormTypes != MEDICINE_FORM_TYPES.OTHERS) {
-        frequency = 'Apply';
-        if (csRx.medicineCustomDosage) {
-          frequency =
-            frequency +
-            ' ' +
-            customDosage +
-            ' (' +
-            csRx.medicineTimings
-              .join(', ')
-              .replace(/,(?=[^,]*$)/, ' and')
-              .split('_')
-              .join(' ') +
-            ')';
-        } else if (csRx.medicineUnit) {
-          const medicineUnit = csRx.medicineUnit.split('_').join(' ') + plural;
-          if (csRx.medicineDosage) frequency = frequency + ' ' + csRx.medicineDosage;
-          frequency = frequency + ' ' + medicineUnit;
-        }
+      if (csRx.medicineCustomDetails) {
+        frequency = csRx.medicineCustomDetails;
       } else {
-        frequency = 'Take';
-        if (csRx.medicineCustomDosage) {
-          frequency =
-            frequency +
-            ' ' +
-            customDosage +
-            ' (' +
-            csRx.medicineTimings
-              .join(', ')
-              .replace(/,(?=[^,]*$)/, ' and')
-              .split('_')
-              .join(' ') +
-            ')';
+        if (csRx.medicineFormTypes != MEDICINE_FORM_TYPES.OTHERS) {
+          frequency = 'Apply';
+          if (csRx.medicineCustomDosage) {
+            frequency =
+              frequency +
+              ' ' +
+              customDosage +
+              ' (' +
+              csRx.medicineTimings
+                .join(', ')
+                .replace(/,(?=[^,]*$)/, ' and')
+                .split('_')
+                .join(' ') +
+              ')';
+          } else if (csRx.medicineUnit) {
+            const medicineUnit = csRx.medicineUnit.split('_').join(' ') + plural;
+            if (csRx.medicineDosage) frequency = frequency + ' ' + csRx.medicineDosage;
+            frequency = frequency + ' ' + medicineUnit;
+          }
         } else {
-          const medicineUnit = csRx.medicineUnit.split('_').join(' ') + plural;
-          if (csRx.medicineDosage) frequency = frequency + ' ' + csRx.medicineDosage;
-          if (csRx.medicineUnit) frequency = frequency + ' ' + medicineUnit;
+          frequency = 'Take';
+          if (csRx.medicineCustomDosage) {
+            frequency =
+              frequency +
+              ' ' +
+              customDosage +
+              ' (' +
+              csRx.medicineTimings
+                .join(', ')
+                .replace(/,(?=[^,]*$)/, ' and')
+                .split('_')
+                .join(' ') +
+              ')';
+          } else {
+            const medicineUnit = csRx.medicineUnit.split('_').join(' ') + plural;
+            if (csRx.medicineDosage) frequency = frequency + ' ' + csRx.medicineDosage;
+            if (csRx.medicineUnit) frequency = frequency + ' ' + medicineUnit;
+          }
         }
-      }
 
-      if (csRx.medicineFrequency && !csRx.medicineCustomDosage)
-        frequency = frequency + ' ' + csRx.medicineFrequency.split('_').join(' ');
+        if (csRx.medicineFrequency && !csRx.medicineCustomDosage)
+          frequency = frequency + ' ' + csRx.medicineFrequency.split('_').join(' ');
 
-      if (
-        csRx.medicineConsumptionDurationInDays &&
-        csRx.medicineConsumptionDurationUnit != MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW
-      ) {
-        frequency = frequency + ' for';
-        frequency = frequency + ' ' + csRx.medicineConsumptionDurationInDays;
-        if (csRx.medicineConsumptionDurationUnit) {
-          const unit =
-            parseInt(csRx.medicineConsumptionDurationInDays.toString(), 10) > 1
-              ? csRx.medicineConsumptionDurationUnit
-              : csRx.medicineConsumptionDurationUnit.replace('S', '');
-          frequency = frequency + ' ' + unit;
-        }
-      }
-
-      if (csRx.medicineConsumptionDurationUnit == MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW) {
-        frequency += ' ' + csRx.medicineConsumptionDurationUnit.split('_').join(' ');
-      }
-
-      if (csRx.medicineToBeTaken)
-        frequency =
-          frequency +
-          ' ' +
-          csRx.medicineToBeTaken
-            .join(', ')
-            .split('_')
-            .join(' ');
-
-      if (csRx.medicineTimings && !csRx.medicineCustomDosage) {
         if (
-          csRx.medicineTimings.length == 1 &&
-          csRx.medicineTimings[0] == MEDICINE_TIMINGS.AS_NEEDED
+          csRx.medicineConsumptionDurationInDays &&
+          csRx.medicineConsumptionDurationUnit != MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW
         ) {
-          frequency = frequency + ' ' + csRx.medicineTimings[0].split('_').join(' ');
-        } else if (
-          csRx.medicineTimings.length == 1 &&
-          csRx.medicineTimings[0] != MEDICINE_TIMINGS.NOT_SPECIFIC
-        ) {
-          frequency = frequency + ' in the';
-          frequency =
-            frequency +
-            ' ' +
-            csRx.medicineTimings
-              .join(', ')
-              .replace(/,(?=[^,]*$)/, ' and')
-              .split('_')
-              .join(' ');
-        } else if (csRx.medicineTimings.length > 1) {
-          frequency = frequency + ' in the';
-          frequency =
-            frequency +
-            ' ' +
-            csRx.medicineTimings
-              .join(', ')
-              .replace(/,(?=[^,]*$)/, ' and')
-              .split('_')
-              .join(' ');
+          frequency = frequency + ' for';
+          frequency = frequency + ' ' + csRx.medicineConsumptionDurationInDays;
+          if (csRx.medicineConsumptionDurationUnit) {
+            const unit =
+              parseInt(csRx.medicineConsumptionDurationInDays.toString(), 10) > 1
+                ? csRx.medicineConsumptionDurationUnit
+                : csRx.medicineConsumptionDurationUnit.replace('S', '');
+            frequency = frequency + ' ' + unit;
+          }
         }
+
+        if (
+          csRx.medicineConsumptionDurationUnit == MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW
+        ) {
+          frequency += ' ' + csRx.medicineConsumptionDurationUnit.split('_').join(' ');
+        }
+
+        if (csRx.medicineToBeTaken)
+          frequency =
+            frequency +
+            ' ' +
+            csRx.medicineToBeTaken
+              .join(', ')
+              .split('_')
+              .join(' ');
+
+        if (csRx.medicineTimings && !csRx.medicineCustomDosage) {
+          if (
+            csRx.medicineTimings.length == 1 &&
+            csRx.medicineTimings[0] == MEDICINE_TIMINGS.AS_NEEDED
+          ) {
+            frequency = frequency + ' ' + csRx.medicineTimings[0].split('_').join(' ');
+          } else if (
+            csRx.medicineTimings.length == 1 &&
+            csRx.medicineTimings[0] != MEDICINE_TIMINGS.NOT_SPECIFIC
+          ) {
+            frequency = frequency + ' in the';
+            frequency =
+              frequency +
+              ' ' +
+              csRx.medicineTimings
+                .join(', ')
+                .replace(/,(?=[^,]*$)/, ' and')
+                .split('_')
+                .join(' ');
+          } else if (csRx.medicineTimings.length > 1) {
+            frequency = frequency + ' in the';
+            frequency =
+              frequency +
+              ' ' +
+              csRx.medicineTimings
+                .join(', ')
+                .replace(/,(?=[^,]*$)/, ' and')
+                .split('_')
+                .join(' ');
+          }
+        }
+
+        frequency = _capitalize(frequency);
+        if (frequency.includes(ApiConstants.STAT_LOWECASE))
+          frequency = frequency.replace(ApiConstants.STAT_LOWECASE, ApiConstants.STAT_UPPERCASE);
+        frequency += '.';
       }
-
-      frequency = _capitalize(frequency);
-      if (frequency.includes(ApiConstants.STAT_LOWECASE))
-        frequency = frequency.replace(ApiConstants.STAT_LOWECASE, ApiConstants.STAT_UPPERCASE);
-      frequency += '.';
-
       const instructions = csRx.medicineInstructions;
       const routeOfAdministration = _capitalize(csRx.routeOfAdministration);
-
+      if (csRx.includeGenericNameInPrescription) {
+        genericName = csRx.genericName;
+      }
       return {
         name,
         ingredients,
@@ -206,6 +215,7 @@ export const convertCaseSheetToRxPdfData = async (
         instructions,
         routeOfAdministration,
         medicineFormTypes: csRx.medicineFormTypes,
+        genericName,
       } as PrescriptionData;
     });
   }
@@ -707,6 +717,14 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
         .fillColor('#333333')
         .text(`${index + 1}.  ${prescription.name}`, margin + 15)
         .moveDown(0.5);
+      if (prescription.genericName) {
+        doc
+          .fontSize(9)
+          .font(assetsDir + '/fonts/IBMPlexSans-Regular.ttf')
+          .fillColor('#7f7f7f')
+          .text(`${prescription.genericName}`, margin + 15)
+          .moveDown(0.5);
+      }
       doc
         .fontSize(11)
         .font(assetsDir + '/fonts/IBMPlexSans-Regular.ttf')

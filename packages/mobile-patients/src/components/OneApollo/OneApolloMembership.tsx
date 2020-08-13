@@ -29,7 +29,7 @@ const windowHeight = Dimensions.get('window').height;
 export interface OneApolloProps extends NavigationScreenProps {}
 
 export const OneApolloMembership: React.FC<OneApolloProps> = (props) => {
-  const [name, setName] = useState<String>('user');
+  const [name, setName] = useState<String>('User');
   const [tier, settier] = useState<String>('Silver');
   const [credits, setCredits] = useState(0);
   const [screen, setScreen] = useState<String>('MyMembership');
@@ -115,7 +115,7 @@ export const OneApolloMembership: React.FC<OneApolloProps> = (props) => {
           <OneApollo style={{ height: 0.1 * windowWidth, width: 0.13 * windowWidth }} />
         </View>
         <View style={{ flex: 0.75, justifyContent: 'center' }}>
-          <Text style={styles.nameText}>{name}</Text>
+          <Text style={styles.nameText}>{name ? name : 'User'}</Text>
           <Text style={styles.tierText}>{tierData[`${tier}`].title}</Text>
         </View>
       </View>

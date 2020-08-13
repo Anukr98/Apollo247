@@ -1075,6 +1075,9 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 const ringtoneUrl = require('../images/phone_ringing.mp3');
+const joinToneUrl = require('../images/join_sound.mp3');
+const exitToneUrl = require('../images/left_sound.mp3');
+const shortToneUrl = require('../images/short_tone.mp3');
 
 interface errorObject {
   reasonError: boolean;
@@ -1468,6 +1471,9 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const [consultStart, setConsultStart] = useState<boolean>(false);
   const [sendToPatientButtonDisable, setSendToPatientButtonDisable] = useState<boolean>(false);
   const [playRingtone, setPlayRingtone] = useState<boolean>(false);
+  const [playJoinTone, setPlayJoinTone] = useState<boolean>(false);
+  const [playExitTone, setPlayExitTone] = useState<boolean>(false);
+  const [playShortTone, setPlayShortTone] = useState<boolean>(false);
   const [isCall, setIscall] = React.useState(true);
 
   //OT Error state
@@ -1890,10 +1896,14 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       if (lastMsg.message && lastMsg.message.message === acceptcallMsg) {
         setIsCallAccepted(true);
         setPlayRingtone(false);
+        setPlayJoinTone(true);
+        setPlayExitTone(false);
         clearInterval(intervalMissCall);
         missedCallCounter = 0;
       }
       if (lastMsg.message && lastMsg.message.message === stopcallMsg) {
+        setPlayJoinTone(false);
+        setPlayExitTone(true);
         setTimeout(() => {
           if (isCall) forcelyDisconnect();
         }, 2000);
@@ -1903,13 +1913,14 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         lastMsg.message &&
         lastMsg.message.message === patientJoinedMeetingRoom
       ) {
-        setPlayRingtone(true);
+        setPlayShortTone(true);
         setJoinPrompt(true);
       }
       if (isConsultStarted && lastMsg.message && lastMsg.message.message === videoCallEnded) {
-        setPlayRingtone(false);
+        setPlayShortTone(false);
         setJoinPrompt(false);
         setFloatingJoinPrompt(false);
+        setPlayExitTone(true);
       }
     }
   }, [props.lastMsg]);
@@ -2307,6 +2318,27 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       {playRingtone && (
         <audio controls autoPlay loop className={classes.ringtone}>
           <source src={ringtoneUrl} type="audio/mpeg" />
+          Your browser does not support the audio tag.
+        </audio>
+      )}
+
+      {playJoinTone && (
+        <audio controls autoPlay className={classes.ringtone}>
+          <source src={joinToneUrl} type="audio/mpeg" />
+          Your browser does not support the audio tag.
+        </audio>
+      )}
+
+      {playExitTone && (
+        <audio controls autoPlay className={classes.ringtone}>
+          <source src={exitToneUrl} type="audio/mpeg" />
+          Your browser does not support the audio tag.
+        </audio>
+      )}
+
+      {playShortTone && (
+        <audio controls autoPlay className={classes.ringtone}>
+          <source src={exitToneUrl} type="audio/mpeg" />
           Your browser does not support the audio tag.
         </audio>
       )}
@@ -3693,6 +3725,14 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           style={{
             cursor: 'pointer',
           }}
+          onClick={() => {
+            handleClose();
+            autoSend(videoCallMsg);
+            setIsVideoCall(true);
+            setDisableOnCancel(true);
+            setIscall(true);
+            setPlayRingtone(false);
+          }}
         >
           <img
             src={require('images/ic_joinPrompt_white.svg')}
@@ -3700,15 +3740,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
             style={{
               height: 30,
               width: 30,
-            }}
-            onClick={() => {
-              handleClose();
-              props.setStartConsultAction(true);
-              autoSend(videoCallMsg);
-              setIsVideoCall(true);
-              setDisableOnCancel(true);
-              missedCallIntervalTimer(45);
-              setIscall(true);
             }}
           />
           {'JOIN'}
@@ -3747,11 +3778,9 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               }}
               onClick={() => {
                 handleClose();
-                props.setStartConsultAction(true);
                 autoSend(videoCallMsg);
                 setIsVideoCall(true);
                 setDisableOnCancel(true);
-                missedCallIntervalTimer(45);
                 setIscall(true);
                 setJoinPrompt(false);
                 setPlayRingtone(false);

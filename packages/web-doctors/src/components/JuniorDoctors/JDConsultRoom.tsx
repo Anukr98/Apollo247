@@ -1303,8 +1303,8 @@ export const JDConsultRoom: React.FC = () => {
     mutationRemoveConsult()
       .then(() => {
         removeLocalStorageItem(appointmentId);
-        if (document.getElementById('homeId')) {
-          document.getElementById('homeId')!.click();
+        if (document.getElementById('activeConsult')) {
+          document.getElementById('activeConsult')!.click();
         }
       })
       .catch((e: ApolloError) => {
@@ -1361,9 +1361,9 @@ export const JDConsultRoom: React.FC = () => {
           setError('');
           setSaving(false);
         } else {
-          if (document.getElementById('homeId')) {
+          if (document.getElementById('activeConsult')) {
             alert('Appointment already fast-tracked by Senior Doctor');
-            document.getElementById('homeId')!.click();
+            document.getElementById('activeConsult')!.click();
           }
         }
       })
@@ -1571,7 +1571,7 @@ export const JDConsultRoom: React.FC = () => {
                 <div className={classes.pageHeader}>
                   <div className={classes.backArrowSection}>
                     <div className={classes.backArrow}>
-                      <a href={clientRoutes.juniorDoctor()}>
+                      <a href={clientRoutes.juniorDoctorActive()}>
                         <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
                         <img
                           className={classes.whiteArrow}
@@ -1736,8 +1736,8 @@ export const JDConsultRoom: React.FC = () => {
             color="primary"
             onClick={() => {
               setIsDialogOpen(false);
-              if (document.getElementById('homeId')) {
-                document.getElementById('homeId')!.click();
+              if (document.getElementById('activeConsult')) {
+                document.getElementById('activeConsult')!.click();
               }
             }}
             autoFocus

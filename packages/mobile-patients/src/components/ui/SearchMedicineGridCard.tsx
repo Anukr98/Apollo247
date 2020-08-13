@@ -4,7 +4,6 @@ import {
   MedicineRxIcon,
   TestsIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
-import { QuantityButton } from '@aph/mobile-patients/src/components/ui/QuantityButton';
 import { Doseform } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
@@ -18,6 +17,7 @@ import {
   ViewStyle,
 } from 'react-native';
 import { Image } from 'react-native-elements';
+import { AddToCartButtons } from '../Medicines/AddToCartButtons';
 
 const styles = StyleSheet.create({
   containerStyle: {
@@ -153,6 +153,8 @@ export interface SearchMedicineGridCardProps {
   onEditPress: () => void;
   onAddSubscriptionPress: () => void;
   containerStyle?: StyleProp<ViewStyle>;
+  maxOrderQty: number;
+  removeCartItem: () => void;
 }
 
 export const SearchMedicineGridCard: React.FC<SearchMedicineGridCardProps> = (props) => {
@@ -173,6 +175,8 @@ export const SearchMedicineGridCard: React.FC<SearchMedicineGridCardProps> = (pr
     onPressSubtractQuantity,
     onPressAdd,
     onPress,
+    maxOrderQty,
+    removeCartItem,
   } = props;
 
   const renderTitleAndIcon = () => {
@@ -190,11 +194,11 @@ export const SearchMedicineGridCard: React.FC<SearchMedicineGridCardProps> = (pr
   const renderAddToCartView = () => {
     return (
       <TouchableOpacity
-        style={styles.addToCartViewStyle}
+        style={[styles.addToCartViewStyle, isInStock && { paddingHorizontal: 10 }]}
         activeOpacity={1}
         onPress={!isInStock ? onNotifyMeClicked : onPressAdd}
       >
-        <Text style={{ ...theme.viewStyles.text('SB', 9, '#fc9916', 1, 17, 0) }}>
+        <Text style={{ ...theme.viewStyles.text('SB', !isInStock ? 9 : 10, '#fc9916', 1, !isInStock ? 17 : 20, 0) }}>
           {!isInStock ? 'NOTIFY ME' : 'ADD'}
         </Text>
       </TouchableOpacity>
@@ -204,18 +208,13 @@ export const SearchMedicineGridCard: React.FC<SearchMedicineGridCardProps> = (pr
   const renderQuantityView = () => {
     return (
       <View style={styles.qtyViewStyle}>
-        <QuantityButton
-          text={'-'}
-          style={styles.minusQtyViewStyle}
-          onPress={onPressSubtractQuantity}
-          textStyle={styles.minusPlusTextStyle}
-        />
-        <Text style={theme.viewStyles.text('B', 12, '#fc9916', 1, 24, 0)}>{quantity}</Text>
-        <QuantityButton
-          text={'+'}
-          style={styles.plusQtyViewStyle}
-          onPress={onPressAddQuantity}
-          textStyle={styles.minusPlusTextStyle}
+        <AddToCartButtons
+          numberOfItemsInCart={quantity}
+          maxOrderQty={maxOrderQty}
+          addToCart={onPressAddQuantity}
+          removeItemFromCart={onPressSubtractQuantity}
+          removeFromCart={removeCartItem}
+          isSolidContainer={false}
         />
       </View>
     );

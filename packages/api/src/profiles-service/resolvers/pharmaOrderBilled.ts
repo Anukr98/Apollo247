@@ -268,7 +268,8 @@ const saveOrderShipmentInvoice: Resolver<
       currentStatus
     );
     if (
-      billDetails.invoiceValue - orderDetails.estimatedAmount > 1 &&
+      Math.abs(Math.floor(billDetails.invoiceValue) - Math.floor(orderDetails.estimatedAmount)) >
+        1 &&
       orderDetails.deliveryType == MEDICINE_DELIVERY_TYPE.HOME_DELIVERY
     ) {
       sendMedicineOrderStatusNotification(

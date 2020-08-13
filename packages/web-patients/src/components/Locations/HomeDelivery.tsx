@@ -61,12 +61,18 @@ const useStyles = makeStyles((theme: Theme) => {
       marginTop: 0,
       borderTop: '0.5px solid rgba(2,71,91,0.2)',
       paddingTop: 10,
+      [theme.breakpoints.down('xs')]: {
+        margin: '10px 0 0',
+      },
     },
     deliveryTimeGroupWrap: {
       display: 'flex',
       backgroundColor: theme.palette.common.white,
       padding: 10,
       borderRadius: 5,
+      [theme.breakpoints.down('xs')]: {
+        padding: 0,
+      },
     },
     deliveryTime: {
       fontSize: 14,
@@ -219,6 +225,7 @@ type HomeDeliveryProps = {
   setDeliveryTime: (deliveryTime: string) => void;
   deliveryTime: string;
   selectedZipCode: (zipCode: string) => void;
+  checkForPriceUpdate: (shopid: string) => void;
 };
 
 interface TatInterface {
@@ -410,9 +417,10 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
           }),
         }
       )
-      .then(({ data }: any) => {
+      .then(async ({ data }: any) => {
         if (data && data.tat && data.tat[0]) {
           setDeliveryTime(data.tat[0].deliverydate);
+          props.checkForPriceUpdate(data.tat[0].siteId);
           changeCartTatStatus && changeCartTatStatus(true);
         }
       })
@@ -461,7 +469,12 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
               const tatResult = res.data.tat;
 
               const nonDeliverySKUArr = tatResult
-                .filter((item: TatInterface) => getDiffInDays(item.deliverydate) > 10)
+                .filter(
+                  (item: TatInterface) =>
+                    getDiffInDays(item.deliverydate) > 10 ||
+                    item.siteId === '' ||
+                    item.siteId === null
+                )
                 .map((filteredSku: TatInterface) => filteredSku.artCode);
 
               const deliverableSku = tatResult

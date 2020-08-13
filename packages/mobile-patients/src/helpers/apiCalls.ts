@@ -244,16 +244,36 @@ export interface OfferBannerSection {
   sku?: string;
 }
 
+export interface MedicinePageAPiMetadata {
+  section_key: string;
+  section_name: string;
+  section_position: number;
+  visible: boolean;
+}
+
+export interface MedicinePageProducts {
+  products: MedicineProduct[];
+  category_id?: number;
+}
+
 export interface MedicinePageAPiResponse {
   mainbanners: OfferBannerSection[];
   healthareas: MedicinePageSection[];
   deals_of_the_day: DealsOfTheDaySection[];
   shop_by_category: MedicinePageSection[];
   shop_by_brand: MedicinePageSection[];
-  hot_sellers?: { products: MedicineProduct[]; category_id?: number };
-  monsoon_essentials?: { products: MedicineProduct[]; category_id?: number };
-  widget_2?: { products: MedicineProduct[]; category_id?: number };
-  widget_3?: { products: MedicineProduct[]; category_id?: number };
+  hot_sellers?: MedicinePageProducts;
+  monsoon_essentials?: MedicinePageProducts;
+  widget_2?: MedicinePageProducts;
+  widget_3?: MedicinePageProducts;
+  metadata: MedicinePageAPiMetadata[];
+  [key: string]:
+    | MedicinePageAPiMetadata[]
+    | MedicinePageProducts
+    | OfferBannerSection[]
+    | DealsOfTheDaySection[]
+    | MedicinePageSection[]
+    | any;
 }
 
 export interface PackageInclusion {
@@ -314,7 +334,8 @@ export const getMedicineDetailsApi = (
 let cancelSearchMedicineApi: Canceler | undefined;
 
 export const searchMedicineApi = async (
-  searchText: string
+  searchText: string,
+  pageId: number = 1
 ): Promise<AxiosResponse<MedicineProductsResponse>> => {
   const CancelToken = Axios.CancelToken;
   cancelSearchMedicineApi && cancelSearchMedicineApi();
@@ -324,6 +345,7 @@ export const searchMedicineApi = async (
     method: 'POST',
     data: {
       params: searchText,
+      page_id: pageId,
     },
     headers: {
       Authorization: config.MED_SEARCH[1],

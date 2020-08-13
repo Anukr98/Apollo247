@@ -66,6 +66,11 @@ export interface TransactionLineItemsPartial {
   DiscountAmount: number;
 }
 
+export interface PaginateParams {
+  take?: number;
+  skip?: number;
+}
+
 export interface TransactionLineItems extends TransactionLineItemsPartial {
   ProductName: string;
   ProductCategory: ONE_APOLLO_PRODUCT_CATEGORY;
@@ -958,6 +963,10 @@ export class PatientDeviceTokens extends BaseEntity {
   @Index('device_token')
   @Column({ type: 'text' })
   deviceToken: string;
+
+  @Index('device_voip_push_token')
+  @Column({nullable:true, type: 'text'})
+  deviceVoipPushToken: string;
 
   @Column()
   deviceOS: string;
