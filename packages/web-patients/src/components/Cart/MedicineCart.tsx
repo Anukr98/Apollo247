@@ -916,12 +916,15 @@ export const MedicineCart: React.FC = (props) => {
         billAmount: cartTotal.toFixed(2),
         coupon: couponCode,
         pinCode: localStorage.getItem('pharmaPincode'),
-        products: cartItems.map((item) => ({
-          sku: item.sku,
-          mrp: item.price,
-          quantity: item.quantity,
-          specialPrice: item.special_price ? item.special_price : item.price,
-        })),
+        products: cartItems.map((item) => {
+          const { sku, quantity, special_price, price } = item;
+          return {
+            sku,
+            mrp: item.price,
+            quantity,
+            specialPrice: special_price || price,
+          };
+        }),
       };
       fetchUtil(process.env.VALIDATE_CONSULT_COUPONS, 'POST', data, '', false)
         .then((resp: any) => {

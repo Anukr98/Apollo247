@@ -19,6 +19,7 @@ import { useShoppingCart } from 'components/MedicinesCartProvider';
 import { gtmTracking } from '../../gtmTracking';
 import { getTypeOfProduct } from 'helpers/commonHelpers';
 import fetchUtil from 'helpers/fetch';
+import { PharmaCoupon } from './MedicineCart';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -166,7 +167,7 @@ export interface consult_coupon {
 }
 
 interface ApplyCouponProps {
-  setValidateCouponResult: (validateCouponResult: any | null) => void;
+  setValidateCouponResult: (validateCouponResult: PharmaCoupon | null) => void;
   couponCode: string;
   close: (isApplyCouponDialogOpen: boolean) => void;
   cartValue: number;
@@ -183,22 +184,21 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [muationLoading, setMuationLoading] = useState<boolean>(false);
 
-  const getCouponMutation = useMutation<getPharmaCouponList>(PHRAMA_COUPONS_LIST, {
-    fetchPolicy: 'no-cache',
-  });
-
   const verifyCoupon = () => {
     const data = {
       mobile: localStorage.getItem('userMobileNo'),
       billAmount: cartTotal.toFixed(2),
       coupon: selectCouponCode,
       pinCode: localStorage.getItem('pharmaPincode'),
-      products: cartItems.map((item) => ({
-        sku: item.sku,
-        mrp: item.price,
-        quantity: item.quantity,
-        specialPrice: item.special_price ? item.special_price : item.price,
-      })),
+      products: cartItems.map((item) => {
+        const { sku, quantity, special_price, price } = item;
+        return {
+          sku,
+          mrp: item.price,
+          quantity,
+          specialPrice: special_price || price,
+        };
+      }),
     };
     if (currentPatient && currentPatient.id) {
       setMuationLoading(true);
