@@ -1,6 +1,6 @@
 import { Theme, Typography, Popover } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState } from 'react';
 import { AphButton } from '@aph/web-ui-components';
 import Scrollbars from 'react-custom-scrollbars';
 import { GetDoctorDetailsById as DoctorDetails } from 'graphql/types/GetDoctorDetailsById';
@@ -470,7 +470,6 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
       } = doctorDetails && doctorDetails.getDoctorDetailsById;
 
       const differenceInMinutes = getDiffInMinutes(appointmentDetails.appointmentDateTime);
-      console.log(differenceInMinutes);
       const specialityName = (specialty && specialty.name) || '';
 
       if (doctorHospital) {
