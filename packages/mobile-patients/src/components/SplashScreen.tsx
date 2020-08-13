@@ -213,7 +213,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   };
   const handleOpenURL = (event: any) => {
     try {
-      console.log('event', event);
+      InitiateAppsFlyer(props.navigation);
       let route;
 
       route = event.replace('apollopatients://', '');
