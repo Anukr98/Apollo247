@@ -121,7 +121,7 @@ import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import AsyncStorage from '@react-native-community/async-storage';
 import { ApolloError } from 'apollo-client';
 import moment from 'moment';
-import Pubnub from 'pubnub';
+import Pubnub, { HereNowResponse } from 'pubnub';
 import React, { useEffect, useRef, useState } from 'react';
 import { useApolloClient, useMutation } from 'react-apollo-hooks';
 import {
@@ -1346,7 +1346,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       .catch((error) => {});
   };
 
-  const sendCallNotificationAPI = (callType: APPT_CALL_TYPE, isCall: boolean) => {
+  const sendCallNotificationAPI = (callType: APPT_CALL_TYPE, isCall: boolean, count: number) => {
     client
       .query<SendCallNotification, SendCallNotificationVariables>({
         query: SEND_CALL_NOTIFICATION,
@@ -1361,6 +1361,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             Platform.OS === 'ios'
               ? AppConfig.Configuration.iOS_Version
               : AppConfig.Configuration.Android_Version,
+          numberOfParticipants: count,
         },
       })
       .then((_data) => {
@@ -1376,15 +1377,17 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   };
 
   const endCallNotificationAPI = (isCall: boolean) => {
-    client
-      .query<EndCallNotification, EndCallNotificationVariables>({
-        query: END_CALL_NOTIFICATION,
-        fetchPolicy: 'no-cache',
-        variables: {
-          appointmentCallId: isCall ? callId : chatId,
-        },
-      })
-      .catch((error) => {});
+    if ((isCall && callId) || (!isCall && chatId)) {
+      client
+        .query<EndCallNotification, EndCallNotificationVariables>({
+          query: END_CALL_NOTIFICATION,
+          fetchPolicy: 'no-cache',
+          variables: {
+            appointmentCallId: isCall ? callId : chatId,
+          },
+        })
+        .catch((error) => {});
+    }
   };
 
   // const startInterval = (timer: number) => { //Consult remaning time
@@ -1414,7 +1417,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     subscribeKey: AppConfig.Configuration.PRO_PUBNUB_SUBSCRIBER,
     publishKey: AppConfig.Configuration.PRO_PUBNUB_PUBLISH,
     ssl: true,
-    uuid: REQUEST_ROLES.DOCTOR,
+    uuid: `DOCTOR_${g(doctorDetails, 'id') || ''}`,
     restore: true,
     keepAlive: true,
     // autoNetworkDetection: true,
@@ -1503,7 +1506,14 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               audioVideoMethod();
               break;
             case messageCodes.patientJoined:
-              showJoinPopUp();
+              AsyncStorage.multiGet(['isAudio', 'isVideo']).then((data) => {
+                if (data) {
+                  const values = data.map((item) => item && item[1]);
+                  if (!values.includes('true')) {
+                    showJoinPopUp();
+                  }
+                }
+              });
               break;
             default:
           }
@@ -1521,7 +1531,14 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           callData.setMessageReceived(true);
           addMessages(message);
         } else if (messageCodes.patientJoined === messageText) {
-          showJoinPopUp();
+          AsyncStorage.multiGet(['isAudio', 'isVideo']).then((data) => {
+            if (data) {
+              const values = data.map((item) => item && item[1]);
+              if (!values.includes('true')) {
+                showJoinPopUp();
+              }
+            }
+          });
         } else {
           callData.setMessageReceived(true);
           addMessages(message);
@@ -1718,6 +1735,27 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     );
   };
 
+  const pubnubPresence = (callBack: (patientCount: number, doctorCount: number) => void) => {
+    pubnub
+      .hereNow({ channels: [channel], includeUUIDs: true })
+      .then((response: HereNowResponse) => {
+        const data = response.channels[appointmentData.id].occupants;
+        let doctorCount = 0;
+        let paientsCount = 0;
+        data.forEach((item) => {
+          if (item.uuid.indexOf('PATIENT') > -1) {
+            paientsCount = 1;
+          } else if (item.uuid.indexOf('DOCTOR') > -1) {
+            doctorCount = 1;
+          }
+        });
+        callBack(paientsCount, doctorCount);
+      })
+      .catch((error) => {
+        CommonBugFender('ChatRoom_PUBNUB_PRESENCE', error);
+      });
+  };
+
   const connectCall = (callType: 'A' | 'V', isJoin?: boolean) => {
     getNetStatus().then(async (connected) => {
       if (connected) {
@@ -1778,10 +1816,13 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         });
         callhandelBack = false;
         setShowPopUp(false);
-        sendCallNotificationAPI(
-          callType === 'V' ? APPT_CALL_TYPE.VIDEO : APPT_CALL_TYPE.AUDIO,
-          true
-        );
+        pubnubPresence((patient: number, doctor: number) => {
+          sendCallNotificationAPI(
+            callType === 'V' ? APPT_CALL_TYPE.VIDEO : APPT_CALL_TYPE.AUDIO,
+            true,
+            patient + doctor
+          );
+        });
         Keyboard.dismiss();
         AsyncStorage.setItem('callDisconnected', 'false');
         firebase
@@ -2166,7 +2207,9 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             setTimeout(() => {
               flatListRef.current && flatListRef.current.scrollToEnd();
             }, 1000);
-            sendCallNotificationAPI(APPT_CALL_TYPE.CHAT, false);
+            pubnubPresence((patient: number, doctor: number) => {
+              sendCallNotificationAPI(APPT_CALL_TYPE.CHAT, true, patient + doctor);
+            });
             console.log('onStartConsult');
             pubnub.publish(
               {

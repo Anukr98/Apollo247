@@ -300,6 +300,7 @@ export const AudioVideoProvider: React.FC = (props) => {
   };
 
   const startTimer = (timer: number) => {
+    stopTimer();
     timerId = setInterval(() => {
       timer = timer + 1;
       const callMinutes = Math.floor(timer / 60);
@@ -664,7 +665,9 @@ export const AudioVideoProvider: React.FC = (props) => {
       } else if (['AuthorizationFailure', 'InvalidSessionId', 1004, 1005].includes(error.code)) {
         message = 'There is an error, please restart application/consult';
       }
-      errorPopup(message, theme.colors.APP_RED);
+      setTimeout(() => {
+        errorPopup(message, theme.colors.APP_RED);
+      }, 50);
       console.log('session stream error!', error);
     },
     otrnError: (event: string) => {
@@ -679,6 +682,7 @@ export const AudioVideoProvider: React.FC = (props) => {
     connectionCreated: (event: string) => {
       connectionCount++;
       setCallConnected(true);
+      setCallAccepted(true);
       if (audioTrack) {
         setPrevVolume();
         audioTrack.stop(() => {
