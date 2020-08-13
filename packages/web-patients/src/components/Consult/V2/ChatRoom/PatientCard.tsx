@@ -46,6 +46,7 @@ interface PatientCardProps {
 export const PatientCard: React.FC<PatientCardProps> = (props) => {
   const classes = useStyles({});
   const chatTime = format(new Date(props.chatTime), 'do MMMM yyyy, hh:mm aaaa');
+  // const chatTime = format(new Date(props.chatTime), 'hh:mm aaaa');
   // console.log(props.chatTime, props.message);
   return (
     <div className={classes.patientCardMain}>

@@ -1589,11 +1589,14 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                 inputProps={{ type: 'text' }}
                 placeholder="Type here..."
                 value={userMessage}
-                onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) => {
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setUserMessage(e.target.value)
+                }
+                onKeyPress={(e: any) => {
                   if ((e.which == 13 || e.keyCode == 13) && userMessage.trim() !== '') {
                     const composeMessage = {
                       id: currentPatient && currentPatient.id,
-                      message: e.currentTarget.value,
+                      message: e.target.value,
                       automatedText: '',
                       duration: '',
                       url: '',
@@ -1602,6 +1605,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                       cardType: 'patient',
                     };
                     publishMessage(appointmentId, composeMessage);
+                    setUserMessage('');
                   }
                 }}
               />
