@@ -405,10 +405,10 @@ export class PatientRepository extends Repository<Patient> {
       }
     }
 
+    ids.forEach((patientId) => {
+      this.dropPatientCache(`${REDIS_PATIENT_ID_KEY_PREFIX}${patientId}`);
+    });
     if (check) {
-      ids.forEach((patientId) => {
-        this.dropPatientCache(`${REDIS_PATIENT_ID_KEY_PREFIX}${patientId}`);
-      });
       return this.update([...ids], fieldToUpdate).catch((updatePatientError) => {
         throw new AphError(AphErrorMessages.UPDATE_PROFILE_ERROR, undefined, {
           updatePatientError,

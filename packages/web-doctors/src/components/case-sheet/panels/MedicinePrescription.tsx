@@ -1163,7 +1163,7 @@ export const MedicinePrescription: React.FC = () => {
   const [forUnit, setforUnit] = useState(forOptions[0].id);
   const [searchInput, setSearchInput] = useState('');
   const [freeTextSwitch, setFreeTextSwitch] = useState<boolean>(false);
-  const [medicineCustomDetails, setMedicineCustomDetails] = useState<string>('');
+  const [medicineCustomDetails, setMedicineCustomDetails] = useState<string>(null);
   const [genericName, setGenericName] = useState<string>('');
   const [includeGenericNameInPrescription, setIncludeGenericNameInPrescription] = useState<boolean>(
     false
@@ -1247,7 +1247,7 @@ export const MedicinePrescription: React.FC = () => {
           setMedicineForm(medicineMappingObj['others'].defaultSetting);
           setRoaOption(medicineMappingObj['others'].defaultRoa);
         }
-        setMedicineCustomDetails('');
+        setMedicineCustomDetails(null);
         setShowDosage(true);
         setSelectedValue(suggestion.label);
         setSelectedId(suggestion.sku);
@@ -1417,11 +1417,8 @@ export const MedicinePrescription: React.FC = () => {
   const updateMedicine = (idx: any) => {
     setGenericName(selectedMedicinesArr[idx].genericName);
     setIncludeGenericNameInPrescription(selectedMedicinesArr[idx].includeGenericNameInPrescription);
-    setMedicineCustomDetails(selectedMedicinesArr[idx].medicineCustomDetails || '');
-    if (
-      selectedMedicinesArr[idx].medicineCustomDetails &&
-      selectedMedicinesArr[idx].medicineCustomDetails.length !== 0
-    ) {
+    setMedicineCustomDetails(selectedMedicinesArr[idx].medicineCustomDetails);
+    if (selectedMedicinesArr[idx].medicineCustomDetails) {
       setFreeTextSwitch(true);
     }
     const slots = toBeTakenSlots.map((slot: SlotsObject) => {
@@ -1516,8 +1513,8 @@ export const MedicinePrescription: React.FC = () => {
   const updateFavMedicine = (idx: any) => {
     setGenericName(idx.genericName);
     setIncludeGenericNameInPrescription(idx.includeGenericNameInPrescription);
-    setMedicineCustomDetails(idx.medicineCustomDetails || '');
-    if (idx.medicineCustomDetails && idx.medicineCustomDetails.length !== 0) {
+    setMedicineCustomDetails(idx.medicineCustomDetails);
+    if (idx.medicineCustomDetails) {
       setFreeTextSwitch(true);
     }
     setSelectedValue(idx.medicineName);
@@ -1588,7 +1585,7 @@ export const MedicinePrescription: React.FC = () => {
           medicineConsumptionDurationInDays: res.medicineConsumptionDurationInDays,
           medicineDosage: String(res.medicineDosage),
           medicineInstructions: res.medicineInstructions,
-          medicineCustomDetails: res.medicineCustomDetails || '',
+          medicineCustomDetails: res.medicineCustomDetails,
           medicineTimings: res.medicineTimings,
           medicineToBeTaken: res.medicineToBeTaken,
           medicineName: res.medicineName,
@@ -1740,7 +1737,7 @@ export const MedicinePrescription: React.FC = () => {
       !isCustomform &&
       (tabletsCount.trim() === '' || tabletsCount.trim() === '0') &&
       medicineForm !== MEDICINE_FORM_TYPES.GEL_LOTION_OINTMENT &&
-      medicineCustomDetails.length == 0
+      !medicineCustomDetails
     ) {
       setErrorState({
         ...errorState,
@@ -1754,7 +1751,7 @@ export const MedicinePrescription: React.FC = () => {
       tabletsCount.trim() === '' &&
       medicineForm === MEDICINE_FORM_TYPES.GEL_LOTION_OINTMENT &&
       medicineUnit !== 'AS_PRESCRIBED' &&
-      medicineCustomDetails.length == 0
+      !medicineCustomDetails
     ) {
       setErrorState({
         ...errorState,
@@ -1765,7 +1762,7 @@ export const MedicinePrescription: React.FC = () => {
       });
     } else if (
       isCustomform &&
-      medicineCustomDetails.length == 0 &&
+      !medicineCustomDetails &&
       ((customDosageMorning.trim() === '' &&
         customDosageNoon.trim() === '' &&
         customDosageEvening.trim() === '' &&
@@ -1788,7 +1785,7 @@ export const MedicinePrescription: React.FC = () => {
       });
     } else if (
       isCustomform &&
-      medicineCustomDetails.length == 0 &&
+      !medicineCustomDetails &&
       ((customDosageMorning.trim() !== '' &&
         customDosageMorning.trim() !== '0' &&
         daySlotsArr.indexOf('MORNING') < 0) ||
@@ -1803,7 +1800,7 @@ export const MedicinePrescription: React.FC = () => {
       });
     } else if (
       isCustomform &&
-      medicineCustomDetails.length == 0 &&
+      !medicineCustomDetails &&
       ((customDosageNoon.trim() !== '' &&
         customDosageNoon.trim() !== '0' &&
         daySlotsArr.indexOf('NOON') < 0) ||
@@ -1818,7 +1815,7 @@ export const MedicinePrescription: React.FC = () => {
       });
     } else if (
       isCustomform &&
-      medicineCustomDetails.length == 0 &&
+      !medicineCustomDetails &&
       ((customDosageEvening.trim() !== '' &&
         customDosageEvening.trim() !== '0' &&
         daySlotsArr.indexOf('EVENING') < 0) ||
@@ -1833,7 +1830,7 @@ export const MedicinePrescription: React.FC = () => {
       });
     } else if (
       isCustomform &&
-      medicineCustomDetails.length == 0 &&
+      !medicineCustomDetails &&
       ((customDosageNight.trim() !== '' &&
         customDosageNight.trim() !== '0' &&
         daySlotsArr.indexOf('NIGHT') < 0) ||
@@ -1848,7 +1845,7 @@ export const MedicinePrescription: React.FC = () => {
       });
     } else if (
       isCustomform &&
-      medicineCustomDetails.length == 0 &&
+      !medicineCustomDetails &&
       customDosageArray.length > daySlotsArr.length
     ) {
       setErrorState({
@@ -1858,7 +1855,7 @@ export const MedicinePrescription: React.FC = () => {
         tobeTakenErr: false,
         dosageErr: false,
       });
-    } else if (daySlotsArr.length === 0 && medicineCustomDetails.length == 0) {
+    } else if (daySlotsArr.length === 0 && !medicineCustomDetails) {
       setErrorState({
         ...errorState,
         durationErr: false,
@@ -1868,7 +1865,7 @@ export const MedicinePrescription: React.FC = () => {
       });
     } else if (
       forUnit !== MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW &&
-      medicineCustomDetails.length == 0 &&
+      !medicineCustomDetails &&
       (consumptionDuration === '' ||
         isNaN(Number(consumptionDuration)) ||
         consumptionDuration === '0')
@@ -1969,7 +1966,7 @@ export const MedicinePrescription: React.FC = () => {
       setSelectedValue('');
       setSelectedId('');
       setGenericName('');
-      setMedicineCustomDetails('');
+      setMedicineCustomDetails(null);
       setIncludeGenericNameInPrescription(false);
       setFreeTextSwitch(false);
     }
@@ -2317,7 +2314,7 @@ export const MedicinePrescription: React.FC = () => {
 
         return (
           <div style={{ position: 'relative' }} key={index}>
-            {medicine.medicineCustomDetails && medicine.medicineCustomDetails.length !== 0 ? (
+            {medicine.medicineCustomDetails ? (
               <Paper className={classes.medicineCard}>
                 {isPresent ? (
                   <h5>{medicine.medicineName}</h5>
@@ -2502,8 +2499,7 @@ export const MedicinePrescription: React.FC = () => {
                   }
                   return (
                     <div className={classes.paper} key={id}>
-                      {favMedicine.medicineCustomDetails &&
-                      favMedicine.medicineCustomDetails.length !== 0 ? (
+                      {favMedicine.medicineCustomDetails ? (
                         <Paper className={classes.favMedBg}>
                           <h5>{favMedicine.medicineName}</h5>
 
@@ -2610,45 +2606,48 @@ export const MedicinePrescription: React.FC = () => {
               <div>
                 <Scrollbars autoHide={true} style={{ height: 'calc(60vh' }}>
                   <div className={classes.dialogContent}>
+                    <Grid item lg={12} md={12} xs={12}>
+                      <RadioGroup
+                        className={classes.radioGroup}
+                        value={medicineForm}
+                        onChange={(e) => {
+                          setMedicineForm((e.target as HTMLInputElement)
+                            .value as MEDICINE_FORM_TYPES);
+                        }}
+                        row
+                      >
+                        {' '}
+                        <FormControlLabel
+                          value={MEDICINE_FORM_TYPES.OTHERS}
+                          label="Take"
+                          disabled={freeTextSwitch ? true : false}
+                          control={<AphRadio title="Take" />}
+                        />
+                        <FormControlLabel
+                          value={MEDICINE_FORM_TYPES.GEL_LOTION_OINTMENT}
+                          label="Apply"
+                          disabled={freeTextSwitch ? true : false}
+                          control={<AphRadio title="Apply" />}
+                        />
+                        <FormControlLabel
+                          label="Free Text Rx"
+                          labelPlacement="start"
+                          control={
+                            <AphSwitch
+                              title="Free Text"
+                              value={freeTextSwitch}
+                              checked={freeTextSwitch}
+                              onChange={(e: any) => {
+                                setFreeTextSwitch(!str2bool(e.target.value));
+                              }}
+                            />
+                          }
+                        />
+                      </RadioGroup>
+                    </Grid>
+
                     {!freeTextSwitch && (
                       <Grid container spacing={2}>
-                        <Grid item lg={12} md={12} xs={12}>
-                          <RadioGroup
-                            className={classes.radioGroup}
-                            value={medicineForm}
-                            onChange={(e) => {
-                              setMedicineForm((e.target as HTMLInputElement)
-                                .value as MEDICINE_FORM_TYPES);
-                            }}
-                            row
-                          >
-                            {' '}
-                            <FormControlLabel
-                              value={MEDICINE_FORM_TYPES.OTHERS}
-                              label="Take"
-                              control={<AphRadio title="Take" />}
-                            />
-                            <FormControlLabel
-                              value={MEDICINE_FORM_TYPES.GEL_LOTION_OINTMENT}
-                              label="Apply"
-                              control={<AphRadio title="Apply" />}
-                            />
-                            <FormControlLabel
-                              label="Free Text Rx"
-                              labelPlacement="start"
-                              control={
-                                <AphSwitch
-                                  title="Free Text"
-                                  value={freeTextSwitch}
-                                  checked={freeTextSwitch}
-                                  onChange={(e: any) => {
-                                    setFreeTextSwitch(!str2bool(e.target.value));
-                                  }}
-                                />
-                              }
-                            />
-                          </RadioGroup>
-                        </Grid>
                         <Grid item lg={12} md={12} xs={12}>
                           {isCustomform ? (
                             <>
@@ -3093,7 +3092,7 @@ export const MedicinePrescription: React.FC = () => {
                             multiline
                             rows={6}
                             placeholder="Type here..."
-                            value={medicineCustomDetails}
+                            value={medicineCustomDetails ? medicineCustomDetails : ''}
                             onChange={(event: any) => {
                               setMedicineCustomDetails(event.target.value);
                             }}
@@ -3262,11 +3261,13 @@ export const MedicinePrescription: React.FC = () => {
                           <FormControlLabel
                             value={MEDICINE_FORM_TYPES.OTHERS}
                             label="Take"
+                            disabled={freeTextSwitch ? true : false}
                             control={<AphRadio title="Take" />}
                           />
                           <FormControlLabel
                             value={MEDICINE_FORM_TYPES.GEL_LOTION_OINTMENT}
                             label="Apply"
+                            disabled={freeTextSwitch ? true : false}
                             control={<AphRadio title="Apply" />}
                           />
                           <FormControlLabel
@@ -3732,7 +3733,7 @@ export const MedicinePrescription: React.FC = () => {
                               multiline
                               rows={6}
                               placeholder="Type here..."
-                              value={medicineCustomDetails}
+                              value={medicineCustomDetails ? medicineCustomDetails : ''}
                               onChange={(event: any) => {
                                 setMedicineCustomDetails(event.target.value);
                               }}

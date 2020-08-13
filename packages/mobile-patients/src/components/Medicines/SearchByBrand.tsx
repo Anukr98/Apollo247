@@ -231,6 +231,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
         thumbnail,
         isInStock: true,
         maxOrderQty: MaxOrderQty,
+        productType: type_id,
       },
       pharmacyPincode!,
       addCartItem,

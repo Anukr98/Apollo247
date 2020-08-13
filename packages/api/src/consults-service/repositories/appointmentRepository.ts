@@ -647,7 +647,8 @@ export class AppointmentRepository extends Repository<Appointment> {
           status5: STATUS.PAYMENT_PENDING_PG,
           status6: STATUS.PAYMENT_ABORTED,
         }
-      ).orderBy("appointment.sdConsultationDate", "DESC")
+      )
+      .orderBy('appointment.sdConsultationDate', 'DESC')
       .getMany();
   }
 

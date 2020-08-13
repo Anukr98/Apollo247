@@ -2797,6 +2797,16 @@
                 "defaultValue": null
               },
               {
+                "name": "numberOfParticipants",
+                "description": null,
+                "type": {
+                  "kind": "SCALAR",
+                  "name": "Int",
+                  "ofType": null
+                },
+                "defaultValue": null
+              },
+              {
                 "name": "sendNotification",
                 "description": null,
                 "type": {
@@ -2855,6 +2865,16 @@
                   "ofType": null
                 },
                 "defaultValue": null
+              },
+              {
+                "name": "isDev",
+                "description": null,
+                "type": {
+                  "kind": "SCALAR",
+                  "name": "Boolean",
+                  "ofType": null
+                },
+                "defaultValue": null
               }
             ],
             "type": {
@@ -2879,6 +2899,16 @@
                 "type": {
                   "kind": "SCALAR",
                   "name": "String",
+                  "ofType": null
+                },
+                "defaultValue": null
+              },
+              {
+                "name": "isDev",
+                "description": null,
+                "type": {
+                  "kind": "SCALAR",
+                  "name": "Boolean",
                   "ofType": null
                 },
                 "defaultValue": null
