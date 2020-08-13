@@ -19,6 +19,8 @@
   },
   "dependencies": {
     "@sendgrid/mail": "^7.1.1",
+    "@types/pubnub": "^4.28.1",
+    "pubnub": "^4.29.2",
     "sendgrid": "^5.2.3",
     "uuid": "^8.2.0"
   }
