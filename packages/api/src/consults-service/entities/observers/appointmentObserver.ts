@@ -1,5 +1,5 @@
 import { EntitySubscriberInterface, EventSubscriber, UpdateEvent } from "typeorm";
-import { Appointment, STATUS, ES_DOCTOR_SLOT_STATUS } from "consults-service/entities";
+import { Appointment, STATUS, ES_DOCTOR_SLOT_STATUS, APPOINTMENT_STATE } from "consults-service/entities";
 import { updateDoctorSlotStatusES } from "doctors-service/entities/doctorElastic";
 import { log } from "customWinstonLogger";
 
@@ -15,8 +15,8 @@ export class AppointmentEntitySubscriber implements EntitySubscriberInterface<Ap
 function updateElasticSlotsViaAppointMent(event: UpdateEvent<any>) {
     return new Promise(async (resolve, reject) => {
         try {
-            let oldAppointment: Appointment = Appointment.create(event.databaseEntity as Appointment);
-            let newAppointment: Appointment = Appointment.create(event.entity as Appointment);
+            const oldAppointment: Appointment = Appointment.create(event.databaseEntity as Appointment);
+            const newAppointment: Appointment = Appointment.create(event.entity as Appointment);
 
             let isAppointmentCanceled: boolean = false;
             let isAppointmentRescheduled: boolean = false;
@@ -27,7 +27,8 @@ function updateElasticSlotsViaAppointMent(event: UpdateEvent<any>) {
             }
 
             isAppointmentCanceled = oldAppointment.status != newAppointment.status && newAppointment.status == STATUS.CANCELLED ? true : false;
-            isAppointmentRescheduled = oldAppointment.appointmentDateTime.getTime() != newAppointment.appointmentDateTime.getTime()
+            isAppointmentRescheduled = (oldAppointment.appointmentState != newAppointment.appointmentState)
+                && newAppointment.appointmentState == APPOINTMENT_STATE.RESCHEDULE;
 
 
             if (isAppointmentRescheduled) {
