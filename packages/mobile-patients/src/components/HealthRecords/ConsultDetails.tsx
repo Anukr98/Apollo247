@@ -605,6 +605,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
             thumbnail: medicineDetails.thumbnail || medicineDetails.image,
             isInStock: !!medicineDetails.is_in_stock,
             maxOrderQty: medicineDetails.MaxOrderQty,
+            productType: medicineDetails.type_id,
           } as ShoppingCartItem;
         });
         const medicines = medicinesAll.filter((item) => !!item);
