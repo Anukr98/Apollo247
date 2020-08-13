@@ -2955,7 +2955,7 @@ export const FavouriteMedicines: React.FC = () => {
                         color="primary"
                         className={classes.updateBtn}
                         onClick={() => {
-                          addUpdateMedicines();
+                          isUpdate ? addUpdateMedicines() : saveMedicines();
                         }}
                       >
                         Submit Rx
