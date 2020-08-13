@@ -246,6 +246,15 @@ API_AVAILABLE(ios(10.0)){
   return YES;
 }
 
+// Reports app open from deep link from apps which do not support Universal Links (Twitter) and for iOS8 and below
+- (BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(NSString*)sourceApplication annotation:(id)annotation
+{
+     [[AppsFlyerTracker sharedTracker] handleOpenURL:url sourceApplication:sourceApplication withAnnotation:annotation];
+     return YES;
+}
+
+#pragma mark - Universal link
+
 - (BOOL)application:(UIApplication *)application continueUserActivity:(NSUserActivity *)userActivity restorationHandler:(void (^)(NSArray<id<UIUserActivityRestoring>> * _Nullable))restorationHandler
 {
   [RCTLinkingManager application:application

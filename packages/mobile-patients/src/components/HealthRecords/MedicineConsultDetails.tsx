@@ -209,6 +209,7 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
           isMedicine: (medicineDetails.type_id || '').toLowerCase() == 'pharma',
           isInStock: true,
           maxOrderQty: medicineDetails.MaxOrderQty,
+          productType: medicineDetails.type_id,
         } as ShoppingCartItem);
         if (medicineDetails.is_prescription_required == '1') {
           addEPrescription!({

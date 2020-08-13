@@ -1471,6 +1471,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             thumbnail,
             isInStock: true,
             maxOrderQty: MaxOrderQty,
+            productType: type_id,
           },
           pharmacyPincode!,
           addCartItem,
@@ -1658,7 +1659,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     }
   };
 
-  const renderSearchBar = () => {
+  const renderSearchInput = () => {
     const shouldEnableSearchSend = searchText.length > 2;
     const rigthIconView = (
       <TouchableOpacity
@@ -1676,7 +1677,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           props.navigation.navigate(AppRoutes.SearchMedicineScene, { searchText });
           setSearchText('');
           setMedicineList([]);
-          setSearchFocused(false);
         }}
       >
         <SearchSendIcon />
@@ -1771,6 +1771,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         thumbnail: thumbnail,
         isInStock: true,
         maxOrderQty: MaxOrderQty,
+        productType: type_id,
       },
       pharmacyPincode!,
       addCartItem,
@@ -1845,10 +1846,10 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     );
   };
 
-  const renderSearchSuggestions = () => {
+  const renderSearchResults = () => {
     // if (medicineList.length == 0) return null;
     return (
-      <View style={{ width: '100%', position: 'absolute' }}>
+      <>
         {searchSate == 'load' ? (
           <View style={{ backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR }}>
             {renderSectionLoader(266)}
@@ -1874,34 +1875,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             />
           )
         )}
-      </View>
-    );
-  };
-
-  const renderSearchBarAndSuggestions = () => {
-    return (
-      <TouchableOpacity
-        activeOpacity={1}
-        onPress={() => {
-          Keyboard.dismiss();
-        }}
-        style={[
-          (searchSate == 'success' || searchSate == 'fail') && medicineList.length == 0
-            ? {
-                height: '100%',
-                width: '100%',
-              }
-            : searchText.length > 2
-            ? {
-                height: '100%',
-                width: '100%',
-                backgroundColor: 'rgba(0,0,0,0.8)',
-              }
-            : {},
-        ]}
-      >
-        {renderSearchSuggestions()}
-      </TouchableOpacity>
+      </>
     );
   };
 
@@ -1935,34 +1909,26 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             : section_key === 'recommended_products'
             ? renderHotSellers(section_name, recommendedProducts, -1)
             : section_key === 'shop_by_brand'
-            ? renderShopByBrand(section_name, data[section_key])
+            ? renderShopByBrand(section_name, data[section_key] || [])
             : null;
         } else {
           const products = g(data, section_key, 'products');
           const isCategoriesType = g(data, section_key, '0', 'title');
 
           return products
-            ? renderHotSellers(section_name, products, g(data, section_key, 'category_id'))
+            ? renderHotSellers(section_name, products || [], g(data, section_key, 'category_id'))
             : isCategoriesType
-            ? renderCategories(section_name, data[section_key])
-            : renderDealsOfTheDay(section_name, data[section_key]);
+            ? renderCategories(section_name, data[section_key] || [])
+            : renderDealsOfTheDay(section_name, data[section_key] || []);
         }
       });
 
     return (
-      <TouchableOpacity
-        activeOpacity={1}
-        onPress={() => {
-          if (medicineList.length == 0 && !searchText) return;
-          setSearchText('');
-          setMedicineList([]);
-        }}
-        style={{ flex: 1 }}
-      >
+      <ScrollView bounces={false}>
         <View style={{ height: 10 }} />
         {sectionsView}
         {!error && <View style={{ height: 20 }} />}
-      </TouchableOpacity>
+      </ScrollView>
     );
   };
 
@@ -1987,47 +1953,49 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     );
   };
 
+  const renderOverlay = () => {
+    const isNoResultsFound =
+      searchSate != 'load' && searchText.length > 2 && medicineList.length == 0;
+    const overlayStyle = {
+      flex: 1,
+      position: 'absolute',
+      left: 0,
+      top: 0,
+      backgroundColor: 'rgba(0,0,0,0.5)',
+      width: Dimensions.get('window').width,
+      height: Dimensions.get('window').height,
+    } as ViewStyle;
+
+    return (
+      (!!medicineList.length || searchSate == 'load' || isNoResultsFound) && (
+        <View style={overlayStyle}>
+          <TouchableOpacity
+            activeOpacity={1}
+            style={overlayStyle}
+            onPress={() => {
+              if (medicineList.length == 0 && !searchText) return;
+              setSearchText('');
+              setMedicineList([]);
+              setSearchFocused(false);
+            }}
+          />
+        </View>
+      )
+    );
+  };
+
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={{ ...viewStyles.container }}>
-        {renderTopView()}
-        <ScrollView
-          keyboardShouldPersistTaps="always"
-          showsVerticalScrollIndicator={false}
-          style={{ flex: 1 }}
-          bounces={false}
-          stickyHeaderIndices={[0]}
-          scrollEventThrottle={20}
-          // contentContainerStyle={[isSearchFocused ? { flex: 1 } : {}]}
-          contentContainerStyle={[
-            isSearchFocused && searchText.length > 2 && medicineList.length > 0 ? { flex: 1 } : {},
-          ]}
-        >
-          <View
-            style={[isSearchFocused ? styles.searchBarAndSuggestionMainViewStyle : { flex: 1 }]}
-          >
-            <View
-              style={{
-                backgroundColor: 'white',
-                position: isSearchFocused ? 'absolute' : 'relative',
-                width: '100%',
-              }}
-            >
-              {renderSearchBar()}
-            </View>
-            <View style={styles.searchBarSuggestionsViewStyle}>
-              {renderSearchBarAndSuggestions()}
-            </View>
-          </View>
-          <View
-            style={[
-              { marginTop: isSearchFocused ? 76 : 0 },
-              isSearchFocused && searchText.length > 2 ? { height: 0, marginTop: 104 } : {},
-            ]}
-          >
-            {renderSections()}
-          </View>
-        </ScrollView>
+        <View style={{ backgroundColor: 'white' }}>
+          {renderTopView()}
+          {renderSearchInput()}
+          {renderSearchResults()}
+        </View>
+        <View style={{ flex: 1 }}>
+          {renderSections()}
+          {renderOverlay()}
+        </View>
       </SafeAreaView>
       {isSelectPrescriptionVisible && renderEPrescriptionModal()}
       {ShowPopop && renderUploadPrescriprionPopup()}
