@@ -17,7 +17,7 @@ import {
   MedicineOrderInvoice,
   TransactionLineItemsPartial,
 } from 'profiles-service/entities';
-import { ONE_APOLLO_STORE_CODE, Tier } from 'types/oneApolloTypes';
+import { ONE_APOLLO_STORE_CODE } from 'types/oneApolloTypes';
 
 import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';

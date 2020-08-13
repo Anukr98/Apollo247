@@ -1,4 +1,4 @@
-import { BlockOneApolloPointsRequest, UnblockPointsRequest, Earnings } from 'types/oneApolloTypes';
+import { BlockOneApolloPointsRequest, UnblockPointsRequest } from 'types/oneApolloTypes';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { OneApollTransaction, ONE_APOLLO_USER_REG } from 'profiles-service/entities';
@@ -139,26 +139,5 @@ export class OneApollo {
     } finally {
       clearTimeout(timeout);
     }
-  }
-
-  getOneApolloTierInfo() {
-    const Earnings: Earnings = {
-      Platinum: {
-        pharma: 10,
-        pl: 20,
-        fmcg: 5,
-      },
-      Gold: {
-        pharma: 10,
-        pl: 15,
-        fmcg: 5,
-      },
-      Silver: {
-        pharma: 10,
-        pl: 10,
-        fmcg: 5,
-      },
-    };
-    return Earnings;
   }
 }
