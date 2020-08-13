@@ -15,7 +15,7 @@ import {
   BOOKING_SOURCE,
   DEVICE_TYPE,
 } from 'profiles-service/entities';
-import { ONE_APOLLO_STORE_CODE, Tier } from 'types/oneApolloTypes';
+import { ONE_APOLLO_STORE_CODE } from 'types/oneApolloTypes';
 
 import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
@@ -183,7 +183,6 @@ const saveOrderDeliveryStatus: Resolver<
 
   return { requestStatus: 'true', requestMessage: 'Delivery status updated successfully' };
 };
-
 const createOneApolloTransaction = async (
   medicineOrdersRepo: MedicineOrdersRepository,
   order: MedicineOrders,
@@ -247,7 +246,6 @@ const generateTransactions = async (
 ) => {
   let transactions: OneApollTransaction[] = [];
   let index = 0;
-  const totalInvoices = invoiceDetails.length;
   return processInvoices(invoiceDetails[index]);
   async function processInvoices(val: MedicineOrderInvoice) {
     const itemDetails = JSON.parse(val.itemDetails);
@@ -256,23 +254,15 @@ const generateTransactions = async (
     );
 
     const itemTypemap = await getSkuMap(itemSku);
-    const oneApollo = new OneApollo();
-    const oneApolloRes = await oneApollo.getOneApolloUser(mobileNumber);
-    let userTier: Tier = Tier.Silver;
-    if (oneApolloRes.Success) {
-      userTier = oneApolloRes.CustomerData.Tier as Tier;
-    }
-    let transactionLineItems = addProductNameAndCat(transactionLineItemsPartial, itemTypemap);
     const healthCreditsRedeemed = +new Decimal(
       order.medicineOrderPayments[0].healthCreditsRedeemed
     ).toDecimalPlaces(2, Decimal.ROUND_DOWN);
-    const transactionLineItemsCom = updateCreditsRedeemedInfo(
-      transactionLineItems,
-      healthCreditsRedeemed,
+    let transactionLineItems = addProductNameAndCat(
+      transactionLineItemsPartial,
       itemTypemap,
-      userTier
+      healthCreditsRedeemed
     );
-    netAmount = transactionLineItemsCom.reduce((acc, curValue) => {
+    netAmount = transactionLineItems.reduce((acc, curValue) => {
       return acc + curValue.NetAmount;
     }, 0);
     const billDetails: BillDetails = JSON.parse(val.billDetails);
@@ -288,7 +278,7 @@ const generateTransactions = async (
       TransactionDate: billDetails.billDateTime,
       GrossAmount: +new Decimal(netAmount).plus(totalDiscount).plus(healthCreditsRedeemed),
       Discount: totalDiscount,
-      TransactionLineItems: transactionLineItemsCom,
+      TransactionLineItems: transactionLineItems,
       StoreCode: getStoreCodeFromDevice(order.deviceType, order.bookingSource),
     };
     transactions.push(transaction);
@@ -318,30 +308,71 @@ const getStoreCodeFromDevice = (
 
 const addProductNameAndCat = (
   transactionLineItems: TransactionLineItemsPartial[],
-  itemTypemap: ItemsSkuTypeMap
+  itemTypemap: ItemsSkuTypeMap,
+  totalCreditsRedeemed: number
 ): TransactionLineItems[] => {
-  const transactionLineItemsComplete: TransactionLineItems[] = [];
+  const fmcgItems: TransactionLineItems[] = [];
+  const pharmaItems: TransactionLineItems[] = [];
+  const plItems: TransactionLineItems[] = [];
+  let availableCredits = totalCreditsRedeemed;
   transactionLineItems.forEach((val, i, arr) => {
     const productType = itemTypemap[val.ProductCode].toLowerCase();
-    let productName = ProductTypes.PHARMA;
-    let ProductCategory = ONE_APOLLO_PRODUCT_CATEGORY.PHARMA;
     switch (productType) {
       case 'fmcg':
-        productName = ProductTypes.FMCG;
-        ProductCategory = ONE_APOLLO_PRODUCT_CATEGORY.NON_PHARMA;
+        let pointsRedeemed = 0;
+        if (availableCredits) {
+          pointsRedeemed = val.NetAmount > availableCredits ? availableCredits : val.NetAmount;
+          let netAmount = +new Decimal(val.NetAmount).minus(pointsRedeemed);
+          arr[i].NetAmount = netAmount;
+          availableCredits = +new Decimal(availableCredits).minus(pointsRedeemed);
+        }
+        fmcgItems.push({
+          ...arr[i],
+          ProductName: ProductTypes.FMCG,
+          ProductCategory: ONE_APOLLO_PRODUCT_CATEGORY.NON_PHARMA,
+          PointsRedeemed: pointsRedeemed,
+        });
         break;
       case 'pl':
-        productName = ProductTypes.PL;
-        ProductCategory = ONE_APOLLO_PRODUCT_CATEGORY.PRIVATE_LABEL;
+        plItems.push({
+          ...arr[i],
+          ProductName: ProductTypes.PL,
+          ProductCategory: ONE_APOLLO_PRODUCT_CATEGORY.PRIVATE_LABEL,
+        });
+        break;
+      case 'pharma':
+        pharmaItems.push({
+          ...arr[i],
+          ProductName: ProductTypes.PHARMA,
+          ProductCategory: ONE_APOLLO_PRODUCT_CATEGORY.PHARMA,
+        });
         break;
     }
-    transactionLineItemsComplete.push({
-      ...arr[i],
-      ProductName: productName,
-      ProductCategory: ProductCategory,
-    });
   });
+  if (availableCredits && pharmaItems.length) {
+    pharmaItems.forEach(_updatePointsNetAmount);
+  }
 
+  if (availableCredits && plItems.length) {
+    plItems.forEach(_updatePointsNetAmount);
+  }
+
+  function _updatePointsNetAmount(
+    curItem: TransactionLineItems,
+    i: number,
+    arr: TransactionLineItems[]
+  ) {
+    if (availableCredits) {
+      let pointsRedeemed =
+        curItem.NetAmount > availableCredits ? availableCredits : curItem.NetAmount;
+      let netAmount = +new Decimal(curItem.NetAmount).minus(pointsRedeemed);
+      availableCredits = +new Decimal(availableCredits).minus(pointsRedeemed);
+      arr[i].PointsRedeemed = pointsRedeemed;
+      arr[i].NetAmount = netAmount;
+    }
+  }
+
+  const transactionLineItemsComplete = fmcgItems.concat(pharmaItems, plItems);
   return transactionLineItemsComplete;
 };
 
@@ -410,78 +441,6 @@ const createLineItems = (itemDetails: Array<ItemDetails>) => {
     netAmount,
     itemSku,
   };
-};
-
-const updateCreditsRedeemedInfo = (
-  transactionLineItems: TransactionLineItems[],
-  totalCreditsRedeemed: number,
-  itemTypemap: ItemsSkuTypeMap,
-  userTier: Tier
-): TransactionLineItems[] => {
-  let availableCredits = totalCreditsRedeemed;
-  const arrSize = transactionLineItems.length;
-  for (let i = 0; i < arrSize; i++) {
-    let currentItem = Object.assign({}, transactionLineItems[i]);
-    if (currentItem.ProductCode) {
-      const currentProductCode: ProductTypePharmacy = itemTypemap[
-        currentItem.ProductCode
-      ].toLowerCase() as ProductTypePharmacy;
-      let earningCurrentItem = projectedEarnings(
-        currentProductCode,
-        currentItem.NetAmount,
-        currentItem.DiscountAmount,
-        userTier
-      );
-      for (let j = i + 1; j < arrSize; j++) {
-        if (!availableCredits) {
-          break;
-        }
-        const iterationItem = Object.assign({}, transactionLineItems[j]);
-        const iterationProductCode: ProductTypePharmacy = itemTypemap[
-          iterationItem.ProductCode
-        ].toLowerCase() as ProductTypePharmacy;
-        const earningIterationItem = projectedEarnings(
-          iterationProductCode,
-          iterationItem.NetAmount,
-          iterationItem.DiscountAmount,
-          userTier
-        );
-
-        if (earningCurrentItem > earningIterationItem) {
-          transactionLineItems[i] = Object.assign({}, iterationItem);
-          transactionLineItems[j] = Object.assign({}, currentItem);
-          currentItem = transactionLineItems[i];
-          earningCurrentItem = earningIterationItem;
-        }
-      }
-
-      const pointsRedeemed =
-        currentItem.NetAmount > availableCredits ? availableCredits : currentItem.NetAmount;
-      availableCredits = +new Decimal(availableCredits).minus(pointsRedeemed);
-      transactionLineItems[i].PointsRedeemed = pointsRedeemed;
-
-      transactionLineItems[i].NetAmount = +new Decimal(currentItem.NetAmount).minus(pointsRedeemed);
-    }
-  }
-  if (availableCredits) {
-    transactionLineItems[arrSize - 1].PointsRedeemed = availableCredits;
-  }
-  return transactionLineItems;
-};
-
-const projectedEarnings = (
-  type: ProductTypePharmacy,
-  netAmount: number,
-  discount: number,
-  tier: Tier
-): number => {
-  const oneApollo = new OneApollo();
-  const earnings = oneApollo.getOneApolloTierInfo();
-  let tierEarnings = earnings[tier];
-  if (!tierEarnings) {
-    tierEarnings = earnings.Silver;
-  }
-  return discount ? 0 : +new Decimal(netAmount).times(tierEarnings[type]);
 };
 
 const saveOrderOutForDeliveryStatus: Resolver<

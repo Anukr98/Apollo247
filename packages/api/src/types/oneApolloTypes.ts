@@ -27,20 +27,3 @@ export type UnblockPointsRequest = {
   PointsToRelease: string;
   RedemptionRequestNumber: string;
 };
-
-export type TierEarningsPerCategory = {
-  pharma: number;
-  pl: number;
-  fmcg: number;
-};
-
-export enum Tier {
-  Platinum = 'Platinum',
-  Gold = 'Gold',
-  Silver = 'Silver',
-}
-export type Earnings = {
-  Platinum: TierEarningsPerCategory;
-  Gold: TierEarningsPerCategory;
-  Silver: TierEarningsPerCategory;
-};
