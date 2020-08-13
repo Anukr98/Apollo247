@@ -275,10 +275,41 @@ const useStyles = makeStyles((theme: Theme) => {
         padding: 10,
       },
     },
+    backArrow: {
+      zIndex: 2,
+      cursor: 'pointer',
+      marginRight: 20,
+      [theme.breakpoints.up(1220)]: {
+        position: 'absolute',
+        top: 90,
+        left: 70,
+        width: 48,
+        height: 48,
+        lineHeight: '36px',
+        borderRadius: '50%',
+        textAlign: 'center',
+        backgroundColor: '#02475b',
+      },
+      '& img': {
+        verticalAlign: 'bottom',
+      },
+    },
+    whiteArrow: {
+      verticalAlign: 'middle',
+      [theme.breakpoints.down(1220)]: {
+        display: 'none',
+      },
+    },
+    blackArrow: {
+      verticalAlign: 'middle',
+      [theme.breakpoints.up(1220)]: {
+        display: 'none',
+      },
+    },
   };
 });
 
-export const Header: React.FC = (props) => {
+export const Header: React.FC<any> = (props) => {
   const classes = useStyles({});
   const avatarRef = useRef(null);
   const { isSigningIn, isSignedIn, setVerifyOtpError, signOut } = useAuth();
@@ -558,6 +589,13 @@ export const Header: React.FC = (props) => {
               )}
             </div>
           </div>
+          {props.backArrrowVisible && (
+            <Link to={props.backLocation || clientRoutes.welcome()}>
+              <div className={classes.backArrow}>
+                <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
+              </div>
+            </Link>
+          )}
         </header>
       </div>
     </div>

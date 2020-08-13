@@ -264,7 +264,6 @@ export const CovidLanding: React.FC = (props: any) => {
   const [modalOpen, setModalOpen] = useState<boolean>(false);
   const scrollToRef = useRef<HTMLDivElement>(null);
   const { currentPatient } = useAllCurrentPatients();
-
   const didMount = useRef(false);
   const covidArticleBaseUrl =
     process.env.NODE_ENV !== 'production'
@@ -337,7 +336,7 @@ export const CovidLanding: React.FC = (props: any) => {
   return (
     <div className={classes.root}>
       <div className={classes.headerCovid}>
-        <Header />
+        <Header backArrrowVisible={true} />
       </div>
       <div className={classes.container}>
         <div className={classes.pageContainer} ref={scrollToRef}>
