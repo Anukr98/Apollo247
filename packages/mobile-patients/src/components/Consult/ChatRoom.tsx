@@ -5044,17 +5044,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               </Text>
             )}
 
-            <Snackbar
-              style={{ marginBottom: 100, zIndex: 1001 }}
-              visible={snackbarState}
-              onDismiss={() => {
-                setSnackbarState(false);
-              }}
-              duration={5000}
-            >
-              {handlerMessage}
-            </Snackbar>
-
             {renderBusyMessages(!PipView, isIphoneX() ? 171 : 161)}
 
             {PipView && renderOnCallPipButtons('video')}
