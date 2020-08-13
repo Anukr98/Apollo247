@@ -398,7 +398,7 @@ export interface WebEngageEvents {
     'category name': string;
     'category ID': string;
     Price: number;
-    'Discounted Price': number;
+    'Discounted Price'?: number;
     Quantity: number;
     'Service Area': 'Pharmacy' | 'Diagnostic';
   };
