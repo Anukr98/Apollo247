@@ -21,7 +21,7 @@ function updateElasticSlotsViaAppointMent(event: UpdateEvent<any>) {
             let isAppointmentCanceled: boolean = false;
             let isAppointmentRescheduled: boolean = false;
 
-            //for some reasons the after update is being valled multiple times
+            //for some reasons the after update is being called multiple times
             if (!(oldAppointment && newAppointment && oldAppointment.appointmentDateTime && newAppointment.appointmentDateTime)) {
                 return resolve();
             }
