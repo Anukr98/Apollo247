@@ -431,6 +431,7 @@ export interface WebEngageEvents {
     'Magento MRP': number;
     'Magento Pack Size': number;
     'Store API MRP': number;
+    'Price Change In Cart': 'Yes' | 'No';
   };
 
   [WebEngageEventName.TAT_API_FAILURE]: {
