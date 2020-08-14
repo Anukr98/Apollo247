@@ -189,7 +189,6 @@ export enum ApiConstants {
 
   //medicine COD email configuration starts
   MEDICINE_SUPPORT_EMAILID = 'sushma.voleti@popcornapps.com',
-  MEDICINE_SUPPORT_CC_EMAILID = 'sumeeth.kumar@popcornapps.com,',
   MEDICINE_SUPPORT_EMAILID_PRODUCTION = 'hd.chennai@apollopharmacy.org',
   MEDICINE_SUPPORT_CC_EMAILID_PRODUCTION = '',
   //medicine COD email configuration ends
@@ -246,7 +245,6 @@ export enum ApiConstants {
   FROM_MAIL = 'info@popcornapps.com',
   APPT_MAIL_SUBJECT = 'Your appointment has been booked successfully',
   FROM_NAME = 'Admin',
-  PATIENT_APPT_EMAILID = 'sriram.kanchan@popcornapps.com',
   PATIENT_APPT_CC_EMAILID = 'chanti.reddy@popcornapps.com',
   PATIENT_APPT_CC_EMAILID_TRIGGER = 'chanti.reddy@popcornapps.com',
   PATIENT_APPT_EMAILID_PRODUCTION = 'helpdesk@apollo247.com',
