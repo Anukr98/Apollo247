@@ -649,6 +649,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                       </Text>
                       <AvailabilityCapsule
                         titleTextStyle={{ paddingHorizontal: 7 }}
+                        styles={{ marginTop: -5 }}
                         availableTime={availableTime}
                       />
                     </View>
@@ -714,6 +715,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                           </Text>
                           <AvailabilityCapsule
                             titleTextStyle={{ paddingHorizontal: 7 }}
+                            styles={{ marginTop: -5 }}
                             availableTime={physicalAvailableTime}
                           />
                         </>

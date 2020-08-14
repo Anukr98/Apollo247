@@ -399,9 +399,9 @@ export const nextAvailability = (nextSlot: string, type: 'Available' | 'Consult'
           minute: moment('06:00', 'HH:mm').get('minute'),
         })
     );
-    if (differenceMinute < 120) {
+    if (differenceMinute < 60) {
       return `${type} in ${differenceMinute} min${differenceMinute !== 1 ? 's' : ''}`;
-    } else if (differenceMinute >= 120 && !isTomorrow) {
+    } else if (differenceMinute >= 60 && !isTomorrow) {
       return `${type} at ${moment(nextSlot).format('hh:mm A')}`;
     } else if (isTomorrow && diffDays < 2) {
       return `${type} Tomorrow${
