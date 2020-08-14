@@ -109,9 +109,9 @@ export const AuthProvider: React.FC = (props) => {
   const hasAuthToken = !_isEmpty(authToken);
 
   const [analytics, setAnalytics] = useState<AuthContextProps['analytics']>(null);
-  const setNewToken = async () => {
-    const userLoggedIn = await AsyncStorage.getItem('userLoggedIn');
-    if(userLoggedIn == 'true'){ // no need to refresh jwt token on login
+  const setNewToken = () => {
+    // const userLoggedIn = await AsyncStorage.getItem('userLoggedIn');
+    // if(userLoggedIn == 'true'){ // no need to refresh jwt token on login
     try {
       firebase.auth().onAuthStateChanged(async (user) => {
         // console.log('authprovider', user);
@@ -127,7 +127,7 @@ export const AuthProvider: React.FC = (props) => {
         }
       });
     } catch (e) {}
-  }
+  // }
   };
   const buildApolloClient = (authToken: string, handleUnauthenticated: any) => {
     if (authToken) {
