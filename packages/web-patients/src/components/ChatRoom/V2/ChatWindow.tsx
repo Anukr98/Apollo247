@@ -1348,7 +1348,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
       stopTimerForSecondTextMessageToPatent();
     };
   }, []);
-
+  console.log(1111111111111111111111);
+  console.log(showVideo, sessionId, token);
   //  End of Second Text to patient if junior doctor doesn't attent the consult
 
   const startIntervalTimer = (timer: number) => {
@@ -1364,7 +1365,6 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
     setStartingTime(0);
     timerIntervalId && clearInterval(timerIntervalId);
   };
-
   const srollToBottomAction = () => {
     setTimeout(() => {
       const scrollDiv = document.getElementById('scrollDiv');
