@@ -608,14 +608,14 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
                   name: doctorDetails.fullName,
                   url: params.specialty
                     ? `${window.location.origin}${clientRoutes.specialtyDoctorDetails(
-                      params.specialty,
-                      readableParam(doctorDetails.fullName),
-                      doctorDetails.id
-                    )}`
+                        params.specialty,
+                        readableParam(doctorDetails.fullName),
+                        doctorDetails.id
+                      )}`
                     : `${window.location.origin}${clientRoutes.doctorDetails(
-                      readableParam(doctorDetails.fullName),
-                      doctorDetails.id
-                    )}`,
+                        readableParam(doctorDetails.fullName),
+                        doctorDetails.id
+                      )}`,
                 });
             });
             setDoctorData(doctors || []);
@@ -645,9 +645,9 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
     return _filter(data, (doctor: DoctorDetails) => {
       const consultMode =
         doctor.consultHours &&
-          doctor.consultHours.length > 0 &&
-          doctor.consultHours[0] &&
-          doctor.consultHours[0].consultMode
+        doctor.consultHours.length > 0 &&
+        doctor.consultHours[0] &&
+        doctor.consultHours[0].consultMode
           ? doctor.consultHours[0].consultMode
           : '';
       if (isOnlineSelected && isPhysicalSelected) {
@@ -685,15 +685,15 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
 
   const doctorsNextAvailability =
     data &&
-      data.getDoctorsBySpecialtyAndFilters &&
-      data.getDoctorsBySpecialtyAndFilters.doctorsNextAvailability
+    data.getDoctorsBySpecialtyAndFilters &&
+    data.getDoctorsBySpecialtyAndFilters.doctorsNextAvailability
       ? data.getDoctorsBySpecialtyAndFilters.doctorsNextAvailability
       : [];
 
   const doctorsAvailability =
     data &&
-      data.getDoctorsBySpecialtyAndFilters &&
-      data.getDoctorsBySpecialtyAndFilters.doctorsAvailability
+    data.getDoctorsBySpecialtyAndFilters &&
+    data.getDoctorsBySpecialtyAndFilters.doctorsAvailability
       ? data.getDoctorsBySpecialtyAndFilters.doctorsAvailability
       : [];
 
@@ -759,9 +759,9 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
                   >
                     Apollo Doctors (
                     {getDoctorsCount(
-                    searchKeyword.length > 1 ? searchDoctors : doctorData || [],
-                    DOCTOR_CATEGORY.APOLLO
-                  )}
+                      searchKeyword.length > 1 ? searchDoctors : doctorData || [],
+                      DOCTOR_CATEGORY.APOLLO
+                    )}
                     )
                   </AphButton>
                   <AphButton
@@ -772,9 +772,9 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
                   >
                     Doctor Partners (
                     {getDoctorsCount(
-                    searchKeyword.length > 1 ? searchDoctors : doctorData || [],
-                    DOCTOR_CATEGORY.PARTNER
-                  )}
+                      searchKeyword.length > 1 ? searchDoctors : doctorData || [],
+                      DOCTOR_CATEGORY.PARTNER
+                    )}
                     )
                   </AphButton>
                 </div>
@@ -826,14 +826,14 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
                                     specialityType={(faqData && faqData[0].title) || ''}
                                   />
                                 ) : (
-                                    <InfoCard
-                                      doctorInfo={doctor}
-                                      doctorType={doctorType}
-                                      nextAvailability={nextAvailability}
-                                      consultMode={doctorAvailableMode}
-                                      specialityType={(faqData && faqData[0].title) || ''}
-                                    />
-                                  )}
+                                  <InfoCard
+                                    doctorInfo={doctor}
+                                    doctorType={doctorType}
+                                    nextAvailability={nextAvailability}
+                                    consultMode={doctorAvailableMode}
+                                    specialityType={(faqData && faqData[0].title) || ''}
+                                  />
+                                )}
                               </Grid>
                             )
                           );
@@ -842,8 +842,8 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
                     </Grid>
                   </>
                 ) : (
-                      'no results found'
-                    )}
+                  'no results found'
+                )}
               </div>
               {faqData && faqData.length > 0 && (
                 <>
