@@ -47,7 +47,6 @@ export enum FirebaseEventName {
   MANAGE_DIABETES = 'MANAGE_DIABETES',
   TRACK_SYMPTOMS = 'TRACK_SYMPTOMS',
   VIEW_HELATH_RECORDS = 'VIEW_HELATH_RECORDS',
-  CORONA_VIRUS_TALK_TO_OUR_EXPERT = 'Corona Virus?Talk to our expert',
   ACTIVE_APPOINTMENTS = 'Active Appointments',
   NEED_HELP = 'Need Help?',
   MY_ACCOUNT = 'MY_ACCOUNT',
@@ -154,7 +153,6 @@ export interface FirebaseEvents {
   [FirebaseEventName.TRACK_SYMPTOMS]: PatientInfoWithSource;
   [FirebaseEventName.VIEW_HELATH_RECORDS]: PatientInfoWithSource;
   [FirebaseEventName.FIND_A_DOCTOR]: PatientInfoWithSource;
-  [FirebaseEventName.CORONA_VIRUS_TALK_TO_OUR_EXPERT]: { clicked: true };
   [FirebaseEventName.ACTIVE_APPOINTMENTS]: { clicked: true };
   [FirebaseEventName.NEED_HELP]: PatientInfoWithNeedHelp; // source values may change later
   [FirebaseEventName.MY_ACCOUNT]: PatientInfo;
