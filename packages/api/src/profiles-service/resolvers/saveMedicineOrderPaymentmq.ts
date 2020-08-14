@@ -192,6 +192,12 @@ const SaveMedicineOrderPaymentMq: Resolver<
   let savePaymentDetails: MedicineOrderPayments | undefined;
 
   if ((savePaymentDetails = await medicineOrdersRepo.findMedicineOrderPayment(orderDetails.id))) {
+    if (
+      savePaymentDetails.paymentStatus !== 'PENDING' &&
+      savePaymentDetails.paymentMode != PAYMENT_METHODS_REVERSE.COD
+    ) {
+      throw new AphError(AphErrorMessages.PAYMENT_ALREADY_PROCESSED, undefined, {});
+    }
     await medicineOrdersRepo.updateMedicineOrderPayment(
       orderDetails.id,
       orderDetails.orderAutoId,
@@ -312,6 +318,7 @@ const SaveMedicineOrderPaymentMq: Resolver<
             await handleOneApolloFailure(orderDetails, medicineOrdersRepo, profilesDb);
           }
         } catch (e) {
+          console.log('Points block request exception', e.stack);
           log(
             'profileServiceLogger',
             `Points block request exception - ${orderDetails.orderAutoId}`,
