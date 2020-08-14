@@ -28,7 +28,6 @@ type RefundInput = {
   refundAmount: number;
   txnId: string;
   orderId: string;
-  paymentMode: string;
   medicineOrderPayments: MedicineOrderPayments;
   medicineOrders: MedicineOrders;
 };
@@ -272,7 +271,6 @@ export const calculateRefund = async (
           medicineOrderPayments: paymentInfo,
           medicineOrders: orderDetails,
           orderId: '' + orderDetails.orderAutoId,
-          paymentMode: '',
         },
         profilesDb
       );
