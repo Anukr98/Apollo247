@@ -36,7 +36,7 @@ const useStyles = makeStyles((theme: Theme) => {
           display: 'flex',
           alignItems: 'flex-start',
           padding: '20px 0',
-          overflow: 'auto',
+          margin: '0 0 20px',
           '& li': {
             padding: '0 5px',
             border: 'none',
@@ -66,6 +66,10 @@ const useStyles = makeStyles((theme: Theme) => {
         display: 'block',
         width: 40,
         height: 40,
+        '& img': {
+          width: '100%',
+          height: '100%',
+        },
       },
     },
     name: {
@@ -114,7 +118,11 @@ export const SubstituteDrugsList: React.FC<SubstituteDrugsListProps> = (props) =
               >
                 <div className={classes.subMed}>
                   <div className={classes.substituteImg}>
-                    <img src={`${apiDetails.imageUrl}${substitute.image}`} />
+                    <img
+                      src={`${apiDetails.imageUrl}${substitute.image}`}
+                      alt="Subsitute"
+                      title="Substitue Medicine"
+                    />
                   </div>
                   <div className={classes.name}>{substitute.name}</div>
                   <div className={classes.price}>Rs. {substitute.price}</div>
