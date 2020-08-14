@@ -185,6 +185,12 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     chatContainer: {
       paddingRight: 5,
+      '& div:first-child': {
+        maxHeight: 300,
+      },
+      '& div:second-child': {
+        maxHeight: 300,
+      },
     },
     chatContainerScroll: {
       '& > div': {
@@ -205,11 +211,32 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     chatSubmitBtn: {
       position: 'absolute',
-      bottom: 14,
-      right: 0,
+      bottom: 8,
+      left: 0,
       minWidth: 'auto',
       padding: 0,
       boxShadow: 'none',
+      textAlign: 'center',
+      '& span': {
+        color: '#01475B',
+        fontWeight: '500',
+        fontSize: 7,
+        lineHeight: '9px',
+        display: 'block',
+      },
+    },
+    chatSend: {
+      position: 'absolute',
+      right: -10,
+      top: 3,
+      boxShadow: 'none',
+      '&:hover': {
+        backgroundColor: 'transparent',
+      },
+      '&:disabled': {
+        opacity: 0.5,
+        pointerEvents: 'none',
+      }
     },
     chatWindowContainer: {
       position: 'relative',
@@ -219,6 +246,14 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingTop: 12,
       position: 'relative',
       margin: '20px 20px 0 20px',
+    },
+    chatWindowFooterInput: {
+      '& input': {
+        marginLeft: '75px',
+        marginBottom: 15,
+        borderLeft: '1px solid #00B38E',
+        padding: '0px 0 0px 10px !important',
+      },
     },
     consultRoom: {
       paddingTop: 0,
@@ -611,6 +646,9 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 16,
       lineHeight: '21px',
       textTransform: 'capitalize',
+      [theme.breakpoints.down('xs')]: {
+        margin: '20px 10px 10px 2px',
+      },
       '&:hover': {
         background: '#FFFFFF',
       },
@@ -625,6 +663,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
       '&:disabled': {
         opacity: 0.5,
+        pointerEvents: 'none',
       },
     },
     btnActive: {
@@ -1310,7 +1349,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
               }
             />
           </Grid>
-          <Grid item xs={3} sm={3} md={3} lg={3}>
+          <Grid item xs={2} sm={3} md={3} lg={3}>
             <button
               className={classes.quesSubmitBtn}
               onClick={() => {
@@ -1338,7 +1377,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
     return (
       <div>
         <Grid spacing={2} container>
-          <Grid item xs={9} sm={9} md={9} lg={9}>
+          <Grid item xs={10} sm={9} md={9} lg={9}>
             <label>How many do you smoke per day ? </label>
             <AphButton
               className={`${classes.quesButton}  ${smokes === '10' ? classes.btnActive : ''}`}
@@ -1359,7 +1398,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
               &gt; 20
             </AphButton>
           </Grid>
-          <Grid item xs={3} sm={3} md={3} lg={3}>
+          <Grid item xs={2} sm={3} md={3} lg={3}>
             <button
               className={classes.quesSubmitBtn}
               onClick={() => {
@@ -1492,7 +1531,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
       <div>
         <Grid spacing={2} container>
           <label className={classes.bpLabel}>What is your blood pressure right now?</label>
-          <Grid item xs={4} sm={4} md={4} lg={4}>
+          <Grid item xs={5} sm={4} md={4} lg={4}>
             <AphTextField
               autoFocus
               className={classes.searchInput}
@@ -1507,7 +1546,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
               No Idea
             </AphButton>
           </Grid>
-          <Grid item xs={3} sm={3} md={3} lg={3}>
+          <Grid item xs={2} sm={3} md={3} lg={3}>
             <button
               className={classes.quesSubmitBtn}
               onClick={() => {
