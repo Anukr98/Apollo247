@@ -978,7 +978,7 @@ export class CaseSheet extends BaseEntity {
 @Entity()
 export class ConsultQueueItem extends BaseEntity {
   @Index('ConsultQueueItem_appointmentId')
-  @Column({})
+  @Column()
   appointmentId: string;
 
   @ManyToOne((type) => Appointment, (appointment) => appointment.consultQueueItem)
