@@ -16,7 +16,6 @@ import {
   MedicineOrderRefunds,
   MedicineOrderPayments,
   MedicineOrders,
-  PAYMENT_METHODS,
 } from 'profiles-service/entities/index';
 import { medicineOrderRefundNotification } from 'notifications-service/resolvers/notifications';
 
