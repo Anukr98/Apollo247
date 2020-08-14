@@ -464,6 +464,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             selectedAddress.zipcode!,
             formatAddress(selectedAddress),
             'Yes',
+            moment(tatDate, 'D-MMM-YYYY HH:mm a').toDate(),
             moment(tatDate).diff(currentDate, 'd')
           );
 
@@ -472,6 +473,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             'Cart',
             g(selectedAddress, 'zipcode')!,
             formatAddress(selectedAddress),
+            moment(tatDate, 'D-MMM-YYYY HH:mm a').toDate(),
             moment(tatDate).diff(currentDate, 'd'),
             'Yes'
           );
@@ -1727,7 +1729,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
       'Sub Total': cartTotal,
       'Delivery charge': deliveryCharges,
       'Net after discount': grandTotal,
-      'Prescription Needed?': uploadPrescriptionRequired ? 'Yes' : 'No',
+      'Prescription Needed?': uploadPrescriptionRequired ? true : false,
       // 'Cart ID': '', // since we don't have cartId before placing order
       'Mode of Delivery': selectedTab === tabs[0].title ? 'Home' : 'Pickup',
       'Delivery Date Time':
