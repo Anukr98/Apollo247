@@ -162,7 +162,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   };
   const handleOpenURL = (event: any) => {
     try {
-      InitiateAppsFlyer(props.navigation);
+      if (Platform.OS === 'ios') {
+        // for ios universal links
+        InitiateAppsFlyer(props.navigation);
+      }
       let route;
 
       route = event.replace('apollopatients://', '');
