@@ -191,11 +191,12 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
       coupon: selectCouponCode,
       pinCode: localStorage.getItem('pharmaPincode'),
       products: cartItems.map((item) => {
-        const { sku, quantity, special_price, price } = item;
+        const { sku, quantity, special_price, price, type_id } = item;
         return {
           sku,
           mrp: item.price,
           quantity,
+          categoryId: type_id || '',
           specialPrice: special_price || price,
         };
       }),
