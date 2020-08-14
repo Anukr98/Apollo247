@@ -1572,7 +1572,7 @@ export const MedicineCart: React.FC = (props) => {
                                 </span>
                               </div>
                               <div className={classes.couponText}>
-                                {validateCouponResult ? validateCouponResult.successMessage : ''}
+                                {validateCouponResult ? validateCouponResult.reason : ''}
                               </div>
                             </>
                           )}
@@ -1686,7 +1686,7 @@ export const MedicineCart: React.FC = (props) => {
                                   couponCode: couponCode == '' ? null : couponCode,
                                   couponValue:
                                     validateCouponResult && validateCouponResult.discount
-                                      ? validateCouponResult.discount.toFixed(2)
+                                      ? Number(validateCouponResult.discount).toFixed(2)
                                       : 0,
                                   totalWithCouponDiscount: totalWithCouponDiscount,
                                   deliveryTime: deliveryTime,
