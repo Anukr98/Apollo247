@@ -92,11 +92,14 @@ export const initiateRefund: refundMethod<RefundInput, Connection, Partial<Paytm
       orderId: refundInput.orderId,
       refundAmount: '' + refundInput.refundAmount,
     };
-
-    const checksumHash: string = await genCheckSumPromiseWrapper(
-      paytmBody,
-      process.env.PAYTM_MERCHANT_KEY_PHARMACY ? process.env.PAYTM_MERCHANT_KEY_PHARMACY : ''
-    );
+    let merchantKey = process.env.PAYTM_MERCHANT_KEY_PHARMACY
+      ? process.env.PAYTM_MERCHANT_KEY_PHARMACY
+      : '';
+    if (refundInput.medicineOrderPayments.partnerInfo == ApiConstants.PARTNER_SBI)
+      merchantKey = process.env.SBI_PAYTM_MERCHANT_KEY_PHARMACY
+        ? process.env.SBI_PAYTM_MERCHANT_KEY_PHARMACY
+        : '';
+    const checksumHash: string = await genCheckSumPromiseWrapper(paytmBody, merchantKey);
     const paytmParams: PaytmHeadBody = {
       head: {
         signature: checksumHash,
