@@ -35,7 +35,7 @@ const consultsOrderQuery = (payload) => {
   if (payload.PAYMENTMODE) {
     params += `, paymentMode: ${payload.PAYMENTMODE}`;
   }
-  console.log(params, 'make appt payment params');
+
   return (
     'mutation { makeAppointmentPayment(paymentInput: {' +
     params +
