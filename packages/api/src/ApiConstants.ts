@@ -96,7 +96,7 @@ export enum ApiConstants {
   ORDER_CANCEL_PREPAID_BODY = 'We have processed for a refund of Rs {refund} for Order {orderId}, the amount should reflect in your A/C in 5-7 working days.',
   ORDER_CANCEL_HC_REFUND_BODY = 'We have refunded Health Credits worth Rs {healthCreditsRefund} to your personal health credits balance for Order {orderId}.',
   ORDER_CANCEL_PAYMENT_HC_REFUND_BODY = 'We have processed for a refund of Rs {refund} for Order {orderId}, the amount should reflect in your A/C in 5-7 working days. Also, Health Credits worth Rs {healthCreditsRefund} have been added back to your personal health credits balance.',
-  
+
   // medicine order partial refund
   ORDER_PAYMENT_PARTIAL_REFUND_BODY = 'We have processed for a refund of Rs {refundAmount} for your order {orderId}, the amount should reflect in your A/C in 5-7 working days.',
   //medicine order partial refund health credits
@@ -179,6 +179,7 @@ export enum ApiConstants {
   APPT_STATE_CHANGED_1 = 'Appointment state changed to AWAITING_RESCHEDULE',
   APPT_STATE_CHANGED_2 = 'Appointment state changed to RESCHEDULED',
   APPT_STATE_CHANGED_3 = 'Appointment cancelled due to max. reschedules',
+  APPT_UPDATE_SEPERATOR = '-rescheduledBy247-',
 
   /*** push-notification messages end here ***/
 
