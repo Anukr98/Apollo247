@@ -2263,6 +2263,29 @@
             "deprecationReason": null
           },
           {
+            "name": "getSDLatestCompletedCaseSheet",
+            "description": null,
+            "args": [
+              {
+                "name": "appointmentId",
+                "description": null,
+                "type": {
+                  "kind": "SCALAR",
+                  "name": "String",
+                  "ofType": null
+                },
+                "defaultValue": null
+              }
+            ],
+            "type": {
+              "kind": "OBJECT",
+              "name": "CaseSheetFullDetails",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
             "name": "getCaseSheet",
             "description": null,
             "args": [
