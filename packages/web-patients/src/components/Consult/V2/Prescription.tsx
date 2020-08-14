@@ -121,6 +121,25 @@ const useStyles = makeStyles((theme: Theme) => {
         },
       },
     },
+    adviceList: {
+      margin: 0,
+      padding: 0,
+      listStyle: 'none',
+    },
+    cdContainer: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      '& p': {},
+    },
+    consultList: {
+      margin: 0,
+      padding: 0,
+      listStyle: 'none',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+    },
   };
 });
 export const Prescription: React.FC = (props) => {
@@ -189,8 +208,29 @@ export const Prescription: React.FC = (props) => {
               </ExpansionPanelSummary>
               <ExpansionPanelDetails className={classes.panelDetails}>
                 <div className={classes.detailsContent}>
-                  <div>
-                    <ul></ul>
+                  <div className={classes.cdContainer}>
+                    <Typography>Cold &amp; Cough</Typography>
+                    <ul className={classes.consultList}>
+                      <li>Since: Last 4 days</li>
+                      <li>How Often: Throughout the day</li>
+                      <li>Severity: Moderate</li>
+                    </ul>
+                  </div>
+                  <div className={classes.cdContainer}>
+                    <Typography>Fever</Typography>
+                    <ul className={classes.consultList}>
+                      <li>Since: Last 4 days</li>
+                      <li>How Often: Throughout the day</li>
+                      <li>Severity: Moderate</li>
+                    </ul>
+                  </div>
+                  <div className={classes.cdContainer}>
+                    <Typography>Nausea</Typography>
+                    <ul className={classes.consultList}>
+                      <li>Since: Last 4 days</li>
+                      <li>How Often: Throughout the day</li>
+                      <li>Severity: Moderate</li>
+                    </ul>
                   </div>
                 </div>
               </ExpansionPanelDetails>
@@ -213,13 +253,22 @@ export const Prescription: React.FC = (props) => {
               </ExpansionPanelSummary>
               <ExpansionPanelDetails className={classes.panelDetails}>
                 <div className={classes.detailsContent}>
-                  <Typography>
-                    Stay I@HOME is a monitored home isolation service offered by Apollo Homecare.
-                    The services are based on the latest guidelines from Indian Council of Medical
-                    Research (ICMR)/ Ministry of Health and Family Welfare (MoHFW), which recommends
-                    home isolation for patients who are pre-symptomatic or have very mild symptoms,
-                    and are either positive or suspected of COVID-19.
-                  </Typography>
+                  <div className={classes.cdContainer}>
+                    <Typography>Sompraz-D Cap </Typography>
+                    <ul className={classes.consultList}>
+                      <li>1 Tab</li>
+                      <li>Morning, Before food</li>
+                      <li>7 days</li>
+                    </ul>
+                  </div>
+                  <div className={classes.cdContainer}>
+                    <Typography>Redixin Plus Mouthwash</Typography>
+                    <ul className={classes.consultList}>
+                      <li>Throat Gargles</li>
+                      <li>Morning, Afternoon, Night</li>
+                      <li>5 days</li>
+                    </ul>
+                  </div>
                 </div>
               </ExpansionPanelDetails>
             </ExpansionPanel>
@@ -241,13 +290,7 @@ export const Prescription: React.FC = (props) => {
               </ExpansionPanelSummary>
               <ExpansionPanelDetails className={classes.panelDetails}>
                 <div className={classes.detailsContent}>
-                  <Typography>
-                    Stay I@HOME is a monitored home isolation service offered by Apollo Homecare.
-                    The services are based on the latest guidelines from Indian Council of Medical
-                    Research (ICMR)/ Ministry of Health and Family Welfare (MoHFW), which recommends
-                    home isolation for patients who are pre-symptomatic or have very mild symptoms,
-                    and are either positive or suspected of COVID-19.
-                  </Typography>
+                  <Typography>Acute Pharyngitis (unspecified)</Typography>
                 </div>
               </ExpansionPanelDetails>
             </ExpansionPanel>
@@ -269,13 +312,12 @@ export const Prescription: React.FC = (props) => {
               </ExpansionPanelSummary>
               <ExpansionPanelDetails className={classes.panelDetails}>
                 <div className={classes.detailsContent}>
-                  <Typography>
-                    Stay I@HOME is a monitored home isolation service offered by Apollo Homecare.
-                    The services are based on the latest guidelines from Indian Council of Medical
-                    Research (ICMR)/ Ministry of Health and Family Welfare (MoHFW), which recommends
-                    home isolation for patients who are pre-symptomatic or have very mild symptoms,
-                    and are either positive or suspected of COVID-19.
-                  </Typography>
+                  <ul className={classes.adviceList}>
+                    <li>Take adequate rest</li>
+                    <li>Take warm fluids / soft food, more frequently in small quantities</li>
+                    <li>Avoid cold / refrigerated food</li>
+                    <li>Follow Prescription</li>
+                  </ul>
                 </div>
               </ExpansionPanelDetails>
             </ExpansionPanel>
@@ -297,13 +339,13 @@ export const Prescription: React.FC = (props) => {
               </ExpansionPanelSummary>
               <ExpansionPanelDetails className={classes.panelDetails}>
                 <div className={classes.detailsContent}>
-                  <Typography>
-                    Stay I@HOME is a monitored home isolation service offered by Apollo Homecare.
-                    The services are based on the latest guidelines from Indian Council of Medical
-                    Research (ICMR)/ Ministry of Health and Family Welfare (MoHFW), which recommends
-                    home isolation for patients who are pre-symptomatic or have very mild symptoms,
-                    and are either positive or suspected of COVID-19.
-                  </Typography>
+                  <div className={classes.cdContainer}>
+                    <Typography>Online Consult / Clinic Visit </Typography>
+                    <ul className={classes.consultList}>
+                      <li>Recommended after 5 days</li>
+                    </ul>
+                    <a href="">Book Follow Up</a>
+                  </div>
                 </div>
               </ExpansionPanelDetails>
             </ExpansionPanel>
@@ -325,13 +367,14 @@ export const Prescription: React.FC = (props) => {
               </ExpansionPanelSummary>
               <ExpansionPanelDetails className={classes.panelDetails}>
                 <div className={classes.detailsContent}>
-                  <Typography>
-                    Stay I@HOME is a monitored home isolation service offered by Apollo Homecare.
-                    The services are based on the latest guidelines from Indian Council of Medical
-                    Research (ICMR)/ Ministry of Health and Family Welfare (MoHFW), which recommends
-                    home isolation for patients who are pre-symptomatic or have very mild symptoms,
-                    and are either positive or suspected of COVID-19.
-                  </Typography>
+                  <div className={classes.cdContainer}>
+                    <Typography>Paid — Rs. 299 </Typography>
+                    <ul className={classes.consultList}>
+                      <li>Debit Card</li>
+                      <li>5546 **** **** ***1</li>
+                    </ul>
+                    <a href="">Order Summary</a>
+                  </div>
                 </div>
               </ExpansionPanelDetails>
             </ExpansionPanel>
