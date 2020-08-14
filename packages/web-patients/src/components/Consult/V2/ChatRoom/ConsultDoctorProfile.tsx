@@ -24,7 +24,8 @@ import formatDistanceStrict from 'date-fns/formatDistance';
 import { REQUEST_ROLES, STATUS } from 'graphql/types/globalTypes';
 import { useMutation } from 'react-apollo-hooks';
 import { cancelAppointment, cancelAppointmentVariables } from 'graphql/types/cancelAppointment';
-import { CANCEL_APPOINTMENT, CONSULT_ORDER_INVOICE } from 'graphql/profiles';
+import { CANCEL_APPOINTMENT } from 'graphql/profiles';
+import { GET_CONSULT_INVOICE } from 'graphql/consult';
 import { Alerts } from 'components/Alerts/Alerts';
 import {
   isPastAppointment,
@@ -438,7 +439,7 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
   const downloadInvoice = (patientId: string, appointmentId: string) => {
     client
       .query({
-        query: CONSULT_ORDER_INVOICE,
+        query: GET_CONSULT_INVOICE,
         variables: {
           patientId: patientId,
           appointmentId: appointmentId,
@@ -446,13 +447,8 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
         fetchPolicy: 'no-cache',
       })
       .then(({ data }: any) => {
-        if (data && data.getOrderInvoice) {
-          let link = document.createElement('a');
-          link.download = data.getOrderInvoice;
-          link.href = data.getOrderInvoice;
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
+        if (data && data.getOrderInvoice && data.getOrderInvoice.length) {
+          window.open(data.getOrderInvoice, '_blank');
         }
       })
       .catch((e) => {

@@ -787,9 +787,3 @@ export const SAVE_DIAGNOSTIC_ORDER = gql`
     }
   }
 `;
-
-export const CONSULT_ORDER_INVOICE = gql`
-  query getOrderInvoice($patientId: String!, $appointmentId: String!) {
-    getOrderInvoice(patientId: $patientId, appointmentId: $appointmentId)
-  }
-`;

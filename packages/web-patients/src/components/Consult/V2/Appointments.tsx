@@ -13,7 +13,7 @@ import { NavigationBottom } from 'components/NavigationBottom';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { AddNewProfile } from 'components/MyAccount/AddNewProfile';
 import { APPOINTMENT_TYPE, APPOINTMENT_STATE, STATUS } from 'graphql/types/globalTypes';
-import { getOrderInvoice } from 'graphql/types/GetOrderInvoice';
+import { GetOrderInvoice } from 'graphql/types/GetOrderInvoice';
 import { GET_PATIENT_ALL_APPOINTMENTS } from 'graphql/doctors';
 import {
   GetPatientAllAppointments,
@@ -484,7 +484,7 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
     if (triggerInvoice) {
       setIsLoading(true);
       apolloClient
-        .query<getOrderInvoice>({
+        .query<GetOrderInvoice>({
           query: GET_CONSULT_INVOICE,
           variables: {
             appointmentId: successApptId,
