@@ -81,7 +81,7 @@ const PaymentCardFooter: FC<PaymentCardFooterProps> = (props) => {
         };
       }
     } else {
-      const { medicineOrderPayments, orderAutoId, orderDateTime } = item;
+      const { medicineOrderPayments, orderAutoId, orderDateTime, currentStatus } = item;
       orderID = orderAutoId;
       dateAndTime = orderDateTime;
       if (!medicineOrderPayments || !medicineOrderPayments.length) {
@@ -113,7 +113,7 @@ const PaymentCardFooter: FC<PaymentCardFooterProps> = (props) => {
             : PaymentModes[paymentMode];
         }
 
-        status = medicineOrderRefunds.length ? REFUND : medicineOrderPayments[0].paymentStatus;
+        status = currentStatus === 'CANCELLED' && medicineOrderRefunds.length ? REFUND : medicineOrderPayments[0].paymentStatus;
         return {
           leftHeaderText: 'Order No. - ' + orderAutoId,
           dateAndTime: getDate(dateAndTime),
