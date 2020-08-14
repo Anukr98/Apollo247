@@ -266,10 +266,12 @@ export const UploadChatPrescription: React.FC<UploadPrescriptionProps> = (props)
                                 const fileName = res.name as string;
                                 toBase64(file).then((res: any) => {
                                   const formattedDate = moment(new Date()).format('YYYY-MM-DD');
+                                  const base64Format = res.split('base64,');
+
                                   const prescriptionFile: MediaPrescriptionFileProperties = {
                                     fileName,
                                     mimeType: mimeType(fileName),
-                                    content: res,
+                                    content: base64Format[1],
                                   };
                                   const inputData: MediaPrescriptionUploadRequest = {
                                     prescribedBy: props.displayName,
