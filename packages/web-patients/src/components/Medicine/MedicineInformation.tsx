@@ -587,7 +587,10 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
           <div className={classes.customScroll}>
             {substitutes && (
               <>
-                <div className={classes.sectionTitle}>Substitute Drugs</div>
+                <Typography
+                  component="h2"
+                  className={classes.sectionTitle}
+                >{`${data.name} alternatives`}</Typography>
 
                 <div className={classes.webView}>
                   <div
