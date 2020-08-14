@@ -476,7 +476,6 @@ const bookRescheduleAppointment: Resolver<
             refundAmount: appointmentPayment.amountPaid,
             txnId: appointmentPayment.paymentRefId,
             orderId: appointmentPayment.orderId,
-            paymentMode: appointmentPayment.paymentMode,
           },
           consultsDb
         );
@@ -580,7 +579,6 @@ const bookRescheduleAppointment: Resolver<
             refundAmount: appointmentPayment.amountPaid,
             txnId: appointmentPayment.paymentRefId,
             orderId: appointmentPayment.orderId,
-            paymentMode: appointmentPayment.paymentMode,
           },
           consultsDb
         );

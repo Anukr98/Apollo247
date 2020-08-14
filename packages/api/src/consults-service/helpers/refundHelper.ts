@@ -8,7 +8,6 @@ import {
   AppointmentRefunds,
   AppointmentPayments,
   Appointment,
-  PAYMENT_METHODS,
 } from 'consults-service/entities/index';
 
 import { log } from 'customWinstonLogger';
@@ -18,7 +17,6 @@ import { ApiConstants } from 'ApiConstants';
 type RefundInput = {
   refundAmount: number;
   txnId: string;
-  paymentMode: string;
   orderId: string;
   appointment: Appointment;
   appointmentPayments: AppointmentPayments;

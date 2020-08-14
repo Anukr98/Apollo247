@@ -19,7 +19,7 @@ import { cancellationEmailTemplate } from 'helpers/emailTemplates/cancellationEm
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { sendNotification, NotificationType } from 'notifications-service/resolvers/notifications';
 import { ConsultQueueRepository } from 'consults-service/repositories/consultQueueRepository';
-import { addMilliseconds, format, addDays } from 'date-fns';
+import { addMilliseconds, format } from 'date-fns';
 import { CaseSheetRepository } from 'consults-service/repositories/caseSheetRepository';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { FacilityRepository } from 'doctors-service/repositories/facilityRepository';
@@ -123,7 +123,6 @@ const cancelAppointment: Resolver<
       {
         orderId: appointment.paymentOrderId,
         txnId: appointment.appointmentPayments[0].paymentRefId,
-        paymentMode: appointment.appointmentPayments[0].paymentMode,
         refundAmount: appointment.appointmentPayments[0].amountPaid,
         appointment: appointment,
         appointmentPayments: appointment.appointmentPayments[0],

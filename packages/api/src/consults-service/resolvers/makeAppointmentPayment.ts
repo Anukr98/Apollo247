@@ -252,7 +252,6 @@ const makeAppointmentPayment: Resolver<
             refundAmount: paymentInfo.amountPaid,
             txnId: paymentInfo.paymentRefId,
             orderId: processingAppointment.paymentOrderId,
-            paymentMode: paymentInfo.paymentMode,
           },
           consultsDb
         );
