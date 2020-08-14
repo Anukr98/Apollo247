@@ -82,7 +82,7 @@ const StatusCard: FC<StatusCardProps> = (props) => {
         if (medicineOrderRefunds.length) {
           status = currentStatus === 'CANCELLED' ? REFUND : paymentStatus;
           price = currentStatus === 'CANCELLED'
-            ? amountPaid
+            ? amountPaid + healthCreditsRedeemed
             : (amountPaid + healthCreditsRedeemed) - medicineOrderRefunds[0].refundAmount;
         }  
       }
