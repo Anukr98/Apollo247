@@ -284,7 +284,7 @@ export interface WebEngageEvents {
     'customer id': string;
     pincode: number;
     Serviceable: 'Yes' | 'No';
-    'TAT Displayed': number;
+    'Delivery TAT': number;
   };
   [WebEngageEventName.PRODUCT_DETAIL_TAB_CLICKED]: {
     tabName: string;
@@ -444,7 +444,7 @@ export interface WebEngageEvents {
     'Sub Total': number;
     'Delivery charge': number;
     'Net after discount': number;
-    'Prescription Needed?': 'Yes' | 'No';
+    'Prescription Needed?': boolean;
     'Cart ID'?: string; // we don't have cartId before placing order
     'Mode of Delivery': 'Home' | 'Pickup' | 'Home Visit' | 'Clinic Visit';
     'Delivery Date Time'?: string; // Optional (only if Home)
@@ -869,13 +869,15 @@ export interface WebEngageEvents {
     Success?: YesOrNo; // Yes / No (If Error message shown because it is unservicable)
     'Delivery address': string;
     Pincode: string;
-    'TAT Displayed': number;
+    'TAT Displayed': Date;
+    'Delivery TAT': number;
   };
   [WebEngageEventName.PHARMACY_CART_ADDRESS_SELECTED_SUCCESS]: {
-    'TAT Displayed'?: number;
+    'TAT Displayed'?: Date;
     'Delivery Successful': YesOrNo; // Yes / No (If Error message shown because it is unservicable)
     'Delivery Address': string;
     Pincode: string;
+    'Delivery TAT': number;
   };
 
   [WebEngageEventName.PHARMACY_CART_ADDRESS_SELECTED_FAILURE]: {
