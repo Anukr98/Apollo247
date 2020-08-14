@@ -199,19 +199,22 @@ export const PaymentStatusModal: React.FC<PaymentStatusProps> = (props) => {
                   const pharmacyCheckoutValues = sessionStorage.getItem('pharmacyCheckoutValues')
                     ? JSON.parse(sessionStorage.getItem('pharmacyCheckoutValues'))
                     : {};
-                  pharmacyCheckoutTracking({
-                    orderId:
-                      typeof params.orderAutoId === 'string'
-                        ? parseInt(params.orderAutoId)
-                        : params.orderAutoId,
-                    payStatus: 'success',
-                    payType: paymentMode,
-                    serviceArea: 'pharmacy',
-                    shippingInfo: '',
-                    grandTotal: pharmacyCheckoutValues && pharmacyCheckoutValues.grandTotal,
-                    discountAmount: pharmacyCheckoutValues && pharmacyCheckoutValues.discountAmount,
-                    netAfterDiscount: amountPaid,
-                  });
+                  (resp.data.pharmaPaymentStatus.paymentStatus === 'PAYMENT_SUCCESS' ||
+                    paymentMode === 'COD') &&
+                    pharmacyCheckoutTracking({
+                      orderId:
+                        typeof params.orderAutoId === 'string'
+                          ? parseInt(params.orderAutoId)
+                          : params.orderAutoId,
+                      payStatus: 'success',
+                      payType: paymentMode,
+                      serviceArea: 'pharmacy',
+                      shippingInfo: '',
+                      grandTotal: pharmacyCheckoutValues && pharmacyCheckoutValues.grandTotal,
+                      discountAmount:
+                        pharmacyCheckoutValues && pharmacyCheckoutValues.discountAmount,
+                      netAfterDiscount: amountPaid,
+                    });
                   /* WebEngage Tracking End*/
                 } else {
                   // redirect to medicine
