@@ -33638,6 +33638,16 @@
               "ofType": null
             },
             "defaultValue": null
+          },
+          {
+            "name": "partnerInfo",
+            "description": null,
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "defaultValue": null
           }
         ],
         "interfaces": null,
@@ -33713,12 +33723,6 @@
           },
           {
             "name": "COD",
-            "description": null,
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
-            "name": "SBIYONO",
             "description": null,
             "isDeprecated": false,
             "deprecationReason": null
@@ -39683,6 +39687,16 @@
             "type": {
               "kind": "ENUM",
               "name": "PAYMENT_METHODS",
+              "ofType": null
+            },
+            "defaultValue": null
+          },
+          {
+            "name": "partnerInfo",
+            "description": null,
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
               "ofType": null
             },
             "defaultValue": null

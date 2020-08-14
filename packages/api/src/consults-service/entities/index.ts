@@ -114,7 +114,6 @@ export enum PAYMENT_METHODS {
   UPI = 'UPI',
   PAYTMCC = 'PAYTM_POSTPAID',
   COD = 'COD',
-  SBIYONO = 'SBIYONO',
 }
 
 export enum PAYMENT_METHODS_REVERSE {
@@ -126,7 +125,6 @@ export enum PAYMENT_METHODS_REVERSE {
   UPI = 'UPI',
   PAYTM_POSTPAID = 'PAYTMCC',
   COD = 'COD',
-  SBIYONO = 'SBIYONO',
 }
 
 export enum REQUEST_ROLES {
@@ -483,6 +481,9 @@ export class AppointmentPayments extends BaseEntity {
 
   @Column({ type: 'text' })
   responseMessage: string;
+
+  @Column({ nullable: true })
+  partnerInfo: string;
 
   @UpdateDateColumn({ nullable: true })
   updatedDate: Date;
@@ -977,7 +978,7 @@ export class CaseSheet extends BaseEntity {
 @Entity()
 export class ConsultQueueItem extends BaseEntity {
   @Index('ConsultQueueItem_appointmentId')
-  @Column()
+  @Column({})
   appointmentId: string;
 
   @ManyToOne((type) => Appointment, (appointment) => appointment.consultQueueItem)

@@ -23,6 +23,7 @@ import { medicineOrderRefundNotification } from 'notifications-service/resolvers
 import { log } from 'customWinstonLogger';
 import { MedicineOrdersRepository } from 'profiles-service/repositories/MedicineOrdersRepository';
 import { ONE_APOLLO_STORE_CODE } from 'types/oneApolloTypes';
+import { ApiConstants } from 'ApiConstants';
 
 type RefundInput = {
   refundAmount: number;
@@ -82,7 +83,7 @@ export const initiateRefund: refundMethod<RefundInput, Connection, Partial<Paytm
     saveRefundAttr.refundStatus = REFUND_STATUS.REFUND_REQUEST_NOT_RAISED;
     const response = await medicineOrderRefundRepo.saveRefundInfo(saveRefundAttr);
     let mid = process.env.MID_PHARMACY ? process.env.MID_PHARMACY : '';
-    if (refundInput.paymentMode == PAYMENT_METHODS.SBIYONO)
+    if (refundInput.medicineOrderPayments.partnerInfo == ApiConstants.PARTNER_SBI)
       mid = process.env.SBI_MID_PHARMACY ? process.env.SBI_MID_PHARMACY : '';
     const paytmBody: PaytmBody = {
       mid,
@@ -269,6 +270,7 @@ export const calculateRefund = async (
           medicineOrderPayments: paymentInfo,
           medicineOrders: orderDetails,
           orderId: '' + orderDetails.orderAutoId,
+          paymentMode: '',
         },
         profilesDb
       );
