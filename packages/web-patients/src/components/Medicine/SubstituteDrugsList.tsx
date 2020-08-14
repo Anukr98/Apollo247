@@ -127,7 +127,11 @@ export const SubstituteDrugsList: React.FC<SubstituteDrugsListProps> = (props) =
                   <div className={classes.name}>{substitute.name}</div>
                   <div className={classes.price}>Rs. {substitute.price}</div>
                   <div className={classes.rightArrow}>
-                    <img src={require('images/ic_arrow_right.svg')} alt="" />
+                    <img
+                      src={require('images/ic_arrow_right.svg')}
+                      alt="right arrow"
+                      title="right arrow"
+                    />
                   </div>
                 </div>
               </li>
