@@ -8,13 +8,7 @@ import { useAllCurrentPatients } from 'hooks/authHooks';
 import { GetDoctorDetailsById as DoctorDetails } from 'graphql/types/GetDoctorDetailsById';
 import moment from 'moment';
 import { ApolloError } from 'apollo-client';
-import {
-  AphButton,
-  AphTextField,
-  AphDialog,
-  AphDialogClose,
-  AphDialogTitle,
-} from '@aph/web-ui-components';
+import { AphButton, AphTextField } from '@aph/web-ui-components';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
@@ -52,8 +46,6 @@ import { AddChatDocument, AddChatDocumentVariables } from 'graphql/types/AddChat
 import { useApolloClient } from 'react-apollo-hooks';
 import { REQUEST_ROLES } from 'graphql/types/globalTypes';
 import { ADD_CHAT_DOCUMENT } from 'graphql/profiles';
-import { UploadChatPrescription } from 'components/ChatRoom/V2/UploadChatPrescriptions';
-import { UploadChatEPrescriptionCard } from 'components/ChatRoom/V2/UploadChatEPrescriptionCard';
 
 // import { GetCaseSheet_getCaseSheet_caseSheetDetails_appointment_appointmentDocuments as appointmentDocument } from 'graphql/types/GetCaseSheet';
 
@@ -238,14 +230,6 @@ const useStyles = makeStyles((theme: Theme) => {
       position: 'absolute',
       bottom: 14,
       right: 0,
-      minWidth: 'auto',
-      padding: 0,
-      boxShadow: 'none',
-    },
-    uploadRecords: {
-      position: 'absolute',
-      bottom: 14,
-      left: 0,
       minWidth: 'auto',
       padding: 0,
       boxShadow: 'none',
@@ -655,9 +639,6 @@ const useStyles = makeStyles((theme: Theme) => {
         opacity: 0.5,
       },
     },
-    ePrescriptionTitle: {
-      zIndex: 9999,
-    },
   };
 });
 
@@ -750,10 +731,6 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
     doctorDetails && doctorDetails.getDoctorDetailsById
       ? doctorDetails.getDoctorDetailsById.lastName
       : '';
-  const fullDisplayName =
-    doctorDetails && doctorDetails.getDoctorDetailsById
-      ? doctorDetails.getDoctorDetailsById.displayName
-      : '';
   const { currentPatient } = useAllCurrentPatients();
   const currentUserId = (currentPatient && currentPatient.id) || '';
   const params = useParams<Params>();
@@ -807,8 +784,6 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
   const apolloClient = useApolloClient();
   const bookAppointment = useMutation(BOOK_APPOINTMENT_RESCHEDULE);
   const [callAudio, setCallAudio] = useState(autoMessageStrings.audioCallMsg);
-  const [isUploadPreDialogOpen, setIsUploadPreDialogOpen] = React.useState<boolean>(false);
-  const [isEPrescriptionOpen, setIsEPrescriptionOpen] = React.useState<boolean>(false);
 
   const doctorId = props.doctorId;
   const patientId = currentUserId;
@@ -1803,42 +1778,28 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
             </div>
           )}
           {(!showVideo || showVideoChat) && (
-            <>
-              <AphButton
-                className={classes.uploadRecords}
-                onClick={() => {
-                  setIsUploadPreDialogOpen(true);
+            <div className={classes.chatWindowFooter}>
+              <AphTextField
+                autoFocus
+                className={classes.searchInput}
+                inputProps={{ type: 'text' }}
+                placeholder="Type here..."
+                value={messageText}
+                onKeyPress={(e) => {
+                  if ((e.which == 13 || e.keyCode == 13) && messageText.trim() !== '') {
+                    send();
+                  }
                 }}
-              >
-                <img
-                  src={require('images/ic_add_circle.svg')}
-                  alt="Upload Records"
-                  title="Upload Records"
-                />
+                onChange={(event) => {
+                  setMessageText(event.currentTarget.value);
+                }}
+              />
+              <AphButton className={classes.chatSubmitBtn}>
+                <img src={require('images/ic_add_circle.svg')} alt="" />
               </AphButton>
-              <div className={classes.chatWindowFooter}>
-                <AphTextField
-                  autoFocus
-                  className={classes.searchInput}
-                  inputProps={{ type: 'text' }}
-                  placeholder="Type here..........."
-                  value={messageText}
-                  onKeyPress={(e) => {
-                    if ((e.which == 13 || e.keyCode == 13) && messageText.trim() !== '') {
-                      send();
-                    }
-                  }}
-                  onChange={(event) => {
-                    setMessageText(event.currentTarget.value);
-                  }}
-                />
-                <AphButton className={classes.chatSubmitBtn}>
-                  <img src={require('images/ic_add_circle.svg')} alt="" />
-                </AphButton>
-              </div>
-            </>
+            </div>
           )}
-          {/* <div className={classes.quesContainer}>
+          <div className={classes.quesContainer}>
             <Slider {...sliderSettings} className={classes.slider}>
               <div>
                 <Grid spacing={2} container>
@@ -1853,7 +1814,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                     />
                   </Grid>
                   <Grid item xs={12} sm={12} md={3} lg={3}>
-                    <button className={classes.quesSubmitBtn} ><img src={require('images/ic_submit.svg')} alt="" /></button>
+                    <button className={classes.quesSubmitBtn}>
+                      <img src={require('images/ic_submit.svg')} alt="" />
+                    </button>
                   </Grid>
                 </Grid>
               </div>
@@ -1865,12 +1828,14 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                     <AphButton className={classes.quesButton}>No</AphButton>
                   </Grid>
                   <Grid item xs={12} sm={12} md={3} lg={3}>
-                    <button className={classes.quesSubmitBtn} ><img src={require('images/ic_submit.svg')} alt="" /></button>
+                    <button className={classes.quesSubmitBtn}>
+                      <img src={require('images/ic_submit.svg')} alt="" />
+                    </button>
                   </Grid>
                 </Grid>
               </div>
             </Slider>
-          </div> */}
+          </div>
         </div>
         <Dialog
           open={isDialogOpen}
@@ -1966,31 +1931,6 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
         isAlertOpen={isAlertOpen}
         setIsAlertOpen={setIsAlertOpen}
       />
-      <AphDialog open={isUploadPreDialogOpen} maxWidth="sm">
-        <AphDialogClose onClick={() => setIsUploadPreDialogOpen(false)} title={'Close'} />
-        <AphDialogTitle>Upload Prescription(s)</AphDialogTitle>
-        <UploadChatPrescription
-          closeDialog={() => {
-            setIsUploadPreDialogOpen(false);
-          }}
-          appointmentId={props.appointmentId}
-          displayName={fullDisplayName}
-          setIsEPrescriptionOpen={setIsEPrescriptionOpen}
-        />
-      </AphDialog>
-      <AphDialog open={isEPrescriptionOpen} maxWidth="sm">
-        <AphDialogClose
-          onClick={() => {
-            setIsEPrescriptionOpen(false);
-          }}
-          title={'Close'}
-        />
-        <AphDialogTitle className={classes.ePrescriptionTitle}>E Prescription</AphDialogTitle>
-        <UploadChatEPrescriptionCard
-          setIsEPrescriptionOpen={setIsEPrescriptionOpen}
-          appointmentId={props.appointmentId}
-        />
-      </AphDialog>
     </div>
   );
   // useEffect(() => {

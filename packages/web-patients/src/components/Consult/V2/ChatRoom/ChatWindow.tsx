@@ -4,7 +4,14 @@ import { makeStyles } from '@material-ui/styles';
 import Scrollbars from 'react-custom-scrollbars';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { GetDoctorDetailsById as DoctorDetails } from 'graphql/types/GetDoctorDetailsById';
-import { AphButton, AphTextField, AphSelect } from '@aph/web-ui-components';
+import {
+  AphButton,
+  AphTextField,
+  AphSelect,
+  AphDialog,
+  AphDialogClose,
+  AphDialogTitle,
+} from '@aph/web-ui-components';
 import Slider from 'react-slick';
 import { PatientCard } from 'components/Consult/V2/ChatRoom/PatientCard';
 import { DoctorCard } from 'components/Consult/V2/ChatRoom/DoctorCard';
@@ -21,6 +28,8 @@ import {
 } from 'graphql/types/AddToConsultQueueWithAutomatedQuestions';
 import { GetAppointmentData, GetAppointmentDataVariables } from 'graphql/types/GetAppointmentData';
 import { useApolloClient } from 'react-apollo-hooks';
+import { UploadChatPrescription } from 'components/ChatRoom/V2/UploadChatPrescriptions';
+import { UploadChatEPrescriptionCard } from 'components/ChatRoom/V2/UploadChatEPrescriptionCard';
 
 type Params = { appointmentId: string; doctorId: string };
 
@@ -119,7 +128,7 @@ const useStyles = makeStyles((theme: Theme) => {
       '&:disabled': {
         opacity: 0.5,
         pointerEvents: 'none',
-      }
+      },
     },
     callMsg: {
       fontSize: 14,
@@ -236,7 +245,7 @@ const useStyles = makeStyles((theme: Theme) => {
       '&:disabled': {
         opacity: 0.5,
         pointerEvents: 'none',
-      }
+      },
     },
     chatWindowContainer: {
       position: 'relative',
@@ -702,6 +711,9 @@ const useStyles = makeStyles((theme: Theme) => {
     patientCardMain: {
       textAlign: 'right',
     },
+    ePrescriptionTitle: {
+      zIndex: 9999,
+    },
   };
 });
 
@@ -815,6 +827,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
   const [appointmentDetails, setAppointmentDetails] = useState(null);
   const [autoQuestionsCompleted, setAutoQuestionsCompleted] = useState(false);
   const [userMessage, setUserMessage] = useState<string>('');
+  const [isUploadPreDialogOpen, setIsUploadPreDialogOpen] = React.useState<boolean>(false);
+  const [isEPrescriptionOpen, setIsEPrescriptionOpen] = React.useState<boolean>(false);
 
   const { currentPatient } = useAllCurrentPatients();
   const doctorDisplayName = props.doctorDetails.getDoctorDetailsById.displayName;
@@ -1422,7 +1436,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
             <AphButton
               className={`${classes.quesButton}  ${
                 drinkPerWeek === '<30ml' ? classes.btnActive : ''
-                }`}
+              }`}
               onClick={() => setDrinkPerWeek('<30ml')}
             >
               &lt; 30ml
@@ -1430,7 +1444,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
             <AphButton
               className={`${classes.quesButton}  ${
                 drinkPerWeek === '30ml-60ml' ? classes.btnActive : ''
-                }`}
+              }`}
               onClick={() => setDrinkPerWeek('30ml-60ml')}
             >
               30ml-60ml
@@ -1438,7 +1452,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
             <AphButton
               className={`${classes.quesButton}  ${
                 drinkPerWeek === '>60ml' ? classes.btnActive : ''
-                }`}
+              }`}
               onClick={() => setDrinkPerWeek('>60ml')}
             >
               &gt; 60ml
@@ -1468,7 +1482,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
             <AphButton
               className={`${classes.quesButton}  ${
                 temperature === '99-100' ? classes.btnActive : ''
-                }`}
+              }`}
               onClick={() => setTemperature('99-100')}
             >
               99-100
@@ -1476,7 +1490,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
             <AphButton
               className={`${classes.quesButton}  ${
                 temperature === '100-101' ? classes.btnActive : ''
-                }`}
+              }`}
               onClick={() => setTemperature('100-101')}
             >
               100-101
@@ -1484,7 +1498,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
             <AphButton
               className={`${classes.quesButton}  ${
                 temperature === '102+' ? classes.btnActive : ''
-                }`}
+              }`}
               onClick={() => setTemperature('102+')}
             >
               102+
@@ -1492,7 +1506,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
             <AphButton
               className={`${classes.quesButton}  ${
                 temperature === 'No Idea' ? classes.btnActive : ''
-                }`}
+              }`}
               onClick={() => setTemperature('No Idea')}
             >
               No Idea
@@ -1566,9 +1580,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                   // add to consult q with automated questions.
                   const lifeStyle = `Smoke: ${_startCase(smokeHabit)}${
                     smokeHabit === 'yes' ? ` ${smokes}` : ''
-                    }, Drink: ${_startCase(drinkHabit)}${
+                  }, Drink: ${_startCase(drinkHabit)}${
                     drinkHabit === 'yes' ? ` ${drinkPerWeek}` : ''
-                    }`;
+                  }`;
 
                   // console.log(lifeStyle, 'life style is...........');
                   mutationAddToConsultQ({
@@ -1648,8 +1662,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
               <span id="scrollDiv" ref={scrollDivRef}></span>
             </Scrollbars>
           </div>
-          {autoQuestionsCompleted ? (
-            <div className={`${classes.chatWindowFooter} ${classes.chatWindowFooterInput}`} >
+          {true ? (
+            <div className={`${classes.chatWindowFooter} ${classes.chatWindowFooterInput}`}>
               <AphTextField
                 autoFocus
                 className={classes.searchInput}
@@ -1679,36 +1693,70 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
               <AphButton className={classes.chatSend} disabled>
                 <img src={require('images/ic_send.svg')} alt="" />
               </AphButton>
-              <AphButton className={classes.chatSubmitBtn}>
-                <img src={require('images/ic_paperclip.svg')} alt="" />
+              <AphButton
+                className={classes.chatSubmitBtn}
+                onClick={() => {
+                  setIsUploadPreDialogOpen(true);
+                }}
+              >
+                <img
+                  src={require('images/ic_paperclip.svg')}
+                  alt="Upload Records"
+                  title="Upload Records"
+                />
                 <span>Upload Records</span>
               </AphButton>
             </div>
           ) : (
-              <div className={classes.quesContainer}>
-                <Slider
-                  {...sliderSettings}
-                  className={classes.slider}
-                  ref={(slider) => (sliderRef.current = slider)}
-                >
-                  {heightQuestionContent()}
-                  {weightQuestionContent()}
-                  {drugAlergyQuestionChoice()}
-                  {drugAllergy === 'yes' && drugsInput()}
-                  {foodAlergyQuestionChoice()}
-                  {dietAllergy === 'yes' && foodAlergyInput()}
-                  {smokeQuestionChoice()}
-                  {smokeHabit === 'yes' && smokeInput()}
-                  {drinkQuestionChoice()}
-                  {drinkHabit === 'yes' && drinkInput()}
-                  {temperatureInput()}
-                  {bpInput()}
-                </Slider>
-              </div>
-            )}
+            <div className={classes.quesContainer}>
+              <Slider
+                {...sliderSettings}
+                className={classes.slider}
+                ref={(slider) => (sliderRef.current = slider)}
+              >
+                {heightQuestionContent()}
+                {weightQuestionContent()}
+                {drugAlergyQuestionChoice()}
+                {drugAllergy === 'yes' && drugsInput()}
+                {foodAlergyQuestionChoice()}
+                {dietAllergy === 'yes' && foodAlergyInput()}
+                {smokeQuestionChoice()}
+                {smokeHabit === 'yes' && smokeInput()}
+                {drinkQuestionChoice()}
+                {drinkHabit === 'yes' && drinkInput()}
+                {temperatureInput()}
+                {bpInput()}
+              </Slider>
+            </div>
+          )}
+          <AphDialog open={isUploadPreDialogOpen} maxWidth="sm">
+            <AphDialogClose onClick={() => setIsUploadPreDialogOpen(false)} title={'Close'} />
+            <AphDialogTitle>Upload Prescription(s)</AphDialogTitle>
+            <UploadChatPrescription
+              closeDialog={() => {
+                setIsUploadPreDialogOpen(false);
+              }}
+              appointmentId={props.appointmentId}
+              displayName={doctorDisplayName}
+              setIsEPrescriptionOpen={setIsEPrescriptionOpen}
+            />
+          </AphDialog>
+          <AphDialog open={isEPrescriptionOpen} maxWidth="sm">
+            <AphDialogClose
+              onClick={() => {
+                setIsEPrescriptionOpen(false);
+              }}
+              title={'Close'}
+            />
+            <AphDialogTitle className={classes.ePrescriptionTitle}>E Prescription</AphDialogTitle>
+            <UploadChatEPrescriptionCard
+              setIsEPrescriptionOpen={setIsEPrescriptionOpen}
+              appointmentId={props.appointmentId}
+            />
+          </AphDialog>
         </div>
       </div>
-    </div >
+    </div>
   );
 };
 

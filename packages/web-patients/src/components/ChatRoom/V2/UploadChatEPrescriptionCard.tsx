@@ -540,7 +540,6 @@ export const UploadChatEPrescriptionCard: React.FC<EPrescriptionCardProps> = (pr
                 return;
               } else {
                 selectedEPrescriptions.forEach((item) => {
-                  console.log('item', item);
                   const url = item.uploadedUrl ? item.uploadedUrl : '';
                   const prism = item.prismPrescriptionFileId ? item.prismPrescriptionFileId : '';
                   // url &&
@@ -558,7 +557,6 @@ export const UploadChatEPrescriptionCard: React.FC<EPrescriptionCardProps> = (pr
                         },
                       })
                       .then((res) => {
-                        console.log('ADD_CHAT_DOCUMENTS data', res);
                         const prismFieldId = res.data.addChatDocument.prismFileId;
                         const documentPath = res.data.addChatDocument.documentPath;
 
