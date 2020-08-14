@@ -47,22 +47,29 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-interface DoctorCardProps {
-  message: string;
+interface WelcomeCardProps {
+  doctorName: string;
 }
 
-export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
+export const WelcomeCard: React.FC<WelcomeCardProps> = (props) => {
   const classes = useStyles({});
-  const message = props.message.replace(/\n/g, '<br />');
   return (
     <div className={classes.doctorCardMain}>
       <div className={classes.doctorAvatar}>
         <Avatar className={classes.avatar} src={require('images/ic_mascot_male.png')} alt="" />
       </div>
-      <div
-        className={`${classes.blueBubble} ${classes.petient} `}
-        dangerouslySetInnerHTML={{ __html: message.replace(/\<(?!br).*?\>/g, '') }}
-      ></div>
+      <div className={`${classes.blueBubble} ${classes.petient} `}>
+        Let’s get you feeling better by following simple steps :)
+        <p>1. Answer some quick questions</p>
+        <p>2. Connect with your doctor</p>
+        <p>3. Get a prescription and meds, if necessary</p>
+        <p>4. Chat with your doctor for 7 days</p>
+        <p>
+          A doctor from ${props.doctorName}'s team will join you shortly to collect your medical
+          details. These details are essential for ${props.doctorName} to help you and will take
+          around 3-5 minutes.
+        </p>
+      </div>
     </div>
   );
 };

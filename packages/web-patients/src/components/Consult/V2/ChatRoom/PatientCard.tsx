@@ -2,6 +2,7 @@ import { makeStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
 import React from 'react';
 import format from 'date-fns/format';
+import isToday from 'date-fns/isToday';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -9,7 +10,7 @@ const useStyles = makeStyles((theme: Theme) => {
       textAlign: 'right',
       [theme.breakpoints.down('xs')]: {
         paddingRight: 15,
-      }
+      },
     },
     chatBub: {
       padding: '6px 16px',
@@ -39,11 +40,11 @@ const useStyles = makeStyles((theme: Theme) => {
     defaultChatTime: {
       color: 'rgba(101, 143, 155, 0.6)',
       textAlign: 'right',
-      margin: '2px 0 0 0'
+      margin: '2px 0 0 0',
     },
     chatQuesTxt: {
       lineHeight: '22px',
-    }
+    },
   };
 });
 
@@ -54,15 +55,17 @@ interface PatientCardProps {
 
 export const PatientCard: React.FC<PatientCardProps> = (props) => {
   const classes = useStyles({});
-  const chatTime = format(new Date(props.chatTime), 'do MMMM yyyy, hh:mm aaaa');
-  // const chatTime = format(new Date(props.chatTime), 'hh:mm aaaa');
-  // console.log(props.chatTime, props.message);
+  const chatDate = new Date(props.chatTime);
+  const chatTime = isToday(chatDate)
+    ? format(chatDate, 'hh:mm a')
+    : format(chatDate, 'do MMMM yyyy, hh:mm a');
+  const message = props.message.replace(/\n/g, '<br />');
   return (
     <div className={classes.patientCardMain}>
       <div className={classes.chatBub}>
         <div className={classes.chatBubble}>
           <div className={classes.chatQuesTxt}>
-            <div>{props.message}</div>
+            <div dangerouslySetInnerHTML={{ __html: message.replace(/\<(?!br).*?\>/g, '') }}></div>
           </div>
           <div className={`${classes.chatTime} ${classes.defaultChatTime}`}>{chatTime}</div>
         </div>
