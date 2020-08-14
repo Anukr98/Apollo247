@@ -465,7 +465,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             selectedAddress.zipcode!,
             formatAddress(selectedAddress),
             'Yes',
-            moment(tatDate, 'D-MMM-YYYY HH:mm a').toDate(),
+            moment(tatDate, AppConfig.Configuration.MED_DELIVERY_DATE_DISPLAY_FORMAT).toDate(),
             moment(tatDate).diff(currentDate, 'd')
           );
 
@@ -474,7 +474,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             'Cart',
             g(selectedAddress, 'zipcode')!,
             formatAddress(selectedAddress),
-            moment(tatDate, 'D-MMM-YYYY HH:mm a').toDate(),
+            moment(tatDate, AppConfig.Configuration.MED_DELIVERY_DATE_DISPLAY_FORMAT).toDate(),
             moment(tatDate).diff(currentDate, 'd'),
             'Yes'
           );
