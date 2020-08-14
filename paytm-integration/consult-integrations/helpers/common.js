@@ -17,7 +17,10 @@ const initPayment = function(
 ) {
   return new Promise((resolve, reject) => {
     let merchantId = process.env.MID_CONSULTS;
-    if (paymentTypeID == 'SBIYONO') merchantId = process.env.SBI_MID_CONSULTS;
+    if (paymentTypeID == process.env.PARTNER_SBI) {
+      merchantId = process.env.SBI_MID_CONSULTS;
+      merc_unq_ref += ':' + process.env.PARTNER_SBI;
+    }
     let paymentObj = {
       ORDER_ID: orderAutoId,
       CUST_ID: patientId,
@@ -30,8 +33,10 @@ const initPayment = function(
       MERC_UNQ_REF: merc_unq_ref,
     };
     Object.assign(paymentObj, addParams);
-
-    genchecksum(paymentObj, process.env.PAYTM_MERCHANT_KEY_CONSULTS, (err, result) => {
+    let merchantKey = process.env.PAYTM_MERCHANT_KEY_CONSULTS;
+    if (paymentTypeID == process.env.PARTNER_SBI)
+      merchantKey = process.env.SBI_PAYTM_MERCHANT_KEY_CONSULTS;
+    genchecksum(paymentObj, merchantKey, (err, result) => {
       if (err) {
         reject('Error while generating checksum');
       } else {
@@ -66,16 +71,8 @@ const generatePaymentOrderId = () => {
 
 const singlePaymentAdditionalParams = (paymentTypeID, bankCode) => {
   const paymentTypeParams = {};
-  const possiblePaymentTypes = [
-    'CC',
-    'DC',
-    'NB',
-    'PPI',
-    'EMI',
-    'UPI',
-    'PAYTM_DIGITAL_CREDIT',
-    'SBIYONO',
-  ];
+  if (paymentTypeID == process.env.PARTNER_SBI) paymentTypeID = 'DC';
+  const possiblePaymentTypes = ['CC', 'DC', 'NB', 'PPI', 'EMI', 'UPI', 'PAYTM_DIGITAL_CREDIT'];
   logger.info(`${paymentTypeID} - paymentTypeID`);
   if (!possiblePaymentTypes.includes(paymentTypeID)) {
     throw new Error('Invalid payment type! Please contact IT department.');
@@ -93,7 +90,6 @@ const singlePaymentAdditionalParams = (paymentTypeID, bankCode) => {
     case 'PPI':
     case 'PAYTM_DIGITAL_CREDIT':
     case 'NB':
-    case 'SBIYONO':
       paymentTypeParams['AUTH_MODE'] = 'USRPWD';
       break;
   }

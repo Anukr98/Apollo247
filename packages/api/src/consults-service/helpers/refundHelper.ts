@@ -13,6 +13,7 @@ import {
 
 import { log } from 'customWinstonLogger';
 import { genchecksumbystring } from 'lib/paytmLib/checksum.js';
+import { ApiConstants } from 'ApiConstants';
 
 type RefundInput = {
   refundAmount: number;
@@ -71,8 +72,9 @@ export const initiateRefund: refundMethod<RefundInput, Connection, Partial<Paytm
     saveRefundAttr.refundStatus = REFUND_STATUS.REFUND_REQUEST_NOT_RAISED;
     const response = await appointmentRefRepo.saveRefundInfo(saveRefundAttr);
     let mid = process.env.MID_CONSULTS ? process.env.MID_CONSULTS : '';
-    if (refundInput.paymentMode == PAYMENT_METHODS.SBIYONO)
+    if (refundInput.appointmentPayments.partnerInfo == ApiConstants.PARTNER_SBI)
       mid = process.env.SBI_MID_CONSULTS ? process.env.SBI_MID_CONSULTS : '';
+
     const paytmBody: PaytmBody = {
       mid,
       refId: response.refId,
