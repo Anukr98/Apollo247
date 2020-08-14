@@ -143,6 +143,9 @@ const useStyles = makeStyles((theme: Theme) => {
     summaryDownloads: {
       margin: '0 0 0 auto',
       textAlign: 'right',
+      [theme.breakpoints.down('xs')]: {
+        paddingBottom: 10,
+      },
       '& button': {
         textTransform: 'uppercase',
         color: '#fc9916',

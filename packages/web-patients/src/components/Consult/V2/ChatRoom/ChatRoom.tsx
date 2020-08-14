@@ -82,9 +82,17 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     leftSection: {
       width: 328,
+      [theme.breakpoints.down('xs')]: {
+        width: '95%',
+        padddingRight: '5%',
+        paddingBottom: 20,
+      },
     },
     rightSection: {
       width: 'calc(100% - 328px)',
+      [theme.breakpoints.down('xs')]: {
+        width: 'calc(100% - 10px)',
+      }
     },
     backArrow: {
       cursor: 'pointer',
