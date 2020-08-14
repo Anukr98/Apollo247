@@ -4,14 +4,14 @@
 // This file was automatically generated and should not be edited.
 
 // ====================================================
-// GraphQL query operation: GetOrderInvoice
+// GraphQL query operation: getOrderInvoice
 // ====================================================
 
-export interface GetOrderInvoice {
+export interface getOrderInvoice {
   getOrderInvoice: string | null;
 }
 
-export interface GetOrderInvoiceVariables {
+export interface getOrderInvoiceVariables {
   patientId: string;
   appointmentId: string;
 }

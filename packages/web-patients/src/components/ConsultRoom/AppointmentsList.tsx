@@ -14,7 +14,7 @@ import { useQueryWithSkip } from 'hooks/apolloHooks';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { AddNewProfile } from 'components/MyAccount/AddNewProfile';
 import { MEDICINE_ORDER_PAYMENT_TYPE } from 'graphql/types/globalTypes';
-import { GetOrderInvoiceVariables, GetOrderInvoice } from 'graphql/types/GetOrderInvoice';
+import { getOrderInvoiceVariables, getOrderInvoice } from 'graphql/types/GetOrderInvoice';
 // import { GET_PATIENT_APPOINTMENTS, GET_PATIENT_ALL_APPOINTMENTS } from 'graphql/doctors';
 import { GET_PATIENT_ALL_APPOINTMENTS } from 'graphql/doctors';
 // import {
@@ -430,7 +430,7 @@ export const AppointmentsList: React.FC<AppointmentProps> = (props) => {
     if (triggerInvoice) {
       setIsLoading(true);
       client
-        .query<GetOrderInvoice>({
+        .query<getOrderInvoice>({
           query: GET_CONSULT_INVOICE,
           variables: {
             appointmentId: successApptId,

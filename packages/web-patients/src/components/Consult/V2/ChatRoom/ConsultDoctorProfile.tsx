@@ -24,13 +24,14 @@ import formatDistanceStrict from 'date-fns/formatDistance';
 import { REQUEST_ROLES, STATUS } from 'graphql/types/globalTypes';
 import { useMutation } from 'react-apollo-hooks';
 import { cancelAppointment, cancelAppointmentVariables } from 'graphql/types/cancelAppointment';
-import { CANCEL_APPOINTMENT } from 'graphql/profiles';
+import { CANCEL_APPOINTMENT, CONSULT_ORDER_INVOICE } from 'graphql/profiles';
 import { Alerts } from 'components/Alerts/Alerts';
 import {
   isPastAppointment,
   getDiffInMinutes,
   getAvailableFreeChatDays,
 } from 'helpers/commonHelpers';
+import { useApolloClient } from 'react-apollo-hooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -410,6 +411,7 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
   const [showCancelPopup, setShowCancelPopup] = useState<boolean>(false);
 
   const { currentPatient } = useAllCurrentPatients();
+  const client = useApolloClient();
   const patientId = currentPatient ? currentPatient.id : '';
 
   const { data, loading, error } = useQueryWithSkip<
@@ -432,6 +434,31 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
   }
 
   let hospitalLocation = '';
+
+  const downloadInvoice = (patientId: string, appointmentId: string) => {
+    client
+      .query({
+        query: CONSULT_ORDER_INVOICE,
+        variables: {
+          patientId: patientId,
+          appointmentId: appointmentId,
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then(({ data }: any) => {
+        if (data && data.getOrderInvoice) {
+          let link = document.createElement('a');
+          link.download = data.getOrderInvoice;
+          link.href = data.getOrderInvoice;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        }
+      })
+      .catch((e) => {
+        console.log(e);
+      });
+  };
 
   if (data && data.getPatinetAppointments && data.getPatinetAppointments.patinetAppointments) {
     const previousAppointments = data.getPatinetAppointments.patinetAppointments;
@@ -671,7 +698,9 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
                       </div>
                     </div>
                     <div className={classes.summaryDownloads}>
-                      <AphButton>Invoice</AphButton>
+                      <AphButton onClick={() => downloadInvoice(patientId, appointmentId)}>
+                        Invoice
+                      </AphButton>
                     </div>
                   </div>
                 ) : null}
