@@ -118,6 +118,7 @@ export const useAllCurrentPatients = () => {
     if (!currentPatientId) {
       const defaultCurrentPatient = allCurrentPatients
         ? allCurrentPatients.find((patient: any) => patient.isUhidPrimary === true) ||
+          allCurrentPatients.find((patient: any) => patient.relation === Relation.ME) ||
           allCurrentPatients[0]
         : null;
       setCurrentPatientId(defaultCurrentPatient ? defaultCurrentPatient.id : null);
