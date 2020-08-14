@@ -125,6 +125,7 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingLeft: 20,
       lineHeight: 1.5,
       display: 'flex',
+      alignItems: 'center',
       [theme.breakpoints.down('xs')]: {
         fontSize: 12,
         paddingLeft: 0,
@@ -154,6 +155,7 @@ const useStyles = makeStyles((theme: Theme) => {
         boxShadow: 'none',
         padding: 0,
         fontSize: 12,
+        minWidth: 52,
       },
     },
     textCenter: {
@@ -232,6 +234,17 @@ const useStyles = makeStyles((theme: Theme) => {
       display: 'flex',
       alignItems: 'center',
       borderRadius: 5,
+      marginTop: 20,
+    },
+    doctorjoinSection: {
+      backgroundColor: '#FF748E',
+      color: '#fff',
+      margin: '20px 0',
+      '& span': {
+        display: 'inline-block',
+        width: '100%',
+        textAlign: 'center',
+      }
     },
     joinTime: {
       fontWeight: 600,
@@ -277,7 +290,7 @@ const useStyles = makeStyles((theme: Theme) => {
       alignItems: 'center',
     },
     appoinmentDetails: {
-      padding: '8px 0 10px 0',
+      padding: '8px 0 3px 0',
     },
     moreIcon: {
       marginLeft: 'auto',
@@ -578,7 +591,7 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
                   {moreOrLessMessage}
                 </div>
               </div>
-              <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 465px)'}>
+              <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 405px)'}>
                 <div
                   className={`${classes.doctorEducationInfo} ${showMore ? classes.hideMore : ''}`}
                 >
@@ -651,58 +664,58 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
                         </span>
                       </div>
                     ) : (
-                      differenceInMinutes > 0 && // enables only for upcoming and active  appointments
-                      (hasDoctorJoined ? (
-                        <div className={classes.joinInSection}>
-                          <span>Doctor has joined!</span>
-                        </div>
-                      ) : (
-                        <div className={classes.joinInSection}>
-                          <span>Doctor Joining In</span>
-                          <span className={classes.joinTime}>{differenceInWords}</span>
-                        </div>
-                      ))
-                    ))}
+                        differenceInMinutes > 0 && // enables only for upcoming and active  appointments
+                        (hasDoctorJoined ? (
+                          <div className={`${classes.joinInSection} ${classes.doctorjoinSection}`}>
+                            <span>Doctor has joined!</span>
+                          </div>
+                        ) : (
+                            <div className={classes.joinInSection}>
+                              <span>Doctor Joining In</span>
+                              <span className={classes.joinTime}>{differenceInWords}</span>
+                            </div>
+                          ))
+                      ))}
                 </div>
                 {appointmentDetails &&
-                !hasDoctorJoined &&
-                appointmentDetails.status !== STATUS.COMPLETED ? (
-                  <div className={classes.appointmentDetails}>
-                    <div className={classes.sectionHead}>
-                      <div className={classes.appoinmentDetails}>Appointment Details</div>
-                    </div>
-                    <div className={`${classes.doctorInfoGroup} ${classes.noBorder}`}>
-                      <div className={`${classes.infoRow} ${classes.textCenter}`}>
-                        <div className={classes.iconType}>
-                          <img src={require('images/ic_calendar_show.svg')} alt="" />
-                        </div>
-                        <div className={classes.details}>
-                          {difference <= 15 && difference > 0
-                            ? `in ${difference} mins`
-                            : otherDateMarkup(appointmentTime)}
-                        </div>
+                  !hasDoctorJoined &&
+                  appointmentDetails.status !== STATUS.COMPLETED ? (
+                    <div className={classes.appointmentDetails}>
+                      <div className={classes.sectionHead}>
+                        <div className={classes.appoinmentDetails}>Appointment Details</div>
                       </div>
-                    </div>
-                    <div className={classes.consultGroup}>
-                      <div className={`${classes.infoRow} ${classes.textCenter}`}>
-                        <div className={classes.iconType}>
-                          <img src={require('images/ic-rupee.svg')} alt="" />
-                        </div>
-                        <div className={classes.consultationDetails}>
+                      <div className={`${classes.doctorInfoGroup} ${classes.noBorder}`}>
+                        <div className={`${classes.infoRow} ${classes.textCenter}`}>
+                          <div className={classes.iconType}>
+                            <img src={require('images/ic_calendar_show.svg')} alt="" />
+                          </div>
                           <div className={classes.details}>
-                            <div>Amount Paid</div>
-                            <div> Rs. {onlineConsultationFees || 0}</div>
+                            {difference <= 15 && difference > 0
+                              ? `in ${difference} mins`
+                              : otherDateMarkup(appointmentTime)}
                           </div>
                         </div>
                       </div>
-                    </div>
-                    <div className={classes.summaryDownloads}>
-                      <AphButton onClick={() => downloadInvoice(patientId, appointmentId)}>
-                        Invoice
+                      <div className={classes.consultGroup}>
+                        <div className={`${classes.infoRow} ${classes.textCenter}`}>
+                          <div className={classes.iconType}>
+                            <img src={require('images/ic-rupee.svg')} alt="" />
+                          </div>
+                          <div className={classes.consultationDetails}>
+                            <div className={classes.details}>
+                              <div>Amount Paid</div>
+                              <div> Rs. {onlineConsultationFees || 0}</div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div className={classes.summaryDownloads}>
+                        <AphButton onClick={() => downloadInvoice(patientId, appointmentId)}>
+                          Invoice
                       </AphButton>
+                      </div>
                     </div>
-                  </div>
-                ) : null}
+                  ) : null}
               </Scrollbars>
             </div>
             {hasDoctorJoined ? (
