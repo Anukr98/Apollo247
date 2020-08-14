@@ -1,4 +1,4 @@
-import { EntityRepository, Repository, Brackets, Connection, Not } from 'typeorm';
+import { EntityRepository, Repository, Brackets, Connection, Not, In } from 'typeorm';
 import {
   Doctor,
   ConsultMode,
@@ -36,6 +36,9 @@ type DoctorSlot = {
   slotType: string;
 };
 
+//define generalise  anonymous cb fn
+// type responseCB = (data: any) => any
+
 @EntityRepository(Doctor)
 export class DoctorRepository extends Repository<Doctor> {
   async updateDoctorSlots(doctorId: string, consultsDb: Connection, doctorsDb: Connection) {
@@ -43,8 +46,13 @@ export class DoctorRepository extends Repository<Doctor> {
     let stDate = new Date();
     let slotsAdded = '';
     const client = new Client({ node: process.env.ELASTIC_CONNECTION_URL });
+
+    if (!process.env.ELASTIC_INDEX_DOCTORS) {
+      throw new AphError(AphErrorMessages.ELASTIC_INDEX_NAME_MISSING);
+    }
+
     const updateDoc: RequestParams.Update = {
-      index: 'doctors',
+      index: process.env.ELASTIC_INDEX_DOCTORS,
       id: doctorId,
       body: {
         script: {
@@ -60,9 +68,13 @@ export class DoctorRepository extends Repository<Doctor> {
         consultsDb,
         doctorsDb
       );
-      //console.log(doctorSlots, 'doctor slots');
+
+      if (!process.env.ELASTIC_INDEX_DOCTORS) {
+        throw new AphError(AphErrorMessages.ELASTIC_INDEX_NAME_MISSING);
+      }
+
       const doc1: RequestParams.Update = {
-        index: 'doctors',
+        index: process.env.ELASTIC_INDEX_DOCTORS,
         id: doctorId,
         body: {
           script: {
@@ -221,9 +233,9 @@ export class DoctorRepository extends Repository<Doctor> {
               .getUTCHours()
               .toString()
               .padStart(2, '0')}:${appt.appointmentDateTime
-              .getUTCMinutes()
-              .toString()
-              .padStart(2, '0')}:00.000Z`;
+                .getUTCMinutes()
+                .toString()
+                .padStart(2, '0')}:00.000Z`;
             if (availableSlots.indexOf(sl) >= 0) {
               doctorSlots[availableSlots.indexOf(sl)].status = ES_DOCTOR_SLOT_STATUS.BOOKED;
             }
@@ -250,8 +262,12 @@ export class DoctorRepository extends Repository<Doctor> {
 
   async getDoctorProfileData(id: string) {
     const client = new Client({ node: process.env.ELASTIC_CONNECTION_URL });
+    if (!process.env.ELASTIC_INDEX_DOCTORS) {
+      throw new AphError(AphErrorMessages.ELASTIC_INDEX_NAME_MISSING);
+    }
+
     const searchParams: RequestParams.Search = {
-      index: 'doctors',
+      index: process.env.ELASTIC_INDEX_DOCTORS,
       body: {
         query: {
           bool: {
@@ -446,6 +462,18 @@ export class DoctorRepository extends Repository<Doctor> {
       .where('doctor.id IN (:...doctorIds)', { doctorIds })
       .getRawMany();
   }
+
+  // async getDoctorById(doctorId: string, cb?: responseCB) {
+  //   const data = await this.findOne({
+  //     where: [{ id: doctorId }]
+  //   })
+
+  //   if (cb) {
+  //     cb(data)
+  //     return;
+  //   }
+  //   return data
+  // }
 
   searchByName(searchString: string, cityName: string) {
     const cities: string[] = [
@@ -786,8 +814,8 @@ export class DoctorRepository extends Repository<Doctor> {
                 fee.maximum === -1
                   ? qb.where('doctor.onlineConsultationFees >= ' + fee.minimum)
                   : qb
-                      .where('doctor.onlineConsultationFees >= ' + fee.minimum)
-                      .andWhere('doctor.onlineConsultationFees <= ' + fee.maximum);
+                    .where('doctor.onlineConsultationFees >= ' + fee.minimum)
+                    .andWhere('doctor.onlineConsultationFees <= ' + fee.maximum);
               })
             );
           });
@@ -804,8 +832,8 @@ export class DoctorRepository extends Repository<Doctor> {
                 exp.maximum === -1
                   ? qb.where('doctor.experience >= ' + exp.minimum)
                   : qb
-                      .where('doctor.experience >= ' + exp.minimum)
-                      .andWhere('doctor.experience <= ' + exp.maximum);
+                    .where('doctor.experience >= ' + exp.minimum)
+                    .andWhere('doctor.experience <= ' + exp.maximum);
               })
             );
           });
@@ -1061,6 +1089,10 @@ export class DoctorRepository extends Repository<Doctor> {
 
   updateNextAvailSlot(id: string, nextAvailableSlot: Date) {
     return this.update(id, { nextAvailableSlot });
+  }
+
+  getAllDocsById(ids: string[]) {
+    return this.find({ where: { id: In(ids) } });
   }
 
   getAllDoctors(doctorId: string, limit: number, offset: number) {

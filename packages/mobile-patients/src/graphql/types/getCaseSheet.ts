@@ -61,6 +61,7 @@ export interface getCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription
   medicineConsumptionDurationUnit: MEDICINE_CONSUMPTION_DURATION | null;
   routeOfAdministration: ROUTE_OF_ADMINISTRATION | null;
   medicineCustomDosage: string | null;
+  medicineCustomDetails: string | null;
 }
 
 export interface getCaseSheet_getCaseSheet_caseSheetDetails_otherInstructions {

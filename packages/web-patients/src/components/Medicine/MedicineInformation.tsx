@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { makeStyles, createStyles } from '@material-ui/styles';
-import { Theme, MenuItem, Popover } from '@material-ui/core';
+import { Theme, MenuItem, Popover, Typography } from '@material-ui/core';
 import { AphButton, AphTextField, AphCustomDropdown } from '@aph/web-ui-components';
 import Scrollbars from 'react-custom-scrollbars';
 
@@ -135,6 +135,7 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down('xs')]: {
         backgroundColor: '#fff',
         boxShadow: '0 2px 4px 0 rgba(128, 128, 128, 0.3)',
+        padding: 10,
       },
     },
     deliveryTimeGroup: {
@@ -173,6 +174,7 @@ const useStyles = makeStyles((theme: Theme) => {
         bottom: 0,
         width: '100%',
         background: '#f7f8f5',
+        boxShadow: '0px -2px 5px rgba(128, 128, 128, 0.2)',
       },
     },
     priceGroup: {
@@ -184,6 +186,9 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: '6px 10px',
       display: 'flex',
       alignItems: 'center',
+      [theme.breakpoints.down('xs')]: {
+        padding: 0,
+      },
     },
     medicinePrice: {
       fontSize: 13,
@@ -191,13 +196,18 @@ const useStyles = makeStyles((theme: Theme) => {
       letterSpacing: 0.3,
       fontWeight: 'bold',
       textAlign: 'right',
-      marginLeft: 'auto',
+      [theme.breakpoints.down('xs')]: {
+        width: '50%',
+      },
     },
     leftGroup: {
       borderRight: 'solid 0.5px rgba(2,71,91,0.2)',
       fontSize: 13,
       fontWeight: 500,
       width: 98,
+      [theme.breakpoints.down('xs')]: {
+        width: '50%',
+      },
     },
     medicinePack: {
       color: '#02475b',
@@ -300,12 +310,27 @@ const useStyles = makeStyles((theme: Theme) => {
       textAlign: 'center',
       padding: 16,
     },
+    webView: {
+      [theme.breakpoints.down('xs')]: {
+        display: 'none',
+      },
+    },
+    mobileView: {
+      display: 'none',
+      [theme.breakpoints.down('xs')]: {
+        display: 'block',
+      },
+    },
   });
 });
 
 type MedicineInformationProps = {
   data: MedicineProductDetails;
 };
+
+interface AddToCarProps {
+  setClickAddCart: (clickAddCart: boolean) => void;
+}
 
 export const MedicineInformation: React.FC<MedicineInformationProps> = (props) => {
   const { data } = props;
@@ -563,20 +588,33 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
             {substitutes && (
               <>
                 <div className={classes.sectionTitle}>Substitute Drugs</div>
-                <div
-                  className={classes.substitutes}
-                  onClick={() => {
-                    setIsSubDrugsPopoverOpen(true);
-                  }}
-                  ref={subDrugsRef}
-                >
+
+                <div className={classes.webView}>
+                  <div
+                    className={classes.substitutes}
+                    onClick={() => {
+                      setIsSubDrugsPopoverOpen(true);
+                    }}
+                    ref={subDrugsRef}
+                  >
+                    <span>
+                      Pick from {substitutes.length} available
+                      {substitutes.length === 1 ? ' substitute' : ' substitutes'}
+                    </span>
+                    <div className={classes.dropDownArrow}>
+                      <img src={require('images/ic_dropdown_green.svg')} alt="" />
+                    </div>
+                  </div>
+                </div>
+                <div className={classes.mobileView}>
                   <span>
                     Pick from {substitutes.length} available
                     {substitutes.length === 1 ? ' substitute' : ' substitutes'}
                   </span>
-                  <div className={classes.dropDownArrow}>
-                    <img src={require('images/ic_dropdown_green.svg')} alt="" />
-                  </div>
+                  <SubstituteDrugsList
+                    data={substitutes}
+                    setIsSubDrugsPopoverOpen={setIsSubDrugsPopoverOpen}
+                  />
                 </div>
               </>
             )}
@@ -812,7 +850,6 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                       /**Gtm code End  */
                       applyCartOperations(cartItem);
                       setAddMutationLoading(false);
-                      setShowPopup(true);
                     }}
                   >
                     {' '}

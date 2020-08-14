@@ -63,7 +63,7 @@ export enum ApiConstants {
 
   //medicine order out for delivery
   ORDER_PLACED_TITLE = 'Medicine order is placed',
-  ORDER_PLACED_BODY = 'Hi {0}, we have received your order {1}. For any support, please speak with our customer care executives on the official WhatsApp channel (during business hours 9 AM - 6 PM) https://bit.ly/apollo247medicines',
+  ORDER_PLACED_BODY = 'Hi {0}, we have received your order {1}.\nChecking your blood oxygen level is helpful. Pulse Oximeter is available Now. Click here https://tinyurl.com/y6jwn7pw.\nFor any support, please speak with our customer care executives on the official WhatsApp channel (during business hours 8:30 AM - 8:30 PM) https://bit.ly/apollo247medicines',
 
   // medicine order out for delivery
   UPLOAD_PRESCRIPTION_TITLE = 'Upload Prescription medicine order placed ',
@@ -95,7 +95,8 @@ export enum ApiConstants {
   ORDER_CANCEL_BODY = 'Dear {name}, referring to your Apollo 247 Order {orderId}, {reason}',
   ORDER_CANCEL_PREPAID_BODY = 'We have processed for a refund of Rs {refund} for Order {orderId}, the amount should reflect in your A/C in 5-7 working days.',
   ORDER_CANCEL_HC_REFUND_BODY = 'We have refunded Health Credits worth Rs {healthCreditsRefund} to your personal health credits balance for Order {orderId}.',
-
+  ORDER_CANCEL_PAYMENT_HC_REFUND_BODY = 'We have processed for a refund of Rs {refund} for Order {orderId}, the amount should reflect in your A/C in 5-7 working days. Also, Health Credits worth Rs {healthCreditsRefund} have been added back to your personal health credits balance.',
+  
   // medicine order partial refund
   ORDER_PAYMENT_PARTIAL_REFUND_BODY = 'We have processed for a refund of Rs {refundAmount} for your order {orderId}, the amount should reflect in your A/C in 5-7 working days.',
   //medicine order partial refund health credits
@@ -437,6 +438,15 @@ export enum ApiConstants {
   NEW_VERSION_PRESCRIPTION_SENT_EVENT_NAME = 'New version of the prescription was sent',
   JD_CASE_SHEET_COMPLETED_EVENT_NAME = 'JD case sheet submitted completed',
   JD_CONSULTATION_STARTED_EVENT_NAME = 'JD consultation Started',
+
+  WHATSAPP_SD_CONSULT_REMINDER_15 = 'inf_sd_consult_reminder_15_min',
+  WHATSAPP_SD_CHAT_NOTIFICATION_ID = 'inf_sd_chat_notification',
+  WHATSAPP_SD_OTP = 'inf_sd_otp_message',
+  WHATSAPP_DOCTOR_BOOKING_CONFIRMATION = 'inf_doctor_consult_booking_confirmation',
+  WHATSAPP_SD_CONSULT_DELAY = 'inf_sd_consult_delay_1',
+  WHATSAPP_DOC_SUMMARY = 'inf_doc_8am_summary',
+
+  ONE_APOLLO_ORDER_CANCELLATION_REASON_CODE = 'R000247',
 }
 
 export enum PATIENT_REPO_RELATIONS {

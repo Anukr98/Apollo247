@@ -9,7 +9,6 @@ import {
   getDeliveryTime,
   medCartItemsDetailsApi,
   MedicineOrderBilledItem,
-  trackTagalysEvent,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   MEDICINE_ORDER_STATUS,
@@ -64,7 +63,9 @@ import { UIElementsContextProps } from '@aph/mobile-patients/src/components/UIEl
 import { NavigationScreenProp, NavigationRoute } from 'react-navigation';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { getLatestMedicineOrder_getLatestMedicineOrder_medicineOrderDetails } from '@aph/mobile-patients/src/graphql/types/getLatestMedicineOrder';
+import { getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails } from '@aph/mobile-patients/src/graphql/types/getMedicineOrderOMSDetailsWithAddress';
 import { Tagalys } from '@aph/mobile-patients/src/helpers/Tagalys';
+import { handleUniversalLinks } from './UniversalLinks';
 
 const googleApiKey = AppConfig.Configuration.GOOGLE_API_KEY;
 let onInstallConversionDataCanceller: any;
@@ -659,7 +660,7 @@ export const extractUrlFromString = (text: string): string | undefined => {
 
 export const reOrderMedicines = async (
   order:
-    | getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails
+    | getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails
     | getLatestMedicineOrder_getLatestMedicineOrder_medicineOrderDetails,
   currentPatient: any,
   source: ReorderMedicines['source']
@@ -710,6 +711,7 @@ export const reOrderMedicines = async (
         thumbnail: item.thumbnail || item.image,
         isInStock: item.is_in_stock == 1,
         maxOrderQty: item.MaxOrderQty,
+        productType: item.type_id,
       } as ShoppingCartItem)
   );
   const unavailableItems = billedLineItems
@@ -947,12 +949,7 @@ export const postwebEngageAddToCartEvent = (
     price,
     special_price,
     category_id,
-  }: Partial<MedicineProduct> & {
-    sku: MedicineProduct['sku'];
-    name: MedicineProduct['name'];
-    price: MedicineProduct['price'];
-    special_price: MedicineProduct['special_price'];
-  },
+  }: Pick<MedicineProduct, 'sku' | 'name' | 'price' | 'special_price' | 'category_id'>,
   source: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['Source'],
   section?: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['Section'],
   sectionName?: string
@@ -1045,7 +1042,9 @@ export const callPermissions = (doRequest?: () => void) => {
   });
 };
 
-export const InitiateAppsFlyer = () => {
+export const InitiateAppsFlyer = (
+  navigation: NavigationScreenProp<NavigationRoute<object>, object>
+) => {
   console.log('InitiateAppsFlyer');
   onInstallConversionDataCanceller = appsFlyer.onInstallConversionData((res) => {
     if (JSON.parse(res.data.is_first_launch) == true) {
@@ -1101,11 +1100,22 @@ export const InitiateAppsFlyer = () => {
     }
   );
 
-  onAppOpenAttributionCanceller = appsFlyer.onAppOpenAttribution((res) => {
-    console.log('onAppOpenAttribution', res);
-    console.log('res.data.af_dp', decodeURIComponent(res.data.af_dp));
+  onAppOpenAttributionCanceller = appsFlyer.onAppOpenAttribution(async (res) => {
+    try {
+      AsyncStorage.setItem('deeplink', res.data.af_dp);
+      AsyncStorage.setItem('deeplinkReferalCode', res.data.af_sub1);
 
-    // AsyncStorage.setItem('deeplink', decodeURIComponent(res.data.af_dp));
+      console.log('res.data.af_dp_onAppOpenAttribution', decodeURIComponent(res.data.af_dp));
+      setBugFenderLog('onAppOpenAttribution_APPS_FLYER_DEEP_LINK', res.data.af_dp);
+      setBugFenderLog('onAppOpenAttribution_APPS_FLYER_DEEP_LINK_Referral_Code', res.data.af_sub1);
+
+      setBugFenderLog('onAppOpenAttribution_APPS_FLYER_DEEP_LINK_COMPLETE', res.data);
+    } catch (error) {}
+
+    const userLoggedIn = await AsyncStorage.getItem('logginHappened');
+    if (userLoggedIn == 'true') {
+      handleUniversalLinks(res.data, navigation);
+    }
   });
 };
 
@@ -1180,12 +1190,7 @@ export const postAppsFlyerAddToCartEvent = (
     type_id,
     price,
     special_price,
-  }: Partial<MedicineProduct> & {
-    sku: MedicineProduct['sku'];
-    name: MedicineProduct['name'];
-    price: MedicineProduct['price'];
-    special_price: MedicineProduct['special_price'];
-  },
+  }: Pick<MedicineProduct, 'sku' | 'type_id' | 'price' | 'special_price'>,
   id: string
 ) => {
   const eventAttributes: AppsFlyerEvents[AppsFlyerEventName.PHARMACY_ADD_TO_CART] = {
@@ -1335,24 +1340,6 @@ export const addPharmaItemToCart = (
     });
   };
 
-  const trackTagalysAddToCartEvent = () => {
-    try {
-      trackTagalysEvent(
-        {
-          event_type: 'product_action',
-          details: {
-            sku: cartItem.id,
-            action: 'add_to_cart',
-            quantity: 1,
-          } as Tagalys.ProductAction,
-        },
-        g(currentPatient, 'id')!
-      );
-    } catch (error) {
-      CommonBugFender('helperFunctions_trackTagalysEvent', error);
-    }
-  };
-
   const addToCart = () => {
     addCartItem!(cartItem);
     postwebEngageAddToCartEvent(
@@ -1376,7 +1363,6 @@ export const addPharmaItemToCart = (
       },
       g(currentPatient, 'id')!
     );
-    trackTagalysAddToCartEvent();
   };
 
   if (!isLocationServeiceable) {
@@ -1428,4 +1414,8 @@ export const dataSavedUserID = async (key: string) => {
   let userId: any = await AsyncStorage.getItem(key);
   userId = JSON.parse(userId);
   return userId;
+};
+
+export const setWebEngageScreenNames = (screenName: string) => {
+  webengage.screen(screenName);
 };

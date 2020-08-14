@@ -79,6 +79,7 @@ import { FirebaseEvents, FirebaseEventName } from '../helpers/firebaseEvents';
 import { CollapseCard } from '@aph/mobile-patients/src/components/CollapseCard';
 import { Down, Up } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Tagalys } from '@aph/mobile-patients/src/helpers/Tagalys';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
 export interface CheckoutSceneNewProps extends NavigationScreenProps {}
 
@@ -247,7 +248,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       description: `${desc || ''}`.trim(),
     });
 
-  const getPrepaidCheckoutCompletedEventAttributes = (orderAutoId: string, isOrderCod?: boolean) => {
+  const getPrepaidCheckoutCompletedEventAttributes = (orderAutoId: string, isCOD?: boolean) => {
     try {
       const addr = deliveryAddressId && addresses.find((item) => item.id == deliveryAddressId);
       const store = storeId && stores.find((item) => item.storeid == storeId);
@@ -267,7 +268,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         'Delivery charge': deliveryCharges,
         'Net after discount': getFormattedAmount(grandTotal),
         'Payment status': 1,
-        'Payment Type': isOrderCod ? 'COD' : 'Prepaid',
+        'Payment Type': isCOD ? 'COD' : 'Prepaid',
         'Service Area': 'Pharmacy',
         'Mode of Delivery': deliveryAddressId ? 'Home' : 'Pickup',
         af_revenue: getFormattedAmount(grandTotal),
@@ -297,9 +298,13 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     return appsflyerEventAttributes;
   };
 
-  const postwebEngageCheckoutCompletedEvent = (orderAutoId: string, orderId: string, isOrderCod?: boolean) => {
+  const postwebEngageCheckoutCompletedEvent = (
+    orderAutoId: string,
+    orderId: string,
+    isCOD?: boolean
+  ) => {
     const eventAttributes = {
-      ...getPrepaidCheckoutCompletedEventAttributes(`${orderAutoId}`, isOrderCod),
+      ...getPrepaidCheckoutCompletedEventAttributes(`${orderAutoId}`, isCOD),
     };
     postWebEngageEvent(WebEngageEventName.PHARMACY_CHECKOUT_COMPLETED, eventAttributes);
 
@@ -330,7 +335,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     }
   };
 
-  const placeOrder = (orderId: string, orderAutoId: number, orderType: string) => {
+  const placeOrder = (orderId: string, orderAutoId: number, orderType: string, isCOD?: boolean) => {
     console.log('placeOrder\t', { orderId, orderAutoId });
     const paymentInfo: SaveMedicineOrderPaymentMqVariables = {
       medicinePaymentMqInput: {
@@ -371,7 +376,12 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         } else {
           // Order-Success, Show popup here & clear cart info
           try {
-            postwebEngageCheckoutCompletedEvent(`${orderAutoId}`, orderId, orderType == 'COD');
+            postwebEngageCheckoutCompletedEvent(
+              `${orderAutoId}`,
+              orderId,
+              orderType == 'COD',
+              isCOD
+            );
             firePurchaseEvent(orderId);
           } catch (error) {
             console.log(error);
@@ -530,10 +540,10 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         } else {
           if (isCOD) {
             console.log('isCashOnDelivery\t', { orderId, orderAutoId });
-            placeOrder(orderId, orderAutoId, 'COD');
+            placeOrder(orderId, orderAutoId, 'COD', true);
           } else if (hcOrder) {
             console.log('HCorder\t', { orderId, orderAutoId });
-            placeOrder(orderId, orderAutoId, 'HCorder');
+            placeOrder(orderId, orderAutoId, 'HCorder', false);
           } else {
             console.log('Redirect To Payment Gateway');
             redirectToPaymentGateway(orderId, orderAutoId, paymentMode, bankCode)
@@ -605,6 +615,10 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
       })
     );
+    const deliveryTimeMomentFormat = moment(
+      deliveryTime,
+      AppConfig.Configuration.MED_DELIVERY_DATE_API_FORMAT
+    );
     showAphAlert!({
       // unDismissable: true,
       title: `Hi, ${(currentPatient && currentPatient.firstName) || ''} :)`,
@@ -650,7 +664,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
               {`#${orderAutoId}`}
             </Text>
           </View>
-          {moment(deliveryTime).isValid() && (
+          {deliveryTimeMomentFormat.isValid() && (
             <>
               <View
                 style={{
@@ -668,7 +682,9 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
                   }}
                 >
                   {deliveryTime &&
-                    `Delivery By: ${moment(deliveryTime).format('D MMM YYYY  | hh:mm A')}`}
+                    `Delivery By: ${deliveryTimeMomentFormat.format(
+                      AppConfig.Configuration.MED_DELIVERY_DATE_DISPLAY_FORMAT
+                    )}`}
                 </Text>
               </View>
             </>
@@ -717,7 +733,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         leftIcon={'backArrow'}
         title={'PAYMENT'}
         onPressLeftIcon={() => {
-          CommonLogEvent(AppRoutes.CheckoutScene, 'Go back clicked');
+          CommonLogEvent(AppRoutes.CheckoutSceneNew, 'Go back clicked');
           if (showChennaiOrderForm) {
             handleBackPressFromChennaiOrderForm();
           } else {
@@ -738,7 +754,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       showAphAlert!({ title: 'Uh oh.. :(', description: 'Enter valid email' });
     } else {
       try {
-        CommonLogEvent(AppRoutes.CheckoutScene, `SUBMIT TO CONFIRM ORDER`);
+        CommonLogEvent(AppRoutes.CheckoutSceneNew, `SUBMIT TO CONFIRM ORDER`);
       } catch (error) {
         CommonBugFender('CheckoutScene_renderPayButton_try', error);
       }

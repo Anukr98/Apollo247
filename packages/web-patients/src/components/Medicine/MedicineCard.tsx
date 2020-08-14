@@ -7,7 +7,11 @@ import { clientRoutes } from 'helpers/clientRoutes';
 import { Link } from 'react-router-dom';
 import { MedicineProduct } from './../../helpers/MedicineApiCalls';
 import { gtmTracking } from '../../gtmTracking';
-import { notifyMeTracking, addToCartTracking } from '../../webEngageTracking';
+import {
+  notifyMeTracking,
+  addToCartTracking,
+  pharmacyProductClickedTracking,
+} from '../../webEngageTracking';
 import { NotifyMeNotification } from './NotifyMeNotification';
 import { useParams } from 'hooks/routerHooks';
 import _replace from 'lodash/replace';
@@ -17,38 +21,57 @@ const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
       backgroundColor: theme.palette.common.white,
-      borderRadius: 5,
+      borderRadius: 10,
       boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
-      padding: 15,
+      padding: 10,
       fontSize: 16,
       fontWeight: 500,
       color: '#01475b',
       textAlign: 'center',
       height: '100%',
     },
+    pdHeader: {
+      [theme.breakpoints.down(500)]: {
+        display: 'flex',
+        alignItems: 'flex-start',
+        padding: '0 0 10px',
+      },
+    },
     bigAvatar: {
       width: 85,
       height: 85,
       textAlign: 'center',
-      margin: 'auto',
-      marginBottom: 15,
-      marginTop: 5,
+      margin: '0 auto 20px',
       '& img': {
         verticalAlign: 'middle',
         maxWidth: '100%',
+      },
+      [theme.breakpoints.down(500)]: {
+        margin: '0 10px 0  0',
+        width: 60,
+        height: 'auto',
       },
     },
     priceGroup: {
       fontSize: 12,
       color: '#01475b',
-      fontWeight: 500,
+      fontWeight: 600,
       textAlign: 'center',
       paddingTop: 5,
-      opacity: 0.6,
+
+      [theme.breakpoints.down(500)]: {
+        display: 'flex',
+        flexDirection: 'column-reverse',
+      },
     },
     regularPrice: {
       paddingLeft: 10,
       textDecoration: 'line-through',
+      opacity: 0.6,
+      [theme.breakpoints.down(500)]: {
+        display: 'block',
+        padding: 0,
+      },
     },
     addToCartBtn: {
       color: '#fc9916',
@@ -81,6 +104,10 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     productName: {
       minHeight: 45,
+      [theme.breakpoints.down(500)]: {
+        textAlign: 'left',
+        fontSize: 12,
+      },
     },
     addQty: {
       paddingTop: 16,
@@ -142,6 +169,18 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: 20,
       margin: 'auto',
     },
+    productDetails: {
+      [theme.breakpoints.down(500)]: {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+      },
+    },
+    gridItem: {
+      [theme.breakpoints.down(500)]: {
+        padding: '5px !important',
+      },
+    },
   };
 });
 export interface products {
@@ -176,7 +215,6 @@ export const MedicineCard: React.FC<MedicineInformationProps> = (props) => {
     imageUrl: process.env.PHARMACY_MED_IMAGES_BASE_URL,
   };
   const params = useParams<Params>();
-  const paramSearchText = params.searchText;
   const { addCartItem, cartItems, updateCartItem, removeCartItem } = useShoppingCart();
   const mascotRef = useRef(null);
   const [iśNotifyMeDialogOpen, setIsNotifyMeDialogOpen] = useState<boolean>(false);
@@ -196,261 +234,269 @@ export const MedicineCard: React.FC<MedicineInformationProps> = (props) => {
     <Grid container spacing={2}>
       {props.medicineList && props.medicineList.length > 0
         ? props.medicineList.map((product: MedicineProduct) => (
-            <Grid key={product.id} item xs={6} sm={6} md={4} lg={4}>
+            <Grid key={product.id} item xs={6} sm={6} md={4} lg={4} className={classes.gridItem}>
               <div className={classes.root}>
                 <Link
-                  to={clientRoutes.medicineCategoryDetails(
-                    params.searchMedicineType,
-                    params.searchText,
-                    product.url_key
-                  )}
+                  to={clientRoutes.medicineDetails(product.url_key)}
+                  onClick={() =>
+                    pharmacyProductClickedTracking({
+                      productName: product.name,
+                      source: 'Category',
+                      productId: product.sku,
+                      sectionName: params.searchMedicineType,
+                    })
+                  }
                 >
-                  <div className={classes.bigAvatar}>
-                    <img src={`${apiDetails.imageUrl}${product.image}`} alt="" />
+                  <div className={classes.pdHeader}>
+                    <div className={classes.bigAvatar}>
+                      <img src={`${apiDetails.imageUrl}${product.image}`} alt="" />
+                    </div>
+                    <div className={classes.productName}>{product.name}</div>
                   </div>
-                  <div className={classes.productName}>{product.name}</div>
                 </Link>
-                <div className={classes.priceGroup}>
-                  Rs. {product.special_price ? product.special_price : product.price}{' '}
-                  {product.special_price && (
-                    <span className={classes.regularPrice}>(Rs. {product.price})</span>
+                <div className={classes.productDetails}>
+                  <div className={classes.priceGroup}>
+                    Rs. {product.special_price ? product.special_price : product.price}{' '}
+                    {product.special_price && (
+                      <span className={classes.regularPrice}>(Rs. {product.price})</span>
+                    )}
+                  </div>
+                  {!isInCart(product) &&
+                    (!product.is_in_stock && !currentPatient ? (
+                      <div className={classes.noStock}>Out Of Stock</div>
+                    ) : (
+                      <AphButton
+                        className={classes.addToCartBtn}
+                        onClick={() => {
+                          if (product.is_in_stock) {
+                            const cartItem: MedicineCartItem = {
+                              MaxOrderQty: product.MaxOrderQty,
+                              url_key: product.url_key,
+                              description: product.description,
+                              id: product.id,
+                              image: product.image,
+                              is_in_stock: product.is_in_stock,
+                              is_prescription_required: product.is_prescription_required,
+                              name: product.name,
+                              price: product.price,
+                              sku: product.sku,
+                              special_price: product.special_price,
+                              small_image: product.small_image,
+                              status: product.status,
+                              thumbnail: product.thumbnail,
+                              type_id: product.type_id,
+                              mou: product.mou,
+                              quantity: 1,
+                              isShippable: true,
+                            };
+                            addToCartTracking({
+                              productName: product.name,
+                              source: 'Pharmacy List',
+                              productId: product.sku,
+                              brand: '',
+                              brandId: '',
+                              categoryName: params.searchText,
+                              categoryId: product.category_id,
+                              discountedPrice: product.special_price,
+                              price: product.price,
+                              quantity: 1,
+                            });
+                            /**Gtm code start  */
+                            gtmTracking({
+                              category: 'Pharmacy',
+                              action: 'Add to Cart',
+                              label: product.name,
+                              value: product.special_price || product.price,
+                              ecommObj: {
+                                event: 'add_to_cart',
+                                ecommerce: {
+                                  items: [
+                                    {
+                                      item_name: product.name,
+                                      item_id: product.sku,
+                                      price: product.special_price || product.price,
+                                      item_category: 'Pharmacy',
+                                      item_category_2: product.type_id
+                                        ? product.type_id.toLowerCase() === 'pharma'
+                                          ? 'Drugs'
+                                          : 'FMCG'
+                                        : null,
+                                      // 'item_category_4': '', // future reference
+                                      item_variant: 'Default',
+                                      index: 1,
+                                      quantity: 1,
+                                    },
+                                  ],
+                                },
+                              },
+                            });
+                            /**Gtm code End  */
+                            const index = cartItems.findIndex((item) => item.id === cartItem.id);
+                            if (index >= 0) {
+                              updateCartItem && updateCartItem(cartItem);
+                            } else {
+                              addCartItem && addCartItem(cartItem);
+                            }
+                          } else {
+                            const { sku, name, category_id } = product;
+                            /* WebEngage event start */
+                            notifyMeTracking({
+                              sku,
+                              category_id,
+                              name,
+                            });
+                            /* WebEngage event end */
+                            setSelectedMedicineName(product.name);
+                            setIsNotifyMeDialogOpen(true);
+                          }
+                        }}
+                      >
+                        {product.is_in_stock
+                          ? 'Add to Cart'
+                          : currentPatient && currentPatient.id
+                          ? 'Notify me'
+                          : ''}
+                      </AphButton>
+                    ))}
+                  {isInCart(product) && (
+                    <div className={classes.addQty}>
+                      <AphButton
+                        onClick={() => {
+                          const medicineQtyInCart = getQuantity(product);
+                          if (medicineQtyInCart === 1) {
+                            /* Gtm code start  */
+                            gtmTracking({
+                              category: 'Pharmacy',
+                              action: 'Remove Cart Item',
+                              label: product.name,
+                              value: product.special_price || product.price,
+                            });
+                            /* Gtm code end  */
+                            removeCartItem && removeCartItem(product.id);
+                          } else {
+                            const cartItem: MedicineCartItem = {
+                              MaxOrderQty: product.MaxOrderQty,
+                              url_key: product.url_key,
+                              description: product.description,
+                              id: product.id,
+                              image: product.image,
+                              is_in_stock: product.is_in_stock,
+                              is_prescription_required: product.is_prescription_required,
+                              name: product.name,
+                              price: product.price,
+                              sku: product.sku,
+                              special_price: product.special_price,
+                              small_image: product.small_image,
+                              status: product.status,
+                              thumbnail: product.thumbnail,
+                              type_id: product.type_id,
+                              mou: product.mou,
+                              quantity: -1,
+                              isShippable: true,
+                            };
+                            /* Gtm code start  */
+                            gtmTracking({
+                              category: 'Pharmacy',
+                              action: 'Remove From Cart',
+                              label: product.name,
+                              value: product.special_price || product.price,
+                              ecommObj: {
+                                event: 'remove_from_cart',
+                                ecommerce: {
+                                  items: [
+                                    {
+                                      item_name: product.name,
+                                      item_id: product.sku,
+                                      price: product.special_price || product.price,
+                                      item_category: 'Pharmacy',
+                                      item_category_2: product.type_id
+                                        ? product.type_id.toLowerCase() === 'pharma'
+                                          ? 'Drugs'
+                                          : 'FMCG'
+                                        : null,
+                                      // 'item_category_4': '', // future reference
+                                      item_variant: 'Default',
+                                      index: 1,
+                                      quantity: 1,
+                                    },
+                                  ],
+                                },
+                              },
+                            });
+                            /* Gtm code end  */
+                            updateCartItem && updateCartItem(cartItem);
+                          }
+                        }}
+                      >
+                        -
+                      </AphButton>
+                      <div className={classes.totalQty}>{getQuantity(product)}</div>
+                      <AphButton
+                        onClick={() => {
+                          const medicineQtyInCart = getQuantity(product);
+                          if (
+                            medicineQtyInCart <
+                            (product.MaxOrderQty || process.env.PHARMACY_MEDICINE_QUANTITY)
+                          ) {
+                            const cartItem: MedicineCartItem = {
+                              MaxOrderQty: product.MaxOrderQty,
+                              url_key: product.url_key,
+                              description: product.description,
+                              id: product.id,
+                              image: product.image,
+                              is_in_stock: product.is_in_stock,
+                              is_prescription_required: product.is_prescription_required,
+                              name: product.name,
+                              price: product.price,
+                              sku: product.sku,
+                              special_price: product.special_price,
+                              small_image: product.small_image,
+                              status: product.status,
+                              thumbnail: product.thumbnail,
+                              type_id: product.type_id,
+                              mou: product.mou,
+                              quantity: 1,
+                              isShippable: true,
+                            };
+                            /* Gtm code start  */
+                            gtmTracking({
+                              category: 'Pharmacy',
+                              action: 'Add to Cart',
+                              label: product.name,
+                              value: product.special_price || product.price,
+                              ecommObj: {
+                                event: 'add_to_cart',
+                                ecommerce: {
+                                  items: [
+                                    {
+                                      item_name: product.name,
+                                      item_id: product.sku,
+                                      price: product.special_price || product.price,
+                                      item_category: 'Pharmacy',
+                                      item_category_2: product.type_id
+                                        ? product.type_id.toLowerCase() === 'pharma'
+                                          ? 'Drugs'
+                                          : 'FMCG'
+                                        : null,
+                                      // 'item_category_4': '', // future reference
+                                      item_variant: 'Default',
+                                      index: 1,
+                                      quantity: 1,
+                                    },
+                                  ],
+                                },
+                              },
+                            });
+                            /* Gtm code end  */
+                            updateCartItem && updateCartItem(cartItem);
+                          }
+                        }}
+                      >
+                        +
+                      </AphButton>
+                    </div>
                   )}
                 </div>
-                {!isInCart(product) &&
-                  (!product.is_in_stock && !currentPatient ? (
-                    <div className={classes.noStock}>Out Of Stock</div>
-                  ) : (
-                    <AphButton
-                      className={classes.addToCartBtn}
-                      onClick={() => {
-                        if (product.is_in_stock) {
-                          const cartItem: MedicineCartItem = {
-                            MaxOrderQty: product.MaxOrderQty,
-                            url_key: product.url_key,
-                            description: product.description,
-                            id: product.id,
-                            image: product.image,
-                            is_in_stock: product.is_in_stock,
-                            is_prescription_required: product.is_prescription_required,
-                            name: product.name,
-                            price: product.price,
-                            sku: product.sku,
-                            special_price: product.special_price,
-                            small_image: product.small_image,
-                            status: product.status,
-                            thumbnail: product.thumbnail,
-                            type_id: product.type_id,
-                            mou: product.mou,
-                            quantity: 1,
-                            isShippable: true,
-                          };
-                          addToCartTracking({
-                            productName: product.name,
-                            source: 'Pharmacy List',
-                            productId: product.sku,
-                            brand: '',
-                            brandId: '',
-                            categoryName: params.searchText,
-                            categoryId: product.category_id,
-                            discountedPrice: product.special_price,
-                            price: product.price,
-                            quantity: 1,
-                          });
-                          /**Gtm code start  */
-                          gtmTracking({
-                            category: 'Pharmacy',
-                            action: 'Add to Cart',
-                            label: product.name,
-                            value: product.special_price || product.price,
-                            ecommObj: {
-                              event: 'add_to_cart',
-                              ecommerce: {
-                                items: [
-                                  {
-                                    item_name: product.name,
-                                    item_id: product.sku,
-                                    price: product.special_price || product.price,
-                                    item_category: 'Pharmacy',
-                                    item_category_2: product.type_id
-                                      ? product.type_id.toLowerCase() === 'pharma'
-                                        ? 'Drugs'
-                                        : 'FMCG'
-                                      : null,
-                                    // 'item_category_4': '', // future reference
-                                    item_variant: 'Default',
-                                    index: 1,
-                                    quantity: 1,
-                                  },
-                                ],
-                              },
-                            },
-                          });
-                          /**Gtm code End  */
-                          const index = cartItems.findIndex((item) => item.id === cartItem.id);
-                          if (index >= 0) {
-                            updateCartItem && updateCartItem(cartItem);
-                          } else {
-                            addCartItem && addCartItem(cartItem);
-                          }
-                        } else {
-                          const { sku, name, category_id } = product;
-                          /* WebEngage event start */
-                          notifyMeTracking({
-                            sku,
-                            category_id,
-                            name,
-                          });
-                          /* WebEngage event end */
-                          setSelectedMedicineName(product.name);
-                          setIsNotifyMeDialogOpen(true);
-                        }
-                      }}
-                    >
-                      {product.is_in_stock
-                        ? 'Add to Cart'
-                        : currentPatient && currentPatient.id
-                        ? 'Notify me'
-                        : ''}
-                    </AphButton>
-                  ))}
-                {isInCart(product) && (
-                  <div className={classes.addQty}>
-                    <AphButton
-                      onClick={() => {
-                        const medicineQtyInCart = getQuantity(product);
-                        if (medicineQtyInCart === 1) {
-                          /* Gtm code start  */
-                          gtmTracking({
-                            category: 'Pharmacy',
-                            action: 'Remove Cart Item',
-                            label: product.name,
-                            value: product.special_price || product.price,
-                          });
-                          /* Gtm code end  */
-                          removeCartItem && removeCartItem(product.id);
-                        } else {
-                          const cartItem: MedicineCartItem = {
-                            MaxOrderQty: product.MaxOrderQty,
-                            url_key: product.url_key,
-                            description: product.description,
-                            id: product.id,
-                            image: product.image,
-                            is_in_stock: product.is_in_stock,
-                            is_prescription_required: product.is_prescription_required,
-                            name: product.name,
-                            price: product.price,
-                            sku: product.sku,
-                            special_price: product.special_price,
-                            small_image: product.small_image,
-                            status: product.status,
-                            thumbnail: product.thumbnail,
-                            type_id: product.type_id,
-                            mou: product.mou,
-                            quantity: -1,
-                            isShippable: true,
-                          };
-                          /* Gtm code start  */
-                          gtmTracking({
-                            category: 'Pharmacy',
-                            action: 'Remove From Cart',
-                            label: product.name,
-                            value: product.special_price || product.price,
-                            ecommObj: {
-                              event: 'remove_from_cart',
-                              ecommerce: {
-                                items: [
-                                  {
-                                    item_name: product.name,
-                                    item_id: product.sku,
-                                    price: product.special_price || product.price,
-                                    item_category: 'Pharmacy',
-                                    item_category_2: product.type_id
-                                      ? product.type_id.toLowerCase() === 'pharma'
-                                        ? 'Drugs'
-                                        : 'FMCG'
-                                      : null,
-                                    // 'item_category_4': '', // future reference
-                                    item_variant: 'Default',
-                                    index: 1,
-                                    quantity: 1,
-                                  },
-                                ],
-                              },
-                            },
-                          });
-                          /* Gtm code end  */
-                          updateCartItem && updateCartItem(cartItem);
-                        }
-                      }}
-                    >
-                      -
-                    </AphButton>
-                    <div className={classes.totalQty}>{getQuantity(product)}</div>
-                    <AphButton
-                      onClick={() => {
-                        const medicineQtyInCart = getQuantity(product);
-                        if (
-                          medicineQtyInCart <
-                          (product.MaxOrderQty || process.env.PHARMACY_MEDICINE_QUANTITY)
-                        ) {
-                          const cartItem: MedicineCartItem = {
-                            MaxOrderQty: product.MaxOrderQty,
-                            url_key: product.url_key,
-                            description: product.description,
-                            id: product.id,
-                            image: product.image,
-                            is_in_stock: product.is_in_stock,
-                            is_prescription_required: product.is_prescription_required,
-                            name: product.name,
-                            price: product.price,
-                            sku: product.sku,
-                            special_price: product.special_price,
-                            small_image: product.small_image,
-                            status: product.status,
-                            thumbnail: product.thumbnail,
-                            type_id: product.type_id,
-                            mou: product.mou,
-                            quantity: 1,
-                            isShippable: true,
-                          };
-                          /* Gtm code start  */
-                          gtmTracking({
-                            category: 'Pharmacy',
-                            action: 'Add to Cart',
-                            label: product.name,
-                            value: product.special_price || product.price,
-                            ecommObj: {
-                              event: 'add_to_cart',
-                              ecommerce: {
-                                items: [
-                                  {
-                                    item_name: product.name,
-                                    item_id: product.sku,
-                                    price: product.special_price || product.price,
-                                    item_category: 'Pharmacy',
-                                    item_category_2: product.type_id
-                                      ? product.type_id.toLowerCase() === 'pharma'
-                                        ? 'Drugs'
-                                        : 'FMCG'
-                                      : null,
-                                    // 'item_category_4': '', // future reference
-                                    item_variant: 'Default',
-                                    index: 1,
-                                    quantity: 1,
-                                  },
-                                ],
-                              },
-                            },
-                          });
-                          /* Gtm code end  */
-                          updateCartItem && updateCartItem(cartItem);
-                        }
-                      }}
-                    >
-                      +
-                    </AphButton>
-                  </div>
-                )}
               </div>
             </Grid>
           ))

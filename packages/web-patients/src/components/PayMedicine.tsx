@@ -442,6 +442,7 @@ export const PayMedicine: React.FC = (props) => {
     deliveryTime,
     totalWithCouponDiscount,
     validateCouponResult,
+    shopId,
   } = cartValues;
   const deliveryCharges =
     cartTotal - Number(couponValue) >= Number(pharmacyMinDeliveryValue) ||
@@ -577,6 +578,7 @@ export const PayMedicine: React.FC = (props) => {
           items: cartItemsForApi,
           coupon: couponCode ? couponCode : null,
           deviceType: getDeviceType(),
+          shopId: shopId,
         },
       },
     }
@@ -944,7 +946,7 @@ export const PayMedicine: React.FC = (props) => {
                           <div style={{ paddingLeft: 10 }}>
                             SBI YONO CASHLESS CARD
                             <div className={classes.offerMessage}>
-                              You are eligible for ${process.env.SBI_CASHCARD_DISCOUNT}% cashback
+                              You are eligible for {process.env.SBI_CASHCARD_DISCOUNT}% cashback
                             </div>
                           </div>
                         </li>

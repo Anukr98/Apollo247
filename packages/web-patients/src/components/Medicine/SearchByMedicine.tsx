@@ -31,7 +31,9 @@ import { gtmTracking } from 'gtmTracking';
 import { MetaTagsComp } from 'MetaTagsComp';
 import { GET_RECOMMENDED_PRODUCTS_LIST } from 'graphql/profiles';
 import { useMutation } from 'react-apollo-hooks';
-
+import { Link } from 'react-router-dom';
+import { useShoppingCart } from 'components/MedicinesCartProvider';
+import { useDiagnosticsCart } from 'components/Tests/DiagnosticsCartProvider';
 import { getRecommendedProductsList_getRecommendedProductsList_recommendedProducts as recommendedProductsType } from 'graphql/types/getRecommendedProductsList';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -45,8 +47,13 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     searchByBrandPage: {
       position: 'relative',
-      [theme.breakpoints.up('sm')]: {
-        backgroundColor: '#f7f8f5',
+      backgroundColor: '#f7f8f5',
+      [theme.breakpoints.down('sm')]: {
+        position: 'fixed',
+        top: 0,
+        width: '100%',
+        zIndex: 999,
+        bottom: 0,
       },
     },
     breadcrumbs: {
@@ -66,26 +73,28 @@ const useStyles = makeStyles((theme: Theme) => {
         position: 'fixed',
         top: 0,
         width: '100%',
-        zIndex: 991,
+        zIndex: 999,
         borderBottom: 'none',
         backgroundColor: theme.palette.common.white,
         margin: 0,
-        paddingLeft: 20,
-        paddingRight: 20,
+        padding: '20px 20px 10px',
         justifyContent: 'space-between',
       },
     },
     brandListingSection: {
-      [theme.breakpoints.up('sm')]: {
-        display: 'flex',
-        padding: '20px 3px 20px 20px',
+      display: 'flex',
+      padding: '20px 3px 20px 20px',
+
+      [theme.breakpoints.down('xs')]: {
+        height: '100%',
+        padding: 0,
       },
     },
     searchSection: {
       width: 'calc(100% - 328px)',
       [theme.breakpoints.down('xs')]: {
         width: '100%',
-        paddingTop: 50,
+        paddingTop: 110,
       },
     },
     backArrow: {
@@ -142,7 +151,7 @@ const useStyles = makeStyles((theme: Theme) => {
         height: 'calc(100vh - 245px) !important',
       },
       [theme.breakpoints.down('xs')]: {
-        height: 'calc(100vh - 185px) !important',
+        height: 'calc(100vh - 135px) !important',
       },
     },
     footerLinks: {
@@ -166,7 +175,8 @@ const useStyles = makeStyles((theme: Theme) => {
       '& >div:first-child': {
         flex: 1,
         [theme.breakpoints.down('xs')]: {
-          top: 50,
+          top: 54,
+          zIndex: 999,
         },
       },
     },
@@ -197,8 +207,8 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingBottom: 16,
       fontWeight: 500,
       [theme.breakpoints.down('xs')]: {
-        marginTop: 25,
-        paddingLeft: 10,
+        marginTop: 0,
+        paddingLeft: 0,
       },
     },
     specialOffer: {
@@ -213,6 +223,26 @@ const useStyles = makeStyles((theme: Theme) => {
         verticalAlign: 'middle',
         marginRight: 10,
       },
+    },
+    cartContainer: {
+      '& a': {
+        position: 'relative',
+        display: 'block',
+      },
+    },
+    itemCount: {
+      width: 14,
+      height: 14,
+      borderRadius: '50%',
+      backgroundColor: '#ff748e',
+      position: 'absolute',
+      right: -4,
+      top: -7,
+      fontSize: 9,
+      fontWeight: 'bold',
+      color: theme.palette.common.white,
+      lineHeight: '14px',
+      textAlign: 'center',
     },
   };
 });
@@ -249,6 +279,8 @@ export const SearchByMedicine: React.FC = (props) => {
   const [isUploadPreDialogOpen, setIsUploadPreDialogOpen] = React.useState<boolean>(false);
   const [isEPrescriptionOpen, setIsEPrescriptionOpen] = React.useState<boolean>(false);
   const [heading, setHeading] = React.useState<string>('');
+  const { cartItems } = useShoppingCart();
+  const { diagnosticsCartItems } = useDiagnosticsCart();
 
   const getTitle = () => {
     let title = params.searchMedicineType;
@@ -652,6 +684,14 @@ export const SearchByMedicine: React.FC = (props) => {
             >
               <img src={require('images/ic_filter.svg')} alt="" />
             </AphButton>
+            <div className={classes.cartContainer}>
+              <Link to={clientRoutes.medicinesCart()}>
+                <img src={require('images/ic_cart.svg')} alt="Cart" title={'cart'} />
+                <span className={classes.itemCount}>
+                  {cartItems.length + diagnosticsCartItems.length || 0}
+                </span>
+              </Link>
+            </div>
           </div>
           <div className={classes.autoSearch}>
             <MedicineAutoSearch />

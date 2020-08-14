@@ -20,6 +20,8 @@ const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
       width: '100%',
+      height: 'auto',
+      maxHeight: 'calc(100% - 65px)',
     },
     sectionHeader: {
       color: '#02475b',
@@ -56,10 +58,10 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 12,
     },
     orderTrackCrads: {
-      margin: 20,
-      marginTop: 10,
       backgroundColor: '#f7f8f5',
       borderRadius: 5,
+      height: '100%',
+      margin: 20,
       [theme.breakpoints.down('xs')]: {
         margin: 0,
       },

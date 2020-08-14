@@ -174,6 +174,9 @@ const styles = StyleSheet.create({
   selectedMenuItemText: {
     ...theme.viewStyles.text('M', 14, theme.colors.BONDI_BLUE),
   },
+  availabilityTextStyle: {
+    ...theme.viewStyles.text('M', 15, '#02475b'),
+  },
   //end
 });
 
@@ -227,7 +230,7 @@ export const FilterScene: React.FC<FilterSceneProps> = (props) => {
     </TouchableOpacity>
   );
 
-  const searchedData = (sectionsData: any, searchTerm: string) => {
+  const searchedData = (sectionsData: any, searchTerm = '') => {
     const finalData = sectionsData.reduce((result, sectionData) => {
       const { state, data } = sectionData;
       const filteredData = data.filter((item: any) => {
@@ -370,7 +373,7 @@ export const FilterScene: React.FC<FilterSceneProps> = (props) => {
                 }}
               >
                 <View>
-                  <Text>Availability</Text>
+                  <Text style={styles.availabilityTextStyle}>Availability</Text>
                 </View>
                 <TouchableOpacity
                   onPress={() => {

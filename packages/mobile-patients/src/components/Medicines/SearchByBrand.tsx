@@ -130,7 +130,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
   const [productsList, setProductsList] = useState<MedicineProduct[]>(products || []);
   const [medicineList, setMedicineList] = useState<MedicineProduct[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(products ? false : true);
-  const [showListView, setShowListView] = useState<boolean>(true);
+  const [showListView, setShowListView] = useState<boolean>(false);
   const [searchSate, setsearchSate] = useState<'load' | 'success' | 'fail' | undefined>();
   const medicineListRef = useRef<FlatList<MedicineProduct> | null>();
   const [pageCount, setPageCount] = useState<number>(1);
@@ -231,6 +231,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
         thumbnail,
         isInStock: true,
         maxOrderQty: MaxOrderQty,
+        productType: type_id,
       },
       pharmacyPincode!,
       addCartItem,
@@ -357,6 +358,8 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
           marginHorizontal: 20,
           paddingBottom: index == medicineList.length - 1 ? 10 : 0,
         }}
+        maxOrderQty={getMaxQtyForMedicineItem(item.MaxOrderQty)}
+        removeCartItem={() => onRemoveCartItem(item)}
       />
     );
   };
@@ -526,6 +529,8 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
         onChangeSubscription={() => {}}
         onEditPress={() => {}}
         onAddSubscriptionPress={() => {}}
+        removeCartItem={() => removeCartItem!(medicine.sku)}
+        maxOrderQty={getMaxQtyForMedicineItem(medicine.MaxOrderQty)}
       />
     );
   };
@@ -613,6 +618,8 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
         onChangeSubscription={() => {}}
         onEditPress={() => {}}
         onAddSubscriptionPress={() => {}}
+        removeCartItem={() => removeCartItem!(medicine.sku)}
+        maxOrderQty={getMaxQtyForMedicineItem(medicine.MaxOrderQty)}
       />
     );
   };
