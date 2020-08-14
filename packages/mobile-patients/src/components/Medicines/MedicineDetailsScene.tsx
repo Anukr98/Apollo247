@@ -622,9 +622,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
               <Button
                 onPress={() => {
                   CommonLogEvent(AppRoutes.MedicineDetailsScene, 'Update quantity cart item');
-                  updateQuantityCartItem(medicineDetails, 1);
                   !isMedicineAddedToCart && onAddCartItem(medicineDetails);
-
                   const eventAttributes: WebEngageEvents[WebEngageEventName.BUY_NOW] = {
                     'product name': medicineDetails.name,
                     'product id': medicineDetails.sku,
@@ -1018,7 +1016,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
                     { fontWeight: 'bold', flex: 1, marginLeft: 10, textAlign: 'right' },
                   ]}
                 >
-                  By
+                  By{' '}
                   {moment(
                     deliveryTime,
                     AppConfig.Configuration.MED_DELIVERY_DATE_API_FORMAT

@@ -41,7 +41,6 @@ export enum AppsFlyerEventName {
   MANAGE_DIABETES = 'Manage Diabetes',
   TRACK_SYMPTOMS = 'Track Symptoms',
   VIEW_HELATH_RECORDS = 'View Helath Records',
-  CORONA_VIRUS_TALK_TO_OUR_EXPERT = 'Corona Virus?Talk to our expert',
   ACTIVE_APPOINTMENTS = 'Active Appointments',
   NEED_HELP = 'Need Help?',
   MY_ACCOUNT = 'My Account',
@@ -104,7 +103,6 @@ export interface AppsFlyerEvents {
   [AppsFlyerEventName.MANAGE_DIABETES]: PatientInfo;
   [AppsFlyerEventName.TRACK_SYMPTOMS]: PatientInfo;
   [AppsFlyerEventName.VIEW_HELATH_RECORDS]: PatientInfoWithSource;
-  [AppsFlyerEventName.CORONA_VIRUS_TALK_TO_OUR_EXPERT]: { clicked: true };
   [AppsFlyerEventName.ACTIVE_APPOINTMENTS]: { clicked: true };
   [AppsFlyerEventName.NEED_HELP]: PatientInfoWithNeedHelp; // source values may change later
   [AppsFlyerEventName.MY_ACCOUNT]: PatientInfo;
