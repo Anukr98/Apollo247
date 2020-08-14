@@ -318,7 +318,6 @@ const SaveMedicineOrderPaymentMq: Resolver<
             await handleOneApolloFailure(orderDetails, medicineOrdersRepo, profilesDb);
           }
         } catch (e) {
-          console.log('Points block request exception', e.stack);
           log(
             'profileServiceLogger',
             `Points block request exception - ${orderDetails.orderAutoId}`,
