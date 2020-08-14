@@ -16,11 +16,11 @@ const useStyles = makeStyles((theme: Theme) => {
       position: 'relative',
       [theme.breakpoints.down('xs')]: {
         position: 'fixed',
-        zIndex: 991,
+        zIndex: 999,
         top: 50,
         borderRadius: 0,
         paddingTop: 0,
-        paddingBottom: 20,
+        // paddingBottom: 20,
         boxShadow: '0 2px 10px 0 rgba(0, 0, 0, 0.1)',
         width: '100%',
         height: 'auto',
@@ -45,7 +45,7 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingRight: 15,
       paddingBottom: 10,
       [theme.breakpoints.down('xs')]: {
-        padding: '0 0 10px 0',
+        padding: '20px',
       },
     },
     searchInput: {
@@ -185,6 +185,14 @@ const useStyles = makeStyles((theme: Theme) => {
       '& span': {
         paddingLeft: 10,
         paddingRight: 10,
+      },
+      [theme.breakpoints.down('xs')]: {
+        '& >div': {
+          padding: 10,
+          '& input': {
+            padding: 10,
+          },
+        },
       },
     },
     padNone: {

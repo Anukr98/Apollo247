@@ -605,6 +605,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
             thumbnail: medicineDetails.thumbnail || medicineDetails.image,
             isInStock: !!medicineDetails.is_in_stock,
             maxOrderQty: medicineDetails.MaxOrderQty,
+            productType: medicineDetails.type_id,
           } as ShoppingCartItem;
         });
         const medicines = medicinesAll.filter((item) => !!item);
@@ -665,7 +666,11 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
   const medicineDescription = (
     item: getCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription
   ) => {
-    const type = item.medicineFormTypes === MEDICINE_FORM_TYPES.OTHERS ? 'Take' : 'Apply';
+    const { medicineCustomDetails } = item;
+    const type =
+      item.medicineFormTypes === MEDICINE_FORM_TYPES.OTHERS && medicineCustomDetails === null
+        ? 'Take'
+        : 'Apply';
     const customDosage = item.medicineCustomDosage
       ? item.medicineCustomDosage.split('-').filter((i) => i !== '' && i != '0')
       : [];
@@ -687,94 +692,102 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
       .filter((i) => i !== null);
     const unit: string =
       (medUnitFormatArray.find((i) => i.key === item.medicineUnit) || {}).value || 'others';
-    return `${type + ' '}${
-      customDosage.length > 0
-        ? `${customDosage.join(' ' + unit + ' - ') + ' ' + unit + ' '}${
-            medicineTimings && medicineTimings.length
-              ? '(' +
-                (medicineTimings.length > 1
-                  ? medicineTimings
-                      .slice(0, -1)
-                      .map((i: MEDICINE_TIMINGS | null) => nameFormater(i || '', 'lower'))
-                      .join(', ') +
-                    ' & ' +
-                    nameFormater(medicineTimings[medicineTimings.length - 1] || '', 'lower')
-                  : medicineTimings
-                      .map((i: MEDICINE_TIMINGS | null) => nameFormater(i || '', 'lower'))
-                      .join(', ')) +
-                ') '
-              : ''
-          }${
-            item.medicineConsumptionDurationInDays
-              ? `for ${item.medicineConsumptionDurationInDays} ${
-                  item.medicineConsumptionDurationUnit
-                    ? `${item.medicineConsumptionDurationUnit.slice(0, -1).toLowerCase()}(s) `
-                    : ``
-                }`
-              : ''
-          }${
-            item.medicineConsumptionDurationUnit
-              ? `${nameFormater(item.medicineConsumptionDurationUnit || '', 'lower')} `
-              : ''
-          }${
-            item.medicineToBeTaken && item.medicineToBeTaken.length
-              ? item.medicineToBeTaken
-                  .map((i: MEDICINE_TO_BE_TAKEN | null) => nameFormater(i || '', 'lower'))
-                  .join(', ') + '.'
-              : ''
-          }`
-        : `${item.medicineDosage ? item.medicineDosage : ''} ${
-            item.medicineUnit ? unit + ' ' : ''
-          }${
-            item.medicineFrequency
-              ? item.medicineFrequency === MEDICINE_FREQUENCY.STAT
-                ? 'STAT (Immediately) '
-                : nameFormater(item.medicineFrequency, 'lower') + ' '
-              : ''
-          }${
-            item.medicineConsumptionDurationInDays
-              ? `for ${item.medicineConsumptionDurationInDays} ${
-                  item.medicineConsumptionDurationUnit
-                    ? `${item.medicineConsumptionDurationUnit.slice(0, -1).toLowerCase()}(s) `
-                    : ``
-                }`
-              : ''
-          }${
-            item.medicineConsumptionDurationUnit
-              ? `${nameFormater(item.medicineConsumptionDurationUnit || '', 'lower')} `
-              : ''
-          }${
-            item.medicineToBeTaken && item.medicineToBeTaken.length
-              ? item.medicineToBeTaken
-                  .map((i: MEDICINE_TO_BE_TAKEN | null) => nameFormater(i || '', 'lower'))
-                  .join(', ') + ' '
-              : ''
-          }${
-            medicineTimings && medicineTimings.length
-              ? `${
-                  medicineTimings.includes(MEDICINE_TIMINGS.AS_NEEDED) &&
-                  medicineTimings.length === 1
-                    ? ''
-                    : 'in the '
-                }` +
-                (medicineTimings.length > 1
-                  ? medicineTimings
-                      .slice(0, -1)
-                      .map((i: MEDICINE_TIMINGS | null) => nameFormater(i || '', 'lower'))
-                      .join(', ') +
-                    ' & ' +
-                    nameFormater(medicineTimings[medicineTimings.length - 1] || '', 'lower') +
-                    ' '
-                  : medicineTimings
-                      .map((i: MEDICINE_TIMINGS | null) => nameFormater(i || '', 'lower'))
-                      .join(', ') + ' ')
-              : ''
-          }`
-    }${
-      item.routeOfAdministration
-        ? `\nTo be taken: ${nameFormater(item.routeOfAdministration, 'title')}`
-        : ''
-    }${item.medicineInstructions ? '\nInstructions: ' + item.medicineInstructions : ''}`;
+    if (medicineCustomDetails !== null) {
+      return `${medicineCustomDetails}${
+        item.routeOfAdministration
+          ? `\nTo be taken: ${nameFormater(item.routeOfAdministration, 'title')}`
+          : ''
+      }${item.medicineInstructions ? '\nInstructions: ' + item.medicineInstructions : ''}`;
+    } else {
+      return `${type + ' '}${
+        customDosage.length > 0
+          ? `${customDosage.join(' ' + unit + ' - ') + ' ' + unit + ' '}${
+              medicineTimings && medicineTimings.length
+                ? '(' +
+                  (medicineTimings.length > 1
+                    ? medicineTimings
+                        .slice(0, -1)
+                        .map((i: MEDICINE_TIMINGS | null) => nameFormater(i || '', 'lower'))
+                        .join(', ') +
+                      ' & ' +
+                      nameFormater(medicineTimings[medicineTimings.length - 1] || '', 'lower')
+                    : medicineTimings
+                        .map((i: MEDICINE_TIMINGS | null) => nameFormater(i || '', 'lower'))
+                        .join(', ')) +
+                  ') '
+                : ''
+            }${
+              item.medicineConsumptionDurationInDays
+                ? `for ${item.medicineConsumptionDurationInDays} ${
+                    item.medicineConsumptionDurationUnit
+                      ? `${item.medicineConsumptionDurationUnit.slice(0, -1).toLowerCase()}(s) `
+                      : ``
+                  }`
+                : ''
+            }${
+              item.medicineConsumptionDurationUnit
+                ? `${nameFormater(item.medicineConsumptionDurationUnit || '', 'lower')} `
+                : ''
+            }${
+              item.medicineToBeTaken && item.medicineToBeTaken.length
+                ? item.medicineToBeTaken
+                    .map((i: MEDICINE_TO_BE_TAKEN | null) => nameFormater(i || '', 'lower'))
+                    .join(', ') + '.'
+                : ''
+            }`
+          : `${item.medicineDosage ? item.medicineDosage : ''} ${
+              item.medicineUnit ? unit + ' ' : ''
+            }${
+              item.medicineFrequency
+                ? item.medicineFrequency === MEDICINE_FREQUENCY.STAT
+                  ? 'STAT (Immediately) '
+                  : nameFormater(item.medicineFrequency, 'lower') + ' '
+                : ''
+            }${
+              item.medicineConsumptionDurationInDays
+                ? `for ${item.medicineConsumptionDurationInDays} ${
+                    item.medicineConsumptionDurationUnit
+                      ? `${item.medicineConsumptionDurationUnit.slice(0, -1).toLowerCase()}(s) `
+                      : ``
+                  }`
+                : ''
+            }${
+              item.medicineConsumptionDurationUnit
+                ? `${nameFormater(item.medicineConsumptionDurationUnit || '', 'lower')} `
+                : ''
+            }${
+              item.medicineToBeTaken && item.medicineToBeTaken.length
+                ? item.medicineToBeTaken
+                    .map((i: MEDICINE_TO_BE_TAKEN | null) => nameFormater(i || '', 'lower'))
+                    .join(', ') + ' '
+                : ''
+            }${
+              medicineTimings && medicineTimings.length
+                ? `${
+                    medicineTimings.includes(MEDICINE_TIMINGS.AS_NEEDED) &&
+                    medicineTimings.length === 1
+                      ? ''
+                      : 'in the '
+                  }` +
+                  (medicineTimings.length > 1
+                    ? medicineTimings
+                        .slice(0, -1)
+                        .map((i: MEDICINE_TIMINGS | null) => nameFormater(i || '', 'lower'))
+                        .join(', ') +
+                      ' & ' +
+                      nameFormater(medicineTimings[medicineTimings.length - 1] || '', 'lower') +
+                      ' '
+                    : medicineTimings
+                        .map((i: MEDICINE_TIMINGS | null) => nameFormater(i || '', 'lower'))
+                        .join(', ') + ' ')
+                : ''
+            }`
+      }${
+        item.routeOfAdministration
+          ? `\nTo be taken: ${nameFormater(item.routeOfAdministration, 'title')}`
+          : ''
+      }${item.medicineInstructions ? '\nInstructions: ' + item.medicineInstructions : ''}`;
+    }
   };
 
   const renderPrescriptions = () => {

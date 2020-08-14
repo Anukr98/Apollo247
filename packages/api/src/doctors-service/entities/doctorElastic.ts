@@ -55,6 +55,7 @@ export async function addDoctorElastic(allDocsInfo: Doctor) {
     if (allDocsInfo.specialty) {
         specialty = {
             specialtyId: allDocsInfo.specialty.id,
+            id: allDocsInfo.specialty.id
         };
         Object.assign(specialty, omit(allDocsInfo.specialty, ['id']));
     }

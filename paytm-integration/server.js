@@ -973,7 +973,11 @@ app.get('/processOmsOrders', (req, res) => {
           url: process.env.API_URL,
           method: 'post',
           data: {
-            query: getMedicineOrderQuery('getMedicineOrderOMSDetails', patientId, orderAutoId),
+            query: getMedicineOrderQuery(
+              'getMedicineOrderOMSDetailsWithAddress',
+              patientId,
+              orderAutoId
+            ),
           },
         })
           .then(async (response) => {
@@ -981,8 +985,8 @@ app.get('/processOmsOrders', (req, res) => {
               response &&
               response.data &&
               response.data.data &&
-              response.data.data.getMedicineOrderOMSDetails &&
-              response.data.data.getMedicineOrderOMSDetails.medicineOrderDetails;
+              response.data.data.getMedicineOrderOMSDetailsWithAddress &&
+              response.data.data.getMedicineOrderOMSDetailsWithAddress.medicineOrderDetails;
             if (orderDetails) {
               logger.info(
                 `message from topic -processOrders() OMS->getMedicineOrderDetails()-> ${JSON.stringify(
@@ -1000,24 +1004,7 @@ app.get('/processOmsOrders', (req, res) => {
                   deliveryStateCode = 'TS',
                   lat = 0,
                   long = 0;
-                if (orderDetails.patientAddressId) {
-                  const patientAddressDetails = await getAddressDetails(
-                    orderDetails.patientAddressId
-                  );
-                  if (patientAddressDetails) {
-                    deliveryState = patientAddressDetails.state;
-                    deliveryAddress1 = patientAddressDetails.addressLine1;
-                    deliveryAddress2 = patientAddressDetails.addressLine2;
-                    landmark = patientAddressDetails.landmark || landmark;
-                    lat = patientAddressDetails.latitude || lat;
-                    long = patientAddressDetails.longitude || long;
-                    deliveryStateCode = patientAddressDetails.stateCode || deliveryStateCode;
-                    deliveryAddress =
-                      patientAddressDetails.addressLine1 + ' ' + patientAddressDetails.addressLine2;
-                    deliveryCity = patientAddressDetails.city || deliveryCity;
-                    deliveryZipcode = patientAddressDetails.zipcode || deliveryZipcode;
-                  }
-                }
+                const patientAddressDetails = orderDetails.medicineOrderAddress;
                 if (orderDetails.deliveryType == 'STORE_PICKUP') {
                   if (!orderDetails.shopAddress) {
                     logger.error(
@@ -1034,6 +1021,17 @@ app.get('/processOmsOrders', (req, res) => {
                   deliveryZipcode = shopAddress.zipcode;
                   deliveryAddress = shopAddress.address || '';
                   deliveryStateCode = shopAddress.stateCode;
+                } else {
+                  deliveryState = patientAddressDetails.state;
+                  deliveryAddress1 = patientAddressDetails.addressLine1;
+                  deliveryAddress2 = patientAddressDetails.addressLine2;
+                  landmark = patientAddressDetails.landmark || landmark;
+                  lat = patientAddressDetails.latitude || lat;
+                  long = patientAddressDetails.longitude || long;
+                  deliveryStateCode = patientAddressDetails.stateCode || deliveryStateCode;
+                  deliveryAddress = deliveryAddress1 + ' ' + deliveryAddress2;
+                  deliveryCity = patientAddressDetails.city || deliveryCity;
+                  deliveryZipcode = patientAddressDetails.zipcode || deliveryZipcode;
                 }
                 if (orderDetails.shopId == '0') {
                   orderDetails.shopId = '';
@@ -1180,7 +1178,7 @@ app.get('/processOmsOrders', (req, res) => {
                     customername:
                       patientDetails.firstName +
                       (patientDetails.lastName ? ' ' + patientDetails.lastName : ''),
-                    primarycontactno: patientDetails.mobileNumber.substr(3),
+                    primarycontactno: patientAddressDetails.mobileNumber.substr(3),
                     secondarycontactno: '',
                     age: patientAge,
                     emailid: patientDetails.emailAddress || '',

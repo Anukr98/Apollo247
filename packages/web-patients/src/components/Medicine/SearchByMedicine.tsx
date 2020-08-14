@@ -31,8 +31,11 @@ import { gtmTracking } from 'gtmTracking';
 import { MetaTagsComp } from 'MetaTagsComp';
 import { GET_RECOMMENDED_PRODUCTS_LIST } from 'graphql/profiles';
 import { useMutation } from 'react-apollo-hooks';
-
+import { Link } from 'react-router-dom';
+import { useShoppingCart } from 'components/MedicinesCartProvider';
+import { useDiagnosticsCart } from 'components/Tests/DiagnosticsCartProvider';
 import { getRecommendedProductsList_getRecommendedProductsList_recommendedProducts as recommendedProductsType } from 'graphql/types/getRecommendedProductsList';
+import { getImageUrl } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -222,6 +225,26 @@ const useStyles = makeStyles((theme: Theme) => {
         marginRight: 10,
       },
     },
+    cartContainer: {
+      '& a': {
+        position: 'relative',
+        display: 'block',
+      },
+    },
+    itemCount: {
+      width: 14,
+      height: 14,
+      borderRadius: '50%',
+      backgroundColor: '#ff748e',
+      position: 'absolute',
+      right: -4,
+      top: -7,
+      fontSize: 9,
+      fontWeight: 'bold',
+      color: theme.palette.common.white,
+      lineHeight: '14px',
+      textAlign: 'center',
+    },
   };
 });
 
@@ -241,6 +264,7 @@ type DiscountFilter = { fromDiscount: string; toDiscount: string };
 
 export const SearchByMedicine: React.FC = (props) => {
   const classes = useStyles({});
+  const patient = useCurrentPatient();
   const recommendedProductsMutation = useMutation(GET_RECOMMENDED_PRODUCTS_LIST);
   const [priceFilter, setPriceFilter] = useState<PriceFilter | null>(null);
   const [discountFilter, setDiscountFilter] = useState<DiscountFilter | null>(null);
@@ -257,6 +281,8 @@ export const SearchByMedicine: React.FC = (props) => {
   const [isUploadPreDialogOpen, setIsUploadPreDialogOpen] = React.useState<boolean>(false);
   const [isEPrescriptionOpen, setIsEPrescriptionOpen] = React.useState<boolean>(false);
   const [heading, setHeading] = React.useState<string>('');
+  const { cartItems } = useShoppingCart();
+  const { diagnosticsCartItems } = useDiagnosticsCart();
 
   const getTitle = () => {
     let title = params.searchMedicineType;
@@ -386,13 +412,6 @@ export const SearchByMedicine: React.FC = (props) => {
       });
   };
 
-  const getImageUrl = (fileIds: string) => {
-    return fileIds
-      .split(',')
-      .filter((fileId) => fileId)
-      .map((fileId) => `/catalog/product${fileId}`)[0];
-  };
-
   const getUrlKey = (name: string) => {
     const formattedName = name
       ? name.replace(/[`~!@#$%^&*()_|+\-=?;:'",.<>\{\}\[\]\\\/]/gi, '-')
@@ -401,81 +420,83 @@ export const SearchByMedicine: React.FC = (props) => {
   };
 
   const getRecommendedProducts = () => {
-    recommendedProductsMutation({
-      variables: {
-        patientUhid: patient && patient.uhid ? patient.uhid : '',
-      },
-    })
-      .then((res: any) => {
-        if (
-          res &&
-          res.data &&
-          res.data.getRecommendedProductsList &&
-          res.data.getRecommendedProductsList.recommendedProducts
-        ) {
-          const dataList = res.data.getRecommendedProductsList.recommendedProducts;
-          setMedicineList(
-            dataList.map((data: recommendedProductsType) => {
-              const {
-                productSku,
-                productName,
-                productImage,
-                productPrice,
-                productSpecialPrice,
-                isPrescriptionNeeded,
-                categoryName,
-                status,
-                mou,
-                imageBaseUrl,
-                id,
-                is_in_stock,
-                small_image,
-                thumbnail,
-                type_id,
-                quantity,
-                isShippable,
-                MaxOrderQty,
-                urlKey,
-              } = data;
-              return {
-                id,
-                image: productImage ? getImageUrl(productImage) : null,
-                is_in_stock,
-                is_prescription_required: isPrescriptionNeeded,
-                name: productName,
-                price: productPrice,
-                special_price: productSpecialPrice,
-                sku: productSku,
-                small_image,
-                status,
-                categoryName,
-                thumbnail,
-                type_id,
-                quantity,
-                mou,
-                isShippable,
-                MaxOrderQty,
-                imageBaseUrl,
-                url_key: urlKey && urlKey !== '' ? urlKey : getUrlKey(productName),
-              };
-            })
-          );
-        } else {
-          setMedicineList([]);
-        }
+    if (patient && patient.uhid) {
+      recommendedProductsMutation({
+        variables: {
+          patientUhid: patient.uhid,
+        },
       })
-      .catch((e) => {
-        console.log(e);
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });
+        .then((res: any) => {
+          if (
+            res &&
+            res.data &&
+            res.data.getRecommendedProductsList &&
+            res.data.getRecommendedProductsList.recommendedProducts
+          ) {
+            const dataList = res.data.getRecommendedProductsList.recommendedProducts;
+            setMedicineList(
+              dataList.map((data: recommendedProductsType) => {
+                const {
+                  productSku,
+                  productName,
+                  productImage,
+                  productPrice,
+                  productSpecialPrice,
+                  isPrescriptionNeeded,
+                  categoryName,
+                  status,
+                  mou,
+                  imageBaseUrl,
+                  id,
+                  is_in_stock,
+                  small_image,
+                  thumbnail,
+                  type_id,
+                  quantity,
+                  isShippable,
+                  MaxOrderQty,
+                  urlKey,
+                } = data;
+                return {
+                  id,
+                  image: productImage ? getImageUrl(productImage) : null,
+                  is_in_stock,
+                  is_prescription_required: isPrescriptionNeeded,
+                  name: productName,
+                  price: productPrice,
+                  special_price: productSpecialPrice,
+                  sku: productSku,
+                  small_image,
+                  status,
+                  categoryName,
+                  thumbnail,
+                  type_id,
+                  quantity,
+                  mou,
+                  isShippable,
+                  MaxOrderQty,
+                  imageBaseUrl,
+                  url_key: urlKey && urlKey !== '' ? urlKey : getUrlKey(productName),
+                };
+              })
+            );
+          } else {
+            setMedicineList([]);
+          }
+        })
+        .catch((e) => {
+          console.log(e);
+        })
+        .finally(() => {
+          setIsLoading(false);
+        });
+    }
   };
 
   useEffect(() => {
     if (!medicineList && paramSearchType !== 'search-medicines') {
       setIsLoading(true);
-      if (paramSearchText === 'recomonded-products') {
+      if (paramSearchText === 'recommended-products') {
         getRecommendedProducts();
       } else {
         getCategoryProducts();
@@ -485,7 +506,7 @@ export const SearchByMedicine: React.FC = (props) => {
     } else {
       setMedicineListFiltered(medicineList);
     }
-  }, [medicineList]);
+  }, [medicineList, patient]);
 
   const getSpecialPrice = (special_price?: string | number) =>
     special_price
@@ -607,10 +628,7 @@ export const SearchByMedicine: React.FC = (props) => {
     }
     setMedicineListFiltered(priceFilterArray);
   }, [priceFilter, filterData, discountFilter, sortBy]);
-
-  const patient = useCurrentPatient();
   const age = patient && patient.dateOfBirth ? moment().diff(patient.dateOfBirth, 'years') : null;
-
   const handleUploadPrescription = () => {
     uploadPrescriptionTracking({ ...patient, age });
     setIsUploadPreDialogOpen(true);
@@ -660,6 +678,14 @@ export const SearchByMedicine: React.FC = (props) => {
             >
               <img src={require('images/ic_filter.svg')} alt="" />
             </AphButton>
+            <div className={classes.cartContainer}>
+              <Link to={clientRoutes.medicinesCart()}>
+                <img src={require('images/ic_cart.svg')} alt="Cart" title={'cart'} />
+                <span className={classes.itemCount}>
+                  {cartItems.length + diagnosticsCartItems.length || 0}
+                </span>
+              </Link>
+            </div>
           </div>
           <div className={classes.autoSearch}>
             <MedicineAutoSearch />

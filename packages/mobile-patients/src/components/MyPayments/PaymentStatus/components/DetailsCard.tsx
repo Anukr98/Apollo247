@@ -138,9 +138,12 @@ const DetailsCard: FC<DetailsCardProps> = (props) => {
     }
     if (paymentFor === 'pharmacy') {
       let statusType = '';
-      const { medicineOrderPayments } = item;
+      const { medicineOrderPayments, currentStatus } = item;
+      const { medicineOrderRefunds } = medicineOrderPayments[0]
       if (!medicineOrderPayments.length) {
         statusType = 'PENDING';
+      } else if (currentStatus === 'CANCELLED' && medicineOrderRefunds.length) {
+        statusType = 'TXN_REFUND';
       } else {
         statusType = medicineOrderPayments[0].paymentStatus;
       }

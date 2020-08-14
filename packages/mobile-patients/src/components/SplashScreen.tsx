@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   StyleSheet,
   View,
@@ -26,6 +26,7 @@ import {
   CommonBugFender,
   setBugFenderLog,
   setBugfenderPhoneNumber,
+  isIos,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import {
@@ -45,6 +46,10 @@ import {
   WebEngageEvents,
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import RNCallKeep from 'react-native-callkeep';
+import VoipPushNotification from 'react-native-voip-push-notification';
+import { string } from '../strings/string';
+import { isUpperCase } from '@aph/mobile-patients/src/utils/commonUtils';
 
 // The moment we import from sdk @praktice/navigator-react-native-sdk,
 // finally not working on all promises.
@@ -101,14 +106,16 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const { showAphAlert, hideAphAlert } = useUIElements();
   const [appState, setAppState] = useState(AppState.currentState);
   const client = useApolloClient();
+  const voipAppointmentId = useRef<string>('');
+
   // const { setVirtualConsultationFee } = useAppCommonData();
 
   useEffect(() => {
     getData('ConsultRoom', undefined, false); // no need to set timeout on didMount
-    InitiateAppsFlyer();
+    InitiateAppsFlyer(props.navigation);
     DeviceEventEmitter.addListener('accept', (params) => {
       console.log('Accept Params', params);
-      getAppointmentDataAndNavigate(params.appointment_id);
+      getAppointmentDataAndNavigate(params.appointment_id, true);
     });
     setBugfenderPhoneNumber();
     AppState.addEventListener('change', _handleAppStateChange);
@@ -131,6 +138,50 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   useEffect(() => {
     handleDeepLink();
   }, []);
+
+  useEffect(() => {
+    if (isIos()) {
+      initializeCallkit();
+      handleVoipEventListeners();
+    }
+  }, []);
+
+  const initializeCallkit = () => {
+    const callkeepOptions = {
+      ios: {
+        appName: string.LocalStrings.appName,
+        imageName: 'callkitAppIcon.png',
+      },
+    };
+
+    try {
+      RNCallKeep.setup(callkeepOptions);
+    } catch (err) {
+      CommonBugFender('InitializeCallKeep_Error', err.message);
+    }
+
+    // Add RNCallKeep Events
+    RNCallKeep.addEventListener('answerCall', onAnswerCallAction);
+    RNCallKeep.addEventListener('endCall', onDisconnetCallAction);
+  };
+
+  const handleVoipEventListeners = () => {
+    VoipPushNotification.addEventListener('notification', (notification) => {
+      // on receive voip push
+      const payload = notification && notification.getData();
+      if (payload && payload.appointmentId) {
+        voipAppointmentId.current = notification.getData().appointmentId;
+      }
+    });
+  };
+
+  const onAnswerCallAction = () => {
+    voipAppointmentId.current && getAppointmentDataAndNavigate(voipAppointmentId.current);
+  };
+
+  const onDisconnetCallAction = () => {
+    voipAppointmentId.current = '';
+  };
 
   const handleDeepLink = () => {
     try {
@@ -162,7 +213,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   };
   const handleOpenURL = (event: any) => {
     try {
-      console.log('event', event);
+      if (Platform.OS === 'ios') {
+        // for ios universal links
+        InitiateAppsFlyer(props.navigation);
+      }
       let route;
 
       route = event.replace('apollopatients://', '');
@@ -241,7 +295,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           break;
 
         case 'ChatRoom':
-          if (data.length === 2) getAppointmentDataAndNavigate(linkId);
+          if (data.length === 2) getAppointmentDataAndNavigate(linkId, false);
           break;
 
         case 'Order':
@@ -297,7 +351,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     } catch (error) {}
   };
 
-  const getData = (routeName: String, id?: String, timeout?: boolean) => {
+  const getData = (routeName: String, id?: String, timeout?: boolean, isCall?: boolean) => {
     async function fetchData() {
       firebase.analytics().setAnalyticsCollectionEnabled(true);
       // const onboarding = await AsyncStorage.getItem('onboarding');
@@ -373,7 +427,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
             if (mePatient) {
               if (mePatient.firstName !== '') {
-                pushTheView(routeName, id ? id : undefined);
+                pushTheView(routeName, id ? id : undefined, isCall);
               } else {
                 props.navigation.replace(AppRoutes.Login);
               }
@@ -412,7 +466,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     }
     fetchData();
   };
-  const getAppointmentDataAndNavigate = (appointmentID: string) => {
+  const getAppointmentDataAndNavigate = (appointmentID: string, isCall: boolean) => {
     client
       .query<getAppointmentDataQuery, getAppointmentDataVariables>({
         query: GET_APPOINTMENT_DATA,
@@ -424,7 +478,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       .then((_data) => {
         const appointmentData: any = _data.data.getAppointmentData!.appointmentsHistory;
         if (appointmentData[0]!.doctorInfo !== null) {
-          getData('ChatRoom', appointmentData[0], true);
+          getData('ChatRoom', appointmentData[0], true, isCall);
         }
       })
       .catch((error) => {
@@ -432,7 +486,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       });
   };
 
-  const pushTheView = (routeName: String, id?: any) => {
+  const pushTheView = (routeName: String, id?: any, isCall?: boolean) => {
     console.log('pushTheView', routeName);
     setBugFenderLog('DEEP_LINK_PUSHVIEW', { routeName, id });
     switch (routeName) {
@@ -492,8 +546,16 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         const cityBrandFilter = id ? id.split('%20') : '';
         props.navigation.navigate(AppRoutes.DoctorSearchListing, {
           specialityId: cityBrandFilter[0] ? cityBrandFilter[0] : '',
-          city: cityBrandFilter.length > 1 ? cityBrandFilter[1] : null,
-          brand: cityBrandFilter.length > 2 ? cityBrandFilter[2] : null,
+          city:
+            cityBrandFilter.length > 1 && !isUpperCase(cityBrandFilter[1])
+              ? cityBrandFilter[1]
+              : null,
+          brand:
+            cityBrandFilter.length > 2
+              ? cityBrandFilter[2]
+              : isUpperCase(cityBrandFilter[1])
+              ? cityBrandFilter[1]
+              : null,
         });
         break;
       case 'Doctor':
@@ -530,6 +592,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           data: id,
           callType: '',
           prescription: '',
+          isCall: isCall,
+          isVoipCall: voipAppointmentId.current ? true : false,
         });
         break;
       case 'Order':
@@ -693,12 +757,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     Pharmacy_Delivery_Charges: {
       PROD: 'Pharmacy_Delivery_Charges',
     },
-    home_screen_emergency_banner: {
-      PROD: 'home_screen_emergency_banner',
-    },
-    home_screen_emergency_number: {
-      PROD: 'home_screen_emergency_number',
-    },
     top6_specailties: {
       QA: 'QA_top6_specailties',
       DEV: 'DEV_top6_specailties',
@@ -773,11 +831,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           return firebase.config().getValues(getRemoteConfigKeys());
         })
         .then((snapshot) => {
-          if (__DEV__) {
-            const snapshotLog = Object.keys(snapshot).map((k) => [k, snapshot[k].val()]);
-            console.log({ snapshotLog });
-          }
-
           const needHelpToContactInMessage = getRemoteConfigValue(
             'Need_Help_To_Contact_In',
             snapshot
@@ -797,18 +850,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           );
 
           setAppConfig('Pharmacy_Delivery_Charges', 'DELIVERY_CHARGES', snapshot);
-
-          setAppConfig(
-            'home_screen_emergency_banner',
-            'HOME_SCREEN_EMERGENCY_BANNER_TEXT',
-            snapshot
-          );
-
-          setAppConfig(
-            'home_screen_emergency_number',
-            'HOME_SCREEN_EMERGENCY_BANNER_NUMBER',
-            snapshot
-          );
 
           setAppConfig('Doctor_Partner_Text', 'DOCTOR_PARTNER_TEXT', snapshot);
 

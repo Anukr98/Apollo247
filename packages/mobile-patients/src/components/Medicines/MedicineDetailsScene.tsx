@@ -11,7 +11,6 @@ import {
   MedicineIcon,
   MedicineRxIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
-import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
@@ -211,7 +210,7 @@ export interface MedicineDetailsSceneProps
   extends NavigationScreenProps<{
     sku: string;
     title: string;
-    movedFrom: string;
+    movedFrom: WebEngageEvents[WebEngageEventName.PRODUCT_PAGE_VIEWED]['source'];
     deliveryError: string;
     sectionName?: string;
   }> {}
@@ -323,11 +322,9 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
   const getItemQuantity = (id: string) => {
     const foundItem = cartItems.find((item) => item.id == id);
-    return foundItem ? foundItem.quantity : 0;
+    return foundItem ? foundItem.quantity : 1;
   };
-  const [selectedQuantity, setselectedQuantity] = useState<string | number>(getItemQuantity(sku));
   const isMedicineAddedToCart = cartItems.findIndex((item) => item.id == sku) != -1;
-  const itemInCart = cartItems.find((item) => item.id == sku);
   const isOutOfStock = !medicineDetails!.is_in_stock;
   const medicineName = medicineDetails.name;
   const scrollViewRef = React.useRef<KeyboardAwareScrollView>(null);
@@ -336,7 +333,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
 
   useEffect(() => {
     if (!_deliveryError) {
-      fetchDeliveryTime();
+      fetchDeliveryTime(false);
     }
 
     if (typeof movedFrom !== 'undefined') {
@@ -408,7 +405,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     }
   };
 
-  const onAddCartItem = (item: MedicineProduct) => {
+  const onAddCartItem = (item: MedicineProductDetails) => {
     const {
       sku,
       mou,
@@ -436,20 +433,21 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       thumbnail: thumbnail,
       isInStock: true,
       maxOrderQty: MaxOrderQty,
+      productType: type_id,
     });
     postwebEngageAddToCartEvent(item, 'Pharmacy PDP', sectionName);
     let id = currentPatient && currentPatient.id ? currentPatient.id : '';
     postAppsFlyerAddToCartEvent(item, id);
   };
 
-  const updateQuantityCartItem = ({ sku }: MedicineProduct, quantity: number) => {
+  const updateQuantityCartItem = ({ sku }: MedicineProductDetails, quantity: number) => {
     updateCartItem!({
       id: sku,
       quantity,
     });
   };
 
-  const fetchDeliveryTime = async () => {
+  const fetchDeliveryTime = async (checkButtonClicked?: boolean) => {
     if (!pincode) return;
     const unServiceableMsg = 'Sorry, not serviceable in your area.';
     const pincodeServiceableItemOutOfStockMsg = 'Sorry, this item is out of stock in your area.';
@@ -488,15 +486,17 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
         const deliveryDate = g(res, 'data', 'tat', '0' as any, 'deliverydate');
         const currentDate = moment();
         if (deliveryDate) {
-          const eventAttributes: WebEngageEvents[WebEngageEventName.PRODUCT_DETAIL_PINCODE_CHECK] = {
-            'product id': sku,
-            'product name': medicineDetails.name,
-            pincode: Number(pincode),
-            'customer id': currentPatient && currentPatient.id ? currentPatient.id : '',
-            'TAT Displayed': moment(deliveryDate).diff(currentDate, 'd'),
-            Serviceable: pinCodeNotServiceable ? 'No' : 'Yes',
-          };
-          postWebEngageEvent(WebEngageEventName.PRODUCT_DETAIL_PINCODE_CHECK, eventAttributes);
+          if (checkButtonClicked) {
+            const eventAttributes: WebEngageEvents[WebEngageEventName.PRODUCT_DETAIL_PINCODE_CHECK] = {
+              'product id': sku,
+              'product name': medicineDetails.name,
+              pincode: Number(pincode),
+              'customer id': currentPatient && currentPatient.id ? currentPatient.id : '',
+              'Delivery TAT': moment(deliveryDate).diff(currentDate, 'd'),
+              Serviceable: pinCodeNotServiceable ? 'No' : 'Yes',
+            };
+            postWebEngageEvent(WebEngageEventName.PRODUCT_DETAIL_PINCODE_CHECK, eventAttributes);
+          }
           if (isDeliveryDateWithInXDays(deliveryDate)) {
             setdeliveryTime(deliveryDate);
             setdeliveryError('');
@@ -542,24 +542,23 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       });
   };
 
-  const postwebEngageNotifyMeEvent = ({ name, sku, category_id }: MedicineProduct) => {
+  const postwebEngageNotifyMeEvent = ({
+    name,
+    sku,
+    category_id,
+  }: Pick<MedicineProduct, 'name' | 'sku' | 'category_id'>) => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.NOTIFY_ME] = {
       'product name': name,
       'product id': sku,
       Brand: '',
       'Brand ID': '',
       'category name': '',
-      'category ID': category_id,
+      'category ID': category_id!,
     };
     postWebEngageEvent(WebEngageEventName.NOTIFY_ME, eventAttributes);
   };
 
   const renderBottomButtons = () => {
-    const opitons = Array.from({
-      length: getMaxQtyForMedicineItem(medicineDetails.MaxOrderQty),
-    }).map((_, i) => {
-      return { key: (i + 1).toString(), value: i + 1 };
-    });
     const itemQty = getItemQuantity(sku);
     const addToCart = () => updateQuantityCartItem(medicineDetails, itemQty + 1);
     const removeItemFromCart = () => updateQuantityCartItem(medicineDetails, itemQty - 1);
@@ -567,7 +566,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
 
     return (
       <StickyBottomComponent style={{ height: 'auto' }}>
-        {!showDeliverySpinner && !deliveryTime || deliveryError || isOutOfStock ? (
+        {(!showDeliverySpinner && !deliveryTime) || deliveryError || isOutOfStock ? (
           <View
             style={{
               paddingTop: 8,
@@ -604,17 +603,17 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
           </View>
         ) : (
           <View style={styles.bottomView}>
-            <View style={{
-              flex: 1,
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'flex-start',
-              marginBottom: 10,
-              marginLeft: 15,
-            }}>
-              <Text style={theme.viewStyles.text('M', 14, '#01475b', 1, 22, 0.35)}>
-                MRP.
-              </Text>
+            <View
+              style={{
+                flex: 1,
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'flex-start',
+                marginBottom: 10,
+                marginLeft: 15,
+              }}
+            >
+              <Text style={theme.viewStyles.text('M', 14, '#01475b', 1, 22, 0.35)}>MRP.</Text>
               <Text style={theme.viewStyles.text('SB', 17, '#01475b', 1, 20, 0.35)}>
                 ₹{medicineDetails.special_price || medicineDetails.price}
               </Text>
@@ -623,25 +622,17 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
               <Button
                 onPress={() => {
                   CommonLogEvent(AppRoutes.MedicineDetailsScene, 'Update quantity cart item');
-                  updateQuantityCartItem(medicineDetails, 1);
                   !isMedicineAddedToCart && onAddCartItem(medicineDetails);
-
                   const eventAttributes: WebEngageEvents[WebEngageEventName.BUY_NOW] = {
                     'product name': medicineDetails.name,
                     'product id': medicineDetails.sku,
                     Brand: '',
                     'Brand ID': '',
                     'category name': '',
-                    'category ID': medicineDetails.category_id,
+                    'category ID': medicineDetails.category_id!,
                     Price: medicineDetails.price,
-                    'Discounted Price':
-                      typeof medicineDetails.special_price == 'string'
-                        ? Number(medicineDetails.special_price)
-                        : medicineDetails.special_price,
-                    Quantity:
-                      typeof selectedQuantity == 'string'
-                        ? Number(selectedQuantity)
-                        : selectedQuantity,
+                    'Discounted Price': Number(medicineDetails.special_price) || undefined,
+                    Quantity: Number(getItemQuantity(sku)),
                     'Service Area': 'Pharmacy',
                   };
                   postWebEngageEvent(WebEngageEventName.BUY_NOW, eventAttributes);
@@ -651,8 +642,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
                 style={{ width: '45%', backgroundColor: theme.colors.WHITE }}
                 titleTextStyle={{ color: '#fc9916' }}
               />
-              {
-                isMedicineAddedToCart ?
+              {isMedicineAddedToCart ? (
                 <AddToCartButtons
                   numberOfItemsInCart={itemQty}
                   maxOrderQty={medicineDetails.MaxOrderQty}
@@ -662,10 +652,11 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
                   isSolidContainer={true}
                   containerStyle={{
                     height: 40,
+                    width: '45%',
                     borderColor: '#fcb716',
                     borderRadius: 10,
                     backgroundColor: '#fcb716',
-                    justifyContent: 'space-between'
+                    justifyContent: 'space-between',
                   }}
                   deleteIconStyle={{
                     resizeMode: 'contain',
@@ -688,7 +679,8 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
                     paddingLeft: 15,
                     paddingRight: 15,
                   }}
-                /> :
+                />
+              ) : (
                 <Button
                   onPress={() => {
                     onAddCartItem(medicineDetails);
@@ -698,7 +690,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
                   disabledStyle={styles.bottomButtonStyle}
                   style={styles.bottomButtonStyle}
                 />
-              }
+              )}
             </View>
           </View>
         )}
@@ -1001,7 +993,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
                   theme.viewStyles.yellowTextStyle,
                   { opacity: pincode.length === 6 ? 1 : 0.21, padding: 5 },
                 ]}
-                onPress={() => (pincode.length === 6 ? fetchDeliveryTime() : {})}
+                onPress={() => (pincode.length === 6 ? fetchDeliveryTime(true) : {})}
                 suppressHighlighting={pincode.length !== 6}
               >
                 CHECK
@@ -1022,10 +1014,14 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
                 <Text
                   style={[
                     theme.viewStyles.text('M', 14, '#01475b', 1, 24, 0),
-                    { fontWeight: 'bold' },
+                    { fontWeight: 'bold', flex: 1, marginLeft: 10, textAlign: 'right' },
                   ]}
                 >
-                  By {moment(deliveryTime.split(' ')[0]).format('Do MMM YYYY')}
+                  By{' '}
+                  {moment(
+                    deliveryTime,
+                    AppConfig.Configuration.MED_DELIVERY_DATE_API_FORMAT
+                  ).format(AppConfig.Configuration.MED_DELIVERY_DATE_DISPLAY_FORMAT)}
                 </Text>
               </View>
             ) : !!deliveryError ? (
@@ -1118,14 +1114,8 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
           borderRadius: 10,
           backgroundColor: 'white',
           marginRight: 20,
-          shadowColor: '#808080',
-          shadowOffset: { width: 0, height: 5 },
-          shadowOpacity: 0.8,
-          shadowRadius: 10,
-          elevation: 5,
           marginLeft: 72,
           maxHeight: height - 200,
-          // overflow: 'scroll',
           height: popupHeight + 24,
           ...theme.viewStyles.shadowStyle,
         }}

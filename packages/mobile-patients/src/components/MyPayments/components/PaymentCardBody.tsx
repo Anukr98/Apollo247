@@ -58,14 +58,20 @@ const PaymentCardBody: FC<PaymentCardBodyProps> = (props) => {
       }
       return { status: status, refId: refId, price: price };
     } else {
-      const { medicineOrderPayments, devliveryCharges, estimatedAmount } = item;
+      const { medicineOrderPayments, devliveryCharges, estimatedAmount, currentStatus } = item;
       if (!medicineOrderPayments.length) {
         status = 'PENDING';
       } else {
-        const { paymentStatus, paymentRefId, amountPaid } = medicineOrderPayments[0];
+        const { paymentStatus, paymentRefId, amountPaid, medicineOrderRefunds, healthCreditsRedeemed } = medicineOrderPayments[0];
         status = paymentStatus;
         refId = paymentRefId;
         price = estimatedAmount;
+        if (medicineOrderRefunds.length) {
+          status = currentStatus === 'CANCELLED' ? REFUND : paymentStatus;
+          price = currentStatus === 'CANCELLED'
+            ? amountPaid + healthCreditsRedeemed
+            : (amountPaid + healthCreditsRedeemed) - medicineOrderRefunds[0].refundAmount;
+        }
       }
       return { status: status, refId: refId, price: price };
     }

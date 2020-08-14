@@ -10,8 +10,7 @@
     "delete:package-lock": "lerna exec -- rm -rf package-lock.json",
     "format": "lerna run format",
     "lint": "lerna run lint",
-    "typecheck": "lerna run typecheck",
-    "doctor": "cd packages/web-doctors && npm run start"
+    "typecheck": "lerna run typecheck"
   },
   "devDependencies": {
     "typescript": "3.5.2",
