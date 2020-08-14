@@ -332,7 +332,7 @@ export const reOrderItems = async (
         ({
           ...item,
           description: '',
-          image: '',
+          image: [],
           mou: isOfflineOrder
             ? Math.ceil(lineItems[index].price / lineItems[index].mrp / lineItems[index].quantity)
             : item.mou,
@@ -365,9 +365,9 @@ export const reOrderItems = async (
         ({
           id: item,
           date: moment().format('DD MMM YYYY'),
-          doctorName: `Meds Rx ${(orderDetails.id &&
-            orderDetails.id.substring(0, orderDetails.id.indexOf('-'))) ||
-            ''}`,
+          doctorName: `Meds Rx ${
+            (orderDetails.id && orderDetails.id.substring(0, orderDetails.id.indexOf('-'))) || ''
+          }`,
           forPatient: patientName,
           medicines: medicineNames,
           uploadedUrl: item,
