@@ -70,8 +70,6 @@ const styles = StyleSheet.create({
   },
 });
 export interface ChatRoomProps extends NavigationScreenProps {
-  returnToCall: boolean;
-  setReturnToCall: Dispatch<SetStateAction<boolean>>;
   setChatReceived: Dispatch<SetStateAction<boolean>>;
   messages: never[];
   send: (messageText: any) => void;
@@ -95,42 +93,24 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const Appintmentdatetime = props.navigation.getParam('Appintmentdatetime');
   const doctorId = props.navigation.getParam('DoctorId');
   const patientId = props.patientId || props.navigation.getParam('PatientId');
-  const [keyBoardVisible, setKeyboardVisible] = useState<boolean>(false);
-  const [heightList, setHeightList] = useState<number>(
-    height - (props.extendedHeader ? 230 : 190) - (Platform.OS === 'android' ? 10 : 0)
-  );
   const [hideSend, setHideSend] = useState<boolean>(true);
+  const iPhoneHeight = isIphoneX() ? 45 : Platform.OS === 'ios' ? -6 : 0;
+
   const patientImage = patientDetails && (
     <Image style={styles.imageStyle} source={{ uri: patientDetails.photoUrl || '' }} />
   );
   const { messages, messageText, setMessageText, flatListRef } = props;
+  const [keyboardHeight, setKeyBoardHeight] = useState<number>(0);
 
   const keyboardDidShow = async (e: KeyboardEvent) => {
-    const changeHeight = Number(await AsyncStorage.getItem('changeHeight'));
-    if (Platform.OS === 'ios') {
-      setHeightList(e.endCoordinates.screenY - changeHeight);
-    }
-    setKeyboardVisible(true);
+    setKeyBoardHeight((e.endCoordinates.height || 0) + (isIphoneX() ? -40 : 0));
     setTimeout(() => {
       flatListRef.current && flatListRef.current.scrollToEnd();
     }, 200);
   };
   const keyboardDidHide = async () => {
-    const changeHeight = Number(await AsyncStorage.getItem('changeHeight'));
-    setHeightList(height - changeHeight);
-    setKeyboardVisible(false);
+    setKeyBoardHeight(0);
   };
-
-  useEffect(() => {
-    setHeightList(
-      height - (props.extendedHeader ? 230 : 190) - (Platform.OS === 'android' ? 10 : 0)
-    );
-    AsyncStorage.setItem(
-      'changeHeight',
-      ((props.extendedHeader ? 230 : 190) + (Platform.OS === 'android' ? 10 : 0)).toString()
-    );
-  }, [props.extendedHeader]);
-
   useEffect(() => {
     // callAbandonmentCall();
     setTimeout(() => {
@@ -801,7 +781,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       <View
         style={{
           width: width,
-          height: !props.returnToCall ? heightList : heightList + 20,
+          height: props.extendedHeader
+            ? height - 238 - iPhoneHeight - keyboardHeight
+            : height - 200 - iPhoneHeight - keyboardHeight,
           marginTop: 0,
           backgroundColor: '#f0f4f5',
         }}
@@ -813,15 +795,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               marginHorizontal: 20,
               marginTop: 0,
             }}
-            ListHeaderComponent={() => {
-              return (
-                <View
-                  style={{
-                    height: Platform.OS === 'android' && keyBoardVisible ? 210 : 0,
-                  }}
-                />
-              );
-            }}
             removeClippedSubviews={false}
             bounces={false}
             data={messages}
@@ -830,7 +803,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             keyExtractor={(_, index) => index.toString()}
             numColumns={1}
             ListFooterComponent={() => {
-              return <View style={{ height: isIphoneX() ? 40 : 0 }} />;
+              return <View style={{ height: 8 }} />;
             }}
             keyboardShouldPersistTaps="always"
             keyboardDismissMode={Platform.OS === 'ios' ? 'interactive' : 'on-drag'}
@@ -869,49 +842,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     );
   };
 
-  const ReturnCallView = () => {
-    return (
-      <View
-        style={{
-          width: width,
-          height: 44,
-          backgroundColor: '#00b38e',
-          position: 'absolute',
-          top: 0,
-          left: 0,
-        }}
-      >
-        <TouchableOpacity
-          onPress={() => {
-            props.setReturnToCall(false);
-            props.setChatReceived(false);
-            Keyboard.dismiss();
-          }}
-        >
-          <View
-            style={{
-              width: width,
-              height: 44,
-            }}
-          >
-            <Text
-              style={{
-                color: 'white',
-                marginLeft: 20,
-                ...theme.fonts.IBMPlexSansSemiBold(14),
-                textAlign: 'left',
-                height: 44,
-                marginTop: 13,
-              }}
-            >
-              {strings.consult_room.tap_to_return_call}
-            </Text>
-          </View>
-        </TouchableOpacity>
-      </View>
-    );
-  };
-
   const onSubmitText = (text?: string) => {
     const textMessage = text ? text.trim() : messageText.trim();
     if (textMessage.length == 0) {
@@ -922,6 +852,111 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     setMessageText('');
     flatListRef.current && flatListRef.current!.scrollToEnd();
   };
+  const renderChatInput = () => {
+    return (
+      <View
+        style={{
+          height: 66,
+          backgroundColor: 'white',
+        }}
+      >
+        <View
+          style={{
+            flex: 1,
+            flexDirection: 'row',
+            alignItems: 'center',
+          }}
+        >
+          <TouchableOpacity
+            activeOpacity={1}
+            onPress={async () => {
+              props.setDropdownVisible(!props.isDropdownVisible);
+            }}
+          >
+            <View
+              style={{
+                flexDirection: 'row',
+                marginLeft: 20,
+                height: 40,
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}
+            >
+              {hideSend ? (
+                <Text style={theme.viewStyles.text('M', 16, theme.colors.LIGHT_BLUE)}>Attach</Text>
+              ) : null}
+              <AttachmentIcon
+                style={{
+                  width: 24,
+                  height: 24,
+                }}
+              />
+            </View>
+          </TouchableOpacity>
+          <View
+            style={{
+              flex: 1,
+              flexDirection: 'row',
+              alignItems: 'center',
+              height: 40,
+              borderBottomWidth: 2,
+              borderColor: theme.colors.APP_GREEN,
+              marginRight: 20,
+              marginLeft: 16,
+            }}
+          >
+            <View style={{ flex: 1 }}>
+              <TextInput
+                autoCorrect={false}
+                placeholder={strings.smartPrescr.type_here}
+                multiline={true}
+                style={{
+                  minHeight: 40,
+                  ...theme.fonts.IBMPlexSansMedium(16),
+                  padding: 0,
+                  paddingBottom: hideSend ? 0 : 12,
+                }}
+                value={messageText}
+                blurOnSubmit={false}
+                onChangeText={(value) => {
+                  setMessageText(value);
+                  flatListRef.current && flatListRef.current.scrollToEnd();
+                  props.setDropdownVisible(false);
+                }}
+                onFocus={() => {
+                  props.setDropdownVisible(false);
+                  setHideSend(false);
+                }}
+                onBlur={() => {
+                  setHideSend(true);
+                }}
+                onSubmitEditing={() => {
+                  Keyboard.dismiss();
+                }}
+                underlineColorAndroid={theme.colors.TRANSPARENT}
+                selectionColor={theme.colors.APP_GREEN}
+              />
+            </View>
+
+            {!hideSend ? (
+              <View style={{ height: 40 }}>
+                <TouchableOpacity
+                  style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}
+                  activeOpacity={1}
+                  onPress={() => {
+                    onSubmitText();
+                  }}
+                >
+                  <ChatSend />
+                </TouchableOpacity>
+              </View>
+            ) : null}
+          </View>
+        </View>
+      </View>
+    );
+  };
+
   return (
     <View
       style={{
@@ -930,117 +965,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       }}
     >
       {renderChatView()}
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 40 : 10}
-        enabled
-      >
-        <View
-          style={{
-            height: 66,
-            backgroundColor: 'white',
-            bottom: isIphoneX() ? 36 : 0,
-            //top: isIphoneX() ? 24 : 0,
-          }}
-        >
-          <View
-            style={{
-              flex: 1,
-              flexDirection: 'row',
-              alignItems: 'center',
-            }}
-          >
-            <TouchableOpacity
-              activeOpacity={1}
-              onPress={async () => {
-                props.setDropdownVisible(!props.isDropdownVisible);
-              }}
-            >
-              <View
-                style={{
-                  flexDirection: 'row',
-                  marginLeft: 20,
-                  height: 40,
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                }}
-              >
-                {hideSend ? (
-                  <Text style={theme.viewStyles.text('M', 16, theme.colors.LIGHT_BLUE)}>
-                    Attach
-                  </Text>
-                ) : null}
-                <AttachmentIcon
-                  style={{
-                    width: 24,
-                    height: 24,
-                  }}
-                />
-              </View>
-            </TouchableOpacity>
-            <View
-              style={{
-                flex: 1,
-                flexDirection: 'row',
-                alignItems: 'center',
-                height: 40,
-                borderBottomWidth: 2,
-                borderColor: theme.colors.APP_GREEN,
-                marginRight: 20,
-                marginLeft: 16,
-              }}
-            >
-              <View style={{ flex: 1 }}>
-                <TextInput
-                  autoCorrect={false}
-                  placeholder={strings.smartPrescr.type_here}
-                  multiline={true}
-                  style={{
-                    minHeight: 40,
-                    ...theme.fonts.IBMPlexSansMedium(16),
-                    padding: 0,
-                    paddingBottom: hideSend ? 0 : 12,
-                  }}
-                  value={messageText}
-                  blurOnSubmit={false}
-                  onChangeText={(value) => {
-                    setMessageText(value);
-                    flatListRef.current && flatListRef.current.scrollToEnd();
-                    props.setDropdownVisible(false);
-                  }}
-                  onFocus={() => {
-                    props.setDropdownVisible(false);
-                    setHideSend(false);
-                  }}
-                  onBlur={() => {
-                    setHideSend(true);
-                  }}
-                  onSubmitEditing={() => {
-                    Keyboard.dismiss();
-                  }}
-                  underlineColorAndroid={theme.colors.TRANSPARENT}
-                  selectionColor={theme.colors.APP_GREEN}
-                />
-              </View>
-
-              {!hideSend ? (
-                <View style={{ height: 40 }}>
-                  <TouchableOpacity
-                    style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}
-                    activeOpacity={1}
-                    onPress={() => {
-                      onSubmitText();
-                    }}
-                  >
-                    <ChatSend />
-                  </TouchableOpacity>
-                </View>
-              ) : null}
-            </View>
-          </View>
-        </View>
-      </KeyboardAvoidingView>
-      {props.returnToCall && ReturnCallView()}
+      {renderChatInput()}
     </View>
   );
 };

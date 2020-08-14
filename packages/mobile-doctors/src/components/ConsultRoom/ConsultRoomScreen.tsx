@@ -235,7 +235,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
 
   const [showPopUp, setShowPopUp] = useState<boolean>(false);
   const [startConsult, setStartConsult] = useState<boolean>(false);
-  const [returnToCall, setReturnToCall] = useState<boolean>(false);
+
   const [caseSheet, setcaseSheet] = useState<GetCaseSheet_getCaseSheet | null | undefined>();
   const [caseSheetEdit, setCaseSheetEdit] = useState<boolean>(
     props.navigation.getParam('caseSheetEnableEdit') || false
@@ -2146,8 +2146,6 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                   messageText={messageText}
                   setMessageText={setMessageText}
                   patientId={patientId}
-                  returnToCall={returnToCall}
-                  setReturnToCall={setReturnToCall}
                   setChatReceived={setChatReceived}
                   navigation={props.navigation}
                   messages={messages}

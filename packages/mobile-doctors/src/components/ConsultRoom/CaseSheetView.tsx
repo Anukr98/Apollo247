@@ -114,6 +114,7 @@ import {
 } from 'react-navigation';
 import { ReferralSelectPopup } from '@aph/mobile-doctors/src/components/ConsultRoom/ReferralSelectPopup';
 import firebase from 'react-native-firebase';
+import { isIphoneX } from 'react-native-iphone-x-helper';
 
 const { width } = Dimensions.get('window');
 
@@ -2728,12 +2729,14 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           enableOnAndroid={true}
           enableAutomaticScroll={true}
           style={{ flex: 1 }}
-          extraHeight={Platform.OS === 'android' ? 20 : 60}
-          extraScrollHeight={Platform.OS === 'android' ? 20 : 120}
+          extraHeight={Platform.OS === 'android' ? 20 : isIphoneX() ? 200 : 160}
           bounces={false}
         >
-          <ScrollView bounces={false} style={{ zIndex: 1 }}>
-            <View style={{ height: 20, backgroundColor: '#f0f4f5' }}></View>
+          <ScrollView
+            bounces={false}
+            contentContainerStyle={{ marginBottom: keyBoardVisible ? 0 : 80 }}
+          >
+            <View style={{ height: 20, backgroundColor: '#f0f4f5' }} />
             {renderPatientImage()}
             {renderBasicProfileDetails(displayId, Appintmentdatetimeconsultpage)}
             {renderSymptonsView()}
@@ -2768,7 +2771,6 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
               </View>
             </View>
             {showPopUp && CallPopUp()}
-            <View style={{ height: 80 }} />
           </ScrollView>
         </KeyboardAwareScrollView>
         {!keyBoardVisible
