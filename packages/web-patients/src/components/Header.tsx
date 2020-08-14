@@ -309,7 +309,13 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const Header: React.FC<any> = (props) => {
+interface HeaderProps {
+  backArrowVisible?: boolean;
+  isWebView?: boolean;
+  backLocation?: string;
+}
+
+export const Header: React.FC<HeaderProps> = (props) => {
   const classes = useStyles({});
   const avatarRef = useRef(null);
   const { isSigningIn, isSignedIn, setVerifyOtpError, signOut } = useAuth();
