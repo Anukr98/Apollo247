@@ -116,6 +116,10 @@ const useStyles = makeStyles((theme: Theme) => {
       '&:focus': {
         backgroundColor: 'transparent',
       },
+      '&:disabled': {
+        opacity: 0.5,
+        pointerEvents: 'none',
+      }
     },
     callMsg: {
       fontSize: 14,
@@ -562,11 +566,21 @@ const useStyles = makeStyles((theme: Theme) => {
         color: '#02475B',
         fontWeight: 500,
         fontSize: 15,
+        [theme.breakpoints.down('xs')]: {
+          fontSize: 12,
+        },
+      },
+      [theme.breakpoints.down('xs')]: {
+        height: 180,
       },
     },
     slider: {
       '& >.slick-dots': {
         position: 'static !important',
+        [theme.breakpoints.down('xs')]: {
+          position: 'absolute !important',
+          bottom: 50,
+        },
         pointerEvents: 'none',
         '& li': {
           margin: 0,
@@ -627,7 +641,21 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: '5px 0 0 10px',
     },
     chatContainerSection: {
-      // minHeight: '300px !important',
+      autoHeightMax: 'calc(100vh - 352px)',
+      maxHeight: 'calc(100vh - 352px)',
+      [theme.breakpoints.down('xs')]: {
+        autoHeightMax: 'calc(100vh - 90px)',
+        maxHeight: 'calc(100vh - 90px)',
+        minHeight: 'calc(100vh - 90px)',
+      },
+    },
+    chatContainerSectionques: {
+      autoHeightMax: 'calc(100vh - 452px)',
+      [theme.breakpoints.down('xs')]: {
+        autoHeightMax: 'calc(100vh - 90px)',
+        maxHeight: 'calc(100vh - 90px)',
+        minHeight: 'calc(100vh - 90px)',
+      },
     },
     doctorCardMain: {
       paddingLeft: 15,
@@ -913,7 +941,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
     return (
       <div>
         <Grid spacing={2} container>
-          <Grid item xs={5} sm={5} md={5} lg={5}>
+          <Grid item xs={6} sm={5} md={5} lg={5}>
             <label>What is your height?</label>
             <AphTextField
               autoFocus
@@ -949,9 +977,10 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
               </MenuItem>
             </AphSelect>
           </Grid>
-          <Grid item xs={3} sm={3} md={3} lg={3}>
+          <Grid item xs={2} sm={3} md={3} lg={3}>
             <button
               className={classes.quesSubmitBtn}
+              disabled
               onClick={() => {
                 if (
                   (heightIn === 'cm' && height.match(/^[0-9]+\.{0,1}[0-9]{0,3}$/)) ||
@@ -990,7 +1019,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
     return (
       <div>
         <Grid spacing={2} container>
-          <Grid item xs={12} sm={12} md={9} lg={9}>
+          <Grid item xs={10} sm={9} md={9} lg={9}>
             <label>What is your weight (in kg) ?</label>
             <AphTextField
               autoFocus
@@ -1002,7 +1031,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
               error={weightError}
             />
           </Grid>
-          <Grid item xs={12} sm={12} md={3} lg={3}>
+          <Grid item xs={2} sm={3} md={3} lg={3}>
             <button
               className={classes.quesSubmitBtn}
               onClick={() => {
@@ -1039,7 +1068,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
     return (
       <div>
         <Grid spacing={2} container>
-          <Grid item xs={12} sm={12} md={9} lg={9}>
+          <Grid item xs={10} sm={9} md={9} lg={9}>
             <label>Are you allergic to any medicine?</label>
             <AphButton
               className={`${classes.quesButton}  ${drugAllergy === 'yes' ? classes.btnActive : ''}`}
@@ -1054,7 +1083,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
               No
             </AphButton>
           </Grid>
-          <Grid item xs={12} sm={12} md={3} lg={3}>
+          <Grid item xs={2} sm={3} md={3} lg={3}>
             <button
               className={classes.quesSubmitBtn}
               onClick={() => {
@@ -1086,7 +1115,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
     return (
       <div>
         <Grid spacing={2} container>
-          <Grid item xs={12} sm={12} md={9} lg={9}>
+          <Grid item xs={10} sm={9} md={9} lg={9}>
             <label>Are you allergic to any kind of food?</label>
             <AphButton
               className={`${classes.quesButton}  ${dietAllergy === 'yes' ? classes.btnActive : ''}`}
@@ -1101,7 +1130,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
               No
             </AphButton>
           </Grid>
-          <Grid item xs={12} sm={12} md={3} lg={3}>
+          <Grid item xs={2} sm={3} md={3} lg={3}>
             <button
               className={classes.quesSubmitBtn}
               onClick={() => {
@@ -1133,7 +1162,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
     return (
       <div>
         <Grid spacing={2} container>
-          <Grid item xs={9} sm={9} md={9} lg={9}>
+          <Grid item xs={10} sm={9} md={9} lg={9}>
             <label>Do you smoke?</label>
             <AphButton
               className={`${classes.quesButton}  ${smokeHabit === 'yes' ? classes.btnActive : ''}`}
@@ -1148,7 +1177,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
               No
             </AphButton>
           </Grid>
-          <Grid item xs={12} sm={12} md={3} lg={3}>
+          <Grid item xs={2} sm={3} md={3} lg={3}>
             <button
               className={classes.quesSubmitBtn}
               onClick={() => {
@@ -1180,7 +1209,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
     return (
       <div>
         <Grid spacing={2} container>
-          <Grid item xs={12} sm={12} md={9} lg={9}>
+          <Grid item xs={10} sm={9} md={9} lg={9}>
             <label>Do you drink alcohol?</label>
             <AphButton
               className={`${classes.quesButton}  ${drinkHabit === 'yes' ? classes.btnActive : ''}`}
@@ -1195,7 +1224,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
               No
             </AphButton>
           </Grid>
-          <Grid item xs={12} sm={12} md={3} lg={3}>
+          <Grid item xs={2} sm={3} md={3} lg={3}>
             <button
               className={classes.quesSubmitBtn}
               onClick={() => {
@@ -1227,7 +1256,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
     return (
       <div>
         <Grid spacing={2} container>
-          <Grid item xs={9} sm={9} md={9} lg={9}>
+          <Grid item xs={10} sm={9} md={9} lg={9}>
             <label>What medicines are you allergic to?</label>
             <AphTextField
               autoFocus
@@ -1240,7 +1269,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
               }
             />
           </Grid>
-          <Grid item xs={3} sm={3} md={3} lg={3}>
+          <Grid item xs={2} sm={3} md={3} lg={3}>
             <button
               className={classes.quesSubmitBtn}
               onClick={() => {
@@ -1268,7 +1297,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
     return (
       <div>
         <Grid spacing={2} container>
-          <Grid item xs={9} sm={9} md={9} lg={9}>
+          <Grid item xs={10} sm={9} md={9} lg={9}>
             <label>What kind of food are you allergic to?</label>
             <AphTextField
               autoFocus
@@ -1349,12 +1378,12 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
     return (
       <div>
         <Grid spacing={2} container>
-          <Grid item xs={9} sm={9} md={9} lg={9}>
+          <Grid item xs={10} sm={9} md={9} lg={9}>
             <label>How much alcohol do you drink in a week? </label>
             <AphButton
               className={`${classes.quesButton}  ${
                 drinkPerWeek === '<30ml' ? classes.btnActive : ''
-              }`}
+                }`}
               onClick={() => setDrinkPerWeek('<30ml')}
             >
               &lt; 30ml
@@ -1362,7 +1391,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
             <AphButton
               className={`${classes.quesButton}  ${
                 drinkPerWeek === '30ml-60ml' ? classes.btnActive : ''
-              }`}
+                }`}
               onClick={() => setDrinkPerWeek('30ml-60ml')}
             >
               30ml-60ml
@@ -1370,13 +1399,13 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
             <AphButton
               className={`${classes.quesButton}  ${
                 drinkPerWeek === '>60ml' ? classes.btnActive : ''
-              }`}
+                }`}
               onClick={() => setDrinkPerWeek('>60ml')}
             >
               &gt; 60ml
             </AphButton>
           </Grid>
-          <Grid item xs={3} sm={3} md={3} lg={3}>
+          <Grid item xs={2} sm={3} md={3} lg={3}>
             <button
               className={classes.quesSubmitBtn}
               onClick={() => {
@@ -1395,12 +1424,12 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
     return (
       <div>
         <Grid spacing={2} container>
-          <Grid item xs={9} sm={9} md={9} lg={9}>
+          <Grid item xs={10} sm={9} md={9} lg={9}>
             <label>What is your body temperature right now (in °F) ?</label>
             <AphButton
               className={`${classes.quesButton}  ${
                 temperature === '99-100' ? classes.btnActive : ''
-              }`}
+                }`}
               onClick={() => setTemperature('99-100')}
             >
               99-100
@@ -1408,7 +1437,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
             <AphButton
               className={`${classes.quesButton}  ${
                 temperature === '100-101' ? classes.btnActive : ''
-              }`}
+                }`}
               onClick={() => setTemperature('100-101')}
             >
               100-101
@@ -1416,7 +1445,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
             <AphButton
               className={`${classes.quesButton}  ${
                 temperature === '102+' ? classes.btnActive : ''
-              }`}
+                }`}
               onClick={() => setTemperature('102+')}
             >
               102+
@@ -1424,13 +1453,13 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
             <AphButton
               className={`${classes.quesButton}  ${
                 temperature === 'No Idea' ? classes.btnActive : ''
-              }`}
+                }`}
               onClick={() => setTemperature('No Idea')}
             >
               No Idea
             </AphButton>
           </Grid>
-          <Grid item xs={3} sm={3} md={3} lg={3}>
+          <Grid item xs={2} sm={3} md={3} lg={3}>
             <button
               className={classes.quesSubmitBtn}
               onClick={() => {
@@ -1498,9 +1527,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                   // add to consult q with automated questions.
                   const lifeStyle = `Smoke: ${_startCase(smokeHabit)}${
                     smokeHabit === 'yes' ? ` ${smokes}` : ''
-                  }, Drink: ${_startCase(drinkHabit)}${
+                    }, Drink: ${_startCase(drinkHabit)}${
                     drinkHabit === 'yes' ? ` ${drinkPerWeek}` : ''
-                  }`;
+                    }`;
 
                   // console.log(lifeStyle, 'life style is...........');
                   mutationAddToConsultQ({
@@ -1554,10 +1583,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
         <div>
           <div className={classes.chatContainer}>
             <Scrollbars
-              className={classes.chatContainerSection}
+              className={`${classes.chatContainerSection} ${classes.chatContainerSectionques}`}
               autoHide={true}
               autoHeight
-              autoHeightMax={'calc(100vh - 442px)'}
             >
               {messages.map((messageDetails: any) => {
                 const cardType =
@@ -1582,7 +1610,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
             </Scrollbars>
           </div>
           {autoQuestionsCompleted ? (
-            <div className={classes.chatWindowFooter}>
+            <div className={`${classes.chatWindowFooter} ${classes.chatWindowFooterInput}`} >
               <AphTextField
                 autoFocus
                 className={classes.searchInput}
@@ -1609,35 +1637,39 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                   }
                 }}
               />
+              <AphButton className={classes.chatSend} disabled>
+                <img src={require('images/ic_send.svg')} alt="" />
+              </AphButton>
               <AphButton className={classes.chatSubmitBtn}>
-                <img src={require('images/ic_add_circle.svg')} alt="" />
+                <img src={require('images/ic_paperclip.svg')} alt="" />
+                <span>Upload Records</span>
               </AphButton>
             </div>
           ) : (
-            <div className={classes.quesContainer}>
-              <Slider
-                {...sliderSettings}
-                className={classes.slider}
-                ref={(slider) => (sliderRef.current = slider)}
-              >
-                {heightQuestionContent()}
-                {weightQuestionContent()}
-                {drugAlergyQuestionChoice()}
-                {drugAllergy === 'yes' && drugsInput()}
-                {foodAlergyQuestionChoice()}
-                {dietAllergy === 'yes' && foodAlergyInput()}
-                {smokeQuestionChoice()}
-                {smokeHabit === 'yes' && smokeInput()}
-                {drinkQuestionChoice()}
-                {drinkHabit === 'yes' && drinkInput()}
-                {temperatureInput()}
-                {bpInput()}
-              </Slider>
-            </div>
-          )}
+              <div className={classes.quesContainer}>
+                <Slider
+                  {...sliderSettings}
+                  className={classes.slider}
+                  ref={(slider) => (sliderRef.current = slider)}
+                >
+                  {heightQuestionContent()}
+                  {weightQuestionContent()}
+                  {drugAlergyQuestionChoice()}
+                  {drugAllergy === 'yes' && drugsInput()}
+                  {foodAlergyQuestionChoice()}
+                  {dietAllergy === 'yes' && foodAlergyInput()}
+                  {smokeQuestionChoice()}
+                  {smokeHabit === 'yes' && smokeInput()}
+                  {drinkQuestionChoice()}
+                  {drinkHabit === 'yes' && drinkInput()}
+                  {temperatureInput()}
+                  {bpInput()}
+                </Slider>
+              </div>
+            )}
         </div>
       </div>
-    </div>
+    </div >
   );
 };
 

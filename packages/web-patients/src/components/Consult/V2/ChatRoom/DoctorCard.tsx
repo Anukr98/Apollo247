@@ -6,9 +6,11 @@ const useStyles = makeStyles((theme: Theme) => {
   return {
     doctorCardMain: {
       paddingLeft: 15,
+      position: 'relative',
     },
     doctorAvatar: {
       position: 'absolute',
+      bottom: 10,
     },
     blueBubble: {
       backgroundColor: '#0087ba',
@@ -26,7 +28,7 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: '#0087ba',
       fontSize: 15,
       maxWidth: 240,
-      margin: '0 0 10px 40px',
+      margin: '0 0 10px 45px',
     },
     chatTime: {
       fontSize: 10,
@@ -36,8 +38,8 @@ const useStyles = makeStyles((theme: Theme) => {
       margin: '10px 0 0 0',
     },
     avatar: {
-      width: 32,
-      height: 32,
+      width: 40,
+      height: 40,
       '& img': {
         verticalAlign: 'middle',
       },
@@ -54,7 +56,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
   return (
     <div className={classes.doctorCardMain}>
       <div className={classes.doctorAvatar}>
-        <Avatar className={classes.avatar} src={require('images/no_photo_icon_round.svg')} alt="" />
+        <Avatar className={classes.avatar} src={require('images/ic_mascot_male.png')} alt="" />
       </div>
       <div className={`${classes.blueBubble} ${classes.petient} `}>{props.message}</div>
     </div>
