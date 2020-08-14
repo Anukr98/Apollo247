@@ -258,11 +258,12 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
       }
       setShowMatchingMedicines(true);
       setProductsIsLoading(true);
-      searchMedicineApi(_searchText, pageCount)
+      searchMedicineApi(_searchText)
         .then(async ({ data }) => {
           const products = data.products || [];
           setSearchHeading(data.search_heading!);
           setProductsList(products);
+          setEndReached(false);
           if (products.length < 10) {
             setEndReached(true);
           }
