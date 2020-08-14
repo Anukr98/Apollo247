@@ -186,12 +186,6 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     chatContainer: {
       paddingRight: 5,
-      '& div:first-child': {
-        // maxHeight: 300,
-      },
-      '& div:second-child': {
-        // maxHeight: 300,
-      },
     },
     chatContainerScroll: {
       '& > div': {
@@ -224,6 +218,9 @@ const useStyles = makeStyles((theme: Theme) => {
         fontSize: 7,
         lineHeight: '9px',
         display: 'block',
+      },
+      '&:hover': {
+        backgroundColor: 'transparent',
       },
     },
     chatSend: {
@@ -685,7 +682,9 @@ const useStyles = makeStyles((theme: Theme) => {
       autoHeightMax: 'calc(100vh - 352px)',
       maxHeight: 'calc(100vh - 352px) !important',
       '& div': {
-        maxHeight: 'calc(100vh - 310px) !important',
+        '&:first-child': {
+          maxHeight: 'calc(100vh - 310px) !important',
+        },
       },
       [theme.breakpoints.down('xs')]: {
         autoHeightMax: 'calc(100vh - 90px)',
@@ -959,6 +958,32 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
     autoplay: false,
     swipe: false,
     touchMove: false,
+    responsive: [
+      {
+        breakpoint: 1024,
+        settings: {
+          slidesToShow: 3,
+          slidesToScroll: 3,
+          infinite: true,
+          dots: true
+        }
+      },
+      {
+        breakpoint: 600,
+        settings: {
+          slidesToShow: 2,
+          slidesToScroll: 2,
+          initialSlide: 2
+        }
+      },
+      {
+        breakpoint: 480,
+        settings: {
+          slidesToShow: 1,
+          slidesToScroll: 1
+        }
+      }
+    ]
   };
 
   const sendWelcomeMessage = () => {
@@ -1458,7 +1483,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
             <AphButton
               className={`${classes.quesButton}  ${
                 drinkPerWeek === '<30ml' ? classes.btnActive : ''
-              }`}
+                }`}
               onClick={() => setDrinkPerWeek('<30ml')}
             >
               &lt; 30ml
@@ -1466,7 +1491,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
             <AphButton
               className={`${classes.quesButton}  ${
                 drinkPerWeek === '30ml-60ml' ? classes.btnActive : ''
-              }`}
+                }`}
               onClick={() => setDrinkPerWeek('30ml-60ml')}
             >
               30ml-60ml
@@ -1474,7 +1499,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
             <AphButton
               className={`${classes.quesButton}  ${
                 drinkPerWeek === '>60ml' ? classes.btnActive : ''
-              }`}
+                }`}
               onClick={() => setDrinkPerWeek('>60ml')}
             >
               &gt; 60ml
@@ -1505,7 +1530,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
             <AphButton
               className={`${classes.quesButton}  ${
                 temperature === '99-100' ? classes.btnActive : ''
-              }`}
+                }`}
               onClick={() => setTemperature('99-100')}
             >
               99-100
@@ -1513,7 +1538,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
             <AphButton
               className={`${classes.quesButton}  ${
                 temperature === '100-101' ? classes.btnActive : ''
-              }`}
+                }`}
               onClick={() => setTemperature('100-101')}
             >
               100-101
@@ -1521,7 +1546,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
             <AphButton
               className={`${classes.quesButton}  ${
                 temperature === '102+' ? classes.btnActive : ''
-              }`}
+                }`}
               onClick={() => setTemperature('102+')}
             >
               102+
@@ -1529,7 +1554,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
             <AphButton
               className={`${classes.quesButton}  ${
                 temperature === 'No Idea' ? classes.btnActive : ''
-              }`}
+                }`}
               onClick={() => setTemperature('No Idea')}
             >
               No Idea
@@ -1605,9 +1630,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                   // add to consult q with automated questions.
                   const lifeStyle = `Smoke: ${_startCase(smokeHabit)}${
                     smokeHabit === 'yes' ? ` ${smokes}` : ''
-                  }, Drink: ${_startCase(drinkHabit)}${
+                    }, Drink: ${_startCase(drinkHabit)}${
                     drinkHabit === 'yes' ? ` ${drinkPerWeek}` : ''
-                  }`;
+                    }`;
 
                   setConsultQMutationLoading(true);
 
@@ -1664,11 +1689,12 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
         <div>
           <div className={classes.chatContainer}>
             <Scrollbars
-              className={`${classes.chatContainerSection} ${
-                autoQuestionsCompleted ? '' : classes.chatContainerSectionques
-              }`}
+              // className={`${classes.chatContainerSection} ${
+              //   autoQuestionsCompleted ? '' : classes.chatContainerSectionques
+              //   }`}
               autoHide={true}
               autoHeight
+              autoHeightMax={'calc(100vh - 332px)'}
             >
               {messages.map((messageDetails: any) => {
                 const cardType =
