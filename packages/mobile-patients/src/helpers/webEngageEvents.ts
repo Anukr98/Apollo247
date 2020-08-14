@@ -88,7 +88,6 @@ export enum WebEngageEventName {
   MANAGE_DIABETES = 'Manage Diabetes',
   TRACK_SYMPTOMS = 'Track Symptoms',
   VIEW_HELATH_RECORDS = 'View Helath Records',
-  CORONA_VIRUS_TALK_TO_OUR_EXPERT = 'Corona Virus?Talk to our expert',
   LEARN_MORE_ABOUT_CORONAVIRUS = 'Learn more about coronavirus',
   CHECK_YOUR_RISK_LEVEL = 'Check your risk level',
   NOTIFICATION_ICON = 'Notification Icon clicked',
@@ -238,7 +237,6 @@ export interface WebEngageEvents {
   [WebEngageEventName.MANAGE_DIABETES]: PatientInfo;
   [WebEngageEventName.TRACK_SYMPTOMS]: PatientInfo;
   [WebEngageEventName.VIEW_HELATH_RECORDS]: PatientInfoWithSource;
-  [WebEngageEventName.CORONA_VIRUS_TALK_TO_OUR_EXPERT]: { clicked: true };
   [WebEngageEventName.LEARN_MORE_ABOUT_CORONAVIRUS]: { clicked: true };
   [WebEngageEventName.CHECK_YOUR_RISK_LEVEL]: { clicked: true };
   [WebEngageEventName.APOLLO_KAVACH_PROGRAM]: { clicked: true };

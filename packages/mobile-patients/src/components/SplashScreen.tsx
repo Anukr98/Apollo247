@@ -754,12 +754,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     Pharmacy_Delivery_Charges: {
       PROD: 'Pharmacy_Delivery_Charges',
     },
-    home_screen_emergency_banner: {
-      PROD: 'home_screen_emergency_banner',
-    },
-    home_screen_emergency_number: {
-      PROD: 'home_screen_emergency_number',
-    },
     top6_specailties: {
       QA: 'QA_top6_specailties',
       DEV: 'DEV_top6_specailties',
@@ -853,18 +847,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           );
 
           setAppConfig('Pharmacy_Delivery_Charges', 'DELIVERY_CHARGES', snapshot);
-
-          setAppConfig(
-            'home_screen_emergency_banner',
-            'HOME_SCREEN_EMERGENCY_BANNER_TEXT',
-            snapshot
-          );
-
-          setAppConfig(
-            'home_screen_emergency_number',
-            'HOME_SCREEN_EMERGENCY_BANNER_NUMBER',
-            snapshot
-          );
 
           setAppConfig('Doctor_Partner_Text', 'DOCTOR_PARTNER_TEXT', snapshot);
 
