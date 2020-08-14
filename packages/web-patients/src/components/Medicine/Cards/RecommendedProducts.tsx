@@ -17,6 +17,7 @@ import {
   removeFromCartTracking,
   pharmacyProductClickedTracking,
 } from 'webEngageTracking';
+import { getImageUrl } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -223,52 +224,7 @@ export const RecommendedProducts: React.FC<RecommendedProductsProps> = (props) =
             res.data.getRecommendedProductsList.recommendedProducts
           ) {
             const dataList = res.data.getRecommendedProductsList.recommendedProducts;
-            setRecommendedProductsList(
-              dataList.map((data: recommendedProductsType) => {
-                const {
-                  productSku,
-                  productName,
-                  productImage,
-                  productPrice,
-                  productSpecialPrice,
-                  isPrescriptionNeeded,
-                  categoryName,
-                  status,
-                  mou,
-                  imageBaseUrl,
-                  id,
-                  is_in_stock,
-                  small_image,
-                  thumbnail,
-                  type_id,
-                  quantity,
-                  isShippable,
-                  MaxOrderQty,
-                  urlKey,
-                } = data;
-                return {
-                  id,
-                  image: productImage ? getImageUrl(productImage) : null,
-                  is_in_stock,
-                  is_prescription_required: isPrescriptionNeeded,
-                  name: productName,
-                  price: productPrice,
-                  special_price: productSpecialPrice,
-                  sku: productSku,
-                  small_image,
-                  status,
-                  categoryName,
-                  thumbnail,
-                  type_id,
-                  quantity,
-                  mou,
-                  isShippable,
-                  MaxOrderQty,
-                  imageBaseUrl,
-                  url_key: urlKey,
-                };
-              })
-            );
+            setRecommendedProductsList(dataList);
           } else {
             setRecommendedProductsList([]);
           }
@@ -282,13 +238,6 @@ export const RecommendedProducts: React.FC<RecommendedProductsProps> = (props) =
   const itemIndexInCart = (item: recommendedProductsType) => {
     const index = cartItems.findIndex((cartItem) => cartItem.sku == item.productSku);
     return index;
-  };
-
-  const getImageUrl = (fileIds: string) => {
-    return fileIds
-      .split(',')
-      .filter((fileId) => fileId)
-      .map((fileId) => `${apiDetails.url}/catalog/product${fileId}`)[0];
   };
 
   return (
@@ -324,7 +273,10 @@ export const RecommendedProducts: React.FC<RecommendedProductsProps> = (props) =
                     }}
                   >
                     <div className={classes.productIcon}>
-                      <img src={getImageUrl(productList.productImage)} alt="" />
+                      <img
+                        src={`${apiDetails.url}${getImageUrl(productList.productImage || '')}`}
+                        alt=""
+                      />
                     </div>
                     <div className={classes.productTitle}>{productList.productName}</div>
                   </Link>
