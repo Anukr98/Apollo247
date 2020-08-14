@@ -960,7 +960,7 @@ export const MedicineDetails: React.FC = (props) => {
                         autoHeightMax={'calc(100vh - 215px'}
                       >
                         <div className={classes.productInformation}>
-                          {medicineDetails.image && medicineDetails.image.includes('.') ? (
+                          {medicineDetails.image && medicineDetails.image.length > 0 ? (
                             <MedicineImageGallery data={medicineDetails} />
                           ) : (
                             <div className={classes.noImageWrapper}>

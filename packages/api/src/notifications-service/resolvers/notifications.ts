@@ -965,6 +965,10 @@ export async function sendNotification(
         templateData
       );
     }
+    const formattedAptDate = format(
+      addMinutes(new Date(appointment.appointmentDateTime), +330),
+      "yyyy-MM-dd hh:mm a"
+    );
     let doctorSMS = ApiConstants.DOCTOR_BOOK_APPOINTMENT_SMS.replace(
       '{0}',
       doctorDetails.firstName
@@ -972,7 +976,7 @@ export async function sendNotification(
     doctorSMS = doctorSMS.replace('{1}', appointment.displayId.toString());
     doctorSMS = doctorSMS.replace('{2}', patientDetails.firstName);
     doctorSMS = doctorSMS
-      .replace('{3}', apptDate.toString())
+      .replace('{3}', formattedAptDate)
       .replace('{4}', doctorDetails.salutation);
     sendNotificationSMS(doctorDetails.mobileNumber, doctorSMS);
   }
