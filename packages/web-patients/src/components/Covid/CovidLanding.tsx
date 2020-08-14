@@ -338,7 +338,7 @@ export const CovidLanding: React.FC = (props: any) => {
   return (
     <div className={classes.root}>
       <div className={classes.headerCovid}>
-        <Header backArrrowVisible={true} isWebView={isWebView} />
+        <Header backArrowVisible={true} isWebView={isWebView} />
       </div>
       <div className={classes.container}>
         <div className={classes.pageContainer} ref={scrollToRef}>

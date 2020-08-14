@@ -590,7 +590,7 @@ export const Header: React.FC<any> = (props) => {
             </div>
           </div>
         </header>
-        {props.backArrrowVisible && (
+        {props.backArrowVisible && (
           <>
             {!props.isWebView && (
               <Link to={props.backLocation || clientRoutes.welcome()}>
