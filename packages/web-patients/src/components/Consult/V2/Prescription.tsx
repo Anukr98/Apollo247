@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { makeStyles } from '@material-ui/styles';
 import { Theme, Typography, MenuItem, Popover, CircularProgress, Avatar } from '@material-ui/core';
 import { Header } from 'components/Header';
@@ -16,7 +17,8 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     prescriptionContent: {
       background: '#f7f8f5',
-      padding: 20,
+      padding: '0 20px 20px',
+      borderRadius: '0 0 10px 10px',
     },
     pageHeader: {
       padding: '15px 0',
@@ -25,6 +27,25 @@ const useStyles = makeStyles((theme: Theme) => {
         padding: '15px 20px',
         display: 'flex',
         alignItems: 'center',
+      },
+      [theme.breakpoints.down('xs')]: {
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        padding: 20,
+        zIndex: 999,
+        background: '#fff',
+        width: '100%',
+        display: 'flex',
+        alignItems: 'center',
+        height: 72,
+      },
+    },
+    backArrow: {
+      display: 'none',
+      [theme.breakpoints.down('xs')]: {
+        display: 'block',
+        padding: '0 20px 0 0',
       },
     },
     breadcrumbs: {
@@ -65,15 +86,100 @@ const useStyles = makeStyles((theme: Theme) => {
             display: 'none',
           },
         },
+        [theme.breakpoints.down('xs')]: {
+          display: 'none',
+          '&:last-child': {
+            display: 'block',
+          },
+        },
       },
     },
     drConsultContent: {
       display: 'flex',
-      alignItems: 'center',
+      alignItems: 'flex-end',
       justifyContent: 'space-between',
+      margin: '0 0 10px',
+      [theme.breakpoints.down('xs')]: {
+        flexDirection: 'column',
+        alignItems: 'flex-start',
+      },
     },
-    consultDetails: { display: 'flex', alignItems: 'center' },
-    consultOptions: { display: 'flex', alignItems: 'center' },
+    consultDetails: {
+      display: 'flex',
+      alignItems: 'flex-end',
+      padding: '16px 0 10px',
+      '& h2': {
+        fontSize: 20,
+        fontWeight: 700,
+        padding: '10px 30px 0 0 ',
+        borderRight: '1px solid rgba(1,71,91,0.2)',
+      },
+      '& p': {
+        fontSize: 14,
+        color: '#0087BA',
+        padding: '0 40px',
+        fontWeight: 500,
+        margin: '0 0 5px',
+      },
+      [theme.breakpoints.down('xs')]: {
+        flexDirection: 'column',
+        alignItems: 'flex-start',
+        borderBottom: '1px solid rgba(1,71,91,0.2)',
+        width: '100%',
+        '& h2': {
+          padding: 0,
+          border: 'none',
+        },
+        '& p': {
+          padding: 0,
+        },
+      },
+    },
+    viewConsult: {
+      fontSize: 14,
+      color: '#FC9916',
+      fontWeight: 700,
+      textTransform: 'uppercase',
+      display: 'block',
+      padding: '0 10px 10px',
+      [theme.breakpoints.down('xs')]: {
+        textAlign: 'right',
+        margin: '10px 0 0',
+        display: 'block',
+        width: '100%',
+      },
+    },
+    consultOptions: {
+      display: 'flex',
+      alignItems: 'center',
+      [theme.breakpoints.down('xs')]: {
+        width: '100%',
+      },
+    },
+    optionList: {
+      display: 'flex',
+      alignItems: 'center',
+      margin: '0 0 10px',
+      padding: 0,
+      listStyle: 'none',
+      '& li': {
+        '& a': {
+          padding: '0 10px',
+          display: 'block',
+          minWidth: 60,
+          textAlign: 'center',
+          '&:last-child': {
+            paddingRight: 0,
+          },
+        },
+      },
+      [theme.breakpoints.down('xs')]: {
+        position: 'fixed',
+        top: 20,
+        right: 20,
+        zIndex: 999,
+      },
+    },
     expansionContainer: {
       borderTop: '1px solid rgba(2, 71, 91, .2)',
     },
@@ -81,12 +187,14 @@ const useStyles = makeStyles((theme: Theme) => {
       boxShadow: 'none',
       borderRadius: '0 !important',
       background: 'none',
+      margin: '0 !important',
       '&:before': {
         display: 'none',
       },
     },
     panelHeader: {
       padding: 0,
+      minHeight: '40px !important',
     },
     summaryContent: {},
     expandIcon: {
@@ -120,17 +228,74 @@ const useStyles = makeStyles((theme: Theme) => {
           margin: 0,
         },
       },
+      '& a': {
+        fontSize: 14,
+        color: '#FC9916',
+        fontWeight: 700,
+        textTransform: 'uppercase',
+        display: 'block',
+        textAlign: 'right',
+        margin: '10px 0 0',
+      },
+      [theme.breakpoints.down('xs')]: {
+        padding: 15,
+      },
     },
     adviceList: {
       margin: 0,
-      padding: 0,
-      listStyle: 'none',
+      padding: '0 0 0 20px',
+      listStyle: 'decimal',
+      '& li': {
+        color: '#0087BA',
+        fontSize: 14,
+        padding: '5px 0',
+      },
     },
     cdContainer: {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'space-between',
-      '& p': {},
+      padding: '10px 0',
+      borderBottom: '1px solid rgba(1,71,91,0.3)',
+      '& p': {
+        fontSize: 14,
+        fontWeight: 500,
+        margin: 0,
+        width: '25%',
+      },
+      '&:first-child': {
+        paddingTop: 0,
+      },
+      '&:last-child': {
+        paddingBottom: 0,
+        border: 'none',
+      },
+
+      '& a': {
+        fontSize: 14,
+        color: '#FC9916',
+        fontWeight: 700,
+        textTransform: 'uppercase',
+        display: 'block',
+        width: '25%',
+        textAlign: 'right',
+      },
+      [theme.breakpoints.down('xs')]: {
+        flexDirection: 'column',
+        alignItems: 'flex-start',
+        border: 'none',
+        '& p': {
+          width: '100%',
+          borderBottom: '1px solid rgba(1,71,91,0.3)',
+          padding: '0 0 10px',
+          margin: '0 0 10px',
+        },
+        '& a': {
+          width: '100%',
+          textAlign: 'right',
+          margin: '10px 0 0',
+        },
+      },
     },
     consultList: {
       margin: 0,
@@ -139,6 +304,21 @@ const useStyles = makeStyles((theme: Theme) => {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'space-between',
+      flex: '1 0 auto',
+      '& li': {
+        fontSize: 14,
+        fontWeight: 500,
+        color: '#0087BA',
+        minWidth: '20%',
+      },
+      [theme.breakpoints.down('xs')]: {
+        flexDirection: 'column',
+        alignItems: 'flex-start',
+        '& li': {
+          width: '100%',
+          padding: ' 3px 0',
+        },
+      },
     },
   };
 });
@@ -156,15 +336,18 @@ export const Prescription: React.FC = (props) => {
       <div className={classes.container}>
         <div className={classes.prescriptionContent}>
           <div className={classes.pageHeader}>
+            <Link to="#" className={classes.backArrow}>
+              <img src={require('images/ic_back.svg')} alt="" />
+            </Link>
             <ol className={classes.breadcrumbs}>
               <li>
-                <a href="">Appointments </a>
+                <Link to="#">Appointments </Link>
               </li>
               <li>
-                <a href="">Consult Room</a>
+                <Link to="#">Consult Room </Link>
               </li>
               <li>
-                <a href="">Prescription</a>
+                <Link to="#">Prescription </Link>
               </li>
             </ol>
           </div>
@@ -173,28 +356,26 @@ export const Prescription: React.FC = (props) => {
               <Typography component="h2">Dr. Simran Rai</Typography>
               <Typography>03 Aug 2019, Online Consult</Typography>
             </div>
-            <ul className={classes.consultOptions}>
-              <li>
-                <a href="">View Consult</a>
-              </li>
-              <li>
-                <a href="">
-                  <img src={require('images/ic_round-share.svg')} alt="Share" />
-                </a>
-              </li>
-              <li>
-                <a href="">
-                  <img src={require('images/ic_download.svg')} alt="download" />
-                </a>
-              </li>
-            </ul>
+            <div className={classes.consultOptions}>
+              <Link to="#" className={classes.viewConsult}>
+                View Consult
+              </Link>
+              <ul className={classes.optionList}>
+                <li>
+                  <Link to="#">
+                    <img src={require('images/ic_round-share.svg')} alt="Share" />
+                  </Link>
+                </li>
+                <li>
+                  <Link to="#">
+                    <img src={require('images/ic_download.svg')} alt="download" />
+                  </Link>
+                </li>
+              </ul>
+            </div>
           </div>
           <div className={classes.expansionContainer}>
-            <ExpansionPanel
-              expanded={expanded === 'panel1'}
-              onChange={handleChange('panel1')}
-              className={classes.panelRoot}
-            >
+            <ExpansionPanel defaultExpanded className={classes.panelRoot}>
               <ExpansionPanelSummary
                 expandIcon={<ExpandMoreIcon />}
                 classes={{
@@ -235,11 +416,7 @@ export const Prescription: React.FC = (props) => {
                 </div>
               </ExpansionPanelDetails>
             </ExpansionPanel>
-            <ExpansionPanel
-              expanded={expanded === 'panel2'}
-              onChange={handleChange('panel2')}
-              className={classes.panelRoot}
-            >
+            <ExpansionPanel defaultExpanded className={classes.panelRoot}>
               <ExpansionPanelSummary
                 expandIcon={<ExpandMoreIcon />}
                 classes={{
@@ -269,14 +446,11 @@ export const Prescription: React.FC = (props) => {
                       <li>5 days</li>
                     </ul>
                   </div>
+                  <Link to="#">Order Medicines </Link>
                 </div>
               </ExpansionPanelDetails>
             </ExpansionPanel>
-            <ExpansionPanel
-              expanded={expanded === 'panel3'}
-              onChange={handleChange('panel3')}
-              className={classes.panelRoot}
-            >
+            <ExpansionPanel defaultExpanded className={classes.panelRoot}>
               <ExpansionPanelSummary
                 expandIcon={<ExpandMoreIcon />}
                 classes={{
@@ -294,11 +468,7 @@ export const Prescription: React.FC = (props) => {
                 </div>
               </ExpansionPanelDetails>
             </ExpansionPanel>
-            <ExpansionPanel
-              expanded={expanded === 'panel4'}
-              onChange={handleChange('panel4')}
-              className={classes.panelRoot}
-            >
+            <ExpansionPanel defaultExpanded className={classes.panelRoot}>
               <ExpansionPanelSummary
                 expandIcon={<ExpandMoreIcon />}
                 classes={{
@@ -321,11 +491,7 @@ export const Prescription: React.FC = (props) => {
                 </div>
               </ExpansionPanelDetails>
             </ExpansionPanel>
-            <ExpansionPanel
-              expanded={expanded === 'panel5'}
-              onChange={handleChange('panel5')}
-              className={classes.panelRoot}
-            >
+            <ExpansionPanel defaultExpanded className={classes.panelRoot}>
               <ExpansionPanelSummary
                 expandIcon={<ExpandMoreIcon />}
                 classes={{
@@ -344,16 +510,12 @@ export const Prescription: React.FC = (props) => {
                     <ul className={classes.consultList}>
                       <li>Recommended after 5 days</li>
                     </ul>
-                    <a href="">Book Follow Up</a>
+                    <Link to="#">Book Follow Up </Link>
                   </div>
                 </div>
               </ExpansionPanelDetails>
             </ExpansionPanel>
-            <ExpansionPanel
-              expanded={expanded === 'panel6'}
-              onChange={handleChange('panel6')}
-              className={classes.panelRoot}
-            >
+            <ExpansionPanel defaultExpanded className={classes.panelRoot}>
               <ExpansionPanelSummary
                 expandIcon={<ExpandMoreIcon />}
                 classes={{
@@ -373,7 +535,7 @@ export const Prescription: React.FC = (props) => {
                       <li>Debit Card</li>
                       <li>5546 **** **** ***1</li>
                     </ul>
-                    <a href="">Order Summary</a>
+                    <Link to="#">Order Summary </Link>
                   </div>
                 </div>
               </ExpansionPanelDetails>
