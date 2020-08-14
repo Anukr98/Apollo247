@@ -178,7 +178,12 @@ export const PaymentStatusModal: React.FC<PaymentStatusProps> = (props) => {
             })
               .then((resp: any) => {
                 if (resp && resp.data && resp.data.pharmaPaymentStatus) {
-                  const { paymentStatus, paymentRefId } = resp.data.pharmaPaymentStatus;
+                  const {
+                    paymentStatus,
+                    paymentRefId,
+                    paymentMode,
+                    amountPaid,
+                  } = resp.data.pharmaPaymentStatus;
                   setPaymentStatusData(resp.data.pharmaPaymentStatus);
                   /* WebEngage Tracking Start*/
                   paymentRefId &&
@@ -191,6 +196,22 @@ export const PaymentStatusModal: React.FC<PaymentStatusProps> = (props) => {
                           ? parseInt(params.orderAutoId)
                           : params.orderAutoId,
                     });
+                  const pharmacyCheckoutValues = sessionStorage.getItem('pharmacyCheckoutValues')
+                    ? JSON.parse(sessionStorage.getItem('pharmacyCheckoutValues'))
+                    : {};
+                  pharmacyCheckoutTracking({
+                    orderId:
+                      typeof params.orderAutoId === 'string'
+                        ? parseInt(params.orderAutoId)
+                        : params.orderAutoId,
+                    payStatus: 'success',
+                    payType: paymentMode,
+                    serviceArea: 'pharmacy',
+                    shippingInfo: '',
+                    grandTotal: pharmacyCheckoutValues && pharmacyCheckoutValues.grandTotal,
+                    discountAmount: pharmacyCheckoutValues && pharmacyCheckoutValues.discountAmount,
+                    netAfterDiscount: amountPaid,
+                  });
                   /* WebEngage Tracking End*/
                 } else {
                   // redirect to medicine

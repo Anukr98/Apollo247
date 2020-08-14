@@ -248,10 +248,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       description: `${desc || ''}`.trim(),
     });
 
-  const getPrepaidCheckoutCompletedEventAttributes = (
-    orderAutoId: string,
-    isOrderCod?: boolean
-  ) => {
+  const getPrepaidCheckoutCompletedEventAttributes = (orderAutoId: string, isCOD?: boolean) => {
     try {
       const addr = deliveryAddressId && addresses.find((item) => item.id == deliveryAddressId);
       const store = storeId && stores.find((item) => item.storeid == storeId);
@@ -271,7 +268,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         'Delivery charge': deliveryCharges,
         'Net after discount': getFormattedAmount(grandTotal),
         'Payment status': 1,
-        'Payment Type': isOrderCod ? 'COD' : 'Prepaid',
+        'Payment Type': isCOD ? 'COD' : 'Prepaid',
         'Service Area': 'Pharmacy',
         'Mode of Delivery': deliveryAddressId ? 'Home' : 'Pickup',
         af_revenue: getFormattedAmount(grandTotal),
@@ -304,10 +301,10 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
   const postwebEngageCheckoutCompletedEvent = (
     orderAutoId: string,
     orderId: string,
-    isOrderCod?: boolean
+    isCOD?: boolean
   ) => {
     const eventAttributes = {
-      ...getPrepaidCheckoutCompletedEventAttributes(`${orderAutoId}`, isOrderCod),
+      ...getPrepaidCheckoutCompletedEventAttributes(`${orderAutoId}`, isCOD),
     };
     postWebEngageEvent(WebEngageEventName.PHARMACY_CHECKOUT_COMPLETED, eventAttributes);
 
@@ -338,7 +335,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     }
   };
 
-  const placeOrder = (orderId: string, orderAutoId: number, orderType: string) => {
+  const placeOrder = (orderId: string, orderAutoId: number, orderType: string, isCOD?: boolean) => {
     console.log('placeOrder\t', { orderId, orderAutoId });
     const paymentInfo: SaveMedicineOrderPaymentMqVariables = {
       medicinePaymentMqInput: {
@@ -379,7 +376,12 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         } else {
           // Order-Success, Show popup here & clear cart info
           try {
-            postwebEngageCheckoutCompletedEvent(`${orderAutoId}`, orderId, orderType == 'COD');
+            postwebEngageCheckoutCompletedEvent(
+              `${orderAutoId}`,
+              orderId,
+              orderType == 'COD',
+              isCOD
+            );
             firePurchaseEvent(orderId);
           } catch (error) {
             console.log(error);
@@ -538,10 +540,10 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         } else {
           if (isCOD) {
             console.log('isCashOnDelivery\t', { orderId, orderAutoId });
-            placeOrder(orderId, orderAutoId, 'COD');
+            placeOrder(orderId, orderAutoId, 'COD', true);
           } else if (hcOrder) {
             console.log('HCorder\t', { orderId, orderAutoId });
-            placeOrder(orderId, orderAutoId, 'HCorder');
+            placeOrder(orderId, orderAutoId, 'HCorder', false);
           } else {
             console.log('Redirect To Payment Gateway');
             redirectToPaymentGateway(orderId, orderAutoId, paymentMode, bankCode)
