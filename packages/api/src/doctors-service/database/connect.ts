@@ -51,6 +51,7 @@ import {
   DoctorPatientExternalConnect,
   AdminAuditLogs,
   DoctorProfileHistory,
+  DoctorHelpLine,
 } from 'doctors-service/entities';
 import {
   Coupon,
@@ -128,6 +129,7 @@ export const connect = async () => {
         DoctorPatientExternalConnect,
         AdminAuditLogs,
         DoctorProfileHistory,
+        DoctorHelpLine
       ],
       type: 'postgres',
       host: process.env.DOCTORS_DB_HOST,

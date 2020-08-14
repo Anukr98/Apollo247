@@ -543,6 +543,7 @@ export const caseSheetTypeDefs = gql`
   }
 
   extend type Query {
+    getSDLatestCompletedCaseSheet(appointmentId: String): CaseSheetFullDetails
     getCaseSheet(appointmentId: String): CaseSheetFullDetails
     getJuniorDoctorCaseSheet(appointmentId: String): CaseSheetFullDetails
     searchDiagnosis(searchString: String): [DiagnosisJson]
@@ -1529,6 +1530,108 @@ const generatePrescriptionTemp: Resolver<
   };
 };
 
+const getSDLatestCompletedCaseSheet: Resolver<
+  null,
+  { appointmentId: string },
+  ConsultServiceContext,
+  {
+    caseSheetDetails: CaseSheet;
+    patientDetails: Patient;
+    pastAppointments: AppointmentDetails[];
+    juniorDoctorNotes: string;
+    juniorDoctorCaseSheet: CaseSheet;
+    allowedDosages: string[];
+  }
+> = async (parent, args, { mobileNumber, consultsDb, doctorsDb, patientsDb }) => {
+  //check appointment id
+  const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
+  const appointmentData = await appointmentRepo.findById(args.appointmentId);
+  if (appointmentData == null) throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
+
+  //get patient info
+  const patientRepo = patientsDb.getCustomRepository(PatientRepository);
+  const patientDetails = await patientRepo.findByIdWithRelations(appointmentData.patientId, [
+    PATIENT_REPO_RELATIONS.PATIENT_ADDRESS,
+    PATIENT_REPO_RELATIONS.FAMILY_HISTORY,
+    PATIENT_REPO_RELATIONS.LIFESTYLE,
+    PATIENT_REPO_RELATIONS.PATIENT_MEDICAL_HISTORY,
+  ]);
+
+  if (patientDetails == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
+  //check if logged in mobile number is associated with doctor
+  const secretaryRepo = doctorsDb.getCustomRepository(SecretaryRepository);
+  const secretaryDetails = await secretaryRepo.getSecretary(mobileNumber, true);
+
+  //get loggedin user details
+  const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
+  const doctorData = await doctorRepository.findByMobileNumber(mobileNumber, true);
+  if (
+    doctorData == null &&
+    mobileNumber != patientDetails.mobileNumber &&
+    secretaryDetails != null &&
+    mobileNumber != secretaryDetails.mobileNumber
+  )
+    throw new AphError(AphErrorMessages.UNAUTHORIZED);
+
+  const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
+  let juniorDoctorNotes = '';
+
+  //check whether there is a senior doctor case-sheet
+  const caseSheetDetails = await caseSheetRepo.getSDLatestCompletedCaseSheet(appointmentData.id);
+  if (caseSheetDetails == null) throw new AphError(AphErrorMessages.NO_CASESHEET_EXIST);
+
+  const juniorDoctorCaseSheet = await caseSheetRepo.getJuniorDoctorCaseSheet(appointmentData.id);
+  if (juniorDoctorCaseSheet == null)
+    throw new AphError(AphErrorMessages.JUNIOR_DOCTOR_CASESHEET_NOT_CREATED);
+  juniorDoctorNotes = juniorDoctorCaseSheet.notes;
+
+  const primaryPatientIds = await patientRepo.getLinkedPatientIds({ patientDetails });
+
+  //get past appointment details
+  const pastAppointments = await appointmentRepo.getPastAppointments(
+    appointmentData.doctorId,
+    primaryPatientIds
+  );
+  let pastAppointmentsWithUnreadMessages: AppointmentDetails[] = [];
+  if (pastAppointments.length) {
+    const appointmentIds: string[] = [];
+    const appointmentMessagesCount: { [key: string]: number } = {};
+    pastAppointments.map((appointment) => {
+      appointmentMessagesCount[appointment.id] = 0;
+      appointmentIds.push(appointment.id);
+    });
+
+    //Getting all the notifications with appointment ids
+    const notificationBinRepo = consultsDb.getCustomRepository(NotificationBinRepository);
+    const notifications = await notificationBinRepo.getRequiredFieldsByAppointmentIds(
+      appointmentIds,
+      ['notificationBin.eventId']
+    );
+
+    //Mapping the count of messages with appointment ids
+    notifications.map((notification) => {
+      if (appointmentMessagesCount[notification.eventId] != undefined) {
+        appointmentMessagesCount[notification.eventId]++;
+      }
+    });
+
+    pastAppointmentsWithUnreadMessages = pastAppointments.map((appointment) => {
+      return {
+        ...appointment,
+        unreadMessagesCount: appointmentMessagesCount[appointment.id],
+      };
+    });
+  }
+  return {
+    caseSheetDetails,
+    patientDetails,
+    pastAppointments: pastAppointmentsWithUnreadMessages,
+    juniorDoctorNotes,
+    juniorDoctorCaseSheet,
+    allowedDosages: ApiConstants.ALLOWED_DOSAGES.split(','),
+  };
+};
+
 export const caseSheetResolvers = {
   Appointment: {
     doctorInfo(appointments: Appointment) {
@@ -1555,6 +1658,7 @@ export const caseSheetResolvers = {
 
   Query: {
     getCaseSheet,
+    getSDLatestCompletedCaseSheet,
     getJuniorDoctorCaseSheet,
     searchDiagnosis,
     searchDiagnostic,

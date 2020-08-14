@@ -7,7 +7,6 @@ import {
   AppointmentRefunds,
   AppointmentPayments,
   AppointmentSessions,
-  ConsultQueueItem,
   CaseSheet,
   DoctorNextAvaialbleSlots,
   FeedbackDashboardSummary,
