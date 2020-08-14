@@ -857,6 +857,7 @@ export const GET_CASESHEET = gql`
           medicineConsumptionDurationUnit
           routeOfAdministration
           medicineCustomDosage
+          medicineCustomDetails
           genericName
           includeGenericNameInPrescription
         }
@@ -983,6 +984,7 @@ export const GET_DOCTOR_FAVOURITE_MEDICINE_LIST = gql`
         externalId
         routeOfAdministration
         medicineCustomDosage
+        medicineCustomDetails
         genericName
         includeGenericNameInPrescription
       }
@@ -1195,6 +1197,7 @@ export const MODIFY_CASESHEET = gql`
         medicineConsumptionDurationUnit
         routeOfAdministration
         medicineCustomDosage
+        medicineCustomDetails
         genericName
         includeGenericNameInPrescription
       }

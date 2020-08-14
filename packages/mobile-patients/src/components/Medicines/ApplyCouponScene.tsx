@@ -150,6 +150,7 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
       pinCode: locationDetails && locationDetails.pincode,
       products: cartItems.map((item) => ({
         sku: item.id,
+        categoryId: item.productType,
         mrp: item.price,
         quantity: item.quantity,
         specialPrice: item.specialPrice || item.price,

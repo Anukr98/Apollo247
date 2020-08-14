@@ -590,7 +590,8 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     cartItemMrp: number,
     cartItemPackSize: number,
     storeMrp: number,
-    skuId: string
+    skuId: string,
+    isDifference: boolean
   ) => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.SKU_PRICE_MISMATCH] = {
       'Mobile Number': g(currentPatient, 'mobileNumber') || '',
@@ -598,6 +599,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
       'Magento MRP': cartItemMrp,
       'Magento Pack Size': cartItemPackSize,
       'Store API MRP': storeMrp,
+      'Price Change In Cart': isDifference ? 'No' : 'Yes'
     };
     postWebEngageEvent(WebEngageEventName.SKU_PRICE_MISMATCH, eventAttributes);
   };
@@ -617,9 +619,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     const isDiff = storeItemPrice
       ? isDiffLessOrGreaterThan25Percent(cartItem.price, storeItemPrice)
       : true;
-    if (isDiff) {
-      postSkuPriceMismatchEvent(cartItem.price, Number(cartItem.mou), storeItemPrice, cartItem.id);
-    }
+    postSkuPriceMismatchEvent(cartItem.price, Number(cartItem.mou), storeItemPrice, cartItem.id, isDiff);
     const storeItemSP =
       !isDiff && cartItem.specialPrice
         ? getSpecialPriceFromRelativePrices(
@@ -700,6 +700,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
       pinCode: locationDetails && locationDetails.pincode,
       products: cartItems.map((item) => ({
         sku: item.id,
+        categoryId: item.productType,
         mrp: item.price,
         quantity: item.quantity,
         specialPrice: item.specialPrice || item.price,
@@ -1020,6 +1021,10 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   };
 
   const renderHomeDelivery = () => {
+    const deliveryTimeMomentFormat = moment(
+      deliveryTime,
+      AppConfig.Configuration.MED_DELIVERY_DATE_API_FORMAT
+    );
     return (
       <View
         style={{ marginTop: 8, marginHorizontal: 16 }}
@@ -1087,8 +1092,10 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
                 <View style={styles.rowSpaceBetweenStyle}>
                   <Text style={styles.deliveryStyle}>{deliveryTime && 'Delivery Time'}</Text>
                   <Text style={styles.deliveryTimeStyle}>
-                    {moment(deliveryTime).isValid()
-                      ? moment(deliveryTime).format('D MMM YYYY  | hh:mm A')
+                    {deliveryTimeMomentFormat.isValid()
+                      ? deliveryTimeMomentFormat.format(
+                          AppConfig.Configuration.MED_DELIVERY_DATE_DISPLAY_FORMAT
+                        )
                       : '...'}
                   </Text>
                 </View>

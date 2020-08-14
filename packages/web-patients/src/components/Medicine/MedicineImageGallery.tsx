@@ -82,14 +82,15 @@ export const MedicineImageGallery: React.FC<MedicineInformationProps> = (props) 
     url: process.env.PHARMACY_MED_IMAGES_BASE_URL,
   };
 
-  const images = [
-    {
-      original: `${apiDetails.url}${props.data.image}`,
-      thumbnail: `${apiDetails.url}${props.data.thumbnail}`,
+  let images: any = [];
+  props.data.image.map((img: any) => {
+    images.push({
+      original: `${apiDetails.url}${img}`,
+      thumbnail: `${apiDetails.url}${img}`,
       originalAlt: `${props.data.name}, Pack of ${getPackOfMedicine(props.data)}`,
       originalTitle: `${props.data.name}, Pack of ${getPackOfMedicine(props.data)}`,
-    },
-  ];
+    });
+  });
 
   return (
     images && (

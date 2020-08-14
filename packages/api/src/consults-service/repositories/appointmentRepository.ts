@@ -52,7 +52,31 @@ export class AppointmentRepository extends Repository<Appointment> {
   async findById(id: string) {
     const cache = await getCache(`${REDIS_APPOINTMENT_ID_KEY_PREFIX}${id}`);
     if (cache && typeof cache === 'string') {
-      const cacheAppointment: Appointment = JSON.parse(cache);
+      let cacheAppointment: Appointment = JSON.parse(cache);
+      if (cacheAppointment.sdConsultationDate) {
+        cacheAppointment.sdConsultationDate = new Date(cacheAppointment.sdConsultationDate);
+      }
+      if (cacheAppointment.bookingDate) {
+        cacheAppointment.bookingDate = new Date(cacheAppointment.bookingDate);
+      }
+      if (cacheAppointment.appointmentDateTime) {
+        cacheAppointment.appointmentDateTime = new Date(cacheAppointment.appointmentDateTime);
+      }
+      if (cacheAppointment.updatedDate) {
+        cacheAppointment.updatedDate = new Date(cacheAppointment.updatedDate);
+      }
+      if (cacheAppointment.cancelledDate) {
+        cacheAppointment.cancelledDate = new Date(cacheAppointment.cancelledDate);
+      }
+      if (cacheAppointment.paymentInfo && cacheAppointment.paymentInfo.createdDate) {
+        cacheAppointment.paymentInfo.createdDate = new Date(cacheAppointment.paymentInfo.createdDate);
+      }
+      if (cacheAppointment.paymentInfo && cacheAppointment.paymentInfo.paymentDateTime) {
+        cacheAppointment.paymentInfo.paymentDateTime = new Date(cacheAppointment.paymentInfo.paymentDateTime);
+      }
+      if (cacheAppointment.paymentInfo && cacheAppointment.paymentInfo.updatedDate) {
+        cacheAppointment.paymentInfo.updatedDate = new Date(cacheAppointment.paymentInfo.updatedDate);
+      }
       return this.create(cacheAppointment);
     }
     const appointment = await this.findOne({ id }).catch((getApptError) => {
@@ -647,7 +671,8 @@ export class AppointmentRepository extends Repository<Appointment> {
           status5: STATUS.PAYMENT_PENDING_PG,
           status6: STATUS.PAYMENT_ABORTED,
         }
-      ).orderBy("appointment.sdConsultationDate", "DESC")
+      )
+      .orderBy('appointment.sdConsultationDate', 'DESC')
       .getMany();
   }
 
@@ -1384,6 +1409,16 @@ export class AppointmentRepository extends Repository<Appointment> {
   }
 
   getAllAppointmentsByPatientId(ids: string[], paginate: PaginateParams) {
+    /**
+     * to support ui for web as well as mobile
+     * as web using asc and mobile will use desc (who sends paignation params)
+     * wll remove this once web also use pagination
+     */
+    const order: { bookingDate: 'ASC' | 'DESC' } = { bookingDate: 'ASC' };
+
+    if (paginate.skip || paginate.take) {
+      order.bookingDate = 'DESC';
+    }
     // returns [result , total]
     return this.findAndCount({
       where: {
@@ -1392,7 +1427,7 @@ export class AppointmentRepository extends Repository<Appointment> {
         status: Not(STATUS.PAYMENT_ABORTED),
       },
       relations: ['appointmentPayments', 'appointmentRefunds'],
-      order: { bookingDate: 'ASC' },
+      order,
       //extra params...
       ...paginate,
     });

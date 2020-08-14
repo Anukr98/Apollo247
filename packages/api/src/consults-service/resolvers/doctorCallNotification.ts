@@ -72,14 +72,16 @@ export const doctorCallNotificationTypeDefs = gql`
       appointmentId: String
       callType: APPT_CALL_TYPE
       doctorType: DOCTOR_CALL_TYPE
+      numberOfParticipants: Int
       sendNotification: Boolean
       doctorId: String
       doctorName: String
       deviceType: DEVICETYPE
       callSource: BOOKINGSOURCE
-      appVersion: String
+      appVersion: String,
+      isDev: Boolean
     ): NotificationResult!
-    endCallNotification(appointmentCallId: String): EndCallResult!
+    endCallNotification(appointmentCallId: String, isDev: Boolean): EndCallResult!
     sendApptNotification: ApptNotificationResult!
     getCallDetails(appointmentCallId: String): CallDetailsResult!
     sendPatientWaitNotification(appointmentId: String): sendPatientWaitNotificationResult
@@ -109,21 +111,21 @@ type CallDetailsResult = {
 
 const endCallNotification: Resolver<
   null,
-  { appointmentCallId: string },
+  { appointmentCallId: string, isDev: boolean },
   ConsultServiceContext,
   EndCallResult
 > = async (parent, args, { consultsDb, doctorsDb, patientsDb }) => {
   const callDetailsRepo = consultsDb.getCustomRepository(AppointmentCallDetailsRepository);
   const callDetails = await callDetailsRepo.getCallDetails(args.appointmentCallId);
-  if(!callDetails){
+  if (!callDetails) {
     throw new AphError(AphErrorMessages.INVALID_CALL_ID, undefined, {});
   }
 
   let doctorName = callDetails.doctorName;
-  if(!doctorName){
+  if (!doctorName) {
     const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
     const doctor = await doctorRepo.findById(callDetails.appointment.doctorId);
-    if(!doctor){
+    if (!doctor) {
       throw new AphError(AphErrorMessages.GET_DOCTORS_ERROR, undefined, {});
     }
     doctorName = doctor.displayName;
@@ -135,8 +137,12 @@ const endCallNotification: Resolver<
     DEVICE_TYPE.IOS
   );
 
+  if (!args.isDev) {
+    args.isDev = false;
+  }
+
   if (voipPushtoken.length && voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken']) {
-    hitCallKitCurl(voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken'], doctorName, callDetails.appointment.id, false, APPT_CALL_TYPE.AUDIO)
+    hitCallKitCurl(voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken'], doctorName, callDetails.appointment.id, false, APPT_CALL_TYPE.AUDIO, args.isDev)
   }
 
   await callDetailsRepo.updateCallDetails(args.appointmentCallId);
@@ -163,12 +169,14 @@ const sendCallNotification: Resolver<
     appointmentId: string;
     callType: APPT_CALL_TYPE;
     doctorType: DOCTOR_CALL_TYPE;
+    numberOfParticipants: number;
     sendNotification: Boolean;
     doctorId: string;
     doctorName: string;
     deviceType: DEVICETYPE;
     callSource: BOOKINGSOURCE;
     appVersion: string;
+    isDev: boolean
   },
   ConsultServiceContext,
   NotificationResult
@@ -191,6 +199,11 @@ const sendCallNotification: Resolver<
   const appointmentCallDetails = await callDetailsRepo.saveAppointmentCallDetails(
     appointmentCallDetailsAttrs
   );
+
+  if (!args.isDev) {
+    args.isDev = false;
+  }
+
   if (args.callType != APPT_CALL_TYPE.CHAT) {
     const pushNotificationInput = {
       appointmentId: args.appointmentId,
@@ -203,7 +216,9 @@ const sendCallNotification: Resolver<
       doctorsDb,
       args.callType,
       args.doctorType,
-      appointmentCallDetails.id
+      appointmentCallDetails.id,
+      args.isDev,
+      args.numberOfParticipants,
     );
     console.log(notificationResult, 'doctor call appt notification');
   } else {
@@ -218,7 +233,9 @@ const sendCallNotification: Resolver<
       doctorsDb,
       args.callType,
       args.doctorType,
-      appointmentCallDetails.id
+      appointmentCallDetails.id,
+      args.isDev,
+      args.numberOfParticipants,
     );
     console.log(notificationResult, 'doctor call appt notification');
   }

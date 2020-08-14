@@ -340,12 +340,15 @@ export async function hitCallKitCurl(
   doctorName: string,
   apptId: string,
   connecting: boolean,
-  callType: APPT_CALL_TYPE
+  callType: APPT_CALL_TYPE,
+  isDev: boolean
 ) {
   const CERT_PATH = process.env.VOIP_CALLKIT_CERT_PATH + '/voipCert.pem';
   const passphrase = process.env.VOIP_CALLKIT_PASSPHRASE || 'apollo@123';
-  const domain =
-    process.env.VOIP_CALLKIT_DOMAIN || 'https://api.development.push.apple.com/3/device/';
+  let domain = process.env.VOIP_CALLKIT_DOMAIN || 'https://api.push.apple.com/3/device/';
+  if (isDev) {
+    domain = 'https://api.development.push.apple.com/3/device/';
+  }
   try {
     const curlCommand = `curl -v -d '{"name": "${doctorName}", 
       "${connecting ? 'isVideo' : 'disconnectCall'}": 
@@ -465,7 +468,9 @@ export async function sendCallsNotification(
   doctorsDb: Connection,
   callType: APPT_CALL_TYPE,
   doctorType: DOCTOR_CALL_TYPE,
-  appointmentCallId: string
+  appointmentCallId: string,
+  isDev: boolean,
+  numberOfParticipants: number
 ) {
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const appointment = await appointmentRepo.findById(pushNotificationInput.appointmentId);
@@ -497,7 +502,8 @@ export async function sendCallsNotification(
       doctorDetails.displayName,
       appointment.id,
       true,
-      callType
+      callType,
+      isDev,
     );
   }
   if (callType == APPT_CALL_TYPE.CHAT && doctorType == DOCTOR_CALL_TYPE.SENIOR) {
@@ -592,6 +598,56 @@ export async function sendCallsNotification(
   });*/
   console.log(registrationToken.length, patientDetails.mobileNumber, 'token length');
   if (registrationToken.length == 0) return;
+
+  //First payload (data only)
+  let dataOnlyPayloadResponse = null;
+  const sendDataOnlyPayload = callType != APPT_CALL_TYPE.CHAT && numberOfParticipants && numberOfParticipants == 1;
+
+  if (sendDataOnlyPayload) {
+    const dataOnlyPayload = {
+      data: {
+        type: 'call_start',
+        appointmentId: appointment.id.toString(),
+        doctorName: 'Dr. ' + doctorDetails.firstName,
+      },
+    };
+
+    admin
+      .messaging()
+      .sendToDevice(registrationToken, dataOnlyPayload, options)
+      .then((response: PushNotificationSuccessMessage) => {
+        dataOnlyPayloadResponse = response;
+        if (pushNotificationInput.notificationType == NotificationType.CALL_APPOINTMENT) {
+          const fileName =
+            process.env.NODE_ENV + '_callnotification_' + format(new Date(), 'yyyyMMdd') + '.txt';
+          let assetsDir = path.resolve('/apollo-hospitals/packages/api/src/assets');
+          if (process.env.NODE_ENV != 'local') {
+            assetsDir = path.resolve(<string>process.env.ASSETS_DIRECTORY);
+          }
+          let content =
+            format(new Date(), 'yyyy-MM-dd hh:mm') +
+            '\n apptid: ' +
+            pushNotificationInput.appointmentId +
+            '\n multicastId: ';
+          content +=
+            response.multicastId.toString() +
+            '\n------------------------------------------------------------------------------------\n';
+          fs.appendFile(assetsDir + '/' + fileName, content, (err) => {
+            if (err) {
+              console.log('file saving error', err);
+            }
+            console.log('notification results saved');
+          });
+        }
+      })
+      .catch((error: JSON) => {
+        console.log('PushNotification Failed::' + error);
+        throw new AphError(AphErrorMessages.PUSH_NOTIFICATION_FAILED);
+      });
+
+    console.log(dataOnlyPayloadResponse, 'dataOnlyPayloadResponse');
+  }
+
   admin
     .messaging()
     .sendToDevice(registrationToken, payload, options)
@@ -626,51 +682,6 @@ export async function sendCallsNotification(
     });
 
   console.log(notificationPayloadResponse, 'notificationPayloadResponse');
-
-  //second payload
-  let dataOnlyPayloadResponse;
-  const dataOnlyPayload = {
-    data: {
-      type: 'call_start',
-      appointmentId: appointment.id.toString(),
-      doctorName: 'Dr. ' + doctorDetails.firstName,
-    },
-  };
-
-  admin
-    .messaging()
-    .sendToDevice(registrationToken, dataOnlyPayload, options)
-    .then((response: PushNotificationSuccessMessage) => {
-      dataOnlyPayloadResponse = response;
-      if (pushNotificationInput.notificationType == NotificationType.CALL_APPOINTMENT) {
-        const fileName =
-          process.env.NODE_ENV + '_callnotification_' + format(new Date(), 'yyyyMMdd') + '.txt';
-        let assetsDir = path.resolve('/apollo-hospitals/packages/api/src/assets');
-        if (process.env.NODE_ENV != 'local') {
-          assetsDir = path.resolve(<string>process.env.ASSETS_DIRECTORY);
-        }
-        let content =
-          format(new Date(), 'yyyy-MM-dd hh:mm') +
-          '\n apptid: ' +
-          pushNotificationInput.appointmentId +
-          '\n multicastId: ';
-        content +=
-          response.multicastId.toString() +
-          '\n------------------------------------------------------------------------------------\n';
-        fs.appendFile(assetsDir + '/' + fileName, content, (err) => {
-          if (err) {
-            console.log('file saving error', err);
-          }
-          console.log('notification results saved');
-        });
-      }
-    })
-    .catch((error: JSON) => {
-      console.log('PushNotification Failed::' + error);
-      throw new AphError(AphErrorMessages.PUSH_NOTIFICATION_FAILED);
-    });
-
-  console.log(dataOnlyPayloadResponse, 'dataOnlyPayloadResponse');
 
   return {
     notificationPayloadResponse: notificationPayloadResponse,
@@ -954,6 +965,10 @@ export async function sendNotification(
         templateData
       );
     }
+    const formattedAptDate = format(
+      addMinutes(new Date(appointment.appointmentDateTime), +330),
+      "yyyy-MM-dd hh:mm a"
+    );
     let doctorSMS = ApiConstants.DOCTOR_BOOK_APPOINTMENT_SMS.replace(
       '{0}',
       doctorDetails.firstName
@@ -961,7 +976,7 @@ export async function sendNotification(
     doctorSMS = doctorSMS.replace('{1}', appointment.displayId.toString());
     doctorSMS = doctorSMS.replace('{2}', patientDetails.firstName);
     doctorSMS = doctorSMS
-      .replace('{3}', apptDate.toString())
+      .replace('{3}', formattedAptDate)
       .replace('{4}', doctorDetails.salutation);
     sendNotificationSMS(doctorDetails.mobileNumber, doctorSMS);
   }
@@ -1782,7 +1797,7 @@ export async function sendReminderNotification(
   if (
     pushNotificationInput.notificationType == NotificationType.APPOINTMENT_CASESHEET_REMINDER_15 ||
     pushNotificationInput.notificationType ==
-      NotificationType.APPOINTMENT_CASESHEET_REMINDER_15_VIRTUAL
+    NotificationType.APPOINTMENT_CASESHEET_REMINDER_15_VIRTUAL
   ) {
     if (!(appointment && appointment.id)) {
       throw new AphError(AphErrorMessages.APPOINTMENT_ID_NOT_FOUND);
@@ -2370,7 +2385,7 @@ const testPushNotification: Resolver<
   { deviceToken: String },
   NotificationsServiceContext,
   PushNotificationSuccessMessage | undefined
-> = async (parent, args, {}) => {
+> = async (parent, args, { }) => {
   //initialize firebaseadmin
   const config = {
     credential: firebaseAdmin.credential.applicationDefault(),
@@ -2557,7 +2572,9 @@ export async function sendChatMessageNotification(
   doctorsDb: Connection,
   chatMessage: string
 ) {
-  const devLink = process.env.DOCTOR_DEEP_LINK ? process.env.DOCTOR_DEEP_LINK : '';
+  const devLink = process.env.CHAT_DOCTOR_DEEP_LINK
+    ? process.env.CHAT_DOCTOR_DEEP_LINK + appointment.id
+    : '';
   const templateData: string[] = [
     doctorDetails.salutation + ' ' + doctorDetails.firstName,
     patientDetails.firstName + ' ' + patientDetails.lastName,
@@ -3108,7 +3125,7 @@ export async function medicineOrderRefundNotification(
    * Otherwise, order was cancelled and user should have been refunded
    */
   if (isPartialRefund === true) {
-    if ( (refundAmount > 0 && isRefundSuccessful) || healthCreditsRefunded > 0) {
+    if ((refundAmount > 0 && isRefundSuccessful) || healthCreditsRefunded > 0) {
       if (refundAmount > 0 && isRefundSuccessful && healthCreditsRefunded > 0) {
         notificationBody = ApiConstants.ORDER_PAYMENT_HC_PARTIAL_REFUND_BODY;
         notificationBody = notificationBody.replace(
@@ -3157,7 +3174,7 @@ export async function medicineOrderRefundNotification(
       await sendNotificationSMS(orderDetails.patient.mobileNumber, notificationBody);
     }
 
-    if (paymentInfo.paymentType == MEDICINE_ORDER_PAYMENT_TYPE.CASHLESS && ( (refundAmount > 0 && isRefundSuccessful) || healthCreditsRefunded > 0) ) {
+    if (paymentInfo.paymentType == MEDICINE_ORDER_PAYMENT_TYPE.CASHLESS && ((refundAmount > 0 && isRefundSuccessful) || healthCreditsRefunded > 0)) {
       if (refundAmount > 0 && isRefundSuccessful && healthCreditsRefunded > 0) {
         notificationBody = ApiConstants.ORDER_CANCEL_PAYMENT_HC_REFUND_BODY;
         notificationBody = notificationBody.replace(
@@ -3169,14 +3186,14 @@ export async function medicineOrderRefundNotification(
           '{healthCreditsRefund}',
           healthCreditsRefunded.toString()
         );
-      }else if (refundAmount > 0 && isRefundSuccessful) {
+      } else if (refundAmount > 0 && isRefundSuccessful) {
         notificationBody = ApiConstants.ORDER_CANCEL_PREPAID_BODY;
         notificationBody = notificationBody.replace(
           '{orderId}',
           orderDetails.orderAutoId.toString()
         );
         notificationBody = notificationBody.replace('{refund}', refundAmount.toString());
-      }else if (healthCreditsRefunded > 0) {
+      } else if (healthCreditsRefunded > 0) {
         notificationBody = ApiConstants.ORDER_CANCEL_HC_REFUND_BODY;
         notificationBody = notificationBody.replace(
           '{orderId}',

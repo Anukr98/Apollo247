@@ -170,6 +170,8 @@ const useStyles = makeStyles((theme: Theme) => {
     saveButton: {
       backgroundColor: '#fcb716',
       color: '#fff',
+      boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.2)',
+      minWidth: 134,
       '&:hover': {
         backgroundColor: '#fcb716',
         color: '#fff',
@@ -521,7 +523,7 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
                     className={`${classes.formControl} ${classes.noMargin}`}
                     ref={disableFieldsRef}
                     onClick={
-                      selectedPatientId.length ? () => setIsDisablePopoverOpen(true) : () => {}
+                      selectedPatientId.length ? () => setIsDisablePopoverOpen(true) : () => { }
                     }
                     fullWidth
                   >
@@ -553,7 +555,7 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
                   <FormControl
                     className={`${classes.formControl}`}
                     onClick={
-                      selectedPatientId.length > 0 ? () => setIsDisablePopoverOpen(true) : () => {}
+                      selectedPatientId.length > 0 ? () => setIsDisablePopoverOpen(true) : () => { }
                     }
                     fullWidth
                   >
@@ -616,7 +618,7 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
                   <FormControl
                     className={classes.formControl}
                     onClick={
-                      selectedPatientId.length ? () => setIsDisablePopoverOpen(true) : () => {}
+                      selectedPatientId.length ? () => setIsDisablePopoverOpen(true) : () => { }
                     }
                   >
                     <label>Gender</label>
@@ -631,14 +633,14 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
                               selectedPatientId.length > 0 && gender !== genderSelected
                                 ? classes.hideBtn
                                 : ''
-                            }`}
+                              }`}
                           >
                             <AphButton
                               color="secondary"
                               disabled={selectedPatientId.length > 0}
                               className={`${classes.genderBtns} ${
                                 gender === genderSelected ? classes.btnActive : ''
-                              }`}
+                                }`}
                               value={genderSelected}
                               onClick={() => {
                                 setGenderSelected(gender as Gender);
@@ -683,6 +685,9 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
                     value={emailAddress}
                     onChange={(e) => {
                       setEmailAddress(e.target.value);
+                      if (e.target.value !== '') {
+                        setIsEmailAddressValid(isEmailValid(e.target.value));
+                      }
                     }}
                     onBlur={(e) => {
                       if (e.target.value !== '') {

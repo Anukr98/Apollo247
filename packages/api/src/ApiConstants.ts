@@ -63,7 +63,7 @@ export enum ApiConstants {
 
   //medicine order out for delivery
   ORDER_PLACED_TITLE = 'Medicine order is placed',
-  ORDER_PLACED_BODY = 'Hi {0}, we have received your order {1}.\nChecking your blood oxygen level is helpful. Pulse Oximeter is available Now. Click here https://tinyurl.com/y6jwn7pw.\nFor any support, please speak with our customer care executives on the official WhatsApp channel (during business hours 8:30 AM - 8:30 PM) https://bit.ly/apollo247medicines',
+  ORDER_PLACED_BODY = 'Hi {0}, we have received your order {1}.\nChecking your blood oxygen level is helpful. Pulse Oximeter is available Now. Click here https://tinyurl.com/y6jwn7pw.\nFor any support, please speak with our customer care executives on the official WhatsApp channel (during business hours 8 AM - 8:30 PM) https://bit.ly/apollo247medicines',
 
   // medicine order out for delivery
   UPLOAD_PRESCRIPTION_TITLE = 'Upload Prescription medicine order placed ',
@@ -74,10 +74,10 @@ export enum ApiConstants {
 
   //medicine order items changed
   MEDICINE_ORDER_CHANGED_TITLE = 'Medicine order is changed',
-  MEDICINE_ORDER_CHANGED_BODY = 'Hi {0}, your order {1} is billed with some modifications, updated details are visible on the Apollo 247 App here: https://pmt.apollo247.com/deeplink?url=apollopatients://Order?{1}. For any support, please speak with our customer care executives on the official WhatsApp channel (during business hours 9 AM - 6 PM) https://bit.ly/apollo247medicines',
+  MEDICINE_ORDER_CHANGED_BODY = 'Hi {0}, your order {1} is billed with some modifications, updated details are visible on the Apollo 247 App here: https://pmt.apollo247.com/deeplink?url=apollopatients://Order?{1}. For any support, please speak with our customer care executives on the official WhatsApp channel (during business hours 8 AM - 8:30 PM) https://bit.ly/apollo247medicines',
   //medicine order ready at store
   ORDER_READY_AT_STORE_TITLE = 'Medicine order is ready',
-  ORDER_READY_AT_STORE_BODY = 'Hi {0}! items for your order {1} are ready for pickup at your selected store {2}. Store Contact Number: {3}. Kindly alert the store 10 minutes before reaching the store. For any support, please speak with our customer care executives on the official WhatsApp channel (during business hours 9 AM - 6 PM) https://bit.ly/apollo247medicines',
+  ORDER_READY_AT_STORE_BODY = 'Hi {0}! items for your order {1} are ready for pickup at your selected store {2}. Store Contact Number: {3}. Kindly alert the store 10 minutes before reaching the store. For any support, please speak with our customer care executives on the official WhatsApp channel (during business hours 8 AM - 8:30 PM) https://bit.ly/apollo247medicines',
 
   //medicine order picked up
   ORDER_PICKEDUP_TITLE = 'Medicine order is pickedup',
@@ -89,7 +89,7 @@ export enum ApiConstants {
 
   //medicine order delivered
   ORDER_DELIVERY_TITLE = 'Medicine order is delivered',
-  ORDER_DELIVERY_BODY = 'Greetings from Apollo 24|7, Your order {1} is delivered successfully! In case of any issues or feedback related to your delivery, please speak with our customer care executives on the official WhatsApp channel (during business hours 9 AM - 8:30 PM) https://bit.ly/apollo247medicines',
+  ORDER_DELIVERY_BODY = 'Greetings from Apollo 24|7, Your order {1} is delivered successfully! In case of any issues or feedback related to your delivery, please speak with our customer care executives on the official WhatsApp channel (during business hours 8 AM - 8:30 PM) https://bit.ly/apollo247medicines',
 
   //medicine order cancelled
   ORDER_CANCEL_BODY = 'Dear {name}, referring to your Apollo 247 Order {orderId}, {reason}',
@@ -179,6 +179,7 @@ export enum ApiConstants {
   APPT_STATE_CHANGED_1 = 'Appointment state changed to AWAITING_RESCHEDULE',
   APPT_STATE_CHANGED_2 = 'Appointment state changed to RESCHEDULED',
   APPT_STATE_CHANGED_3 = 'Appointment cancelled due to max. reschedules',
+  APPT_UPDATE_SEPERATOR = '-rescheduledBy247-',
 
   /*** push-notification messages end here ***/
 
@@ -406,10 +407,6 @@ export enum ApiConstants {
   REDIS_PORT = 6379,
   REDIS_PWD = 'FgFyZpibcBewC6U7AZYDq1DppMW02mi+koiEa63gDF4=',
   REDIS_IMAGE_URL = '/catalog/product/',
-
-  PHARMA_DISCOUNT = 10,
-  PL_DISCOUNT = 15,
-  FMCG_DISCOUNT = 5,
 
   //prescriptions uploaded through medicine, diagnostic orders or from OLD APPS
   PRESCRIPTION_UPLOADED_BY_PATIENT = 'Prescription uploaded by Patient',

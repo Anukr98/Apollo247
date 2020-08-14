@@ -28,6 +28,7 @@ export interface ShoppingCartItem {
   isInStock: boolean;
   unserviceable?: boolean;
   isMedicine: boolean;
+  productType?: 'FMCG' | 'Pharma' | 'PL';
 }
 
 export interface PhysicalPrescription {

@@ -43,10 +43,12 @@ import {
   CommonSetUserBugsnag,
   DeviceHelper,
   setBugFenderLog,
+  isIos,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
   GET_PATIENT_FUTURE_APPOINTMENT_COUNT,
   SAVE_DEVICE_TOKEN,
+  SAVE_VOIP_DEVICE_TOKEN
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { getPatientFutureAppointmentCount } from '@aph/mobile-patients/src/graphql/types/getPatientFutureAppointmentCount';
 import { DEVICE_TYPE, Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
@@ -112,6 +114,9 @@ import { NavigationScreenProps } from 'react-navigation';
 import { getPatientPersonalizedAppointments_getPatientPersonalizedAppointments_appointmentDetails } from '../../graphql/types/getPatientPersonalizedAppointments';
 import { getPatientPersonalizedAppointmentList } from '../../helpers/clientCalls';
 import { ConsultPersonalizedCard } from '../ui/ConsultPersonalizedCard';
+import VoipPushNotification from 'react-native-voip-push-notification';
+import { LocalStrings } from '@aph/mobile-patients/src/strings/LocalStrings';
+import { addVoipPushToken, addVoipPushTokenVariables } from '../../graphql/types/addVoipPushToken';
 
 const { Vitals } = NativeModules;
 
@@ -301,6 +306,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [serviceable, setserviceable] = useState<String>('');
   const [personalizedData, setPersonalizedData] = useState<any>([]);
   const [isPersonalizedCard, setisPersonalizedCard] = useState(false);
+  const [voipDeviceToken, setVoipDeviceToken] = useState<string>('');
 
   const webengage = new WebEngage();
 
@@ -803,6 +809,52 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     fetchData();
     callDeviceTokenAPI();
   }, []);
+
+  useEffect(() => {
+    if (isIos()) {
+      initializeVoip();
+    }
+  }, [])
+
+  const initializeVoip = () => {
+    VoipPushNotification.requestPermissions();
+    VoipPushNotification.registerVoipToken();
+
+    VoipPushNotification.addEventListener('register', (token: string) => {
+      if (token) setVoipDeviceToken(token);
+    });
+  }
+
+  useEffect(() => {
+    if (voipDeviceToken) {
+      setTimeout(() => {
+        callVoipDeviceTokenAPI(); // for safer side(to get currentPatient.id)
+      }, 2000);
+    }
+  }, [voipDeviceToken])
+
+  const callVoipDeviceTokenAPI = async () => {
+    const asyncVoipToken = await AsyncStorage.getItem(LocalStrings.voipDeviceToken);
+    const parsedToken = asyncVoipToken && JSON.parse(asyncVoipToken);
+    if (voipDeviceToken !== parsedToken) {
+      const input = {
+        patientId: currentPatient ? currentPatient.id : '',
+        voipToken: voipDeviceToken
+      }
+      client.mutate<addVoipPushToken, addVoipPushTokenVariables>({
+        mutation: SAVE_VOIP_DEVICE_TOKEN,
+        variables: {
+          voipPushTokenInput: input
+        },
+        fetchPolicy: 'no-cache'
+      }).then((data: any) => {
+        AsyncStorage.setItem(LocalStrings.voipDeviceToken, JSON.stringify(voipDeviceToken));
+      }).catch((e) => {
+        CommonBugFender('ConsultRoom_callDeviceVoipTokenAPI', e);
+        console.log('Error occured while sending voip token', e);
+      })
+    }
+  }
 
   const getTokenforCM = async () => {
     const retrievedItem: any = await AsyncStorage.getItem('currentPatient');
