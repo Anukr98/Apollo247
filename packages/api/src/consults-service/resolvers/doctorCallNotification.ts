@@ -142,7 +142,14 @@ const endCallNotification: Resolver<
   }
 
   if (voipPushtoken.length && voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken']) {
-    hitCallKitCurl(voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken'], doctorName, callDetails.appointment.id, false, APPT_CALL_TYPE.AUDIO, args.isDev)
+    hitCallKitCurl(
+      voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken'], 
+      doctorName, 
+      callDetails.appointment.id, 
+      callDetails.appointment.patientId,
+      false, 
+      APPT_CALL_TYPE.AUDIO, 
+      args.isDev)
   }
 
   await callDetailsRepo.updateCallDetails(args.appointmentCallId);

@@ -339,6 +339,7 @@ export async function hitCallKitCurl(
   token: string,
   doctorName: string,
   apptId: string,
+  patientId: string,
   connecting: boolean,
   callType: APPT_CALL_TYPE,
   isDev: boolean
@@ -353,7 +354,7 @@ export async function hitCallKitCurl(
     const curlCommand = `curl -v -d '{"name": "${doctorName}", 
       "${connecting ? 'isVideo' : 'disconnectCall'}": 
       ${connecting ? (callType == APPT_CALL_TYPE.VIDEO ? true : false) : true}, 
-      "appointmentId" : "${apptId}"}' --http2 --cert ${CERT_PATH}:${passphrase} ${domain}${token}`;
+      "appointmentId" : "${apptId}", "patientId": "${patientId}" }' --http2 --cert ${CERT_PATH}:${passphrase} ${domain}${token}`;
     const resp = child_process.execSync(curlCommand);
     const result = resp.toString('utf-8');
     console.log('voipCallKit result > ', result);
@@ -501,6 +502,7 @@ export async function sendCallsNotification(
       voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken'],
       doctorDetails.displayName,
       appointment.id,
+      patientDetails.id,
       true,
       callType,
       isDev,
