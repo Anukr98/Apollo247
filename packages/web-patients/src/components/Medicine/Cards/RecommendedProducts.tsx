@@ -188,9 +188,8 @@ export const RecommendedProducts: React.FC<RecommendedProductsProps> = (props) =
       {
         breakpoint: 480,
         settings: {
-          slidesToShow: 1,
-          slidesToScroll: 1,
-          centerMode: true,
+          slidesToShow: 2,
+          slidesToScroll: 2,
           nextArrow: <img src={require('images/ic_white_arrow_right.svg')} alt="" />,
           prevArrow: <img src={require('images/ic_white_arrow_right.svg')} alt="" />,
         },
