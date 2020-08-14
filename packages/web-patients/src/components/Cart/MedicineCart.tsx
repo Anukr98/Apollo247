@@ -1246,7 +1246,7 @@ export const MedicineCart: React.FC = (props) => {
           itemCount: cartItems ? cartItems.length : 0,
           couponCode: couponCode ? couponCode : null,
           couponValue:
-            validateCouponResult && validateCouponResult.discountedTotals
+            validateCouponResult && validateCouponResult.discount
               ? validateCouponResult.discount.toFixed(2)
               : 0,
           finalBookingValue: totalWithCouponDiscount,
@@ -1580,7 +1580,7 @@ export const MedicineCart: React.FC = (props) => {
                       </div>
                       {couponCode.length > 0 &&
                         validateCouponResult &&
-                        validateCouponResult.discountedTotals &&
+                        validateCouponResult.discount &&
                         validateCouponResult.discount > 0 && (
                           <div className={classes.discountTotal}>
                             {`Savings of Rs.
@@ -1685,7 +1685,7 @@ export const MedicineCart: React.FC = (props) => {
                                 JSON.stringify({
                                   couponCode: couponCode == '' ? null : couponCode,
                                   couponValue:
-                                    validateCouponResult && validateCouponResult.discountedTotals
+                                    validateCouponResult && validateCouponResult.discount
                                       ? validateCouponResult.discount.toFixed(2)
                                       : 0,
                                   totalWithCouponDiscount: totalWithCouponDiscount,
