@@ -65,8 +65,8 @@ const linkUhids: Resolver<
   });
   //Updating the primary and linked patients
   if (primaryPatientId && linkedPatientIds.length) {
-    patientsRepo.updateLinkedUhidAccount([primaryPatientId], 'isUhidPrimary', true);
-    patientsRepo.updateLinkedUhidAccount(
+    await patientsRepo.updateLinkedUhidAccount([primaryPatientId], 'isUhidPrimary', true);
+    await patientsRepo.updateLinkedUhidAccount(
       linkedPatientIds,
       'isLinked',
       true,
@@ -126,11 +126,11 @@ const unlinkUhids: Resolver<
 
   //Updating the primary and linked patients
   if (primaryPatientId && linkedPatientIds.length) {
-    patientsRepo.updateLinkedUhidAccount(linkedPatientIds, 'isLinked', false, 'null');
+    await patientsRepo.updateLinkedUhidAccount(linkedPatientIds, 'isLinked', false, 'null');
 
     //If no uhid is linked to primary uhid, marking its isUhidPrimary column as false
     if (notUnLinkedPatientIds.length == 0) {
-      patientsRepo.updateLinkedUhidAccount([primaryPatientId], 'isUhidPrimary', false);
+      await patientsRepo.updateLinkedUhidAccount([primaryPatientId], 'isUhidPrimary', false);
     }
   }
 

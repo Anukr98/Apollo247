@@ -344,10 +344,19 @@ const getMedicineOrdersOMSList: Resolver<
     paginateParams.take = pageSize
     paginateParams.skip = (pageSize * pageNo) - pageSize //bcoz pageNo. starts from 1 not 0.
   }
-  const [medicineOrdersList, totalCount]: any = await medicineOrdersRepo.getMedicineOrdersListWithoutAbortedStatus(
+
+  // const [medicineOrdersList, totalCount]: any = await medicineOrdersRepo.getMedicineOrdersListWithoutAbortedStatus(
+  //   primaryPatientIds,
+  //   paginateParams
+  // );
+
+  console.log('pagination params ---->', paginateParams)
+  const [medicineOrdersList, totalCount]: any = await Promise.all(medicineOrdersRepo.getMedicineOrdersListWithoutAbortedStatus(
     primaryPatientIds,
     paginateParams
-  );
+  ));
+
+  console.log('medicineOrdersList length---->', medicineOrdersList.length, totalCount)
 
   let uhid = patientDetails.uhid;
   if (process.env.NODE_ENV == 'local') uhid = ApiConstants.CURRENT_UHID.toString();

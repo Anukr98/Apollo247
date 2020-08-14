@@ -191,3 +191,20 @@ export const ADD_CHAT_DOCUMENTS = gql`
     }
   }
 `;
+
+export const JOIN_JDQ_WITH_AUTOMATED_QUESTIONS = gql`
+  mutation AddToConsultQueueWithAutomatedQuestions($ConsultQueueInput: ConsultQueueInput) {
+    addToConsultQueueWithAutomatedQuestions(consultQueueInput: $ConsultQueueInput) {
+      id
+      doctorId
+      totalJuniorDoctorsOnline
+      juniorDoctorsList {
+        juniorDoctorId
+        doctorName
+        # queueCount
+      }
+      totalJuniorDoctors
+      isJdAllowed
+    }
+  }
+`;

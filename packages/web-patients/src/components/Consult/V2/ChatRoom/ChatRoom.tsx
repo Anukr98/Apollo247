@@ -1,11 +1,10 @@
+import React, { useState, useRef, useEffect } from 'react';
 import { Theme, Modal, Popover, Typography, FormControlLabel } from '@material-ui/core';
-import { Link } from 'react-router-dom';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
-import React, { useState, useRef, useEffect } from 'react';
 import { clientRoutes } from 'helpers/clientRoutes';
-import { ChatWindow } from 'components/ChatRoom/V2/ChatWindow';
-import { ConsultDoctorProfile } from 'components/ChatRoom/V2/ConsultDoctorProfile';
+import { ChatWindow } from 'components/Consult/V2/ChatRoom/ChatWindow';
+import { ConsultDoctorProfile } from 'components/Consult/V2/ChatRoom/ConsultDoctorProfile';
 import { useParams } from 'hooks/routerHooks';
 import { useAuth } from 'hooks/authHooks';
 import { GET_DOCTOR_DETAILS_BY_ID } from 'graphql/doctors';
@@ -16,7 +15,6 @@ import {
 import { useQueryWithSkip } from 'hooks/apolloHooks';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import Paper from '@material-ui/core/Paper';
-import { OnlineConsult } from 'components/OnlineConsult';
 import { AphButton, AphTextField, AphRadio } from '@aph/web-ui-components';
 import { useApolloClient } from 'react-apollo-hooks';
 import moment from 'moment';
@@ -26,18 +24,13 @@ import {
 } from 'graphql/types/GetDoctorNextAvailableSlot';
 import { GET_DOCTOR_NEXT_AVAILABILITY } from 'graphql/doctors';
 import { TRANSFER_INITIATED_TYPE, BookRescheduleAppointmentInput } from 'graphql/types/globalTypes';
-import {
-  bookRescheduleAppointment,
-  bookRescheduleAppointmentVariables,
-} from 'graphql/types/bookRescheduleAppointment';
 import { BOOK_APPOINTMENT_RESCHEDULE } from 'graphql/profiles';
 import { useAllCurrentPatients } from 'hooks/authHooks';
-// import { ChatMessage } from "components/ChatRoom/ChatMessage";
 import { useMutation } from 'react-apollo-hooks';
 import Scrollbars from 'react-custom-scrollbars';
 import { Alerts } from 'components/Alerts/Alerts';
 import { ManageProfile } from 'components/ManageProfile';
-import { hasOnePrimaryUser } from '../../../helpers/onePrimaryUser';
+import { hasOnePrimaryUser } from '../../../../helpers/onePrimaryUser';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -89,9 +82,17 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     leftSection: {
       width: 328,
+      [theme.breakpoints.down('xs')]: {
+        width: '95%',
+        padddingRight: '5%',
+        paddingBottom: 20,
+      },
     },
     rightSection: {
       width: 'calc(100% - 328px)',
+      [theme.breakpoints.down('xs')]: {
+        width: 'calc(100% - 10px)',
+      }
     },
     backArrow: {
       cursor: 'pointer',
@@ -424,7 +425,7 @@ const useStyles = makeStyles((theme: Theme) => {
 
 type Params = { appointmentId: string; doctorId: string };
 
-export const ChatRoom: React.FC = (props) => {
+export const ChatRoom: React.FC = () => {
   const classes = useStyles({});
   const params = useParams<Params>();
   const [hasDoctorJoined, setHasDoctorJoined] = useState<boolean>(false);
@@ -455,6 +456,7 @@ export const ChatRoom: React.FC = (props) => {
     variables: { id: doctorId },
   });
   const bookAppointment = useMutation(BOOK_APPOINTMENT_RESCHEDULE);
+
   const rescheduleAPI = (bookRescheduleInput: BookRescheduleAppointmentInput) => {
     bookAppointment({
       variables: {
@@ -485,10 +487,7 @@ export const ChatRoom: React.FC = (props) => {
     });
 
   const nextAvailableSlot = (slotDoctorId: string, date: Date) => {
-    const todayDate = moment
-      .utc(date)
-      .local()
-      .format('YYYY-MM-DD');
+    const todayDate = moment.utc(date).local().format('YYYY-MM-DD');
     availableSlot(slotDoctorId, todayDate)
       .then(({ data }: any) => {
         try {
@@ -592,7 +591,13 @@ export const ChatRoom: React.FC = (props) => {
           </div>
         </div>
       </div>
-      {data && (
+      {!onePrimaryUser && <ManageProfile />}
+    </div>
+  );
+};
+
+{
+  /* {data && (
         <Modal
           open={isModalOpen}
           onClose={() => setIsModalOpen(false)}
@@ -603,18 +608,13 @@ export const ChatRoom: React.FC = (props) => {
             <div className={classes.modalBoxClose} onClick={() => setIsModalOpen(false)}>
               <img src={require('images/ic_cross_popup.svg')} alt="" />
             </div>
-            {/* <OnlineConsult
-              setIsPopoverOpen={setIsModalOpen}
-              doctorDetails={data.getDoctorDetailsById}
-              onBookConsult={(popover: boolean) => setIsModalOpen(popover)}
-              isRescheduleConsult={true}
-              appointmentId={params.appointmentId}
-              rescheduleAPI={rescheduleAPI}
-            /> */}
           </Paper>
         </Modal>
-      )}
-      <Popover
+      )} */
+}
+
+{
+  /* <Popover
         open={isPopoverOpen}
         anchorEl={mascotRef.current}
         anchorOrigin={{
@@ -633,7 +633,6 @@ export const ChatRoom: React.FC = (props) => {
               <img src={require('images/ic-mascot.png')} alt="" />
             </div>
             <div className={classes.windowBody}>
-              {/* <Typography variant="h2">hi! :)</Typography> */}
               <p>
                 We’re sorry that you have to reschedule. You can reschedule up to 3 times for free.
               </p>
@@ -664,8 +663,11 @@ export const ChatRoom: React.FC = (props) => {
             </div>
           </div>
         </div>
-      </Popover>
-      <Popover
+      </Popover> */
+}
+
+{
+  /* <Popover
         open={isRescheduleSuccess}
         anchorEl={mascotRef.current}
         anchorOrigin={{
@@ -699,8 +701,11 @@ export const ChatRoom: React.FC = (props) => {
             </div>
           </div>
         </div>
-      </Popover>
-      <div className={classes.headerActions}>
+      </Popover> */
+}
+
+{
+  /* <div className={classes.headerActions}>
         <div
           onClick={() => {
             setIsFeedbackPopoverOpen(true);
@@ -710,8 +715,11 @@ export const ChatRoom: React.FC = (props) => {
             <img src={require('images/ic-mascot.png')} alt="" />
           </div>
         </div>
-      </div>
-      <Popover
+      </div> */
+}
+
+{
+  /* <Popover
         open={isFeedbackPopoverOpen}
         anchorEl={mascotRef.current}
         anchorOrigin={{
@@ -822,6 +830,8 @@ export const ChatRoom: React.FC = (props) => {
           </div>
         </div>
       </Popover>
+
+
       <Popover
         open={isSubmitPopoverOpen}
         anchorEl={mascotRef.current}
@@ -859,14 +869,14 @@ export const ChatRoom: React.FC = (props) => {
             </div>
           </div>
         </div>
-      </Popover>
-      <Alerts
+      </Popover> */
+}
+
+{
+  /* <Alerts
         setAlertMessage={setAlertMessage}
         alertMessage={alertMessage}
         isAlertOpen={isAlertOpen}
         setIsAlertOpen={setIsAlertOpen}
-      />
-      {!onePrimaryUser && <ManageProfile />}
-    </div>
-  );
-};
+      /> */
+}

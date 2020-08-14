@@ -797,7 +797,7 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
     filteredAppointmentsList.forEach((appointmentDetails) => {
       if (
         appointmentDetails.status !== STATUS.CANCELLED &&
-        !isPastAppointment(appointmentDetails)
+        !isPastAppointment(appointmentDetails.appointmentDateTime)
       ) {
         const tomorrowAvailabilityHourTime = moment('00:00', 'HH:mm');
         const tomorrowAvailabilityTime = moment()

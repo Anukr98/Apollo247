@@ -1091,10 +1091,26 @@ app.get('/processOmsOrders', (req, res) => {
                 }
                 if (prescriptionImages.length > 0) {
                   prescriptionImages.map((imageUrl) => {
-                    const url = {
-                      url: imageUrl,
+                    const requestJSON = {
+                      query: `mutation{
+                        fetchBlobURLWithPRISMData(patientId:"${patientDetails.id}",fileUrl:"${imageUrl}"){
+                          blobUrl
+                        }
+                      }`,
                     };
-                    orderPrescriptionUrl.push(url);
+                    axios.defaults.headers.common['authorization'] = Constants.AUTH_TOKEN;
+                    axios
+                      .post(process.env.API_URL, requestJSON)
+                      .then((response) => {
+                        const url = {
+                          url: response.data.data.fetchBlobURLWithPRISMData.blobUrl,
+                        };
+                        console.log('fetchBlobURLWithPRISMData url>>>>>>>>>>>>>>>>>>>>>>', url);
+                        orderPrescriptionUrl.push(url);
+                      })
+                      .catch((error) => {
+                        console.log('error', error);
+                      });
                   });
                 }
                 if (!orderDetails.orderTat) {

@@ -478,6 +478,20 @@ export interface CancelAppointmentInput {
   cancelledById: string;
 }
 
+export interface ConsultQueueInput {
+  appointmentId: string;
+  height?: string | null;
+  weight?: string | null;
+  temperature?: string | null;
+  bp?: string | null;
+  lifeStyle?: string | null;
+  familyHistory?: string | null;
+  dietAllergies?: string | null;
+  drugAllergies?: string | null;
+  age?: number | null;
+  gender?: Gender | null;
+}
+
 export interface DiagnosticLineItem {
   itemId?: number | null;
   price?: number | null;

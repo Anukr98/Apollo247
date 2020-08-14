@@ -797,10 +797,11 @@ export const AppointmentsList: React.FC<AppointmentProps> = (props) => {
             {tabValue === 0 && (
               <TabContainer>
                 {availableAppointments && availableAppointments.length > 0 ? (
-                  <ConsultationsCardList
-                    appointments={availableAppointments}
-                    pastOrCurrent="current"
-                  />
+                  // <ConsultationsCardList
+                  //   appointments={availableAppointments}
+                  //   pastOrCurrent="current"
+                  // />
+                  <></>
                 ) : loading || isSigningIn ? (
                   <div className={classes.loader}>
                     <CircularProgress />
@@ -835,8 +836,9 @@ export const AppointmentsList: React.FC<AppointmentProps> = (props) => {
             {tabValue === 1 && (
               <TabContainer>
                 {pastAppointments && pastAppointments.length > 0 ? (
-                  <ConsultationsCardList appointments={pastAppointments} pastOrCurrent="past" />
-                ) : loading || isSigningIn ? (
+                  <></>
+                ) : // <ConsultationsCardList appointments={pastAppointments} pastOrCurrent="past" />
+                loading || isSigningIn ? (
                   <div className={classes.loader}>
                     <CircularProgress />
                   </div>
