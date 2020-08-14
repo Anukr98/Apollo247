@@ -42,7 +42,6 @@ export type PaytmResponse = {
   resultInfo: ResultInfo;
   orderId: string;
   refId: string;
-  paymentMode: string;
   refundAmount: string;
   refundId: string;
   txnAmount: string;
