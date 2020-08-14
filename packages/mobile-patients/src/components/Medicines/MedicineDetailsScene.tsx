@@ -652,6 +652,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
                   isSolidContainer={true}
                   containerStyle={{
                     height: 40,
+                    width: '45%',
                     borderColor: '#fcb716',
                     borderRadius: 10,
                     backgroundColor: '#fcb716',
