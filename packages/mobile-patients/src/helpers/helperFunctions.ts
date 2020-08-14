@@ -1112,7 +1112,7 @@ export const InitiateAppsFlyer = (
       setBugFenderLog('onAppOpenAttribution_APPS_FLYER_DEEP_LINK_COMPLETE', res.data);
     } catch (error) {}
 
-    const userLoggedIn = await AsyncStorage.getItem('logginHappened');
+    const userLoggedIn = await AsyncStorage.getItem('userLoggedIn');
     if (userLoggedIn == 'true') {
       handleUniversalLinks(res.data, navigation);
     }
