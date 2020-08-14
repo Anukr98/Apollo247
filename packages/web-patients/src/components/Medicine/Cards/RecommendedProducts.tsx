@@ -347,12 +347,14 @@ export const RecommendedProducts: React.FC<RecommendedProductsProps> = (props) =
                       {itemIndexInCart(productList) === -1 ? (
                         <AphButton
                           onClick={() => {
+                            const imageList = [];
+                            imageList.push(productList.productImage);
                             const cartItem: MedicineCartItem = {
                               MaxOrderQty: null,
                               url_key: productList.productSku,
                               description: null,
                               id: Number(productList.categoryName),
-                              image: productList.productImage || null,
+                              image: imageList,
                               is_in_stock: true,
                               is_prescription_required: '1',
                               name: productList.productName,
